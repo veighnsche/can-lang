@@ -107,7 +107,7 @@ func TestGenericVariantRevisionIdentity(t *testing.T) {
 	src := genericOptionSource(t)
 	old, _ := revisionProg(t, map[string]string{"option.can": src}, []string{"option.can"})
 	base := &RevisionBaseline{Format: RevisionFormat, Origin: "generic-variant-test", Accepted: true,
-		Scope: []string{"option"}, Entries: FingerprintProgram(old)}
+		Scope: []string{"option"}, Entries: FingerprintProgram(old), Pinned: PinnedRows(old)}
 	// Rename one case consistently so the new program is valid on its
 	// own, but changes both stamped variant contracts at the same rev.
 	changed := strings.ReplaceAll(src, "case None()", "case Absent()")

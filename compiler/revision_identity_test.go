@@ -87,6 +87,7 @@ func revisionBaseline(t *testing.T, prog *Program, origin string) *RevisionBasel
 		Accepted: true,
 		Scope:    []string{"model", "client"},
 		Entries:  FingerprintProgram(prog),
+		Pinned:   PinnedRows(prog),
 	}
 	return base
 }
@@ -389,6 +390,7 @@ fn m__max(left: int, right: int) -> M__Out rev 1
 		Format: RevisionFormat, Origin: "review-base:B",
 		Accepted: true, Scope: []string{"m"},
 		Entries: FingerprintProgram(progB),
+		Pinned:  PinnedRows(progB),
 	}
 	modC := strings.Replace(modB, "    left >= right\n", "    true\n", 1)
 	progC, textsC := revisionProg(t, map[string]string{"m.can": modC}, []string{"m.can"})

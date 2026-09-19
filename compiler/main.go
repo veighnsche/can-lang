@@ -207,6 +207,11 @@ func compileAll(out string, paths []string, jsonOut bool, baselinePath string) e
 	// prints loudly on both output modes, and never blocks emit.
 	if base != nil {
 		if pinDiags := CheckPinnedRows(prog, texts, base); len(pinDiags) > 0 {
+			// Acceptance changes are warnings; inability to canonicalize
+			// evidence is an error and must prevent artifact emission.
+			if firstError(pinDiags) != nil {
+				return failDiags(pinDiags, jsonOut)
+			}
 			if jsonOut {
 				reportDiags(os.Stdout, pinDiags)
 			} else {

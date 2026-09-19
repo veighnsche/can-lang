@@ -9,8 +9,8 @@ and [probe guide](README.md).
 
 **Status:** Workstream A audit/review completed at `8bbcf13` on 2026-09-19;
 [replacement dossier, judgments and dispositions](workstream-a/README.md).
-Remaining workstreams are planning checklists. No language redesign or defect
-repair has been implemented by this document. Audit recommendations are proposals,
+B1/F01 is implemented; see the [repair record](b1-canonicalization.md).
+Other workstreams remain planning checklists. Audit recommendations are proposals,
 not approved specifications. The original JEV reviews are withdrawn as decision support:
 the supplied Can context was insufficient. Reproducible compiler findings remain
 evidence independently of those reviews.
@@ -24,7 +24,7 @@ compatibility modes. Migrations still need explicit semantic decisions and tests
 | Order | Workstream | Current status | Depends on |
 |---|---|---|---|
 | Done | A. Correct the JEV review process | Replacement review complete; design dispositions recorded | [Dossier and evidence](workstream-a/README.md) |
-| Now | B. Confirmed correctness/integration defects | Reproduced at `8bbcf13`, including new F06; fixes pending | Can proceed without syntax redesign |
+| Now | B. Confirmed correctness/integration defects | B1/F01 repaired; B2–B5 remain pending (including F06) | Can proceed without syntax redesign |
 | Now / decision | C. Current specification and compiler foundations | C1 supported next work; C2/C3 architecture unresolved | Current inventory and concrete compiler pressure cases |
 | Decision | D. Successes, calls, bindings, patterns | Success/call/context choices unresolved; other changes remain candidates | Explicit semantics; H before any public ABI migration |
 | Repair / decision | E. Modules, ownership, effects, revisions | Strict duplicate rejection supported; namespace/visibility redesign unresolved | B2/B3; ownership and authority decisions |
@@ -128,19 +128,23 @@ under H; the review did not classify it as a hostile-host sandbox breach.
 
 ### B1. Acceptance and canonicalization — F01
 
-- [ ] Add a normal regression test: changing a pinned callback target together
+**Complete:** [implementation, consumer audit, and validation](b1-canonicalization.md).
+Revision baseline format 2 rejects old evidence; candidate generation remains
+unaccepted. No language syntax/ABI redesign or proof-cache claim is implied.
+
+- [x] Add a normal regression test: changing a pinned callback target together
   with the factory body must produce the acceptance-change warning.
-- [ ] Encode function-reference target, revision/identity, captures, and relevant
+- [x] Encode function-reference target, revision/identity, captures, and relevant
   specialization information in canonical evidence.
-- [ ] Include semantically relevant typed-Ok and pattern annotations.
-- [ ] Include invocation arguments in canonical executable structure.
-- [ ] Reject unsupported semantic node kinds instead of hashing an
+- [x] Include semantically relevant typed-Ok and pattern annotations.
+- [x] Include invocation arguments in canonical executable structure.
+- [x] Reject unsupported semantic node kinds instead of hashing an
   `unknown-kind(...)` placeholder.
-- [ ] Separate interface, executable, dependency, and acceptance identities;
+- [x] Separate interface, executable, dependency, and acceptance identities;
   audit which consumers use each canonical form.
-- [ ] Version the canonical format and reject incomplete old evidence. Do not
+- [x] Version the canonical format and reject incomplete old evidence. Do not
   silently promote a regenerated candidate baseline to accepted authority.
-- [ ] Test changed targets, captures, invocation arguments, type arguments,
+- [x] Test changed targets, captures, invocation arguments, type arguments,
   dependencies, and formatting-only edits.
 
 **Done when:** semantic changes are distinguished, formatting is inert, and the

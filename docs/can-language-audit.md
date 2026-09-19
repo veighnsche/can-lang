@@ -93,6 +93,10 @@ continue to exist.
 
 ### F01 — Pinned callback expectations can change without the warning
 
+**Repaired in B1:** see the [implementation and consumer audit](audit-probes/b1-canonicalization.md).
+The description below records the original finding; current regression tests
+require a warning and baseline format 2 rejects the incomplete old evidence.
+
 **Confirmed defect; fix first.**
 
 `compiler/revision.go:canonSmall` has no `fnref` case. Different references

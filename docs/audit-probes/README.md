@@ -5,6 +5,12 @@ completed at `8bbcf13` on 2026-09-19. It reproduces F01–F05, adds F06
 (named-argument fault-order mismatch), and preserves all thirteen new review
 packets with explicit dispositions. The original evidence below remains history.
 
+**Implemented follow-up:** [B1/F01 canonicalization repair](b1-canonicalization.md).
+The pinned callback-target collision now warns; baseline format is 2. Current
+regressions: `go test ./compiler -run TestCanonical -count=1`. The archived F01
+probe below now fails its old collision hypothesis, as expected; it is not a
+current regression gate. Other findings remain tracked separately.
+
 Start with the **[master TODO checklist](TODO.md)** for priorities, dependencies,
 completion criteria, and coverage of every audit section.
 
@@ -16,8 +22,10 @@ regression test in the repair commit.
 
 ## Compiler/evidence probes
 
-From the repo root, use a temporary test filename, refusing to overwrite an
-existing file and cleaning up even on failure:
+Historical reproduction at the audit baseline (F01 is now repaired). From the
+repo root, use a temporary test filename, refusing to overwrite an existing file
+and cleaning up even on failure. To probe only the still-open F02 on current
+HEAD, select `^TestAuditDuplicateRecordProbe$` instead:
 
 ```sh
 test ! -e compiler/z_audit_probe_test.go && (

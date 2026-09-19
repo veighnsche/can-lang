@@ -13,15 +13,15 @@ import (
 
 // a77: revision identity enforcement. Fingerprints over resolved
 // declarations plus transitive closures; baselines selected by the
-// acceptance workflow; same-revision drift rejected. Three
-// identities — interface drift, proof freshness, test evidence —
-// share this mechanism without conflating inputs: bodies, tests,
-// positions, comments, checker annotations, and given tables never
-// enter interface identity.
+// acceptance workflow; same-revision drift rejected. Interface/dependency
+// fingerprints and pinned acceptance evidence have distinct inputs. Bodies,
+// tests, positions, comments, checker annotations, and given tables never
+// enter interface identity. Executable structure is serialized separately;
+// proofs are recomputed, not authorized by a persisted executable hash.
 
 // RevisionFormat versions the canonicalization. Incompatible
 // baseline formats are refused, never silently rehashed.
-const RevisionFormat = 1
+const RevisionFormat = 2
 
 // RevisionEntry is one declaration's identity record. Fingerprint
 // covers the own canonical form plus the transitive dependency
@@ -81,10 +81,10 @@ type RevisionBaseline struct {
 	Scope    []string                 `json:"scope"`
 	Entries  map[string]RevisionEntry `json:"entries"`
 	// Pinned records trusted-acceptance rows (a87): row key to
-	// canonical expectation rendering. Additive: older baselines
-	// carry no pins and simply track nothing, so the format does
-	// not bump for this advisory section. Pins never enter the
-	// fingerprint hash — weakening warns (CAN6017), never rejects.
+	// canonical expectation rendering plus resolved reference dependencies.
+	// Format 2 requires this section, including an empty map when there
+	// are no pins. Format 1 omitted semantic inputs and is not authority.
+	// Pins never enter interface fingerprints; changes warn (CAN6017).
 	Pinned map[string]string `json:"pinned"`
 }
 
@@ -106,7 +106,7 @@ func canonStringList(xs []string) string {
 func canonFields(fs [][2]string) string {
 	parts := make([]string, 0, len(fs))
 	for _, f := range fs {
-		parts = append(parts, f[0]+":"+f[1])
+		parts = append(parts, f[0]+":"+canonType(f[1]))
 	}
 	return "[" + strings.Join(parts, ",") + "]"
 }
@@ -126,7 +126,7 @@ func canonSmall(s *Small) string {
 		return "s:" + strconv.Quote(s.Str)
 	case "int":
 		if s.Num == nil {
-			return "i:?"
+			panic(canonicalError("int literal has no value"))
 		}
 		return "i:" + s.Num.String()
 	case "bool":
@@ -154,27 +154,13 @@ func canonSmall(s *Small) string {
 		for _, it := range s.Items {
 			parts = append(parts, canonSmall(it))
 		}
-		return "seqlit(" + s.Elem + ")[" + strings.Join(parts, ",") + "]"
-	case "ctor":
-		parts := make([]string, 0, len(s.Args))
-		for _, a := range s.Args {
-			name := "pos"
-			if a.HasName {
-				name = a.Name
-			}
-			parts = append(parts, name+"="+canonSmall(a.V))
+		return "seqlit(" + canonType(s.Elem) + ")[" + strings.Join(parts, ",") + "]"
+	case "ctor", "call", "fnref":
+		name := s.Fname
+		if s.Kind == "ctor" {
+			name = s.Ctor
 		}
-		return "ctor(" + s.Ctor + ")[" + strings.Join(parts, ",") + "]"
-	case "call":
-		parts := make([]string, 0, len(s.Args))
-		for _, a := range s.Args {
-			name := "pos"
-			if a.HasName {
-				name = a.Name
-			}
-			parts = append(parts, name+"="+canonSmall(a.V))
-		}
-		return "call(" + s.Fname + ")[" + strings.Join(parts, ",") + "]"
+		return s.Kind + "(" + strconv.Quote(name) + ")types" + canonTypes(s.TypeArgs) + canonArgs(s.Args)
 	case "binop":
 		return "binop(" + s.Op + "," + canonSmall(s.L) + "," + canonSmall(s.R) + ")"
 	case "strlen":
@@ -206,10 +192,7 @@ func canonSmall(s *Small) string {
 	case "forward":
 		return "forward(" + s.Str + ")"
 	default:
-		// Fail closed: an unserializable kind must never hash as
-		// a blank. New expression kinds force this function to
-		// learn them before any baseline can cover them.
-		return "unknown-kind(" + s.Kind + ")"
+		panic(canonicalError("unsupported expression kind " + strconv.Quote(s.Kind)))
 	}
 }
 
@@ -237,15 +220,12 @@ func canonPattern(p Pattern) string {
 		return "str:" + strconv.Quote(p.Str)
 	case "int":
 		if p.Num == nil {
-			return "unknown-pattern(int)"
+			panic(canonicalError("int pattern has no value"))
 		}
 		return "int:" + p.Num.String()
 	case "range":
 		if p.Num == nil || p.Hi == nil {
-			if p.LoS != "" || p.HiS != "" {
-				return "range:" + p.LoS + ".." + p.HiS
-			}
-			return "unknown-pattern(range)"
+			panic(canonicalError("unresolved range pattern"))
 		}
 		return "range:" + p.Num.String() + ".." + p.Hi.String()
 	case "or":
@@ -258,12 +238,9 @@ func canonPattern(p Pattern) string {
 		}
 		return "or:(" + strings.Join(parts, "|") + ")"
 	case "variant", "variantWild":
-		if p.Var == "" {
-			return p.Kind + ":" + p.Name
-		}
-		return p.Kind + ":" + p.Name + ":" + p.Var
+		return p.Kind + ":" + strconv.Quote(p.Name) + ":" + strconv.Quote(p.Var) + ":types" + canonTypes(p.TypeArgs)
 	default:
-		return "unknown-pattern(" + p.Kind + ")"
+		panic(canonicalError("unsupported pattern kind " + strconv.Quote(p.Kind)))
 	}
 }
 
@@ -276,7 +253,16 @@ func canonNode(n *Node) string {
 	if !n.IsMatch {
 		return canonSmall(n.Small)
 	}
-	parts := make([]string, 0, len(n.Scruts)+len(n.Arms))
+	if n.Kind != MatchValue && n.Kind != MatchCall && n.Kind != MatchInvoke {
+		panic(canonicalError(fmt.Sprintf("unsupported/unelaborated match kind %d", n.Kind)))
+	}
+	parts := make([]string, 0, len(n.Scruts)+len(n.Arms)+1)
+	if n.Kind == MatchInvoke {
+		if n.InvokeArg == nil {
+			panic(canonicalError("invocation has no argument"))
+		}
+		parts = append(parts, "with="+canonSmall(n.InvokeArg))
+	}
 	for _, s := range n.Scruts {
 		parts = append(parts, canonSmall(s))
 	}
@@ -306,17 +292,31 @@ func canonContractArm(a ContractArm) string {
 }
 
 func shaHex(s string) string {
-	sum := sha256.Sum256([]byte(s))
+	sum := sha256.Sum256([]byte(fmt.Sprintf("can-revision/v%d\x00%s", RevisionFormat, s)))
 	return hex.EncodeToString(sum[:])
 }
 
 // revisionTypeDeps collects the nominal type names inside one
 // annotation: bare names verbatim, sequences unwrapped to their
-// element. Base types resolve to nothing; everything else is a
-// dependency candidate the indexer maps to an identity key.
+// element, callable input/result/error members recursively traversed. Base
+// types resolve to nothing; other names are dependency candidates mapped
+// by the indexer to identity keys.
 func revisionTypeDeps(t string, out map[string]bool) {
+	t = canonType(t)
 	if elem, ok := seqElemName(t); ok {
-		t = elem
+		revisionTypeDeps(elem, out)
+		return
+	}
+	if a, r, es, ok := fnTypeShape(t); ok {
+		revisionTypeDeps(a, out)
+		revisionTypeDeps(r, out)
+		for _, e := range strings.Split(strings.Trim(es, "[]"), ",") {
+			e = strings.TrimSpace(e)
+			if e != "" {
+				out[e] = true
+			}
+		}
+		return
 	}
 	switch t {
 	case "str", "int", "bool", "dec", "Bytes":
@@ -370,7 +370,7 @@ func revisionDeclEntries(m *Module, out map[string]*revisionWork) {
 			}
 			canon := "fn(" + d.Name + ")" +
 				"params" + canonFields(params) +
-				"ret(" + d.Ret + ")" +
+				"ret(" + canonType(d.Ret) + ")" +
 				"emits" + canonStringList(d.Emits) +
 				"effects" + canonStringList(d.Effects) +
 				"requires[" + strings.Join(requires, ",") + "]" +
@@ -475,7 +475,7 @@ func revisionDeclEntries(m *Module, out map[string]*revisionWork) {
 			}
 			canon := "extern(" + d.Name + ")" +
 				"params" + canonFields(params) +
-				"ret(" + d.Ret + ")" +
+				"ret(" + canonType(d.Ret) + ")" +
 				"emits" + canonStringList(d.Emits)
 			fragment := fmt.Sprintf("extern %s.%s(%s) -> %s emits %s",
 				m.Mod, d.Name, canonFields(params), d.Ret, canonStringList(d.Emits))
@@ -894,8 +894,8 @@ func ensuresOutcome(canon string) string {
 // fingerprints; baseline-only identities report REMOVED and
 // candidate-only identities report ADDED. A nil baseline selects
 // no enforcement. Diagnostics sort by message for determinism.
-func CheckRevisionIdentity(prog *Program, texts map[string]string, base *RevisionBaseline) []Diag {
-	var out []Diag
+func CheckRevisionIdentity(prog *Program, texts map[string]string, base *RevisionBaseline) (out []Diag) {
+	defer canonicalDiags(prog, texts, &out)
 	if base == nil {
 		return nil
 	}
@@ -908,13 +908,17 @@ func CheckRevisionIdentity(prog *Program, texts map[string]string, base *Revisio
 		return spanDiag(text, line, "error", msg, token, code)
 	}
 	if base.Format != RevisionFormat {
-		return []Diag{mkspan(fmt.Sprintf("unsupported revision format %d (want %d): regenerate the baseline with a compatible canlc",
+		return []Diag{mkspan(fmt.Sprintf("unsupported revision format %d (want %d): generate a new candidate with a compatible canlc, then explicitly review and re-accept",
 			base.Format, RevisionFormat), "mod", CodeRevisionIdentity)}
 	}
 	if !base.Accepted {
 		return []Diag{mkspan(fmt.Sprintf("not an accepted baseline (origin %q): generation is not acceptance; select an accepted baseline from the review base",
 			base.Origin), "mod", CodeRevisionIdentity)}
 	}
+	if base.Pinned == nil {
+		return []Diag{mkspan("incomplete revision baseline: missing pinned evidence section; regenerate and explicitly review/re-accept", "mod", CodeRevisionIdentity)}
+	}
+	validateCanonicalProgram(prog)
 	current := FingerprintProgram(prog)
 	anchor := func(key string) (string, int) {
 		fileID, line := revisionAnchor(prog, key)
@@ -1131,7 +1135,7 @@ func canonPinnedRow(t Test) string {
 		}
 		parts = append(parts, name+"="+v)
 	}
-	return t.Name + "(" + strings.Join(parts, ",") + ") => " + canonSmall(t.Expected)
+	return t.Name + "(" + strings.Join(parts, ",") + ")binds" + canonFields(t.TypeBinds) + " => " + canonSmall(t.Expected)
 }
 
 // pinRowKey names one acceptance row: the fn identity key plus test
@@ -1147,6 +1151,7 @@ func pinRowKey(fnKey, test string) string {
 // are proposed evidence whose churn is silent by construction.
 func pinnedRowWalk(prog *Program) map[string]PinnedRow {
 	rows := map[string]PinnedRow{}
+	entries := FingerprintProgram(prog)
 	for _, m := range prog.Modules {
 		for _, d := range m.Decls {
 			fn, ok := d.(*FnDecl)
@@ -1157,7 +1162,7 @@ func pinnedRowWalk(prog *Program) map[string]PinnedRow {
 			for _, t := range fn.Tests {
 				rows[pinRowKey(fnKey, t.Name)] = PinnedRow{
 					FnKey: fnKey, FnName: m.Mod + "." + fn.Name,
-					Test: t.Name, Line: t.Line, Render: canonPinnedRow(t),
+					Test: t.Name, Line: t.Line, Render: canonPinnedRow(t) + canonRowDependencies(prog, entries, t),
 					Pinned: t.Pinned, FileID: m.ID, File: m.File,
 				}
 			}
@@ -1182,12 +1187,14 @@ func PinnedRows(prog *Program) map[string]string {
 // CheckPinnedRows reports A-light weakening (a87): a pinned expectation
 // that changed, a pinned row that vanished, or a pin demoted back to
 // proposed since the accepted baseline. Advisory only: severity warning,
-// never error, so every caller gates exactly as before. Runs only
+// not a build error. Canonicalization failures, unlike weakening, fail closed
+// with an error. Runs only
 // against accepted baselines in the current format — identity owns
 // every other complaint. Fns whose identity is absent on either side
 // are skipped: added, removed, or revved declarations already report
 // through CAN6013, and new pins record silently on regen.
-func CheckPinnedRows(prog *Program, texts map[string]string, base *RevisionBaseline) []Diag {
+func CheckPinnedRows(prog *Program, texts map[string]string, base *RevisionBaseline) (out []Diag) {
+	defer canonicalDiags(prog, texts, &out)
 	if base == nil || base.Format != RevisionFormat || !base.Accepted || len(base.Pinned) == 0 {
 		return nil
 	}
@@ -1200,7 +1207,6 @@ func CheckPinnedRows(prog *Program, texts map[string]string, base *RevisionBasel
 			}
 		}
 	}
-	var out []Diag
 	warn := func(row PinnedRow, line int, verb, expected, found string) {
 		d := spanDiag(texts[row.FileID], line, "warning",
 			fmt.Sprintf("pinned row %s/%s %s since accepted baseline %q", row.FnName, row.Test, verb, base.Origin),
@@ -1262,7 +1268,17 @@ func CheckPinnedRows(prog *Program, texts map[string]string, base *RevisionBasel
 // resolved program. Generation is deterministic: sorted modules,
 // sorted entry keys. Accepted stays false: generation is not
 // acceptance, and the checker refuses unaccepted baselines.
-func WriteBaseline(path string, prog *Program, origin string) error {
+func WriteBaseline(path string, prog *Program, origin string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			if e, ok := r.(canonicalError); ok {
+				err = e
+			} else {
+				panic(r)
+			}
+		}
+	}()
+	validateCanonicalProgram(prog)
 	mods := map[string]bool{}
 	for _, m := range prog.Modules {
 		mods[m.Mod] = true
