@@ -1,7 +1,11 @@
 # Can language audit — master TODO
 
-Source: [full audit](../can-language-audit.md), baseline `8312d85`.
-Reproductions: [probe guide](README.md).
+Current basis: [replacement audit and dispositions](workstream-a/README.md),
+language/compiler baseline `8bbcf13`, reviewed 2026-09-19.
+The [original audit](../can-language-audit.md), baseline `8312d85`, remains the
+source of candidate redesigns, not a settled implementation plan.
+Reproductions: [current findings and gates](workstream-a/README.md#current-findings-and-validation)
+and [probe guide](README.md).
 
 **Status:** Workstream A audit/review completed at `8bbcf13` on 2026-09-19;
 [replacement dossier, judgments and dispositions](workstream-a/README.md).
@@ -21,21 +25,59 @@ compatibility modes. Migrations still need explicit semantic decisions and tests
 |---|---|---|---|
 | Done | A. Correct the JEV review process | Replacement review complete; design dispositions recorded | [Dossier and evidence](workstream-a/README.md) |
 | Now | B. Confirmed correctness/integration defects | Reproduced at `8bbcf13`, including new F06; fixes pending | Can proceed without syntax redesign |
-| Next | C. Current specification, type model, compiler core | Proposal | Reconcile actual behavior and intended guarantees |
-| Next | D. Uniform successes, calls, bindings, patterns | Proposal | C; source/public ABI decisions |
-| Next | E. Modules, ownership, effects, revision identity | Proposal | C; coordinate with B's identity fixes |
-| Next | F. Tests, evidence, contracts, faults | Proposal | C; coordinate with D/E |
-| Then | G. Generic outcomes, data, higher-order functions | Proposal | C/D; error/effect/termination decisions |
-| Then | H. Public host boundary and wire schemas | Design pending | Design before D's ABI migration; implementation may be staged |
-| Later | I. B05 async and resources | Competing designs; not implemented | C/E/H; reconciled B05 decision |
-| Parallel | J. Formatter, syntax polish, diagnostics | Proposal | Settled grammar and semantic choices |
-| Per slice | K. Stdlib migration and acceptance gates | Pending | Relevant approved workstreams |
+| Now / decision | C. Current specification and compiler foundations | C1 supported next work; C2/C3 architecture unresolved | Current inventory and concrete compiler pressure cases |
+| Decision | D. Successes, calls, bindings, patterns | Success/call/context choices unresolved; other changes remain candidates | Explicit semantics; H before any public ABI migration |
+| Repair / decision | E. Modules, ownership, effects, revisions | Strict duplicate rejection supported; namespace/visibility redesign unresolved | B2/B3; ownership and authority decisions |
+| Decision / gates | F. Tests, evidence, contracts, faults | Pure-test default unresolved; existing guarantees and repair gates retained | B1/B5; chosen source and evidence semantics |
+| Decision | G. Errors, data, higher-order functions | Error abstraction unresolved; expressivity extensions are candidates | Chosen error/effect/termination and type rules |
+| Decision | H. Host and wire boundaries | Trust policy/public facade unresolved | Real embedding requirements; separate source/private/public/wire contracts |
+| Design process | I. B05 async and resources | Contract-first comparison supported; source/host/backend choices unresolved | Real customer, settlement/resource requirements and acceptance vectors |
+| Evidence / decision | J. Formatter, surface syntax, diagnostics | Collection/literal/boolean/label choices unresolved | Agent trials and explicit grammar/evaluation rules |
+| Per decided slice | K. Stdlib migration and acceptance gates | Repairs and gates pending; redesign migration conditional | Relevant recorded decisions and working implementation |
 
 Checkboxes are completion evidence, not approval. Mark a design task complete
 when its decision and rationale are recorded; mark an implementation task
 complete only when its acceptance gates pass. Record the implementation commit
 and test evidence when closing an item. Keep baseline failures separate from
 regressions introduced by a change.
+
+## Decisions carried forward from the replacement audit
+
+**Accepted** below means supported as an audit recommendation within its stated
+scope, not approval of a new language or ABI. The review accepted three bounded
+recommendations and left ten choices unresolved. JEV's highest-scoring option
+alone does not choose a design; the [full distributions and reviewer rationale](workstream-a/README.md#replacement-jev-results-and-audit-disposition)
+remain the evidence record.
+
+| Reviewed question | Disposition | Consequence for this TODO |
+|---|---|---|
+| Sequencing | **Accepted:** repair and specify first | Prioritize B, C1 and working gates. Do not assume a new core must precede every semantic slice; decide C2/C3 from concrete needs. |
+| Successes | **Unresolved** | D1 must compare declared-shape/B11, uniform whole-value and raw-total conventions; no removal or ABI migration is selected. |
+| Calls | **Unresolved long-term** | D2 must compare split call/invoke, unified explicit call and bare application. Repair F06 independently; wider callable positions need authority/cycle analysis. |
+| Modules | **Accepted only for immediate repair:** strict uniqueness | B2/B3 reject duplicate definitions and use one owned schema. Scoped/package namespaces and visibility remain open in E1. |
+| Pure-source tests | **Unresolved** | F1 must compare scripted boundaries plus linked gates, executing pure source by default, and explicit test modes. |
+| Host boundary | **Unresolved** | H2 must choose trusted embedding, a validated data-only facade, or a validated facade with callable provenance before imposing an ingress policy. |
+| Error abstraction | **Unresolved** | G1 must compare concrete combinators, rows-first relay, and rows plus completed outcomes; neither `Outcome<T,E>` nor generic error rows are selected. |
+| B05 process | **Accepted:** contracts before backend selection | I must resolve a real customer's source/host/resource obligations, then prototype only uncertainties needing measurement. No mandatory pair of full implementations. |
+| Contextual typing | **Unresolved** | D5 must compare fully explicit, constructor/pattern-only context, and broader deterministic local context. |
+| Collection spelling | **Unresolved** | J1 must compare `Seq<T>`, `[T]` and `T[]` independently of fixing compositional type rules. |
+| Literals | **Unresolved** | J1 must compare current explicit families, ordinary exact decimals plus escaped strings, and a numeric-only change using edit/error evidence. |
+| Boolean evaluation | **Unresolved as a permanent choice** | Keep current eager semantics during repairs; conditional evaluation needs explicit branch/fault rules and trials. |
+| Argument labels | **Unresolved** | Repair F06 first; compare optional labels, canonical positional forms and required multi-argument labels separately from parameter binding. |
+
+**Checklist interpretation:** B's confirmed repairs and C1's current inventory
+are concrete next work. C2/C3 and the redesign parts of D–J describe decisions
+and conditional implementation work: first choose the design, then implement
+only the applicable branch. They do not require implementing every alternative
+or carrying both old and new forms. Preserving current behavior while a decision
+is open creates no permanent compatibility obligation. Additional proposals such
+as pattern unification, local blocks, resources or tail-call lowering were not
+independently approved by the thirteen judgments.
+
+Do not carry forward these rejected inferences: scores approve a redesign;
+current winners must remain forever; B05 differs only in its backend; TS types
+establish host ownership/purity; or green Can rows/unchanged goldens establish
+strict target validity or universal proof.
 
 ## A. Redo the JEV review correctly
 
@@ -80,7 +122,9 @@ unresolved. No implementation commit applies: compiler behavior is unchanged.
 ## B. Repair confirmed defects and incomplete gates
 
 These repairs do not need to wait for a new parser. Reproduce at current HEAD
-before changing code; the probe fixtures describe the audit baseline.
+before changing code; the current audit reproduced F01/F02/F04/F05 and added
+F06 at `8bbcf13`. F03 is a confirmed trusted-boundary behavior/design gap, tracked
+under H; the review did not classify it as a hostile-host sandbox breach.
 
 ### B1. Acceptance and canonicalization — F01
 
@@ -105,12 +149,17 @@ narrower structural probes alone.
 
 ### B2. Declaration identity — F02
 
-- [ ] Reject conflicting duplicate record identities at their declarations.
+Immediate scope: deterministic strict uniqueness in the current global model.
+This repair does not require selecting scoped namespaces or visibility in E1.
+
+- [ ] Reject duplicate record definitions at their declarations, including
+  identical redeclarations that currently coalesce as well as conflicting shapes.
 - [ ] Audit corresponding brand/error ownership and collision paths.
 - [ ] Decide how genuinely shared definitions are imported; remove accidental
   coalescing/redeclaration and migrate affected stdlib sources.
-- [ ] Test both source orders, identical short names in different owners, and
-  ambiguous imports. Resolution must not depend on file order.
+- [ ] Test both source orders, identical and conflicting duplicate definitions,
+  distinct global names and explicit shared imports. Resolution must not depend
+  on file order; same short names in separate scopes depend on a later E1 decision.
 - [ ] Make CLI, LSP, checker, revision machinery, and emitter agree on identity.
 
 **Done when:** the duplicate-record probe cannot silently select int versus str
@@ -167,21 +216,33 @@ faults for reordered named arguments, with the chosen order documented.
 
 ## C. Establish the current specification and compiler foundations
 
+C1 is supported next work. C2/C3 are candidate architecture changes, not a
+selected prerequisite for every repair or semantic improvement.
+
 ### C1. Authoritative specification — C03
 
 - [ ] Publish one current semantic specification and an implemented/proposed/
   historical/deferred feature inventory.
 - [ ] Reconcile the root README, REQUIREMENTS, can-idioms, stdlib comments,
   contract-activation comments, and conflicting B01 examples/plans.
+- [ ] Carry the dossier's factual corrections into the current specification:
+  all three recursion schemas; bare-parameter-only invocation; active but limited
+  contract verification; module `emits` unenforced; no historical revision store;
+  and B10/B11 success support superseding old record-only/bare-Seq restrictions.
 - [ ] Document which claims are checked, tested, universally verified, or trusted.
+- [ ] State current evidence maturity: stdlib rows have no `requires`, `ensures`
+  or `pinned` markers at the audit baseline; A-light needs an accepted baseline,
+  records no pinner identity, and warns rather than blocking emission.
 - [ ] Preserve historical documents as history with clear supersession links.
 - [ ] Generate syntax/intrinsic/diagnostic inventories where practical.
 
 ### C2. Compositional types — T01
 
-- [ ] Define a type AST for primitives, nominal applications, type variables,
-  sequences, callable signatures, outcomes, error rows, and effect rows.
-- [ ] Give generic parameters explicit kinds; separate data/error/effect parameters.
+- [ ] Compare introducing a shared type representation first with extracting it
+  through a bounded end-to-end semantic slice; record the chosen scope and costs.
+- [ ] If selected, define a type AST for currently admitted primitives, nominal
+  applications, type variables, sequences and callable signatures. Add outcomes,
+  error/effect rows and associated kinds only when their semantics are decided.
 - [ ] Resolve nominal symbols to identities rather than display strings.
 - [ ] Centralize substitution, equality, signature comparison, containment, and
   specialization instead of repeatedly parsing type strings.
@@ -192,9 +253,12 @@ faults for reordered named arguments, with the chosen order documented.
 
 ### C3. Shared typed core and stage contracts — C01
 
+- [ ] Decide whether a new shared core/lexer is justified before semantic work
+  or should be extracted from a concrete vertical slice; do not treat the old
+  audit's preferred architecture as an accepted requirement.
 - [ ] Specify parsed, resolved/typed, elaborated, proof/evidence, and lowered forms.
-- [ ] Replace late-parsed source text and scattered generic-head parsing with a
-  lexer, recursive grammar, and structured nodes.
+- [ ] Under the chosen architecture, replace unsupported late-parsed source and
+  scattered generic parsing with shared structured rules where needed.
 - [ ] Preserve source-origin and branch identities through elaboration and stamping.
 - [ ] Share stage contracts across CLI, LSP, evaluator, prover, catalogue,
   normalizer, identity machinery, and emitter.
@@ -202,48 +266,61 @@ faults for reordered named arguments, with the chosen order documented.
 - [ ] Add exhaustive visitor/canonicalization coverage for every semantic node kind.
 - [ ] Retain the evaluator as an independent oracle during backend changes.
 
-## D. Simplify successes, calls, bindings, and patterns
+## D. Decide success, call, binding, and pattern semantics
 
-**Design approval required.** These are candidate replacements, not additions
-that must coexist permanently with the old forms.
+**Unresolved design choices.** Uniform successes and unified calls remain
+candidates, alongside retaining deliberately specified current conventions.
+The implementation/removal steps below apply only to a selected replacement.
 
-### D1. Uniform success values — S01, E05
+### D1. Success convention — S01, E05
 
-- [ ] Decide the single-value source convention and public success envelope.
-- [ ] Define the same success binder meaning in bodies, ensures, tests, scripts,
-  named calls, and callbacks.
-- [ ] Specify a genuine Unit type/value for no-payload success.
+- [ ] Compare declared-shape/B11 successes, uniform whole-value `Ok(T)`, and raw
+  values for total functions; record the semantic choice independently of any
+  public envelope/tag or private layout.
+- [ ] Specify the chosen construction/binder matrix for bodies, ensures, tests,
+  scripts, named calls and callbacks, including real fields named `value`.
+- [ ] Decide empty nominal records versus a genuine Unit type/value rather than
+  assuming that uniform successes or a new Unit have already been selected.
 - [ ] Implement whole-value `Ok(value)` for every supported T if approved.
-- [ ] Remove flattened/multi-field Ok construction, B11's typed-Ok workaround,
-  and outcome-only `.value` unwrapping; retain actual data fields named `value`.
+- [ ] If whole-value semantics replace the current convention, remove flattened
+  construction, redundant typed-Ok forms and outcome-only `.value` unwrapping;
+  retain actual data fields named `value`. Otherwise document the chosen matrix.
 - [ ] Migrate source, contracts, host implementations, normalized evidence,
   catalogues, and generated output using resolved types—not text replacement.
 - [ ] Test every producer/consumer combination, especially empty records,
   single-field records, brands, sequences, variants, and Fn factories.
 
-### D2. Unified application — S02
+### D2. Application convention — S02
 
-- [ ] Decide one application spelling for named and indirect targets.
-- [ ] Type callable parameters, fields, and returned/bound values through the
-  same application rule; remove the parameter-location restriction when sound.
-- [ ] Preserve single evaluation and specified argument order.
+- [ ] Compare current separate `call`/`invoke`, one explicit `call`, and bare
+  application; decide spelling separately from newly admitted callable positions.
+- [ ] For any widened target positions, specify signature, precondition,
+  authority and indirect-cycle checking before allowing fields or bound/returned
+  Fn values to be invoked. Current invocation admits only bare Fn parameters.
+- [ ] Repair B5 independently; preserve single evaluation and specified argument
+  order under every application alternative.
 - [ ] Keep static/indirect target information for authority, preconditions,
   cycle analysis, script attribution, and code generation.
 - [ ] Test identical signatures in every newly admitted target position.
 
 ### D3. Immutable bindings and sequencing — S03
 
-- [ ] Specify expression blocks with immutable local bindings and a final result.
+- [ ] Decide whether expression blocks/immutable bindings improve the current
+  match/chain/forward forms; this is still a proposal, not a separate approved
+  result of the application-spelling review.
+- [ ] If selected, specify expression blocks with immutable bindings and a final result.
 - [ ] Define irrefutable success binding for operations with an empty error set.
 - [ ] Reject such binding for fallible operations; require dispatch or a separately
   specified completed-outcome transfer.
 - [ ] Specify whole-outcome tail calls without hidden early exit or payload loss.
-- [ ] Retire redundant chain/forward forms after their semantics are covered.
+- [ ] Retire chain/forward forms only if a selected replacement covers their
+  evaluation, outcome and evidence semantics.
 - [ ] Compare evaluation order, state traces, error payloads, and branch evidence.
 
 ### D4. Unified patterns — S04
 
-- [ ] Define constructor-shaped outcome/data patterns and one canonical arm form.
+- [ ] Compare unified constructor-shaped patterns with the current pattern
+  families; decide destructuring and arm syntax before implementing extensions.
 - [ ] Specify record/tuple destructuring, whole nominal binding, constants,
   wildcards, ranges, or-patterns, and nested patterns.
 - [ ] Include the parent sum type in case identity; allow unrelated parents to
@@ -254,7 +331,8 @@ that must coexist permanently with the old forms.
 
 ### D5. Contextual typing — S05
 
-- [ ] Decide where bidirectional/contextual checking replaces redundant annotations.
+- [ ] Compare fully explicit applications, constructor/pattern-only context, and
+  broader deterministic local context; decide exactly where omission is admitted.
 - [ ] Keep explicit API and authority contracts and annotations for ambiguous locals.
 - [ ] Require annotations when empty collections or polymorphic values are ambiguous.
 - [ ] Prohibit inference of contracts or generic laws from example rows.
@@ -265,22 +343,33 @@ that must coexist permanently with the old forms.
 
 ### E1. Namespaces and visibility — M01
 
-- [ ] Specify module/package identity, local names, qualified imports, and public/private declarations.
-- [ ] Replace global double-underscore resolution with scoped symbol resolution if approved.
+**Immediate decision:** B2/B3 strict uniqueness and explicit reuse are supported.
+Long-term namespace and visibility choices remain unresolved.
+
+- [ ] Compare strict globals, owned global spellings, module-scoped symbols and
+  package scope; decide visibility separately from collision repair.
+- [ ] If selected, specify module/package identity, local names, qualified imports
+  and public/private declarations, then replace the existing resolution model.
 - [ ] Give errors/types one owner and import them instead of redeclaring lookalikes.
-- [ ] Stop exporting every implementation helper as public TS API.
-- [ ] Test moves/renames/reordered files, duplicate short names, private access,
-  brand ownership, revision resolution, and declaring-owner host bindings.
+- [ ] Specify the intended public/private surface before changing generated helper
+  exports; a strict-global repair alone does not introduce source visibility.
+- [ ] Test moves/renames/reordered files, brand ownership, revision resolution
+  and declaring-owner host bindings. Add same-short-name/private-access tests
+  if the selected namespace/visibility design admits those distinctions.
 
 ### E2. Authored versus generated metadata — M02
 
 - [ ] Remove or deliberately enforce module-level `emits`; do not leave a list
   looking contractual while unchecked.
-- [ ] Derive exports from public declarations rather than a duplicate `provides` list.
-- [ ] Generate summaries from checked declarations while preserving explicit imports
-  and real public error/effect boundaries.
+- [ ] Decide whether exports remain in `provides` or derive from public
+  declarations under E1; generated exports are conditional on that choice.
+- [ ] Make summaries agree with checked declarations while preserving explicit
+  imports and real public error/effect boundaries.
 
 ### E3. Explicit effects and capabilities — M03
+
+Current externs are rejected by linked-pure/Fn-target admission even with empty
+`emits`; the gap is absence of host capability rows, not automatic extern purity.
 
 - [ ] Specify host observation/capability footprints independently of error sets.
 - [ ] Carry authority transitively through named calls and callable types.
@@ -293,35 +382,51 @@ that must coexist permanently with the old forms.
 ### E4. Revision and artifact identity — M04
 
 - [ ] Decide public release/version policy versus private helper identity.
-- [ ] Move exact artifact selection to an explicit immutable manifest where appropriate.
+- [ ] Decide whether an immutable artifact manifest is warranted; do not assume
+  a historical store or multi-version linker exists or has been selected.
 - [ ] Retain accepted interface-drift checks and separate executable/evidence invalidation.
 - [ ] Remove misleading historical-version/coexistence promises not backed by a linker/store.
 - [ ] Reject wrong/mixed artifacts and candidate-supplied acceptance authority.
 
 ## F. Tests, proofs, termination, and runtime faults
 
-### F1. Location-independent pure tests — E01
+### F1. Pure-source test semantics — E01
 
-- [ ] Decide normal execution of checked pure Can across module boundaries.
-- [ ] Keep deliberate contract mocks explicit and real observations scripted.
+**Unresolved.** The replacement review did not choose a new default. Current
+ordinary rows execute local source and script foreign source; linked-pure
+integration is a separate Go helper with no unit-witness credit.
+
+- [ ] Compare scripted contract boundaries plus required linked integration,
+  real checked-pure execution by default, and explicit unit/linked test modes.
+- [ ] Define deliberate mocks and real observations for the chosen mode; retain
+  full reachable-graph admission and prohibit actual host execution at compile time.
 - [ ] Specify stable effect-site identities for scripts and traces.
 - [ ] Preserve request/response pairing, missing/leftover checks, and fresh test state.
-- [ ] Test helper extraction/movement without changing behavior or evidence obligations.
+- [ ] Specify and test helper extraction/movement under the chosen mode. If
+  file-based contract boundaries remain, document the changed mock obligations
+  rather than claiming location independence.
 - [ ] Prevent compile-time host execution and accidental integration-to-unit coverage credit.
 
 ### F2. Evidence and acceptance — E02
 
 - [ ] Preserve executed/certified/uncovered distinctions and authorized certificates.
-- [ ] Track obligations against source branches, not administrative lowering branches.
+- [ ] Track obligations against source match arms, not administrative lowering
+  branches; current CAN4107 has no general proved-unreachable exemption.
 - [ ] Keep real branch obligations through optimization.
 - [ ] Decide explicit build/review policy for pinned-row warnings versus errors.
+- [ ] Preserve the distinction between a source `pinned` marker and authority in
+  an accepted baseline; do not claim A-light records an authenticated pinner.
 - [ ] Test false contracts, changed acceptance rows, and evidence preservation through lowering.
 
 ### F3. Termination and runtime cost — E03
 
+- [ ] Preserve and document the current unit-descent, Euclid and binary-narrowing
+  schemas; none establishes resource bounds or target stack safety.
 - [ ] Specify additional structural/well-founded measures before widening recursion admission.
-- [ ] Add finite traversal constructs or primitives instead of ubiquitous manual fuel plumbing.
-- [ ] Lower tail recursion to loops/frames and test beyond evaluator/JS stack limits.
+- [ ] Evaluate finite traversal constructs/primitives against manual fuel customers;
+  add them only after choosing their semantics and termination obligations.
+- [ ] Evaluate tail-recursion lowering to loops/frames against measured stack
+  limits, then implement and test the selected backend change.
 - [ ] Benchmark repeated append and collection builders; permit private mutation
   optimizations only when source immutability and alias behavior are preserved.
 - [ ] Test nondecreasing cycles and distinguish termination from resource/time bounds.
@@ -332,11 +437,14 @@ that must coexist permanently with the old forms.
 - [ ] Specify checked indexing and the proof obligation for unchecked indexing.
 - [ ] Define bounds/platform conversion, malformed Unicode, canonical decimals,
   host throw/rejection, and resource-exhaustion behavior.
+- [ ] Include B5's first-fault ordering in evaluator/target conformance; keep a
+  future embedding-contract fault protocol distinct from today's primitive throws.
 - [ ] Test that faults are neither fabricated successes nor undeclared ordinary errors.
 
-### F5. One contract semantics — E05
+### F5. Contract semantics and success binders — E05
 
-- [ ] Align ensures binders with the new executable success/pattern semantics.
+- [ ] Reconcile ensures binders with the explicitly chosen success/pattern
+  semantics; do not assume D1/D4 already selected a uniform replacement.
 - [ ] Keep proof-fragment admission explicit and reject unsupported clauses whole.
 - [ ] Distinguish ordinary checked/tested functions from universally verified functions.
 - [ ] Expand proof support independently; keep TS shape checking separate from proof.
@@ -344,20 +452,35 @@ that must coexist permanently with the old forms.
 
 ## G. Complete generic composition and data/function expressivity
 
-### G1. Finite error rows and completed outcomes — T02
+### G1. Error-composition abstraction — T02
 
-- [ ] Specify `Outcome<T,E>`, error values, finite row union/deduplication, and total mappings.
+**Unresolved.** Concrete combinators, finite rows with relay first, and rows plus
+first-class completed outcomes are distinct options. The following expansion
+work applies only to the selected abstraction.
+
+- [ ] Compare those three directions using actual map/recover/compose/zip/collect
+  customers, implementation costs and explicit failure-accounting obligations.
+- [ ] If rows are selected, specify their kinds, union/deduplication, total maps,
+  variance/subsumption and relay versus recovery rules.
+- [ ] If completed outcomes are selected, specify `Outcome<T,E>` and error
+  values, including storing, nesting and transferring them as successful data.
 - [ ] Define handling, preservation, transfer-as-data, and explicit discard;
   do not rely on unused-variable warnings to prevent hidden error loss.
 - [ ] Update catalogue accounting for those distinct operations.
 - [ ] Use one canonical declaration for function failures; avoid requiring both
   an Outcome return and a duplicate `emits E` for the same boundary.
-- [ ] Distinguish an Outcome returned as successful data from the function's own outcome.
-- [ ] Decide error-row variance/subsumption and its effect on callback admission and witnesses.
-- [ ] Implement generic map/and_then/map_error/recover/zip/collect with complete
-  payload and simultaneous-failure preservation.
+- [ ] Distinguish any completed Outcome returned as successful data from the
+  function's own outcome; do not implicitly flatten the two.
+- [ ] Test the chosen abstraction's effects on callback admission and witnesses.
+- [ ] Specify an explicit error product/collection when simultaneous failures
+  must be retained: a union of error kinds alone cannot represent both failures.
+- [ ] Implement only combinators supported by the chosen abstraction, with
+  complete payload preservation and explicit simultaneous-failure semantics.
 
 ### G2. Higher-order source functions — T03
+
+These are candidate extensions. The call-spelling review did not approve wider
+callable positions, arbitrary host callbacks or a general effectful Fn model.
 
 - [ ] Specify callable parameter lists, explicit captures, latent effects/errors,
   and preconditions consistently with ordinary function declarations.
@@ -370,9 +493,11 @@ that must coexist permanently with the old forms.
 
 ### G3. Data composition and nominal meaning — T01, T04
 
-- [ ] Admit nested generic data, nested sequences, and sequences of variants through
-  common type/representation rules rather than ad hoc exclusions.
-- [ ] Preserve meaningful nominal wrappers; remove purely mechanical result carriers.
+- [ ] Inventory position-specific nesting restrictions and existing composition
+  (including Map's sequence of generic pairs); do not describe current nesting
+  as uniformly absent. Decide and implement supported extensions through common rules.
+- [ ] Preserve meaningful nominal wrappers; remove mechanical result carriers
+  only where the selected result/type convention makes them unnecessary.
 - [ ] Design opaque non-string representations and module-owned smart constructors.
 - [ ] Keep validation predicates separate from nominal minting/authority claims.
 - [ ] Specify finite recursive algebraic data and reject infinite products/host cycles.
@@ -380,33 +505,47 @@ that must coexist permanently with the old forms.
 
 ## H. Specify four separate ABI contracts — F03, audit §7
 
-Public ABI design is a prerequisite for the success-layout migration; full
-boundary implementation can be split into later green slices.
+**Host trust policy remains unresolved.** F03 establishes the current direct,
+trusted JS boundary; it does not establish that a hostile-input facade is the
+chosen product requirement. Keep source, private execution, public embedding
+and wire contracts separate. Decide the public contract before any selected
+success-layout migration; implementing every possible boundary is not required.
 
 ### H1. Source and private execution
 
 - [ ] Specify source values, exact numerics, immutable data, outcomes, and evaluation order
   without depending on JS layout or generated specialization names.
-- [ ] Define the private call/closure/tag/frame/specialization convention.
+- [ ] Document the current private call/closure/tag/specialization convention;
+  define replacements only for selected changes. Frames are a B05 candidate.
 - [ ] Permit private layout optimizations only under semantic differential tests.
 - [ ] Do not make every internal operation pay external ingress-validation costs.
 
 ### H2. Public host facade
 
+- [ ] Choose among an explicitly trusted direct embedding, a validated data-only
+  facade, and a validated facade admitting checked callables. Use a real customer,
+  intended trust boundary and measured copying/validation costs.
 - [ ] Specify public entry points and supported generic instantiations.
-- [ ] Generate a versioned manifest of schemas, identities, effects/errors, ABI
-  format, and exact host binding ownership.
+- [ ] Decide the manifest/versioning policy for schemas, identities, effects/errors,
+  ABI format and exact host binding ownership, then generate the selected artifacts.
 - [ ] Decide the success/error envelope and nominal variant/error tag layout.
-- [ ] Generate readonly/opaque TS surfaces without treating them as runtime guarantees.
-- [ ] Define copy/transfer/owned-view rules for arrays, buffers, records, and returned data.
-- [ ] Validate types, canonical decimals, Unicode, tags, shapes, and recursive structure.
-- [ ] Reject or safely handle getters, exotic prototypes, cycles, and post-completion mutation.
-- [ ] Require checked callable provenance at public Fn boundaries; do not certify
-  arbitrary JS callbacks through `typeof function` or a TS cast.
-- [ ] Specify any explicitly trusted zero-copy/host-callback path separately.
-- [ ] Define stateful world instances, root reentry policy, and the embedding-fault channel.
+- [ ] Under a trusted policy, explicitly assign ownership, canonical-value,
+  callable-provenance and fault responsibilities to the embedder; do not claim
+  those guarantees are enforced against arbitrary JS callers.
+- [ ] Under a validated policy, define copy/transfer/owned-view rules and check
+  types, exact decimals, Unicode, tags, shapes and recursive structure.
+- [ ] For validated ingress, reject or safely handle getters, exotic prototypes,
+  cycles and post-completion mutation; test the actual selected policy.
+- [ ] If public Fn values are admitted by a validated facade, require checked
+  provenance; if data-only is selected, keep them private or specify capability
+  handles. Neither `typeof function` nor a TS cast proves source purity.
+- [ ] Generate readonly/opaque TS surfaces where useful without treating them as
+  runtime guarantees; specify any trusted zero-copy/callback path explicitly.
+- [ ] Decide stateful world instances, root reentry and the embedding-fault channel
+  where required by the selected host/B05 contract.
 - [ ] Preserve brand minting/disclosure authority; shape validation is not authorization.
-- [ ] Add adversarial boundary and ownership conformance tests.
+- [ ] Add boundary and ownership conformance tests for the promised enforcement
+  or trusted responsibilities; do not label documented trust as sandboxing.
 
 ### H3. Wire and persistence
 
@@ -418,11 +557,25 @@ boundary implementation can be split into later green slices.
 
 ## I. Resolve B05 async and resources — audit §8
 
-- [ ] Reconcile the Promise/completion proposal and private machine/frame proposal
-  using complete Can context; keep B05 as the design identifier.
-- [ ] Resolve labeled versus positional join-product syntax and remove obsolete
-  record-success assumptions from the chosen proposal.
+**Accepted process, unresolved design.** Establish contracts against a real
+customer before choosing a backend. Neither proposal is implemented, and the
+review did not require building two complete runtimes or choose a public Promise ABI.
+
+- [ ] Select a real async/resource customer and define its required source,
+  authority, completion, cleanup and resource acceptance vectors.
+- [ ] Reconcile proposal A's uniform completion-capable callable ABI (Promise is
+  one possible lowering) with proposal B's private machine/frame model; keep B05
+  as the design identifier and use the current success-type inventory.
+- [ ] Resolve the source differences: labeled versus positional outcome slots,
+  join-site identifiers, singleton admission, and obsolete record-only successes.
+- [ ] Resolve the host-contract differences: A's dynamic deadline, declared
+  rejection mapping and `concurrency isolated` versus B's timeout/settle bounds,
+  owned receipts, `Host__World.use`, reentry rules and failed-world faults.
+- [ ] Do not credit A's timeout result with B's cleanup/settlement guarantee;
+  specify when child authority retires and which later effects are forbidden.
 - [ ] Choose private execution machinery separately from the public root-completion facade.
+- [ ] Identify uncertainties needing measurements and run only the bounded
+  prototypes needed to resolve them against the same chosen acceptance vectors.
 - [ ] Preserve joined ownership, complete outcome products, authority partition,
   and simultaneous-failure information.
 - [ ] Define timeout versus actual settlement/cleanup; late effects must not be
@@ -437,12 +590,22 @@ boundary implementation can be split into later green slices.
 
 ### J1. Grammar and surface choices — S06
 
+The collection, literal, boolean and label questions remain unresolved. Current
+spellings/eager semantics remain the implementation baseline during repairs;
+there is no requirement to preserve them after a deliberate replacement decision.
+
 - [ ] Review the brace ban, especially punctuation inside comments, on semantic grounds.
-- [ ] Decide declaration and named-argument spelling; preserve useful labels if approved.
-- [ ] Decide exact decimal and raw/escaped string literal families without adding coercion,
-  binary-float semantics, rounding, or Unicode normalization.
-- [ ] Decide regular collection type spelling on compositionality, not fashion.
-- [ ] Decide eager versus short-circuit boolean semantics and any branch-evidence obligations.
+- [ ] Compare optional labels, canonical positional forms and required
+  multi-argument labels using actual edit/error trials; repair F06 independently
+  and keep binding/evaluation order separate from formatting policy.
+- [ ] Compare current `d"..."`/raw/`e"..."` families, ordinary exact decimals
+  plus escaped strings, and a numeric-only change. Preserve exactness, canonical
+  decimal values and Unicode semantics without coercion or binary floats.
+- [ ] Compare `Seq<T>`, `[T]` and `T[]` independently of compositional nesting;
+  measure usability rather than treating a punctuation preference as a type fix.
+- [ ] Compare eager `and`/`or` with conditional evaluation and any explicit
+  conditional spelling. Specify skipped/evaluated branch evidence and fault
+  behavior before changing semantics; ordinary function arguments stay strict.
 - [ ] Treat keyword renaming as low priority; do not confuse it with semantic simplification.
 
 ### J2. Formatter and diagnostics — C02
@@ -466,12 +629,15 @@ boundary implementation can be split into later green slices.
 
 ### K1. Real stdlib customers
 
+- [ ] Select migrations only after the applicable decision in D–J is recorded;
+  the thirteen reviews do not authorize a blanket syntax or ABI rewrite.
 - [ ] Inventory which single-field/empty records are semantic types versus old return carriers.
 - [ ] Migrate approved return/call/type/module changes across stdlib, sketches,
   contracts, scripts, hosts, and compiler fixtures.
 - [ ] Ship canonical optional APIs and decide `seq.find` migration.
 - [ ] Ship outcome combinators and generic `schema__migrate` only after their actual
-  error-algebra and type requirements are implemented.
+  chosen error-algebra and type requirements are implemented; do not assume
+  first-class completed outcomes were selected over rows-first or concrete APIs.
 - [ ] Re-probe remaining catalogue blockers rather than claiming async/resources,
   Unicode, or host APIs are solved by unrelated syntax work.
 - [ ] Update implementation records and distinguish prototype, shipped, and pending APIs.
@@ -482,7 +648,8 @@ boundary implementation can be split into later green slices.
 - [ ] Write positive, negative, authority, and false-proof regressions before closing the slice.
 - [ ] Migrate with parsed/resolved structure; remove obsolete forms instead of
   introducing a permanent old/new compatibility mode.
-- [ ] Compare values, effect/error traces, and source evidence across evaluator and target.
+- [ ] Compare values, first-fault order, effect/error traces and source evidence
+  across evaluator and target, including reordered named arguments from F06.
 - [ ] Regenerate and review affected TS, catalogues, schemas, manifests, and goldens.
 - [ ] Run Go tests, modcheck, gramcheck, whole-stdlib compilation, and strict TS
   on complete fresh output bundles; retain known-failure status until each new gate is fixed.
@@ -492,6 +659,8 @@ boundary implementation can be split into later green slices.
 
 ### K3. Measure improvement
 
+- [ ] Identify which unresolved decision each measurement can resolve; record
+  the absence of usability/performance evidence instead of substituting JEV scores.
 - [ ] Benchmark large sequence/JSON inputs, allocation, stack depth, and runtime cost.
 - [ ] Measure generic specialization growth, build time, and LSP latency.
 - [ ] Run agent tasks comparing successful edits, error rates, and diagnostic recovery.
@@ -514,6 +683,9 @@ boundary implementation can be split into later green slices.
 
 **Next actionable work:** repair the independently confirmed defects in B,
 including the new F06 argument-order finding, and establish the accurate current
-specification and gates. Workstream A is complete; its design dispositions are
-explicitly recorded, with ten choices unresolved. Neither archived nor replacement
-JEV probabilities approve a redesign or remove the need for semantic decisions.
+specification in C1 and complete dependency/target gates in B3/B4/K2. Use I's
+contract-first process when beginning a real async customer. Choose C2/C3 and
+the applicable D–J alternatives before their conditional implementation tasks.
+Workstream A is complete; all thirteen dispositions are carried into this TODO,
+with ten choices unresolved. Neither archived nor replacement JEV probabilities
+approve a redesign or remove the need for semantic decisions.
