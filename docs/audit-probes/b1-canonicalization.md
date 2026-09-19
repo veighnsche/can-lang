@@ -1,6 +1,6 @@
 # B1 — acceptance and canonicalization repair
 
-Implementation commit: `TBD`.
+Implementation commit: `d9037ca`.
 
 Scope: F01 correctness repair in the existing language. No success/call syntax,
 ABI, host trust policy, or higher-order admission redesign is selected here.
