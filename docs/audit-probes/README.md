@@ -1,5 +1,10 @@
 # Audit evidence at 8312d85
 
+**Current follow-up:** [Workstream A replacement audit and JEV review](workstream-a/README.md),
+completed at `8bbcf13` on 2026-09-19. It reproduces F01–F05, adds F06
+(named-argument fault-order mismatch), and preserves all thirteen new review
+packets with explicit dispositions. The original evidence below remains history.
+
 Start with the **[master TODO checklist](TODO.md)** for priorities, dependencies,
 completion criteria, and coverage of every audit section.
 
@@ -100,5 +105,9 @@ history only. Do not use their scores to justify recommendations or approval.
 The compiler reproductions above remain independent evidence; redesign
 recommendations remain the audit author's proposals pending proper review.
 
-See [TODO section A](TODO.md#a-redo-the-jev-review-correctly) for rebuilding the
-complete self-contained context and repeating the review.
+See [TODO section A](TODO.md#a-redo-the-jev-review-correctly) for the replacement
+review's context and completion requirements.
+
+The replacement review is now complete: see its [results and dispositions](workstream-a/README.md)
+and [method](workstream-a/method.md). The original two JSON files stay withdrawn;
+new responses are in `workstream-a/responses/`. New scores are advice, not approval.

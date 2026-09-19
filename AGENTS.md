@@ -1,1 +1,3 @@
 There are zero external users. Implementing with backwards compatibility immediately results in technical debt. Maintaining syntax, ABI, old source spellings, generated TSlayouts, or old goldens is not a product requirement.
+
+You can ask Jev (TypeSafe AI) SystemOne for design decisions, but you have to give it all the relevant context yourself. Jev CANNOT do research before it answers, it's not capable of doing that. Jev is a very advanced classifier model, NOT an LLM.

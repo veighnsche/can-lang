@@ -5,6 +5,10 @@ specs, and the rules each feature had to satisfy before it landed.
 
 ## Current audit and implementation record
 
+- [Workstream A replacement audit](audit-probes/workstream-a/README.md) — current
+  dossier, reproduced F01–F05 plus new F06 argument-order finding, all thirteen
+  self-contained JEV reviews and explicit accepted/rejected/unresolved dispositions.
+
 - [Zero-compatibility syntax and ABI audit](can-language-audit.md) — whole-language
   architecture review at `8312d85`: confirmed evidence/identity findings,
   proposed simplifications, ABI boundaries, and staged migration. **Recommendation,

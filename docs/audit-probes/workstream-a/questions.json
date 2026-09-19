@@ -1,0 +1,374 @@
+{
+  "sequencing": {
+    "question": "Which next-work sequence best preserves Can's explicit guarantees while making a coherent zero-compatibility redesign reviewable? Choose a process direction, not a language specification.",
+    "before": "Current normal gates pass, while F01/F02 leave acceptance/identity checks incomplete or ambiguous and F04/F05 fail integration. Type strings, source rules and TS layouts are coupled.",
+    "options": {
+      "repair_then_core": {
+        "design": "Repair confirmed defects, establish shared type/core and boundary contracts, then migrate semantics in bounded green slices.",
+        "benefit": "Creates reliable evidence and shared rules before broad semantic changes.",
+        "cost": "Some existing parser/emitter work may later be replaced; visible simplification comes later.",
+        "obligation": "Keep independently reproduced failures visible, preserve source evidence identities, avoid treating a proposed core as an approved specification.",
+        "after": "F01 regression green -> typed representation and boundary decision -> uniform-success slice with full migrated corpus."
+      },
+      "vertical_slice": {
+        "design": "First design and implement one end-to-end uniform-success/call slice, repairing defects it touches and extracting a core from that experience.",
+        "benefit": "Tests real customer pressure and avoids a speculative general core.",
+        "cost": "Cross-cutting evidence/identity defects remain until separately repaired; large slice may expose repeated work.",
+        "obligation": "No false green gate; explicitly track untouched F findings and preserve authority through temporary compiler staging.",
+        "after": "Choose one optional-map customer -> specify success semantics -> migrate parser/checker/evaluator/emitter/evidence together."
+      },
+      "parallel_tracks": {
+        "design": "Run defect repairs and a bounded async/host prototype alongside semantic/core design; merge only through shared contracts.",
+        "benefit": "Real host requirements can constrain the public ABI early, with parallel progress.",
+        "cost": "Coordination and prototype discard cost; unsettled types/outcomes can invalidate experiments.",
+        "obligation": "Prototype is not shipped language authority; settle shared ABI and all green gates before integration.",
+        "after": "Repair F01/F02 alongside disposable B05 backend spikes against the same conformance matrix; use results in a later ABI decision."
+      },
+      "repair_and_specify": {
+        "design": "Repair F01/F02/F04/F05 and publish an accurate current semantic inventory and gates before choosing a typed core or a vertical semantic migration.",
+        "benefit": "Improves correctness and specification confidence without prematurely committing to a compiler architecture.",
+        "cost": "Defers simplification and may perform repairs that a later redesign replaces.",
+        "obligation": "Do not let inventory work excuse known defects; make any remaining semantic contradictions explicit and preserve distinct authority/evidence identities.",
+        "after": "Make the current compiler and complete target bundles reliable, then decide core extraction versus success/call migration using concrete pressure cases."
+      }
+    }
+  },
+  "successes": {
+    "question": "Which canonical success convention should be developed for Can, across calls, tests, scripts, contracts, generics and the public host boundary? The actual envelope/Unit specification still needs review.",
+    "before": "For Pair(int,bool), Ok(7,true) and Ok<Pair>(Pair(7,true)) both emit flattened fields; for int, Ok(7) emits value. Typed binders bind T; untyped scalar binders wrap it.",
+    "options": {
+      "whole_value": {
+        "design": "Every function success contains one T; Ok(x) and its binder mean the whole value for records and scalars alike.",
+        "benefit": "One generic producer/consumer rule; preserves nominal record identity without B11-specific binder syntax.",
+        "cost": "All constructor/binder/contracts/catalogue/host layouts migrate; Unit and public envelope must be decided.",
+        "obligation": "No coercion or erased record identity; preserve error payloads, empty records and source evidence; separate public and private layout decisions.",
+        "after": "Proposed source: Ok(Pair(7,true)); on Ok(pair) binds Pair. The public tag/envelope and the private representation are separate unchosen contracts."
+      },
+      "declared_shape": {
+        "design": "Keep declared-type-dependent record flattening and scalar value slots as the canonical rule; retain explicit whole-value typed forms for polymorphic code.",
+        "benefit": "Direct access to result fields and shallow TS objects; current B11 already supports whole generic values.",
+        "cost": "Two binder/construction conventions and shape-specific backend rules remain; benefit must justify complexity independently of compatibility.",
+        "obligation": "Precisely align contracts, tests, empty/one-field records and generic instantiation; never silently splat a scalar or erase nominality.",
+        "after": "Ok(7,true) for Pair; Ok<T>(value) in a generic producer; on Ok<T> x for whole-T consumers."
+      },
+      "total_raw": {
+        "design": "Functions with no declared errors return raw T; fallible functions return an explicit outcome.",
+        "benefit": "Simpler total-function composition and potentially less wrapper work.",
+        "cost": "The error-set boundary changes application/result typing; becoming fallible is a larger interface migration.",
+        "obligation": "No inference of purity from empty errors; no hidden propagation; explicit adaptation for higher-order total/fallible signatures and tests. Empty declared errors do not imply absence of runtime faults.",
+        "after": "Proposed total identity: id(x) = x; fallible parse retains explicit Ok(parsed) or a qualified declared error such as json.invalid(payload)."
+      }
+    }
+  },
+  "calls": {
+    "question": "Which source application direction should Can develop while preserving explicit outcomes and target-sensitive authority/termination checks? Local binding and additional callable positions require their own rules.",
+    "before": "Named: match call f(x); indirect: match invoke cb with x. Factory-bound Fn values cannot simply be invoked in all local positions.",
+    "options": {
+      "explicit_unified": {
+        "design": "One explicit call operation for named and typed callable targets, with the target's signature determining arguments and outcomes.",
+        "benefit": "Common application rule while keeping outcome-producing evaluation visibly marked.",
+        "cost": "Parser/core/call graph/scripts change; multi-parameter callbacks and new positions require additional analysis.",
+        "obligation": "Single evaluation, specified target/argument order, no implicit early exit; keep static versus indirect authority and cycle edges.",
+        "after": "Proposed: match call f(x) ...; match call cb(x) ...; typed target resolution distinguishes them."
+      },
+      "bare_unified": {
+        "design": "Use f(x) uniformly for named and indirect application, with typing requiring exhaustive outcome use.",
+        "benefit": "Conventional composition with less syntax; the type system supplies the operation distinction.",
+        "cost": "Constructor/application parsing and diagnostics must stay clear; new expression positions can conceal evaluation effects from casual reading.",
+        "obligation": "Same authority, cycles and outcome accounting as explicit calls; forbid implicit exception/return propagation.",
+        "after": "Proposed: match f(x) ...; match cb(x) ...; a fallible application cannot be silently discarded."
+      },
+      "retain_distinct": {
+        "design": "Keep separate named call and unary invoke syntax, while independently considering safe additional callable locations.",
+        "benefit": "Makes direct dependencies and indirect execution visibly different; aligns with the present bounded Fn design.",
+        "cost": "Generic consumers have two application rules and restricted composition remains unless expanded separately.",
+        "obligation": "Distinction must reflect useful authority/evidence facts rather than parameter-location accidents; preserve identical signature semantics.",
+        "after": "match call f(x) ... and match invoke cb with x ... remain canonical, with any new binder target explicitly analyzed."
+      }
+    }
+  },
+  "modules": {
+    "question": "Which symbol ownership and module visibility direction best serves Can after fixing ambiguous declarations? All candidates must reject F02/F04 conflicts rather than coalescing them.",
+    "before": "Files list provides/uses with global __ names; every source function is exported in TS; duplicate records can first-win and incompatible error schemas coalesce until later payload checking fails.",
+    "options": {
+      "scoped_symbols": {
+        "design": "Module-owned declarations with local names, explicit imports and public/private visibility; exact artifacts selected separately.",
+        "benefit": "Clear ownership, independent short names and smaller public surfaces; cases include their parent identity.",
+        "cost": "Resolver, brand owners, revisions, hosts, LSP and all sources migrate; moving a declaration needs identity policy.",
+        "obligation": "Reject ambiguity, preserve mint/disclosure authority and declaring-owner host binding, detect stale/mixed artifacts.",
+        "after": "Proposed: module ratio exports Ratio; import scalar as s; distinct ratio.nonterminating and s.nonterminating schemas."
+      },
+      "owned_globals": {
+        "design": "Keep globally qualified identifiers, but add unique declaration owners, explicit visibility and deterministic import checks.",
+        "benefit": "Retains self-describing names and simpler lookup while fixing actual collision and visibility defects.",
+        "cost": "Long global names and source export metadata remain; ownership still needs a structured symbol identity.",
+        "obligation": "No first-wins duplicates; one schema per error identity; prefixes are display names rather than authority proof.",
+        "after": "ratio__divide and scalars__divide retain spellings; explicitly import one shared schema or use distinct qualified errors."
+      },
+      "package_scope": {
+        "design": "Use package-level public identity and private file modules, with explicit package manifests selecting artifacts.",
+        "benefit": "File moves can be private refactors; public authority is owned at a stable package boundary.",
+        "cost": "Introduces a package concept and choices about intra-package trust, brand grants and revisions.",
+        "obligation": "Define which scope mints brands and owns hosts; never equate package reachability with permission.",
+        "after": "Proposed package std.math exports divide; implementation file ratio may move without changing the package declaration identity."
+      },
+      "strict_global": {
+        "design": "Keep one global namespace and current provides/uses, but reject every duplicate definition at its declaration; defer visibility redesign.",
+        "benefit": "The smallest deterministic repair, retaining a simple explicit dependency model.",
+        "cost": "Long globally unique names, helper exports and limited independent package vocabulary remain.",
+        "obligation": "One owner/schema per global identity, explicit reuse through imports, source-order-independent CLI/LSP/checker/emitter/revision behavior; do not treat spelling as brand authorization.",
+        "after": "Shared__Record is declared once and imported; two distinct types need distinct global names; helper exports remain a consciously accepted limit."
+      }
+    }
+  },
+  "pure_source_tests": {
+    "question": "Which default testing contract should Can develop for cross-file checked pure source, keeping unit/mock, integration and proof evidence distinct?",
+    "before": "Same-file source executes in ordinary rows; cross-file source uses exchange scripts. Linked-pure execution exists as a separate path with its own evidence limits.",
+    "options": {
+      "execute_pure": {
+        "design": "Execute checked pure Can source independent of file location; require explicit contract mocks and script real observations.",
+        "benefit": "Helper extraction does not change default behavior; tests exercise real pure composition.",
+        "cost": "Larger evaluated dependency closure, potentially slower rows and more change coupling; old mock tests need explicit intent.",
+        "obligation": "Do not execute hosts at compile time; stabilize effect-site scripts, fresh state and provider preparation; never credit integration runs as local witnesses by accident. Admission examines the full reachable graph: no extern/state/effects, only admitted deterministic kernels; empty emits alone is insufficient.",
+        "after": "Moving pure validate from quota.can to scalars.can preserves row execution; a deliberate mock is marked explicitly."
+      },
+      "contract_boundary": {
+        "design": "Keep imported-source calls scripted by default, and require separate linked integration gates.",
+        "benefit": "Tests isolate producer contracts and remain stable/fast when imported bodies change.",
+        "cost": "File movement changes test obligations and mocks may hide real composition defects.",
+        "obligation": "Make unit versus linked results explicit; require representative actual dependency execution and complete request/response scripts.",
+        "after": "Quota rows script scalar__validate; an independent committed linked integration vector runs the real validator and checks composition."
+      },
+      "explicit_test_modes": {
+        "design": "Require rows/suites to declare unit-contract or linked-source mode rather than derive behavior from file location.",
+        "benefit": "Test intent is visible and both isolation and integration remain available.",
+        "cost": "Another declaration and coverage policy; authors may choose the easier mode without meaningful integration gates.",
+        "obligation": "Define admission/credit for each mode, prevent real-host execution, and keep moved helpers semantically stable within a mode.",
+        "after": "Proposed unit row mocks a selected pure boundary; linked row executes all admitted pure providers across files."
+      }
+    }
+  },
+  "host_boundary": {
+    "question": "Which public JavaScript embedding policy should Can specify, independently of private layout and wire codecs? Current hosts are trusted; a stronger public boundary is a proposed product choice.",
+    "before": "Direct exported TS functions receive arrays/objects/callbacks; alias mutation, getters and a raw effectful JS callback occur in F03. TS types erase brands/decimal validity.",
+    "options": {
+      "validated_owned": {
+        "design": "Default public entries validate admitted values and acquire defined ownership/snapshots; expose readonly/opaque TS facades and checked callable provenance.",
+        "benefit": "Public source guarantees have an enforceable ingress boundary rather than depending on arbitrary host objects.",
+        "cost": "Validation/copy overhead and adapter complexity; proxies/getters/cycles, resource limits and authority need explicit policy.",
+        "obligation": "Shape is not minting authority; no typeof-function purity certificate; define reentry, host faults, post-completion mutation and trusted opt-in paths.",
+        "after": "Public facade accepts validated copied [1n]; later host mutation does not change Can's completed value; branded entry requires authorized construction."
+      },
+      "trusted_documented": {
+        "design": "Specify a deliberately trusted embedding contract with direct generated entry calls and explicit host ownership/provenance responsibilities.",
+        "benefit": "Minimal wrapper cost and a simple deployment model for controlled hosts.",
+        "cost": "Cannot enforce immutability/purity against a violating embedding; all application integrators must uphold the contract.",
+        "obligation": "Document alias/callback/fault responsibilities honestly, version artifacts, and avoid claiming source guarantees for arbitrary JS inputs.",
+        "after": "Host promises exclusive immutable use of an array after transfer and only compiler-produced callbacks; violations are embedding faults."
+      },
+      "data_only_facade": {
+        "design": "Start with a validated data-only public facade; keep Fn, state handles and authority-bearing values private or reachable through explicit capabilities.",
+        "benefit": "Smaller enforceable boundary and simpler conformance testing than arbitrary public callable provenance.",
+        "cost": "Restricts public higher-order APIs and requires wrappers/handles for some integrations; validation/copy still costs.",
+        "obligation": "Separate codec data from authorized nominal values; maintain exact numbers and explicit errors; define per-world state/reentry.",
+        "after": "Expose parse(data) through a schema adapter; public map accepts a declared operation handle only if a later capability design admits it."
+      }
+    }
+  },
+  "error_abstraction": {
+    "question": "What next error-composition direction should Can pursue for reusable generic combinators, while retaining complete declared failures and distinguishing returned domain errors from runtime faults?",
+    "before": "Concrete emits lists and Fn error lists are finite; no generic error rows or completed Outcome data. Per-error wrappers duplicate map/recover logic.",
+    "options": {
+      "rows_and_outcomes": {
+        "design": "Design finite error-row algebra plus first-class completed Outcome<T,E>, with explicit handling/preservation/transfer/discard semantics.",
+        "benefit": "Supports generic map, and_then, map_error, zip and collect while retaining payload types.",
+        "cost": "New kinds, variance, consumption/catalogue rules and nested outcome semantics; much larger proof and boundary surface.",
+        "obligation": "One declaration for the function's own failure boundary; Outcome as successful data remains nested; no generic catch-all silently loses a new error.",
+        "after": "Proposed map<T,U,E>(Outcome<T,E>, mapper) returns Outcome<U,E>. Any zip collecting simultaneous failures needs an explicit error product/collection; a simple row union alone cannot represent both."
+      },
+      "rows_first": {
+        "design": "Add generic finite error rows and explicit generic relay at control-flow boundaries before making outcomes storable data.",
+        "benefit": "Enables reusable fallible callable composition while limiting new failure-as-data accounting.",
+        "cost": "Some zip/collect/inspection APIs remain awkward; eventual completed outcomes may require another migration.",
+        "obligation": "Specify row union/subsumption and relay as preservation, not catch-all recovery; preserve all payloads and witnesses.",
+        "after": "Proposed compose(f: Fn<A,B,E>, g: Fn<B,C,F>) emits union(E,F), relaying each failure without exposing raw outcome storage."
+      },
+      "concrete_combinators": {
+        "design": "Keep concrete declared errors for now and add explicitly specialized domain combinators while gathering pressure cases.",
+        "benefit": "Small proven core, clear exhaustiveness and lower initial implementation burden.",
+        "cost": "Duplication and limited library abstraction; every new domain/error set needs more source.",
+        "obligation": "Do not erase errors into str/any or confuse test instances with generic proofs; record pressure cases as deferred capability.",
+        "after": "A JSON-specific recover function handles only json.invalid with its payload; another error set needs a separate checked function."
+      }
+    }
+  },
+  "b05_process": {
+    "question": "Which B05 ABI decision process should happen next, given the supplied competing Promise and private-machine proposals? This question does not choose final syntax or declare either proposal implemented.",
+    "before": "Current output is synchronous. Proposal A uses a uniform completion-capable callable ABI (Promise is one possible lowering), labeled join slots, singleton joins, dynamic completes deadline, declared rejects error, and concurrency isolated; it has no separate settlement bound. Proposal B uses a private frame machine for join-capable worlds, positional slots/local site IDs, only completion-contracted extern singleton, Host__World.use, one active root, literal timeout T and settle S, and runtime receipt/reentry/world-fault rules. A fully join-free B artifact may keep direct output. These are competing unimplemented source and host contracts, not merely interchangeable backends. Resources still need acquisition/use/release/cleanup rules.",
+    "options": {
+      "contract_then_compare": {
+        "design": "First settle common source/ownership/settlement and public root contracts, then compare bounded Promise and machine prototypes against identical conformance and cost cases.",
+        "benefit": "Separates semantic requirements from backend choice; collects implementation evidence before committing.",
+        "cost": "Two prototypes and delayed final ABI choice; risks overdesign without a real customer slice.",
+        "obligation": "First resolve the source and host disagreements: labels/positions/singletons; rejection as domain error versus embedding fault; timer expiry versus settlement; all children registered, complete outcomes, authority retained through cleanup. Then test duplicate/late receipts, slot overwrite, reentry/concurrent roots, alias mutation/late effects, simultaneous failures, final store, resource exhaustion and scheduler progress.",
+        "after": "The same two-child failure/late-effect/reentry tests run through both prototypes before a private execution decision."
+      },
+      "promise_reference": {
+        "design": "Use proposal A's uniform completion-capable internal callable ABI as a reference prototype, possibly with Promises; specify the public adapter separately and ratify neither syntax nor ABI yet.",
+        "benefit": "Uses mature JS host integration and reaches a real async customer sooner.",
+        "cost": "Completion allocation/scheduling and rejection semantics need measurement. Backend replacement still requires whole-world re-emission or an explicit bridge and conformance parity; prototype details may harden into accidental ABI.",
+        "obligation": "Explicitly decide whether to strengthen A with settlement-before-completion and fault handling; it cannot be credited with B's T/S guarantee today. Evaluate full join outcomes, host rejection, duplicate completion, cleanup, reentry and nonpreemptible bigint work.",
+        "after": "A disposable completion-returning internal implementation runs a real customer and failure vectors; the public root adapter is a separate decision."
+      },
+      "machine_reference": {
+        "design": "Use proposal B's private frame/machine as the first reference prototype, with public root adapters hiding it; ratify neither source nor ABI yet.",
+        "benefit": "Provides explicit receipt slots, reentry rules and world lifecycle state; any stack/allocation benefit remains unmeasured.",
+        "cost": "Custom runtime/interpreter complexity and larger trusted machinery before practical performance evidence.",
+        "obligation": "Prove transition and continuation invariants, handle duplicate completions and malformed hosts, preserve full joins and honest settlement.",
+        "after": "Root facade drives private frames; two pending children settle into a complete product before the root completion fires."
+      },
+      "customer_contract_first": {
+        "design": "Choose one real async/resource customer and settle its source, authority, timeout/settlement and cleanup contracts; defer private runtime choice until acceptance vectors and measurements justify one or both spikes.",
+        "benefit": "Grounds the design in real demand without assuming two backends or a runtime choice are needed now.",
+        "cost": "Delays broad async availability and may optimize first for one customer.",
+        "obligation": "Make all A/B source and host disagreements explicit, keep resources separate but accounted for, and do not promise liveness without a progressing platform.",
+        "after": "Specify an HTTP request lifecycle with cancellation/cleanup and late-effect tests, then decide which bounded execution experiment could resolve an actual uncertainty."
+      }
+    }
+  },
+  "contextual_typing": {
+    "question": "Where should Can allow contextual typing while preserving explicit API/authority contracts and nominal exact types? No candidate may infer a contract from tests.",
+    "before": "B11 writes Ok<T>(x) and on Ok<T> x; generic calls/tests and Seq constructors often repeat explicit type arguments.",
+    "options": {
+      "local_context": {
+        "design": "Use deterministic bidirectional checking where expected type uniquely determines local constructor/pattern/application annotations; retain explicit API and ambiguous local annotations.",
+        "benefit": "Less redundant syntax with a unique elaboration that tools can show.",
+        "cost": "Context propagation and diagnostics become more complex; edits to enclosing types can affect locals.",
+        "obligation": "No overload guessing, numeric coercion or nominal collapse; empty/polymorphic ambiguity demands annotation; explicit and inferred forms elaborate equivalently.",
+        "after": "Proposed in -> Box<int>: Ok(Box(7)); without expected element type an empty Seq still needs Seq<int>[]."
+      },
+      "explicit_all": {
+        "design": "Keep explicit type applications and typed binders even when context appears unique.",
+        "benefit": "Local syntax records the intended specialization and is easy to inspect without context.",
+        "cost": "Repeated types add editing burden and more opportunities for inconsistent annotation; benefits need measurement.",
+        "obligation": "Centralize type checking and give precise mismatch diagnostics; do not confuse verbosity with proof.",
+        "after": "Ok<Box<int>>(Box<int>(7)); on Ok<Box<int>> result remains explicit."
+      },
+      "constructor_context": {
+        "design": "Infer only constructors and patterns from a directly declared boundary; require explicit generic call/ref specializations.",
+        "benefit": "A smaller inference surface removes obvious repetition while keeping specialization demands explicit.",
+        "cost": "A deliberate rule boundary leaves some repeated types and another distinction for authors.",
+        "obligation": "Document exactly which positions propagate expected types; preserve nominality and refuse ambiguity consistently.",
+        "after": "Proposed -> Box<int> accepts Ok(Box(7)), but call id<int>(7) and fnref map<int>(...) stay explicit."
+      }
+    }
+  },
+  "collection_spelling": {
+    "question": "Which collection type spelling should Can develop assuming the same compositional type and containment rules underneath? Do not infer nesting support from punctuation.",
+    "before": "Current Seq<T> has typed literals Seq<int>[1,2], while nested generic positions have separate implementation restrictions.",
+    "options": {
+      "regular_application": {
+        "design": "Retain Seq<T> as the regular application grammar alongside Option<T> and Map<K,V>.",
+        "benefit": "One type application model and direct relation to generic libraries.",
+        "cost": "More punctuation for nested sequences; parser must distinguish type angles from comparisons.",
+        "obligation": "Compositional AST/substitution/containment and exact nominal identities; spelling alone solves no nesting defect.",
+        "after": "Proposed uniform nesting: Seq<Seq<int>> and Seq<Option<int>> under shared type rules."
+      },
+      "bracket_sequence": {
+        "design": "Make [T] the one sequence type spelling, retaining Name<T> for other applications.",
+        "benefit": "Compact, visually recognizable sequence nesting.",
+        "cost": "A special type constructor grammar and migration of signatures/literals/tooling; [] already serves enumeration roles.",
+        "obligation": "Specify context-disambiguation and canonical formatting; provide the same nesting/containment support as regular application.",
+        "after": "Proposed [[int]] and [Option<int>] denote the same types as nested Seq applications."
+      },
+      "postfix_sequence": {
+        "design": "Use T[] as the single sequence type spelling.",
+        "benefit": "Familiar from TS target types and compact multi-dimensional spelling.",
+        "cost": "Special precedence with Fn/generic types and expression indexing; target familiarity is not usability evidence.",
+        "obligation": "Specify parenthesization and identical source immutability/type rules, independent of mutable TS array layout.",
+        "after": "Proposed int[][] and Option<int>[] replace Seq<Seq<int>> and Seq<Option<int>>."
+      }
+    }
+  },
+  "literals": {
+    "question": "Which literal-family direction should Can evaluate? Every candidate preserves exact int/dec, no coercions or rounding, and no Unicode normalization. A usability conclusion needs measured trials.",
+    "before": "Exact decimals use d\"12.50\"; ordinary strings are raw; e\"line\\n\" decodes supported escapes.",
+    "options": {
+      "conventional_exact": {
+        "design": "Ordinary dotted numeric tokens denote exact dec; ordinary strings decode a specified escape set and a prefixed form is raw.",
+        "benefit": "Familiar writing/editing conventions without introducing binary float.",
+        "cost": "Lexer, escaping, source tools and corpus migrate; leading/trailing dots, exponents and raw delimiter rules need decisions.",
+        "obligation": "Canonical decimal values and string scalar validation stay exact; formatter round trips and escaped/raw equivalence are tested.",
+        "after": "Proposed 12.50 denotes exact dec; \"line\\n\" contains LF; r\"line\\n\" contains backslash+n."
+      },
+      "explicit_families": {
+        "design": "Keep prefixed exact decimal and interpreted-string forms with raw ordinary strings.",
+        "benefit": "The numeric/text interpretation is visible and raw source minimizes escaping in many embedded fragments.",
+        "cost": "Unfamiliar defaults can cause mistakes; decimal text resembles a string even though it is typed dec.",
+        "obligation": "Measure actual agent mistakes, document escape families and retain strict Unicode/canonical numeric checks.",
+        "after": "d\"12.50\", e\"line\\n\" and raw \"line\\n\" remain distinct canonical families."
+      },
+      "numeric_only": {
+        "design": "Adopt ordinary exact decimal tokens but retain raw ordinary and e-prefixed interpreted strings.",
+        "benefit": "Removes decimal quoting without simultaneously changing embedded-text defaults.",
+        "cost": "Mixed conventionality and two independent syntax migrations over time if strings later change.",
+        "obligation": "Do not couple string defaults to numeric semantics; test numeric lexer and unchanged string behavior independently.",
+        "after": "Proposed 12.50 alongside e\"line\\n\" and raw \"line\\n\"."
+      }
+    }
+  },
+  "boolean_evaluation": {
+    "question": "Which and/or evaluation policy should Can prefer pending agent trials, considering faulting pure expressions and source branch evidence? Ordinary function arguments remain strict in every option.",
+    "before": "and/or evaluate both operands. false and xs[0] == 1 can still fault on an empty sequence; explicit match is required to guard evaluation.",
+    "options": {
+      "eager": {
+        "design": "Keep left-to-right eager and/or, using explicit match for guarded evaluation.",
+        "benefit": "Preserves uniform eager expressions and makes all control-flow branch obligations explicit in source matches.",
+        "cost": "Differs from many languages; guard-shaped boolean expressions can unexpectedly fault and require longer matches.",
+        "obligation": "Document eager fault behavior and test it in evaluator/TS; measure agent confusion rather than assuming explicitness succeeds.",
+        "after": "Current guard shape:\nmatch #xs == 0\n  true => Ok(false)\n  false => Ok(xs[0] == 1)"
+      },
+      "short_circuit": {
+        "design": "Make and/or left-to-right conditional evaluation with explicit typed-core guard nodes.",
+        "benefit": "Natural safe boolean guards and familiar evaluation expectations.",
+        "cost": "Introduces implicit source branches and changes fault/evaluation behavior; evidence obligations must be specified.",
+        "obligation": "Preserve source origins and distinguish skipped from executed evidence; no lazy argument semantics or hidden error propagation.",
+        "after": "Proposed #xs > 0 and xs[0] == 1 skips indexing for empty xs; coverage records the skipped/evaluated paths under the chosen rule."
+      },
+      "explicit_conditional_operator": {
+        "design": "Replace eager and/or with a visibly conditional canonical spelling such as and_then/or_else for boolean expressions.",
+        "benefit": "Communicates conditional evaluation directly without keeping two synonymous families.",
+        "cost": "Unfamiliar names and corpus migration; still needs all short-circuit evidence rules and can be confused with outcome combinators.",
+        "obligation": "One operator family, stable evaluation and fault semantics; test readability before ratification.",
+        "after": "Proposed #xs > 0 and_then xs[0] == 1 uses an explicit conditional operator."
+      }
+    }
+  },
+  "argument_labels": {
+    "question": "What should canonical Can tooling do with argument labels under one binding/evaluation rule? Labels are not permission to reorder effectful evaluation.",
+    "before": "The structural lint rejects redundant in-position names; useful labels can be forced away even when authors intend readability.",
+    "options": {
+      "preserve_optional": {
+        "design": "Allow named and positional arguments with one deterministic binding rule; preserve user labels in formatting.",
+        "benefit": "Names clarify similar-typed inputs while short obvious calls remain concise.",
+        "cost": "Multiple surface spellings conflict with the current canonical-form preference; positional/named mixing needs precise diagnostics.",
+        "obligation": "Duplicate/missing/unknown binding rejection, defined source evaluation order and formatting without semantic rewrites.",
+        "after": "Proposed transfer(from = source, to = destination) stays labeled even in declaration order; id(x) remains positional."
+      },
+      "canonical_positional": {
+        "design": "Require positional arguments whenever each argument occupies its declared slot; retain names only where semantically required by the chosen binding rule.",
+        "benefit": "One compact normal form and less annotation churn.",
+        "cost": "Similar-typed arguments lose visible roles; structural lint forces readability edits unrelated to program correctness.",
+        "obligation": "Measure swapped-argument errors and diagnostic quality; canonicalization must not alter evaluation order or authority.",
+        "after": "transfer(from = source, to = destination) is diagnosed with canonical transfer(source, destination)."
+      },
+      "all_named": {
+        "design": "Require labels on all multi-argument calls/constructors, with an explicitly specified unary/empty convention.",
+        "benefit": "Roles are visible and declaration reordering need not silently rebind arguments.",
+        "cost": "More source and parameter-name API churn; repetitive mechanical labels in small helpers.",
+        "obligation": "Parameter names become interface identity; define named source order, duplicate binding checks and canonical formatting.",
+        "after": "Proposed transfer(from = source, to = destination) is required for a two-parameter declaration."
+      }
+    }
+  }
+}

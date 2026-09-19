@@ -1,0 +1,31 @@
+{
+  "started_at": "2026-09-19T18:32:18.300257+00:00",
+  "completed_at": "2026-09-19T18:32:19.139028+00:00",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "request_sha256": "931e6acd7900331c4a8d8ff11dd3182f72058cfcbb552b48189257cc6e1c0aed",
+  "http_status": 200,
+  "response_body_sha256": "7dc484759ec13450c697bae12d4343e37fcb669f9eb28909488531328d636b3f",
+  "response_body": "modules.body.json",
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {
+      "modules": {
+        "type": "choice",
+        "choice": "strict_global",
+        "confidence": 0.5,
+        "probabilities": {
+          "defer": 0.26,
+          "package_scope": 0.01,
+          "scoped_symbols": 0.07,
+          "strict_global": 0.6,
+          "owned_globals": 0.06
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 5641,
+      "output_tokens": 59
+    }
+  },
+  "validated": true
+}

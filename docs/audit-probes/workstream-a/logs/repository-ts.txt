@@ -1,0 +1,45 @@
+sketches/host-clock/clock.ts(3,55): error TS2307: Cannot find module './host' or its corresponding type declarations.
+sketches/host-clock/clock.ts(4,32): error TS2307: Cannot find module './host.externs' or its corresponding type declarations.
+sketches/notify/notify.ts(3,124): error TS2307: Cannot find module './quota' or its corresponding type declarations.
+sketches/reserve/reserve.ts(3,124): error TS2307: Cannot find module './quota' or its corresponding type declarations.
+std/json/json.ts(3,209): error TS2307: Cannot find module './scalars' or its corresponding type declarations.
+std/json/json.ts(308,90): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(308,386): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(308,434): error TS2322: Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/json/json.ts(321,90): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(321,388): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(321,436): error TS2322: Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/json/json.ts(341,92): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(341,371): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(341,412): error TS2322: Type '{ $can_kind: string; } | Json__Value' is not assignable to type 'Json__Value'.
+  Type '{ $can_kind: string; }' is not assignable to type 'Json__Value'.
+    Types of property '$can_kind' are incompatible.
+      Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/json/json.ts(353,92): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; } | { tag: { $can_kind: string; }; ... 5 more ...; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: Json__Doc[]; ipos: bigint; fields: never[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(353,616): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(353,665): error TS2322: Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/json/json.ts(386,94): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; } | { tag: { $can_kind: string; }; ... 5 more ...; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(386,621): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(386,693): error TS2322: Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/json/json.ts(398,94): error TS2322: Type 'Json__Frame | { tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; } | { tag: { $can_kind: string; }; ... 5 more ...; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+  Type '{ tag: { $can_kind: string; }; text: string; val: { $can_kind: string; }; items: never[]; ipos: bigint; fields: Json__Field[]; fpos: bigint; }' is not assignable to type 'Json__Frame'.
+    The types of 'tag.$can_kind' are incompatible between these types.
+      Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(398,621): error TS2322: Type 'string' is not assignable to type '"Json__TagEmit" | "Json__TagFields" | "Json__TagItems" | "Json__TagValue"'.
+std/json/json.ts(398,702): error TS2322: Type 'string' is not assignable to type '"Json__Arr" | "Json__Bool" | "Json__Null" | "Json__Num" | "Json__Obj" | "Json__Str"'.
+std/quota/quota.ts(3,62): error TS2307: Cannot find module './scalars' or its corresponding type declarations.

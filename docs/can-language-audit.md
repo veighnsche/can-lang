@@ -1,6 +1,13 @@
 # Can: zero-compatibility syntax and ABI audit
 
 Status: **audit and redesign recommendation, not an approved language spec**.
+
+**2026-09-19 follow-up:** [Workstream A replacement audit](audit-probes/workstream-a/README.md)
+reproduces F01–F05 at `8bbcf13`, adds F06 argument-order evidence, and records
+all thirteen replacement JEV judgments. Its dispositions supersede use of the
+withdrawn reviews: three bounded process/correctness recommendations accepted,
+ten redesign choices unresolved. The proposals below remain unapproved.
+
 Baseline: `8312d85`, including B11. No production compiler or language behavior
 was changed during this audit. Existing design documents remain history, not
 vetoes on the proposals below. B05 remains the async design identifier.

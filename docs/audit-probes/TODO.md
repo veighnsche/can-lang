@@ -3,9 +3,11 @@
 Source: [full audit](../can-language-audit.md), baseline `8312d85`.
 Reproductions: [probe guide](README.md).
 
-**Status:** planning checklist. No language redesign or defect repair has been
-implemented by this document. Audit recommendations are proposals, not approved
-specifications. The original JEV reviews are withdrawn as decision support:
+**Status:** Workstream A audit/review completed at `8bbcf13` on 2026-09-19;
+[replacement dossier, judgments and dispositions](workstream-a/README.md).
+Remaining workstreams are planning checklists. No language redesign or defect
+repair has been implemented by this document. Audit recommendations are proposals,
+not approved specifications. The original JEV reviews are withdrawn as decision support:
 the supplied Can context was insufficient. Reproducible compiler findings remain
 evidence independently of those reviews.
 
@@ -17,8 +19,8 @@ compatibility modes. Migrations still need explicit semantic decisions and tests
 
 | Order | Workstream | Current status | Depends on |
 |---|---|---|---|
-| Now | A. Correct the JEV review process | Old reviews withdrawn; replacement pending | Research and complete context dossier |
-| Now | B. Confirmed correctness/integration defects | Reproduced at audit baseline; fixes pending | Can proceed without syntax redesign |
+| Done | A. Correct the JEV review process | Replacement review complete; design dispositions recorded | [Dossier and evidence](workstream-a/README.md) |
+| Now | B. Confirmed correctness/integration defects | Reproduced at `8bbcf13`, including new F06; fixes pending | Can proceed without syntax redesign |
 | Next | C. Current specification, type model, compiler core | Proposal | Reconcile actual behavior and intended guarantees |
 | Next | D. Uniform successes, calls, bindings, patterns | Proposal | C; source/public ABI decisions |
 | Next | E. Modules, ownership, effects, revision identity | Proposal | C; coordinate with B's identity fixes |
@@ -37,36 +39,42 @@ regressions introduced by a change.
 
 ## A. Redo the JEV review correctly
 
+Completed as an audit, not a redesign approval. All thirteen replacement
+requests/responses, context, input checks, current probes and reviewer decisions
+are preserved in [Workstream A](workstream-a/README.md). Three bounded
+process/correctness recommendations are accepted; ten design choices remain
+unresolved. No implementation commit applies: compiler behavior is unchanged.
+
 - [x] Flag the original JEV reviews as withdrawn in the audit and probe index;
   retain the original request/response files as historical evidence.
-- [ ] Research Can ourselves and assemble a complete, self-contained context
+- [x] Research Can ourselves and assemble a complete, self-contained context
   dossier. Do not ask JEV to research, inspect files, follow links, or fill gaps.
-- [ ] Include the language's goals, zero-user constraint, guarantees, non-goals,
+- [x] Include the language's goals, zero-user constraint, guarantees, non-goals,
   and the distinction between current rules and rules being reconsidered.
-- [ ] Include actual source examples and current behavior for values, success/
+- [x] Include actual source examples and current behavior for values, success/
   error returns, calls, patterns, generics, function values, modules, effects,
   tests, contracts, revisions, recursion, and host boundaries.
-- [ ] Include relevant compiler rules and implementation evidence—not merely
+- [x] Include relevant compiler rules and implementation evidence—not merely
   summaries of the preferred alternatives or repository paths.
-- [ ] Include current TS layouts, exact numeric representations, ownership/trust
+- [x] Include current TS layouts, exact numeric representations, ownership/trust
   assumptions, runtime faults, and the separate source/private/public/wire layers.
-- [ ] Include stdlib customers, counterexamples, confirmed F01–F05 findings, and
+- [x] Include stdlib customers, counterexamples, confirmed F01–F05 findings, and
   both competing B05 proposals. Label implemented, proposed, and historical facts.
-- [ ] Resolve documentation contradictions before presenting them as facts.
-- [ ] For each decision, supply balanced alternatives, semantic consequences,
+- [x] Resolve documentation contradictions before presenting them as facts.
+- [x] For each decision, supply balanced alternatives, semantic consequences,
   proof/authority obligations, migration costs, and concrete before/after examples.
-- [ ] Check input limits before submission. Every request must contain the
+- [x] Check input limits before submission. Every request must contain the
   context it needs, including the shared Can model; no assumed repository access,
   cross-request memory, or silent truncation. Narrow the question if necessary.
-- [ ] Re-run the eight architecture questions: sequencing, successes, calls,
+- [x] Re-run the eight architecture questions: sequencing, successes, calls,
   modules, pure-source tests, host boundary, error abstraction, and B05 ABI process.
-- [ ] Re-run the five surface questions: contextual typing, collection spelling,
+- [x] Re-run the five surface questions: contextual typing, collection spelling,
   literals, boolean evaluation, and argument labels.
-- [ ] Preserve full supplied context, questions, alternatives, model/version,
+- [x] Preserve full supplied context, questions, alternatives, model/version,
   responses, probabilities, confidence, and any subsequent reviewer decision.
-- [ ] Review the answers against actual evidence; do not treat probabilities as
+- [x] Review the answers against actual evidence; do not treat probabilities as
   soundness proofs, usability measurements, or user approval.
-- [ ] Record which recommendations are accepted, rejected, or unresolved before
+- [x] Record which recommendations are accepted, rejected, or unresolved before
   using them as implementation requirements.
 
 ## B. Repair confirmed defects and incomplete gates
@@ -137,6 +145,25 @@ payload types or silently merging incompatible identities.
 **Done when:** fresh JSON output passes both its 785 baseline Can rows and strict
 TS; whole-library/consumer bundles compile and execute with their real dependencies.
 A byte-identical but invalid golden is not a passing target gate.
+
+### B5. Named-argument evaluation order — F06 (new in Workstream A)
+
+Current-HEAD reproduction: [evaluator/target fault-priority probe](workstream-a/evidence-argument-order.txt).
+Well-typed `xs=[]`, `index=0`, `divisor=0` produce different first primitive
+faults for source `right = xs[index], left = 1 / divisor`: evaluator reports
+sequence bounds, emitted TS reports division by zero. Non-faulting values agree.
+
+- [ ] Record the intended argument evaluation order; reconcile the binder's
+  source-order contract with the emitter's parameter-order expression lowering.
+- [ ] Add an evaluator/target regression with two independently faulting
+  expressions, reordered labels, and non-faulting controls.
+- [ ] Evaluate each argument exactly once in the specified order, then place
+  evaluated values into parameter slots; audit the other binding consumers.
+- [ ] Preserve correct parameter binding and test both first-fault behavior and
+  ordinary outcomes without relying on invalid host types or side effects.
+
+**Done when:** evaluator and freshly emitted target agree on values and first
+faults for reordered named arguments, with the chosen order documented.
 
 ## C. Establish the current specification and compiler foundations
 
@@ -475,6 +502,7 @@ boundary implementation can be split into later green slices.
 | Audit section | Checklist |
 |---|---|
 | F01 / F02 / F03 / F04 / F05 | B1 / B2 / H / B3 / B4 |
+| F06 (Workstream A follow-up) | B5 |
 | S01 / S02 / S03 / S04 / S05 / S06 | D1 / D2 / D3 / D4 / D5 / J1 |
 | T01 / T02 / T03 / T04 | C2 + G3 / G1 / G2 / G3 |
 | M01 / M02 / M03 / M04 | E1 / E2 / E3 / E4 |
@@ -484,6 +512,8 @@ boundary implementation can be split into later green slices.
 | Illustrative destination / migration / measurements | D + approval decisions / K1–K2 / K3 |
 | JEV review correction | A |
 
-**Next actionable work:** complete the replacement review context in A while
-repairing the independently confirmed defects in B. Do not use the archived
-JEV scores to skip a design decision or to claim the redesign is approved.
+**Next actionable work:** repair the independently confirmed defects in B,
+including the new F06 argument-order finding, and establish the accurate current
+specification and gates. Workstream A is complete; its design dispositions are
+explicitly recorded, with ten choices unresolved. Neither archived nor replacement
+JEV probabilities approve a redesign or remove the need for semantic decisions.

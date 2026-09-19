@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"b05_process":{"type":"choice","choice":"contract_then_compare","confidence":0.53,"probabilities":{"promise_reference":0.02,"defer":0.18,"customer_contract_first":0.17,"machine_reference":0.01,"contract_then_compare":0.62}}},"usage":{"input_tokens":5984,"output_tokens":64}}
