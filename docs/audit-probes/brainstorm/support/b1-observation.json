@@ -1,0 +1,43 @@
+{
+  "observed_at_utc": "2026-09-19T19:02:13.616399+00:00",
+  "head": "adaff3a6b7a2bebb2d3d5c6119d8dff8730f89b5",
+  "scope": "User B1 implementation observed in working tree; brainstorm did not edit compiler files. Hashes describe observation, not an implementation commit or approval.",
+  "files": {
+    "compiler/canonical.go": "77d53ddc36909cfa9d1001288bd009119904e718ae8c7d315ce6932a94cbd4fb",
+    "compiler/canonical_test.go": "2f57bdf214f3f95ffc38cfdfee9ef5800d04ad13e035a60a10c449562b120fe0",
+    "compiler/revision.go": "0caf54314a06c0a24666b449160b83ed500c73cae9a5210ac2ad3b2c76dc5eba",
+    "compiler/main.go": "6fb3018b4c441d3916625348271e69003fe6ab795912a610b41e167f2ca74646",
+    "compiler/revision_identity_test.go": "90311b90fa0fd1ecbbf0032aa752e9ae0ffe751b7898455c535f11745ec1482b",
+    "compiler/generics_variants_more_test.go": "0a031a45bcb03055cc6d1a3f3df24d1df839e487738e7b3be553a20c9d46f7a7"
+  },
+  "validation": {
+    "command": "go test -count=1 ./compiler -run 'TestCanonical|TestRevisionIdentity|TestGenericVariantRevisionIdentity|TestPinned' -v",
+    "exit_code": 0,
+    "output": "b1-checks.txt",
+    "sha256": "ab981c7db5da469d0d231586561aa4bf1062533e2a5b6712a1fbe0f7c8dd3a93",
+    "limitation": "Focused existing regression tests; not a full B1 audit, full repository gate run, or agent usability experiment."
+  },
+  "subsequent_reconciliation": {
+    "observed_at_utc": "2026-09-19T19:12:41.727892+00:00",
+    "implementation_commit": "d9037ca6708441cc3f77d7d38ad16185a47d2a65",
+    "repair_record": "../../b1-canonicalization.md",
+    "same_as_observed_files": {
+      "compiler/canonical.go": true,
+      "compiler/canonical_test.go": true,
+      "compiler/revision.go": false,
+      "compiler/main.go": true,
+      "compiler/revision_identity_test.go": true,
+      "compiler/generics_variants_more_test.go": true
+    },
+    "note": "The implementation task committed B1 while brainstorming continued. The initial observation and focused-test receipt above remain unchanged. Full gate results belong to the linked repair record.",
+    "focused_validation": {
+      "observed_at_utc": "2026-09-19T19:15:49.255415+00:00",
+      "command": "go test -count=1 ./compiler -run 'TestCanonical|TestRevisionIdentity|TestGenericVariantRevisionIdentity|TestPinned' -v",
+      "exit_code": 0,
+      "output": "b1-committed-checks.txt",
+      "sha256": "7631530eae2b246d24c6cf1a2c3245d5e40b36fb37488640dd8fbf00b32b1b3a",
+      "top_level_tests": 23,
+      "limitation": "Focused existing regression tests; not a full B1 audit, full repository gate run, or agent usability experiment."
+    }
+  }
+}

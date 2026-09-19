@@ -5,6 +5,11 @@ specs, and the rules each feature had to satisfy before it landed.
 
 ## Current audit and implementation record
 
+- [Complete agent-focused language brainstorm](audit-probes/brainstorm/README.md)
+  — central language questions, five source directions, whole-language alternatives,
+  cross-feature conflicts and 20 discriminating tasks. Exploration complete;
+  no replacement syntax, grammar or ABI selected.
+
 - [Workstream A replacement audit](audit-probes/workstream-a/README.md) — current
   dossier, reproduced F01–F05 plus new F06 argument-order finding, all thirteen
   self-contained JEV reviews and explicit accepted/rejected/unresolved dispositions.

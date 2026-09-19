@@ -15,6 +15,12 @@ not approved specifications. The original JEV reviews are withdrawn as decision 
 the supplied Can context was insufficient. Reproducible compiler findings remain
 evidence independently of those reviews.
 
+**Brainstorm completed:** the [agent-focused whole-language exploration](brainstorm/README.md)
+covers the full language, with alternative representations,
+semantic options, counterexamples, interactions and discriminating experiments.
+It selects no replacement syntax, grammar or ABI; the design decisions below
+remain open.
+
 **Constraint:** zero external users. Preserve guarantees, not old syntax, ABI,
 source spellings, generated TS layouts, or goldens. Do not create permanent
 compatibility modes. Migrations still need explicit semantic decisions and tests.
@@ -24,6 +30,7 @@ compatibility modes. Migrations still need explicit semantic decisions and tests
 | Order | Workstream | Current status | Depends on |
 |---|---|---|---|
 | Done | A. Correct the JEV review process | Replacement review complete; design dispositions recorded | [Dossier and evidence](workstream-a/README.md) |
+| Done | Agent-focused brainstorm following A | [Alternatives and experiment inventory](brainstorm/README.md); no design selected | Whole-language questions and real programming workloads |
 | Now | B. Confirmed correctness/integration defects | B1/F01 repaired; B2–B5 remain pending (including F06) | Can proceed without syntax redesign |
 | Now / decision | C. Current specification and compiler foundations | C1 supported next work; C2/C3 architecture unresolved | Current inventory and concrete compiler pressure cases |
 | Decision | D. Successes, calls, bindings, patterns | Success/call/context choices unresolved; other changes remain candidates | Explicit semantics; H before any public ABI migration |
@@ -685,11 +692,13 @@ there is no requirement to preserve them after a deliberate replacement decision
 | Illustrative destination / migration / measurements | D + approval decisions / K1–K2 / K3 |
 | JEV review correction | A |
 
-**Next actionable work:** repair the independently confirmed defects in B,
-including the new F06 argument-order finding, and establish the accurate current
+**Next actionable work:** repair the remaining confirmed defects in B2–B5,
+including F06 argument ordering, and establish the accurate current
 specification in C1 and complete dependency/target gates in B3/B4/K2. Use I's
 contract-first process when beginning a real async customer. Choose C2/C3 and
 the applicable D–J alternatives before their conditional implementation tasks.
-Workstream A is complete; all thirteen dispositions are carried into this TODO,
-with ten choices unresolved. Neither archived nor replacement JEV probabilities
-approve a redesign or remove the need for semantic decisions.
+Workstream A and the [subsequent brainstorm](brainstorm/README.md) are complete;
+B1 is implemented as recorded above. All thirteen audit dispositions remain
+recorded, with ten choices unresolved. The brainstorm supplies broader alternatives
+and experiments rather than new decisions. Neither archived nor replacement JEV
+probabilities approve a redesign or remove the need for semantic decisions.

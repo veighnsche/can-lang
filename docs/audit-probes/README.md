@@ -14,6 +14,11 @@ current regression gate. Other findings remain tracked separately.
 Start with the **[master TODO checklist](TODO.md)** for priorities, dependencies,
 completion criteria, and coverage of every audit section.
 
+The [subsequent whole-language brainstorm](brainstorm/README.md) explores
+agent-focused alternatives across syntax, semantics and program construction.
+It includes concrete examples, counterexamples and comparison tasks; no
+replacement design has been selected.
+
 These probes substantiate `../can-language-audit.md`. They are not normal
 regression gates: the Go probe currently expects the documented defects to be
 present. After a fix, a failed hypothesis is a reason to update the audit status,

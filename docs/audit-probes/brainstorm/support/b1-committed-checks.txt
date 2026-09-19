@@ -1,0 +1,66 @@
+=== RUN   TestPinnedRowSetsFlag
+--- PASS: TestPinnedRowSetsFlag (0.00s)
+=== RUN   TestPinnedRowDiagnosesClean
+--- PASS: TestPinnedRowDiagnosesClean (0.00s)
+=== RUN   TestPinnedWeakeningWarns
+--- PASS: TestPinnedWeakeningWarns (0.00s)
+=== RUN   TestPinnedUnpinnedChurnSilent
+--- PASS: TestPinnedUnpinnedChurnSilent (0.00s)
+=== RUN   TestPinnedRemovedWarns
+--- PASS: TestPinnedRemovedWarns (0.00s)
+=== RUN   TestPinnedDemoteWarns
+--- PASS: TestPinnedDemoteWarns (0.00s)
+=== RUN   TestCanonicalPinnedCallbackChanges
+=== RUN   TestCanonicalPinnedCallbackChanges/target
+=== RUN   TestCanonicalPinnedCallbackChanges/capture
+=== RUN   TestCanonicalPinnedCallbackChanges/revision
+--- PASS: TestCanonicalPinnedCallbackChanges (0.00s)
+    --- PASS: TestCanonicalPinnedCallbackChanges/target (0.00s)
+    --- PASS: TestCanonicalPinnedCallbackChanges/capture (0.00s)
+    --- PASS: TestCanonicalPinnedCallbackChanges/revision (0.00s)
+=== RUN   TestCanonicalIdentitySeparationAndFormatting
+--- PASS: TestCanonicalIdentitySeparationAndFormatting (0.00s)
+=== RUN   TestCanonicalCallbackDependencyClosure
+--- PASS: TestCanonicalCallbackDependencyClosure (0.00s)
+=== RUN   TestCanonicalStampedCallbackEvidence
+--- PASS: TestCanonicalStampedCallbackEvidence (0.00s)
+=== RUN   TestCanonicalSemanticInputs
+--- PASS: TestCanonicalSemanticInputs (0.00s)
+=== RUN   TestCanonicalRefusesUnsupportedStructure
+=== RUN   TestCanonicalRefusesUnsupportedStructure/chain
+=== RUN   TestCanonicalRefusesUnsupportedStructure/integer
+=== RUN   TestCanonicalRefusesUnsupportedStructure/range
+=== RUN   TestCanonicalRefusesUnsupportedStructure/expression
+=== RUN   TestCanonicalRefusesUnsupportedStructure/pattern
+=== RUN   TestCanonicalRefusesUnsupportedStructure/match
+--- PASS: TestCanonicalRefusesUnsupportedStructure (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/chain (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/integer (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/range (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/expression (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/pattern (0.00s)
+    --- PASS: TestCanonicalRefusesUnsupportedStructure/match (0.00s)
+=== RUN   TestCanonicalVersionAndAcceptanceAuthority
+--- PASS: TestCanonicalVersionAndAcceptanceAuthority (0.00s)
+=== RUN   TestGenericVariantRevisionIdentity
+--- PASS: TestGenericVariantRevisionIdentity (0.00s)
+=== RUN   TestRevisionIdentityPrimary
+--- PASS: TestRevisionIdentityPrimary (0.00s)
+=== RUN   TestRevisionIdentityCommentsSilent
+--- PASS: TestRevisionIdentityCommentsSilent (0.00s)
+=== RUN   TestRevisionIdentityCompleteEliminators
+--- PASS: TestRevisionIdentityCompleteEliminators (0.00s)
+=== RUN   TestRevisionIdentityIncompleteStays
+--- PASS: TestRevisionIdentityIncompleteStays (0.00s)
+=== RUN   TestRevisionIdentityBumpPin
+--- PASS: TestRevisionIdentityBumpPin (0.00s)
+=== RUN   TestRevisionIdentityProperBump
+--- PASS: TestRevisionIdentityProperBump (0.00s)
+=== RUN   TestRevisionIdentityUntrustedBaseline
+--- PASS: TestRevisionIdentityUntrustedBaseline (0.00s)
+=== RUN   TestRevisionIdentityBadFormat
+--- PASS: TestRevisionIdentityBadFormat (0.00s)
+=== RUN   TestRevisionIdentityContractDrift
+--- PASS: TestRevisionIdentityContractDrift (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler	0.321s
