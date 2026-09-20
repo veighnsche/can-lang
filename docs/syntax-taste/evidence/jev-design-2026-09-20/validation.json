@@ -1,0 +1,9 @@
+{
+  "identical_state_sha256": "abcc1d829e605e742c3f28ecd61407cfeced06f0e4e679e5945c62396b027a8e",
+  "identical_criteria": true,
+  "distinct_instruction_paraphrases_per_topic": 3,
+  "questions_per_round": 8,
+  "rounds": 3,
+  "validated_answers": 24,
+  "distribution_checks": "All exact key sets/ranges/sums and selected maxima pass. No evidence of invalid provider normalization in these responses."
+}

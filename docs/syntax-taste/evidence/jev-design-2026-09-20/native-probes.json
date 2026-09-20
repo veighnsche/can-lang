@@ -1,0 +1,39 @@
+{
+  "runtime": "Bun 1.4.2",
+  "scope": "Read-only native-runtime observations, not Can compiler/adapter tests.",
+  "from_async": {
+    "input": [
+      1,
+      2,
+      3
+    ],
+    "mapped": [
+      2,
+      4,
+      6
+    ],
+    "events": [
+      "start:1",
+      "end:1",
+      "start:2",
+      "end:2",
+      "start:3",
+      "end:3"
+    ],
+    "maximum_active_callbacks": 1,
+    "rejection_at": 2,
+    "visited_before_rejection": [
+      1,
+      2
+    ],
+    "empty_output": []
+  },
+  "thenable_payload": {
+    "direct_Promise_resolve_result": "assimilated",
+    "callable_then_invocations_after_direct": 1,
+    "callable_then_invocations_after_boxed_promise_and_index_fromAsync": 1,
+    "payload_identity_preserved": true,
+    "mapped_record_count": 2
+  },
+  "interpretation": "The direct record was assimilated once. Promise boxing and index-based Array.fromAsync did not invoke its then field again. A null-prototype private box contained the user payload; synchronous native map unwrapped results."
+}

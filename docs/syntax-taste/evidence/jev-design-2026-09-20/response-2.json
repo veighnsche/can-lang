@@ -1,0 +1,94 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "integer_codec": {
+      "type": "choice",
+      "choice": "exact_integral_tokens",
+      "confidence": 0.96,
+      "probabilities": {
+        "exact_integral_tokens": 0.97,
+        "integer_lexemes": 0.01,
+        "review_needed": 0.02
+      }
+    },
+    "generation_shapes": {
+      "type": "choice",
+      "choice": "bounded_initial_subset",
+      "confidence": 0.99,
+      "probabilities": {
+        "reuse_broader_type_graph": 0.01,
+        "bounded_initial_subset": 0.99,
+        "review_needed": 0.0
+      }
+    },
+    "aggregate_type": {
+      "type": "choice",
+      "choice": "lazy_expected_type",
+      "confidence": 0.99,
+      "probabilities": {
+        "always_contextual_type": 0.0,
+        "unique_cover_search": 0.0,
+        "lazy_expected_type": 1.0,
+        "review_needed": 0.0
+      }
+    },
+    "resource_deadline": {
+      "type": "choice",
+      "choice": "external_supervisor_boundary",
+      "confidence": 0.97,
+      "probabilities": {
+        "runtime_hard_stop": 0.0,
+        "drain_without_host_policy": 0.01,
+        "external_supervisor_boundary": 0.98,
+        "review_needed": 0.01
+      }
+    },
+    "sequential_map": {
+      "type": "choice",
+      "choice": "native_from_async",
+      "confidence": 0.55,
+      "probabilities": {
+        "shared_handwritten_traversal": 0.04,
+        "native_from_async": 0.66,
+        "predecessor_promises": 0.26,
+        "review_needed": 0.04
+      }
+    },
+    "fixture_queue": {
+      "type": "choice",
+      "choice": "canonical_shared_fifo",
+      "confidence": 0.88,
+      "probabilities": {
+        "canonical_shared_fifo": 0.9,
+        "argument_matching": 0.02,
+        "participant_local_fifo": 0.06,
+        "review_needed": 0.02
+      }
+    },
+    "generic_checking": {
+      "type": "choice",
+      "choice": "concrete_specialization",
+      "confidence": 0.81,
+      "probabilities": {
+        "concrete_specialization": 0.87,
+        "parametric_only": 0.12,
+        "review_needed": 0.01
+      }
+    },
+    "promise_payloads": {
+      "type": "choice",
+      "choice": "private_completion_boxes",
+      "confidence": 0.97,
+      "probabilities": {
+        "mangled_record_fields": 0.01,
+        "review_needed": 0.01,
+        "private_completion_boxes": 0.97,
+        "reserve_then_name": 0.01
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 4478,
+    "output_tokens": 434
+  }
+}

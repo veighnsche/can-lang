@@ -1,0 +1,9 @@
+{
+  "date": "2026-09-20T21:23:40.299934+00:00",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "requested_model": "jev-latest",
+  "state_sha256": "abcc1d829e605e742c3f28ecd61407cfeced06f0e4e679e5945c62396b027a8e",
+  "topic_count": 8,
+  "rounds": 3,
+  "method": "Same state and identical alternatives in all rounds; only instructions are paraphrased. Questions independent. No majority-vote acceptance rule."
+}

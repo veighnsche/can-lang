@@ -7,10 +7,17 @@ requirements, not claims about implemented or compiler-validated behavior.
 
 Decision: SURFACE-069.
 
-Only choices explicitly confirmed in this record establish the current design.
+The source forms and product choices recorded here establish the current design.
+The incorporated [technical specification](technical-spec.md) and its
+[coordination](coordination-spec.md), [AI/I/O](ai-io-spec.md), and
+[platform/testing](platform-testing-spec.md) companions complete the previously
+open technical contracts. These documents select technical defaults under the
+user’s documentation-only authorization; they do not imply implementation.
+Recorded user choices take precedence if a conflict is found.
 Everything else, including earlier design documents and the existing
 implementation, is historical material, not a default or fallback specification.
-An unrecorded feature or rule remains undecided; it is not implicitly retained.
+A feature absent from this record and the incorporated specification is not
+implicitly retained. The historical deep review remains an audit, not authority.
 This authority rule does not authorize implementation changes or deletion.
 
 Effects are deferred for later reconsideration; no effect-checking requirement
@@ -30,8 +37,14 @@ recorded Can-to-Bun platform boundary remains in force.
 - Replace changed decisions in place; do not retain rejected alternatives or history.
 - Preserve semantics established in this record when a sketch omits details. Suggestions and
   explanatory examples do not establish additional decisions.
-- Consult Jev for technical design decisions with the relevant context supplied;
-  user taste choices recorded here are not Jev validation.
+- Technical contracts may be resolved from the full design and primary evidence.
+  Jev may advise when supplied all relevant context; it cannot research and does
+  not validate or override user choices. For difficult technical choices, consult
+  it with multiple differently worded versions of the same facts, constraints,
+  and alternatives. Record the responses and the engineering judgment; disagreement
+  exposes uncertainty, while repeated agreement or a majority vote is not proof.
+  The [September consultation record](jev-design-consultations-2026-09-20.md)
+  contains the completed design consultations and their limits.
 
 Decision IDs identify the applicable choices; they are not a required sequence.
 
@@ -55,9 +68,9 @@ not a particular judgment spelling or a change to ordinary pattern-match semanti
 Jev-backed AI primitives must have their own native Can grammar and syntax;
 ordinary standard-library function wrappers alone do not satisfy this requirement.
 Design their concrete forms as part of the language, reconciling the older
-native-AI proposals with current decisions. The exact primitive inventory and
-spellings still require design; this requirement does not adopt the old proposals
-wholesale.
+native-AI proposals with current decisions. The native Noul, Choice, Score, judge and LLM forms below are selected; their
+complete numeric, protocol and handler contracts are in [AI/I/O](ai-io-spec.md).
+No older proposal is adopted wholesale.
 
 Decisions: SURFACE-074, SURFACE-083–084.
 
@@ -76,9 +89,33 @@ function declarations are not supported. Functions remain first-class values;
 `callable <name>` creates references, and `near` inputs provide captures from the
 reference-creation scope.
 
-Callable domain-error annotation placement is provisionally selected below;
-compatibility and inference rules remain undecided. Callables require no purity
+Callable domain-error annotation placement is selected below; compatibility
+and finite inference are specified in [C4](technical-spec.md#c4). Callables require no purity
 or effect classification.
+
+## Domain-error declarations for native executable forms
+
+Approved from deep-review decision U1: native questions (`noul`, `choice`,
+`score`, including generated-record forms), `judge`, named `choice_arm`,
+`fetch`, and `llm` declarations use an ordinary indented `emits [...]` section,
+matching functions. Do not put this annotation in the declaration header or
+introduce a separate `contract` section. The list describes permitted domain
+errors; standard runtime failures remain outside it.
+
+```text
+choice str route from service
+    emits [ai::invalid_question, ai::invalid_answer, review_required]
+    asks "Which route?"
+        auto "Routine request." => ok "auto"
+        manual "Needs review." => review_required()
+```
+
+Every declaration spells its full domain-error upper bound, including applicable
+intrinsic validation/transport errors and handler errors. No hidden fixed domain
+set is added to `emits`. [AI/I/O](ai-io-spec.md) defines those finite sets;
+[C5/C9](technical-spec.md#c5) and [coordination](coordination-spec.md) define
+completion ownership. Standard failures remain outside `emits`. Examples below
+are declaration or body excerpts unless expressly identified as whole programs.
 
 ## Native Noul declaration direction
 
@@ -89,7 +126,7 @@ and response decoding; authors do not repeat fetch setup in judgment handlers.
 Use a dedicated named declaration with indented settings (the selected first
 option), rather than a configuration-record binding or factory function.
 Use `connection` as the declaration keyword. The indented setting notation
-below is selected; detailed transport behavior remains technical design work.
+below is selected; [AI/I/O](ai-io-spec.md) specifies its complete transport contract.
 
 Wrappers are generic shared transport configuration, usable by ordinary HTTP
 fetch operations and native AI judgments, not TypeSafe-only declarations.
@@ -98,8 +135,7 @@ metadata, not a mandatory field of every wrapper. Support configurable remote
 and local service endpoints rather than hard-coding the hosted TypeSafe service.
 Native judgments still require a compatible request/response protocol or an
 explicitly supported adapter; choosing a different endpoint alone does not
-establish protocol compatibility. Detailed metadata typing and adapter
-configuration remain to be designed.
+establish protocol compatibility. Metadata typing and the closed adapter registry are specified in [AI/I/O](ai-io-spec.md).
 
 ### Shared connection configuration
 
@@ -112,6 +148,7 @@ connection default_wrapper
     auth bearer env "LOCAL_API_KEY"
     timeout_ms 30000
     metadata
+        protocol "typesafe_systemone_v1"
         model "local-model"
 ```
 
@@ -127,20 +164,17 @@ Native judgments still own their question/state encoding and response decoding.
 This configuration does not allow embedded backend code or user-written externs.
 
 `timeout_ms` expresses a timeout in milliseconds; 30000 is an example, not a
-global default. Further technical design must specify timeout boundaries,
-headers, configuration validation,
-metadata typing and application, and supported authentication schemes. No retry
-policy, configuration evaluation mechanism, or arbitrary metadata forwarding is
-silently established by this example.
+global default. The [transport contract](ai-io-spec.md) fixes timeout scope, validated settings,
+headers, bearer authentication, protocol metadata and no automatic retries.
+The example does not enable arbitrary metadata forwarding.
 
 Use the primitive-first declaration head `noul <return_type> <name>`, rather than a `question`
 prefix or an inner `kind` marker. Select its provider wrapper with
 `noul <return_type> <name> from <wrapper_name>`, for example
 `noul str needs_human from default_wrapper`. The explicit return type is the
 type produced by the selected handler, not the probability type. The wrapper keeps provider/transport
-setup separate from the question. The dedicated configuration declaration is
-selected above; its final detailed grammar, relationship to project configuration,
-and whether `from` may be omitted remain unresolved.
+setup separate from the question. The dedicated configuration declaration is selected above. `from` is mandatory;
+connection resolution, identity and grammar are specified in [AI/I/O](ai-io-spec.md).
 This does not introduce arbitrary embedded backend code or extern adapters.
 Question declarations use `given` for ordinary parameters that may supply
 question text or criterion descriptions. Shared evaluated content is declared
@@ -152,6 +186,7 @@ their criterion description followed by `=>` and an executable handler:
 
 ```text
 noul bool needs_human from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     given
         str what_question
         str what_is_true
@@ -177,13 +212,13 @@ remainder operator. Its numeric scale is 0–1: a twenty-percent probability is
 `0.2`, not `20`. It exposes the original probability without automatic scaling
 or rounding. This supersedes the intervening 0–100 selection for `%` only;
 the `minimum` cutoff remains unchanged on the same probability scale.
-String formatting/conversion remains unresolved. The user's concatenation
-sketch does not establish implicit numeric-to-string conversion.
+`%` is a `float`; formatting uses explicit `call text::from_float(%)` under
+[C6](technical-spec.md#c6), with no implicit conversion.
 
-The example records the shown explicit-cutoff layout. Exact branch indentation
-when `minimum` is omitted and detailed typing/assertion rules remain to be
-designed. Batched invocation is specified under `judge` below. Whether criterion descriptions are mandatory
-also remains unresolved.
+Without `minimum`, the true/false criterion branches are indented beneath
+`asks`; with it, preserve the shown branches beneath `minimum`. Both criterion
+descriptions are mandatory. [AI/I/O](ai-io-spec.md) specifies typing and raw
+fixtures; batched invocation uses `judge` below.
 
 ## Native Choice and full-distribution forms
 
@@ -194,6 +229,7 @@ beneath `asks`. Only the winning option's handler executes:
 
 ```text
 choice str route_ticket from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     asks "Which team should handle this message?"
         billing "Payments, invoices, or refunds." => ok "billing"
         technical "Bugs or problems using the product." => ok "technical"
@@ -211,27 +247,33 @@ earlier handler-free, raw-probability-only form:
 
 ```text
 record routing_result choice float routing_weights from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     given
         str question
     confidence as conf
     asks question
-        billing "Payments, invoices, or refunds." => ok 100 * %
+        billing "Payments, invoices, or refunds." => ok 100.0 * %
         technical "Bugs or problems using the product." => ok %
-        other "Anything outside those categories." => ok 400 * %
+        other "Anything outside those categories." => ok 400.0 * %
 ```
 
 The numeric example uses `float`, not `int`; no rounding or truncation rule is
 introduced. A `record <record_name> choice str ...` declaration likewise produces string
-fields. The user's string-field example requests automatic conversion of a
-numeric handler payload to `str` in that context. Exact formatting and whether
-that conversion applies in other language contexts remain unresolved; this is
-not blanket authorization for implicit conversions throughout Can.
+fields. Approved deep-review U6 option 1 replaces the earlier contextual
+automatic conversion: numeric handler payloads must be explicitly converted to
+`str` through an ordinary library call. A string-field handler returning bare
+`%` is a type error, not an implicit conversion. Conversion can remain inside
+the handler; no separate transformation stage is required. The canonical library call is `call text::from_float(%)`, with native
+number-to-string formatting as specified in [C6](technical-spec.md#c6). No automatic
+percentage scaling or general coercion is introduced.
 
 The explicit record name identifies the generated type. `confidence as conf`
 binds confidence for handlers and exposes it as the generated record field
 `conf`; an option named `conf` then conflicts and must be rejected. That metadata
 field carries the provider confidence rather than an option handler result.
-Handler failure semantics and inclusion of the selected option remain undecided.
+[AI/I/O](ai-io-spec.md) defines field order, complete validation, first handler
+failure and the exact generated record fields; no implicit selected-option field
+is inserted.
 This does not mean every
 handler in a `choice` declaration executes. The distinction is a Can surface
 design: TypeSafe Choice already returns the full probability distribution as
@@ -241,8 +283,9 @@ probability on the original 0–1 scale. Use `confidence as <name>` to bind the
 separate returned confidence value. An optional `minimum <threshold> => <fallback>`
 selects the fallback below the minimum confidence; otherwise the winning option
 handler runs. This differs from Noul minimum, which thresholds probability of
-true. Confidence scale/default/formatting details remain unresolved; the source
-examples do not establish new string conversion or percentage-scaling rules.
+true. Confidence is a separate finite `float` on 0–1. Omitting `minimum` imposes no
+confidence cutoff; [AI/I/O](ai-io-spec.md) defines tie/validation rules. There is
+no new string conversion or percentage scaling.
 
 ## Batched judgments with `judge`
 
@@ -259,13 +302,14 @@ approved and differs from ordinary sequential `call` execution outside a judge.
 
 ```text
 judge str assess_urgency from default_wrapper
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
     given
         str question
     state
         str email_content
         int num_emails_from_author
         int num_emails_from_system
-        timestamp received_time
+        int received_time_ms
     call needs_human(question, "True when human assistance is needed.", "False otherwise.") as bool human_needed
     call route_ticket() as str department
     call routing_weights(question) as routing_result weights
@@ -277,12 +321,11 @@ the user's omitted arguments were not approval for missing fixed inputs.
 The shared state is available to the AI questions, separate from these arguments.
 Invoke a judge with ordinary `given` arguments first, followed by one final
 parenthesized group containing its `state` arguments, both in declaration order:
-`call assess_email(question, (email_content, email_count))`. The inner group is
+`call assess_urgency(question, (email_content, email_count, system_count, received_time_ms))`. The inner group is
 judge-specific argument syntax, not a general anonymous tuple value.
-Serialization (including the
-illustrative `timestamp` type), request failures, assertions, handler execution
-order and compatibility of question/judge connections remain unresolved.
-The example does not approve a general timestamp type or new conversions.
+[AI/I/O](ai-io-spec.md) specifies serialization, declared failures, registration
+versus answer scopes, connection identity and handler order. Time here is an
+ordinary integer in explicitly named milliseconds; there is no timestamp base type.
 
 ### Choice confidence and reusable arms
 
@@ -290,6 +333,7 @@ The selected confidence/fallback surface is illustrated by:
 
 ```text
 choice str route_ticket from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     asks "Which team should handle this message?"
     confidence as conf
     minimum 0.6 => ok "Review needed."
@@ -306,29 +350,33 @@ beneath `asks`:
 
 ```text
 choice_arm float billing_arm
+    emits []
     describes "Payments and refunds."
     ok %
 
 choice_arm float technical_arm
+    emits []
     describes "Product faults."
     ok %
 
 /// Reusable department judgment arms.
 record departments
-    choice_arm billing
-    choice_arm technical
+    choice_arm<float> emits [] billing
+    choice_arm<float> emits [] technical
 
 departments all_depts = departments(billing_arm, technical_arm)
 
 record routing_result2 choice float routing_weights2 from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     confidence as conf
     asks "Which team should handle this message?"
         ...all_depts
         other "Anything outside those categories." => ok %
 ```
 
-The record field names supply the option names. Exact captures and detailed
-handler/field compatibility remain unresolved. This does not add general
+The record field names supply the option names. Reusable arms are initially
+capture-free, with invariant result types and error-subset compatibility as
+specified in [AI/I/O](ai-io-spec.md). This does not add general
 anonymous functions or inline executable arm-constructor expressions.
 
 ### Runtime-defined Choice options
@@ -338,6 +386,7 @@ arm receiving the selected key:
 
 ```text
 choice str select_department from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     given
         str question
         choice_option[] candidates
@@ -346,12 +395,21 @@ choice str select_department from default_wrapper
         ok str selected_key => ok selected_key
 ```
 
-`choice_option` describes a stable key and criterion text; its exact record
-contract and validation remain technical work. These candidates contain data,
+`choice_option` is an immutable record with `str key` then `str description`;
+[AI/I/O](ai-io-spec.md) specifies duplicate/count/description validation. These candidates contain data,
 not executable handlers. Their spread is distinguished by element type from
 spreading reusable `choice_arm` values. Runtime-generated names do not create
 statically named result fields. No `dynamic` modifier or separate `options`
 section is introduced.
+
+Stored reusable arm values use `choice_arm<result_type> emits [errors] name`
+(approved deep-review U2 option 1). The generic argument describes the handler's
+result type; the explicit error list is its domain-error contract. For example,
+`choice_arm<float> emits [] billing` stores a float-returning arm with no domain
+errors. Named arm declarations retain `choice_arm <return_type> <name>` and the
+ordinary `emits` section. Arms are capture-free; their result/error compatibility is defined in
+[AI/I/O](ai-io-spec.md). This introduces no `choice_context` record and does not
+replace arms with ordinary description/callable records.
 
 ## Native Score declarations
 
@@ -362,6 +420,7 @@ rewrite of other declaration layouts.
 
 ```text
 score float assess_severity from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     confidence as conf
     score as value
     minimum 0.6 => ok -1.0
@@ -372,6 +431,7 @@ score float assess_severity from default_wrapper
         ok => ok value
 
 record severity_weights score float assess_severity_weights from default_wrapper
+    emits [ai::invalid_question, ai::invalid_answer]
     confidence as conf
     score as value
     asks "How severe is the problem described in the email?"
@@ -395,8 +455,8 @@ provider values, separate from transformed level fields. Name collisions are
 errors. These metadata fields are not forced to the level-handler field type.
 
 Both forms receive shared state through `judge` and may have ordinary `given`
-parameters. Default confidence policy, assertions, provider failures and other
-unresolved judge contracts are not supplied implicitly by these examples.
+parameters. Confidence policy, raw fixtures and complete provider/handler contracts are
+specified in [AI/I/O](ai-io-spec.md), rather than inferred from these examples.
 
 ## Named fetch declarations
 
@@ -405,6 +465,7 @@ the name and `from` selecting shared connection configuration:
 
 ```text
 fetch user_profile load_profile from account_service
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     given
         str user_id
     get "/profile"
@@ -419,7 +480,13 @@ Invoke it using ordinary call syntax and completion handling:
 ```text
 match call load_profile("42")
     ok user_profile profile => ok profile
-    // Error arms depend on the fetch contract, which remains to be designed.
+    http::invalid_request
+    http::credentials_missing
+    http::transport_failed
+    http::timeout
+    http::body_limit
+    http::status_error
+    codec::invalid_data
 ```
 
 `user_profile` is a separately declared record describing the expected decoded
@@ -427,17 +494,51 @@ response body, validated before exposure as that type. The connection supplies
 shared transport settings. This selects the named declaration option, not the
 ordinary-library-call alternative or its proposed call-site `from` suffix.
 Use ordinary `given` parameters and named `query` and `headers` sections, with
-`name = expression` entries. Query encoding, header mapping/merging, other HTTP
-methods, request bodies, response status/header access, text/bytes responses and
-error contracts remain to be designed. No request-record or helper-expression
-alternative is selected.
+`name = expression` entries. Approved deep-review U5 option 1 extends this
+layout with a method line such as `post "/receipts"`, explicit `body json payload`,
+and `http::response<receipt>` as an envelope result containing the decoded body,
+status and immutable header data. A body-only `fetch receipt ...` remains available.
 
-## Native LLM responses and tools
+```text
+fetch http::response<receipt> save_receipt from service
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, codec::invalid_data]
+    given
+        receipt_request payload
+    post "/receipts"
+    body json payload
+```
+
+[AI/I/O](ai-io-spec.md) fixes the full intrinsic error bounds, envelope fields,
+query/header encoding, methods, text/bytes modes and status policy. No request-expression alternative or ordinary-function replacement is
+selected. The envelope is immutable Can data, not a mutable native Response.
+
+## Native LLM responses
 
 Can must support native LLM-generated responses in addition to the judgment
 primitives. Responses must support both plain text and structured data, such as
-JSON. The exact structured-output type/schema syntax and validation/error rules
-remain to be designed; this does not introduce a general untyped JSON value.
+JSON. [AI/I/O](ai-io-spec.md) defines the structured schema subset, concrete protocol
+profiles and validation/error contracts; there is no general untyped JSON value.
+
+Approved deep-review U3 option 1: plain-text generation uses
+`llm str <name> from <connection_name>`. LLM declarations retain the `state`
+section and use the same grouped-state calling convention as judges. Ordinary
+`given` arguments precede the final parenthesized state group; the group is not
+a general tuple value. A single state input is still grouped:
+
+```text
+llm str summarize from generator
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    state
+        str email_content
+    asks "Summarize the email."
+
+call summarize((email_text))
+```
+
+The same invocation convention applies to structured-record LLM results.
+A zero-state invocation supplies the final empty group: `call summarize(())`
+when that declaration has no state inputs. [AI/I/O](ai-io-spec.md) specifies
+provider validation and the explicit intrinsic domain-error bounds.
 
 For structured responses, use `llm <record_type> <name> from <connection_name>`.
 The output shape is an ordinary separately declared record. There is no
@@ -451,14 +552,15 @@ record email_summary
     str subject
     str summary
 
-llm email_summary summarize_email from default_wrapper
+llm email_summary summarize_email from generator
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
     state
         str email_content
     asks "Summarize the email with a short subject and a factual summary."
 ```
 
 Validate generated structured data against the declared record shape before
-exposing it as that type. Invalid-output handling remains to be designed.
+exposing it as that type. Invalid output produces the declared errors specified in [AI/I/O](ai-io-spec.md).
 The previously requested plain-text capability is not removed by this
 structured-response syntax selection.
 
@@ -475,19 +577,16 @@ transformation, and the subsequent judgment; no automatic LLM-to-Choice pipeline
 is implied. A judgment depending on generated inputs follows generation rather
 than running as an independent question in the same request.
 
-Validation of generated question/options and detailed dynamic-result typing
-remain unresolved. Description-only option spread and a shared selected-key
+[AI/I/O](ai-io-spec.md) specifies validation of generated question/options and
+dynamic-result typing. Description-only option spread and a shared selected-key
 handler are selected under runtime-defined Choice options. Runtime-generated
 labels do not automatically become statically known record fields, nor does
 this requirement authorize executing generated descriptions as Can code or
 generating arbitrary executable option handlers.
 
-LLM tool syntax and execution design are explicitly deferred. The requirement
-to support author-supplied tools remains; none of the chooser tool-list options
-is selected. Tool exposure, execution, result-return rules and termination/error
-handling remain to be designed.
-This requirement does not grant a model unrestricted access to Can functions
-or establish automatic execution of every requested tool call.
+LLM tool calling is outside the language scope entirely. No tool declaration,
+model-directed function exposure, execution loop or tool-result protocol is
+required or selected.
 
 ## Naming
 
@@ -508,7 +607,9 @@ Digits are allowed after the first letter in names, for example `vector2`.
 Names must start with a letter; leading underscores in names are forbidden.
 Letters in names are restricted to ASCII English `a`–`z`, consistent with the
 lowercase naming rule. Unicode letters are not allowed in names.
-Language keywords are reserved and forbidden as user-defined names.
+Hard language keywords are reserved. The complete hard/contextual inventory is
+in [C2](technical-spec.md#c2); contextual settings such as `minimum` and `score`
+remain valid data names outside their grammar positions.
 Only single underscores between name parts are allowed. Consecutive underscores
 and trailing underscores in names are compile-time errors.
 The wildcard pattern is the standalone `_`; it is not a name and remains allowed.
@@ -516,12 +617,9 @@ Duplicate names in the same scope are compile-time errors, including collisions
 across declaration kinds such as records, functions and variables. This is not a
 project-wide uniqueness requirement. Inner scopes may shadow names from outer
 scopes; a reference resolves to the nearest enclosing declaration of that name.
-This does not permit duplicate declarations in the same scope. The precise
-scope boundaries remain undecided.
-Other detailed identifier rules
-remain undecided. This naming choice does
-not rename language keywords or the special `ok` completion marker, and does
-not decide name-resolution rules when type and value names coincide.
+This does not permit duplicate declarations in the same scope. [C2–C3](technical-spec.md#c2) defines scope boundaries and eligible-kind lookup
+when types and values share spelling in different scopes. The lowercase `ok`
+completion marker is unchanged.
 
 ## Packages
 
@@ -531,15 +629,15 @@ including mandatory `emits` and `asserts`, rather than a special entry-point
 form. Its success type is `void`, written `fn void main`; successful completion
 uses bare `ok` and maps to process exit code zero. Command-line arguments are
 supplied as an ordinary `str[]` input in `given`, so assertions can supply
-them explicitly. The input's required name, if any, and which runtime argument
-entries it contains remain to be specified.
+them explicitly. Its input may use any valid name; it contains only application arguments,
+excluding the runtime and executable entries, as specified in [platform](platform-testing-spec.md).
 The entry-point function `main` must appear explicitly in its defining file's
 `provides` list.
 
 There is no package-level `emits` list. The package's declared errors define
 its own error set. This replaces the historical module-level error list, not
-function-level `emits`, which remains required. Detailed relationships between
-package-declared errors and forwarded errors from other packages remain open.
+function-level `emits`, which remains required. Functions may explicitly list and forward visible imported error types under
+[C3/C9](technical-spec.md#c3); errors need not belong to the caller’s package.
 
 A file's package declaration uses `package <name>`:
 Header order is mandatory: `package`, then its indented `provides` list, then
@@ -597,8 +695,8 @@ package shop
 ```
 
 The `provides` list is indented one level, like `uses`, and has no trailing
-comma. This selects the public-declaration list form; exact visibility and
-ownership rules remain to be specified.
+comma. Visibility and ownership, including generated declarations and signature
+accessibility, follow [C3](technical-spec.md#c3).
 
 Both `provides` and `uses` remain explicit when empty; do not omit an empty
 list:
@@ -626,13 +724,10 @@ uses [math as numbers]
 ```
 
 This alias lets the file refer to that package as `numbers`, for example
-`call numbers::add(left, right)`. This selects alias syntax and direction;
-collision and shadowing rules remain undecided.
+`call numbers::add(left, right)`. Alias collision and shadowing rules follow [C3](technical-spec.md#c3).
 
-These choices select package-header and name-qualification syntax.
-Import targets, visibility details, other placement
-requirements and name-resolution rules remain undecided; no other old
-package-header rules are inherited.
+[C3](technical-spec.md#c3) and the [platform catalogue](platform-testing-spec.md)
+complete import resolution and visibility; no old package-header rules are inherited.
 
 ## Generic type spelling
 
@@ -661,16 +756,16 @@ box<int>(3)
 rejected<int>(42)
 ```
 
-These choices select spelling and placement only, not whether explicit type
-arguments are mandatory. Generic typing, constraints, inference, assertions
-remain undecided.
+[C4](technical-spec.md#c4) specifies explicit arguments, finite inference,
+specialization checking and generic assertion instances. There is no additional
+constraint or error-set parameter syntax.
 
 ## Integers
 
 `int` is an arbitrary-precision integer type, not a fixed-width type such as
 64-bit integers. Its range has no language-defined fixed bound; actual execution
-remains subject to available resources. This selects integer size only, not
-other arithmetic, literal, conversion or fault rules from the old implementation.
+remains subject to available resources. [C2/C6](technical-spec.md#c2) specifies literals, native bigint arithmetic,
+conversions and faults; no arithmetic rule is inherited from the old implementation.
 
 ## Decimal numbers
 
@@ -681,8 +776,8 @@ No implementation removal is authorized by this design decision.
 ## Numeric literal spelling
 
 Scientific notation is allowed, for example `1.5e3`. Underscore digit separators
-are not allowed: write `1000000`, not `1_000_000`. This selects literal spelling
-only; detailed exponent grammar and exponent-form typing remain to be specified.
+are not allowed: write `1000000`, not `1_000_000`. [C2](technical-spec.md#c2) defines the exponent grammar; every exponent-form
+literal is float.
 
 Non-decimal integer literals are allowed with these prefixes:
 
@@ -702,9 +797,8 @@ Can supports `float` using IEEE 754 binary64, matching JavaScript/Bun's native
 approximately `0.30000000000000004`, not an exact decimal `0.3`.
 
 Ordinary decimal-point literals such as `0.1` and `3.14` denote `float`;
-integer literals such as `3` denote `int`. Other literal forms, conversions
-and language rules for infinity, `NaN` and other special values remain separate
-unresolved decisions. This selection does not
+integer literals such as `3` denote `int`. [C2/C6](technical-spec.md#c2) defines literals, explicit conversions, signed zero,
+infinity and NaN. These rules do not
 adopt JavaScript's implicit coercions or change arbitrary-precision `int`.
 
 Mixed `int`/`float` arithmetic is a compile-time error unless an explicit
@@ -715,25 +809,22 @@ an explicit conversion makes the operand types agree. For example, `3 is 3.0`
 and `3 < 3.5` are rejected.
 
 Numeric conversions use ordinary standard-library function calls with `call`,
-not special cast syntax. Conversion function names, rounding and
-conversion-failure behavior remain undecided.
+not special cast syntax. Conversion names, rounding and failures are specified in [C6/C8](technical-spec.md#c6).
 
 ## Arithmetic operator spelling
 
 Subtraction uses `-`, multiplication uses `*`, division uses `/`, and remainder
-uses `%`. This selects their spelling; operand typing and numeric behavior are
-separate decisions.
+uses `%`. [C6](technical-spec.md#c6) fixes operand typing and native numeric behavior.
 Unary negation uses a leading `-`, as in `-amount`. Unary `+` is forbidden.
 Exponentiation uses `**`, as in `base ** exponent`.
-This does not decide sign spelling inside scientific-notation exponents.
+Scientific exponents accept their own optional sign under [C2](technical-spec.md#c2).
 
 ## Bitwise operator spelling
 
 Bitwise operations use symbolic operators: `&` for AND, `|` for OR, `^` for
 XOR, `~` for NOT, `<<` for left shift and `>>` for right shift.
 The `|` spelling retains its existing meaning for alternatives in patterns.
-This selects spelling only; operand typing and shift behavior remain separate
-decisions.
+[C6](technical-spec.md#c6) fixes bigint operand typing and native shift behavior.
 
 ## Expression grouping
 
@@ -752,15 +843,15 @@ left or right
 not ready
 ```
 
-This selects spelling only. Precedence, associativity and eager versus
-short-circuit evaluation remain undecided.
+[C2/C5](technical-spec.md#c2) selects precedence, associativity and short-circuit
+evaluation.
 
 ## Comparison spelling
 
 Chained comparisons are allowed, for example `lower < value < upper`.
 Comparisons are not restricted to two operands. Parentheses remain available
-for grouping expressions. The precise rules for comparison chains remain to
-be specified.
+for grouping expressions. [C5](technical-spec.md#c5) defines single evaluation, short-circuiting and pairwise
+typing of comparison chains.
 
 Use `is` for equality and `is not` for inequality:
 
@@ -809,7 +900,7 @@ Triple-quoted strings interpret backslash escapes the same way as ordinary
 strings. Indentation spaces inside multiline strings are preserved exactly;
 shared indentation is not automatically stripped. A newline immediately after
 the opening triple quotes or immediately before the closing triple quotes is
-preserved. The remaining ordinary-string escape inventory remains undecided.
+preserved. The listed escapes are the complete inventory under [C2](technical-spec.md#c2).
 Assertions still occupy one source line; this
 choice does not create an exception for multiline literals inside assertions.
 
@@ -844,8 +935,9 @@ text[index]
 text[start:end]
 ```
 
-This selects syntax only. The indexing unit, result types, bounds, endpoint
-inclusion, omitted endpoints and failure behavior remain undecided.
+[C6](technical-spec.md#c6) selects native UTF-16 code-unit indexing/length,
+checked indices and native half-open clamped slices. Named Unicode operations
+are separate [C7](technical-spec.md#c7) library calls.
 
 ## Step separators
 
@@ -913,14 +1005,12 @@ A function-valued input follows the usual type-before-name declaration shape:
 
 ```text
 given
-    callable int (int) transform
+    callable int (int) emits [] transform
 ```
 
-The example above illustrates the base callable-type shape only; omission of
-an error annotation does not establish an empty contract.
+Every callable type spells its error bound, including an empty one.
 
-Provisional choice, explicitly open to revision after practical use: place a
-callable's `emits [...]` annotation after its input types and before the binding
+Place a callable's `emits [...]` annotation after its input types and before the binding
 name:
 
 ```text
@@ -929,9 +1019,8 @@ given
 ```
 
 Here `receipt` is the success return type, and `operation` is the callable input
-name. This selects annotation placement only. Whether empty lists must be
-written, inference from referenced function declarations, callable compatibility
-and generic error propagation remain unresolved. No purity or effect annotation
+name. [C4](technical-spec.md#c4) defines required empty lists, reference inference,
+error-subset compatibility and finite catalogue callback specialization. No purity or effect annotation
 is introduced.
 
 Invoke a function-valued input or other callable value with the same `call`
@@ -941,9 +1030,8 @@ syntax used for named functions:
 call transform(5)
 ```
 
-`callable` creates a function reference; `call` invokes a function. This invocation
-syntax does not settle callable error compatibility or introduce implicit
-error propagation.
+`callable` creates a function reference; `call` invokes a function. Callable compatibility follows [C4](technical-spec.md#c4), with no implicit
+domain-error propagation.
 
 ## Named function references
 
@@ -1008,8 +1096,8 @@ int max_retries = 3
 ```
 
 Both top-level and local bindings are immutable; the difference is their scope.
-Allowed initializer expressions, initialization order and related rules remain
-undecided.
+Allowed initializers and deterministic dependency order are specified in
+[C8](technical-spec.md#c8).
 
 ## Functions and local values
 
@@ -1054,7 +1142,8 @@ call panel.resize(5, 4).area()
 ```
 
 Here `resize` returns a new rectangle and `area` operates on that returned value.
-This does not settle completion handling for chains with nonempty error sets.
+[C5](technical-spec.md#c5) defines explicit handling for method chains whose
+combined declared error set is nonempty.
 
 Method assertions separate the receiver value, ordinary inputs and expected
 completion with two `=>` separators:
@@ -1110,9 +1199,9 @@ Require the direct form instead:
 ok left + right
 ```
 
-Bindings remain available where needed. The precise, mechanically checkable
-boundary beyond this example remains to be designed, including preservation of
-evaluation order, evaluation count, typing and `near` capture requirements.
+Bindings remain available where needed. The finite immediate-forward rule in [C8](technical-spec.md#c8) fixes the exact
+checker boundary, preserving evaluation, typing and `near` captures; it does not
+require arbitrary semantic equivalence analysis.
 This decision does not introduce a `let` keyword.
 
 The success marker is lowercase `ok` everywhere: completions, assertion
@@ -1131,8 +1220,8 @@ Runtime failures such as fatal out-of-memory conditions are outside `emits`;
 this does not establish a runtime recovery or supervision policy. The implementation may
 produce only listed domain errors, and callers must handle or forward the declared
 set. An empty set is written explicitly as `emits []`; it does not promise freedom
-from primitive faults or runtime/resource failures. Platform error mapping
-remains to be designed within the compiler-owned Bun boundary.
+from primitive faults or runtime/resource failures. [C9](technical-spec.md#c9) and the companion catalogue fix standard-failure and
+platform-domain mapping within the compiler-owned Bun boundary.
 
 `given` declares inputs. There is no `given / when / then` business-logic grammar.
 
@@ -1175,29 +1264,28 @@ which that dependency outcome is supplied. In that assertion, the table supplies
 the outcome instead of executing the dependency. Normal execution invokes the
 real dependency.
 
-The following excerpt assumes `clock::wall_now()` returns `int` and declares
-`clock::unavailable`:
+The following excerpt uses the catalogue `clock::wall_millis()` operation,
+which returns `int` with `emits []`:
 
 ```text
 /// Reads the current time in milliseconds.
 fn int read_millis
-    emits [clock::unavailable]
+    emits []
     asserts
-        available: => ok 1726920000000
-        unavailable: => clock::unavailable()
-    match call clock::wall_now()
+        first_read: => ok 1726920000000
+        later_read: => ok 1726920001000
+    match call clock::wall_millis()
         when
-            available: => ok 1726920000000
-            unavailable: => clock::unavailable()
+            first_read: => ok 1726920000000
+            later_read: => ok 1726920001000
         ok int millis => ok millis
-        clock::unavailable
 ```
 
 This approves the keyword, call-site placement and row notation. It does not
 restore the old boolean `when` chain guards or a `given / when / then`
-business-logic grammar. Repeated-call sequences, missing-row rules, transitive
-assertion context and integration with coordination blocks still need design;
-the old implementation's policies are not inherited automatically.
+business-logic grammar. The [testing contract](platform-testing-spec.md) defines repeated rows, missing/unused
+fixtures, dynamic invocation paths and coordination wrappers. No old fixture
+policy is inherited automatically.
 
 ### Assertions for AI and fetch consumers
 
@@ -1216,15 +1304,15 @@ match call load_profile("42")
     ok user_profile profile => ok profile
 ```
 
-Provider-output fixtures for testing AI declarations themselves remain a separate
-design task; a supplied dependency result is not evidence of live model quality.
+[AI/I/O](ai-io-spec.md) and [testing](platform-testing-spec.md) define raw
+provider fixtures for native declarations; a supplied dependency result is not
+evidence of live model quality.
 
 ## Calls and completion handling
 
 Call arguments allow array spread, for example `call combine(...values)`.
 The array's elements become separate arguments; `call combine(values)` instead
-passes the array as one argument. Argument-count and typing rules for spread
-remain to be designed.
+passes the array as one argument. Argument-count and spread typing follow [C5](technical-spec.md#c5).
 
 Variadic parameters collect any number of arguments into an array. Their
 declaration uses the array type followed by three dots and the parameter name:
@@ -1262,8 +1350,8 @@ forbidden: for a two-parameter function, write `call add(left, right)`, not
 Every fixed parameter requires an argument. Missing fixed arguments and empty
 argument slots are compile-time errors; there is no implicit undefined value
 for an omitted argument. A variadic parameter collects the additional arguments.
-Array spread in calls remains allowed; validation when its length is unknown
-remains to be specified.
+Runtime-length spread is allowed only in the trailing variadic portion after
+all fixed inputs have been supplied; [C5](technical-spec.md#c5) defines static spreads.
 
 A standard runtime failure propagates up through callers until a `[_] => expression`
 arm in `match call` or `match chain` catches it. This handler is optional in
@@ -1274,16 +1362,16 @@ outside `emits`, not for domain errors. Declared domain errors retain their
 explicit handling or forwarding requirements. The wildcard covers standard
 runtime failures that can propagate to a Can handler; it does not guarantee
 recovery from fatal process termination, such as fatal out-of-memory.
-If no handler catches a standard failure, it is fatal. The full inventory of
-standard failures remains undecided.
+If no handler catches a standard failure, it is fatal. The standard-failure inventory and coordination qualification are fixed by
+[C9](technical-spec.md#c9) and [Q7](coordination-spec.md#q7-what-is-the-priority-of-domain-errors-and-standard-failures).
 The standard-failure handler can inspect a string description of the caught
 failure, including runtime exceptions originating in generated TypeScript or
 JavaScript/Bun operations rather than declared Can domain errors. This value
 is exposed as a string, not as a declared Can error type. Bind the description
 with `[_] as str message => expression`, using `as <type> <name>`.
 The unbound `[_] => expression` form remains available when the description is
-not needed. The precise conversion of runtime thrown values to strings remains
-undecided.
+not needed. Canonical conversion of thrown values to strings is defined in
+[C9](technical-spec.md#c9); arbitrary object coercion is not invoked.
 
 Direct successful-payload binding is a compile-time error when the callee's
 declared `emits` set is nonempty, even if a particular invocation would succeed.
@@ -1304,7 +1392,7 @@ fn int lookup_or_zero
         missing_becomes_zero: "other" => ok 0
     match call lookup(key)
         ok int number => ok number
-        missing() => ok 0
+        missing => ok 0
 ```
 
 Here `lookup` has success type `int` and declared error set `[missing]`, returning
@@ -1316,7 +1404,7 @@ A bare `ok` arm forwards the matched success and its whole payload unchanged:
 ```text
 match call lookup(key)
     ok
-    missing() => ok 0
+    missing => ok 0
 ```
 
 A bare named error arm forwards that exact error and its complete payload:
@@ -1383,7 +1471,7 @@ The example assumes the calls declare `user_not_found`, `account_not_found`
 and `insufficient_balance`, respectively.
 There is no boolean `when` guard in a chain. Checks are calls that report failure
 through declared errors, handled by the same explicit error arms.
-Additional typing and composition rules remain undecided.
+[C5](technical-spec.md#c5) fixes typing, scopes and terminal composition.
 
 ## Array patterns
 
@@ -1403,8 +1491,8 @@ remaining array to `rest`.
 An underscore `_` ignores one required element; empty positions are not used
 in array patterns. For example, `[first, _, ...rest]` binds the first element,
 ignores the second and collects the remaining elements. `first` and `rest` are
-arm-local binding names, not reserved keywords. Literal positions and exact-length matching
-without a remainder remain undecided.
+arm-local binding names, not reserved keywords. Literal positions and exact-length patterns without a remainder are supported
+under [C5](technical-spec.md#c5).
 
 This complete example demonstrates matching and ignoring the second element:
 
@@ -1450,6 +1538,7 @@ This permits value-producing matches without making intermediate bindings the
 preferred style. It does not establish additional expression-placement rules
 or general completion storage.
 
+The following excerpt assumes `record_decision` returns `void` with `emits []`.
 Multiple steps use `pattern => do`
 followed by an indented body. `do` denotes multiple steps, not merely multiple
 lines. Arms have no prefix keyword.
@@ -1457,8 +1546,8 @@ lines. Arms have no prefix keyword.
 ```text
 match eligible
     true => do
-        int result = left + right
-        ok result
+        call record_decision()
+        ok left + right
     false => ok 0
 ```
 
@@ -1495,7 +1584,7 @@ match is_admin, is_owner
 Use `|` between alternative patterns sharing one arm body. The arm matches when
 any alternative matches; its body executes once. Alternatives may contain
 record constructors, literals and ignored fields, as shown by `has_zero_side`.
-Binding consistency across alternatives remains to be specified.
+[C5](technical-spec.md#c5) requires identical bound names/types across alternatives.
 
 Ordinary-data matching remains exhaustive; arms are ordered and the first match
 wins. A wildcard may cover ordinary data. Completion matching has the stricter
@@ -1510,7 +1599,7 @@ match number
     _ => ok false
 ```
 
-Other range forms and bound-expression rules remain undecided.
+Only inclusive integer literal bounds are admitted under [C5](technical-spec.md#c5).
 
 Match an error with its bare name. Within that arm, the error name refers to
 the matched error and its payload fields are accessed by their declared names
@@ -1541,7 +1630,9 @@ generic parameters), using comma-separated `<type> <name>` entries on the
 declaration line. This replaces the indented field-list form for errors only;
 record declarations are unchanged. Trailing commas remain forbidden.
 
-IDs identify error kinds, are unique throughout the codebase, and must be visible
+[C9](technical-spec.md#c9) defines allocated ranges, generic identity, dependency
+collisions and retired-ID policy. IDs identify error kinds, are unique throughout
+the resolved codebase, and must be visible
 in relevant error reports. Missing and duplicate IDs must be compile-time errors.
 They are declaration metadata, not payload arguments or replacements for nominal
 error identity. All occurrences of an error kind share its ID. Numbers in these
@@ -1661,8 +1752,7 @@ Decisions: SURFACE-080–081.
 
 Use `variant` to declare a type whose value is one of the listed types. This
 replaces the data-type keyword `choice`; it does not change matching semantics.
-The name `choice` is freed for native AI judgments, whose exact declaration
-syntax is still being designed. Records
+The name `choice` is used by the native AI declarations specified above. Records
 are declared independently and then listed as alternatives:
 
 ```text
@@ -1696,8 +1786,8 @@ Within a variant arm, the original matched binding remains the value and is
 narrowed to the matched record type. Access its fields through that binding,
 such as `shape.width`, and return or copy-update it as `shape`. The record type
 name does not become a value binding. Only error matching exposes the matched
-value through the error name. Other permitted alternative types, nesting and
-overlap rules remain undecided.
+value through the error name. [C4](technical-spec.md#c4) admits finite disjoint nominal record/error leaves,
+nested variants and the special standard-failure leaf required by aggregates.
 
 ## Arrays and array operations
 
@@ -1706,7 +1796,7 @@ This is a criterion for targeted tradeoffs, not a goal of turning Can into
 TypeScript. Preserve Can's intended language model; recommend specific changes
 only with concrete costs and benefits, and obtain approval before replacing
 established syntax choices.
-Review both approved and unresolved array choices against straightforward
+Evaluate array choices against straightforward
 compilation to native TypeScript/JavaScript operations. Challenge prior choices
 when they introduce unnecessary complexity; approval is not evidence that a
 design is technically sound. Present concrete tradeoffs and recommended revisions
@@ -1749,11 +1839,11 @@ Array indexing uses brackets:
 scores[index]
 ```
 
-This selects indexing syntax only. Index bounds, negative indices and failure
-behavior remain undecided.
+Indices are checked nonnegative ints; out-of-range access is a standard bounds
+failure under [C6](technical-spec.md#c6).
 
-Array slicing uses `scores[start:end]`. Endpoint inclusion, omitted endpoints,
-negative bounds and failure behavior remain undecided.
+Array slicing uses `scores[start:end]`, with native half-open, negative-relative,
+clamped bounds and optional endpoints as specified in [C6](technical-spec.md#c6).
 
 Array length uses the property `scores.length`.
 
@@ -1821,8 +1911,8 @@ call numbers.map(callable multiply).slice(start, end)
 
 Each operation executes once, in chain order. Chaining does not introduce
 implicit error propagation; fallible operations still require the established
-completion handling. The full method/property inventory, callback contracts,
-type conversions and fallible-chain syntax remain unresolved. These examples
+completion handling. [C5–C7](technical-spec.md#c5) fixes the method inventory, sequential awaited
+callbacks, conversions and explicit fallible-chain handling. These examples
 do not expose arbitrary backend imports, custom
 prototype extensions or every JavaScript API.
 
@@ -1830,8 +1920,7 @@ Method chains must stay on one source line. Dot-led multiline continuation is
 not supported. Chaining itself remains supported, as shown above.
 
 The already selected bracket indexing/slicing syntax and ordinary `append`
-function remain available. Whether `append` also has a method spelling is not
-settled by restoring native-style methods.
+function remain available. `append` has only the ordinary function spelling; no append method is selected.
 
 ## Effects and asynchronous execution
 
@@ -1850,8 +1939,8 @@ Can must also make the native Promise method capabilities available through
 its Bun-backed standard library, including coordinating concurrent operations
 as with `Promise.all`. This supersedes the blanket rejection of concurrency
 and promise-handling APIs. Reuse native runtime implementations rather than
-reimplementing them. The exact Can spelling, method inventory and mapping to
-Can completion/error contracts remain to be designed. In particular, the
+reimplementing them. The four spellings below and the [coordination specification](coordination-spec.md)
+fix the result/error/native-settlement mapping. In particular, the
 coordination form must allow operations to start before awaiting each result;
 ordinary sequential calls alone cannot express that overlap. No concrete
 promise type, task type or start syntax is selected by this decision.
@@ -1859,17 +1948,19 @@ promise type, task type or start syntax is selected by this decision.
 Use the Can function name `concurrent` for native `Promise.all`. It coordinates
 multiple calls, starting them without awaiting each one sequentially and then
 awaiting the native aggregate operation. The compiler must preserve this
-behavior despite the ordinary automatic-await rule. Result representation
-remains undecided.
+behavior despite the ordinary automatic-await rule. Result and handler typing are defined in [Q4](coordination-spec.md#q4-what-result-type-does-each-coordination-form-produce).
 
 Use `race` in Can for first-success coordination, backed by native `Promise.any`.
 This replaces the earlier mapping to `Promise.race`. The compiler starts the
 participating calls without awaiting each one sequentially, then waits for the
 first successful completion. A failed call does not end the race while another
 participating call can still succeed. If every call fails, the race fails.
-All-failed handling uses the `errors` group specified below. The underlying
-aggregate representation and adapter between Can completions and native promise
-settlement remain undecided.
+All-failed handling selects one aggregate domain-error arm, `all_failed`,
+containing the original failures in input order (approved deep-review U4 option 3).
+This replaces the `errors` group and repeated per-error dispatch. Native `Promise.any` supplies aggregate settlement. [Q6](coordination-spec.md#q6-what-exactly-is-all_failed)
+defines prelude `all_failed<F>` (ID100), its expected named variant, full payload
+and explicit completion contract. Original domain-error and standard-failure identities
+must be preserved rather than flattened into one string.
 This selects the `race` spelling and first-success behavior, not a general
 promise type exposed to Can authors or automatic cancellation of remaining calls.
 
@@ -1891,8 +1982,8 @@ match call race
 ```
 
 This omission applies only to calls listed directly in these blocks; it does
-not remove `call` from ordinary invocation syntax. Result binding and detailed
-completion semantics remain to be designed; arm placement is specified below.
+not remove `call` from ordinary invocation syntax. Result binding and completion semantics are fixed by [coordination](coordination-spec.md);
+arm placement is specified below.
 Operation entries are function invocations, not declarations or arbitrary
 statements. Completion arms are also allowed as specified below.
 In particular, record declarations cannot appear as entries. The
@@ -1944,9 +2035,7 @@ match call race
     primary::lookup(user_id)
     backup::lookup(user_id)
     ok profile found_profile => ...
-    errors
-        primary_unavailable => ...
-        backup_unavailable => ...
+    all_failed => ...
 
 match call race with error
     primary::lookup(user_id)
@@ -1963,11 +2052,11 @@ match call race with error
 - `match call concurrent with error`: success and domain-error arms are beneath
   each call. Wait for every outcome, then process each call's matching arm in
   written order. A participant's failure does not discard another's success.
-- `match call race`: the first success selects the shared success arm. Only when
-  every participant fails, enter `errors` and dispatch each collected failure
-  to its matching arm in input order. The same error arm can run more than once
-  when multiple participants produce that error kind. This replaces individual
-  shared domain-error arms outside an `errors` group for this form only.
+- `match call race`: the first success selects the shared success arm. If every
+  participant fails, select the single `all_failed` aggregate domain-error arm
+  once. Its `failures` payload preserves original failures in input order. Its
+  handler produces one result compatible with the success arm; no automatic
+  per-failure handler execution or `errors` group remains.
 - `match call race with error`: the first completion, success or failure, selects
   exactly one shared arm.
 
@@ -1975,13 +2064,12 @@ Calls run concurrently; handlers process the outcome of native coordination.
 Unfinished calls are not automatically cancelled. Handler bodies are scoped to
 the coordination operation: multiple success arms cannot each return from the
 enclosing function. Successful per-call handler values are collected as described
-below. Propagation when a handler itself fails remains unresolved.
+below. A handler failure leaves the construct and is never redispatched to participant
+arms; [Q8](coordination-spec.md#q8-what-if-a-selected-handler-itself-fails) defines the boundary.
 
 Standard failures remain distinct from declared domain errors and use the
-existing optional `[_]` handler where applicable. Propagation of unhandled
-standard failures within collected outcomes remains unresolved. Exact aggregate
-representation and handling for expanded callable collections
-still need design.
+existing optional `[_]` handler where applicable. [Q6–Q9](coordination-spec.md#q6-what-exactly-is-all_failed) defines standard
+failures within aggregates, spread typing, empty inputs and dispatch priority.
 
 These layouts retain lowercase `ok` and bare error-name patterns. Capitalized
 success markers and constructor-shaped error patterns in earlier sketches did
@@ -2010,13 +2098,13 @@ outputs must fit the declared array element type. This collects transformed
 handler results, not automatically preserved raw completions; handlers can
 explicitly preserve error information in their output values.
 
-The typed-binding placement is selected. Handler-failure propagation, shared
-failure-arm results for plain `concurrent`, and the result of an all-failed
-`race` remain unresolved; this example does not settle those cases.
+The typed-binding placement is selected. [Q4/Q8](coordination-spec.md#q4-what-result-type-does-each-coordination-form-produce)
+defines common element types, complete fallback arrays for concurrent shared
+failures, one race result, and failure without partial result exposure.
 
 ### Runtime-sized collections of different calls
 
-Current selected direction, explicitly open to future revision: reuse existing
+Reuse existing
 `callable <name>` values and `near` captures to collect different operations
 without executing them. Named top-level wrapper functions may capture each
 operation's distinct immutable inputs and invoke its underlying database or
@@ -2061,10 +2149,10 @@ illustrated declared domain errors. No `each` marker or coordination-specific
 arms of the race forms beneath spread entries.
 
 The illustrated operations share a success type, such as a named `receipt`
-record. Exact collection typing, compatibility of callable domain-error sets,
-and aggregate error handling remain unresolved. This decision
-does not approve arbitrary unrelated result types in one collection or choose
-new callable error-contract syntax. Extra named wrappers are an accepted
+record. [C4](technical-spec.md#c4) and [coordination](coordination-spec.md) define exact
+nullary callable collection typing, error-subset compatibility and aggregate
+handling. Unrelated result types in a single callable collection remain invalid;
+direct concurrent entries may map distinct types into one declared result type. Extra named wrappers are an accepted
 tradeoff of this current direction.
 
 Effects are allowed in every function. There are no purity annotations, purity
@@ -2081,8 +2169,8 @@ Initial iteration uses named callable collection operations, with no new loop
 syntax. `call items.for_each(callable save)` processes items sequentially.
 This is a Can library contract; do not blindly lower an async callback through
 native JavaScript `forEach`, which does not await it. Existing transformation
-syntax such as `call items.map(callable transform)` remains available. Detailed
-fallible iteration and callback contracts remain technical design work.
+syntax such as `call items.map(callable transform)` remains available. [C7](technical-spec.md#c7) fixes fallible sequential traversal, stopping and native
+callback adapters.
 
 Keep terminal completion only; add no `return` or `finish` early-exit keyword.
 Structure the remainder using existing `match` and `do` forms:
@@ -2098,30 +2186,39 @@ match ready
 This selects no additional early-return syntax and does not change the already
 established completion rules of existing match arms.
 
-## Unresolved questions
+## Technical contract coverage
 
-- Whitespace rules beyond four-space indentation and the rejection of indentation tabs.
-- General expression continuation outside assertions.
-- Detailed dependency-table behavior and integration beyond the approved
-  call-site `when` syntax.
-- Callable domain-error compatibility, inference and generic error propagation;
-  annotation placement is provisional, while the basic callable type and generic
-  error declaration spelling are settled.
-- Binding consistency across `|` alternatives; applicability of alternatives to
-  completion dispatch.
-- Typed binding declarations within ordinary record patterns.
-- Error-ID allocation and historical stability enforcement, retired-ID reuse,
-  dependency collisions, numeric ranges and relation to compiler diagnostic IDs.
-- Detailed copy-update evaluation and validation rules.
-- Array operation inventory and contracts beyond the selected `append`.
+The formerly unresolved grammar, whitespace, lookup, generics, pattern,
+copy-update, error-ID, callback and initializer questions are resolved in
+[technical specification C2–C9](technical-spec.md#c2). Coordination, native
+AI/I/O and platform/testing contracts are incorporated above. The
+[traceability and readiness assessment](technical-spec.md#c11) records every
+audit finding and the seven approved answers. Optional broader catalogue
+features are distinguished from missing required language policy there.
 
 ## Can-to-Bun boundary
+
+### Initial web frontend: server-rendered HTML with HTMX
+
+Approved deep-review U7: option 2 plus HTMX. Can executes on Bun and renders
+HTML pages and fragments. HTMX runs in the browser, issues requests and updates
+page regions from those responses. Interactive forms, search and dashboards
+are in scope through this server-driven model; Bun-only execution does not mean
+static pages only.
+
+The initial design does not require a Can-to-browser compilation target or
+application-authored JavaScript/TypeScript adapters. Reuse the upstream HTMX
+runtime rather than rebuilding its behavior. The [platform specification](platform-testing-spec.md) fixes server routes,
+typed HTML, HTMX attributes, response integration, assets and lifecycle.
+This does not select additional syntax, arbitrary inline script support, or
+promise arbitrary offline/client-side computation.
+
 
 ### Initial distribution scope
 
 Windows is not a supported platform. Start with macOS support. Linux is a possible additional target, not yet a
-committed initial platform. The initial macOS architecture coverage remains
-to be selected. Runtime packaging should be platform-specific rather than
+committed initial platform. The [distribution contract](platform-testing-spec.md) selects initial macOS
+architecture coverage. Runtime packaging should be platform-specific rather than
 shipping binaries for every operating system in each download.
 
 Current boundary: SURFACE-066. Catalogue ownership and command-execution
@@ -2178,9 +2275,10 @@ String operations such as lowercasing belong to Can's language or standard libra
 not project-defined backend escapes. Platform-specific details remain behind
 Can operations; no unrestricted Bun namespace is exposed to application code.
 
-The approved inventory, exact Can APIs, error mapping and test
-substitution remain unresolved. Illustrative file-operation names are not yet
-approved library APIs.
+The [technical catalogue](technical-spec.md#c7), [AI/I/O](ai-io-spec.md), and
+[platform/testing](platform-testing-spec.md) specify admitted APIs, native
+mappings, error bounds and substitution. Historical illustrative operation names
+are not automatically admitted.
 
 ## Required removal and implementation authorization
 
