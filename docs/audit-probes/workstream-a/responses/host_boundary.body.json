@@ -1,1 +1,0 @@
-{"model":"jev-1.13.0","answers":{"host_boundary":{"type":"choice","choice":"defer","confidence":0.25,"probabilities":{"trusted_documented":0.16,"defer":0.43,"data_only_facade":0.1,"validated_owned":0.31}}},"usage":{"input_tokens":6612,"output_tokens":55}}

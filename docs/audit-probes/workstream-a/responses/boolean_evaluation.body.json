@@ -1,1 +1,0 @@
-{"model":"jev-1.13.0","answers":{"boolean_evaluation":{"type":"choice","choice":"eager","confidence":0.4,"probabilities":{"eager":0.55,"defer":0.37,"short_circuit":0.07,"explicit_conditional_operator":0.01}}},"usage":{"input_tokens":6200,"output_tokens":58}}
