@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The development package contains an unchanged Bun 1.4.2 executable with a Go entry point, targeting macOS arm64. Compatibility with earlier users is unnecessary because there are none. Installation-relative executable lookup must follow the actual launcher location, never PATH; fetching dependencies during launch is prohibited. Approved environment and credential reads must retain caller-supplied values. In a measured experiment, an empty file supplied through --config did not prevent HOME/.bunfig.toml from preloading code. The binary supports --no-install, --no-env-file, --no-macros and --tsconfig-override. Native startup may instead receive private HOME/XDG_CONFIG_HOME, explicit configs, and no Bun, Node or dynamic-loader control variables, but then its environment differs from the caller. Passing a snapshot through inherited descriptor 3 lets a private accessor expose original values to later env/auth adapters without secrets in command arguments or files, at the cost of transport glue. Other alternatives are unconditional inheritance or mandatory user cleanup. Executable adversarial checks remain necessary regardless of the classifier output. Signed packaging and sandboxing arbitrary JavaScript are outside this development step.",
+  "questions": {
+    "launch": {
+      "type": "choice",
+      "instructions": "Using only these supplied observations and obligations, select the most suitable way to handle environment state when starting the sidecar; no external investigation is available.",
+      "criteria": {
+        "snapshot": "Give Bun a cleaned startup environment and isolated config directory; send caller values via an inherited pipe for the trusted env/auth access layer.",
+        "inherit": "Forward all caller variables directly, trusting the chosen empty config file together with Bun flags to prevent interference.",
+        "user_cleanup": "Make removal of global preloads and startup controls a prerequisite performed by the person running Can."
+      }
+    }
+  }
+}

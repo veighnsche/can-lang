@@ -18,6 +18,21 @@ jobs:
           PY
       - name: Qualify the staged runtime offline
         run: python3 distribution/qualify.py --archive "$RUNNER_TEMP/bun.zip" --report "$RUNNER_TEMP/native-capabilities-v1.json"
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Test the development sidecar offline
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+        run: |
+          set -o pipefail
+          go test -count=1 -v ./distribution ./compiler/internal/driver ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: development-sidecar-v1
+          path: ${{ runner.temp }}/development-sidecar-v1.txt
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:

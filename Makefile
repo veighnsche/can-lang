@@ -19,3 +19,11 @@ install: build
 
 uninstall:
 	rm -f $(PREFIX)/canlc
+
+# The archive is acquired explicitly; assembling and running never downloads Bun.
+.PHONY: bundle
+bundle:
+	@test -n "$(BUN_ARCHIVE)" || (echo "BUN_ARCHIVE must name the pinned local zip" >&2; exit 2)
+	go run ./tools/distbuild --archive "$(BUN_ARCHIVE)" --out "$(BUNDLE_OUT)" --version "$(VERSION)"
+
+BUNDLE_OUT ?= ./dist/development

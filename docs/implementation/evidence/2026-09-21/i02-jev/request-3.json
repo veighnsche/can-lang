@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "We are implementing a development-only macOS arm64 distribution comprising a Go command and the exact unaltered Bun 1.4.2 sidecar. Zero existing consumers means no legacy compatibility constraint. Execution must find Bun relative to the resolved command installation, reject PATH substitutions, and avoid runtime acquisition. Environment/authentication operations in Can must see the original application values. Testing showed a preload in HOME/.bunfig.toml executes even when --config selects an empty configuration. Available options on this binary include --no-install, --no-env-file, --no-macros and --tsconfig-override. An isolated HOME plus XDG_CONFIG_HOME, explicit configs, and removal of Bun/Node/dynamic-loader launch variables address startup injection while altering the child process environment. A small private accessor could recover original observations from a caller snapshot on inherited file descriptor 3; env/auth would use it later, and secrets would not be written to disk or exposed in argv. Full inheritance and requiring manual cleanup are also candidate policies. These judgments are advisory, not validation; hostile-config runtime probes must establish behavior. The present work neither signs releases nor confines arbitrary JavaScript.",
+  "questions": {
+    "launch": {
+      "type": "choice",
+      "instructions": "Assess the described tradeoff and pick the environment-handling policy that most closely satisfies the requirements. Base the classification entirely on this context rather than attempted research.",
+      "criteria": {
+        "snapshot": "Isolate startup settings and configuration paths, then feed original environment data through an inherited pipe to the private accessor for approved reads.",
+        "inherit": "Leave every original environment entry in Bun and depend on explicit configuration selection and flags for launch isolation.",
+        "user_cleanup": "Decline to isolate automatically and instruct operators to clear all conflicting environment controls and global configuration themselves."
+      }
+    }
+  }
+}

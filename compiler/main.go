@@ -6,6 +6,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -14,6 +15,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/driver"
 )
 
 func failf(format string, args ...any) error {
@@ -31,7 +34,22 @@ func main() {
 // Unstamped builds (e.g. plain `go install ...@latest`) report "dev".
 var version = "dev"
 
+// Bound by the development bundle builder; an ordinary compiler build has no sidecar.
+var bundleManifestSHA256 string
+
 func run(argv []string) int {
+	if len(argv) > 0 && argv[0] == "runtime-check" {
+		sidecar, err := driver.Resolve(bundleManifestSHA256)
+		if err == nil {
+			err = sidecar.RunTool(context.Background(), "tools/runtime/check.ts", argv[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+		}
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		return 0
+	}
+
 	if len(argv) > 0 && (argv[0] == "--version" || argv[0] == "-version" || argv[0] == "version") {
 		fmt.Printf("canlc %s\n", version)
 		return 0

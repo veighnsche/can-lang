@@ -1,0 +1,3 @@
+# Explicit compiler-owned configuration; ambient global configuration is isolated.
+[install]
+auto = "disable"

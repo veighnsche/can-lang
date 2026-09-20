@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can ships a Go launcher and unmodified pinned Bun 1.4.2 on macOS arm64. There are no external users or compatibility requirements. The launcher must resolve its private runtime from its real installation root, forbid PATH fallback and automatic downloads, and preserve application environment observations for approved env/auth operations. A direct local probe found that --config pointing to an empty file still executes preload from HOME/.bunfig.toml. Bun exposes --no-install, --no-env-file, --no-macros, and --tsconfig-override. Setting a private HOME and XDG_CONFIG_HOME plus explicit configuration and stripping Bun/Node/dynamic-loader startup controls can isolate launch; it changes the native child environment. A trusted runtime module can read the original environment snapshot over inherited fd 3, keeping secrets off disk and argv; future approved env/auth adapters must read that snapshot. This adds a small transport adapter. Alternatively the launcher can pass the original environment unchanged, or require users to clean it. No option is proven by this advice; adversarial executable tests are still required. This task is the development bundle, not signing or a security sandbox for authored JavaScript.",
+  "questions": {
+    "launch": {
+      "type": "choice",
+      "instructions": "Which launch-environment approach best meets these stated contracts and observed Bun behavior? Choose solely from the provided evidence, without researching.",
+      "criteria": {
+        "snapshot": "Sanitize native startup, use a private configuration home, and deliver original application environment over a pipe to a trusted accessor used by env/auth adapters.",
+        "inherit": "Keep the native environment intact and rely on an explicit empty Bun config and runtime flags.",
+        "user_cleanup": "Require the user to remove conflicting global configuration and startup variables before launching."
+      }
+    }
+  }
+}
