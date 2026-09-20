@@ -1,0 +1,58 @@
+{
+  "bun": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "platform": "darwin",
+  "arch": "arm64",
+  "features": {
+    "rawJSON": "function",
+    "fromAsync": "function",
+    "toSorted": "function",
+    "intersection": "function",
+    "isProxy": "function"
+  },
+  "intersection": [
+    1,
+    2
+  ],
+  "json": {
+    "tokens": [
+      [
+        "large",
+        "9007199254740993"
+      ],
+      [
+        "z",
+        "-0"
+      ]
+    ],
+    "raw": "{\"large\":9007199254740993}",
+    "negativeZero": true
+  },
+  "boxIdentity": true,
+  "thenCalls": 0,
+  "fromAsync": [
+    {
+      "value": 0
+    },
+    {
+      "value": 1
+    },
+    {
+      "value": 2
+    }
+  ],
+  "mapEvents": [
+    0,
+    1,
+    2
+  ],
+  "deepEqual": {
+    "nan": true,
+    "zero": false
+  },
+  "text": {
+    "codeUnits": 2,
+    "scalars": 1,
+    "literalReplace": "$&$&"
+  }
+}

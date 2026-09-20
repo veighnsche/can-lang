@@ -1,0 +1,23 @@
+{
+  "preparation_only": true,
+  "stages_in_order": [
+    "research.md + native-reuse.md",
+    "brainstorm.md",
+    "reconciliation.md after fresh Jev calls",
+    "plan.md",
+    "tasks.md + coverage.md"
+  ],
+  "final_check_utc": "2026-09-20T22:34:34.661342+00:00",
+  "documents_sha256": {
+    "README.md": "43f46c46710c0a729f81d001feeb4ee0a252fdaa0beb679315ae6c062526ca06",
+    "tasks.md": "97c26d9d80998d319985b61140ea6df471d4a4251acd164e43d175d18e6df6c9",
+    "reconciliation.md": "167d74e7e3a23a9b648e2550cc160de274c903b425238963c06ac7aa9376dd34",
+    "research.md": "549de2c84ee4a4c9a849e94aba5e3230707a16b03e77819e2b976c656383766d",
+    "native-reuse.md": "f5b418b28aad7677776cac3dd67a018c5e53f5392e0db36754daed39f579e2fa",
+    "plan.md": "137adcaeb8a0712c2b2547fcea08094e465f720df02b8434f4cab3036d83f2c5",
+    "coverage.md": "e209aeb08b5d02098d26ced6c1d92c97e037684cc2fda8f09d825049b4b1e902",
+    "brainstorm.md": "92f3cfbf9fbc5df70fddf4d0c10664810e063573098e64c4c41d4ef73a9c5a85"
+  },
+  "no_production_changes": true,
+  "no_commits_or_publication": true
+}

@@ -1,0 +1,16 @@
+Executable=/Users/vince/.bun/bin/bun
+Identifier=bun
+Format=Mach-O thin (arm64)
+CodeDirectory v=20500 size=120943 flags=0x10000(runtime) hashes=3769+7 location=embedded
+Signature size=8975
+Authority=Developer ID Application: Jarred Sumner (7FRXF46ZSN)
+Authority=Developer ID Certification Authority
+Authority=Apple Root CA
+Timestamp=5 Sep 2026 at 05:02:14
+Info.plist=not bound
+TeamIdentifier=7FRXF46ZSN
+Runtime Version=26.5.0
+Sealed Resources=none
+Internal requirements count=1 size=164
+Total signatures=1
+Chosen signature=1

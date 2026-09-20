@@ -1,0 +1,60 @@
+{
+  "retrieval_date": "2026-09-21",
+  "note": "Temporary read copies are incidental; URLs and hashes identify retrieved upstream sources. Final documents contain the research conclusions.",
+  "sources": [
+    {
+      "url": "https://docs.typesafe.ai/llms.txt",
+      "sha256": "9bb713532b8b5b836d48bf19733a6649525aff8353e22c5cbebf5524a498ff24",
+      "bytes": 16369,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_llms.txt"
+    },
+    {
+      "url": "https://docs.typesafe.ai/api.md",
+      "sha256": "7ea1c82d9d16bd06e3d38885a5292548293f91e6d1ade4682c27398ced51a9e5",
+      "bytes": 11772,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_api.md"
+    },
+    {
+      "url": "https://docs.typesafe.ai/primitives/choice.md",
+      "sha256": "4c55085131f8f2d7ae1faefdec52b1c7b379d40657d701cd2c786021cfe9dac9",
+      "bytes": 26794,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_primitives_choice.md"
+    },
+    {
+      "url": "https://docs.typesafe.ai/concepts/state.md",
+      "sha256": "6871d59470c6af330b10be302a7382ab4c175ee8994886ad48df2fe6bb315462",
+      "bytes": 3874,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_concepts_state.md"
+    },
+    {
+      "url": "https://docs.typesafe.ai/confidence.md",
+      "sha256": "97dafe98b77979906a2ad456013dd85a70dcecd109d0644b096817d910997ea5",
+      "bytes": 11396,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_confidence.md"
+    },
+    {
+      "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
+      "sha256": "381b3840c94e9e232cefef2dbe941254a90b6a1cf56c8b8c7e333b9f12e9b583",
+      "bytes": 49954,
+      "local_read_copy": "/private/tmp/can-implementation-research/docs.typesafe.ai_cookbooks_consistency_choice_cookbook.md"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/pganalyze/pg_query_go/master/README.md",
+      "sha256": "a29a97466d0daf55392dfce0c74378fc3c1aa743f04486a2d96f5eee3bce10ae",
+      "bytes": 7080,
+      "local_read_copy": "/private/tmp/can-implementation-research/raw.githubusercontent.com_pganalyze_pg_query_go_master_README.md"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/oven-sh/bun/main/docs/project/license.mdx",
+      "sha256": "1fac2ad9eac5ba9e1e0ef0d2893108e7d7a17fae5afac60f4bb0bd403087f3ec",
+      "bytes": 10827,
+      "local_read_copy": "/private/tmp/can-implementation-research/raw.githubusercontent.com_oven-sh_bun_main_docs_project_license.mdx"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/jridgewell/gen-mapping/main/README.md",
+      "sha256": "27a51cc6a0e6a35070252e7c024f18737ff483a17c985d5ee609d1dbb49cb111",
+      "bytes": 7654,
+      "local_read_copy": "/private/tmp/can-implementation-research/raw.githubusercontent.com_jridgewell_gen-mapping_main_README.md"
+    }
+  ]
+}

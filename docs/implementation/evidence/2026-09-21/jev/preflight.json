@@ -1,0 +1,10 @@
+{
+  "semantic_review": "preflight.md",
+  "wording_review": "wording-check.json",
+  "ready_for_live_calls": true,
+  "request_sha256": {
+    "request-1.json": "6b9cf378bf015f69fd626ea6cec31afc5cfba7f24a68f2490ed9d0725fbdb3b6",
+    "request-2.json": "43793b523a526de681f04ddf5fca09e56391d34482c2b3352811bb67a8258bd3",
+    "request-3.json": "878ed810503acfa9760205f63314e1e70a4b031dda544fa3687087bbab7f1fbd"
+  }
+}

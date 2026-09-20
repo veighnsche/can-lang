@@ -1,0 +1,54 @@
+{
+  "answer_shapes_valid": true,
+  "rounds": [
+    {
+      "compiler": {
+        "choice": "fresh",
+        "confidence": 0.48
+      },
+      "packaging": {
+        "choice": "sidecar",
+        "confidence": 0.94
+      },
+      "sql": {
+        "choice": "insufficient",
+        "confidence": 0.17
+      }
+    },
+    {
+      "compiler": {
+        "choice": "insufficient",
+        "confidence": 0.37
+      },
+      "packaging": {
+        "choice": "sidecar",
+        "confidence": 0.77
+      },
+      "sql": {
+        "choice": "insufficient",
+        "confidence": 0.33
+      }
+    },
+    {
+      "compiler": {
+        "choice": "insufficient",
+        "confidence": 0.39
+      },
+      "packaging": {
+        "choice": "sidecar",
+        "confidence": 0.96
+      },
+      "sql": {
+        "choice": "cgo_first",
+        "confidence": 0.84
+      }
+    }
+  ],
+  "disagreement": [
+    "compiler",
+    "sql"
+  ],
+  "unanimous": [
+    "packaging"
+  ]
+}

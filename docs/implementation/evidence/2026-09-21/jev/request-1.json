@@ -1,0 +1,39 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "common": "Can has zero external users and requires no preservation of old syntax or ABI. Its approved functional, immutable language compiles from Go to TypeScript on Bun. Native operations and upstream libraries must be reused; custom glue requires a specific contract mismatch. This exercise chooses implementation approaches, not new language policies. The first admitted platform is macOS arm64. The three questions are independent. Classify using only the supplied evidence; do not pretend to research. Answers advise an engineer and do not prove correctness.",
+    "compiler": "Current Go parser uses regex declarations and a string-tagged AST. Checking includes revisions, proof admission and a separate Go evaluator. Emission uses old flattened successes, exact decimal strings and synchronous callable signatures. New contracts require nominal package identity, typed completion regions, native AI, protected asynchronous results and assertions executing generated Bun code. Some diagnostic utilities, generic worklist patterns and test scenarios may be reused after review. Replacing the pipeline costs front-loaded interfaces and must ship runnable vertical slices. In-place changes reuse more code initially but risk repeated translations and old restrictions. New-syntax-to-old-IR bridging offers an early demo but carries those incompatible semantics. No implementation timing comparison has been measured.",
+    "packaging": "Users must receive pinned upstream Bun without separately installing it; one physical executable is not required. A sidecar bundle places the unchanged Bun executable beside the Go launcher in a private versioned installation. It needs layout, lookup, integrity and whole-version update handling but no first-run cache writes. Embedding Bun bytes into Go still requires extracting an executable file: version/digest cache, permissions, atomic publication, concurrent extraction control, link defenses and cleanup. It uses both embedded and extracted disk space and needs a writable executable cache. Both options need architecture checks, notices, verification and macOS signing/notarization testing. Installed Bun 1.4.2 arm64 has an upstream Developer ID signature; no Can release container or extraction trust test has been run. The Go embed package provides data, not an in-process Bun engine. Neither option may fork Bun or silently use PATH.",
+    "sql": "SQL admission must use libpg_query actual PostgreSQL parsing and scanning. Bun.SQL owns execution, pooling and transactions. Official pg_query_go uses CGo and introduces a C build toolchain, not a user installation prerequisite. go-pgquery compiles the same upstream C parser to WASM under wazero, avoiding CGo but adding an execution engine and potential wrapper-specific failures. The WASM project runs upstream tests and documents that additional issues can remain. Neither option was measured here for startup, size or scanner parity. Compiler distribution initially targets macOS arm64. Exact binding revision and PostgreSQL major must be pinned and verified. A handwritten SQL parser is forbidden."
+  },
+  "questions": {
+    "compiler": {
+      "type": "choice",
+      "instructions": "Which compiler replacement approach best fits the stated contracts and evidence?",
+      "criteria": {
+        "fresh": "Build a new typed Go pipeline with audited utility reuse, deliver executable slices, and retire old production passes.",
+        "in_place": "Transform the existing shared parser/AST/checker/emitter in place, removing incompatible behavior as each part changes.",
+        "bridge": "Temporarily lower the new surface into the old IR, accepting adaptation work until the IR is replaced.",
+        "insufficient": "The supplied comparison cannot yet justify selecting a compiler approach."
+      }
+    },
+    "packaging": {
+      "type": "choice",
+      "instructions": "Which bundled-runtime packaging approach is best justified for this first release?",
+      "criteria": {
+        "sidecar": "Ship a versioned installation containing the Go launcher and private unchanged upstream Bun executable; test the whole distribution.",
+        "embedded": "Put upstream Bun bytes inside the Go launcher and implement a verified atomic versioned extraction cache before executing them.",
+        "insufficient": "Keep packaging undecided until additional evidence makes either approach defensible."
+      }
+    },
+    "sql": {
+      "type": "choice",
+      "instructions": "What parser-binding adoption path should the plan take with this evidence?",
+      "criteria": {
+        "cgo_first": "Start the binding spike with official CGo pg_query_go, compare against WASM, and gate adoption on pinned correctness and packaging tests.",
+        "wasm_first": "Start the binding spike with go-pgquery/wazero, compare against CGo, and gate adoption on pinned correctness and packaging tests.",
+        "insufficient": "Run a neutral comparison before expressing a preferred starting binding."
+      }
+    }
+  }
+}

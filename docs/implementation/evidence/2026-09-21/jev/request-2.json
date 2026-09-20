@@ -1,0 +1,39 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "common": "There is no compatibility audience for Can: old spellings and generated layouts may disappear. The settled language emphasizes immutable functional programs, with a Go compiler producing Bun-hosted TypeScript. Equivalent upstream facilities take priority; additional mechanisms need a demonstrated Can contract gap. We are selecting engineering routes within that design, initially for arm64 Macs. Treat each question separately and reason from this record alone rather than claiming outside investigation. A classification is advisory, never validation of an implementation.",
+    "compiler": "The repository currently parses declarations by regular expressions into nodes tagged with strings. Revision/proof rules and a Go-side interpreter participate in checking; emitted code has flattened completion payloads, decimal-as-string arithmetic and synchronous callable types. The required replacement semantics include package-nominal types, explicit completion ownership, language-level AI, boxed async payloads and Bun execution for assertions. Reviewed diagnostics, specialization-worklist ideas and relevant test cases could survive. A clean typed pipeline needs initial interface work and incremental runnable deliveries. Editing existing stages can save early code but may spread old assumptions and conversion layers. A temporary bridge through the old representation can demonstrate syntax sooner while retaining that semantic baggage. Relative delivery times have not been benchmarked.",
+    "packaging": "Bundling an exact upstream Bun version must eliminate a separate runtime-install step, but the download need not be a single executable. The sidecar design keeps unmodified Bun private to a versioned launcher installation, with path resolution, layout checks, integrity checks and atomic version replacement; startup needs no extraction write. A Go-embedded payload must instead be written out for execution. That route adds a digest/version cache, executable modes, atomic installation, coordination among simultaneous starters, symlink protection and cache retirement, plus duplicate storage and writable executable-cache requirements. Both designs require platform validation, license notices, trustworthy verification and Mac signing/notarization exercises. This machine runs signed upstream arm64 Bun 1.4.2, but neither a Can container nor extraction-related trust behavior has been tested. Go embed stores bytes; it does not expose Bun as a Go runtime library. Forking Bun and implicit PATH substitution are excluded.",
+    "sql": "The static SQL checker is required to call PostgreSQL\u2019s real parser/scanner through libpg_query; native Bun.SQL remains responsible for queries, pools and transaction execution. The official pg_query_go interface relies on CGo, so compiler builders need C tools while recipients of the built binary do not. The alternative go-pgquery runs a WASM build of that same C implementation with wazero: it removes the CGo requirement and adds an engine plus possible integration-specific faults. Its maintainers exercise upstream cases without claiming those eliminate every WASM issue. We have no local parity, size or cold-start measurements for either choice. Mac arm64 is the initial shipment target; both the binding revision and PostgreSQL grammar major need explicit pins and verification. Implementing our own SQL parser is not an alternative."
+  },
+  "questions": {
+    "compiler": {
+      "type": "choice",
+      "instructions": "For these language requirements, which route should organize the Go compiler work?",
+      "criteria": {
+        "fresh": "Introduce typed compiler stages, selectively salvage reviewed utilities, deliver working slices and delete superseded production stages.",
+        "in_place": "Rework the present parser, representation, checking and emitter directly while progressively eliminating obsolete rules.",
+        "bridge": "Use the present intermediate representation as a transitional destination for new syntax, then replace it after the bridging work.",
+        "insufficient": "Defer an architectural preference because this record does not support one."
+      }
+    },
+    "packaging": {
+      "type": "choice",
+      "instructions": "Given the installation constraint and observed evidence, how should Bun accompany the initial compiler?",
+      "criteria": {
+        "sidecar": "Distribute launcher and unmodified private Bun together under a versioned root, qualifying that package as a unit.",
+        "embedded": "Include Bun as launcher data and execute a checked copy published through an atomic version-keyed cache.",
+        "insufficient": "Do not choose a bundle form yet; obtain the missing discriminating evidence first."
+      }
+    },
+    "sql": {
+      "type": "choice",
+      "instructions": "How should the implementation schedule approach the upstream SQL binding choice?",
+      "criteria": {
+        "cgo_first": "Use the official CGo interface as the first spike candidate, test the WASM counterpart too, and require pinned behavioral/distribution gates before adoption.",
+        "wasm_first": "Try the wazero-backed interface first, also measure its CGo counterpart, and require pinned behavioral/distribution gates before adoption.",
+        "insufficient": "Compare both without favoring a starting candidate until the measurements exist."
+      }
+    }
+  }
+}

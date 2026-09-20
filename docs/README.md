@@ -13,6 +13,10 @@ records below describe the previous design and are not current language policy.
 - [Latest design review](syntax-taste/deep-design-review-2026-09-20.md) — historical findings reconciled by the current specification.
 - [Jev consultations and evidence](syntax-taste/jev-design-consultations-2026-09-20.md)
 
+## Implementation preparation
+
+- [Five-stage implementation packet](implementation/README.md) — research, alternatives, reconciliation, plan, and unchecked tasks for the current design.
+
 ## Historical records
 
 - [Zero-compatibility syntax and ABI audit](can-language-audit.md) — older,

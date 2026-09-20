@@ -1,0 +1,131 @@
+{
+  "retrieved_utc": "2026-09-20T22:23:36.785621+00:00",
+  "calls": [
+    {
+      "round": 1,
+      "elapsed_seconds": 0.71,
+      "model": "jev-1.13.0",
+      "answers": {
+        "compiler": {
+          "type": "choice",
+          "choice": "fresh",
+          "confidence": 0.48,
+          "probabilities": {
+            "bridge": 0.03,
+            "fresh": 0.6,
+            "in_place": 0.03,
+            "insufficient": 0.34
+          }
+        },
+        "packaging": {
+          "type": "choice",
+          "choice": "sidecar",
+          "confidence": 0.94,
+          "probabilities": {
+            "insufficient": 0.03,
+            "sidecar": 0.96,
+            "embedded": 0.01
+          }
+        },
+        "sql": {
+          "type": "choice",
+          "choice": "insufficient",
+          "confidence": 0.17,
+          "probabilities": {
+            "insufficient": 0.44,
+            "cgo_first": 0.33,
+            "wasm_first": 0.23
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1261,
+        "output_tokens": 135
+      }
+    },
+    {
+      "round": 2,
+      "elapsed_seconds": 0.6,
+      "model": "jev-1.13.0",
+      "answers": {
+        "compiler": {
+          "type": "choice",
+          "choice": "insufficient",
+          "confidence": 0.37,
+          "probabilities": {
+            "insufficient": 0.53,
+            "bridge": 0.05,
+            "in_place": 0.0,
+            "fresh": 0.42
+          }
+        },
+        "packaging": {
+          "type": "choice",
+          "choice": "sidecar",
+          "confidence": 0.77,
+          "probabilities": {
+            "embedded": 0.0,
+            "sidecar": 0.85,
+            "insufficient": 0.15
+          }
+        },
+        "sql": {
+          "type": "choice",
+          "choice": "insufficient",
+          "confidence": 0.33,
+          "probabilities": {
+            "cgo_first": 0.44,
+            "insufficient": 0.55,
+            "wasm_first": 0.01
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1315,
+        "output_tokens": 138
+      }
+    },
+    {
+      "round": 3,
+      "elapsed_seconds": 0.61,
+      "model": "jev-1.13.0",
+      "answers": {
+        "compiler": {
+          "type": "choice",
+          "choice": "insufficient",
+          "confidence": 0.39,
+          "probabilities": {
+            "insufficient": 0.54,
+            "bridge": 0.02,
+            "in_place": 0.0,
+            "fresh": 0.44
+          }
+        },
+        "packaging": {
+          "type": "choice",
+          "choice": "sidecar",
+          "confidence": 0.96,
+          "probabilities": {
+            "embedded": 0.0,
+            "sidecar": 0.98,
+            "insufficient": 0.02
+          }
+        },
+        "sql": {
+          "type": "choice",
+          "choice": "cgo_first",
+          "confidence": 0.84,
+          "probabilities": {
+            "wasm_first": 0.01,
+            "insufficient": 0.1,
+            "cgo_first": 0.89
+          }
+        }
+      },
+      "usage": {
+        "input_tokens": 1366,
+        "output_tokens": 137
+      }
+    }
+  ]
+}

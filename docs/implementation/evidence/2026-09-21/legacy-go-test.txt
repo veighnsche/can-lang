@@ -1,0 +1,4 @@
+ok  	github.com/veighnsche/can-lang/compiler	9.434s
+ok  	github.com/veighnsche/can-lang/internal/scan	(cached)
+ok  	github.com/veighnsche/can-lang/tools/gramcheck	0.419s
+ok  	github.com/veighnsche/can-lang/tools/modcheck	0.482s

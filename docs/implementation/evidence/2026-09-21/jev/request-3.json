@@ -1,0 +1,39 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "common": "Can\u2019s current specification can replace its predecessor outright because nobody externally depends on it. Programs are functional and immutable; Go performs compilation and Bun runs the resulting TypeScript. Reuse native or maintained upstream implementations wherever their behavior fits, adding only explained contract adapters. This review concerns implementation strategy for the accepted design, with macOS arm64 as the first target. Each requested judgment stands alone. Use this supplied factual account without assuming you can look things up, and regard the result as engineering advice rather than proof.",
+    "compiler": "Existing compiler stages revolve around a string-kind AST and regex-based declarations. The checker also handles revision contracts, formal proof admission and execution in a separate Go interpreter. Its backend produces synchronous callable signatures, decimal strings and success fields merged into completion records. Approved semantics instead need package-owned nominal identities, typed executable regions, intrinsic AI declarations, async-safe payload carriers and assertion execution in emitted Bun code. It may be possible to salvage diagnostic helpers, generic specialization worklist techniques and still-relevant scenarios after inspection. Starting typed stages anew incurs up-front interface effort and requires runnable incremental milestones. Altering the old stages offers immediate reuse but exposes work to obsolete constraints and successive conversions. Routing new syntax through the old IR can accelerate a demonstration at the expense of temporary semantic adapters. There is no measured schedule comparison.",
+    "packaging": "The requirement is a shipped pinned upstream Bun with no user-managed Bun installation, not a sole binary file. One candidate is an installation directory versioning the Go command and a private, byte-preserved Bun sidecar. Its engineering duties are directory integrity, executable discovery and whole-release updates, without writing a startup cache. The other candidate stores the executable as Go data, then extracts it to run. Extraction entails cache identity by version/hash, mode setting, atomic visibility, competing-start synchronization, link attack checks and eventual removal; it consumes a second disk copy and depends on writable storage that permits execution. Both candidates must check architecture, carry notices, validate provenance/integrity and pass macOS distribution-signing/notarization checks. An existing arm64 Bun 1.4.2 installation shows a Developer ID signature. Tests of a Can release package and of trust after extraction have not occurred. Embedding offers bytes, not a callable Bun engine; a Bun fork or hidden PATH fallback is unacceptable.",
+    "sql": "The compiler may validate SQL only using the genuine libpg_query PostgreSQL grammar and scanner. Runtime database work stays in Bun.SQL, including pooling and transactions. CGo connects Go to the official pg_query_go library, requiring a C compiler during builds but no such install on an end user\u2019s machine. With go-pgquery, a wazero runtime executes a WASM compilation of the same C parser. This trades away CGo build dependence for an extra execution layer with possible distinct bugs. That wrapper imports upstream tests yet acknowledges they cannot guarantee absence of WASM defects. We have not collected comparative scanner behavior, startup latency or binary footprint data. Initial deployment is arm64 macOS, and release gates must fix the exact binding and PostgreSQL major. Writing a Can-owned SQL grammar implementation is disallowed."
+  },
+  "questions": {
+    "compiler": {
+      "type": "choice",
+      "instructions": "Select the compiler construction strategy most supported by this account.",
+      "criteria": {
+        "fresh": "Replace the pipeline with typed Go passes, reuse only examined helpers, keep intermediate milestones executable and remove the retired production machinery.",
+        "in_place": "Keep the existing compiler structure while changing its parsing, nodes, semantic passes and output code and stripping superseded behavior.",
+        "bridge": "Add an interim translation from current syntax to the predecessor IR and pay its adaptation costs before changing representations.",
+        "insufficient": "Withhold a strategy choice because the presented evidence is inadequate."
+      }
+    },
+    "packaging": {
+      "type": "choice",
+      "instructions": "Select the runtime distribution form that these constraints support most strongly.",
+      "criteria": {
+        "sidecar": "Package the Go command with an untouched private upstream executable in one versioned installation and validate the combined release.",
+        "embedded": "Carry the executable inside Go data, materialize it in a verified version-specific cache atomically, and launch that copy.",
+        "insufficient": "Leave the packaging decision open pending evidence that distinguishes the candidates."
+      }
+    },
+    "sql": {
+      "type": "choice",
+      "instructions": "Select the next binding-selection procedure for PostgreSQL syntax admission.",
+      "criteria": {
+        "cgo_first": "Begin with the upstream CGo binding, include a WASM comparison in the spike, and adopt only after version-pinned conformance and shipment checks.",
+        "wasm_first": "Begin with the WASM/wazero binding, include an official CGo comparison in the spike, and adopt only after version-pinned conformance and shipment checks.",
+        "insufficient": "Gather a balanced comparison first without naming either binding as the preferred initial candidate."
+      }
+    }
+  }
+}
