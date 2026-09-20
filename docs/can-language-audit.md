@@ -1,8 +1,10 @@
 # Can: zero-compatibility syntax and ABI audit
 
-Status: **audit and redesign recommendation, not an approved language spec**.
+Status: **historical audit and redesign recommendation, not current language policy**.
 
-**2026-09-19 follow-up:** [Workstream A replacement audit](audit-probes/workstream-a/README.md)
+The supporting probe archive has been removed. Use the [current decisions](syntax-taste/decisions.md) and [technical specification](syntax-taste/technical-spec.md) for the present design. Findings below describe the recorded historical baseline, not a fresh verification.
+
+**2026-09-19 follow-up:** Workstream A replacement audit (archive removed)
 reproduces F01–F05 at `8bbcf13`, adds F06 argument-order evidence, and records
 all thirteen replacement JEV judgments. Its dispositions supersede use of the
 withdrawn reviews: three bounded process/correctness recommendations accepted,
@@ -85,15 +87,14 @@ Lexical corpus inventory, excluding Go-embedded fixtures:
 meaning. `Int__Value` and mechanically required result carriers are a different
 category. Do not replace a semantic type just because it has one field.
 
-Reproducible new probes are in `audit-probes/`. Their findings are described
-below; they are audit probes, not permanent tests asserting that bugs should
-continue to exist.
+The findings below were supported by historical audit probes. That archive
+has been removed; these descriptions are not permanent regression tests.
 
 ## 2. Findings requiring attention before the redesign
 
 ### F01 — Pinned callback expectations can change without the warning
 
-**Repaired in B1:** see the [implementation and consumer audit](audit-probes/b1-canonicalization.md).
+**Recorded as repaired in B1:** the supporting implementation and consumer audit archive has been removed.
 The description below records the original finding; current regression tests
 require a warning and baseline format 2 rejects the incomplete old evidence.
 
@@ -892,8 +893,8 @@ Important properties, independent of keyword taste:
 
 ## 11. Migration plan and acceptance criteria
 
-The **[master TODO checklist](audit-probes/TODO.md)** tracks all audit sections,
-priorities, dependencies, acceptance criteria, and the replacement JEV review.
+The former master TODO checklist was removed with the probe archive. The
+following migration proposal is historical, not the current implementation plan.
 
 | Stage | Deliverable | Must not regress |
 |---|---|---|
@@ -934,11 +935,10 @@ Can context was insufficient. JEV cannot inspect the repository or research
 missing facts; we must supply the complete context ourselves. The scores below
 are historical records only, not support for this audit's recommendations.
 Those recommendations remain the author's proposals. Reproducible compiler
-findings remain valid independently of these calls. The replacement review is
-tracked in [TODO section A](audit-probes/TODO.md#a-redo-the-jev-review-correctly).
+findings remain valid independently of these calls. The replacement review was tracked in the now-removed historical checklist.
 
-`jev-1.13.0`, Choice; live HTTP/Choice documentation consulted. Full requests,
-alternatives, distributions, and responses are in `audit-probes/jev-*.json`.
+`jev-1.13.0`, Choice; live HTTP/Choice documentation consulted. The historical requests, alternatives, distributions, and responses were
+removed with the probe archive.
 These are comparative design judgments, **not proofs, user approval, or empirical
 usability results**. Narrow wins remain narrow. The JEV calls preceded the final
 F04/F05 integration probes; those findings come from actual compiler/TS runs,

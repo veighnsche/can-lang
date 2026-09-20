@@ -1,0 +1,65 @@
+{
+  "checked_utc": "2026-09-20T21:49:21.866002+00:00",
+  "phase": "before_live_calls",
+  "request_sha256": {
+    "request-1.json": "6f4085ef356b0364c05523374fc3d3a6848f736bbc1b7ee0eec958f225fc1ad7",
+    "request-2.json": "79f1e147575c20fa726d6fda5397dec65e4897fe0536e2c5dcacdb009b7be3c0",
+    "request-3.json": "d78f3c9359cf2a5a15f6e3269b970cfefac8b5102916a4ab9bbd96abf5e68d40"
+  },
+  "mechanical_checks_pass": true,
+  "errors": [],
+  "prose_fields_per_request": 54,
+  "pairwise_prose_variation": [
+    {
+      "rounds": [
+        1,
+        2
+      ],
+      "prose_fields_compared": 54,
+      "identical_prose_fields": [],
+      "identical_sentences_at_least_8_words": [],
+      "high_similarity_fields_for_manual_review": [],
+      "mean_word_sequence_similarity": 0.3696,
+      "max_word_sequence_similarity": 0.6957
+    },
+    {
+      "rounds": [
+        1,
+        3
+      ],
+      "prose_fields_compared": 54,
+      "identical_prose_fields": [],
+      "identical_sentences_at_least_8_words": [],
+      "high_similarity_fields_for_manual_review": [],
+      "mean_word_sequence_similarity": 0.4359,
+      "max_word_sequence_similarity": 0.7222
+    },
+    {
+      "rounds": [
+        2,
+        3
+      ],
+      "prose_fields_compared": 54,
+      "identical_prose_fields": [],
+      "identical_sentences_at_least_8_words": [],
+      "high_similarity_fields_for_manual_review": [],
+      "mean_word_sequence_similarity": 0.454,
+      "max_word_sequence_similarity": 0.7368
+    }
+  ],
+  "original_prose_reuse": [
+    {
+      "round": 1,
+      "identical_prose_fields_to_original": []
+    },
+    {
+      "round": 2,
+      "identical_prose_fields_to_original": []
+    },
+    {
+      "round": 3,
+      "identical_prose_fields_to_original": []
+    }
+  ],
+  "limits": "These checks establish structural preservation and substantive wording differences, not semantic equivalence. Independent manual fact/alternative reviews and the coordinator reconciliation must pass before live requests."
+}

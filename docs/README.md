@@ -1,29 +1,28 @@
 # docs — can-lang design records (reviewer index)
 
-Start here. This folder is the language's memory: plans, per-feature
-specs, and the rules each feature had to satisfy before it landed.
+Start with the current decisions and technical specification. Older implementation
+records below describe the previous design and are not current language policy.
 
-## Current audit and implementation record
+## Current design
 
-- [Complete agent-focused language brainstorm](audit-probes/brainstorm/README.md)
-  — central language questions, five source directions, whole-language alternatives,
-  cross-feature conflicts and 20 discriminating tasks. Exploration complete;
-  no replacement syntax, grammar or ABI selected.
+- [Approved syntax decisions](syntax-taste/decisions.md)
+- [Technical specification](syntax-taste/technical-spec.md)
+- [AI and external data](syntax-taste/ai-io-spec.md)
+- [Concurrency and coordination](syntax-taste/coordination-spec.md)
+- [Platform and testing](syntax-taste/platform-testing-spec.md)
+- [Latest design review](syntax-taste/deep-design-review-2026-09-20.md) — historical findings reconciled by the current specification.
+- [Jev consultations and evidence](syntax-taste/jev-design-consultations-2026-09-20.md)
 
-- [Workstream A replacement audit](audit-probes/workstream-a/README.md) — current
-  dossier, reproduced F01–F05 plus new F06 argument-order finding, all thirteen
-  self-contained JEV reviews and explicit accepted/rejected/unresolved dispositions.
+## Historical records
 
-- [Zero-compatibility syntax and ABI audit](can-language-audit.md) — whole-language
-  architecture review at `8312d85`: confirmed evidence/identity findings,
-  proposed simplifications, ABI boundaries, and staged migration. **Recommendation,
-  not an approved replacement specification.** Reproducible probes and JEV
-  distributions are in `audit-probes/`.
-- [Stdlib implementation record](stdlib-remaining.md) — shipped stdlib and
-  B06–B11 language slices, with remaining blockers and pending work.
+- [Zero-compatibility syntax and ABI audit](can-language-audit.md) — older,
+  unapproved redesign recommendations. Its supporting probe archive was removed.
+- [Stdlib implementation record](stdlib-remaining.md) — previous implementation
+  history, not the implementation plan for the current design.
 
-The status map below is historical and incomplete; it is not a current inventory
-of everything implemented. Older `aNN` documents generally live under `a/`.
+The status map and reviewer guidance below are historical and incomplete;
+they do not override the current decisions or specification. Older `aNN`
+documents generally live under `a/`.
 
 ## Status map
 
@@ -60,7 +59,7 @@ of everything implemented. Older `aNN` documents generally live under `a/`.
 | `a47-bytes-encode.md` | Shipped (Bytes B3) | Public `bytes__utf8__encode` kernel; kernel descriptor table; strict `str` admission; Render consumer next |
 | `can-idioms.md` | Living | `.can` style guide from blessed code: truth tables, bool-field match, guard shapes, fuel workers, arm coverage |
 
-## Reading order for a reviewer
+## Historical reading order for a reviewer
 
 1. `REQUIREMENTS.md` Goal + R1–R9 (the thesis and the shape).
 2. `a05-expressiveness.md` (what was missing and in what order).
@@ -70,7 +69,7 @@ of everything implemented. Older `aNN` documents generally live under `a/`.
 5. `can-idioms.md` before writing or refactoring any `.can` file.
 5. `CLEAN_ROOM_REVIEW.md` (design input; historical record, see note).
 
-## Rules for reading (and editing)
+## Historical reading and editing rules
 
 - The v0.1 freeze means: no silent drift. Amendments land tagged with
   their version (`(a07)`), never by rewriting a ratified rule.

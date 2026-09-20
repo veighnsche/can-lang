@@ -1,0 +1,16 @@
+{
+  "exercise": "complete-presentation redo; prior experiment preserved separately",
+  "started_utc": "2026-09-20T21:52:23.858938+00:00",
+  "finished_utc": "2026-09-20T21:52:24.640100+00:00",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "requested_model": "jev-latest",
+  "live_request_count": 3,
+  "topics_per_request": 8,
+  "request_sha256": {
+    "request-1.json": "6f4085ef356b0364c05523374fc3d3a6848f736bbc1b7ee0eec958f225fc1ad7",
+    "request-2.json": "79f1e147575c20fa726d6fda5397dec65e4897fe0536e2c5dcacdb009b7be3c0",
+    "request-3.json": "d78f3c9359cf2a5a15f6e3269b970cfefac8b5102916a4ab9bbd96abf5e68d40"
+  },
+  "preflight_sha256": "a2a7193b4714dc94362f77e0647bcefde087d0516006606d81d6223b08efb2b3",
+  "method": "Every natural-language context, instruction and candidate description was independently reworded across rounds; exact technical identifiers, numeric facts, semantic option IDs and option order retained. No previous answers included. No voting or retry-for-agreement rule."
+}

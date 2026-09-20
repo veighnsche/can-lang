@@ -1,0 +1,39 @@
+{
+  "recorded_utc": "2026-09-20T21:48:45.477438+00:00",
+  "phase": "before_fresh_live_calls",
+  "scope": "Independent reconsideration of all eight existing technical conclusions; prior consultations known but no fresh response available. Decisions remain reviewable after new results.",
+  "topics": {
+    "integer_codec": {
+      "provisional_engineering_choice": "exact_integral_tokens",
+      "basis": "Original numeric tokens preserve precision. JSON Schema mathematical integrality creates a concrete interoperability requirement. Bounded native-token adaptation can satisfy both without source coercion."
+    },
+    "generation_shapes": {
+      "provisional_engineering_choice": "bounded_initial_subset",
+      "basis": "All traced required generation flows fit ordinary nonrecursive records/arrays. References and variants require more provider schema emission and testing; existing shared codec validation remains reusable."
+    },
+    "aggregate_type": {
+      "provisional_engineering_choice": "lazy_expected_type",
+      "basis": "An internal aggregate with no observed or exported payload needs no source type. Source-visible values still require unique expected nominal F, avoiding unrelated declaration-dependent lookup."
+    },
+    "resource_deadline": {
+      "provisional_engineering_choice": "external_supervisor_boundary",
+      "basis": "The fixed no-loser-cancellation/live-lease constraints do not imply eventual exit. Separating host kill from language cleanup expresses the operational limit without adding runtime termination policy."
+    },
+    "sequential_map": {
+      "provisional_engineering_choice": "native_from_async",
+      "basis": "The supplied native algorithm and observed order/failure behavior match the required sequential semantics. Indices and private completion boxes protect legal callable then fields."
+    },
+    "fixture_queue": {
+      "provisional_engineering_choice": "canonical_shared_fifo",
+      "basis": "Repeated equal-argument calls need ordered supplied outcomes. Shared FIFO supports those scripts in existing syntax. It requires one explicit canonical test scheduler and separate native interleaving conformance."
+    },
+    "generic_checking": {
+      "provisional_engineering_choice": "concrete_specialization",
+      "basis": "No type-bound syntax is approved. Checking every branch of reachable concrete instances preserves useful generic operations while making use-site errors and termination restrictions explicit."
+    },
+    "promise_payloads": {
+      "provisional_engineering_choice": "private_completion_boxes",
+      "basis": "Native thenable assimilation is an observed semantic hazard for legal records. Universal private promise-boundary protection avoids source-name restrictions and does not dictate the physical layout of ordinary fields."
+    }
+  }
+}

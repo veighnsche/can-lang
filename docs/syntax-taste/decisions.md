@@ -40,8 +40,10 @@ recorded Can-to-Bun platform boundary remains in force.
 - Technical contracts may be resolved from the full design and primary evidence.
   Jev may advise when supplied all relevant context; it cannot research and does
   not validate or override user choices. For difficult technical choices, consult
-  it with multiple differently worded versions of the same facts, constraints,
-  and alternatives. Record the responses and the engineering judgment; disagreement
+  it with multiple presentations of the same facts, constraints, and alternatives,
+  rewording all natural-language context, questions, and option descriptions.
+  Check substantive equivalence and whole-payload variation before live calls.
+  Record the responses and the engineering judgment; disagreement
   exposes uncertainty, while repeated agreement or a majority vote is not proof.
   The [September consultation record](jev-design-consultations-2026-09-20.md)
   contains the completed design consultations and their limits.

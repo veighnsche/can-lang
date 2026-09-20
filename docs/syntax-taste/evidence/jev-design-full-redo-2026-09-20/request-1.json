@@ -1,0 +1,131 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "common": {
+      "purpose": "Assess technical design alternatives for Can as an adviser using the information provided here. Research and explanatory prose are not capabilities of this judgment. The task grants no permission to implement source changes. Selecting the explicit uncertainty or inadequate-options outcome is permitted.",
+      "fixed_constraints": [
+        "AI coding agents are the intended users of immutable Can. Authored executable functions must have names and reside at top level. Underlying execution is async for every function, with ordinary calls awaiting one after another. The language excludes authored anonymous functions, a purity/effect system, foreign-code escape, and a browser Can target.",
+        "Lower operations to their equivalent native JavaScript/Bun behavior; adapters exist only to enforce language contracts and immutability. There are zero external users, so preserving old syntax, ABI, generated layout, or goldens has no compatibility value. Favor compiler simplicity when the required semantics remain intact.",
+        "In their established order, the four approved coordination headers correspond to Promise.all, Promise.allSettled, Promise.any, Promise.race. A losing participant is not cancelled automatically. A plain race dispatches one bare all_failed aggregate, retaining every original domain or standard failure occurrence in input order.",
+        "Domain-error contracts on both authored and native declarations must be complete, finite, and explicitly written as emits bounds; standard failures travel separately. Named records, generic records/errors, and finite named variants are available. Source union literals and syntax for error-set parameters are absent.",
+        "The accepted surface includes return-first named arms and fields of type choice_arm<T> emits [errors]; both llm str and structured LLM declarations end their invocation inputs with grouped state. Named fetch provides body encodings and an immutable http::response<T>. Formatting float as text requires an explicit conversion. Web applications use Bun SSR plus upstream HTMX, and LLM tools remain outside scope.",
+        "Technical defaults and backend adapters may be revised within the granted scope. An option that needs different approved syntax or different product limits should not be preferred. Resolve these technical choices autonomously instead of presenting the user with another questionnaire."
+      ],
+      "evidence_limits": "Treat the runtime/native observations as bounded local checks or documentation facts, not validation of a Can implementation. Neither confidence nor model probabilities supply proof or decision-making authority. Each offered alternative is a technical proposal and does not carry user approval.",
+      "snapshot_scope": "Replay the alternatives as they stood before the previous consultation. References to a baseline or proposed rule describe that earlier design snapshot, rather than asserting what the revised normative specification says today. This payload supplies neither earlier Jev judgments nor engineering decisions made afterward."
+    },
+    "topics": {
+      "integer_codec": {
+        "sections": "A6.1-A6.2, A10.1",
+        "facts": "An arbitrary-precision native bigint represents Can int, and one codec serves standalone JSON, fetch, and generated records. JSON.parse source-context supplies the original number token even when its Number result has lost precision. Native BigInt can consume integer digit strings but cannot directly consume fraction/exponent notation. Official JSON Schema documentation counts mathematically integral spellings, including 1.0 and 1e0, as integer. In the historical baseline, Can admits integer lexemes only, so those schema-valid spellings become domain decoding errors. Both alternatives forbid recovery through rounded Number-to-bigint conversion, coercing quoted numbers, coercing source int/float values, and introducing a decimal primitive. Native code retains responsibility for general JSON parsing. An exact adapter can separate coefficient and exponent in an already native-validated token, examine trailing zeros to establish integrality, and finish with BigInt. Before expansion, limits on digits, exponent, and output size must rule out enormous allocations from a short 1eHuge token."
+      },
+      "generation_shapes": {
+        "sections": "A6.1, A10.1",
+        "facts": "The shared Can JSON codec admits named tagged record/error variants as well as finite acyclic instances of recursive records. On the wire, a variant is a closed object containing case and value. Finite inhabitation and finite specialization are core requirements. The earlier LLM profile was narrower: a nonrecursive ordinary record at the root, containing only nested records/arrays/bool/str/int/float, with every field required and additional fields disallowed. Variants and recursive shapes were compile-time errors in that baseline. OpenAI Responses documentation permits recursive references and nested anyOf in structured output, but requires an object root rather than anyOf. Regardless of provider compliance, the result is decoded and validated independently. The demonstrated summary->dynamic question workflow fits the simple baseline shapes. Expanding support could share the codec type graph, at the cost of a provider schema graph emitter and conformance work for references and alternatives. A source schema language, tools, null coercion, and executable generated values are all excluded. The profile budget in this snapshot is depth 8, 1024 properties, 65536 bytes; the runtime codec separately limits depth, nodes, and bytes."
+      },
+      "aggregate_type": {
+        "sections": "Q6, Q9, C4/C9",
+        "facts": "Participant domain-error types together with the opaque standard_failure leaf form a race's finite internal set U; runtime occurrences keep their order and retain duplicates. User approval fixes the arm spelling to bare all_failed without a type annotation. Named variants comprise disjoint finite nominal leaves, generic types are invariant, and concrete arguments normally contribute to generic error identity. The all_failed<F> payload is F[] failures. Under the historical proposal, observing, passing, or forwarding failures obtains F from an existing expected argument, binding, or forwarding emits context. A suitable F covers U without an anonymous source union. A fallback that never inspects the payload can retain a compiler-private U instead of a source-denotable F. An explicitly named helper can establish expected F using existing syntax. More than one unrelated variant can cover identical U, and named wrappers must normalize ambiguous specializations of a single bare error kind."
+      },
+      "resource_deadline": {
+        "sections": "Q9-Q10, P6/P10/P12",
+        "facts": "A participant that never settles stays pending, as does native Promise.race([]). Winning a race leaves its losers uncancelled. Owners keep promises and captured resource leases alive until those promises settle; existing owners can complete work through subleases. A live lease cannot be invalidated by close/commit/rollback. The snapshot's graceful-close policy refuses new owners, then drains the existing work. Reaching an explicit resource-close deadline produces the declared failure but leaves the resource closing, owned, and observed, while root shutdown continues waiting. Consequently, a lease that never settles prevents any assurance of eventual nonzero exit. The approved language has neither a universal timeout nor Can cancellation syntax. Killing the host process abandons effects and resources; it does not settle promises or reverse remote effects. A supervisor outside Can can apply a host kill deadline without adding a language feature. All offered choices leave pure pending work pending when no resource deadline applies."
+      },
+      "sequential_map": {
+        "sections": "C7, Q11",
+        "facts": "A Can callback always runs asynchronously and can perform effects. Mapping an immutable dense array must visit each callback once in ascending index order, await it before starting the next callback, and stop at the first domain or standard failure without yielding a partial result. The historical lowering uses native map to build one predecessor-linked promise per element and then Promise.all: callback execution is sequential, but downstream promise allocation happens up front. The observed local Bun 1.4.2 runtime includes native Array.fromAsync. A read-only [1,2,3] probe recorded start1/end1/start2/end2/start3/end3, with at most one callback active and result [2,4,6]; rejecting at 2 visited only [1,2], and the empty input produced []. The TC39 draft waits for each mapper result before advancing. Availability belongs to the pinned-runtime contract, not an assumption about every runtime. Every candidate still needs adapters that prevent thenable assimilation of user payloads. A generated callback can operate on array indices and boxed completions, followed by native final map to unwrap boxes. Authored async comparators and concurrent ordinary traversal remain excluded."
+      },
+      "fixture_queue": {
+        "sections": "P3-P4, Q2/Q10",
+        "facts": "Named assertions are required on every fn. A when row already contains an assertion selector, expected explicit inputs, and a supplied typed completion, and the same selector may appear repeatedly. The approved source has no new selector for participants. Root assertion identity combines package, declaration, and assertion; call identity also tracks its lexical site, dynamic parent path/occurrence, participant indices, and immutable callable-capture fingerprint. Concurrent calls into a common transitive helper must receive deterministic fixtures that check their expected arguments and never access live services. In the baseline design, recursive and concurrent visits share one FIFO queue keyed by root+lexical when table. A test-only canonical scheduler reserves identities and releases fixture completions through specified path-order barriers instead of following native race timing. It therefore exercises one deterministic schedule, not all production interleavings; a separate controlled concurrency suite must validate native timing. Every owner drains before its assertion ends, preventing leftover work from reaching another test."
+      },
+      "generic_checking": {
+        "sections": "C4",
+        "facts": "Explicit generic parameters exist in Can, but typeclass, trait, bound, overload, and effect-parameter syntax have not been approved. Ordinary methods/operators may be applied to parameters by named functions. Nominal records and callables are invariant. At the historical baseline, declaration checking covers grammar, names, and errors independent of parameters; each reachable concrete specialization is then checked throughout its body, including branches that tests never exercise. Same-type recursion is allowed while infinite expansion of specializations is rejected. Consumers may instantiate public templates, and assertion evidence applies only to the concrete instances it exercises. The competing policy would admit only type-independent generic actions such as storing, passing, or returning data, requiring a concrete wrapper for arithmetic or member access. Neither approach changes the available source syntax. For closed higher-order catalogue operations, finite specialization of callback error bounds is already compiler-known."
+      },
+      "promise_payloads": {
+        "sections": "C4-C7, Q2",
+        "facts": "Records may contain callable fields in Can, including a field legally named then, and an authored function can return such a record or a collection containing it. Native JavaScript Promise resolution and await invoke an object's callable then property through assimilation. Exposing that record directly as a fulfilled native payload can therefore trigger unintended effects or leave execution nonterminating. Replacing native Promise APIs is prohibited. At the historical snapshot, Q supplies private success/domain/standard tags for coordination, while the core has no rule shielding every payload crossing. No existing generated TypeScript representation must be preserved for compatibility. Authored field names and values must remain intact in source access and wire serialization. Can's immutable records and callables cannot be extended with new properties."
+      }
+    }
+  },
+  "questions": {
+    "integer_codec": {
+      "type": "choice",
+      "instructions": "Select the JSON-number rule that offers the best combination of exact Can int values, provider compatibility, finite resource consumption, and a small adapter. Consider the complete contents of `common` together with `topics.integer_codec`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "integer_lexemes": "For int, allow a decimal digit sequence with an optional minus sign and no other numeric notation. Fraction and exponent tokens fail even when their exact value is integral. This keeps the adapter small by accepting a stated compatibility limitation.",
+        "exact_integral_tokens": "Within explicit resource bounds, use exact token normalization followed by native BigInt to accept any JSON number whose mathematical value is an integer. Nonintegral inputs fail without rounding. The added boundary adapter brings acceptance into line with JSON Schema integer.",
+        "review_needed": "The evidence is insufficient to distinguish the two rules, or neither rule adequately maintains the required contracts."
+      }
+    },
+    "generation_shapes": {
+      "type": "choice",
+      "instructions": "Select the initial generated-output shape policy that best balances type reuse, the capability actually needed, implementation effort, clear diagnostics, and dependence on one provider. Consider the complete contents of `common` together with `topics.generation_shapes`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "bounded_initial_subset": "Keep generation initially limited to nonrecursive records and arrays. Continue using shared codec checks and precise unsupported-field errors, leaving wider shapes deliberately outside the initial support boundary.",
+        "reuse_broader_type_graph": "Support nested named record variants and recursive records using closed discriminated schemas with references. Retain an ordinary record root and finite schema/runtime budgets. Sharing codec types requires additional reference-handling machinery and provider conformance tests.",
+        "review_needed": "The given requirements support neither proposed initial boundary well enough, or a different technical candidate should be considered."
+      }
+    },
+    "aggregate_type": {
+      "type": "choice",
+      "instructions": "Select the all_failed typing contract that makes nominal behavior predictable, keeps payload-ignoring fallbacks usable, and introduces no new source notation. Consider the complete contents of `common` together with `topics.aggregate_type`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "lazy_expected_type": "Demand a unique expected named F when code examines the payload or forwards the aggregate, but keep a private finite U when a fallback ignores it. Do not search variants globally; represent private erased aggregates separately from source-visible nominal ones.",
+        "always_contextual_type": "Make every race establish named F from existing context or a typed named helper, even if the fallback ignores its payload. Materialization is uniform, with additional author code required when no payload leaves the construct.",
+        "unique_cover_search": "Search the declared named variants for a cover of U, accepting F only if exactly one qualifies. Fewer local annotations are needed, but introducing an otherwise unrelated covering variant can invalidate earlier code through ambiguity.",
+        "review_needed": "Given the fixed bare-arm spelling, none of the candidates establishes a coherent enough nominal typing contract."
+      }
+    },
+    "resource_deadline": {
+      "type": "choice",
+      "instructions": "Select the resource-deadline boundary that gives the clearest operational contract without altering Promise semantics or invalidating live leases. Consider the complete contents of `common` together with `topics.resource_deadline`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "drain_without_host_policy": "Continue draining indefinitely after a resource deadline fails. Record a nonzero eventual status only if the drain finishes, without prescribing how any external supervisor should behave.",
+        "runtime_hard_stop": "At the already configured resource deadline, report the failure/diagnostic and end the host with nonzero status. State explicitly that this abandons work rather than providing Can cancellation or rollback; host termination becomes a new mandatory policy.",
+        "external_supervisor_boundary": "Keep the declared close failure and potentially indefinite drain inside the language, and assign any bounded host-termination guarantee explicitly to an external supervisor. A deployment may kill the process, with no Can assurance of clean draining or reversing effects.",
+        "review_needed": "The proposed choices leave the boundary unsettled or violate the fixed requirements for leases and absence of implicit cancellation."
+      }
+    },
+    "sequential_map": {
+      "type": "choice",
+      "instructions": "Select the sequential map emission strategy that meets Can semantics with the least generated machinery and the most suitable use of native facilities. Consider the complete contents of `common` together with `topics.sequential_map`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "predecessor_promises": "Retain the native map/predecessor-promise/Promise.all construction. It delivers the required sequential callbacks while allocating the downstream promise chain eagerly.",
+        "native_from_async": "Emit native Array.fromAsync with a small completion adapter generated by the compiler. Iterate indices when shielding payloads requires it, and unwrap results natively. Pin the necessary Bun capability and validate it with conformance tests.",
+        "shared_handwritten_traversal": "Generate a common sequential loop for map and search adapters, delegating storage and sorting to native operations afterward. Fewer distinct lowering recipes come at the cost of reproducing traversal available in Array.fromAsync.",
+        "review_needed": "The supplied evidence establishes neither equivalent behavior nor suitable runtime availability for any candidate sufficiently well."
+      }
+    },
+    "fixture_queue": {
+      "type": "choice",
+      "instructions": "Select the allocation rule that best combines reproducible concurrent assertions, meaningful repeated-call scripts, explicit argument verification, and manageable implementation complexity. Consider the complete contents of `common` together with `topics.fixture_queue`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "canonical_shared_fifo": "Use a single root/site queue shared by visits, with allocation determined by the canonical scheduler. Fail on mismatched arguments rather than searching ahead. Repeated visits can follow one global script, provided scheduler conformance is established.",
+        "participant_local_fifo": "Initialize a separate queue from the lexical rows for each dynamic participant/call path. Shared allocation races disappear, but every participant replays the same rows; distinct sites or wrappers are needed to script results across participants.",
+        "argument_matching": "Choose the next unused row whose explicit arguments match, and reject identical ambiguous rows. Distinct argument values no longer need a canonical shared allocation order, but values determine fixture choice and repeated equal inputs cannot be distinguished directly.",
+        "review_needed": "An additional technical contract is needed before any candidate can reconcile deterministic fixtures with the existing row syntax."
+      }
+    },
+    "generic_checking": {
+      "type": "choice",
+      "instructions": "Select the checking policy that best combines useful generic algorithms, understandable diagnostics, bounded compiler work, and the lack of constraint syntax. Consider the complete contents of `common` together with `topics.generic_checking`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "concrete_specialization": "Continue checking the whole body at concrete template instantiation, rejecting expanding recursion and reporting both source and instantiation locations. Generic operations remain possible without constraint syntax, although some errors appear only at use sites.",
+        "parametric_only": "Check generic declarations once by allowing only operations independent of the concrete parameter types. This moves errors earlier and simplifies separate contracts, while requiring concrete named wrappers for generic arithmetic or member-based algorithms.",
+        "review_needed": "Neither candidate offers sufficient expression and checking guarantees within the boundary that excludes an unapproved constraint language."
+      }
+    },
+    "promise_payloads": {
+      "type": "choice",
+      "instructions": "Select the runtime representation policy that blocks unintended thenable assimilation while retaining authored field names, immutable callable-containing records, and native Promise operations. Consider the complete contents of `common` together with `topics.promise_payloads`. Use the remaining topics only for background. Base the selection exclusively on this supplied evidence and these alternatives; unavailable facts cannot be researched during the judgment.",
+      "criteria": {
+        "private_completion_boxes": "Keep each Can value inside a private non-thenable completion/element box whenever it crosses native promise resolution. Generated synchronous contexts alone unwrap it; collection adapters use indices or boxed outputs where necessary. This leaves source names and arbitrary record layout independent of shielding.",
+        "mangled_record_fields": "Store every generated record field at a private or mangled physical key, preventing a record from exposing a callable then to native resolution. Explicitly project authored names at codecs. This imposes a global backend layout rather than boxing each payload crossing.",
+        "reserve_then_name": "Disallow callable source fields named then to prevent native assimilation. That introduces an authored restriction inconsistent with the existing general field-name grammar.",
+        "review_needed": "None of the offered representations adequately retains both source semantics and native Promise behavior."
+      }
+    }
+  }
+}

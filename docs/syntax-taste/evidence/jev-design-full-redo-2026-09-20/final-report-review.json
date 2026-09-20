@@ -1,0 +1,15 @@
+{
+  "reviewed_utc": "2026-09-20T21:58:19.086669+00:00",
+  "reviewer": "capabilities_assertions",
+  "scope": "Independent final consultation-report audit against raw requests, responses, preflight and validation artifacts",
+  "material_findings": [],
+  "verified": [
+    "Superseded instruction-only exercise clearly separated from fresh whole-presentation redo; no pooling",
+    "Three fresh calls, eight topics per call, 54 prose fields and 29 candidate descriptions match evidence",
+    "14,687 input and 1,302 output tokens; selected probabilities and confidence all match raw responses",
+    "All eight conclusions grounded in engineering reassessment; largest probability movements considered",
+    "No voting, calibrated correctness, independent replication or new implementation/contract claim",
+    "All ten original evidence files match preserved SHA-256 hashes"
+  ],
+  "additional_api_calls": 0
+}

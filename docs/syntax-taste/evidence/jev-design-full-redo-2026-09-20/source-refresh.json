@@ -1,0 +1,38 @@
+[
+  {
+    "url": "https://docs.typesafe.ai/llms.txt",
+    "retrieved_utc": "2026-09-20T21:40:18.002626+00:00",
+    "sha256": "9bb713532b8b5b836d48bf19733a6649525aff8353e22c5cbebf5524a498ff24",
+    "bytes": 16369
+  },
+  {
+    "url": "https://docs.typesafe.ai/api.md",
+    "retrieved_utc": "2026-09-20T21:40:18.233558+00:00",
+    "sha256": "7ea1c82d9d16bd06e3d38885a5292548293f91e6d1ade4682c27398ced51a9e5",
+    "bytes": 11772
+  },
+  {
+    "url": "https://docs.typesafe.ai/primitives/choice.md",
+    "retrieved_utc": "2026-09-20T21:40:18.431391+00:00",
+    "sha256": "4c55085131f8f2d7ae1faefdec52b1c7b379d40657d701cd2c786021cfe9dac9",
+    "bytes": 26794
+  },
+  {
+    "url": "https://docs.typesafe.ai/concepts/state.md",
+    "retrieved_utc": "2026-09-20T21:40:18.635637+00:00",
+    "sha256": "6871d59470c6af330b10be302a7382ab4c175ee8994886ad48df2fe6bb315462",
+    "bytes": 3874
+  },
+  {
+    "url": "https://docs.typesafe.ai/confidence.md",
+    "retrieved_utc": "2026-09-20T21:40:18.833403+00:00",
+    "sha256": "97dafe98b77979906a2ad456013dd85a70dcecd109d0644b096817d910997ea5",
+    "bytes": 11396
+  },
+  {
+    "url": "https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook.md",
+    "retrieved_utc": "2026-09-20T21:40:19.164275+00:00",
+    "sha256": "381b3840c94e9e232cefef2dbe941254a90b6a1cf56c8b8c7e333b9f12e9b583",
+    "bytes": 49954
+  }
+]

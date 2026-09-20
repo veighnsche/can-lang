@@ -1,0 +1,230 @@
+{
+  "checked_utc": "2026-09-20T21:53:42.930798+00:00",
+  "passes": true,
+  "fresh_live_calls": 3,
+  "answered_questions": 24,
+  "request_hashes_match_pre_live_gate": true,
+  "preflight_precedes_live_requests": true,
+  "engineering_reassessment_precedes_live_requests": true,
+  "exact_answer_and_probability_keys": true,
+  "normalized_finite_distributions": true,
+  "selected_candidate_has_maximum_probability": true,
+  "confidence_in_range": true,
+  "actual_models": [
+    "jev-1.13.0"
+  ],
+  "usage": {
+    "input_tokens": 14687,
+    "output_tokens": 1302
+  },
+  "response_sha256": {
+    "response-1.json": "6b15c0d973da7d59ed8e7e412dc7406b34b3bf707f7fc4e7db737a650cf2e801",
+    "response-2.json": "ebefb8170f58f95c63277a1b5b337929900416fc14f47bb39ee98803531b287f",
+    "response-3.json": "a6116673e39dea0fe6c84ab772bb8ef4e3e433143f4ce60702c8c197e63bb813"
+  },
+  "prior_evidence_files_unchanged": 10,
+  "credential_absent_from_saved_evidence": true,
+  "topic_results": [
+    {
+      "topic": "integer_codec",
+      "choices": [
+        "exact_integral_tokens",
+        "exact_integral_tokens",
+        "exact_integral_tokens"
+      ],
+      "selected_probabilities": [
+        0.99,
+        0.99,
+        0.98
+      ],
+      "confidence": [
+        0.98,
+        0.99,
+        0.98
+      ],
+      "selected_probability_range": [
+        0.98,
+        0.99
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "exact_integral_tokens",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "generation_shapes",
+      "choices": [
+        "bounded_initial_subset",
+        "bounded_initial_subset",
+        "bounded_initial_subset"
+      ],
+      "selected_probabilities": [
+        0.98,
+        1.0,
+        0.96
+      ],
+      "confidence": [
+        0.97,
+        1.0,
+        0.94
+      ],
+      "selected_probability_range": [
+        0.96,
+        1.0
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "bounded_initial_subset",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "aggregate_type",
+      "choices": [
+        "lazy_expected_type",
+        "lazy_expected_type",
+        "lazy_expected_type"
+      ],
+      "selected_probabilities": [
+        0.95,
+        0.82,
+        0.98
+      ],
+      "confidence": [
+        0.92,
+        0.76,
+        0.98
+      ],
+      "selected_probability_range": [
+        0.82,
+        0.98
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "lazy_expected_type",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "resource_deadline",
+      "choices": [
+        "external_supervisor_boundary",
+        "external_supervisor_boundary",
+        "external_supervisor_boundary"
+      ],
+      "selected_probabilities": [
+        0.98,
+        0.88,
+        0.97
+      ],
+      "confidence": [
+        0.98,
+        0.83,
+        0.96
+      ],
+      "selected_probability_range": [
+        0.88,
+        0.98
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "external_supervisor_boundary",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "sequential_map",
+      "choices": [
+        "native_from_async",
+        "native_from_async",
+        "native_from_async"
+      ],
+      "selected_probabilities": [
+        0.96,
+        0.94,
+        0.93
+      ],
+      "confidence": [
+        0.96,
+        0.91,
+        0.91
+      ],
+      "selected_probability_range": [
+        0.93,
+        0.96
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "native_from_async",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "fixture_queue",
+      "choices": [
+        "canonical_shared_fifo",
+        "canonical_shared_fifo",
+        "canonical_shared_fifo"
+      ],
+      "selected_probabilities": [
+        0.96,
+        0.94,
+        0.99
+      ],
+      "confidence": [
+        0.95,
+        0.93,
+        0.97
+      ],
+      "selected_probability_range": [
+        0.94,
+        0.99
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "canonical_shared_fifo",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "generic_checking",
+      "choices": [
+        "concrete_specialization",
+        "concrete_specialization",
+        "concrete_specialization"
+      ],
+      "selected_probabilities": [
+        0.99,
+        0.95,
+        0.95
+      ],
+      "confidence": [
+        0.97,
+        0.93,
+        0.93
+      ],
+      "selected_probability_range": [
+        0.95,
+        0.99
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "concrete_specialization",
+      "any_choice_differs_from_pre_response_assessment": false
+    },
+    {
+      "topic": "promise_payloads",
+      "choices": [
+        "private_completion_boxes",
+        "private_completion_boxes",
+        "private_completion_boxes"
+      ],
+      "selected_probabilities": [
+        1.0,
+        0.95,
+        0.97
+      ],
+      "confidence": [
+        0.99,
+        0.93,
+        0.96
+      ],
+      "selected_probability_range": [
+        0.95,
+        1.0
+      ],
+      "categorical_disagreement": false,
+      "pre_response_engineering_choice": "private_completion_boxes",
+      "any_choice_differs_from_pre_response_assessment": false
+    }
+  ],
+  "limits": "Valid response structure and within-sample agreement do not establish semantic truth, model calibration, independent replication, or compiler conformance."
+}

@@ -1,0 +1,15 @@
+{
+  "checked_utc": "2026-09-20T21:58:19.185812+00:00",
+  "passes": true,
+  "errors": [],
+  "markdown_files_checked": 9,
+  "local_links_checked": 138,
+  "json_files_parsed": 17,
+  "prior_evidence_files_unchanged": 10,
+  "historical_review_sha256": "bf9c90dfe21476ea87f47072685d22061b6df90ef63b2377439bb1770749e5b3",
+  "historical_review_unchanged": true,
+  "archived_prior_report_sha256": "9b593df235b2fc54ad76eecccde98ce0623f5c3cd6800ce53b884102c2131862",
+  "credential_absent": true,
+  "git_diff_check_passes": true,
+  "scope": "Documentation links, fences, JSON evidence integrity, preserved historical artifacts, and whitespace only. No compiler, adapter, database, deployment, or model-quality conformance is claimed."
+}
