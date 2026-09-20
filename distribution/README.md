@@ -98,3 +98,8 @@ integration suite; they do not claim offline-distribution coverage. The local
 saved result is in `docs/implementation/evidence/2026-09-21/i02-sidecar-tests.txt`.
 Publisher signatures, complete third-party source/relink material, notarization,
 quarantine, end-user installation and updates remain I39 gates.
+
+The I47 development command `canlc catalogue-check` accepts the fixed catalogue
+conformance fixture on stdin and runs generated-registry checks through the
+same isolated sidecar. It verifies identity/payload agreement and reports its
+source digest; it does not accept arbitrary code or register host operations.

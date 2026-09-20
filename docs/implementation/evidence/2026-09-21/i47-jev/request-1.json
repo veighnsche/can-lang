@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can has no external users or compatibility obligations. I47 must establish one checked compiler-owned catalogue before the new parser/type checker/runtime implementations exist. Approved C/A/P specifications define primitive and collection operations, nominal data, opaque handles, stable error IDs, native mappings and assertion evidence. The catalogue must include every approved operation but must not claim future runtime adapters are implemented. Ordinary generic parameters, callback-derived finite error sets and mode-dependent HTTP/auth errors are required; source authors may not register kernels, protocols or opaque representations. One JSON inventory with structural signature/error descriptors can be validated by Go and generate hash-bound Go/TypeScript mirrors and documentation. Descriptive native recipes can reference the owning implementation task and are not executable adapters. Duplicated language registries would be easier to edit independently but drift is a risk. Starting with only implemented functions keeps metadata small but omits the approved inventory demanded now. All alternatives still need tests; classifier advice cannot prove completeness.",
+  "questions": {
+    "catalogue": {
+      "type": "choice",
+      "instructions": "Which catalogue organization best satisfies this task and its sequencing constraints? Use only the supplied facts, not external research.",
+      "criteria": {
+        "inventory": "Store the full approved descriptor inventory once in checked JSON; generate Go/TS mirrors and references, separating planned recipes from implemented runtime support.",
+        "duplicate": "Maintain separate hand-authored compiler and runtime registries with agreement tests between them.",
+        "implemented_only": "Record only currently executable operations and defer the rest of the approved catalogue to their implementation tasks."
+      }
+    }
+  }
+}

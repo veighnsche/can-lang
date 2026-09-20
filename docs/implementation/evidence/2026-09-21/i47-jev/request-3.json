@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can implementation is replacing earlier behavior and supports no external users, eliminating compatibility constraints. Its I47 milestone asks for a checked single catalogue encompassing the authorized C/A/P operation set before replacement parsing, typing and runtime work is done. Relevant contracts cover native primitive/collection behavior, nominal and opaque types, stable domain IDs, lowering descriptors and assertion substitutions. Coverage of approved operations must not be confused with implemented execution. The representation needs generic data arguments, callback-bound unions and HTTP mode/auth conditions; user-defined kernel/protocol registration and opaque representation construction are forbidden. JSON records with structured signatures/errors could be validated and used to emit digest-linked Go, TypeScript and documentation views. Recipes would describe native mappings and owner tasks without pretending to supply executable adapters. Alternative hand-maintained registries ease per-language edits while inviting disagreement, and an implemented-only list is smaller but defers required complete metadata. Verification remains necessary under every choice, and classification alone cannot establish correctness.",
+  "questions": {
+    "catalogue": {
+      "type": "choice",
+      "instructions": "Which representation strategy is best supported by these requirements and available evidence? Restrict the decision to the context provided here.",
+      "criteria": {
+        "inventory": "Make one validated full-surface JSON inventory authoritative, derive language mirrors and reference material, and distinguish declared native recipes from executable implementations.",
+        "duplicate": "Keep compiler and runtime definitions as manually edited language-specific tables, using consistency checks to catch differences.",
+        "implemented_only": "Describe just the operations whose native adapters already execute, postponing all other approved entries until later work."
+      }
+    }
+  }
+}

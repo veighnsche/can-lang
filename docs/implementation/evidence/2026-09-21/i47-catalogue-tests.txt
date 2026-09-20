@@ -1,0 +1,335 @@
+=== RUN   TestCompleteInventoryAndMirrors
+=== RUN   TestCompleteInventoryAndMirrors/text::from_int
+=== RUN   TestCompleteInventoryAndMirrors/text::from_float
+=== RUN   TestCompleteInventoryAndMirrors/text::from_bool
+=== RUN   TestCompleteInventoryAndMirrors/number::int_to_float
+=== RUN   TestCompleteInventoryAndMirrors/number::float_to_int
+=== RUN   TestCompleteInventoryAndMirrors/number::bool_to_int
+=== RUN   TestCompleteInventoryAndMirrors/number::int_to_bool
+=== RUN   TestCompleteInventoryAndMirrors/number::floor
+=== RUN   TestCompleteInventoryAndMirrors/number::ceil
+=== RUN   TestCompleteInventoryAndMirrors/number::trunc
+=== RUN   TestCompleteInventoryAndMirrors/number::round
+=== RUN   TestCompleteInventoryAndMirrors/number::is_finite
+=== RUN   TestCompleteInventoryAndMirrors/number::is_nan
+=== RUN   TestCompleteInventoryAndMirrors/text::to_int
+=== RUN   TestCompleteInventoryAndMirrors/text::to_float
+=== RUN   TestCompleteInventoryAndMirrors/text::to_bool
+=== RUN   TestCompleteInventoryAndMirrors/array.map
+=== RUN   TestCompleteInventoryAndMirrors/array.filter
+=== RUN   TestCompleteInventoryAndMirrors/array.for_each
+=== RUN   TestCompleteInventoryAndMirrors/array.fold
+=== RUN   TestCompleteInventoryAndMirrors/array.find
+=== RUN   TestCompleteInventoryAndMirrors/array.some
+=== RUN   TestCompleteInventoryAndMirrors/array.every
+=== RUN   TestCompleteInventoryAndMirrors/array.sort_by
+=== RUN   TestCompleteInventoryAndMirrors/array.slice
+=== RUN   TestCompleteInventoryAndMirrors/array.concat
+=== RUN   TestCompleteInventoryAndMirrors/array.to_reversed
+=== RUN   TestCompleteInventoryAndMirrors/append
+=== RUN   TestCompleteInventoryAndMirrors/str.includes
+=== RUN   TestCompleteInventoryAndMirrors/str.starts_with
+=== RUN   TestCompleteInventoryAndMirrors/str.ends_with
+=== RUN   TestCompleteInventoryAndMirrors/str.to_lower_case
+=== RUN   TestCompleteInventoryAndMirrors/str.to_upper_case
+=== RUN   TestCompleteInventoryAndMirrors/str.trim
+=== RUN   TestCompleteInventoryAndMirrors/str.slice
+=== RUN   TestCompleteInventoryAndMirrors/str.split
+=== RUN   TestCompleteInventoryAndMirrors/str.replace_all
+=== RUN   TestCompleteInventoryAndMirrors/text::join
+=== RUN   TestCompleteInventoryAndMirrors/text::scalars
+=== RUN   TestCompleteInventoryAndMirrors/text::from_scalars
+=== RUN   TestCompleteInventoryAndMirrors/text::graphemes
+=== RUN   TestCompleteInventoryAndMirrors/text::normalize_nfc
+=== RUN   TestCompleteInventoryAndMirrors/collections::empty_map
+=== RUN   TestCompleteInventoryAndMirrors/collections::empty_set
+=== RUN   TestCompleteInventoryAndMirrors/collections::get
+=== RUN   TestCompleteInventoryAndMirrors/collections::insert
+=== RUN   TestCompleteInventoryAndMirrors/collections::replace
+=== RUN   TestCompleteInventoryAndMirrors/collections::remove
+=== RUN   TestCompleteInventoryAndMirrors/collections::entries
+=== RUN   TestCompleteInventoryAndMirrors/collections::contains
+=== RUN   TestCompleteInventoryAndMirrors/collections::add
+=== RUN   TestCompleteInventoryAndMirrors/collections::union
+=== RUN   TestCompleteInventoryAndMirrors/collections::intersection
+=== RUN   TestCompleteInventoryAndMirrors/collections::difference
+=== RUN   TestCompleteInventoryAndMirrors/number::divmod
+=== RUN   TestCompleteInventoryAndMirrors/number::euclidean_divmod
+=== RUN   TestCompleteInventoryAndMirrors/number::round_ratio_half_even
+=== RUN   TestCompleteInventoryAndMirrors/bytes::empty
+=== RUN   TestCompleteInventoryAndMirrors/bytes::from_ints
+=== RUN   TestCompleteInventoryAndMirrors/bytes::to_ints
+=== RUN   TestCompleteInventoryAndMirrors/bytes::from_utf8
+=== RUN   TestCompleteInventoryAndMirrors/bytes::to_utf8
+=== RUN   TestCompleteInventoryAndMirrors/codec::encode_json
+=== RUN   TestCompleteInventoryAndMirrors/codec::decode_json
+=== RUN   TestCompleteInventoryAndMirrors/array.length
+=== RUN   TestCompleteInventoryAndMirrors/str.length
+=== RUN   TestCompleteInventoryAndMirrors/bytes.length
+=== RUN   TestCompleteInventoryAndMirrors/io::stdin_bytes
+=== RUN   TestCompleteInventoryAndMirrors/io::stdin_text
+=== RUN   TestCompleteInventoryAndMirrors/io::stdout_write
+=== RUN   TestCompleteInventoryAndMirrors/io::stderr_write
+=== RUN   TestCompleteInventoryAndMirrors/clock::wall_millis
+=== RUN   TestCompleteInventoryAndMirrors/clock::monotonic_millis
+=== RUN   TestCompleteInventoryAndMirrors/clock::sleep_millis
+=== RUN   TestCompleteInventoryAndMirrors/random::secure_bytes
+=== RUN   TestCompleteInventoryAndMirrors/random::uuid_v4
+=== RUN   TestCompleteInventoryAndMirrors/crypto::sha256
+=== RUN   TestCompleteInventoryAndMirrors/env::required
+=== RUN   TestCompleteInventoryAndMirrors/env::optional
+=== RUN   TestCompleteInventoryAndMirrors/log::write_info
+=== RUN   TestCompleteInventoryAndMirrors/log::write_error
+=== RUN   TestCompleteInventoryAndMirrors/html::make_tag
+=== RUN   TestCompleteInventoryAndMirrors/html::text
+=== RUN   TestCompleteInventoryAndMirrors/html::parse_url
+=== RUN   TestCompleteInventoryAndMirrors/html::text_attribute
+=== RUN   TestCompleteInventoryAndMirrors/html::url_attribute
+=== RUN   TestCompleteInventoryAndMirrors/html::element
+=== RUN   TestCompleteInventoryAndMirrors/html::fragment
+=== RUN   TestCompleteInventoryAndMirrors/html::text_fragment
+=== RUN   TestCompleteInventoryAndMirrors/html::stylesheet
+=== RUN   TestCompleteInventoryAndMirrors/html::meta_viewport
+=== RUN   TestCompleteInventoryAndMirrors/html::document
+=== RUN   TestCompleteInventoryAndMirrors/htmx::get
+=== RUN   TestCompleteInventoryAndMirrors/htmx::post
+=== RUN   TestCompleteInventoryAndMirrors/htmx::target_id
+=== RUN   TestCompleteInventoryAndMirrors/htmx::target_attribute
+=== RUN   TestCompleteInventoryAndMirrors/htmx::indicator_id
+=== RUN   TestCompleteInventoryAndMirrors/htmx::swap_inner
+=== RUN   TestCompleteInventoryAndMirrors/htmx::swap_outer
+=== RUN   TestCompleteInventoryAndMirrors/htmx::trigger_change
+=== RUN   TestCompleteInventoryAndMirrors/htmx::disable_this
+=== RUN   TestCompleteInventoryAndMirrors/htmx::trigger_input_changed
+=== RUN   TestCompleteInventoryAndMirrors/htmx::trigger_every
+=== RUN   TestCompleteInventoryAndMirrors/htmx::runtime_head
+=== RUN   TestCompleteInventoryAndMirrors/asset::url
+=== RUN   TestCompleteInventoryAndMirrors/http::request_method
+=== RUN   TestCompleteInventoryAndMirrors/http::request_path
+=== RUN   TestCompleteInventoryAndMirrors/http::request_headers
+=== RUN   TestCompleteInventoryAndMirrors/http::query_one
+=== RUN   TestCompleteInventoryAndMirrors/http::query_all
+=== RUN   TestCompleteInventoryAndMirrors/http::request_body
+=== RUN   TestCompleteInventoryAndMirrors/http::request_json
+=== RUN   TestCompleteInventoryAndMirrors/http::request_form
+=== RUN   TestCompleteInventoryAndMirrors/http::make_status
+=== RUN   TestCompleteInventoryAndMirrors/http::make_body_status
+=== RUN   TestCompleteInventoryAndMirrors/http::status_ok
+=== RUN   TestCompleteInventoryAndMirrors/http::status_unprocessable
+=== RUN   TestCompleteInventoryAndMirrors/http::status_internal
+=== RUN   TestCompleteInventoryAndMirrors/http::status_unavailable
+=== RUN   TestCompleteInventoryAndMirrors/http::make_server_headers
+=== RUN   TestCompleteInventoryAndMirrors/http::empty_server_headers
+=== RUN   TestCompleteInventoryAndMirrors/http::response_empty
+=== RUN   TestCompleteInventoryAndMirrors/http::response_bytes
+=== RUN   TestCompleteInventoryAndMirrors/http::response_text
+=== RUN   TestCompleteInventoryAndMirrors/http::response_html
+=== RUN   TestCompleteInventoryAndMirrors/http::response_json
+=== RUN   TestCompleteInventoryAndMirrors/http::route_get
+=== RUN   TestCompleteInventoryAndMirrors/http::route_post
+=== RUN   TestCompleteInventoryAndMirrors/http::make_router
+=== RUN   TestCompleteInventoryAndMirrors/http::make_server_config
+=== RUN   TestCompleteInventoryAndMirrors/http::server_start
+=== RUN   TestCompleteInventoryAndMirrors/http::server_wait
+=== RUN   TestCompleteInventoryAndMirrors/http::server_stop
+=== RUN   TestCompleteInventoryAndMirrors/sql::pool_open
+=== RUN   TestCompleteInventoryAndMirrors/sql::pool_close
+=== RUN   TestCompleteInventoryAndMirrors/sql::query_one
+=== RUN   TestCompleteInventoryAndMirrors/sql::query_optional
+=== RUN   TestCompleteInventoryAndMirrors/sql::query_rows
+=== RUN   TestCompleteInventoryAndMirrors/sql::execute
+=== RUN   TestCompleteInventoryAndMirrors/sql::transaction_query_one
+=== RUN   TestCompleteInventoryAndMirrors/sql::transaction_query_optional
+=== RUN   TestCompleteInventoryAndMirrors/sql::transaction_query_rows
+=== RUN   TestCompleteInventoryAndMirrors/sql::transaction_execute
+=== RUN   TestCompleteInventoryAndMirrors/sql::with_transaction
+--- PASS: TestCompleteInventoryAndMirrors (0.01s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::from_int (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::from_float (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::from_bool (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::int_to_float (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::float_to_int (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::bool_to_int (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::int_to_bool (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::floor (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::ceil (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::trunc (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::round (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::is_finite (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::is_nan (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::to_int (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::to_float (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::to_bool (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.map (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.filter (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.for_each (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.fold (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.find (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.some (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.every (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.sort_by (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.slice (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.concat (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.to_reversed (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/append (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.includes (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.starts_with (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.ends_with (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.to_lower_case (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.to_upper_case (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.trim (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.slice (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.split (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.replace_all (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::join (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::scalars (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::from_scalars (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::graphemes (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/text::normalize_nfc (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::empty_map (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::empty_set (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::get (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::insert (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::replace (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::remove (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::entries (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::contains (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::add (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::union (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::intersection (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/collections::difference (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::divmod (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::euclidean_divmod (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/number::round_ratio_half_even (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes::empty (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes::from_ints (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes::to_ints (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes::from_utf8 (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes::to_utf8 (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/codec::encode_json (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/codec::decode_json (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/array.length (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/str.length (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/bytes.length (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/io::stdin_bytes (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/io::stdin_text (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/io::stdout_write (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/io::stderr_write (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/clock::wall_millis (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/clock::monotonic_millis (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/clock::sleep_millis (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/random::secure_bytes (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/random::uuid_v4 (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/crypto::sha256 (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/env::required (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/env::optional (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/log::write_info (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/log::write_error (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::make_tag (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::text (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::parse_url (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::text_attribute (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::url_attribute (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::element (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::fragment (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::text_fragment (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::stylesheet (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::meta_viewport (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/html::document (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::get (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::post (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::target_id (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::target_attribute (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::indicator_id (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::swap_inner (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::swap_outer (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::trigger_change (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::disable_this (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::trigger_input_changed (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::trigger_every (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/htmx::runtime_head (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/asset::url (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_method (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_path (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_headers (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::query_one (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::query_all (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_body (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_json (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::request_form (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::make_status (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::make_body_status (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::status_ok (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::status_unprocessable (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::status_internal (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::status_unavailable (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::make_server_headers (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::empty_server_headers (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::response_empty (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::response_bytes (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::response_text (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::response_html (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::response_json (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::route_get (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::route_post (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::make_router (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::make_server_config (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::server_start (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::server_wait (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/http::server_stop (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::pool_open (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::pool_close (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::query_one (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::query_optional (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::query_rows (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::execute (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::transaction_query_one (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::transaction_query_optional (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::transaction_query_rows (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::transaction_execute (0.00s)
+    --- PASS: TestCompleteInventoryAndMirrors/sql::with_transaction (0.00s)
+=== RUN   TestRejectMalformedInventory
+=== RUN   TestRejectMalformedInventory/duplicate-error-id
+=== RUN   TestRejectMalformedInventory/duplicate-name
+=== RUN   TestRejectMalformedInventory/unallocated-error-id
+=== RUN   TestRejectMalformedInventory/unknown-error-bound
+=== RUN   TestRejectMalformedInventory/standard-in-domain-bound
+=== RUN   TestRejectMalformedInventory/constructible-opaque
+=== RUN   TestRejectMalformedInventory/opaque-fields
+=== RUN   TestRejectMalformedInventory/unknown-type
+=== RUN   TestRejectMalformedInventory/wrong-generic-arity
+=== RUN   TestRejectMalformedInventory/void-data
+=== RUN   TestRejectMalformedInventory/protocol-registration
+=== RUN   TestRejectMalformedInventory/missing-native-recipe
+=== RUN   TestRejectMalformedInventory/dropped-callback-errors
+--- PASS: TestRejectMalformedInventory (0.03s)
+    --- PASS: TestRejectMalformedInventory/duplicate-error-id (0.00s)
+    --- PASS: TestRejectMalformedInventory/duplicate-name (0.00s)
+    --- PASS: TestRejectMalformedInventory/unallocated-error-id (0.00s)
+    --- PASS: TestRejectMalformedInventory/unknown-error-bound (0.00s)
+    --- PASS: TestRejectMalformedInventory/standard-in-domain-bound (0.00s)
+    --- PASS: TestRejectMalformedInventory/constructible-opaque (0.00s)
+    --- PASS: TestRejectMalformedInventory/opaque-fields (0.00s)
+    --- PASS: TestRejectMalformedInventory/unknown-type (0.00s)
+    --- PASS: TestRejectMalformedInventory/wrong-generic-arity (0.00s)
+    --- PASS: TestRejectMalformedInventory/void-data (0.00s)
+    --- PASS: TestRejectMalformedInventory/protocol-registration (0.00s)
+    --- PASS: TestRejectMalformedInventory/missing-native-recipe (0.00s)
+    --- PASS: TestRejectMalformedInventory/dropped-callback-errors (0.00s)
+=== RUN   TestClosedLookupAndOpacity
+--- PASS: TestClosedLookupAndOpacity (0.00s)
+=== RUN   TestCallbackAndStaticBounds
+--- PASS: TestCallbackAndStaticBounds (0.00s)
+=== RUN   TestNativeModeBounds
+--- PASS: TestNativeModeBounds (0.00s)
+=== RUN   TestGenericConstraints
+--- PASS: TestGenericConstraints (0.00s)
+=== RUN   TestGenerationDetectsDrift
+--- PASS: TestGenerationDetectsDrift (0.01s)
+=== RUN   TestCallbackUnionRejectsConflictingIDs
+--- PASS: TestCallbackUnionRejectsConflictingIDs (0.00s)
+=== RUN   TestPackagedCatalogueBoundary
+    integration_test.go:72: packaged Bun 1.4.2; native network denied; 9 runtime checks; error ID 1110, nominal identity, payload and occurrence retained; source cbe788155f88e13bcfac50cc271cf4887d5ffbacaec12af92b7a5f9fc8476435
+--- PASS: TestPackagedCatalogueBoundary (1.60s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/catalogue	1.826s

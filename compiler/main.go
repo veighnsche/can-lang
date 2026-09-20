@@ -38,10 +38,14 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
-	if len(argv) > 0 && argv[0] == "runtime-check" {
+	if len(argv) > 0 && (argv[0] == "runtime-check" || argv[0] == "catalogue-check") {
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
-			err = sidecar.RunTool(context.Background(), "tools/runtime/check.ts", argv[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+			entry := "tools/runtime/check.ts"
+			if argv[0] == "catalogue-check" {
+				entry = "tools/runtime/catalogue-check.ts"
+			}
+			err = sidecar.RunTool(context.Background(), entry, argv[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr)
 		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)

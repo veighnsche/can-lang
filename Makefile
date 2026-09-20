@@ -27,3 +27,10 @@ bundle:
 	go run ./tools/distbuild --archive "$(BUN_ARCHIVE)" --out "$(BUNDLE_OUT)" --version "$(VERSION)"
 
 BUNDLE_OUT ?= ./dist/development
+
+.PHONY: catalogue catalogue-check
+catalogue:
+	go run ./compiler/internal/catalogue/cmd/cataloguegen
+
+catalogue-check:
+	go run ./compiler/internal/catalogue/cmd/cataloguegen --check

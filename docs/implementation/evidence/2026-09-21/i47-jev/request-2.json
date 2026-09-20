@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "This project has zero existing consumers, so old interfaces impose no requirements. Task I47 precedes new syntax, type-checking and most runtime code, yet requires a complete closed intrinsic inventory from the approved C/A/P contracts. Those contracts specify primitive/collection calls, nominal records and opaque resources, numeric error allocations, native emission and fixture rules. Every approved descriptor is needed now without suggesting that later adapters already run. Generic data variables, errors derived from callbacks, and native mode/authentication-dependent bounds must be represented. Applications cannot add protocols, kernels or opaque backing layouts. A structurally described JSON registry can feed validation and generated Go/TS declarations plus reference docs, with hashes detecting stale outputs. Native recipes may identify their future owner task rather than contain callable code. Independent compiler/runtime source tables offer local editing convenience but can diverge; limiting the registry to runnable features postpones mandatory inventory coverage. No option removes the need for real verification or makes a model judgment a completeness proof.",
+  "questions": {
+    "catalogue": {
+      "type": "choice",
+      "instructions": "Given this evidence and ordering, select the most appropriate way to organize the intrinsic registry. Do not attempt to look up further information.",
+      "criteria": {
+        "inventory": "Use a validated JSON source covering the approved surface and produce compiler/runtime mirrors and docs; track recipe descriptions separately from actual adapter availability.",
+        "duplicate": "Write Go and TypeScript registry entries independently and compare their contents during tests.",
+        "implemented_only": "Admit metadata solely for functioning operations and add pending contracts as executable adapters arrive."
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"catalogue":{"type":"choice","choice":"inventory","confidence":1.0,"probabilities":{"implemented_only":0.0,"inventory":1.0,"duplicate":0.0}}},"usage":{"input_tokens":602,"output_tokens":41}}
