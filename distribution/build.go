@@ -75,14 +75,32 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 	}
 	defer os.RemoveAll(stage)
 	manifest := Manifest{SchemaVersion: 1, Kind: "can.development-distribution", Version: version, TargetID: target.TargetID, Files: map[string]string{}}
+	// macOS layouts must not acquire case-aliasing assets, even when the build
+	// checkout happens to live on a case-sensitive volume. Generated destinations
+	// are claimed before source assets are copied; no later write may replace one.
+	written := map[string]bool{"manifest.json": true, "bin/canlc": true}
 	write := func(name string, data []byte, mode os.FileMode) error {
+		key := strings.ToLower(filepath.ToSlash(name))
+		if written[key] {
+			return fmt.Errorf("bundle destination collision: %s", name)
+		}
 		path := filepath.Join(stage, filepath.FromSlash(name))
 		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 			return err
 		}
-		if err := os.WriteFile(path, data, mode); err != nil {
-			return err
+		file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, mode)
+		if err != nil {
+			return fmt.Errorf("create unique bundle asset %s: %w", name, err)
 		}
+		_, writeErr := file.Write(data)
+		closeErr := file.Close()
+		if writeErr != nil {
+			return writeErr
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+		written[key] = true
 		manifest.Files[name] = Hash(data)
 		return nil
 	}
