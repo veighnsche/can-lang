@@ -37,12 +37,27 @@ Decision IDs identify the applicable choices; they are not a required sequence.
 
 ## Design direction
 
+The standard-library capabilities described in `../ASTRA_STDLIB.md` belong in
+Can's language-design scope, including capabilities not yet implemented. Review
+and carry those requirements into the current design rather than discarding
+them because the document uses older language assumptions. Its proposed syntax,
+contracts and implementation strategies are not automatically approved: reconcile
+them with these decisions and identify remaining design and implementation gaps.
+This inclusion does not authorize implementation work.
+
 Native AI judgments are foundational to Can's purpose and name, not an optional
 library integration added after the language is designed. Probabilistic judgment
 and branching are central design concerns, including how they relate to pattern
 matching. Design effects, asynchronous execution, concurrency and assertion
 support around concrete native-judgment use cases. This establishes direction,
 not a particular judgment spelling or a change to ordinary pattern-match semantics.
+
+Jev-backed AI primitives must have their own native Can grammar and syntax;
+ordinary standard-library function wrappers alone do not satisfy this requirement.
+Design their concrete forms as part of the language, reconciling the older
+native-AI proposals with current decisions. The exact primitive inventory and
+spellings still require design; this requirement does not adopt the old proposals
+wholesale.
 
 Decisions: SURFACE-074, SURFACE-083–084.
 
@@ -61,18 +76,429 @@ function declarations are not supported. Functions remain first-class values;
 `callable <name>` creates references, and `near` inputs provide captures from the
 reference-creation scope.
 
-Callable error/effect contracts remain undecided.
+Callable domain-error annotation placement is provisionally selected below;
+compatibility and inference rules remain undecided. Callables require no purity
+or effect classification.
+
+## Native Noul declaration direction
+
+Noul, Choice and Score use shared project configuration for provider settings.
+Question declarations describe state, instructions, criteria and handlers, not
+HTTP request construction. The compiler/runtime owns authentication, transport
+and response decoding; authors do not repeat fetch setup in judgment handlers.
+Use a dedicated named declaration with indented settings (the selected first
+option), rather than a configuration-record binding or factory function.
+Use `connection` as the declaration keyword. The indented setting notation
+below is selected; detailed transport behavior remains technical design work.
+
+Wrappers are generic shared transport configuration, usable by ordinary HTTP
+fetch operations and native AI judgments, not TypeSafe-only declarations.
+Credentials are shared transport concerns; model selection is AI-specific
+metadata, not a mandatory field of every wrapper. Support configurable remote
+and local service endpoints rather than hard-coding the hosted TypeSafe service.
+Native judgments still require a compatible request/response protocol or an
+explicitly supported adapter; choosing a different endpoint alone does not
+establish protocol compatibility. Detailed metadata typing and adapter
+configuration remain to be designed.
+
+### Shared connection configuration
+
+Use indented named settings, including `endpoint`, `auth bearer env`,
+`timeout_ms`, and a nested `metadata` section:
+
+```text
+connection default_wrapper
+    endpoint "http://localhost:8080"
+    auth bearer env "LOCAL_API_KEY"
+    timeout_ms 30000
+    metadata
+        model "local-model"
+```
+
+`endpoint` selects the destination, including a compatible local service.
+`auth bearer env` reads the named environment variable at runtime and supplies
+Bearer authentication; it does not embed a secret in source. A connection
+without authentication omits `auth`. Additional authentication schemes and
+headers belong to transport configuration, not individual question handlers.
+`metadata` carries operation-specific settings: the native AI adapter places
+`model` in the request body. Generic fetch calls do not automatically acquire
+an AI model field, and metadata is not implicitly converted to HTTP headers.
+Native judgments still own their question/state encoding and response decoding.
+This configuration does not allow embedded backend code or user-written externs.
+
+`timeout_ms` expresses a timeout in milliseconds; 30000 is an example, not a
+global default. Further technical design must specify timeout boundaries,
+headers, configuration validation,
+metadata typing and application, and supported authentication schemes. No retry
+policy, configuration evaluation mechanism, or arbitrary metadata forwarding is
+silently established by this example.
+
+Use the primitive-first declaration head `noul <return_type> <name>`, rather than a `question`
+prefix or an inner `kind` marker. Select its provider wrapper with
+`noul <return_type> <name> from <wrapper_name>`, for example
+`noul str needs_human from default_wrapper`. The explicit return type is the
+type produced by the selected handler, not the probability type. The wrapper keeps provider/transport
+setup separate from the question. The dedicated configuration declaration is
+selected above; its final detailed grammar, relationship to project configuration,
+and whether `from` may be omitted remain unresolved.
+This does not introduce arbitrary embedded backend code or extern adapters.
+Question declarations use `given` for ordinary parameters that may supply
+question text or criterion descriptions. Shared evaluated content is declared
+by the enclosing `judge` in `state`, as specified below. This replaces the
+earlier interpretation of question-level `given` as state. The design must support descriptions of what counts as true and
+false, and multiple named Noul questions in a single request over shared state.
+Use `asks` for the question text. The `true` and `false` branches each carry
+their criterion description followed by `=>` and an executable handler:
+
+```text
+noul bool needs_human from default_wrapper
+    given
+        str what_question
+        str what_is_true
+        str what_is_false
+    asks what_question
+    minimum 0.6
+        true what_is_true => ok true
+        false what_is_false => ok false
+```
+
+`minimum` is an optional cutoff on the Noul probability of yes. At or above
+the cutoff selects the `true` handler; below it selects the `false` handler.
+If `minimum` is omitted, the cutoff is 0.5. There is no third uncertainty branch
+in this form; the cutoff is not a separate confidence score or a symmetric
+certainty threshold. The descriptions are model criteria; the handlers execute
+the selected Can branch.
+
+Inside a Noul branch handler, standalone `%` exposes the returned probability
+of true. It refers to the same underlying probability in both the `true` and
+`false` handlers; the false handler does not substitute its complement.
+This is a contextual expression, not a replacement for the existing binary
+remainder operator. Its numeric scale is 0–1: a twenty-percent probability is
+`0.2`, not `20`. It exposes the original probability without automatic scaling
+or rounding. This supersedes the intervening 0–100 selection for `%` only;
+the `minimum` cutoff remains unchanged on the same probability scale.
+String formatting/conversion remains unresolved. The user's concatenation
+sketch does not establish implicit numeric-to-string conversion.
+
+The example records the shown explicit-cutoff layout. Exact branch indentation
+when `minimum` is omitted and detailed typing/assertion rules remain to be
+designed. Batched invocation is specified under `judge` below. Whether criterion descriptions are mandatory
+also remains unresolved.
+
+## Native Choice and full-distribution forms
+
+`choice <return_type> <name> from <connection_name>` uses the primitive-first
+AI declaration layout, with an explicit return type before the name. That type
+describes the selected handler's result. Named criteria and handlers appear
+beneath `asks`. Only the winning option's handler executes:
+
+```text
+choice str route_ticket from default_wrapper
+    asks "Which team should handle this message?"
+        billing "Payments, invoices, or refunds." => ok "billing"
+        technical "Bugs or problems using the product." => ok "technical"
+        other "Anything outside those categories." => ok "other"
+```
+
+Use `record <record_name> choice <field_type> <name> from <connection_name>` for the separate
+native form processing all option probabilities. This replaces both the
+initial standalone `distribution` and subsequent `choice distribution` spellings.
+This form returns a compiler-generated record whose fields are the declared
+option names. Every option's handler runs, with standalone `%` exposing that
+option's original 0–1 probability. Its `ok` payload supplies that field's value;
+the explicit field type applies to every generated field. This supersedes the
+earlier handler-free, raw-probability-only form:
+
+```text
+record routing_result choice float routing_weights from default_wrapper
+    given
+        str question
+    confidence as conf
+    asks question
+        billing "Payments, invoices, or refunds." => ok 100 * %
+        technical "Bugs or problems using the product." => ok %
+        other "Anything outside those categories." => ok 400 * %
+```
+
+The numeric example uses `float`, not `int`; no rounding or truncation rule is
+introduced. A `record <record_name> choice str ...` declaration likewise produces string
+fields. The user's string-field example requests automatic conversion of a
+numeric handler payload to `str` in that context. Exact formatting and whether
+that conversion applies in other language contexts remain unresolved; this is
+not blanket authorization for implicit conversions throughout Can.
+
+The explicit record name identifies the generated type. `confidence as conf`
+binds confidence for handlers and exposes it as the generated record field
+`conf`; an option named `conf` then conflicts and must be rejected. That metadata
+field carries the provider confidence rather than an option handler result.
+Handler failure semantics and inclusion of the selected option remain undecided.
+This does not mean every
+handler in a `choice` declaration executes. The distinction is a Can surface
+design: TypeSafe Choice already returns the full probability distribution as
+well as its selected option and confidence. It does not require a new provider
+primitive. In ordinary Choice handlers, `%` exposes the selected option
+probability on the original 0–1 scale. Use `confidence as <name>` to bind the
+separate returned confidence value. An optional `minimum <threshold> => <fallback>`
+selects the fallback below the minimum confidence; otherwise the winning option
+handler runs. This differs from Noul minimum, which thresholds probability of
+true. Confidence scale/default/formatting details remain unresolved; the source
+examples do not establish new string conversion or percentage-scaling rules.
+
+## Batched judgments with `judge`
+
+Use `judge <return_type> <name> from <connection_name>`. Its `given` section
+contains ordinary inputs. Its `state` section declares the shared content for
+all questions. Question text and criteria may be supplied through ordinary
+question parameters rather than being restricted to literals.
+
+Each listed `call question(arguments) as <type> <name>` registers a question
+for one shared AI request. It is not a sequential network request. All answers
+are received and their question handlers evaluated and results bound before
+executing the judge's final `ok => ...` arm. This batching behavior is explicitly
+approved and differs from ordinary sequential `call` execution outside a judge.
+
+```text
+judge str assess_urgency from default_wrapper
+    given
+        str question
+    state
+        str email_content
+        int num_emails_from_author
+        int num_emails_from_system
+        timestamp received_time
+    call needs_human(question, "True when human assistance is needed.", "False otherwise.") as bool human_needed
+    call route_ticket() as str department
+    call routing_weights(question) as routing_result weights
+    ok => ok department
+```
+
+This adapted excerpt supplies the three required arguments to `needs_human`;
+the user's omitted arguments were not approval for missing fixed inputs.
+The shared state is available to the AI questions, separate from these arguments.
+Invoke a judge with ordinary `given` arguments first, followed by one final
+parenthesized group containing its `state` arguments, both in declaration order:
+`call assess_email(question, (email_content, email_count))`. The inner group is
+judge-specific argument syntax, not a general anonymous tuple value.
+Serialization (including the
+illustrative `timestamp` type), request failures, assertions, handler execution
+order and compatibility of question/judge connections remain unresolved.
+The example does not approve a general timestamp type or new conversions.
+
+### Choice confidence and reusable arms
+
+The selected confidence/fallback surface is illustrated by:
+
+```text
+choice str route_ticket from default_wrapper
+    asks "Which team should handle this message?"
+    confidence as conf
+    minimum 0.6 => ok "Review needed."
+        billing "Payments, invoices, or refunds." => ok "billing"
+        technical "Bugs or problems using the product." => ok "technical"
+        other "Anything outside those categories." => ok "other"
+```
+
+Reusable choice arms are named top-level declarations. Use
+`choice_arm <return_type> <name>`, a `describes` line for its criterion text,
+and an executable completion body. `%` is the current option probability.
+Store those named arm values in ordinary record fields and spread the record
+beneath `asks`:
+
+```text
+choice_arm float billing_arm
+    describes "Payments and refunds."
+    ok %
+
+choice_arm float technical_arm
+    describes "Product faults."
+    ok %
+
+/// Reusable department judgment arms.
+record departments
+    choice_arm billing
+    choice_arm technical
+
+departments all_depts = departments(billing_arm, technical_arm)
+
+record routing_result2 choice float routing_weights2 from default_wrapper
+    confidence as conf
+    asks "Which team should handle this message?"
+        ...all_depts
+        other "Anything outside those categories." => ok %
+```
+
+The record field names supply the option names. Exact captures and detailed
+handler/field compatibility remain unresolved. This does not add general
+anonymous functions or inline executable arm-constructor expressions.
+
+### Runtime-defined Choice options
+
+Spread description-only option data beneath `asks`, then use one shared success
+arm receiving the selected key:
+
+```text
+choice str select_department from default_wrapper
+    given
+        str question
+        choice_option[] candidates
+    asks question
+        ...candidates
+        ok str selected_key => ok selected_key
+```
+
+`choice_option` describes a stable key and criterion text; its exact record
+contract and validation remain technical work. These candidates contain data,
+not executable handlers. Their spread is distinguished by element type from
+spreading reusable `choice_arm` values. Runtime-generated names do not create
+statically named result fields. No `dynamic` modifier or separate `options`
+section is introduced.
+
+## Native Score declarations
+
+The revised Score forms are approved, superseding the earlier deferral. Put
+settings before `asks`; `asks` is the final section, containing ordered levels
+and handlers. This placement decision applies to Score forms, not a silent
+rewrite of other declaration layouts.
+
+```text
+score float assess_severity from default_wrapper
+    confidence as conf
+    score as value
+    minimum 0.6 => ok -1.0
+    asks "How severe is the problem described in the email?"
+        minor "An inconvenience; normal work can continue."
+        moderate "Work is disrupted, but a workaround exists."
+        severe "Essential work is blocked with no workaround."
+        ok => ok value
+
+record severity_weights score float assess_severity_weights from default_wrapper
+    confidence as conf
+    score as value
+    asks "How severe is the problem described in the email?"
+        minor "An inconvenience; normal work can continue." => ok %
+        moderate "Work is disrupted, but a workaround exists." => ok %
+        severe "Essential work is blocked with no workaround." => ok %
+```
+
+Levels are numbered from zero in written order. `score as <name>` binds the
+returned weighted numeric score, which may be fractional; `confidence as <name>`
+binds the separate confidence. Ordinary Score runs the minimum-confidence
+fallback below its explicit threshold, otherwise the final `ok` handler. It
+never implicitly rounds the score or selects the highest-probability level.
+The example's `-1.0` is an author-chosen fallback, not a built-in failure value.
+
+`record <record_name> score <field_type> <name> from <connection_name>` runs
+every level handler and generates a field for each named level. In those
+handlers `%` is that level's probability on the 0–1 scale. The confidence and
+score bindings also name generated metadata fields carrying their respective
+provider values, separate from transformed level fields. Name collisions are
+errors. These metadata fields are not forced to the level-handler field type.
+
+Both forms receive shared state through `judge` and may have ordinary `given`
+parameters. Default confidence policy, assertions, provider failures and other
+unresolved judge contracts are not supplied implicitly by these examples.
+
+## Named fetch declarations
+
+Use a named fetch declaration with the expected response record type before
+the name and `from` selecting shared connection configuration:
+
+```text
+fetch user_profile load_profile from account_service
+    given
+        str user_id
+    get "/profile"
+    query
+        id = user_id
+    headers
+        accept = "application/json"
+```
+
+Invoke it using ordinary call syntax and completion handling:
+
+```text
+match call load_profile("42")
+    ok user_profile profile => ok profile
+    // Error arms depend on the fetch contract, which remains to be designed.
+```
+
+`user_profile` is a separately declared record describing the expected decoded
+response body, validated before exposure as that type. The connection supplies
+shared transport settings. This selects the named declaration option, not the
+ordinary-library-call alternative or its proposed call-site `from` suffix.
+Use ordinary `given` parameters and named `query` and `headers` sections, with
+`name = expression` entries. Query encoding, header mapping/merging, other HTTP
+methods, request bodies, response status/header access, text/bytes responses and
+error contracts remain to be designed. No request-record or helper-expression
+alternative is selected.
+
+## Native LLM responses and tools
+
+Can must support native LLM-generated responses in addition to the judgment
+primitives. Responses must support both plain text and structured data, such as
+JSON. The exact structured-output type/schema syntax and validation/error rules
+remain to be designed; this does not introduce a general untyped JSON value.
+
+For structured responses, use `llm <record_type> <name> from <connection_name>`.
+The output shape is an ordinary separately declared record. There is no
+`returns` section; the record type is in the declaration header. This selects
+the first proposed form, superseding the briefly discussed bottom `returns`
+layout, without adding nested record declarations.
+
+```text
+/// A generated summary of an email.
+record email_summary
+    str subject
+    str summary
+
+llm email_summary summarize_email from default_wrapper
+    state
+        str email_content
+    asks "Summarize the email with a short subject and a factual summary."
+```
+
+Validate generated structured data against the declared record shape before
+exposing it as that type. Invalid-output handling remains to be designed.
+The previously requested plain-text capability is not removed by this
+structured-response syntax selection.
+
+The author defines the shape of a structured LLM response. This is a general
+capability, not a dedicated generator for Choice questions or options. Ordinary
+Can code can transform the typed response and pass selected values into a
+Choice's `given` parameters. The response need not itself match a built-in
+Choice schema. Generating question text, option sets and descriptions is one
+motivating application, not a restriction on what an LLM can return.
+
+In that application, options may be determined at runtime rather than limited
+to source-declared lists. The author explicitly connects generation, any data
+transformation, and the subsequent judgment; no automatic LLM-to-Choice pipeline
+is implied. A judgment depending on generated inputs follows generation rather
+than running as an independent question in the same request.
+
+Validation of generated question/options and detailed dynamic-result typing
+remain unresolved. Description-only option spread and a shared selected-key
+handler are selected under runtime-defined Choice options. Runtime-generated
+labels do not automatically become statically known record fields, nor does
+this requirement authorize executing generated descriptions as Can code or
+generating arbitrary executable option handlers.
+
+LLM tool syntax and execution design are explicitly deferred. The requirement
+to support author-supplied tools remains; none of the chooser tool-list options
+is selected. Tool exposure, execution, result-return rules and termination/error
+handling remain to be designed.
+This requirement does not grant a model unrestricted access to Can functions
+or establish automatic execution of every requested tool call.
 
 ## Naming
 
 All user-defined names use lowercase `snake_case`, including functions, inputs,
-locals, fields, assertions, records, choices and errors. Types and errors do not
+locals, fields, assertions, records, variants and errors. Types and errors do not
 use a different capitalization convention.
 
 ```text
 fn int calculate_total
 record order_item
-choice payment_method
+variant payment_method
 error 1003 invalid_quantity
 ```
 
@@ -211,7 +637,7 @@ package-header rules are inherited.
 ## Generic type spelling
 
 Generic type applications use angle brackets, for example `box<int>`.
-Generic record, function, choice and error declarations place type parameters immediately
+Generic record, function, variant and error declarations place type parameters immediately
 after the declared name, also in angle brackets:
 
 ```text
@@ -220,8 +646,8 @@ record box<item>
 ```
 
 The corresponding function-header shape is `fn item identity<item>`.
-Choice and error declaration-head shapes include `choice outcome<item>` and
-`error 1004 rejected<item>`. Error fields may use those type parameters.
+Variant and error declaration-head shapes include `variant outcome<item>` and
+`error 1004 rejected<item>(item value)`. Error fields may use those type parameters.
 Type-parameter names follow the same `snake_case` rule as other user-defined
 names.
 
@@ -490,8 +916,23 @@ given
     callable int (int) transform
 ```
 
-This selects the callable-type shape only. Callable error/effect contracts remain
-undecided; their omission in this sketch does not establish an empty contract.
+The example above illustrates the base callable-type shape only; omission of
+an error annotation does not establish an empty contract.
+
+Provisional choice, explicitly open to revision after practical use: place a
+callable's `emits [...]` annotation after its input types and before the binding
+name:
+
+```text
+given
+    callable receipt () emits [postgres_failed, redis_failed] operation
+```
+
+Here `receipt` is the success return type, and `operation` is the callable input
+name. This selects annotation placement only. Whether empty lists must be
+written, inference from referenced function declarations, callable compatibility
+and generic error propagation remain unresolved. No purity or effect annotation
+is introduced.
 
 Invoke a function-valued input or other callable value with the same `call`
 syntax used for named functions:
@@ -501,7 +942,7 @@ call transform(5)
 ```
 
 `callable` creates a function reference; `call` invokes a function. This invocation
-syntax does not settle callable error/effect contracts or introduce implicit
+syntax does not settle callable error compatibility or introduce implicit
 error propagation.
 
 ## Named function references
@@ -720,6 +1161,64 @@ and arrow:
 default_value: => ok 3
 ```
 
+### Dependency outcomes with `when`
+
+Use a `when` table beneath a `match call` and before its completion arms to
+supply dependency outcomes during named assertions. This replaces the old
+call-site `given` table; `given` remains the function-input declaration section.
+
+Each row uses assertion-style syntax:
+`assertion_name: expected_call_arguments => supplied_completion`.
+Arguments are positional and comma-separated; zero-input calls leave the space
+between the colon and arrow empty. The row name identifies the assertion for
+which that dependency outcome is supplied. In that assertion, the table supplies
+the outcome instead of executing the dependency. Normal execution invokes the
+real dependency.
+
+The following excerpt assumes `clock::wall_now()` returns `int` and declares
+`clock::unavailable`:
+
+```text
+/// Reads the current time in milliseconds.
+fn int read_millis
+    emits [clock::unavailable]
+    asserts
+        available: => ok 1726920000000
+        unavailable: => clock::unavailable()
+    match call clock::wall_now()
+        when
+            available: => ok 1726920000000
+            unavailable: => clock::unavailable()
+        ok int millis => ok millis
+        clock::unavailable
+```
+
+This approves the keyword, call-site placement and row notation. It does not
+restore the old boolean `when` chain guards or a `given / when / then`
+business-logic grammar. Repeated-call sequences, missing-row rules, transitive
+assertion context and integration with coordination blocks still need design;
+the old implementation's policies are not inherited automatically.
+
+### Assertions for AI and fetch consumers
+
+Reuse ordinary `asserts` and approved call-site `when` tables when testing
+consumers of AI and fetch declarations. Do not introduce a separate top-level
+assertion declaration or declaration-level `when` fixture section through this
+selection. The excerpt below assumes `user_profile` has one string field:
+
+```text
+// Inside a calling function:
+asserts
+    example: "42" => ok user_profile("Sam")
+match call load_profile("42")
+    when
+        example: "42" => ok user_profile("Sam")
+    ok user_profile profile => ok profile
+```
+
+Provider-output fixtures for testing AI declarations themselves remain a separate
+design task; a supplied dependency result is not evidence of live model quality.
+
 ## Calls and completion handling
 
 Call arguments allow array spread, for example `call combine(...values)`.
@@ -882,7 +1381,7 @@ that specific error using the existing error-arm rules. If every call succeeds,
 the `ok => expression` arm runs. These arms replace `then` and shared `else`.
 The example assumes the calls declare `user_not_found`, `account_not_found`
 and `insufficient_balance`, respectively.
-There is no `when` clause in a chain. Checks are calls that report failure
+There is no boolean `when` guard in a chain. Checks are calls that report failure
 through declared errors, handled by the same explicit error arms.
 Additional typing and composition rules remain undecided.
 
@@ -1031,13 +1530,16 @@ Here the declared field is `minimum`. If the error declares a field named
 Decisions: SURFACE-032–037.
 
 Declare an error with a mandatory stable numeric ID followed by its name, then
-indented type-before-name payload fields:
+parenthesized type-before-name payload fields:
 
 ```text
-error 1002 below_minimum
-    int actual
-    int minimum
+error 1002 below_minimum(int actual, int minimum)
 ```
+
+Error payload fields are declared in parentheses after the error name (and any
+generic parameters), using comma-separated `<type> <name>` entries on the
+declaration line. This replaces the indented field-list form for errors only;
+record declarations are unchanged. Trailing commas remain forbidden.
 
 IDs identify error kinds, are unique throughout the codebase, and must be visible
 in relevant error reports. Missing and duplicate IDs must be compile-time errors.
@@ -1084,7 +1586,7 @@ empty parentheses for construction:
 record finished
 ```
 
-Construct its value as `finished()`. Fieldless records may serve as choice
+Construct its value as `finished()`. Fieldless records may serve as variant
 alternatives carrying no additional data.
 
 Decisions: SURFACE-038–039, SURFACE-041, SURFACE-043–044, SURFACE-050.
@@ -1113,7 +1615,7 @@ and trailing commas are forbidden. Record declaration layout is unchanged.
 
 Record patterns identify fields positionally in declaration order. Every field
 has a pattern; `_` ignores a field. Ordinary first-match semantics apply.
-Choice matching uses bare type names as specified below.
+Variant matching uses bare type names as specified below.
 
 ```text
 fn bool has_zero_side
@@ -1153,11 +1655,14 @@ fn dimensions enlarge
     ok dimensions with (width = dimensions.width + amount, height = dimensions.height + amount)
 ```
 
-## Choices
+## Variants
 
 Decisions: SURFACE-080–081.
 
-Use `choice` to declare a type whose value is one of the listed types. Records
+Use `variant` to declare a type whose value is one of the listed types. This
+replaces the data-type keyword `choice`; it does not change matching semantics.
+The name `choice` is freed for native AI judgments, whose exact declaration
+syntax is still being designed. Records
 are declared independently and then listed as alternatives:
 
 ```text
@@ -1168,7 +1673,7 @@ record rectangle
     int width
     int height
 
-choice shape
+variant shape
     circle
     rectangle
 ```
@@ -1187,7 +1692,7 @@ match shape
         false => ok shape
 ```
 
-Within a choice arm, the original matched binding remains the value and is
+Within a variant arm, the original matched binding remains the value and is
 narrowed to the matched record type. Access its fields through that binding,
 such as `shape.width`, and return or copy-update it as `shape`. The record type
 name does not become a value binding. Only error matching exposes the matched
@@ -1328,24 +1833,280 @@ The already selected bracket indexing/slicing syntax and ordinary `append`
 function remain available. Whether `append` also has a method spelling is not
 settled by restoring native-style methods.
 
-## Effects — deferred
+## Effects and asynchronous execution
 
-Revisit whether Can needs effect tracking and, if so, its mechanism and syntax
-later. No requirement to distinguish pure and externally interacting functions
-is currently established. This deferral does not change `emits` or the
-separately recorded Can-to-Bun platform boundary.
+Can authors do not annotate functions as asynchronous or synchronous. The
+compiler owns that distinction. Ordinary Can code requires no promise handling
+or authored `async` or `await`. Code is written as if calls
+are synchronous: an ordinary call obtains its completion before dependent or
+subsequent steps proceed, while native asynchronous waiting need not block the
+runtime's other work. Calls are not implicitly launched concurrently.
+All Can functions use asynchronous execution underneath: generated functions
+use native async functions and ordinary calls await their completions.
+Ordinary calls execute sequentially; asynchronous waiting does not mean
+starting subsequent calls before the current call completes.
+
+Can must also make the native Promise method capabilities available through
+its Bun-backed standard library, including coordinating concurrent operations
+as with `Promise.all`. This supersedes the blanket rejection of concurrency
+and promise-handling APIs. Reuse native runtime implementations rather than
+reimplementing them. The exact Can spelling, method inventory and mapping to
+Can completion/error contracts remain to be designed. In particular, the
+coordination form must allow operations to start before awaiting each result;
+ordinary sequential calls alone cannot express that overlap. No concrete
+promise type, task type or start syntax is selected by this decision.
+
+Use the Can function name `concurrent` for native `Promise.all`. It coordinates
+multiple calls, starting them without awaiting each one sequentially and then
+awaiting the native aggregate operation. The compiler must preserve this
+behavior despite the ordinary automatic-await rule. Result representation
+remains undecided.
+
+Use `race` in Can for first-success coordination, backed by native `Promise.any`.
+This replaces the earlier mapping to `Promise.race`. The compiler starts the
+participating calls without awaiting each one sequentially, then waits for the
+first successful completion. A failed call does not end the race while another
+participating call can still succeed. If every call fails, the race fails.
+All-failed handling uses the `errors` group specified below. The underlying
+aggregate representation and adapter between Can completions and native promise
+settlement remain undecided.
+This selects the `race` spelling and first-success behavior, not a general
+promise type exposed to Can authors or automatic cancellation of remaining calls.
+
+All four coordination headers require the `match call` prefix: `match call concurrent`,
+`match call concurrent with error`, `match call race`, and `match call race with error`.
+Bare coordination headers are not the selected syntax.
+
+Both coordination forms use an indented block with one participating call per
+line. These direct entries omit the `call` keyword:
+
+```text
+match call concurrent
+    classify(review_a)
+    classify(review_b)
+
+match call race
+    classify(review_a)
+    classify(review_b)
+```
+
+This omission applies only to calls listed directly in these blocks; it does
+not remove `call` from ordinary invocation syntax. Result binding and detailed
+completion semantics remain to be designed; arm placement is specified below.
+Operation entries are function invocations, not declarations or arbitrary
+statements. Completion arms are also allowed as specified below.
+In particular, record declarations cannot appear as entries. The
+coordination construct supplies the invocation context, making `call` redundant
+on each entry.
+
+The modifier `with error` follows the coordination name on the block header:
+
+```text
+match call concurrent with error
+    classify(review_a)
+    classify(review_b)
+
+match call race with error
+    classify(review_a)
+    classify(review_b)
+```
+
+`concurrent with error` maps to native `Promise.allSettled`: wait for every
+participating call and retain each success or failure. `race with error` maps
+to native `Promise.race`: take the first completion, whether success or failure.
+Unmodified `concurrent` still maps to `Promise.all`, and unmodified `race` still
+maps to `Promise.any`. The modifier selects coordination behavior; it does not
+select result-binding syntax, change `emits`, or settle the representation of
+collected domain errors and standard failures.
+
+### Coordination completion-arm layout
+
+The following sketches use `...` for handler bodies, not executable Can syntax.
+
+```text
+match call concurrent
+    primary::lookup(user_id)
+        ok profile primary_profile => ...
+    backup::lookup(user_id)
+        ok profile backup_profile => ...
+    primary_unavailable => ...
+    backup_unavailable => ...
+
+match call concurrent with error
+    primary::lookup(user_id)
+        ok profile primary_profile => ...
+        primary_unavailable => ...
+    backup::lookup(user_id)
+        ok profile backup_profile => ...
+        backup_unavailable => ...
+
+match call race
+    primary::lookup(user_id)
+    backup::lookup(user_id)
+    ok profile found_profile => ...
+    errors
+        primary_unavailable => ...
+        backup_unavailable => ...
+
+match call race with error
+    primary::lookup(user_id)
+    backup::lookup(user_id)
+    ok profile found_profile => ...
+    primary_unavailable => ...
+    backup_unavailable => ...
+```
+
+- `match call concurrent`: success arms are beneath their calls; shared domain-error
+  arms follow at the call-entry indentation. Start all calls. If all succeed,
+  process success arms in written order after all results arrive. Otherwise,
+  dispatch the first failure to the shared arms and do not run success arms.
+- `match call concurrent with error`: success and domain-error arms are beneath
+  each call. Wait for every outcome, then process each call's matching arm in
+  written order. A participant's failure does not discard another's success.
+- `match call race`: the first success selects the shared success arm. Only when
+  every participant fails, enter `errors` and dispatch each collected failure
+  to its matching arm in input order. The same error arm can run more than once
+  when multiple participants produce that error kind. This replaces individual
+  shared domain-error arms outside an `errors` group for this form only.
+- `match call race with error`: the first completion, success or failure, selects
+  exactly one shared arm.
+
+Calls run concurrently; handlers process the outcome of native coordination.
+Unfinished calls are not automatically cancelled. Handler bodies are scoped to
+the coordination operation: multiple success arms cannot each return from the
+enclosing function. Successful per-call handler values are collected as described
+below. Propagation when a handler itself fails remains unresolved.
+
+Standard failures remain distinct from declared domain errors and use the
+existing optional `[_]` handler where applicable. Propagation of unhandled
+standard failures within collected outcomes remains unresolved. Exact aggregate
+representation and handling for expanded callable collections
+still need design.
+
+These layouts retain lowercase `ok` and bare error-name patterns. Capitalized
+success markers and constructor-shaped error patterns in earlier sketches did
+not revise those established rules.
+
+### Binding collected handler results
+
+Bind a coordination result using the ordinary typed binding before the block,
+not an `as` suffix or a separate binding line inside the block:
+
+```text
+save_result[] results = match call concurrent with error
+    postgres::save(account)
+        ok receipt saved => ok save_result("postgres", true)
+        postgres_failed => ok save_result("postgres", false)
+    redis::save(account)
+        ok receipt saved => ok save_result("redis", true)
+        redis_failed => ok save_result("redis", false)
+```
+
+This excerpt assumes a declared `save_result` record containing a database name
+and success flag, and the illustrated function/error contracts. Each selected
+per-call handler supplies one array entry through its `ok` payload, in input
+call order. These completions do not finish the enclosing function. Handler
+outputs must fit the declared array element type. This collects transformed
+handler results, not automatically preserved raw completions; handlers can
+explicitly preserve error information in their output values.
+
+The typed-binding placement is selected. Handler-failure propagation, shared
+failure-arm results for plain `concurrent`, and the result of an all-failed
+`race` remain unresolved; this example does not settle those cases.
+
+### Runtime-sized collections of different calls
+
+Current selected direction, explicitly open to future revision: reuse existing
+`callable <name>` values and `near` captures to collect different operations
+without executing them. Named top-level wrapper functions may capture each
+operation's distinct immutable inputs and invoke its underlying database or
+other function when called. Creating the callable captures the inputs; it does
+not start the operation. This introduces neither anonymous functions nor new
+argument-binding or deferred-call syntax.
+
+A collection may contain different compatible callable implementations, for
+example `[callable save_postgres, callable save_redis]`, and may be constructed
+with a runtime-dependent number of entries. Expand the collection inside a
+coordination block with `...operations`:
+
+```text
+match call concurrent
+    ...operations
+
+match call race
+    ...operations
+```
+
+The same expansion is available in the `with error` forms. Each callable is
+invoked using its own captured inputs, without awaiting entries sequentially
+before coordination. This extends the call-only block rule to permit a spread
+entry supplying calls from a collection; it does not allow arbitrary statements
+or declarations in the block.
+
+For `concurrent with error`, put per-operation handlers directly beneath the
+spread entry. The same arms apply separately to each expanded call, and their
+successful payloads form the bound array in collection order:
+
+```text
+bool[] results = match call concurrent with error
+    ...operations
+        ok receipt saved => ok true
+        postgres_failed => ok false
+        redis_failed => ok false
+```
+
+This excerpt assumes compatible callable inputs returning `receipt` with the
+illustrated declared domain errors. No `each` marker or coordination-specific
+`for` syntax is introduced. This placement does not move the shared outcome
+arms of the race forms beneath spread entries.
+
+The illustrated operations share a success type, such as a named `receipt`
+record. Exact collection typing, compatibility of callable domain-error sets,
+and aggregate error handling remain unresolved. This decision
+does not approve arbitrary unrelated result types in one collection or choose
+new callable error-contract syntax. Extra named wrappers are an accepted
+tradeoff of this current direction.
+
+Effects are allowed in every function. There are no purity annotations, purity
+checks, effect lists or effect-propagation checks. The compiler conservatively
+treats every function as potentially effectful; this does not mean every function
+actually interacts with external state. This decision does not change `emits`
+or the separately recorded Can-to-Bun platform boundary.
 Decisions about `read`, `write`, `modify` and `delete`, including their keyword
 status or effect meaning, are also deferred.
+
+## Iteration and early completion
+
+Initial iteration uses named callable collection operations, with no new loop
+syntax. `call items.for_each(callable save)` processes items sequentially.
+This is a Can library contract; do not blindly lower an async callback through
+native JavaScript `forEach`, which does not await it. Existing transformation
+syntax such as `call items.map(callable transform)` remains available. Detailed
+fallible iteration and callback contracts remain technical design work.
+
+Keep terminal completion only; add no `return` or `finish` early-exit keyword.
+Structure the remainder using existing `match` and `do` forms:
+
+```text
+match ready
+    true => ok value
+    false => do
+        call prepare()
+        ok fallback
+```
+
+This selects no additional early-return syntax and does not change the already
+established completion rules of existing match arms.
 
 ## Unresolved questions
 
 - Whitespace rules beyond four-space indentation and the rejection of indentation tabs.
 - General expression continuation outside assertions.
-- Early-return rules.
-- Integration and naming of dependency expectations alongside input `given`.
-- Effects: deferred, including whether effect tracking is needed at all.
-- Callable domain-error contract spelling and generic error propagation;
-  the basic callable type and generic error declaration spelling are settled.
+- Detailed dependency-table behavior and integration beyond the approved
+  call-site `when` syntax.
+- Callable domain-error compatibility, inference and generic error propagation;
+  annotation placement is provisional, while the basic callable type and generic
+  error declaration spelling are settled.
 - Binding consistency across `|` alternatives; applicability of alternatives to
   completion dispatch.
 - Typed binding declarations within ordinary record patterns.
@@ -1355,6 +2116,13 @@ status or effect meaning, are also deferred.
 - Array operation inventory and contracts beyond the selected `append`.
 
 ## Can-to-Bun boundary
+
+### Initial distribution scope
+
+Windows is not a supported platform. Start with macOS support. Linux is a possible additional target, not yet a
+committed initial platform. The initial macOS architecture coverage remains
+to be selected. Runtime packaging should be platform-specific rather than
+shipping binaries for every operating system in each download.
 
 Current boundary: SURFACE-066. Catalogue ownership and command-execution
 constraints: SURFACE-063–064.
@@ -1410,8 +2178,7 @@ String operations such as lowercasing belong to Can's language or standard libra
 not project-defined backend escapes. Platform-specific details remain behind
 Can operations; no unrestricted Bun namespace is exposed to application code.
 
-The approved inventory, exact Can APIs, effect granularity (individual operations
-versus broader categories), asynchronous execution rules, error mapping and test
+The approved inventory, exact Can APIs, error mapping and test
 substitution remain unresolved. Illustrative file-operation names are not yet
 approved library APIs.
 
