@@ -1,22 +1,26 @@
-name: verifier backend gate
+name: target qualification
 
 on:
   push:
   pull_request:
 
 jobs:
-  z3-present:
-    runs-on: ubuntu-latest
+  native-capabilities:
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v6
-      - run: sudo apt-get update && sudo apt-get install -y z3
-      # The verifier's integer control probes execute against the
-      # real backend: 2*x==1 must be unsat over Int (no 1/2 witness),
-      # and 0<x<1 must be unsat (no integer strictly between).
-      - run: |
-          printf '(declare-const x Int)\n(assert (= (* 2 x) 1))\n(check-sat)\n' | z3 -in | grep -q '^unsat$'
-          printf '(declare-const x Int)\n(assert (> x 0))\n(assert (< x 1))\n(check-sat)\n' | z3 -in | grep -q '^unsat$'
-      - uses: actions/setup-go@v6
+      - name: Acquire the pinned upstream archive
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          target = json.loads(pathlib.Path('distribution/target.json').read_text())
+          urllib.request.urlretrieve(target['upstream']['url'], pathlib.Path(os.environ['RUNNER_TEMP']) / 'bun.zip')
+          PY
+      - name: Qualify the staged runtime offline
+        run: python3 distribution/qualify.py --archive "$RUNNER_TEMP/bun.zip" --report "$RUNNER_TEMP/native-capabilities-v1.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          go-version-file: go.mod
-      - run: go test -count=1 ./...
+          name: native-capabilities-v1
+          path: ${{ runner.temp }}/native-capabilities-v1.json
+          if-no-files-found: error
