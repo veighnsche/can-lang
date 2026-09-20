@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestBraceOutsideString(t *testing.T) {
+func TestLegacyBraceOutsideString(t *testing.T) {
 	cases := []struct {
 		line string
 		want bool
@@ -24,17 +24,17 @@ func TestBraceOutsideString(t *testing.T) {
 		{"", false},
 	}
 	for _, c := range cases {
-		if got := BraceOutsideString(c.line); got != c.want {
-			t.Errorf("BraceOutsideString(%q) = %v, want %v", c.line, got, c.want)
+		if got := LegacyBraceOutsideString(c.line); got != c.want {
+			t.Errorf("LegacyBraceOutsideString(%q) = %v, want %v", c.line, got, c.want)
 		}
 	}
 }
 
-func TestHasBraceOutsideString(t *testing.T) {
-	if HasBraceOutsideString("a\nb\nc") {
+func TestLegacyHasBraceOutsideString(t *testing.T) {
+	if LegacyHasBraceOutsideString("a\nb\nc") {
 		t.Fatal("clean body must not trip the ban")
 	}
-	if !HasBraceOutsideString("a\nb { x }\nc") {
+	if !LegacyHasBraceOutsideString("a\nb { x }\nc") {
 		t.Fatal("braced line must trip the ban")
 	}
 }

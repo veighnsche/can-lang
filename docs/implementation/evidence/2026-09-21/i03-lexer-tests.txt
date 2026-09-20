@@ -1,0 +1,174 @@
+=== RUN   TestOriginalBytesAndCoordinateConventions
+--- PASS: TestOriginalBytesAndCoordinateConventions (0.00s)
+=== RUN   TestRejectSplitAndOutOfRangeCoordinates
+--- PASS: TestRejectSplitAndOutOfRangeCoordinates (0.00s)
+=== RUN   TestInvalidUTF8HasOriginalOffset
+--- PASS: TestInvalidUTF8HasOriginalOffset (0.00s)
+=== RUN   FuzzCoordinates
+=== RUN   FuzzCoordinates/seed#0
+=== RUN   FuzzCoordinates/seed#1
+=== RUN   FuzzCoordinates/seed#2
+=== RUN   FuzzCoordinates/seed#3
+=== RUN   FuzzCoordinates/seed#4
+--- PASS: FuzzCoordinates (0.00s)
+    --- PASS: FuzzCoordinates/seed#0 (0.00s)
+    --- PASS: FuzzCoordinates/seed#1 (0.00s)
+    --- PASS: FuzzCoordinates/seed#2 (0.00s)
+    --- PASS: FuzzCoordinates/seed#3 (0.00s)
+    --- PASS: FuzzCoordinates/seed#4 (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/source	0.145s
+=== RUN   TestIndentationAndCommentOnlyLines
+--- PASS: TestIndentationAndCommentOnlyLines (0.00s)
+=== RUN   TestCommentSeparationNestingAndDocumentation
+--- PASS: TestCommentSeparationNestingAndDocumentation (0.00s)
+=== RUN   TestKeywordsAndContextualNames
+--- PASS: TestKeywordsAndContextualNames (0.00s)
+=== RUN   TestStringDecodingAndOriginalSpans
+=== RUN   TestStringDecodingAndOriginalSpans/"line\n\r\t\0\"\\"
+=== RUN   TestStringDecodingAndOriginalSpans/"\q\u1234\x41\a"
+=== RUN   TestStringDecodingAndOriginalSpans/r"C:\files\notes\"
+=== RUN   TestStringDecodingAndOriginalSpans/"""______é😀__"""
+=== RUN   TestStringDecodingAndOriginalSpans/r"""___\"_"""
+=== RUN   TestStringDecodingAndOriginalSpans/"""one_"_two_""_end"""
+=== RUN   TestStringDecodingAndOriginalSpans/"bare_return_inside"
+=== RUN   TestStringDecodingAndOriginalSpans/"\ufeff"
+--- PASS: TestStringDecodingAndOriginalSpans (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"line\n\r\t\0\"\\" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"\q\u1234\x41\a" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/r"C:\files\notes\" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"""______é😀__""" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/r"""___\"_""" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"""one_"_two_""_end""" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"bare_return_inside" (0.00s)
+    --- PASS: TestStringDecodingAndOriginalSpans/"\ufeff" (0.00s)
+=== RUN   TestNumericLiteralsRangesAndSigns
+--- PASS: TestNumericLiteralsRangesAndSigns (0.00s)
+=== RUN   TestLexicalFailuresHavePreciseSpans
+=== RUN   TestLexicalFailuresHavePreciseSpans/____first
+=== RUN   TestLexicalFailuresHavePreciseSpans/a___b
+=== RUN   TestLexicalFailuresHavePreciseSpans/a_________b
+=== RUN   TestLexicalFailuresHavePreciseSpans/a_____b_______c
+=== RUN   TestLexicalFailuresHavePreciseSpans/a__b
+=== RUN   TestLexicalFailuresHavePreciseSpans///_tab_
+=== RUN   TestLexicalFailuresHavePreciseSpans/a_b
+=== RUN   TestLexicalFailuresHavePreciseSpans//*_x__*/
+=== RUN   TestLexicalFailuresHavePreciseSpans/a_b#01
+=== RUN   TestLexicalFailuresHavePreciseSpans/a\ufeffb
+=== RUN   TestLexicalFailuresHavePreciseSpans/Bad
+=== RUN   TestLexicalFailuresHavePreciseSpans/bad__name
+=== RUN   TestLexicalFailuresHavePreciseSpans/bad_
+=== RUN   TestLexicalFailuresHavePreciseSpans/_bad
+=== RUN   TestLexicalFailuresHavePreciseSpans/café
+=== RUN   TestLexicalFailuresHavePreciseSpans/01
+=== RUN   TestLexicalFailuresHavePreciseSpans/0x
+=== RUN   TestLexicalFailuresHavePreciseSpans/0b102
+=== RUN   TestLexicalFailuresHavePreciseSpans/0o8
+=== RUN   TestLexicalFailuresHavePreciseSpans/0x1.2
+=== RUN   TestLexicalFailuresHavePreciseSpans/1_000
+=== RUN   TestLexicalFailuresHavePreciseSpans/1e+
+=== RUN   TestLexicalFailuresHavePreciseSpans/.5
+=== RUN   TestLexicalFailuresHavePreciseSpans/1.
+=== RUN   TestLexicalFailuresHavePreciseSpans/1e9999
+=== RUN   TestLexicalFailuresHavePreciseSpans/"x_y"
+=== RUN   TestLexicalFailuresHavePreciseSpans/"unclosed
+=== RUN   TestLexicalFailuresHavePreciseSpans/r"""unclosed
+=== RUN   TestLexicalFailuresHavePreciseSpans//*_unclosed_/*_*/
+=== RUN   TestLexicalFailuresHavePreciseSpans/call_f(_)
+=== RUN   TestLexicalFailuresHavePreciseSpans/[r"""x_y"""]
+=== RUN   TestLexicalFailuresHavePreciseSpans/(x_/*_*/)
+=== RUN   TestLexicalFailuresHavePreciseSpans/(]
+=== RUN   TestLexicalFailuresHavePreciseSpans/(
+=== RUN   TestLexicalFailuresHavePreciseSpans/)
+=== RUN   TestLexicalFailuresHavePreciseSpans/;
+=== RUN   TestLexicalFailuresHavePreciseSpans/{
+=== RUN   TestLexicalFailuresHavePreciseSpans/}
+=== RUN   TestLexicalFailuresHavePreciseSpans/'
+=== RUN   TestLexicalFailuresHavePreciseSpans/\
+=== RUN   TestLexicalFailuresHavePreciseSpans/==
+=== RUN   TestLexicalFailuresHavePreciseSpans/!=
+=== RUN   TestLexicalFailuresHavePreciseSpans/&&
+=== RUN   TestLexicalFailuresHavePreciseSpans/||
+=== RUN   TestLexicalFailuresHavePreciseSpans/+=
+=== RUN   TestLexicalFailuresHavePreciseSpans/->
+=== RUN   TestLexicalFailuresHavePreciseSpans/@
+=== RUN   TestLexicalFailuresHavePreciseSpans/?
+--- PASS: TestLexicalFailuresHavePreciseSpans (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/____first (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a___b (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a_________b (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a_____b_______c (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a__b (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans///_tab_ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a_b (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans//*_x__*/ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a_b#01 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/a\ufeffb (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/Bad (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/bad__name (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/bad_ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/_bad (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/café (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/01 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/0x (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/0b102 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/0o8 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/0x1.2 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/1_000 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/1e+ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/.5 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/1. (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/1e9999 (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/"x_y" (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/"unclosed (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/r"""unclosed (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans//*_unclosed_/*_*/ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/call_f(_) (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/[r"""x_y"""] (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/(x_/*_*/) (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/(] (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/( (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/) (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/; (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/{ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/} (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/' (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/\ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/== (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/!= (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/&& (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/|| (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/+= (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/-> (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/@ (0.00s)
+    --- PASS: TestLexicalFailuresHavePreciseSpans/? (0.00s)
+=== RUN   TestLFAndCRLFHaveIdenticalLogicalTokens
+--- PASS: TestLFAndCRLFHaveIdenticalLogicalTokens (0.00s)
+=== RUN   TestCurrentFixturesAndSharedPositions
+=== RUN   TestCurrentFixturesAndSharedPositions/core.can
+=== RUN   TestCurrentFixturesAndSharedPositions/literals.can
+--- PASS: TestCurrentFixturesAndSharedPositions (0.00s)
+    --- PASS: TestCurrentFixturesAndSharedPositions/core.can (0.00s)
+    --- PASS: TestCurrentFixturesAndSharedPositions/literals.can (0.00s)
+=== RUN   TestNestedGenericClosersRemainLexable
+--- PASS: TestNestedGenericClosersRemainLexable (0.00s)
+=== RUN   TestDiagnosticSharesOriginalUTF16Location
+--- PASS: TestDiagnosticSharesOriginalUTF16Location (0.00s)
+=== RUN   FuzzLexerTerminatesWithOriginalSpans
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#0
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#1
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#2
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#3
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#4
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#5
+=== RUN   FuzzLexerTerminatesWithOriginalSpans/seed#6
+--- PASS: FuzzLexerTerminatesWithOriginalSpans (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#0 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#1 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#2 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#3 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#4 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#5 (0.00s)
+    --- PASS: FuzzLexerTerminatesWithOriginalSpans/seed#6 (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.148s

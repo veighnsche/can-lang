@@ -263,7 +263,7 @@ func checkGroup(files []string, keyOf func(string) string, shared map[string][]s
 		if externsRe.MatchString(body) {
 			add(base, "externals section is gone, use call-site given")
 		}
-		if scan.HasBraceOutsideString(body) {
+		if scan.LegacyHasBraceOutsideString(body) {
 			add(base, "curly braces are banned, use () records")
 		}
 		testNames := map[string]bool{}

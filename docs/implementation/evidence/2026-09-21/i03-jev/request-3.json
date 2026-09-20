@@ -1,0 +1,14 @@
+{
+  "model": "jev-latest",
+  "state": "No users depend on the former compiler, and the replacement Can implementation has no compatibility mandate. According to C2, source is UTF-8; LF and CRLF denote newlines; a BOM is ignored only at the beginning; multiline literal indentation is retained while newline semantics are normalized. Task I03 must keep byte-accurate original spans and supply diagnostic coordinates as well as UTF-16 coordinates for editor and source-map consumers. Reading a source must stay inert. Astral Unicode and paired CRLF cannot shift reported locations. Candidate representations are an immutable original buffer with newline-aware scanner/string handling, or an additional normalized buffer accompanied by a full reverse offset map. Line indexing and scalar-safe coordinate conversion are necessary in either case. The original-buffer approach removes duplicate text and translation upkeep; the normalized-buffer approach makes scanner input uniform at the cost of maintaining that translation. There is no measured timing or correctness evidence yet. Tests of coordinate boundaries and round trips must validate the choice; a model result is not proof.",
+  "questions": {
+    "source": {
+      "type": "choice",
+      "instructions": "Choose between these representations using the facts and costs provided here, with no external investigation.",
+      "criteria": {
+        "original": "Preserve source bytes unchanged, derive shared diagnostic/UTF-16 positions, and handle newline normalization during lexical consumption.",
+        "normalized": "Maintain normalized lexical text alongside a mapping that converts all emitted spans back into the original source."
+      }
+    }
+  }
+}

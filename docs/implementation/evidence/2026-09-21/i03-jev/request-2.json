@@ -1,0 +1,14 @@
+{
+  "model": "jev-latest",
+  "state": "The new Can front end owes no backward compatibility because the project has no external consumers. Its C2 contract allows valid UTF-8 and either LF or CRLF, treats a leading BOM as ignorable, and gives multiline strings exact indentation with normalized source newlines. I03 requires original-file byte ranges, human diagnostic coordinates, and UTF-16 locations usable by LSP and mapping output. Loading source cannot execute code. CRLF and supplementary Unicode characters must not cause location drift. One implementation can preserve the immutable input and recognize newline pairs during scanning and string decoding; another can create a newline-normalized copy with an offset translation table. Both must index lines and reject coordinates splitting scalar encodings. Retaining input avoids dual-text/map upkeep, whereas normalization simplifies scanning by adding translation obligations. Neither strategy has measured performance or passing verification here. Executed round-trip and boundary cases remain the correctness evidence irrespective of this advice.",
+  "questions": {
+    "source": {
+      "type": "choice",
+      "instructions": "Based only on the stated situation, choose the more suitable source-storage design; do not try to discover additional facts.",
+      "criteria": {
+        "original": "Use unchanged input bytes for token spans and central coordinate conversion, teaching the scanner to consume logical LF/CRLF newlines.",
+        "normalized": "Create canonical newline text for scanning and use an explicit translation index to recover original token ranges."
+      }
+    }
+  }
+}

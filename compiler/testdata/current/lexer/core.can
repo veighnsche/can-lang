@@ -1,0 +1,20 @@
+package lexical
+    provides [poem, take]
+    uses [text]
+
+/// A multiline literal keeps its indentation and boundary newlines.
+str poem = """
+    é😀 — combining é
+    /* these are literal bytes */
+"""
+
+/* Outer comment
+   /* a nested comment */
+*/
+fn str take
+    emits []
+    given
+        str score
+    asserts
+        ("é😀") => "é😀"
+    ok score

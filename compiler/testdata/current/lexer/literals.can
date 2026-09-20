@@ -1,0 +1,10 @@
+package literal_examples
+    provides [path, escapes, ratio]
+    uses []
+
+str path = r"C:\files\notes"
+str escapes = "line\nquote\"unknown\u1234"
+float ratio = 1.25e-2
+str raw_poem = r"""
+    \backslashes and "quotes" stay literal
+"""

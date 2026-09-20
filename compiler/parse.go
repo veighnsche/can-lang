@@ -2108,7 +2108,7 @@ func parseModuleText(name, text string) (*Module, error) {
 	// string literals is not delimiters either, so the ban scans
 	// string-aware. Comments stay banned.
 	for n, raw := range strings.Split(text, "\n") {
-		if scan.BraceOutsideString(raw) {
+		if scan.LegacyBraceOutsideString(raw) {
 			return nil, at(n+1, fmt.Errorf("curly braces are banned outside string literals, use () records"))
 		}
 	}

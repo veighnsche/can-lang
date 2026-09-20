@@ -21,12 +21,12 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Test the development sidecar offline
+      - name: Test compiler foundations and the development sidecar offline
         env:
           CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
         run: |
           set -o pipefail
-          go test -count=1 -v ./distribution ./compiler/internal/driver ./compiler/internal/catalogue ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          go test -count=1 -v ./distribution ./compiler/internal/... ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

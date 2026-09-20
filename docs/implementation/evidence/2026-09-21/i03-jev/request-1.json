@@ -1,0 +1,14 @@
+{
+  "model": "jev-latest",
+  "state": "Can is replacing a compiler and has zero external users or compatibility requirements. C2 accepts UTF-8, LF and CRLF, ignores an initial BOM, normalizes newline meaning, and permits multiline strings preserving their content indentation. I03 must provide exact original byte spans plus diagnostic line/column information and UTF-16 positions for both LSP and source maps. Source loading itself performs no effects. The lexer must not lose locations after CRLF or astral characters. Two representations are possible: retain immutable original bytes and make lexer newline consumption recognize LF/CRLF while decoding string newlines uniformly, or construct normalized text plus a complete normalized-to-original offset map. Both need line indexes and valid scalar-boundary conversion. The first avoids a second text and mapping synchronization; the second offers a uniform byte stream but adds mapping maintenance. No benchmark or correctness result is available yet. Direct boundary and round-trip tests, not classification agreement, must establish correctness.",
+  "questions": {
+    "source": {
+      "type": "choice",
+      "instructions": "Which source representation better fits these explicit requirements and tradeoffs? Classify from this supplied evidence without research.",
+      "criteria": {
+        "original": "Keep the original immutable source with byte-based spans, newline-aware lexing and shared scalar/UTF-16 coordinate conversion.",
+        "normalized": "Lex a separately normalized source copy and translate every token span through a maintained original-offset map."
+      }
+    }
+  }
+}
