@@ -77,3 +77,17 @@ test("description adapter defects retain the original cause with a fixed fallbac
   expect(standardFailureDiagnostics(occurrence!).cause).toBe(cause);
   expect(standardFailureDiagnostics(occurrence!).origin).toEqual(origin);
 });
+
+test("synthetic failures retain identity and original metadata when the first checked boundary is attached",()=>{
+ const synthetic={source:"can:cli",start:0,end:0,invocation:[]};
+ const failure=assertionFailure("missing fixture",synthetic), id=standardFailureOccurrenceID(failure);
+ expect(captureStandard(failure,synthetic)).toBe(failure);
+ expect(standardFailureDiagnostics(failure).boundaryOrigin).toBeUndefined();
+ expect(captureStandard(failure,origin)).toBe(failure);
+ expect(standardFailureDiagnostics(failure).origin).toEqual(synthetic);
+ expect(standardFailureDiagnostics(failure).boundaryOrigin).toEqual(origin);
+ expect(standardFailureOccurrenceID(failure)).toBe(id);
+ expect(standardFailureMessage(failure)).toBe("assertion: missing fixture");
+ captureStandard(failure,{source:"outer.can",start:99,end:100,invocation:[]});
+ expect(standardFailureDiagnostics(failure).boundaryOrigin).toEqual(origin);
+});

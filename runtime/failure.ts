@@ -7,7 +7,7 @@ export type StandardKind = "arithmetic" | "bounds" | "resource_state" | "asserti
 export type FailureOrigin = Readonly<{ source: string; start: number; end: number; invocation: readonly string[] }>;
 declare const standardFailureBrand: unique symbol;
 export type StandardFailure = Readonly<{ readonly [standardFailureBrand]: true }>;
-type StandardDetails = Readonly<{ occurrenceID: bigint; kind: StandardKind; message: string; cause: unknown; origin: FailureOrigin }>;
+type StandardDetails = Readonly<{ occurrenceID: bigint; kind: StandardKind; message: string; cause: unknown; origin: FailureOrigin; boundaryOrigin?: FailureOrigin }>;
 const standard = new WeakMap<object, StandardDetails>();
 let nextOccurrence = 1n;
 export function allocateOccurrenceID(): bigint { return nextOccurrence++; }
@@ -58,7 +58,15 @@ function createStandard(kind: StandardKind, message: string, cause: unknown, ori
 }
 
 export function captureStandard(cause: unknown, origin: FailureOrigin): StandardFailure {
-  if (objectLike(cause) && standard.has(cause)) return cause as StandardFailure;
+  if (objectLike(cause) && standard.has(cause)) {
+    const details = standard.get(cause)!;
+    // Runtime-created synthetic origins have no authored span. Retain their
+    // original metadata and identity while recording the first checked boundary.
+    if (details.origin.source.startsWith("can:") && !origin.source.startsWith("can:") && origin.source !== "" && !details.boundaryOrigin) {
+      standard.set(cause, Object.freeze({...details, boundaryOrigin: freezeOrigin(origin)}));
+    }
+    return cause as StandardFailure;
+  }
   const kind = primitiveFailureKind(cause);
   if (kind) return createStandard(kind, primitiveFailureMessage(cause)!, cause, origin);
   return createStandard("native_exception", describeNativeFailure(cause), cause, origin);

@@ -42,3 +42,9 @@ origin fallback. Stack inspection rejects proxies and stack accessors, and the
 pinned native Error descriptor probe verifies that name/message getters are not
 called. Compiler-private initialization/configuration defects remain nonzero and
 sanitized rather than exposing an unhandled native stack.
+
+Assertion suite initialization failures use the same mapped reporting boundary.
+Sticky harness violations retain their occurrence tokens and locations even if
+authored code catches the standard failure. Synthetic adapter failures keep their
+original metadata and acquire a separate first checked call-site origin; later
+callers do not replace it.

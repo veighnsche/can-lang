@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import { record } from "./data.ts";
 import { createDomainRuntime, domainFailureDiagnostics } from "./domain.ts";
-import { captureStandard, standardFailureOccurrenceID } from "./failure.ts";
+import { captureStandard, standardFailureDiagnostics, standardFailureOccurrenceID } from "./failure.ts";
 import { success, failure, value, element, elementValue, checkedCompletion, invoke, dispatch, toPromise, fromPromise, type Completion } from "./completion.ts";
 const origin = {source:"test.can",start:1,end:2,invocation:["test"]};
 const declaration = {identity:"can.project.root::app::missing",name:"app::missing",id:1000000,parameters:0};
@@ -71,4 +71,18 @@ test("forged carriers and immediate unboxed thenables are refused without execut
   for(const forged of [{kind:"ok",value:1},new Proxy(success(1),{}),revoked.proxy])expect(()=>checkedCompletion(forged as Completion)).toThrow();
   expect(()=>elementValue(success(1) as any)).toThrow();
   expect(()=>failure({} as any)).toThrow();
+});
+
+
+test("returned and rejected synthetic failures acquire one checked boundary without new occurrences",async()=>{
+ for (const mode of ["immediate","awaited","rejected"] as const) {
+  const original={source:"can:adapter",start:0,end:0,invocation:[]};
+  const occurrence=captureStandard("private",original), carrier=failure(occurrence);
+  const result=await invoke(()=>mode==="immediate"?carrier:mode==="awaited"?Promise.resolve(carrier):Promise.reject(occurrence),origin);
+  expect(result.kind).toBe("standard");expect(result.value).toBe(occurrence);
+  expect(standardFailureDiagnostics(occurrence).origin).toEqual(original);
+  expect(standardFailureDiagnostics(occurrence).boundaryOrigin).toEqual(origin);
+  await invoke(()=>carrier,{source:"outer.can",start:10,end:20,invocation:[]});
+  expect(standardFailureDiagnostics(occurrence).boundaryOrigin).toEqual(origin);
+ }
 });

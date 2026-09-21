@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A missing fixture is raised by a maintained CLI boundary as a privately branded standard occurrence whose origin is can:cli and whose cause has no Error stack. The generated invoke has a precise source span when catching it; the existing capture routine currently keeps the old metadata only. The assertion context remembers sticky reason text, including after source handling, but no failure token, so reporting has no location. Preserve token identity and its original origin/category/message. The alternatives are supplemental first-authored-boundary metadata plus retained violation tokens, an extra location argument across every compiler/native callable signature, or allocating a replacement caller-side occurrence. Separately, suite initialization failures must use the existing mapping reporter. Neither global assertion context nor raw exception details should enter output.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Select the most suitable location propagation mechanism for the supplied architecture.",
+      "criteria": {
+        "metadata": "Keep the occurrence and original metadata, recording one authored-boundary origin and sticky token references separately.",
+        "argument": "Pass location through a new parameter everywhere in the internal callable ABI.",
+        "replace": "Construct a replacement occurrence when the synthetic failure reaches the caller."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Current fail-closed CLI assertions create a standard token at synthetic origin can:cli without a native cause. On return to generated invoke, a checked Can location is available, yet captureStandard reuses the token without adding location evidence. Sticky harness state records violation labels only and therefore cannot report the location after authored code catches the failure. Required invariants are the same occurrence and unchanged original origin, category and message. Choose between adding the first real call boundary privately to the existing token while remembering violation occurrences, threading another diagnostic argument through generated and adapter call ABIs, and making a new occurrence at each caller. Setup failures need the already available mapped report as well. Keep assertion context explicit and exclude native stacks/messages from serialized output.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which option should supply source locations while retaining existing failure semantics?",
+      "criteria": {
+        "metadata": "Retain the original token and fields, augment with first real span, and report retained harness occurrences.",
+        "argument": "Introduce an extra source-location argument across all native and generated callables.",
+        "replace": "Recreate the failure at the source boundary with a fresh occurrence."
+      }
+    }
+  }
+}

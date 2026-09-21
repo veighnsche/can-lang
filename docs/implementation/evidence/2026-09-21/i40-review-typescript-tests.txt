@@ -1,0 +1,2 @@
+TypeScript 7.0.2: strict check of all runtime modules and tests.
+exit status: 0

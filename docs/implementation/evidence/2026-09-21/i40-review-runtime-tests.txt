@@ -1,0 +1,72 @@
+bun test v1.4.2 (744846f84)
+
+runtime/data.test.ts:
+(pass) native strict deep equality observes nominal identity [0.07ms]
+(pass) native copy preserves original aliases, tags and field spelling [0.06ms]
+
+runtime/domain.test.ts:
+(pass) domain occurrences preserve exact payload, allocation and private origin [0.69ms]
+(pass) malformed payloads and hostile identity metadata fail without getters or traps [0.28ms]
+(pass) compiler plan rejects wrong allocations, catalogue fields, and variant cycles [0.65ms]
+(pass) recursive payloads admit shared immutable data and reject circular native values [0.11ms]
+
+runtime/completion.test.ts:
+(pass) async calls, continuations, elements and native Promise bridges never assimilate then data [0.44ms]
+(pass) void and distinct failure categories round trip with original occurrences [0.16ms]
+(pass) selected handler failure is never redispatched and nested handlers complete locally [0.15ms]
+(pass) forged carriers and immediate unboxed thenables are refused without executing data [0.08ms]
+(pass) returned and rejected synthetic failures acquire one checked boundary without new occurrences [0.10ms]
+
+runtime/primitive.test.ts:
+(pass) native bigint contract and exact fault identities [0.07ms]
+(pass) index validates bigint range before narrowing [0.05ms]
+(pass) bigint-normalized native slicing and UTF-16 boundaries [0.05ms]
+(pass) finite slice bounds agree with native array/string slice [0.37ms]
+
+runtime/failure.test.ts:
+(pass) native descriptions never invoke application behavior [0.06ms]
+(pass) native scalar and Error descriptions follow fixed rules [0.07ms]
+(pass) origins are distinct and propagation preserves an occurrence [0.04ms]
+(pass) primitive and maintained categories use fixed messages [0.10ms]
+(pass) description adapter defects retain the original cause with a fixed fallback [0.03ms]
+(pass) synthetic failures retain identity and original metadata when the first checked boundary is attached [0.02ms]
+
+runtime/test/assertions.test.ts:
+(pass) an assertion awaits and executes its real body exactly once [0.32ms]
+(pass) caught live-boundary refusal is sticky and independent roots do not share it [0.17ms]
+(pass) expected evaluation failure does not execute the subject [0.09ms]
+(pass) native assertion equality preserves nominal, float and opaque identities [0.06ms]
+(pass) supplied completion replaces only the exact call and labels its evidence [0.14ms]
+(pass) basic fixture FIFO never searches later rows and reports leftovers [0.06ms]
+
+runtime/test/entry.test.ts:
+(pass) root awaits main and passes only a frozen copy of the supplied application arguments [0.12ms]
+(pass) initialization failure prevents main and awaits its diagnostic [0.11ms]
+(pass) root report preserves failure identity without native message, stack or origin disclosure [0.09ms]
+(pass) forged and non-void main results fail without invoking a then getter [0.09ms]
+(pass) diagnostic write rejection retains nonzero status [0.04ms]
+
+runtime/test/catalogue.test.ts:
+(pass) closed generated runtime catalogue [0.53ms]
+
+runtime/test/cli.test.ts:
+(pass) native UTF-8 conversion preserves scalar text, BOM and immutable byte ownership [0.18ms]
+(pass) unpaired surrogates yield the exact codec domain error [0.09ms]
+(pass) forged byte handles fail before native output and without running traps [0.12ms]
+
+runtime/test/diagnostics.test.ts:
+(pass) direct Bun TS frames compose through upstream maps (callback=true) without private details [9.91ms]
+(pass) direct Bun TS frames compose through upstream maps (callback=false) without private details [8.89ms]
+(pass) stack inspection rejects proxies and accessors without calling authored behavior [0.08ms]
+
+tools/runtime/output-graph.test.ts:
+(pass) closed graph rejects computed edges anywhere in generated syntax [2.05ms]
+(pass) upstream grammar distinguishes data/comments and exact static edges [1.03ms]
+
+tools/runtime/source-map-validation.test.ts:
+(pass) upstream source-map validation refuses missing, corrupt and unknown-source maps [0.88ms]
+
+ 42 pass
+ 0 fail
+ 1240 expect() calls
+Ran 42 tests across 12 files. [45.00ms]

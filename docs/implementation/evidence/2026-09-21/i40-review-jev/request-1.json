@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "An assertion CLI adapter creates an opaque standard failure with source can:cli and no native cause. Generated invoke catches the same occurrence with an exact checked Can origin, but captureStandard currently preserves all metadata unchanged. Sticky assertion violations survive authored catches but store only reason strings. Reports thus lose the actual call location. Original occurrence identity, original origin, category and message must remain intact. Options: retain the first nonsynthetic boundary origin as private additional metadata on that same occurrence and retain violation occurrences for reporting; append a diagnostic parameter through all generated/native callable ABIs; or replace the occurrence with a new one at the caller. Initialization setup failures also need existing mapped diagnostic reporting. No ambient root context or raw stacks/messages may be exposed.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which correction best preserves these invariants with the current runtime?",
+      "criteria": {
+        "metadata": "Attach first checked boundary as additional private metadata and store original violation tokens for sanitized reporting.",
+        "argument": "Extend all generated and adapter callable signatures with another diagnostic argument.",
+        "replace": "Allocate a new caller-side standard failure with its own identity."
+      }
+    }
+  }
+}

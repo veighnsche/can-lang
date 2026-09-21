@@ -56,19 +56,19 @@ export async function runAssertion(test: AssertionCase) {
   let reason: "expected evaluation failed" | "outcome mismatch" | "harness violation" | undefined;
   try {
     const expected = await invoke(() => test.expected(context), origin);
-    if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.origin);}
+    if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
     else {
       const actual = await invoke(() => test.actual(context), origin);
       if (!sameCompletion(actual, expected)) {
         reason = "outcome mismatch";
-        if (actual.kind === "standard") {const details=standardFailureDiagnostics(actual.value);frames=diagnosticFrames(details.cause,details.origin);}
+        if (actual.kind === "standard") {const details=standardFailureDiagnostics(actual.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
         else if (actual.kind === "domain") {const details=domainFailureDiagnostics(actual.value);frames=diagnosticFrames(undefined,details.origin);}
       }
     }
   } catch { reason = "outcome mismatch"; }
   finally { closeContext(context); }
   const report = contextReport(context);
-  if (report.violations.length) reason = "harness violation";
+  if (report.violations.length) {reason = "harness violation"; if (report.frames.length) frames=report.frames;}
   return Object.freeze({...report, passed: reason === undefined, ...(reason ? {reason,frames} : {})});
 }
 export async function runAssertions(tests: readonly AssertionCase[], initialize: () => void): Promise<0 | 1> {
@@ -84,7 +84,10 @@ export async function runAssertions(tests: readonly AssertionCase[], initialize:
 }
 async function finishSuite(tests: readonly AssertionCase[], setup: Completion): Promise<0 | 1> {
   if (setup.kind !== "ok") {
-    await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-report", passed: false, reason: "initialization failed", assertions: []}) + "\n");
+    const details=setup.kind==="standard" ? standardFailureDiagnostics(setup.value) : domainFailureDiagnostics(setup.value);
+    const boundary="boundaryOrigin" in details ? details.boundaryOrigin : undefined;
+    const frames=diagnosticFrames(details.cause,boundary ?? details.origin);
+    await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-report", passed: false, reason: "initialization failed", frames, assertions: []}) + "\n");
     return 1;
   }
   const assertions = [];

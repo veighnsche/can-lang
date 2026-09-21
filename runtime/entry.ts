@@ -24,7 +24,7 @@ function diagnostic(completion: Exclude<Completion<void>, {kind: "ok"}>, phase: 
   }
   const details = standardFailureDiagnostics(completion.value);
   return JSON.stringify({...base, channel: "standard", category: details.kind,
-    occurrence: String(details.occurrenceID), frames: diagnosticFrames(details.cause,details.origin)}) + "\n";
+    occurrence: String(details.occurrenceID), frames: diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin)}) + "\n";
 }
 async function reportToStderr(line: string): Promise<void> { await Bun.write(Bun.stderr, line); }
 

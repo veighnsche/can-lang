@@ -2,7 +2,8 @@
   "schemaVersion": 1,
   "modules": {
     "assert/context.ts": [
-      "../failure.ts"
+      "../failure.ts",
+      "../diagnostics.ts"
     ],
     "assert/fixtures.ts": [
       "../completion.ts",

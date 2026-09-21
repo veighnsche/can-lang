@@ -63,12 +63,17 @@ export function elementValue<T>(box: Element<T>): T {
 }
 // Generated thunks return a carrier synchronously or a native promise of one.
 // Reject an unboxed immediate result before await could assimilate its `then`.
+function locatedCompletion<T>(value: Completion<T>, origin: FailureOrigin): Completion<T> {
+  const result=checkedCompletion(value);
+  if (result.kind==="standard") captureStandard(result.value,origin);
+  return result;
+}
 export async function invoke<T>(call: () => Completion<T> | Promise<Completion<T>>, origin: FailureOrigin): Promise<Completion<T>> {
   try {
     const pending = call();
-    if (isCompletion(pending)) return pending as Completion<T>;
+    if (isCompletion(pending)) return locatedCompletion(pending as Completion<T>,origin);
     if (!(pending instanceof Promise)) throw new TypeError("call returned an unboxed result");
-    return checkedCompletion(await pending);
+    return locatedCompletion(await pending,origin);
   } catch (cause) { return caught(cause, origin); }
 }
 // Native all/allSettled/any/race consume these adapter promises in I19. Only a
@@ -81,7 +86,7 @@ export function toPromise<T>(pending: Promise<Completion<T>>): Promise<Completio
   });
 }
 export async function fromPromise<T>(pending: Promise<Completion<T>>, origin: FailureOrigin): Promise<Completion<T>> {
-  try { return checkedCompletion(await pending); }
+  try { return locatedCompletion(await pending,origin); }
   catch (cause) {
     if (isCompletion(cause) && cause.kind !== "ok") return cause;
     return caught(cause, origin);

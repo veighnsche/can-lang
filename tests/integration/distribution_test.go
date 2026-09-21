@@ -252,7 +252,7 @@ func TestDevelopmentSidecar(t *testing.T) {
 		command.Dir = clean
 		command.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/nonexistent"}
 		output, err := command.CombinedOutput()
-		if err != nil || !strings.Contains(string(output), "9 pass") {
+		if err != nil || !strings.Contains(string(output), "10 pass") {
 			t.Fatalf("staged native failure conformance: %v\n%s", err, output)
 		}
 	})
@@ -262,7 +262,7 @@ func TestDevelopmentSidecar(t *testing.T) {
 		command.Dir = clean
 		command.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/nonexistent"}
 		output, err := command.CombinedOutput()
-		if err != nil || !strings.Contains(string(output), "4 pass") {
+		if err != nil || !strings.Contains(string(output), "5 pass") {
 			t.Fatalf("staged completion conformance: %v\n%s", err, output)
 		}
 	})

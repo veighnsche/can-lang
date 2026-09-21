@@ -197,3 +197,107 @@ fn int consume
 		t.Fatalf("initialization: %d %s %s", code, out, diag)
 	}
 }
+
+// Exact runtime mapping must survive both suite setup failure and a source catch
+// of a sticky harness violation. Neither path has an ordinary uncaught main.
+func TestAssertionFailureLocations(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for assertion diagnostic qualification")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "assertion-locations")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.Mkdir(filepath.Join(root, "src"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	for name, text := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":[],"retired":[]}`} {
+		if err = os.WriteFile(filepath.Join(root, name), []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	run := func(text, expression string, initialization bool) {
+		t.Helper()
+		if err = os.WriteFile(filepath.Join(root, "src/main.can"), []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+		command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), "assert", root)
+		command.Env = []string{"PATH=/nonexistent", "HOME=" + t.TempDir(), "SECRET=must-not-disclose"}
+		var out, diag bytes.Buffer
+		command.Stdout = &out
+		command.Stderr = &diag
+		err := command.Run()
+		var status *exec.ExitError
+		if !errors.As(err, &status) || status.ExitCode() != 1 || diag.Len() != 0 {
+			t.Fatalf("status/diagnostic: %v %s %s", err, out.String(), diag.String())
+		}
+		var report map[string]any
+		if err = json.Unmarshal(out.Bytes(), &report); err != nil {
+			t.Fatal(err, out.String())
+		}
+		var frames []any
+		if initialization {
+			if report["reason"] != "initialization failed" {
+				t.Fatal(report)
+			}
+			frames, _ = report["frames"].([]any)
+		} else {
+			test := report["assertions"].([]any)[0].(map[string]any)
+			if test["reason"] != "harness violation" || !strings.Contains(out.String(), "missing fixture") {
+				t.Fatal(report)
+			}
+			frames, _ = test["frames"].([]any)
+		}
+		start := strings.Index(text, expression)
+		end := start + len(expression)
+		line := strings.Count(text[:start], "\n") + 1
+		column := start - strings.LastIndex(text[:start], "\n")
+		found := false
+		for _, raw := range frames {
+			frame := raw.(map[string]any)
+			if frame["file"] == "main.can" && frame["start"] == float64(start) && frame["end"] == float64(end) && frame["line"] == float64(line) && frame["column"] == float64(column) {
+				found = true
+			}
+		}
+		if !found {
+			t.Fatalf("missing exact span [%d,%d): %s", start, end, out.String())
+		}
+		for _, secret := range []string{root, bundle, "must-not-disclose", "can:cli", "Error:", "must-not-write"} {
+			if strings.Contains(out.String(), secret) {
+				t.Fatal("disclosed private detail", secret)
+			}
+		}
+	}
+	run(`package app
+    provides []
+    uses []
+int broken = 1 / 0
+fn int sample
+    emits []
+    asserts
+        works: => ok 1
+    ok 1
+`, "1 / 0", true)
+	run(`package app
+    provides []
+    uses [bytes, codec, io]
+fn void sample
+    emits [codec::invalid_data, io::write_failed]
+    asserts
+        guarded: => ok
+    match call bytes::from_utf8("must-not-write")
+        ok bytes::buffer payload => match call io::stdout_write(payload)
+            ok int written => ok
+            io::write_failed
+            [_] => ok
+        codec::invalid_data
+`, "io::stdout_write(payload)", false)
+}
