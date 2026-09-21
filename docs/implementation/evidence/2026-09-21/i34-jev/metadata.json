@@ -1,0 +1,21 @@
+{
+  "exercise": "I34 packaged HTMX and static assets design decisions",
+  "started_utc": "2026-09-21T17:55:05+00:00",
+  "finished_utc": "2026-09-21T17:56:04+00:00",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "requested_model": "jev-latest",
+  "live_request_count": 3,
+  "topics_per_request": 4,
+  "request_sha256": {
+    "request-1.json": "9d05cc52a85c99627bc9cfa1a9b3eb844c5637be3d809fc0c19216ce19eb35e5",
+    "request-2.json": "7e5c9e16345c4ffc3e78b951670babef4eca5c74f7ab170a7c3551130a727faa",
+    "request-3.json": "8afa5b7b8d89c9a41e843328e45af3a9e9b88df4c5a6c28fc483ea2a393a4a7e"
+  },
+  "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and numeric facts retained. No previous answers included. No voting or retry-for-agreement rule.",
+  "verdicts": {
+    "binary_signature_depth": "header_validated (2/3; r2 magic_only investigated, P11 mismatch depth decides)",
+    "json_policy": "json_must_parse (3/3 strong)",
+    "ownership_scope": "caller_only (3/3)",
+    "reason_vocabulary": "specific_taxonomy by merit (weak 3/3 single_missing overridden: sibling reason style + task-named cases)"
+  }
+}

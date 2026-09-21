@@ -642,7 +642,7 @@ The initial opaque types are `html::node`, `html::safe`, `html::url`,
 | `htmx::trigger_input_changed` | `(int delay_ms) -> html::attribute emits [htmx::invalid_interval]`; emits `input changed delay:<n>ms` |
 | `htmx::trigger_every` | `(int interval_ms) -> html::attribute emits [htmx::invalid_interval]`; emits `every <n>ms` |
 | `htmx::indicator_id` | `(str id) -> html::attribute emits [htmx::invalid_target]` |
-| `htmx::disable_this` | `() -> html::attribute emits []`; emits `hx-disabled-elt="this"` |
+| `htmx::disable_this` | `() -> html::attribute emits []`; emits `hx-disable="this"` |
 | `htmx::runtime_head` | `() -> html::node emits []`; emits the pinned local script and response policy |
 
 The closed author-tag inventory is `main`, `header`, `footer`, `nav`, `section`,
@@ -714,7 +714,7 @@ or a claim that arbitrary bytes are safe.
 
 The initial HTMX attribute inventory is `hx-get`, `hx-post`, `hx-target`,
 `hx-swap` (`innerHTML` and `outerHTML`), typed change/input/poll triggers,
-`hx-indicator`, and `hx-disabled-elt=this`. Input delays are 0--60000 ms and
+`hx-indicator`, and `hx-disable=this`. Input delays are 0--60000 ms and
 poll intervals are 1000--3600000 ms. Catalogue constructors produce every
 value; `html::text_attribute` rejects raw `hx-*` and `data-hx-*` names. `hx-on*`,
 arbitrary selectors, arbitrary triggers, `hx-vals`, extensions, and script
@@ -852,21 +852,22 @@ compiler reimplementation of HTMX.
 
 ### Technical contract
 
-The distribution embeds one reviewed upstream HTMX minified asset, initially
-the 2.0.10 release bytes with digest
-`sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V`.
+The distribution embeds one reviewed upstream HTMX minified asset,
+the 4.0.0 release bytes with digest
+`sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc`.
 The server reserves:
 
 ```text
-/__can/assets/htmx-2.0.10.min.js
+/__can/assets/htmx-4.0.0.min.js
 ```
 
 The route serves the embedded bytes with the JavaScript media type, immutable
 cache headers, ETag, and the recorded digest. Project routes cannot shadow the
 `/__can/` prefix. `htmx::runtime_head` renders a local `defer` script reference
 with integrity metadata and a compiler-owned `htmx-config` meta element.
-That meta configuration fixes `allowEval=false`, `allowScriptTags=false`, and
-`selfRequestsOnly=true`. Application HTML cannot override these values because
+That meta configuration fixes `mode="same-origin"` and the compiler-owned
+`noSwap` list (204, 304, and 400--599 except 422). Eval scripting support is
+absent from HTMX 4 itself, so no Can policy entry needs to disable it. Application HTML cannot override these values because
 raw meta/script construction and `hx-on*` are outside the catalogue.
 
 The response policy is fixed initially:
@@ -1335,15 +1336,16 @@ The runtime decisions above are grounded in current primary documentation:
   P12 pins instead of defining another SQL parser.
 - [HTMX documentation](https://htmx.org/docs/) documents declarative response
   handling, including configurable 422 swapping and default 4xx/5xx errors.
-- [HTMX security guidance](https://htmx.org/docs/#security) documents the
-  `allowEval`, `allowScriptTags`, and `selfRequestsOnly` configuration used by
-  the pinned runtime head.
+- [HTMX 4.0.0 release announcement](https://four.htmx.org/announcements/2026-08-28-htmx-4.0.0-is-released)
+  documents same-origin fetch mode, the `noSwap` response policy, `hx-disable`,
+  and eval removal for the pinned runtime head.
 - [HTMX `hx-post`](https://htmx.org/attributes/hx-post/),
   [`hx-target`](https://htmx.org/attributes/hx-target/), and
   [`hx-swap`](https://htmx.org/attributes/hx-swap/) document the request,
   target, and swap behavior used by P13.
-- [HTMX release quick start](https://htmx.org/) records the upstream 2.0.10
-  asset and integrity digest used as the initial distribution input.
+- [HTMX 4.0.0 release announcement](https://four.htmx.org/announcements/2026-08-28-htmx-4.0.0-is-released)
+  records the upstream 4.0.0 asset and integrity digest used as the distribution
+  input.
 
 Compiler adapters may validate and copy values, map errors, manage the resource
 registry, and bridge Can completions. HTTP serving, promise coordination, file

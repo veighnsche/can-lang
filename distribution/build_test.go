@@ -63,3 +63,49 @@ func TestBuildRejectsSidecarDestinationCollision(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildRejectsTamperedHTMX(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for archive-backed tamper regression")
+	}
+	root := t.TempDir()
+	source := filepath.Join(root, "source")
+	output := filepath.Join(root, "output")
+	for _, dir := range []string{"runtime", "tools/runtime", "distribution/notices", "distribution/assets"} {
+		if err := os.MkdirAll(filepath.Join(source, dir), 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(source, "tools/runtime/tsconfig.json"), []byte("{}"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	lock, err := os.ReadFile("assets/htmx.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(source, "distribution/assets/htmx.lock.json"), lock, 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(source, "distribution/assets/htmx-4.0.0.min.js"), []byte("tampered"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	notice, err := os.ReadFile("notices/htmx-LICENSE.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(source, "distribution/notices/htmx-LICENSE.txt"), notice, 0644); err != nil {
+		t.Fatal(err)
+	}
+	path, err := Build(context.Background(), source, output, archive, "tamper-test")
+	if err == nil || path != "" || !strings.Contains(err.Error(), "htmx script") {
+		t.Fatalf("expected htmx refusal, got %q: %v", path, err)
+	}
+	entries, err := os.ReadDir(output)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(entries) != 0 {
+		t.Fatalf("failed build left published/staged data: %v", entries)
+	}
+}

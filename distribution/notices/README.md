@@ -8,3 +8,10 @@ JavaScriptCore/WebKit relinking instructions. The Bun executable is unmodified.
 This development fixture is not the I39 release artifact. Complete pinned
 third-party notices, corresponding sources/relink materials and signed,
 notarized distribution validation remain mandatory I39 release gates.
+
+htmx-LICENSE.txt is the unmodified upstream Zero-Clause BSD licensing document
+fetched from
+https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/LICENSE.
+The vendored script bytes are pinned by distribution/assets/htmx.lock.json
+and verified before bundle publication; all three recorded origins returned
+byte-identical content.

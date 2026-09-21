@@ -90,7 +90,7 @@ test("response status boundaries keep bodyless statuses separate",async()=>{
 });
 test("native header validation rejects fixed sink overrides and hop-by-hop fields",async()=>{
  const header=(name:string,value:string)=>array([record("header",[["name",name],["value",value]])]);
- for(const name of ["content-type","Content-Length","X-Content-Type-Options","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade","bad name",""]){check(await responses.makeHeaders(header(name,"x")),1100,{reason:"invalid_header"});}
+ for(const name of ["content-type","Content-Length","X-Content-Type-Options","Content-Security-Policy","content-security-policy-report-only","HX-Redirect","hx-location","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade","bad name",""]){check(await responses.makeHeaders(header(name,"x")),1100,{reason:"invalid_header"});}
  for(const content of ["a\nb","a\rb","a\0b","\ud800","😀"])check(await responses.makeHeaders(header("x-test",content)),1100,{reason:"invalid_header"});
  const headers=value(await responses.makeHeaders(header("X-Test"," value "))),status=value(await responses.ok());
  const response=nativeResponse(value(await responses.text(status,headers,"body")));expect(response.headers.get("x-test")).toBe("value");expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");

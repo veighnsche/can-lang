@@ -338,11 +338,11 @@ func TestOwnerRevalidationAndInputAssets(t *testing.T) {
 	})
 	t.Run("asset mutation invalidates snapshot", func(t *testing.T) {
 		root := outputProject(t)
-		os.WriteFile(filepath.Join(root, "can.project.json"), []byte(`{"source_root":"src","error_registry":"can.errors.json","assets":{"logo":"logo.svg"}}`), 0600)
-		os.WriteFile(filepath.Join(root, "logo.svg"), []byte("before"), 0600)
+		os.WriteFile(filepath.Join(root, "can.project.json"), []byte(`{"source_root":"src","error_registry":"can.errors.json","assets":{"logo":"logo.txt"}}`), 0600)
+		os.WriteFile(filepath.Join(root, "logo.txt"), []byte("before"), 0600)
 		s := outputBegin(t, root)
 		p := outputPrepared(t, s, "one")
-		os.WriteFile(filepath.Join(root, "logo.svg"), []byte("after"), 0600)
+		os.WriteFile(filepath.Join(root, "logo.txt"), []byte("after"), 0600)
 		if _, err := s.Publish(p); err == nil || !strings.Contains(err.Error(), "inputs changed") {
 			t.Fatal("changed asset published", err)
 		}

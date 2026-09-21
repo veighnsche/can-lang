@@ -35,6 +35,29 @@ func TestPinnedOutputParser(t *testing.T) {
 	}
 }
 
+func TestPinnedHTMXRuntime(t *testing.T) {
+	if err := VerifyHTMX(".."); err != nil {
+		t.Fatal(err)
+	}
+	var lock HTMXLock
+	raw, err := os.ReadFile("assets/htmx.lock.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(raw, &lock); err != nil {
+		t.Fatal(err)
+	}
+	if lock.Version != "4.0.0" || lock.Size != 36716 || lock.SHA256 != "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f" {
+		t.Fatal("unexpected htmx pin")
+	}
+	if lock.Integrity != "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc" || lock.Route != "/__can/assets/htmx-4.0.0.min.js" {
+		t.Fatal("unexpected htmx route contract")
+	}
+	if lock.License.SPDX != "0BSD" {
+		t.Fatal("unexpected htmx license")
+	}
+}
+
 func TestPinnedSourceMapTools(t *testing.T) {
 	var lock struct {
 		SchemaVersion int               `json:"schemaVersion"`

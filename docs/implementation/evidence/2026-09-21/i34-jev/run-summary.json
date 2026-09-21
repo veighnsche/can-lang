@@ -1,0 +1,143 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1987,
+   "output_tokens": 176
+  },
+  "answers": {
+   "binary_signature_depth": {
+    "choice": "header_validated",
+    "confidence": 0.44,
+    "probabilities": {
+     "review_needed": 0.05,
+     "magic_only": 0.32,
+     "header_validated": 0.63
+    }
+   },
+   "json_policy": {
+    "choice": "json_must_parse",
+    "confidence": 0.95,
+    "probabilities": {
+     "review_needed": 0.01,
+     "json_must_parse": 0.97,
+     "json_bytes": 0.02
+    }
+   },
+   "ownership_scope": {
+    "choice": "caller_only",
+    "confidence": 0.62,
+    "probabilities": {
+     "review_needed": 0.16,
+     "root_union": 0.1,
+     "caller_only": 0.74
+    }
+   },
+   "reason_vocabulary": {
+    "choice": "single_missing",
+    "confidence": 0.14,
+    "probabilities": {
+     "specific_taxonomy": 0.33,
+     "review_needed": 0.25,
+     "single_missing": 0.42
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1976,
+   "output_tokens": 174
+  },
+  "answers": {
+   "binary_signature_depth": {
+    "choice": "magic_only",
+    "confidence": 0.36,
+    "probabilities": {
+     "header_validated": 0.4,
+     "review_needed": 0.03,
+     "magic_only": 0.57
+    }
+   },
+   "json_policy": {
+    "choice": "json_must_parse",
+    "confidence": 0.99,
+    "probabilities": {
+     "json_must_parse": 1.0,
+     "review_needed": 0.0,
+     "json_bytes": 0.0
+    }
+   },
+   "ownership_scope": {
+    "choice": "caller_only",
+    "confidence": 0.67,
+    "probabilities": {
+     "root_union": 0.17,
+     "review_needed": 0.05,
+     "caller_only": 0.78
+    }
+   },
+   "reason_vocabulary": {
+    "choice": "single_missing",
+    "confidence": 0.42,
+    "probabilities": {
+     "single_missing": 0.61,
+     "specific_taxonomy": 0.24,
+     "review_needed": 0.15
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1968,
+   "output_tokens": 176
+  },
+  "answers": {
+   "binary_signature_depth": {
+    "choice": "header_validated",
+    "confidence": 0.49,
+    "probabilities": {
+     "magic_only": 0.21,
+     "review_needed": 0.13,
+     "header_validated": 0.66
+    }
+   },
+   "json_policy": {
+    "choice": "json_must_parse",
+    "confidence": 0.89,
+    "probabilities": {
+     "json_bytes": 0.02,
+     "review_needed": 0.05,
+     "json_must_parse": 0.93
+    }
+   },
+   "ownership_scope": {
+    "choice": "caller_only",
+    "confidence": 0.84,
+    "probabilities": {
+     "root_union": 0.06,
+     "review_needed": 0.05,
+     "caller_only": 0.89
+    }
+   },
+   "reason_vocabulary": {
+    "choice": "single_missing",
+    "confidence": 0.28,
+    "probabilities": {
+     "specific_taxonomy": 0.36,
+     "single_missing": 0.52,
+     "review_needed": 0.12
+    }
+   }
+  }
+ }
+]

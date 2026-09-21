@@ -285,7 +285,7 @@ that production graceful shutdown works.
 
 ## I34 — Packaged HTMX and assets
 
-**Files:** create `distribution/assets/htmx-2.0.10.min.js` and its lock/provenance
+**Files:** create `distribution/assets/htmx-4.0.0.min.js` and its lock/provenance
 metadata; add the upstream notice under `distribution/notices/`. Extend
 `distribution/build.go`, `manifest.go`, their tests and vendor integrity checks.
 Create `compiler/internal/project/assets.go`, `assets_test.go`,
@@ -319,8 +319,8 @@ responsibilities require them. Extend driver artifact/publication validation and
    only the packaged HTMX script executes in the browser.
 
 Browser evidence must verify actual 422 swap, 204 no-swap, other error no-swap,
-polling/trigger behavior, and `allowEval=false`, `allowScriptTags=false`,
-`selfRequestsOnly=true`. Block external network/CDN and attempt hostile response
+polling/trigger behavior, and the pinned `mode="same-origin"` plus `noSwap`
+configuration. Block external network/CDN and attempt hostile response
 content/destinations. Store browser/version and screenshots or DOM/network evidence
 with the task report. Literal HTML snapshots alone cannot close I34.
 

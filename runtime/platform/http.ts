@@ -61,7 +61,7 @@ export function nativeResponse(value:unknown):Response{
  const response=read(responses,value);
  return new Response(response.body===null?null:new Uint8Array(copyBytes(response.body,origin)),{status:response.status,headers:response.headers.map(([name,value])=>[name,value])});
 }
-const forbiddenResponseHeaders=new Set(["content-type","content-length","x-content-type-options","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade"]);
+const forbiddenResponseHeaders=new Set(["content-type","content-length","x-content-type-options","content-security-policy","content-security-policy-report-only","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade"]);
 export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData">){
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
  function status(value:bigint,body:boolean):Completion<unknown>{if(value<200n||value>599n||body&&(value===204n||value===205n||value===304n))return invalid("invalid_status");return success(opaque(body?bodyStatuses:statuses,Number(value)));}
@@ -84,7 +84,7 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
    for(const entry of dataArray(input)){
     const name=dataProperty(entry,"name"),value=dataProperty(entry,"value");
     if(typeof name!=="string"||typeof value!=="string")throw new TypeError("invalid compiler header");
-    if(forbiddenResponseHeaders.has(name.toLowerCase())||!name.isWellFormed()||!value.isWellFormed())return invalid("invalid_header");
+    if(forbiddenResponseHeaders.has(name.toLowerCase())||name.toLowerCase().startsWith("hx-")||!name.isWellFormed()||!value.isWellFormed())return invalid("invalid_header");
     try{headers.append(name,value);}catch(cause){if(cause instanceof TypeError)return invalid("invalid_header");throw cause;}
    }
    return success(opaque(serverHeaders,Object.freeze(Array.from(headers.entries(),entry=>Object.freeze(entry)))));

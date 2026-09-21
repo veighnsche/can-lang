@@ -31,6 +31,7 @@ type Program struct {
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
 	Assertions   []*ir.Assertion
+	Assets       []project.Asset
 }
 type ProgramFunction struct {
 	Symbol        *resolve.Symbol
@@ -248,7 +249,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		if httpGenericOperation(op.Identity) {
 			continue
 		} // I32 generics specialize per concrete type argument on use.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Name != "htmx::runtime_head" {
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" {
 			continue
 		}
 		signature := &syntax.CallableType{}
@@ -515,7 +516,19 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		return nil, err
 	}
 	p.Model = c.specializer.Model()
+	for _, key := range projectKeys(graph) {
+		p.Assets = append(p.Assets, graph.Projects[key].CheckedAssets...)
+	}
 	return p, nil
+}
+
+func projectKeys(graph *project.Graph) []string {
+	keys := make([]string, 0, len(graph.Projects))
+	for key := range graph.Projects {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext, error) {
@@ -528,7 +541,10 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	if e != nil {
 		return CompletionContext{}, e
 	}
-	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables}
+	owner := file.Source.Package.Owner
+	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Asset: func(name string) ir.AssetResolution {
+		return resolveAssetName(c.world.Graph, owner, name)
+	}}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
 		symbol, err := file.Lookup(scope, name, resolve.CallUse)

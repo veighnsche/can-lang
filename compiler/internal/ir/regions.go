@@ -70,6 +70,7 @@ type InvocationStep struct {
 	// SuccessBinding is available only after this step succeeds. Method chains
 	// use it as the next receiver; match-chain arms see it only on success.
 	SuccessBinding string
+	Asset          *AssetResolution
 }
 type CompletionKind string
 

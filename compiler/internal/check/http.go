@@ -368,6 +368,9 @@ func checkRoutePath(path string) error {
 			return fail()
 		}
 	}
+	if string(decoded) == "/__can" || strings.HasPrefix(string(decoded), "/__can/") {
+		return fail()
+	}
 	return nil
 }
 

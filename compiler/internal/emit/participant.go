@@ -61,7 +61,7 @@ func (e *RegionEmitter) prepareParticipant(call *ir.Invocation) (LoweredExpressi
 			if err != nil {
 				return LoweredExpression{}, nil, err
 			}
-		} else if step.Native == nil && step.Array == nil {
+		} else if step.Native == nil && step.Array == nil && step.Asset == nil {
 			target, err := e.target(step.Identity)
 			if err != nil {
 				return LoweredExpression{}, nil, err

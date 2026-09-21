@@ -30,6 +30,7 @@ type Project struct {
 	Dependencies                 map[string]*Project
 	Packages                     []*Package
 	Sources                      []*Source
+	CheckedAssets                []Asset
 }
 type Package struct {
 	Name, ID, Directory, OutputDirectory string
@@ -113,10 +114,12 @@ func Load(directory string) (*Graph, error) {
 		}
 		project := &Project{Key: key, ID: identity, Root: directory, Manifest: manifest, ManifestSHA256: Digest(data), Registry: registry, Dependencies: map[string]*Project{}}
 		g.Projects[key] = project
-		for _, name := range sortedKeys(manifest.Assets) {
-			if _, err := ConfinedPath(directory, manifest.Assets[name], false); err != nil {
-				return nil, fmt.Errorf("asset %q: %w", name, err)
-			}
+		project.CheckedAssets, err = Snapshot(directory, manifest.Assets)
+		if err != nil {
+			return nil, err
+		}
+		for i := range project.CheckedAssets {
+			project.CheckedAssets[i].Project = key
 		}
 		for _, name := range sortedKeys(manifest.Dependencies) {
 			depDir, err := ConfinedPath(directory, manifest.Dependencies[name], true)

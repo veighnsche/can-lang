@@ -390,11 +390,25 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, typ := range program.Model.Types() {
 		numberIDs[typ.Declaration()] = typ.Identity()
 	}
-	fmt.Fprintf(&state, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s});\n", quote(numberIDs["can.std.html@1::invalid_structure"]), quote(numberIDs["can.std.html@1::invalid_url"]), quote(numberIDs["can.std.htmx@1::invalid_target"]), quote(numberIDs["can.std.htmx@1::invalid_interval"]))
+	assetTable, assetURLs, assetFiles, err := assetBundle(program)
+	if err != nil {
+		return nil, err
+	}
+	encodedTable, err := json.Marshal(assetTable)
+	if err != nil {
+		return nil, err
+	}
+	encodedURLs, err := json.Marshal(assetURLs)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Fprintf(&state, "const $canAssetTable:Parameters<typeof $canCreateAssets>[0]=%s;\n", encodedTable)
+	fmt.Fprintf(&state, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s},%s);\n", quote(numberIDs["can.std.html@1::invalid_structure"]), quote(numberIDs["can.std.html@1::invalid_url"]), quote(numberIDs["can.std.htmx@1::invalid_target"]), quote(numberIDs["can.std.htmx@1::invalid_interval"]), encodedURLs)
+	fmt.Fprintf(&state, "const $canAssets=$canCreateAssets($canAssetTable, new URL(\"../\", import.meta.url));\n")
 	fmt.Fprintf(&state, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s});\n", headerType, quote(numberIDs["can.std.http@1::invalid_request"]), quote(numberIDs["can.std.http@1::body_limit"]), quote(invalidData), quote(numberIDs["can.std.http@1::header"]))
 	fmt.Fprintf(&state, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s});\n", quote(numberIDs["can.std.http@1::invalid_request"]), quote(invalidData))
 	fmt.Fprintf(&state, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(numberIDs["can.std.http@1::invalid_route"]), quote(numberIDs["can.std.http@1::duplicate_route"]), quote(numberIDs["can.std.http@1::ambiguous_route"]))
-	fmt.Fprintf(&state, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s});\n", quote(numberIDs["can.std.http@1::invalid_server_config"]), quote(numberIDs["can.std.http@1::bind_failed"]), quote(numberIDs["can.std.http@1::shutdown_failed"]))
+	fmt.Fprintf(&state, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s},$canAssets);\n", quote(numberIDs["can.std.http@1::invalid_server_config"]), quote(numberIDs["can.std.http@1::bind_failed"]), quote(numberIDs["can.std.http@1::shutdown_failed"]))
 	fmt.Fprintf(&state, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(numberIDs["can.std.clock@1::invalid_duration"]), quote(numberIDs["can.std.random@1::invalid_length"]), quote(numberIDs["can.std.log@1::write_failed"]))
 	fmt.Fprintf(&state, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(numberIDs["can.std.io@1::read_failed"]), quote(numberIDs["can.std.io@1::limit_exceeded"]), quote(invalidData), optionType, quote(numberIDs["can.std.env@1::invalid_name"]), quote(numberIDs["can.std.http@1::credentials_missing"]), quote(optionIDs["can.std.option@1::some"]), quote(optionIDs["can.std.option@1::none"]))
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
@@ -493,6 +507,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
@@ -724,7 +739,11 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		entry.Body = "process.exitCode = await $canRunAssertions([" + strings.Join(cases, ",") + "], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();});\n"
 		modules = append(modules, entry)
-		return Modules(modules, dependencies...)
+		artifacts, err := Modules(modules, dependencies...)
+		if err != nil {
+			return nil, err
+		}
+		return append(artifacts, assetFiles...), nil
 	}
 	main := program.Entry
 	modules = append(modules, Module{Path: "entry.ts", Imports: []ModuleImport{
@@ -733,5 +752,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
 		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{functions[main.Identity()], "$canMain"}}},
 	}, Body: "process.exitCode = await $canRunEntry(() => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, $canMain, process.argv.slice(2));\n"})
-	return Modules(modules, dependencies...)
+	artifacts, err := Modules(modules, dependencies...)
+	if err != nil {
+		return nil, err
+	}
+	return append(artifacts, assetFiles...), nil
 }

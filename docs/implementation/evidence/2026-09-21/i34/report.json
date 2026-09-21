@@ -1,0 +1,126 @@
+{
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "base": "http://127.0.0.1:18485",
+  "passed": true,
+  "checks": [
+    {
+      "name": "htmx-loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "single-pinned-script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "htmx-config",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "stylesheet-local",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "csp-header",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "form-422-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "form-200-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hostile-escaped",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "204-no-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "500-no-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "dashboard-polling",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-external-requests",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "aborted": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/__can/project/6431abd38866d230ea26466a973107e9df8d10b3456746f632a6998ac35930cb/site.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/__can/assets/htmx-4.0.0.min.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18485/validate",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18485/validate",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18485/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/quiet",
+      "status": 204
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/boom",
+      "status": 500
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18485/dashboard",
+      "status": 200
+    }
+  ]
+}

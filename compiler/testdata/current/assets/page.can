@@ -1,0 +1,192 @@
+package app
+    provides []
+    uses [html, htmx, http, asset, clock, text, codec]
+record account_form
+    str name
+fn html::safe feedback
+    emits [html::invalid_structure]
+    given
+        str message
+    asserts
+        plain: "Ann" => ok
+        hostile: "<script>window.__pwned=1</script>" => ok
+    match chain
+        call html::text(message) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+fn html::safe page
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call htmx::runtime_head() as html::node runtime
+        call html::parse_url("/validate") as html::url validate_url
+        call htmx::post(validate_url) as html::attribute post
+        call htmx::target_id("account_results") as htmx::target account_target
+        call htmx::target_attribute(account_target) as html::attribute account_selector
+        call htmx::swap_inner() as html::attribute swap
+        call html::text_attribute("method", "post") as html::attribute method
+        call html::text_attribute("id", "account_form") as html::attribute form_id
+        call html::make_tag("form") as html::tag form_tag
+        call html::text_attribute("name", "name") as html::attribute field_name
+        call html::text_attribute("id", "account_name") as html::attribute field_id
+        call html::make_tag("input") as html::tag input_tag
+        call html::element(input_tag, [field_name, field_id], []) as html::node field
+        call html::text_attribute("type", "submit") as html::attribute submit_type
+        call htmx::disable_this() as html::attribute disable
+        call html::text("Save") as html::node submit_label
+        call html::make_tag("button") as html::tag button_tag
+        call html::element(button_tag, [submit_type, disable], [submit_label]) as html::node submit
+        call html::text_attribute("id", "account_results") as html::attribute results_id
+        call html::text("waiting") as html::node waiting
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [results_id], [waiting]) as html::node results
+        call html::element(form_tag, [form_id, method, post, account_selector, swap], [field, submit, results]) as html::node form
+        call html::parse_url("/quiet") as html::url quiet_url
+        call htmx::get(quiet_url) as html::attribute quiet_get
+        call htmx::target_id("quiet_region") as htmx::target quiet_target
+        call htmx::target_attribute(quiet_target) as html::attribute quiet_selector
+        call html::text("Quiet") as html::node quiet_label
+        call html::element(button_tag, [quiet_get, quiet_selector, swap], [quiet_label]) as html::node quiet_button
+        call html::text_attribute("id", "quiet_region") as html::attribute quiet_id
+        call html::text("quiet-before") as html::node quiet_text
+        call html::element(paragraph, [quiet_id], [quiet_text]) as html::node quiet_region
+        call html::parse_url("/boom") as html::url boom_url
+        call htmx::get(boom_url) as html::attribute boom_get
+        call htmx::target_id("boom_region") as htmx::target boom_target
+        call htmx::target_attribute(boom_target) as html::attribute boom_selector
+        call html::text("Boom") as html::node boom_label
+        call html::element(button_tag, [boom_get, boom_selector, swap], [boom_label]) as html::node boom_button
+        call html::text_attribute("id", "boom_region") as html::attribute boom_id
+        call html::text("boom-before") as html::node boom_text
+        call html::element(paragraph, [boom_id], [boom_text]) as html::node boom_region
+        call html::parse_url("/dashboard") as html::url dashboard_url
+        call htmx::get(dashboard_url) as html::attribute dashboard_get
+        call htmx::target_id("dashboard") as htmx::target dashboard_target
+        call htmx::target_attribute(dashboard_target) as html::attribute dashboard_selector
+        call htmx::trigger_every(1000) as html::attribute poll
+        call html::text_attribute("id", "dashboard") as html::attribute dashboard_id
+        call html::text("dashboard-before") as html::node dashboard_text
+        call html::make_tag("div") as html::tag division
+        call html::element(division, [dashboard_id, dashboard_get, dashboard_selector, swap, poll], [dashboard_text]) as html::node dashboard
+        call html::text("<script>window.__pwned=1</script>") as html::node hostile_text
+        call html::text_attribute("id", "hostile") as html::attribute hostile_id
+        call html::element(paragraph, [hostile_id], [hostile_text]) as html::node hostile
+        call html::document("Accounts", [css, runtime], [form, quiet_button, quiet_region, boom_button, boom_region, dashboard, hostile]) as html::safe document
+        ok => ok document
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target
+        htmx::invalid_interval
+fn http::server_response show
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call page()
+        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_target => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_interval => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+fn http::server_response validate
+    emits []
+    given
+        http::request req
+    asserts
+        blank: => ok
+        named: => ok
+    match call http::request_form<account_form>(req, 2048)
+        when
+            blank: req, 2048 => ok account_form("")
+            named: req, 2048 => ok account_form("Ann")
+        ok account_form form => match form.name is ""
+            true => match call feedback("Name is required.")
+                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            false => match call feedback(form.name)
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        http::body_limit => match call feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        http::invalid_request => match call feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        codec::invalid_data => match call feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+fn http::server_response quiet
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::make_status(204)
+        ok http::status status => ok call http::response_empty(status, call http::empty_server_headers())
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+fn http::server_response boom
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "nope")
+fn http::server_response dashboard
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call clock::wall_millis()
+        when
+            sample: => ok 1000
+        ok int millis => match call text::from_int(millis)
+            ok str label => match call feedback(label)
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+fn http::router routes
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/", callable show) as http::route home
+        call http::route_post("/validate", callable validate) as http::route submit
+        call http::route_get("/quiet", callable quiet) as http::route silence
+        call http::route_get("/boom", callable boom) as http::route failure
+        call http::route_get("/dashboard", callable dashboard) as http::route summary
+        call http::make_router([home, submit, silence, failure, summary]) as http::router built
+        ok => ok built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+fn http::server boot
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        ok http::server_config config => match call routes()
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                ok http::server sturdy => ok sturdy
+                http::bind_failed
+            http::invalid_route
+            http::duplicate_route
+            http::ambiguous_route
+        http::invalid_server_config
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

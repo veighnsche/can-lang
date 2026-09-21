@@ -242,7 +242,7 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			fmt.Fprintf(&out, "%s = %s;\n%s = $canSuccess(%s);\n", e.expression.Bindings[step.SuccessBinding], value.Value, result, e.expression.Bindings[step.SuccessBinding])
 			continue
 		}
-		if target == "" && step.Native == nil && step.Array == nil {
+		if target == "" && step.Native == nil && step.Array == nil && step.Asset == nil {
 			var err error
 			target, err = e.target(step.Identity)
 			if err != nil {
@@ -271,6 +271,12 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 				return LoweredExpression{}, err
 			}
 			invocation = "(() => {\n" + value.Statements + "return $canSuccess(" + value.Value + ");\n})()"
+		} else if step.Asset != nil {
+			var err error
+			invocation, err = assetInvocation(step.Asset)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
 		} else {
 			invocation = target + "(" + strings.Join(append(args, "$canContext"), ", ") + ")"
 		}
@@ -306,7 +312,7 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
 		}
 		instance := "undefined"
-		if step.Native == nil && step.Array == nil {
+		if step.Native == nil && step.Array == nil && step.Asset == nil {
 			instance = "$canCallableInstance(" + target + ")"
 		}
 		invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"

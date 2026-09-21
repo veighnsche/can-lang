@@ -142,7 +142,7 @@ const output=renderSafe(result.value),escaped=Bun.escapeHTML(input);
 assert.ok(output.startsWith("<!doctype html><html><head><title>"+escaped+"</title>"));
 assert.ok(output.endsWith('<body><section id="results" hx-get="/results?q=a&amp;x=b" hx-target="#results" hx-trigger="every 1000ms"><p title="'+escaped+'">'+escaped+'</p></section></body></html>'));
 assert.equal((output.match(/<script /g)||[]).length,1);assert.ok(!output.includes('<img'));assert.ok(!output.includes('<script>alert'));
-assert.ok(output.includes('/__can/assets/htmx-2.0.10.min.js'));
+assert.ok(output.includes('/__can/assets/htmx-4.0.0.min.js'));
 const text=await $canHTML.text(input);assert.equal(text.kind,"ok");const part=await fragment([text.value]);assert.equal(part.kind,"ok");assert.equal(renderSafe(part.value),escaped);
 console.log("compiled request-derived HTML passed");
 `, renderName, fragmentName, quote(module), quote(filepath.Join(build.Directory, "program/state.ts")), quote(filepath.Join(runtimes[0], "platform/html.ts")), quote(server.URL), quote(hostile), quote(hostile))

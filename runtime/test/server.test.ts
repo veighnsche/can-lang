@@ -120,6 +120,8 @@ test("start rejects foreign routers without binding",async ()=>{
   const token=value(await server.start(config,table));
   const response=await fetch("http://127.0.0.1:18343/x");
   expect(response.status).toBe(200);expect(await response.text()).toBe("recovered");
+  expect(response.headers.get("content-security-policy")).toContain("script-src 'self'");
+  expect(response.headers.get("content-security-policy")).not.toContain("unsafe-eval");
   expect((await server.stop(token)).kind).toBe("ok");
   return success(undefined);
  });

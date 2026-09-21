@@ -29,6 +29,7 @@ export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types
   // Source checking additionally requires a static path and named exact callback.
   if(!source.isWellFormed()||!source.startsWith("/")||source.startsWith("//")||/[\x00-\x20\x7f\\?#*]/.test(source)||source.split("/").some(segment=>segment.startsWith(":")))return error(types.invalid,[["reason","path"]]);
   let path:string;try{path=normalizedPath(new URL(source,"http://can.invalid"));}catch(cause){if(!(cause instanceof URIError)&&!(cause instanceof TypeError))throw cause;return error(types.invalid,[["reason","path"]]);}
+  if(path==="/__can"||path.startsWith("/__can/"))return error(types.invalid,[["reason","path"]]);
   if(typeof callback!=="function")throw new TypeError("invalid mounted callback");
   return success(opaque(routes,Object.freeze({method,source,path,callback})));
  }

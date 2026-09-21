@@ -320,6 +320,7 @@
       "../failure.ts",
       "./http.ts"
     ],
+    "platform/assets.ts": [],
     "platform/server.ts": [
       "../completion.ts",
       "../assert/context.ts",
@@ -327,6 +328,7 @@
       "../domain.ts",
       "../failure.ts",
       "../owner.ts",
+      "./assets.ts",
       "./http.ts",
       "./router.ts"
     ]

@@ -117,7 +117,7 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 	if err := write("tsconfig.json", config, 0644); err != nil {
 		return "", err
 	}
-	for _, dir := range []string{"runtime", "tools/runtime", "distribution/notices"} {
+	for _, dir := range []string{"runtime", "tools/runtime", "distribution/assets", "distribution/notices"} {
 		err := filepath.WalkDir(filepath.Join(source, dir), func(path string, entry os.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -145,6 +145,9 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 		if err != nil {
 			return "", err
 		}
+	}
+	if err := VerifyHTMX(source); err != nil {
+		return "", err
 	}
 	manifestBytes, err := json.MarshalIndent(manifest, "", "  ")
 	if err != nil {

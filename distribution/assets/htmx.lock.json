@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.browser-runtime",
+  "package": "htmx.org",
+  "version": "4.0.0",
+  "repository": {
+    "url": "https://github.com/bigskysoftware/htmx.git",
+    "type": "git",
+    "tag": "v4.0.0"
+  },
+  "origins": [
+    "https://unpkg.com/htmx.org@4.0.0/dist/htmx.min.js",
+    "https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/htmx.min.js",
+    "https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/dist/htmx.min.js"
+  ],
+  "acquiredUtc": "2026-09-21",
+  "crossChecked": "All three origins returned byte-identical content.",
+  "file": "htmx-4.0.0.min.js",
+  "integrity": "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
+  "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f",
+  "size": 36716,
+  "route": "/__can/assets/htmx-4.0.0.min.js",
+  "mediaType": "text/javascript",
+  "license": {
+    "spdx": "0BSD",
+    "source": "https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/LICENSE",
+    "path": "distribution/notices/htmx-LICENSE.txt",
+    "sha256": "d3d2456f76414f2456104660ebd65aff1c04cd7966b942bdabd63f3cdb316a38"
+  }
+}

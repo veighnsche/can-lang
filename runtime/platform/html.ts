@@ -48,11 +48,12 @@ const children=(input:readonly unknown[])=>dataArray(input).map(v=>read(nodes,v)
 const serialize=(a:Attribute)=>` ${a.name}="${Bun.escapeHTML(a.value)}"`;
 const selectorID=(value:string)=>/^[A-Za-z_][A-Za-z0-9_-]*$/.test(string(value));
 type Contracts=Readonly<{structure:string;url:string;target:string;interval:string}>;
-export function createHTML(domain:ReturnType<typeof createDomainRuntime>,types:Contracts){
+export function createHTML(domain:ReturnType<typeof createDomainRuntime>,types:Contracts,declared:readonly string[]=[]){
  const bad=(identity:string,reason:string)=>failure(domain.create(identity,record(identity,[["reason",reason]]),origin));
  const structure=(reason:string)=>bad(types.structure,reason);
  const interval=(n:bigint)=>failure(domain.create(types.interval,record(types.interval,[["milliseconds",n]]),origin));
  const local=(input:unknown,name:string)=>{const url=read(urls,input);return url.local?success(attr(name,url.value)):bad(types.url,"same_origin");};
+ const declaredURLs=new Set(declared);
  return Object.freeze({
   async makeTag(name:string,_context?:AssertionContext){name=lower(name);return authorTags.has(name)?success(token(tags,name)):structure("tag");},
   async text(value:string,_context?:AssertionContext){return success(node(Bun.escapeHTML(string(value))));},
@@ -107,10 +108,19 @@ export function createHTML(domain:ReturnType<typeof createDomainRuntime>,types:C
   async triggerChange(_context?:AssertionContext){return success(attr("hx-trigger","change"));},
   async triggerInputChanged(delay:bigint,_context?:AssertionContext){return delay<0n||delay>60000n?interval(delay):success(attr("hx-trigger",`input changed delay:${delay}ms`));},
   async triggerEvery(period:bigint,_context?:AssertionContext){return period<1000n||period>3600000n?interval(period):success(attr("hx-trigger",`every ${period}ms`));},
-  async disableThis(_context?:AssertionContext){return success(attr("hx-disabled-elt","this"));},
+  async disableThis(_context?:AssertionContext){return success(attr("hx-disable","this"));},
+  async declareAsset(url:string,_context?:AssertionContext){
+   if(typeof url!=="string"||!declaredURLs.has(url))throw new TypeError("undeclared asset url");
+   return success(token(urls,Object.freeze({value:url,local:true})));
+  },
+  async rejectAsset(reason:string,_context?:AssertionContext){if(reason!=="missing"&&reason!=="unowned")throw new TypeError("invalid asset reason");return bad(types.url,reason);},
   async runtimeHead(_context?:AssertionContext){
-   const config=JSON.stringify({allowEval:false,allowScriptTags:false,selfRequestsOnly:true,responseHandling:[{code:"204",swap:false},{code:"[23]..",swap:true},{code:"422",swap:true,error:false},{code:"[45]..",swap:false,error:true}]});
-   return success(node(`<meta name="htmx-config" content="${Bun.escapeHTML(config)}"><script defer src="/__can/assets/htmx-2.0.10.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V"></script>`,"runtime",true));
+   // htmx 4 swaps every status except noSwap entries. The compiler-owned
+   // policy keeps 204/304 quiet and every 4xx/5xx except 422 out of swaps,
+   // with same-origin fetch pinned explicitly.
+   const noSwap=[204,304];for(let code=400;code<600;code++)if(code!==422)noSwap.push(code);
+   const config=JSON.stringify({mode:"same-origin",noSwap});
+   return success(node(`<meta name="htmx-config" content="${Bun.escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>`,"runtime",true));
   }
  });
 }

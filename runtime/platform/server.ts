@@ -6,6 +6,7 @@ import {resourceStateFailure} from "../failure.ts";
 import {registerResource,useResource,closeResource,guardCallback,withScope,type Resource,type Scope} from "../owner.ts";
 import {snapshotRequest} from "./http.ts";
 import {dispatch,isRouterValue} from "./router.ts";
+import {browserPolicy,type AssetServer} from "./assets.ts";
 const origin=Object.freeze({source:"can:server",start:0,end:0,invocation:Object.freeze([])});
 type Config=Readonly<{host:string;port:bigint;bodyLimit:number;shutdownMs:number}>;
 type Native=Readonly<{server:Readonly<{stop:(closeActiveConnections?:boolean)=>void}>;scope:Scope;router:unknown;bodyLimit:number;shutdownMs:number;settled:Promise<Completion<void>>;settle:(completion:Completion<void>)=>void}>;
@@ -20,7 +21,16 @@ function fixed(status:400|413|500):Response{
  const headers=new Headers({"content-type":"text/plain; charset=utf-8","x-content-type-options":"nosniff"});
  return new Response(status===400?"Bad Request":status===413?"Payload Too Large":"Internal Server Error",{status,headers});
 }
-export function createServer(domain:ReturnType<typeof createDomainRuntime>,types:Readonly<{invalidConfig:string;bindFailed:string;shutdownFailed:string}>){
+const idle:AssetServer={async serve():Promise<Response|undefined>{return undefined;}};
+function withPolicy(response:Response):Response{
+ const headers=new Headers(response.headers);
+ headers.set("content-security-policy",browserPolicy);
+ headers.set("x-content-type-options","nosniff");
+ const status=response.status;
+ const body=status===204||status===205||status===304?null:response.body;
+ return new Response(body,{status,statusText:response.statusText,headers});
+}
+export function createServer(domain:ReturnType<typeof createDomainRuntime>,types:Readonly<{invalidConfig:string;bindFailed:string;shutdownFailed:string}>,assets:AssetServer=idle){
  const invalid=(reason:string)=>failure(domain.create(types.invalidConfig,record(types.invalidConfig,[["reason",reason]]),origin));
  const shutdown=(phase:string)=>failure(domain.create(types.shutdownFailed,record(types.shutdownFailed,[["phase",phase]]),origin));
  function readConfig(value:unknown):Config{if(!object(value)||!configs.has(value))throw resourceStateFailure(undefined,origin);return configs.get(value)!;}
@@ -58,9 +68,13 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
     });
     try{
      const server=Bun.serve({hostname:host,port:Number(port),fetch:async (native:Request):Promise<Response>=>{
-      try{const completed=await guarded(native);return completed.kind==="ok"?completed.value:fixed(500);}
-      catch{return fixed(500);}
-     },error:()=>fixed(500)});
+      try{
+       const reserved=await assets.serve(native);
+       if(reserved)return withPolicy(reserved);
+       const completed=await guarded(native);return withPolicy(completed.kind==="ok"?completed.value:fixed(500));
+      }
+      catch{return withPolicy(fixed(500));}
+     },error:()=>withPolicy(fixed(500))});
      ready({server,scope});
      await lifetime;
     }catch{ready({});return success(undefined);}

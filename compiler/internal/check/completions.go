@@ -46,6 +46,8 @@ type CompletionContext struct {
 	// BareOpaque permits bare ok in assertion expectations for C-excluded
 	// opaque/callable results; bodies and match arms always require values.
 	BareOpaque bool
+	// Asset resolves one static manifest key in the calling project.
+	Asset func(string) ir.AssetResolution
 }
 type regionChecker struct {
 	aggregate *aggregateInference
@@ -546,6 +548,13 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			}
 		}
 		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
+		if binding.Identity == assetURL {
+			resolution, err := c.resolveAsset(args)
+			if err != nil {
+				return err
+			}
+			step.Asset = &resolution
+		}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)
 		if err != nil {

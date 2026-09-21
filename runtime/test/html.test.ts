@@ -57,12 +57,12 @@ test("head-only nodes, native title escaping and pinned HTMX policy",async()=>{
  check(await html.document("x",[await text("x")],[]),1220);
  const output=renderSafe(value(await html.document("<title>",[viewport,css,runtime],[await text("<body>")])));
  expect(output.startsWith("<!doctype html><html><head><title>&lt;title&gt;</title>")).toBe(true);expect(output.endsWith("<body>&lt;body&gt;</body></html>")).toBe(true);
- expect(output).toContain('/__can/assets/htmx-2.0.10.min.js');expect(output).toContain('allowEval&quot;:false');expect(output).toContain('allowScriptTags&quot;:false');expect(output).toContain('selfRequestsOnly&quot;:true');expect(output).toContain('422');
+ expect(output).toContain('/__can/assets/htmx-4.0.0.min.js');expect(output).toContain('mode&quot;:&quot;same-origin');expect(output).toContain('noSwap');expect(output).toContain('sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc');
 });
 test("typed HTMX selectors and finite intervals cannot inject trigger code",async()=>{
  for(const id of ["","#id","x y","x,body","x]","1id","x\n","x:has(*)"]) {check(await html.targetID(id),1222);check(await html.indicatorID(id),1222);}
  const target=value(await html.targetID("results_1"));const attrs=[value(await html.targetAttribute(target)),value(await html.indicatorID("busy")),value(await html.swapInner()),value(await html.disableThis()),value(await html.triggerInputChanged(60000n))];
- expect(await render([await element("input",[],attrs)])).toBe('<input hx-target="#results_1" hx-indicator="#busy" hx-swap="innerHTML" hx-disabled-elt="this" hx-trigger="input changed delay:60000ms">');
+ expect(await render([await element("input",[],attrs)])).toBe('<input hx-target="#results_1" hx-indicator="#busy" hx-swap="innerHTML" hx-disable="this" hx-trigger="input changed delay:60000ms">');
  for(const n of [-1n,60001n,10n**50n])check(await html.triggerInputChanged(n),1223);
  for(const n of [0n,999n,3600001n])check(await html.triggerEvery(n),1223);
  for(const n of [1000n,3600000n])expect((await html.triggerEvery(n)).kind).toBe("ok");
