@@ -25,6 +25,7 @@ type Program struct {
 	Initializers []ir.Initializer
 	Entry        *ProgramFunction
 	Intrinsics   map[string]*types.Type
+	Codecs       map[string]*CodecSpecialization
 	Assertions   []*ir.Assertion
 }
 type ProgramFunction struct {
@@ -33,6 +34,8 @@ type ProgramFunction struct {
 }
 
 type programChecker struct {
+	codecs      map[string]*CodecSpecialization
+	codecParts  map[string][]*types.Type
 	world       *resolve.World
 	builder     *types.Builder
 	annotations map[*resolve.File]map[string]*types.Type
@@ -80,6 +83,16 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 		if node, ok := value.Interface().(syntax.TypeNode); ok {
 			_, err := c.gather(file, node)
 			return err
+		}
+		switch node := value.Interface().(type) {
+		case *syntax.CallExpr:
+			if err := c.gatherCodec(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
+				return err
+			}
+		case *syntax.ReferenceExpr:
+			if err := c.gatherCodec(file, node.Callee, node.Types); err != nil {
+				return err
+			}
 		}
 		if constructor, ok := value.Interface().(*syntax.ConstructorExpr); ok {
 			if _, err := c.gather(file, &syntax.NamedType{Name: constructor.Name, Arguments: constructor.Types}); err != nil {
@@ -311,6 +324,19 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	p.Codecs = c.codecs
+	for id, special := range c.codecs {
+		parts := c.codecParts[id]
+		special.Schema, err = types.Schema(special.Data)
+		if err != nil {
+			return nil, err
+		}
+		special.Contract, err = types.CallableOfChecked(parts[0], []*types.Type{parts[1]}, []*types.Type{parts[2]})
+		if err != nil {
+			return nil, err
+		}
+		p.Intrinsics[id] = special.Contract
+	}
 	callables := map[string]CallableDeclaration{}
 	for id, typ := range p.Intrinsics {
 		names := make([]string, len(typ.Inputs()))
@@ -343,6 +369,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			return nil, e
 		}
 		context := CompletionContext{Identity: symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: callables}
+		context.Specialize = func(name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
+			return c.specializeCodec(file, scope, name, args)
+		}
 		context.Method = func(receiver *types.Type, name syntax.Token, args []syntax.TypeNode) (ValueBinding, error) {
 			if len(args) != 0 {
 				return ValueBinding{}, fmt.Errorf("generic method specialization is not implemented")

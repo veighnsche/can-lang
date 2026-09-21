@@ -40,7 +40,9 @@ func (d CallableDeclaration) validate() error {
 }
 func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir.Expression, error) {
 	if len(n.Types) != 0 {
-		return nil, fmt.Errorf("generic callable reference requires concrete specialization")
+		if _, ok := n.Callee.(*syntax.NameExpr); !ok || c.context.Specialize == nil {
+			return nil, fmt.Errorf("generic callable reference requires concrete specialization")
+		}
 	}
 	e := c.expressions(scope)
 	var binding ValueBinding
@@ -51,7 +53,11 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir
 		if e.Reference == nil {
 			return nil, fmt.Errorf("missing named reference resolver")
 		}
-		binding, err = e.Reference(callee.Name)
+		if len(n.Types) > 0 {
+			binding, err = c.context.Specialize(callee.Name, n.Types)
+		} else {
+			binding, err = e.Reference(callee.Name)
+		}
 		if err == nil {
 			c.uses.Names[callee] = binding.Identity
 		}

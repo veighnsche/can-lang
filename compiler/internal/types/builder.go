@@ -140,6 +140,10 @@ func (b *Builder) instantiate(symbol *resolve.Symbol, arguments []*Type) (*Type,
 	if err != nil {
 		return nil, err
 	}
+	n.canonical = symbol.Name
+	if symbol.Package != nil {
+		n.canonical = symbol.Package.Name + "::" + symbol.Name
+	}
 	// A same-specialization reference may point back to a node whose fields are
 	// being built. Its full shape is checked when the graph is sealed.
 	if n.defined || b.building(n) {

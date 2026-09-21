@@ -34,6 +34,7 @@ type Field struct {
 type Type struct {
 	kind            Kind
 	id, declaration string
+	canonical       string
 	key             string
 	arguments       []*Type
 	fields          []Field

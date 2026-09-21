@@ -28,9 +28,10 @@ type CompletionContext struct {
 	ErrorName        func(syntax.QualifiedName) (string, error)
 	PatternName      func(syntax.QualifiedName) (string, error)
 	// Variadic declaration contracts have a final array input in the private ABI.
-	Callables map[string]CallableDeclaration
-	Variadic  map[string]bool
-	Method    func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	Specialize func(syntax.QualifiedName, []syntax.TypeNode) (ValueBinding, error)
+	Callables  map[string]CallableDeclaration
+	Variadic   map[string]bool
+	Method     func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
 }
@@ -292,7 +293,9 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 		return nil, fmt.Errorf("missing invocation")
 	}
 	if len(n.Invocation.Types) != 0 {
-		return nil, fmt.Errorf("generic invocation requires specialization")
+		if _, ok := n.Invocation.Callee.(*syntax.NameExpr); !ok || c.context.Specialize == nil {
+			return nil, fmt.Errorf("generic invocation requires specialization")
+		}
 	}
 	out := &ir.Invocation{Span: n.Span}
 	e := c.expressions(scope)
@@ -311,7 +314,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 	var err error
 	switch callee := n.Invocation.Callee.(type) {
 	case *syntax.NameExpr:
-		first, err = e.Function(callee.Name)
+		if len(n.Invocation.Types) > 0 {
+			first, err = c.context.Specialize(callee.Name, n.Invocation.Types)
+		} else {
+			first, err = e.Function(callee.Name)
+		}
 		if err == nil {
 			c.uses.Names[callee] = first.Identity
 		}

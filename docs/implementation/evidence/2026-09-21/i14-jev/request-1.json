@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Can I14 requires native JSON.parse/source-context reviver and JSON.stringify/rawJSON, exact integral numeric tokens, negative-zero floats, duplicate rejection, nominal typed data, finite recursive schemas, and depth 64/node 1000000/byte 8388608 budgets. Shared decoded integer canonical digits consume a cumulative byte budget. Encoding must bound bigint and escaped string formatting before allocation and count exact punctuation; no separate general parser, decimal arithmetic engine, or Can-owned serialization tree is allowed. Existing sealed concrete types and protected completion carriers are available; native opaque bytes now work. Ordinary generic functions remain I46, but I14 must make explicit encode_json<T>/decode_json<T> callable from Can now. Candidate codec plans: a sealed schema graph plus bounded preflight and native holder-aware adapters with lazy per-container serialization views; a complete mirrored wire tree before stringify; or a custom full parser/serializer. Candidate integration plans: specialize the two catalogue codec operations for checked explicit type arguments while deferring general inference; wait until I46 and expose only runtime functions; or implement unrestricted generics within I14.",
+  "questions": {
+    "codec": {
+      "type": "choice",
+      "instructions": "Which codec architecture meets the stated native-reuse and budgeting constraints?",
+      "criteria": {
+        "native": "Use the checked schema graph, bounded preflight, holder/token associations and lazy container access views for native stringify.",
+        "tree": "Construct a complete alternate wire-value tree before invoking stringify.",
+        "custom": "Implement a general JSON parser and formatter in the maintained runtime."
+      }
+    },
+    "admission": {
+      "type": "choice",
+      "instructions": "How should I14 expose typed codec calls before general generic inference?",
+      "criteria": {
+        "explicit": "Admit only explicit checked concrete arguments for the two catalogue codec operations.",
+        "delay": "Ship runtime APIs only and postpone source codec calls until I46.",
+        "general": "Implement general-purpose generic functions and inference as part of I14."
+      }
+    }
+  }
+}

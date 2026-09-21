@@ -1,0 +1,81 @@
+package json_values
+    provides []
+    uses [codec, bytes, option]
+record receipt
+    int amount
+    str description
+fn receipt roundtrip
+    emits [codec::invalid_data]
+    given
+        receipt original
+    asserts
+        exact: receipt(9007199254740993, "héllo 😀") => ok receipt(9007199254740993, "héllo 😀")
+    match chain
+        call codec::encode_json<receipt>(original) as bytes::buffer encoded
+        call codec::decode_json<receipt>(encoded) as receipt decoded
+        ok => ok decoded
+        codec::invalid_data
+fn int decode_integer
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        exact: "9007199254740993.0" => ok 9007199254740993
+        scaled: "1.25e2" => ok 125
+        fractional: "1.25" => codec::invalid_data("", "integer_token")
+        quoted: "\"42\"" => codec::invalid_data("", "type")
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer encoded
+        call codec::decode_json<int>(encoded) as int decoded
+        ok => ok decoded
+        codec::invalid_data
+fn int via_callable
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "9007199254740993" => ok 9007199254740993
+    callable int (bytes::buffer) emits [codec::invalid_data] decode = callable codec::decode_json<int>
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer encoded
+        call decode(encoded) as int decoded
+        ok => ok decoded
+        codec::invalid_data
+fn void main
+    emits [codec::invalid_data]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call roundtrip(receipt(9007199254740993, "héllo 😀"))
+        ok receipt decoded => do
+            int amount = decoded.amount
+            match amount
+                9007199254740993 => ok
+                _ => do
+                    int invalid = 1 / 0
+                    ok
+        codec::invalid_data
+fn str encode_option
+    emits [codec::invalid_data]
+    given
+        int value
+    asserts
+        sample: 42 => ok "{\"case\":\"option::some<int>\",\"value\":{\"value\":42}}"
+    match chain
+        call codec::encode_json<option::value<int>>(option::some<int>(value)) as bytes::buffer encoded
+        call bytes::to_utf8(encoded) as str text
+        ok => ok text
+        codec::invalid_data
+fn option::value<int> decode_option
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "{\"case\":\"option::some<int>\",\"value\":{\"value\":42}}" => ok option::some<int>(42)
+        private_name: "{\"case\":\"can.std.option@1::some<int>\",\"value\":{\"value\":42}}" => codec::invalid_data("/case", "variant_tag")
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer encoded
+        call codec::decode_json<option::value<int>>(encoded) as option::value<int> decoded
+        ok => ok decoded
+        codec::invalid_data

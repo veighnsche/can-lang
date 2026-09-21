@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "The typed JSON milestone must execute through native parse with source tokens and native stringify with rawJSON. Requirements include exact integer normalization, preserved float -0, unique decoded member names, nominal records/variants, finite recursive type graphs, and limits of 64 containers, 1000000 values and 8388608 bytes. Canonical integer text shares a decode budget. Before native output formatting, prove bigint/string bounds and include every delimiter. A replacement JSON grammar, decimal-number engine and separately built Can wire-value tree are prohibited. The compiler already seals concrete types and boxes completions, and owned byte operations are present. Full generic functions are scheduled for I46; nevertheless I14 needs source calls to encode_json<T>/decode_json<T>. Codec alternatives are graph-based schemas with resource preflight and holder tracking plus on-demand container views, eager duplication into wire objects, or handwritten parsing/formatting. For source admission, compare explicit concrete specialization of just those two catalogue functions, runtime-only implementation pending I46, and bringing all generic support forward.",
+  "questions": {
+    "codec": {
+      "type": "choice",
+      "instructions": "Select the conversion strategy consistent with these requirements.",
+      "criteria": {
+        "native": "Retain a finite schema graph and add limited budget/key/token adapters around native JSON with per-container views created as needed.",
+        "tree": "Eagerly copy the entire payload to an independent JSON-shaped object graph.",
+        "custom": "Replace native JSON responsibilities with a complete owned encoding and decoding engine."
+      }
+    },
+    "admission": {
+      "type": "choice",
+      "instructions": "Choose the source integration scope for the current milestone.",
+      "criteria": {
+        "explicit": "Specialize encode_json and decode_json from supplied concrete type annotations without broad inference.",
+        "delay": "Leave authored invocation unsupported until the later generic milestone.",
+        "general": "Move unrestricted generic specialization and inference into the codec task."
+      }
+    }
+  }
+}

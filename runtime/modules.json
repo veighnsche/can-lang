@@ -74,6 +74,22 @@
       "./failure.ts"
     ],
     "vendor/trace-mapping.ts": [],
-    "callable.ts": []
+    "callable.ts": [],
+    "codec/budget.ts": [],
+    "codec/numbers.ts": [
+      "./budget.ts"
+    ],
+    "codec/duplicates.ts": [
+      "./budget.ts"
+    ],
+    "codec/json.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "./budget.ts",
+      "./numbers.ts",
+      "./duplicates.ts"
+    ]
   }
 }

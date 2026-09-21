@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "I14 acceptance covers JSON precision and bounded typed conversion: JSON.parse supplies primitive source contexts; JSON.stringify and rawJSON remain the formatters. Integral tokens must stay exact and floats retain negative zero. Reject duplicate decoded keys, preserve nominal type identity and support finite recursive schemas. Enforce depth 64, nodes 1000000 and bytes 8388608, including cumulative canonical integer digits on decode and punctuation/primitive preflight costs on encode. Large bigint and escaped-text formatting must be proven bounded in advance. Do not introduce a general JSON parser, decimal arithmetic subsystem or independent serialization tree. Existing infrastructure includes sealed types, boxed completions and private byte storage. I46 has not implemented generic functions, yet authored explicit encode_json<T>/decode_json<T> calls belong to I14. Consider schema graphs and bounded native adapters using holder associations and lazy container facades versus eager wire-tree copying versus a bespoke JSON engine. Separately compare dedicated checked catalogue specialization for the two codec calls with delaying source access until I46 and implementing arbitrary generics now.",
+  "questions": {
+    "codec": {
+      "type": "choice",
+      "instructions": "Which implementation preserves the specified division of responsibility?",
+      "criteria": {
+        "native": "Combine sealed schema references with resource checks, reviver holder metadata and transient serialization facades over original data.",
+        "tree": "Prepare a full duplicated representation of every wire node before serialization.",
+        "custom": "Own all syntax parsing and JSON text production in custom code."
+      }
+    },
+    "admission": {
+      "type": "choice",
+      "instructions": "Which admission approach fulfills the codec task with the given compiler state?",
+      "criteria": {
+        "explicit": "Resolve concrete type parameters for these two maintained codec declarations only.",
+        "delay": "Provide no Can codec calls yet, waiting for generic support.",
+        "general": "Deliver the complete generic language facility alongside the codec."
+      }
+    }
+  }
+}
