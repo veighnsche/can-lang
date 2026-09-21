@@ -22,12 +22,17 @@ import (
 
 func errorFixture(t *testing.T) (*resolve.World, *check.ErrorRegistry, map[string]*types.Type) {
 	t.Helper()
+	return errorFixtureID(t, "1000000")
+}
+
+func errorFixtureID(t *testing.T, spelling string) (*resolve.World, *check.ErrorRegistry, map[string]*types.Type) {
+	t.Helper()
 	root := t.TempDir()
 	var packages []string
 	for _, p := range catalogue.Builtin().Inventory().Packages {
 		packages = append(packages, p.Name)
 	}
-	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror 1000000 failed<item>(item value)\nerror 1000001 nested(option::value<int> value)\nvariant failure\n    failed<int>\n    standard_failure\n"
+	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror " + spelling + " failed<item>(item value)\nerror 1000001 nested(option::value<int> value)\nvariant failure\n    failed<int>\n    standard_failure\n"
 	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":[{"id":1000000,"kind":"app::failed"},{"id":1000001,"kind":"app::nested"}],"retired":[1000002]}`, "src/main.can": text} {
 		p := filepath.Join(root, name)
 		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
@@ -133,6 +138,24 @@ func TestExactErrorBoundsAndAllocation(t *testing.T) {
 	second, _ := json.Marshal(r.Plan(both))
 	if string(first) != string(second) {
 		t.Fatal("nondeterministic failure plan")
+	}
+}
+
+func TestErrorAllocationIntegerSpellings(t *testing.T) {
+	var identity string
+	for _, spelling := range []string{"1000000", "0xf4240", "0b11110100001001000000", "0o3641100"} {
+		t.Run(spelling, func(t *testing.T) {
+			_, registry, ts := errorFixtureID(t, spelling)
+			entry := bound(t, registry, ts["failed<int>"]).Entries()[0]
+			if entry.Declaration.ID != 1000000 {
+				t.Fatalf("source spelling changed registry allocation: %+v", entry)
+			}
+			if identity == "" {
+				identity = entry.TypeIdentity
+			} else if entry.TypeIdentity != identity {
+				t.Fatal("equivalent integer spelling changed concrete error identity")
+			}
+		})
 	}
 }
 

@@ -76,7 +76,8 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 			if !ok {
 				return nil, fmt.Errorf("error allocation lacks error AST")
 			}
-			id, err := strconv.ParseUint(declaration.ID.Text, 10, 64)
+			// Match project.Load's approved integer prefixes and C9's ID range.
+			id, err := strconv.ParseUint(declaration.ID.Text, 0, 31)
 			if err != nil || id != allocation.ID {
 				return nil, fmt.Errorf("error source/registry ID mismatch")
 			}

@@ -1,0 +1,16 @@
+=== RUN   TestErrorAllocationIntegerSpellings
+=== RUN   TestErrorAllocationIntegerSpellings/1000000
+=== RUN   TestErrorAllocationIntegerSpellings/0xf4240
+    errors_test.go:148: error source/registry ID mismatch
+=== RUN   TestErrorAllocationIntegerSpellings/0b11110100001001000000
+    errors_test.go:148: error source/registry ID mismatch
+=== RUN   TestErrorAllocationIntegerSpellings/0o3641100
+    errors_test.go:148: error source/registry ID mismatch
+--- FAIL: TestErrorAllocationIntegerSpellings (0.03s)
+    --- PASS: TestErrorAllocationIntegerSpellings/1000000 (0.02s)
+    --- FAIL: TestErrorAllocationIntegerSpellings/0xf4240 (0.01s)
+    --- FAIL: TestErrorAllocationIntegerSpellings/0b11110100001001000000 (0.00s)
+    --- FAIL: TestErrorAllocationIntegerSpellings/0o3641100 (0.00s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/check	0.270s
+FAIL
