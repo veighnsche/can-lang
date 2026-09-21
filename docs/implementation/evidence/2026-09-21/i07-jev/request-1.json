@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can C5 requires left-to-right operand evaluation, bool-only and/or short circuit, and chained comparisons whose operands run at most once and whose later operands are skipped after failure. C6 selects native operators, Object.is for scalar float equality, and strict Bun.deepEquals for admitted containers. I07 introduces checked expression IR; I10 later adds awaited native calls with private completion boxes and synchronous payload extraction. Current expression tests can supply synchronous typed call bindings. No public ABI or legacy-layout compatibility is required. Candidate lowering designs are ordered statement blocks with unique compiler temporaries and explicit conditional blocks; synchronous immediately-invoked closures embedding expression source; or direct textual expansion that repeats middle comparison operands. Statement blocks can later contain awaited call lowering inside the enclosing async region, while a synchronous closure cannot contain await without becoming a promise and requiring boxing. Textual duplication violates the once-only rule for effectful operands. The block choice requires native execution tests for exact event order, short-circuit faults and future call-lowering insertion points. No performance measurement is claimed.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Which lowering shape best meets the supplied sequencing and later integration constraints without changing language semantics?",
+      "criteria": {
+        "blocks": "Use ordered statements, hygienic temporaries and nested conditional blocks, leaving awaited calls to the enclosing region.",
+        "closures": "Wrap primitive expression lowering in synchronous immediately-invoked closures containing generated source.",
+        "duplicate": "Expand comparisons textually and repeat the middle operands in each adjacent comparison."
+      }
+    }
+  }
+}

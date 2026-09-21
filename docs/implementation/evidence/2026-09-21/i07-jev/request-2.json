@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The expression contract in Can C5 evaluates operands in source order, permits only bool conditions, skips unnecessary and/or branches, and evaluates each comparison-chain operand once while abandoning later operands after a false pair. C6 requires native primitive operations, Object.is on floats and strict Bun.deepEquals on eligible aggregate data. Checked IR is I07 work; I10 will supply async calls, non-thenable completion boxes and synchronous unwrapping. For current tests, typed calls may be synchronous. There are no external users or compatibility obligations. Choices are sequenced statements plus generated unique bindings and conditional regions, synchronous IIFEs assembled from expressions, or repeated textual operands in expanded chains. A statement region accommodates await when the enclosing callable becomes async; inserting await into a synchronous IIFE is invalid, and making that IIFE async adds a promise/boxing boundary. Repeating expressions breaks single evaluation when operands have effects. Choosing regions still needs executable order/skip tests, including skipped primitive faults, and a place to insert later call lowering. There are no benchmark results.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Select the representation that most directly preserves these ordering rules and allows the planned call integration.",
+      "criteria": {
+        "blocks": "Lower into a sequence with compiler-only temporary names and explicit branch bodies owned by the surrounding region.",
+        "closures": "Generate a synchronous closure invocation for each compound primitive expression.",
+        "duplicate": "Render adjacent comparisons independently, reusing source text for shared operands."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "C5 specifies that Can operands run left to right; logical conjunction/disjunction accept bool and omit unneeded work; a comparison chain must not repeat an operand and must stop evaluating new operands once a pair is false. Native arithmetic, Object.is scalar-float comparison and strict Bun.deepEquals aggregate comparison are fixed by C6. The present I07 pass builds typed expression IR. Awaited calls and private non-thenable result boxing arrive in I10, with payloads extracted synchronously. Tests in this step can bind calls to synchronous typed implementations. Prior APIs and emitted layouts need not be retained because the language has no outside consumers. Three strategies are statement sequences with hygienic temporary variables and explicit conditional sub-blocks, synchronous generated immediate closures, and textual pairwise comparisons duplicating shared expressions. Only the first readily accepts await from a later enclosing async region; the closure strategy would need async conversion and an additional protected promise boundary, and duplicate text repeats side effects. The sequence strategy must be validated with event logs, skipped-failure cases and an explicit later call hook. No speed evidence is available.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Using only this context, choose the lowering strategy consistent with both primitive behavior and the scheduled async work.",
+      "criteria": {
+        "blocks": "Emit ordered temporary assignments and nested conditional statements, integrating calls within their owner region.",
+        "closures": "Place compound-expression code inside immediately called synchronous functions.",
+        "duplicate": "Build chains from separate comparison strings that reevaluate their common operands."
+      }
+    }
+  }
+}

@@ -50,3 +50,8 @@ expression/completion passes, and I09 publishes complete generated modules.
 The predecessor `legacy_types.go` and `legacy_result.go` remain isolated in the
 old pipeline until its scheduled retirement; current types do not use their
 string shapes or old success wrappers.
+
+`ArrayOfChecked` derives a structural array type from sealed data for expression
+inference. It cannot create new nominal declarations or recursive shape edges,
+does not reopen the original graph, and uses the same framed identity as an
+explicit array annotation.

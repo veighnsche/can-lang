@@ -1,0 +1,12 @@
+bun test v1.4.2 (744846f84)
+
+runtime/primitive.test.ts:
+(pass) native bigint contract and exact fault identities [1.92ms]
+(pass) index validates bigint range before narrowing [0.74ms]
+(pass) bigint-normalized native slicing and UTF-16 boundaries [0.84ms]
+(pass) finite slice bounds agree with native array/string slice [1.47ms]
+
+ 4 pass
+ 0 fail
+ 916 expect() calls
+Ran 4 tests across 1 file. [20.00ms]

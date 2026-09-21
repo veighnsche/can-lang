@@ -25,3 +25,10 @@ Expressions here are synchronous payload operations. An authored callable field
 named `then` stays legal; the callable/region pass must keep every native promise
 crossing in private non-thenable completion boxes before it calls these operations.
 This data representation alone is not a promise-assimilation defense.
+
+I07 adds typed primitive expression lowering as ordered statements. Native bigint,
+number, string and boolean operations remain native; float equality is Object.is
+and admitted aggregate equality is strict Bun.deepEquals. Only integer divisor/
+exponent guards and bigint-normalized index/slice bounds call primitive adapters.
+The runtime converts indices only after bounding them by a native finite length,
+then uses native indexing/slice. Array slices are frozen fresh copies.

@@ -24,7 +24,7 @@ func fixtureTypes(t *testing.T) map[string]*types.Type {
 		"can.errors.json":      `{"active":[],"retired":[]}`,
 		"src/alpha/shared.can": "package alpha\n    provides [item]\n    uses []\nrecord item\n    int value\n    int[] shared\n",
 		"src/beta/shared.can":  "package beta\n    provides [item]\n    uses []\nrecord item\n    int value\n    int[] shared\n",
-		"src/app/main.can":     "package app\n    provides []\n    uses [alpha, beta, bytes]\nrecord box<item>\n    item value\n",
+		"src/app/main.can":     "package app\n    provides []\n    uses [alpha, beta, bytes, number]\nrecord box<item>\n    item value\n\nvariant both\n    alpha::item\n    beta::item\n",
 	}
 	for name, text := range files {
 		path := filepath.Join(root, name)
@@ -54,7 +54,7 @@ func fixtureTypes(t *testing.T) map[string]*types.Type {
 		}
 	}
 	out := map[string]*types.Type{}
-	for _, name := range []string{"alpha::item", "beta::item", "box<int>", "box<str>", "int", "str", "int[]", "bytes::buffer", "callable int () emits []"} {
+	for _, name := range []string{"alpha::item", "beta::item", "box<int>", "box<str>", "int", "float", "bool", "str", "int[]", "str[]", "both", "both[]", "alpha::item[]", "bytes::buffer", "callable int () emits []", "callable bool () emits []", "callable float () emits []", "callable str () emits []", "callable int () emits [number::inexact]"} {
 		src, _ := source.New("type.can", name)
 		node, ds := syntax.ParseType(src)
 		if len(ds) != 0 {
