@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can backend targets ordinary JavaScript operations through TypeScript. Its AI batch contract requires ordered argument/descriptor preparation followed by a single Noul/Choice/Score exchange, full validation even of unconsumed answers, and ordered handler evaluation afterward. Errors stop subsequent handlers, and a question result is bound only when all its work succeeds. An arm-record spread must be evaluated once during preparation, preserving the chosen arm objects over the network suspension. Record questions evaluate every field with its own probability in declared order and add confidence/score fields afterward. Runtime description arrays instead use a shared key handler; below-threshold fallback can access metadata but cannot see a key or probability. Top-level named arms prohibit local captures, yet their inert descriptions can depend on constants declared later. The compiler already orders value initializers by a cycle-checked graph; arms are presently assumed available externally and have no backend value emission. The extension must keep immutable arm identity and concrete result types without unknown casts. One approach lowers all question kinds into checked IR whose preparation builds a protocol descriptor and a typed deferred closure holding evaluated inputs/arms; complete response checking precedes every invocation. It also inserts frozen description/run arm values into initialization ordering with description dependencies, leaving bodies deferred. Competing approaches regenerate spread choices after transport or construct fresh arm values lazily at reference sites. Weigh fidelity against engineering complexity; generated runner closures do not introduce source-language anonymous arms.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Select the architecture that implements these phase and identity requirements reliably.",
+      "criteria": {
+        "prepared_graph": "Capture prepared arguments and arm objects in typed deferred runners; order immutable arm construction through the existing dependency graph.",
+        "reconstruct": "Rebuild static spread selections after network completion while keeping initial descriptor preparation independent.",
+        "lazy_arms": "Avoid graph integration by constructing each referenced arm on demand, producing a fresh value for each use."
+      }
+    }
+  }
+}

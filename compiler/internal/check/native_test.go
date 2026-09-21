@@ -223,7 +223,7 @@ choice_arm<float> emits [] stored = reusable
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(p.Initializers) != 1 || len(p.Natives) != 1 || len(p.Natives[0].Regions) != 1 {
+	if len(p.Initializers) != 2 || len(p.Natives) != 1 || len(p.Natives[0].Regions) != 1 {
 		t.Fatal("named arm evidence missing")
 	}
 	for name, bad := range map[string]string{

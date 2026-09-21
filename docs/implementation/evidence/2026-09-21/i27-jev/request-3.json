@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A compiler for Can needs to finish AI questions in its native TypeScript output. Required phases are source-ordered input and descriptor evaluation, one combined Noul/Choice/Score HTTP call, validation of the entire returned batch regardless of liveness, then registration-ordered handlers. The earliest handler failure aborts the rest, and publication waits for completion of the whole question. Static spreads supply arm records whose expression is evaluated before transport exactly once; the arm choices must survive await unchanged. A generated result record invokes all field handlers in field order using individual probabilities, followed by declared score/confidence fields. Dynamic option arrays have a common handler with the chosen key, whereas fallback has metadata alone and cannot access either key or probability. Named arms have no caller captures and are top-level immutable values, with inert descriptions allowed to refer forward to constants. Value initialization already has dependency ordering and cycle detection; today it mistakenly models arms as preexisting and does not emit their values. Any solution must retain stable arm identity and statically typed results rather than unknown casts. Candidate A introduces generalized checked question plans; preparation returns a descriptor paired with a typed runner retaining evaluated arguments and arm selections, and the judge runs these only after batch validation. Arm objects contain description/run, are frozen, and enter the initializer graph through description dependencies while bodies remain delayed. Candidate B rebuilds spread selections after networking. Candidate C creates arms lazily on each reference. Assess both correctness and implementation effort, recognizing that backend closures are distinct from unsupported authored anonymous-arm syntax.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Which compiler strategy fits the supplied semantic obligations?",
+      "criteria": {
+        "prepared_graph": "Emit checked preparation yielding a descriptor and delayed typed executor, with stable arm values initialized according to description references.",
+        "reconstruct": "Determine executable spread arms by repeating their expressions once transport has returned.",
+        "lazy_arms": "Replace graph-ordered named arm values with per-reference deferred factories that recreate the arm objects."
+      }
+    }
+  }
+}

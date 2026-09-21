@@ -77,7 +77,9 @@ func NativeTypeDeclarations(graph []*types.Type) (string, error) {
 			text = "unknown"
 		case types.Array:
 			text = "ReadonlyArray<" + TypeName(t.Element()) + ">"
-		case types.Callable, types.ChoiceArm:
+		case types.ChoiceArm:
+			text = "Readonly<{description:string;run:(probability:number,$canContext?:$canAssertionContext)=>Promise<$canCompletion<" + TypeName(t.Result()) + ">>}>"
+		case types.Callable:
 			var args []string
 			for i, arg := range t.Inputs() {
 				args = append(args, fmt.Sprintf("arg%d: %s", i, TypeName(arg)))

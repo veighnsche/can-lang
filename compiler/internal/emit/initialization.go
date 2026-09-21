@@ -21,11 +21,14 @@ func InitializationImports(path string) string {
 // A fault throws its opaque occurrence immediately, preventing later initializers
 // and main from running. The owning entry supervisor reports that occurrence.
 func Initialization(plan []ir.Initializer, namedArms map[string]string, mapped bool) (InitializedValues, error) {
+	return initialization(plan, namedArms, nil, mapped)
+}
+func initialization(plan []ir.Initializer, namedArms, handlers map[string]string, mapped bool) (InitializedValues, error) {
 	bindings := map[string]string{}
 	for id, name := range namedArms {
 		bindings[id] = name
 	}
-	emitter := ExpressionEmitter{Bindings: bindings}
+	emitter := ExpressionEmitter{Bindings: bindings, Arms: handlers}
 	var out strings.Builder
 	for i, entry := range plan {
 		if _, exists := bindings[entry.Identity]; exists || entry.Identity == "" || entry.Value == nil || !types.Assignable(entry.Value.Type, entry.Type) {

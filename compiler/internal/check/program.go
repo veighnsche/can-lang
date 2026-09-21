@@ -479,13 +479,14 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 		}
 	}
-	var namedArms []ValueBinding
 	for _, native := range p.Natives {
-		if native.Symbol.Kind == resolve.ChoiceArm {
-			namedArms = append(namedArms, ValueBinding{Identity: native.Symbol.ID, Type: c.bindings[native.Symbol.ID]})
+		if native.ArmDescription != nil {
+			file := c.world.Files[native.Symbol.Source]
+			d := native.Symbol.Declaration.(*syntax.ChoiceArmDecl)
+			initial = append(initial, InitialValue{Identity: native.Symbol.ID, QualifiedName: native.Symbol.ID, Source: file.Source.ID, Binding: syntax.Binding{Value: d.Description}, Type: c.bindings[native.Symbol.ID], Checker: c.expressions(file, file.Scope), ArmDescription: native.ArmDescription})
 		}
 	}
-	p.Initializers, err = Initialization(initial, namedArms)
+	p.Initializers, err = Initialization(initial, nil)
 	if err != nil {
 		return nil, err
 	}

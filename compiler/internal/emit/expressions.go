@@ -17,6 +17,7 @@ type ExpressionEmitter struct {
 	Coordination func(*ir.Coordination) (LoweredExpression, error)
 	Callable     func(*ir.Expression) (LoweredExpression, error)
 	Bindings     map[string]string
+	Arms         map[string]string
 	TypeName     func(*types.Type) string
 	Invocation   func(*ir.Invocation) (LoweredExpression, error)
 	Match        func(*ir.Match) (LoweredExpression, error)
@@ -60,6 +61,15 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		return lowered.Value, nil
 	}
 	switch node.Kind {
+	case ir.ArmValue:
+		if e.Arms[node.Text] == "" || len(node.Inputs) != 1 {
+			return LoweredExpression{}, fmt.Errorf("missing named arm handler")
+		}
+		description, err := input(node.Inputs[0])
+		if err != nil {
+			return LoweredExpression{}, err
+		}
+		return bind("Object.freeze({description:" + description + ",run:" + e.Arms[node.Text] + "})"), nil
 	case ir.CallableValue:
 		if e.Callable == nil {
 			return LoweredExpression{}, fmt.Errorf("callable lowering requires its owning region")

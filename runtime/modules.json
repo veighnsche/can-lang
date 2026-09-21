@@ -154,9 +154,9 @@
       "../transport/http.ts",
       "../transport/request.ts",
       "../codec/json.ts",
-      "../codec/document.ts",
       "../codec/budget.ts",
-      "../assert/provider.ts"
+      "../assert/provider.ts",
+      "./questions.ts"
     ],
     "assert/provider.ts": [
       "./context.ts",
@@ -227,6 +227,13 @@
       "./media.ts",
       "../assert/provider.ts",
       "../assert/context.ts"
+    ],
+    "ai/questions.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../codec/json.ts",
+      "../codec/document.ts",
+      "../codec/budget.ts"
     ]
   }
 }

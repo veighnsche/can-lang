@@ -1,0 +1,166 @@
+package app
+    provides []
+    uses [ai, http, codec, bytes, io]
+
+connection classifier
+    endpoint "http://127.0.0.1:1/systemone"
+    auth bearer env "CAN_I27_TOKEN"
+    timeout_ms 1000
+    metadata
+        protocol "typesafe_systemone_v1"
+        model "jev-latest"
+
+fn float report
+    emits [codec::invalid_data, io::write_failed]
+    given
+        float probability
+        str marker
+    asserts
+        sample: 0.5, "T" => ok 0.5
+    match call bytes::from_utf8(marker)
+        ok bytes::buffer encoded => match call io::stdout_write(encoded)
+            when
+                sample: encoded => ok 1
+            ok int written => ok probability
+            io::write_failed
+        codec::invalid_data
+
+noul float likelihood from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    asks "Noul"
+        true "Yes" => relay call report(%, "N")
+        false "No" => relay call report(%, "n")
+
+choice float choose from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    confidence as certainty
+    asks "Choice"
+    minimum 0.5 => relay call report(certainty, "f")
+        first "First" => relay call report(% + certainty, "A")
+        second "Second" => relay call report(% + certainty, "B")
+
+choice str dynamic from classifier
+    emits [ai::invalid_question, ai::invalid_answer]
+    given
+        choice_option[] first
+        choice_option[] second
+    asks "Dynamic"
+        ...first
+        ...second
+        ok str selected => match % >= 0.9
+            true => ok selected
+            false => ok "incorrect selected probability"
+
+score float rate from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    score as measured
+    confidence as certainty
+    minimum 0.5 => relay call report(certainty, "g")
+    asks "Score"
+        low "Low"
+        medium "Medium"
+        high "High"
+        ok => relay call report(measured + certainty, "S")
+
+record choice_weights choice float weights from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    confidence as certainty
+    asks "Weights"
+        first "First" => relay call report(% + certainty, "C")
+        second "Second" => relay call report(%, "D")
+
+record score_weights score float levels from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    score as measured
+    confidence as certainty
+    asks "Levels"
+        low "Low" => relay call report(%, "E")
+        high "High" => relay call report(% + measured, "F")
+
+choice_arm float left_arm
+    emits [codec::invalid_data, io::write_failed]
+    describes arm_description
+    relay call report(%, "L")
+
+choice_arm float right_arm
+    emits [codec::invalid_data, io::write_failed]
+    describes "Right"
+    relay call report(%, "R")
+
+str arm_description = "Left"
+
+record arms
+    choice_arm<float> emits [codec::invalid_data, io::write_failed] left
+    choice_arm<float> emits [codec::invalid_data, io::write_failed] right
+
+arms stored = arms(left_arm, right_arm)
+
+choice float spread from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    given
+        arms choices
+    asks "Spread"
+        ...choices
+
+record arm_weights choice float spread_weights from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    given
+        arms choices
+    confidence as certainty
+    asks "Spread weights"
+        before "Before" => relay call report(%, "G")
+        ...choices
+        after "After" => relay call report(%, "H")
+
+judge float assess from classifier
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    state
+        str message
+    call likelihood() as float n
+    call choose() as float c
+    call dynamic([choice_option("one", "One")], [choice_option("__proto__", "Other")]) as str d
+    call rate() as float s
+    call weights() as choice_weights w
+    call levels() as score_weights l
+    call spread(stored) as float a
+    call spread_weights(arms(right_arm, left_arm)) as arm_weights r
+    ok => match d is "__proto__"
+        true => ok n + c + s + w.first + w.second + w.certainty + l.low + l.high + l.measured + l.certainty + a + r.before + r.left + r.right + r.after + r.certainty
+        false => ok -1.0
+
+fn choice_weights roundtrip
+    emits [codec::invalid_data]
+    given
+        choice_weights original
+    asserts
+        generated: choice_weights(1.0, 0.5, 0.5) => ok choice_weights(1.0, 0.5, 0.5)
+    match chain
+        call codec::encode_json<choice_weights>(original) as bytes::buffer encoded
+        call codec::decode_json<choice_weights>(encoded) as choice_weights decoded
+        ok => ok decoded
+        codec::invalid_data
+
+fn void main
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call assess(("evidence"))
+        when
+            sample: ("evidence") => ok 10.0
+        ok float measured => match measured is 10.0
+            true => ok
+            false => do
+                int invalid = 1 / 0
+                ok
+        http::invalid_request
+        http::credentials_missing
+        http::transport_failed
+        http::timeout
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        ai::invalid_question
+        ai::invalid_answer
+        io::write_failed

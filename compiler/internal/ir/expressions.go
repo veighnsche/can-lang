@@ -10,6 +10,7 @@ import (
 type ExpressionKind string
 
 const (
+	ArmValue           ExpressionKind = "arm"
 	CoordinationValue  ExpressionKind = "coordination"
 	CallableValue      ExpressionKind = "callable"
 	Literal            ExpressionKind = "literal"

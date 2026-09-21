@@ -5,21 +5,28 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
-// Noul retains runtime descriptor computations separately from response
-// handlers. Options remain in authored order for once-only preparation; their
-// Boolean labels select handlers independently of that order.
-type Noul struct {
-	Identity, Source, Connection string
-	Span                         source.Span
-	Inputs                       []Local
-	Instructions, Minimum        *Expression
-	Options                      []NoulOption
+// Question separates ordered descriptor preparation from deferred handlers.
+// Prepared static spreads retain their original arm values across transport.
+type Question struct {
+	Identity, Source, Connection, Kind string
+	Span                               source.Span
+	Inputs                             []Local
+	Result                             *types.Type
+	Record                             bool
+	Instructions, Minimum              *Expression
+	Options                            []QuestionOption
+	Metadata                           []QuestionMetadata
+	Fallback, Shared                   *Region
 }
-
-type NoulOption struct {
-	True        bool
-	Description *Expression
-	Handler     *Region
+type QuestionMetadata struct {
+	Name, Kind string
+	Local      Local
+}
+type QuestionOption struct {
+	Name                string
+	Description, Spread *Expression
+	Handler             *Region
+	Dynamic             bool
 }
 
 // Judge is an explicit phase plan. Registration preparations cannot see answer

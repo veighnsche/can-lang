@@ -12,16 +12,17 @@ import (
 // NativeDeclaration retains checked contracts independently from provider
 // lowering. Questions are registration targets, never ordinary calls.
 type NativeDeclaration struct {
-	Symbol        *resolve.Symbol
-	Signature     *types.Type
-	Connection    string
-	Descriptor    CallableDeclaration
-	State         []syntax.Field
-	Regions       []*ir.Region
-	Registrations []ir.JudgeRegistration
-	Fetch         *ir.Fetch
-	Noul          *ir.Noul
-	Judge         *ir.Judge
+	Symbol         *resolve.Symbol
+	Signature      *types.Type
+	Connection     string
+	Descriptor     CallableDeclaration
+	State          []syntax.Field
+	Regions        []*ir.Region
+	Registrations  []ir.JudgeRegistration
+	Fetch          *ir.Fetch
+	Question       *ir.Question
+	ArmDescription *ir.Expression
+	Judge          *ir.Judge
 }
 
 func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Declaration) (*NativeDeclaration, error) {

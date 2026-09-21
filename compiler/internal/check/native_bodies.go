@@ -295,11 +295,21 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if err != nil {
 				return err
 			}
+			plan := &ir.Question{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Kind: d.Kind, Span: d.Span, Result: native.Signature.Result(), Record: d.RecordName != nil, Instructions: checkedDescriptors[d.Asks], Minimum: checkedDescriptors[d.Minimum]}
+			plan.Inputs = append([]ir.Local(nil), ctx.Parameters[len(d.Binders):]...)
+			if d.Kind == "noul" && plan.Minimum == nil {
+				plan.Minimum = &ir.Expression{Kind: ir.Literal, Span: d.Span, Type: c.annotations[file]["float"], Text: "0.5"}
+			}
 			names := map[string]bool{}
-			for _, binder := range d.Binders {
+			for i, binder := range d.Binders {
+				plan.Metadata = append(plan.Metadata, ir.QuestionMetadata{Name: binder.Name.Text, Kind: binder.Kind.Text, Local: ctx.Parameters[i]})
 				names[binder.Name.Text] = true
 			}
 			for _, option := range d.Options {
+				preparedOption := ir.QuestionOption{Dynamic: d.Selected != nil}
+				if option.Name != nil {
+					preparedOption.Name = option.Name.Text
+				}
 				if option.Name != nil {
 					if names[option.Name.Text] {
 						return fmt.Errorf("duplicate option/metadata name %s", option.Name.Text)
@@ -311,6 +321,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 					if e != nil {
 						return e
 					}
+					preparedOption.Spread = spread
 					if d.Selected != nil {
 						if spread.Type.Kind() != types.Array || spread.Type.Element().Declaration() != "can.prelude@1::choice_option" {
 							return fmt.Errorf("dynamic Choice spread requires choice_option[]")
@@ -342,16 +353,20 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 						return err
 					}
 				}
+				preparedOption.Description = checkedDescriptors[option.Description]
 				if option.Body != nil {
 					if err = handler(option.Body, result, true); err != nil {
 						return err
 					}
+					preparedOption.Handler = native.Regions[len(native.Regions)-1]
 				}
+				plan.Options = append(plan.Options, preparedOption)
 			}
 			if d.Fallback != nil {
 				if err = handler(d.Fallback, result, false); err != nil {
 					return err
 				}
+				plan.Fallback = native.Regions[len(native.Regions)-1]
 			}
 			if d.Selected != nil {
 				typ, e := c.annotation(file, d.Selected.Type, false)
@@ -376,21 +391,15 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 				if err = handler(d.Shared, result, true); err != nil {
 					return err
 				}
+				plan.Shared = native.Regions[len(native.Regions)-1]
 			}
 			if d.Shared != nil && d.Selected == nil {
 				if err = handler(d.Shared, result, false); err != nil {
 					return err
 				}
+				plan.Shared = native.Regions[len(native.Regions)-1]
 			}
-			if d.Kind == "noul" {
-				native.Noul = &ir.Noul{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Instructions: checkedDescriptors[d.Asks], Minimum: checkedDescriptors[d.Minimum]}
-				if native.Noul.Minimum == nil {
-					native.Noul.Minimum = &ir.Expression{Kind: ir.Literal, Span: d.Span, Type: c.annotations[file]["float"], Text: "0.5"}
-				}
-				for i, option := range d.Options {
-					native.Noul.Options = append(native.Noul.Options, ir.NoulOption{True: option.Name.Text == "true", Description: checkedDescriptors[option.Description], Handler: native.Regions[i]})
-				}
-			}
+			native.Question = plan
 		case *syntax.ChoiceArmDecl:
 			if err = inertExpression(d.Description); err != nil {
 				return fmt.Errorf("choice arm description must be a constant expression: %w", err)
@@ -401,6 +410,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if err = scalarExpression(d.Description, "str"); err != nil {
 				return err
 			}
+			native.ArmDescription = checkedDescriptors[d.Description]
 			ctx.Expressions.Probability = &ValueBinding{Identity: ctx.Identity + "/probability", Type: c.annotations[file]["float"]}
 			ctx.Parameters = append(ctx.Parameters, ir.Local{Identity: ctx.Expressions.Probability.Identity, Type: ctx.Expressions.Probability.Type})
 			region, e := CheckRegion(ctx, d.Body)

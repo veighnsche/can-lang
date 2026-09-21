@@ -17,6 +17,7 @@ type InitialValue struct {
 	Binding                         syntax.Binding
 	Type                            *types.Type
 	Checker                         *Expressions
+	ArmDescription                  *ir.Expression
 }
 
 // Initialization admits C8's closed AST set, checks concrete expressions, then
@@ -52,7 +53,16 @@ func Initialization(values []InitialValue, namedArms []ValueBinding) ([]ir.Initi
 		if err := inertExpression(v.Binding.Value); err != nil {
 			return nil, fmt.Errorf("%s at byte %d: %w", v.Source, v.Binding.Value.ExprSpan().Start, err)
 		}
-		expr, err := v.Checker.Check(v.Binding.Value, v.Type)
+		var expr *ir.Expression
+		var err error
+		if v.ArmDescription != nil {
+			if v.Type.Kind() != types.ChoiceArm {
+				return nil, fmt.Errorf("invalid arm initializer type")
+			}
+			expr = &ir.Expression{Kind: ir.ArmValue, Span: v.Binding.Value.ExprSpan(), Type: v.Type, Text: v.Identity, Inputs: []*ir.Expression{v.ArmDescription}}
+		} else {
+			expr, err = v.Checker.Check(v.Binding.Value, v.Type)
+		}
 		if err != nil {
 			return nil, fmt.Errorf("%s initialization: %w", v.QualifiedName, err)
 		}

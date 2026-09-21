@@ -125,18 +125,20 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	bindings := map[string]string{}
 	nativeNames := map[string]string{}
 	nativePaths := map[string]string{}
-	questions := map[string]*ir.Noul{}
+	questions := map[string]*ir.Question{}
 	judges := false
 	fetches := false
 	for i, native := range program.Natives {
-		if native.Noul == nil && native.Judge == nil && native.Fetch == nil {
+		if native.Question == nil && native.Judge == nil && native.Fetch == nil && native.ArmDescription == nil {
 			continue
 		}
 		name := fmt.Sprintf("$canNative%d", i)
-		nativeNames[native.Symbol.ID] = name
-		nativePaths[native.Symbol.ID] = native.Symbol.Source.OutputPath
-		if native.Noul != nil {
-			questions[native.Symbol.ID] = native.Noul
+		if native.ArmDescription == nil {
+			nativeNames[native.Symbol.ID] = name
+			nativePaths[native.Symbol.ID] = native.Symbol.Source.OutputPath
+		}
+		if native.Question != nil {
+			questions[native.Symbol.ID] = native.Question
 		}
 		if native.Fetch != nil {
 			functions[native.Symbol.ID] = name
@@ -190,7 +192,13 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if err != nil {
 		return nil, err
 	}
-	initial, err := Initialization(program.Initializers, nil, true)
+	armHandlers := map[string]string{}
+	for _, native := range program.Natives {
+		if native.ArmDescription != nil {
+			armHandlers[native.Symbol.ID] = nativeNames[native.Regions[0].ID]
+		}
+	}
+	initial, err := initialization(program.Initializers, nil, armHandlers, true)
 	if err != nil {
 		return nil, err
 	}
@@ -319,6 +327,12 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
 	}
 
+	for _, native := range program.Natives {
+		if native.ArmDescription != nil {
+			name := armHandlers[native.Symbol.ID]
+			imports = append(imports, ModuleImport{Target: native.Symbol.Source.OutputPath, Names: []ImportName{{name, name}}})
+		}
+	}
 	modules := []Module{{Path: statePath, Imports: imports, Body: state.String()}}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
@@ -342,7 +356,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			regions = append(regions, fn.Region)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath == path && (native.Noul != nil || native.Judge != nil || native.Fetch != nil) {
+			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.ArmDescription != nil) {
 				regions = append(regions, native.Regions...)
 			}
 		}
@@ -363,7 +377,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString(code)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath != path || native.Noul == nil && native.Judge == nil && native.Fetch == nil {
+			if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.ArmDescription == nil {
 				continue
 			}
 			for _, region := range native.Regions {
@@ -377,8 +391,10 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
 			var code string
 			var e error
-			if native.Noul != nil {
-				code, e = emitter.NoulPreparation(nativeNames[native.Symbol.ID], native.Noul)
+			if native.Question != nil {
+				code, e = emitter.QuestionPreparation(nativeNames[native.Symbol.ID], native.Question, nativeNames)
+			} else if native.ArmDescription != nil {
+				continue
 			} else if native.Fetch != nil {
 				code, e = emitter.Fetch(nativeNames[native.Symbol.ID], native.Fetch, connectionNames[native.Connection])
 			} else {
@@ -392,7 +408,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString("export " + code)
 		}
 		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
-		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", TypeOnly: true, Names: []ImportName{{"NoulDescriptor", "$canNoulDescriptor"}}})
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})
 		}

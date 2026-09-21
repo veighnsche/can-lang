@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can compiles typed questions to native TypeScript. A judge evaluates ordinary inputs and all descriptors in source order, makes one mixed Noul/Choice/Score request, validates every answer including unused ones, and only then executes handlers in registration order. Each question publishes its value only after its handlers all succeed; the first error stops execution. Static arm-record spreads evaluate once before the request and must retain exactly the selected arm values across await. Generated records run all field handlers in declaration order with each field probability, then append declared confidence/score metadata. Dynamic choice_option[] uses one shared selected-key handler; fallback receives metadata but no probability or selected key. Named arms are capture-free top-level values with inert description expressions that may reference forward top-level constants. Existing initialization checks a dependency graph and rejects cycles, but currently treats arms as externally ready without emitting them. We need typed results without unknown casts and stable immutable arm identity. Proposed design: a checked general question IR emits a preparation returning a private descriptor plus a typed deferred runner closing over prepared inputs and arm values. Runtime validates the complete response before the judge calls any runner. Named arm values become graph initializer nodes depending on their description expressions, storing a frozen description/run object; handler bodies execute later. Alternatives split descriptor preparation from handlers and reconstruct spreads after the request, or lazily recreate arms each time they are referenced. Compare semantic correctness and implementation cost; closures here are generated backend machinery, not authored anonymous arm syntax.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Which lowering best preserves the stated preparation, publication and initialization contracts?",
+      "criteria": {
+        "prepared_graph": "Use typed prepared descriptor/runner pairs and dependency-ordered frozen arm initializers, retaining evaluated arm choices across transport.",
+        "reconstruct": "Keep descriptors separate and evaluate arm spreads again after the response when choosing handlers.",
+        "lazy_arms": "Materialize new arm description/handler objects lazily at every reference instead of adding initializer dependencies."
+      }
+    }
+  }
+}
