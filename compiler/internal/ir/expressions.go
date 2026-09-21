@@ -22,6 +22,8 @@ const (
 	StandardProjection ExpressionKind = "standard_projection"
 	Array              ExpressionKind = "array"
 	Call               ExpressionKind = "call"
+	InvocationValue    ExpressionKind = "invocation"
+	MatchValue         ExpressionKind = "match_value"
 	Record             ExpressionKind = "record"
 	Update             ExpressionKind = "update"
 )
@@ -35,9 +37,11 @@ const (
 )
 
 type Expression struct {
-	Kind ExpressionKind
-	Span source.Span
-	Type *types.Type
+	Invocation *Invocation
+	Match      *Match
+	Kind       ExpressionKind
+	Span       source.Span
+	Type       *types.Type
 	// Text is decoded string data, exact numeric spelling, an operator, a field
 	// name, or a resolved binding identity according to Kind; never emitted code.
 	Text      string

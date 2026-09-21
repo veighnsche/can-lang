@@ -60,3 +60,12 @@ finite expression filter, rechecks substitution and compares concrete typing
 including nested nodes. It never guesses purity, removes code, or assumes absent
 capture evidence means no capture. It returns a source-spanned diagnostic with
 the direct replacement only when every predicate holds.
+
+## Completion bodies
+
+`CheckRegion` now owns lexical body scopes, explicit completion ownership, exact
+call/chain arm coverage, handler escape sets, ordered/exhaustive ordinary matching
+and once-only argument preparation. It consumes sealed file/declaration contracts;
+`CompletionContext` supplies method lookup and declared variadic metadata. See
+[`docs/implementation/completions.md`](../../../docs/implementation/completions.md)
+for the carrier boundary and the remaining callable/native/coordination interfaces.

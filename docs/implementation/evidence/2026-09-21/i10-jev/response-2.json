@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"carrier":{"type":"choice","choice":"boxes","confidence":0.81,"probabilities":{"boxes":0.88,"throws":0.12,"raw":0.0}}},"usage":{"input_tokens":629,"output_tokens":38}}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Implementing Can completion semantics requires distinct source-located region IDs for named functions versus selected local handlers. Nested do, relay, ordinary matches and call/chain matches retain the active region, and the source language exposes no raw completion storage. All generated async/callback results must be compiler-private fixed-field data boxes whose prototypes are null and whose keys cannot be authored, with no then member. A user record's callable then is permitted and must survive without Promise assimilation. The runtime already brands domain tokens with their precise nominal specialization and standard tokens with persistent occurrence identity and diagnostic origin. Calls may catch failures from preparation, arguments and invocation; handlers must execute beyond that catch so their failures are not reinterpreted as participant outcomes. Later Promise combinators require success boxes to fulfill and tagged failures to reject. Statement-based expression emission already offers a call-lowering hook. The alternatives are fulfilling functions with boxes for every category then converting only at native bridges, throwing opaque failure occurrences while boxing success and auditing all catches, or letting async functions return raw values on the premise that then causes no harm. Either boxed option must validate private identity, check arm/error contracts statically and test nested regions and then-bearing data. There are no benchmark results.",
+  "questions": {
+    "carrier": {
+      "type": "choice",
+      "instructions": "Which approach should implement the described region and async-boundary semantics?",
+      "criteria": {
+        "boxes": "Use category boxes as function results and explicit rejection adapters for native promises, excluding selected handlers from invocation catches.",
+        "throws": "Use exceptions for domain and standard completion while protecting only fulfilled successes, with carefully partitioned catches.",
+        "raw": "Expose data directly to Promise resolution on the belief that callable then is safe."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The I10 contract assigns an explicit IR identity to each function or local handler result region and retains source spans. Ordinary nested matching, call/chain matching, do and relay finish that region; completions cannot be stored as source values. Async returns, including callbacks, must protect payloads in privately recognized null-prototype objects with fixed data properties and neither a then property nor user-chosen keys. Legal records can have a callable then field, so Promise assimilation must never see the record directly. Existing opaque domain occurrences carry exact specialized nominal types, while separate standard occurrences retain identity and origin metadata. Invocation handling covers receiver/callee/arguments/body; selected handlers must be outside that catch and cannot be dispatched again for their own failures. Future native combinators need fulfillment for successes and private rejection tags for both failure channels. The expression emitter already sequences synchronous statements and delegates calls through a hook. Options are boxed-category fulfillment plus explicit native bridge rejection, boxed success with failures thrown as occurrence tokens and carefully separated catches, and unboxed async data justified by an assumption about then. The first two still need brand validation, exact coverage/error escape checking and nested-region/thenable tests. Performance has not been established.",
+  "questions": {
+    "carrier": {
+      "type": "choice",
+      "instructions": "Choose the most suitable completion transport architecture for these supplied constraints.",
+      "criteria": {
+        "boxes": "Keep success/domain/standard in fulfilled branded boxes until a native adapter converts failures to rejection; invoke selected handlers after the protected call.",
+        "throws": "Transport failure occurrences through exceptions and successful values through boxes, auditing every catch boundary.",
+        "raw": "Allow raw async results based on a non-assimilation assumption about authored then members."
+      }
+    }
+  }
+}

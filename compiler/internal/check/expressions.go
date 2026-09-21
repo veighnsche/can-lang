@@ -16,7 +16,10 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
-	Scalars map[string]*types.Type
+	ResolvedValue func(*syntax.NameExpr, ValueBinding)
+	Scalars       map[string]*types.Type
+	CallCheck     func(*syntax.CallExpr, *types.Type) (*ir.Expression, error)
+	MatchCheck    func(*syntax.MatchExpr, *types.Type) (*ir.Expression, error)
 	// The owning body pass supplies its eligible-kind lexical/package resolution.
 	// Call lookup is separate because an ineligible local must not hide a function.
 	Value       func(syntax.QualifiedName) (ValueBinding, error)
@@ -52,6 +55,11 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 	out := &ir.Expression{Span: node.ExprSpan()}
 	var err error
 	switch n := node.(type) {
+	case *syntax.MatchExpr:
+		if c.MatchCheck == nil {
+			return nil, fmt.Errorf("value match requires its owning region")
+		}
+		return c.MatchCheck(n, expected)
 	case *syntax.LiteralExpr:
 		out.Kind = ir.Literal
 		out.Text = n.Token.Text
@@ -82,6 +90,9 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		}
 		if binding.Identity == "" || !types.Equal(binding.Type, binding.Type) || binding.Type.Kind() == types.Void {
 			return nil, fmt.Errorf("invalid checked value binding")
+		}
+		if c.ResolvedValue != nil {
+			c.ResolvedValue(n, binding)
 		}
 		out.Kind = ir.Binding
 		out.Text = binding.Identity
@@ -361,6 +372,9 @@ func (c *Expressions) slice(receiver *ir.Expression, start, end syntax.Expr, nod
 	return out, nil
 }
 func (c *Expressions) call(n *syntax.CallExpr, expected *types.Type) (*ir.Expression, error) {
+	if c.CallCheck != nil {
+		return c.CallCheck(n, expected)
+	}
 	var out *ir.Expression
 	invocation := n.Invocation
 	if len(invocation.Types) != 0 {

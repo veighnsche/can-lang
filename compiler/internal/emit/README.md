@@ -32,3 +32,9 @@ and admitted aggregate equality is strict Bun.deepEquals. Only integer divisor/
 exponent guards and bigint-normalized index/slice bounds call primitive adapters.
 The runtime converts indices only after bounding them by a native finite length,
 then uses native indexing/slice. Array slices are frozen fresh copies.
+
+`RegionEmitter.Function` emits protected async completion returns and separates
+invocation catches from selected arm bodies. `RegionTypeDeclarations` collects
+all referenced concrete and derived types for strict TypeScript aliases. Runtime
+completion and pattern imports use the generation's one private runtime namespace.
+See `docs/implementation/completions.md` for the boundary contracts.

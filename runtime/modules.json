@@ -1,11 +1,29 @@
 {
   "schemaVersion": 1,
   "modules": {
-    "catalogue.ts": ["./data.ts"],
-    "data.ts": ["node:util"],
-    "domain.ts": ["node:crypto", "./catalogue.ts", "./data.ts", "./failure.ts"],
-    "environment.ts": ["node:fs"],
-    "failure.ts": ["node:util", "./primitive.ts"],
+    "catalogue.ts": [
+      "./data.ts"
+    ],
+    "completion.ts": [
+      "./domain.ts",
+      "./failure.ts"
+    ],
+    "data.ts": [
+      "node:util"
+    ],
+    "domain.ts": [
+      "node:crypto",
+      "./catalogue.ts",
+      "./data.ts",
+      "./failure.ts"
+    ],
+    "environment.ts": [
+      "node:fs"
+    ],
+    "failure.ts": [
+      "node:util",
+      "./primitive.ts"
+    ],
     "primitive.ts": []
   }
 }

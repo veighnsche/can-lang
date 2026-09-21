@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.completion-typescript-check",
+  "packages": {
+    "typescript": "7.0.2",
+    "@types/bun": "1.4.2",
+    "@types/node": "26.6.2",
+    "bun-types": "1.4.2"
+  },
+  "flags": [
+    "--noEmit",
+    "--strict",
+    "--skipLibCheck",
+    "--target",
+    "esnext",
+    "--module",
+    "esnext",
+    "--moduleResolution",
+    "bundler",
+    "--allowImportingTsExtensions",
+    "--typeRoots",
+    "/tmp/can-i10-tscheck/node_modules/@types",
+    "--types",
+    "bun,node"
+  ],
+  "inputs": [
+    "/tmp/can-i10-regions.ts",
+    "runtime/completion.ts"
+  ],
+  "generatedSourceSHA256": "6a695b728192e56f4edb0fbb8687d2efdd6974f53c6bc090c5516993ff30bc26",
+  "exitStatus": 0,
+  "scope": "Generated completion integration program and imported runtime; dependency declaration checking skipped. Not the complete I45 release gate."
+}

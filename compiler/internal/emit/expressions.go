@@ -14,9 +14,12 @@ type LoweredExpression struct{ Statements, Value string }
 // region may later insert awaited, boxed call lowering at Call without introducing
 // hidden async IIFEs or exposing payloads to promise assimilation.
 type ExpressionEmitter struct {
-	Bindings map[string]string
-	Call     func(identity string, arguments []string) (LoweredExpression, error)
-	serial   int
+	Bindings   map[string]string
+	TypeName   func(*types.Type) string
+	Invocation func(*ir.Invocation) (LoweredExpression, error)
+	Match      func(*ir.Match) (LoweredExpression, error)
+	Call       func(identity string, arguments []string) (LoweredExpression, error)
+	serial     int
 }
 
 func PrimitiveImports(path string) string {
@@ -36,6 +39,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 	var statements strings.Builder
 	bind := func(code string) LoweredExpression {
 		name := e.temporary()
+		if e.TypeName != nil && (node.Kind == ir.Record || node.Kind == ir.Update || node.Kind == ir.Binding) {
+			code = "(" + code + ") as unknown as " + e.TypeName(node.Type)
+		}
 		fmt.Fprintf(&statements, "const %s = %s;\n", name, code)
 		return LoweredExpression{statements.String(), name}
 	}
@@ -48,6 +54,16 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		return lowered.Value, nil
 	}
 	switch node.Kind {
+	case ir.InvocationValue:
+		if e.Invocation == nil {
+			return LoweredExpression{}, fmt.Errorf("invocation requires its owning region")
+		}
+		return e.Invocation(node.Invocation)
+	case ir.MatchValue:
+		if e.Match == nil {
+			return LoweredExpression{}, fmt.Errorf("match requires its owning region")
+		}
+		return e.Match(node.Match)
 	case ir.Literal:
 		value := node.Text
 		switch node.Type.Declaration() {

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I10 needs source-spanned explicit completion-region IDs. Named functions and selected handlers have distinct result regions; nested match/call/chain/do/relay complete the current region. Source has no stored raw completion type. Every generated async function and callback must resolve with a private nonthenable box: null prototype, fixed own data fields, no then key, no application-controlled keys. Application records may contain callable then and must never cross Promise resolution unboxed. Domain failures already have branded opaque occurrence tokens with exact nominal specialization; standard failure tokens preserve identity and diagnostic origins. A call match catches argument/callee/body preparation faults, but chosen handler failures escape without redispatch. Native Promise coordination later requires success fulfillment and tagged domain/standard rejection. Existing expression emission is synchronous statement sequencing with a call hook. Alternatives: return boxed categories from functions and adapt failures to native rejection only at Promise bridges, with dispatch outside invocation catches; throw domain/standard tokens for control flow and return boxed successes, auditing catch boundaries; or return raw data from async functions while assuming then is harmless. Both viable boxed designs require runtime identity checks, exact static arm coverage and escaping-error checks, and tests for thenable payloads and nested regions. No measured performance claim exists.",
+  "questions": {
+    "carrier": {
+      "type": "choice",
+      "instructions": "Which carrier and dispatch design best fits the stated compiler interfaces and completion contracts?",
+      "criteria": {
+        "boxes": "Fulfill with protected boxes for all categories; reject failure boxes only in explicit native bridges and dispatch handlers outside invocation catches.",
+        "throws": "Fulfill with boxed success but throw opaque failures, separating all invocation and handler catch scopes.",
+        "raw": "Return unboxed application payloads from async code and assume their then fields are harmless."
+      }
+    }
+  }
+}
