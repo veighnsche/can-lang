@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can C8 defines unnecessary locals by exactly four predicates: a typed binding immediately precedes terminal ok name or a match-arm final name; that is its single direct source use and no implicit near capture needs it; the initializer belongs to a finite non-effectful AST allowlist excluding calls, references, constructors, arrays, matches, indexing, slicing, division, remainder, power, shifts, resources and contextual percent; substitution under the terminal expected type preserves concrete typing and variant conversion. The existing compiler separates AST, resolved identities, sealed nominal types, expression IR, and native emission. Body regions and named callable captures are scheduled later. Shadowed names cannot be counted by spelling. Existing expression checking accepts an expected type and produces typed IR. There are no external users or compatibility constraints. Candidates are an explicit complete resolved-use/capture ledger from the owning body checker plus rechecking substitution and comparing typed evidence; counting identifier strings and presuming no capture; or a general purity/equivalence optimizer. The ledger approach must reject incomplete evidence rather than infer absence, and tests must distinguish unknown evidence from a permitted local. No performance measurements exist.",
+  "questions": {
+    "boundary": {
+      "type": "choice",
+      "instructions": "Which integration preserves the exact finite rule while allowing the later region/capture passes to supply their evidence?",
+      "criteria": {
+        "evidence": "Consume complete resolved binding-use and implicit-capture evidence, apply the finite syntactic filter, and recheck substitution with identical concrete typing.",
+        "spelling": "Count matching identifier text and assume absent capture information means no capture.",
+        "optimizer": "Infer general purity and behavioral equivalence to decide whether a local is useful."
+      }
+    }
+  }
+}

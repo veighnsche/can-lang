@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "C8 permits rejecting a local only when all four conditions hold: its typed declaration is adjacent to an ok name terminal or a value-arm final name; the binding has one direct source use and is not needed by near capture; its initializer is inside the enumerated simple AST set, outside calls, references, constructors, array literals, matches, indexing/slicing, division/remainder/exponentiation/shifting, resources and contextual percent; and checking the replacement under the terminal expected type leaves concrete types and variant conversion unchanged. The compiler presently has parsed nodes, resolved declaration identities, sealed concrete types, typed expression IR and JavaScript/Bun emission. Region analysis and named capture implementation are later work. Name spelling alone cannot distinguish shadowed declarations, and expression checking already supports expected-type input. No legacy users impose compatibility requirements. Three alternatives are full resolved usage/capture evidence supplied by the body owner with a typed replacement check, lexical spelling counts with unknown captures treated as absent, and general effect/purity equivalence inference. Full evidence must be validated as complete rather than silently defaulted; tests need both incomplete-evidence rejection and valid retained-local cases. Runtime cost has not been measured.",
+  "questions": {
+    "boundary": {
+      "type": "choice",
+      "instructions": "Choose the design boundary most consistent with these finite semantics and the existing compiler responsibilities.",
+      "criteria": {
+        "evidence": "Require full binding-identity and capture records, inspect only admitted syntax, and verify the replacement using the terminal typing context.",
+        "spelling": "Match names as text and interpret missing capture data as an empty capture set.",
+        "optimizer": "Decide redundancy through a general semantic optimizer that reasons about purity and equivalent behavior."
+      }
+    }
+  }
+}

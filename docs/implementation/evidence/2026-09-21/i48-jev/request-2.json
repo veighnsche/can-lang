@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The unnecessary-local contract in Can C8 is a conjunction of four tests: immediate forwarding by ok name or final match-arm name after a typed local; precisely one direct reference with no required near capture; a closed harmless-expression subset that omits calls/references, construction, arrays, match, index/slice, divide/remainder/power/shift, resource operations and contextual percent; and unchanged concrete type plus variant conversion when rechecked in the terminal context. Current components provide source ASTs, canonical resolved names, sealed types, checked expression trees and native lowering. Completion regions and callable capture resolution come in future tasks. Textually equal names may resolve to different bindings. The expression checker already takes expected types. Compatibility is unnecessary with zero outside users. Options use a complete body-owned identity/capture ledger and typed substitution comparison, a spelling tally that treats missing capture records as empty, or unrestricted purity/equivalence analysis. The ledger design requires incomplete evidence to be an error and explicit tests separating missing evidence from legitimate retention. There are no benchmark results.",
+  "questions": {
+    "boundary": {
+      "type": "choice",
+      "instructions": "Select the boundary that enforces the stated four tests without replacing future capture and region ownership.",
+      "criteria": {
+        "evidence": "Use resolved reference/capture accounting, filter the specified syntax, and compare the expected-type recheck to the original typing evidence.",
+        "spelling": "Tally equal source names while defaulting unknown implicit captures to none.",
+        "optimizer": "Employ broader purity and equivalence reasoning to classify redundant bindings."
+      }
+    }
+  }
+}

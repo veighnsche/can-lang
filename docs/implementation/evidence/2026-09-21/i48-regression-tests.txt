@@ -1,0 +1,105 @@
+=== RUN   TestInitializationOrderingAndRefusals
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_b_int_b_=_a_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_a_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_call_first()_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_(1_+_call_first())_
+=== RUN   TestInitializationOrderingAndRefusals/str_a_=_call_env::get("TOKEN")_
+=== RUN   TestInitializationOrderingAndRefusals/bytes::buffer_a_=_call_bytes::from_utf8("x")_
+=== RUN   TestInitializationOrderingAndRefusals/callable_int_()_emits_[]_a_=_callable_first_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_ints[0]_
+=== RUN   TestInitializationOrderingAndRefusals/bytes::buffer_a_=_resource_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_match_true_____true_=>_1_____false_=>_2_
+=== RUN   TestInitializationOrderingAndRefusals/bool_a_=_false_and_(call_first()_is_1)_
+--- PASS: TestInitializationOrderingAndRefusals (0.01s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_b_int_b_=_a_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_a_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_call_first()_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_(1_+_call_first())_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/str_a_=_call_env::get("TOKEN")_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bytes::buffer_a_=_call_bytes::from_utf8("x")_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/callable_int_()_emits_[]_a_=_callable_first_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_ints[0]_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bytes::buffer_a_=_resource_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_match_true_____true_=>_1_____false_=>_2_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bool_a_=_false_and_(call_first()_is_1)_ (0.00s)
+=== RUN   TestInitializationNamedArmEvidence
+--- PASS: TestInitializationNamedArmEvidence (0.00s)
+=== RUN   TestEmittedInitializationBeforeMain
+=== RUN   TestEmittedInitializationBeforeMain/fault=false
+    initialization_test.go:209: main reached
+        startup once verified
+=== RUN   TestEmittedInitializationBeforeMain/fault=true
+    initialization_test.go:209: startup failure reported
+--- PASS: TestEmittedInitializationBeforeMain (0.08s)
+    --- PASS: TestEmittedInitializationBeforeMain/fault=false (0.01s)
+    --- PASS: TestEmittedInitializationBeforeMain/fault=true (0.01s)
+=== RUN   TestFiniteLocalRule
+=== RUN   TestFiniteLocalRule/left_+_right
+=== RUN   TestFiniteLocalRule/(left_*_2)_-_right
+=== RUN   TestFiniteLocalRule/~left_|_right_&_3
+=== RUN   TestFiniteLocalRule/item.value
+=== RUN   TestFiniteLocalRule/ints.length
+=== RUN   TestFiniteLocalRule/left_<_right_and_not_false
+=== RUN   TestFiniteLocalRule/text_+_"!"
+=== RUN   TestFiniteLocalRule/result_+_1
+=== RUN   TestFiniteLocalRule/retain/left_/_right
+=== RUN   TestFiniteLocalRule/retain/left_%_right
+=== RUN   TestFiniteLocalRule/retain/left_**_right
+=== RUN   TestFiniteLocalRule/retain/left_<<_right
+=== RUN   TestFiniteLocalRule/retain/left_>>_right
+=== RUN   TestFiniteLocalRule/retain/1.0_/_2.0
+=== RUN   TestFiniteLocalRule/retain/ints[0]
+=== RUN   TestFiniteLocalRule/retain/ints[0:1]
+=== RUN   TestFiniteLocalRule/retain/[]
+=== RUN   TestFiniteLocalRule/retain/[1]
+=== RUN   TestFiniteLocalRule/retain/alpha::item(1,_[])
+=== RUN   TestFiniteLocalRule/retain/item_with_value=1
+=== RUN   TestFiniteLocalRule/retain/call_first()
+=== RUN   TestFiniteLocalRule/retain/callable_first
+=== RUN   TestFiniteLocalRule/retain/item
+--- PASS: TestFiniteLocalRule (0.00s)
+    --- PASS: TestFiniteLocalRule/left_+_right (0.00s)
+    --- PASS: TestFiniteLocalRule/(left_*_2)_-_right (0.00s)
+    --- PASS: TestFiniteLocalRule/~left_|_right_&_3 (0.00s)
+    --- PASS: TestFiniteLocalRule/item.value (0.00s)
+    --- PASS: TestFiniteLocalRule/ints.length (0.00s)
+    --- PASS: TestFiniteLocalRule/left_<_right_and_not_false (0.00s)
+    --- PASS: TestFiniteLocalRule/text_+_"!" (0.00s)
+    --- PASS: TestFiniteLocalRule/result_+_1 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_/_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_%_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_**_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_<<_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_>>_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/1.0_/_2.0 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/ints[0] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/ints[0:1] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/[] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/[1] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/alpha::item(1,_[]) (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/item_with_value=1 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/call_first() (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/callable_first (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/item (0.00s)
+=== RUN   TestLocalUseIdentityAndCaptureEvidence
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/same_spelling_is_not_same_binding
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/two_resolved_uses_retain_the_local
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/incomplete_names_refuse_rather_than_guess
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/captured
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/not_captured
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/missing_evidence
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/intervening_work_retains_timing
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/terminal_calculation_is_not_immediate_name_forwarding
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/substitution_rechecks_expected_typing
+--- PASS: TestLocalUseIdentityAndCaptureEvidence (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/same_spelling_is_not_same_binding (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/two_resolved_uses_retain_the_local (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/incomplete_names_refuse_rather_than_guess (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/captured (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/not_captured (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/missing_evidence (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/intervening_work_retains_timing (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/terminal_calculation_is_not_immediate_name_forwarding (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/substitution_rechecks_expected_typing (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.161s

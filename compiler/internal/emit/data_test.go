@@ -54,7 +54,7 @@ func fixtureTypes(t *testing.T) map[string]*types.Type {
 		}
 	}
 	out := map[string]*types.Type{}
-	for _, name := range []string{"alpha::item", "beta::item", "box<int>", "box<str>", "int", "float", "bool", "str", "int[]", "str[]", "both", "both[]", "alpha::item[]", "bytes::buffer", "callable int () emits []", "callable bool () emits []", "callable float () emits []", "callable str () emits []", "callable int () emits [number::inexact]"} {
+	for _, name := range []string{"alpha::item", "beta::item", "box<int>", "box<str>", "int", "float", "bool", "str", "int[]", "str[]", "both", "both[]", "alpha::item[]", "bytes::buffer", "callable int () emits []", "callable bool () emits []", "callable float () emits []", "callable str () emits []", "callable int () emits [number::inexact]", "choice_arm<int> emits []"} {
 		src, _ := source.New("type.can", name)
 		node, ds := syntax.ParseType(src)
 		if len(ds) != 0 {
