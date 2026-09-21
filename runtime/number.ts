@@ -55,3 +55,33 @@ export function createNumbers(domain:ReturnType<typeof createDomainRuntime>,erro
   },
  });
 }
+
+export type Division=Readonly<{quotient:bigint;remainder:bigint}>;
+export type Rounded=Readonly<{value:bigint;remainder_numerator:bigint;denominator:bigint}>;
+export function createExactAmounts(domain:ReturnType<typeof createDomainRuntime>,identities:Readonly<{zeroDivisor:string;division:string;rounded:string}>){
+ const zero=():Completion<never>=>failure(domain.create(identities.zeroDivisor,record(identities.zeroDivisor,[]),origin));
+ const division=(quotient:bigint,remainder:bigint):Division=>record(identities.division,[["quotient",quotient],["remainder",remainder]]) as Division;
+ return Object.freeze({
+  async divmod(numerator:bigint,denominator:bigint,_context?:AssertionContext):Promise<Completion<Division>>{
+   if(denominator===0n)return zero();
+   return success(division(numerator/denominator,numerator%denominator));
+  },
+  async euclideanDivmod(numerator:bigint,denominator:bigint,_context?:AssertionContext):Promise<Completion<Division>>{
+   if(denominator===0n)return zero();
+   let quotient=numerator/denominator,remainder=numerator%denominator;
+   if(remainder<0n){
+    remainder+=denominator<0n?-denominator:denominator;
+    quotient+=denominator<0n?1n:-1n;
+   }
+   return success(division(quotient,remainder));
+  },
+  async roundRatioHalfEven(numerator:bigint,denominator:bigint,_context?:AssertionContext):Promise<Completion<Rounded>>{
+   if(denominator===0n)return zero();
+   const n=denominator<0n?-numerator:numerator,d=denominator<0n?-denominator:denominator;
+   let quotient=n/d;
+   const remainder=n%d,twice=2n*(remainder<0n?-remainder:remainder);
+   if(twice>d||(twice===d&&quotient%2n!==0n))quotient+=n<0n?-1n:1n;
+   return success(record(identities.rounded,[["value",quotient],["remainder_numerator",n-quotient*d],["denominator",d]]) as Rounded);
+  },
+ });
+}

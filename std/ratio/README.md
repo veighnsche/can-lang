@@ -1,3 +1,20 @@
+# Current exact-amount example
+
+[current/src/main.can](current/src/main.can) is the maintained current-language
+project. It exercises native truncating/Euclidean divmod and half-even ratio
+rounding, including all signs, ties, zero denominators and a large minor-unit
+balance encoded without losing integer precision. Run the staged command as
+`canlc assert std/ratio/current` or `canlc run std/ratio/current`.
+
+The finite C8 adapters live in `runtime/number.ts`. Results are ordinary catalogue
+records with a positive denominator and exact retained remainder. No decimal
+base type, GCD reduction or recursive arithmetic kernel is introduced.
+
+Adjacent old sources/generated files remain historical test inputs for I43/I44
+retirement; they are not an active catalogue or fallback.
+
+## Historical ratio implementation
+
 # ratio — exact fractions as records
 
 - `ratio.can` — `mod ratio`: `std__ratio__make` (reduced

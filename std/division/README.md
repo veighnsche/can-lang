@@ -1,3 +1,16 @@
+# Current division catalogue
+
+Use `number::divmod` for native truncation toward zero and
+`number::euclidean_divmod` for a nonnegative remainder. Both return the ordinary
+`number::division` record and emit `number::zero_divisor` for a zero denominator.
+The maintained example and sign/tie assertions are in
+[the current exact-amount project](../ratio/current/src/main.can).
+
+Adjacent old sources/generated files are historical test inputs scheduled for
+I43/I44 retirement, not a current compiler fallback.
+
+## Historical division implementation
+
 # division — exact Euclidean integer division
 
 - `division.can` — `mod division`: `std__int__divmod`,

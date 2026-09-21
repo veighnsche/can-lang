@@ -1,0 +1,100 @@
+package amounts
+    provides []
+    uses [number, codec, bytes]
+record account
+    int minor_units
+    str currency
+fn number::division truncating
+    emits [number::zero_divisor]
+    given
+        int numerator
+        int denominator
+    asserts
+        positive: 7, 3 => ok number::division(2, 1)
+        negative: -7, 3 => ok number::division(-2, -1)
+        divisor_negative: 7, -3 => ok number::division(-2, 1)
+        both_negative: -7, -3 => ok number::division(2, -1)
+        zero: 7, 0 => number::zero_divisor()
+    match call number::divmod(numerator, denominator)
+        ok number::division output => ok output
+        number::zero_divisor
+fn number::division euclidean
+    emits [number::zero_divisor]
+    given
+        int numerator
+        int denominator
+    asserts
+        negative: -7, 3 => ok number::division(-3, 2)
+        both_negative: -7, -3 => ok number::division(3, 2)
+        positive: 7, -3 => ok number::division(-2, 1)
+        exact: -6, 3 => ok number::division(-2, 0)
+        zero: 7, 0 => number::zero_divisor()
+    match call number::euclidean_divmod(numerator, denominator)
+        ok number::division output => ok output
+        number::zero_divisor
+fn number::rounded rounded
+    emits [number::zero_divisor]
+    given
+        int numerator
+        int denominator
+    asserts
+        even: 5, 2 => ok number::rounded(2, 1, 2)
+        odd: 7, 2 => ok number::rounded(4, -1, 2)
+        negative_even: -5, 2 => ok number::rounded(-2, -1, 2)
+        negative_odd: -7, 2 => ok number::rounded(-4, 1, 2)
+        non_tie: 8, 3 => ok number::rounded(3, -1, 3)
+        denominator_negative: 5, -2 => ok number::rounded(-2, -1, 2)
+        both_negative: -5, -2 => ok number::rounded(2, 1, 2)
+        unreduced: 2, 4 => ok number::rounded(0, 2, 4)
+        zero: 7, 0 => number::zero_divisor()
+    match call number::round_ratio_half_even(numerator, denominator)
+        ok number::rounded output => ok output
+        number::zero_divisor
+fn account deposit
+    emits []
+    given
+        account balance
+        int increment
+    asserts
+        large: account(9007199254740993, "EUR"), 2 => ok account(9007199254740995, "EUR")
+    ok balance with minor_units = balance.minor_units + increment
+fn str encoded_share
+    emits [number::zero_divisor, codec::invalid_data]
+    given
+        account balance
+    asserts
+        large: account(9007199254740995, "EUR") => ok "{\"value\":4503599627370498,\"remainder_numerator\":-1,\"denominator\":2}"
+    match call number::round_ratio_half_even(balance.minor_units, 2)
+        ok number::rounded share => match call codec::encode_json<number::rounded>(share)
+            ok bytes::buffer encoded => match call bytes::to_utf8(encoded)
+                ok str text => ok text
+                codec::invalid_data
+            codec::invalid_data
+        number::zero_divisor
+fn number::division reference
+    emits [number::zero_divisor]
+    asserts
+        sample: => ok number::division(-3, 2)
+    callable number::division (int, int) emits [number::zero_divisor] operation = callable number::euclidean_divmod
+    match call operation(-7, 3)
+        ok number::division output => ok output
+        number::zero_divisor
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    account updated = call deposit(account(9007199254740993, "EUR"), 2)
+    match call encoded_share(updated)
+        ok str text => match text
+            "{\"value\":4503599627370498,\"remainder_numerator\":-1,\"denominator\":2}" => ok
+            _ => do
+                int invalid = 1 / 0
+                ok
+        number::zero_divisor => do
+            int invalid = 1 / 0
+            ok
+        codec::invalid_data => do
+            int invalid = 1 / 0
+            ok
