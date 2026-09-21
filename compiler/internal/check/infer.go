@@ -2,7 +2,6 @@ package check
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
@@ -68,7 +67,7 @@ func genericArguments(inputs []syntax.Input, args []syntax.Argument) ([]argument
 			}
 			continue
 		}
-		length, known := literalSpreadLength(arg.Value)
+		_, known := literalSpreadLength(arg.Value)
 		if !known {
 			if position < fixed || !variadic {
 				return nil, fmt.Errorf("runtime-length spread cannot supply generic fixed inputs")
@@ -76,9 +75,8 @@ func genericArguments(inputs []syntax.Input, args []syntax.Argument) ([]argument
 			constraints = append(constraints, argumentConstraint{&syntax.ArrayType{Element: inputs[fixed].Type}, arg.Value})
 			continue
 		}
-		for i := 0; i < length; i++ {
-			index := &syntax.LiteralExpr{ExpressionLocation: syntax.ExpressionLocation{Span: arg.Span}, Token: syntax.Token{Kind: syntax.Integer, Text: strconv.Itoa(i), Value: strconv.Itoa(i), Span: arg.Span}}
-			if err := add(&syntax.IndexExpr{ExpressionLocation: syntax.ExpressionLocation{Span: arg.Span}, Receiver: arg.Value, Index: index}); err != nil {
+		for _, element := range literalSpreadElements(arg.Value) {
+			if err := add(element); err != nil {
 				return nil, err
 			}
 		}
@@ -294,4 +292,23 @@ func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.C
 type typeConstraint struct {
 	annotation syntax.TypeNode
 	actual     *types.Type
+}
+
+// Only syntactically known spreads reach this helper. Checking the original
+// array during ordinary argument lowering still enforces its homogeneous type
+// and single evaluation; inference retains each element's expected context.
+func literalSpreadElements(node syntax.Expr) []syntax.Expr {
+	if group, ok := node.(*syntax.GroupExpr); ok {
+		return literalSpreadElements(group.Value)
+	}
+	array := node.(*syntax.ArrayExpr)
+	var elements []syntax.Expr
+	for _, element := range array.Elements {
+		if element.Spread {
+			elements = append(elements, literalSpreadElements(element.Value)...)
+		} else {
+			elements = append(elements, element.Value)
+		}
+	}
+	return elements
 }

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A generic-specialization cache and body-checking queue use exact declaration/argument identities. The current recursion guard compares a requested argument vector with same-function ancestors: strict structural containment in argument positions triggers failure, and nominal fields are excluded. A reviewed counterexample calls fixed<int[]> inside fixed<T>; beginning at fixed<int> falsely fails although all subsequent requests name the same array specialization. The failure disappears if an assertion creates that specialization beforehand. Both inferred requests and explicit ones should admit such finite transitions without depending on insertion order, whereas repeat<T> repeatedly requesting repeat<T[]> must fail. A distinct discovery resource limit is retained, and no universal termination guarantee is sought.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "Select the most suitable guard change given this finite-transition counterexample and the required expanding-recursion rejection.",
+      "criteria": {
+        "repeated_site": "Apply the containment comparison to ancestors born at the same declaration application site as the current request, storing this first site separately from the growing list of diagnostic request sites; stable targets hit the cache and recurrent growth still fails.",
+        "closed_explicit_only": "Skip containment for syntactically closed explicit type applications only, continuing to apply the prior rule to inferred targets.",
+        "keep_rule": "Leave the existing single-edge growth rejection intact and rely on added assertion instances to influence cache order."
+      }
+    }
+  }
+}

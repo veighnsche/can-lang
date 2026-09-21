@@ -1,0 +1,1 @@
+Reviewed all three requests: distinct explanatory state, instruction and option prose; same worklist/cache facts, containment rule, finite fixed target counterexample, prepopulation dependence, explicit/inferred requirement, genuine expansion rejection, field exclusion, finite budget and no termination proof. Alternatives preserve the same engineering choices.

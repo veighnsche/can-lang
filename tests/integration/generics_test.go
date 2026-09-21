@@ -92,4 +92,32 @@ func TestCurrentBundledGenerics(t *testing.T) {
 	if status == 0 || !strings.Contains(diag, "concrete function") {
 		t.Fatalf("invalid unused branch admitted: %d %s %s", status, out, diag)
 	}
+	for _, name := range []string{"definitions.can", "helper.can"} {
+		if err := os.Remove(filepath.Join(root, "src", name)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, name := range []string{"finite-transition", "spread-inferred"} {
+		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/generics", name+".can"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		variants := []string{string(data)}
+		if name == "finite-transition" {
+			variants = append(variants, strings.Replace(string(data), "        sample: 1, 0 => ok 0", "        sample: 1, 0 => ok 0\n        array: [1], 0 => ok 0", 1))
+			variants = append(variants, strings.Replace(string(data), "fixed<int[]>([1]", "fixed([1]", 1))
+		}
+		for index, source := range variants {
+			write("src/main.can", source)
+			status, out, diag = run("assert")
+			if status != 0 || diag != "" || !strings.Contains(out, `"passed":true`) {
+				t.Fatalf("%s variant %d assertions: %d %s %s", name, index, status, out, diag)
+			}
+			status, out, diag = run("run")
+			if status != 0 || out != "" || diag != "" {
+				t.Fatalf("%s variant %d execution: %d %s %s", name, index, status, out, diag)
+			}
+		}
+	}
+
 }

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Concrete generic function bodies are processed through a cached worklist keyed by resolved declaration plus type arguments. An ancestor comparison presently labels every same-declaration strict structural enlargement as expanding recursion, examining arguments but not record fields. For fixed<T>, a call of fixed<int[]> from the int instance is therefore refused despite stabilization at int[]. Adding an assertion that caches int[] first removes the error. Genuine repeat<T[]> recursion from repeat<T> must remain invalid; inferred and explicit invocations both need cache-order-independent admission. The compiler already bounds total discovery separately and is not a termination prover. Choose a correction for this evidence.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "What revision most appropriately distinguishes a finite fixed target from a recurring type expansion in this checker?",
+      "criteria": {
+        "repeated_site": "Require the earlier instance to have originated at the identical application location of the same declaration before using argument containment to diagnose growth; keep that origin immutable while gathering further request locations. Fixed transitions converge through cache reuse and recurring enlargement remains rejected.",
+        "closed_explicit_only": "Retain the broad ancestor comparison for inference, disabling it only for explicit applications whose annotations contain no parameters.",
+        "keep_rule": "Continue rejecting every larger same-declaration argument vector, leaving assertion-driven cache prepopulation as the workaround."
+      }
+    }
+  }
+}

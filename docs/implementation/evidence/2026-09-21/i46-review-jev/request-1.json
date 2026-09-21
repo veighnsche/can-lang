@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can compiler caches generic instances by declaration and concrete arguments and checks whole bodies on a worklist. It currently rejects any ancestry edge to the same declaration when each new argument structurally contains its old argument and some containment is strict. This rejects finite fixed<T> to literal fixed<int[]> when T=int, even though the next target remains int[]. Preloading the array instance makes that same source pass because cache hits bypass the test. True repeat<T> to repeat<T[]> must still be rejected. Inferred calls as well as explicit type applications must behave independently of cache population order. Only argument structures, not nominal fields, are traversed, and a separate finite discovery budget remains. Assess the proposed replacement without claiming a general termination proof.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "Which growth-check refinement best addresses the demonstrated false rejection while keeping a finite implementation and detecting repeated expansion?",
+      "criteria": {
+        "repeated_site": "Compare structural growth only when the same declaration recurs through the same source application site along its ancestry; retain the original creation site separately from accumulated request diagnostics. A constant concrete transition then reuses its cache, while repeated growing applications are rejected.",
+        "closed_explicit_only": "Keep the declaration-wide growth rule but exempt explicitly written closed type arguments; leave inferred applications under the old containment test.",
+        "keep_rule": "Preserve rejection after any structural growth edge to the same declaration and require authors to pre-register fixed target instances in assertions."
+      }
+    }
+  }
+}

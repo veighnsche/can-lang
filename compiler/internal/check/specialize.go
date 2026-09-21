@@ -67,8 +67,11 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	var ancestors []*ProgramFunction
 	if c.current != nil {
 		ancestors = append(append([]*ProgramFunction(nil), c.current.Ancestors...), c.current)
+		// One larger argument vector can be a finite transition to a literal
+		// target. Require recurrence of the same source application before
+		// treating structural containment as expanding polymorphic recursion.
 		for _, parent := range ancestors {
-			if parent.Symbol.ID == symbol.ID && growingArguments(parent.TypeArguments, arguments) {
+			if parent.Symbol.ID == symbol.ID && parent.Application == request && growingArguments(parent.TypeArguments, arguments) {
 				return ValueBinding{}, fmt.Errorf("expanding polymorphic recursion from %s to %s", parent.Identity(), key)
 			}
 		}
@@ -112,7 +115,7 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	for i, field := range fields {
 		c.bindings[key+"/input/"+field.Name.Text] = contract.Inputs()[i]
 	}
-	fn := &ProgramFunction{Requests: []string{request}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters, Ancestors: ancestors}
+	fn := &ProgramFunction{Application: request, Requests: []string{request}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters, Ancestors: ancestors}
 	c.instances[key] = fn
 	c.program.Functions = append(c.program.Functions, fn)
 	return ValueBinding{Identity: key, Type: contract}, nil

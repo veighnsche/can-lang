@@ -1,0 +1,19 @@
+package app
+    provides []
+    uses []
+fn item pick<item>
+    emits []
+    given
+        item first
+        item second
+    asserts
+        sample: 1, 2 => ok 1
+    ok first
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    int[] result = call pick(...[[], []])
+    ok

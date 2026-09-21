@@ -1,0 +1,21 @@
+package app
+    provides []
+    uses []
+fn int fixed<item>
+    emits []
+    given
+        item value
+        int count
+    asserts
+        sample: 1, 0 => ok 0
+    match count is 0
+        true => ok 0
+        false => relay call fixed<int[]>([1], count - 1)
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    int result = call fixed<int>(1, 2)
+    ok

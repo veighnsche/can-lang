@@ -61,7 +61,8 @@ func TestGenericWholeBodyAndRecursion(t *testing.T) {
         true => ok value
         false => ok "wrong"
 `,
-		"expanding recursion": `    relay call repeat<item[]>([value], count)
+		"expanding recursion": `    match call repeat<item[]>([value], count)
+        ok item[] ignored => ok value
 `,
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -338,5 +339,54 @@ func TestGenericCrossModuleIdentity(t *testing.T) {
 	files["src/definitions.can"] = strings.Replace(files["src/definitions.can"], "    ok value\n", "    ok false\n", 1)
 	if _, err = programFixture(t, files); err == nil || !strings.Contains(err.Error(), "generic source") || !strings.Contains(err.Error(), "requested at") {
 		t.Fatalf("missing generic application diagnostic: %v", err)
+	}
+}
+
+func TestFiniteGenericTransitionsIgnoreCacheOrder(t *testing.T) {
+	declaration := `fn int fixed<item>
+    emits []
+    given
+        item value
+        int count
+    asserts
+        sample: 1, 0 => ok 0
+    match count is 0
+        true => ok 0
+        false => relay call fixed<int[]>([1], count - 1)
+`
+	for _, inferred := range []bool{false, true} {
+		for _, preloaded := range []bool{false, true} {
+			source := declaration
+			if inferred {
+				source = strings.Replace(source, "fixed<int[]>([1]", "fixed([1]", 1)
+			}
+			if preloaded {
+				source = strings.Replace(source, "        sample: 1, 0 => ok 0", "        sample: 1, 0 => ok 0\n        array: [1], 0 => ok 0", 1)
+			}
+			p, err := programFixture(t, map[string]string{"src/main.can": programHeader + source + programMain + "    int result = call fixed<int>(1, 2)\n    ok\n"})
+			if err != nil {
+				t.Fatalf("inferred=%v preloaded=%v: %v", inferred, preloaded, err)
+			}
+			if len(p.Functions) != 3 {
+				t.Fatalf("finite transition did not stabilize: %d", len(p.Functions))
+			}
+		}
+	}
+}
+func TestGenericLiteralSpreadPreservesExpectedElements(t *testing.T) {
+	declaration := `fn item pick<item>
+    emits []
+    given
+        item first
+        item second
+    asserts
+        sample: 1, 2 => ok 1
+    ok first
+`
+	for _, spread := range []string{"...[[], []]", "...([[], []])"} {
+		text := programHeader + declaration + programMain + "    int[] result = call pick(" + spread + ")\n    ok\n"
+		if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
