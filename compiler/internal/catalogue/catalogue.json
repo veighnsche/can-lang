@@ -3585,7 +3585,7 @@
         "native": [
           "Bun.stdin"
         ],
-        "adapter": "Bound the input bytes before decoding and map expected I/O failures.",
+        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3619,7 +3619,7 @@
           "Bun.stdin",
           "TextDecoder"
         ],
-        "adapter": "Bound the input bytes before decoding and map expected I/O failures.",
+        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3880,7 +3880,7 @@
         "native": [
           "Bun.env"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3911,7 +3911,7 @@
         "native": [
           "Bun.env"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -5038,7 +5038,7 @@
         "native": [
           "Number"
         ],
-        "adapter": "Admit 200–599; body status additionally excludes 204, 205 and 304.",
+        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
         "task": "I32"
       },
       "assertion": "real",
@@ -5069,7 +5069,7 @@
         "native": [
           "Number"
         ],
-        "adapter": "Admit 200–599; body status additionally excludes 204, 205 and 304.",
+        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
         "task": "I32"
       },
       "assertion": "real",

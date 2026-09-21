@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: cbe788155f88e13bcfac50cc271cf4887d5ffbacaec12af92b7a5f9fc8476435.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 74f4a94a8f4c3a789a433b1fb7b0a6265b9206a511dee60132ede546ac9c3239.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -207,8 +207,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | array.length | T:data; receiver T[];  → int | [] |  | Array.prototype.length, BigInt | Exact native length widened to bigint; validate opaque bytes before access. | real | I07 / C6,A2 |
 | str.length | receiver str;  → int | [] |  | String.prototype.length, BigInt | Exact native length widened to bigint; validate opaque bytes before access. | real | I07 / C6,A2 |
 | bytes.length | receiver bytes::buffer;  → int | [] |  | Uint8Array.prototype.byteLength, BigInt | Exact native length widened to bigint; validate opaque bytes before access. | real | I13 / C6,A2 |
-| io::stdin_bytes | int max_bytes → bytes::buffer | [io::limit_exceeded, io::read_failed] |  | Bun.stdin | Bound the input bytes before decoding and map expected I/O failures. | supplied | I29 / P8 |
-| io::stdin_text | int max_bytes → str | [io::limit_exceeded, io::read_failed, codec::invalid_data] |  | Bun.stdin, TextDecoder | Bound the input bytes before decoding and map expected I/O failures. | supplied | I29 / P8 |
+| io::stdin_bytes | int max_bytes → bytes::buffer | [io::limit_exceeded, io::read_failed] |  | Bun.stdin | Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors. | supplied | I29 / P8 |
+| io::stdin_text | int max_bytes → str | [io::limit_exceeded, io::read_failed, codec::invalid_data] |  | Bun.stdin, TextDecoder | Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors. | supplied | I29 / P8 |
 | io::stdout_write | bytes::buffer buffer → int | [io::write_failed] |  | Bun.write, Bun.stdout | Await write and return exact byte count. | supplied | I29 / P8 |
 | io::stderr_write | bytes::buffer buffer → int | [io::write_failed] |  | Bun.write, Bun.stderr | Await write and return exact byte count. | supplied | I29 / P8 |
 | clock::wall_millis |  → int | [] |  | Date.now, BigInt | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
@@ -217,8 +217,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | random::secure_bytes | int length → bytes::buffer | [random::invalid_length] |  | crypto.getRandomValues, Uint8Array | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
 | random::uuid_v4 |  → str | [] |  | crypto.randomUUID | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
 | crypto::sha256 | bytes::buffer buffer → bytes::buffer | [] |  | Bun.CryptoHasher | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | real | I30 / P8 |
-| env::required | str name → str | [env::invalid_name, http::credentials_missing] |  | Bun.env | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I29 / P8 |
-| env::optional | str name → option::value&lt;str&gt; | [env::invalid_name] |  | Bun.env | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I29 / P8 |
+| env::required | str name → str | [env::invalid_name, http::credentials_missing] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
+| env::optional | str name → option::value&lt;str&gt; | [env::invalid_name] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
 | log::write_info | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
 | log::write_error | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
 | html::make_tag | str name → html::tag | [html::invalid_structure] |  | Set.prototype.has | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |

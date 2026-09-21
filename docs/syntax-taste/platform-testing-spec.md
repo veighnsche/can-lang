@@ -573,6 +573,14 @@ can complete synchronously. `bytes::buffer` preserves immutability by copying a
 native view before it crosses into Can or by proving exclusive ownership of a
 fresh native buffer.
 
+`max_bytes` is an exact nonnegative integer; a negative argument yields
+`io::limit_exceeded(max_bytes)` before reading. Zero accepts only empty input.
+Read incrementally and reject before retaining bytes beyond the caller's budget;
+cancel the reader on overflow. No additional fixed byte ceiling is implied.
+Unexpected native allocation defects remain standard failures. Text decoding is
+fatal UTF-8 and preserves a leading BOM as text. Expected native I/O errors map
+to the declared read/write failures; unrelated runtime defects do not.
+
 ### Finite host utilities
 
 | Operation | Contract and native emission |
@@ -589,7 +597,11 @@ fresh native buffer.
 | `log::write_error` | `(str message) -> void emits [log::write_failed]`; same with fixed `error` level |
 
 Environment names match `[A-Z_][A-Z0-9_]*`; the catalogue exposes no enumeration
-or mutation. Log JSON has exactly string fields `level` and `message`, uses
+or mutation. Optional lookup returns `option::none()` only for absence and
+`option::some<str>(value)` for a present entry, including an empty string. Required
+lookup likewise returns an empty present value; only absence yields
+`http::credentials_missing(name)`. These operations read the launcher snapshot of
+the caller environment, not the driver's rewritten runtime environment. Log JSON has exactly string fields `level` and `message`, uses
 native `JSON.stringify`, and never invokes value inspection. Clock, random,
 environment, sleep, and log operations require deterministic assertion
 fixtures. SHA-256 is deterministic and executes in ordinary assertions.

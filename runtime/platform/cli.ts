@@ -1,5 +1,4 @@
-// I11's first executable CLI slice. The remaining bounded input/environment
-// operations and assertion boundary queues are implemented by I13/I29/I18.
+// Await native writes before returning their exact byte counts.
 import { denyLiveBoundary, type AssertionContext } from "../assert/context.ts";
 import { types as nativeTypes } from "node:util";
 import { success, failure, type Completion } from "../completion.ts";

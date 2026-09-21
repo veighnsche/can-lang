@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can P8 requires bounded Bun.stdin reads returning immutable bytes or strict UTF-8 text, io::limit_exceeded(int limit), and io::read_failed(str operation). It gives no maximum max_bytes or negative-limit rule. Can int is arbitrary precision; native buffers have finite capacity. Do not invent compatibility or a second runtime. Retain only chunks within the caller limit, compare counts using bigint before narrowing, cancel on overflow and observe cleanup. P8 env reads validate [A-Z_][A-Z0-9_]*, expose optional absence or required http::credentials_missing, and use a launch-time snapshot; empty strings are present values. Current bearer auth independently rejects empty credentials. No fixtures may perform ambient reads."
+  },
+  "questions": {
+    "policy": {
+      "type": "choice",
+      "instructions": "Choose the stdin policy that best preserves the stated contract without fabricating a hidden cap.",
+      "criteria": {
+        "bounded": "Reject negative max_bytes with limit_exceeded; allow zero and nonnegative bigint budgets; consume incrementally, reject crossing the budget, and retain native unexpected allocation failures as standard failures.",
+        "cap": "Introduce a fixed 64 MiB maximum for all caller budgets and return limit_exceeded for larger arguments.",
+        "eager": "Read all native stdin first and compare the finished buffer size to max_bytes."
+      }
+    }
+  }
+}

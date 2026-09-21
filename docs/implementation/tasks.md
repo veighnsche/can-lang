@@ -76,7 +76,7 @@ Reference key: [C](../syntax-taste/technical-spec.md), [Q](../syntax-taste/coord
 
 ## Platform, delivery and retirement
 
-- [ ] **I29 — Complete bounded CLI I/O and environment.** Depends: I11,I13,I18,I20. Refs: P8. Areas: `runtime/platform/{cli,io,env}.ts`, catalogue. P+: argv/stdin/awaited stdout/stderr and validated optional env values follow P8. N−: limit overflow, bad env names, invalid encoding and native I/O failure classify correctly. INT: pipe exact binary/text input through the bundled command, verify drain and status, then run the same function with deterministic boundary fixtures and no ambient reads.
+- [x] **I29 — Complete bounded CLI I/O and environment.** Depends: I11,I13,I18,I20. Refs: P8. Areas: `runtime/platform/{cli,io,env}.ts`, catalogue. P+: argv/stdin/awaited stdout/stderr and validated optional env values follow P8. N−: limit overflow, bad env names, invalid encoding and native I/O failure classify correctly. INT: pipe exact binary/text input through the bundled command, verify drain and status, then run the same function with deterministic boundary fixtures and no ambient reads.
 
 - [ ] **I30 — Add finite clock/random/crypto/log utilities.** Depends: I13,I18,I29. Refs: P8 utilities,P14. Areas: `runtime/platform/{clock,random,crypto,log}.ts`. Use Date/performance/Bun.sleep, native crypto randomness/UUID, CryptoHasher and shared JSON policy. P+: correct declared units, sizes and hash vectors. N−: invalid duration/length/range and log serialization failures yield specified outcomes. INT: assertions supply clock/random observations while hashing/ordinary computation remain real; secrets never enter default diagnostics.
 

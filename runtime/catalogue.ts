@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "cbe788155f88e13bcfac50cc271cf4887d5ffbacaec12af92b7a5f9fc8476435";
+export const catalogueSHA256 = "74f4a94a8f4c3a789a433b1fb7b0a6265b9206a511dee60132ede546ac9c3239";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -3595,7 +3595,7 @@ export const catalogue = freeze({
         "native": [
           "Bun.stdin"
         ],
-        "adapter": "Bound the input bytes before decoding and map expected I/O failures.",
+        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3629,7 +3629,7 @@ export const catalogue = freeze({
           "Bun.stdin",
           "TextDecoder"
         ],
-        "adapter": "Bound the input bytes before decoding and map expected I/O failures.",
+        "adapter": "Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3890,7 +3890,7 @@ export const catalogue = freeze({
         "native": [
           "Bun.env"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -3921,7 +3921,7 @@ export const catalogue = freeze({
         "native": [
           "Bun.env"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions.",
         "task": "I29"
       },
       "assertion": "supplied",
@@ -5048,7 +5048,7 @@ export const catalogue = freeze({
         "native": [
           "Number"
         ],
-        "adapter": "Admit 200–599; body status additionally excludes 204, 205 and 304.",
+        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
         "task": "I32"
       },
       "assertion": "real",
@@ -5079,7 +5079,7 @@ export const catalogue = freeze({
         "native": [
           "Number"
         ],
-        "adapter": "Admit 200–599; body status additionally excludes 204, 205 and 304.",
+        "adapter": "Admit 200\u2013599; body status additionally excludes 204, 205 and 304.",
         "task": "I32"
       },
       "assertion": "real",

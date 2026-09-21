@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Target behavior is P8 native stdin collection with a user-supplied integer byte budget, immutable buffers, strict UTF-8 strings, io::limit_exceeded(int limit) and io::read_failed(str operation). The document neither caps max_bytes nor defines a negative argument. Arbitrary-size Can integers differ from finite native allocation limits. There is no backwards-compatibility requirement or runtime fallback. Before any narrowing, track size as bigint; do not keep data beyond the requested allowance, and cancel excess input while observing cleanup failures. Environment names satisfy [A-Z_][A-Z0-9_]* and values come from the startup caller snapshot. Optional lookup distinguishes absence; required lookup reports http::credentials_missing when missing; an existing empty value remains present. Authentication separately refuses empty bearer secrets. Deterministic fixtures cannot read ambient state."
+  },
+  "questions": {
+    "policy": {
+      "type": "choice",
+      "instructions": "Which read design follows the available specification most closely while avoiding an invented resource bound?",
+      "criteria": {
+        "bounded": "Use limit_exceeded for negative arguments and accept zero or larger bigint limits. Check each incoming chunk against remaining capacity, leaving unforeseen allocation exceptions as standard failures.",
+        "cap": "Set an additional 64 MiB ceiling and classify every argument over it as limit_exceeded.",
+        "eager": "Let the native API accumulate the entire input, then apply the caller size comparison."
+      }
+    }
+  }
+}

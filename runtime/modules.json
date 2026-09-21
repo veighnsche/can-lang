@@ -248,6 +248,22 @@
       "../assert/provider.ts",
       "../transport/http.ts",
       "../transport/request.ts"
+    ],
+    "platform/io.ts": [
+      "node:util",
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts"
+    ],
+    "platform/env.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts"
     ]
   }
 }

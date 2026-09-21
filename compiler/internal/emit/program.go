@@ -51,6 +51,10 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		"can.std.bytes@1::empty":     "$canBytes.empty",
 		"can.std.io@1::stdout_write": "$canCLI.stdoutWrite",
 		"can.std.io@1::stderr_write": "$canCLI.stderrWrite",
+		"can.std.io@1::stdin_bytes":  "$canIO.stdinBytes",
+		"can.std.io@1::stdin_text":   "$canIO.stdinText",
+		"can.std.env@1::required":    "$canEnv.required",
+		"can.std.env@1::optional":    "$canEnv.optional",
 	}
 	functions["can.intrinsic.str@1::includes"] = "$canText.includes"
 	functions["can.intrinsic.str@1::starts_with"] = "$canText.startsWith"
@@ -211,8 +215,15 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if err != nil {
 		return nil, err
 	}
+	optionResult := program.Intrinsics["can.std.env@1::optional"].Result()
+	optionType := TypeName(optionResult)
+	optionIDs := map[string]string{}
+	for _, leaf := range optionResult.Leaves() {
+		optionIDs[leaf.Declaration()] = leaf.Identity()
+	}
 	var state strings.Builder
 	state.WriteString(declarations)
+	fmt.Fprintf(&state, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", optionType)
 	for _, id := range connectionIDs {
 		policy := program.Connections[id]
 		headers := make([]map[string]string, 0, len(policy.Headers))
@@ -270,6 +281,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, typ := range program.Model.Types() {
 		numberIDs[typ.Declaration()] = typ.Identity()
 	}
+	fmt.Fprintf(&state, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(numberIDs["can.std.io@1::read_failed"]), quote(numberIDs["can.std.io@1::limit_exceeded"]), quote(invalidData), optionType, quote(numberIDs["can.std.env@1::invalid_name"]), quote(numberIDs["can.std.http@1::credentials_missing"]), quote(optionIDs["can.std.option@1::some"]), quote(optionIDs["can.std.option@1::none"]))
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
 	fmt.Fprintf(&state, "$canAmounts = $canCreateExactAmounts($canDomain, {zeroDivisor:%s,division:%s,rounded:%s});\n", quote(numberIDs["can.std.number@1::zero_divisor"]), quote(numberIDs["can.std.number@1::division"]), quote(numberIDs["can.std.number@1::rounded"]))
 	fmt.Fprintf(&state, "$canText = $canCreateText($canDomain, {emptySeparator:%s,emptyPattern:%s,invalidUnicode:%s});\n", quote(numberIDs["can.std.text@1::empty_separator"]), quote(numberIDs["can.std.text@1::empty_pattern"]), quote(numberIDs["can.std.text@1::invalid_unicode"]))
@@ -346,9 +358,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if llms {
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/responses.ts", Names: []ImportName{{"createResponses", "$canCreateResponses"}}})
 	}
-	if judges || fetches || llms {
-		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
-	}
+	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
 
 	for _, native := range program.Natives {
 		if native.ArmDescription != nil {
@@ -460,7 +470,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})
@@ -512,7 +522,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 			for _, id := range collectionIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})
 			}

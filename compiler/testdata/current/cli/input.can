@@ -1,0 +1,24 @@
+package app
+    provides []
+    uses [io, bytes, codec]
+fn void main
+    emits [io::limit_exceeded, io::read_failed, io::write_failed, codec::invalid_data]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    bytes::buffer empty = call bytes::empty()
+    match call io::stdin_bytes(16)
+        when
+            sample: 16 => ok empty
+        ok bytes::buffer input => match call io::stdout_write(input)
+            when
+                sample: empty => ok 0
+            ok int written => match call io::stderr_write(input)
+                when
+                    sample: empty => ok 0
+                ok int diagnostic => ok
+                io::write_failed
+            io::write_failed
+        io::limit_exceeded
+        io::read_failed

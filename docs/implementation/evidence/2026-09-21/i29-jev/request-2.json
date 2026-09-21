@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The CLI specification calls for Bun.stdin input bounded by a caller int, immutable byte results, fatal UTF-8 conversion for text, and the errors io::limit_exceeded(int limit) / io::read_failed(str operation). No upper bound or behavior for negative max_bytes is written. Integers in Can are unbounded, whereas platform arrays cannot grow indefinitely. Compatibility shims and alternative runtimes are excluded. Chunk retention must stay within the requested ceiling; bigint accounting must precede conversion, and overflowing reads require cancellation with cleanup observation. Environment access uses the caller snapshot, permits only [A-Z_][A-Z0-9_]* names, returns optional absence or required http::credentials_missing, and treats the empty string as an existing entry. Bearer authentication has its separate empty-value rejection. Assertion fixtures must not touch host input."
+  },
+  "questions": {
+    "policy": {
+      "type": "choice",
+      "instructions": "Select the implementation strategy most faithful to these input constraints without adding an unstated ceiling.",
+      "criteria": {
+        "bounded": "A negative budget yields limit_exceeded, zero is valid, and any positive bigint budget is accepted. Incremental reads enforce the budget; unexpected native allocation faults keep the standard failure channel.",
+        "cap": "All budgets above 64 MiB are rejected as limit_exceeded under a new fixed upper threshold.",
+        "eager": "Collect the complete stdin buffer through the host before testing its size against the requested allowance."
+      }
+    }
+  }
+}
