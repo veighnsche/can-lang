@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 74f4a94a8f4c3a789a433b1fb7b0a6265b9206a511dee60132ede546ac9c3239.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c1517500a51df8d56f3147c7cc7bf29e31bd75902ea6b0fb6b87a124b12ed1f8.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -211,16 +211,16 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | io::stdin_text | int max_bytes → str | [io::limit_exceeded, io::read_failed, codec::invalid_data] |  | Bun.stdin, TextDecoder | Reject negative limits before input; count incrementally as bigint, cancel on overflow, preserve immutable bytes and fatal BOM-preserving UTF-8. Map only expected native I/O errors. | supplied | I29 / P8 |
 | io::stdout_write | bytes::buffer buffer → int | [io::write_failed] |  | Bun.write, Bun.stdout | Await write and return exact byte count. | supplied | I29 / P8 |
 | io::stderr_write | bytes::buffer buffer → int | [io::write_failed] |  | Bun.write, Bun.stderr | Await write and return exact byte count. | supplied | I29 / P8 |
-| clock::wall_millis |  → int | [] |  | Date.now, BigInt | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| clock::monotonic_millis |  → float | [] |  | performance.now | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| clock::sleep_millis | int milliseconds → void | [clock::invalid_duration] |  | Bun.sleep | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| random::secure_bytes | int length → bytes::buffer | [random::invalid_length] |  | crypto.getRandomValues, Uint8Array | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| random::uuid_v4 |  → str | [] |  | crypto.randomUUID | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| crypto::sha256 | bytes::buffer buffer → bytes::buffer | [] |  | Bun.CryptoHasher | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | real | I30 / P8 |
+| clock::wall_millis |  → int | [] |  | Date.now, BigInt | Return native epoch milliseconds exactly as bigint; supplied assertion boundary. | supplied | I30 / P8 |
+| clock::monotonic_millis |  → float | [] |  | performance.now | Return native monotonic milliseconds as float; supplied assertion boundary. | supplied | I30 / P8 |
+| clock::sleep_millis | int milliseconds → void | [clock::invalid_duration] |  | Bun.sleep | Validate bigint milliseconds in 0--2147483647 before Number conversion and await Bun.sleep; supplied assertion boundary. | supplied | I30 / P8 |
+| random::secure_bytes | int length → bytes::buffer | [random::invalid_length] |  | crypto.getRandomValues, Uint8Array | Validate bigint length in 0--65536 before allocation; fill a fresh native array and preserve immutable byte ownership; supplied assertion boundary. | supplied | I30 / P8 |
+| random::uuid_v4 |  → str | [] |  | crypto.randomUUID | Return native crypto.randomUUID; supplied assertion boundary. | supplied | I30 / P8 |
+| crypto::sha256 | bytes::buffer buffer → bytes::buffer | [] |  | Bun.CryptoHasher | Hash copied immutable bytes with a fresh Bun.CryptoHasher and return owned digest bytes; execute in ordinary assertions. | real | I30 / P8 |
 | env::required | str name → str | [env::invalid_name, http::credentials_missing] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
 | env::optional | str name → option::value&lt;str&gt; | [env::invalid_name] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
-| log::write_info | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
-| log::write_error | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values. | supplied | I30 / P8 |
+| log::write_info | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary. | supplied | I30 / P8 |
+| log::write_error | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Serialize exactly level/error and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary. | supplied | I30 / P8 |
 | html::make_tag | str name → html::tag | [html::invalid_structure] |  | Set.prototype.has | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::text | str value → html::node | [] |  | Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::parse_url | str value → html::url | [html::invalid_url] |  | URL | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |

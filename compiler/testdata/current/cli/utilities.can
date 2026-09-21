@@ -1,0 +1,50 @@
+package app
+    provides []
+    uses [clock, random, crypto, log, bytes, codec]
+fn int[] hash_empty
+    emits []
+    asserts
+        sample: => ok [227, 176, 196, 66, 152, 252, 28, 20, 154, 251, 244, 200, 153, 111, 185, 36, 39, 174, 65, 228, 100, 155, 147, 76, 164, 149, 153, 27, 120, 82, 184, 85]
+        native_expected: => ok call bytes::to_ints(call crypto::sha256(call bytes::empty()))
+    bytes::buffer empty = call bytes::empty()
+    bytes::buffer hashed = call crypto::sha256(empty)
+    ok call bytes::to_ints(hashed)
+fn void main
+    emits [clock::invalid_duration, random::invalid_length, log::write_failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    bytes::buffer empty = call bytes::empty()
+    match call clock::wall_millis()
+        when
+            sample: => ok 1000
+        ok int wall => match call clock::monotonic_millis()
+            when
+                sample: => ok 1.5
+            ok float monotonic => match call clock::sleep_millis(0)
+                when
+                    sample: 0 => ok
+                ok => match call random::secure_bytes(0)
+                    when
+                        sample: 0 => ok empty
+                    ok bytes::buffer entropy => match call random::uuid_v4()
+                        when
+                            sample: => ok "00000000-0000-4000-8000-000000000000"
+                        ok str uuid => do
+                            int[] digest = call hash_empty()
+                            match wall >= 0 and monotonic >= 0.0 and entropy.length is 0 and uuid.length is 36 and digest[0] is 227
+                                true => match call log::write_info("secret info")
+                                    when
+                                        sample: "secret info" => ok
+                                    ok => match call log::write_error("secret error")
+                                        when
+                                            sample: "secret error" => ok
+                                        ok => ok
+                                        log::write_failed
+                                    log::write_failed
+                                false => do
+                                    int invalid = 1 / 0
+                                    ok
+                    random::invalid_length
+                clock::invalid_duration

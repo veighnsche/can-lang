@@ -264,6 +264,30 @@
       "../data.ts",
       "../domain.ts",
       "../failure.ts"
+    ],
+    "platform/clock.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
+    ],
+    "platform/random.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts"
+    ],
+    "platform/crypto.ts": [
+      "../completion.ts",
+      "../bytes.ts"
+    ],
+    "platform/log.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "./io.ts"
     ]
   }
 }

@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "74f4a94a8f4c3a789a433b1fb7b0a6265b9206a511dee60132ede546ac9c3239";
+export const catalogueSHA256 = "c1517500a51df8d56f3147c7cc7bf29e31bd75902ea6b0fb6b87a124b12ed1f8";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -3718,7 +3718,7 @@ export const catalogue = freeze({
           "Date.now",
           "BigInt"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Return native epoch milliseconds exactly as bigint; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3742,7 +3742,7 @@ export const catalogue = freeze({
         "native": [
           "performance.now"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Return native monotonic milliseconds as float; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3773,7 +3773,7 @@ export const catalogue = freeze({
         "native": [
           "Bun.sleep"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate bigint milliseconds in 0--2147483647 before Number conversion and await Bun.sleep; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3805,7 +3805,7 @@ export const catalogue = freeze({
           "crypto.getRandomValues",
           "Uint8Array"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Validate bigint length in 0--65536 before allocation; fill a fresh native array and preserve immutable byte ownership; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3829,7 +3829,7 @@ export const catalogue = freeze({
         "native": [
           "crypto.randomUUID"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Return native crypto.randomUUID; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3858,7 +3858,7 @@ export const catalogue = freeze({
         "native": [
           "Bun.CryptoHasher"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Hash copied immutable bytes with a fresh Bun.CryptoHasher and return owned digest bytes; execute in ordinary assertions.",
         "task": "I30"
       },
       "assertion": "real",
@@ -3953,7 +3953,7 @@ export const catalogue = freeze({
           "JSON.stringify",
           "Bun.write"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
@@ -3985,7 +3985,7 @@ export const catalogue = freeze({
           "JSON.stringify",
           "Bun.write"
         ],
-        "adapter": "Apply P8 finite bounds and output policy; env reads use the launcher snapshot of caller Bun.env values.",
+        "adapter": "Serialize exactly level/error and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary.",
         "task": "I30"
       },
       "assertion": "supplied",
