@@ -222,7 +222,7 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		}
 		out.Inputs = []*ir.Expression{receiver}
 		out.Text = n.Field.Text
-		if n.Field.Text == "length" && (receiver.Type.Kind() == types.Array || scalar(receiver.Type, "str")) {
+		if n.Field.Text == "length" && (receiver.Type.Kind() == types.Array || scalar(receiver.Type, "str") || receiver.Type.Declaration() == "can.std.bytes@1::buffer") {
 			out.Kind = ir.Length
 			out.Type, err = c.scalar("int")
 		} else if receiver.Type.Kind() == types.Opaque && receiver.Type.Declaration() == "can.prelude@1::standard_failure" {

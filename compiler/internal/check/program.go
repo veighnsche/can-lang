@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
@@ -180,7 +181,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
 	c.annotations[builtinFile] = map[string]*types.Type{}
 	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Name != "bytes::from_utf8" && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
+		if !strings.HasPrefix(op.Name, "bytes::") && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
 			continue
 		}
 		signature := &syntax.CallableType{}

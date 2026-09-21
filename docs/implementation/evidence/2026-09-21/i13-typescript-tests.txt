@@ -1,0 +1,3 @@
+PASS: all runtime modules/tests, TypeScript 7.0.2.
+PASS: freshly staged generated entry and assertion modules.
+Flags: --noEmit --strict --skipLibCheck --target esnext --module esnext --moduleResolution bundler --allowImportingTsExtensions --types bun,node

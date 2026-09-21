@@ -14,6 +14,7 @@ import (
 
 func programImports(runtime string) []ModuleImport {
 	return []ModuleImport{
+		{Target: runtime + "/bytes.ts", Names: []ImportName{{"byteLength", "$canByteLength"}}},
 		{Target: runtime + "/callable.ts", Names: []ImportName{{"ownCallable", "$canOwnCallable"}}},
 		{Target: runtime + "/assert/fixtures.ts", Names: []ImportName{{"withFixture", "$canWithFixture"}}},
 		{Target: runtime + "/completion.ts", Names: []ImportName{{"success", "$canSuccess"}, {"failure", "$canFailure"}, {"value", "$canValue"}, {"invoke", "$canInvoke"}, {"caught", "$canCaught"}, {"errorType", "$canErrorType"}, {"errorPayload", "$canErrorPayload"}}},
@@ -39,7 +40,11 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	const statePath = "program/state.ts"
 	functions := map[string]string{
-		"can.std.bytes@1::from_utf8": "$canCLI.fromUTF8",
+		"can.std.bytes@1::from_utf8": "$canBytes.fromUTF8",
+		"can.std.bytes@1::to_utf8":   "$canBytes.toUTF8",
+		"can.std.bytes@1::from_ints": "$canBytes.fromInts",
+		"can.std.bytes@1::to_ints":   "$canBytes.toInts",
+		"can.std.bytes@1::empty":     "$canBytes.empty",
 		"can.std.io@1::stdout_write": "$canCLI.stdoutWrite",
 		"can.std.io@1::stderr_write": "$canCLI.stderrWrite",
 	}
@@ -74,7 +79,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	var state strings.Builder
 	state.WriteString(declarations)
-	state.WriteString("export let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	state.WriteString("export let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	var invalidData, writeFailed, bytesID string
 	for _, typ := range program.Model.Types() {
 		switch typ.Declaration() {
@@ -87,14 +92,14 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 	}
 	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => identity === %s && $canIsBytes(value));\n", plan, quote(bytesID))
-	fmt.Fprintf(&state, "$canCLI = $canCreateCLI($canDomain, {invalidData: %s, writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	state.WriteString(initial.Code)
 	for _, value := range program.Initializers {
 		fmt.Fprintf(&state, "$canValues[%s] = %s;\n", quote(value.Identity), initial.Bindings[value.Identity])
 	}
 	state.WriteString("Object.freeze($canValues);\n}\n")
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	modules := []Module{{Path: statePath, Imports: imports, Body: state.String()}}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
@@ -128,7 +133,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString("export ")
 			body.WriteString(code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 		for _, fn := range program.Functions {
 			target := fn.Symbol.Source.OutputPath
 			if target != path {
@@ -154,7 +159,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 			for _, fn := range program.Functions {
 				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Symbol.ID], functions[fn.Symbol.ID]}}})
 			}

@@ -17,8 +17,12 @@ import (
 
 func callableProgram(t *testing.T) *check.Program {
 	t.Helper()
+	return sourceProgram(t, "../../testdata/current/callables/captures.can")
+}
+func sourceProgram(t *testing.T, fixture string) *check.Program {
+	t.Helper()
 	root := t.TempDir()
-	data, err := os.ReadFile("../../testdata/current/callables/captures.can")
+	data, err := os.ReadFile(fixture)
 	if err != nil {
 		t.Fatal(err)
 	}

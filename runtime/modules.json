@@ -21,7 +21,10 @@
       "../diagnostics.ts"
     ],
     "bytes.ts": [
-      "./failure.ts"
+      "./failure.ts",
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts"
     ],
     "catalogue.ts": [
       "./data.ts"

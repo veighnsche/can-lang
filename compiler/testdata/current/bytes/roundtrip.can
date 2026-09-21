@@ -1,0 +1,67 @@
+package octets
+    provides []
+    uses [bytes, codec]
+fn str roundtrip
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        multibyte: "héllo 😀" => ok "héllo 😀"
+        empty: "" => ok ""
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer original
+        call bytes::to_utf8(original) as str decoded
+        ok => ok decoded
+        codec::invalid_data
+fn int[] integers
+    emits [codec::invalid_data]
+    given
+        int[] values
+    asserts
+        edges: [0, 255, 128] => ok [0, 255, 128]
+        negative: [-1] => codec::invalid_data("/0", "byte_range")
+        too_large: [256] => codec::invalid_data("/0", "byte_range")
+    match chain
+        call bytes::from_ints(values) as bytes::buffer original
+        call bytes::to_ints(original) as int[] decoded
+        ok => ok decoded
+        codec::invalid_data
+fn int empty_size
+    emits []
+    asserts
+        sample: => ok 0
+    bytes::buffer empty = call bytes::empty()
+    ok empty.length
+fn str captured
+    emits [codec::invalid_data]
+    given
+        near bytes::buffer original
+    asserts
+        sample: call bytes::empty() => ok ""
+    relay call bytes::to_utf8(original)
+fn str callable_roundtrip
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "héllo 😀" => ok "héllo 😀"
+    match call bytes::from_utf8(text)
+        ok bytes::buffer original => do
+            callable str () emits [codec::invalid_data] action = callable captured
+            relay call action()
+        codec::invalid_data
+fn void main
+    emits [codec::invalid_data]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call callable_roundtrip("héllo 😀")
+        ok str decoded => do
+            int checked = 1
+            match decoded
+                "héllo 😀" => ok
+                _ => do
+                    int invalid = 1 / 0
+                    ok
+        codec::invalid_data

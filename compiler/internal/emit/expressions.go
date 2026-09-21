@@ -211,6 +211,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		case ir.Slice:
 			return bind("$canSlice(" + strings.Join(values, ", ") + ")"), nil
 		case ir.Length:
+			if node.Inputs[0].Type.Declaration() == "can.std.bytes@1::buffer" {
+				return bind("$canByteLength(" + values[0] + ")"), nil
+			}
 			return bind("BigInt(" + values[0] + ".length)"), nil
 		case ir.Field:
 			return bind(values[0] + "[" + quote(node.Text) + "]"), nil

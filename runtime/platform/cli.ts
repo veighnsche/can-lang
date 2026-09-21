@@ -4,12 +4,12 @@ import { denyLiveBoundary, type AssertionContext } from "../assert/context.ts";
 import { types as nativeTypes } from "node:util";
 import { success, failure, type Completion } from "../completion.ts";
 import { record } from "../data.ts";
-import { ownBytes, copyBytes, type Bytes } from "../bytes.ts";
+import { copyBytes } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { type FailureOrigin } from "../failure.ts";
 
 type Domain = ReturnType<typeof createDomainRuntime>;
-type Contracts = Readonly<{invalidData: string; writeFailed: string}>;
+type Contracts = Readonly<{writeFailed: string}>;
 const origin: FailureOrigin = Object.freeze({source: "can:cli", start: 0, end: 0, invocation: Object.freeze([])});
 const writeCodes = new Set(["EPIPE", "EBADF", "EIO", "ENOSPC", "EACCES", "EINVAL", "EFBIG", "EROFS", "EINTR", "EAGAIN"]);
 function expectedWriteFailure(cause: unknown): boolean {
@@ -19,15 +19,6 @@ function expectedWriteFailure(cause: unknown): boolean {
 }
 export function createCLI(domain: Domain, contracts: Contracts) {
   return Object.freeze({
-    async fromUTF8(text: string, _context?: AssertionContext): Promise<Completion<Bytes>> {
-      const encoded = new TextEncoder().encode(text);
-      // Native UTF-8 round-trip rejects replacement of lone surrogates. Preserve
-      // a leading BOM as text, rather than treating it as a transport marker.
-      if (new TextDecoder("utf-8", {fatal: true, ignoreBOM: true}).decode(encoded) !== text) {
-        return failure(domain.create(contracts.invalidData, record(contracts.invalidData, [["path", ""], ["reason", "unpaired_surrogate"]]), origin));
-      }
-      return success(ownBytes(encoded));
-    },
     async stdoutWrite(bytes: unknown, context?: AssertionContext): Promise<Completion<bigint>> { denyLiveBoundary(context, origin); return write(bytes, "stdout_write", Bun.stdout); },
     async stderrWrite(bytes: unknown, context?: AssertionContext): Promise<Completion<bigint>> { denyLiveBoundary(context, origin); return write(bytes, "stderr_write", Bun.stderr); },
   });

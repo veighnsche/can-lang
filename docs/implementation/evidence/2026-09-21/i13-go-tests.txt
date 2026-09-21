@@ -1,0 +1,18 @@
+ok  	github.com/veighnsche/can-lang/compiler	10.889s
+ok  	github.com/veighnsche/can-lang/compiler/internal/catalogue	(cached)
+?   	github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen	[no test files]
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	0.459s
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	2.298s
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.814s
+?   	github.com/veighnsche/can-lang/compiler/internal/ir	[no test files]
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/resolve	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/source	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/types	(cached)
+ok  	github.com/veighnsche/can-lang/distribution	(cached)
+ok  	github.com/veighnsche/can-lang/internal/scan	(cached)
+ok  	github.com/veighnsche/can-lang/tests/integration	0.148s
+?   	github.com/veighnsche/can-lang/tools/distbuild	[no test files]
+ok  	github.com/veighnsche/can-lang/tools/gramcheck	(cached)
+ok  	github.com/veighnsche/can-lang/tools/modcheck	(cached)
