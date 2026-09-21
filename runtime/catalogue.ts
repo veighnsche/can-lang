@@ -1,4 +1,5 @@
 // Code generated from compiler/internal/catalogue/catalogue.json; DO NOT EDIT.
+import { dataArray, dataKeys, dataProperty } from "./data";
 function freeze<T>(value: T): Readonly<T> {
   if (value !== null && typeof value === 'object') {
     for (const child of Object.values(value)) freeze(child);
@@ -6490,6 +6491,1345 @@ export const catalogue = freeze({
     }
   ]
 } as const);
+export const catalogueTypeShapes = freeze([
+  {
+    "name": "choice_option",
+    "identity": "can.prelude@1::choice_option",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "description",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "standard_failure",
+    "identity": "can.prelude@1::standard_failure",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "option::none",
+    "identity": "can.std.option@1::none",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "option::some",
+    "identity": "can.std.option@1::some",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "option::value",
+    "identity": "can.std.option@1::value",
+    "kind": "variant",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "option::none",
+        "arguments": null
+      },
+      {
+        "name": "option::some",
+        "arguments": [
+          {
+            "name": "T",
+            "arguments": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "number::division",
+    "identity": "can.std.number@1::division",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "quotient",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "remainder",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "number::rounded",
+    "identity": "can.std.number@1::rounded",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "remainder_numerator",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "denominator",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "collections::entry",
+    "identity": "can.std.collections@1::entry",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "K",
+        "constraint": "map_key"
+      },
+      {
+        "name": "V",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "K",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "V",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "collections::map",
+    "identity": "can.std.collections@1::map",
+    "kind": "opaque",
+    "parameters": [
+      {
+        "name": "K",
+        "constraint": "map_key"
+      },
+      {
+        "name": "V",
+        "constraint": "data"
+      }
+    ],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "collections::set",
+    "identity": "can.std.collections@1::set",
+    "kind": "opaque",
+    "parameters": [
+      {
+        "name": "K",
+        "constraint": "map_key"
+      }
+    ],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::header",
+    "identity": "can.std.http@1::header",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::response",
+    "identity": "can.std.http@1::response",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "status",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::header",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "body",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "bytes::buffer",
+    "identity": "can.std.bytes@1::buffer",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "html::node",
+    "identity": "can.std.html@1::node",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "html::safe",
+    "identity": "can.std.html@1::safe",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "html::url",
+    "identity": "can.std.html@1::url",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "html::attribute",
+    "identity": "can.std.html@1::attribute",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "html::tag",
+    "identity": "can.std.html@1::tag",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "htmx::target",
+    "identity": "can.std.htmx@1::target",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "htmx::swap",
+    "identity": "can.std.htmx@1::swap",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::request",
+    "identity": "can.std.http@1::request",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::server_response",
+    "identity": "can.std.http@1::server_response",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::status",
+    "identity": "can.std.http@1::status",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::body_status",
+    "identity": "can.std.http@1::body_status",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::server_headers",
+    "identity": "can.std.http@1::server_headers",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::route",
+    "identity": "can.std.http@1::route",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::router",
+    "identity": "can.std.http@1::router",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::server",
+    "identity": "can.std.http@1::server",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::server_config",
+    "identity": "can.std.http@1::server_config",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "sql::pool",
+    "identity": "can.std.sql@1::pool",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "sql::transaction",
+    "identity": "can.std.sql@1::transaction",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "sql::commit",
+    "identity": "can.std.sql@1::commit",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::rollback",
+    "identity": "can.std.sql@1::rollback",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::decision",
+    "identity": "can.std.sql@1::decision",
+    "kind": "variant",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "sql::commit",
+        "arguments": [
+          {
+            "name": "T",
+            "arguments": null
+          }
+        ]
+      },
+      {
+        "name": "sql::rollback",
+        "arguments": [
+          {
+            "name": "T",
+            "arguments": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "all_failed",
+    "identity": "can.prelude@1::all_failed",
+    "kind": "error",
+    "parameters": [
+      {
+        "name": "F",
+        "constraint": "failure_variant"
+      }
+    ],
+    "fields": [
+      {
+        "name": "failures",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "F",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "number::inexact",
+    "identity": "can.std.number@1::inexact",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::invalid_number",
+    "identity": "can.std.text@1::invalid_number",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "input",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::invalid_bool",
+    "identity": "can.std.text@1::invalid_bool",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "input",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "number::invalid_bool",
+    "identity": "can.std.number@1::invalid_bool",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "value",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::empty_separator",
+    "identity": "can.std.text@1::empty_separator",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "text::empty_pattern",
+    "identity": "can.std.text@1::empty_pattern",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "text::invalid_unicode",
+    "identity": "can.std.text@1::invalid_unicode",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "collections::key_absent",
+    "identity": "can.std.collections@1::key_absent",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "collections::key_exists",
+    "identity": "can.std.collections@1::key_exists",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "number::zero_divisor",
+    "identity": "can.std.number@1::zero_divisor",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::invalid_request",
+    "identity": "can.std.http@1::invalid_request",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::credentials_missing",
+    "identity": "can.std.http@1::credentials_missing",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "variable",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::transport_failed",
+    "identity": "can.std.http@1::transport_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "phase",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::timeout",
+    "identity": "can.std.http@1::timeout",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "timeout_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::body_limit",
+    "identity": "can.std.http@1::body_limit",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::status_error",
+    "identity": "can.std.http@1::status_error",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "status",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "headers",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::header",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "codec::invalid_data",
+    "identity": "can.std.codec@1::invalid_data",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ai::invalid_question",
+    "identity": "can.std.ai@1::invalid_question",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ai::invalid_answer",
+    "identity": "can.std.ai@1::invalid_answer",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "question",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "llm::refused",
+    "identity": "can.std.llm@1::refused",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "llm::truncated",
+    "identity": "can.std.llm@1::truncated",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "llm::invalid_response",
+    "identity": "can.std.llm@1::invalid_response",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "io::read_failed",
+    "identity": "can.std.io@1::read_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "io::write_failed",
+    "identity": "can.std.io@1::write_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "io::limit_exceeded",
+    "identity": "can.std.io@1::limit_exceeded",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "html::invalid_structure",
+    "identity": "can.std.html@1::invalid_structure",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "html::invalid_url",
+    "identity": "can.std.html@1::invalid_url",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "htmx::invalid_target",
+    "identity": "can.std.htmx@1::invalid_target",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "htmx::invalid_interval",
+    "identity": "can.std.htmx@1::invalid_interval",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "milliseconds",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::invalid_route",
+    "identity": "can.std.http@1::invalid_route",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::duplicate_route",
+    "identity": "can.std.http@1::duplicate_route",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "method",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::ambiguous_route",
+    "identity": "can.std.http@1::ambiguous_route",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "first",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "second",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::invalid_server_config",
+    "identity": "can.std.http@1::invalid_server_config",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::bind_failed",
+    "identity": "can.std.http@1::bind_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "address",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::shutdown_failed",
+    "identity": "can.std.http@1::shutdown_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "phase",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::connection_failed",
+    "identity": "can.std.sql@1::connection_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "phase",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::query_failed",
+    "identity": "can.std.sql@1::query_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::row_missing",
+    "identity": "can.std.sql@1::row_missing",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "query",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::row_count",
+    "identity": "can.std.sql@1::row_count",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "query",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "actual",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::schema_mismatch",
+    "identity": "can.std.sql@1::schema_mismatch",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::constraint_failed",
+    "identity": "can.std.sql@1::constraint_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "constraint",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::transaction_failed",
+    "identity": "can.std.sql@1::transaction_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "phase",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::commit_unknown",
+    "identity": "can.std.sql@1::commit_unknown",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "transaction_id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::close_failed",
+    "identity": "can.std.sql@1::close_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::row_limit",
+    "identity": "can.std.sql@1::row_limit",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "sql::unsupported_value",
+    "identity": "can.std.sql@1::unsupported_value",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "clock::invalid_duration",
+    "identity": "can.std.clock@1::invalid_duration",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "milliseconds",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "random::invalid_length",
+    "identity": "can.std.random@1::invalid_length",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "length",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "env::invalid_name",
+    "identity": "can.std.env@1::invalid_name",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "log::write_failed",
+    "identity": "can.std.log@1::write_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "level",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  }
+] as const);
 export type CatalogueOperationName = typeof catalogue.operations[number]["name"];
 export type CatalogueTypeName = typeof catalogue.types[number]["name"];
 export type CatalogueErrorName = typeof catalogue.errors[number]["name"];
@@ -6518,11 +7858,14 @@ export function requireConstructor(name: string) {
 export function errorIdentity(name: string, typeArguments: readonly string[] = []): CatalogueErrorIdentity {
   const error = catalogue.errors.find(value => value.name === name);
   if (!error) throw new Error("unallocated catalogue error");
-  if (error.parameters.length !== typeArguments.length || typeArguments.some(value => typeof value !== "string" || value.length === 0)) throw new Error("invalid error specialization");
-  return freeze({ name: error.name, identity: error.identity, id: error.id, typeArguments: [...typeArguments] });
+  const argumentsCopy = dataArray(typeArguments);
+  if (error.parameters.length !== argumentsCopy.length || argumentsCopy.some(value => typeof value !== "string" || value.length === 0)) throw new Error("invalid error specialization");
+  return freeze({ name: error.name, identity: error.identity, id: error.id, typeArguments: argumentsCopy as string[] });
 }
 export function validateErrorIdentity(value: CatalogueErrorIdentity): CatalogueErrorIdentity {
-  const expected = errorIdentity(value.name, value.typeArguments);
-  if (value.identity !== expected.identity || value.id !== expected.id) throw new Error("catalogue error identity mismatch");
+  const keys = dataKeys(value);
+  if (keys.length !== 4 || keys.some(key => typeof key !== "string" || !["name", "identity", "id", "typeArguments"].includes(key))) throw new Error("invalid catalogue identity shape");
+  const expected = errorIdentity(dataProperty(value, "name") as string, dataProperty(value, "typeArguments") as string[]);
+  if (dataProperty(value, "identity") !== expected.identity || dataProperty(value, "id") !== expected.id) throw new Error("catalogue error identity mismatch");
   return expected;
 }

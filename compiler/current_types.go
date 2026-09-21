@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	resolution "github.com/veighnsche/can-lang/compiler/internal/resolve"
 	checkedtypes "github.com/veighnsche/can-lang/compiler/internal/types"
@@ -52,6 +53,10 @@ func runInspectTypes(stdout, stderr io.Writer, args []string) int {
 	}
 	model, err := checkedtypes.CheckDeclarations(world)
 	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return 1
+	}
+	if _, err := check.ErrorDeclarations(world); err != nil {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}

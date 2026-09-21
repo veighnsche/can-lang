@@ -207,6 +207,16 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		if n.Field.Text == "length" && (receiver.Type.Kind() == types.Array || scalar(receiver.Type, "str")) {
 			out.Kind = ir.Length
 			out.Type, err = c.scalar("int")
+		} else if receiver.Type.Kind() == types.Opaque && receiver.Type.Declaration() == "can.prelude@1::standard_failure" {
+			out.Kind = ir.StandardProjection
+			switch n.Field.Text {
+			case "occurrence_id":
+				out.Type, err = c.scalar("int")
+			case "kind", "message":
+				out.Type, err = c.scalar("str")
+			default:
+				return nil, fmt.Errorf("unknown standard_failure projection %s", n.Field.Text)
+			}
 		} else {
 			if receiver.Type.Kind() != types.Record && receiver.Type.Kind() != types.Error {
 				return nil, fmt.Errorf("field access requires an ordinary record/error or an explicit catalogue projection")

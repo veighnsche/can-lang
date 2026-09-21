@@ -76,6 +76,15 @@ func (c *Catalogue) generatedFiles() (map[string][]byte, error) {
 	var ts strings.Builder
 	ts.WriteString(runtimeHeader)
 	fmt.Fprintf(&ts, "export const catalogueSHA256 = %q;\nexport const catalogue = freeze(%s as const);\n", SourceHash(), strings.TrimSpace(string(source)))
+	shapes, err := c.runtimeShapes()
+	if err != nil {
+		return nil, err
+	}
+	shapeJSON, err := json.MarshalIndent(shapes, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	fmt.Fprintf(&ts, "export const catalogueTypeShapes = freeze(%s as const);\n", shapeJSON)
 	ts.WriteString(runtimeFooter)
 	var doc strings.Builder
 	fmt.Fprintf(&doc, "# Closed distribution catalogue\n\nGenerated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.\nRevision: **%d**. Target: %s. Source SHA-256: %s.\n\nThis is the complete approved descriptor inventory, not a claim that every\nruntime adapter is implemented. Each native recipe names its implementation\ntask. No user host protocol, kernel, opaque representation or catalogue package\nregistration is available. Standard failures stay outside domain emits.\n\nRegenerate with go run ./compiler/internal/catalogue/cmd/cataloguegen; verify\nwith the same command plus --check. Go tests also reject stale mirrors.\n\n", c.inventory.Revision, c.inventory.TargetID, SourceHash())

@@ -246,6 +246,16 @@ func TestDevelopmentSidecar(t *testing.T) {
 			t.Fatalf("staged native primitive conformance: %v\n%s", err, output)
 		}
 	})
+	t.Run("native-failures-offline", func(t *testing.T) {
+		clean := t.TempDir()
+		command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(root, "runtime/bun"), "--no-env-file", "--no-macros", "--no-install", "--config="+filepath.Join(root, "tools/runtime/bunfig.toml"), "test", filepath.Join(root, "runtime/failure.test.ts"), filepath.Join(root, "runtime/domain.test.ts"))
+		command.Dir = clean
+		command.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/nonexistent"}
+		output, err := command.CombinedOutput()
+		if err != nil || !strings.Contains(string(output), "9 pass") {
+			t.Fatalf("staged native failure conformance: %v\n%s", err, output)
+		}
+	})
 	if !reflect.DeepEqual(bundleBefore, treeHashes(t, root, []string{"."})) {
 		t.Fatal("execution wrote to bundle")
 	}

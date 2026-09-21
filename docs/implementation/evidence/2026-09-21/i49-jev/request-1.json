@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can C9 requires a unique runtime occurrence identity, original native cause, and source/invocation origin for standard failures. Q requires equal error kinds to retain distinct failures, and propagation must preserve an existing occurrence rather than inventing a new one. A native Error object can be thrown independently twice; thrown primitives have no object identity. Standard-failure snapshots are opaque Can data with only kind, fixed/safely described message and occurrence ID exposed. No raw cause or stack is appended to that projection. I07 already brands primitive arithmetic/bounds causes privately. There are no external users or compatibility obligations. Options are fresh opaque tokens at originating capture with WeakMap metadata and recognition of existing tokens during propagation; caching occurrences by raw cause object; or allocating a new occurrence at every boundary including propagation. The token option preserves repeated-origin distinction and stable forwarding, but requires explicit creation/forwarding tests and private-only diagnostic access to cause/origin. Cause caching merges independent throws of a reused object; always allocating splits one propagated failure. No performance data is available.",
+  "questions": {
+    "occurrence": {
+      "type": "choice",
+      "instructions": "Which occurrence model best satisfies the supplied identity and privacy contracts without adding language semantics?",
+      "criteria": {
+        "tokens": "Create a new opaque occurrence for each origin, preserve recognized occurrences during forwarding, and keep cause/origin in private metadata.",
+        "cause_cache": "Reuse one occurrence whenever the same native cause object appears again.",
+        "every_boundary": "Allocate a fresh occurrence each time a failure crosses any boundary, even if it is already recorded."
+      }
+    }
+  }
+}

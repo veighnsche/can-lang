@@ -26,3 +26,19 @@ standard failures, not additions to authored domain emits. The private primitive
 runtime keeps fixed kind/message observations by thrown-object identity for the
 I49 failure boundary; native capacity exceptions remain unclassified native
 exceptions for that boundary.
+
+## Error contracts
+
+`ErrorDeclarations` connects the I05 manifest/source/lock-validated allocation
+registry to canonical resolver declarations, including catalogue reserved IDs.
+`Bound` accepts sealed concrete errors only; `CheckEscaping` compares exact
+specializations, without widening or inference. The owning I10 region checker
+will compute which errors escape handlers. Bare error patterns resolve only when
+one concrete specialization exists for that declaration.
+
+`Plan` serializes the sealed graph for the private domain runtime. Generated
+catalogue descriptors validate catalogue payloads against the same inventory,
+including generic arguments and nested data. Standard failures remain opaque and
+outside domain bounds. Expression checking exposes only their three maintained
+projections, lowered through private runtime adapters. Native cause and source
+origin remain diagnostic-only metadata, not authored fields.

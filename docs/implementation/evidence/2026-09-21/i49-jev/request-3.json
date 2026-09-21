@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "In Can, the C9 standard channel retains a native cause and originating source/invocation path under a unique occurrence identity. Q keeps different occurrences distinct even when their domain or standard categories match, and a propagated occurrence remains itself. Native code can throw one Error object at two separate origins; primitives such as strings have no object-key identity. The Can standard_failure view is opaque except for kind, safe fixed/derived message and occurrence ID, never automatically revealing its native cause or stack. I07 privately marks primitive arithmetic and bounds faults already. There are zero external users, so existing ABI preservation is not a constraint. Alternatives are opaque tokens minted on originating capture, whose WeakMap records are retained when the token is forwarded; a raw-cause-object cache; or new identities on every boundary. Origin tokens need separate origin/forwarding tests and access-controlled diagnostic metadata, but distinguish reused causes without splitting propagation. Caching by cause conflates independent throws; unconditional reminting loses propagation identity. There are no speed measurements.",
+  "questions": {
+    "occurrence": {
+      "type": "choice",
+      "instructions": "Choose the occurrence design consistent with these facts, without inventing new source-level behavior.",
+      "criteria": {
+        "tokens": "Mint one private token per originating failure, retain it through propagation, and hide cause/location in external metadata.",
+        "cause_cache": "Index occurrences by native thrown-object identity and reuse the indexed entry.",
+        "every_boundary": "Remint the failure identity at each catch or forwarding boundary."
+      }
+    }
+  }
+}

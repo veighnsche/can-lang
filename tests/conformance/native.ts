@@ -11,6 +11,7 @@ export function identityFailures(target: any, actual: any): string[] {
 }
 export function apiAvailable(name: string): boolean {
   if (name === "node:util.types.isProxy") return typeof types.isProxy === "function";
+  if (name === "node:util.types.isNativeError") return typeof types.isNativeError === "function";
   return typeof name.split(".").reduce((value, key) => value?.[key], globalThis as any) === "function";
 }
 const probes: Record<string, () => unknown> = {

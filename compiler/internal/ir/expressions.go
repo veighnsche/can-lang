@@ -10,19 +10,20 @@ import (
 type ExpressionKind string
 
 const (
-	Literal    ExpressionKind = "literal"
-	Binding    ExpressionKind = "binding"
-	Unary      ExpressionKind = "unary"
-	Binary     ExpressionKind = "binary"
-	Comparison ExpressionKind = "comparison"
-	Index      ExpressionKind = "index"
-	Slice      ExpressionKind = "slice"
-	Length     ExpressionKind = "length"
-	Field      ExpressionKind = "field"
-	Array      ExpressionKind = "array"
-	Call       ExpressionKind = "call"
-	Record     ExpressionKind = "record"
-	Update     ExpressionKind = "update"
+	Literal            ExpressionKind = "literal"
+	Binding            ExpressionKind = "binding"
+	Unary              ExpressionKind = "unary"
+	Binary             ExpressionKind = "binary"
+	Comparison         ExpressionKind = "comparison"
+	Index              ExpressionKind = "index"
+	Slice              ExpressionKind = "slice"
+	Length             ExpressionKind = "length"
+	Field              ExpressionKind = "field"
+	StandardProjection ExpressionKind = "standard_projection"
+	Array              ExpressionKind = "array"
+	Call               ExpressionKind = "call"
+	Record             ExpressionKind = "record"
+	Update             ExpressionKind = "update"
 )
 
 type EqualityMode string

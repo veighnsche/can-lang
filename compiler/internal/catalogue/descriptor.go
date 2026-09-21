@@ -4,8 +4,8 @@ package catalogue
 // authored-source parser. Parameters retain their inventory names until the
 // concrete type builder substitutes already-resolved nodes.
 type Descriptor struct {
-	Name      string
-	Arguments []Descriptor
+	Name      string       `json:"name"`
+	Arguments []Descriptor `json:"arguments"`
 }
 
 func ParseDescriptor(text string) (Descriptor, error) {

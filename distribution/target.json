@@ -34,7 +34,7 @@
     "AbortController", "ReadableStream", "Date.now", "performance.now",
     "crypto.getRandomValues", "crypto.randomUUID", "Bun.deepEquals",
     "Bun.sleep", "Bun.CryptoHasher", "Bun.escapeHTML", "Bun.file", "Bun.write",
-    "Bun.serve", "Bun.SQL", "node:util.types.isProxy"
+    "Bun.serve", "Bun.SQL", "node:util.types.isProxy", "node:util.types.isNativeError"
   ],
   "requiredBehaviorProbes": [
     "json-source-and-raw-integers", "ordered-fromAsync", "nonthenable-box",

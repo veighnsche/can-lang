@@ -1,0 +1,45 @@
+bun test v1.4.2 (744846f84)
+
+runtime/data.test.ts:
+(pass) native strict deep equality observes nominal identity [0.07ms]
+(pass) native copy preserves original aliases, tags and field spelling [0.06ms]
+
+runtime/domain.test.ts:
+(pass) domain occurrences preserve exact payload, allocation and private origin [0.64ms]
+(pass) malformed payloads and hostile identity metadata fail without getters or traps [0.27ms]
+(pass) compiler plan rejects wrong allocations, catalogue fields, and variant cycles [0.41ms]
+(pass) recursive payloads admit shared immutable data and reject circular native values [0.11ms]
+
+runtime/primitive.test.ts:
+(pass) native bigint contract and exact fault identities [0.06ms]
+(pass) index validates bigint range before narrowing [0.05ms]
+(pass) bigint-normalized native slicing and UTF-16 boundaries [0.05ms]
+(pass) finite slice bounds agree with native array/string slice [0.29ms]
+
+runtime/failure.test.ts:
+(pass) native descriptions never invoke application behavior [0.07ms]
+(pass) native scalar and Error descriptions follow fixed rules [0.06ms]
+(pass) origins are distinct and propagation preserves an occurrence [0.05ms]
+(pass) primitive and maintained categories use fixed messages [0.10ms]
+(pass) description adapter defects retain the original cause with a fixed fallback [0.03ms]
+
+runtime/test/catalogue.test.ts:
+(pass) closed generated runtime catalogue [0.49ms]
+
+tests/conformance/native.test.ts:
+(pass) qualified native APIs and behaviors [3.13ms]
+(pass) refuse missing JSON.rawJSON without fallback [0.21ms]
+(pass) refuse missing Array.fromAsync without fallback [0.05ms]
+(pass) refuse missing node:util.types.isProxy without fallback [0.04ms]
+(pass) refuse missing node:util.types.isNativeError without fallback [0.11ms]
+(pass) refuse different name [0.06ms]
+(pass) refuse different version [0.03ms]
+(pass) refuse different revision [0.03ms]
+(pass) refuse different platform [0.03ms]
+(pass) refuse different architecture [0.04ms]
+(pass) refuse different sha256 [0.02ms]
+
+ 27 pass
+ 0 fail
+ 1063 expect() calls
+Ran 27 tests across 6 files. [42.00ms]

@@ -2,16 +2,17 @@ import { test, expect } from "bun:test";
 import manifest from "../../distribution/target.json";
 import { qualify, sha256 } from "./native";
 import { readFileSync } from "node:fs";
+import { types } from "node:util";
 
 const actual = { name: "bun", version: Bun.version, revision: Bun.revision,
   platform: process.platform, architecture: process.arch, sha256: sha256(readFileSync(process.execPath)) };
 test("qualified native APIs and behaviors", async () => {
   expect((await qualify(manifest, actual)).failures).toEqual([]);
 });
-for (const name of ["JSON.rawJSON", "Array.fromAsync"]) {
+for (const name of ["JSON.rawJSON", "Array.fromAsync", "node:util.types.isProxy", "node:util.types.isNativeError"]) {
   test(`refuse missing ${name} without fallback`, async () => {
-    const owner = name === "JSON.rawJSON" ? JSON : Array;
-    const key = name === "JSON.rawJSON" ? "rawJSON" : "fromAsync";
+    const owner = name.startsWith("node:util") ? types : name === "JSON.rawJSON" ? JSON : Array;
+    const key = name.split(".").at(-1)!;
     const descriptor = Object.getOwnPropertyDescriptor(owner, key)!;
     try {
       Object.defineProperty(owner, key, { ...descriptor, value: undefined });

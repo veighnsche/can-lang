@@ -22,6 +22,9 @@ type ExpressionEmitter struct {
 func PrimitiveImports(path string) string {
 	return "import { intDivide as $canIntDivide, intRemainder as $canIntRemainder, intPower as $canIntPower, index as $canIndex, slice as $canSlice } from " + quote(path) + ";\n"
 }
+func FailureImports(path string) string {
+	return "import { standardFailureKind as $canFailureKind, standardFailureMessage as $canFailureMessage, standardFailureOccurrenceID as $canFailureOccurrenceID } from " + quote(path) + ";\n"
+}
 func (e *ExpressionEmitter) temporary() string {
 	e.serial++
 	return fmt.Sprintf("$canExpr%d", e.serial)
@@ -150,7 +153,7 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			return LoweredExpression{}, err
 		}
 		return LoweredExpression{statements.String(), result}, nil
-	case ir.Index, ir.Slice, ir.Length, ir.Field, ir.Array, ir.Call, ir.Record, ir.Update:
+	case ir.Index, ir.Slice, ir.Length, ir.Field, ir.StandardProjection, ir.Array, ir.Call, ir.Record, ir.Update:
 		values := make([]string, len(node.Inputs))
 		for i, n := range node.Inputs {
 			if n == nil {
@@ -185,6 +188,12 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			return bind("BigInt(" + values[0] + ".length)"), nil
 		case ir.Field:
 			return bind(values[0] + "[" + quote(node.Text) + "]"), nil
+		case ir.StandardProjection:
+			adapter := map[string]string{"kind": "$canFailureKind", "message": "$canFailureMessage", "occurrence_id": "$canFailureOccurrenceID"}[node.Text]
+			if adapter == "" {
+				return LoweredExpression{}, fmt.Errorf("unknown standard failure projection")
+			}
+			return bind(adapter + "(" + values[0] + ")"), nil
 		case ir.Array:
 			for i, spread := range node.Spread {
 				if spread {

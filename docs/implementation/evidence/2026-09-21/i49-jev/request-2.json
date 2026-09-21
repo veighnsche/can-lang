@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "C9 gives each Can standard failure a runtime occurrence ID and retains its native cause plus source and invocation location. Q forbids merging separate failures just because their kinds agree; forwarding one occurrence must keep its identity. The same native Error may be independently thrown more than once, and primitive throws cannot serve as object keys. Authored standard_failure snapshots expose only kind, sanitized/fixed message and occurrence ID, with no raw cause or automatic stack attachment. Primitive arithmetic/bounds errors already carry private I07 branding. Backward compatibility is unnecessary because there are no outside consumers. Candidate designs use fresh opaque origin tokens backed by WeakMap metadata and recognize those tokens on propagation, deduplicate by raw native cause object, or assign new IDs at every crossing. Fresh origin tokens distinguish repeated independent uses of one cause while keeping propagation stable; they need tests for both paths and diagnostic-only access to hidden origin/cause. Raw-cause deduplication collapses independent throws, while per-crossing IDs divide one continuing occurrence. Nothing has been benchmarked.",
+  "questions": {
+    "occurrence": {
+      "type": "choice",
+      "instructions": "Select the representation that most directly preserves the stated occurrence and disclosure requirements.",
+      "criteria": {
+        "tokens": "Issue private tokens at failure origins and forward known tokens unchanged while storing native details outside their public projection.",
+        "cause_cache": "Deduplicate failures using the identity of the original thrown object.",
+        "every_boundary": "Give each observed boundary crossing a new ID regardless of prior occurrence tracking."
+      }
+    }
+  }
+}
