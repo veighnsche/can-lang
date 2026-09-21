@@ -4,6 +4,18 @@ import { types as nativeTypes } from "node:util";
 // their own maintained constructors and never enter these ordinary adapters.
 const nominal = Symbol("can.nominal");
 const nominalRecords = new WeakMap<object, string>();
+// Maintained opaque containers can retain resource-bearing data without exposing
+// their backing storage. Evidence records containment only; the owner acquires
+// leases at participant preparation, never at container construction.
+const opaqueChildren = new WeakMap<object, readonly unknown[]>();
+export function registerOpaqueContents(token: object, values: readonly unknown[]): void {
+  if (opaqueChildren.has(token)) throw new TypeError("opaque contents already registered");
+  opaqueChildren.set(token, Object.freeze([...values]));
+}
+export function opaqueContents(token: object): readonly unknown[] | undefined {
+  return opaqueChildren.get(token);
+}
+
 export type RecordValue = Readonly<Record<string | symbol, unknown>>;
 
 export function record(identity: string, fields: readonly (readonly [string, unknown])[]): RecordValue {

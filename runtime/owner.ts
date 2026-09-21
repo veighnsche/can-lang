@@ -3,7 +3,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { types as nativeTypes } from "node:util";
 import { invoke, checkedCompletion, success, failure, type Completion } from "./completion.ts";
-import { dataArray, dataKeys, dataProperty, recordIdentity } from "./data.ts";
+import { dataArray, dataKeys, dataProperty, recordIdentity, opaqueContents } from "./data.ts";
 import { cleanupFailure, resourceStateFailure, standardFailureDiagnostics, type FailureOrigin, type StandardFailure } from "./failure.ts";
 
 const origin:FailureOrigin=Object.freeze({source:"can:owner",start:0,end:0,invocation:Object.freeze([])});
@@ -60,6 +60,7 @@ function capturedResources(values:readonly unknown[]):ResourceState[]{
  function visit(value:unknown):void{
   if(!objectLike(value)||seen.has(value))return;seen.add(value);
   const retained=resources.get(value);if(retained){found.add(retained);return;}
+  const children=opaqueContents(value);if(children){for(const item of children)visit(item);return;}
   if(typeof value==="function"){for(const item of captures.get(value)??[])visit(item);return;}
   if(nativeTypes.isProxy(value))return;
   if(Array.isArray(value)){for(const item of dataArray(value))visit(item);return;}

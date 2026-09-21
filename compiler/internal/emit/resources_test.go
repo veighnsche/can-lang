@@ -33,6 +33,9 @@ func TestCheckedResourceCaptureRetainsNativeLease(t *testing.T) {
 	if got := ir.ResourceCaptureIndices([]*ir.Expression{{Type: fixture.ts["bytes::buffer"]}, {Type: fixture.ts["receipt"]}}); len(got) != 1 || got[0] != 1 {
 		t.Fatalf("opaque byte/callable classification: %v", got)
 	}
+	if got := ir.ResourceCaptureIndices([]*ir.Expression{{Type: fixture.ts["collections::map<int,sql::pool>"]}}); len(got) != 1 || got[0] != 0 {
+		t.Fatalf("opaque map capture omitted: %v", got)
+	}
 	emitter := RegionEmitter{Functions: map[string]string{"function/inspect": "$inspect"}, Bindings: map[string]string{"value/pool": "pool"}}
 	declarations, err := RegionTypeDeclarations(region)
 	if err != nil {

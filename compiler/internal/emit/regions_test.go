@@ -35,7 +35,7 @@ func newRegionFixture(t *testing.T) *regionFixture {
 	root := t.TempDir()
 	text := `package app
     provides []
-    uses [sql, bytes]
+    uses [sql, bytes, collections]
 error 1000000 missing(int code)
 error 1000001 other()
 error 1000002 wrapped<item>(item value)
@@ -80,7 +80,7 @@ record node
 	if err = builder.SeedDeclarations(); err != nil {
 		t.Fatal(err)
 	}
-	names := []string{"sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]"}
+	names := []string{"collections::map<int,sql::pool>", "sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]"}
 	fixture := &regionFixture{ts: map[string]*types.Type{}, registry: registry, scope: file.Scope, functions: map[string]check.ValueBinding{}, values: map[string]check.ValueBinding{}}
 	for _, name := range names {
 		src, _ := source.New("type.can", name)

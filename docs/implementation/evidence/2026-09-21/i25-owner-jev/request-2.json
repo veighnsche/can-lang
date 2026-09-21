@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The runtime represents each immutable map as an unforgeable frozen object whose native storage is private. Map payloads may contain resources, nested maps, records, arrays or closures with captures; sets carry scalar keys only. Lease discovery already handles resources and the ordinary/callable graph, deduplicates cycles and resources, and avoids proxy traps and property getters. Coordination prepares every lease before starting any participant and unwinds partial acquisition on failure. Review demonstrated missing map traversal: after another race arm wins, closure happens before the map-holding loser uses its resource; capturing a map with a closed resource also fails to block launch. Retention evidence must be recorded without acquiring at construction time, since scope and open-state checks belong to participant preparation. Copying, replacement and deletion require evidence for each new immutable value, preserving older aliases. One option adds a compiler-private WeakMap from opaque tokens to frozen child-value lists and makes the current walker recursively visit those lists. It reveals neither mutable backing nor user-visible properties. Compare that option with leasing during map creation or inspecting opaque representations through reflection; include cycles, aliasing, nesting and hostile proxies.",
+  "questions": {
+    "ownership": {
+      "type": "choice",
+      "instructions": "Choose the integration that fixes map-hidden resources without changing lifecycle semantics.",
+      "criteria": {
+        "private_evidence": "Store each token\u2019s retained values in a private weak registry, then let the current cycle-safe walker discover them when preparing participants.",
+        "creation_leases": "Make map creation lease its contained resources immediately rather than waiting for coordination preparation.",
+        "reflection": "Traverse properties and implementation internals of opaque tokens to recover their resource-bearing contents."
+      }
+    }
+  }
+}

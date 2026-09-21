@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can immutable maps privately own native Map storage under frozen opaque tokens. Values can retain resources directly or through maps, records, arrays and callable captures; set keys are only int/bool/str. The owner currently discovers direct resources and traverses ordinary records, arrays and registered callable captures with cycle and resource deduplication, never invoking proxy traps or getters. Before any coordination participant launches it atomically acquires leases for all discovered resources, rolling back on failure. A confirmed race captures only a map containing a resource: discovery misses it, an early winner closes it, and the losing participant later fails resource_state. A closed resource hidden in a map also lets participants launch incorrectly. Map creation itself must not acquire leases or reject closed resources; use at participant preparation must enforce current scope/state. Native copy, replace and remove must describe only the new map values while old aliases retain their own contents. Consider a private WeakMap of immutable retained-value snapshots registered by map construction, read recursively by existing ownership traversal; registration exposes no map storage or authored fields. Alternatives acquire leases when a map is created or reflect over opaque objects to find backing values. Evaluate correctness under nesting, repeated references, proxies and immutable aliases.",
+  "questions": {
+    "ownership": {
+      "type": "choice",
+      "instructions": "Which repair preserves the ownership timing and opacity contracts?",
+      "criteria": {
+        "private_evidence": "Register immutable child snapshots privately and recurse through them during existing atomic participant preparation; retain normal scope checks and deduplication.",
+        "creation_leases": "Acquire and retain resource leases as soon as each immutable map value is constructed.",
+        "reflection": "Discover resource references by reflecting through opaque objects and their hidden backing representation."
+      }
+    }
+  }
+}

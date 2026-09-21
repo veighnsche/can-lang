@@ -1,5 +1,5 @@
 import {success,failure,type Completion,type AssertionContext} from "../completion.ts";
-import {array,record} from "../data.ts";
+import {array,record,registerOpaqueContents} from "../data.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
 import {checkKey,type Key,type KeyKind} from "./set.ts";
@@ -11,7 +11,7 @@ export function isMap(identity:string,value:unknown):value is object{
  return value!==null&&typeof value==="object"&&storage.get(value)?.identity===identity;
 }
 export function createMap<K extends Key,V>(domain:ReturnType<typeof createDomainRuntime>,identities:Readonly<{map:string;entry:string;absent:string;exists:string}>,keyKind:KeyKind){
- function own(values:Map<Key,unknown>):ImmutableMap<K,V>{const token=Object.freeze(Object.create(null));storage.set(token,{identity:identities.map,values});return token;}
+ function own(values:Map<Key,unknown>):ImmutableMap<K,V>{const token=Object.freeze(Object.create(null));storage.set(token,{identity:identities.map,values});registerOpaqueContents(token,Array.from(values.values()));return token;}
  function backing(value:unknown):Map<Key,unknown>{if(!isMap(identities.map,value))throw resourceStateFailure(undefined,origin);return storage.get(value)!.values;}
  function error(identity:string):Completion<never>{return failure(domain.create(identity,record(identity,[]),origin));}
  return Object.freeze({

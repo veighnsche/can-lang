@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Native Map contents are hidden behind immutable opaque Can tokens. Resource references can be nested in map values, ordinary arrays/records, further maps and registered function captures; Set elements are limited to scalar keys. The existing owner walker recognizes direct resources and ordinary/callable containment using seen-object and resource sets, without evaluating getters or proxy traps. Its participant preparation obtains all leases atomically before launch and releases any partial set if preparation fails. A verified defect leaves resources inside maps unseen: a winning race arm allows close to finish before a losing arm retrieves the resource, and an already closed map-held resource fails to reject the entire launch. Construction may store evidence but must neither lease nor test resource availability. Preparation remains responsible for scope and lifecycle validation. Fresh native copies, replacement and removal must register their own exact child lists without altering old aliases. The proposed repair records frozen retained children in a private WeakMap keyed by opaque token and extends the established recursive walk to consult it, keeping storage and contents inaccessible to authored code. The alternatives take creation-time leases or search opaque internals reflectively. Assess these choices for nested/repeated references, cyclic graphs, proxy safety and immutability.",
+  "questions": {
+    "ownership": {
+      "type": "choice",
+      "instructions": "What evidence mechanism should connect opaque map contents to participant lease preparation?",
+      "criteria": {
+        "private_evidence": "Supply frozen per-token child evidence to the existing recursive lease scan, acquiring only at the established pre-launch boundary.",
+        "creation_leases": "Attach resource leases to newly created maps at construction, before any participant uses them.",
+        "reflection": "Inspect opaque representations using reflective property access to locate native storage and resource descendants."
+      }
+    }
+  }
+}
