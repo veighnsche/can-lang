@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can has no external users and no compatibility mandate. I04 requires an explicit current-syntax AST and replacement of grammar ownership in compiler/parse.go. The existing checker, emitter and LSP consume predecessor AST types from that file. The task plan replaces checking in I06 and later, driver behavior in I11, and removes obsolete compiler paths in I44. I03 already supplies an independent lexer with original-byte spans. Current source has indentation, return-first functions, mandatory emits/asserts, native declarations assigned to I16, and no rev/extern/dec grammar. Options are: add an independent current parser and a fixed parse-only driver entry point while explicitly renaming the predecessor file as legacy until its scheduled removal; translate current nodes into predecessor nodes to reuse the old pipeline; or immediately remove the old pipeline and implement all later checker/driver/LSP responsibilities in I04. No runtime execution is required for syntax tests. The independent path leaves old code present temporarily but avoids semantic coercion; translation risks retaining obsolete assumptions; immediate replacement expands task dependencies. Whichever approach is chosen, I04 must fully parse core syntax, reject obsolete forms, and test inert parsing rather than claim runtime support.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which integration strategy best respects the stated language boundary and task dependencies? Use only the evidence supplied.",
+      "criteria": {
+        "independent": "Make the explicit current AST/parser authoritative for a dedicated inert parse path and label the predecessor implementation legacy pending its scheduled deletion.",
+        "translate": "Convert the new syntax tree into the prior AST and reuse its existing checker and emitter.",
+        "replace_all": "Delete the old pipeline now and bring forward all dependent checker, driver and editor implementation work."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can repository owes no backwards compatibility because it has zero outside consumers. Task I04 calls for explicit nodes for the new language and moving grammar authority away from compiler/parse.go, whose old node definitions still feed checking, emission and editor services. Planned successors handle checking from I06 onward, the driver in I11 and final obsolete-code retirement in I44. An original-span lexer exists from I03. The intended grammar uses indentation and return types before function names, requires emits and asserts, excludes rev/extern/dec, and schedules native declarations for I16. Three routes are available: independently parse the new language through a fixed syntax-only driver command and rename the former parser as legacy for later deletion; lower new syntax into historical nodes and retain the old execution pipeline; or remove that pipeline immediately while doing subsequent checker, driver and LSP work early. Syntax verification needs no evaluation. Keeping an isolated parser temporarily preserves old files without adapting new semantics to them; converting nodes could carry historical assumptions; wholesale replacement pulls future dependencies forward. Every route still owes complete core parsing, negative obsolete-syntax tests and an inert parse boundary, with no claim of execution readiness.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Select the integration approach most consistent with these requirements and sequencing constraints, without seeking additional information.",
+      "criteria": {
+        "independent": "Expose a fixed parsing-only command backed by new explicit nodes, and clearly quarantine the old grammar file until the planned removal gate.",
+        "translate": "Adapt current nodes to the predecessor representation so historical checking and generation can consume them.",
+        "replace_all": "Retire the prior compiler immediately and implement the later checking, command and LSP stages within this task."
+      }
+    }
+  }
+}

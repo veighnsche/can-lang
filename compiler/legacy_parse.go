@@ -1,5 +1,10 @@
 package main
 
+// PREDECESSOR IMPLEMENTATION: this file supports the historical checker,
+// evaluator and editor until their explicit replacement/retirement tasks. It is
+// not grammar authority for current Can. Current syntax is exclusively parsed
+// by compiler/internal/syntax and exposed by the inert `canlc parse` command.
+
 import (
 	"errors"
 	"fmt"

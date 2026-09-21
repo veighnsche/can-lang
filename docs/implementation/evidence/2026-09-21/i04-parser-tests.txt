@@ -1,0 +1,138 @@
+=== RUN   TestCoordinationGrammarAndRendering
+--- PASS: TestCoordinationGrammarAndRendering (0.00s)
+=== RUN   TestCoordinationRejectsWrongArmPlacement
+--- PASS: TestCoordinationRejectsWrongArmPlacement (0.00s)
+=== RUN   TestParserLocationsAndGroupingSurviveRendering
+--- PASS: TestParserLocationsAndGroupingSurviveRendering (0.00s)
+=== RUN   TestCoreSpecificationPackage
+--- PASS: TestCoreSpecificationPackage (0.00s)
+=== RUN   TestCoreConsumerSpecification
+--- PASS: TestCoreConsumerSpecification (0.00s)
+=== RUN   TestCompleteCoreDecisionExamples
+=== RUN   TestCompleteCoreDecisionExamples/example_01
+=== RUN   TestCompleteCoreDecisionExamples/example_02
+=== RUN   TestCompleteCoreDecisionExamples/example_03
+=== RUN   TestCompleteCoreDecisionExamples/example_04
+=== RUN   TestCompleteCoreDecisionExamples/example_05
+=== RUN   TestCompleteCoreDecisionExamples/example_06
+=== RUN   TestCompleteCoreDecisionExamples/example_07
+=== RUN   TestCompleteCoreDecisionExamples/example_08
+=== RUN   TestCompleteCoreDecisionExamples/example_09
+=== RUN   TestCompleteCoreDecisionExamples/example_10
+=== RUN   TestCompleteCoreDecisionExamples/example_11
+=== RUN   TestCompleteCoreDecisionExamples/example_12
+=== RUN   TestCompleteCoreDecisionExamples/example_13
+--- PASS: TestCompleteCoreDecisionExamples (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_01 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_02 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_03 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_04 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_05 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_06 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_07 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_08 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_09 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_10 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_11 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_12 (0.00s)
+    --- PASS: TestCompleteCoreDecisionExamples/example_13 (0.00s)
+=== RUN   TestCurrentDeclarationsAndBodies
+--- PASS: TestCurrentDeclarationsAndBodies (0.00s)
+=== RUN   TestPatternNodes
+--- PASS: TestPatternNodes (0.00s)
+=== RUN   TestFileParserRejectsObsoleteAndMalformedGrammar
+--- PASS: TestFileParserRejectsObsoleteAndMalformedGrammar (0.00s)
+=== RUN   TestCompletionRegionsRejectAmbiguousOrUnadmittedForms
+--- PASS: TestCompletionRegionsRejectAmbiguousOrUnadmittedForms (0.00s)
+=== RUN   TestNestedParenthesizedArgumentsParseOnce
+--- PASS: TestNestedParenthesizedArgumentsParseOnce (0.00s)
+=== RUN   TestExpressionPrecedence
+--- PASS: TestExpressionPrecedence (0.00s)
+=== RUN   TestExplicitCallsAndConstructors
+--- PASS: TestExplicitCallsAndConstructors (0.00s)
+=== RUN   TestArraysSlicesAndUpdates
+--- PASS: TestArraysSlicesAndUpdates (0.00s)
+=== RUN   TestExpressionsRejectMalformedForms
+--- PASS: TestExpressionsRejectMalformedForms (0.00s)
+=== RUN   TestCurrentFixturesAndSharedPositions
+=== RUN   TestCurrentFixturesAndSharedPositions/core.can
+=== RUN   TestCurrentFixturesAndSharedPositions/literals.can
+--- PASS: TestCurrentFixturesAndSharedPositions (0.00s)
+    --- PASS: TestCurrentFixturesAndSharedPositions/core.can (0.00s)
+    --- PASS: TestCurrentFixturesAndSharedPositions/literals.can (0.00s)
+=== RUN   TestNestedGenericClosersRemainLexable
+--- PASS: TestNestedGenericClosersRemainLexable (0.00s)
+=== RUN   TestTypeGrammarRoundTrip
+=== RUN   TestTypeGrammarRoundTrip/int
+=== RUN   TestTypeGrammarRoundTrip/str[][]
+=== RUN   TestTypeGrammarRoundTrip/option::value<item>
+=== RUN   TestTypeGrammarRoundTrip/outer<middle<inner<int>>>
+=== RUN   TestTypeGrammarRoundTrip/pair<int[],_option::value<str>>[]
+=== RUN   TestTypeGrammarRoundTrip/callable_int[]_()_emits_[]
+=== RUN   TestTypeGrammarRoundTrip/callable_int_()_emits_[][]
+=== RUN   TestTypeGrammarRoundTrip/callable_callable_int_(str)_emits_[failed]_(bool)_emits_[other<int>]
+=== RUN   TestTypeGrammarRoundTrip/choice_arm<option::value<str>>_emits_[failed][]
+=== RUN   TestTypeGrammarRoundTrip/callable_choice_arm<int>_emits_[]_(callable_str_()_emits_[])_emits_[]
+--- PASS: TestTypeGrammarRoundTrip (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/int (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/str[][] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/option::value<item> (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/outer<middle<inner<int>>> (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/pair<int[],_option::value<str>>[] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/callable_int[]_()_emits_[] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/callable_int_()_emits_[][] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/callable_callable_int_(str)_emits_[failed]_(bool)_emits_[other<int>] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/choice_arm<option::value<str>>_emits_[failed][] (0.00s)
+    --- PASS: TestTypeGrammarRoundTrip/callable_choice_arm<int>_emits_[]_(callable_str_()_emits_[])_emits_[] (0.00s)
+=== RUN   TestCallableArrayOwnership
+--- PASS: TestCallableArrayOwnership (0.00s)
+=== RUN   TestTypeGrammarRejectsMalformedFragments
+=== RUN   TestTypeGrammarRejectsMalformedFragments/#00
+=== RUN   TestTypeGrammarRejectsMalformedFragments/[]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/(int)
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<>
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<int,>
+=== RUN   TestTypeGrammarRejectsMalformedFragments/int<str>
+=== RUN   TestTypeGrammarRejectsMalformedFragments/callable_int_()
+=== RUN   TestTypeGrammarRejectsMalformedFragments/callable_int_(str,)_emits_[]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/callable_int_()_emits_[bad,]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/choice_arm<int>
+=== RUN   TestTypeGrammarRejectsMalformedFragments/choice_arm<int,_str>_emits_[]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<int>=x
+=== RUN   TestTypeGrammarRejectsMalformedFragments/int[3]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<int
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<int>>
+=== RUN   TestTypeGrammarRejectsMalformedFragments/int_str
+=== RUN   TestTypeGrammarRejectsMalformedFragments/int_str#01
+=== RUN   TestTypeGrammarRejectsMalformedFragments/callable_int_(_str)_emits_[]
+=== RUN   TestTypeGrammarRejectsMalformedFragments/item<item<item<item<item<item<item<item<item<item<item<item<
+--- PASS: TestTypeGrammarRejectsMalformedFragments (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/#00 (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/[] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/(int) (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<> (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<int,> (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/int<str> (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/callable_int_() (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/callable_int_(str,)_emits_[] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/callable_int_()_emits_[bad,] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/choice_arm<int> (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/choice_arm<int,_str>_emits_[] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<int>=x (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/int[3] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<int (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<int>> (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/int_str (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/int_str#01 (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/callable_int_(_str)_emits_[] (0.00s)
+    --- PASS: TestTypeGrammarRejectsMalformedFragments/item<item<item<item<item<item<item<item<item<item<item<item< (0.00s)
+=== RUN   TestGenericClosersPreserveLexerResult
+--- PASS: TestGenericClosersPreserveLexerResult (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.070s
+=== RUN   TestCurrentParseNeverEvaluatesBodiesOrAssertions
+--- PASS: TestCurrentParseNeverEvaluatesBodiesOrAssertions (0.00s)
+=== RUN   TestCurrentParseRejectsLegacySyntaxAndHasNoPartialOutput
+--- PASS: TestCurrentParseRejectsLegacySyntaxAndHasNoPartialOutput (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler	0.202s

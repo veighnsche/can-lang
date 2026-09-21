@@ -26,7 +26,7 @@ jobs:
           CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
         run: |
           set -o pipefail
-          go test -count=1 -v ./distribution ./compiler/internal/... ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          go test -count=1 -v ./distribution ./compiler ./compiler/internal/... ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

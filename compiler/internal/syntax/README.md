@@ -1,4 +1,44 @@
-# Current C2 lexical boundary
+# Current C2 syntax boundary
+
+`Parse(*source.File)` is the current core grammar authority. It returns explicit
+nodes or diagnostics, never a partially accepted file. It only reads the supplied
+source object: parsing does not resolve imports, evaluate assertions/bodies, read
+the environment, or call providers. The command `canlc parse [--render] FILE.can`
+exposes this boundary, including in a staged distribution. `--render` formats the
+syntax tree to stdout; it omits comments without modifying the input file.
+
+The AST distinguishes nominal/array/callable/choice-arm types, declarations,
+immutable bindings, expressions, patterns, completion bodies and coordination
+participants. Comparison chains retain all operands and operators. Original-byte
+spans and separate comment trivia remain available. Formatting retains authored
+grouping, particularly the distinction between ordinary call arguments and
+parenthesized state syntax; parse/render tests compare node kinds and payloads.
+
+Core syntax includes ordered package headers, return-first functions with required
+emits/asserts and optional receiver/given sections, generic records/errors/variants,
+top-level values, calls/references/constructors, arrays/spreads/slices, copy updates,
+ordinary and completion matches, call-site when tables, chain, relay and do.
+Coordination syntax includes all four headers, direct/spread participants, typed
+bindings and the selected per-participant/shared handler placement. An unbound
+coordination remains a step and requires a subsequent terminal completion.
+
+Semantic checks belong to later checker tasks: eligible-kind lookup, duplicate
+names, completion coverage, type/effect compatibility, valid error identities,
+range ordering, and whether a grouped argument belongs to a native declaration.
+Empty/multiple state groups are argument-only nodes, never tuple expressions;
+one-value groups retain their ordinary GroupExpr spelling until resolution.
+Native AI/fetch declarations and handler-specific `%` syntax remain I16.
+
+`ParseType` and `ParseExpression` provide inert fragment entry points. Recursive
+type/expression/pattern/block parsing is bounded at 256 levels. Right-angle token
+fragments are held in a parser-local pending token, so speculative type application
+does not mutate lexer results or copy the entire token stream at every expression.
+Arguments are parsed once; nested parenthesized calls do not trigger exponential
+speculative reparsing.
+
+The predecessor parser is explicitly named `compiler/legacy_parse.go`. It supports
+the old checker/emitter/editor until their scheduled replacement and I44 retirement;
+the current parser neither imports it nor translates its nodes into that model.
 
 `Lex(*source.File)` produces tokens with original byte spans, decoded string
 values, raw/multiline flags, separate comment trivia and precise diagnostics.
@@ -25,12 +65,12 @@ fractional point. No numeric value is evaluated as a Can operation here.
 
 Parentheses/brackets cannot cross a physical source newline, even through a
 comment or multiline literal. Other context-sensitive restrictions belong to
-I04: declaration grammar, required nonempty blocks, trailing commas, physical
+the parser: declaration grammar, required nonempty blocks, trailing commas, physical
 one-line assertions and completed method chains. Multiline literal spans let
 the parser enforce those restrictions without scanning strings again.
 
 Right-angle operators use maximal tokens. While reading generic arguments,
-I04 may split `>>` or `>=` into closing angles and the remaining token. Thus
+the parser may split `>>` or `>=` into closing angles and the remaining token. Thus
 three nested type closers remain lexable; no unsigned-right-shift token exists.
 The expression grammar must reject an attempted unsigned shift. Obsolete
 semantics are not inferred from the predecessor lexer or old goldens.

@@ -92,6 +92,33 @@ func TestDevelopmentSidecar(t *testing.T) {
 	if strings.Contains(string(output), "never-print-this") {
 		t.Fatal("environment secret leaked")
 	}
+	t.Run("current-parser-is-inert", func(t *testing.T) {
+		parse := func(path string) ([]byte, error) {
+			command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", link, "parse", "--render", path)
+			command.Dir = cwd
+			command.Env = env
+			return command.CombinedOutput()
+		}
+		fixture := filepath.Join(source, "compiler/testdata/current/parser/offline.can")
+		rendered, err := parse(fixture)
+		if err != nil {
+			t.Fatalf("offline parse: %v\n%s", err, rendered)
+		}
+		if !strings.Contains(string(rendered), "http::must_not_run") || !strings.Contains(string(rendered), "1 / 0") || strings.Contains(string(rendered), "never-print-this") {
+			t.Fatalf("unexpected parse output: %s", rendered)
+		}
+		renderedPath := filepath.Join(cwd, "rendered.can")
+		write(renderedPath, string(rendered))
+		again, err := parse(renderedPath)
+		if err != nil || string(again) != string(rendered) {
+			t.Fatalf("offline render round-trip: %v\n%s", err, again)
+		}
+		write(renderedPath, "package invalid\n    provides []\n    uses []\nextern fn obsolete\n")
+		rejected, err := parse(renderedPath)
+		if err == nil || !strings.Contains(string(rejected), ":4:") || !strings.Contains(string(rejected), "syntax:") {
+			t.Fatalf("obsolete grammar accepted: %v\n%s", err, rejected)
+		}
+	})
 	if !reflect.DeepEqual(bundleBefore, treeHashes(t, root, []string{"."})) {
 		t.Fatal("execution wrote to bundle")
 	}

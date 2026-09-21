@@ -1,4 +1,4 @@
-// Package syntax owns the current C2 lexer and (in I04) explicit syntax nodes.
+// Package syntax owns the current C2 lexer, parser and explicit syntax nodes.
 // It does not import the predecessor compiler's line/brace scanners.
 package syntax
 

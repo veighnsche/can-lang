@@ -1,0 +1,15 @@
+package offline
+    provides [main]
+    uses [http]
+
+/// Parsing must neither evaluate this assertion nor invoke this operation.
+fn void main
+    emits []
+    asserts
+        explosive: => ok (1 / 0)
+    int value = call http::must_not_run("https://invalid.example/", "😀")
+    match value
+        0 => do
+            call must_not_run_either()
+            ok
+        _ => ok

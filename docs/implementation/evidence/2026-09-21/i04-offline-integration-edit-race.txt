@@ -1,0 +1,9 @@
+=== RUN   TestDevelopmentSidecar
+=== RUN   TestDevelopmentSidecar/current-parser-is-inert
+=== NAME  TestDevelopmentSidecar
+    distribution_test.go:126: build/run wrote to source tree
+--- FAIL: TestDevelopmentSidecar (2.32s)
+    --- PASS: TestDevelopmentSidecar/current-parser-is-inert (0.04s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/tests/integration	2.453s
+FAIL

@@ -38,6 +38,9 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
+	if len(argv) > 0 && argv[0] == "parse" {
+		return runCurrentParse(os.Stdout, os.Stderr, argv[1:])
+	}
 	if len(argv) > 0 && (argv[0] == "runtime-check" || argv[0] == "catalogue-check") {
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {

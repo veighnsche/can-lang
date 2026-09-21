@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "There are no external Can users, so preserving the previous language is not required. I04 must introduce a concrete current AST and displace compiler/parse.go as grammar owner; the historical checker, code generator and LSP currently depend on that file\u2019s AST. The implementation ledger assigns checking to I06 and following tasks, CLI changes to I11 and obsolete implementation removal to I44. I03 provides separate lexing and exact input-byte locations. Approved syntax is indentation-based with return-first function headers and required emits/asserts sections; rev, extern and dec are obsolete, and native declarations belong to I16. Candidate approaches are an independent parser reached by a fixed non-evaluating command with the former parser explicitly renamed legacy until removal, an adapter into the old AST/pipeline, or immediate pipeline deletion plus early implementation of later checker/driver/editor stages. Parser validation does not require running source. Isolation retains historical files for a limited period without forcing their semantics on new nodes; adaptation may preserve unwanted assumptions; complete replacement enlarges the dependency scope. In all cases the task must cover the core grammar, demonstrate rejection of obsolete forms and prove parsing has no evaluation effects; it cannot advertise working execution based on syntax support.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "From these facts alone, choose the strategy that best maintains the new-language contract while following the implementation dependencies.",
+      "criteria": {
+        "independent": "Use a dedicated inert driver path for the new parser and AST, marking predecessor grammar as legacy until its explicit retirement task.",
+        "translate": "Bridge new parsed constructs into historical nodes and continue using the earlier checker/emitter machinery.",
+        "replace_all": "Eliminate the previous pipeline at once and absorb downstream checker, driver and editor work into I04."
+      }
+    }
+  }
+}
