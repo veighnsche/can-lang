@@ -21,7 +21,7 @@ export function provideHTTP(context:AssertionContext,rows:readonly RawHTTPFixtur
  })));
  for(const row of copied){
   new Headers(row.request.headers.map(([name,value])=>[name,value]));
-  fixtureResponse(row.response);
+  fixtureResponse(row.request.method,row.response);
  }
  }catch{throw violation(context,"malformed fixture",origin);}
  fixtures.set(contextOwner(context),copied);
@@ -36,14 +36,15 @@ export function providerHTTP(context:AssertionContext|undefined,where:FailureOri
   const expectedHeaders=Array.from(new Headers(row.request.headers.map(([name,value])=>[name,value])).entries());
   const body=init.body===undefined?new Uint8Array():init.body;
   if(init.method!==row.request.method||url.href!==row.request.url||JSON.stringify(actualHeaders)!==JSON.stringify(expectedHeaders)||!(body instanceof Uint8Array)||body.length!==row.request.body.length||!body.every((byte,i)=>byte===row.request.body[i]))throw violation(context,"argument mismatch",where);
-  const response=fixtureResponse(row.response);
+  const response=fixtureResponse(row.request.method,row.response);
   rawProviderEvidence(context);
   return response;
  };
 }
 
-function fixtureResponse(response:RawHTTPFixture["response"]):Response{
+function fixtureResponse(method:string,response:RawHTTPFixture["response"]):Response{
  if(!Number.isInteger(response.status)||response.status<200||response.status>599)throw new TypeError("invalid fixture status");
- if([204,205,304].includes(response.status)&&response.body.length!==0)throw new TypeError("invalid fixture body");
- return new Response([204,205,304].includes(response.status)&&response.body.length===0?null:new Uint8Array(response.body),{status:response.status,headers:response.headers.map(([name,value])=>[name,value])});
+ const bodyless=method.toUpperCase()==="HEAD"||[204,205,304].includes(response.status);
+ if(bodyless&&response.body.length!==0)throw new TypeError("invalid fixture body");
+ return new Response(bodyless?null:new Uint8Array(response.body),{status:response.status,headers:response.headers.map(([name,value])=>[name,value])});
 }

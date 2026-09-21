@@ -229,12 +229,8 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 							return fmt.Errorf("invalid, conflicting or duplicate request header %s", name)
 						}
 						seen[name] = true
-						if literal, ok := entry.Value.(*syntax.LiteralExpr); ok && literal.Token.Kind == syntax.String {
-							for _, r := range literal.Token.Value {
-								if r > 255 || r == 0 || r == '\r' || r == '\n' {
-									return fmt.Errorf("invalid literal request header value")
-								}
-							}
+						if err := checkLiteralHeaderValues(entry.Value); err != nil {
+							return err
 						}
 					}
 					var expected *types.Type

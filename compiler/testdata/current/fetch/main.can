@@ -10,11 +10,11 @@ connection service
     max_body_bytes 8192
 fetch receipt load_json from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
-    get "/json"
+    get (call [["/json"]].map(callable extract))[0]
     query
-        labels = ["a b", "+"]
+        labels = call [["a b"], ["+"]].map(callable extract)
     headers
-        x_probe = "yes"
+        x_probe = call [["yes"]].map(callable extract)
 fetch http::response<bytes::buffer> load_envelope from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     get "/envelope"
@@ -23,7 +23,7 @@ fetch str send_text from service
     given
         str payload
     post "/text"
-    body text payload
+    body text (call [[payload]].map(callable extract))[0]
 fetch receipt send_json from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     given
@@ -178,3 +178,11 @@ fn str referenced
         http::body_limit
         http::status_error
         codec::invalid_data
+
+fn str extract
+    emits []
+    given
+        str[] values
+    asserts
+        first: ["value"] => ok "value"
+    ok values[0]

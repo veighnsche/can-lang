@@ -120,3 +120,21 @@ test("named fetch body Content-Type defaults and overrides preserve explicit enc
  });expect(root.completion.kind).toBe("ok");
  for(const bad of ["application/json; x=\"a\u0001b\"","application/json\u00a0; charset=utf-8"])expect(()=>responseMedia(bad,true)).toThrow("media_type");
 });
+
+test("raw HEAD fixtures reject impossible bodies even after authored recovery",async()=>{
+ const api=createNamedFetch(domain,ids,()=>{throw Error("fixture read credentials");});
+ const c={...connection,endpoint:"https://fixture.invalid/",maxBodyBytes:1024};
+ for(const method of ["HEAD","head"]){
+  let registered=false;
+  const report=await runAssertion({root:{package:"conformance",declaration:"head",name:method},actual:async context=>{
+   try{provideHTTP(context,[{request:{method,url:c.endpoint,headers:[],body:new Uint8Array()},response:{status:200,headers:[],body:new TextEncoder().encode("impossible-body")}}]);registered=true;}catch{/* Recovery must not clear malformed fixture evidence. */}
+   return success(undefined);
+  },expected:async()=>success(undefined)});
+  expect(registered).toBe(false);expect(report.passed).toBe(false);expect(report.violations).toEqual(["malformed fixture"]);expect(report.evidence).not.toContain("raw-provider-fixture");
+ }
+ const report=await runAssertion({root:{package:"conformance",declaration:"head",name:"empty"},actual:async context=>{
+  provideHTTP(context,[{request:{method:"HEAD",url:c.endpoint,headers:[],body:new Uint8Array()},response:{status:200,headers:[["content-type","text/plain"]],body:new Uint8Array()}}]);
+  return api.request<string>(c,{...request,method:"HEAD"},undefined,{mode:"text"},origin,context);
+ },expected:async()=>success("")});
+ expect(report.passed).toBe(true);expect(report.evidence).toEqual(["raw-provider-fixture","real-can"]);
+});

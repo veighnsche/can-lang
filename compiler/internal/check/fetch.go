@@ -95,3 +95,27 @@ func finishFetchPlan(plan *ir.Fetch) error {
 	}
 	return nil
 }
+
+// Inspect only statically present string values, including grouped arrays and
+// literal spreads. Dynamic expressions retain the transport admission check.
+func checkLiteralHeaderValues(expr syntax.Expr) error {
+	switch value := expr.(type) {
+	case *syntax.LiteralExpr:
+		if value.Token.Kind == syntax.String {
+			for _, r := range value.Token.Value {
+				if r > 255 || r == 0 || r == '\r' || r == '\n' {
+					return fmt.Errorf("invalid literal request header value")
+				}
+			}
+		}
+	case *syntax.GroupExpr:
+		return checkLiteralHeaderValues(value.Value)
+	case *syntax.ArrayExpr:
+		for _, item := range value.Elements {
+			if err := checkLiteralHeaderValues(item.Value); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

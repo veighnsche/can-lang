@@ -352,16 +352,40 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, path := range paths {
 		var body strings.Builder
 		var regions []*ir.Region
+		var descriptors []*ir.Expression
 		for _, fn := range byPath[path] {
 			regions = append(regions, fn.Region)
 		}
 		for _, native := range program.Natives {
 			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.ArmDescription != nil) {
 				regions = append(regions, native.Regions...)
+				if f := native.Fetch; f != nil {
+					descriptors = append(descriptors, f.Path, f.Body)
+					for _, entry := range f.Query {
+						descriptors = append(descriptors, entry.Value)
+					}
+					for _, entry := range f.Headers {
+						descriptors = append(descriptors, entry.Value)
+					}
+				}
+				if q := native.Question; q != nil {
+					descriptors = append(descriptors, q.Instructions, q.Minimum)
+					for _, option := range q.Options {
+						descriptors = append(descriptors, option.Description, option.Spread)
+					}
+				}
+				if j := native.Judge; j != nil {
+					for _, registration := range j.Registrations {
+						descriptors = append(descriptors, registration.Arguments...)
+						for _, step := range registration.Prepare {
+							descriptors = append(descriptors, step.Value)
+						}
+					}
+				}
 			}
 		}
 		// Initializer references may name types absent from function signatures.
-		allTypes := append(program.Model.Types(), regionTypes(regions...)...)
+		allTypes := append(program.Model.Types(), checkedTypes(regions, descriptors)...)
 		localTypes, err := NativeTypeDeclarations(allTypes)
 		if err != nil {
 			return nil, err

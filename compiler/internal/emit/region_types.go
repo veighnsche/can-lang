@@ -12,6 +12,11 @@ func RegionTypeDeclarations(regions ...*ir.Region) (string, error) {
 	return NativeTypeDeclarations(regionTypes(regions...))
 }
 func regionTypes(regions ...*ir.Region) []*types.Type {
+	return checkedTypes(regions, nil)
+}
+
+// checkedTypes shares one recursive walk for region bodies and native descriptors.
+func checkedTypes(regions []*ir.Region, expressions []*ir.Expression) []*types.Type {
 	var roots []*types.Type
 	add := func(t *types.Type) {
 		if t != nil {
@@ -165,6 +170,9 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 			add(input.Type)
 		}
 		block(region.Body)
+	}
+	for _, value := range expressions {
+		expression(value)
 	}
 	return roots
 }
