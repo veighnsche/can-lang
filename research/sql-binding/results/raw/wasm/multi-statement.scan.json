@@ -1,0 +1,1 @@
+{"version":170007, "tokens":[{"end":6, "token":"SELECT", "keywordKind":"RESERVED_KEYWORD"}, {"start":7, "end":9, "token":"PARAM"}, {"start":9, "end":10, "token":"ASCII_59"}, {"start":11, "end":17, "token":"SELECT", "keywordKind":"RESERVED_KEYWORD"}, {"start":18, "end":19, "token":"ICONST"}]}

@@ -1,0 +1,125 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 2125,
+   "output_tokens": 147
+  },
+  "answers": {
+   "binding_choice": {
+    "type": "choice",
+    "choice": "cgo_official",
+    "confidence": 0.95,
+    "probabilities": {
+     "review_needed": 0.01,
+     "wasm_wazero": 0.02,
+     "cgo_official": 0.97
+    }
+   },
+   "error_vocabulary": {
+    "type": "choice",
+    "choice": "closed_reasons",
+    "confidence": 0.57,
+    "probabilities": {
+     "review_needed": 0.06,
+     "verbatim_upstream": 0.23,
+     "closed_reasons": 0.71
+    }
+   },
+   "result_packaging": {
+    "type": "choice",
+    "choice": "separate_calls",
+    "confidence": 0.31,
+    "probabilities": {
+     "review_needed": 0.22,
+     "separate_calls": 0.54,
+     "bundled_call": 0.24
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 2209,
+   "output_tokens": 150
+  },
+  "answers": {
+   "binding_choice": {
+    "type": "choice",
+    "choice": "cgo_official",
+    "confidence": 0.97,
+    "probabilities": {
+     "wasm_wazero": 0.01,
+     "review_needed": 0.01,
+     "cgo_official": 0.98
+    }
+   },
+   "error_vocabulary": {
+    "type": "choice",
+    "choice": "verbatim_upstream",
+    "confidence": 0.51,
+    "probabilities": {
+     "review_needed": 0.17,
+     "verbatim_upstream": 0.68,
+     "closed_reasons": 0.15
+    }
+   },
+   "result_packaging": {
+    "type": "choice",
+    "choice": "separate_calls",
+    "confidence": 0.72,
+    "probabilities": {
+     "bundled_call": 0.15,
+     "review_needed": 0.04,
+     "separate_calls": 0.81
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 2146,
+   "output_tokens": 150
+  },
+  "answers": {
+   "binding_choice": {
+    "type": "choice",
+    "choice": "cgo_official",
+    "confidence": 0.86,
+    "probabilities": {
+     "cgo_official": 0.91,
+     "wasm_wazero": 0.02,
+     "review_needed": 0.07
+    }
+   },
+   "error_vocabulary": {
+    "type": "choice",
+    "choice": "verbatim_upstream",
+    "confidence": 0.86,
+    "probabilities": {
+     "verbatim_upstream": 0.91,
+     "closed_reasons": 0.06,
+     "review_needed": 0.03
+    }
+   },
+   "result_packaging": {
+    "type": "choice",
+    "choice": "separate_calls",
+    "confidence": 0.37,
+    "probabilities": {
+     "bundled_call": 0.33,
+     "separate_calls": 0.59,
+     "review_needed": 0.08
+    }
+   }
+  }
+ }
+]

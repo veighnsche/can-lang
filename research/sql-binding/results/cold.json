@@ -1,0 +1,14 @@
+{
+ "cgo": {
+  "wall_min": 4.589332966133952,
+  "wall_median": 5.032791057601571,
+  "inner_min": 0.964083,
+  "inner_median": 1.048125
+ },
+ "wasm": {
+  "wall_min": 447.9740000097081,
+  "wall_median": 453.9046250283718,
+  "inner_min": 441.53325,
+  "inner_median": 447.217708
+ }
+}

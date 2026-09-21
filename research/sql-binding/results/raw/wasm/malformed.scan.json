@@ -1,0 +1,1 @@
+{"version":170007, "tokens":[{"end":6, "token":"SELECT", "keywordKind":"RESERVED_KEYWORD"}, {"start":7, "end":11, "token":"FROM", "keywordKind":"RESERVED_KEYWORD"}, {"start":12, "end":17, "token":"WHERE", "keywordKind":"RESERVED_KEYWORD"}]}

@@ -1,0 +1,1 @@
+{"version":170007, "stmts":[{"stmt":{"SelectStmt":{"targetList":[{"ResTarget":{"val":{"A_Const":{"sval":{"sval":"esc ' $1"}, "location":7}}, "location":7}}, {"ResTarget":{"val":{"ParamRef":{"number":2, "location":21}}, "location":21}}], "limitOption":"LIMIT_OPTION_DEFAULT", "op":"SETOP_NONE"}}}]}

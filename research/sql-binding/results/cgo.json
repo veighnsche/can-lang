@@ -1,0 +1,1355 @@
+[
+  {
+    "id": "select-params",
+    "sha256": "4c7c28f37adf12c0fe1bfea83fc89549d3bb786e4a84bdae7885e8cef0c38089",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 9,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 9,
+        "end": 10,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 11,
+        "end": 23,
+        "text": "display_name",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 24,
+        "end": 28,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 29,
+        "end": 37,
+        "text": "accounts",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 38,
+        "end": 43,
+        "text": "WHERE",
+        "token": "WHERE",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 44,
+        "end": 56,
+        "text": "display_name",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 57,
+        "end": 62,
+        "text": "ILIKE",
+        "token": "ILIKE",
+        "keyword": "TYPE_FUNC_NAME_KEYWORD"
+      },
+      {
+        "start": 63,
+        "end": 65,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 66,
+        "end": 71,
+        "text": "ORDER",
+        "token": "ORDER",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 72,
+        "end": 74,
+        "text": "BY",
+        "token": "BY",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 75,
+        "end": 77,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 78,
+        "end": 83,
+        "text": "LIMIT",
+        "token": "LIMIT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 84,
+        "end": 86,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":7}}, \"location\":7}}, {\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"display_name\"}}], \"location\":11}}, \"location\":11}}], \"fromClause\":[{\"RangeVar\":{\"relname\":\"accounts\", \"inh\":true, \"relpersistence\":\"p\", \"location\":29}}], \"whereClause\":{\"A_Expr\":{\"kind\":\"AEXPR_ILIKE\", \"name\":[{\"String\":{\"sval\":\"~~*\"}}], \"lexpr\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"display_name\"}}], \"location\":44}}, \"rexpr\":{\"ParamRef\":{\"number\":1, \"location\":63}}, \"location\":57}}, \"sortClause\":[{\"SortBy\":{\"node\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":75}}, \"sortby_dir\":\"SORTBY_DEFAULT\", \"sortby_nulls\":\"SORTBY_NULLS_DEFAULT\", \"location\":-1}}], \"limitCount\":{\"ParamRef\":{\"number\":2, \"location\":84}}, \"limitOption\":\"LIMIT_OPTION_COUNT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":9, \"token\":\"IDENT\"}, {\"start\":9, \"end\":10, \"token\":\"ASCII_44\"}, {\"start\":11, \"end\":23, \"token\":\"IDENT\"}, {\"start\":24, \"end\":28, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":29, \"end\":37, \"token\":\"IDENT\"}, {\"start\":38, \"end\":43, \"token\":\"WHERE\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":44, \"end\":56, \"token\":\"IDENT\"}, {\"start\":57, \"end\":62, \"token\":\"ILIKE\", \"keywordKind\":\"TYPE_FUNC_NAME_KEYWORD\"}, {\"start\":63, \"end\":65, \"token\":\"PARAM\"}, {\"start\":66, \"end\":71, \"token\":\"ORDER\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":72, \"end\":74, \"token\":\"BY\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":75, \"end\":77, \"token\":\"IDENT\"}, {\"start\":78, \"end\":83, \"token\":\"LIMIT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":84, \"end\":86, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "repeated-param",
+    "sha256": "24eead3509bf8ed4195e3247177494e3db24083e94f4714e8cf571de86707da3",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 9,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 9,
+        "end": 10,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 11,
+        "end": 13,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "text": "+",
+        "token": "ASCII_43",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 16,
+        "end": 18,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":1, \"location\":7}}, \"location\":7}}, {\"ResTarget\":{\"val\":{\"A_Expr\":{\"kind\":\"AEXPR_OP\", \"name\":[{\"String\":{\"sval\":\"+\"}}], \"lexpr\":{\"ParamRef\":{\"number\":1, \"location\":11}}, \"rexpr\":{\"ParamRef\":{\"number\":2, \"location\":16}}, \"location\":14}}, \"location\":11}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":9, \"token\":\"PARAM\"}, {\"start\":9, \"end\":10, \"token\":\"ASCII_44\"}, {\"start\":11, \"end\":13, \"token\":\"PARAM\"}, {\"start\":14, \"end\":15, \"token\":\"ASCII_43\"}, {\"start\":16, \"end\":18, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "param-high-number",
+    "sha256": "0ce1c73287fbdf44fa5ae85420435d97332f3e8d789789858cbccba44bc31c26",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 10,
+        "text": "$16",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":16, \"location\":7}}, \"location\":7}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":10, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "string-param-like",
+    "sha256": "80fbab7c2b7fe7fac9857eb316ed9efb96b1dd87a82b52a45ec5ad2eca655a57",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 29,
+        "text": "'it''s $1 not a param'",
+        "token": "SCONST",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"sval\":{\"sval\":\"it's $1 not a param\"}, \"location\":7}}, \"location\":7}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":29, \"token\":\"SCONST\"}]}"
+  },
+  {
+    "id": "escape-string",
+    "sha256": "a9db3eef1fed92cde4e3e2748adac4c6870c91b7377c754116410236889c4826",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 19,
+        "text": "E'esc \\' $1'",
+        "token": "SCONST",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 19,
+        "end": 20,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 21,
+        "end": 23,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"sval\":{\"sval\":\"esc ' $1\"}, \"location\":7}}, \"location\":7}}, {\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":2, \"location\":21}}, \"location\":21}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":19, \"token\":\"SCONST\"}, {\"start\":19, \"end\":20, \"token\":\"ASCII_44\"}, {\"start\":21, \"end\":23, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "dollar-quote",
+    "sha256": "8618cba63e9be45f2f0208cb5b5ccb64f7448a96db48038c7615c3e49e87a0b5",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 18,
+        "text": "$$body $1$$",
+        "token": "SCONST",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 18,
+        "end": 19,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 20,
+        "end": 38,
+        "text": "$tag$inner $2$tag$",
+        "token": "SCONST",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 38,
+        "end": 39,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 40,
+        "end": 42,
+        "text": "$3",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"sval\":{\"sval\":\"body $1\"}, \"location\":7}}, \"location\":7}}, {\"ResTarget\":{\"val\":{\"A_Const\":{\"sval\":{\"sval\":\"inner $2\"}, \"location\":20}}, \"location\":20}}, {\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":3, \"location\":40}}, \"location\":40}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":18, \"token\":\"SCONST\"}, {\"start\":18, \"end\":19, \"token\":\"ASCII_44\"}, {\"start\":20, \"end\":38, \"token\":\"SCONST\"}, {\"start\":38, \"end\":39, \"token\":\"ASCII_44\"}, {\"start\":40, \"end\":42, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "line-comment",
+    "sha256": "a25c115e2e34ed5590a195518884569848802b6866f8a151f0770b8ba6c60d90",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 22,
+        "text": "-- trailing $1 comment",
+        "token": "SQL_COMMENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 23,
+        "end": 29,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 30,
+        "end": 32,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":2, \"location\":30}}, \"location\":30}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":22, \"token\":\"SQL_COMMENT\"}, {\"start\":23, \"end\":29, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":30, \"end\":32, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "nested-block-comment",
+    "sha256": "e8758663550f3c85e3b59e8a67a5e8218f11eba5018dcfe4398eced7f9dff307",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 43,
+        "text": "/* outer /* inner $1 */ still comment $2 */",
+        "token": "C_COMMENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 44,
+        "end": 50,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 51,
+        "end": 53,
+        "text": "$3",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":3, \"location\":51}}, \"location\":51}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":43, \"token\":\"C_COMMENT\"}, {\"start\":44, \"end\":50, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":51, \"end\":53, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "unicode-comment",
+    "sha256": "8a23995904b7bd0c2076639e57a7852421d9f79dac7ba6647c8cd088a60264eb",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 20,
+        "text": "-- café ☃ snowman",
+        "token": "SQL_COMMENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 21,
+        "end": 27,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 28,
+        "end": 30,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":1, \"location\":28}}, \"location\":28}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":20, \"token\":\"SQL_COMMENT\"}, {\"start\":21, \"end\":27, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":28, \"end\":30, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "unicode-ident",
+    "sha256": "9f1c431091a0a9ff97cbad2831eb49ed02c964cc8ae65b04350ea6f246e9e274",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 14,
+        "text": "\"café\"",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 19,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 20,
+        "end": 21,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 22,
+        "end": 27,
+        "text": "WHERE",
+        "token": "WHERE",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 28,
+        "end": 29,
+        "text": "x",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 30,
+        "end": 31,
+        "text": "=",
+        "token": "ASCII_61",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 32,
+        "end": 34,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"café\"}}], \"location\":7}}, \"location\":7}}], \"fromClause\":[{\"RangeVar\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":20}}], \"whereClause\":{\"A_Expr\":{\"kind\":\"AEXPR_OP\", \"name\":[{\"String\":{\"sval\":\"=\"}}], \"lexpr\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"x\"}}], \"location\":28}}, \"rexpr\":{\"ParamRef\":{\"number\":1, \"location\":32}}, \"location\":30}}, \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":14, \"token\":\"IDENT\"}, {\"start\":15, \"end\":19, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":20, \"end\":21, \"token\":\"IDENT\"}, {\"start\":22, \"end\":27, \"token\":\"WHERE\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":28, \"end\":29, \"token\":\"IDENT\"}, {\"start\":30, \"end\":31, \"token\":\"ASCII_61\"}, {\"start\":32, \"end\":34, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "malformed",
+    "sha256": "fd535a08c68f1a301e32f09d55517822f40d526cc9fe1336ca72fcc9e8adfff1",
+    "version": 170007,
+    "parse_error": {
+      "type": "*parser.Error",
+      "message": "syntax error at or near \"WHERE\"",
+      "cursorpos": 13
+    },
+    "stmts": null,
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 11,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 12,
+        "end": 17,
+        "text": "WHERE",
+        "token": "WHERE",
+        "keyword": "RESERVED_KEYWORD"
+      }
+    ],
+    "raw_parse": "",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":11, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":12, \"end\":17, \"token\":\"WHERE\", \"keywordKind\":\"RESERVED_KEYWORD\"}]}"
+  },
+  {
+    "id": "unterminated-string",
+    "sha256": "7cd38f93dc7a0d3487ccae17ffdfc2399b9708b58defc98ee06b18d37a20a3d0",
+    "version": 0,
+    "parse_error": {
+      "type": "*parser.Error",
+      "message": "unterminated quoted string at or near \"'oops\"",
+      "cursorpos": 8
+    },
+    "stmts": null,
+    "scan_error": {
+      "type": "*parser.Error",
+      "message": "unterminated quoted string at or near \"'oops\"",
+      "cursorpos": 8
+    },
+    "tokens": null,
+    "raw_parse": "",
+    "raw_scan": ""
+  },
+  {
+    "id": "multi-statement",
+    "sha256": "0d48c4d16ec6c5df772ea49ebbc9856e27eeb4df842239ceb77ea9164ddc6e4c",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 9,
+        "kind": "*pg_query.Node_SelectStmt"
+      },
+      {
+        "location": 10,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 9,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 9,
+        "end": 10,
+        "text": ";",
+        "token": "ASCII_59",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 11,
+        "end": 17,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 18,
+        "end": 19,
+        "text": "2",
+        "token": "ICONST",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":1, \"location\":7}}, \"location\":7}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"stmt_len\":9}, {\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"ival\":{\"ival\":2}, \"location\":18}}, \"location\":18}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"stmt_location\":10}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":9, \"token\":\"PARAM\"}, {\"start\":9, \"end\":10, \"token\":\"ASCII_59\"}, {\"start\":11, \"end\":17, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":18, \"end\":19, \"token\":\"ICONST\"}]}"
+  },
+  {
+    "id": "multi-statement-semi",
+    "sha256": "6bf5bd6ffad1af80e0b3f3e5d84a39119940355762067ddb5c4756f4c49403c5",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 8,
+        "kind": "*pg_query.Node_SelectStmt"
+      },
+      {
+        "location": 9,
+        "length": 10,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 8,
+        "text": "1",
+        "token": "ICONST",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 8,
+        "end": 9,
+        "text": ";",
+        "token": "ASCII_59",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 10,
+        "end": 16,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 17,
+        "end": 19,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 19,
+        "end": 20,
+        "text": ";",
+        "token": "ASCII_59",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"ival\":{\"ival\":1}, \"location\":7}}, \"location\":7}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"stmt_len\":8}, {\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ParamRef\":{\"number\":1, \"location\":17}}, \"location\":17}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"stmt_location\":9, \"stmt_len\":10}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":8, \"token\":\"ICONST\"}, {\"start\":8, \"end\":9, \"token\":\"ASCII_59\"}, {\"start\":10, \"end\":16, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":17, \"end\":19, \"token\":\"PARAM\"}, {\"start\":19, \"end\":20, \"token\":\"ASCII_59\"}]}"
+  },
+  {
+    "id": "empty",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": null,
+    "scan_error": null,
+    "tokens": null,
+    "raw_parse": "{\"version\":170007}",
+    "raw_scan": "{\"version\":170007}"
+  },
+  {
+    "id": "comment-only",
+    "sha256": "f8857e2f58e65d8fce64cdafb0e75ebeeeb3f2a89b9d8a0a5df8f8e39c08a808",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": null,
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 15,
+        "text": "-- nothing here",
+        "token": "SQL_COMMENT",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":15, \"token\":\"SQL_COMMENT\"}]}"
+  },
+  {
+    "id": "semicolon-only",
+    "sha256": "41b805ea7ac014e23556e98bb374702a08344268f92489a02f0880849394a1e4",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": null,
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 1,
+        "text": ";",
+        "token": "ASCII_59",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":1, \"token\":\"ASCII_59\"}]}"
+  },
+  {
+    "id": "insert-values",
+    "sha256": "b6d4bb3f6ef435066d9c8cd7c5eea478ed1f74ee9e8d2d91105d177e23206486",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_InsertStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "INSERT",
+        "token": "INSERT",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 11,
+        "text": "INTO",
+        "token": "INTO",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 12,
+        "end": 13,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "text": "(",
+        "token": "ASCII_40",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 16,
+        "text": "a",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 16,
+        "end": 17,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 18,
+        "end": 19,
+        "text": "b",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 19,
+        "end": 20,
+        "text": ")",
+        "token": "ASCII_41",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 21,
+        "end": 27,
+        "text": "VALUES",
+        "token": "VALUES",
+        "keyword": "COL_NAME_KEYWORD"
+      },
+      {
+        "start": 28,
+        "end": 29,
+        "text": "(",
+        "token": "ASCII_40",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 29,
+        "end": 31,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 31,
+        "end": 32,
+        "text": ",",
+        "token": "ASCII_44",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 33,
+        "end": 35,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 35,
+        "end": 36,
+        "text": ")",
+        "token": "ASCII_41",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"InsertStmt\":{\"relation\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":12}, \"cols\":[{\"ResTarget\":{\"name\":\"a\", \"location\":15}}, {\"ResTarget\":{\"name\":\"b\", \"location\":18}}], \"selectStmt\":{\"SelectStmt\":{\"valuesLists\":[{\"List\":{\"items\":[{\"ParamRef\":{\"number\":1, \"location\":29}}, {\"ParamRef\":{\"number\":2, \"location\":33}}]}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"override\":\"OVERRIDING_NOT_SET\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"INSERT\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":7, \"end\":11, \"token\":\"INTO\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":12, \"end\":13, \"token\":\"IDENT\"}, {\"start\":14, \"end\":15, \"token\":\"ASCII_40\"}, {\"start\":15, \"end\":16, \"token\":\"IDENT\"}, {\"start\":16, \"end\":17, \"token\":\"ASCII_44\"}, {\"start\":18, \"end\":19, \"token\":\"IDENT\"}, {\"start\":19, \"end\":20, \"token\":\"ASCII_41\"}, {\"start\":21, \"end\":27, \"token\":\"VALUES\", \"keywordKind\":\"COL_NAME_KEYWORD\"}, {\"start\":28, \"end\":29, \"token\":\"ASCII_40\"}, {\"start\":29, \"end\":31, \"token\":\"PARAM\"}, {\"start\":31, \"end\":32, \"token\":\"ASCII_44\"}, {\"start\":33, \"end\":35, \"token\":\"PARAM\"}, {\"start\":35, \"end\":36, \"token\":\"ASCII_41\"}]}"
+  },
+  {
+    "id": "insert-returning",
+    "sha256": "c42d962723e83b7a23f15ac02593a6932a653e33392c0c2de2383939c09bc185",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_InsertStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "INSERT",
+        "token": "INSERT",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 11,
+        "text": "INTO",
+        "token": "INTO",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 12,
+        "end": 13,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "text": "(",
+        "token": "ASCII_40",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 16,
+        "text": "a",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 16,
+        "end": 17,
+        "text": ")",
+        "token": "ASCII_41",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 18,
+        "end": 24,
+        "text": "VALUES",
+        "token": "VALUES",
+        "keyword": "COL_NAME_KEYWORD"
+      },
+      {
+        "start": 25,
+        "end": 26,
+        "text": "(",
+        "token": "ASCII_40",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 26,
+        "end": 28,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 28,
+        "end": 29,
+        "text": ")",
+        "token": "ASCII_41",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 30,
+        "end": 39,
+        "text": "RETURNING",
+        "token": "RETURNING",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 40,
+        "end": 42,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"InsertStmt\":{\"relation\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":12}, \"cols\":[{\"ResTarget\":{\"name\":\"a\", \"location\":15}}], \"selectStmt\":{\"SelectStmt\":{\"valuesLists\":[{\"List\":{\"items\":[{\"ParamRef\":{\"number\":1, \"location\":26}}]}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}, \"returningList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":40}}, \"location\":40}}], \"override\":\"OVERRIDING_NOT_SET\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"INSERT\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":7, \"end\":11, \"token\":\"INTO\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":12, \"end\":13, \"token\":\"IDENT\"}, {\"start\":14, \"end\":15, \"token\":\"ASCII_40\"}, {\"start\":15, \"end\":16, \"token\":\"IDENT\"}, {\"start\":16, \"end\":17, \"token\":\"ASCII_41\"}, {\"start\":18, \"end\":24, \"token\":\"VALUES\", \"keywordKind\":\"COL_NAME_KEYWORD\"}, {\"start\":25, \"end\":26, \"token\":\"ASCII_40\"}, {\"start\":26, \"end\":28, \"token\":\"PARAM\"}, {\"start\":28, \"end\":29, \"token\":\"ASCII_41\"}, {\"start\":30, \"end\":39, \"token\":\"RETURNING\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":40, \"end\":42, \"token\":\"IDENT\"}]}"
+  },
+  {
+    "id": "update-where",
+    "sha256": "33280fc36c0634517d3ec2d32d42a64a70aa94023437508307bd02dbdd142625",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_UpdateStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "UPDATE",
+        "token": "UPDATE",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 8,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 9,
+        "end": 12,
+        "text": "SET",
+        "token": "SET",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 13,
+        "end": 14,
+        "text": "a",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 16,
+        "text": "=",
+        "token": "ASCII_61",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 17,
+        "end": 19,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 20,
+        "end": 25,
+        "text": "WHERE",
+        "token": "WHERE",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 26,
+        "end": 28,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 29,
+        "end": 30,
+        "text": "=",
+        "token": "ASCII_61",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 31,
+        "end": 33,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"UpdateStmt\":{\"relation\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":7}, \"targetList\":[{\"ResTarget\":{\"name\":\"a\", \"val\":{\"ParamRef\":{\"number\":1, \"location\":17}}, \"location\":13}}], \"whereClause\":{\"A_Expr\":{\"kind\":\"AEXPR_OP\", \"name\":[{\"String\":{\"sval\":\"=\"}}], \"lexpr\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":26}}, \"rexpr\":{\"ParamRef\":{\"number\":2, \"location\":31}}, \"location\":29}}}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"UPDATE\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":7, \"end\":8, \"token\":\"IDENT\"}, {\"start\":9, \"end\":12, \"token\":\"SET\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":13, \"end\":14, \"token\":\"IDENT\"}, {\"start\":15, \"end\":16, \"token\":\"ASCII_61\"}, {\"start\":17, \"end\":19, \"token\":\"PARAM\"}, {\"start\":20, \"end\":25, \"token\":\"WHERE\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":26, \"end\":28, \"token\":\"IDENT\"}, {\"start\":29, \"end\":30, \"token\":\"ASCII_61\"}, {\"start\":31, \"end\":33, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "delete-where",
+    "sha256": "8f214b3ff2fb33a10da5f2f3d9e7512d8c918b3ec56621e033600f97c2e5f8f5",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_DeleteStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "DELETE",
+        "token": "DELETE_P",
+        "keyword": "UNRESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 11,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 12,
+        "end": 13,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 14,
+        "end": 19,
+        "text": "WHERE",
+        "token": "WHERE",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 20,
+        "end": 22,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 23,
+        "end": 24,
+        "text": "=",
+        "token": "ASCII_61",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 25,
+        "end": 27,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"DeleteStmt\":{\"relation\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":12}, \"whereClause\":{\"A_Expr\":{\"kind\":\"AEXPR_OP\", \"name\":[{\"String\":{\"sval\":\"=\"}}], \"lexpr\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":20}}, \"rexpr\":{\"ParamRef\":{\"number\":1, \"location\":25}}, \"location\":23}}}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"DELETE_P\", \"keywordKind\":\"UNRESERVED_KEYWORD\"}, {\"start\":7, \"end\":11, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":12, \"end\":13, \"token\":\"IDENT\"}, {\"start\":14, \"end\":19, \"token\":\"WHERE\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":20, \"end\":22, \"token\":\"IDENT\"}, {\"start\":23, \"end\":24, \"token\":\"ASCII_61\"}, {\"start\":25, \"end\":27, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "limit-subquery",
+    "sha256": "6780f680797700813de7e521c4518dd98ed695e3f3e297988ef8f621c8d54e30",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 8,
+        "text": "*",
+        "token": "ASCII_42",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 9,
+        "end": 13,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 14,
+        "end": 15,
+        "text": "(",
+        "token": "ASCII_40",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 21,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 22,
+        "end": 24,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 25,
+        "end": 29,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 30,
+        "end": 31,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 32,
+        "end": 37,
+        "text": "LIMIT",
+        "token": "LIMIT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 38,
+        "end": 40,
+        "text": "$1",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 40,
+        "end": 41,
+        "text": ")",
+        "token": "ASCII_41",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 42,
+        "end": 43,
+        "text": "s",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 44,
+        "end": 49,
+        "text": "LIMIT",
+        "token": "LIMIT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 50,
+        "end": 52,
+        "text": "$2",
+        "token": "PARAM",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"A_Star\":{}}], \"location\":7}}, \"location\":7}}], \"fromClause\":[{\"RangeSubselect\":{\"subquery\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":22}}, \"location\":22}}], \"fromClause\":[{\"RangeVar\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":30}}], \"limitCount\":{\"ParamRef\":{\"number\":1, \"location\":38}}, \"limitOption\":\"LIMIT_OPTION_COUNT\", \"op\":\"SETOP_NONE\"}}, \"alias\":{\"aliasname\":\"s\"}}}], \"limitCount\":{\"ParamRef\":{\"number\":2, \"location\":50}}, \"limitOption\":\"LIMIT_OPTION_COUNT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":8, \"token\":\"ASCII_42\"}, {\"start\":9, \"end\":13, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":14, \"end\":15, \"token\":\"ASCII_40\"}, {\"start\":15, \"end\":21, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":22, \"end\":24, \"token\":\"IDENT\"}, {\"start\":25, \"end\":29, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":30, \"end\":31, \"token\":\"IDENT\"}, {\"start\":32, \"end\":37, \"token\":\"LIMIT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":38, \"end\":40, \"token\":\"PARAM\"}, {\"start\":40, \"end\":41, \"token\":\"ASCII_41\"}, {\"start\":42, \"end\":43, \"token\":\"IDENT\"}, {\"start\":44, \"end\":49, \"token\":\"LIMIT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":50, \"end\":52, \"token\":\"PARAM\"}]}"
+  },
+  {
+    "id": "limit-literal",
+    "sha256": "d9efafb85c9618b2bdef5c60b345625e30b45bb610f7a8f05d9c08c39f4ac915",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 9,
+        "text": "id",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 10,
+        "end": 14,
+        "text": "FROM",
+        "token": "FROM",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 15,
+        "end": 16,
+        "text": "t",
+        "token": "IDENT",
+        "keyword": "NO_KEYWORD"
+      },
+      {
+        "start": 17,
+        "end": 22,
+        "text": "LIMIT",
+        "token": "LIMIT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 23,
+        "end": 25,
+        "text": "10",
+        "token": "ICONST",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"ColumnRef\":{\"fields\":[{\"String\":{\"sval\":\"id\"}}], \"location\":7}}, \"location\":7}}], \"fromClause\":[{\"RangeVar\":{\"relname\":\"t\", \"inh\":true, \"relpersistence\":\"p\", \"location\":15}}], \"limitCount\":{\"A_Const\":{\"ival\":{\"ival\":10}, \"location\":23}}, \"limitOption\":\"LIMIT_OPTION_COUNT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":9, \"token\":\"IDENT\"}, {\"start\":10, \"end\":14, \"token\":\"FROM\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":15, \"end\":16, \"token\":\"IDENT\"}, {\"start\":17, \"end\":22, \"token\":\"LIMIT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":23, \"end\":25, \"token\":\"ICONST\"}]}"
+  },
+  {
+    "id": "select-no-params",
+    "sha256": "e004ebd5b5532a4b85984a62f8ad48a81aa3460c1ca07701f386135d72cdecf5",
+    "version": 170007,
+    "parse_error": null,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "scan_error": null,
+    "tokens": [
+      {
+        "start": 0,
+        "end": 6,
+        "text": "SELECT",
+        "token": "SELECT",
+        "keyword": "RESERVED_KEYWORD"
+      },
+      {
+        "start": 7,
+        "end": 8,
+        "text": "1",
+        "token": "ICONST",
+        "keyword": "NO_KEYWORD"
+      }
+    ],
+    "raw_parse": "{\"version\":170007, \"stmts\":[{\"stmt\":{\"SelectStmt\":{\"targetList\":[{\"ResTarget\":{\"val\":{\"A_Const\":{\"ival\":{\"ival\":1}, \"location\":7}}, \"location\":7}}], \"limitOption\":\"LIMIT_OPTION_DEFAULT\", \"op\":\"SETOP_NONE\"}}}]}",
+    "raw_scan": "{\"version\":170007, \"tokens\":[{\"end\":6, \"token\":\"SELECT\", \"keywordKind\":\"RESERVED_KEYWORD\"}, {\"start\":7, \"end\":8, \"token\":\"ICONST\"}]}"
+  }
+]

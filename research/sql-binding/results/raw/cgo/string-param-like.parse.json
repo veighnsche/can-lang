@@ -1,0 +1,1 @@
+{"version":170007, "stmts":[{"stmt":{"SelectStmt":{"targetList":[{"ResTarget":{"val":{"A_Const":{"sval":{"sval":"it's $1 not a param"}, "location":7}}, "location":7}}], "limitOption":"LIMIT_OPTION_DEFAULT", "op":"SETOP_NONE"}}}]}

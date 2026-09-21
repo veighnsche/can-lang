@@ -1,0 +1,480 @@
+[
+  {
+    "id": "select-params",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 63,
+        "end": 65
+      },
+      {
+        "n": 2,
+        "start": 84,
+        "end": 86
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 15
+  },
+  {
+    "id": "repeated-param",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 7,
+        "end": 9
+      },
+      {
+        "n": 1,
+        "start": 11,
+        "end": 13
+      },
+      {
+        "n": 2,
+        "start": 16,
+        "end": 18
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 6
+  },
+  {
+    "id": "param-high-number",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 16,
+        "start": 7,
+        "end": 10
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 2
+  },
+  {
+    "id": "string-param-like",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 2
+  },
+  {
+    "id": "escape-string",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 2,
+        "start": 21,
+        "end": 23
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 4
+  },
+  {
+    "id": "dollar-quote",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 3,
+        "start": 40,
+        "end": 42
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 6
+  },
+  {
+    "id": "line-comment",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 2,
+        "start": 30,
+        "end": 32
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 3
+  },
+  {
+    "id": "nested-block-comment",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 3,
+        "start": 51,
+        "end": 53
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 3
+  },
+  {
+    "id": "unicode-comment",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 28,
+        "end": 30
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 3
+  },
+  {
+    "id": "unicode-ident",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 32,
+        "end": 34
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 8
+  },
+  {
+    "id": "malformed",
+    "version": 170007,
+    "stmts": [],
+    "params": [],
+    "parse_error": {
+      "type": "*parser.Error",
+      "message": "syntax error at or near \"WHERE\"",
+      "cursorpos": 13
+    },
+    "scan_error": null,
+    "token_count": 3
+  },
+  {
+    "id": "unterminated-string",
+    "version": 0,
+    "stmts": [],
+    "params": [],
+    "parse_error": {
+      "type": "*parser.Error",
+      "message": "unterminated quoted string at or near \"'oops\"",
+      "cursorpos": 8
+    },
+    "scan_error": {
+      "type": "*parser.Error",
+      "message": "unterminated quoted string at or near \"'oops\"",
+      "cursorpos": 8
+    },
+    "token_count": 0
+  },
+  {
+    "id": "multi-statement",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 9,
+        "kind": "*pg_query.Node_SelectStmt"
+      },
+      {
+        "location": 10,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 7,
+        "end": 9
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 5
+  },
+  {
+    "id": "multi-statement-semi",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 8,
+        "kind": "*pg_query.Node_SelectStmt"
+      },
+      {
+        "location": 9,
+        "length": 10,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 17,
+        "end": 19
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 6
+  },
+  {
+    "id": "empty",
+    "version": 170007,
+    "stmts": [],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 0
+  },
+  {
+    "id": "comment-only",
+    "version": 170007,
+    "stmts": [],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 1
+  },
+  {
+    "id": "semicolon-only",
+    "version": 170007,
+    "stmts": [],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 1
+  },
+  {
+    "id": "insert-values",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_InsertStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 29,
+        "end": 31
+      },
+      {
+        "n": 2,
+        "start": 33,
+        "end": 35
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 14
+  },
+  {
+    "id": "insert-returning",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_InsertStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 26,
+        "end": 28
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 12
+  },
+  {
+    "id": "update-where",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_UpdateStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 17,
+        "end": 19
+      },
+      {
+        "n": 2,
+        "start": 31,
+        "end": 33
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 10
+  },
+  {
+    "id": "delete-where",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_DeleteStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 25,
+        "end": 27
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 7
+  },
+  {
+    "id": "limit-subquery",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [
+      {
+        "n": 1,
+        "start": 38,
+        "end": 40
+      },
+      {
+        "n": 2,
+        "start": 50,
+        "end": 52
+      }
+    ],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 14
+  },
+  {
+    "id": "limit-literal",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 6
+  },
+  {
+    "id": "select-no-params",
+    "version": 170007,
+    "stmts": [
+      {
+        "location": 0,
+        "length": 0,
+        "kind": "*pg_query.Node_SelectStmt"
+      }
+    ],
+    "params": [],
+    "parse_error": null,
+    "scan_error": null,
+    "token_count": 2
+  }
+]

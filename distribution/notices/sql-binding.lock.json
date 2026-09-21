@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.sql-binding",
+  "task": "I36",
+  "selected": {
+    "module": "github.com/pganalyze/pg_query_go/v6",
+    "version": "v6.2.2",
+    "published": "2026-01-28T06:36:51Z",
+    "repository": "https://github.com/pganalyze/pg_query_go",
+    "tag": "v6.2.2",
+    "commit": "6a1adb4a50b66ca95f2bb34409697c586e18fa28",
+    "goSum": "h1:O0L6zMC226R82RF3X5n0Ki6HjytDsoAzuzp4ATVAHNo=",
+    "goModSum": "h1:Cn6+j4870kJz3iYNsb0VsNG04vpSWgEvBwc590J4qD0=",
+    "libpgQuery": "17-6.2.2",
+    "postgresVersion": 170007,
+    "postgresMajor": 17,
+    "licenses": [
+      {"spdx": "BSD-3-Clause", "path": "distribution/notices/pg-query-go-LICENSE.txt"},
+      {"spdx": "PostgreSQL", "path": "distribution/notices/libpg-query-LICENSE.POSTGRESQL.txt"}
+    ]
+  },
+  "transitive": [
+    {
+      "module": "google.golang.org/protobuf",
+      "version": "v1.36.12",
+      "published": "2026-08-10T13:29:45Z",
+      "repository": "https://go.googlesource.com/protobuf",
+      "commit": "cdd4c5f7406e82462949c7a65defa9f3029c162d",
+      "goSum": "h1:pJOKDDOyeXErUroCihFAd5LQuwXBSpVnKGrj5o/fwxc=",
+      "goModSum": "h1:HTf+CrKn2C3g5S8VImy6tdcUvCska2kB7j23XfzDpco=",
+      "licenses": [
+        {"spdx": "BSD-3-Clause", "path": "distribution/notices/protobuf-LICENSE.txt"}
+      ]
+    }
+  ],
+  "rejected": {
+    "module": "github.com/wasilibs/go-pgquery",
+    "version": "v0.0.0-20260915022521-81f99195012b",
+    "reason": "byte-identical outputs but ~454 ms cold compile and ~300 MB transient peak per process, larger binary, untagged third-party pin; see research/sql-binding/README.md"
+  },
+  "buildInputs": "The binding ships inside the canlc launcher binary, whose content hash feeds every build ID via the compiler input; no separate manifest field is needed."
+}

@@ -1,0 +1,63 @@
+=== revisions ===
+github.com/pganalyze/pg_query_go/v6 v6.2.2
+github.com/wasilibs/go-pgquery v0.0.0-20260915022521-81f99195012b
+github.com/tetratelabs/wazero v1.12.0
+go: go version go1.27.1 darwin/arm64 / Apple clang version 21.0.0 (clang-2100.3.34.2) / arm64
+=== warm build ===
+cgo bytes: 13461954
+wasm bytes: 20639362
+=== cold build (fresh GOCACHE) ===
+real 5.89
+user 26.94
+sys 5.05
+real 7.40
+user 35.85
+sys 6.63
+cold cgo bytes: 13461954
+cold wasm bytes: 20639362
+=== CGO_ENABLED=0 (no C toolchain) ===
+wasm CGO_ENABLED=0: builds, bytes: 15403074
+# github.com/veighnsche/can-lang/research/sql-binding/cgo
+cgo/main.go:90:29: undefined: pg_query.Parse
+cgo/main.go:107:28: undefined: pg_query.Scan
+cgo CGO_ENABLED=0: refuses as expected
+=== cold invocation (21 fresh processes each, wall ms) ===
+cgo {"wall_min": 4.589332966133952, "wall_median": 5.032791057601571, "inner_min": 0.964083, "inner_median": 1.048125}
+wasm {"wall_min": 447.9740000097081, "wall_median": 453.9046250283718, "inner_min": 441.53325, "inner_median": 447.217708}
+=== warmed benchmarks ===
+goos: darwin
+goarch: arm64
+pkg: github.com/veighnsche/can-lang/research/sql-binding/cgo
+cpu: Apple M4
+BenchmarkCgoParseSelect-10    	   78906	     13870 ns/op	    3280 B/op	      70 allocs/op
+BenchmarkCgoParseSelect-10    	   86722	     13863 ns/op	    3280 B/op	      70 allocs/op
+BenchmarkCgoScanSelect-10     	  546265	      2109 ns/op	    1608 B/op	      23 allocs/op
+BenchmarkCgoScanSelect-10     	  575664	      2081 ns/op	    1608 B/op	      23 allocs/op
+BenchmarkCgoParseTiny-10      	  417163	      2858 ns/op	     960 B/op	      16 allocs/op
+BenchmarkCgoParseTiny-10      	  420960	      2844 ns/op	     960 B/op	      16 allocs/op
+PASS
+ok  	github.com/veighnsche/can-lang/research/sql-binding/cgo	7.611s
+goos: darwin
+goarch: arm64
+pkg: github.com/veighnsche/can-lang/research/sql-binding/wasm
+cpu: Apple M4
+BenchmarkWasmParseSelect-10    	   26734	     44738 ns/op	   85312 B/op	      78 allocs/op
+BenchmarkWasmParseSelect-10    	   26809	     44720 ns/op	   85312 B/op	      78 allocs/op
+BenchmarkWasmScanSelect-10     	  235899	      5032 ns/op	   12432 B/op	      30 allocs/op
+BenchmarkWasmScanSelect-10     	  237794	      5025 ns/op	   12432 B/op	      30 allocs/op
+BenchmarkWasmParseTiny-10      	  115598	     10495 ns/op	   82984 B/op	      24 allocs/op
+BenchmarkWasmParseTiny-10      	  113528	     10554 ns/op	   82984 B/op	      24 allocs/op
+PASS
+ok  	github.com/veighnsche/can-lang/research/sql-binding/wasm	9.486s
+=== batch memory (50 corpus passes) ===
+{"elapsed_ns":18840625,"heap_alloc":3153264,"iterations":1200,"num_gc":7,"total_alloc":13817104}
+            11994000  peak memory footprint
+{"elapsed_ns":481010333,"heap_alloc":382750920,"iterations":1200,"num_gc":10,"total_alloc":475521792}
+           346145944  peak memory footprint
+=== batch memory under GC pressure (GOGC=20) ===
+{"elapsed_ns":21226375,"heap_alloc":2482328,"iterations":1200,"num_gc":16,"total_alloc":13853888}
+{"elapsed_ns":523047625,"heap_alloc":12018136,"iterations":1200,"num_gc":105,"total_alloc":475808480}
+=== module payload ===
+/Users/vince/go/pkg/mod/github.com/wasilibs/go-pgquery@v0.0.0-20260915022521-81f99195012b
+-r--r--r--@ 1 vince  staff  2488452 Sep 21 21:35 /Users/vince/go/pkg/mod/github.com/wasilibs/go-pgquery@v0.0.0-20260915022521-81f99195012b/internal/wasm/libpg_query.so
+done

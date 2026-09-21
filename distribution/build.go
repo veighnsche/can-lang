@@ -170,7 +170,11 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 		}
 		cmd.Env = append(cmd.Env, entry)
 	}
-	cmd.Env = append(cmd.Env, "GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=0", "GOPROXY=off", "GOSUMDB=off", "GOTOOLCHAIN=local")
+	// I36 pins the official CGo PostgreSQL parser, so the launcher needs a C
+	// toolchain at build time (a documented developer prerequisite). The
+	// shipped binary links only the platform libc and runs without any C
+	// tooling; staged tests execute it with PATH lacking compilers.
+	cmd.Env = append(cmd.Env, "GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=1", "GOPROXY=off", "GOSUMDB=off", "GOTOOLCHAIN=local")
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("build launcher: %w\n%s", err, output)
 	}

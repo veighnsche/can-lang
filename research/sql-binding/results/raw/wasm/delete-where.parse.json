@@ -1,0 +1,1 @@
+{"version":170007, "stmts":[{"stmt":{"DeleteStmt":{"relation":{"relname":"t", "inh":true, "relpersistence":"p", "location":12}, "whereClause":{"A_Expr":{"kind":"AEXPR_OP", "name":[{"String":{"sval":"="}}], "lexpr":{"ColumnRef":{"fields":[{"String":{"sval":"id"}}], "location":20}}, "rexpr":{"ParamRef":{"number":1, "location":25}}, "location":23}}}}}]}

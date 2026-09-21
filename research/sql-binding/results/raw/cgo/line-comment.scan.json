@@ -1,0 +1,1 @@
+{"version":170007, "tokens":[{"end":22, "token":"SQL_COMMENT"}, {"start":23, "end":29, "token":"SELECT", "keywordKind":"RESERVED_KEYWORD"}, {"start":30, "end":32, "token":"PARAM"}]}

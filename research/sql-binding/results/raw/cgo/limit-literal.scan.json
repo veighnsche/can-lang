@@ -1,0 +1,1 @@
+{"version":170007, "tokens":[{"end":6, "token":"SELECT", "keywordKind":"RESERVED_KEYWORD"}, {"start":7, "end":9, "token":"IDENT"}, {"start":10, "end":14, "token":"FROM", "keywordKind":"RESERVED_KEYWORD"}, {"start":15, "end":16, "token":"IDENT"}, {"start":17, "end":22, "token":"LIMIT", "keywordKind":"RESERVED_KEYWORD"}, {"start":23, "end":25, "token":"ICONST"}]}

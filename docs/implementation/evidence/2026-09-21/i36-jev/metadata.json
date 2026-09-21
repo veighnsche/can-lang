@@ -1,0 +1,19 @@
+{
+ "exercise": "I36 SQL parser binding selection and adapter shape",
+ "finished_utc": "2026-09-21T19:51:15+00:00",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "951e39c9ae0d731bd9a03fe3efd625b9693fdb5efc975b3f33c49d91b2e89878",
+  "request-2.json": "c805e89f9326e1aff0b8d81340c61c8e787cedc814cb601c8d75089fadb27009",
+  "request-3.json": "a0ddac0f1919b5aa3da806ae9cc51ad5519c878c481f122631c8d9f56e37e776"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and numeric facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 21/21 strings pairwise distinct, 12 exact identifiers preserved.",
+ "verdicts": {
+  "binding_choice": "cgo_official (3/3 strong: 0.97, 0.98, 0.91)",
+  "error_vocabulary": "verbatim_upstream by 2-1 (r1 closed_reasons 0.71 investigated; r2 0.68, r3 0.91 verbatim) plus structural-classification argument",
+  "result_packaging": "separate_calls (3/3 soft: 0.54, 0.81, 0.59)"
+ }
+}
