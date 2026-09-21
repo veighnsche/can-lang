@@ -196,6 +196,15 @@ fn item unwrap<item>
         sample: box<int>(1) => => ok 1
     ok self.value
 
+fn item choose<item>
+    emits []
+    given
+        int index
+        item value
+    asserts
+        sample: 1, 1 => ok 1
+    ok value
+
 record weights choice float weighted from classifier
     emits [ai::invalid_question, ai::invalid_answer]
     given
@@ -204,7 +213,7 @@ record weights choice float weighted from classifier
     asks "Choose"
         ...SPREAD
 `
-	for _, spread := range []string{"call identity(choices)", "call identity<arms>(choices)", "call identity(call identity(choices))", "call first([choices])", "call keep([], choices)", "call variadic(...[choices])", "call wrapped.unwrap()"} {
+	for _, spread := range []string{"call identity(choices)", "call identity<arms>(choices)", "call identity(call identity(choices))", "call first([choices])", "call keep([], choices)", "call variadic(...[choices])", "call wrapped.unwrap()", "call keep(call identity([]), choices)", "call choose(1 + 0, choices)", "call identity(box(choices)).unwrap()", "call identity(box(call choose(1 + 0, call keep(call identity([]), choices)))).unwrap()"} {
 		t.Run(spread, func(t *testing.T) {
 			text := nativeHeader + nativeClassifier + strings.Replace(declarations, "SPREAD", spread, 1) + programMain + "    ok\n"
 			p, err := programFixture(t, map[string]string{"src/main.can": text})
@@ -218,10 +227,13 @@ record weights choice float weighted from classifier
 		})
 	}
 	for name, change := range map[string][2]string{
-		"ambiguous": {"identity<item>", "identity<item,unused>"},
-		"conflict":  {"...SPREAD", "...call keep([1], choices)"},
-		"arity":     {"...SPREAD", "...call identity<arms,int>(choices)"},
-		"cycle":     {"arms choices", "weights choices"},
+		"ambiguous":         {"identity<item>", "identity<item,unused>"},
+		"conflict":          {"...SPREAD", "...call keep([1], choices)"},
+		"arity":             {"...SPREAD", "...call identity<arms,int>(choices)"},
+		"fixed invalid":     {"...SPREAD", `...call choose("wrong", choices)`},
+		"resolved conflict": {"...SPREAD", `...call keep([choices], 1)`},
+		"nested invalid":    {"...SPREAD", `...call keep(call identity([1]), choices)`},
+		"cycle":             {"arms choices", "weights choices"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			text := strings.Replace(declarations, change[0], change[1], 1)

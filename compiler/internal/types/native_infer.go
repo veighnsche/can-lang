@@ -94,14 +94,16 @@ func (b *Builder) inferNativeShape(file *resolve.File, scope *resolve.Scope, dec
 			if done[index] {
 				continue
 			}
-			var want *Type
+			// Once every hole in an input is known, its expression cannot
+			// contribute to declaration shape. The sealed checker supplies
+			// that context and checks its full ordinary expression semantics.
 			if solver.Resolved(entry.pattern) {
-				want, err = b.Resolve(declaring, entry.annotation, solver.Bindings(), false)
-				if err != nil {
-					return nil, err
-				}
+				done[index] = true
+				remaining--
+				progress = true
+				continue
 			}
-			actual, err := b.nativeArgumentShape(file, scope, entry.expression, want)
+			actual, err := b.nativeArgumentShape(file, scope, entry.expression, nil)
 			if err != nil {
 				unresolved = err
 				continue

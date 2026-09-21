@@ -28,7 +28,41 @@ func (b *Builder) nativeShape(file *resolve.File, scope *resolve.Scope, node syn
 		}
 		return b.Resolve(declaringFile, symbol.Type, nil, false)
 	case *syntax.ConstructorExpr:
-		return b.Resolve(file, &syntax.NamedType{Name: n.Name, Arguments: n.Types}, nil, false)
+		symbol, err := file.Lookup(scope, n.Name, resolve.TypeUse)
+		if err != nil {
+			return nil, err
+		}
+		if len(n.Types) != 0 || len(symbol.Parameters) == 0 {
+			return b.Resolve(file, &syntax.NamedType{Name: n.Name, Arguments: n.Types}, nil, false)
+		}
+		var fields []syntax.Field
+		switch declaration := symbol.Declaration.(type) {
+		case *syntax.RecordDecl:
+			fields = declaration.Fields
+		case *syntax.ErrorDecl:
+			fields = declaration.Fields
+		default:
+			return nil, fmt.Errorf("inferred constructor lacks declared fields")
+		}
+		// Constructor field annotations are ordinary argument constraints;
+		// final constructor admission remains in the sealed expression checker.
+		declaration := &syntax.FunctionDecl{}
+		for _, field := range fields {
+			declaration.Inputs = append(declaration.Inputs, syntax.Input{Field: field})
+		}
+		declaring := file
+		if symbol.Source != nil {
+			declaring = b.world.Files[symbol.Source]
+		}
+		env, err := b.inferNativeShape(file, scope, declaring, symbol, declaration, n.Arguments, nil)
+		if err != nil {
+			return nil, err
+		}
+		args := make([]*Type, len(symbol.Parameters))
+		for i, name := range symbol.Parameters {
+			args[i] = env[name]
+		}
+		return b.instantiate(symbol, args)
 	case *syntax.FieldExpr:
 		receiver, err := b.nativeShape(file, scope, n.Receiver)
 		if err != nil {

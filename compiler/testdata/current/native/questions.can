@@ -100,7 +100,7 @@ choice float spread from classifier
     given
         arms choices
     asks "Spread"
-        ...call identity(choices)
+        ...call identity(box(call keep_after_index(1 + 0, call keep(call identity([]), choices)))).unwrap()
 
 record arm_weights choice float spread_weights from classifier
     emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
@@ -109,7 +109,7 @@ record arm_weights choice float spread_weights from classifier
     confidence as certainty
     asks "Spread weights"
         before "Before" => relay call report(%, "G")
-        ...call identity(choices)
+        ...call identity(box(call keep_after_index(1 + 0, call keep(call identity([]), choices)))).unwrap()
         after "After" => relay call report(%, "H")
 
 judge float assess from classifier
@@ -172,3 +172,31 @@ fn item identity<item>
     asserts
         sample: 1 => ok 1
     ok value
+
+fn item keep<item>
+    emits []
+    given
+        item[] ignored
+        item value
+    asserts
+        sample: [], 1 => ok 1
+    ok value
+
+fn item keep_after_index<item>
+    emits []
+    given
+        int index
+        item value
+    asserts
+        sample: 1, 1 => ok 1
+    ok value
+
+record box<item>
+    item value
+
+fn item unwrap<item>
+    on box<item> self
+    emits []
+    asserts
+        sample: box<int>(1) => => ok 1
+    ok self.value
