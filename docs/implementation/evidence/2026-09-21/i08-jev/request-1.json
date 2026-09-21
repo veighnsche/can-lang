@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I08 needs named callable references with exact-name near capture, receiver capture once before ordinary inputs, exact input/result types and error-subset compatibility. Direct calls still supply near inputs. Captures retain immutable values without copying and each evaluation needs a distinct native function identity for later fixture identity. Generated calls already return protected nonthenable completion boxes and carry an optional private assertion context. Functions may have interleaved near and ordinary parameters. A callable must use the invoking assertion context, not capture the creation root. Alternatives are a fresh native closure over once-evaluated locals with arguments reconstructed in declaration order, native bind alone, or re-resolving capture names at invocation. Native fetch references are eligible; question/judge/LLM references are excluded and ordinary wrappers are eligible. Native declaration parsing is a separate pending I16 milestone, so static eligibility and executable pure capture evidence must not be misrepresented as implemented provider behavior.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which implementation best satisfies capture timing and the existing completion/context ABI?",
+      "criteria": {
+        "closure": "Allocate a native async closure per reference, capture prepared locals and reconstruct full target arguments, forwarding invocation context.",
+        "bind": "Use Function.bind alone to capture the original target parameters.",
+        "lookup": "Resolve near names again whenever the callable runs."
+      }
+    }
+  }
+}

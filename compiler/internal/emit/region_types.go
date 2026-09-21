@@ -34,6 +34,9 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 			return
 		}
 		add(e.Type)
+		if e.Callable != nil {
+			add(e.Callable.Contract)
+		}
 		for _, input := range e.Inputs {
 			expression(input)
 		}
@@ -47,6 +50,7 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 		add(call.Result)
 		roots = append(roots, call.Errors...)
 		for _, step := range call.Steps {
+			expression(step.Callee)
 			if step.Fixtures != nil {
 				for _, row := range step.Fixtures.Rows {
 					for _, p := range row.Prepare {

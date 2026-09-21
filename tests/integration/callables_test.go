@@ -1,0 +1,114 @@
+package integration
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"github.com/veighnsche/can-lang/distribution"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"testing"
+	"time"
+)
+
+func TestCurrentBundledCallables(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for offline callable execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "callable-integration")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, name)
+		if err = os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(p, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	run := func(command string, args ...string) (int, string, string) {
+		t.Helper()
+		argv := []string{"-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), command, root}
+		argv = append(argv, args...)
+		cmd := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", argv...)
+		cmd.Dir = t.TempDir()
+		cmd.Env = []string{"PATH=/nonexistent", "HOME=" + cmd.Dir}
+		var out, diag bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &diag
+		if err := cmd.Run(); err != nil {
+			var status *exec.ExitError
+			if !errors.As(err, &status) {
+				t.Fatal(err)
+			}
+			return status.ExitCode(), out.String(), diag.String()
+		}
+		return 0, out.String(), diag.String()
+	}
+	data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/callables/captures.can"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("src/main.can", string(data))
+	status, out, diag := run("assert")
+	if status != 0 || diag != "" {
+		t.Fatalf("native captures: %d %s %s", status, out, diag)
+	}
+	var report map[string]any
+	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 11 {
+		t.Fatalf("invalid capture report %v %s", err, out)
+	}
+	status, out, diag = run("run")
+	if status != 0 || out != "" || diag != "" {
+		t.Fatalf("native entry: %d %s %s", status, out, diag)
+	}
+	const boundary = `package boundary
+    provides []
+    uses [bytes, codec, io]
+fn void write
+    emits [codec::invalid_data, io::write_failed]
+    given
+        near str message
+    asserts
+        sample: "private" => ok
+    match chain
+        call bytes::from_utf8(message) as bytes::buffer payload
+        call io::stdout_write(payload) as int written
+        ok => ok
+        codec::invalid_data
+        io::write_failed
+fn void guarded
+    emits [codec::invalid_data, io::write_failed]
+    asserts
+        sample: => ok
+    str message = "must-not-be-written"
+    callable void () emits [codec::invalid_data, io::write_failed] action = callable write
+    relay call action()
+`
+	write("src/main.can", boundary)
+	status, out, diag = run("assert", "can.project.root/boundary", "can.project.root/boundary::guarded", "sample")
+	if status != 1 || diag != "" || !strings.Contains(out, "missing fixture") || strings.Contains(out, "must-not-be-written") {
+		t.Fatalf("captured callback lost root context: %d %s %s", status, out, diag)
+	}
+	write("src/main.can", strings.Replace(boundary, "    relay call action()", "    ok", 1))
+	status, out, diag = run("assert", "can.project.root/boundary", "can.project.root/boundary::guarded", "sample")
+	if status != 0 || diag != "" || !strings.Contains(out, `"passed":true`) {
+		t.Fatalf("reference construction ran target: %d %s %s", status, out, diag)
+	}
+}

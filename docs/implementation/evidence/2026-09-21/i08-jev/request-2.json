@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "I08 adds first-class references to named Can operations. Receiver evaluation precedes capturing exact-name near bindings, each once, while remaining input/result contracts are invariant and declared errors may fit a larger expected set. Calling the declaration directly continues to pass every input. Native closures retain immutable aliases rather than deep copies; each reference evaluation must create its own function identity for future fixture tracking. The existing ABI uses protected completion boxes and a hidden optional assertion context. Near slots can appear between ordinary parameters, and invocation must receive its caller root instead of saving the creator context. Choose a newly allocated native closure with prepared captures and declaration-order argument assembly, plain Function.bind, or lookup of capture names when called. Fetch declarations may be referenced, question/judge/LLM declarations may not, and ordinary wrappers remain eligible. I16 still owns native syntax, so neither reference-checker tests nor pure execution tests prove provider implementation.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Select the suitable callable representation for these stated constraints.",
+      "criteria": {
+        "closure": "Create a fresh native closure retaining evaluated captures and passing remaining arguments into declaration slots with the caller context.",
+        "bind": "Implement references solely through the native bind operation.",
+        "lookup": "Look up current surrounding bindings on each invocation."
+      }
+    }
+  }
+}

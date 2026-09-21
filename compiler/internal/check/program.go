@@ -142,8 +142,9 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 		return ValueBinding{Identity: symbol.ID, Type: typ}, nil
 	}
 	return &Expressions{Scalars: c.annotations[file],
-		Value:    func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
-		Function: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
+		Value:     func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
+		Reference: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ReferenceUse) },
+		Function:  func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
 		Constructor: func(node *syntax.ConstructorExpr, expected *types.Type) (*types.Type, error) {
 			if _, err := file.Lookup(nil, node.Name, resolve.ConstructorUse); err != nil {
 				return nil, err
@@ -256,9 +257,6 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 					fields = append(fields, *d.Receiver)
 				}
 				for i, input := range d.Inputs {
-					if input.Near {
-						return nil, fmt.Errorf("%s: near capture lowering is not implemented", symbol.ID)
-					}
 					field := input.Field
 					if input.Variadic {
 						if i != len(d.Inputs)-1 {
@@ -312,6 +310,27 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	callables := map[string]CallableDeclaration{}
+	for id, typ := range p.Intrinsics {
+		names := make([]string, len(typ.Inputs()))
+		for i := range names {
+			names[i] = fmt.Sprintf("input%d", i)
+		}
+		callables[id] = CallableDeclaration{Kind: "function", Contract: typ, Names: names, Near: make([]bool, len(names))}
+	}
+	for _, fn := range p.Functions {
+		d := fn.Symbol.Declaration.(*syntax.FunctionDecl)
+		descriptor := CallableDeclaration{Kind: "function", Contract: c.bindings[fn.Symbol.ID], Receiver: d.Receiver != nil}
+		if d.Receiver != nil {
+			descriptor.Names = append(descriptor.Names, d.Receiver.Name.Text)
+			descriptor.Near = append(descriptor.Near, false)
+		}
+		for _, input := range d.Inputs {
+			descriptor.Names = append(descriptor.Names, input.Name.Text)
+			descriptor.Near = append(descriptor.Near, input.Near)
+		}
+		callables[fn.Symbol.ID] = descriptor
+	}
 	for _, fn := range p.Functions {
 		symbol := fn.Symbol
 		file := world.Files[symbol.Source]
@@ -322,7 +341,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		if e != nil {
 			return nil, e
 		}
-		context := CompletionContext{Identity: symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: registry, Expressions: c.expressions(file, scope), Variadic: c.variadic}
+		context := CompletionContext{Identity: symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: callables}
 		context.Method = func(receiver *types.Type, name syntax.Token, args []syntax.TypeNode) (ValueBinding, error) {
 			if len(args) != 0 {
 				return ValueBinding{}, fmt.Errorf("generic method specialization is not implemented")

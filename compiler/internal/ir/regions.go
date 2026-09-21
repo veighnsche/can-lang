@@ -50,6 +50,7 @@ type Preparation struct {
 	Value *Expression
 }
 type InvocationStep struct {
+	Callee    *Expression
 	Contract  *types.Type
 	Receiver  bool
 	Fixtures  *FixtureTable

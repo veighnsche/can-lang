@@ -14,6 +14,7 @@ type LoweredExpression struct{ Statements, Value string }
 // region may later insert awaited, boxed call lowering at Call without introducing
 // hidden async IIFEs or exposing payloads to promise assimilation.
 type ExpressionEmitter struct {
+	Callable   func(*ir.Expression) (LoweredExpression, error)
 	Bindings   map[string]string
 	TypeName   func(*types.Type) string
 	Invocation func(*ir.Invocation) (LoweredExpression, error)
@@ -58,6 +59,11 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		return lowered.Value, nil
 	}
 	switch node.Kind {
+	case ir.CallableValue:
+		if e.Callable == nil {
+			return LoweredExpression{}, fmt.Errorf("callable lowering requires its owning region")
+		}
+		return e.Callable(node)
 	case ir.InvocationValue:
 		if e.Invocation == nil {
 			return LoweredExpression{}, fmt.Errorf("invocation requires its owning region")

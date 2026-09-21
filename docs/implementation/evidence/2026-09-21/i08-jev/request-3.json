@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The callable task requires evaluating a method receiver once then retaining near values resolved by their exact lexical names at construction. Signature inputs and result must match exactly; the actual error set may be narrower than its expected contract. A normal direct call includes near arguments explicitly. Captured immutable data stays shared, and separate evaluations need distinct native callable identities for later fixture machinery. Current generated functions return nonthenable completion carriers and accept an optional compiler-private assertion context. Captured and uncaptured parameter slots may be interspersed; a stored callable must propagate the invocation context rather than the creation context. Candidate designs are native closures holding prepared locals and restoring original argument order, only native bind, and delayed capture-name lookup on invocation. Eligibility permits fetch and ordinary function wrappers but refuses questions, judges and LLM references. Native declarations are pending I16, and no evidence from this core should imply completed provider execution.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which lowering should preserve the required identities, ordering and root propagation?",
+      "criteria": {
+        "closure": "Emit a new async closure over saved immutable values, restoring argument order and receiving its executing assertion root.",
+        "bind": "Apply only Function.bind to the named target and captured inputs.",
+        "lookup": "Defer capture resolution until the callable is executed."
+      }
+    }
+  }
+}

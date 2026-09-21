@@ -16,13 +16,15 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
-	ResolvedValue func(*syntax.NameExpr, ValueBinding)
-	Scalars       map[string]*types.Type
-	CallCheck     func(*syntax.CallExpr, *types.Type) (*ir.Expression, error)
-	MatchCheck    func(*syntax.MatchExpr, *types.Type) (*ir.Expression, error)
+	ResolvedValue  func(*syntax.NameExpr, ValueBinding)
+	Scalars        map[string]*types.Type
+	ReferenceCheck func(*syntax.ReferenceExpr, *types.Type) (*ir.Expression, error)
+	CallCheck      func(*syntax.CallExpr, *types.Type) (*ir.Expression, error)
+	MatchCheck     func(*syntax.MatchExpr, *types.Type) (*ir.Expression, error)
 	// The owning body pass supplies its eligible-kind lexical/package resolution.
 	// Call lookup is separate because an ineligible local must not hide a function.
 	Value       func(syntax.QualifiedName) (ValueBinding, error)
+	Reference   func(syntax.QualifiedName) (ValueBinding, error)
 	Function    func(syntax.QualifiedName) (ValueBinding, error)
 	Constructor func(*syntax.ConstructorExpr, *types.Type) (*types.Type, error)
 }
@@ -55,6 +57,11 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 	out := &ir.Expression{Span: node.ExprSpan()}
 	var err error
 	switch n := node.(type) {
+	case *syntax.ReferenceExpr:
+		if c.ReferenceCheck == nil {
+			return nil, fmt.Errorf("callable reference requires its owning region")
+		}
+		return c.ReferenceCheck(n, expected)
 	case *syntax.MatchExpr:
 		if c.MatchCheck == nil {
 			return nil, fmt.Errorf("value match requires its owning region")

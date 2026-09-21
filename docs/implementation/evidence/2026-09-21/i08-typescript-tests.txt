@@ -1,0 +1,4 @@
+PASS: strict TypeScript checking of all runtime modules and tests.
+PASS: strict TypeScript checking of staged generated entry and assertion modules.
+Flags: --noEmit --strict --skipLibCheck --target esnext --module esnext --moduleResolution bundler --allowImportingTsExtensions --types bun,node
+TypeScript: 7.0.2; execution runtime: qualified Bun 1.4.2.

@@ -143,6 +143,7 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	if e.SourceID != "" {
 		e.expression.Mark = func(node *ir.Expression) string { return e.mark(node.Span, string(node.Kind)) }
 	}
+	e.expression.Callable = e.callable
 	e.expression.Invocation = e.invocationValue
 	e.expression.Match = e.valueMatch
 	e.expression.Call = func(id string, args []string) (LoweredExpression, error) {
@@ -202,6 +203,15 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 	}
 	fmt.Fprintf(&out, "%s: { try {\n", label)
 	for _, step := range call.Steps {
+		var target string
+		if step.Callee != nil {
+			callee, err := e.expression.Lower(step.Callee)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			out.WriteString(callee.Statements)
+			target = callee.Value
+		}
 		for _, prepared := range step.Prepare {
 			value, err := e.expression.Lower(prepared.Value)
 			if err != nil {
@@ -221,9 +231,12 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			fmt.Fprintf(&out, "%s = %s;\n%s = $canSuccess(%s);\n", e.expression.Bindings[step.SuccessBinding], value.Value, result, e.expression.Bindings[step.SuccessBinding])
 			continue
 		}
-		target, err := e.target(step.Identity)
-		if err != nil {
-			return LoweredExpression{}, err
+		if target == "" {
+			var err error
+			target, err = e.target(step.Identity)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
 		}
 		var args []string
 		for _, argument := range step.Arguments {

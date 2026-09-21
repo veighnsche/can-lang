@@ -10,6 +10,7 @@ import (
 type ExpressionKind string
 
 const (
+	CallableValue      ExpressionKind = "callable"
 	Literal            ExpressionKind = "literal"
 	Binding            ExpressionKind = "binding"
 	Unary              ExpressionKind = "unary"
@@ -37,6 +38,7 @@ const (
 )
 
 type Expression struct {
+	Callable   *Callable
 	Invocation *Invocation
 	Match      *Match
 	Kind       ExpressionKind

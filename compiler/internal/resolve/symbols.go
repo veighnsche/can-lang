@@ -24,12 +24,17 @@ const (
 	Primitive     Kind = "primitive"
 	TypeParameter Kind = "type_parameter"
 	Function      Kind = "function"
+	Fetch         Kind = "fetch"
+	Question      Kind = "question"
+	Judge         Kind = "judge"
+	LLM           Kind = "llm"
 	Value         Kind = "value"
 )
 
 type Usage string
 
 const (
+	ReferenceUse   Usage = "reference"
 	TypeUse        Usage = "type"
 	ConstructorUse Usage = "constructor"
 	CallUse        Usage = "call"
@@ -51,6 +56,8 @@ type Symbol struct {
 
 func (s *Symbol) Eligible(usage Usage) bool {
 	switch usage {
+	case ReferenceUse:
+		return (s.Kind == Function || s.Kind == Fetch) && s.Receiver == nil
 	case TypeUse:
 		return s.Kind == Record || s.Kind == Error || s.Kind == Variant || s.Kind == Opaque || s.Kind == Primitive || s.Kind == TypeParameter
 	case ConstructorUse:

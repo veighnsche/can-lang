@@ -1,0 +1,92 @@
+package closures
+    provides []
+    uses []
+record holder
+    callable int (int) emits [] action
+record box
+    int value
+fn int identity
+    emits []
+    given
+        int value
+    asserts
+        sample: 4 => ok 4
+    ok value
+fn int combine
+    emits []
+    given
+        near int prefix
+        int value
+        near int suffix
+    asserts
+        sample: 3, 4, 5 => ok 12
+    ok prefix + value + suffix
+fn int consume
+    emits []
+    given
+        callable int (int) emits [] action
+        int value
+    asserts
+        sample: callable identity, 4 => ok 4
+    ok call action(value)
+fn int compute
+    emits []
+    given
+        int prefix
+        int suffix
+        int value
+    asserts
+        first: 3, 5, 4 => ok 12
+        second: 7, 11, 4 => ok 22
+    callable int (int) emits [] action = callable combine
+    ok call consume(action, value)
+fn int through_field
+    emits []
+    given
+        int prefix
+        int suffix
+    asserts
+        sample: 3, 5 => ok 12
+    holder stored = holder(callable combine)
+    ok call stored.action(4)
+fn box make_box
+    emits []
+    asserts
+        sample: => ok box(7)
+    ok box(7)
+fn int read
+    on box self
+    emits []
+    given
+        near int increment
+    asserts
+        sample: box(7) => 3 => ok 10
+    ok self.value + increment
+fn int receiver_capture
+    emits []
+    given
+        int increment
+    asserts
+        sample: 3 => ok 10
+    callable int () emits [] action = callable (call make_box()).read
+    ok call action()
+fn int through_array
+    emits []
+    given
+        int prefix
+        int suffix
+    asserts
+        sample: 3, 5 => ok 12
+    callable int (int) emits [][] actions = [callable combine]
+    ok call actions[0](4)
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match (call compute(3, 5, 4) + call compute(7, 11, 4) + call receiver_capture(3))
+        44 => ok
+        _ => do
+            int invalid = 1 / 0
+            ok

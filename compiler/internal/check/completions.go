@@ -28,8 +28,9 @@ type CompletionContext struct {
 	ErrorName        func(syntax.QualifiedName) (string, error)
 	PatternName      func(syntax.QualifiedName) (string, error)
 	// Variadic declaration contracts have a final array input in the private ABI.
-	Variadic map[string]bool
-	Method   func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	Callables map[string]CallableDeclaration
+	Variadic  map[string]bool
+	Method    func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
 }
@@ -122,6 +123,9 @@ func (c *regionChecker) expressions(scope bodyScope) *Expressions {
 			return ValueBinding{}, fmt.Errorf("unknown callable %s", name.Name)
 		}
 		return c.context.Expressions.Function(name)
+	}
+	e.ReferenceCheck = func(n *syntax.ReferenceExpr, expected *types.Type) (*ir.Expression, error) {
+		return c.reference(n, scope)
 	}
 	e.ResolvedValue = func(n *syntax.NameExpr, b ValueBinding) { c.uses.Names[n] = b.Identity }
 	e.CallCheck = func(n *syntax.CallExpr, expected *types.Type) (*ir.Expression, error) {
@@ -302,6 +306,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 		return nil
 	}
 	var first ValueBinding
+	var directCallee *ir.Expression
 	var receiver *ir.Expression
 	var err error
 	switch callee := n.Invocation.Callee.(type) {
@@ -313,6 +318,17 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 	case *syntax.FieldExpr:
 		receiver, err = e.Check(callee.Receiver, nil)
 		if err == nil {
+			for _, field := range receiver.Type.Fields() {
+				if field.Name == callee.Field.Text && field.Type.Kind() == types.Callable {
+					directCallee = &ir.Expression{Kind: ir.Field, Type: field.Type, Span: callee.Span, Text: field.Name, Inputs: []*ir.Expression{receiver}}
+					first = ValueBinding{Identity: c.identity("callee"), Type: field.Type}
+					receiver = nil
+					break
+				}
+			}
+			if directCallee != nil {
+				break
+			}
 			if callee.Field.Text == "slice" && (receiver.Type.Kind() == types.Array || scalar(receiver.Type, "str")) {
 				err = appendSlice(receiver, n.Invocation.Arguments, n.Invocation.Span)
 				break
@@ -323,16 +339,19 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 			first, err = c.context.Method(receiver.Type, callee.Field, nil)
 		}
 	default:
-		return nil, fmt.Errorf("call requires an eligible named callable")
+		directCallee, err = e.Check(n.Invocation.Callee, nil)
+		if err == nil {
+			first = ValueBinding{Identity: c.identity("callee"), Type: directCallee.Type}
+		}
 	}
 	if err != nil {
 		return nil, err
 	}
-	appendStep := func(binding ValueBinding, args []syntax.Argument, receiver *ir.Expression, span source.Span) error {
+	appendStep := func(binding ValueBinding, args []syntax.Argument, receiver *ir.Expression, span source.Span, callee *ir.Expression) error {
 		if binding.Identity == "" || !types.Equal(binding.Type, binding.Type) || binding.Type.Kind() != types.Callable {
 			return fmt.Errorf("invalid resolved callable contract")
 		}
-		step := ir.InvocationStep{Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
+		step := ir.InvocationStep{Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)
 		if err != nil {
@@ -344,7 +363,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 		return nil
 	}
 	if len(out.Steps) == 0 {
-		if err = appendStep(first, n.Invocation.Arguments, receiver, n.Invocation.Span); err != nil {
+		if err = appendStep(first, n.Invocation.Arguments, receiver, n.Invocation.Span, directCallee); err != nil {
 			return nil, err
 		}
 	}
@@ -363,6 +382,22 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 			}
 			continue
 		}
+		var fieldCallee *ir.Expression
+		for _, field := range out.Result.Fields() {
+			if field.Name == method.Name.Text && field.Type.Kind() == types.Callable {
+				if len(method.Types) != 0 {
+					return nil, fmt.Errorf("callable value does not accept generic arguments")
+				}
+				fieldCallee = &ir.Expression{Kind: ir.Field, Span: method.Span, Type: field.Type, Text: field.Name, Inputs: []*ir.Expression{receiver}}
+				break
+			}
+		}
+		if fieldCallee != nil {
+			if err = appendStep(ValueBinding{Identity: c.identity("callee"), Type: fieldCallee.Type}, method.Arguments, nil, method.Span, fieldCallee); err != nil {
+				return nil, err
+			}
+			continue
+		}
 		if c.context.Method == nil {
 			return nil, fmt.Errorf("missing resolved method contract")
 		}
@@ -370,7 +405,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 		if err != nil {
 			return nil, err
 		}
-		if err = appendStep(binding, method.Arguments, receiver, method.Span); err != nil {
+		if err = appendStep(binding, method.Arguments, receiver, method.Span, nil); err != nil {
 			return nil, err
 		}
 	}
