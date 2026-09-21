@@ -319,6 +319,16 @@
       "../domain.ts",
       "../failure.ts",
       "./http.ts"
+    ],
+    "platform/server.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../owner.ts",
+      "./http.ts",
+      "./router.ts"
     ]
   }
 }

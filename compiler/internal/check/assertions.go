@@ -125,6 +125,10 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 		}
 		c.context.Result = step.Result
 		c.context.Errors = bound
+		// Fixture expectations admit bare ok under the same opaque/callable
+		// confinement as assertion expectations: supplied boundaries can
+		// return tokens no Can expression can construct.
+		c.context.BareOpaque = true
 		c.region.Result = step.Result
 		expected, err := c.completion(row.Expected, scope)
 		c.context, c.region.Result, c.region.Escapes = savedContext, savedResult, savedEscapes

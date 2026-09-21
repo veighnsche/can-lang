@@ -248,7 +248,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		if httpGenericOperation(op.Identity) {
 			continue
 		} // I32 generics specialize per concrete type argument on use.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Name != "htmx::runtime_head" {
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Name != "htmx::runtime_head" {
 			continue
 		}
 		signature := &syntax.CallableType{}

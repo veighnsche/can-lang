@@ -33,7 +33,7 @@ compiler/
     catalogue/                    catalogue.json is the source of API truth
     check/                        source admission, exact bounds, specializations
       http.go                     I32 closed: HTTP/static callback checks
-      server.go                   proposed I33 server-specific checks if needed
+      server.go                   I33 closed: no server-specific checks needed (gate plus generic bare-opaque fixtures)
       assets.go                   proposed I34 static asset resolution
       sql.go                      proposed I37/I35 SQL descriptor/call checks
       transaction.go              proposed I38 callback/scope checks
@@ -61,8 +61,8 @@ runtime/
   ai/                            TypeSafe and Responses adapters
   assert/                        assertion identities, queues, fixtures, reports
   platform/
-    http.ts / router.ts / form.ts  I32 closed; extend for I33 here
-    server.ts                    planned I33 native Bun server ownership
+    http.ts / router.ts / form.ts  I32 closed; I33 reused snapshot/dispatch unchanged
+    server.ts                    I33 closed: native Bun server ownership
     assets.ts                    planned I34 closed native asset serving
     sql-descriptor.ts            planned I37 private descriptor provenance
     sql.ts                       planned I35 pool/query/row adapters
