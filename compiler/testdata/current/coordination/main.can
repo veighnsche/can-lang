@@ -1,0 +1,117 @@
+package coordination
+    provides []
+    uses [codec]
+fn int one
+    emits []
+    asserts
+        sample: => ok 1
+    ok 1
+fn str text
+    emits []
+    asserts
+        sample: => ok "two"
+    ok "two"
+fn int unavailable
+    emits [codec::invalid_data]
+    asserts
+        sample: => codec::invalid_data("", "type")
+    codec::invalid_data("", "type")
+variant failure
+    codec::invalid_data
+    standard_failure
+fn int fail_all
+    emits [all_failed<failure>]
+    asserts
+        sample: => all_failed<failure>([codec::invalid_data("", "type")])
+    int result = match call race
+        unavailable()
+        ok int value => ok value
+        all_failed
+    ok result
+fn int aggregate_size
+    emits []
+    asserts
+        sample: => ok 1
+    match call fail_all()
+        ok int value => ok value
+        all_failed => ok all_failed.failures.length
+fn int summarize
+    emits []
+    given
+        failure[] failures
+    asserts
+        empty: [] => ok 0
+    ok failures.length
+fn int observe
+    emits []
+    asserts
+        sample: => ok 2
+    int result = match call race
+        unavailable()
+        ok int value => ok value
+        all_failed => do
+            int count = all_failed.failures.length
+            int summarized = call summarize(all_failed.failures)
+            ok count + summarized
+    ok result
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    int observed = call observe()
+    int failure_count = call aggregate_size()
+    int[] concurrent = match call concurrent
+        one()
+            ok int value => ok value
+        text()
+            ok str value => ok value.length
+    int[] settled = match call concurrent with error
+        unavailable()
+            ok int value => ok value
+            codec::invalid_data => ok 2
+        one()
+            ok int value => ok value
+    int raced = match call race with error
+        unavailable()
+        one()
+        ok int value => ok value
+        codec::invalid_data => ok 9
+    int first_success = match call race
+        unavailable()
+        one()
+        ok int value => ok value
+        all_failed => ok 0
+    int all_failed_result = match call race
+        unavailable()
+        ok int value => ok value
+        all_failed => ok 5
+    callable int () emits [][] empty_operations = []
+    int[] empty_all = match call concurrent
+        ...empty_operations
+            ok int value => ok value
+    int[] empty_settled = match call concurrent with error
+        ...empty_operations
+            ok int value => ok value
+    int empty_result = match call race
+        ...empty_operations
+        ok int value => ok value
+        all_failed => ok 7
+    callable int () emits [][] operations = [callable one, callable one]
+    int[] spread = match call concurrent
+        ...operations
+            ok int value => ok value
+    str[] sliced = match call concurrent
+        "abcd".slice(1, 3)
+            ok str value => ok value
+        text().slice(call one(), 3).slice(0, 1)
+            ok str value => ok value
+    match call concurrent
+        one()
+            ok int value => ok
+    match concurrent is [1, 3] and settled is [2, 1] and raced is 9 and spread is [1, 1] and sliced is ["bc", "w"] and first_success is 1 and all_failed_result is 5 and empty_result is 7 and failure_count is 1 and observed is 2 and empty_all.length is 0 and empty_settled.length is 0
+        true => ok
+        false => do
+            int invalid = 1 / 0
+            ok

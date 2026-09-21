@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can coordination prepares each written argument and callee before any participant starts, then launches participants in input order and delegates selection to native Promise operations. The existing checked invocation IR represents method chains as multiple steps and unions their declared errors. Later steps contain synthetic receiver bindings to earlier success results; authored argument expressions cannot refer to those synthetic names. Ordinary Can data fields are immutable data, without authored getters. Preparation failures must escape without entering coordination arms or launching a prefix. We need to execute an entire method chain as one participant while retaining exact completion boxes and resource captures. Which split can preserve these constraints without inventing new syntax?",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Choose the preparation boundary for a checked chained participant.",
+      "criteria": {
+        "dependency_split": "Hoist all callee/argument preparation independent of prior chain results before launch; keep only synthetic receiver-dependent bindings and invocation steps within the launched chain, retaining hoisted captured values in its owner.",
+        "first_only": "Prepare only the first step before launch and evaluate later written arguments after the preceding method completes.",
+        "prefix_outside": "Execute all prefix invocations before launch so that only the final method becomes the participant."
+      }
+    }
+  }
+}

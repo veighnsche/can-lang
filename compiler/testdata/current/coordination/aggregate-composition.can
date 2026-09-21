@@ -1,0 +1,100 @@
+package composition
+    provides []
+    uses [codec]
+variant a_failure
+    codec::invalid_data
+    standard_failure
+variant b_failure
+    codec::invalid_data
+    standard_failure
+variant combined_failure
+    codec::invalid_data
+    standard_failure
+fn int original_a
+    emits [all_failed<a_failure>]
+    asserts
+        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
+    all_failed<a_failure>([codec::invalid_data("a", "type")])
+fn combined_failure[] widen_a
+    emits []
+    given
+        a_failure[] failures
+    asserts
+        empty: [] => ok []
+    match failures
+        [] => ok []
+        [head, ...tail] => do
+            combined_failure first = match head
+                codec::invalid_data => head
+                standard_failure => head
+            combined_failure[] rest = call widen_a(tail)
+            ok [first, ...rest]
+fn int normalized_a
+    emits [all_failed<combined_failure>]
+    asserts
+        sample: => all_failed<combined_failure>([codec::invalid_data("a", "type")])
+    match call original_a()
+        ok
+        all_failed => do
+            combined_failure[] values = call widen_a(all_failed.failures)
+            all_failed<combined_failure>(values)
+fn int original_b
+    emits [all_failed<b_failure>]
+    asserts
+        sample: => all_failed<b_failure>([codec::invalid_data("b", "type")])
+    all_failed<b_failure>([codec::invalid_data("b", "type")])
+fn combined_failure[] widen_b
+    emits []
+    given
+        b_failure[] failures
+    asserts
+        empty: [] => ok []
+    match failures
+        [] => ok []
+        [head, ...tail] => do
+            combined_failure first = match head
+                codec::invalid_data => head
+                standard_failure => head
+            combined_failure[] rest = call widen_b(tail)
+            ok [first, ...rest]
+fn int normalized_b
+    emits [all_failed<combined_failure>]
+    asserts
+        sample: => all_failed<combined_failure>([codec::invalid_data("b", "type")])
+    match call original_b()
+        ok
+        all_failed => do
+            combined_failure[] values = call widen_b(all_failed.failures)
+            all_failed<combined_failure>(values)
+fn str describe
+    emits []
+    given
+        combined_failure value
+    asserts
+        sample: codec::invalid_data("payload", "type") => ok "payload"
+    match value
+        codec::invalid_data => ok value.path
+        standard_failure => ok value.message
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    str selected = match call race with error
+        normalized_a()
+        normalized_b()
+        ok int value => ok "unexpected"
+        all_failed => ok call describe(all_failed.failures[0])
+    str[] ordered = match call concurrent with error
+        normalized_a()
+            ok int value => ok "unexpected"
+            all_failed => ok call describe(all_failed.failures[0])
+        normalized_b()
+            ok int value => ok "unexpected"
+            all_failed => ok call describe(all_failed.failures[0])
+    match (selected is "a" or selected is "b") and ordered is ["a", "b"]
+        true => ok
+        false => do
+            int invalid = 1 / 0
+            ok

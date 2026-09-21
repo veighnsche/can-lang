@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A first-success coordination operation must delegate selection to Promise.any. Its inputs are private completion carriers: errors in either domain or standard category reject, and successful boxes protect payloads from thenable assimilation. Task and lease retention is implemented by launchOwned until all participants finish; cancellation is absent. Calling publish(selectedIndices) once tells that owner which slots have been consumed. It reports each standard failure excluded from that set exactly once, whether already finished or arriving later. The contract distinguishes unsuccessful attempts before success, which are observed then released, from standard failures after result selection, which require sanitized diagnostics but cannot invalidate the result. Selected handlers execute after the aggregate and cannot be caught by the participant arms. When all attempts fail, consumption covers every index and the original completions are ordered by input position. Decide the successful-case consumed set.",
+  "questions": {
+    "publication": {
+      "type": "choice",
+      "instructions": "Which index-set strategy should accompany the native winner to honor the supplied consumption and late-diagnostic rules?",
+      "criteria": {
+        "observed_before_winner": "Include the successful participant and all rejection adapters recorded ahead of its settlement; exclude later arrivals from consumption.",
+        "winner_only": "Include only the chosen success, leaving earlier and later standard failures equally subject to owner diagnostics.",
+        "all_slots": "Include all participants immediately upon success, so even eventual loser failures count as consumed."
+      }
+    }
+  }
+}

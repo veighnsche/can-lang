@@ -1,0 +1,63 @@
+package app
+    provides []
+    uses []
+record left
+    int value
+record right
+    str value
+variant result
+    left
+    right
+fn left make_left
+    emits []
+    asserts
+        sample: => ok left(1)
+    ok left(1)
+fn right make_right
+    emits []
+    asserts
+        sample: => ok right("two")
+    ok right("two")
+fn result normalized_left
+    emits []
+    asserts
+        sample: => ok left(1)
+    ok call make_left()
+fn result normalized_right
+    emits []
+    asserts
+        sample: => ok right("two")
+    ok call make_right()
+fn str describe
+    emits []
+    given
+        result value
+    asserts
+        left_value: left(1) => ok "left"
+        right_value: right("two") => ok "two"
+    match value
+        left => ok "left"
+        right => ok value.value
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    result[] values = match call concurrent
+        make_left()
+            ok left value => ok left(value.value)
+        make_right()
+            ok right value => ok right(value.value)
+    result selected = match call race with error
+        normalized_left()
+        normalized_right()
+        ok result value => ok value
+    str first = call describe(values[0])
+    str second = call describe(values[1])
+    str winner = call describe(selected)
+    match first is "left" and second is "two" and (winner is "left" or winner is "two")
+        true => ok
+        false => do
+            int invalid = 1 / 0
+            ok

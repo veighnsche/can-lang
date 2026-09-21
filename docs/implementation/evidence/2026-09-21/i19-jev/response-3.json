@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"publication":{"type":"choice","choice":"observed_before_winner","confidence":0.31,"probabilities":{"observed_before_winner":0.55,"winner_only":0.42,"all_slots":0.03}}},"usage":{"input_tokens":569,"output_tokens":52}}

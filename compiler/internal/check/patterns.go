@@ -13,6 +13,14 @@ import (
 )
 
 func (c *regionChecker) install(scope bodyScope, name string, local *ir.Local) error {
+	if local.ErrorAlias && name == "all_failed" && local.Type.Declaration() == "can.prelude@1::all_failed" {
+		if scope.symbols.Symbols[name] != nil {
+			return fmt.Errorf("duplicate error alias")
+		}
+		scope.symbols.Symbols[name] = &resolve.Symbol{ID: local.Identity, Name: name, Kind: resolve.Value}
+		c.locals[local.Identity] = local.Type
+		return nil
+	}
 	if err := scope.symbols.Define(&resolve.Symbol{ID: local.Identity, Name: name, Kind: resolve.Value}); err != nil {
 		return err
 	}
@@ -82,6 +90,7 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 				if err != nil {
 					return nil, err
 				}
+				out.Binding.ErrorAlias = true
 			}
 		} else {
 			if n.Name.Package != "" || len(n.Types) != 0 {

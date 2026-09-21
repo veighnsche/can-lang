@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can first-success coordination uses Promise.any and preserves failed completions in participant order. The checker knows a finite closed set of declared error specializations plus standard_failure. An ignored all_failed payload needs no source type. Observing all_failed.failures requires exactly one expected named variant F whose disjoint leaves cover that set, creating all_failed<F>; conflicting demands fail. Forwarding derives F from the enclosing emits bound. The checker already passes expected types into argument, constructor, and binding expressions, and finite generic inference retries deferred arguments. Sealed concrete type graphs are extended through an existing validated specializer. We need observed-field inference without searching all declared variants, anonymous source unions, array covariance, error-set inference or unbounded retries. An otherwise contextless use can be deferred until another use determines F, and still must fail finitely if no unique context emerges. Nested scopes and aggregate aliases must retain their lexical identity.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which integration approach best preserves these finite constraints while reusing the checked expression pipeline?",
+      "criteria": {
+        "contextual_hook": "Give the aggregate alias a contextual projection hook that records exact expected F constraints, admits its sealed type once known, and uses a bounded discovery/recheck for deferred contextless uses before final checked IR is accepted.",
+        "separate_pass": "Add a separate complete syntax visitor carrying expected contracts and lexical scopes to discover every aggregate constraint, then invoke ordinary checking with the resulting type.",
+        "global_restart": "Use repeated whole-program checking from scratch whenever an aggregate constraint appears, retaining constraints between passes until no further information is found."
+      }
+    }
+  }
+}

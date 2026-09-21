@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The target language maps first-success race to Promise.any and keeps all failed attempts in source participant order. Its static aggregate leaf set contains every declared concrete participant error and standard_failure. Unused aggregate data can stay compiler-private. If failures are accessed, one expected named variant F must admit all those leaves without duplicates; incompatible expectations reject. Forwarding uses the enclosing all_failed<F> error bound. Existing expression checking propagates expected annotations through calls, record construction and bindings, and generic argument constraints already support finite deferral. Newly required concrete types can be sealed by the current extension mechanism. No declaration-wide variant search, anonymous author-visible union, array covariance, inferred error set or unlimited retry is allowed. Context-free observations may wait for another observation to constrain F, with finite ambiguity failure when none does. Nested aggregate names require correct lexical ownership.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which implementation strategy is the best fit for this expected-context inference and sealed-evidence architecture?",
+      "criteria": {
+        "contextual_hook": "Track the named-variant equality at contextual aggregate projections, resolve sealed aggregate evidence after learning it, and perform bounded discovery followed by checked re-evaluation for any deferred observations.",
+        "separate_pass": "Build a second full syntax analysis for expected types and scope binding to collect aggregate equalities prior to ordinary body checking.",
+        "global_restart": "Re-run the entire program checker whenever an aggregate equality is discovered, preserving accumulated equalities until global convergence."
+      }
+    }
+  }
+}

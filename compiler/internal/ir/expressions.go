@@ -10,6 +10,7 @@ import (
 type ExpressionKind string
 
 const (
+	CoordinationValue  ExpressionKind = "coordination"
 	CallableValue      ExpressionKind = "callable"
 	Literal            ExpressionKind = "literal"
 	Binding            ExpressionKind = "binding"
@@ -38,12 +39,13 @@ const (
 )
 
 type Expression struct {
-	Callable   *Callable
-	Invocation *Invocation
-	Match      *Match
-	Kind       ExpressionKind
-	Span       source.Span
-	Type       *types.Type
+	Coordination *Coordination
+	Callable     *Callable
+	Invocation   *Invocation
+	Match        *Match
+	Kind         ExpressionKind
+	Span         source.Span
+	Type         *types.Type
 	// Text is decoded string data, exact numeric spelling, an operator, a field
 	// name, or a resolved binding identity according to Kind; never emitted code.
 	Text      string

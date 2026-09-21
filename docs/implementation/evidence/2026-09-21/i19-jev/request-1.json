@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can maps first-success race to native Promise.any over private boxed participant completions. Domain and standard failures reject their adapters; success fulfills without exposing thenable payloads. An existing launchOwned group retains every task and resource lease until settlement. Its one publish(selectedIndices) call suppresses late diagnostics for selected slots; any unselected standard failure, even one already settled, produces one sanitized diagnostic. The coordination contract says failures preceding a winning success are observed and released, whereas standard failures arriving after selection produce diagnostics and never change the selected result. There is no loser cancellation. Native Promise.any must own winner selection; handlers run afterward, outside participant dispatch. We must choose which slots publish marks consumed when success wins. All-failed races consume all slots and preserve original completions in input order.",
+  "questions": {
+    "publication": {
+      "type": "choice",
+      "instructions": "Which publication policy best implements the described distinction between consumed failures and late failures while preserving native first-success selection?",
+      "criteria": {
+        "observed_before_winner": "Mark the winning slot plus failed adapters observed before the winning adapter settles; leave every later slot unselected for ordinary owner diagnostics.",
+        "winner_only": "Publish only the success winner, allowing the owner to report standard failures regardless of whether they preceded selection.",
+        "all_slots": "Publish every participant as consumed when a winner appears, suppressing diagnostics from unfinished losers as well."
+      }
+    }
+  }
+}

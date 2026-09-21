@@ -14,14 +14,15 @@ type LoweredExpression struct{ Statements, Value string }
 // region may later insert awaited, boxed call lowering at Call without introducing
 // hidden async IIFEs or exposing payloads to promise assimilation.
 type ExpressionEmitter struct {
-	Callable   func(*ir.Expression) (LoweredExpression, error)
-	Bindings   map[string]string
-	TypeName   func(*types.Type) string
-	Invocation func(*ir.Invocation) (LoweredExpression, error)
-	Match      func(*ir.Match) (LoweredExpression, error)
-	Call       func(identity string, arguments []string) (LoweredExpression, error)
-	Mark       func(*ir.Expression) string
-	serial     int
+	Coordination func(*ir.Coordination) (LoweredExpression, error)
+	Callable     func(*ir.Expression) (LoweredExpression, error)
+	Bindings     map[string]string
+	TypeName     func(*types.Type) string
+	Invocation   func(*ir.Invocation) (LoweredExpression, error)
+	Match        func(*ir.Match) (LoweredExpression, error)
+	Call         func(identity string, arguments []string) (LoweredExpression, error)
+	Mark         func(*ir.Expression) string
+	serial       int
 }
 
 func PrimitiveImports(path string) string {
@@ -69,6 +70,11 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			return LoweredExpression{}, fmt.Errorf("invocation requires its owning region")
 		}
 		return e.Invocation(node.Invocation)
+	case ir.CoordinationValue:
+		if e.Coordination == nil {
+			return LoweredExpression{}, fmt.Errorf("coordination requires its owning region")
+		}
+		return e.Coordination(node.Coordination)
 	case ir.MatchValue:
 		if e.Match == nil {
 			return LoweredExpression{}, fmt.Errorf("match requires its owning region")
@@ -222,7 +228,10 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			if adapter == "" {
 				return LoweredExpression{}, fmt.Errorf("unknown standard failure projection")
 			}
-			return bind(adapter + "(" + values[0] + ")"), nil
+			// Opaque Can aliases emit as unknown. The checker has already admitted
+			// this exact standard_failure projection; retain the adapter's private
+			// branded parameter type at the TypeScript boundary.
+			return bind(adapter + "(" + values[0] + " as Parameters<typeof " + adapter + ">[0])"), nil
 		case ir.Array:
 			for i, spread := range node.Spread {
 				if spread {

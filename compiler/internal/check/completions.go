@@ -17,6 +17,7 @@ import (
 // Handlers use their own Identity/Parent and selected Result, with the enclosing
 // escaping error contract. Their callers later assemble coordination/native data.
 type CompletionContext struct {
+	AggregateType    func(*types.Type) (*types.Type, error)
 	Identity, Parent string
 	Kind             ir.RegionKind
 	File             *source.File
@@ -40,11 +41,12 @@ type CompletionContext struct {
 	Parameters []ir.Local
 }
 type regionChecker struct {
-	context CompletionContext
-	region  *ir.Region
-	serial  int
-	uses    LocalUses
-	locals  map[string]*types.Type
+	aggregate *aggregateInference
+	context   CompletionContext
+	region    *ir.Region
+	serial    int
+	uses      LocalUses
+	locals    map[string]*types.Type
 }
 type bodyScope struct{ symbols *resolve.Scope }
 
@@ -95,6 +97,19 @@ func (c *regionChecker) bind(scope bodyScope, name string, typ *types.Type) (*ir
 	c.locals[local.Identity] = typ
 	return local, nil
 }
+
+// The prelude error name cannot be authored as a declaration, but its selected
+// domain arm still introduces the language-defined alias to the error value.
+func (c *regionChecker) bindErrorAlias(scope bodyScope, name string, typ *types.Type) (*ir.Local, error) {
+	if name != "all_failed" || typ.Declaration() != "can.prelude@1::all_failed" {
+		return c.bind(scope, name, typ)
+	}
+	local := &ir.Local{Identity: c.identity(name), Type: typ, ErrorAlias: true}
+	if err := c.install(scope, name, local); err != nil {
+		return nil, err
+	}
+	return local, nil
+}
 func (c *regionChecker) lexical(scope bodyScope, name syntax.QualifiedName, call bool) (ValueBinding, bool) {
 	if name.Package != "" {
 		return ValueBinding{}, false
@@ -129,6 +144,10 @@ func (c *regionChecker) expressions(scope bodyScope) *Expressions {
 		}
 		return c.context.Expressions.Function(name)
 	}
+	e.AggregateFieldCheck = func(node *syntax.FieldExpr, expected *types.Type) (*ir.Expression, bool, error) {
+		return c.aggregateField(node, expected, scope)
+	}
+	e.DeferredCheck = c.discoverAggregateConstraints
 	e.ReferenceCheck = func(n *syntax.ReferenceExpr, expected *types.Type) (*ir.Expression, error) {
 		return c.reference(n, scope, expected)
 	}
@@ -145,6 +164,16 @@ func (c *regionChecker) expressions(scope bodyScope) *Expressions {
 			return nil, fmt.Errorf("void call is not a data value")
 		}
 		return &ir.Expression{Kind: ir.InvocationValue, Span: n.Span, Type: call.Result, Invocation: call}, nil
+	}
+	e.CoordinationCheck = func(n *syntax.CoordinationExpr, expected *types.Type) (*ir.Expression, error) {
+		if expected == nil || expected.Kind() == types.Void {
+			return nil, fmt.Errorf("coordination binding requires an expected data type")
+		}
+		coordination, err := c.coordination(n.Coordination, scope, expected)
+		if err != nil {
+			return nil, err
+		}
+		return &ir.Expression{Kind: ir.CoordinationValue, Span: n.Span, Type: expected, Coordination: coordination}, nil
 	}
 	e.MatchCheck = func(n *syntax.MatchExpr, expected *types.Type) (*ir.Expression, error) {
 		if expected == nil || expected.Kind() == types.Void {
@@ -172,7 +201,7 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 			}
 			e := c.expressions(scope)
 			value, err := e.Check(n.Value, typ)
-			if err != nil {
+			if err != nil && !c.deferAggregate(err) {
 				return nil, err
 			}
 			// Freeze initializer lookup before inserting this local: later shadowing
@@ -189,6 +218,13 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 			}
 			out.Steps = append(out.Steps, ir.Statement{Local: local, Value: value})
 			last = local
+		case *syntax.CoordinationStep:
+			coordination, err := c.coordination(n.Coordination, scope, nil)
+			if err != nil {
+				return nil, err
+			}
+			out.Steps = append(out.Steps, ir.Statement{Coordination: coordination})
+			last = nil
 		case *syntax.CallStep:
 			call, err := c.invocation(n.Call, scope)
 			if err != nil {
@@ -208,7 +244,7 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 	if err != nil {
 		return nil, err
 	}
-	if last != nil {
+	if last != nil && !(c.aggregate != nil && c.aggregate.discovery) {
 		if err = CheckLocalForwarding(LocalForwarding{File: c.context.File, Block: block, Binding: ValueBinding{last.Identity, last.Type}, Uses: c.uses, Checker: lastChecker, Expected: c.region.Result}); err != nil {
 			return nil, err
 		}

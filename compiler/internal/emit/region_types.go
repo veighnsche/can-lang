@@ -18,6 +18,7 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 			roots = append(roots, t)
 		}
 	}
+	var coordination func(*ir.Coordination)
 	var expression func(*ir.Expression)
 	var invocation func(*ir.Invocation)
 	var match func(*ir.Match)
@@ -42,6 +43,7 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 		}
 		invocation(e.Invocation)
 		match(e.Match)
+		coordination(e.Coordination)
 	}
 	invocation = func(call *ir.Invocation) {
 		if call == nil {
@@ -50,6 +52,7 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 		add(call.Result)
 		roots = append(roots, call.Errors...)
 		for _, step := range call.Steps {
+			add(step.Contract)
 			expression(step.Callee)
 			if step.Fixtures != nil {
 				for _, row := range step.Fixtures.Rows {
@@ -106,6 +109,31 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 			}
 		}
 	}
+	coordination = func(node *ir.Coordination) {
+		if node == nil {
+			return
+		}
+		add(node.Result)
+		add(node.AggregateType)
+		roots = append(roots, node.Errors...)
+		handler := func(h *ir.OutcomeHandler) {
+			if h == nil {
+				return
+			}
+			add(h.Region.Result)
+			roots = append(roots, h.Region.Errors...)
+			match(&ir.Match{Arms: h.Arms})
+		}
+		for _, entry := range node.Entries {
+			add(entry.Result)
+			roots = append(roots, entry.Errors...)
+			invocation(entry.Call)
+			expression(entry.Spread)
+			handler(entry.Handler)
+		}
+		handler(node.Shared)
+		handler(node.Aggregate)
+	}
 	completion = func(c *ir.Completion) {
 		if c == nil {
 			return
@@ -123,6 +151,7 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 			local(step.Local)
 			expression(step.Value)
 			invocation(step.Call)
+			coordination(step.Coordination)
 		}
 		completion(b.Terminal)
 	}

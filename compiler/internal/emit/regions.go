@@ -163,6 +163,7 @@ func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 	e.expression.Callable = e.callable
 	e.expression.Invocation = e.invocationValue
 	e.expression.Match = e.valueMatch
+	e.expression.Coordination = e.coordinationValue
 	e.expression.Call = func(id string, args []string) (LoweredExpression, error) {
 		target, err := e.target(id)
 		if err != nil {
@@ -330,6 +331,13 @@ func (e *RegionEmitter) block(block *ir.Block) (string, error) {
 			name := e.temp()
 			e.expression.Bindings[step.Local.Identity] = name
 			fmt.Fprintf(&out, "const %s: %s = %s;\n", name, TypeName(step.Local.Type), value.Value)
+		} else if step.Coordination != nil {
+			lowered, err := e.coordination(step.Coordination)
+			if err != nil {
+				return "", err
+			}
+			out.WriteString(lowered.Statements)
+			fmt.Fprintf(&out, "$canValue(%s);\n", lowered.Value)
 		} else if step.Call != nil {
 			call, err := e.invocation(step.Call)
 			if err != nil {
@@ -396,15 +404,18 @@ func (e *RegionEmitter) valueMatch(match *ir.Match) (LoweredExpression, error) {
 	}
 	return LoweredExpression{fmt.Sprintf("let %s!: %s;\n", result, TypeName(match.ValueResult)) + code, result}, nil
 }
-func (e *RegionEmitter) match(match *ir.Match, result string) (string, error) {
+func (e *RegionEmitter) match(match *ir.Match, result string, supplied ...string) (string, error) {
 	if match == nil {
 		return "", fmt.Errorf("missing match")
 	}
+	outcomeMatch := match.Call != nil || len(supplied) > 0
 	var out strings.Builder
 	var values []string
 	var completion string
 	var patternDeclarations strings.Builder
-	if match.Call != nil {
+	if len(supplied) > 0 {
+		completion = supplied[0]
+	} else if match.Call != nil {
 		call, err := e.invocation(match.Call)
 		if err != nil {
 			return "", err
@@ -421,9 +432,12 @@ func (e *RegionEmitter) match(match *ir.Match, result string) (string, error) {
 			values = append(values, value.Value)
 		}
 	}
+	if outcomeMatch && len(match.Arms) == 0 {
+		return "return " + completion + " as $canCompletion<" + TypeName(e.region.Result) + ">;\n", nil
+	}
 	for i, arm := range match.Arms {
 		var condition, setup string
-		if match.Call != nil {
+		if outcomeMatch {
 			switch arm.Outcome {
 			case "ok":
 				condition = completion + ".kind === 'ok'"
@@ -460,7 +474,7 @@ func (e *RegionEmitter) match(match *ir.Match, result string) (string, error) {
 				out.WriteString("else ")
 			}
 		}
-		if match.Call != nil && i > 0 {
+		if outcomeMatch && i > 0 {
 			out.WriteString("else ")
 		}
 		fmt.Fprintf(&out, "if (%s) {\n%s", condition, setup)
@@ -482,7 +496,7 @@ func (e *RegionEmitter) match(match *ir.Match, result string) (string, error) {
 		}
 		out.WriteString("}\n")
 	}
-	if match.Call != nil {
+	if outcomeMatch {
 		fmt.Fprintf(&out, "else { return %s as $canCompletion<%s>; }\n", completion, TypeName(e.region.Result))
 	} else {
 		out.WriteString("else { throw new Error('checked match was not exhaustive'); }\n")

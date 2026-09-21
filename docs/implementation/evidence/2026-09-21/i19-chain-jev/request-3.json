@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The compiler already models a chained call as ordered invocation steps with a combined domain-error bound. For coordination, all authored argument/callee work must complete ahead of any participant, and a failure in that phase must launch nothing and cannot select a coordination arm. A later method receiver depends on an earlier step success through an inaccessible compiler binding; authored expressions cannot use that binding. Can fields hold immutable data and cannot run authored getters. The implementation must preserve one participant for the whole chain, native Promise coordination, boxed completions and ownership of captured resources, without a surface-language addition.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Select an IR preparation strategy consistent with this complete-chain participant contract.",
+      "criteria": {
+        "dependency_split": "Analyze dependencies on preceding success identities, emit independent preparation before launch, and perform dependent receiver binding plus calls inside one participant whose captures retain the prepared values.",
+        "first_only": "Emit preparation for the first invocation only before the batch, allowing later source argument evaluation after launch.",
+        "prefix_outside": "Run every earlier invocation in the preparation phase and launch just the final method as the participant."
+      }
+    }
+  }
+}

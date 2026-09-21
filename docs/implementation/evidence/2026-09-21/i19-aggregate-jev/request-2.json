@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "For a Can race that selects the first success, native Promise.any supplies selection and unsuccessful outcomes retain their original input positions. Static analysis has the complete finite participant error-type set, including standard_failure. The all_failed alias may remain private when ignored; its failures projection otherwise must resolve to one named variant F with sufficient disjoint leaves, and disagreeing contexts are errors. An enclosing emits specialization supplies a forwarding constraint. Expected types already flow through ordinary call arguments, constructors and typed locals, with bounded deferred-argument retry in generic inference; isolated specializer extensions provide sealed concrete types. Implementation must not enumerate variants to guess F, invent public unions, widen existing arrays, infer effect sets or loop indefinitely. A use lacking local context may await information from another use, but absence of a unique solution must terminate in a diagnostic. Alias identity must respect nested lexical scopes.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Choose the compiler integration that most directly reuses existing checking while enforcing the stated aggregate inference limits.",
+      "criteria": {
+        "contextual_hook": "Attach exact contextual constraints to aggregate field lookup, obtain the sealed specialization when F becomes known, and bound a discovery/final-check sequence so unresolved uses cannot enter checked IR.",
+        "separate_pass": "Implement an independent exhaustive AST pass reproducing lexical scopes and expected contracts to solve the projection type before the normal checker runs.",
+        "global_restart": "Restart all program checking upon newly discovered aggregate constraints, carrying those constraints across global passes until stabilization."
+      }
+    }
+  }
+}

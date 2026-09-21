@@ -72,12 +72,18 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 		}
 		out.Call.Steps[0].Fixtures = table
 	}
-	bound, err := c.context.Registry.Bound(out.Call.Errors)
+	out.Arms, err = c.completionArms(n.Arms, out.Call.Result, out.Call.Errors, scope, successScope, true)
+	return out, err
+}
+
+func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Type, errors []*types.Type, scope, successScope bodyScope, requireSuccess bool) ([]ir.Arm, error) {
+	bound, err := c.context.Registry.Bound(errors)
 	if err != nil {
 		return nil, err
 	}
+	var checked []ir.Arm
 	seen := map[string]bool{}
-	for _, arm := range n.Arms {
+	for _, arm := range arms {
 		if arm.Outcome == nil || len(arm.Patterns) != 0 {
 			return nil, fmt.Errorf("completion match requires exact outcome patterns")
 		}
@@ -94,7 +100,7 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 			}
 			a.Outcome = "ok"
 			key = "ok"
-			bindingType = out.Call.Result
+			bindingType = result
 			armScope = c.child(successScope)
 		case pattern.StandardFailure:
 			if pattern.Error != nil || arm.Forward {
@@ -149,7 +155,11 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 			bindingName = pattern.Binding.Name.Text
 		}
 		if bindingName != "" && !arm.Forward {
-			a.Binding, err = c.bind(armScope, bindingName, bindingType)
+			if a.Outcome == "domain" {
+				a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
+			} else {
+				a.Binding, err = c.bind(armScope, bindingName, bindingType)
+			}
 			if err != nil {
 				return nil, err
 			}
@@ -159,7 +169,7 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 				return nil, fmt.Errorf("forwarding arm cannot contain a body or binding")
 			}
 			if a.Outcome == "ok" {
-				if !types.Assignable(out.Call.Result, c.region.Result) {
+				if !types.Assignable(result, c.region.Result) {
 					return nil, fmt.Errorf("forwarded success does not fit current region")
 				}
 			} else {
@@ -173,13 +183,13 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 			}
 		} else {
 			a.Body, err = c.completion(arm.Body, armScope)
-			if err != nil {
+			if err != nil && !c.deferAggregate(err) {
 				return nil, err
 			}
 		}
-		out.Arms = append(out.Arms, a)
+		checked = append(checked, a)
 	}
-	if !seen["ok"] {
+	if requireSuccess && !seen["ok"] {
 		return nil, fmt.Errorf("completion match requires exactly one success arm")
 	}
 	for _, entry := range bound.Entries() {
@@ -187,7 +197,7 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 			return nil, fmt.Errorf("missing completion arm for %s", entry.Declaration.Name)
 		}
 	}
-	return out, nil
+	return checked, nil
 }
 
 func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *types.Type) (*ir.Match, error) {
@@ -299,7 +309,7 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 		} else {
 			var err error
 			a.Body, err = c.completion(arm.Body, armScope)
-			if err != nil {
+			if err != nil && !c.deferAggregate(err) {
 				return nil, err
 			}
 		}

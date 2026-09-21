@@ -28,6 +28,9 @@ type Region struct {
 type Local struct {
 	Identity string
 	Type     *types.Type
+	// ErrorAlias distinguishes a language-provided bare error pattern alias
+	// from an authored binding, including reserved prelude error names.
+	ErrorAlias bool
 }
 type Block struct {
 	Span     source.Span
@@ -35,9 +38,10 @@ type Block struct {
 	Terminal *Completion
 }
 type Statement struct {
-	Local *Local
-	Value *Expression
-	Call  *Invocation
+	Coordination *Coordination
+	Local        *Local
+	Value        *Expression
+	Call         *Invocation
 }
 type Invocation struct {
 	Span   source.Span

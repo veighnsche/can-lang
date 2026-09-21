@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A coordination entry may be a checked multi-step method invocation whose error contract includes every step. The language requires written arguments and callee preparation to finish before the participant batch begins, and preparation failure starts no work and bypasses participant handlers. Later receiver values are represented by private success-binding identities; source arguments cannot name them. Records expose immutable data fields rather than user getters. Native Promise selection and protected completion carriers remain required, and owners must retain captured resources. We want the full chain to remain one launched participant and add no syntax.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which division of existing invocation IR best satisfies the stated preparation and chain-ownership rules?",
+      "criteria": {
+        "dependency_split": "Move every preparation expression not depending on an earlier private success binding ahead of batch launch; leave result-dependent receiver setup and the calls in the participant, with moved values retained as captures.",
+        "first_only": "Move the initial call setup ahead of launch but leave subsequent authored method arguments to ordinary sequential execution within the participant.",
+        "prefix_outside": "Evaluate the chain before its final call during preparation, treating that last call alone as the launched operation."
+      }
+    }
+  }
+}

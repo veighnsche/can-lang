@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The runtime already provides launchOwned: it holds participant work and resource captures through completion and accepts publish(selectedIndices) exactly once. Standard failures outside that index set are diagnosed once, including completed ones. In Can first-success races, Promise.any determines the winner using shielded completion adapters that reject domain/standard outcomes and fulfill successes without assimilating their payloads. Specification requires earlier unsuccessful attempts to be consumed and released, and failures occurring after the chosen success to retain sanitized late reporting without replacing the result. No participant is cancelled. Handler processing follows native aggregation and is not fed back into its dispatch. If no success exists, every original completion is retained in participant order and all indexes are consumed. The unresolved engineering choice is the publication set for a successful race.",
+  "questions": {
+    "publication": {
+      "type": "choice",
+      "instructions": "Choose the ownership publication rule that preserves these first-success race requirements without implementing a replacement winner algorithm.",
+      "criteria": {
+        "observed_before_winner": "Consume the success index together with rejected adapters that were seen before that success adapter settled, keeping subsequent outcomes eligible for late reporting.",
+        "winner_only": "Consume just the winning index so any other standard failure is diagnosed, irrespective of its temporal relationship to the success.",
+        "all_slots": "Consume the full index range on success, including still-running tasks, thereby disabling their later standard-failure reports."
+      }
+    }
+  }
+}

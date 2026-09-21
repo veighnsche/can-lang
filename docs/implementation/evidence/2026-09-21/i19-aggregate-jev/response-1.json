@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"integration":{"type":"choice","choice":"contextual_hook","confidence":1.0,"probabilities":{"global_restart":0.0,"contextual_hook":1.0,"separate_pass":0.0}}},"usage":{"input_tokens":620,"output_tokens":48}}

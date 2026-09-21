@@ -1,0 +1,1 @@
+All three states, questions and option descriptions differ. Semantic review preserves native Promise.any, boxed outcomes, retained work/leases, one publication, earlier failure consumption, later diagnostic requirement, no cancellation, outside handlers, ordered all-failed originals, and the same three alternatives. Exact API identifiers and choice keys are intentionally stable.

@@ -46,6 +46,7 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 	ctx.Specialize = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
 		return c.specialize(file, scope, name, args)
 	}
+	ctx.AggregateType = func(variant *types.Type) (*types.Type, error) { return c.aggregateType(file, variant) }
 	ctx.ResolveMethod = func(application MethodApplication) (ValueBinding, error) { return c.method(file, application) }
 	ctx.InferReference = func(scope *resolve.Scope, name syntax.QualifiedName, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
 		return c.inferReference(file, scope, name, expected, e)

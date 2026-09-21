@@ -1,0 +1,7 @@
+# I19 chained participant preparation
+
+Three fresh requests rewrote every explanatory state, question and option description while preserving the same facts and alternatives. All chose `dependency_split`, with probabilities 1.0, 0.97 and 0.99 and confidence 0.99, 0.96 and 0.98. Raw requests/responses and the equivalence audit are retained here. No selected-answer disagreement occurred; agreement is advice, not proof.
+
+The emitter copies checked invocation IR and moves callee/argument preparation independent of earlier chain results before launch. Private success bindings and their receiver aliases stay inside the participant. Authored source cannot reference these private bindings. Captures retain every prepared argument and callable; the entire chain remains one participant with its combined domain bound. Native slice operands follow the same split. Generated per-participant source-origin state avoids sharing mutable failure origins across concurrent chains.
+
+`TestGeneratedCoordinationPreparesWholeChains` uses controlled promises to establish complete argument preparation before launch, flattened direct/spread launch order without awaiting the first participant, no launch or participant-handler dispatch on preparation failure, and no later method after a chain failure. The test also checks that emission does not mutate checked IR. Staged execution and strict TypeScript validation cover source method/slice chains and native selection.

@@ -153,6 +153,13 @@
     "assert/provider.ts": [
       "./context.ts",
       "../failure.ts"
+    ],
+    "coordination.ts": [
+      "./completion.ts",
+      "./owner.ts",
+      "./failure.ts",
+      "./data.ts",
+      "./domain.ts"
     ]
   }
 }

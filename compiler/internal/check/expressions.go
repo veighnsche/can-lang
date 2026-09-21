@@ -16,12 +16,15 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
-	Probability    *ValueBinding
-	ResolvedValue  func(*syntax.NameExpr, ValueBinding)
-	Scalars        map[string]*types.Type
-	ReferenceCheck func(*syntax.ReferenceExpr, *types.Type) (*ir.Expression, error)
-	CallCheck      func(*syntax.CallExpr, *types.Type) (*ir.Expression, error)
-	MatchCheck     func(*syntax.MatchExpr, *types.Type) (*ir.Expression, error)
+	DeferredCheck       func(syntax.Expr, *types.Type, *Expressions, error) (*ir.Expression, error)
+	AggregateFieldCheck func(*syntax.FieldExpr, *types.Type) (*ir.Expression, bool, error)
+	CoordinationCheck   func(*syntax.CoordinationExpr, *types.Type) (*ir.Expression, error)
+	Probability         *ValueBinding
+	ResolvedValue       func(*syntax.NameExpr, ValueBinding)
+	Scalars             map[string]*types.Type
+	ReferenceCheck      func(*syntax.ReferenceExpr, *types.Type) (*ir.Expression, error)
+	CallCheck           func(*syntax.CallExpr, *types.Type) (*ir.Expression, error)
+	MatchCheck          func(*syntax.MatchExpr, *types.Type) (*ir.Expression, error)
 	// The owning body pass supplies its eligible-kind lexical/package resolution.
 	// Call lookup is separate because an ineligible local must not hide a function.
 	Value       func(syntax.QualifiedName) (ValueBinding, error)
@@ -46,6 +49,9 @@ func (c *Expressions) Check(node syntax.Expr, expected *types.Type) (*ir.Express
 		return nil, fmt.Errorf("missing expression")
 	}
 	out, err := c.expression(node, expected)
+	if err != nil && c.DeferredCheck != nil {
+		out, err = c.DeferredCheck(node, expected, c, err)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("expression at byte %d: %w", node.ExprSpan().Start, err)
 	}
@@ -63,6 +69,11 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 			return nil, fmt.Errorf("callable reference requires its owning region")
 		}
 		return c.ReferenceCheck(n, expected)
+	case *syntax.CoordinationExpr:
+		if c.CoordinationCheck == nil {
+			return nil, fmt.Errorf("coordination requires a checked region")
+		}
+		return c.CoordinationCheck(n, expected)
 	case *syntax.MatchExpr:
 		if c.MatchCheck == nil {
 			return nil, fmt.Errorf("value match requires its owning region")
@@ -224,6 +235,12 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		}
 		return c.slice(receiver, n.Start, n.End, node)
 	case *syntax.FieldExpr:
+		if c.AggregateFieldCheck != nil {
+			value, handled, err := c.AggregateFieldCheck(n, expected)
+			if handled {
+				return value, err
+			}
+		}
 		receiver, e := c.Check(n.Receiver, nil)
 		if e != nil {
 			return nil, e
