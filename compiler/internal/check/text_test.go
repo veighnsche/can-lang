@@ -15,6 +15,9 @@ func TestTextCatalogue(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, change := range [][2]string{
+		{"text::join(...[...[[]]],", "text::join(...[...[[1]]],"},
+		{"retain<str>(...[...[[]]])", "retain<str>(...[...[[1]]])"},
+		{"ok [...([...[[]]])]", "ok [...([...[[], [1]]])]"},
 		{"value.includes(part)", "value.includes(1)"},
 		{"value.to_lower_case()", "value.locale_lower_case()"},
 		{"text::from_scalars(items)", "text::from_scalars([1.0])"},
@@ -29,5 +32,24 @@ func TestTextCatalogue(t *testing.T) {
 				t.Fatal("unsupported coercion, operation or error bound admitted")
 			}
 		})
+	}
+}
+
+func TestNestedSpreadRetainsExistingArrayInvariance(t *testing.T) {
+	declarations := `record box<item>
+    item value
+variant selection
+    box<int>
+    box<str>
+fn selection[][] nested
+    emits []
+    given
+        box<int>[] values
+    asserts
+        sample: [box(1)] => ok [[box(1)]]
+    ok [...[values]]
+`
+	if _, err := programFixture(t, map[string]string{"src/main.can": programHeader + declarations + programMain + "    ok\n"}); err == nil || !strings.Contains(err.Error(), "expression type does not fit expected type") {
+		t.Fatalf("expected invariant-array mismatch, got %v", err)
 	}
 }

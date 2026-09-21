@@ -289,6 +289,23 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 			want := element
 			if argument.Spread {
 				want = nil
+				// Context belongs to fresh literal construction, including grouped
+				// nested spreads. Existing arrays retain their invariant type.
+				literal := argument.Value
+				for {
+					group, ok := literal.(*syntax.GroupExpr)
+					if !ok {
+						break
+					}
+					literal = group.Value
+				}
+				if _, ok := literal.(*syntax.ArrayExpr); ok && element != nil {
+					var err error
+					want, err = types.ArrayOfChecked(element)
+					if err != nil {
+						return nil, err
+					}
+				}
 			}
 			x, e := c.Check(argument.Value, want)
 			if e != nil {

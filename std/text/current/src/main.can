@@ -170,3 +170,30 @@ fn void main
             _ => do
                 int invalid = 1 / 0
                 ok
+fn str nested_join
+    emits []
+    asserts
+        sample: => ok ""
+    ok call text::join(...[...[[]]], ",")
+fn item[] retain<item>
+    emits []
+    given
+        item[] values
+    asserts
+        sample: ["x"] => ok ["x"]
+    ok values
+fn str[] nested_explicit
+    emits []
+    asserts
+        sample: => ok []
+    ok call retain<str>(...[...[[]]])
+fn str[] nested_inferred
+    emits []
+    asserts
+        sample: => ok []
+    ok call retain(...[...[[]]])
+fn str[][] nested_construction
+    emits []
+    asserts
+        sample: => ok [[]]
+    ok [...([...[[]]])]

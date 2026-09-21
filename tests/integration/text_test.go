@@ -71,7 +71,7 @@ func TestCurrentBundledText(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 31}} {
+	}{{"main", 36}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "std/text/current/src", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)
