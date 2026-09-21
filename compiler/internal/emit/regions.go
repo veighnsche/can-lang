@@ -226,7 +226,11 @@ func (e *RegionEmitter) invocationValue(call *ir.Invocation) (LoweredExpression,
 	if err != nil {
 		return LoweredExpression{}, err
 	}
-	lowered.Value = "($canValue(" + lowered.Value + ") as " + TypeName(call.Result) + ")"
+	// A failed operand must escape before another operand is prepared, even
+	// when the consumer (for example a wildcard pattern) never reads its value.
+	value := e.temp()
+	lowered.Statements += fmt.Sprintf("const %s = $canValue(%s) as %s;\n", value, lowered.Value, TypeName(call.Result))
+	lowered.Value = value
 	return lowered, nil
 }
 func (e *RegionEmitter) block(block *ir.Block) (string, error) {

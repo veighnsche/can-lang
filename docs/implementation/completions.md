@@ -32,7 +32,9 @@ appear merely because the invocation declared them.
 ## Native emission
 
 Generated functions are async and return `Completion<T>`. Calls await a protected
-carrier, inspect its category synchronously, and only then extract data. Native
+carrier, inspect its category synchronously, and immediately extract data into a
+temporary before any later operand is prepared. Even an unused wildcard
+scrutinee must propagate a failed call. Native
 operator evaluation remains ordinary JavaScript/Bun; there is no Can interpreter.
 Argument preparation, receiver evaluation and reached method/chain steps are
 inside the invocation catch. Selected arm bodies are outside it. A failure from
@@ -64,7 +66,10 @@ work produces a finite diagnostic rather than invoking theorem proving.
 
 Alternatives must bind the same names with identical types. A bare admitted leaf
 narrows a named scrutinee when every alternative agrees on that leaf; otherwise
-its existing admitted type is retained. Error leaf names also bind payload data.
+its existing admitted type is retained. Repeated occurrences of one resolved
+binding share their inferred narrowing, including parenthesized occurrences;
+disjoint nominal requirements for that same value are rejected. Error leaf names
+also bind payload data.
 Array remainder bindings receive frozen native slices. The emitter uses native
 comparisons, property/index reads and ordered branches, with no runtime pattern
 interpreter.

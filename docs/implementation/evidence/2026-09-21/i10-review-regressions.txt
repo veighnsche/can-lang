@@ -1,0 +1,22 @@
+=== RUN   TestEmittedFailureEvaluationOrder
+=== RUN   TestEmittedFailureEvaluationOrder/constructor
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/scrutinees
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/binary
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/wildcard
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/array
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/comparison
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/logical
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/value-match
+{"kind":"standard","events":["first"]}--- PASS: TestEmittedFailureEvaluationOrder (0.20s)
+    --- PASS: TestEmittedFailureEvaluationOrder/constructor (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/scrutinees (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/binary (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/wildcard (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/array (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/comparison (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/logical (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/value-match (0.02s)
+=== RUN   TestRepeatedScrutineeNarrowing
+--- PASS: TestRepeatedScrutineeNarrowing (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.432s

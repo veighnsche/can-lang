@@ -323,6 +323,9 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 		body, result, want string
 		errors             []string
 	}{
+		{"    match choice, choice\n        left, left => ok choice.value\n        _, _ => ok 0\n", "int", "7n", nil},
+		{"    match (choice), choice\n        left, left => ok choice.value\n        _, _ => ok 0\n", "int", "7n", nil},
+
 		{"    ok false and call truth()\n", "bool", "false", nil},
 		{"    ok 3 < call first() < call first()\n", "bool", "false", nil},
 

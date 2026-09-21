@@ -1,0 +1,4 @@
+TypeScript 7.0.2: exit 0, no diagnostics.
+Inputs: /tmp/can-i10-reviewed-regions.ts runtime/completion.ts
+Flags: --noEmit --strict --skipLibCheck --target esnext --module esnext --moduleResolution bundler --allowImportingTsExtensions --typeRoots /tmp/can-i10-tscheck/node_modules/@types --types bun,node
+Host definition versions are recorded in i10-typescript-tests.txt.

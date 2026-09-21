@@ -224,21 +224,50 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 				return nil, err
 			}
 		}
-		// A named scrutinee narrows only where every pattern alternative selects the
-		// same leaf. It remains the original value with a new lexical type binding.
+		// Repeated occurrences of the same resolved binding share one inferred
+		// arm-local narrowing. Parentheses preserve that binding identity. A pair
+		// of disjoint nominal requirements cannot both hold for one immutable value.
+		type narrowing struct {
+			typ   *types.Type
+			local *ir.Local
+		}
+		narrowed := map[string]narrowing{}
 		for i, node := range n.Values {
-			if name, ok := node.(*syntax.NameExpr); ok && name.Name.Package == "" {
-				if narrow := patternNarrow(a.Patterns[i]); narrow != nil && !types.Equal(narrow, columns[i]) {
-					if _, exists := bindings[name.Name.Name]; exists {
-						continue
-					}
-					local, err := c.bind(armScope, name.Name.Name, narrow)
+			for {
+				group, ok := node.(*syntax.GroupExpr)
+				if !ok {
+					break
+				}
+				node = group.Value
+			}
+			name, ok := node.(*syntax.NameExpr)
+			if !ok || name.Name.Package != "" {
+				continue
+			}
+			narrow := patternNarrow(a.Patterns[i])
+			if narrow == nil || types.Equal(narrow, columns[i]) {
+				continue
+			}
+			resolved := out.Values[i]
+			if resolved.Kind != ir.Binding || resolved.Text == "" {
+				return nil, fmt.Errorf("missing resolved scrutinee identity")
+			}
+			prior := narrowed[resolved.Text]
+			if prior.typ != nil && !types.Equal(prior.typ, narrow) {
+				return nil, fmt.Errorf("incompatible nominal patterns for repeated scrutinee")
+			}
+			prior.typ = narrow
+			if _, explicit := bindings[name.Name.Name]; !explicit {
+				if prior.local == nil {
+					var err error
+					prior.local, err = c.bind(armScope, name.Name.Name, narrow)
 					if err != nil {
 						return nil, err
 					}
-					a.Patterns[i].Narrow = local
 				}
+				a.Patterns[i].Narrow = prior.local
 			}
+			narrowed[resolved.Text] = prior
 		}
 		if valueType != nil {
 			switch body := arm.Body.(type) {

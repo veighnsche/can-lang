@@ -1,0 +1,75 @@
+=== RUN   TestEmittedFailureEvaluationOrder
+=== RUN   TestEmittedFailureEvaluationOrder/binary
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/wildcard
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/array
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/comparison
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/logical
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/value-match
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/constructor
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/scrutinees
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+--- PASS: TestEmittedFailureEvaluationOrder (2.60s)
+    --- PASS: TestEmittedFailureEvaluationOrder/binary (0.48s)
+    --- PASS: TestEmittedFailureEvaluationOrder/wildcard (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/array (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/comparison (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/logical (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/value-match (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/constructor (0.03s)
+    --- PASS: TestEmittedFailureEvaluationOrder/scrutinees (0.04s)
+=== RUN   TestRepeatedScrutineeNarrowing
+--- PASS: TestRepeatedScrutineeNarrowing (0.00s)
+=== RUN   TestEmittedCompletionRegions
+--- PASS: TestEmittedCompletionRegions (1.07s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	3.871s
+=== RUN   TestPackagedOutputValidationAndExecution
+    output_runtime_test.go:31: === RUN   TestPackagedOutputValidationAndExecution
+            output_runtime_test.go:142: native parser validated exact imports; published entry executed; inherited child lease survived launcher close
+        --- PASS: TestPackagedOutputValidationAndExecution (2.75s)
+        PASS
+        
+--- PASS: TestPackagedOutputValidationAndExecution (2.76s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	2.885s
+=== RUN   TestDevelopmentSidecar
+=== RUN   TestDevelopmentSidecar/current-parser-is-inert
+=== RUN   TestDevelopmentSidecar/current-project-identities-offline
+=== RUN   TestDevelopmentSidecar/current-declaration-types-offline
+=== RUN   TestDevelopmentSidecar/native-nominal-data-offline
+=== RUN   TestDevelopmentSidecar/native-primitives-offline
+=== RUN   TestDevelopmentSidecar/native-failures-offline
+=== RUN   TestDevelopmentSidecar/native-completions-offline
+=== RUN   TestDevelopmentSidecar/missing
+=== RUN   TestDevelopmentSidecar/non-executable
+=== RUN   TestDevelopmentSidecar/tampered
+=== RUN   TestDevelopmentSidecar/wrong-architecture
+=== RUN   TestDevelopmentSidecar/symlinked-sidecar
+=== RUN   TestDevelopmentSidecar/tampered-manifest.json
+=== RUN   TestDevelopmentSidecar/tampered-tools/runtime/check.ts
+=== NAME  TestDevelopmentSidecar
+    distribution_test.go:355: offline absolute sidecar and symlink execution passed; hostile config ignored; identity bun-1.4.2-darwin-arm64-v1
+--- PASS: TestDevelopmentSidecar (3.22s)
+    --- PASS: TestDevelopmentSidecar/current-parser-is-inert (0.03s)
+    --- PASS: TestDevelopmentSidecar/current-project-identities-offline (0.06s)
+    --- PASS: TestDevelopmentSidecar/current-declaration-types-offline (0.03s)
+    --- PASS: TestDevelopmentSidecar/native-nominal-data-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-primitives-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-failures-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-completions-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/missing (0.02s)
+    --- PASS: TestDevelopmentSidecar/non-executable (0.02s)
+    --- PASS: TestDevelopmentSidecar/tampered (0.10s)
+    --- PASS: TestDevelopmentSidecar/wrong-architecture (0.06s)
+    --- PASS: TestDevelopmentSidecar/symlinked-sidecar (0.03s)
+    --- PASS: TestDevelopmentSidecar/tampered-manifest.json (0.01s)
+    --- PASS: TestDevelopmentSidecar/tampered-tools/runtime/check.ts (0.06s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	3.336s

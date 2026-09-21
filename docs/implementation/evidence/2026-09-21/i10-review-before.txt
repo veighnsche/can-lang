@@ -1,0 +1,249 @@
+=== RUN   TestEmittedFailureEvaluationOrder
+=== RUN   TestEmittedFailureEvaluationOrder/scrutinees
+    region_order_test.go:77: exit status 1
+        {"kind":"ok","events":["first","increment"]}
+        65 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:165,invocation:["app::run"]}); }
+        66 | }
+        67 | 
+        68 | const result=await test();
+        69 | console.log(JSON.stringify({kind:result.kind,events}));
+        70 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrderscrutinees2204904187/002/review.ts:70:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1: $canCompletion<unknown>;
+        let $canRegion3!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion2: { try {
+        $canRegion1 = await $canInvoke(() => first(), {source:"region.can",start:114,end:121,invocation:["app::run"]});
+        if ($canRegion1.kind !== 'ok') break $canRegion2;
+        $canRegion3 = $canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion1 = $canCaught($canCause, {source:"region.can",start:109,end:121,invocation:["app::run"]}); } }
+        let $canRegion4: $canCompletion<unknown>;
+        let $canRegion6!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion5: { try {
+        const $canExpr1 = 1n;
+        const $canRegion7 = $canExpr1;
+        const $canExpr2 = ($canRegion7) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion4 = await $canInvoke(() => increment($canExpr2), {source:"region.can",start:130,end:142,invocation:["app::run"]});
+        if ($canRegion4.kind !== 'ok') break $canRegion5;
+        $canRegion6 = $canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion4 = $canCaught($canCause, {source:"region.can",start:125,end:142,invocation:["app::run"]}); } }
+        if ((true) && (true)) {
+        const $canExpr3 = 1n;
+        return $canSuccess($canExpr3);
+        }
+        else { throw new Error('checked match was not exhaustive'); }
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:165,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/binary
+    region_order_test.go:77: exit status 1
+        {"kind":"standard","events":["first","increment"]}
+        62 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:138,invocation:["app::run"]}); }
+        63 | }
+        64 | 
+        65 | const result=await test();
+        66 | console.log(JSON.stringify({kind:result.kind,events}));
+        67 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrderbinary1551532041/002/review.ts:67:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1: $canCompletion<unknown>;
+        let $canRegion3!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion2: { try {
+        $canRegion1 = await $canInvoke(() => first(), {source:"region.can",start:110,end:117,invocation:["app::run"]});
+        if ($canRegion1.kind !== 'ok') break $canRegion2;
+        $canRegion3 = $canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion1 = $canCaught($canCause, {source:"region.can",start:105,end:117,invocation:["app::run"]}); } }
+        let $canRegion4: $canCompletion<unknown>;
+        let $canRegion6!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion5: { try {
+        const $canExpr1 = 1n;
+        const $canRegion7 = $canExpr1;
+        const $canExpr2 = ($canRegion7) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion4 = await $canInvoke(() => increment($canExpr2), {source:"region.can",start:125,end:137,invocation:["app::run"]});
+        if ($canRegion4.kind !== 'ok') break $canRegion5;
+        $canRegion6 = $canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion4 = $canCaught($canCause, {source:"region.can",start:120,end:137,invocation:["app::run"]}); } }
+        const $canExpr3 = (($canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71)) + (($canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71));
+        return $canSuccess($canExpr3);
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:138,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/wildcard
+    region_order_test.go:77: exit status 1
+        {"kind":"ok","events":["first"]}
+        55 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:141,invocation:["app::run"]}); }
+        56 | }
+        57 | 
+        58 | const result=await test();
+        59 | console.log(JSON.stringify({kind:result.kind,events}));
+        60 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrderwildcard39706873/002/review.ts:60:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1: $canCompletion<unknown>;
+        let $canRegion3!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion2: { try {
+        $canRegion1 = await $canInvoke(() => first(), {source:"region.can",start:114,end:121,invocation:["app::run"]});
+        if ($canRegion1.kind !== 'ok') break $canRegion2;
+        $canRegion3 = $canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion1 = $canCaught($canCause, {source:"region.can",start:109,end:121,invocation:["app::run"]}); } }
+        if ((true)) {
+        const $canExpr1 = 1n;
+        return $canSuccess($canExpr1);
+        }
+        else { throw new Error('checked match was not exhaustive'); }
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:141,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/array
+    region_order_test.go:77: exit status 1
+        {"kind":"standard","events":["first","increment"]}
+        63 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:146,invocation:["app::run"]}); }
+        64 | }
+        65 | 
+        66 | const result=await test();
+        67 | console.log(JSON.stringify({kind:result.kind,events}));
+        68 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrderarray495972847/002/review.ts:68:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1: $canCompletion<unknown>;
+        let $canRegion3!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion2: { try {
+        $canRegion1 = await $canInvoke(() => first(), {source:"region.can",start:111,end:118,invocation:["app::run"]});
+        if ($canRegion1.kind !== 'ok') break $canRegion2;
+        $canRegion3 = $canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion1 = $canCaught($canCause, {source:"region.can",start:106,end:118,invocation:["app::run"]}); } }
+        let $canRegion4: $canCompletion<unknown>;
+        let $canRegion6!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion5: { try {
+        const $canExpr1 = 1n;
+        const $canRegion7 = $canExpr1;
+        const $canExpr2 = ($canRegion7) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion4 = await $canInvoke(() => increment($canExpr2), {source:"region.can",start:125,end:137,invocation:["app::run"]});
+        if ($canRegion4.kind !== 'ok') break $canRegion5;
+        $canRegion6 = $canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion4 = $canCaught($canCause, {source:"region.can",start:120,end:137,invocation:["app::run"]}); } }
+        const $canExpr3 = Object.freeze([($canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71), ($canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71)]);
+        const $canExpr4 = BigInt($canExpr3.length);
+        return $canSuccess($canExpr4);
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:146,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/comparison
+    region_order_test.go:77: exit status 1
+        {"kind":"standard","events":["first","increment"]}
+        71 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:187,invocation:["app::run"]}); }
+        72 | }
+        73 | 
+        74 | const result=await test();
+        75 | console.log(JSON.stringify({kind:result.kind,events}));
+        76 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrdercomparison3078736951/002/review.ts:76:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1: $canCompletion<unknown>;
+        let $canRegion3!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion2: { try {
+        $canRegion1 = await $canInvoke(() => first(), {source:"region.can",start:114,end:121,invocation:["app::run"]});
+        if ($canRegion1.kind !== 'ok') break $canRegion2;
+        $canRegion3 = $canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion1 = $canCaught($canCause, {source:"region.can",start:109,end:121,invocation:["app::run"]}); } }
+        let $canExpr1 = true;
+        let $canRegion4: $canCompletion<unknown>;
+        let $canRegion6!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion5: { try {
+        const $canExpr2 = 1n;
+        const $canRegion7 = $canExpr2;
+        const $canExpr3 = ($canRegion7) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion4 = await $canInvoke(() => increment($canExpr3), {source:"region.can",start:130,end:142,invocation:["app::run"]});
+        if ($canRegion4.kind !== 'ok') break $canRegion5;
+        $canRegion6 = $canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion4 = $canCaught($canCause, {source:"region.can",start:125,end:142,invocation:["app::run"]}); } }
+        $canExpr1 = (($canValue($canRegion1) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71) === ($canValue($canRegion4) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71));
+        if (($canExpr1 === true)) {
+        const $canExpr4 = 1n;
+        return $canSuccess($canExpr4);
+        }
+        else if (($canExpr1 === false)) {
+        const $canExpr5 = 0n;
+        return $canSuccess($canExpr5);
+        }
+        else { throw new Error('checked match was not exhaustive'); }
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:187,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/logical
+{"kind":"standard","events":["first"]}=== RUN   TestEmittedFailureEvaluationOrder/value-match
+    region_order_test.go:77: exit status 1
+        {"kind":"ok","events":["first"]}
+        59 | } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:169,invocation:["app::run"]}); }
+        60 | }
+        61 | 
+        62 | const result=await test();
+        63 | console.log(JSON.stringify({kind:result.kind,events}));
+        64 | if(result.kind!=='standard'||events.join(',')!=='first')throw new Error('failure order violated');
+                                                                               ^
+        error: failure order violated
+              at /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestEmittedFailureEvaluationOrdervalue-match1571150158/002/review.ts:64:67
+        
+        Bun v1.4.2 (macOS arm64)
+        
+        async function test(): Promise<$canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>> {
+        try {
+        let $canRegion1!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        let $canRegion2: $canCompletion<unknown>;
+        let $canRegion4!: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        $canRegion3: { try {
+        $canRegion2 = await $canInvoke(() => first(), {source:"region.can",start:129,end:136,invocation:["app::run"]});
+        if ($canRegion2.kind !== 'ok') break $canRegion3;
+        $canRegion4 = $canValue($canRegion2) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        } catch ($canCause) { $canRegion2 = $canCaught($canCause, {source:"region.can",start:124,end:136,invocation:["app::run"]}); } }
+        if ((true)) {
+        const $canExpr1 = 1n;
+        $canRegion1 = $canExpr1;
+        }
+        else { throw new Error('checked match was not exhaustive'); }
+        const $canRegion5: $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71 = $canRegion1;
+        const $canExpr2 = ($canRegion5) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+        return $canSuccess($canExpr2);
+        } catch ($canCause) { return $canCaught($canCause, {source:"region.can",start:102,end:169,invocation:["app::run"]}); }
+        }
+=== RUN   TestEmittedFailureEvaluationOrder/constructor
+{"kind":"standard","events":["first"]}--- FAIL: TestEmittedFailureEvaluationOrder (0.22s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/scrutinees (0.03s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/binary (0.02s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/wildcard (0.02s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/array (0.02s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/comparison (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/logical (0.02s)
+    --- FAIL: TestEmittedFailureEvaluationOrder/value-match (0.02s)
+    --- PASS: TestEmittedFailureEvaluationOrder/constructor (0.02s)
+=== RUN   TestRepeatedScrutineeNarrowing
+    region_order_test.go:93: region.can region app::run: duplicate name "choice" in one scope
+--- FAIL: TestRepeatedScrutineeNarrowing (0.00s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.497s
+FAIL
