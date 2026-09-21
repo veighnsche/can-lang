@@ -15,6 +15,9 @@ fn void main
         str[] args
     asserts
         sample: [] => ok
+    callable void (int) emits [clock::invalid_duration] sleep = callable clock::sleep_millis
+    callable void (str) emits [log::write_failed] write_info = callable log::write_info
+    callable void (str) emits [log::write_failed] write_error = callable log::write_error
     bytes::buffer empty = call bytes::empty()
     match call clock::wall_millis()
         when
@@ -22,7 +25,7 @@ fn void main
         ok int wall => match call clock::monotonic_millis()
             when
                 sample: => ok 1.5
-            ok float monotonic => match call clock::sleep_millis(0)
+            ok float monotonic => match call sleep(0)
                 when
                     sample: 0 => ok
                 ok => match call random::secure_bytes(0)
@@ -34,10 +37,10 @@ fn void main
                         ok str uuid => do
                             int[] digest = call hash_empty()
                             match wall >= 0 and monotonic >= 0.0 and entropy.length is 0 and uuid.length is 36 and digest[0] is 227
-                                true => match call log::write_info("secret info")
+                                true => match call write_info("secret info")
                                     when
                                         sample: "secret info" => ok
-                                    ok => match call log::write_error("secret error")
+                                    ok => match call write_error("secret error")
                                         when
                                             sample: "secret error" => ok
                                         ok => ok

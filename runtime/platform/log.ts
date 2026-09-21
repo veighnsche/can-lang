@@ -7,7 +7,7 @@ const origin=Object.freeze({source:"can:log",start:0,end:0,invocation:Object.fre
 type Native=Readonly<{encode:(value:Readonly<{level:string;message:string}>)=>string;write:(line:string)=>Promise<number>}>;
 const native:Native=Object.freeze({encode:JSON.stringify,write:line=>Bun.write(Bun.stderr,line)});
 export function createLog(domain:ReturnType<typeof createDomainRuntime>,writeFailed:string,host:Native=native){
- async function write(level:"info"|"error",message:string,context?:AssertionContext):Promise<Completion<void>>{
+ async function write(level:"info"|"error",message:string,context?:AssertionContext):Promise<Completion<undefined>>{
   denyLiveBoundary(context,origin);
   // Private type validation precedes serialization; proxies/getters are never inspected.
   if(typeof message!=="string")throw new TypeError("invalid log text");

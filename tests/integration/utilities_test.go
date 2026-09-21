@@ -70,7 +70,7 @@ func TestCurrentBundledUtilities(t *testing.T) {
 	if code, out, diag := run("run"); code != 0 || out != "" || diag != expected {
 		t.Fatalf("native utilities: %d %q %q", code, out, diag)
 	}
-	for _, tc := range []struct{ from, to, id string }{{"sleep_millis(0)", "sleep_millis(-1)", "1260"}, {"sleep_millis(0)", "sleep_millis(2147483648)", "1260"}, {"secure_bytes(0)", "secure_bytes(-1)", "1261"}, {"secure_bytes(0)", "secure_bytes(65537)", "1261"}} {
+	for _, tc := range []struct{ from, to, id string }{{"sleep(0)", "sleep(-1)", "1260"}, {"sleep(0)", "sleep(2147483648)", "1260"}, {"secure_bytes(0)", "secure_bytes(-1)", "1261"}, {"secure_bytes(0)", "secure_bytes(65537)", "1261"}} {
 		write("src/main.can", strings.Replace(source, tc.from, tc.to, 1))
 		if code, out, diag := run("run"); code != 1 || out != "" || !strings.Contains(diag, `"id":`+tc.id) || strings.Contains(diag, "secret") {
 			t.Fatalf("utility bound: %d %q %s", code, out, diag)
