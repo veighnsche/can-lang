@@ -1,17 +1,5 @@
-// types.go: the first real type checker.
-//
-// Until now annotations were documentation the evaluator ignored.
-// checkTypes enforces them: every value position has a declared type,
-// brands are nominal, and nothing converts implicitly. A branded value
-// flows only into a position annotated with the same brand, so the sink
-// rule (no secrets into str fields, no cross-brand comparison) falls out
-// of exact matching with no separate taint pass. Branding is proof, not
-// runtime: the evaluator and emitter already treat sealed values as
-// plain strings.
-//
-// Runs in checkSem after checkEmits, before test execution, shared by
-// editor and CLI. Three entry points: checkTypes per function,
-// checkExternSig per extern, checkBrandDecl per brand.
+// Predecessor type checker, retained only until the legacy pipeline retirement.
+// Current nominal types and compatibility live in internal/types.
 package main
 
 import (

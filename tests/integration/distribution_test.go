@@ -204,6 +204,38 @@ func TestDevelopmentSidecar(t *testing.T) {
 			}
 		}
 	})
+	t.Run("current-declaration-types-offline", func(t *testing.T) {
+		inspect := func(directory string) ([]byte, error) {
+			command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", link, "inspect-types", directory)
+			command.Dir = cwd
+			command.Env = env
+			return command.CombinedOutput()
+		}
+		report, err := inspect(filepath.Join(source, "compiler/testdata/current/project"))
+		if err != nil || !strings.Contains(string(report), "can.declaration-types") || strings.Contains(string(report), "never-print-this") {
+			t.Fatalf("offline type inspection: %v\n%s", err, report)
+		}
+		directory := t.TempDir()
+		write(filepath.Join(directory, "can.project.json"), `{"source_root":".","error_registry":"can.errors.json"}`)
+		write(filepath.Join(directory, "can.errors.json"), `{"active":[],"retired":[]}`)
+		write(filepath.Join(directory, "main.can"), "package app\n    provides []\n    uses []\nrecord infinite\n    infinite next\n")
+		rejected, err := inspect(directory)
+		if err == nil || !strings.Contains(string(rejected), "finite inhabitant") {
+			t.Fatalf("uninhabited record admitted: %v\n%s", err, rejected)
+		}
+	})
+	t.Run("native-nominal-data-offline", func(t *testing.T) {
+		// Execute the packaged data conformance with the absolute staged Bun.
+		// The compiler's authored source cannot select an arbitrary tool entry.
+		clean := t.TempDir()
+		command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(root, "runtime/bun"), "--no-env-file", "--no-macros", "--no-install", "--config="+filepath.Join(root, "tools/runtime/bunfig.toml"), "test", filepath.Join(root, "runtime/data.test.ts"))
+		command.Dir = clean
+		command.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/nonexistent"}
+		output, err := command.CombinedOutput()
+		if err != nil || !strings.Contains(string(output), "2 pass") {
+			t.Fatalf("staged native data conformance: %v\n%s", err, output)
+		}
+	})
 	if !reflect.DeepEqual(bundleBefore, treeHashes(t, root, []string{"."})) {
 		t.Fatal("execution wrote to bundle")
 	}

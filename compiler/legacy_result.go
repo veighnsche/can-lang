@@ -1,3 +1,5 @@
+// Predecessor completion layout. Current data identity lives in internal/types;
+// current completion regions and protected payload boxes are implemented in I10.
 package main
 
 // scalarSuccess identifies the four primitive scalar types.

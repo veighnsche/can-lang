@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "For Can, C4 gives every record/error a declaration-based nominal identity with invariant concrete parameters. Finite variants have no repeated flattened leaves and no cycles consisting solely of variants. Recursive data is valid only if some finite value exists: arrays permit [], and option::value<node> offers none beside some<node>; required cycles of records lacking any base do not qualify. The opaque standard_failure snapshot alone is permitted as a variant leaf. Data fields can hold resources or callables, but equality cannot apply to a type whose reachable fields include them. Reusing one concrete specialization recursively is supported; generating an infinite succession of different specializations is not. Zero outside consumers means old representations need no preservation. I06 owns concrete graph foundations; I46 later supplies complete generic body validation and inference. Alternatives are a shared finite node graph with independent variant-cycle/duplicate checks, a least fixed point seeded by empty arrays and other bases using conjunction for fields and disjunction for variants, plus reachability-based equality rejection; universal cycle rejection; or optimistic repeated-node acceptance bounded by depth. Choosing the first also entails a separate expansion safeguard and tests exercising optional/array exits, compulsory mutual cycles, overlapping leaves and recursive paths to callable fields. There is no measured speed evidence.",
+  "questions": {
+    "analysis": {
+      "type": "choice",
+      "instructions": "Based on these constraints alone, choose the suitable graph strategy without inventing additional semantics.",
+      "criteria": {
+        "fixed": "Intern concrete nodes, enforce finite disjoint variant expansion, compute least-fixed-point inhabitation and transitive equality exclusions, and separately bound specialization expansion.",
+        "reject": "Make any recursive edge an error regardless of available finite constructors.",
+        "optimistic": "Presume all encountered recursive types inhabited and comparable, stopping only at a maximum depth."
+      }
+    }
+  }
+}

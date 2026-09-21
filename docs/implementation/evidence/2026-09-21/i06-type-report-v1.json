@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.declaration-types",
+  "types": [
+    {
+      "identity": "00ecab1f076d0f1897e0ef6591dae7f8be180cfe3a2f6d1337db8301b3bdd3c4",
+      "kind": "array",
+      "element": "9f7cf87231d4e20ee1f8505d6d09219dbe509344fa96d0d7c7dc8b9dd51579b6",
+      "equality": true
+    },
+    {
+      "identity": "08c71c613f572b66b7bc91f43453d3233589889657fbec0c2215b38029eff207",
+      "declaration": "can.project.root/alpha::holder",
+      "kind": "record",
+      "fields": [
+        {
+          "name": "value",
+          "type": "55c90f736a293be592e4b6f6529e8f8e94bde63efeba43b1a29a7b3fd56ea987"
+        }
+      ],
+      "equality": true
+    },
+    {
+      "identity": "28cafcb8ed0902359abbbb0085f8c463e1a3f78ee6800a870d5bc2e567867edc",
+      "declaration": "can.project.dependency/sample/utils::unavailable",
+      "kind": "error",
+      "fields": [
+        {
+          "name": "reason",
+          "type": "9f7cf87231d4e20ee1f8505d6d09219dbe509344fa96d0d7c7dc8b9dd51579b6"
+        }
+      ],
+      "equality": true
+    },
+    {
+      "identity": "2e1ed72b8a4c1efd83db9e96414c5d6382c4d952396b148009970f66aab8cef3",
+      "declaration": "can.project.dependency/sample/utils::item",
+      "kind": "record",
+      "fields": [
+        {
+          "name": "value",
+          "type": "9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71"
+        }
+      ],
+      "equality": true
+    },
+    {
+      "identity": "55c90f736a293be592e4b6f6529e8f8e94bde63efeba43b1a29a7b3fd56ea987",
+      "declaration": "can.project.root/alpha::item",
+      "kind": "record",
+      "fields": [
+        {
+          "name": "value",
+          "type": "58148e9e5c2dfd524a24e4442831d87e7605fd71484fe5bc8ab2d42bb7681bfd"
+        }
+      ],
+      "equality": true
+    },
+    {
+      "identity": "58148e9e5c2dfd524a24e4442831d87e7605fd71484fe5bc8ab2d42bb7681bfd",
+      "declaration": "can.project.root/beta::item",
+      "kind": "record",
+      "fields": [
+        {
+          "name": "value",
+          "type": "9f7cf87231d4e20ee1f8505d6d09219dbe509344fa96d0d7c7dc8b9dd51579b6"
+        }
+      ],
+      "equality": true
+    },
+    {
+      "identity": "859d5d464ce6f29f60bd8404798a72e82b08b6134d17f25f63da2d4fd6c580d7",
+      "declaration": "void",
+      "kind": "void",
+      "equality": false
+    },
+    {
+      "identity": "9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71",
+      "declaration": "int",
+      "kind": "primitive",
+      "equality": true
+    },
+    {
+      "identity": "9f7cf87231d4e20ee1f8505d6d09219dbe509344fa96d0d7c7dc8b9dd51579b6",
+      "declaration": "str",
+      "kind": "primitive",
+      "equality": true
+    }
+  ]
+}

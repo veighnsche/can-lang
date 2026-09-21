@@ -38,6 +38,9 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
+	if len(argv) > 0 && argv[0] == "inspect-types" {
+		return runInspectTypes(os.Stdout, os.Stderr, argv[1:])
+	}
 	if len(argv) > 0 && argv[0] == "inspect-project" {
 		return runInspectProject(os.Stdout, os.Stderr, argv[1:])
 	}

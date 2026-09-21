@@ -1,0 +1,7 @@
+=== RUN   TestDataEmissionRejectsInvalidContracts
+--- PASS: TestDataEmissionRejectsInvalidContracts (0.01s)
+=== RUN   TestEmittedNativeNominalData
+    data_test.go:163: emitted nominal identity, immutable update and evaluation order passed
+--- PASS: TestEmittedNativeNominalData (0.07s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.324s

@@ -1,0 +1,10 @@
+bun test v1.4.2 (744846f84)
+
+runtime/data.test.ts:
+(pass) native strict deep equality observes nominal identity [5.02ms]
+(pass) native copy preserves original aliases, tags and field spelling [1.38ms]
+
+ 2 pass
+ 0 fail
+ 16 expect() calls
+Ran 2 tests across 1 file. [59.00ms]

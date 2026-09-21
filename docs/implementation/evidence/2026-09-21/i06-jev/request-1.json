@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can C4 requires nominal identity by declaration and invariant concrete arguments, finite disjoint variant leaves, no variant-only cycles, and finite inhabitants for recursive records. Arrays can be empty; option::value<node> contains none and some<node>, so either can terminate recursion. Required record cycles without a base must fail. standard_failure is the sole opaque variant leaf exception. Records may contain opaque resources and callables; equality must reject any reachable excluded field, including through a recursive graph. Expanding infinitely many distinct generic types must be rejected separately; ordinary same-specialization recursion is legal. There are no external users or old-layout obligations. I06 will provide the type graph, with complete generic body inference/checking in I46. Candidate algorithms are: intern a finite concrete graph, separately reject variant-only cycles and duplicate leaves, calculate inhabitation by a least fixed point (all record fields, any variant leaf, empty arrays as bases), and propagate equality exclusions through reachable fields; reject every cycle with a recursion stack; or accept repeated nodes optimistically with a depth cutoff. The fixed-point choice requires a separate finite-expansion guard and tests for option/array bases, mutual required cycles, duplicate leaves and recursive callable fields. No benchmark data is available.",
+  "questions": {
+    "analysis": {
+      "type": "choice",
+      "instructions": "Which graph-analysis approach best preserves these concrete type contracts? Judge the supplied evidence, without researching or designing new language rules.",
+      "criteria": {
+        "fixed": "Use interning and separate variant-cycle validation, least-fixed-point inhabitation, and reachable exclusion analysis for equality, with a distinct expansion guard.",
+        "reject": "Reject all type graph cycles as soon as a traversal revisits a node.",
+        "optimistic": "Treat revisited types as inhabited and equal-comparable until a traversal depth limit fails."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The C4 rules distinguish declared nominal types and invariant specializations. Variant alternatives must flatten to distinct finite leaves and cannot recurse only through variants. A recursive record needs a finite construction: an empty array or the none branch in option::value<node> supplies a base, while mutually required records without a base are invalid. Only standard_failure may appear as an opaque variant alternative. Callable and resource fields are legal data but disqualify their whole containing graph from equality. Infinitely expanding concrete generic instances are forbidden, whereas a reference back to the identical instance is allowed. Compatibility with historical layouts is unnecessary because no external users exist. This I06 graph work precedes I46 full generic-body checking and inference. Available designs: cache concrete nodes, validate variant cycles/leaf uniqueness independently, solve record-all/variant-any inhabitation from empty-array bases to a least fixed point, then check reachable equality exclusions; forbid every back edge; or assume repeated nodes valid subject to a depth cap. The first design still needs its own finite-expansion check plus regressions for array/option termination, mandatory mutual recursion, repeated leaves and callables reached recursively. Performance measurements have not been made.",
+  "questions": {
+    "analysis": {
+      "type": "choice",
+      "instructions": "Select the analysis that most directly satisfies the stated type requirements using only the facts here; do not extend the language.",
+      "criteria": {
+        "fixed": "Cache concrete identities, check variant recursion separately, derive finite inhabitants monotonically, and scan field reachability for equality blockers while guarding expansion independently.",
+        "reject": "Disallow recursion whenever graph traversal encounters an already active type.",
+        "optimistic": "Accept recursive visits as inhabited and equality eligible unless a fixed nesting cap is exceeded."
+      }
+    }
+  }
+}
