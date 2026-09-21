@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The HTML contract provides immutable constructor-owned handles for nodes, completed safe markup, addresses, attributes, tags and HTMX targets/swaps. User syntax cannot express raw HTML/CSS/JS or event handlers. Escaping belongs solely to Bun.escapeHTML; URL interpretation belongs to native URL. Parent construction must detect descendant anchors/forms, enforce head-only placement and retain whether URLs started as one-slash same-origin paths for HTMX use. Runtime internals are inaccessible to authored modules. Forged objects, including proxies and getters, must fail with no trap execution. Old behavior need not be preserved. Completed safe markup is already rendered and immutable. The decision concerns private authority and metadata only."
+  },
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Pick the storage approach that preserves constructor authority and the necessary structural metadata.",
+      "criteria": {
+        "weak": "Use private WeakMap associations from frozen property-free tokens to escaped output and immutable composition facts, rejecting unregistered identities before inspection.",
+        "brand": "Put a string authenticity marker and rendered HTML on visible frozen records and read the marker to authorize use.",
+        "reparse": "Keep unbranded strings and employ another HTML parsing implementation at each output boundary to establish acceptability."
+      }
+    }
+  }
+}

@@ -56,6 +56,29 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		"can.std.env@1::required":    "$canEnv.required",
 		"can.std.env@1::optional":    "$canEnv.optional",
 	}
+	functions["can.std.html@1::make_tag"] = "$canHTML.makeTag"
+	functions["can.std.html@1::text"] = "$canHTML.text"
+	functions["can.std.html@1::text_fragment"] = "$canHTML.textFragment"
+	functions["can.std.html@1::parse_url"] = "$canHTML.parseURL"
+	functions["can.std.html@1::text_attribute"] = "$canHTML.textAttribute"
+	functions["can.std.html@1::url_attribute"] = "$canHTML.urlAttribute"
+	functions["can.std.html@1::element"] = "$canHTML.element"
+	functions["can.std.html@1::fragment"] = "$canHTML.fragment"
+	functions["can.std.html@1::stylesheet"] = "$canHTML.stylesheet"
+	functions["can.std.html@1::meta_viewport"] = "$canHTML.metaViewport"
+	functions["can.std.html@1::document"] = "$canHTML.document"
+	functions["can.std.htmx@1::get"] = "$canHTML.get"
+	functions["can.std.htmx@1::post"] = "$canHTML.post"
+	functions["can.std.htmx@1::target_id"] = "$canHTML.targetID"
+	functions["can.std.htmx@1::target_attribute"] = "$canHTML.targetAttribute"
+	functions["can.std.htmx@1::indicator_id"] = "$canHTML.indicatorID"
+	functions["can.std.htmx@1::swap_inner"] = "$canHTML.swapInner"
+	functions["can.std.htmx@1::swap_outer"] = "$canHTML.swapOuter"
+	functions["can.std.htmx@1::trigger_change"] = "$canHTML.triggerChange"
+	functions["can.std.htmx@1::trigger_input_changed"] = "$canHTML.triggerInputChanged"
+	functions["can.std.htmx@1::trigger_every"] = "$canHTML.triggerEvery"
+	functions["can.std.htmx@1::disable_this"] = "$canHTML.disableThis"
+	functions["can.std.htmx@1::runtime_head"] = "$canHTML.runtimeHead"
 	functions["can.std.clock@1::wall_millis"] = "$canClock.wallMillis"
 	functions["can.std.clock@1::monotonic_millis"] = "$canClock.monotonicMillis"
 	functions["can.std.clock@1::sleep_millis"] = "$canClock.sleepMillis"
@@ -231,6 +254,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	var state strings.Builder
 	state.WriteString(declarations)
+	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
 	state.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&state, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", optionType)
 	for _, id := range connectionIDs {
@@ -284,12 +308,24 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			bytesID = typ.Identity()
 		}
 	}
-	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value));\n", plan, quote(bytesID))
+	htmlKinds := map[string]string{}
+	for _, typ := range program.Model.Types() {
+		if typ.Kind() == types.Opaque && (strings.HasPrefix(typ.Declaration(), "can.std.html@1::") || strings.HasPrefix(typ.Declaration(), "can.std.htmx@1::")) {
+			htmlKinds[typ.Identity()] = strings.Split(typ.Declaration(), "::")[1]
+		}
+	}
+	htmlKindsJSON, err := json.Marshal(htmlKinds)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Fprintf(&state, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
+	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	numberIDs := map[string]string{}
 	for _, typ := range program.Model.Types() {
 		numberIDs[typ.Declaration()] = typ.Identity()
 	}
+	fmt.Fprintf(&state, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s});\n", quote(numberIDs["can.std.html@1::invalid_structure"]), quote(numberIDs["can.std.html@1::invalid_url"]), quote(numberIDs["can.std.htmx@1::invalid_target"]), quote(numberIDs["can.std.htmx@1::invalid_interval"]))
 	fmt.Fprintf(&state, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(numberIDs["can.std.clock@1::invalid_duration"]), quote(numberIDs["can.std.random@1::invalid_length"]), quote(numberIDs["can.std.log@1::write_failed"]))
 	fmt.Fprintf(&state, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(numberIDs["can.std.io@1::read_failed"]), quote(numberIDs["can.std.io@1::limit_exceeded"]), quote(invalidData), optionType, quote(numberIDs["can.std.env@1::invalid_name"]), quote(numberIDs["can.std.http@1::credentials_missing"]), quote(optionIDs["can.std.option@1::some"]), quote(optionIDs["can.std.option@1::none"]))
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
@@ -360,6 +396,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
 	if judges {
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}})
 	}
@@ -481,7 +518,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
@@ -534,7 +571,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 			imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 			for _, id := range collectionIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})

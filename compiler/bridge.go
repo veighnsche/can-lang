@@ -1,3 +1,6 @@
+// Historical compiler only: P9 constructors supersede these grants in current
+// build/run/assert. Remove this legacy pass with I44; it grants no authority to
+// the current compiler under compiler/internal.
 // bridge.go: Schema-to-HTML asset bridge (S2 slice plan).
 //
 // An asset_bridge grant authorizes one exact-shape sink function to

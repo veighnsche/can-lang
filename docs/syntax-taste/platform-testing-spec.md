@@ -666,6 +666,36 @@ The exact text-attribute inventory is global `id`, `class`, `title`, `lang`,
 The URL-attribute inventory is `href` on `a`, `action` on `form`, and
 `formaction` on `button`. Duplicate names after ASCII-case normalization fail.
 
+The maintained tag-specific attribute matrix is:
+
+| Attribute | Author tags |
+| --- | --- |
+| `name` | form, input, textarea, select, button |
+| `value` | input, option, button, li |
+| `type` | input, button, a, ol |
+| `placeholder` | input, textarea |
+| `autocomplete` | form, input, textarea, select |
+| `for` / `method` / `rel` | label / form / a and form |
+| `checked` / `selected` | input / option |
+| `disabled` | input, textarea, select, option, button |
+| `required` / `multiple` | input, textarea, select / input, select |
+| `rows`, `cols` / `scope` | textarea / th |
+| `colspan`, `rowspan` | td, th |
+
+Names normalize ASCII case; values are preserved for serialization. Boolean
+attributes accept empty text or their own name; `hidden` additionally admits
+`until-found`. `dir`, form method, input/button/list type, scope and autocomplete
+use their defined HTML tokens. Autocomplete detail tokens may include the HTML
+section, address/contact and final webauthn qualifiers; form autocomplete is
+on/off only. `rel` accepts the standard link keywords applicable to a/form,
+without arbitrary extension keywords. Numeric rows/cols are positive; colspan
+is 1--1000, rowspan 0--65534, and tabindex/li value are signed integer strings.
+These tables refine the closed P9 profile rather than enabling other HTML
+attributes. The implementation references the
+[HTML attribute index](https://html.spec.whatwg.org/multipage/indices.html#attributes-3),
+[boolean attributes](https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#boolean-attributes),
+and [link types](https://html.spec.whatwg.org/multipage/links.html#linkTypes).
+
 `html::text` and every attribute serializer pass the already typed `str` to
 native `Bun.escapeHTML`; no adapter implements a second escaping algorithm.
 `html::parse_url` uses the native `URL` parser, rejects controls, backslashes,
@@ -688,7 +718,10 @@ The initial HTMX attribute inventory is `hx-get`, `hx-post`, `hx-target`,
 poll intervals are 1000--3600000 ms. Catalogue constructors produce every
 value; `html::text_attribute` rejects raw `hx-*` and `data-hx-*` names. `hx-on*`,
 arbitrary selectors, arbitrary triggers, `hx-vals`, extensions, and script
-attributes are deferred.
+attributes are deferred. Target and indicator IDs use `[A-Za-z_][A-Za-z0-9_-]*`;
+the constructor prepends `#`, so authored selectors are never interpreted.
+Native URL normalization must still leave local URLs with exactly one leading
+slash; a path that normalizes into a scheme-relative spelling is rejected.
 
 ## P10. HTTP request, response, routing, and server catalogue
 

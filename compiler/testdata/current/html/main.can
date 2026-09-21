@@ -1,0 +1,52 @@
+package app
+    provides []
+    uses [html, htmx]
+fn html::safe render
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    given
+        str message
+        str tag_name
+    asserts
+        invalid_tag: "text", "script" => html::invalid_structure("tag")
+    match chain
+        call html::make_tag(tag_name) as html::tag section
+        call html::make_tag("p") as html::tag paragraph
+        call html::text(message) as html::node text
+        call html::text_attribute("title", message) as html::attribute title
+        call html::text_attribute("id", "results") as html::attribute identity
+        call html::parse_url("/results?q=a&x=b") as html::url address
+        call htmx::get(address) as html::attribute request
+        call htmx::target_id("results") as htmx::target target
+        call htmx::target_attribute(target) as html::attribute selector
+        call htmx::trigger_every(1000) as html::attribute trigger
+        call html::element(paragraph, [title], [text]) as html::node child
+        call html::element(section, [identity, request, selector, trigger], [child]) as html::node body
+        call html::parse_url("/site.css") as html::url stylesheet
+        call html::stylesheet(stylesheet) as html::node style
+        call html::meta_viewport() as html::node viewport
+        call htmx::runtime_head() as html::node runtime
+        call html::document(message, [viewport, style, runtime], [body]) as html::safe document
+        ok => ok document
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target
+        htmx::invalid_interval
+fn html::safe fragment
+    emits [html::invalid_structure]
+    given
+        html::node[] nodes
+    asserts
+        invalid_head: [call html::meta_viewport()] => html::invalid_structure("head_context")
+    relay call html::fragment(nodes)
+fn void main
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    given
+        str[] args
+    asserts
+        hostile: ["<script>not executable</script>"] => ok
+    match call render(args[0], "section")
+        ok html::safe output => ok
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target
+        htmx::invalid_interval

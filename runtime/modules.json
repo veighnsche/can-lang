@@ -288,6 +288,12 @@
       "../data.ts",
       "../domain.ts",
       "./io.ts"
+    ],
+    "platform/html.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts"
     ]
   }
 }

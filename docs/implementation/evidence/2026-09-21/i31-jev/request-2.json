@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "P9 exposes only maintained immutable HTML node, safe output, URL, attribute and tag handles plus HTMX target/swap handles. Authored raw markup, CSS, scripts and handlers are excluded. Text and attributes must escape through Bun.escapeHTML and addresses parse with URL. Validation needs ancestry facts for nested a/form rejection, separate head-only nodes, and original single-slash-relative URL classification for HTMX. Applications cannot import private runtime modules. Invalid proxy or accessor impostors must be rejected without executing traps. Legacy compatibility is not a requirement. Trusted output is an immutable rendered string behind its handle. Select storage/provenance machinery without changing source language."
+  },
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Select the internal design best matching the stated immutable authority and validation constraints.",
+      "criteria": {
+        "weak": "Allocate empty frozen handles and keep rendering plus fixed descendant/context facts in module-private WeakMaps; check identity membership first.",
+        "brand": "Expose frozen objects carrying textual branding and HTML data, with sink checks based on reading that brand.",
+        "reparse": "Represent values as plain markup strings and reconstruct trust through an additional HTML parser whenever consumed."
+      }
+    }
+  }
+}

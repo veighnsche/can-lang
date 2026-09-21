@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can P9 uses catalogue-only immutable html node/safe/url/attribute/tag and htmx target/swap values. No raw HTML, style, script or event attribute is authorable. Bun.escapeHTML must perform all text/attribute escaping; URL must do URL parsing. Child constraints require descendant detection for nested anchors/forms and head/body separation. URLs remember whether a single-slash local path was authored; HTMX requires that local kind. The native runtime is private; source programs cannot import it. Forged proxy/getter inputs must fail without invoking traps. No backwards compatibility is needed. A safe value is rendered immutable HTML. Design the internal provenance representation, not new source syntax."
+  },
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Choose the representation that satisfies the provenance and composition requirements with minimal mutable exposure.",
+      "criteria": {
+        "weak": "Frozen empty tokens keyed in private WeakMaps; retain escaped rendering and immutable structural metadata privately; use membership checks before reads.",
+        "brand": "Publicly readable frozen records containing a string brand and markup; validate the brand field at sinks.",
+        "reparse": "Store ordinary HTML strings and reparse them with a separate HTML parser at every sink to infer safety."
+      }
+    }
+  }
+}
