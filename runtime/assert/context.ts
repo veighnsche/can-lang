@@ -114,6 +114,10 @@ export type CoordinationContexts=Readonly<{
 export function coordinationContexts(context:AssertionContext,site:string,positions:readonly (readonly number[])[],mode:"all"|"settled"|"any"|"race"):CoordinationContexts{
  const parent=view(context),children=participantIdentities(parent.identity,site,positions).map(identity=>makeView(parent.shared,identity));
  const started=new Set<number>(),observed=new Set<number>();let gate:Frame|undefined,returned=false;
+ // Empty settling aggregates already have a pending native selection reaction.
+ // Keep that continuation active before suspending the parent, just as observed
+ // does for a nonempty aggregate whose result can now be selected.
+ if(children.length===0&&mode!=="race"){gate=reserveFrame(parent.shared.barrier,invocationIdentity(parent.identity,"can:assertion-selection#0"));startFrame(gate)}
  suspendFrame(parent.frame);
  function child(index:number):View{if(!Number.isSafeInteger(index)||index<0||index>=children.length)throw new TypeError("invalid participant index");return view(children[index]);}
  return Object.freeze({contexts:Object.freeze(children),
@@ -126,7 +130,7 @@ export function coordinationContexts(context:AssertionContext,site:string,positi
    finishFrame(value.frame);
   },
   selected(){if(returned)throw new TypeError("coordination already resumed");returned=true;resumeFrame(parent.frame);if(gate)finishFrame(gate)},
-  abort(){if(returned||started.size)throw new TypeError("cannot abandon started coordination");for(const value of children)abandonFrame(view(value).frame);returned=true;resumeFrame(parent.frame)},
+  abort(){if(returned||started.size)throw new TypeError("cannot abandon started coordination");for(const value of children)abandonFrame(view(value).frame);returned=true;resumeFrame(parent.frame);if(gate)finishFrame(gate)},
  });
 }
 
