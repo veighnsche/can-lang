@@ -96,6 +96,9 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 	if err != nil {
 		return nil, err
 	}
+	if routeOperation(binding.Identity) {
+		return nil, fmt.Errorf("route construction requires a direct call with a static path")
+	}
 	declaration, ok := c.context.Callables[binding.Identity]
 	if !ok {
 		return nil, fmt.Errorf("missing named callable declaration evidence")

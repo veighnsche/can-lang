@@ -15,7 +15,7 @@ import (
 func programImports(runtime string) []ModuleImport {
 	return []ModuleImport{
 		{Target: runtime + "/collections/array.ts", Names: arrayImports()},
-		{Target: runtime + "/assert/context.ts", Names: []ImportName{{"callContext", "$canCallContext"}}},
+		{Target: runtime + "/assert/context.ts", Names: []ImportName{{"callContext", "$canCallContext"}, {"scopeRequest", "$canScopeRequest"}}},
 		{Target: runtime + "/coordination.ts", Names: []ImportName{{"settle", "$canCoordinateSettle"}, {"handle", "$canCoordinateHandle"}, {"aggregate", "$canCoordinateAggregate"}}},
 		{Target: runtime + "/owner.ts", TypeOnly: true, Names: []ImportName{{"Participant", "$canParticipant"}}},
 		{Target: runtime + "/bytes.ts", Names: []ImportName{{"byteLength", "$canByteLength"}}},
@@ -79,6 +79,27 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	functions["can.std.htmx@1::trigger_every"] = "$canHTML.triggerEvery"
 	functions["can.std.htmx@1::disable_this"] = "$canHTML.disableThis"
 	functions["can.std.htmx@1::runtime_head"] = "$canHTML.runtimeHead"
+	functions["can.std.http@1::request_method"] = "$canHTTPRequests.method"
+	functions["can.std.http@1::request_path"] = "$canHTTPRequests.path"
+	functions["can.std.http@1::request_headers"] = "$canHTTPRequests.headers"
+	functions["can.std.http@1::query_one"] = "$canHTTPRequests.queryOne"
+	functions["can.std.http@1::query_all"] = "$canHTTPRequests.queryAll"
+	functions["can.std.http@1::request_body"] = "$canHTTPRequests.body"
+	functions["can.std.http@1::make_status"] = "$canHTTPResponses.makeStatus"
+	functions["can.std.http@1::make_body_status"] = "$canHTTPResponses.makeBodyStatus"
+	functions["can.std.http@1::status_ok"] = "$canHTTPResponses.ok"
+	functions["can.std.http@1::status_unprocessable"] = "$canHTTPResponses.unprocessable"
+	functions["can.std.http@1::status_internal"] = "$canHTTPResponses.internal"
+	functions["can.std.http@1::status_unavailable"] = "$canHTTPResponses.unavailable"
+	functions["can.std.http@1::make_server_headers"] = "$canHTTPResponses.makeHeaders"
+	functions["can.std.http@1::empty_server_headers"] = "$canHTTPResponses.emptyHeaders"
+	functions["can.std.http@1::response_empty"] = "$canHTTPResponses.empty"
+	functions["can.std.http@1::response_bytes"] = "$canHTTPResponses.bytes"
+	functions["can.std.http@1::response_text"] = "$canHTTPResponses.text"
+	functions["can.std.http@1::response_html"] = "$canHTTPResponses.html"
+	functions["can.std.http@1::route_get"] = "$canRouter.get"
+	functions["can.std.http@1::route_post"] = "$canRouter.post"
+	functions["can.std.http@1::make_router"] = "$canRouter.make"
 	functions["can.std.clock@1::wall_millis"] = "$canClock.wallMillis"
 	functions["can.std.clock@1::monotonic_millis"] = "$canClock.monotonicMillis"
 	functions["can.std.clock@1::sleep_millis"] = "$canClock.sleepMillis"
@@ -120,6 +141,21 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	functions["can.std.number@1::round"] = "$canNumbers.round"
 	functions["can.std.number@1::is_finite"] = "$canNumbers.isFinite"
 	functions["can.std.number@1::is_nan"] = "$canNumbers.isNaN"
+	httpIDs := make([]string, 0, len(program.HTTPs))
+	for id := range program.HTTPs {
+		httpIDs = append(httpIDs, id)
+	}
+	sort.Strings(httpIDs)
+	httpNames := map[string]string{}
+	for i, id := range httpIDs {
+		name := fmt.Sprintf("$canHTTP%d", i)
+		httpNames[id] = name
+		method := "decode"
+		if program.HTTPs[id].Operation == "can.std.http@1::response_json" {
+			method = "encode"
+		}
+		functions[id] = name + "." + method
+	}
 	codecIDs := make([]string, 0, len(program.Codecs))
 	for id := range program.Codecs {
 		codecIDs = append(codecIDs, id)
@@ -252,9 +288,19 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, leaf := range optionResult.Leaves() {
 		optionIDs[leaf.Declaration()] = leaf.Identity()
 	}
+	headerType := ""
+	for _, typ := range program.Model.Types() {
+		if typ.Declaration() == "can.std.http@1::header" {
+			headerType = TypeName(typ)
+		}
+	}
+	if headerType == "" {
+		return nil, fmt.Errorf("HTTP header type is not in the checked model")
+	}
 	var state strings.Builder
 	state.WriteString(declarations)
 	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
+	fmt.Fprintf(&state, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\n", headerType)
 	state.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&state, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", optionType)
 	for _, id := range connectionIDs {
@@ -318,14 +364,32 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if err != nil {
 		return nil, err
 	}
+	httpKinds := map[string]string{}
+	for _, typ := range program.Model.Types() {
+		if typ.Kind() != types.Opaque || !strings.HasPrefix(typ.Declaration(), "can.std.http@1::") {
+			continue
+		}
+		switch kind := strings.Split(typ.Declaration(), "::")[1]; kind {
+		case "request", "status", "body_status", "server_headers", "server_response", "route", "router":
+			httpKinds[typ.Identity()] = kind
+		}
+	}
+	httpKindsJSON, err := json.Marshal(httpKinds)
+	if err != nil {
+		return nil, err
+	}
 	fmt.Fprintf(&state, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
-	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value));\n", plan, quote(bytesID))
+	fmt.Fprintf(&state, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
+	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	numberIDs := map[string]string{}
 	for _, typ := range program.Model.Types() {
 		numberIDs[typ.Declaration()] = typ.Identity()
 	}
 	fmt.Fprintf(&state, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s});\n", quote(numberIDs["can.std.html@1::invalid_structure"]), quote(numberIDs["can.std.html@1::invalid_url"]), quote(numberIDs["can.std.htmx@1::invalid_target"]), quote(numberIDs["can.std.htmx@1::invalid_interval"]))
+	fmt.Fprintf(&state, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s});\n", headerType, quote(numberIDs["can.std.http@1::invalid_request"]), quote(numberIDs["can.std.http@1::body_limit"]), quote(invalidData), quote(numberIDs["can.std.http@1::header"]))
+	fmt.Fprintf(&state, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s});\n", quote(numberIDs["can.std.http@1::invalid_request"]), quote(invalidData))
+	fmt.Fprintf(&state, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(numberIDs["can.std.http@1::invalid_route"]), quote(numberIDs["can.std.http@1::duplicate_route"]), quote(numberIDs["can.std.http@1::ambiguous_route"]))
 	fmt.Fprintf(&state, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(numberIDs["can.std.clock@1::invalid_duration"]), quote(numberIDs["can.std.random@1::invalid_length"]), quote(numberIDs["can.std.log@1::write_failed"]))
 	fmt.Fprintf(&state, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(numberIDs["can.std.io@1::read_failed"]), quote(numberIDs["can.std.io@1::limit_exceeded"]), quote(invalidData), optionType, quote(numberIDs["can.std.env@1::invalid_name"]), quote(numberIDs["can.std.http@1::credentials_missing"]), quote(optionIDs["can.std.option@1::some"]), quote(optionIDs["can.std.option@1::none"]))
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
@@ -389,6 +453,33 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		fmt.Fprintf(&state, "$canValues[%s] = %s;\n", quote(value.Identity), initial.Bindings[value.Identity])
 	}
 	state.WriteString("Object.freeze($canValues);\n}\n")
+	for _, id := range httpIDs {
+		special := program.HTTPs[id]
+		var encoded []byte
+		var e error
+		shape := ""
+		switch special.Operation {
+		case "can.std.http@1::request_json", "can.std.http@1::response_json":
+			encoded, e = json.Marshal(special.Schema)
+		case "can.std.http@1::request_form":
+			encoded, e = json.Marshal(special.Form)
+		default:
+			e = fmt.Errorf("unknown HTTP specialization %s", special.Operation)
+		}
+		if e != nil {
+			return nil, e
+		}
+		if special.Operation == "can.std.http@1::response_json" {
+			shape = "encode:(status:unknown,headers:unknown,body:unknown,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canHTTPResponses.json(" + string(encoded) + ",status,headers,body,$canContext)"
+		} else {
+			method := "json"
+			if special.Operation == "can.std.http@1::request_form" {
+				method = "form"
+			}
+			shape = "decode:(request:unknown,limit:bigint,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canHTTPRequests." + method + "(" + string(encoded) + ",request,limit,$canContext)"
+		}
+		fmt.Fprintf(&state, "export const %s = Object.freeze({%s});\n", httpNames[id], shape)
+	}
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/collections/map.ts", Names: []ImportName{{"createMap", "$canCreateMap"}, {"isMap", "$canIsMap"}}}, ModuleImport{Target: runtime + "/collections/set.ts", Names: []ImportName{{"createSet", "$canCreateSet"}, {"isSet", "$canIsSet"}}})
@@ -397,6 +488,8 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	if judges {
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}})
 	}
@@ -518,7 +611,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
@@ -546,6 +639,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		for _, id := range codecIDs {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 		}
+		for _, id := range httpIDs {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{httpNames[id], httpNames[id]}}})
+		}
 		for _, fn := range program.Functions {
 			target := fn.Symbol.Source.OutputPath
 			if target != path {
@@ -571,13 +667,16 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}}})
 			imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 			for _, id := range collectionIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})
 			}
 			for _, id := range codecIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
+			}
+			for _, id := range httpIDs {
+				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{httpNames[id], httpNames[id]}}})
 			}
 			for _, fn := range program.Functions {
 				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Identity()], functions[fn.Identity()]}}})

@@ -99,6 +99,8 @@ func FormatExpression(expression Expr) string {
 		return out
 	case *ReferenceExpr:
 		return "callable " + FormatExpression(n.Callee) + formatTypeArguments(n.Types)
+	case *ScopeExpr:
+		return "scope"
 	case *UpdateExpr:
 		fields := make([]string, len(n.Fields))
 		for i, f := range n.Fields {

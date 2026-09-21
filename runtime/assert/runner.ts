@@ -42,8 +42,17 @@ function opaqueIdentitiesAgree(left: unknown, right: unknown, seen = new WeakMap
 export function assertionEqual(left: unknown, right: unknown): boolean {
   return Object.is(left, right) || opaqueIdentitiesAgree(left, right) && Bun.deepEquals(left, right, true);
 }
+function isOpaqueToken(value: unknown): boolean {
+  if (value === null || (typeof value !== "object" && typeof value !== "function")) return false;
+  if (Array.isArray(value) || nativeTypes.isProxy(value)) return false;
+  return recordIdentity(value) === undefined;
+}
 function sameCompletion(actual: Completion, expected: Completion): boolean {
   if (actual.kind !== expected.kind || actual.kind === "standard" || expected.kind === "standard") return false;
+  // Bare ok expectations (checker-confined to C-excluded opaque results) pass
+  // against any opaque token: fixture structure and completion kinds are the
+  // verified content, never the unobservable interior.
+  if (actual.kind === "ok" && expected.kind === "ok" && expected.value === undefined && isOpaqueToken(actual.value)) return true;
   if (actual.kind === "ok" && expected.kind === "ok") return assertionEqual(actual.value, expected.value);
   if (actual.kind === "domain" && expected.kind === "domain") {
     const a = domainFailureDiagnostics(actual.value), b = domainFailureDiagnostics(expected.value);

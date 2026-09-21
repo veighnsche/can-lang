@@ -1,0 +1,25 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can I32 mounts HTTP routes. P10 fixes the callback contract as callable http::server_response (http::request) emits []. Catalogue entries http::route_get and http::route_post take (static str path, mounted_callback) and emit http::invalid_route; http::make_router takes http::route[] and emits duplicate_route and ambiguous_route. The drafted runtime exposes createRouter.get(path, callback) with MountedCallback defined as (request: unknown, context?: AssertionContext) => Promise<Completion<unknown>>; dispatch awaits the boxed completion and converts the finished immutable response once. Mounted callbacks must be named Can declarations, never anonymous values. Route paths are the first catalogue staticInputs; no static-argument enforcement exists yet in the checker. The compiler already lowers named callable references to owned async wrappers via $canOwnCallable(site, target, captures, async (residual..., $canContext?) => Promise<Completion<Result>>, retained, context), and ir/resources.go already tracks resource captures through those callable values. The handoff forbids a second invocation pipeline and permits a dedicated ir/http.go only when ordinary invocation IR cannot carry the checked distinction."
+  },
+  "questions": {
+    "mount": {
+      "type": "choice",
+      "instructions": "Which route-mount representation best preserves the named-callback contract, capture ownership, and single-pipeline rule?",
+      "criteria": {
+        "ordinary_callable": "Mount as an ordinary checked call: the callback argument is a normally lowered callable value whose residual contract must equal exactly (http::request) -> http::server_response with emits [], and the existing $canOwnCallable wrapper serves directly as the MountedCallback.",
+        "dedicated_ir": "Add a dedicated checked route node carrying the normalized path, callback target identity, and capture preparations explicitly, with its own emitter that constructs the mount.",
+        "synthetic_wrapper": "Synthesize one wrapper function per mount site that accepts the request, invokes the named target, and returns the response; the route call then references only that wrapper."
+      }
+    },
+    "paths": {
+      "type": "choice",
+      "instructions": "How should the static-path requirement be enforced across the Go checker and the Bun runtime?",
+      "criteria": {
+        "check_literal_runtime_recheck": "Require a string literal at check time, validate its normalization then, pass it as an ordinary argument, and let the runtime re-validate at mount; check-time rejection is an early diagnostic and runtime remains authoritative.",
+        "runtime_only": "Accept any string expression in the checker and enforce exact normalized-path validity solely in the runtime mount constructor."
+      }
+    }
+  }
+}

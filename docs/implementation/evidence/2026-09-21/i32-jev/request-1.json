@@ -1,0 +1,26 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can P10 specifies immutable opaque HTTP responses, native Request/Response/Headers, complete awaited named callbacks, and conversion exactly once. No linear response consumption is specified; immutable Can values may be reused by callbacks. Native Response bodies are consumable. Exact static GET/POST routes match decoded normalized request paths; no implicit HEAD, captures or wildcards. URL performs normalization before decodeURIComponent. Errors include duplicate_route(method,path) and ambiguous_route(first,second). Different textual paths can normalize to one decoded path. There are zero compatibility requirements. These choices concern private representation and collision handling, not new public operations."
+  },
+  "questions": {
+    "response": {
+      "type": "choice",
+      "instructions": "Which response representation best preserves these immutability and boundary requirements?",
+      "criteria": {
+        "snapshot": "Keep status, validated headers and immutable payload privately; construct a fresh native Response once for each completed dispatch, allowing the same Can value in later requests.",
+        "consume": "Mark each Can response consumed upon its first conversion and fail any subsequent dispatch that returns it.",
+        "cache": "Cache one native Response inside the Can value and hand that same native object to every dispatch."
+      }
+    },
+    "routes": {
+      "type": "choice",
+      "instructions": "Which exact-route collision policy best implements the declared normalization and error surface?",
+      "criteria": {
+        "collision": "Normalize every valid static spelling with the request algorithm; reject identical same-method spellings as duplicate_route and distinct same-method spellings with equal normalized paths as ambiguous_route; GET and POST may share a path.",
+        "strict": "Accept only a single canonical decoded spelling at construction; reject every normalization alias as invalid_route, leaving no normalization collision for make_router.",
+        "overwrite": "Allow normalization collisions and choose the last route for each method and normalized path."
+      }
+    }
+  }
+}

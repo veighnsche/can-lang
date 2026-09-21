@@ -86,6 +86,12 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		out.Kind = ir.Binding
 		out.Text = c.Probability.Identity
 		out.Type = c.Probability.Type
+	case *syntax.ScopeExpr:
+		if expected == nil || !isScopeRequest(expected) {
+			return nil, fmt.Errorf("harness scope is only available at an elided ingress argument")
+		}
+		out.Kind = ir.ScopeRequest
+		out.Type = expected
 	case *syntax.LiteralExpr:
 		out.Kind = ir.Literal
 		out.Text = n.Token.Text

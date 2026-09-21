@@ -1,6 +1,6 @@
 # Stage 5 — Actionable implementation tasks
 
-Implementation is paused at the user’s request as of 2026-09-21; resume only with renewed authorization. Checkboxes record completed, verified tasks; unchecked tasks remain pending. The paused baseline has 36 of 50 tasks complete. IDs are stable; dependencies are task IDs, not chronological numbering. New paths below are proposed implementation locations. Existing files are to be replaced/adapted, not treated as policy. [Plan](plan.md) defines output/distribution invariants; [coverage](coverage.md) defines completeness.
+Implementation was paused at the user’s request as of 2026-09-21 and resumed under renewed authorization the same day. Checkboxes record completed, verified tasks; unchecked tasks remain pending. The handoff baseline had 36 of 50 tasks complete; 37 of 50 are now checked. IDs are stable; dependencies are task IDs, not chronological numbering. New paths below are proposed implementation locations. Existing files are to be replaced/adapted, not treated as policy. [Plan](plan.md) defines output/distribution invariants; [coverage](coverage.md) defines completeness.
 
 Reference key: [C](../syntax-taste/technical-spec.md), [Q](../syntax-taste/coordination-spec.md), [A](../syntax-taste/ai-io-spec.md), [P](../syntax-taste/platform-testing-spec.md). Every task includes positive (P+), negative (N−), and integration (INT) evidence. “Done” requires the observable result and its tests, not only changed source. Test source belongs under `compiler/testdata/current`, pass tests beside new Go code, runtime tests under `runtime/test`, and end-to-end release tests under `tests/integration`.
 
@@ -12,7 +12,7 @@ sequence and acceptance checks. Read its architecture map and I32 workspace
 snapshot before changing code. Preserve the existing `compiler/internal`,
 `runtime`, `distribution` and test boundaries; proposed files are small additions
 inside those owners, not permission to restructure the repository. The I32 drafts
-are uncommitted and do not count as task completion. Planning does not resume the
+were completed, verified and committed after the handoff. Planning does not resume the
 implementation goal.
 
 ## Foundation and first executable slice
@@ -93,7 +93,7 @@ implementation goal.
 
 - [x] **I31 — Replace HTML proof brands with opaque constructors.** Depends: I06,I18,I20,I24. Refs: P6,P9,F11. Areas: `runtime/platform/html.ts`, replacement `std/html`; retire `bridge.go` grants. Use native escapeHTML and URL validation with the exact tag/attribute/HTMX inventory. P+: immutable nested text/attribute/node construction and full document/fragment rendering. N−: forged safe node, forbidden tags/attributes/protocols and raw script/CSS injection reject. INT: request-derived hostile strings render as data through actual native escaping, not fixture-supplied HTML.
 
-- [ ] **I32 — Add immutable HTTP values and exact router.** Depends: I14,I18,I20,I31. Refs: P10. Areas: `runtime/platform/{http,router,form}.ts`. Wrap native Request/Response/Headers, cache bounded decoded body, use native URLSearchParams after strict malformed-percent validation. P+: repeated forms, approved statuses and exact GET/POST routes. N−: malformed escapes/body/headers, unsupported method and nonmatching path return the prescribed errors/404/405/Allow; no implicit HEAD. INT: real loopback requests prove URL normalization, query distinction, repeated body reads and response completion. Detailed plan: [files, sequence and completion checks](remaining-tasks.md#i32--http-values-forms-and-exact-router).
+- [x] **I32 — Add immutable HTTP values and exact router.** Depends: I14,I18,I20,I31. Refs: P10. Areas: `runtime/platform/{http,router,form}.ts`. Wrap native Request/Response/Headers, cache bounded decoded body, use native URLSearchParams after strict malformed-percent validation. P+: repeated forms, approved statuses and exact GET/POST routes. N−: malformed escapes/body/headers, unsupported method and nonmatching path return the prescribed errors/404/405/Allow; no implicit HEAD. INT: real loopback requests prove URL normalization, query distinction, repeated body reads and response completion. Detailed plan: [files, sequence and completion checks](remaining-tasks.md#i32--http-values-forms-and-exact-router).
 
 - [ ] **I33 — Implement Bun server lifetime and handler bridge.** Depends: I19,I20,I32. Refs: P6,P10,Q10. Areas: `runtime/platform/server.ts`. Adapt async boxed Can callbacks to native Response, own per-request leases and native graceful stop(false). P+: handler waits and successful close drain before releasing resources. N−: thrown/domain failures sanitize to the fixed 500; timeout does not revoke in-flight leases. INT: SIGINT/SIGTERM, keep-alive and an early race loser exercise real Bun shutdown, with late diagnostics and no unhandled rejection. Detailed plan: [files, sequence and completion checks](remaining-tasks.md#i33--native-server-lifetime).
 

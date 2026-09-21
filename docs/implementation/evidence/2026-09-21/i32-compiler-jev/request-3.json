@@ -1,0 +1,25 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "I32 route registration binds one exact static path to one named Can handler. The binding contract from P10 is callable http::server_response (http::request) emits []. Catalogue operations http::route_get and http::route_post map (static str path, mounted_callback) to http::route with http::invalid_route on failure; http::make_router folds http::route[] into http::router, reporting duplicate_route and ambiguous_route. In the runtime draft, createRouter.get(path, callback) consumes a MountedCallback of type (request: unknown, context?: AssertionContext) => Promise<Completion<unknown>>, and dispatch waits for the boxed result before converting the completed immutable response into exactly one new native Response. Handlers must name a declared Can function. The staticInputs tag on path is the catalogue's first; the checker enforces no literal-only rule anywhere today. The established lowering converts a named handler reference into an owned async closure via $canOwnCallable(site, target, captures, async (residual..., $canContext?) => Promise<Completion<Result>>, retained, context), and ir/resources.go already propagates resource capture evidence through callable-typed values. Per the handoff, no second invocation pipeline may be built, and ir/http.go is justified only if ordinary invocation IR proves inexpressive for this checked feature."
+  },
+  "questions": {
+    "mount": {
+      "type": "choice",
+      "instructions": "Select the representation that honors the exact handler type, retains capture ownership, and respects the single-pipeline constraint.",
+      "criteria": {
+        "ordinary_callable": "Keep the mount an ordinary checked invocation: lower the handler operand through the standard callable path, require the leftover contract to read exactly (http::request) -> http::server_response with no emitted errors, and supply the resulting $canOwnCallable closure directly where a MountedCallback is expected.",
+        "dedicated_ir": "Mint a purpose-built checked route structure that stores the normalized path plus handler target plus capture setup, emitted by dedicated code that performs the mount.",
+        "synthetic_wrapper": "Emit a per-site synthetic shim routine taking the request, delegating to the named handler, and producing the response, leaving the route operation to cite the shim alone."
+      }
+    },
+    "paths": {
+      "type": "choice",
+      "instructions": "Decide how the static nature of paths is guaranteed between check time and mount time.",
+      "criteria": {
+        "check_literal_runtime_recheck": "Check time demands a literal string and verifies its normalized form, the value travels as a normal argument, and mount time validates once more; the checker gives early feedback while the runtime has the last word.",
+        "runtime_only": "Checked code may compute the path freely and the runtime mount constructor alone judges exact normalized-path correctness."
+      }
+    }
+  }
+}

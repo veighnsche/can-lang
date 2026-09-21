@@ -1,0 +1,150 @@
+package app
+    provides []
+    uses [http, bytes, codec, option, html]
+record item
+    str name
+    int count
+record search_form
+    str query
+    str[] tags
+    option::value<str> note
+fn http::server_response handle
+    emits []
+    given
+        http::request req
+    asserts
+        method: => ok
+        missing: => ok
+    match call http::request_method(req)
+        when
+            method: req => ok "GET"
+            missing: req => ok "GET"
+        ok str method => match call http::query_one(req, "q")
+            when
+                method: req, "q" => ok "v"
+                missing: req, "q" => http::invalid_request("query_missing")
+            ok str value => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), method)
+            http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "missing")
+fn http::server_response submit
+    emits []
+    given
+        http::request req
+    asserts
+        created: => ok
+        bad: => ok
+    match call http::request_json<item>(req, 1024)
+        when
+            created: req, 1024 => ok item("a", 1)
+            bad: req, 1024 => http::invalid_request("unsupported_media_type")
+        ok item found => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), found.name)
+        http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+fn bool json_ok
+    emits [codec::invalid_data]
+    asserts
+        sample: => ok true
+    match call http::response_json<item>(call http::status_ok(), call http::empty_server_headers(), item("a", 1))
+        ok http::server_response response => ok true
+        codec::invalid_data
+fn http::server_response search
+    emits []
+    given
+        http::request req
+    asserts
+        found: => ok
+        incomplete: => ok
+    match call http::request_form<search_form>(req, 2048)
+        when
+            found: req, 2048 => ok search_form("ann", ["x"], option::none())
+            incomplete: req, 2048 => http::invalid_request("form_missing")
+        ok search_form form => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.query)
+        http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+fn http::server_response inspect
+    emits [http::body_limit]
+    given
+        http::request req
+    asserts
+        path: => ok
+    match call http::request_path(req)
+        when
+            path: req => ok "/a"
+        ok str path => match call http::query_all(req, "x")
+            when
+                path: req, "x" => ok ["1", "2"]
+            ok str[] values => match call http::request_headers(req)
+                when
+                    path: req => ok [http::header("x-test", "1")]
+                ok http::header[] headers => match call http::request_body(req, 64)
+                    when
+                        path: req, 64 => ok call bytes::empty()
+                    ok bytes::buffer content => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), path)
+                    http::body_limit
+            http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+fn http::server_response tagged<mark>
+    emits []
+    given
+        http::request req
+        near mark tag
+    asserts
+        sample: "t" => ok
+    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), tag)
+fn http::server_response wrapped
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call handle(req)
+        when
+            sample: req => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "GET")
+        ok http::server_response response => ok response
+fn bool responses
+    emits [http::invalid_request, html::invalid_structure]
+    asserts
+        sample: => ok true
+    match chain
+        call http::make_status(304) as http::status cached
+        call http::make_status(204) as http::status empty_status
+        call http::make_body_status(201) as http::body_status created
+        call http::status_internal() as http::body_status oops
+        call http::status_unavailable() as http::body_status down
+        call http::make_server_headers([http::header("x-a", "1")]) as http::server_headers headers
+        call http::response_empty(empty_status, call http::empty_server_headers()) as http::server_response e
+        call http::response_empty(cached, call http::empty_server_headers()) as http::server_response c
+        call http::response_bytes(created, headers, call bytes::empty()) as http::server_response b
+        call html::text("ok") as html::node node
+        call html::fragment([node]) as html::safe page
+        call http::response_html(oops, headers, page) as http::server_response h
+        ok => ok true
+        http::invalid_request
+        html::invalid_structure
+fn http::router mounted
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    str tag = "t"
+    match chain
+        call http::route_get("/a", callable handle) as http::route first
+        call http::route_post("/b", callable submit) as http::route second
+        call http::route_get("/g", callable tagged) as http::route generic
+        call http::route_post("/w", callable wrapped) as http::route wrap
+        call http::route_post("/s", callable search) as http::route form
+        call http::make_router([first, second, generic, wrap, form]) as http::router router
+        ok => ok router
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+fn void main
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call mounted()
+        ok http::router router => ok
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route

@@ -1,0 +1,26 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The HTTP catalogue in Can exposes opaque immutable response values and requires awaiting a named handler completely before one native Response conversion. Its contract has no rule making those values single-use, while a native body can be consumed. Routing supports only exact static GET/POST paths, decoded after native URL normalization, with HEAD never supplied automatically and capture/wildcard matching absent. Both duplicate_route(method,path) and ambiguous_route(first,second) are declared. Distinct authored spellings may produce an identical decoded normalized path. Existing consumers impose no compatibility obligations. Select internal storage and collision policy without adding catalogue APIs."
+  },
+  "questions": {
+    "response": {
+      "type": "choice",
+      "instructions": "Choose the response storage/conversion behavior most consistent with the supplied contract.",
+      "criteria": {
+        "snapshot": "Represent the value by private immutable status/header/body data; make one new native Response per finished handler invocation so value reuse remains valid.",
+        "consume": "Attach mutable used-state to the opaque value and reject reuse after the first request has converted it.",
+        "cache": "Store a single constructed native Response and return that shared instance on every request using the value."
+      }
+    },
+    "routes": {
+      "type": "choice",
+      "instructions": "Select the treatment of normalization aliases that best fits the stated router contracts.",
+      "criteria": {
+        "collision": "Use the ingress normalizer on valid route literals; same-method repeated literals cause duplicate_route, whereas different literals with one normalized destination cause ambiguous_route; distinct GET/POST registrations coexist.",
+        "strict": "Demand the canonical decoded path as the only permitted literal, reporting invalid_route for aliases before router creation can see a collision.",
+        "overwrite": "Resolve multiple spellings targeting the same method/path by replacing earlier entries with later ones."
+      }
+    }
+  }
+}

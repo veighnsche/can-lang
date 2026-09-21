@@ -294,6 +294,31 @@
       "../data.ts",
       "../domain.ts",
       "../failure.ts"
+    ],
+    "platform/form.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../codec/budget.ts"
+    ],
+    "platform/http.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../codec/budget.ts",
+      "../codec/json.ts",
+      "../transport/media.ts",
+      "./form.ts",
+      "./html.ts"
+    ],
+    "platform/router.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./http.ts"
     ]
   }
 }

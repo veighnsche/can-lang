@@ -107,6 +107,11 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			return LoweredExpression{}, fmt.Errorf("missing emitted binding %s", node.Text)
 		}
 		return bind(value), nil
+	case ir.ScopeRequest:
+		if node.Type.Declaration() != "can.std.http@1::request" {
+			return LoweredExpression{}, fmt.Errorf("harness scope requires an ingress request type")
+		}
+		return bind("$canScopeRequest($canContext)"), nil
 	case ir.Unary:
 		value, err := input(node.Inputs[0])
 		if err != nil {

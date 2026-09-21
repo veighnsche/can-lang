@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Route handlers in Can I32 must produce opaque http::server_response values and declare empty error bounds. The language insists on assertions per function, yet execution shows each handler row ends in outcome mismatch because every response constructor returns a new token while completion matching relies on identity with deep equality. Contract C keeps opaque values out of assertion comparison, and P10 treats responses as one-way sinks lacking readers, leaving response content invisible to Can programs. When-row diagnostics still confirm the boundary invocations and their operands, while loopback suites confirm on-the-wire statuses and payloads. P13 asks for supplied-completion assertions over callbacks. The HTML corpus asserts failures and void outcomes rather than opaque successes."
+  },
+  "questions": {
+    "opaque": {
+      "type": "choice",
+      "instructions": "How should passing handler assertions be shaped?",
+      "criteria": {
+        "bare_opaque_ok": "Confine valueless ok expectations to assertion checks over excluded opaque results; execution accepts an undefined expectation beside an opaque outcome. Rows keep proving fixture shape, operand matching, and completion kinds, with loopback suites proving content.",
+        "exempt_handlers": "Release mounted-handler-shaped declarations from mandatory assertions through an explicit correction; loopback execution becomes the lone behavioral proof while Can rows cover models, mounts, and constructors.",
+        "vacuous_runner": "Make execution accept all opaque-ok against opaque-ok pairs, interpreting the C exclusion as universal comparison skipping.",
+        "structural_response_compare": "Retain valued expectations and compare responses field by field from status, header, and body storage."
+      }
+    }
+  }
+}

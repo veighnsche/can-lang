@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "I32 route handlers obey one rigid shape: callable http::server_response (http::request) emits []. Can insists that each function ships assertions, but a handler row cannot be written because no in-scope term has type http::request; such values materialize exclusively when the runtime snapshots ingress, and P10 provides no way to build one. P12 still mandates supplied-completion callback assertions across the whole behavior table. P3 matches opaque fixture operands through compiler-issued harness-token identity, and the current corpus shows when-rows citing in-scope opaque bindings such as encoded bytes, so handler-body reader calls can receive supplied outcomes via when-rows over req. The unresolved fragment is the root call's request operand. Staged suites may invoke compiled handlers via a private bridge fed by real snapshots. The catalogue stays closed, and concealed test-only evaluation routes are out of favor."
+  },
+  "questions": {
+    "assertions": {
+      "type": "choice",
+      "instructions": "Select the approach that keeps handler assertions writable without breaking ingress-only requests.",
+      "criteria": {
+        "elided_scope": "Permit rows to skip root inputs of ingress-only opaque type; the checker allows gaps only at those inputs, the runner binds harness-token requests there, and every body reader needs a when-row with its supplied outcome.",
+        "token_constructor": "Ship one closed constructor confined to assertion contexts that produces http::request; production uses are rejected, the runner binds a harness token, and every body reader needs a when-row with its supplied outcome.",
+        "real_harness_request": "Ship one closed assertion-confined constructor taking descriptive inputs; the runner mints true snapshots with the shared snapshotRequest adapter, so body readers execute truly and when-rows stay unnecessary.",
+        "staged_only": "Release mounted handlers from mandatory Can assertions via an explicit design correction; bodies remain fully checked and staged loopback execution over the test bridge furnishes all behavioral evidence."
+      }
+    }
+  }
+}

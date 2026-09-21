@@ -1,0 +1,25 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "For Can I32, a route pairs an exact static path with a named handler. P10 admits only the handler shape callable http::server_response (http::request) emits []. The catalogue declares http::route_get and http::route_post as (static str path, mounted_callback) -> http::route emitting http::invalid_route, plus http::make_router over http::route[] emitting duplicate_route and ambiguous_route. The runtime draft offers createRouter.get(path, callback) where MountedCallback is (request: unknown, context?: AssertionContext) => Promise<Completion<unknown>>; dispatch runs the boxed callback to completion and then builds one fresh native Response from the immutable value. Only named Can declarations may be mounted. Paths carry the catalogue's first staticInputs marker, and the checker has no literal-argument rule yet. Today's pipeline turns a named callable reference into an owned asynchronous wrapper through $canOwnCallable(site, target, captures, async (residual..., $canContext?) => Promise<Completion<Result>>, retained, context), while ir/resources.go follows resource captures across such callable values. The handoff bans a parallel invocation pipeline and allows a new ir/http.go file solely when plain invocation IR is unable to express the checked difference."
+  },
+  "questions": {
+    "mount": {
+      "type": "choice",
+      "instructions": "Which mounting design keeps the handler contract exact, keeps captured resources owned, and avoids duplicating the invocation pipeline?",
+      "criteria": {
+        "ordinary_callable": "Treat mounting as a regular checked call whose callback operand is an ordinarily lowered callable value; demand its residual contract be precisely (http::request) -> http::server_response with empty emits, and hand the produced $canOwnCallable wrapper straight to the router as the MountedCallback.",
+        "dedicated_ir": "Introduce a special checked route record holding the normalized path, the handler target identity, and the capture preparations, together with a bespoke emitter that assembles the mount operation.",
+        "synthetic_wrapper": "Create a fresh generated wrapper routine at every mount point that receives the request, calls the named handler, and yields the response, so the route operation only ever names that wrapper."
+      }
+    },
+    "paths": {
+      "type": "choice",
+      "instructions": "Where must static-path validity be decided given a Go checker and a Bun runtime?",
+      "criteria": {
+        "check_literal_runtime_recheck": "Insist on a string literal during checking, confirm its normalization there, forward it like any other argument, and validate again inside the runtime mount; the early diagnostic never overrules the runtime verdict.",
+        "runtime_only": "Permit arbitrary string expressions in checked code and put every exact normalized-path rule exclusively in the runtime mount constructor."
+      }
+    }
+  }
+}

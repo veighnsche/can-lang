@@ -68,6 +68,12 @@ type LiteralExpr struct {
 	ExpressionLocation
 	Token Token
 }
+
+// ScopeExpr is synthesized by the assertion checker, never parsed: it stands
+// for one harness-supplied ingress value at an elided root argument position.
+type ScopeExpr struct {
+	ExpressionLocation
+}
 type NameExpr struct {
 	ExpressionLocation
 	Name QualifiedName

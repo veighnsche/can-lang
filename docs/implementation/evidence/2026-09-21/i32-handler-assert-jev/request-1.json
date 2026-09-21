@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can I32 fixes HTTP handlers as callable http::server_response (http::request) emits []. Every Can function must carry mandatory assertions, and a probe compiling a handler fails with no eligible declaration for the request argument because no Can expression produces http::request: requests enter only through runtime ingress snapshots, and P10 defines no request constructor. P12 nevertheless requires supplied-completion callback assertions for every handler behavior row. P3 states that opaque fixture handles compare by compiler-issued harness-token identity, and existing when-rows name in-scope opaque locals such as encoded bytes. Reader calls inside a handler body can therefore carry when-rows naming req, but the root assertion call still needs a request-typed argument expression. Staged integration can enter compiled handlers through a private test bridge with real snapshots. The catalogue is closed and test-only execution paths are disfavored."
+  },
+  "questions": {
+    "assertions": {
+      "type": "choice",
+      "instructions": "Which design best reconciles mandatory handler assertions with ingress-only requests?",
+      "criteria": {
+        "elided_scope": "Assertion rows omit ingress-only opaque root arguments; the checker verifies the omission covers exactly those positions, the runner supplies harness-token requests, and body reader calls must carry when-rows with supplied outcomes.",
+        "token_constructor": "Add one closed assertion-only catalogue constructor returning http::request; the checker rejects it outside assertion contexts, the runner supplies a harness token, and body reader calls must carry when-rows with supplied outcomes.",
+        "real_harness_request": "Add one closed assertion-only catalogue constructor with descriptive inputs; the runner builds real request snapshots through the shared snapshotRequest adapter so body readers execute for real without when-rows.",
+        "staged_only": "Exempt mounted handlers from mandatory Can assertions by explicit design correction; handler bodies are still type-checked, and staged loopback integration through the test bridge supplies all execution evidence."
+      }
+    }
+  }
+}

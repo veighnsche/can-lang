@@ -1,6 +1,6 @@
 # Coverage and admission ledger
 
-This ledger maps approved contracts to their owning tasks and required evidence. Completion status is recorded in [tasks](tasks.md): 36 of 50 tasks are checked at the 2026-09-21 planning handoff. Implementation is currently paused; the [remaining task plans](remaining-tasks.md) describe unfinished work, not passing evidence. C/Q/A/P refer to the linked current specs there. A task's absence from the first runnable milestone does not defer it from the final initial distribution.
+This ledger maps approved contracts to their owning tasks and required evidence. Completion status is recorded in [tasks](tasks.md): 36 of 50 tasks were checked at the 2026-09-21 planning handoff, and I32 closed under renewed authorization the same day (37 of 50). The [remaining task plans](remaining-tasks.md) describe unfinished work, not passing evidence. C/Q/A/P refer to the linked current specs there. A task's absence from the first runnable milestone does not defer it from the final initial distribution.
 
 ## Every specification section
 

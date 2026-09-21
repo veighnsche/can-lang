@@ -43,6 +43,9 @@ type CompletionContext struct {
 	ResolveMethod  func(MethodApplication) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
+	// BareOpaque permits bare ok in assertion expectations for C-excluded
+	// opaque/callable results; bodies and match arms always require values.
+	BareOpaque bool
 }
 type regionChecker struct {
 	aggregate *aggregateInference
@@ -273,9 +276,12 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 			}
 		} else {
 			if n.Value == nil {
-				return nil, fmt.Errorf("nonvoid success requires a value")
+				if !c.context.BareOpaque || (c.region.Result.Kind() != types.Opaque && c.region.Result.Kind() != types.Callable) {
+					return nil, fmt.Errorf("nonvoid success requires a value")
+				}
+			} else {
+				out.Value, err = c.expressions(scope).Check(n.Value, c.region.Result)
 			}
-			out.Value, err = c.expressions(scope).Check(n.Value, c.region.Result)
 		}
 	case *syntax.FailureBody:
 		out.Kind = ir.DomainCompletion
@@ -533,6 +539,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 	appendStep := func(binding ValueBinding, args []syntax.Argument, receiver *ir.Expression, span source.Span, callee *ir.Expression) error {
 		if binding.Identity == "" || !types.Equal(binding.Type, binding.Type) || binding.Type.Kind() != types.Callable {
 			return fmt.Errorf("invalid resolved callable contract")
+		}
+		if routeOperation(binding.Identity) {
+			if err := checkRouteMount(args); err != nil {
+				return err
+			}
 		}
 		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
 		var err error

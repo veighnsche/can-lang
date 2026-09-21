@@ -28,11 +28,11 @@ compiler/
       overlay.go                  proposed I41 unsaved source overlay
     resolve/                      package identity and eligible-kind lookup
     types/                        sealed nominal graph and concrete descriptors
-      form_schema.go              I32 draft; shallow form shape derivation
+      form_schema.go              I32 closed; shallow form shape derivation
       sql_schema.go               proposed I35 scalar/option SQL shape derivation
     catalogue/                    catalogue.json is the source of API truth
     check/                        source admission, exact bounds, specializations
-      http.go                     proposed I32 HTTP/static callback checks
+      http.go                     I32 closed: HTTP/static callback checks
       server.go                   proposed I33 server-specific checks if needed
       assets.go                   proposed I34 static asset resolution
       sql.go                      proposed I37/I35 SQL descriptor/call checks
@@ -61,7 +61,7 @@ runtime/
   ai/                            TypeSafe and Responses adapters
   assert/                        assertion identities, queues, fixtures, reports
   platform/
-    http.ts / router.ts / form.ts  I32 drafts; finish here
+    http.ts / router.ts / form.ts  I32 closed; extend for I33 here
     server.ts                    planned I33 native Bun server ownership
     assets.ts                    planned I34 closed native asset serving
     sql-descriptor.ts            planned I37 private descriptor provenance
@@ -161,6 +161,9 @@ full gates. Do not change compiler/runtime/distribution/tools files during stage
 integration runs: source snapshots and integrity hashes must remain stable.
 
 ## I32 — HTTP values, forms and exact router
+
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i32](evidence/2026-09-21/i32/README.md).
+The plan below is kept as dependency context for I33/I35/I38/I42.
 
 ### Handoff state: drafts, not completed implementation
 

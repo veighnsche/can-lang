@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "In Can I32 each route handler must match callable http::server_response (http::request) emits []. The language demands assertions on every function, yet compiling a handler's assertion row fails since file scope offers no request-typed expression: http::request values are born solely in runtime ingress snapshots, and P10 admits no constructor for them. Despite that, P12 calls for supplied-completion assertions covering all handler behavior rows. Per P3, opaque values inside fixtures are matched by harness-token identity issued by the compiler, and current sources already write when-rows that cite in-scope opaque locals like encoded byte buffers. Hence reader invocations in a handler can be fixture-supplied through when-rows mentioning req, while the outermost assertion invocation still lacks a writable request argument. A private test bridge can drive compiled handlers with genuine snapshots during staged integration. Catalogue additions stay closed and hidden test execution shortcuts are unwanted."
+  },
+  "questions": {
+    "assertions": {
+      "type": "choice",
+      "instructions": "How should handler assertions obtain their request argument?",
+      "criteria": {
+        "elided_scope": "Rows leave ingress-only opaque root inputs unwritten; checking confirms precisely those slots are skipped, execution injects harness-token requests, and readers in the body require when-rows carrying supplied results.",
+        "token_constructor": "Introduce a single closed catalogue constructor, legal only in assertion contexts, that yields http::request; checking bars it from production code, execution injects a harness token, and readers in the body require when-rows carrying supplied results.",
+        "real_harness_request": "Introduce a single closed assertion-only constructor accepting descriptive inputs; execution fabricates authentic snapshots via the shared snapshotRequest adapter, letting body readers run genuinely with no when-rows.",
+        "staged_only": "Carve mounted handlers out of mandatory Can assertions through an explicit correction; bodies keep full type checking while staged loopback runs through the test bridge provide every execution proof."
+      }
+    }
+  }
+}

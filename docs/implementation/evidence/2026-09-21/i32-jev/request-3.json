@@ -1,0 +1,26 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "We are implementing Can HTTP internals with no backwards-compatibility burden. The specified response is opaque and immutable; each named callback must finish before the adapter converts it exactly once using native Response. Can does not prescribe linear ownership for a response, but native response streams are consumable. Paths for exact GET/POST dispatch use URL normalization followed by decodeURIComponent; HEAD has no automatic GET alias, and neither captures nor wildcards exist. Normalization can merge different source spellings. The available route errors are duplicate_route(method,path) and ambiguous_route(first,second). Public operation signatures remain fixed; only implementation representation and collision treatment are being selected."
+  },
+  "questions": {
+    "response": {
+      "type": "choice",
+      "instructions": "Assess which response lifetime model follows the given Can value and native sink semantics.",
+      "criteria": {
+        "snapshot": "Retain a hidden frozen response description and materialize it into a distinct native Response exactly once at each request boundary, including when handlers reuse a Can value.",
+        "consume": "Give the response token one conversion lifetime, invalidating it for all later callback results.",
+        "cache": "Materialize the native Response only once over the value lifetime, then send the identical native instance for subsequent callbacks."
+      }
+    },
+    "routes": {
+      "type": "choice",
+      "instructions": "Determine the strongest fit for alias and duplicate detection under the supplied exact-routing rules.",
+      "criteria": {
+        "collision": "Apply identical native normalization to requests and valid static declarations, classify same-method identical declarations as duplicate_route and same-method alias collisions as ambiguous_route, and permit both GET and POST at one destination.",
+        "strict": "Forbid all noncanonical spellings through invalid_route at route construction, so normalized aliases never participate in router collision analysis.",
+        "overwrite": "Select the final registration whenever normalization maps several route declarations to one method and path."
+      }
+    }
+  }
+}

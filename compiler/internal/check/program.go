@@ -29,6 +29,7 @@ type Program struct {
 	Intrinsics   map[string]*types.Type
 	Collections  map[string]*CollectionSpecialization
 	Codecs       map[string]*CodecSpecialization
+	HTTPs        map[string]*HTTPSpecialization
 	Assertions   []*ir.Assertion
 }
 type ProgramFunction struct {
@@ -55,6 +56,8 @@ type programChecker struct {
 	current     *ProgramFunction
 	codecs      map[string]*CodecSpecialization
 	codecParts  map[string][]*types.Type
+	https       map[string]*HTTPSpecialization
+	httpParts   map[string]*httpParts
 	world       *resolve.World
 	builder     *types.Builder
 	annotations map[*resolve.File]map[string]*types.Type
@@ -114,8 +117,14 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 			if err := c.gatherCodec(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
 				return err
 			}
+			if err := c.gatherHTTP(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
+				return err
+			}
 		case *syntax.ReferenceExpr:
 			if err := c.gatherCodec(file, node.Callee, node.Types); err != nil {
+				return err
+			}
+			if err := c.gatherHTTP(file, node.Callee, node.Types); err != nil {
 				return err
 			}
 		}
@@ -230,7 +239,16 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
 	c.annotations[builtinFile] = map[string]*types.Type{}
 	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Name != "htmx::runtime_head" {
+		if routeOperation(op.Identity) {
+			if err = c.admitRouteOperation(p, builtinFile, op); err != nil {
+				return nil, err
+			}
+			continue
+		}
+		if httpGenericOperation(op.Identity) {
+			continue
+		} // I32 generics specialize per concrete type argument on use.
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Name != "htmx::runtime_head" {
 			continue
 		}
 		signature := &syntax.CallableType{}
@@ -400,6 +418,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			return nil, err
 		}
 		p.Intrinsics[id] = special.Contract
+	}
+	p.HTTPs = c.https
+	for id := range c.https {
+		if err = c.finishHTTP(id); err != nil {
+			return nil, err
+		}
 	}
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables

@@ -29,6 +29,7 @@ const (
 	MatchValue         ExpressionKind = "match_value"
 	Record             ExpressionKind = "record"
 	Update             ExpressionKind = "update"
+	ScopeRequest       ExpressionKind = "scope_request"
 )
 
 type EqualityMode string

@@ -14,7 +14,7 @@ declare const contextBrand: unique symbol;
 export type AssertionContext = Readonly<{readonly [contextBrand]: true}>;
 type Violation = "missing fixture" | "argument mismatch" | "ambiguous fixture" | "malformed fixture" | "unexpected live boundary" | "unused fixture";
 type FixturePathDiagnostic=Readonly<{reason:Violation;expected:Allocation|null;actual:InvocationPath}>;
-type State = {owner:object; barrier:Barrier; queues:FixtureQueues; paths:FixturePathDiagnostic[]; origins:Map<string,FailureOrigin>; root: AssertionRoot; violations: Violation[]; failures: StandardFailure[]; evidence: Evidence; closed: boolean; tables: Map<string, {used: number; total: number; origin: FailureOrigin}>};
+type State = {owner:object; barrier:Barrier; queues:FixtureQueues; paths:FixturePathDiagnostic[]; origins:Map<string,FailureOrigin>; root: AssertionRoot; violations: Violation[]; failures: StandardFailure[]; evidence: Evidence; closed: boolean; tables: Map<string, {used: number; total: number; origin: FailureOrigin}>; scope: unknown};
 type View={shared:State; identity:InvocationIdentity; frame:Frame};
 const contexts = new WeakMap<object, View>();
 function view(context:AssertionContext):View{
@@ -30,7 +30,7 @@ export function assertionContext(root: AssertionRoot): AssertionContext {
   const identity=rootIdentity(root),barrier=createBarrier(identity);
   const evidence=createEvidence("assertion");
   recordEvidence(evidence,"real-can");
-  const context=makeView({owner:Object.freeze({}),barrier,queues:fixtureQueues(identity),paths:[],origins:new Map(),root: Object.freeze({...root}), violations: [], failures: [], evidence, closed: false, tables: new Map()},identity);
+  const context=makeView({owner:Object.freeze({}),barrier,queues:fixtureQueues(identity),paths:[],origins:new Map(),root: Object.freeze({...root}), violations: [], failures: [], evidence, closed: false, tables: new Map(), scope: undefined},identity);
   startFrame(view(context).frame);return context;
 }
 function state(context: AssertionContext): State {return view(context).shared;}
@@ -48,6 +48,15 @@ export function denyLiveBoundary(context: AssertionContext | undefined, origin: 
   throw violation(context,reason,origin);
 }
 export function suppliedEvidence(context: AssertionContext): void { recordEvidence(state(context).evidence,"supplied-completion"); }
+// One inert harness token per assertion root stands in for every elided
+// ingress scope argument. Readers deny live execution under assertion
+// context, so the token only ever meets when-row identity comparison.
+export function scopeRequest(context: AssertionContext | undefined): unknown {
+  if (context === undefined) throw new TypeError("harness scope requires an assertion context");
+  const current = state(context);
+  if (current.scope === undefined) current.scope = Object.freeze(Object.create(null));
+  return current.scope;
+}
 export function rawProviderEvidence(context: AssertionContext): void { recordEvidence(state(context).evidence,"raw-provider-fixture"); }
 export function contextReport(context: AssertionContext) {
   const current = state(context);

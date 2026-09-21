@@ -25,16 +25,48 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 	var result []*ir.Assertion
 	for _, row := range rows {
 		root := ir.AssertionRoot{Package: fn.Symbol.Package.ID, Declaration: fn.Symbol.ID, Name: row.Name.Text}
-		var callee syntax.Expr = &syntax.NameExpr{Name: syntax.QualifiedName{Name: declaration.Name.Text}, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
-		if declaration.Receiver != nil {
-			if row.Receiver == nil {
-				return nil, fmt.Errorf("method assertion requires a receiver")
+		contract := c.bindings[fn.Identity()]
+		if contract != nil && contract.Kind() == types.Callable {
+			if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value != nil {
+				if isScopeRequest(contract.Result()) {
+					return nil, fmt.Errorf("assertion %s: ingress scope results cannot be named in expected completions", row.Name.Text)
+				}
+				if kind := contract.Result().Kind(); kind == types.Opaque || kind == types.Callable {
+					return nil, fmt.Errorf("assertion %s: excluded opaque results use bare ok", row.Name.Text)
+				}
 			}
-			callee = &syntax.FieldExpr{Receiver: row.Receiver, Field: declaration.Name, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
+		}
+		var callee syntax.Expr = &syntax.NameExpr{Name: syntax.QualifiedName{Name: declaration.Name.Text}, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
+		receiver := 0
+		if declaration.Receiver != nil {
+			receiver = 1
+			scope := contract != nil && contract.Kind() == types.Callable && len(contract.Inputs()) > 0 && isScopeRequest(contract.Inputs()[0])
+			if row.Receiver == nil {
+				if !scope {
+					return nil, fmt.Errorf("method assertion requires a receiver")
+				}
+				callee = &syntax.FieldExpr{Receiver: &syntax.ScopeExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}, Field: declaration.Name, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
+			} else {
+				if scope {
+					return nil, fmt.Errorf("assertion %s: ingress scope receivers are harness-supplied", row.Name.Text)
+				}
+				callee = &syntax.FieldExpr{Receiver: row.Receiver, Field: declaration.Name, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
+			}
 		} else if row.Receiver != nil {
 			return nil, fmt.Errorf("ordinary function assertion cannot supply a receiver")
 		}
-		call := &syntax.CallExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}, Invocation: syntax.Invocation{Span: row.Span, Callee: callee, Arguments: row.Arguments}}
+		expanded := row.Arguments
+		if contract != nil && contract.Kind() == types.Callable {
+			inputs := contract.Inputs()
+			var err error
+			expanded, err = expandScopeArguments(len(inputs)-receiver, func(i int) bool {
+				return isScopeRequest(inputs[i+receiver])
+			}, c.variadic[fn.Identity()], row.Arguments, row.Span)
+			if err != nil {
+				return nil, fmt.Errorf("assertion %s arguments: %w", row.Name.Text, err)
+			}
+		}
+		call := &syntax.CallExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}, Invocation: syntax.Invocation{Span: row.Span, Callee: callee, Arguments: expanded}}
 		actualContext := context
 		actualContext.Identity = fn.Symbol.ID + "/assert/" + row.Name.Text + "/actual"
 		actualContext.Sites = nil // This synthetic root call has its own syntax tree.
@@ -52,6 +84,7 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 		}
 		expectedContext := actualContext
 		expectedContext.Identity = fn.Symbol.ID + "/assert/" + row.Name.Text + "/expected"
+		expectedContext.BareOpaque = true
 		expected, err := CheckRegion(expectedContext, syntax.Block{Span: row.Span, Terminal: row.Expected})
 		if err != nil {
 			return nil, fmt.Errorf("assertion %s expected completion: %w", row.Name.Text, err)
@@ -128,17 +161,35 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 			}
 			symbol := file.Package.Scope.Symbols[d.Name.Text]
 			for _, row := range d.Assertions {
-				constraints, err := genericArguments(d.Inputs, row.Arguments)
+				elided := make([]bool, len(d.Inputs))
+				for i, input := range d.Inputs {
+					elided[i] = !input.Variadic && c.scopeElided(file, input.Type)
+				}
+				expanded, err := expandScopeArguments(len(d.Inputs), func(i int) bool { return elided[i] }, len(d.Inputs) > 0 && d.Inputs[len(d.Inputs)-1].Variadic, row.Arguments, row.Span)
+				if err != nil {
+					return fmt.Errorf("generic assertion %s: %w", row.Name.Text, err)
+				}
+				constraints, err := genericArguments(d.Inputs, expanded)
 				if err != nil {
 					return fmt.Errorf("generic assertion %s: %w", row.Name.Text, err)
 				}
 				if d.Receiver != nil {
 					if row.Receiver == nil {
-						return fmt.Errorf("method assertion requires a receiver")
+						if !c.scopeElided(file, d.Receiver.Type) {
+							return fmt.Errorf("method assertion requires a receiver")
+						}
+						constraints = append(constraints, argumentConstraint{d.Receiver.Type, &syntax.ScopeExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}})
+					} else {
+						if c.scopeElided(file, d.Receiver.Type) {
+							return fmt.Errorf("generic assertion %s: ingress scope receivers are harness-supplied", row.Name.Text)
+						}
+						constraints = append(constraints, argumentConstraint{d.Receiver.Type, row.Receiver})
 					}
-					constraints = append(constraints, argumentConstraint{d.Receiver.Type, row.Receiver})
 				}
 				if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value != nil {
+					if c.scopeElided(file, d.Result) {
+						return fmt.Errorf("generic assertion %s: ingress scope results cannot be named in expected completions", row.Name.Text)
+					}
 					constraints = append(constraints, argumentConstraint{d.Result, success.Value})
 				}
 				provisional := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: symbol.ID + "/assert/inference", Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}

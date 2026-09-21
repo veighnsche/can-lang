@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can I32 handlers return opaque http::server_response with emits []. Every Can function needs mandatory assertions, but staged runs prove handler rows always fail with outcome mismatch: response constructors mint fresh tokens and the runner compares completions by identity plus deep equality, so actual and expected responses are never equal. The C contract excludes opaque values from assertion comparison and P10 defines responses as write-only sinks with no accessors, so no Can code can observe response content. Fixture paths still verify which boundary calls a handler made with which arguments, and staged loopback verifies wire status codes and bodies. P13 calls for supplied-completion callback assertions. HTML precedent never compares opaque success values; failures and void are compared instead."
+  },
+  "questions": {
+    "opaque": {
+      "type": "choice",
+      "instructions": "Which design gives handlers honest passing assertions without breaking response opacity?",
+      "criteria": {
+        "bare_opaque_ok": "Allow bare ok in assertion expectations only, and only for excluded opaque results; the runner passes undefined-expected against opaque actuals. Rows still verify fixture structure, boundary-call arguments, and completion kinds; staged loopback verifies response content.",
+        "exempt_handlers": "Exempt mounted-handler-shaped functions from mandatory assertions by design correction; staged loopback supplies all execution evidence and Can assertions cover models, mounts, and constructors.",
+        "vacuous_runner": "Change the runner to pass every opaque-ok versus opaque-ok pair, reading the C exclusion as skipping comparison for all opaque types everywhere.",
+        "structural_response_compare": "Keep valued expectations and teach the runner to compare responses structurally by reading status, headers, and body storage."
+      }
+    }
+  }
+}

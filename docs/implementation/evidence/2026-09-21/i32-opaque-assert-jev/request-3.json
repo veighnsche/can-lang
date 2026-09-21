@@ -1,0 +1,18 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "I32 fixes every route handler at callable http::server_response (http::request) emits []. Mandatory per-function assertions collide with this shape: measured runs fail all handler rows as outcome mismatches since fresh response tokens never satisfy the runner's identity-plus-deep-equality rule. The C comparison rules omit opaque values, and the P10 sink contract exposes no response readers, so Can cannot inspect what a handler returned. Fixture-path records still attest the handler's boundary calls and arguments, and staged loopback checks still read true wire behavior. P13 wants supplied-completion callback assertions, and established HTML suites assert only failures and void rather than opaque successes."
+  },
+  "questions": {
+    "opaque": {
+      "type": "choice",
+      "instructions": "Select the assertion design that stays truthful about opaque handler results.",
+      "criteria": {
+        "bare_opaque_ok": "Permit value-free ok solely in assertion expectations for excluded opaque results, with the runner accepting undefined expectations against opaque outcomes. Fixture layout, argument checks, and completion kinds stay verified in Can; response bytes stay verified in loopback.",
+        "exempt_handlers": "Drop mandatory assertions for mounted-handler-shaped functions via explicit correction, leaving loopback as the single execution witness and Can assertions to models, mounts, and constructors.",
+        "vacuous_runner": "Accept every opaque-ok versus opaque-ok match in the runner, taking the C exclusion as a blanket comparison waiver.",
+        "structural_response_compare": "Preserve valued expectations by structurally equating statuses, headers, and bodies from private response storage."
+      }
+    }
+  }
+}
