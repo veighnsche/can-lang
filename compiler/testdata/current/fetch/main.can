@@ -13,8 +13,10 @@ fetch receipt load_json from service
     get (call [["/json"]].map(callable extract))[0]
     query
         labels = call [["a b"], ["+"]].map(callable extract)
+        omitted = (([]))
     headers
         x_probe = call [["yes"]].map(callable extract)
+        x_omitted = ([...([])])
 fetch http::response<bytes::buffer> load_envelope from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     get "/envelope"
@@ -29,6 +31,8 @@ fetch receipt send_json from service
     given
         receipt payload
     put "/json"
+    headers
+        content_type = ([...([("application/json")])])
     body json payload
 fetch bytes::buffer send_bytes from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]

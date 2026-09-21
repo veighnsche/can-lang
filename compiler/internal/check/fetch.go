@@ -37,30 +37,12 @@ func checkFetchContentType(d *syntax.FetchDecl, policy ConnectionPolicy) error {
 		if !strings.EqualFold(strings.ReplaceAll(header.Name.Text, "_", "-"), "content-type") {
 			continue
 		}
-		switch value := header.Value.(type) {
-		case *syntax.LiteralExpr:
-			if value.Token.Kind != syntax.String {
-				return nil
-			}
-			current = value.Token.Value
-			present = true
-		case *syntax.ArrayExpr:
-			var parts []string
-			for _, item := range value.Elements {
-				literal, ok := item.Value.(*syntax.LiteralExpr)
-				if !ok || item.Spread || literal.Token.Kind != syntax.String {
-					return nil
-				}
-				parts = append(parts, literal.Token.Value)
-			}
-			if len(parts) == 0 {
-				return nil
-			}
-			current = strings.Join(parts, ", ")
-			present = true
-		default:
+		parts, known := literalFetchHeader(header.Value)
+		if !known {
 			return nil
 		}
+		current = strings.Join(parts, ", ")
+		present = len(parts) > 0
 	}
 	if present && !fetchJSONContentType(current) {
 		return fmt.Errorf("JSON fetch body requires application/json Content-Type with optional UTF-8 charset")
@@ -118,4 +100,51 @@ func checkLiteralHeaderValues(expr syntax.Expr) error {
 		}
 	}
 	return nil
+}
+
+func fetchUngroup(expr syntax.Expr) syntax.Expr {
+	for {
+		group, ok := expr.(*syntax.GroupExpr)
+		if !ok {
+			return expr
+		}
+		expr = group.Value
+	}
+}
+
+// Return only completely known native header values. An empty array removes
+// a connection header; an unknown expression defers admission to transport.
+func literalFetchHeader(expr syntax.Expr) ([]string, bool) {
+	expr = fetchUngroup(expr)
+	if literal, ok := expr.(*syntax.LiteralExpr); ok && literal.Token.Kind == syntax.String {
+		return []string{literal.Token.Value}, true
+	}
+	values, ok := expr.(*syntax.ArrayExpr)
+	if !ok {
+		return nil, false
+	}
+	var result []string
+	for _, item := range values.Elements {
+		if item.Group != nil {
+			return nil, false
+		}
+		child := fetchUngroup(item.Value)
+		if item.Spread {
+			if _, ok := child.(*syntax.ArrayExpr); !ok {
+				return nil, false
+			}
+			nested, known := literalFetchHeader(child)
+			if !known {
+				return nil, false
+			}
+			result = append(result, nested...)
+		} else {
+			literal, ok := child.(*syntax.LiteralExpr)
+			if !ok || literal.Token.Kind != syntax.String {
+				return nil, false
+			}
+			result = append(result, literal.Token.Value)
+		}
+	}
+	return result, true
 }

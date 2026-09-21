@@ -45,7 +45,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		case "/json":
 			w.Header().Set("Content-Type", "application/json")
 			if r.Method == "GET" {
-				if r.URL.Query().Get("labels") != "a b" || len(r.URL.Query()["labels"]) != 2 || r.URL.Query()["labels"][1] != "+" || r.Header.Get("X-Probe") != "yes" {
+				if r.URL.Query().Get("labels") != "a b" || len(r.URL.Query()["labels"]) != 2 || r.URL.Query()["labels"][1] != "+" || r.Header.Get("X-Probe") != "yes" || r.URL.Query().Has("omitted") || len(r.Header.Values("X-Omitted")) != 0 {
 					t.Error("query/header mismatch")
 				}
 			}

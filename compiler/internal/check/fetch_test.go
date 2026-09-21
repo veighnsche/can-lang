@@ -30,8 +30,8 @@ func TestNamedFetchModes(t *testing.T) {
 		{"fetch receipt load_json", "fetch int load_json"},
 		{"labels = call [[\"a b\"], [\"+\"]].map(callable extract)", "labels = [1]"},
 		{"body text (call [[payload]].map(callable extract))[0]", "body bytes payload"},
-		{"    body json payload", "    headers\n        content_type = \"text/plain\"\n    body json payload"},
-		{"    body json payload", "    headers\n        content_type = \"\"\n    body json payload"},
+		{`content_type = ([...([("application/json")])])`, `content_type = "text/plain"`},
+		{`content_type = ([...([("application/json")])])`, `content_type = ""`},
 		{"http::timeout, ", ""},
 	} {
 		t.Run(change[1], func(t *testing.T) {
@@ -58,5 +58,69 @@ func TestFetchRejectsLiteralHeaderValuesInsideArrays(t *testing.T) {
 				t.Fatalf("literal header admitted or wrong failure: %v", err)
 			}
 		})
+	}
+}
+
+func TestFetchGroupedEmptyEntriesAndLiteralContentTypes(t *testing.T) {
+	data, err := os.ReadFile("../../testdata/current/fetch/main.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := string(data)
+	for _, entry := range []string{`labels = call [["a b"], ["+"]].map(callable extract)`, `x_probe = call [["yes"]].map(callable extract)`} {
+		for _, value := range []string{"[]", "([])", "(([]))", "([...([])])"} {
+			t.Run(entry+value, func(t *testing.T) {
+				name := strings.Split(entry, " = ")[0]
+				if _, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(source, entry, name+" = "+value, 1)}); err != nil {
+					t.Fatal(err)
+				}
+			})
+		}
+	}
+	for _, value := range []string{`("text/plain")`, `(("text/plain"))`, `[...["text/plain"]]`, `([...([("text/plain")])])`, `["application/json", ...(["text/plain"])]`} {
+		t.Run(value, func(t *testing.T) {
+			text := strings.Replace(source, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
+			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
+				t.Fatalf("known conflict: %v", err)
+			}
+		})
+	}
+	for _, value := range []string{`("application/json")`, `([...(["application/json; charset=utf-8"])])`, `([])`, `([...([])])`} {
+		t.Run("valid "+value, func(t *testing.T) {
+			text := strings.Replace(source, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
+			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func TestFetchContentTypeEmptyOverrideAndDynamicAdmission(t *testing.T) {
+	data, err := os.ReadFile("../../testdata/current/fetch/main.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := strings.Replace(string(data), "    max_body_bytes 8192", "    max_body_bytes 8192\n    headers\n        content_type = \"text/plain\"", 1)
+	for _, value := range []string{`[]`, `(([]))`, `([...([])])`, `("application/json")`, `call ["text/plain"].map(callable pass_header)`} {
+		t.Run(value, func(t *testing.T) {
+			text := strings.Replace(base, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
+			text += `fn str pass_header
+    emits []
+    given
+        str value
+    asserts
+        sample: "text/plain" => ok "text/plain"
+    ok value
+`
+			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+	base = strings.Replace(base, `    headers
+        content_type = ([...([("application/json")])])
+`, "", 1)
+	if _, err := programFixture(t, map[string]string{"src/main.can": base}); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
+		t.Fatalf("unreplaced default conflict: %v", err)
 	}
 }

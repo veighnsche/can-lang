@@ -234,7 +234,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 						}
 					}
 					var expected *types.Type
-					if _, ok := entry.Value.(*syntax.ArrayExpr); ok {
+					if _, ok := fetchUngroup(entry.Value).(*syntax.ArrayExpr); ok {
 						expected = c.annotations[file]["str[]"]
 					}
 					value, e := expressions.Check(entry.Value, expected)
