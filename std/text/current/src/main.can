@@ -1,0 +1,172 @@
+package texts
+    provides []
+    uses [text]
+fn bool includes
+    emits []
+    given
+        str value
+        str part
+    asserts
+        sample: "A😀B", "😀" => ok true
+        empty: "abc", "" => ok true
+    ok call value.includes(part)
+fn bool starts
+    emits []
+    given
+        str value
+        str part
+    asserts
+        sample: "abc", "ab" => ok true
+    ok call value.starts_with(part)
+fn bool ends
+    emits []
+    given
+        str value
+        str part
+    asserts
+        sample: "abc", "bc" => ok true
+    ok call value.ends_with(part)
+fn str lower
+    emits []
+    given
+        str value
+    asserts
+        sample: "ABC" => ok "abc"
+    ok call value.to_lower_case()
+fn str upper
+    emits []
+    given
+        str value
+    asserts
+        sample: "ß" => ok "SS"
+    ok call value.to_upper_case()
+fn str trimmed
+    emits []
+    given
+        str value
+    asserts
+        sample: "  hi  " => ok "hi"
+    ok call value.trim()
+fn str sliced
+    emits []
+    given
+        str value
+    asserts
+        sample: "A😀B" => ok "😀"
+    ok call value.slice(1, 3)
+fn str[] split
+    emits [text::empty_separator]
+    given
+        str value
+        str separator
+    asserts
+        sample: ",a,,", "," => ok ["", "a", "", ""]
+        empty: "", "," => ok [""]
+        bad: "a", "" => text::empty_separator()
+    match call value.split(separator)
+        ok str[] output => ok output
+        text::empty_separator
+fn str replace
+    emits [text::empty_pattern]
+    given
+        str value
+        str search
+        str replacement
+    asserts
+        sample: "aba", "a", "$&" => ok "$&b$&"
+        bad: "abc", "", "x" => text::empty_pattern()
+    match call value.replace_all(search, replacement)
+        ok str output => ok output
+        text::empty_pattern
+fn str joined
+    emits []
+    given
+        str[] items
+    asserts
+        sample: ["", "a", ""] => ok ",a,"
+        empty: [] => ok ""
+    ok call text::join(items, ",")
+fn int[] scalars
+    emits [text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "A😀" => ok [65, 128512]
+        empty: "" => ok []
+        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+    match call text::scalars(value)
+        ok int[] output => ok output
+        text::invalid_unicode
+fn str from_scalars
+    emits [text::invalid_unicode]
+    given
+        int[] items
+    asserts
+        sample: [65, 128512] => ok "A😀"
+        empty: [] => ok ""
+        surrogate: [55296] => text::invalid_unicode("invalid scalar value")
+        range: [1114112] => text::invalid_unicode("invalid scalar value")
+    match call text::from_scalars(items)
+        ok str output => ok output
+        text::invalid_unicode
+fn str[] graphemes
+    emits [text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "A😀é👩‍👩‍👧‍👦" => ok ["A", "😀", "é", "👩‍👩‍👧‍👦"]
+        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+    match call text::graphemes(value)
+        ok str[] output => ok output
+        text::invalid_unicode
+fn str normalized
+    emits [text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "é" => ok "é"
+        bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
+    match call text::normalize_nfc(value)
+        ok str output => ok output
+        text::invalid_unicode
+fn bool[] references
+    emits []
+    given
+        str[] values
+    asserts
+        sample: ["A", "😀", "Z"] => ok [true, true, false]
+    callable bool (str) emits [] operation = callable ("A😀B").includes
+    ok call values.map(operation)
+fn str slice_reference
+    emits []
+    asserts
+        sample: => ok "😀"
+    callable str (int, int) emits [] operation = callable ("A😀B").slice
+    ok call operation(1, 3)
+fn str supplied
+    emits []
+    asserts
+        sample: => ok "fixture"
+    match call "abc".to_upper_case()
+        when
+            sample: => ok "fixture"
+        ok str output => ok output
+fn str spread_replace
+    emits [text::empty_pattern]
+    asserts
+        sample: => ok "$&b$&"
+    match call "aba".replace_all(...["a", "$&"])
+        ok str output => ok output
+        text::empty_pattern
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call " a😀b ".trim().to_upper_case().slice(1, 3)
+        ok str output => match output
+            "😀" => ok
+            _ => do
+                int invalid = 1 / 0
+                ok

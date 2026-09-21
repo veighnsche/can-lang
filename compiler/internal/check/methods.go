@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
@@ -29,6 +30,20 @@ func (c *regionChecker) resolveMethod(application MethodApplication) (ValueBindi
 	return c.context.Method(application.Receiver, application.Name, application.Types)
 }
 func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueBinding, error) {
+	if scalar(a.Receiver, "str") {
+		for _, op := range catalogue.Builtin().Inventory().Operations {
+			if op.Name == "str."+a.Name.Text && op.Lowering.Task == "I24" {
+				if len(a.Types) != 0 {
+					return ValueBinding{}, fmt.Errorf("string method does not take type arguments")
+				}
+				typ := c.bindings[op.Identity]
+				if typ == nil {
+					return ValueBinding{}, fmt.Errorf("missing string catalogue contract")
+				}
+				return ValueBinding{Identity: op.Identity, Type: typ}, nil
+			}
+		}
+	}
 	var receiver *resolve.Symbol
 	for _, pkg := range c.world.Packages {
 		for _, symbol := range pkg.Scope.Symbols {

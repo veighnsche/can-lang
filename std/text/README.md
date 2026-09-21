@@ -1,3 +1,22 @@
+# Current native text and Unicode catalogue
+
+The maintained project is [current/src/main.can](current/src/main.can). Its 31
+mandatory assertions cover every I24 operation, bound string methods, spreads,
+method chains, deterministic fixtures and the declared text errors. Run the
+staged `canlc assert std/text/current` or `canlc run std/text/current` command.
+
+String indexing and slicing remain UTF-16 code-unit operations. Named `scalars`,
+`from_scalars`, `graphemes` and `normalize_nfc` validate Unicode scalar input and
+use the pinned native runtime's code-point, segmentation and normalization APIs.
+Literal replacement preserves dollar sequences; split preserves empty pieces.
+The implementation is `runtime/text.ts`, with bounded fromCodePoint chunks.
+
+Adjacent old Can/generated files are historical inputs for I43/I44 retirement,
+not a current library or fallback. No custom Unicode, sorting or string kernel
+is selected by the current CLI.
+
+## Historical text implementation
+
 # text — explicit text construction and scalar access
 
 - `text.can` — `mod text`: `std__str__concat`, `is_empty`,

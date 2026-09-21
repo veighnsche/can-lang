@@ -191,6 +191,12 @@
       "./completion.ts",
       "./data.ts",
       "./domain.ts"
+    ],
+    "text.ts": [
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts",
+      "./primitive.ts"
     ]
   }
 }

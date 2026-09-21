@@ -229,7 +229,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
 	c.annotations[builtinFile] = map[string]*types.Type{}
 	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && !strings.HasPrefix(op.Name, "bytes::") && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
 			continue
 		}
 		signature := &syntax.CallableType{}
@@ -247,6 +247,13 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		signature.Result, err = parse(op.Result)
 		if err != nil {
 			return nil, err
+		}
+		if op.Receiver != "" {
+			receiver, e := parse(op.Receiver)
+			if e != nil {
+				return nil, e
+			}
+			signature.Inputs = append(signature.Inputs, receiver)
 		}
 		for _, input := range op.Inputs {
 			node, e := parse(input.Type)
@@ -403,7 +410,14 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		for i := range names {
 			names[i] = fmt.Sprintf("input%d", i)
 		}
-		callables[id] = CallableDeclaration{Kind: "function", Contract: typ, Names: names, Near: make([]bool, len(names))}
+		receiver := false
+		for _, op := range catalogue.Builtin().Inventory().Operations {
+			if op.Identity == id {
+				receiver = op.Kind == "method"
+				break
+			}
+		}
+		callables[id] = CallableDeclaration{Kind: "function", Contract: typ, Names: names, Near: make([]bool, len(names)), Receiver: receiver}
 	}
 	for _, fn := range p.Functions {
 		d := fn.Symbol.Declaration.(*syntax.FunctionDecl)
