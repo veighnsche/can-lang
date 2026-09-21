@@ -18,9 +18,6 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 	if valueType != nil {
 		return nil, fmt.Errorf("call/chain match cannot initialize a value")
 	}
-	if len(n.When) != 0 {
-		return nil, fmt.Errorf("when fixtures require assertion checking")
-	}
 	successScope := c.child(scope)
 	var err error
 	switch n.Kind {
@@ -64,6 +61,16 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 	}
 	if err != nil {
 		return nil, err
+	}
+	if len(n.When) != 0 {
+		if n.Kind != syntax.CallMatch || len(out.Call.Steps) != 1 || out.Call.Steps[0].Contract == nil {
+			return nil, fmt.Errorf("fixture table requires one resolved invocation; chain fixture scheduling belongs to the coordination harness")
+		}
+		table, err := c.fixtures(n.When, &out.Call.Steps[0], scope)
+		if err != nil {
+			return nil, err
+		}
+		out.Call.Steps[0].Fixtures = table
 	}
 	bound, err := c.context.Registry.Bound(out.Call.Errors)
 	if err != nil {

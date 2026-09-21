@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The assertion milestone runs checked source bodies in generated asynchronous Bun modules. Its existing return protocol protects every outcome in privately recognized nonthenable boxes; evaluation in Go is excluded. Root identity consists of package, declaration and assertion name, with replacements confined to that assertion. Ordinary deterministic native computation remains real; side-effecting and nondeterministic boundaries require fixture evidence before execution. A source catch cannot erase an assertion-harness violation. Nested awaits/helpers already exist; concurrent canonical queues and ownership of late tasks arrive in I18 and I20. Bun documentation lists node:async_hooks AsyncLocalStorage support, though this exact target still requires a behavioral isolation test plus admitted-import/API updates. The candidates are a native async-local root store, an extra compiler-private context parameter threaded through functions/callbacks/adapters, and a single changing global root with no async separation. Keep harness failures sticky independently of returned Can outcomes and separate real-can versus supplied-completion labels. There are no timing measurements, and successful qualification alone would not establish security.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Select the most suitable way to carry root assertion state through the described generated execution.",
+      "criteria": {
+        "native": "Carry root state in Bun-supported async-local storage after qualifying the pin; record unerasable harness failures there.",
+        "parameter": "Extend all internal call signatures with a context parameter, including callbacks and maintained adapters.",
+        "global": "Assign a single global root whenever an assertion begins and rely on it across awaits."
+      }
+    }
+  }
+}

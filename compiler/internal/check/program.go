@@ -24,6 +24,7 @@ type Program struct {
 	Initializers []ir.Initializer
 	Entry        *ProgramFunction
 	Intrinsics   map[string]*types.Type
+	Assertions   []*ir.Assertion
 }
 type ProgramFunction struct {
 	Symbol *resolve.Symbol
@@ -154,7 +155,9 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 
 // CheckProgram connects project resolution, declaration checking, initialization
 // ordering and completion regions without using the superseded compiler passes.
-func CheckProgram(graph *project.Graph) (*Program, error) {
+func CheckProgram(graph *project.Graph) (*Program, error)          { return checkProgram(graph, true) }
+func CheckAssertionProgram(graph *project.Graph) (*Program, error) { return checkProgram(graph, false) }
+func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	world, err := resolve.Build(graph)
 	if err != nil {
 		return nil, err
@@ -231,6 +234,9 @@ func CheckProgram(graph *project.Graph) (*Program, error) {
 		for _, declaration := range file.Source.Syntax.Declarations {
 			switch d := declaration.(type) {
 			case *syntax.FunctionDecl:
+				if err = validateAssertionNames(d); err != nil {
+					return nil, err
+				}
 				symbol := file.Package.Scope.Symbols[d.Name.Text]
 				if d.Name.Text == "main" && file.Source.Package.Owner == graph.Root {
 					if p.Entry != nil {
@@ -276,6 +282,9 @@ func CheckProgram(graph *project.Graph) (*Program, error) {
 					return nil, e
 				}
 				c.bindings[symbol.ID] = typ
+				if err = c.gatherBody(file, reflect.ValueOf(d.Assertions)); err != nil {
+					return nil, err
+				}
 				if err = c.gatherBody(file, reflect.ValueOf(d.Body)); err != nil {
 					return nil, err
 				}
@@ -296,7 +305,7 @@ func CheckProgram(graph *project.Graph) (*Program, error) {
 			}
 		}
 	}
-	if p.Entry == nil {
+	if requireEntry && p.Entry == nil {
 		return nil, fmt.Errorf("root project requires void main(str[] args)")
 	}
 	p.Model, err = c.builder.Finish()
@@ -364,6 +373,11 @@ func CheckProgram(graph *project.Graph) (*Program, error) {
 			id := symbol.ID + "/input/" + name
 			context.Parameters = append(context.Parameters, ir.Local{Identity: id, Type: c.bindings[id]})
 		}
+		assertions, e := c.assertions(file, fn, context)
+		if e != nil {
+			return nil, e
+		}
+		p.Assertions = append(p.Assertions, assertions...)
 		fn.Region, err = CheckRegion(context, d.Body)
 		if err != nil {
 			return nil, err

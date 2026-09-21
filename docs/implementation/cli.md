@@ -45,5 +45,5 @@ It uses catalogue signatures for `bytes::from_utf8` and `io::stdout_write`.
 UTF-8 conversion rejects unpaired surrogates, and writes return exact byte counts.
 These are foundations for I13 and I29, not completion of their full inventories.
 Unsupported intrinsics, specialization and capture lowering fail explicitly.
-Assertion execution is I12; generic specialization is I46; ownership/draining is
-I20. Those tasks remain unchecked.
+The [assert command](assertions.md) executes mandatory assertions in emitted code.
+Generic specialization is I46; ownership/draining is I20. Those tasks remain unchecked.

@@ -1,5 +1,6 @@
 // I11's first executable CLI slice. The remaining bounded input/environment
 // operations and assertion boundary queues are implemented by I13/I29/I18.
+import { denyLiveBoundary, type AssertionContext } from "../assert/context.ts";
 import { types as nativeTypes } from "node:util";
 import { success, failure, type Completion } from "../completion.ts";
 import { record } from "../data.ts";
@@ -18,7 +19,7 @@ function expectedWriteFailure(cause: unknown): boolean {
 }
 export function createCLI(domain: Domain, contracts: Contracts) {
   return Object.freeze({
-    async fromUTF8(text: string): Promise<Completion<Bytes>> {
+    async fromUTF8(text: string, _context?: AssertionContext): Promise<Completion<Bytes>> {
       const encoded = new TextEncoder().encode(text);
       // Native UTF-8 round-trip rejects replacement of lone surrogates. Preserve
       // a leading BOM as text, rather than treating it as a transport marker.
@@ -27,8 +28,8 @@ export function createCLI(domain: Domain, contracts: Contracts) {
       }
       return success(ownBytes(encoded));
     },
-    async stdoutWrite(bytes: unknown): Promise<Completion<bigint>> { return write(bytes, "stdout_write", Bun.stdout); },
-    async stderrWrite(bytes: unknown): Promise<Completion<bigint>> { return write(bytes, "stderr_write", Bun.stderr); },
+    async stdoutWrite(bytes: unknown, context?: AssertionContext): Promise<Completion<bigint>> { denyLiveBoundary(context, origin); return write(bytes, "stdout_write", Bun.stdout); },
+    async stderrWrite(bytes: unknown, context?: AssertionContext): Promise<Completion<bigint>> { denyLiveBoundary(context, origin); return write(bytes, "stderr_write", Bun.stderr); },
   });
   async function write(bytes: unknown, operation: string, destination: typeof Bun.stdout): Promise<Completion<bigint>> {
     const data = copyBytes(bytes, origin);

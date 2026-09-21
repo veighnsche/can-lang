@@ -11,7 +11,7 @@ import (
 )
 
 func CompletionImports(path string) string {
-	return "import { success as $canSuccess, failure as $canFailure, value as $canValue, invoke as $canInvoke, caught as $canCaught, errorType as $canErrorType, errorPayload as $canErrorPayload, type Completion as $canCompletion } from " + quote(path) + ";\n"
+	return "import { success as $canSuccess, failure as $canFailure, value as $canValue, invoke as $canInvoke, caught as $canCaught, errorType as $canErrorType, errorPayload as $canErrorPayload, type Completion as $canCompletion, type AssertionContext as $canAssertionContext } from " + quote(path) + ";\n"
 }
 func PatternImports(dataPath, failurePath string) string {
 	return "import { recordIdentity as $canRecordIdentity } from " + quote(dataPath) + ";\nimport { isStandardFailure as $canIsStandardFailure, standardFailureMessage as $canStandardMessage } from " + quote(failurePath) + ";\n"
@@ -81,6 +81,7 @@ func NativeTypeDeclarations(graph []*types.Type) (string, error) {
 			for i, arg := range t.Inputs() {
 				args = append(args, fmt.Sprintf("arg%d: %s", i, TypeName(arg)))
 			}
+			args = append(args, "$canContext?: $canAssertionContext")
 			text = "(" + strings.Join(args, ", ") + ") => Promise<$canCompletion<" + TypeName(t.Result()) + ">>"
 		case types.Variant:
 			var parts []string
@@ -134,7 +135,7 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 			return LoweredExpression{}, err
 		}
 		boxed := e.temp()
-		return LoweredExpression{Statements: fmt.Sprintf("const %s = await $canInvoke(() => %s(%s), %s);\n", boxed, target, strings.Join(args, ", "), e.origin(region.Span)), Value: "$canValue(" + boxed + ")"}, nil
+		return LoweredExpression{Statements: fmt.Sprintf("const %s = await $canInvoke(() => %s(%s), %s);\n", boxed, target, strings.Join(append(args, "$canContext"), ", "), e.origin(region.Span)), Value: "$canValue(" + boxed + ")"}, nil
 	}
 	var args []string
 	for i, input := range region.Inputs {
@@ -145,6 +146,7 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 		bindings[input.Identity] = param
 		args = append(args, param+": "+TypeName(input.Type))
 	}
+	args = append(args, "$canContext?: $canAssertionContext")
 	body, err := e.block(region.Body)
 	if err != nil {
 		return "", err
@@ -210,7 +212,39 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			out.WriteString(lowered.Statements)
 			args = append(args, lowered.Value)
 		}
-		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s(%s), %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, target, strings.Join(args, ", "), e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
+		invocation := target + "(" + strings.Join(append(args, "$canContext"), ", ") + ")"
+		if step.Fixtures != nil {
+			var rows []string
+			for _, row := range step.Fixtures.Rows {
+				var prepare strings.Builder
+				for _, binding := range row.Prepare {
+					value, err := e.expression.Lower(binding.Value)
+					if err != nil {
+						return LoweredExpression{}, err
+					}
+					prepare.WriteString(value.Statements)
+					name := e.temp()
+					e.expression.Bindings[binding.Local.Identity] = name
+					fmt.Fprintf(&prepare, "const %s = %s;\n", name, value.Value)
+				}
+				var expectedArgs []string
+				for _, arg := range row.Arguments {
+					value, err := e.expression.Lower(arg)
+					if err != nil {
+						return LoweredExpression{}, err
+					}
+					prepare.WriteString(value.Statements)
+					expectedArgs = append(expectedArgs, value.Value)
+				}
+				expected, err := e.completion(row.Expected)
+				if err != nil {
+					return LoweredExpression{}, err
+				}
+				rows = append(rows, "{selector:"+quote(row.Selector)+", arguments: async () => {"+prepare.String()+"return $canSuccess(["+strings.Join(expectedArgs, ",")+"]);}, expected: async () => {"+expected+"}}")
+			}
+			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
+		}
+		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
 	}
 	if call.Result.Kind() == types.Void {
 		fmt.Fprintf(&out, "%s = $canSuccess(undefined);\n", result)

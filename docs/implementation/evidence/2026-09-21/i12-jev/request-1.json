@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I12 must execute mandatory typed assertions through emitted async Bun code, not a Go evaluator. Functions already return branded nonthenable completion boxes. Each assertion has immutable package/declaration/name identity, and supplied call completions are scoped to that root. Pure native operations execute normally, while external or nondeterministic adapters must fail closed without fixtures; catching the resulting standard failure must not let the harness claim success. Later I18 adds canonical concurrent fixture queues and I20 owns late work. Assertions can await nested helper calls today. Native AsyncLocalStorage from node:async_hooks is documented as supported by Bun, but the pinned runtime still needs an actual isolation probe and its closed import/API inventory updated. Alternatives: use AsyncLocalStorage to hold a root context across native promises; pass a private context argument through every generated function/callback/intrinsic ABI; use one mutable global root without async isolation. The context should accumulate sticky harness violations outside Can completion handling and reports must distinguish real-can from supplied-completion evidence. No benchmark favors any option, and qualification is not a security proof.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Which context transport best preserves these assertion isolation and fail-closed contracts with the existing async compiler ABI?",
+      "criteria": {
+        "native": "Use qualified native AsyncLocalStorage and keep sticky harness violations in each root store.",
+        "parameter": "Thread an explicit private root context through every generated function, callback and intrinsic parameter list.",
+        "global": "Keep the selected assertion in one mutable process-global variable without asynchronous isolation."
+      }
+    }
+  }
+}

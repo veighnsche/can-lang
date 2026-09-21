@@ -50,6 +50,9 @@ type Preparation struct {
 	Value *Expression
 }
 type InvocationStep struct {
+	Contract  *types.Type
+	Receiver  bool
+	Fixtures  *FixtureTable
 	Prepare   []Preparation
 	Native    *Expression
 	Identity  string

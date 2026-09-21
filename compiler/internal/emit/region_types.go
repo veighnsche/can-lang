@@ -47,6 +47,18 @@ func regionTypes(regions ...*ir.Region) []*types.Type {
 		add(call.Result)
 		roots = append(roots, call.Errors...)
 		for _, step := range call.Steps {
+			if step.Fixtures != nil {
+				for _, row := range step.Fixtures.Rows {
+					for _, p := range row.Prepare {
+						add(p.Local.Type)
+						expression(p.Value)
+					}
+					for _, arg := range row.Arguments {
+						expression(arg)
+					}
+					completion(row.Expected)
+				}
+			}
 			for _, prepared := range step.Prepare {
 				add(prepared.Local.Type)
 				expression(prepared.Value)

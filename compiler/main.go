@@ -36,6 +36,27 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
+	if len(argv) > 0 && argv[0] == "assert" {
+		if len(argv) != 2 && len(argv) != 4 && len(argv) != 5 {
+			fmt.Fprintln(os.Stderr, "usage: canlc assert PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+			return 2
+		}
+		sidecar, err := driver.Resolve(bundleManifestSHA256)
+		if err == nil {
+			err = sidecar.Assert(context.Background(), argv[1], argv[2:], os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+		}
+		if err != nil {
+			if exit, ok := err.(*exec.ExitError); ok {
+				if code := exit.ExitCode(); code > 0 {
+					return code
+				}
+				return 1
+			}
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		return 0
+	}
 	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
 		if len(argv) < 2 || argv[1] == "" || (argv[0] == "build" && len(argv) != 2) || (argv[0] == "run" && len(argv) > 2 && argv[2] != "--") {
 			fmt.Fprintln(os.Stderr, "usage: canlc build PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")

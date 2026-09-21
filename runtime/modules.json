@@ -1,6 +1,23 @@
 {
   "schemaVersion": 1,
   "modules": {
+    "assert/context.ts": [
+      "../failure.ts"
+    ],
+    "assert/fixtures.ts": [
+      "../completion.ts",
+      "../failure.ts",
+      "./runner.ts",
+      "./context.ts"
+    ],
+    "assert/runner.ts": [
+      "node:util",
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./context.ts"
+    ],
     "bytes.ts": [
       "./failure.ts"
     ],
@@ -9,7 +26,8 @@
     ],
     "completion.ts": [
       "./domain.ts",
-      "./failure.ts"
+      "./failure.ts",
+      "./assert/context.ts"
     ],
     "data.ts": [
       "node:util"
@@ -39,7 +57,8 @@
       "../data.ts",
       "../bytes.ts",
       "../domain.ts",
-      "../failure.ts"
+      "../failure.ts",
+      "../assert/context.ts"
     ],
     "primitive.ts": []
   }

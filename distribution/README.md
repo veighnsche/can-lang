@@ -69,7 +69,8 @@ Run `/absolute/path/to/version/bin/canlc runtime-check` from any directory,
 including via a symlink and with PATH lacking Bun. This development command runs
 only the fixed manifest-owned check; it does not expose arbitrary TS execution.
 Current `build` and `run` commands use the checked compiler and bundled runtime; see
-[CLI instructions](../docs/implementation/cli.md). Assertion execution is a separate implementation task. Runtime
+[CLI instructions](../docs/implementation/cli.md). The [assert command](../docs/implementation/assertions.md) runs mandatory assertions
+through the same bundled runtime. Runtime
 lookup follows the real launcher, verifies the launcher-bound manifest, target,
 all owned asset hashes, Mach-O arm64 identity and executable permission, and
 refuses missing, modified or symlinked assets with `CAN-DIST-*` diagnostics.

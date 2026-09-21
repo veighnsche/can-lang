@@ -1,0 +1,2 @@
+TypeScript 7.0.2 strict check: freshly emitted assertion roots/fixtures and maintained runtime/tests
+Exit status: 0

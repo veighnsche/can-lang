@@ -1,0 +1,19 @@
+package arithmetic
+    provides []
+    uses []
+fn int square
+    emits []
+    given
+        int value
+    asserts
+        small: 3 => ok 9
+        large: 9007199254740993 => ok 81129638414606699710187514626049
+    ok value * value
+fn int adjusted
+    emits []
+    asserts
+        supplied: => ok 8
+    match call square(3)
+        when
+            supplied: 3 => ok 7
+        ok int result => ok result + 1

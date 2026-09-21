@@ -1,6 +1,7 @@
 package emit
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -13,8 +14,9 @@ import (
 
 func programImports(runtime string) []ModuleImport {
 	return []ModuleImport{
+		{Target: runtime + "/assert/fixtures.ts", Names: []ImportName{{"withFixture", "$canWithFixture"}}},
 		{Target: runtime + "/completion.ts", Names: []ImportName{{"success", "$canSuccess"}, {"failure", "$canFailure"}, {"value", "$canValue"}, {"invoke", "$canInvoke"}, {"caught", "$canCaught"}, {"errorType", "$canErrorType"}, {"errorPayload", "$canErrorPayload"}}},
-		{Target: runtime + "/completion.ts", TypeOnly: true, Names: []ImportName{{"Completion", "$canCompletion"}}},
+		{Target: runtime + "/completion.ts", TypeOnly: true, Names: []ImportName{{"Completion", "$canCompletion"}, {"AssertionContext", "$canAssertionContext"}}},
 		{Target: runtime + "/data.ts", Names: []ImportName{{"record", "$canRecord"}, {"update", "$canUpdate"}, {"array", "$canArray"}, {"recordIdentity", "$canRecordIdentity"}}},
 		{Target: runtime + "/primitive.ts", Names: []ImportName{{"intDivide", "$canIntDivide"}, {"intRemainder", "$canIntRemainder"}, {"intPower", "$canIntPower"}, {"index", "$canIndex"}, {"slice", "$canSlice"}}},
 		{Target: runtime + "/failure.ts", Names: []ImportName{{"captureStandard", "$canCaptureStandard"}, {"isStandardFailure", "$canIsStandardFailure"}, {"standardFailureMessage", "$canStandardMessage"}, {"standardFailureKind", "$canFailureKind"}, {"standardFailureMessage", "$canFailureMessage"}, {"standardFailureOccurrenceID", "$canFailureOccurrenceID"}}},
@@ -25,7 +27,13 @@ func programImports(runtime string) []ModuleImport {
 // function creates error evidence and evaluates the ordered top-level values;
 // the entry supervisor invokes it before calling the checked main region.
 func ProgramModules(program *check.Program, runtime string, dependencies []ir.Artifact) ([]ir.Artifact, error) {
-	if program == nil || program.Entry == nil || program.Entry.Region == nil {
+	return programModules(program, runtime, dependencies, false)
+}
+func AssertionModules(program *check.Program, runtime string, dependencies []ir.Artifact) ([]ir.Artifact, error) {
+	return programModules(program, runtime, dependencies, true)
+}
+func programModules(program *check.Program, runtime string, dependencies []ir.Artifact, assertions bool) ([]ir.Artifact, error) {
+	if program == nil || (!assertions && (program.Entry == nil || program.Entry.Region == nil)) {
 		return nil, fmt.Errorf("emission requires a checked entry")
 	}
 	const statePath = "program/state.ts"
@@ -127,6 +135,50 @@ func ProgramModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 		}
 		modules = append(modules, Module{Path: path, Imports: imports, Body: body.String()})
+	}
+	if assertions {
+		if len(program.Assertions) == 0 {
+			return nil, fmt.Errorf("project has no concrete assertions")
+		}
+		entry := Module{Path: "entry.ts", Imports: []ModuleImport{
+			{Target: runtime + "/assert/runner.ts", Names: []ImportName{{"runAssertions", "$canRunAssertions"}}},
+			{Target: statePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
+		}}
+		var cases []string
+		for i, test := range program.Assertions {
+			rootJSON, err := json.Marshal(test.Root)
+			if err != nil {
+				return nil, err
+			}
+			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
+			path := fmt.Sprintf("assertions/%x.ts", digest)
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}}})
+			for _, fn := range program.Functions {
+				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Symbol.ID], functions[fn.Symbol.ID]}}})
+			}
+			graph := append(program.Model.Types(), regionTypes(test.Actual, test.Expected)...)
+			body, err := NativeTypeDeclarations(graph)
+			if err != nil {
+				return nil, err
+			}
+			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain"}
+			actual, err := emitter.Function("$canActual", test.Actual)
+			if err != nil {
+				return nil, err
+			}
+			expected, err := emitter.Function("$canExpected", test.Expected)
+			if err != nil {
+				return nil, err
+			}
+			body += actual + expected + fmt.Sprintf("export const $canCase = Object.freeze({root: Object.freeze(%s), actual: $canActual, expected: $canExpected});\n", rootJSON)
+			modules = append(modules, Module{Path: path, Imports: imports, Body: body})
+			name := fmt.Sprintf("$canCase%d", i)
+			cases = append(cases, name)
+			entry.Imports = append(entry.Imports, ModuleImport{Target: path, Names: []ImportName{{"$canCase", name}}})
+		}
+		entry.Body = "process.exitCode = await $canRunAssertions([" + strings.Join(cases, ",") + "], $canInitialize);\n"
+		modules = append(modules, entry)
+		return Modules(modules, dependencies...)
 	}
 	main := program.Entry
 	modules = append(modules, Module{Path: "entry.ts", Imports: []ModuleImport{

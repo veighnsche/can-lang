@@ -1,3 +1,4 @@
+export type { AssertionContext } from "./assert/context.ts";
 // Every Promise-visible Can payload stays behind a compiler-private box. The
 // brand sets admit only constructors below; property inspection never touches a
 // forged value or application-controlled proxy/getter.

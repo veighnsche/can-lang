@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "I12 adds real execution of typed mandatory Can assertions using asynchronous emitted code on Bun, never source interpretation by the Go launcher. Current functions fulfill with branded boxes that cannot assimilate application then fields. An assertion root is an immutable package/declaration/name tuple; any substituted outcome belongs to that root alone. Deterministic operations must run natively, but provider/platform nondeterminism and side effects are denied when fixtures are absent. Even if authored code handles that standard failure, the test must remain failed. Awaited helper chains are available now; I18 later provides concurrent fixture scheduling and I20 tracks late work. Bun advertises AsyncLocalStorage in node:async_hooks, but a concrete isolation probe and closed runtime inventory admission are still required for this pin. Choose among native async-local context, a hidden context argument added throughout generated callable and intrinsic ABIs, or one mutable global assertion identity lacking async isolation. The chosen context must preserve harness violations outside ordinary completion catches, and evidence distinguishes actual Can work from supplied outcomes. Performance has not been measured and runtime tests do not constitute a security proof.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Which mechanism should propagate the assertion context under these supplied constraints?",
+      "criteria": {
+        "native": "Admit and test AsyncLocalStorage, storing each root identity and sticky failures in its native async context.",
+        "parameter": "Propagate the root as a hidden argument across the full emitted and intrinsic callable ABI.",
+        "global": "Use shared mutable root state with no context separation for asynchronous calls."
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+=== RUN   TestCurrentBundledAssertions
+--- PASS: TestCurrentBundledAssertions (3.82s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	3.988s

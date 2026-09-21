@@ -332,7 +332,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 		if binding.Identity == "" || !types.Equal(binding.Type, binding.Type) || binding.Type.Kind() != types.Callable {
 			return fmt.Errorf("invalid resolved callable contract")
 		}
-		step := ir.InvocationStep{Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
+		step := ir.InvocationStep{Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)
 		if err != nil {
