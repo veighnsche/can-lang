@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The runtime must execute at most one fetch with manual redirects. Preparation precedes the total request deadline; the budget includes response headers, body streaming and validation. Expiry aborts the operation and selects HTTP error 1103, with no rollback guarantee. Ownership rules retain started work through settlement and root shutdown, and cleanup exceptions are diagnostic rather than replacements for prior domain failures. launchOwned can register an owner before a native action starts and observe its normalized settlement. Native fetch, reader.read and cancel can remain pending after a deadline race settles. Compare owner retention for those native promises with separately bounded caller waits, simple race handlers without root ownership, and withholding timeout until cleanup finishes. There is no added full-invocation capture lease policy for regular callables.",
+  "questions": {
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "Select the ownership boundary consistent with the described timeout and cleanup rules.",
+      "criteria": {
+        "owned": "Retain actual native promise lifetimes in owners while exposing an independently timed wait.",
+        "race": "Observe rejection branches but omit outstanding operations from root drain.",
+        "wait": "Await complete native settlement before returning the timeout outcome."
+      }
+    }
+  }
+}

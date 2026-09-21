@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The selected transport contract starts its timeout after arguments/auth/encoding, performs one manual-redirect native fetch, and measures the entire header/body/decode interval. At expiry it requests abort and yields 1103 but cannot establish rollback. The resource specification says roots drain launched owned work; a late cleanup failure is reported without altering an already chosen domain outcome. The available launchOwned primitive admits work before execution and observes completion. Settling a race against a timer does not mean fetch, stream reads or cancellation have settled. Candidate implementations own each such native promise while racing only exposed waits, merely attach race rejection observers without retaining root work, or postpone timeout delivery until every cleanup promise resolves. Ordinary functions retain their existing semantics without blanket capture leases.",
+  "questions": {
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "Which approach preserves the independent caller deadline and root-drain requirements?",
+      "criteria": {
+        "owned": "Keep every native action owned until settlement; permit timeout selection before that settlement.",
+        "race": "Treat a handled race loser as fully drained even if it remains pending.",
+        "wait": "Require all cancellation work to finish before publishing deadline failure."
+      }
+    }
+  }
+}

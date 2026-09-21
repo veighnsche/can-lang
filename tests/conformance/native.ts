@@ -61,6 +61,7 @@ const probes: Record<string, () => unknown> = {
     assert.deepEqual(input, [3, 1, 2]);
   },
   "unicode-and-literal-replacement": () => {
+    assert("😀".isWellFormed()); assert(!"\ud800".isWellFormed()); assert(!"\udfff".isWellFormed());
     assert.equal("😀".length, 2); assert.equal([..."😀"].length, 1);
     assert.equal("e\u0301".normalize("NFC"), "é");
     assert.equal([...new Intl.Segmenter("en", { granularity: "grapheme" }).segment("e\u0301")].length, 1);

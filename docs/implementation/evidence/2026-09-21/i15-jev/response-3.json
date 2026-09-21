@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"lifecycle":{"type":"choice","choice":"owned","confidence":0.94,"probabilities":{"owned":0.96,"race":0.0,"wait":0.04}}},"usage":{"input_tokens":516,"output_tokens":40}}

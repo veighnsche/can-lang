@@ -125,9 +125,13 @@ export async function closeResource(value:unknown,kind:string,deadline?:Readonly
 
 export type Participant=Readonly<{run:()=>Completion|Promise<Completion>;captures:readonly unknown[]}>;
 export type OwnedGroup=Readonly<{promises:readonly Promise<Completion>[];publish:(selected:readonly number[])=>void}>;
-export function launchOwned(participants:readonly Participant[]):OwnedGroup{
- const current=execution();if(current.scope.state!=="open")invalid();
- const group:Group={root:current.root,scope:current.scope,key:{},tasks:[],sealed:false,selected:new Set(),pending:participants.length};
+export function launchOwned(participants:readonly Participant[]):OwnedGroup{return launch(participants,false);}
+// Maintained native subwork belongs to an already active owner, including while
+// its scope drains. This does not admit a new coordination owner into closing.
+export function launchNative(participant:Participant):OwnedGroup{return launch([participant],true);}
+function launch(participants:readonly Participant[],native:boolean):OwnedGroup{
+ const current=execution();if(current.scope.state!=="open"&&!(native&&current.task&&current.task.completion===undefined))invalid();
+ const group:Group={root:current.root,scope:current.scope,key:native&&current.owner?current.owner:{},tasks:[],sealed:false,selected:new Set(),pending:participants.length};
  const child:Execution={...current,owner:group.key};
  const retained:(()=>void)[]=[];
  // Every lease/capture is prepared before the first participant can run.

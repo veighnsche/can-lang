@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can A4 requires one native fetch attempt, redirect manual, a deadline beginning after preparation and covering headers, streamed bytes and decoding. Timeout aborts native fetch and returns 1103 without promising rollback. Q10/P6 requires launched work remain observed and root drain await owned work; unexpected stream cleanup faults produce late standard diagnostics without replacing a selected domain error. Existing launchOwned installs ownership before invoking work and keeps normalized promises until settlement. A timer race can return before fetch, read or cancel promises settle. Options are to retain each native fetch/read/cancel promise in launchOwned while deadline races only the caller wait, to rely only on Promise.race rejection observation with no root retention, or to wait for all native cleanup before delivering timeout. Ordinary callables should not acquire whole-call resource capture leases.",
+  "questions": {
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "Which lifecycle implementation satisfies both bounded caller waits and retained native work?",
+      "criteria": {
+        "owned": "Register native fetch/read/cancel work with launchOwned; race the caller wait and diagnose cleanup separately.",
+        "race": "Use Promise.race observers alone and let root shutdown ignore remaining native promises.",
+        "wait": "Do not deliver timeout until native cleanup and outstanding work have completed."
+      }
+    }
+  }
+}

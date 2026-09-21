@@ -101,6 +101,33 @@
       "./completion.ts",
       "./data.ts",
       "./failure.ts"
+    ],
+    "transport/deadline.ts": [],
+    "transport/body.ts": [
+      "./deadline.ts"
+    ],
+    "transport/request.ts": [
+      "./deadline.ts"
+    ],
+    "transport/owned.ts": [
+      "../owner.ts",
+      "../completion.ts"
+    ],
+    "transport/fetch.ts": [
+      "../completion.ts",
+      "./deadline.ts",
+      "./body.ts",
+      "./owned.ts",
+      "./request.ts"
+    ],
+    "transport/http.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./deadline.ts",
+      "./fetch.ts",
+      "./request.ts"
     ]
   }
 }

@@ -28,7 +28,7 @@
     "Array.prototype.toSorted", "Array.prototype.toReversed",
     "Set.prototype.intersection", "Map", "Set", "Object.is",
     "Promise.all", "Promise.allSettled", "Promise.any", "Promise.race",
-    "Intl.Segmenter", "String.prototype.normalize", "String.prototype.replaceAll",
+    "Intl.Segmenter", "String.prototype.normalize", "String.prototype.replaceAll", "String.prototype.isWellFormed",
     "Uint8Array", "TextEncoder", "TextDecoder", "URL", "URLSearchParams",
     "Headers", "Headers.prototype.getSetCookie", "Request", "Response", "fetch",
     "AbortController", "ReadableStream", "Date.now", "performance.now",
