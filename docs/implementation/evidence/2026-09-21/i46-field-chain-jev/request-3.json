@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A valid generic walk follows a next field through seed, step<seed>, and done<step<seed>>, after which specialization repeats. The existing same-site structural-size guard rejects that finite sequence, and adding a terminal-type assertion changes the outcome. Can requires complete reachable-body checking, accepts recursion at one specialization and rejects expansion without proving termination. Literal fixed targets are legitimate. Original input type annotations and lexical identities are available; exact inference over input references and array construction can expose a stable substitution. Wrapping the current parameter in an array or nominal argument can demonstrate growth, but a nominal-field lookup cannot do so by concrete size alone. Bounded specialization discovery and bounded type graphs already provide explicit implementation-limit failures for cases lacking a proof. A higher observation count cannot repair an unsound proof.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "What guard design should follow from this finite-chain counterexample?",
+      "criteria": {
+        "source_evidence": "Reject directly recursive substitutions only with source evidence that retains all corresponding parameters and strictly nests at least one, checking the concrete increase as well. Otherwise remove containment heuristics and rely on the existing explicit bounds, with tests for assertion-order independence and both inferred and written expanding calls.",
+        "higher_threshold": "Preserve structural containment as the decisive criterion while increasing how many times a site must recur.",
+        "ban_projection": "Reject all type-parameter field accesses, including accesses valid for every reached concrete instance."
+      }
+    }
+  }
+}

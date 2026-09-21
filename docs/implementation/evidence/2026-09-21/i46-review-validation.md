@@ -1,6 +1,6 @@
 # I46 review corrections
 
-Independent review confirmed two false rejections in `47f7e38`.
+Independent review confirmed two false rejections in `47f7e38`. The first correction below was subsequently shown insufficient by a finite nominal-field chain and is superseded by the [source-evidence correction](i46-field-chain-validation.md).
 
 1. A single structural enlargement was classified as expanding recursion even for `fixed<int>` calling the constant target `fixed<int[]>`, which stabilizes at that instance. Preloading the target through an assertion accidentally changed admission. The guard now requires a recurring source application site for the same declaration before diagnosing structural growth. The immutable creation site is separate from later diagnostic request sites. Tests cover explicit and inferred transitions in both cache-population orders and preserve rejection of genuinely growing recursion.
 2. Inference represented literal-spread elements as indexing expressions over the complete spread array. That discarded known expected element context, so `int[] result = call pick(...[[], []])` failed while explicit `pick<int[]>` worked. Inference now constrains the original literal elements directly, including grouped and recursively flattened literal-spread syntax. Ordinary argument lowering still checks the complete array's homogeneous contract and evaluates it once; no general array covariance or error-bound inference is added.

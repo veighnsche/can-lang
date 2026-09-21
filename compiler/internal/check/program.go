@@ -36,9 +36,7 @@ type ProgramFunction struct {
 	Instance      string
 	TypeArguments []*types.Type
 	Parameters    map[string]*types.Type
-	Application   string
 	Requests      []string
-	Ancestors     []*ProgramFunction
 }
 
 func (f *ProgramFunction) Identity() string {

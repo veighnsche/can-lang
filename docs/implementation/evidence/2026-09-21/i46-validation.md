@@ -6,7 +6,7 @@
 
 Calls, generic constructors, receiver methods and callable references infer concrete arguments. Expected callable contracts exclude captured receiver/near inputs; near captures supply exact constraints. Assertion rows infer independent concrete instances and schedule complete bodies even when application code does not call them. Deferred arguments such as empty arrays are retried only while constraints make progress. No union, numeric widening, error-set inference or arbitrary instance search is introduced.
 
-Same-instance recursion uses the cache. Proven structural growth along a repeated generic declaration is rejected, and separately labelled finite implementation bounds stop excessive discovery. Existing recursive nominal graph inhabitation/expansion admission remains in force. Generic body diagnostics name the source and requesting application sites.
+Same-instance recursion uses the cache. Source-backed parameter-preserving growth in direct recursive substitutions is rejected, and separately labelled finite implementation bounds stop excessive discovery. Concrete containment alone is insufficient; see the [field-chain correction](i46-field-chain-validation.md). Existing recursive nominal graph inhabitation/expansion admission remains in force. Generic body diagnostics name the source and requesting application sites.
 
 ## Acceptance evidence
 

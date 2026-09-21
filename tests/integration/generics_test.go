@@ -97,7 +97,7 @@ func TestCurrentBundledGenerics(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for _, name := range []string{"finite-transition", "spread-inferred"} {
+	for _, name := range []string{"finite-transition", "finite-field-chain", "spread-inferred"} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/generics", name+".can"))
 		if err != nil {
 			t.Fatal(err)
@@ -106,6 +106,11 @@ func TestCurrentBundledGenerics(t *testing.T) {
 		if name == "finite-transition" {
 			variants = append(variants, strings.Replace(string(data), "        sample: 1, 0 => ok 0", "        sample: 1, 0 => ok 0\n        array: [1], 0 => ok 0", 1))
 			variants = append(variants, strings.Replace(string(data), "fixed<int[]>([1]", "fixed([1]", 1))
+		}
+		if name == "finite-field-chain" {
+			row := "        sample: seed([]), 0 => ok 0\n"
+			terminal := "        terminal: done<step<seed>>([]), 0 => ok 0\n"
+			variants = append(variants, strings.Replace(string(data), row, terminal+row, 1), strings.Replace(string(data), row, row+terminal, 1))
 		}
 		for index, source := range variants {
 			write("src/main.can", source)

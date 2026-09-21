@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can checks every reachable concrete generic function body. Same-instance recursion is legal; expanding polymorphic recursion must be rejected, without claiming general termination proof. A guard currently rejects a recurrent source call when concrete arguments structurally contain earlier arguments. Counterexample: walk<T>(value.next[0]) visits seed, step<seed>, done<step<seed>>, then stabilizes; assertion preload order changes acceptance. Fixed literal substitutions must also remain legal. A direct source substitution T -> T[] or T -> box<T> is parameter-dependent growth, whereas nominal field projection can be a finite transition. Inputs retain their original declared syntax and resolved binding identity. Exact invariant inference can derive source substitutions from input names and array construction; field/index projections need not supply such evidence. Existing finite specialization/type-graph implementation bounds reject excessive unknown discovery. We need a sound correction and cannot replace proof with a larger recurrence threshold.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which recursion rejection policy is supported by these facts?",
+      "criteria": {
+        "source_evidence": "Remove concrete-containment-only rejection. Prove direct recursive growth from source substitutions that preserve each corresponding parameter and wrap at least one, corroborate with concrete growth, and conservatively leave unsupported inference or indirect cycles to the separately named implementation bounds. Test finite field chains in multiple assertion orders and explicit/inferred true growth.",
+        "higher_threshold": "Keep the current containment rule but require more visits to the same source call before rejecting.",
+        "ban_projection": "Treat every generic field projection as forbidden so that the finite chain cannot be expressed."
+      }
+    }
+  }
+}

@@ -47,13 +47,16 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 			return ValueBinding{}, err
 		}
 	}
-	return c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start))
+	return c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start), args)
 }
 
-func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request string) (ValueBinding, error) {
+func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request string, substitutions ...[]syntax.TypeNode) (ValueBinding, error) {
 	key, err := types.SpecializationKey(symbol.ID, arguments)
 	if err != nil {
 		return ValueBinding{}, err
+	}
+	if len(substitutions) == 1 && c.provesRecursiveGrowth(symbol, arguments, substitutions[0]) {
+		return ValueBinding{}, fmt.Errorf("expanding polymorphic recursion from %s to %s", c.current.Identity(), key)
 	}
 	if existing := c.instances[key]; existing != nil {
 		if !containsString(existing.Requests, request) {
@@ -63,18 +66,6 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	}
 	if len(c.instances) >= 4096 {
 		return ValueBinding{}, fmt.Errorf("concrete function specialization exceeds implementation limit at %s", symbol.ID)
-	}
-	var ancestors []*ProgramFunction
-	if c.current != nil {
-		ancestors = append(append([]*ProgramFunction(nil), c.current.Ancestors...), c.current)
-		// One larger argument vector can be a finite transition to a literal
-		// target. Require recurrence of the same source application before
-		// treating structural containment as expanding polymorphic recursion.
-		for _, parent := range ancestors {
-			if parent.Symbol.ID == symbol.ID && parent.Application == request && growingArguments(parent.TypeArguments, arguments) {
-				return ValueBinding{}, fmt.Errorf("expanding polymorphic recursion from %s to %s", parent.Identity(), key)
-			}
-		}
 	}
 	parameters := map[string]*types.Type{}
 	for i, name := range symbol.Parameters {
@@ -115,16 +106,15 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	for i, field := range fields {
 		c.bindings[key+"/input/"+field.Name.Text] = contract.Inputs()[i]
 	}
-	fn := &ProgramFunction{Application: request, Requests: []string{request}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters, Ancestors: ancestors}
+	fn := &ProgramFunction{Requests: []string{request}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters}
 	c.instances[key] = fn
 	c.program.Functions = append(c.program.Functions, fn)
 	return ValueBinding{Identity: key, Type: contract}, nil
 }
 
-// Proper structural containment proves this repeated declaration grows its type
-// arguments. Nominal fields are not traversed: recursive data is not by itself
-// expanding polymorphic recursion. Other excessive discovery has a separately
-// labelled implementation bound rather than a fabricated termination proof.
+// Concrete containment corroborates source substitution evidence; it is not a
+// proof by itself. A nominal field can lead through larger arguments and then
+// stabilize. Unknown transitions use the separately labelled discovery bound.
 func growingArguments(before, after []*types.Type) bool {
 	if len(before) == 0 || len(before) != len(after) {
 		return false

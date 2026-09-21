@@ -33,7 +33,8 @@ func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, nam
 	if err != nil {
 		return ValueBinding{}, true, fmt.Errorf("generic call %s at byte %d: %w", symbol.ID, name.Span.Start, err)
 	}
-	binding, err := c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start))
+	substitutions := c.inferredSubstitutions(file, scope, symbol, constraints)
+	binding, err := c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start), substitutions)
 	return binding, true, err
 }
 

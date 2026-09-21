@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The compiler specializes reachable generic bodies completely, permits identical-instance recursion and must reject expanding recursion; it does not establish program termination. Its repeated-call concrete containment heuristic incorrectly rejects seed -> step<seed> -> done<step<seed>> -> stable through value.next[0], unless assertions preload the terminal instance. Constant-target recursive calls are valid too. In contrast, source-level substitutions such as T[] or box<T> around the current T provide persistent dependence. Lexically resolved inputs retain declaration type syntax, allowing invariant call inference to recover some substitutions from names and array literals. A projected nominal field is not evidence of perpetual expansion. Separate finite limits already bound instance discovery and type graphs. Raising a recurrence threshold would not establish correctness.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Select the defensible replacement for this specialization guard.",
+      "criteria": {
+        "source_evidence": "Use source-backed direct self-call substitutions plus actual concrete growth to prove expansion: every corresponding parameter survives and at least one gains a constructor. Drop size-only rejection, use existing labeled limits for unproved inferred or indirect cases, and regress finite chains under varied preload orders alongside explicit and inferred growth negatives.",
+        "higher_threshold": "Delay the containment rejection until a larger number of repeated application sites has been seen.",
+        "ban_projection": "Disallow field projection in generic functions regardless of their concrete body validity."
+      }
+    }
+  }
+}

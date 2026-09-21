@@ -1,0 +1,27 @@
+package app
+    provides []
+    uses []
+record seed
+    step<seed>[] next
+record step<item>
+    done<step<item>>[] next
+record done<item>
+    done<item>[] next
+fn int walk<item>
+    emits []
+    given
+        item value
+        int count
+    asserts
+        sample: seed([]), 0 => ok 0
+    match count is 0
+        true => ok 0
+        false => relay call walk(value.next[0], count - 1)
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    int result = call walk(seed([step<seed>([done<step<seed>>([])])]), 2)
+    ok

@@ -1,5 +1,7 @@
 # I46 finite-transition guard review
 
+Historical consultation: the finite nominal-field-chain counterexample disproved the implemented heuristic described below. See [the replacement consultation](../i46-field-chain-jev/README.md). Unanimous classifier advice did not establish correctness.
+
 Three fresh requests, with completely rewritten explanatory state/instructions/options and the same facts and alternatives, selected `repeated_site`. Choice probability was 1.0 in all three; confidence was 1.0, 0.99, 0.99. No selected-answer disagreement occurred. Raw requests/responses and the wording-equivalence audit are saved here. Agreement is advice, not a termination proof.
 
 The implemented guard retains an immutable instance-creation application site separately from accumulated diagnostic requests. It compares structural growth against an ancestor of the same declaration originating at that same site. A fixed target stabilizes through normal cache reuse regardless of whether an assertion preloaded it. Repeated parameter-dependent growth still rejects. A separately labelled discovery limit remains for other excessive expansion; this is finite compiler admission, not general termination analysis.

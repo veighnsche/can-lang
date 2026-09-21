@@ -64,6 +64,9 @@ func TestGenericWholeBodyAndRecursion(t *testing.T) {
 		"expanding recursion": `    match call repeat<item[]>([value], count)
         ok item[] ignored => ok value
 `,
+		"inferred expanding recursion": `    match call repeat([value], count)
+        ok item[] ignored => ok value
+`,
 	} {
 		t.Run(name, func(t *testing.T) {
 			declaration := `fn item repeat<item>
@@ -85,7 +88,7 @@ func TestGenericWholeBodyAndRecursion(t *testing.T) {
 				}
 			} else if err == nil {
 				t.Fatal("invalid generic body admitted")
-			} else if name == "expanding recursion" && !strings.Contains(err.Error(), "expanding polymorphic recursion") {
+			} else if strings.Contains(name, "expanding recursion") && !strings.Contains(err.Error(), "expanding polymorphic recursion") {
 				t.Fatalf("wrong expanding recursion diagnostic: %v", err)
 			}
 		})
@@ -388,5 +391,25 @@ func TestGenericLiteralSpreadPreservesExpectedElements(t *testing.T) {
 		if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+func TestFiniteGenericFieldChainIgnoresAssertionOrder(t *testing.T) {
+	data, err := os.ReadFile("../../testdata/current/generics/finite-field-chain.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	row := "        sample: seed([]), 0 => ok 0\n"
+	terminal := "        terminal: done<step<seed>>([]), 0 => ok 0\n"
+	for name, rows := range map[string]string{"unloaded": row, "first": terminal + row, "last": row + terminal} {
+		t.Run(name, func(t *testing.T) {
+			p, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(string(data), row, rows, 1)})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(p.Functions) != 4 {
+				t.Fatalf("want three walk instances and main, got %d", len(p.Functions))
+			}
+		})
 	}
 }

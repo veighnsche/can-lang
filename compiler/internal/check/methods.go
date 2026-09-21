@@ -76,5 +76,5 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 			return ValueBinding{}, fmt.Errorf("generic method %s at byte %d: %w", symbol.ID, a.Name.Span.Start, err)
 		}
 	}
-	return c.instantiateFunction(symbol, d, arguments, applicationSite(file, a.Name.Span.Start))
+	return c.instantiateFunction(symbol, d, arguments, applicationSite(file, a.Name.Span.Start), a.Types)
 }
