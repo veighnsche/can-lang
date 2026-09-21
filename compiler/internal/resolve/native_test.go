@@ -9,7 +9,7 @@ import (
 const nativeConnection = "connection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\n"
 
 func TestNativeKindsAndGeneratedNames(t *testing.T) {
-	text := header("app", "weights, classify", "") + nativeConnection + `record weights choice float classify from service
+	text := header("app", "weights, classify, service", "") + nativeConnection + `record weights choice float classify from service
     emits []
     confidence as certainty
     asks "Choose"
@@ -60,7 +60,8 @@ func TestNativeSignatureCollisionsAndVisibility(t *testing.T) {
         first "First" => ok %
 `
 	for name, text := range map[string]string{
-		"hidden generated record":   header("app", "classify", "") + nativeConnection + question,
+		"hidden generated record":   header("app", "classify, service", "") + nativeConnection + question,
+		"private connection":        header("app", "weights, classify", "") + nativeConnection + question,
 		"same generated name":       header("app", "", "") + nativeConnection + strings.Replace(question, "record weights", "record classify", 1),
 		"ordinary name collision":   header("app", "", "") + nativeConnection + "record weights\n" + question,
 		"wrong connection kind":     header("app", "", "") + "record service\n" + question,

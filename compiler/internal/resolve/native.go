@@ -7,8 +7,12 @@ import (
 
 func (w *World) nativeSignature(file *File, scope *Scope, symbol *Symbol, declaration syntax.Declaration) error {
 	header := syntax.NativeSignature(declaration)
-	if _, err := file.Lookup(scope, header.Connection, ConnectionUse); err != nil {
+	connection, err := file.Lookup(scope, header.Connection, ConnectionUse)
+	if err != nil {
 		return err
+	}
+	if symbol.Public && !connection.Public {
+		return fmt.Errorf("exported signature exposes private connection %s", connection.ID)
 	}
 	if err := file.checkType(scope, header.Result, symbol.Public, TypeUse); err != nil {
 		return err
@@ -36,7 +40,11 @@ func (w *World) nativeSignature(file *File, scope *Scope, symbol *Symbol, declar
 		if input.Variadic && i != len(header.Inputs)-1 {
 			return fmt.Errorf("variadic native input must be last")
 		}
-		if err := add(input.Field); err != nil {
+		field := input.Field
+		if input.Variadic {
+			field.Type = &syntax.ArrayType{Element: field.Type}
+		}
+		if err := add(field); err != nil {
 			return err
 		}
 	}

@@ -83,16 +83,21 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			return err
 		}
 		file := c.world.Files[native.Symbol.Source]
-		checker := expressionRegion(ctx)
-		expressions := checker.expressions(bodyScope{ctx.Scope})
-		valueLookup := expressions.Value
-		expressions.Value = func(name syntax.QualifiedName) (ValueBinding, error) {
+		// Put the phase restriction in the context inherited by nested calls,
+		// matches and near captures, not only on the outer expression checker.
+		preparation := ctx
+		preparationExpressions := *ctx.Expressions
+		preparation.Expressions = &preparationExpressions
+		valueLookup := preparationExpressions.Value
+		preparationExpressions.Value = func(name syntax.QualifiedName) (ValueBinding, error) {
 			binding, err := valueLookup(name)
 			if err == nil && strings.HasPrefix(binding.Identity, native.Symbol.ID+"/metadata/") {
 				return ValueBinding{}, fmt.Errorf("answer metadata is unavailable during descriptor preparation")
 			}
 			return binding, err
 		}
+		checker := expressionRegion(preparation)
+		expressions := checker.expressions(bodyScope{preparation.Scope})
 		scalarExpression := func(expression syntax.Expr, kind string) error {
 			_, err := expressions.Check(expression, c.annotations[file][kind])
 			return err

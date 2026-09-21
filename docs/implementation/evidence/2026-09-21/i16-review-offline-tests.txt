@@ -1,0 +1,4 @@
+=== RUN   TestCurrentBundledNativeDeclarations
+--- PASS: TestCurrentBundledNativeDeclarations (3.16s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	3.265s

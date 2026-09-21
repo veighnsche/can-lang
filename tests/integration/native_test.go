@@ -73,6 +73,9 @@ func TestCurrentBundledNativeDeclarations(t *testing.T) {
 		strings.Replace(string(data), "question(\"Second\")", "question(first)", 1),
 		strings.Replace(string(data), "model \"jev-latest\"", "unknown \"jev-latest\"", 1),
 		strings.Replace(string(data), "ok false", "ok 1", 1),
+		strings.Replace(string(data), "provides [weights, weighted, classifier]", "provides [weights, weighted]", 1),
+		strings.Replace(string(data), "asks \"Choose\"", "asks call describe(certainty)", 1),
+		strings.Replace(strings.Replace(string(data), "uses [ai,", "uses [bytes, ai,", 1), "str message", "bytes::buffer message", -1),
 	} {
 		write("src/main.can", bad)
 		status, _, diag = run("build")

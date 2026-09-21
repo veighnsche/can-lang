@@ -106,6 +106,11 @@ func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Dec
 
 func (c *programChecker) checkNativeContracts(program *Program) error {
 	for _, native := range program.Natives {
+		for _, field := range native.State {
+			if _, err := types.Schema(c.bindings[native.Symbol.ID+"/input/"+field.Name.Text]); err != nil {
+				return fmt.Errorf("native state %s: %w", field.Name.Text, err)
+			}
+		}
 		policy, connected := program.Connections[native.Connection]
 		if native.Symbol.Kind != resolve.ChoiceArm && !connected {
 			return fmt.Errorf("native declaration has no checked connection")

@@ -210,7 +210,7 @@ func countLocalUses(block syntax.Block, evidence LocalUses, target string) (int,
 		}
 		var children []syntax.Expr
 		switch n := value.(type) {
-		case *syntax.LiteralExpr:
+		case *syntax.LiteralExpr, *syntax.ProbabilityExpr:
 		case *syntax.NameExpr:
 			id, ok := evidence.Names[n]
 			if !ok || id == "" {
