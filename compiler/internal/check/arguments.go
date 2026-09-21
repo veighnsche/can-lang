@@ -191,3 +191,26 @@ func (c *regionChecker) arguments(e *Expressions, callee ValueBinding, args []sy
 	}
 	return prepared, values, nil
 }
+
+// fixedArgumentElements supplies syntax-level equalities for fixed-arity
+// inference. Runtime preparation must still use arguments on the original list
+// so every spread is checked as one homogeneous array and evaluated once.
+func fixedArgumentElements(args []syntax.Argument) ([]syntax.Argument, error) {
+	var result []syntax.Argument
+	for _, arg := range args {
+		if arg.Group != nil {
+			return nil, fmt.Errorf("fixed inputs do not accept state groups")
+		}
+		if !arg.Spread {
+			result = append(result, arg)
+			continue
+		}
+		if _, known := literalSpreadLength(arg.Value); !known {
+			return nil, fmt.Errorf("runtime-length spread cannot supply fixed inputs")
+		}
+		for _, element := range literalSpreadElements(arg.Value) {
+			result = append(result, syntax.Argument{Span: element.ExprSpan(), Value: element})
+		}
+	}
+	return result, nil
+}

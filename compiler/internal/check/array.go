@@ -31,7 +31,11 @@ func callbackConstraints(d *syntax.FunctionDecl, inputs []*types.Type, result *t
 		if input.Variadic {
 			node = &syntax.ArrayType{Element: node}
 		}
-		seeds = append(seeds, typeConstraint{node, inputs[index]})
+		// A nil entry means no equality is known for this argument yet. It is
+		// never installed as an inference type or a checked callable input.
+		if inputs[index] != nil {
+			seeds = append(seeds, typeConstraint{node, inputs[index]})
+		}
 		index++
 	}
 	if index != len(inputs) {
@@ -112,6 +116,11 @@ func (c *regionChecker) arrayStep(receiver *ir.Expression, name, site string, ar
 	operationName := "array." + name
 	if name == "append" {
 		operationName = name
+	}
+	originalArgs := args
+	args, err := fixedArgumentElements(args)
+	if err != nil {
+		return ir.InvocationStep{}, err
 	}
 	op, err := catalogue.Builtin().Operation(operationName, inventory.TargetID, inventory.Revision)
 	if err != nil {
@@ -199,10 +208,9 @@ func (c *regionChecker) arrayStep(receiver *ir.Expression, name, site string, ar
 	if err != nil {
 		return ir.InvocationStep{}, err
 	}
-	for _, input := range inputs {
-		local := ir.Local{Identity: c.identity("array-argument"), Type: input.Type}
-		step.Prepare = append(step.Prepare, ir.Preparation{Local: local, Value: input})
-		step.Arguments = append(step.Arguments, &ir.Expression{Kind: ir.Binding, Type: input.Type, Span: input.Span, Text: local.Identity})
+	step.Prepare, step.Arguments, err = c.arguments(e, ValueBinding{Identity: step.Identity, Type: step.Contract}, originalArgs, receiver)
+	if err != nil {
+		return ir.InvocationStep{}, err
 	}
 	return step, nil
 }
@@ -403,6 +411,10 @@ func (c *regionChecker) arrayReceiver(node syntax.Expr, name string, args []synt
 	if size, known := literalSpreadLength(node); !known || size != 0 {
 		return nil, original
 	}
+	args, err := fixedArgumentElements(args)
+	if err != nil {
+		return nil, err
+	}
 	var element *types.Type
 	if expected != nil && expected.Kind() == types.Array && name != "map" && name != "fold" {
 		element = expected.Element()
@@ -418,7 +430,30 @@ func (c *regionChecker) arrayReceiver(node syntax.Expr, name string, args []synt
 		callbackIndex = 1
 	}
 	if element == nil && name != "concat" && name != "to_reversed" && len(args) > callbackIndex && args[callbackIndex].Value != nil {
-		action, err := e.Check(args[callbackIndex].Value, nil)
+		node := args[callbackIndex].Value
+		for {
+			group, ok := node.(*syntax.GroupExpr)
+			if !ok {
+				break
+			}
+			node = group.Value
+		}
+		var hint *callbackHint
+		if name == "map" && expected != nil && expected.Kind() == types.Array {
+			hint = &callbackHint{inputs: []*types.Type{nil}, result: expected.Element()}
+		} else if name == "fold" {
+			initial, err := e.Check(args[0].Value, expected)
+			if err == nil {
+				hint = &callbackHint{inputs: []*types.Type{initial.Type, nil}, result: initial.Type}
+			}
+		}
+		var action *ir.Expression
+		var err error
+		if reference, ok := node.(*syntax.ReferenceExpr); ok && hint != nil {
+			action, err = c.reference(reference, scope, nil, *hint)
+		} else {
+			action, err = e.Check(node, nil)
+		}
 		if err == nil && action.Type.Kind() == types.Callable {
 			inputs := action.Type.Inputs()
 			if len(inputs) == callbackIndex+1 {

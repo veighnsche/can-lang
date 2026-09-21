@@ -360,24 +360,28 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 	}
 	e := c.expressions(scope)
 	appendSlice := func(receiver *ir.Expression, args []syntax.Argument, span source.Span) error {
-		value, err := e.sliceArguments(receiver, args, n)
+		elements, err := fixedArgumentElements(args)
+		if err != nil {
+			return err
+		}
+		value, err := e.sliceArguments(receiver, elements, n)
 		if err != nil {
 			return err
 		}
 		step := ir.InvocationStep{Site: currentSite, Native: value, Identity: "can.native::slice", Receiver: true, Span: span, Result: value.Type, SuccessBinding: c.identity("slice")}
 		var inputs []*types.Type
-		for index, input := range value.Inputs {
-			local := ir.Local{Identity: c.identity("native-argument"), Type: input.Type}
-			step.Prepare = append(step.Prepare, ir.Preparation{Local: local, Value: input})
-			binding := &ir.Expression{Kind: ir.Binding, Span: input.Span, Type: input.Type, Text: local.Identity}
-			step.Arguments = append(step.Arguments, binding)
-			value.Inputs[index] = binding
+		for _, input := range value.Inputs {
 			inputs = append(inputs, input.Type)
 		}
 		step.Contract, err = types.CallableOfChecked(value.Type, inputs, nil)
 		if err != nil {
 			return err
 		}
+		step.Prepare, step.Arguments, err = c.arguments(e, ValueBinding{Identity: step.Identity, Type: step.Contract}, args, receiver)
+		if err != nil {
+			return err
+		}
+		value.Inputs = step.Arguments
 		out.Steps = append(out.Steps, step)
 		out.Result = value.Type
 		return nil
@@ -389,13 +393,12 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 	case *syntax.NameExpr:
 		if c.context.IntrinsicIdentity != nil && c.context.IntrinsicIdentity(scope.symbols, callee.Name) == "can.prelude@1::append" {
 			c.uses.Names[callee] = "can.prelude@1::append"
-			if len(n.Invocation.Types) > 1 || len(n.Invocation.Arguments) != 2 {
-				return nil, fmt.Errorf("append requires two ordinary arguments")
+			elements, e2 := fixedArgumentElements(n.Invocation.Arguments)
+			if e2 != nil {
+				return nil, e2
 			}
-			for _, arg := range n.Invocation.Arguments {
-				if arg.Spread || arg.Group != nil {
-					return nil, fmt.Errorf("append requires fixed ordinary arguments")
-				}
+			if len(n.Invocation.Types) > 1 || len(elements) != 2 {
+				return nil, fmt.Errorf("append requires two ordinary arguments")
 			}
 			var want *types.Type
 			if len(expected) > 0 && len(n.Methods) == 0 && expected[0] != nil && expected[0].Kind() == types.Array {
@@ -411,14 +414,14 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 					return nil, e2
 				}
 			}
-			receiver, err = e.Check(n.Invocation.Arguments[0].Value, want)
+			receiver, err = e.Check(elements[0].Value, want)
 			if err != nil && want == nil {
-				if length, known := literalSpreadLength(n.Invocation.Arguments[0].Value); known && length == 0 {
-					item, e2 := e.Check(n.Invocation.Arguments[1].Value, nil)
+				if length, known := literalSpreadLength(elements[0].Value); known && length == 0 {
+					item, e2 := e.Check(elements[1].Value, nil)
 					if e2 == nil {
 						want, e2 = types.ArrayOfChecked(item.Type)
 						if e2 == nil {
-							receiver, err = e.Check(n.Invocation.Arguments[0].Value, want)
+							receiver, err = e.Check(elements[0].Value, want)
 						}
 					}
 				}
@@ -426,7 +429,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			if err != nil {
 				return nil, err
 			}
-			step, e2 := c.arrayStep(receiver, "append", currentSite, n.Invocation.Arguments[1:], n.Invocation.Span, scope, want)
+			step, e2 := c.arrayStep(receiver, "append", currentSite, elements[1:], n.Invocation.Span, scope, want)
+			if e2 != nil {
+				return nil, e2
+			}
+			step.Prepare, step.Arguments, e2 = c.arguments(e, ValueBinding{Identity: step.Identity, Type: step.Contract}, n.Invocation.Arguments, nil)
 			if e2 != nil {
 				return nil, e2
 			}

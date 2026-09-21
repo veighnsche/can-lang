@@ -63,3 +63,74 @@ func TestArrayCatalogueRejectsLostErrorBound(t *testing.T) {
 		}
 	}
 }
+
+func TestArrayInferenceAndSpreadRejections(t *testing.T) {
+	source, err := os.ReadFile("../../testdata/current/arrays/main.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, change := range [][2]string{
+		{"items.map(...[callable twice])", "items.map(...[callable twice, callable twice])"},
+		{"items.concat(...[[4]])", "items.concat(...items)"},
+		{"append(...[items], ...[3])", "append(...[items, 3])"},
+		{"[].fold(0, callable generic_add)", "[].fold(false, callable generic_add)"},
+		{"[].map(callable identity)", "[].map(callable generic_add)"},
+	} {
+		text := strings.Replace(string(source), change[0], change[1], 1)
+		if text == string(source) {
+			t.Fatal("mutation missed source")
+		}
+		if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil {
+			t.Fatalf("accepted invalid array constraints: %s", change[1])
+		}
+	}
+}
+
+func TestEmptyArrayGenericInferenceDoesNotGuess(t *testing.T) {
+	source, err := os.ReadFile("../../testdata/current/arrays/main.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name, extra := range map[string]string{
+		"near conflict": `
+fn item near_identity<item>
+    emits []
+    given
+        near item prefix
+        item value
+    asserts
+        unit: 1, 2 => ok 2
+    ok value
+fn int[] conflict
+    emits []
+    given
+        str prefix
+    asserts
+        unit: "x" => ok []
+    ok call [].map(callable near_identity)
+`,
+		"unconstrained input": `
+fn output produce<output, input>
+    emits []
+    given
+        near output result
+        input value
+    asserts
+        unit: 1, "x" => ok 1
+    ok result
+fn int[] ambiguous
+    emits []
+    given
+        int result
+    asserts
+        unit: 1 => ok []
+    ok call [].map(callable produce)
+`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			if _, err := programFixture(t, map[string]string{"src/main.can": string(source) + extra}); err == nil {
+				t.Fatal("inconsistent or incomplete constraints admitted")
+			}
+		})
+	}
+}

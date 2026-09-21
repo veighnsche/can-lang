@@ -178,6 +178,64 @@ fn int[] referenced_slice
         empty: [] => ok []
     callable int[] (int, int) emits [] action = callable items.slice
     ok call action(1, 99)
+fn item generic_add<item>
+    emits []
+    given
+        item total
+        item value
+    asserts
+        unit: 1, 2 => ok 3
+    ok total + value
+fn int[] empty_generic_map
+    emits []
+    asserts
+        empty: => ok []
+    ok call [].map(callable identity)
+fn int empty_generic_fold
+    emits []
+    asserts
+        empty: => ok 0
+    ok call [].fold(0, callable generic_add)
+fn int[] spread_map
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [2, 4]
+    ok call items.map(...[callable twice])
+fn int[] spread_concat
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [1, 2, 4]
+    ok call items.concat(...[[4]])
+fn int[] spread_append
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [1, 2, 3]
+    ok call append(...[items], ...[3])
+fn int[] spread_slice
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok [2, 3]
+    ok call items.slice(...[1, 99])
+fn int[] nested_spread_map
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [2, 4]
+    ok call items.map(...[], ...[...[callable twice]], ...[])
+fn int[] empty_generic_spread
+    emits []
+    asserts
+        empty: => ok []
+    ok call [].map(...[callable identity])
 fn void main
     emits []
     given

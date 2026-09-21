@@ -71,7 +71,7 @@ func TestCurrentBundledArrays(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 35}, {"contracts", 24}} {
+	}{{"main", 44}, {"contracts", 28}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/arrays", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)

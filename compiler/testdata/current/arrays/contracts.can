@@ -175,6 +175,36 @@ fn str nonfinite_sort
     match call [1.0, 1.0 / 0.0, 2.0].sort_by(callable identity)
         ok float[] output => ok "unexpected"
         [_] as str message => ok message
+fn int once
+    emits []
+    given
+        int value
+    asserts
+        unit: 0 => ok 0
+    match call source(value)
+        when
+            sample: 1 => ok 9
+        ok int output => ok output
+fn int[] spread_once
+    emits []
+    asserts
+        sample: => ok [1, 9]
+    ok call append([1], ...[call once(1)])
+fn int map
+    on offset self
+    emits []
+    given
+        int ...values
+    asserts
+        unit: offset(1) => 2, 3 => ok 3
+    ok self.amount + values.length
+fn int nominal_map
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [2, 3] => ok 3
+    ok call (offset(1)).map(...values)
 fn void main
     emits []
     given
