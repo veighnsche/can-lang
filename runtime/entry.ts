@@ -5,6 +5,8 @@ import { array } from "./data.ts";
 import { domainFailureDiagnostics } from "./domain.ts";
 import { standardFailureDiagnostics, type FailureOrigin } from "./failure.ts";
 
+import { diagnosticFrames } from "./diagnostics.ts";
+
 type Main = (args: readonly string[]) => Completion<void> | Promise<Completion<void>>;
 type Reporter = (line: string) => void | Promise<void>;
 const rootOrigin: FailureOrigin = Object.freeze({source: "can:entry", start: 0, end: 0, invocation: Object.freeze([])});
@@ -18,11 +20,11 @@ function diagnostic(completion: Exclude<Completion<void>, {kind: "ok"}>, phase: 
     const details = domainFailureDiagnostics(completion.value);
     return JSON.stringify({...base, channel: "domain", id: details.declaration.id,
       error: details.declaration.name, typeIdentity: details.typeIdentity,
-      occurrence: String(details.occurrenceID), payload: "<redacted>"}) + "\n";
+      occurrence: String(details.occurrenceID), payload: "<redacted>", frames: diagnosticFrames(undefined,details.origin)}) + "\n";
   }
   const details = standardFailureDiagnostics(completion.value);
   return JSON.stringify({...base, channel: "standard", category: details.kind,
-    occurrence: String(details.occurrenceID)}) + "\n";
+    occurrence: String(details.occurrenceID), frames: diagnosticFrames(details.cause,details.origin)}) + "\n";
 }
 async function reportToStderr(line: string): Promise<void> { await Bun.write(Bun.stderr, line); }
 

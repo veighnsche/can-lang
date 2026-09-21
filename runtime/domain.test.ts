@@ -50,7 +50,7 @@ test("malformed payloads and hostile identity metadata fail without getters or t
  expect(runtime.accepts(codec.identity,{...valid})).toBe(false);
  const identity=errorIdentity("codec::invalid_data");
  for(const value of [proxy,revoked.proxy,{...identity,get name(){return trap()}},{...identity,typeArguments:new Proxy([],{get:trap,ownKeys:trap})},{...identity,extra:"secret"}])expect(()=>validateErrorIdentity(value as any)).toThrow();
- const args=[];Object.defineProperty(args,"0",{get:trap});expect(()=>errorIdentity("all_failed",args)).toThrow();
+ const args:string[]=[];Object.defineProperty(args,"0",{get:trap});expect(()=>errorIdentity("all_failed",args)).toThrow();
  expect(()=>errorIdentity("all_failed",new Array(1))).toThrow();
  expect(invoked).toBe(0);
 });

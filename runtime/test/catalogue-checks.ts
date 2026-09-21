@@ -36,8 +36,10 @@ export function checkCatalogue(): string[] {
   });
   check("transaction callback has an empty bound", () => {
     const value = operation("sql::with_transaction");
-    assert.deepEqual(value.callbacks[0].emits, []);
-    assert.equal(value.callbacks[0].deriveErrors, false);
+    const callback = value.callbacks?.[0];
+    assert(callback);
+    assert.deepEqual(callback.emits, []);
+    assert.equal(callback.deriveErrors, false);
   });
   check("thenable-safe sequential map recipe", () => {
     const value = operation("array.map");

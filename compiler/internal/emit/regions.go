@@ -108,6 +108,7 @@ type RegionEmitter struct {
 	Functions map[string]string
 	// DomainRuntime is the private instance created from the checked error plan.
 	DomainRuntime string
+	SourceID      string
 	expression    ExpressionEmitter
 	region        *ir.Region
 	serial        int
@@ -115,7 +116,19 @@ type RegionEmitter struct {
 
 func (e *RegionEmitter) temp() string { e.serial++; return fmt.Sprintf("$canRegion%d", e.serial) }
 func (e *RegionEmitter) origin(span source.Span) string {
-	return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.region.Source), span.Start, span.End, quote(e.region.ID))
+	return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.sourceID()), span.Start, span.End, quote(e.region.ID))
+}
+func (e *RegionEmitter) sourceID() string {
+	if e.SourceID != "" {
+		return e.SourceID
+	}
+	return e.region.Source
+}
+func (e *RegionEmitter) mark(span source.Span, operation string) string {
+	if e.SourceID == "" {
+		return ""
+	}
+	return mappingMark(e.SourceID, span, operation) + "$canOrigin = " + e.origin(span) + ";\n" + mappingMark(e.SourceID, span, operation)
 }
 func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error) {
 	if region == nil || region.ID == "" || region.Body == nil || !types.Equal(region.Result, region.Result) || !jsBinding.MatchString(name) {
@@ -127,6 +140,9 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 		bindings[id] = value
 	}
 	e.expression = ExpressionEmitter{Bindings: bindings, TypeName: TypeName}
+	if e.SourceID != "" {
+		e.expression.Mark = func(node *ir.Expression) string { return e.mark(node.Span, string(node.Kind)) }
+	}
 	e.expression.Invocation = e.invocationValue
 	e.expression.Match = e.valueMatch
 	e.expression.Call = func(id string, args []string) (LoweredExpression, error) {
@@ -151,7 +167,13 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	if err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\ntry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), body, e.origin(region.Span)), nil
+	origin := e.origin(region.Span)
+	prefix := ""
+	if e.SourceID != "" {
+		prefix = mappingMark(e.SourceID, region.Span, "function") + "let $canOrigin = " + origin + ";\n"
+		origin = "$canOrigin"
+	}
+	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
 }
 func (e *RegionEmitter) target(id string) (string, error) {
 	if name := e.Functions[id]; name != "" {
@@ -244,12 +266,18 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
 		}
+		out.WriteString(e.mark(step.Span, "call"))
 		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
 	}
 	if call.Result.Kind() == types.Void {
 		fmt.Fprintf(&out, "%s = $canSuccess(undefined);\n", result)
 	}
-	fmt.Fprintf(&out, "} catch ($canCause) { %s = $canCaught($canCause, %s); } }\n", result, e.origin(call.Span))
+	fmt.Fprintf(&out, "} catch ($canCause) { %s = $canCaught($canCause, %s); } }\n", result, func() string {
+		if e.SourceID != "" {
+			return "$canOrigin"
+		}
+		return e.origin(call.Span)
+	}())
 	return LoweredExpression{out.String(), result}, nil
 }
 func (e *RegionEmitter) invocationValue(call *ir.Invocation) (LoweredExpression, error) {
@@ -322,7 +350,7 @@ func (e *RegionEmitter) completion(node *ir.Completion) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		return value.Statements + "return $canFailure(" + e.DomainRuntime + ".create(" + quote(node.Value.Type.Identity()) + ", " + value.Value + ", " + e.origin(node.Span) + "));\n", nil
+		return value.Statements + e.mark(node.Span, "domain") + "return $canFailure(" + e.DomainRuntime + ".create(" + quote(node.Value.Type.Identity()) + ", " + value.Value + ", " + e.origin(node.Span) + "));\n", nil
 	case ir.RelayCompletion:
 		call, err := e.invocation(node.Call)
 		if err != nil {

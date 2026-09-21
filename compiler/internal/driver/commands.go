@@ -40,6 +40,10 @@ func (r *Runtime) publishProgram(ctx context.Context, store *OutputStore, progra
 	if err != nil {
 		return BuildReport{}, err
 	}
+	artifacts, err = r.encodeSourceMaps(ctx, program, artifacts)
+	if err != nil {
+		return BuildReport{}, err
+	}
 	launcher, err := regularFile(r.Root, "bin/canlc", true)
 	if err != nil {
 		return BuildReport{}, err

@@ -63,7 +63,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if err != nil {
 		return nil, err
 	}
-	initial, err := Initialization(program.Initializers, nil)
+	initial, err := Initialization(program.Initializers, nil, true)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		body.WriteString(localTypes)
 		for _, fn := range byPath[path] {
-			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain"}
+			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID}
 			code, err := emitter.Function(functions[fn.Symbol.ID], fn.Region)
 			if err != nil {
 				return nil, err
@@ -143,6 +143,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		entry := Module{Path: "entry.ts", Imports: []ModuleImport{
 			{Target: runtime + "/assert/runner.ts", Names: []ImportName{{"runAssertions", "$canRunAssertions"}}},
 			{Target: statePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
+			{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
 		}}
 		var cases []string
 		for i, test := range program.Assertions {
@@ -161,7 +162,16 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			if err != nil {
 				return nil, err
 			}
-			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain"}
+			sourceID := ""
+			for src := range program.World.Files {
+				if src.Syntax.Source.Name() == test.Actual.Source {
+					sourceID = src.ID
+				}
+			}
+			if sourceID == "" {
+				return nil, fmt.Errorf("assertion source is not indexed")
+			}
+			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: sourceID}
 			actual, err := emitter.Function("$canActual", test.Actual)
 			if err != nil {
 				return nil, err
@@ -176,7 +186,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			cases = append(cases, name)
 			entry.Imports = append(entry.Imports, ModuleImport{Target: path, Names: []ImportName{{"$canCase", name}}})
 		}
-		entry.Body = "process.exitCode = await $canRunAssertions([" + strings.Join(cases, ",") + "], $canInitialize);\n"
+		entry.Body = "process.exitCode = await $canRunAssertions([" + strings.Join(cases, ",") + "], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();});\n"
 		modules = append(modules, entry)
 		return Modules(modules, dependencies...)
 	}
@@ -184,7 +194,8 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	modules = append(modules, Module{Path: "entry.ts", Imports: []ModuleImport{
 		{Target: runtime + "/entry.ts", Names: []ImportName{{"runEntry", "$canRunEntry"}}},
 		{Target: statePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
+		{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
 		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{functions[main.Symbol.ID], "$canMain"}}},
-	}, Body: "process.exitCode = await $canRunEntry($canInitialize, $canMain, process.argv.slice(2));\n"})
+	}, Body: "process.exitCode = await $canRunEntry(() => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, $canMain, process.argv.slice(2));\n"})
 	return Modules(modules, dependencies...)
 }

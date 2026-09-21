@@ -1,6 +1,7 @@
 package driver
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -244,6 +245,33 @@ func validateOutputManifest(m OutputManifest, checkID bool) error {
 }
 
 func validateArtifactPayloads(files map[string][]byte) error {
+	indexData, hasIndex := files["diagnostics/source-index.json"]
+	if hasIndex {
+		var index sourceIndex
+		if err := decodeOutput(indexData, &index); err != nil || index.SchemaVersion != 1 || index.Kind != "can.source-index" {
+			return fmt.Errorf("invalid source index")
+		}
+		indexed := map[string]bool{}
+		for _, module := range index.Modules {
+			data, ok := files[module.Path]
+			if !ok || indexed[module.Path] || !strings.HasSuffix(module.Path, ".ts") {
+				return fmt.Errorf("invalid source index module")
+			}
+			indexed[module.Path] = true
+			if _, ok := files[module.Path+".map"]; !ok {
+				return fmt.Errorf("missing source map")
+			}
+			if !bytes.HasSuffix(data, []byte("//# sourceMappingURL="+path.Base(module.Path)+".map\n")) {
+				return fmt.Errorf("missing source map reference")
+			}
+		}
+		for name := range files {
+			if strings.HasSuffix(name, ".ts") && !strings.HasPrefix(name, "runtime/") && !indexed[name] {
+				return fmt.Errorf("missing source index module")
+			}
+		}
+	}
+
 	for name, data := range files {
 		if (strings.HasSuffix(name, ".ts") || strings.HasSuffix(name, ".map")) && !utf8.Valid(data) {
 			return fmt.Errorf("generated text is not UTF-8")
@@ -253,6 +281,9 @@ func validateArtifactPayloads(files map[string][]byte) error {
 			if len(parts) != 3 || parts[1] != hashBytes(data) {
 				return fmt.Errorf("asset path does not bind its content digest")
 			}
+		}
+		if strings.HasSuffix(name, ".ts") && bytes.Contains(data, []byte("//# sourceMappingURL=")) && !hasIndex {
+			return fmt.Errorf("missing source index")
 		}
 		if strings.HasSuffix(name, ".ts.map") {
 			if _, ok := files[strings.TrimSuffix(name, ".map")]; !ok {
@@ -265,6 +296,7 @@ func validateArtifactPayloads(files map[string][]byte) error {
 				SourcesContent []string `json:"sourcesContent"`
 				Names          []string `json:"names"`
 				Mappings       string   `json:"mappings"`
+				IgnoreList     []int    `json:"ignoreList,omitempty"`
 				SourceRoot     string   `json:"sourceRoot,omitempty"`
 			}
 			if err := decodeOutput(data, &sourceMap); err != nil || sourceMap.Version != 3 || len(sourceMap.Sources) != len(sourceMap.SourcesContent) {

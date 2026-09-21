@@ -108,7 +108,7 @@ func TestInitializationNamedArmEvidence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	code, err := Initialization(plan, map[string]string{arm.Identity: "$namedArm"})
+	code, err := Initialization(plan, map[string]string{arm.Identity: "$namedArm"}, false)
 	if err != nil || !strings.Contains(code.Code, "= $namedArm;") || strings.Contains(code.Code, "$namedArm(") {
 		t.Fatal("storing a named arm must not invoke it", err, code.Code)
 	}
@@ -154,7 +154,7 @@ func TestEmittedInitializationBeforeMain(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			emitted, err := Initialization(plan, nil)
+			emitted, err := Initialization(plan, nil, false)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -208,5 +208,23 @@ try {await import(%s);assert.fail("startup unexpectedly succeeded")}catch(failur
 			}
 			t.Log(strings.TrimSpace(string(output)))
 		})
+	}
+}
+
+func TestMappedInitializationPreservesAuthoredOriginLikeString(t *testing.T) {
+	plan, err := check.Initialization(initialValues(t, "str a = \"$canInitialOrigin\"\nstr b = \"$canInitialOrigin0\"\n", fixtureTypes(t)), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	emitted, err := Initialization(plan, nil, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	code, segments, err := extractMappings(emitted.Code)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(segments) != 4 || !strings.Contains(code, `= "$canInitialOrigin";`) || !strings.Contains(code, `= "$canInitialOrigin0";`) {
+		t.Fatalf("changed literal during mapping: %s", code)
 	}
 }

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.source-map-tools",
+  "bundler": {
+    "name": "bun",
+    "version": "1.4.2",
+    "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+    "flags": [
+      "--target=bun",
+      "--format=esm"
+    ],
+    "postprocess": "Normalize bundle source comments to node_modules-relative paths; prepend @ts-nocheck and provenance comment to runtime TypeScript bundle."
+  },
+  "packages": [
+    {
+      "package": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "repository": {
+        "url": "git+https://github.com/jridgewell/sourcemaps.git",
+        "type": "git",
+        "directory": "packages/gen-mapping"
+      },
+      "revision": "095a5825c482003597a30aa380b50159219f3618",
+      "archive": {
+        "url": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.13.tgz",
+        "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==",
+        "sha256": "bc16f658c1f6d63e0c8738ab881d03f49f1955d8f853cdcb8f7d315cf62f0082",
+        "size": 17972
+      },
+      "license": {
+        "path": "distribution/notices/jridgewell-gen-mapping-LICENSE.txt",
+        "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c"
+      },
+      "dependencies": {
+        "@jridgewell/trace-mapping": "^0.3.24",
+        "@jridgewell/sourcemap-codec": "^1.5.0"
+      }
+    },
+    {
+      "package": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "repository": {
+        "url": "git+https://github.com/jridgewell/sourcemaps.git",
+        "type": "git",
+        "directory": "packages/trace-mapping"
+      },
+      "revision": "74fc8e11d30641b82e3ca3532cd89477671afeab",
+      "archive": {
+        "url": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.31.tgz",
+        "integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==",
+        "sha256": "c64c71a119630d5abe8246889edf334b2ca9ddad094e20d623332956b1453ccf",
+        "size": 30747
+      },
+      "license": {
+        "path": "distribution/notices/jridgewell-trace-mapping-LICENSE.txt",
+        "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c"
+      },
+      "dependencies": {
+        "@jridgewell/resolve-uri": "^3.1.0",
+        "@jridgewell/sourcemap-codec": "^1.4.14"
+      }
+    },
+    {
+      "package": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "repository": {
+        "url": "git+https://github.com/jridgewell/sourcemaps.git",
+        "type": "git",
+        "directory": "packages/sourcemap-codec"
+      },
+      "revision": "94c82a925ca79d5eb193ce45d7f0824a4d91e77d",
+      "archive": {
+        "url": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.6.0.tgz",
+        "integrity": "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==",
+        "sha256": "f30a35f6af8c347d01b8ff2f8662272f7d986cf21b916704d86c249a90b97e25",
+        "size": 18401
+      },
+      "license": {
+        "path": "distribution/notices/jridgewell-sourcemap-codec-LICENSE.txt",
+        "sha256": "769d154fbde32a915af110b1123650bc79f4cbe675acc66e005265bf069c6c6c"
+      },
+      "dependencies": {}
+    },
+    {
+      "package": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "repository": {
+        "url": "git+https://github.com/jridgewell/resolve-uri.git",
+        "type": "git"
+      },
+      "revision": "caa7a299d6c688570773c81732f77d3c7035ded6",
+      "archive": {
+        "url": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
+        "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+        "sha256": "db52f9f62558baab13353dd39e3200750fc33e6a129a575b46226f493776e230",
+        "size": 9622
+      },
+      "license": {
+        "path": "distribution/notices/jridgewell-resolve-uri-LICENSE.txt",
+        "sha256": "b8778b155bfde5a28b023a558753c0fa058a52bb9de35c343c250be1bbcdedab"
+      },
+      "dependencies": {}
+    }
+  ],
+  "bundles": {
+    "tools/runtime/vendor/source-maps.mjs": "cd8c138fc81109261aedfc5876d3eed50b83c295f829a30a0f50bae6ec09af5d",
+    "runtime/vendor/trace-mapping.ts": "bb71555d3b1f2db8516030978157e956a50c7faf06fd3b96818eb61d324e407b"
+  }
+}

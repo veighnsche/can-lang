@@ -16,7 +16,8 @@
       "../data.ts",
       "../domain.ts",
       "../failure.ts",
-      "./context.ts"
+      "./context.ts",
+      "../diagnostics.ts"
     ],
     "bytes.ts": [
       "./failure.ts"
@@ -42,7 +43,8 @@
       "./completion.ts",
       "./data.ts",
       "./domain.ts",
-      "./failure.ts"
+      "./failure.ts",
+      "./diagnostics.ts"
     ],
     "environment.ts": [
       "node:fs"
@@ -60,6 +62,13 @@
       "../failure.ts",
       "../assert/context.ts"
     ],
-    "primitive.ts": []
+    "primitive.ts": [],
+    "diagnostics.ts": [
+      "node:fs",
+      "node:util",
+      "./vendor/trace-mapping.ts",
+      "./failure.ts"
+    ],
+    "vendor/trace-mapping.ts": []
   }
 }

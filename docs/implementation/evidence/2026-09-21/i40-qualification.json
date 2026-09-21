@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.source-map-qualification",
+  "target": "bun-1.4.2-darwin-arm64-v1",
+  "runtimeRevision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "encoder": "@jridgewell/gen-mapping@0.3.13",
+  "consumer": "@jridgewell/trace-mapping@0.3.31",
+  "observations": {
+    "bunReportsOriginalTypeScriptCoordinates": true,
+    "bunAppliesExternalCanMapDuringDirectTypeScriptExecution": false,
+    "explicitUpstreamTraceMapsNestedAwaitedCalls": true,
+    "explicitUpstreamTraceMapsAsyncCallbackThrowSite": true,
+    "thenAsyncCallbackCanOmitOuterCallers": true,
+    "unicodeColumnsUseUTF16": true,
+    "syntheticOriginsUseCheckedCanSpan": true,
+    "nativeStackDescriptorTriggeredNameOrMessageGetters": false,
+    "rawMessagesAndMachinePathsExcludedFromRuntimeReports": true
+  },
+  "tests": [
+    "runtime/test/diagnostics.test.ts",
+    "compiler/internal/driver/source_maps_test.go",
+    "tools/runtime/source-map-validation.test.ts"
+  ],
+  "evidenceClass": "bun-conformance",
+  "languageConformance": "separate emitted-Can integration evidence; no assertion/provider quality claim"
+}

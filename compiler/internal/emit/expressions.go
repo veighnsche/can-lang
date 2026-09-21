@@ -19,6 +19,7 @@ type ExpressionEmitter struct {
 	Invocation func(*ir.Invocation) (LoweredExpression, error)
 	Match      func(*ir.Match) (LoweredExpression, error)
 	Call       func(identity string, arguments []string) (LoweredExpression, error)
+	Mark       func(*ir.Expression) string
 	serial     int
 }
 
@@ -41,6 +42,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		name := e.temporary()
 		if e.TypeName != nil && (node.Kind == ir.Record || node.Kind == ir.Update || node.Kind == ir.Binding) {
 			code = "(" + code + ") as unknown as " + e.TypeName(node.Type)
+		}
+		if e.Mark != nil {
+			statements.WriteString(e.Mark(node))
 		}
 		fmt.Fprintf(&statements, "const %s = %s;\n", name, code)
 		return LoweredExpression{statements.String(), name}
@@ -224,6 +228,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 			call, err := e.Call(node.Text, values)
 			if err != nil {
 				return LoweredExpression{}, err
+			}
+			if e.Mark != nil {
+				statements.WriteString(e.Mark(node))
 			}
 			statements.WriteString(call.Statements)
 			return bind(call.Value), nil

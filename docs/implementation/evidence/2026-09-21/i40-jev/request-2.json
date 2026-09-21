@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The current backend emits TypeScript from typed Can operations and launches it with Bun version 1.4.2. A direct experiment returned TS line/column frames, not Can coordinates, despite an attached external sourceMappingURL; Bun handled its own transpilation step. Reading an Error's own stack descriptor did not evaluate overridden name/message getters in that experiment, but proxy objects and stack accessors remain inadmissible. Required behavior includes nested/async and UTF16 location accuracy, upstream map encoding, publication refusal on invalid or absent maps, and exclusion of source bodies, host paths, secrets and exception messages from reports. The Go frontend has byte ranges and UTF16 positions. Available strategies are explicit IR segments encoded with vendored gen-mapping plus trace-mapping of Bun TS frames; automatic Bun mapping alone despite the observed limitation; or catch-location reporting alone with no stack-map consumption. The explicit tracing approach also uses validated nearest-operation origins for synthetic/primitive failures and prints only locations admitted by the generation source index. Both map data and index are verified artifacts, omitting source text. The tracing runtime remains to be implemented.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Select the implementation strategy supported by the supplied qualification result and requirements.",
+      "criteria": {
+        "trace": "Use the upstream encoder/consumer pair for explicit TS-to-Can tracing, retaining trusted operation-origin fallback and index-filtered output.",
+        "bun": "Leave all mapping composition to the native runtime without an additional consumer.",
+        "origin": "Omit mapped native frames and show only region catch metadata."
+      }
+    }
+  }
+}

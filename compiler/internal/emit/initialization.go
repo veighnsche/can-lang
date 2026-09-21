@@ -20,7 +20,7 @@ func InitializationImports(path string) string {
 // Initialization emits synchronous native statements before the main invocation.
 // A fault throws its opaque occurrence immediately, preventing later initializers
 // and main from running. The owning entry supervisor reports that occurrence.
-func Initialization(plan []ir.Initializer, namedArms map[string]string) (InitializedValues, error) {
+func Initialization(plan []ir.Initializer, namedArms map[string]string, mapped bool) (InitializedValues, error) {
 	bindings := map[string]string{}
 	for id, name := range namedArms {
 		bindings[id] = name
@@ -31,12 +31,23 @@ func Initialization(plan []ir.Initializer, namedArms map[string]string) (Initial
 		if _, exists := bindings[entry.Identity]; exists || entry.Identity == "" || entry.Value == nil || !types.Assignable(entry.Value.Type, entry.Type) {
 			return InitializedValues{}, fmt.Errorf("invalid checked initialization plan")
 		}
+		origin := fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(entry.Source), entry.Span.Start, entry.Span.End, quote("initialization:"+entry.QualifiedName))
+		originName := fmt.Sprintf("$canInitialOrigin%d", i)
+		if mapped {
+			emitter.Mark = func(node *ir.Expression) string {
+				return mappingMark(entry.Source, node.Span, string(node.Kind)) + fmt.Sprintf("%s = {source:%s,start:%d,end:%d,invocation:[%s]};\n", originName, quote(entry.Source), node.Span.Start, node.Span.End, quote("initialization:"+entry.QualifiedName)) + mappingMark(entry.Source, node.Span, string(node.Kind))
+			}
+			fmt.Fprintf(&out, "let $canInitialOrigin%d = %s;\n", i, origin)
+		}
 		lowered, err := emitter.Lower(entry.Value)
 		if err != nil {
 			return InitializedValues{}, err
 		}
 		name := fmt.Sprintf("$canInitial%d", i)
-		fmt.Fprintf(&out, "let %s;\ntry {\n%s%s = %s;\n} catch ($canInitialCause) {\nthrow $canCaptureStandard($canInitialCause, { source: %s, start: %d, end: %d, invocation: [%s] });\n}\n", name, lowered.Statements, name, lowered.Value, quote(entry.Source), entry.Span.Start, entry.Span.End, quote("initialization:"+entry.QualifiedName))
+		if mapped {
+			origin = fmt.Sprintf("$canInitialOrigin%d", i)
+		}
+		fmt.Fprintf(&out, "let %s;\ntry {\n%s%s = %s;\n} catch ($canInitialCause) {\nthrow $canCaptureStandard($canInitialCause, %s);\n}\n", name, lowered.Statements, name, lowered.Value, origin)
 		bindings[entry.Identity] = name
 	}
 	return InitializedValues{Code: out.String(), Bindings: bindings}, nil

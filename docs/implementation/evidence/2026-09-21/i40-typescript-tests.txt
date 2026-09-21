@@ -1,0 +1,2 @@
+TypeScript 7.0.2: strict check of fresh emitted entry/import graph, all maintained runtime/tests and source map tools.
+exit status: 0

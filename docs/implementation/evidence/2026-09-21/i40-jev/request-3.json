@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "For I40, a checked Can program becomes generated TS run on the fixed Bun 1.4.2 target. Testing showed Bun removes its transpilation coordinate shift but does not follow the provided external Can mapping: Error.stack still names the TS file. The probe of an own stack data descriptor on a native Error triggered zero hostile name/message reads; this does not authorize proxies or accessor-based stack retrieval. Acceptance demands exact nested-call, async-callback and Unicode positions, an upstream encoder, fail-closed missing/corrupt-map publication checks, and sanitized reports excluding native messages, machine directories, source contents and credentials. Go already knows source byte intervals and UTF16 coordinates. Alternatives: vendor gen-mapping for explicit compiler segments and trace-mapping for a second TS-to-Can step; depend exclusively on automatic Bun remapping notwithstanding the test; or skip map tracing and expose only catch origins. Explicit tracing can supplement primitive and synthetic frames with checked operation spans, admitting only locations from the verified generation index. Maps/index are verified local artifacts with no embedded Can text. The proposed stack tracing code has not yet been written.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which design should this compiler use to satisfy the stated source-location acceptance checks?",
+      "criteria": {
+        "trace": "Bundle gen-mapping and trace-mapping, combine their explicit segment pipeline with validated nearest spans, and emit only indexed diagnostic fields.",
+        "bun": "Assume the attached external sourceMappingURL is sufficient for Bun alone.",
+        "origin": "Avoid tracing and limit locations to generated catch-site origins."
+      }
+    }
+  }
+}

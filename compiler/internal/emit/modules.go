@@ -92,7 +92,11 @@ func Modules(modules []Module, dependencies ...ir.Artifact) ([]ir.Artifact, erro
 			imports = append(imports, name)
 		}
 		sort.Strings(imports)
-		result = append(result, ir.Artifact{Path: m.Path, Bytes: []byte(code.String()), Imports: imports})
+		text, mappings, err := extractMappings(code.String())
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, ir.Artifact{Path: m.Path, Bytes: []byte(text), Imports: imports, Mappings: mappings})
 	}
 	return result, nil
 }

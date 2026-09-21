@@ -100,13 +100,24 @@ func (r *Runtime) ValidateOutput(ctx context.Context, prepared *PreparedOutput) 
 		Imports []string `json:"imports"`
 	}
 	request := struct {
-		SchemaVersion int      `json:"schemaVersion"`
-		Modules       []module `json:"modules"`
+		SchemaVersion int                        `json:"schemaVersion"`
+		Modules       []module                   `json:"modules"`
+		SourceIndex   json.RawMessage            `json:"sourceIndex,omitempty"`
+		Maps          map[string]json.RawMessage `json:"maps,omitempty"`
 	}{SchemaVersion: 1, Modules: []module{}}
 	for _, name := range sortedOutputKeys(prepared.manifest.Imports) {
 		imports := append([]string{}, prepared.manifest.Imports[name]...)
 		imports = append(imports, prepared.manifest.NativeImports[name]...)
 		request.Modules = append(request.Modules, module{name, string(prepared.files[name]), imports})
+	}
+	if index, ok := prepared.files["diagnostics/source-index.json"]; ok {
+		request.SourceIndex = index
+		request.Maps = map[string]json.RawMessage{}
+		for name, data := range prepared.files {
+			if strings.HasSuffix(name, ".ts.map") {
+				request.Maps[strings.TrimSuffix(name, ".map")] = data
+			}
+		}
 	}
 	data, err := json.Marshal(request)
 	if err != nil {
@@ -114,7 +125,7 @@ func (r *Runtime) ValidateOutput(ctx context.Context, prepared *PreparedOutput) 
 	}
 	var stdout, stderr bytes.Buffer
 	if err = r.RunTool(ctx, "tools/runtime/output-check.ts", nil, nil, bytes.NewReader(data), &stdout, &stderr); err != nil {
-		return fmt.Errorf("generated TypeScript validation failed: %w: %s", err, stderr.String())
+		return fmt.Errorf("generated TypeScript/source-map validation failed: %w", err)
 	}
 	var report struct {
 		SchemaVersion int    `json:"schemaVersion"`

@@ -2,8 +2,10 @@ import { types as nativeTypes } from "node:util";
 import { invoke, success, type Completion } from "../completion.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "../data.ts";
 import { domainFailureDiagnostics } from "../domain.ts";
-import { type FailureOrigin } from "../failure.ts";
+import { standardFailureDiagnostics, type FailureOrigin } from "../failure.ts";
 import { assertionContext, closeContext, contextReport, type AssertionContext, type AssertionRoot } from "./context.ts";
+
+import { diagnosticFrames } from "../diagnostics.ts";
 
 export type AssertionCase = Readonly<{
   root: AssertionRoot;
@@ -50,19 +52,24 @@ function sameCompletion(actual: Completion, expected: Completion): boolean {
 }
 export async function runAssertion(test: AssertionCase) {
   const context = assertionContext(test.root);
+  let frames: ReturnType<typeof diagnosticFrames> = [];
   let reason: "expected evaluation failed" | "outcome mismatch" | "harness violation" | undefined;
   try {
     const expected = await invoke(() => test.expected(context), origin);
-    if (expected.kind === "standard") reason = "expected evaluation failed";
+    if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.origin);}
     else {
       const actual = await invoke(() => test.actual(context), origin);
-      if (!sameCompletion(actual, expected)) reason = "outcome mismatch";
+      if (!sameCompletion(actual, expected)) {
+        reason = "outcome mismatch";
+        if (actual.kind === "standard") {const details=standardFailureDiagnostics(actual.value);frames=diagnosticFrames(details.cause,details.origin);}
+        else if (actual.kind === "domain") {const details=domainFailureDiagnostics(actual.value);frames=diagnosticFrames(undefined,details.origin);}
+      }
     }
   } catch { reason = "outcome mismatch"; }
   finally { closeContext(context); }
   const report = contextReport(context);
   if (report.violations.length) reason = "harness violation";
-  return Object.freeze({...report, passed: reason === undefined, ...(reason ? {reason} : {})});
+  return Object.freeze({...report, passed: reason === undefined, ...(reason ? {reason,frames} : {})});
 }
 export async function runAssertions(tests: readonly AssertionCase[], initialize: () => void): Promise<0 | 1> {
   const setup = await invoke(() => {initialize(); return success(undefined);}, origin);

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can compiles checked IR to TypeScript executed directly by pinned Bun 1.4.2. Qualification observed that native Error.stack reports original TypeScript coordinates after Bun transpilation but ignores an external Can-to-TS sourceMappingURL. Accessing a native Error own stack data descriptor caused no name/message getter calls in the probe; proxies and accessor stacks must still be rejected. I40 requires exact Can spans for nested calls, async callbacks and Unicode columns, upstream encoding, failed publication for malformed/missing maps, and diagnostics without machine paths, source content, credentials or native messages. Go owns IR byte spans and UTF16 conversion. Consider: feed explicit compiler segments to bundled gen-mapping, validate maps, and trace the Bun-reported TS frames through bundled trace-mapping; rely only on Bun's automatic mapping despite this result; or emit only catch-origin labels without consuming stack maps. The first choice retains checked nearest-span origins for primitive or synthetic frames and outputs only source-index-admitted locations. Runtime sources and source index are verified generation artifacts; no authored source content is embedded. No trace stack implementation has been completed yet.",
+  "questions": {
+    "design": {
+      "type": "choice",
+      "instructions": "Which approach meets this mapping and diagnostic contract given the runtime evidence?",
+      "criteria": {
+        "trace": "Encode Go segments with bundled gen-mapping and trace Bun TS stack positions with bundled trace-mapping; supplement with checked origins and sanitize by the source index.",
+        "bun": "Rely entirely on Bun to compose the external Can map automatically.",
+        "origin": "Report catch origins only and do not consume stack source maps."
+      }
+    }
+  }
+}
