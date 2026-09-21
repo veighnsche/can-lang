@@ -1,0 +1,11 @@
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities/blank_terminal_identity
+    locals_test.go:213: blank terminal identity accepted: <nil>
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities/blank_capture_identity
+    locals_test.go:224: blank capture identity accepted: unnecessary local result at byte 110; replace with ok left + right
+--- FAIL: TestLocalForwardingRejectsBlankEvidenceIdentities (0.01s)
+    --- FAIL: TestLocalForwardingRejectsBlankEvidenceIdentities/blank_terminal_identity (0.00s)
+    --- FAIL: TestLocalForwardingRejectsBlankEvidenceIdentities/blank_capture_identity (0.00s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.319s
+FAIL

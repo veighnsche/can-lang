@@ -75,7 +75,7 @@ func CheckLocalForwarding(context LocalForwarding) error {
 		return fmt.Errorf("local terminal does not fit expected type")
 	}
 	target, exists := context.Uses.Names[name]
-	if !exists {
+	if !exists || target == "" {
 		return fmt.Errorf("missing resolved terminal name")
 	}
 	if target != context.Binding.Identity {
@@ -258,6 +258,9 @@ func countLocalUses(block syntax.Block, evidence LocalUses, target string) (int,
 				return fmt.Errorf("missing implicit near-capture evidence")
 			}
 			for _, id := range ids {
+				if id == "" {
+					return fmt.Errorf("missing resolved implicit capture identity")
+				}
 				if id == target {
 					captured = true
 				}

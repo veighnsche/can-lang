@@ -201,3 +201,27 @@ func TestLocalUseIdentityAndCaptureEvidence(t *testing.T) {
 		}
 	})
 }
+
+func TestLocalForwardingRejectsBlankEvidenceIdentities(t *testing.T) {
+	ts := fixtureTypes(t)
+	t.Run("blank terminal identity", func(t *testing.T) {
+		context := localContext(t, ts, "int", "left + right")
+		terminal := context.Block.Terminal.(*syntax.SuccessBody).Value.(*syntax.NameExpr)
+		context.Uses.Names[terminal] = ""
+		err := check.CheckLocalForwarding(context)
+		if err == nil || !strings.Contains(err.Error(), "resolved terminal") {
+			t.Fatalf("blank terminal identity accepted: %v", err)
+		}
+	})
+	t.Run("blank capture identity", func(t *testing.T) {
+		context := localContext(t, ts, "int", "left + right")
+		ref := &syntax.ReferenceExpr{Callee: &syntax.NameExpr{Name: syntax.QualifiedName{Name: "worker"}}}
+		context.Uses.Names[ref.Callee.(*syntax.NameExpr)] = "function:worker"
+		context.Uses.Captures[ref] = []string{""}
+		context.Block.Steps = append([]syntax.Step{&syntax.BindingStep{Binding: syntax.Binding{Value: ref}}}, context.Block.Steps...)
+		err := check.CheckLocalForwarding(context)
+		if err == nil || !strings.Contains(err.Error(), "capture identity") {
+			t.Fatalf("blank capture identity accepted: %v", err)
+		}
+	})
+}
