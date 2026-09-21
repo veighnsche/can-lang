@@ -2,6 +2,8 @@ package check
 
 import (
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
+	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
@@ -240,13 +242,50 @@ func (c *programChecker) inferDeclaredReference(symbol *resolve.Symbol, d *synta
 
 func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.ConstructorExpr, expected *types.Type, e *Expressions) (*types.Type, error) {
 	var fields []syntax.Field
+	file := c.world.Files[symbol.Source]
+	parameterNames := symbol.Parameters
+	qualified := syntax.QualifiedName{Name: symbol.Name}
 	switch d := symbol.Declaration.(type) {
 	case *syntax.RecordDecl:
 		fields = d.Fields
 	case *syntax.ErrorDecl:
 		fields = d.Fields
 	default:
-		return nil, fmt.Errorf("generic constructor requires record or error declaration")
+		var metadata []catalogue.Field
+		found := false
+		inventory := catalogue.Builtin().Inventory()
+		for _, declaration := range inventory.Types {
+			if declaration.Identity == symbol.ID && declaration.Kind == "record" && declaration.Constructible {
+				metadata = declaration.Fields
+				found = true
+				break
+			}
+		}
+		for _, declaration := range inventory.Errors {
+			if declaration.Identity == symbol.ID {
+				metadata = declaration.Fields
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("generic constructor requires record or error declaration")
+		}
+		for _, field := range metadata {
+			annotation, err := catalogueTypeNode(field.Type, symbol.Parameters)
+			if err != nil {
+				return nil, err
+			}
+			fields = append(fields, syntax.Field{Name: syntax.Token{Text: field.Name}, Type: annotation})
+		}
+		file = &resolve.File{Scope: c.world.Prelude, Imports: c.world.Packages}
+		if symbol.Package != nil {
+			qualified.Package = symbol.Package.Name
+		}
+		parameterNames = make([]string, len(symbol.Parameters))
+		for i, name := range symbol.Parameters {
+			parameterNames[i] = "catalogue_" + strings.ToLower(name)
+		}
 	}
 	if len(fields) != len(node.Arguments) {
 		return nil, fmt.Errorf("constructor arity mismatch")
@@ -259,8 +298,8 @@ func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.C
 		}
 		constraints[i] = argumentConstraint{field.Type, argument.Value}
 	}
-	template := &syntax.NamedType{Name: syntax.QualifiedName{Name: symbol.Name}}
-	for _, parameter := range symbol.Parameters {
+	template := &syntax.NamedType{Name: qualified}
+	for _, parameter := range parameterNames {
 		template.Arguments = append(template.Arguments, named(parameter))
 	}
 	// Only a unique matching concrete nominal expectation contributes equalities.
@@ -278,13 +317,12 @@ func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.C
 		}
 		expected = candidate
 	}
-	file := c.world.Files[symbol.Source]
-	arguments, err := c.inferArguments(file, symbol.Parameters, template, expected, constraints, e)
+	arguments, err := c.inferArguments(file, parameterNames, template, expected, constraints, e)
 	if err != nil {
 		return nil, fmt.Errorf("generic constructor %s at byte %d: %w", symbol.ID, node.Span.Start, err)
 	}
 	parameters := map[string]*types.Type{}
-	for i, name := range symbol.Parameters {
+	for i, name := range parameterNames {
 		parameters[name] = arguments[i]
 	}
 	return c.specializer.Resolve(file, template, parameters, false)

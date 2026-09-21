@@ -21,15 +21,20 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	for i, index := range declaration.ResourceCaptures {
 		retained[i] = strconv.Itoa(index)
 	}
-	target, err := e.target(declaration.Target)
-	if err != nil {
-		return LoweredExpression{}, err
+	var target string
+	if declaration.Array == nil {
+		var err error
+		target, err = e.target(declaration.Target)
+		if err != nil {
+			return LoweredExpression{}, err
+		}
 	}
 	var out strings.Builder
-	out.WriteString(e.mark(node.Span, "callable"))
 	var captures []string
 	savedTarget := e.temp()
-	fmt.Fprintf(&out, "const %s = %s;\n", savedTarget, target)
+	if declaration.Array == nil {
+		fmt.Fprintf(&out, "const %s = %s;\n", savedTarget, target)
+	}
 	full := declaration.Contract.Inputs()
 	arguments := make([]string, len(full))
 	previous := -1
@@ -72,9 +77,19 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 		}
 	}
 	parameters = append(parameters, "$canContext?: $canAssertionContext")
-	arguments = append(arguments, "$canContext")
+	var invoke string
+	if declaration.Array != nil {
+		var err error
+		invoke, err = e.arrayInvocation(ir.InvocationStep{Array: declaration.Array, Site: declaration.Site, Span: node.Span, Result: node.Type.Result()}, arguments)
+		if err != nil {
+			return LoweredExpression{}, err
+		}
+	} else {
+		arguments = append(arguments, "$canContext")
+		invoke = savedTarget + "(" + strings.Join(arguments, ", ") + ")"
+	}
 	name := e.temp()
 	out.WriteString(e.mark(node.Span, "callable"))
-	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s(%s), [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), savedTarget, strings.Join(arguments, ", "), strings.Join(retained, ", "))
+	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

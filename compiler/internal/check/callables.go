@@ -40,13 +40,17 @@ func (d CallableDeclaration) validate() error {
 	}
 	return nil
 }
-func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expected *types.Type) (*ir.Expression, error) {
+func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expected *types.Type, hints ...callbackHint) (*ir.Expression, error) {
 	e := c.expressions(scope)
 	var binding ValueBinding
 	var receiver *ir.Expression
 	var err error
 	switch callee := n.Callee.(type) {
 	case *syntax.NameExpr:
+		if c.context.IntrinsicIdentity != nil && c.context.IntrinsicIdentity(scope.symbols, callee.Name) == "can.prelude@1::append" {
+			c.uses.Names[callee] = "can.prelude@1::append"
+			return c.arrayReference(n, "append", nil, expected, hints)
+		}
 		if e.Reference == nil {
 			return nil, fmt.Errorf("missing named reference resolver")
 		}
@@ -57,7 +61,10 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 			binding, err = c.context.Specialize(scope.symbols, callee.Name, n.Types)
 		} else {
 			handled := false
-			if c.context.InferReference != nil {
+			if len(hints) > 0 && c.context.InferCallback != nil {
+				binding, handled, err = c.context.InferCallback(scope.symbols, callee.Name, hints[0].inputs, hints[0].result, e)
+			}
+			if !handled && c.context.InferReference != nil {
 				binding, handled, err = c.context.InferReference(scope.symbols, callee.Name, expected, e)
 			}
 			if !handled {
@@ -69,11 +76,19 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 		}
 	case *syntax.FieldExpr:
 		receiver, err = e.Check(callee.Receiver, nil)
+		if err == nil && receiver.Type.Kind() == types.Array && (arrayMethod(callee.Field.Text) || callee.Field.Text == "slice") {
+			return c.arrayReference(n, callee.Field.Text, receiver, expected, hints)
+		}
 		if err == nil {
 			if c.context.Method == nil && c.context.ResolveMethod == nil {
 				return nil, fmt.Errorf("missing receiver method resolver")
 			}
-			binding, err = c.resolveMethod(MethodApplication{Receiver: receiver.Type, Name: callee.Field, Types: n.Types, Expected: expected, Reference: true, Expressions: e})
+			application := MethodApplication{Receiver: receiver.Type, Name: callee.Field, Types: n.Types, Expected: expected, Reference: true, Expressions: e}
+			if len(hints) > 0 {
+				application.CallbackInputs = hints[0].inputs
+				application.CallbackResult = hints[0].result
+			}
+			binding, err = c.resolveMethod(application)
 		}
 	default:
 		return nil, fmt.Errorf("callable reference requires a named declaration or receiver method")

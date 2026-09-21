@@ -54,6 +54,7 @@ type Preparation struct {
 	Value *Expression
 }
 type InvocationStep struct {
+	Array     *ArrayOperation
 	Site      string
 	Callee    *Expression
 	Contract  *types.Type

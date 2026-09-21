@@ -14,6 +14,7 @@ import (
 
 func programImports(runtime string) []ModuleImport {
 	return []ModuleImport{
+		{Target: runtime + "/collections/array.ts", Names: arrayImports()},
 		{Target: runtime + "/assert/context.ts", Names: []ImportName{{"callContext", "$canCallContext"}}},
 		{Target: runtime + "/coordination.ts", Names: []ImportName{{"settle", "$canCoordinateSettle"}, {"handle", "$canCoordinateHandle"}, {"aggregate", "$canCoordinateAggregate"}}},
 		{Target: runtime + "/owner.ts", TypeOnly: true, Names: []ImportName{{"Participant", "$canParticipant"}}},

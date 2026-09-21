@@ -26,6 +26,18 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 			ctx.Parameters = append(ctx.Parameters, ir.Local{Identity: id, Type: c.bindings[id]})
 		}
 	}
+
+	ctx.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
+		symbol, err := file.Lookup(scope, name, resolve.CallUse)
+		if err != nil {
+			return ""
+		}
+		return symbol.ID
+	}
+	ctx.CatalogueType = c.catalogueType
+	ctx.InferCallback = func(scope *resolve.Scope, name syntax.QualifiedName, inputs []*types.Type, result *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferCallback(file, scope, name, inputs, result, e)
+	}
 	ctx.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
 		return c.annotation(file, node, allowVoid)
 	}

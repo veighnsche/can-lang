@@ -8,13 +8,15 @@ import (
 )
 
 type MethodApplication struct {
-	Receiver    *types.Type
-	Name        syntax.Token
-	Types       []syntax.TypeNode
-	Arguments   []syntax.Argument
-	Expected    *types.Type
-	Reference   bool
-	Expressions *Expressions
+	CallbackInputs []*types.Type
+	CallbackResult *types.Type
+	Receiver       *types.Type
+	Name           syntax.Token
+	Types          []syntax.TypeNode
+	Arguments      []syntax.Argument
+	Expected       *types.Type
+	Reference      bool
+	Expressions    *Expressions
 }
 
 func (c *regionChecker) resolveMethod(application MethodApplication) (ValueBinding, error) {
@@ -64,7 +66,15 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 	} else {
 		seed := typeConstraint{d.Receiver.Type, a.Receiver}
 		if a.Reference {
-			binding, _, err := c.inferDeclaredReference(symbol, d, a.Expected, a.Expressions, applicationSite(file, a.Name.Span.Start), seed)
+			seeds := []typeConstraint{seed}
+			if a.CallbackInputs != nil {
+				more, e := callbackConstraints(d, a.CallbackInputs, a.CallbackResult)
+				if e != nil {
+					return ValueBinding{}, e
+				}
+				seeds = append(seeds, more...)
+			}
+			binding, _, err := c.inferDeclaredReference(symbol, d, a.Expected, a.Expressions, applicationSite(file, a.Name.Span.Start), seeds...)
 			return binding, err
 		}
 		constraints, err := genericArguments(d.Inputs, a.Arguments)

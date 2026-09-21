@@ -179,6 +179,13 @@
     "assert/queue.ts": [
       "./identity.ts"
     ],
-    "assert/report.ts": []
+    "assert/report.ts": [],
+    "collections/array.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../failure.ts",
+      "../assert/context.ts",
+      "../callable.ts"
+    ]
   }
 }

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The required collection surface is a fixed catalogue: invariant arrays, map output from the selected callback, identical fold accumulator/result types, boolean predicates, void iteration, primitive admissible sort keys and nominal option results. Callable bounds must retain exactly their concrete domain failures. Existing machinery supplies sealed types, bounded generic inference and cached specializations, fixture-aware invocation preparation, and coordination hoisting; its Native expression route specifically emits synchronous pure values. The runtime adapters now await native algorithms sequentially, protect payloads with boxes and track assertion callback frames. A generic callable may not resolve until its input is constrained by the array element or fold initial type; a known surrounding result can contribute another constraint. Captures must be evaluated once. Checking cannot run effects, broaden types, introduce unknown placeholders or replace the inventory. One option adds a checked array-call descriptor containing operation/type/error/option evidence and extends existing reference inference with those concrete constraints, preserving the standard preparation and fixture pipeline. Other options force the asynchronous fallible ABI through Native expressions unchanged, or manufacture source-level wrappers with speculative permissive type holes.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Select the lowering strategy that respects these existing boundaries and inference requirements.",
+      "criteria": {
+        "checked_array_ir": "Represent array calls explicitly in checked invocation IR, feed concrete input and available output constraints to the established generic solver, retain precise error bounds, and lower through the runtime while preserving captures, fixtures and coordinated preparation.",
+        "native_expression": "Treat array adapters as current Native expressions even though that path assumes an immediate pure value.",
+        "placeholder_wrappers": "Generate synthetic user-style generic functions and substitute broad provisional types wherever callback inference lacks evidence."
+      }
+    }
+  }
+}

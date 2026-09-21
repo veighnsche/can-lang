@@ -1,0 +1,188 @@
+package contracts
+    provides []
+    uses [codec]
+record payload
+    int value
+    callable void () emits [] then
+record offset
+    int amount
+fn void noop
+    emits []
+    asserts
+        unit: => ok
+    ok
+fn item identity<item>
+    emits []
+    given
+        item input
+    asserts
+        unit: 1 => ok 1
+    ok input
+fn int add_near
+    emits []
+    given
+        near int amount
+        int value
+    asserts
+        unit: 5, 2 => ok 7
+    ok amount + value
+fn item echo<item>
+    on offset self
+    emits []
+    given
+        item input
+    asserts
+        unit: offset(5) => 2 => ok 2
+    ok input
+fn int captured
+    emits []
+    given
+        int amount
+    asserts
+        sample: 10 => ok 23
+    int[] output = call [1, 2].map(callable add_near)
+    ok output[0] + output[1]
+fn int generic_bound
+    emits []
+    asserts
+        sample: => ok 3
+    int[] output = call [1, 2].map(callable (offset(5)).echo)
+    ok output[0] + output[1]
+fn int protected_payloads
+    emits []
+    asserts
+        sample: => ok 3
+    payload[] output = call [payload(1, callable noop), payload(2, callable noop)].map(callable identity)
+    ok output[0].value + output[1].value
+fn item accumulate<item>
+    emits []
+    given
+        item total
+        int value
+    asserts
+        unit: 1, 2 => ok 1
+    ok total
+fn int protected_fold
+    emits []
+    asserts
+        sample: => ok 10
+    payload output = call [1, 2].fold(payload(10, callable noop), callable accumulate)
+    ok output.value
+fn int fallible
+    emits [codec::invalid_data]
+    given
+        int value
+    asserts
+        good: 1 => ok 1
+        bad: 2 => codec::invalid_data("array", "stop")
+    match value
+        2 => codec::invalid_data("array", "stop")
+        3 => do
+            int invalid = 1 / 0
+            ok invalid
+        _ => ok value
+fn int[] stops
+    emits [codec::invalid_data]
+    asserts
+        sample: => codec::invalid_data("array", "stop")
+    match call [1, 2, 3].map(callable fallible)
+        ok int[] output => ok output
+        codec::invalid_data
+fn int[] referenced_stops
+    emits [codec::invalid_data]
+    asserts
+        sample: => codec::invalid_data("array", "stop")
+    callable int[] (callable int (int) emits [codec::invalid_data]) emits [codec::invalid_data] action = callable ([1, 2, 3]).map
+    match call action(callable fallible)
+        ok int[] output => ok output
+        codec::invalid_data
+fn int quotient
+    emits []
+    given
+        int value
+    asserts
+        unit: 1 => ok 10
+    ok 10 / value
+fn str standard_stop
+    emits []
+    asserts
+        sample: => ok "arithmetic: integer division by zero"
+    match call [1, 0, 3].map(callable quotient)
+        ok int[] output => ok "unexpected"
+        [_] as str message => ok message
+fn int source
+    emits []
+    given
+        int value
+    asserts
+        unit: 0 => ok 0
+    ok value
+fn int queued
+    emits []
+    given
+        int value
+    asserts
+        unit: 0 => ok 0
+    match call source(value)
+        when
+            sample: 0 => ok 10
+            sample: 1 => ok 20
+            sample: 2 => ok 30
+        ok int output => ok output
+fn int[] mapped_queue
+    emits []
+    asserts
+        unit: => ok [0, 1]
+    ok call [0, 1].map(callable queued)
+fn int[] concurrent_queue
+    emits []
+    asserts
+        sample: => ok [30, 30]
+    int[] output = match call concurrent
+        mapped_queue()
+            ok int[] values => ok values[0] + values[1]
+        queued(2)
+            ok int value => ok value
+    ok output
+fn int immutable_copies
+    emits []
+    asserts
+        sample: => ok 6
+    int[] source = [1, 2]
+    int[] changed = call append(source, 3).to_reversed()
+    ok source[0] + source[1] + changed[0]
+fn int sort_key
+    emits []
+    given
+        int value
+    asserts
+        unit: 0 => ok 0
+    match call source(value)
+        when
+            sample: 0 => ok 2
+            sample: 1 => ok 1
+            sample: 2 => ok 1
+        ok int output => ok output
+fn int[] stable_sort
+    emits []
+    asserts
+        sample: => ok [1, 2, 0]
+    ok call [0, 1, 2].sort_by(callable sort_key)
+fn str nonfinite_sort
+    emits []
+    asserts
+        sample: => ok "arithmetic: nonfinite sort key"
+    match call [1.0, 1.0 / 0.0, 2.0].sort_by(callable identity)
+        ok float[] output => ok "unexpected"
+        [_] as str message => ok message
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        unit: [] => ok
+    match (call protected_payloads() + call protected_fold() + call captured(10) + call generic_bound() + call immutable_copies())
+        45 => ok
+        _ => do
+            int invalid = 1 / 0
+            ok

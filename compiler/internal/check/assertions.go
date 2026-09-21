@@ -142,6 +142,18 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 					constraints = append(constraints, argumentConstraint{d.Result, success.Value})
 				}
 				provisional := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: symbol.ID + "/assert/inference", Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}
+
+				provisional.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
+					symbol, err := file.Lookup(scope, name, resolve.CallUse)
+					if err != nil {
+						return ""
+					}
+					return symbol.ID
+				}
+				provisional.CatalogueType = c.catalogueType
+				provisional.InferCallback = func(scope *resolve.Scope, name syntax.QualifiedName, inputs []*types.Type, result *types.Type, e *Expressions) (ValueBinding, bool, error) {
+					return c.inferCallback(file, scope, name, inputs, result, e)
+				}
 				provisional.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
 					return c.annotation(file, node, allowVoid)
 				}

@@ -489,6 +489,18 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return CompletionContext{}, e
 	}
 	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables}
+
+	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
+		symbol, err := file.Lookup(scope, name, resolve.CallUse)
+		if err != nil {
+			return ""
+		}
+		return symbol.ID
+	}
+	context.CatalogueType = c.catalogueType
+	context.InferCallback = func(scope *resolve.Scope, name syntax.QualifiedName, inputs []*types.Type, result *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferCallback(file, scope, name, inputs, result, e)
+	}
 	context.Specialize = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
 		return c.specialize(file, scope, name, args)
 	}

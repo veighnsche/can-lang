@@ -17,19 +17,22 @@ import (
 // Handlers use their own Identity/Parent and selected Result, with the enclosing
 // escaping error contract. Their callers later assemble coordination/native data.
 type CompletionContext struct {
-	Sites            lexicalSites
-	AggregateType    func(*types.Type) (*types.Type, error)
-	Identity, Parent string
-	Kind             ir.RegionKind
-	File             *source.File
-	Scope            *resolve.Scope
-	Result           *types.Type
-	Errors           ErrorBound
-	Registry         *ErrorRegistry
-	Expressions      *Expressions
-	Type             func(syntax.TypeNode, bool) (*types.Type, error)
-	ErrorName        func(syntax.QualifiedName) (string, error)
-	PatternName      func(syntax.QualifiedName) (string, error)
+	IntrinsicIdentity func(*resolve.Scope, syntax.QualifiedName) string
+	CatalogueType     func(string, map[string]*types.Type) (*types.Type, error)
+	InferCallback     func(*resolve.Scope, syntax.QualifiedName, []*types.Type, *types.Type, *Expressions) (ValueBinding, bool, error)
+	Sites             lexicalSites
+	AggregateType     func(*types.Type) (*types.Type, error)
+	Identity, Parent  string
+	Kind              ir.RegionKind
+	File              *source.File
+	Scope             *resolve.Scope
+	Result            *types.Type
+	Errors            ErrorBound
+	Registry          *ErrorRegistry
+	Expressions       *Expressions
+	Type              func(syntax.TypeNode, bool) (*types.Type, error)
+	ErrorName         func(syntax.QualifiedName) (string, error)
+	PatternName       func(syntax.QualifiedName) (string, error)
 	// Variadic declaration contracts have a final array input in the private ABI.
 	Specialize     func(*resolve.Scope, syntax.QualifiedName, []syntax.TypeNode) (ValueBinding, error)
 	InferReference func(*resolve.Scope, syntax.QualifiedName, *types.Type, *Expressions) (ValueBinding, bool, error)
@@ -384,6 +387,53 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 	var receiver *ir.Expression
 	switch callee := n.Invocation.Callee.(type) {
 	case *syntax.NameExpr:
+		if c.context.IntrinsicIdentity != nil && c.context.IntrinsicIdentity(scope.symbols, callee.Name) == "can.prelude@1::append" {
+			c.uses.Names[callee] = "can.prelude@1::append"
+			if len(n.Invocation.Types) > 1 || len(n.Invocation.Arguments) != 2 {
+				return nil, fmt.Errorf("append requires two ordinary arguments")
+			}
+			for _, arg := range n.Invocation.Arguments {
+				if arg.Spread || arg.Group != nil {
+					return nil, fmt.Errorf("append requires fixed ordinary arguments")
+				}
+			}
+			var want *types.Type
+			if len(expected) > 0 && len(n.Methods) == 0 && expected[0] != nil && expected[0].Kind() == types.Array {
+				want = expected[0]
+			}
+			if len(n.Invocation.Types) == 1 {
+				element, e2 := c.context.Type(n.Invocation.Types[0], false)
+				if e2 != nil {
+					return nil, e2
+				}
+				want, e2 = types.ArrayOfChecked(element)
+				if e2 != nil {
+					return nil, e2
+				}
+			}
+			receiver, err = e.Check(n.Invocation.Arguments[0].Value, want)
+			if err != nil && want == nil {
+				if length, known := literalSpreadLength(n.Invocation.Arguments[0].Value); known && length == 0 {
+					item, e2 := e.Check(n.Invocation.Arguments[1].Value, nil)
+					if e2 == nil {
+						want, e2 = types.ArrayOfChecked(item.Type)
+						if e2 == nil {
+							receiver, err = e.Check(n.Invocation.Arguments[0].Value, want)
+						}
+					}
+				}
+			}
+			if err != nil {
+				return nil, err
+			}
+			step, e2 := c.arrayStep(receiver, "append", currentSite, n.Invocation.Arguments[1:], n.Invocation.Span, scope, want)
+			if e2 != nil {
+				return nil, e2
+			}
+			out.Steps = append(out.Steps, step)
+			out.Result = step.Result
+			break
+		}
 		if len(n.Invocation.Types) == 0 && c.context.InferCall != nil {
 			var want *types.Type
 			if len(expected) > 0 && len(n.Methods) == 0 {
@@ -407,7 +457,15 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			c.uses.Names[callee] = first.Identity
 		}
 	case *syntax.FieldExpr:
-		receiver, err = e.Check(callee.Receiver, nil)
+		if arrayMethod(callee.Field.Text) {
+			var want *types.Type
+			if len(expected) > 0 && len(n.Methods) == 0 {
+				want = expected[0]
+			}
+			receiver, err = c.arrayReceiver(callee.Receiver, callee.Field.Text, n.Invocation.Arguments, scope, want)
+		} else {
+			receiver, err = e.Check(callee.Receiver, nil)
+		}
 		if err == nil {
 			for _, field := range receiver.Type.Fields() {
 				if field.Name == callee.Field.Text && field.Type.Kind() == types.Callable {
@@ -420,6 +478,23 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			if directCallee != nil {
 				if len(n.Invocation.Types) != 0 {
 					return nil, fmt.Errorf("callable value does not accept generic arguments")
+				}
+				break
+			}
+			if receiver.Type.Kind() == types.Array && arrayMethod(callee.Field.Text) {
+				if len(n.Invocation.Types) != 0 {
+					return nil, fmt.Errorf("array method does not take authored type arguments")
+				}
+				var want *types.Type
+				if len(expected) > 0 && len(n.Methods) == 0 {
+					want = expected[0]
+				}
+				var step ir.InvocationStep
+				step, err = c.arrayStep(receiver, callee.Field.Text, currentSite, n.Invocation.Arguments, n.Invocation.Span, scope, want)
+				if err == nil {
+					out.Steps = append(out.Steps, step)
+					out.Result = step.Result
+					out.Errors = unionErrors(out.Errors, step.Errors)
 				}
 				break
 			}
@@ -478,6 +553,23 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 		}
 		prior := out.Steps[len(out.Steps)-1]
 		receiver = &ir.Expression{Kind: ir.Binding, Type: prior.Result, Text: prior.SuccessBinding, Span: method.Span}
+		if out.Result.Kind() == types.Array && arrayMethod(method.Name.Text) {
+			if len(method.Types) != 0 {
+				return nil, fmt.Errorf("array method does not take authored type arguments")
+			}
+			var want *types.Type
+			if len(expected) > 0 && methodIndex == len(n.Methods)-1 {
+				want = expected[0]
+			}
+			step, err := c.arrayStep(receiver, method.Name.Text, currentSite, method.Arguments, method.Span, scope, want)
+			if err != nil {
+				return nil, err
+			}
+			out.Steps = append(out.Steps, step)
+			out.Result = step.Result
+			out.Errors = unionErrors(out.Errors, step.Errors)
+			continue
+		}
 		if method.Name.Text == "slice" && (out.Result.Kind() == types.Array || scalar(out.Result, "str")) {
 			if len(method.Types) != 0 {
 				return nil, fmt.Errorf("slice does not take type arguments")

@@ -6,6 +6,7 @@ import "github.com/veighnsche/can-lang/compiler/internal/types"
 // Inputs contain captures in evaluation order; Positions place them back into
 // declaration-order arguments. The remaining slots are the closure parameters.
 type Callable struct {
+	Array            *ArrayOperation
 	Site             string
 	Target           string
 	Contract         *types.Type

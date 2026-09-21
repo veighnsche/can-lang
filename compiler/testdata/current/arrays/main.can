@@ -1,0 +1,192 @@
+package arrays
+    provides []
+    uses [option]
+fn int twice
+    emits []
+    given
+        int item
+    asserts
+        unit: 2 => ok 4
+    ok item * 2
+fn bool selected
+    emits []
+    given
+        int item
+    asserts
+        unit: 2 => ok true
+    ok item >= 2
+fn int add
+    emits []
+    given
+        int total
+        int item
+    asserts
+        unit: 2, 3 => ok 5
+    ok total + item
+fn void observe
+    emits []
+    given
+        int item
+    asserts
+        unit: 1 => ok
+    ok
+fn item identity<item>
+    emits []
+    given
+        item input
+    asserts
+        unit: 1 => ok 1
+    ok input
+fn int[] mapped
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok [2, 4, 6]
+        empty: [] => ok []
+    ok call items.map(callable twice)
+fn int[] filtered
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok [2, 3]
+        empty: [] => ok []
+    ok call items.filter(callable selected)
+fn int folded
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok 16
+        empty: [] => ok 10
+    ok call items.fold(10, callable add)
+fn void visited
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok
+        empty: [] => ok
+    call items.for_each(callable observe)
+    ok
+fn option::value<int> found
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok option::some(2)
+        empty: [] => ok option::none()
+    ok call items.find(callable selected)
+fn bool any
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok true
+        empty: [] => ok false
+    ok call items.some(callable selected)
+fn bool all
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok false
+        empty: [] => ok true
+    ok call items.every(callable selected)
+fn int[] sorted
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [3, 1, 2] => ok [1, 2, 3]
+        empty: [] => ok []
+    ok call items.sort_by(callable identity)
+fn int[] copied
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [4, 3, 2, 1]
+        empty: [] => ok [4, 3]
+    int[] result = call append(items, 3).concat([4]).to_reversed()
+    ok result
+fn int[] generic_map
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [1, 2]
+    ok call items.map(callable identity)
+fn int[] referenced_map
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [2, 4]
+    callable int[] (callable int (int) emits []) emits [] action = callable items.map
+    ok call action(callable twice)
+fn int[] referenced_reverse
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [2, 1]
+    callable int[] () emits [] action = callable items.to_reversed
+    ok call action()
+fn int[] referenced_append
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [1, 2, 3]
+    callable int[] (int[], int) emits [] action = callable append<int>
+    ok call action(items, 3)
+fn int[] inferred_append
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok [1, 2, 3]
+    callable int[] (int[], int) emits [] action = callable append
+    ok call action(items, 3)
+fn option::value<int> referenced_find
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2] => ok option::some(2)
+        empty: [] => ok option::none()
+    callable option::value<int> (callable bool (int) emits []) emits [] action = callable items.find
+    ok call action(callable selected)
+fn int[] direct_empty
+    emits []
+    asserts
+        sample: => ok []
+    ok call [].map(callable twice)
+fn int[] direct_append
+    emits []
+    asserts
+        sample: => ok [1]
+    ok call append<int>([], 1)
+fn int[] referenced_slice
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1, 2, 3] => ok [2, 3]
+        empty: [] => ok []
+    callable int[] (int, int) emits [] action = callable items.slice
+    ok call action(1, 99)
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    int[] result = call [1, 2].map(callable twice).filter(callable selected).to_reversed()
+    match result
+        [4, 2] => ok
+        _ => do
+            int invalid = 1 / 0
+            ok

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "We are integrating native immutable arrays into a compiler whose concrete types are sealed and whose finite inference/cache already specialize named generics. Catalogue rules demand invariant element types; map follows callback result, fold keeps its initial accumulator type, filter/find/some/every require bool, for_each requires void, sort_by admits only int/finite float/str/bool keys, and find produces the existing nominal option type. Calls expose actual finite callback errors. Runtime implementations already use sequential native mapping, filtering, sorting and reduction with protected completions and assertion frames. Ordinary invocation IR handles once-only operand preparation and fixtures, and coordination hoists prepared operands; in contrast, Native expression IR presumes synchronous non-domain-failing values. Receiver/near captures happen at creation once. Generic references may need concrete element/accumulator input evidence and, if known, a result expectation before solving. There must be no checker evaluation, placeholder unknown type, implicit widening or substitute inventory. Candidate designs are an explicit array invocation record with sealed operation/type/error/option evidence using existing constraint solving and invocation plumbing; unchanged use of the synchronous Native route for asynchronous adapters; or authored-function synthesis with loose holes for unsolved callable components.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Choose the design that maintains exact callback admission and the established execution semantics.",
+      "criteria": {
+        "checked_array_ir": "Introduce an explicit array-operation invocation descriptor and reuse finite inference with concrete receiver, accumulator and optional result constraints; carry the exact failure set and preserve preparation, capture, fixture and participant behavior in runtime emission.",
+        "native_expression": "Send async boxed array operations down the unchanged synchronous pure Native-expression emitter.",
+        "placeholder_wrappers": "Build generic wrapper source internally and accept permissive stand-in types for unresolved callback details."
+      }
+    }
+  }
+}

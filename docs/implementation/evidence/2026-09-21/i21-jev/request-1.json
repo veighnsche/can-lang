@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can array operations must use the closed C7 catalogue and exact callable inputs/results with the actual finite callback error bound. Arrays are invariant; map derives its output element from the callback, fold requires accumulator equality, predicates return bool, for_each returns void, sort keys are int/finite float/str/bool, and find returns the ordinary nominal option specialization. Generic callback references can need receiver element and accumulator constraints before specialization, plus a contextual result constraint when available; near/receiver captures are resolved once at creation. The compiler currently has sealed concrete types, a finite generic solver and specialization cache, ordinary invocation steps with once-only preparation and fixture contracts, synchronous Native expression steps, and coordinated participant preparation that hoists arguments before launch. New runtime array adapters already implement native sequential mapping/filtering/sorting/reduce, boxed completions, failure stopping, and assertion child frames. Native expression steps assume synchronous pure values, so async adapters with domain errors cannot be emitted through that assumption. No widening, placeholder unknown types, user effects during checking, or alternate catalogue is allowed. Consider an explicit array invocation descriptor carrying operation identity, concrete types, exact derived errors and option identities; derive contextual generic reference constraints through the existing solver, preserve preparation/fixture/ownership plumbing, and emit calls to the tested runtime adapter. Alternatives reuse Native expressions despite their ABI, or synthesize authored generic wrapper functions and insert placeholder types for unresolved callback pieces.",
+  "questions": {
+    "lowering": {
+      "type": "choice",
+      "instructions": "Which compiler integration best preserves the complete typed callback and invocation contract?",
+      "criteria": {
+        "checked_array_ir": "Add explicit checked array invocation IR, constrain generic references from concrete receiver/accumulator and available result evidence through the existing solver, derive exact errors, and keep ordinary preparation/fixture/participant semantics around native runtime adapters.",
+        "native_expression": "Reuse the synchronous Native expression representation for async completion-returning adapters without changing its assumptions.",
+        "placeholder_wrappers": "Invent generic source wrapper declarations and fill unavailable callback types with permissive placeholders before emission."
+      }
+    }
+  }
+}
