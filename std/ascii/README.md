@@ -1,3 +1,17 @@
+# Superseded ASCII implementation
+
+The adjacent `ascii.can` and generated `ascii.ts` belong to the obsolete language
+and its historical tests. They are not a current catalogue or compiler fallback;
+I43/I44 remove them with their old consumers.
+
+Current numeric text conversion is implemented by the native `text::to_int`,
+`text::to_float` and `text::to_bool` catalogue operations, with strict whole-input
+grammar checks. See [the current scalar project](../scalars/current/src/main.can).
+Named text/Unicode APIs are implemented separately by I24; arbitrary ASCII
+kernel/prototype access is not admitted.
+
+## Historical ASCII implementation
+
 # ascii — named ASCII scalar bounds
 
 - `ascii.can` — `mod ascii`: `std__ascii__HASH`, `PLUS`, `MINUS`,

@@ -229,7 +229,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
 	c.annotations[builtinFile] = map[string]*types.Type{}
 	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if !strings.HasPrefix(op.Name, "bytes::") && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
+		if op.Lowering.Task != "I22" && !strings.HasPrefix(op.Name, "bytes::") && op.Name != "io::stdout_write" && op.Name != "io::stderr_write" {
 			continue
 		}
 		signature := &syntax.CallableType{}

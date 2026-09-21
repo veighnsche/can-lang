@@ -1,0 +1,175 @@
+package numbers
+    provides []
+    uses [number, text]
+fn str format_int
+    emits []
+    given
+        int value
+    asserts
+        large: 9007199254740993 => ok "9007199254740993"
+    ok call text::from_int(value)
+fn str format_float
+    emits []
+    given
+        float value
+    asserts
+        negative_zero: -0.0 => ok "0"
+        nan: 0.0 / 0.0 => ok "NaN"
+        infinity: 1.0 / 0.0 => ok "Infinity"
+        negative_infinity: -1.0 / 0.0 => ok "-Infinity"
+    ok call text::from_float(value)
+fn str format_bool
+    emits []
+    given
+        bool value
+    asserts
+        yes: true => ok "true"
+        no: false => ok "false"
+    ok call text::from_bool(value)
+fn float int_float
+    emits [number::inexact]
+    given
+        int value
+    asserts
+        exact: 9007199254740992 => ok 9007199254740992.0
+        inexact: 9007199254740993 => number::inexact("not exactly representable as float")
+    match call number::int_to_float(value)
+        ok float output => ok output
+        number::inexact
+fn int float_int
+    emits [number::inexact]
+    given
+        float value
+    asserts
+        exact: 9007199254740992.0 => ok 9007199254740992
+        negative_zero: -0.0 => ok 0
+        fraction: 1.5 => number::inexact("not a finite integer")
+    match call number::float_to_int(value)
+        ok int output => ok output
+        number::inexact
+fn int bool_int
+    emits []
+    given
+        bool value
+    asserts
+        yes: true => ok 1
+        no: false => ok 0
+    ok call number::bool_to_int(value)
+fn bool int_bool
+    emits [number::invalid_bool]
+    given
+        int value
+    asserts
+        yes: 1 => ok true
+        no: 0 => ok false
+        invalid: 2 => number::invalid_bool(2)
+    match call number::int_to_bool(value)
+        ok bool output => ok output
+        number::invalid_bool
+fn float floor_value
+    emits []
+    given
+        float value
+    asserts
+        negative: -1.5 => ok -2.0
+        infinity: 1.0 / 0.0 => ok 1.0 / 0.0
+    ok call number::floor(value)
+fn float ceil_value
+    emits []
+    given
+        float value
+    asserts
+        negative: -0.5 => ok -0.0
+    ok call number::ceil(value)
+fn float trunc_value
+    emits []
+    given
+        float value
+    asserts
+        negative: -0.5 => ok -0.0
+    ok call number::trunc(value)
+fn float round_value
+    emits []
+    given
+        float value
+    asserts
+        negative: -0.5 => ok -0.0
+        tie: 1.5 => ok 2.0
+    ok call number::round(value)
+fn bool finite_value
+    emits []
+    given
+        float value
+    asserts
+        finite: 1.0 => ok true
+        infinity: 1.0 / 0.0 => ok false
+    ok call number::is_finite(value)
+fn bool nan_value
+    emits []
+    given
+        float value
+    asserts
+        nan: 0.0 / 0.0 => ok true
+        finite: 1.0 => ok false
+    ok call number::is_nan(value)
+fn int parse_int
+    emits [text::invalid_number]
+    given
+        str value
+    asserts
+        large: "9007199254740993" => ok 9007199254740993
+        space: " 1" => text::invalid_number(" 1")
+        zero: "-0" => ok 0
+    match call text::to_int(value)
+        ok int output => ok output
+        text::invalid_number
+fn float parse_float
+    emits [text::invalid_number]
+    given
+        str value
+    asserts
+        exponent: "1e3" => ok 1000.0
+        underflow: "-1e-999" => ok -0.0
+        leading_zero_float: "01.0" => ok 1.0
+        leading_zero_integer: "01" => text::invalid_number("01")
+        overflow: "1e309" => text::invalid_number("1e309")
+    match call text::to_float(value)
+        ok float output => ok output
+        text::invalid_number
+fn bool parse_bool
+    emits [text::invalid_bool]
+    given
+        str value
+    asserts
+        yes: "true" => ok true
+        invalid: "True" => text::invalid_bool("True")
+    match call text::to_bool(value)
+        ok bool output => ok output
+        text::invalid_bool
+fn str[] referenced_format
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 9007199254740993] => ok ["1", "9007199254740993"]
+    ok call values.map(callable text::from_int)
+fn str fixture_format
+    emits []
+    asserts
+        sample: => ok "supplied"
+    match call text::from_int(1)
+        when
+            sample: 1 => ok "supplied"
+        ok str output => ok output
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        unit: [] => ok
+    match call text::from_int(9007199254740993)
+        ok str output => match output
+            "9007199254740993" => ok
+            _ => do
+                int invalid = 1 / 0
+                ok

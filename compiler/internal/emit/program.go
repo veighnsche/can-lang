@@ -52,6 +52,22 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		"can.std.io@1::stdout_write": "$canCLI.stdoutWrite",
 		"can.std.io@1::stderr_write": "$canCLI.stderrWrite",
 	}
+	functions["can.std.text@1::from_int"] = "$canNumbers.fromInt"
+	functions["can.std.text@1::from_float"] = "$canNumbers.fromFloat"
+	functions["can.std.text@1::from_bool"] = "$canNumbers.fromBool"
+	functions["can.std.text@1::to_int"] = "$canNumbers.toInt"
+	functions["can.std.text@1::to_float"] = "$canNumbers.toFloat"
+	functions["can.std.text@1::to_bool"] = "$canNumbers.toBool"
+	functions["can.std.number@1::int_to_float"] = "$canNumbers.intToFloat"
+	functions["can.std.number@1::float_to_int"] = "$canNumbers.floatToInt"
+	functions["can.std.number@1::bool_to_int"] = "$canNumbers.boolToInt"
+	functions["can.std.number@1::int_to_bool"] = "$canNumbers.intToBool"
+	functions["can.std.number@1::floor"] = "$canNumbers.floor"
+	functions["can.std.number@1::ceil"] = "$canNumbers.ceil"
+	functions["can.std.number@1::trunc"] = "$canNumbers.trunc"
+	functions["can.std.number@1::round"] = "$canNumbers.round"
+	functions["can.std.number@1::is_finite"] = "$canNumbers.isFinite"
+	functions["can.std.number@1::is_nan"] = "$canNumbers.isNaN"
 	codecIDs := make([]string, 0, len(program.Codecs))
 	for id := range program.Codecs {
 		codecIDs = append(codecIDs, id)
@@ -163,7 +179,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, id := range codecIDs {
 		fmt.Fprintf(&state, "export let %s: ReturnType<typeof $canCreateCodec<%s>>;\n", codecNames[id], TypeName(program.Codecs[id].Data))
 	}
-	state.WriteString("export let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	state.WriteString("export let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	var invalidData, writeFailed, bytesID string
 	for _, typ := range program.Model.Types() {
 		switch typ.Declaration() {
@@ -177,6 +193,11 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => identity === %s && $canIsBytes(value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	numberIDs := map[string]string{}
+	for _, typ := range program.Model.Types() {
+		numberIDs[typ.Declaration()] = typ.Identity()
+	}
+	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
 	if judges {
 		ids := map[string]string{}
 		for _, typ := range program.Model.Types() {
@@ -206,6 +227,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	state.WriteString("Object.freeze($canValues);\n}\n")
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	if judges {
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}}, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
@@ -280,7 +302,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", TypeOnly: true, Names: []ImportName{{"NoulDescriptor", "$canNoulDescriptor"}}})
 		if judges {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canAI", "$canAI"}}})
@@ -323,7 +345,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 			for _, id := range codecIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 			}

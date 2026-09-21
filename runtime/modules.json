@@ -186,6 +186,11 @@
       "../failure.ts",
       "../assert/context.ts",
       "../callable.ts"
+    ],
+    "number.ts": [
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts"
     ]
   }
 }

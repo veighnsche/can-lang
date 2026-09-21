@@ -1,3 +1,23 @@
+# Current scalar catalogue
+
+The maintained scalar example is [current/src/main.can](current/src/main.can),
+a standalone current-language project with 40 mandatory assertions covering all
+16 I22 numeric/conversion operations, error bounds, callable references and
+fixtures. Run it with the staged `canlc assert std/scalars/current` or
+`canlc run std/scalars/current` command.
+
+Arithmetic and comparisons use native bigint/binary64 operations. Explicit
+conversions and formatting use the closed `number`/`text` catalogue and
+`runtime/number.ts`; there is no decimal base type or recursive conversion kernel.
+The current compiler rejects the obsolete syntax and does not execute its Go
+arithmetic evaluator. Exact-amount adapters are the separate I23 task.
+
+The adjacent old `scalars.can`, generated `scalars.ts` and `errors.json` are
+superseded historical test inputs, scheduled with their old consumers for the
+I43/I44 inventory retirement. They are not the current library or a fallback.
+
+## Historical scalar implementation
+
 # std-scalars — monomorphic scalar standard library
 
 - `scalars.can` — `mod scalars`: boolean logic, three-way
