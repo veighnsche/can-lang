@@ -1,0 +1,19 @@
+--- FAIL: TestArtifactIdentityAndClosedImports (0.00s)
+    --- FAIL: TestArtifactIdentityAndClosedImports/manifest.json/extra.ts (0.00s)
+        artifacts_test.go:50: unsafe output admitted
+    --- FAIL: TestArtifactIdentityAndClosedImports/MANIFEST.JSON/extra.ts (0.00s)
+        artifacts_test.go:50: unsafe output admitted
+    --- FAIL: TestArtifactIdentityAndClosedImports/Manifest.Json (0.00s)
+        artifacts_test.go:50: unsafe output admitted
+--- FAIL: TestPublicationRechecksSnapshotBeforeCurrent (0.40s)
+    --- FAIL: TestPublicationRechecksSnapshotBeforeCurrent/staged/reuse=false (0.12s)
+        output_test.go:439: published stale snapshot
+    --- FAIL: TestPublicationRechecksSnapshotBeforeCurrent/generation/reuse=false (0.10s)
+        output_test.go:439: published stale snapshot
+    --- FAIL: TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=false (0.11s)
+        output_test.go:439: published stale snapshot
+    --- FAIL: TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=true (0.07s)
+        output_test.go:439: published stale snapshot
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/driver	0.655s
+FAIL

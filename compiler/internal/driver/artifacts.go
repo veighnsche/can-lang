@@ -67,7 +67,7 @@ func outputPath(name string) error {
 			return fmt.Errorf("unsafe output component: %q", part)
 		}
 	}
-	if name == "manifest.json" || strings.HasPrefix(name, ".") {
+	if strings.EqualFold(strings.Split(name, "/")[0], "manifest.json") || strings.HasPrefix(name, ".") {
 		return fmt.Errorf("reserved output path: %s", name)
 	}
 	return nil

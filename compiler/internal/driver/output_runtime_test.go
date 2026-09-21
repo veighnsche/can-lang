@@ -63,7 +63,10 @@ func TestPackagedOutputValidationAndExecution(t *testing.T) {
 		}
 		return p
 	}
-	for _, source := range []string{`const x = ;`, `import {readFileSync} from "node:fs"; console.log(readFileSync);`} {
+	for _, source := range []string{`const target = "node:fs"; await import(target);`,
+		"const target = 'fs'; await import(`node:${target}`);",
+		`export async function dormant(target: string) { return import(/* hidden edge */ target); }`,
+		`export const nested = () => (() => import(String("node:fs")));`, `const x = ;`, `import {readFileSync} from "node:fs"; console.log(readFileSync);`} {
 		p := makeOutput(source, nil)
 		if err = runtime.ValidateOutput(ctx, p); err == nil {
 			t.Fatal("invalid syntax/import inventory admitted")

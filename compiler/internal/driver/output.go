@@ -448,6 +448,17 @@ func (s *OutputStore) Publish(prepared *PreparedOutput) (string, error) {
 			return "", err
 		}
 	}
+	if err = s.hook("before-current"); err != nil {
+		return "", err
+	}
+	// Validation/staging can outlive edits by the author. Recheck both new and
+	// reused generations immediately before selecting them as current.
+	if err = s.ensureFresh(); err != nil {
+		return "", err
+	}
+	if err = s.checkLayout(); err != nil {
+		return "", err
+	}
 	current := outputCurrent{1, id, hashBytes(prepared.manifestBytes)}
 	if err = s.atomicMetadata("current.json", ".current.tmp", current); err != nil {
 		return "", err

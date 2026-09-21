@@ -1,0 +1,1 @@
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	2.246s

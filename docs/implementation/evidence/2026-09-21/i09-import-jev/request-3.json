@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "I09 must refuse executable dependencies outside its declared static ESM inventory. Can currently supplies generated TypeScript as strings alongside import metadata; the language does not admit authored TS. Runtime assets have independent hash checks. Syntax parsing uses Bun.Transpiler.transformSync, but Bun's scanImports does not report const target = \"node:fs\"; await import(target);. One possible remedy parses Bun's JS output with the self-contained upstream Acorn 8.18.0 MIT parser and walks its tree to forbid ImportExpression nodes for all argument shapes, with no evaluation. This adds obligations to retain licensing, pin archive and module hashes, and include the parser offline. Another remedy replaces every text-producing emitter with sealed structured construction and trusts that provenance alone; the present string interface cannot supply that guarantee. Keeping scanImports as the only edge check is the third option. Timings have not been measured, and no authored-Can exploitation has been demonstrated.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "Which available implementation should enforce the described dependency restriction at publication?",
+      "criteria": {
+        "parser": "Parse transformed JS with the vendored upstream implementation and enforce graph rules through AST nodes.",
+        "construction": "Eliminate string-based producers throughout and rely entirely on sealed module construction.",
+        "scan": "Preserve the current scan as the only dependency validation."
+      }
+    }
+  }
+}

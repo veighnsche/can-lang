@@ -1,0 +1,10 @@
+bun test v1.4.2 (744846f84)
+
+tools/runtime/output-graph.test.ts:
+(pass) closed graph rejects computed edges anywhere in generated syntax [9.85ms]
+(pass) upstream grammar distinguishes data/comments and exact static edges [5.57ms]
+
+ 2 pass
+ 0 fail
+ 14 expect() calls
+Ran 2 tests across 1 file. [60.00ms]

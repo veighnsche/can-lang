@@ -42,7 +42,7 @@ func TestArtifactIdentityAndClosedImports(t *testing.T) {
 	if err = validateOutputManifest(manifest, true); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"../entry.ts", "/entry.ts", "packages/../entry.ts", "packages/A.ts", "packages/CON.ts", "packages/a.ts.", "packages/a\\b.ts"} {
+	for _, name := range []string{"manifest.json/extra.ts", "MANIFEST.JSON/extra.ts", "Manifest.Json", "../entry.ts", "/entry.ts", "packages/../entry.ts", "packages/A.ts", "packages/CON.ts", "packages/a.ts.", "packages/a\\b.ts"} {
 		t.Run(name, func(t *testing.T) {
 			items := artifactFixture()
 			items = append(items, OutputArtifact{Path: name, Bytes: []byte("x")}, OutputArtifact{Path: "packages/a.ts", Bytes: []byte("x")})

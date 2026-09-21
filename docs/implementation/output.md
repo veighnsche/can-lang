@@ -24,11 +24,13 @@ identities together with the exact artifact hashes, entry and import inventory.
 Source/dependency identities also include registry and configured asset contents.
 Absolute project paths, process IDs and random staging names are outside semantic
 content identity. A source/manifest/registry/asset change during a build causes
-publication to refuse the stale snapshot.
+publication to refuse the stale snapshot. The snapshot is checked again immediately
+before replacing current, for both staged and reused generations.
 
 Generated modules use structured imports rendered as exact relative `.ts` paths.
 The complete graph includes type-only imports even though Bun erases them. Path
-claims include directories and reject case aliases, device names, traversal and
+claims include directories, reserve `manifest.json` and its descendants under any
+case spelling, and reject case aliases, device names, traversal and
 file/directory conflicts. Assets bind their bytes through their digest path;
 source maps must match their generated module and basic version-3 structure.
 Detailed source-map generation belongs to I40.
@@ -41,7 +43,11 @@ Authored TypeScript, npm discovery and user host-module registration are absent.
 
 Before publication, the pinned Bun transpiler parses every generated/runtime
 module without executing it or resolving dependencies. Executable import edges
-must match the emission inventory. Structured type-only edges are checked by the
+must match the emission inventory. A pinned, bundled Acorn parser additionally
+checks Bun-transformed JavaScript ASTs, refusing computed imports (including
+nested functions) that Bun’s import scan does not enumerate. Static re-export
+edges are also checked. This pass performs no execution or dependency resolution.
+Structured type-only edges are checked by the
 Go graph even when erased by the native parser. This validates compiler-generated
 fragments; it is not an API for admitting arbitrary authored TypeScript.
 

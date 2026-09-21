@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can's I09 output API accepts compiler-generated TypeScript strings and structured static import inventories; authored TypeScript is not a language input. Pinned Bun.Transpiler.transformSync validates syntax, while scanImports misses computed import expressions such as const target = \"node:fs\"; await import(target);. The contract requires a closed static ESM graph before publication. Runtime files are separately hash-verified. Existing generated fragments are strings, so full construction provenance would require changing all producers. Acorn 8.18.0 is an upstream MIT JavaScript parser available as a self-contained module; it can parse Bun-transformed JavaScript without execution, and AST traversal can reject ImportExpression regardless of its argument. Vendoring requires exact archive/file hashes, license and offline bundle coverage. Alternatives are a pinned upstream AST validation pass after Bun erases TypeScript; replacing all string producers with a sealed structured module API before relying exclusively on provenance; or retaining scanImports alone. No performance measurements or authored-source exploit are established.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "Which correction best establishes the stated publication invariant given these existing interfaces?",
+      "criteria": {
+        "parser": "Vendor the pinned upstream parser and inspect the transformed JavaScript AST before accepting the module.",
+        "construction": "Replace every text producer with sealed structural emission and make provenance the exclusive graph guard.",
+        "scan": "Continue using the existing import scan without another guard."
+      }
+    }
+  }
+}

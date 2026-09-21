@@ -1,8 +1,10 @@
 package driver
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -403,5 +405,44 @@ func TestProjectLockAcrossProcesses(t *testing.T) {
 	reopened := outputBegin(t, root)
 	if reopened.Graph.Root.Root != root {
 		t.Fatal("lock did not release")
+	}
+}
+
+func TestPublicationRechecksSnapshotBeforeCurrent(t *testing.T) {
+	for _, point := range []string{"staged", "generation", "before-current"} {
+		for _, reuse := range []bool{false, true} {
+			if reuse && point != "before-current" {
+				continue
+			}
+			t.Run(fmt.Sprintf("%s/reuse=%t", point, reuse), func(t *testing.T) {
+				root := outputProject(t)
+				s := outputBegin(t, root)
+				first := outputPrepared(t, s, "export const value=1n;")
+				if _, err := s.Publish(first); err != nil {
+					t.Fatal(err)
+				}
+				before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+				if err != nil {
+					t.Fatal(err)
+				}
+				candidate := first
+				if !reuse {
+					candidate = outputPrepared(t, s, "export const value=2n;")
+				}
+				s.testHook = func(at string) error {
+					if at == point {
+						return os.WriteFile(filepath.Join(root, "src/main.can"), []byte("package app\n    provides []\n    uses []\nint value = 999\n"), 0600)
+					}
+					return nil
+				}
+				if _, err = s.Publish(candidate); err == nil {
+					t.Fatal("published stale snapshot")
+				}
+				after, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+				if err != nil || !bytes.Equal(before, after) {
+					t.Fatal("previous current changed", err)
+				}
+			})
+		}
 	}
 }

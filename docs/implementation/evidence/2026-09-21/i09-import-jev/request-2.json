@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The current Can compiler emits TS text with an explicit list of static dependencies. User TS cannot enter through Can syntax. In I09, Bun.Transpiler.transformSync checks parsing and scanImports checks known edges, but const target = \"node:fs\"; await import(target); is absent from that scan. Publication promises only a closed ESM dependency graph. Distribution runtime bytes already undergo hash verification. Since producers currently return text fragments, a provenance-only guarantee needs a migration of every producer. A standalone MIT-licensed upstream parser, Acorn 8.18.0, could examine the JavaScript emitted by Bun and reject every ImportExpression AST node without running source. Its integration must pin the downloaded archive and vendored bytes, retain the license, and work in the offline bundle. The available choices are adding that pinned AST pass, converting all emitters to a sealed structural construction interface as the sole edge guarantee, or leaving the scan unchanged. There is neither measured performance evidence nor evidence of an exploit from authored Can.",
+  "questions": {
+    "guard": {
+      "type": "choice",
+      "instructions": "Select the most appropriate way to repair the supplied graph-validation gap under the stated constraints.",
+      "criteria": {
+        "parser": "Add the hash-pinned upstream AST check on Bun output, bundling its license and offline bytes.",
+        "construction": "Migrate all emitters to a closed structured API and depend only on its construction guarantees.",
+        "scan": "Leave validation based solely on scanImports."
+      }
+    }
+  }
+}
