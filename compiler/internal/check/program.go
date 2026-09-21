@@ -30,6 +30,7 @@ type Program struct {
 	Collections  map[string]*CollectionSpecialization
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
+	SQLs         map[string]*SQLSpecialization
 	Assertions   []*ir.Assertion
 	Assets       []project.Asset
 	SQL          []ir.SQLDescriptor
@@ -60,6 +61,7 @@ type programChecker struct {
 	codecParts  map[string][]*types.Type
 	https       map[string]*HTTPSpecialization
 	httpParts   map[string]*httpParts
+	sqlSites    []SQLSiteRecord
 	world       *resolve.World
 	builder     *types.Builder
 	annotations map[*resolve.File]map[string]*types.Type
@@ -250,7 +252,10 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		if httpGenericOperation(op.Identity) {
 			continue
 		} // I32 generics specialize per concrete type argument on use.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" {
+		if sqlGenericOperation(op.Identity) {
+			continue
+		} // I35 query generics specialize per P/R on use; transaction variants wait for I38.
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" {
 			continue
 		}
 		signature := &syntax.CallableType{}
@@ -524,6 +529,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = CheckSQLCallSites(p.SQLs, c.sqlSites, p.SQL); err != nil {
+		return nil, err
+	}
 	return p, nil
 }
 
@@ -549,6 +557,9 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	owner := file.Source.Package.Owner
 	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Asset: func(name string) ir.AssetResolution {
 		return resolveAssetName(c.world.Graph, owner, name)
+	}, SQLSite: func(key, name string) ir.SQLCallSite {
+		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})
+		return ir.SQLCallSite{Owner: owner.Key, Name: name}
 	}}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {

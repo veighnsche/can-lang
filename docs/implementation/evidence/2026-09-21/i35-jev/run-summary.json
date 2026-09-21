@@ -1,0 +1,128 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1406,
+   "output_tokens": 146
+  },
+  "answers": {
+   "max_rows_errors": {
+    "type": "choice",
+    "choice": "argument_values",
+    "confidence": 0.99,
+    "probabilities": {
+     "review_needed": 0.01,
+     "limit_unified": 0.0,
+     "argument_values": 0.99
+    }
+   },
+   "pool_open_proof": {
+    "type": "choice",
+    "choice": "connect_await",
+    "confidence": 0.7,
+    "probabilities": {
+     "review_needed": 0.09,
+     "lazy_documented": 0.11,
+     "connect_await": 0.78,
+     "probe_query": 0.02
+    }
+   },
+   "unknown_failures": {
+    "type": "choice",
+    "choice": "propagate_fault",
+    "confidence": 0.2,
+    "probabilities": {
+     "review_needed": 0.27,
+     "query_failed_unknown": 0.27,
+     "propagate_fault": 0.46
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1370,
+   "output_tokens": 146
+  },
+  "answers": {
+   "max_rows_errors": {
+    "type": "choice",
+    "choice": "argument_values",
+    "confidence": 0.99,
+    "probabilities": {
+     "review_needed": 0.01,
+     "limit_unified": 0.0,
+     "argument_values": 0.99
+    }
+   },
+   "pool_open_proof": {
+    "type": "choice",
+    "choice": "connect_await",
+    "confidence": 0.78,
+    "probabilities": {
+     "connect_await": 0.84,
+     "lazy_documented": 0.09,
+     "review_needed": 0.01,
+     "probe_query": 0.06
+    }
+   },
+   "unknown_failures": {
+    "type": "choice",
+    "choice": "propagate_fault",
+    "confidence": 0.62,
+    "probabilities": {
+     "propagate_fault": 0.74,
+     "review_needed": 0.11,
+     "query_failed_unknown": 0.15
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1354,
+   "output_tokens": 146
+  },
+  "answers": {
+   "max_rows_errors": {
+    "type": "choice",
+    "choice": "argument_values",
+    "confidence": 0.96,
+    "probabilities": {
+     "argument_values": 0.98,
+     "review_needed": 0.01,
+     "limit_unified": 0.01
+    }
+   },
+   "pool_open_proof": {
+    "type": "choice",
+    "choice": "connect_await",
+    "confidence": 0.88,
+    "probabilities": {
+     "lazy_documented": 0.01,
+     "connect_await": 0.9,
+     "probe_query": 0.06,
+     "review_needed": 0.03
+    }
+   },
+   "unknown_failures": {
+    "type": "choice",
+    "choice": "propagate_fault",
+    "confidence": 0.34,
+    "probabilities": {
+     "query_failed_unknown": 0.32,
+     "review_needed": 0.12,
+     "propagate_fault": 0.56
+    }
+   }
+  }
+ }
+]

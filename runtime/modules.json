@@ -332,6 +332,16 @@
       "./http.ts",
       "./router.ts"
     ],
-    "platform/sql-descriptor.ts": []
+    "platform/sql-descriptor.ts": [],
+    "platform/sql.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../bytes.ts",
+      "../owner.ts",
+      "./sql-descriptor.ts"
+    ]
   }
 }

@@ -15,3 +15,12 @@ type SQLDescriptor struct {
 	Parameters []string
 	Checked    sql.Descriptor
 }
+
+// SQLCallSite is one checked query/execute call site: the owning project
+// key plus the static manifest descriptor name. The emitter splices the
+// checked descriptor value for this site; the name never becomes a
+// runtime lookup string.
+type SQLCallSite struct {
+	Owner string
+	Name  string
+}

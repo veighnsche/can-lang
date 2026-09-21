@@ -104,6 +104,8 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	functions["can.std.http@1::server_start"] = "$canServer.start"
 	functions["can.std.http@1::server_stop"] = "$canServer.stop"
 	functions["can.std.http@1::server_wait"] = "$canServer.wait"
+	functions["can.std.sql@1::pool_open"] = "$canSQLPools.open"
+	functions["can.std.sql@1::pool_close"] = "$canSQLPools.close"
 	functions["can.std.clock@1::wall_millis"] = "$canClock.wallMillis"
 	functions["can.std.clock@1::monotonic_millis"] = "$canClock.monotonicMillis"
 	functions["can.std.clock@1::sleep_millis"] = "$canClock.sleepMillis"
@@ -159,6 +161,16 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			method = "encode"
 		}
 		functions[id] = name + "." + method
+	}
+	sqlIDs := make([]string, 0, len(program.SQLs))
+	for id := range program.SQLs {
+		sqlIDs = append(sqlIDs, id)
+	}
+	sort.Strings(sqlIDs)
+	sqlNames := map[string]string{}
+	for i, id := range sqlIDs {
+		sqlNames[id] = fmt.Sprintf("$canSQLQuery%d", i)
+		functions[id] = sqlNames[id] + ".run"
 	}
 	codecIDs := make([]string, 0, len(program.Codecs))
 	for id := range program.Codecs {
@@ -303,7 +315,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	var state strings.Builder
 	state.WriteString(declarations)
-	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\n")
+	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\nexport let $canSQLPools:ReturnType<typeof $canCreateSQLPools>;\n")
 	fmt.Fprintf(&state, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", headerType)
 	state.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&state, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", optionType)
@@ -382,9 +394,21 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if err != nil {
 		return nil, err
 	}
+	sqlKinds := map[string]string{}
+	for _, typ := range program.Model.Types() {
+		if typ.Kind() != types.Opaque || typ.Declaration() != "can.std.sql@1::pool" {
+			continue
+		}
+		sqlKinds[typ.Identity()] = "pool"
+	}
+	sqlKindsJSON, err := json.Marshal(sqlKinds)
+	if err != nil {
+		return nil, err
+	}
 	fmt.Fprintf(&state, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
 	fmt.Fprintf(&state, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
-	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value));\n", plan, quote(bytesID))
+	fmt.Fprintf(&state, "const $canSQLKinds:Readonly<Record<string,string>>=%s;\n", sqlKindsJSON)
+	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	numberIDs := map[string]string{}
 	for _, typ := range program.Model.Types() {
@@ -410,6 +434,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		return nil, err
 	}
 	fmt.Fprintf(&state, "$canSQL=$canCreateSQLDescriptors(%s);\n", sqlDescriptors)
+	fmt.Fprintf(&state, "$canSQLPools=$canCreateSQLPools($canDomain,{credentialsMissing:%s,connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,closeFailed:%s,rowLimit:%s,unsupportedValue:%s},$canOriginalEnvironment,$canSQL);\n", quote(numberIDs["can.std.http@1::credentials_missing"]), quote(numberIDs["can.std.sql@1::connection_failed"]), quote(numberIDs["can.std.sql@1::query_failed"]), quote(numberIDs["can.std.sql@1::row_missing"]), quote(numberIDs["can.std.sql@1::row_count"]), quote(numberIDs["can.std.sql@1::schema_mismatch"]), quote(numberIDs["can.std.sql@1::constraint_failed"]), quote(numberIDs["can.std.sql@1::close_failed"]), quote(numberIDs["can.std.sql@1::row_limit"]), quote(numberIDs["can.std.sql@1::unsupported_value"]))
 	fmt.Fprintf(&state, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s});\n", headerType, quote(numberIDs["can.std.http@1::invalid_request"]), quote(numberIDs["can.std.http@1::body_limit"]), quote(invalidData), quote(numberIDs["can.std.http@1::header"]))
 	fmt.Fprintf(&state, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s});\n", quote(numberIDs["can.std.http@1::invalid_request"]), quote(invalidData))
 	fmt.Fprintf(&state, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(numberIDs["can.std.http@1::invalid_route"]), quote(numberIDs["can.std.http@1::duplicate_route"]), quote(numberIDs["can.std.http@1::ambiguous_route"]))
@@ -504,6 +529,26 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		fmt.Fprintf(&state, "export const %s = Object.freeze({%s});\n", httpNames[id], shape)
 	}
+	for _, id := range sqlIDs {
+		special := program.SQLs[id]
+		method, err := sqlMethod(special.Operation)
+		if err != nil {
+			return nil, err
+		}
+		plan, err := sqlPlan(special)
+		if err != nil {
+			return nil, err
+		}
+		// The static descriptor literal stays in the lowered arguments for
+		// fixture matching; the bound descriptor value arrives spliced per
+		// call site and is the only value the runtime method consumes.
+		descriptor := "Parameters<typeof $canSQL.template>[0]"
+		shape := "run:(pool:unknown,_name:unknown,params:unknown,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canSQLPools." + method + "(descriptor," + plan + ",pool,params,$canContext)"
+		if special.Operation == "can.std.sql@1::query_rows" {
+			shape = "run:(pool:unknown,_name:unknown,params:unknown,maxRows:bigint,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canSQLPools." + method + "(descriptor," + plan + ",pool,params,maxRows,$canContext)"
+		}
+		fmt.Fprintf(&state, "export const %s = Object.freeze({%s});\n", sqlNames[id], shape)
+	}
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/collections/map.ts", Names: []ImportName{{"createMap", "$canCreateMap"}, {"isMap", "$canIsMap"}}}, ModuleImport{Target: runtime + "/collections/set.ts", Names: []ImportName{{"createSet", "$canCreateSet"}, {"isSet", "$canIsSet"}}})
@@ -514,6 +559,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql-descriptor.ts", Names: []ImportName{{"createSQLDescriptors", "$canCreateSQLDescriptors"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql.ts", Names: []ImportName{{"createSQLPools", "$canCreateSQLPools"}, {"isSQLPoolValue", "$canIsSQLPool"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
@@ -638,7 +684,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
@@ -669,6 +715,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		for _, id := range httpIDs {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{httpNames[id], httpNames[id]}}})
 		}
+		for _, id := range sqlIDs {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{sqlNames[id], sqlNames[id]}}})
+		}
 		for _, fn := range program.Functions {
 			target := fn.Symbol.Source.OutputPath
 			if target != path {
@@ -694,7 +743,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
 			imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 			for _, id := range collectionIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})
@@ -704,6 +753,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			for _, id := range httpIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{httpNames[id], httpNames[id]}}})
+			}
+			for _, id := range sqlIDs {
+				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{sqlNames[id], sqlNames[id]}}})
 			}
 			for _, fn := range program.Functions {
 				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Identity()], functions[fn.Identity()]}}})

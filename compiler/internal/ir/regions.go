@@ -71,6 +71,7 @@ type InvocationStep struct {
 	// use it as the next receiver; match-chain arms see it only on success.
 	SuccessBinding string
 	Asset          *AssetResolution
+	SQL            *SQLCallSite
 }
 type CompletionKind string
 

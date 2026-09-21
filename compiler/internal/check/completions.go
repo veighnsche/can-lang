@@ -48,6 +48,9 @@ type CompletionContext struct {
 	BareOpaque bool
 	// Asset resolves one static manifest key in the calling project.
 	Asset func(string) ir.AssetResolution
+	// SQLSite records one static descriptor name in the calling project
+	// and returns the splice the emitter renders for the call site.
+	SQLSite func(key, name string) ir.SQLCallSite
 }
 type regionChecker struct {
 	aggregate *aggregateInference
@@ -554,6 +557,13 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 			step.Asset = &resolution
+		}
+		if operation := sqlQueryKey(binding.Identity); operation != "" {
+			resolution, err := c.resolveSQLSite(operation, binding.Identity, args)
+			if err != nil {
+				return err
+			}
+			step.SQL = &resolution
 		}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)

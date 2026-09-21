@@ -23,6 +23,9 @@ func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, nam
 	if op := collectionOperation(symbol.ID); op != nil {
 		return c.inferCollection(op, args, expected, e)
 	}
+	if sqlGenericOperation(symbol.ID) {
+		return ValueBinding{}, true, fmt.Errorf("sql query %s requires explicit type arguments", symbol.ID)
+	}
 	declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
 	if !ok || len(symbol.Parameters) == 0 {
 		return ValueBinding{}, false, nil

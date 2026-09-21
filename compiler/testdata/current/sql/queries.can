@@ -1,0 +1,329 @@
+package app
+    provides []
+    uses [sql, http, option, bytes, codec, io]
+/// Parameters for the account search descriptors.
+record search_parameters
+    str term
+/// One validated account row.
+record account_row
+    int id
+    str display_name
+/// Single integer parameter.
+record id_parameters
+    int id
+/// Binary and nullable cover row.
+record cover_row
+    int id
+    bytes::buffer payload
+    option::value<str> note
+fn sql::pool open_pool
+    emits [http::credentials_missing, sql::connection_failed]
+    asserts
+        sample: => ok
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => ok pool
+        http::credentials_missing
+        sql::connection_failed
+fn account_row account_by_id
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    given
+        int id
+    asserts
+        sample: 4 => ok account_row(4, "Bob")
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::query_one<id_parameters, account_row>(pool, "account_by_id", id_parameters(id))
+            when
+                sample: pool, "account_by_id", id_parameters(4) => ok account_row(4, "Bob")
+            ok account_row row => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok row
+                sql::close_failed
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_missing
+            sql::row_count
+            sql::schema_mismatch
+        http::credentials_missing
+        sql::connection_failed
+fn option::value<account_row> account_by_term
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    given
+        str term
+    asserts
+        sample: "Bob" => ok option::some(account_row(4, "Bob"))
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::query_optional<search_parameters, account_row>(pool, "account_by_term", search_parameters(term))
+            when
+                sample: pool, "account_by_term", search_parameters("Bob") => ok option::some(account_row(4, "Bob"))
+            ok option::value<account_row> found => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok found
+                sql::close_failed
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_count
+            sql::schema_mismatch
+        http::credentials_missing
+        sql::connection_failed
+fn account_row[] accounts_by_term
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch, sql::close_failed]
+    given
+        str term
+        int max
+    asserts
+        sample: "son", 10 => ok [account_row(2, "Jason"), account_row(3, "Mason")]
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::query_rows<search_parameters, account_row>(pool, "accounts_by_term", search_parameters(term), max)
+            when
+                sample: pool, "accounts_by_term", search_parameters("son"), 10 => ok [account_row(2, "Jason"), account_row(3, "Mason")]
+            ok account_row[] rows => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok rows
+                sql::close_failed
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_limit
+            sql::schema_mismatch
+        http::credentials_missing
+        sql::connection_failed
+fn int add_account
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::close_failed]
+    given
+        str term
+    asserts
+        sample: "Zed" => ok 1
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::execute<search_parameters>(pool, "add_account", search_parameters(term))
+            when
+                sample: pool, "add_account", search_parameters("Zed") => ok 1
+            ok int affected => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok affected
+                sql::close_failed
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+        http::credentials_missing
+        sql::connection_failed
+fn void close_pool
+    emits [http::credentials_missing, sql::connection_failed, sql::close_failed]
+    asserts
+        sample: => ok
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::pool_close(pool, 1000)
+            when
+                sample: pool, 1000 => ok
+            ok => ok
+            sql::close_failed
+        http::credentials_missing
+        sql::connection_failed
+fn cover_row cover_by_id
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    given
+        int id
+    asserts
+        missing: 999 => sql::row_missing("cover_by_id")
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            missing: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::query_one<id_parameters, cover_row>(pool, "cover_by_id", id_parameters(id))
+            when
+                missing: pool, "cover_by_id", id_parameters(999) => sql::row_missing("cover_by_id")
+            ok cover_row row => match call sql::pool_close(pool, 1000)
+                when
+                    missing: pool, 1000 => ok
+                ok => ok row
+                sql::close_failed
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_missing
+            sql::row_count
+            sql::schema_mismatch
+        http::credentials_missing
+        sql::connection_failed
+fn void main
+    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::row_limit, sql::schema_mismatch, sql::close_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: by_id <id> | by_term <term> | rows <term> <max> | add <term> | cover <id> | close")
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                ok int written => ok
+                io::write_failed
+            codec::invalid_data
+        false => match args[0]
+            "by_id" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call account_by_id(id) as account_row row
+                    call codec::encode_json<account_row>(row) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_missing
+                    sql::row_count
+                    sql::schema_mismatch
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: by_id <id>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "by_term" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<str>(raw) as str term
+                    call account_by_term(term) as option::value<account_row> found
+                    call codec::encode_json<option::value<account_row>>(found) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_count
+                    sql::schema_mismatch
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: by_term <term>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "rows" => match args.length is 3
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw_term
+                    call codec::decode_json<str>(raw_term) as str term
+                    call bytes::from_utf8(args[2]) as bytes::buffer raw_max
+                    call codec::decode_json<int>(raw_max) as int max
+                    call accounts_by_term(term, max) as account_row[] rows
+                    call codec::encode_json<account_row[]>(rows) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_limit
+                    sql::schema_mismatch
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: rows <term> <max>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "add" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<str>(raw) as str term
+                    call add_account(term) as int affected
+                    call codec::encode_json<int>(affected) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: add <term>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "cover" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call cover_by_id(id) as cover_row row
+                    call codec::encode_json<int>(row.id) as bytes::buffer id_body
+                    call io::stdout_write(id_body) as int w1
+                    call bytes::to_ints(row.payload) as int[] ints
+                    call codec::encode_json<int[]>(ints) as bytes::buffer ints_body
+                    call io::stdout_write(ints_body) as int w2
+                    call codec::encode_json<option::value<str>>(row.note) as bytes::buffer note_body
+                    call io::stdout_write(note_body) as int w3
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_missing
+                    sql::row_count
+                    sql::schema_mismatch
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: cover <id>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "close" => match args.length is 1
+                true => match chain
+                    call close_pool()
+                    call bytes::from_utf8("closed") as bytes::buffer message
+                    call io::stdout_write(message) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: close")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            _ => match call bytes::from_utf8("usage: by_id <id> | by_term <term> | rows <term> <max> | add <term> | cover <id> | close")
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        badop: message => ok 0
+                    ok int written => ok
+                    io::write_failed
+                codec::invalid_data

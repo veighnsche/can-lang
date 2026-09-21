@@ -258,6 +258,13 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			out.WriteString(lowered.Statements)
 			args = append(args, lowered.Value)
 		}
+		callArgs := args
+		if step.SQL != nil {
+			// The checked descriptor value is bound per call site. It
+			// joins the invocation only: fixture matching still compares
+			// the authored arguments, including the static name literal.
+			callArgs = append(append([]string{}, args...), "$canSQL.declareDescriptor("+quote(step.SQL.Owner)+","+quote(step.SQL.Name)+")")
+		}
 		var invocation string
 		if step.Array != nil {
 			var err error
@@ -278,7 +285,7 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 				return LoweredExpression{}, err
 			}
 		} else {
-			invocation = target + "(" + strings.Join(append(args, "$canContext"), ", ") + ")"
+			invocation = target + "(" + strings.Join(append(callArgs, "$canContext"), ", ") + ")"
 		}
 		if step.Fixtures != nil {
 			var rows []string

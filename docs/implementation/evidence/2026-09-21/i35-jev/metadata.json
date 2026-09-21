@@ -1,0 +1,19 @@
+{
+ "exercise": "I35 pool establishment proof, max_rows error placement, unknown native failure handling",
+ "finished_utc": "2026-09-21T20:58:38+00:00",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "8d9376b16f7c81817e381cf4fd67639f548eecc56839bc5054a41baee6378674",
+  "request-2.json": "0137bc789912d51d4d2ab8d37cf6157668a99f5204e01d8f2fe25141328eeaeb",
+  "request-3.json": "8cf024331b14b10b230ebb9ed5623461cf6aaa3083a1a26641bcbc8c5ad275a4"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and measured facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 21/21 strings pairwise distinct.",
+ "verdicts": {
+  "pool_open_proof": "connect_await (3/3: 0.78, 0.84, 0.90)",
+  "max_rows_errors": "argument_values (3/3 strong: 0.99, 0.99, 0.98)",
+  "unknown_failures": "propagate_fault (3/3 weak: 0.46, 0.74, 0.56; query_failed_unknown drew 0.27/0.15/0.32)"
+ }
+}

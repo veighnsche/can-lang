@@ -6,6 +6,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/sql"
+	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
 // sqlTable renders checked descriptors as the manifest-owned table consumed
@@ -57,4 +58,44 @@ func sqlTable(program *check.Program) (string, error) {
 		return "", err
 	}
 	return string(raw), nil
+}
+
+// sqlPlan renders one query specialization as the JSON plan consumed by
+// the $canSQLPools methods: shared parameter/row scalar projections plus
+// the concrete result option identities for query_optional. The
+// descriptor itself is spliced per call site, never carried in the plan.
+func sqlPlan(special *check.SQLSpecialization) (string, error) {
+	type schema = types.SQLSchema
+	plan := struct {
+		Params schema  `json:"params"`
+		Rows   *schema `json:"rows,omitempty"`
+		Some   string  `json:"some,omitempty"`
+		None   string  `json:"none,omitempty"`
+	}{Params: special.Params}
+	if special.Operation != "can.std.sql@1::execute" {
+		plan.Rows = &special.Rows
+	}
+	if special.Operation == "can.std.sql@1::query_optional" {
+		plan.Some, plan.None = special.ResultSome, special.ResultNone
+	}
+	raw, err := json.Marshal(plan)
+	if err != nil {
+		return "", err
+	}
+	return string(raw), nil
+}
+
+// sqlMethod maps a pool query operation to its $canSQLPools method.
+func sqlMethod(operation string) (string, error) {
+	switch operation {
+	case "can.std.sql@1::query_one":
+		return "queryOne", nil
+	case "can.std.sql@1::query_optional":
+		return "queryOptional", nil
+	case "can.std.sql@1::query_rows":
+		return "queryRows", nil
+	case "can.std.sql@1::execute":
+		return "execute", nil
+	}
+	return "", fmt.Errorf("unknown SQL specialization %s", operation)
 }

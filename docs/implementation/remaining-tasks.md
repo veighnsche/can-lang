@@ -398,6 +398,9 @@ exist; it must not become an authored raw-driver escape.
 
 ## I35 — Typed Bun.SQL pools and rows
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i35](evidence/2026-09-21/i35/README.md).
+The plan below is kept as dependency context for I38/I42.
+
 **Files:** create `runtime/platform/sql.ts`, `runtime/test/sql.test.ts`,
 `compiler/internal/types/sql_schema.go`, `sql_schema_test.go`; extend I37's
 `check/sql.go`, `ir/sql.go`, `emit/sql.go` and shared program wiring. Use
