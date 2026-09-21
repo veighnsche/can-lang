@@ -46,7 +46,7 @@ test("child categories, table order, pairs and descendant nesting",async()=>{
  for(const name of ["a","form"]){const nested=await element("div",[await element(name)]);check(await html.element(await tag(name),[],[nested]),1220);}
 });
 test("URL parsing rejects origin and script ambiguity",async()=>{
- for(const input of ["//evil.test","/\\evil.test","javascript:alert(1)","data:text/html,x","http://a.test"," https://a.test","https://a:b@a.test","/x\ny","/.//evil.test","/%2e//evil.test","https://"] )check(await html.parseURL(input),1221);
+ for(const input of ["/\ud800","https://example.com/\udfff","//evil.test","/\\evil.test","javascript:alert(1)","data:text/html,x","http://a.test"," https://a.test","https://a:b@a.test","/x\ny","/.//evil.test","/%2e//evil.test","https://"] )check(await html.parseURL(input),1221);
  for(const input of ["/","/a b?q=x&y=z#f","/a/../b","https://example.com/path?x=1&y=2"]){const url=value(await html.parseURL(input));const attr=value(await html.urlAttribute("href",url));expect((await html.element(await tag("a"),[attr],[])).kind).toBe("ok");check(await html.element(await tag("div"),[attr],[]),1220);}
  const outside=value(await html.parseURL("https://example.com/"));check(await html.get(outside),1221);check(await html.post(outside),1221);
  const local=value(await html.parseURL("/search?q=a&x=b"));expect(await render([await element("div",[],[value(await html.get(local))])])).toBe('<div hx-get="/search?q=a&amp;x=b"></div>');

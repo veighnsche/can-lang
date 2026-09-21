@@ -58,7 +58,7 @@ export function createHTML(domain:ReturnType<typeof createDomainRuntime>,types:C
   async text(value:string,_context?:AssertionContext){return success(node(Bun.escapeHTML(string(value))));},
   async textFragment(value:string,_context?:AssertionContext){return success(token(safe,Bun.escapeHTML(string(value))));},
   async parseURL(value:string,_context?:AssertionContext){
-   string(value);if(/[\x00-\x1f\x7f\\]/.test(value)||value.startsWith("//"))return bad(types.url,"syntax");
+   string(value);if(!value.isWellFormed()||/[\x00-\x1f\x7f\\]/.test(value)||value.startsWith("//"))return bad(types.url,"syntax");
    const local=value.startsWith("/");if(!local&&!/^https:\/\//i.test(value))return bad(types.url,"scheme");
    let parsed:URL;try{parsed=new URL(value,"https://can.invalid/");}catch(cause){if(!(cause instanceof TypeError))throw cause;return bad(types.url,"syntax");}
    if(parsed.protocol!=="https:"||parsed.username!==""||parsed.password!=="")return bad(types.url,"authority");
