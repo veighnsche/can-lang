@@ -1,6 +1,6 @@
 # Stage 4 — Implementation plan
 
-Completed after [reconciliation](reconciliation.md). All execution below belongs to a separately authorized stage6. [Tasks](tasks.md) are unchecked and dependency ordered; [coverage](coverage.md) is the completion ledger. This plan targets the whole approved redesign, not repairs to the predecessor compiler.
+Prepared after [reconciliation](reconciliation.md). Stage6 implementation subsequently began; [tasks](tasks.md) now records verified completion and dependencies, while [coverage](coverage.md) maps contracts to their owners. Implementation is paused at the user’s request as of 2026-09-21. The [file-level continuation handoff](remaining-tasks.md) expands the remaining work while preserving the established architecture. This plan targets the whole approved redesign, not repairs to the predecessor compiler.
 
 ## Milestones and exit gates
 
@@ -72,4 +72,4 @@ Replacement tests are derived from current spec examples and edge contracts. Kee
 
 ## Stop conditions
 
-An unsupported native feature, parser scanner mismatch, incorrect deadline/drain behavior, incomplete source mapping or unsafe output deletion blocks its dependent milestone. Record the failing minimal case and upstream version before considering another upstream version/library. A change to a Can contract requires a separate design correction; this plan does not preauthorize it. Stage6 itself remains unauthorized until the user asks to implement.
+An unsupported native feature, parser scanner mismatch, incorrect deadline/drain behavior, incomplete source mapping or unsafe output deletion blocks its dependent milestone. Record the failing minimal case and upstream version before considering another upstream version/library. A change to a Can contract requires a separate design correction; this plan does not preauthorize it. Implementation was authorized and partially completed, then paused by the user. Resume only with renewed authorization; this planning update does not restart execution.
