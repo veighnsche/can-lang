@@ -98,8 +98,12 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 		}
 		checker := expressionRegion(preparation)
 		expressions := checker.expressions(bodyScope{preparation.Scope})
+		checkedDescriptors := map[syntax.Expr]*ir.Expression{}
 		scalarExpression := func(expression syntax.Expr, kind string) error {
-			_, err := expressions.Check(expression, c.annotations[file][kind])
+			value, err := expressions.Check(expression, c.annotations[file][kind])
+			if err == nil {
+				checkedDescriptors[expression] = value
+			}
 			return err
 		}
 		handler := func(body syntax.Body, result *types.Type, probability bool) error {
@@ -124,6 +128,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 		}
 		switch d := native.Symbol.Declaration.(type) {
 		case *syntax.JudgeDecl:
+			judgeInputs := append([]ir.Local(nil), ctx.Parameters...)
 			var pending []struct {
 				field syntax.Field
 				typ   *types.Type
@@ -159,7 +164,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 				if e != nil {
 					return e
 				}
-				checked := NativeRegistration{Question: question.ID, Prepare: prepare, Arguments: args}
+				checked := ir.JudgeRegistration{Question: question.ID, Span: registration.Span, Prepare: prepare, Arguments: args}
 				if target.Signature.Result().Kind() == types.Void {
 					if registration.Binding != nil {
 						return fmt.Errorf("void question registration cannot bind a value")
@@ -198,6 +203,11 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if err = handler(d.Continuation, ctx.Result, false); err != nil {
 				return err
 			}
+			state, stateInputs, e := judgeState(native, judgeInputs)
+			if e != nil {
+				return e
+			}
+			native.Judge = &ir.Judge{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: judgeInputs, State: state, StateInputs: stateInputs, Registrations: native.Registrations, Continuation: native.Regions[0]}
 		case *syntax.LLMDecl:
 			if err = scalarExpression(d.Asks, "str"); err != nil {
 				return err
@@ -354,6 +364,15 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if d.Shared != nil && d.Selected == nil {
 				if err = handler(d.Shared, result, false); err != nil {
 					return err
+				}
+			}
+			if d.Kind == "noul" {
+				native.Noul = &ir.Noul{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Instructions: checkedDescriptors[d.Asks], Minimum: checkedDescriptors[d.Minimum]}
+				if native.Noul.Minimum == nil {
+					native.Noul.Minimum = &ir.Expression{Kind: ir.Literal, Span: d.Span, Type: c.annotations[file]["float"], Text: "0.5"}
+				}
+				for i, option := range d.Options {
+					native.Noul.Options = append(native.Noul.Options, ir.NoulOption{True: option.Name.Text == "true", Description: checkedDescriptors[option.Description], Handler: native.Regions[i]})
 				}
 			}
 		case *syntax.ChoiceArmDecl:

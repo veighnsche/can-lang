@@ -1,10 +1,10 @@
 import { array, dataArray, dataKeys, dataProperty, record, recordIdentity } from "../data.ts";
-import { byteLength, copyBytes, ownBytes, type Bytes } from "../bytes.ts";
+import { ownBytes, type Bytes } from "../bytes.ts";
 import { success, failure, type Completion, type AssertionContext } from "../completion.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { Budget, CodecIssue, reject, childPath, standaloneBytes } from "./budget.ts";
 import { decodeInteger, encodeInteger } from "./numbers.ts";
-import { scanJSON } from "./duplicates.ts";
+import { parseDocument } from "./document.ts";
 
 export type SchemaNode = Readonly<{identity:string;kind:string;name:string;element?:string;fields?:readonly Readonly<{name:string;type:string}>[];leaves?:readonly string[]}>;
 export type Schema = Readonly<{root:string;nodes:readonly SchemaNode[]}>;
@@ -40,23 +40,7 @@ function extras(value:Record<string,unknown>,fields:readonly string[],path:strin
 
 export function decodeJSON(schema:Schema,input:unknown,bytes=standaloneBytes):unknown {
   const get=graph(schema), budget=new Budget(bytes);
-  if(byteLength(input)>BigInt(bytes))reject("","byte_limit");
-  let text:string;
-  try{text=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(copyBytes(input,origin));}
-  catch(cause){if(cause instanceof TypeError)reject("","utf8");throw cause;}
-  // BOM preservation makes a leading BOM fail native JSON syntax, as required.
-  const duplicate=scanJSON(text);
-  const tokens=new WeakMap<object,Map<string,string>>();
-  let rootHolder:object|undefined;
-  let parsed:unknown;
-  try{
-    parsed=JSON.parse(text,function(this:object,key:string,value:unknown,context?:{source?:string}){
-      if(context?.source!==undefined){let holder=tokens.get(this);if(!holder){holder=new Map();tokens.set(this,holder);}holder.set(key,context.source);}
-      if(key==="")rootHolder=this;
-      return value;
-    });
-  }catch(cause){if(cause instanceof SyntaxError)reject("","invalid_json");throw cause;}
-  if(duplicate!==undefined)reject(duplicate,"duplicate_member");
+  const {parsed,rootHolder,tokens}=parseDocument(input,bytes);
   function visit(node:SchemaNode,value:unknown,holder:object,key:string,path:string,depth:number):unknown {
     const container=node.kind!=="primitive";
     budget.visit(depth+(container?1:0),path);

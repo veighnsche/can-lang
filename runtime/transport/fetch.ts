@@ -3,8 +3,9 @@ import {Deadline,transportFault} from "./deadline.ts";
 import {readBody} from "./body.ts";
 import {nativeOperation,nativeCompletion,cleanupOperation} from "./owned.ts";
 import {prepareRequest,headerSnapshot,type Connection,type Entries} from "./request.ts";
+import type {HTTPExchange} from "../assert/provider.ts";
 
-export type NativeRequest=Readonly<{path:string;method:"GET"|"HEAD"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS";query:Entries;headers:Entries;body?:Uint8Array;envelope?:boolean;ownerSignal?:AbortSignal}>;
+export type NativeRequest=Readonly<{path:string;method:"GET"|"HEAD"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS";query:Entries;headers:Entries;body?:Uint8Array;envelope?:boolean;ownerSignal?:AbortSignal;exchange?:HTTPExchange}>;
 export type ResponseMetadata=Readonly<{status:number;headers:readonly Readonly<{name:string;value:string}>[]}>;
 
 // Private boundary: decoding returns only a checked immutable Can value. The
@@ -18,7 +19,7 @@ export async function performRequest<T>(connection:Connection,request:NativeRequ
  try{
   response=await nativeOperation(async()=>{
    let received:Response;
-   try{received=await fetch(prepared.url,{method:request.method,headers:prepared.headers,body,redirect:"manual",credentials:"omit",signal:deadline.signal});}
+   try{received=await (request.exchange??fetch)(prepared.url,{method:request.method,headers:prepared.headers,body,redirect:"manual",credentials:"omit",signal:deadline.signal});}
    catch(cause){
     deadline.check();
     // Classification is confined to the actual fetch call, not ownership,

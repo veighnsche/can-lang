@@ -134,6 +134,23 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	if region == nil || region.ID == "" || region.Body == nil || !types.Equal(region.Result, region.Result) || !jsBinding.MatchString(name) {
 		return "", fmt.Errorf("invalid checked region")
 	}
+	args, err := e.configure(region)
+	if err != nil {
+		return "", err
+	}
+	body, err := e.block(region.Body)
+	if err != nil {
+		return "", err
+	}
+	origin := e.origin(region.Span)
+	prefix := ""
+	if e.SourceID != "" {
+		prefix = mappingMark(e.SourceID, region.Span, "function") + "let $canOrigin = " + origin + ";\n"
+		origin = "$canOrigin"
+	}
+	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
+}
+func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 	e.region = region
 	bindings := map[string]string{}
 	for id, value := range e.Bindings {
@@ -157,24 +174,14 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	var args []string
 	for i, input := range region.Inputs {
 		if input.Identity == "" || !types.Equal(input.Type, input.Type) {
-			return "", fmt.Errorf("invalid region input")
+			return nil, fmt.Errorf("invalid region input")
 		}
 		param := fmt.Sprintf("$canArg%d", i)
 		bindings[input.Identity] = param
 		args = append(args, param+": "+TypeName(input.Type))
 	}
 	args = append(args, "$canContext?: $canAssertionContext")
-	body, err := e.block(region.Body)
-	if err != nil {
-		return "", err
-	}
-	origin := e.origin(region.Span)
-	prefix := ""
-	if e.SourceID != "" {
-		prefix = mappingMark(e.SourceID, region.Span, "function") + "let $canOrigin = " + origin + ";\n"
-		origin = "$canOrigin"
-	}
-	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
+	return args, nil
 }
 func (e *RegionEmitter) target(id string) (string, error) {
 	if name := e.Functions[id]; name != "" {

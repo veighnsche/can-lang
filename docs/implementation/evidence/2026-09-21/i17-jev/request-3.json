@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Implementation facts: the frontend retains native signatures, argument preparation evidence and handler Completion IR; checked descriptor values are not yet retained. A RegionEmitter exists for typed expressions and conventional regions. Exact bigint JSON, byte/depth/node admission, HTTP deadlines, owned async work and domain failures are provided by shared runtime services. A Noul judge must perform runtime-only computation: normal call arguments first, grouped state second, then each registered occurrence arguments/asks/criteria/minimum in declaration order, with no repeated evaluation. Entire descriptor/state validation precedes authentication and a lone batch request whose occurrence keys are q0, q1, and so forth. Response checking covers every answer before executing any handler. Execute handlers sequentially, propagate the first failure without later handlers or continuation, and run the continuation only after all succeed. Async results remain private nonthenable Completion carriers so callable then fields are data. No alternative may relax these rules or evaluate code/contact providers while compiling. All options need explicit refusal for unsupported forms and a subsequent extension to Choice and Score.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Which of these equivalent-contract architectures should implement the checked Noul vertical slice while building on existing emission and runtime services?",
+      "criteria": {
+        "phase_ir": "Introduce preserved typed judge phases, lower their sequencing in generated code, call existing region handlers, and delegate protocol mechanics to the shared runtime.",
+        "synthetic_regions": "Desugar judge phases into the existing ordinary region representation, using synthetic region steps for the complete workflow.",
+        "runtime_closures": "Generate closures for preparation and execution, handing complete phase scheduling to a runtime-level judge controller."
+      }
+    }
+  }
+}

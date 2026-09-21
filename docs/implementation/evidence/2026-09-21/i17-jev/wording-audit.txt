@@ -1,0 +1,1 @@
+Reviewed before submission: all three contexts, instructions, and each option description are freshly worded. Facts and mandatory phase/boxing constraints are equivalent; option meanings and stable labels are unchanged. Differences are wording, not new evidence or relaxed alternatives. Agreement is advisory, not a proof or guaranteed removal of bias.

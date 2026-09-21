@@ -1,0 +1,70 @@
+package app
+    provides []
+    uses [ai, http, codec, bytes, io]
+
+connection classifier
+    endpoint "http://127.0.0.1:1/systemone"
+    auth bearer env "CAN_I17_TOKEN"
+    timeout_ms 1000
+    metadata
+        protocol "typesafe_systemone_v1"
+        model "jev-latest"
+
+fn float report
+    emits [codec::invalid_data, io::write_failed]
+    given
+        float probability
+        str marker
+    asserts
+        sample: 0.5, "T" => ok 0.5
+    match call bytes::from_utf8(marker)
+        ok bytes::buffer encoded => match call io::stdout_write(encoded)
+            when
+                sample: encoded => ok 1
+            ok int written => ok probability
+            io::write_failed
+        codec::invalid_data
+
+noul float likelihood from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    given
+        str description
+    asks description
+    minimum 0.5
+        true "Yes" => relay call report(%, "T")
+        false "No" => relay call report(%, "F")
+
+judge float assess from classifier
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    state
+        int amount
+        float signed_zero
+    call likelihood("First") as float first
+    call likelihood("Second") as float second
+    call likelihood("Unused") as float unused
+    ok => ok first + second
+
+fn void main
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call assess((9007199254740993, -0.0))
+        when
+            sample: (9007199254740993, -0.0) => ok 0.75
+        ok float measured => match measured is 0.75
+            true => ok
+            false => do
+                int invalid = 1 / 0
+                ok
+        http::invalid_request
+        http::credentials_missing
+        http::transport_failed
+        http::timeout
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        ai::invalid_question
+        ai::invalid_answer
+        io::write_failed

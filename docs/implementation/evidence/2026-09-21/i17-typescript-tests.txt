@@ -1,0 +1,5 @@
+Strict generated TypeScript check
+TypeScript: Version 7.0.2
+Build: 1523f9d635f638fd8c2c594fe79d656f96bf07481abe56be2ab0516d2bf5567a
+All 33 generated/private runtime TypeScript modules checked.
+Exit: 0

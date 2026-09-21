@@ -64,6 +64,48 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		functions[id] = name + "." + method
 	}
 	bindings := map[string]string{}
+	nativeNames := map[string]string{}
+	nativePaths := map[string]string{}
+	questions := map[string]*ir.Noul{}
+	judges := false
+	for i, native := range program.Natives {
+		if native.Noul == nil && native.Judge == nil {
+			continue
+		}
+		name := fmt.Sprintf("$canNative%d", i)
+		nativeNames[native.Symbol.ID] = name
+		nativePaths[native.Symbol.ID] = native.Symbol.Source.OutputPath
+		if native.Noul != nil {
+			questions[native.Symbol.ID] = native.Noul
+		}
+		if native.Judge != nil {
+			functions[native.Symbol.ID] = name
+			judges = true
+		}
+		for j, region := range native.Regions {
+			nativeNames[region.ID] = fmt.Sprintf("%sHandler%d", name, j)
+			nativePaths[region.ID] = native.Symbol.Source.OutputPath
+		}
+	}
+	connectionNames := map[string]string{}
+	for _, native := range program.Natives {
+		if native.Judge != nil {
+			connectionNames[native.Connection] = ""
+		}
+	}
+	connectionIDs := make([]string, 0, len(connectionNames))
+	for id := range connectionNames {
+		connectionIDs = append(connectionIDs, id)
+	}
+	sort.Strings(connectionIDs)
+	for i, id := range connectionIDs {
+		connectionNames[id] = fmt.Sprintf("$canConnection%d", i)
+	}
+	nativeIDs := make([]string, 0, len(nativePaths))
+	for id := range nativePaths {
+		nativeIDs = append(nativeIDs, id)
+	}
+	sort.Strings(nativeIDs)
 	for i, fn := range program.Functions {
 		functions[fn.Symbol.ID] = fmt.Sprintf("$canFunction%d", i)
 	}
@@ -94,6 +136,26 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	var state strings.Builder
 	state.WriteString(declarations)
+	for _, id := range connectionIDs {
+		policy := program.Connections[id]
+		headers := make([]map[string]string, 0, len(policy.Headers))
+		for _, header := range policy.Headers {
+			headers = append(headers, map[string]string{"name": header.Name, "value": header.Value})
+		}
+		connection := map[string]any{"endpoint": policy.Endpoint, "timeoutMilliseconds": policy.TimeoutMilliseconds, "maxBodyBytes": policy.MaxBodyBytes, "headers": headers}
+		if policy.BearerEnvironment != "" {
+			connection["bearerEnvironment"] = policy.BearerEnvironment
+		}
+		encoded, e := json.Marshal(connection)
+		if e != nil {
+			return nil, e
+		}
+		fmt.Fprintf(&state, "export const %s = Object.freeze(%s);\n", connectionNames[id], encoded)
+	}
+
+	if judges {
+		state.WriteString("export let $canAI: ReturnType<typeof $canCreateTypeSafe>;\n")
+	}
 	for _, id := range codecIDs {
 		fmt.Fprintf(&state, "export let %s: ReturnType<typeof $canCreateCodec<%s>>;\n", codecNames[id], TypeName(program.Codecs[id].Data))
 	}
@@ -111,6 +173,21 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => identity === %s && $canIsBytes(value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	if judges {
+		ids := map[string]string{}
+		for _, typ := range program.Model.Types() {
+			ids[typ.Declaration()] = typ.Identity()
+		}
+		fields := map[string]string{}
+		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data", "invalidQuestion": "can.std.ai@1::invalid_question", "invalidAnswer": "can.std.ai@1::invalid_answer"} {
+			fields[name] = ids[declaration]
+		}
+		encoded, e := json.Marshal(fields)
+		if e != nil {
+			return nil, e
+		}
+		fmt.Fprintf(&state, "$canAI = $canCreateTypeSafe($canDomain,%s,$canOriginalEnvironment);\n", encoded)
+	}
 	for _, id := range codecIDs {
 		encoded, e := json.Marshal(program.Codecs[id].Schema)
 		if e != nil {
@@ -126,11 +203,19 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
+	if judges {
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}}, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
+	}
 	modules := []Module{{Path: statePath, Imports: imports, Body: state.String()}}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
 		path := fn.Symbol.Source.OutputPath
 		byPath[path] = append(byPath[path], fn)
+	}
+	for _, path := range nativePaths {
+		if _, ok := byPath[path]; !ok {
+			byPath[path] = nil
+		}
 	}
 	var paths []string
 	for path := range byPath {
@@ -142,6 +227,11 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		var regions []*ir.Region
 		for _, fn := range byPath[path] {
 			regions = append(regions, fn.Region)
+		}
+		for _, native := range program.Natives {
+			if native.Symbol.Source.OutputPath == path && (native.Noul != nil || native.Judge != nil) {
+				regions = append(regions, native.Regions...)
+			}
 		}
 		// Initializer references may name types absent from function signatures.
 		allTypes := append(program.Model.Types(), regionTypes(regions...)...)
@@ -159,7 +249,48 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString("export ")
 			body.WriteString(code)
 		}
+		for _, native := range program.Natives {
+			if native.Symbol.Source.OutputPath != path || native.Noul == nil && native.Judge == nil {
+				continue
+			}
+			for _, region := range native.Regions {
+				emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
+				code, e := emitter.Function(nativeNames[region.ID], region)
+				if e != nil {
+					return nil, e
+				}
+				body.WriteString("export " + code)
+			}
+			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
+			var code string
+			var e error
+			if native.Noul != nil {
+				code, e = emitter.NoulPreparation(nativeNames[native.Symbol.ID], native.Noul)
+			} else {
+				policy := program.Connections[native.Connection]
+				connectionName := connectionNames[native.Connection]
+				code, e = emitter.Judge(nativeNames[native.Symbol.ID], native.Judge, questions, nativeNames, connectionName, policy.Model)
+			}
+			if e != nil {
+				return nil, e
+			}
+			body.WriteString("export " + code)
+		}
 		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", TypeOnly: true, Names: []ImportName{{"NoulDescriptor", "$canNoulDescriptor"}}})
+		if judges {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canAI", "$canAI"}}})
+		}
+		for _, id := range connectionIDs {
+			name := connectionNames[id]
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{name, name}}})
+		}
+		for _, id := range nativeIDs {
+			target := nativePaths[id]
+			if target != path {
+				imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{nativeNames[id], nativeNames[id]}}})
+			}
+		}
 		for _, id := range codecIDs {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 		}
@@ -194,6 +325,12 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			for _, fn := range program.Functions {
 				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Symbol.ID], functions[fn.Symbol.ID]}}})
+			}
+			for _, id := range nativeIDs {
+				target := nativePaths[id]
+				if name := functions[id]; name != "" {
+					imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{name, name}}})
+				}
 			}
 			graph := append(program.Model.Types(), regionTypes(test.Actual, test.Expected)...)
 			body, err := NativeTypeDeclarations(graph)

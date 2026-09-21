@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Current native frontend evidence includes callable contracts, checked registration inputs and boxed handler regions, but loses the checked asks/criteria/minimum expressions. We need executable Noul judges without compile-time evaluation or provider communication. Existing typed-expression and region emission can generate those computations. Runtime codec/HTTP modules already own bigint fidelity, resource limits, elapsed deadlines, task ownership and error construction. Required behavior is ordered: ordinary invocation inputs precede grouped state, each evaluated once; registrations prepare arguments and descriptor strings/threshold once in source order; the complete descriptors plus state are admitted before reading auth; a single POST contains separate q0/q1/etc entries even for repeated declarations. Every returned answer is admitted before ordered handlers start. A handler failure skips remaining handlers and final continuation; otherwise continuation follows them. Private nonthenable Completion boxes must protect values containing callable then properties at every async boundary. Each strategy offered must satisfy the same constraints, diagnose unimplemented forms, and leave room for Choice/Score.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Choose the implementation structure most suitable for preserving this ordering using the existing checked compiler and maintained boundary modules.",
+      "criteria": {
+        "phase_ir": "Store typed phase-specific question/judge evidence, generate sequencing in TypeScript, and reuse ordinary regions for handlers plus runtime encoding/HTTP/answer checks.",
+        "synthetic_regions": "Express preparation, dispatch, handler order and continuation entirely as generated instances of the ordinary region/call IR.",
+        "runtime_closures": "Pass generated computation callbacks for descriptors and bodies into one runtime sequencing engine for the full judge operation."
+      }
+    }
+  }
+}

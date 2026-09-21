@@ -93,7 +93,7 @@
       "../domain.ts",
       "./budget.ts",
       "./numbers.ts",
-      "./duplicates.ts"
+      "./document.ts"
     ],
     "owner.ts": [
       "node:async_hooks",
@@ -119,7 +119,8 @@
       "./deadline.ts",
       "./body.ts",
       "./owned.ts",
-      "./request.ts"
+      "./request.ts",
+      "../assert/provider.ts"
     ],
     "transport/http.ts": [
       "../completion.ts",
@@ -129,6 +130,29 @@
       "./deadline.ts",
       "./fetch.ts",
       "./request.ts"
+    ],
+    "codec/document.ts": [
+      "../bytes.ts",
+      "./budget.ts",
+      "./duplicates.ts"
+    ],
+    "ai/typesafe.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../assert/context.ts",
+      "../transport/http.ts",
+      "../transport/request.ts",
+      "../codec/json.ts",
+      "../codec/document.ts",
+      "../codec/budget.ts",
+      "../assert/provider.ts"
+    ],
+    "assert/provider.ts": [
+      "./context.ts",
+      "../failure.ts"
     ]
   }
 }

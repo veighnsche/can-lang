@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can compiler already checks native question and judge signatures, registration arguments and handler Completion regions. Descriptor expressions are currently type checked but discarded. Source compilation must never execute descriptors or access the provider. Every call uses a private nonthenable Completion carrier, preserving callable then fields. Judge invocation evaluates ordinary arguments then grouped state once; registration order evaluates each question arguments, asks, criterion descriptions and threshold once. All descriptors and state must validate before credential lookup; one batch POST supplies q0, q1 and subsequent occurrence IDs. All answers must validate before any handler; handlers run in registration order, stop at first failure, then the continuation runs. Existing RegionEmitter lowers typed expressions and ordinary completion regions; shared codec and transport handle exact integers, budgets, deadline, ownership and domain errors. The pending Noul slice must preserve these phases and reuse those services. The alternatives below all must maintain these guarantees and reject unsupported forms explicitly; later Choice and Score extend this path.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Which compiler representation and execution split best preserves the listed phase guarantees while reusing checked expression and completion lowering?",
+      "criteria": {
+        "phase_ir": "Retain explicit checked judge/question phase IR and emit orchestration around ordinary handler regions; keep the maintained runtime responsible for wire validation and transport.",
+        "synthetic_regions": "Translate the entire judge into synthetic ordinary completion regions and calls, encoding phase sequencing through existing general region nodes.",
+        "runtime_closures": "Emit descriptor, handler and continuation closures and let a maintained runtime judge orchestrator own all phase sequencing."
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+package check
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestJudgeRetainsCheckedPhases(t *testing.T) {
+	text := nativeHeader + nativeClassifier + nativeQuestion + nativeJudge + programMain + "    ok\n"
+	p, err := programFixture(t, map[string]string{"src/main.can": text})
+	if err != nil {
+		t.Fatal(err)
+	}
+	question, judge := p.Natives[0].Noul, p.Natives[1].Judge
+	if question == nil || judge == nil || question.Instructions == nil || question.Minimum.Text != "0.5" || len(question.Options) != 2 {
+		t.Fatal("missing checked descriptor evidence")
+	}
+	if !question.Options[0].True || question.Options[1].True || question.Options[0].Handler != p.Natives[0].Regions[0] || question.Options[1].Handler != p.Natives[0].Regions[1] {
+		t.Fatal("lost option labels or handler association")
+	}
+	if len(judge.Registrations) != 2 || judge.Registrations[0].Question != question.Identity || judge.Registrations[1].Question != question.Identity {
+		t.Fatal("repeated registrations were merged")
+	}
+	if len(judge.Inputs) != 1 || len(judge.Continuation.Inputs) != 3 || judge.Continuation.Inputs[1].Identity != judge.Registrations[0].Binding.Identity {
+		t.Fatal("answer scope leaked out of continuation")
+	}
+	if len(judge.StateInputs) != 1 || judge.StateInputs[0].Identity != judge.Inputs[0].Identity {
+		t.Fatal("state inputs lost")
+	}
+	for _, node := range judge.State.Nodes {
+		if node.Identity == judge.State.Root && (len(node.Fields) != 1 || node.Fields[0].Name != "message") {
+			t.Fatal("incorrect state object schema")
+		}
+	}
+	// Both source option orders are legal; local selection uses labels, while
+	// descriptor computation retains declaration order.
+	reversed := strings.Replace(text, "true \"Yes\" => ok % >= 0.5\n        false \"No\" => ok false", "false \"No\" => ok false\n        true \"Yes\" => ok % >= 0.5", 1)
+	p, err = programFixture(t, map[string]string{"src/main.can": reversed})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.Natives[0].Noul.Options[0].True || !p.Natives[0].Noul.Options[1].True {
+		t.Fatal("reordered descriptor computations")
+	}
+}
+
+func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
+	for _, state := range []string{"", "    state\n        str message\n        int count\n"} {
+		judge := "judge bool assess from classifier\n    emits [" + nativeHTTP + ", ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state + "    call question(private_description) as bool unused\n    ok => ok true\n"
+		p, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeClassifier + nativeQuestion + judge + programMain + "    ok\n"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		plan := p.Natives[1].Judge
+		if len(plan.Registrations) != 1 || plan.Registrations[0].Binding == nil {
+			t.Fatal("unused question registration eliminated")
+		}
+		want := 0
+		if state != "" {
+			want = 2
+		}
+		if len(plan.StateInputs) != want || len(plan.Inputs) != want+1 {
+			t.Fatal("ordinary input disclosed as shared state")
+		}
+		found := false
+		for _, node := range plan.State.Nodes {
+			if node.Identity != plan.State.Root {
+				continue
+			}
+			found = true
+			if len(node.Fields) != want || want == 2 && (node.Fields[0].Name != "message" || node.Fields[1].Name != "count") {
+				t.Fatal("state field order or empty object lost")
+			}
+		}
+		if !found {
+			t.Fatal("missing schema root")
+		}
+	}
+}

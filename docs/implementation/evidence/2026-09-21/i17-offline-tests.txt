@@ -1,0 +1,527 @@
+=== RUN   TestCurrentBundledAssertions
+--- PASS: TestCurrentBundledAssertions (6.46s)
+=== RUN   TestAssertionFailureLocations
+--- PASS: TestAssertionFailureLocations (2.04s)
+=== RUN   TestCurrentBundledBytes
+--- PASS: TestCurrentBundledBytes (2.17s)
+=== RUN   TestCurrentBundledCallables
+--- PASS: TestCurrentBundledCallables (2.84s)
+=== RUN   TestCurrentBundledCLI
+--- PASS: TestCurrentBundledCLI (4.84s)
+=== RUN   TestCurrentBundledCodec
+--- PASS: TestCurrentBundledCodec (2.06s)
+=== RUN   TestDevelopmentSidecar
+=== RUN   TestDevelopmentSidecar/current-parser-is-inert
+=== RUN   TestDevelopmentSidecar/current-project-identities-offline
+=== RUN   TestDevelopmentSidecar/current-declaration-types-offline
+=== RUN   TestDevelopmentSidecar/native-nominal-data-offline
+=== RUN   TestDevelopmentSidecar/native-primitives-offline
+=== RUN   TestDevelopmentSidecar/native-failures-offline
+=== RUN   TestDevelopmentSidecar/native-completions-offline
+=== RUN   TestDevelopmentSidecar/missing
+=== RUN   TestDevelopmentSidecar/non-executable
+=== RUN   TestDevelopmentSidecar/tampered
+=== RUN   TestDevelopmentSidecar/wrong-architecture
+=== RUN   TestDevelopmentSidecar/symlinked-sidecar
+=== RUN   TestDevelopmentSidecar/tampered-manifest.json
+=== RUN   TestDevelopmentSidecar/tampered-tools/runtime/check.ts
+=== NAME  TestDevelopmentSidecar
+    distribution_test.go:355: offline absolute sidecar and symlink execution passed; hostile config ignored; identity bun-1.4.2-darwin-arm64-v1
+--- PASS: TestDevelopmentSidecar (1.85s)
+    --- PASS: TestDevelopmentSidecar/current-parser-is-inert (0.04s)
+    --- PASS: TestDevelopmentSidecar/current-project-identities-offline (0.05s)
+    --- PASS: TestDevelopmentSidecar/current-declaration-types-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-nominal-data-offline (0.01s)
+    --- PASS: TestDevelopmentSidecar/native-primitives-offline (0.01s)
+    --- PASS: TestDevelopmentSidecar/native-failures-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-completions-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/missing (0.02s)
+    --- PASS: TestDevelopmentSidecar/non-executable (0.02s)
+    --- PASS: TestDevelopmentSidecar/tampered (0.06s)
+    --- PASS: TestDevelopmentSidecar/wrong-architecture (0.07s)
+    --- PASS: TestDevelopmentSidecar/symlinked-sidecar (0.04s)
+    --- PASS: TestDevelopmentSidecar/tampered-manifest.json (0.01s)
+    --- PASS: TestDevelopmentSidecar/tampered-tools/runtime/check.ts (0.05s)
+=== RUN   TestCurrentBundledNoulJudge
+    judge_test.go:194: {"root":{"package":"conformance","declaration":"compiled_judge","name":"raw_provider"},"frames":[],"violations":[],"evidence":["raw-provider-fixture","real-can"],"passed":true}
+--- PASS: TestCurrentBundledNoulJudge (2.79s)
+=== RUN   TestCurrentBundledNativeDeclarations
+--- PASS: TestCurrentBundledNativeDeclarations (2.00s)
+=== RUN   TestBundledOwnershipOffline
+--- PASS: TestBundledOwnershipOffline (1.26s)
+=== RUN   TestBundledTransportLoopback
+--- PASS: TestBundledTransportLoopback (1.21s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	29.622s
+=== RUN   TestArtifactIdentityAndClosedImports
+=== RUN   TestArtifactIdentityAndClosedImports/manifest.json/extra.ts
+=== RUN   TestArtifactIdentityAndClosedImports/MANIFEST.JSON/extra.ts
+=== RUN   TestArtifactIdentityAndClosedImports/Manifest.Json
+=== RUN   TestArtifactIdentityAndClosedImports/../entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports//entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/../entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/A.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/CON.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/a.ts.
+=== RUN   TestArtifactIdentityAndClosedImports/packages/a\b.ts
+=== RUN   TestArtifactIdentityAndClosedImports/ambient
+=== RUN   TestArtifactIdentityAndClosedImports//absolute.ts
+=== RUN   TestArtifactIdentityAndClosedImports/./missing.ts
+=== RUN   TestArtifactIdentityAndClosedImports/../../../outside.ts
+=== RUN   TestArtifactIdentityAndClosedImports/./packages/p-a/a.ts?x
+=== RUN   TestArtifactIdentityAndClosedImports/./packages/p-a/a
+--- PASS: TestArtifactIdentityAndClosedImports (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/manifest.json/extra.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/MANIFEST.JSON/extra.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/Manifest.Json (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/../entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports//entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/../entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/A.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/CON.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/a.ts. (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/a\b.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/ambient (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports//absolute.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./missing.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/../../../outside.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./packages/p-a/a.ts?x (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./packages/p-a/a (0.00s)
+=== RUN   TestArtifactMetadataAndPayloadRefusals
+--- PASS: TestArtifactMetadataAndPayloadRefusals (0.00s)
+=== RUN   TestPackagedOutputValidationAndExecution
+    output_runtime_test.go:32: === RUN   TestPackagedOutputValidationAndExecution
+            output_runtime_test.go:143: native parser validated exact imports; published entry executed; inherited child lease survived launcher close
+        --- PASS: TestPackagedOutputValidationAndExecution (2.44s)
+        PASS
+        
+--- PASS: TestPackagedOutputValidationAndExecution (2.45s)
+=== RUN   TestOwnedOutputPublicationAndLeases
+--- PASS: TestOwnedOutputPublicationAndLeases (0.12s)
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/unowned
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/symlink
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/wrong_owner
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/source_overlap
+--- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs (0.03s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/unowned (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/symlink (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/wrong_owner (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/source_overlap (0.00s)
+=== RUN   TestInterruptedPublicationRecovery
+=== RUN   TestInterruptedPublicationRecovery/reserved
+=== RUN   TestInterruptedPublicationRecovery/file:entry.ts
+=== RUN   TestInterruptedPublicationRecovery/staged
+=== RUN   TestInterruptedPublicationRecovery/generation
+=== RUN   TestInterruptedPublicationRecovery/published
+--- PASS: TestInterruptedPublicationRecovery (0.90s)
+    --- PASS: TestInterruptedPublicationRecovery/reserved (0.12s)
+    --- PASS: TestInterruptedPublicationRecovery/file:entry.ts (0.19s)
+    --- PASS: TestInterruptedPublicationRecovery/staged (0.30s)
+    --- PASS: TestInterruptedPublicationRecovery/generation (0.14s)
+    --- PASS: TestInterruptedPublicationRecovery/published (0.15s)
+=== RUN   TestOutputPreservesUnexpectedGenerationContents
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/unknown_file
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/unknown_directory
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/modified_file
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/symlink
+--- PASS: TestOutputPreservesUnexpectedGenerationContents (0.52s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/unknown_file (0.21s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/unknown_directory (0.12s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/modified_file (0.09s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/symlink (0.10s)
+=== RUN   TestCurrentManifestIsAuthoritative
+--- PASS: TestCurrentManifestIsAuthoritative (0.04s)
+=== RUN   TestCleanRebuildAndSnapshotBinding
+--- PASS: TestCleanRebuildAndSnapshotBinding (0.15s)
+=== RUN   TestInterruptedStageUnknownFilesArePreserved
+--- PASS: TestInterruptedStageUnknownFilesArePreserved (0.05s)
+=== RUN   TestOwnerRevalidationAndInputAssets
+=== RUN   TestOwnerRevalidationAndInputAssets/owner_changed_after_opening
+=== RUN   TestOwnerRevalidationAndInputAssets/asset_mutation_invalidates_snapshot
+--- PASS: TestOwnerRevalidationAndInputAssets (0.13s)
+    --- PASS: TestOwnerRevalidationAndInputAssets/owner_changed_after_opening (0.10s)
+    --- PASS: TestOwnerRevalidationAndInputAssets/asset_mutation_invalidates_snapshot (0.03s)
+=== RUN   TestSourceRemovalPublishesOnlyNewGraph
+--- PASS: TestSourceRemovalPublishesOnlyNewGraph (0.21s)
+=== RUN   TestProjectLockAcrossProcesses
+--- PASS: TestProjectLockAcrossProcesses (0.03s)
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/staged/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/generation/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=true
+--- PASS: TestPublicationRechecksSnapshotBeforeCurrent (0.44s)
+    --- PASS: TestPublicationRechecksSnapshotBeforeCurrent/staged/reuse=false (0.08s)
+    --- PASS: TestPublicationRechecksSnapshotBeforeCurrent/generation/reuse=false (0.08s)
+    --- PASS: TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=false (0.15s)
+    --- PASS: TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=true (0.13s)
+=== RUN   TestOSMinimum
+--- PASS: TestOSMinimum (0.00s)
+=== RUN   TestAssetPathRefusals
+--- PASS: TestAssetPathRefusals (0.00s)
+=== RUN   TestPackagedSourceMaps
+    source_maps_test.go:35: === RUN   TestPackagedSourceMaps
+            source_maps_test.go:122: mapped native failure: {"schemaVersion":1,"kind":"can.runtime-failure","phase":"main","channel":"standard","category":"bounds","occurrence":"1","frames":[{"source":"can.project.root/app/main.can","file":"main.can","line":10,"column":15,"endLine":10,"endColumn":24,"start":177,"end":186,"operation":"index","synthetic":false},{"source":"can.project.root/app/main.can","file":"main.can","line":18,"column":36,"endLine":18,"endColumn":47,"start":370,"end":381,"operation":"call","synthetic":false}]}
+                
+        === RUN   TestPackagedSourceMaps/missing-map
+        === RUN   TestPackagedSourceMaps/missing-index
+        === RUN   TestPackagedSourceMaps/corrupt-map
+        === RUN   TestPackagedSourceMaps/unknown-source
+        --- PASS: TestPackagedSourceMaps (1.52s)
+            --- PASS: TestPackagedSourceMaps/missing-map (0.00s)
+            --- PASS: TestPackagedSourceMaps/missing-index (0.00s)
+            --- PASS: TestPackagedSourceMaps/corrupt-map (0.02s)
+            --- PASS: TestPackagedSourceMaps/unknown-source (0.02s)
+        PASS
+        
+--- PASS: TestPackagedSourceMaps (1.54s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	6.698s
+=== RUN   TestBytesThroughCanCaptureAndTransportFixture
+--- PASS: TestBytesThroughCanCaptureAndTransportFixture (0.03s)
+=== RUN   TestNativeCallableInstancesAndCaptureTiming
+--- PASS: TestNativeCallableInstancesAndCaptureTiming (0.02s)
+=== RUN   TestDynamicCallablePreparationAndThenField
+--- PASS: TestDynamicCallablePreparationAndThenField (0.02s)
+=== RUN   TestDataEmissionRejectsInvalidContracts
+--- PASS: TestDataEmissionRejectsInvalidContracts (0.00s)
+=== RUN   TestEmittedNativeNominalData
+    data_test.go:170: emitted nominal identity, immutable update and evaluation order passed
+--- PASS: TestEmittedNativeNominalData (0.05s)
+=== RUN   TestPrimitiveExpressionTypeRefusals
+=== RUN   TestPrimitiveExpressionTypeRefusals/alpha::item(1,_[])_is_beta::item(1,_[])
+=== RUN   TestPrimitiveExpressionTypeRefusals/bytes::buffer()
+=== RUN   TestPrimitiveExpressionTypeRefusals/alpha::item(1.0,_[])
+=== RUN   TestPrimitiveExpressionTypeRefusals/(alpha::item(1,_[])_with_value=1.0).value
+=== RUN   TestPrimitiveExpressionTypeRefusals/item_is_other
+=== RUN   TestPrimitiveExpressionTypeRefusals/false_and_(1_+_1.0_is_0)
+=== RUN   TestPrimitiveExpressionTypeRefusals/1_+_1.0
+=== RUN   TestPrimitiveExpressionTypeRefusals/1_**_2.0
+=== RUN   TestPrimitiveExpressionTypeRefusals/1_and_true
+=== RUN   TestPrimitiveExpressionTypeRefusals/not_1
+=== RUN   TestPrimitiveExpressionTypeRefusals/~1.0
+=== RUN   TestPrimitiveExpressionTypeRefusals/true_<_false
+=== RUN   TestPrimitiveExpressionTypeRefusals/1_<_2.0
+=== RUN   TestPrimitiveExpressionTypeRefusals/callback_is_callback
+=== RUN   TestPrimitiveExpressionTypeRefusals/resource_is_resource
+=== RUN   TestPrimitiveExpressionTypeRefusals/[callback]_is_[callback]
+=== RUN   TestPrimitiveExpressionTypeRefusals/ints[1.0]
+=== RUN   TestPrimitiveExpressionTypeRefusals/text[false]
+=== RUN   TestPrimitiveExpressionTypeRefusals/ints[0:1.0]
+=== RUN   TestPrimitiveExpressionTypeRefusals/1[0]
+=== RUN   TestPrimitiveExpressionTypeRefusals/ints.missing
+=== RUN   TestPrimitiveExpressionTypeRefusals/1_.length
+=== RUN   TestPrimitiveExpressionTypeRefusals/[1,_2.0]
+=== RUN   TestPrimitiveExpressionTypeRefusals/[]
+=== RUN   TestPrimitiveExpressionTypeRefusals/call_fallible()_+_1
+=== RUN   TestPrimitiveExpressionTypeRefusals/call_text.slice(0)
+=== RUN   TestPrimitiveExpressionTypeRefusals/call_text.slice(0,_1.0)
+--- PASS: TestPrimitiveExpressionTypeRefusals (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/alpha::item(1,_[])_is_beta::item(1,_[]) (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/bytes::buffer() (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/alpha::item(1.0,_[]) (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/(alpha::item(1,_[])_with_value=1.0).value (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/item_is_other (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/false_and_(1_+_1.0_is_0) (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1_+_1.0 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1_**_2.0 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1_and_true (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/not_1 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/~1.0 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/true_<_false (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1_<_2.0 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/callback_is_callback (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/resource_is_resource (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/[callback]_is_[callback] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/ints[1.0] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/text[false] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/ints[0:1.0] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1[0] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/ints.missing (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/1_.length (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/[1,_2.0] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/[] (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/call_fallible()_+_1 (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/call_text.slice(0) (0.00s)
+    --- PASS: TestPrimitiveExpressionTypeRefusals/call_text.slice(0,_1.0) (0.00s)
+=== RUN   TestEmittedPrimitiveExpressions
+    expressions_test.go:209: primitive expressions, skipped effects, comparison order, UTF-16 bounds and failures passed
+--- PASS: TestEmittedPrimitiveExpressions (0.05s)
+=== RUN   TestInitializationOrderingAndRefusals
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_b_int_b_=_a_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_a_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_call_first()_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_(1_+_call_first())_
+=== RUN   TestInitializationOrderingAndRefusals/str_a_=_call_env::get("TOKEN")_
+=== RUN   TestInitializationOrderingAndRefusals/bytes::buffer_a_=_call_bytes::from_utf8("x")_
+=== RUN   TestInitializationOrderingAndRefusals/callable_int_()_emits_[]_a_=_callable_first_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_ints[0]_
+=== RUN   TestInitializationOrderingAndRefusals/bytes::buffer_a_=_resource_
+=== RUN   TestInitializationOrderingAndRefusals/int_a_=_match_true_____true_=>_1_____false_=>_2_
+=== RUN   TestInitializationOrderingAndRefusals/bool_a_=_false_and_(call_first()_is_1)_
+--- PASS: TestInitializationOrderingAndRefusals (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_b_int_b_=_a_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_a_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_call_first()_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_(1_+_call_first())_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/str_a_=_call_env::get("TOKEN")_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bytes::buffer_a_=_call_bytes::from_utf8("x")_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/callable_int_()_emits_[]_a_=_callable_first_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_ints[0]_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bytes::buffer_a_=_resource_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/int_a_=_match_true_____true_=>_1_____false_=>_2_ (0.00s)
+    --- PASS: TestInitializationOrderingAndRefusals/bool_a_=_false_and_(call_first()_is_1)_ (0.00s)
+=== RUN   TestInitializationNamedArmEvidence
+--- PASS: TestInitializationNamedArmEvidence (0.00s)
+=== RUN   TestEmittedInitializationBeforeMain
+=== RUN   TestEmittedInitializationBeforeMain/fault=false
+    initialization_test.go:209: main reached
+        startup once verified
+=== RUN   TestEmittedInitializationBeforeMain/fault=true
+    initialization_test.go:209: startup failure reported
+--- PASS: TestEmittedInitializationBeforeMain (1.62s)
+    --- PASS: TestEmittedInitializationBeforeMain/fault=false (0.54s)
+    --- PASS: TestEmittedInitializationBeforeMain/fault=true (0.02s)
+=== RUN   TestMappedInitializationPreservesAuthoredOriginLikeString
+--- PASS: TestMappedInitializationPreservesAuthoredOriginLikeString (0.00s)
+=== RUN   TestFiniteLocalRule
+=== RUN   TestFiniteLocalRule/left_+_right
+=== RUN   TestFiniteLocalRule/(left_*_2)_-_right
+=== RUN   TestFiniteLocalRule/~left_|_right_&_3
+=== RUN   TestFiniteLocalRule/item.value
+=== RUN   TestFiniteLocalRule/ints.length
+=== RUN   TestFiniteLocalRule/left_<_right_and_not_false
+=== RUN   TestFiniteLocalRule/text_+_"!"
+=== RUN   TestFiniteLocalRule/result_+_1
+=== RUN   TestFiniteLocalRule/retain/left_/_right
+=== RUN   TestFiniteLocalRule/retain/left_%_right
+=== RUN   TestFiniteLocalRule/retain/left_**_right
+=== RUN   TestFiniteLocalRule/retain/left_<<_right
+=== RUN   TestFiniteLocalRule/retain/left_>>_right
+=== RUN   TestFiniteLocalRule/retain/1.0_/_2.0
+=== RUN   TestFiniteLocalRule/retain/ints[0]
+=== RUN   TestFiniteLocalRule/retain/ints[0:1]
+=== RUN   TestFiniteLocalRule/retain/[]
+=== RUN   TestFiniteLocalRule/retain/[1]
+=== RUN   TestFiniteLocalRule/retain/alpha::item(1,_[])
+=== RUN   TestFiniteLocalRule/retain/item_with_value=1
+=== RUN   TestFiniteLocalRule/retain/call_first()
+=== RUN   TestFiniteLocalRule/retain/callable_first
+=== RUN   TestFiniteLocalRule/retain/item
+--- PASS: TestFiniteLocalRule (0.00s)
+    --- PASS: TestFiniteLocalRule/left_+_right (0.00s)
+    --- PASS: TestFiniteLocalRule/(left_*_2)_-_right (0.00s)
+    --- PASS: TestFiniteLocalRule/~left_|_right_&_3 (0.00s)
+    --- PASS: TestFiniteLocalRule/item.value (0.00s)
+    --- PASS: TestFiniteLocalRule/ints.length (0.00s)
+    --- PASS: TestFiniteLocalRule/left_<_right_and_not_false (0.00s)
+    --- PASS: TestFiniteLocalRule/text_+_"!" (0.00s)
+    --- PASS: TestFiniteLocalRule/result_+_1 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_/_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_%_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_**_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_<<_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/left_>>_right (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/1.0_/_2.0 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/ints[0] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/ints[0:1] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/[] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/[1] (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/alpha::item(1,_[]) (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/item_with_value=1 (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/call_first() (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/callable_first (0.00s)
+    --- PASS: TestFiniteLocalRule/retain/item (0.00s)
+=== RUN   TestLocalUseIdentityAndCaptureEvidence
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/same_spelling_is_not_same_binding
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/two_resolved_uses_retain_the_local
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/incomplete_names_refuse_rather_than_guess
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/captured
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/not_captured
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/missing_evidence
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/intervening_work_retains_timing
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/terminal_calculation_is_not_immediate_name_forwarding
+=== RUN   TestLocalUseIdentityAndCaptureEvidence/substitution_rechecks_expected_typing
+--- PASS: TestLocalUseIdentityAndCaptureEvidence (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/same_spelling_is_not_same_binding (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/two_resolved_uses_retain_the_local (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/incomplete_names_refuse_rather_than_guess (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/captured (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/not_captured (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/missing_evidence (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/intervening_work_retains_timing (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/terminal_calculation_is_not_immediate_name_forwarding (0.00s)
+    --- PASS: TestLocalUseIdentityAndCaptureEvidence/substitution_rechecks_expected_typing (0.00s)
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities/blank_terminal_identity
+=== RUN   TestLocalForwardingRejectsBlankEvidenceIdentities/blank_capture_identity
+--- PASS: TestLocalForwardingRejectsBlankEvidenceIdentities (0.00s)
+    --- PASS: TestLocalForwardingRejectsBlankEvidenceIdentities/blank_terminal_identity (0.00s)
+    --- PASS: TestLocalForwardingRejectsBlankEvidenceIdentities/blank_capture_identity (0.00s)
+=== RUN   TestMappingAssemblyPreservesUTF16AndCannotAdmitQuotedMarkers
+--- PASS: TestMappingAssemblyPreservesUTF16AndCannotAdmitQuotedMarkers (0.00s)
+=== RUN   TestExactESMEdges
+--- PASS: TestExactESMEdges (0.00s)
+=== RUN   TestEmittedFailureEvaluationOrder
+=== RUN   TestEmittedFailureEvaluationOrder/constructor
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/scrutinees
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/binary
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/wildcard
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/array
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/comparison
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/logical
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+=== RUN   TestEmittedFailureEvaluationOrder/value-match
+    region_order_test.go:97: {"kind":"standard","events":["first"]}
+--- PASS: TestEmittedFailureEvaluationOrder (1.88s)
+    --- PASS: TestEmittedFailureEvaluationOrder/constructor (0.53s)
+    --- PASS: TestEmittedFailureEvaluationOrder/scrutinees (0.11s)
+    --- PASS: TestEmittedFailureEvaluationOrder/binary (0.06s)
+    --- PASS: TestEmittedFailureEvaluationOrder/wildcard (0.04s)
+    --- PASS: TestEmittedFailureEvaluationOrder/array (0.05s)
+    --- PASS: TestEmittedFailureEvaluationOrder/comparison (0.04s)
+    --- PASS: TestEmittedFailureEvaluationOrder/logical (0.05s)
+    --- PASS: TestEmittedFailureEvaluationOrder/value-match (0.07s)
+=== RUN   TestRepeatedScrutineeNarrowing
+--- PASS: TestRepeatedScrutineeNarrowing (0.02s)
+=== RUN   TestCompletionRegionContracts
+=== RUN   TestCompletionRegionContracts/good0/function
+=== RUN   TestCompletionRegionContracts/good0/handler
+=== RUN   TestCompletionRegionContracts/good1/function
+=== RUN   TestCompletionRegionContracts/good1/handler
+=== RUN   TestCompletionRegionContracts/good2/function
+=== RUN   TestCompletionRegionContracts/good2/handler
+=== RUN   TestCompletionRegionContracts/good3/function
+=== RUN   TestCompletionRegionContracts/good3/handler
+=== RUN   TestCompletionRegionContracts/good4/function
+=== RUN   TestCompletionRegionContracts/good4/handler
+=== RUN   TestCompletionRegionContracts/good5/function
+=== RUN   TestCompletionRegionContracts/good5/handler
+=== RUN   TestCompletionRegionContracts/good6/function
+=== RUN   TestCompletionRegionContracts/good6/handler
+=== RUN   TestCompletionRegionContracts/good7/function
+=== RUN   TestCompletionRegionContracts/good7/handler
+=== RUN   TestCompletionRegionContracts/good8/function
+=== RUN   TestCompletionRegionContracts/good8/handler
+=== RUN   TestCompletionRegionContracts/good9/function
+=== RUN   TestCompletionRegionContracts/good9/handler
+=== RUN   TestCompletionRegionContracts/good10/function
+=== RUN   TestCompletionRegionContracts/good10/handler
+=== RUN   TestCompletionRegionContracts/good11/function
+=== RUN   TestCompletionRegionContracts/good11/handler
+=== RUN   TestCompletionRegionContracts/good12/function
+=== RUN   TestCompletionRegionContracts/good12/handler
+=== RUN   TestCompletionRegionContracts/good13/function
+=== RUN   TestCompletionRegionContracts/good13/handler
+=== RUN   TestCompletionRegionContracts/good14/function
+=== RUN   TestCompletionRegionContracts/good14/handler
+=== RUN   TestCompletionRegionContracts/good15/function
+=== RUN   TestCompletionRegionContracts/good15/handler
+=== RUN   TestCompletionRegionContracts/bad0
+=== RUN   TestCompletionRegionContracts/bad1
+=== RUN   TestCompletionRegionContracts/bad2
+=== RUN   TestCompletionRegionContracts/bad3
+=== RUN   TestCompletionRegionContracts/bad4
+=== RUN   TestCompletionRegionContracts/bad5
+=== RUN   TestCompletionRegionContracts/bad6
+=== RUN   TestCompletionRegionContracts/bad7
+=== RUN   TestCompletionRegionContracts/bad8
+=== RUN   TestCompletionRegionContracts/bad9
+=== RUN   TestCompletionRegionContracts/bad10
+=== RUN   TestCompletionRegionContracts/bad11
+=== RUN   TestCompletionRegionContracts/bad12
+=== RUN   TestCompletionRegionContracts/bad13
+=== RUN   TestCompletionRegionContracts/bad14
+=== RUN   TestCompletionRegionContracts/bad15
+=== RUN   TestCompletionRegionContracts/bad16
+=== RUN   TestCompletionRegionContracts/bad17
+=== RUN   TestCompletionRegionContracts/bad18
+=== RUN   TestCompletionRegionContracts/bad19
+=== RUN   TestCompletionRegionContracts/bad20
+=== RUN   TestCompletionRegionContracts/bad21
+=== RUN   TestCompletionRegionContracts/bad22
+=== RUN   TestCompletionRegionContracts/bad23
+=== RUN   TestCompletionRegionContracts/bad24
+=== RUN   TestCompletionRegionContracts/bad25
+=== RUN   TestCompletionRegionContracts/bad26
+=== RUN   TestCompletionRegionContracts/bad27
+=== RUN   TestCompletionRegionContracts/bad28
+=== RUN   TestCompletionRegionContracts/bad29
+--- PASS: TestCompletionRegionContracts (0.01s)
+    --- PASS: TestCompletionRegionContracts/good0/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good0/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good1/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good1/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good2/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good2/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good3/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good3/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good4/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good4/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good5/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good5/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good6/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good6/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good7/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good7/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good8/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good8/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good9/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good9/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good10/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good10/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good11/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good11/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good12/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good12/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good13/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good13/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good14/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good14/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/good15/function (0.00s)
+    --- PASS: TestCompletionRegionContracts/good15/handler (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad0 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad1 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad2 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad3 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad4 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad5 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad6 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad7 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad8 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad9 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad10 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad11 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad12 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad13 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad14 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad15 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad16 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad17 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad18 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad19 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad20 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad21 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad22 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad23 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad24 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad25 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad26 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad27 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad28 (0.00s)
+    --- PASS: TestCompletionRegionContracts/bad29 (0.00s)
+=== RUN   TestEmittedCompletionRegions
+--- PASS: TestEmittedCompletionRegions (1.35s)
+=== RUN   TestRegionTypesAndOwnership
+--- PASS: TestRegionTypesAndOwnership (0.01s)
+=== RUN   TestCheckedResourceCaptureRetainsNativeLease
+--- PASS: TestCheckedResourceCaptureRetainsNativeLease (0.03s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	5.199s

@@ -1,0 +1,5 @@
+=== RUN   TestCurrentBundledNoulJudge
+    judge_test.go:197: {"root":{"package":"conformance","declaration":"compiled_judge","name":"raw_provider"},"frames":[],"violations":[],"evidence":["raw-provider-fixture","real-can"],"passed":true}
+--- PASS: TestCurrentBundledNoulJudge (3.64s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	3.904s

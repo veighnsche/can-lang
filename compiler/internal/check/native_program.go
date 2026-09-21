@@ -18,7 +18,9 @@ type NativeDeclaration struct {
 	Descriptor    CallableDeclaration
 	State         []syntax.Field
 	Regions       []*ir.Region
-	Registrations []NativeRegistration
+	Registrations []ir.JudgeRegistration
+	Noul          *ir.Noul
+	Judge         *ir.Judge
 }
 
 func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Declaration) (*NativeDeclaration, error) {
@@ -170,11 +172,4 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		}
 	}
 	return nil
-}
-
-type NativeRegistration struct {
-	Question  string
-	Prepare   []ir.Preparation
-	Arguments []*ir.Expression
-	Binding   *ir.Local
 }

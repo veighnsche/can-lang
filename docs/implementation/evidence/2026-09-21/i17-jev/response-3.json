@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"architecture":{"type":"choice","choice":"phase_ir","confidence":0.76,"probabilities":{"phase_ir":0.84,"runtime_closures":0.01,"synthetic_regions":0.15}}},"usage":{"input_tokens":621,"output_tokens":45}}
