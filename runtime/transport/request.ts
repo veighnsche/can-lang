@@ -1,3 +1,4 @@
+import {jsonRequestMedia} from "./media.ts";
 import {transportFault,type RequestReason} from "./deadline.ts";
 export type Entries=readonly Readonly<{name:string;value:string|readonly string[]}>[];
 export type Connection=Readonly<{endpoint:string;timeoutMilliseconds:number;maxBodyBytes:number;bearerEnvironment?:string;headers:Entries}>;
@@ -26,7 +27,7 @@ export function endpointURL(endpoint:string):URL{
  if(url.protocol!=="http:"&&url.protocol!=="https:")invalid("url");
  if(url.username||url.password)invalid("userinfo");if(url.href.includes("#"))invalid("fragment");if(url.href.includes("?"))invalid("path_query");return url;
 }
-export function prepareRequest(connection:Connection,path:string,query:Entries,entries:Entries,readEnvironment:(name:string)=>string|undefined):Readonly<{url:URL;headers:Headers}>{
+export function prepareRequest(connection:Connection,path:string,query:Entries,entries:Entries,readEnvironment:(name:string)=>string|undefined,bodyEncoding?:"json"|"text"|"bytes"):Readonly<{url:URL;headers:Headers}>{
  let endpoint=endpoints.get(connection);
  if(!endpoint){endpoint=endpointURL(connection.endpoint);endpoints.set(connection,endpoint);}
  if(!scalar(path))invalid("url");let url:URL;
@@ -42,6 +43,11 @@ export function prepareRequest(connection:Connection,path:string,query:Entries,e
  url.search=search.toString();const headers=new Headers();
  applyHeaders(headers,connection.headers,connection.bearerEnvironment!==undefined);
  applyHeaders(headers,entries,connection.bearerEnvironment!==undefined);
+ if(bodyEncoding!==undefined){
+  const contentType=headers.get("content-type");
+  if(bodyEncoding==="json"&&contentType!==null&&!jsonRequestMedia(contentType))invalid("content_type");
+  if(contentType===null)headers.set("content-type",bodyEncoding==="json"?"application/json":bodyEncoding==="text"?"text/plain; charset=utf-8":"application/octet-stream");
+ }
  if(connection.bearerEnvironment!==undefined){
   const credential=readEnvironment(connection.bearerEnvironment);
   if(credential===undefined||credential==="")throw transportFault({kind:"credential"});

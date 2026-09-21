@@ -34,7 +34,7 @@ export function providerHTTP(context:AssertionContext|undefined,where:FailureOri
   const row=rows[fixtureIndex(context,"can:raw-http",rows.length,where)];
   const actualHeaders=Array.from(new Headers(init.headers).entries());
   const expectedHeaders=Array.from(new Headers(row.request.headers.map(([name,value])=>[name,value])).entries());
-  const body=init.body;
+  const body=init.body===undefined?new Uint8Array():init.body;
   if(init.method!==row.request.method||url.href!==row.request.url||JSON.stringify(actualHeaders)!==JSON.stringify(expectedHeaders)||!(body instanceof Uint8Array)||body.length!==row.request.body.length||!body.every((byte,i)=>byte===row.request.body[i]))throw violation(context,"argument mismatch",where);
   const response=fixtureResponse(row.response);
   rawProviderEvidence(context);

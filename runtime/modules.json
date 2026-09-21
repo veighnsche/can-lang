@@ -114,7 +114,8 @@
       "./deadline.ts"
     ],
     "transport/request.ts": [
-      "./deadline.ts"
+      "./deadline.ts",
+      "./media.ts"
     ],
     "transport/owned.ts": [
       "../owner.ts",
@@ -208,6 +209,24 @@
     "collections/set.ts": [
       "../completion.ts",
       "../failure.ts"
+    ],
+    "transport/media.ts": [
+      "../codec/budget.ts"
+    ],
+    "transport/named.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../codec/json.ts",
+      "../codec/budget.ts",
+      "./http.ts",
+      "./request.ts",
+      "./fetch.ts",
+      "./media.ts",
+      "../assert/provider.ts",
+      "../assert/context.ts"
     ]
   }
 }

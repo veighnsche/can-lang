@@ -212,9 +212,14 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 				return err
 			}
 		case *syntax.FetchDecl:
+			plan := &ir.Fetch{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Result: native.Signature.Result(), Method: strings.ToUpper(d.Method.Text)}
+			if err = checkFetchContentType(d, program.Connections[native.Connection]); err != nil {
+				return err
+			}
 			if err = scalarExpression(d.Path, "str"); err != nil {
 				return err
 			}
+			plan.Path = checkedDescriptors[d.Path]
 			for sectionIndex, section := range [][]syntax.NativeEntry{d.Query, d.Headers} {
 				seen := map[string]bool{}
 				for _, entry := range section {
@@ -240,6 +245,12 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 					if e != nil {
 						return e
 					}
+					entryPlan := ir.FetchEntry{Name: entry.Name.Text, Value: value}
+					if sectionIndex == 0 {
+						plan.Query = append(plan.Query, entryPlan)
+					} else {
+						plan.Headers = append(plan.Headers, entryPlan)
+					}
 					if !scalar(value.Type, "str") && !(value.Type.Kind() == types.Array && scalar(value.Type.Element(), "str")) {
 						return fmt.Errorf("query/header value requires str or str[]")
 					}
@@ -250,6 +261,8 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 				if e != nil {
 					return e
 				}
+				plan.Body = body
+				plan.BodyMode = d.BodyEncoding.Text
 				switch d.BodyEncoding.Text {
 				case "text":
 					if !scalar(body.Type, "str") {
@@ -265,6 +278,10 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 					}
 				}
 			}
+			if err = finishFetchPlan(plan); err != nil {
+				return err
+			}
+			native.Fetch = plan
 		case *syntax.QuestionDecl:
 			if err = scalarExpression(d.Asks, "str"); err != nil {
 				return err

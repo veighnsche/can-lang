@@ -127,8 +127,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	nativePaths := map[string]string{}
 	questions := map[string]*ir.Noul{}
 	judges := false
+	fetches := false
 	for i, native := range program.Natives {
-		if native.Noul == nil && native.Judge == nil {
+		if native.Noul == nil && native.Judge == nil && native.Fetch == nil {
 			continue
 		}
 		name := fmt.Sprintf("$canNative%d", i)
@@ -136,6 +137,10 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		nativePaths[native.Symbol.ID] = native.Symbol.Source.OutputPath
 		if native.Noul != nil {
 			questions[native.Symbol.ID] = native.Noul
+		}
+		if native.Fetch != nil {
+			functions[native.Symbol.ID] = name
+			fetches = true
 		}
 		if native.Judge != nil {
 			functions[native.Symbol.ID] = name
@@ -148,7 +153,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	connectionNames := map[string]string{}
 	for _, native := range program.Natives {
-		if native.Judge != nil {
+		if native.Judge != nil || native.Fetch != nil {
 			connectionNames[native.Connection] = ""
 		}
 	}
@@ -212,6 +217,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		fmt.Fprintf(&state, "export const %s = Object.freeze(%s);\n", connectionNames[id], encoded)
 	}
 
+	if fetches {
+		state.WriteString("export let $canFetch: ReturnType<typeof $canCreateNamedFetch>;\n")
+	}
 	if judges {
 		state.WriteString("export let $canAI: ReturnType<typeof $canCreateTypeSafe>;\n")
 	}
@@ -257,6 +265,17 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			fmt.Fprintf(&state, "%s = $canCreateSet<%s>(%s,%s);\n", collectionNames[id], TypeName(args[0]), quote(id), quote(args[0].Declaration()))
 		}
 	}
+	if fetches {
+		ids := map[string]string{}
+		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data"} {
+			ids[name] = numberIDs[declaration]
+		}
+		encoded, e := json.Marshal(ids)
+		if e != nil {
+			return nil, e
+		}
+		fmt.Fprintf(&state, "$canFetch=$canCreateNamedFetch($canDomain,%s,$canOriginalEnvironment);\n", encoded)
+	}
 	if judges {
 		ids := map[string]string{}
 		for _, typ := range program.Model.Types() {
@@ -291,8 +310,15 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	if judges {
-		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}}, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", Names: []ImportName{{"createTypeSafe", "$canCreateTypeSafe"}}})
 	}
+	if fetches {
+		imports = append(imports, ModuleImport{Target: runtime + "/transport/named.ts", Names: []ImportName{{"createNamedFetch", "$canCreateNamedFetch"}}})
+	}
+	if judges || fetches {
+		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
+	}
+
 	modules := []Module{{Path: statePath, Imports: imports, Body: state.String()}}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
@@ -316,7 +342,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			regions = append(regions, fn.Region)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath == path && (native.Noul != nil || native.Judge != nil) {
+			if native.Symbol.Source.OutputPath == path && (native.Noul != nil || native.Judge != nil || native.Fetch != nil) {
 				regions = append(regions, native.Regions...)
 			}
 		}
@@ -337,7 +363,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString(code)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath != path || native.Noul == nil && native.Judge == nil {
+			if native.Symbol.Source.OutputPath != path || native.Noul == nil && native.Judge == nil && native.Fetch == nil {
 				continue
 			}
 			for _, region := range native.Regions {
@@ -353,6 +379,8 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			var e error
 			if native.Noul != nil {
 				code, e = emitter.NoulPreparation(nativeNames[native.Symbol.ID], native.Noul)
+			} else if native.Fetch != nil {
+				code, e = emitter.Fetch(nativeNames[native.Symbol.ID], native.Fetch, connectionNames[native.Connection])
 			} else {
 				policy := program.Connections[native.Connection]
 				connectionName := connectionNames[native.Connection]
@@ -365,6 +393,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/typesafe.ts", TypeOnly: true, Names: []ImportName{{"NoulDescriptor", "$canNoulDescriptor"}}})
+		if fetches {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})
+		}
 		if judges {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canAI", "$canAI"}}})
 		}

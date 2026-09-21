@@ -19,6 +19,7 @@ type NativeDeclaration struct {
 	State         []syntax.Field
 	Regions       []*ir.Region
 	Registrations []ir.JudgeRegistration
+	Fetch         *ir.Fetch
 	Noul          *ir.Noul
 	Judge         *ir.Judge
 }

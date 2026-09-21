@@ -5,7 +5,7 @@ import {nativeOperation,nativeCompletion,cleanupOperation} from "./owned.ts";
 import {prepareRequest,headerSnapshot,type Connection,type Entries} from "./request.ts";
 import type {HTTPExchange} from "../assert/provider.ts";
 
-export type NativeRequest=Readonly<{path:string;method:"GET"|"HEAD"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS";query:Entries;headers:Entries;body?:Uint8Array;envelope?:boolean;ownerSignal?:AbortSignal;exchange?:HTTPExchange}>;
+export type NativeRequest=Readonly<{path:string;method:"GET"|"HEAD"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS";query:Entries;headers:Entries;body?:Uint8Array;bodyEncoding?:"json"|"text"|"bytes";envelope?:boolean;ownerSignal?:AbortSignal;exchange?:HTTPExchange}>;
 export type ResponseMetadata=Readonly<{status:number;headers:readonly Readonly<{name:string;value:string}>[]}>;
 
 // Private boundary: decoding returns only a checked immutable Can value. The
@@ -13,7 +13,7 @@ export type ResponseMetadata=Readonly<{status:number;headers:readonly Readonly<{
 export async function performRequest<T>(connection:Connection,request:NativeRequest,readEnvironment:(name:string)=>string|undefined,decode:(bytes:Uint8Array,metadata:ResponseMetadata)=>Completion<T>|Promise<Completion<T>>):Promise<Completion<T>>{
  if(request.body!==undefined&&request.body.byteLength>connection.maxBodyBytes)throw transportFault({kind:"limit",limit:connection.maxBodyBytes});
  const body=request.body===undefined?undefined:new Uint8Array(request.body);
- const prepared=prepareRequest(connection,request.path,request.query,request.headers,readEnvironment);
+ const prepared=prepareRequest(connection,request.path,request.query,request.headers,readEnvironment,request.bodyEncoding);
  const deadline=new Deadline(connection.timeoutMilliseconds,request.ownerSignal);
  let response:Response|undefined,consuming=false;
  try{
