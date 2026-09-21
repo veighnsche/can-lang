@@ -37,6 +37,7 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 		call := &syntax.CallExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}, Invocation: syntax.Invocation{Span: row.Span, Callee: callee, Arguments: row.Arguments}}
 		actualContext := context
 		actualContext.Identity = fn.Symbol.ID + "/assert/" + row.Name.Text + "/actual"
+		actualContext.Sites = nil // This synthetic root call has its own syntax tree.
 		actualContext.Scope = file.Scope
 		actualContext.Parameters = nil
 		actualContext.Expressions = c.expressions(file, file.Scope)
@@ -63,7 +64,10 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 // A basic table belongs to one checked invocation. The complete concurrent
 // scheduler, participant paths and captured callable instances are I18's pass.
 func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationStep, scope bodyScope) (*ir.FixtureTable, error) {
-	table := &ir.FixtureTable{Identity: c.identity("when")}
+	if step.Site == "" {
+		return nil, fmt.Errorf("fixture requires a checked lexical call site")
+	}
+	table := &ir.FixtureTable{Identity: step.Site + "/when"}
 	var receiver *ir.Expression
 	if step.Receiver {
 		receiver = step.Arguments[0]
@@ -137,7 +141,7 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 				if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value != nil {
 					constraints = append(constraints, argumentConstraint{d.Result, success.Value})
 				}
-				provisional := CompletionContext{Identity: symbol.ID + "/assert/inference", Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}
+				provisional := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: symbol.ID + "/assert/inference", Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}
 				provisional.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
 					return c.annotation(file, node, allowVoid)
 				}

@@ -17,6 +17,7 @@ import (
 // Handlers use their own Identity/Parent and selected Result, with the enclosing
 // escaping error contract. Their callers later assemble coordination/native data.
 type CompletionContext struct {
+	Sites            lexicalSites
 	AggregateType    func(*types.Type) (*types.Type, error)
 	Identity, Parent string
 	Kind             ir.RegionKind
@@ -56,6 +57,9 @@ func CheckRegion(context CompletionContext, block syntax.Block) (*ir.Region, err
 	}
 	if context.Kind != ir.FunctionRegion && context.Kind != ir.HandlerRegion {
 		return nil, fmt.Errorf("unknown completion region kind")
+	}
+	if context.Sites == nil {
+		context.Sites = indexLexicalSites(context.Identity, block)
 	}
 	if context.Kind == ir.FunctionRegion && context.Parent != "" || context.Kind == ir.HandlerRegion && (context.Parent == "" || context.Parent == context.Identity) {
 		return nil, fmt.Errorf("invalid completion region parent")
@@ -347,20 +351,37 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 		}
 	}
 	out := &ir.Invocation{Span: n.Span}
+	currentSite, err := c.lexicalSite("call", n.Invocation.Span)
+	if err != nil {
+		return nil, err
+	}
 	e := c.expressions(scope)
 	appendSlice := func(receiver *ir.Expression, args []syntax.Argument, span source.Span) error {
 		value, err := e.sliceArguments(receiver, args, n)
 		if err != nil {
 			return err
 		}
-		out.Steps = append(out.Steps, ir.InvocationStep{Native: value, Span: span, Result: value.Type, SuccessBinding: c.identity("slice")})
+		step := ir.InvocationStep{Site: currentSite, Native: value, Identity: "can.native::slice", Receiver: true, Span: span, Result: value.Type, SuccessBinding: c.identity("slice")}
+		var inputs []*types.Type
+		for index, input := range value.Inputs {
+			local := ir.Local{Identity: c.identity("native-argument"), Type: input.Type}
+			step.Prepare = append(step.Prepare, ir.Preparation{Local: local, Value: input})
+			binding := &ir.Expression{Kind: ir.Binding, Span: input.Span, Type: input.Type, Text: local.Identity}
+			step.Arguments = append(step.Arguments, binding)
+			value.Inputs[index] = binding
+			inputs = append(inputs, input.Type)
+		}
+		step.Contract, err = types.CallableOfChecked(value.Type, inputs, nil)
+		if err != nil {
+			return err
+		}
+		out.Steps = append(out.Steps, step)
 		out.Result = value.Type
 		return nil
 	}
 	var first ValueBinding
 	var directCallee *ir.Expression
 	var receiver *ir.Expression
-	var err error
 	switch callee := n.Invocation.Callee.(type) {
 	case *syntax.NameExpr:
 		if len(n.Invocation.Types) == 0 && c.context.InferCall != nil {
@@ -431,7 +452,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 		if binding.Identity == "" || !types.Equal(binding.Type, binding.Type) || binding.Type.Kind() != types.Callable {
 			return fmt.Errorf("invalid resolved callable contract")
 		}
-		step := ir.InvocationStep{Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
+		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)
 		if err != nil {
@@ -448,6 +469,10 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 		}
 	}
 	for methodIndex, method := range n.Methods {
+		currentSite, err = c.lexicalSite("method", method.Span)
+		if err != nil {
+			return nil, err
+		}
 		if out.Result.Kind() == types.Void {
 			return nil, fmt.Errorf("void cannot be a method receiver")
 		}

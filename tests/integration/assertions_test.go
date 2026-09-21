@@ -139,6 +139,66 @@ func TestCurrentBundledAssertions(t *testing.T) {
 	if code != 0 || diag != "" || report(out)["passed"] != true {
 		t.Fatalf("full root selector: %d %s %s", code, out, diag)
 	}
+	native, err := os.ReadFile(filepath.Join(source, "compiler/testdata/current/assertions/native-slice.can"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("src/main.can", string(native))
+	code, out, diag = run()
+	if code != 0 || diag != "" || report(out)["passed"] != true || len(report(out)["assertions"].([]any)) != 3 || !strings.Contains(out, "supplied-completion") {
+		t.Fatalf("native call fixture: %d %s %s", code, out, diag)
+	}
+	code, out, diag = run("can.project.root/native_fixture", "actual")
+	if code != 0 || diag != "" || report(out)["passed"] != true || strings.Contains(out, "supplied-completion") {
+		t.Fatalf("unselected native fixture replaced real operation: %d %s %s", code, out, diag)
+	}
+	write("src/main.can", strings.Replace(string(native), `selected: 1, 3 => ok "fake"`, `selected: 2, 3 => ok "fake"`, 1))
+	code, out, diag = run("can.project.root/native_fixture", "selected")
+	if code != 1 || diag != "" || report(out)["passed"] != false || !strings.Contains(out, "argument mismatch") {
+		t.Fatalf("native fixture arguments were not validated: %d %s %s", code, out, diag)
+	}
+	queues, err := os.ReadFile(filepath.Join(source, "compiler/testdata/current/assertions/queues.can"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("src/main.can", string(queues))
+	code, out, diag = run()
+	if code != 0 || diag != "" || report(out)["passed"] != true || len(report(out)["assertions"].([]any)) != 22 {
+		t.Fatalf("shared fixture queues: %d %s %s", code, out, diag)
+	}
+	if compiler := os.Getenv("CAN_TSC"); compiler != "" {
+		nodeModules := filepath.Dir(filepath.Dir(filepath.Dir(compiler)))
+		args := []string{compiler, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(nodeModules, "@types"), "--types", "bun,node"}
+		if err := filepath.WalkDir(filepath.Join(root, "dist"), func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !entry.IsDir() && strings.HasSuffix(path, ".ts") {
+				args = append(args, path)
+			}
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		if output, err := exec.CommandContext(ctx, os.Getenv("CAN_BUN"), args...).CombinedOutput(); err != nil {
+			t.Fatalf("strict assertion TypeScript: %v\n%s", err, output)
+		}
+	}
+	write("src/main.can", strings.Replace(string(queues), "sample: 0 => ok 10", "sample: 1 => ok 10", 1))
+	code, out, diag = run("can.project.root/queues", "can.project.root/queues::captured_pair", "sample")
+	if code != 1 || diag != "" || !strings.Contains(out, "argument mismatch") || !strings.Contains(out, `"callable":`) || !strings.Contains(out, `"instance":`) || !strings.Contains(out, `"fixturePaths":`) {
+		t.Fatalf("callable fixture mismatch lacks creation path: %d %s %s", code, out, diag)
+	}
+	write("src/main.can", strings.Replace(string(queues), "            sample: 1 => ok 20\n", "", 1))
+	code, out, diag = run("can.project.root/queues", "can.project.root/queues::repeated", "sample")
+	if code != 1 || diag != "" || !strings.Contains(out, "missing fixture") || !strings.Contains(out, `"row":1`) {
+		t.Fatalf("shared fixture exhaustion: %d %s %s", code, out, diag)
+	}
+	write("src/main.can", strings.Replace(string(queues), "            sample: 1 => ok 20\n", "            sample: 1 => ok 20\n            sample: 2 => ok 30\n", 1))
+	code, out, diag = run("can.project.root/queues", "can.project.root/queues::race", "sample")
+	if code != 1 || diag != "" || !strings.Contains(out, "unused fixture") || !strings.Contains(out, `"row":2`) || strings.Contains(out, "argument mismatch") {
+		t.Fatalf("leftover check must follow losing participant drain: %d %s %s", code, out, diag)
+	}
 	const boundary = `package io_test
     provides []
     uses [bytes, codec, io]

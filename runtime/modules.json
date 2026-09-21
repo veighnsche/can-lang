@@ -3,7 +3,12 @@
   "modules": {
     "assert/context.ts": [
       "../failure.ts",
-      "../diagnostics.ts"
+      "../diagnostics.ts",
+      "./report.ts",
+      "./identity.ts",
+      "./barrier.ts",
+      "./queue.ts",
+      "../completion.ts"
     ],
     "assert/fixtures.ts": [
       "../completion.ts",
@@ -77,7 +82,9 @@
     ],
     "vendor/trace-mapping.ts": [],
     "callable.ts": [
-      "./owner.ts"
+      "./owner.ts",
+      "./assert/context.ts",
+      "./assert/identity.ts"
     ],
     "codec/budget.ts": [],
     "codec/numbers.ts": [
@@ -159,7 +166,19 @@
       "./owner.ts",
       "./failure.ts",
       "./data.ts",
-      "./domain.ts"
-    ]
+      "./domain.ts",
+      "./assert/context.ts"
+    ],
+    "assert/identity.ts": [
+      "node:crypto"
+    ],
+    "assert/barrier.ts": [
+      "../completion.ts",
+      "./identity.ts"
+    ],
+    "assert/queue.ts": [
+      "./identity.ts"
+    ],
+    "assert/report.ts": []
   }
 }

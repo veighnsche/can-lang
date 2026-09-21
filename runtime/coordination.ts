@@ -1,8 +1,10 @@
 import {checkedCompletion,invoke,success,failure,errorPayload,type Completion} from "./completion.ts";
-import {launchOwned,type Participant} from "./owner.ts";
+import {launchOwned} from "./owner.ts";
 import {record} from "./data.ts";
 import type {createDomainRuntime} from "./domain.ts";
 import type {FailureOrigin} from "./failure.ts";
+
+import {coordinationContexts,type AssertionContext} from "./assert/context.ts";
 
 export type Mode="all"|"settled"|"any"|"race";
 type Indexed=Readonly<{index:number;completion:Completion}>;
@@ -14,14 +16,18 @@ export type Selection=Readonly<
 // Null-prototype private carriers never expose a Can payload to Promise
 // resolution. Rejecting an adapter preserves its exact original completion.
 function carrier<T extends object>(fields:T):Readonly<T>{return Object.freeze(Object.assign(Object.create(null),fields));}
-export async function settle(mode:Mode,participants:readonly Participant[]):Promise<Selection>{
- const owner=launchOwned(participants);
+type ContextParticipant=Readonly<{captures:readonly unknown[];run:(context?:AssertionContext)=>Completion|Promise<Completion>}>;
+export async function settle(mode:Mode,participants:readonly ContextParticipant[],context?:AssertionContext,site?:string,positions?:readonly (readonly number[])[]):Promise<Selection>{
+ const frames=context===undefined?undefined:coordinationContexts(context,site!,positions!,mode);
+ let owner;
+ try{owner=launchOwned(frames?participants.map((participant,index)=>({captures:participant.captures,run:()=>{frames.start(index);return participant.run(frames.contexts[index]);}})):participants)}catch(cause){frames?.abort();throw cause}
+ try{
  const outcomes:Completion[]=new Array(participants.length);
  const rejected=new Set<number>();
  let firstSuccess:readonly number[]|undefined;
  const tags=new WeakSet<object>();
  const promises=owner.promises.map((pending,index)=>pending.then(completion=>{
-  checkedCompletion(completion);outcomes[index]=completion;
+  checkedCompletion(completion);frames?.observed(index,completion);outcomes[index]=completion;
   const tagged=carrier({index,completion});tags.add(tagged);
   if(completion.kind!=="ok"){rejected.add(index);throw tagged;}
   if(firstSuccess===undefined)firstSuccess=Object.freeze([...rejected,index]);
@@ -56,6 +62,7 @@ export async function settle(mode:Mode,participants:readonly Participant[]):Prom
   if(typeof cause!=="object"||cause===null||!tags.has(cause))throw cause;
   return selected(cause as Indexed);
  }
+ }finally{frames?.selected()}
 }
 
 export type Handlers=Readonly<{

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The compiler emits immutable JavaScript closures for callable references, including bound receivers and near arguments. Their fixture paths must record the original creation site plus occurrence and privately preserve capture aliases. Root-specific invocation views, queues and occurrence counters are already implemented; closures built inside an assertion can capture that root and parent path. In contrast, pure module setup precedes assertions and constructs reusable top-level callables without any assertion context. Different roots must remain isolated even when they invoke that same setup value. WeakMap brands validate identity, and diagnostic hashes encode creation coordinates rather than captured data. Reassigning a dynamically created receipt to another root is disallowed; native production closure execution stays intact. One design creates a distinct immutable setup receipt when ownCallable runs, using lexical-site-local construction numbering and no root ownership, while in-root construction keeps root ownership. Each invocationIdentity then combines its own root path with the unchanged setup receipt; the receipt contains no mutable queue or scheduling state. Competing designs defer instance minting to first invocation per root or ban use of values lacking an assertion root at their construction.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Select the representation that maintains both authentic construction identity and independent roots in this setup-versus-dynamic case.",
+      "criteria": {
+        "construction_receipt": "Brand module-setup receipts separately with root-independent site/occurrence and frozen capture evidence at construction, permit those receipts in multiple root-local paths, and continue validating root ownership for dynamically constructed receipts.",
+        "first_use": "Create a fresh identity when a root first calls a value and derive its coordinates from that invocation rather than module construction.",
+        "reject_initialization": "Accept only closures constructed under an active assertion context, excluding setup-created callable values from assertions."
+      }
+    }
+  }
+}

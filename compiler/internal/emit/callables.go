@@ -75,6 +75,6 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	arguments = append(arguments, "$canContext")
 	name := e.temp()
 	out.WriteString(e.mark(node.Span, "callable"))
-	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s(%s), [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), savedTarget, strings.Join(arguments, ", "), strings.Join(retained, ", "))
+	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s(%s), [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), savedTarget, strings.Join(arguments, ", "), strings.Join(retained, ", "))
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

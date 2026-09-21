@@ -19,7 +19,7 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 	if err != nil {
 		return CompletionContext{}, err
 	}
-	ctx := CompletionContext{Identity: native.Symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: native.Signature.Result(), Errors: bound, Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic}
+	ctx := CompletionContext{Sites: indexLexicalSites(native.Symbol.ID, native.Symbol.Declaration), Identity: native.Symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: native.Signature.Result(), Errors: bound, Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic}
 	if question, ok := native.Symbol.Declaration.(*syntax.QuestionDecl); ok {
 		for _, binder := range question.Binders {
 			id := native.Symbol.ID + "/metadata/" + binder.Name.Text

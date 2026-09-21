@@ -49,3 +49,32 @@ fn int plus
 		}
 	}
 }
+
+func TestNativeSliceFixturesUseCheckedInvocationContract(t *testing.T) {
+	source := programHeader + `fn str sample
+    emits []
+    asserts
+        selected: => ok "fake"
+    match call "abc".slice(1, 3)
+        when
+            selected: 1, 3 => ok "fake"
+        ok
+` + programMain + "    ok\n"
+	p, err := programFixture(t, map[string]string{"src/main.can": source})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, fn := range p.Functions {
+		if fn.Symbol.Name == "sample" {
+			step := fn.Region.Body.Terminal.Match.Call.Steps[0]
+			if step.Native == nil || step.Contract == nil || step.Fixtures == nil || !step.Receiver || len(step.Prepare) != 3 || len(step.Arguments) != 3 {
+				t.Fatal("native fixture lost its checked native operation or argument contract")
+			}
+		}
+	}
+	for _, row := range []string{`selected: "wrong", 3 => ok "fake"`, `selected: 1 => ok "fake"`, `selected: 1, 3 => ok 7`, `selected: 1, 3 => ok`} {
+		if _, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(source, `selected: 1, 3 => ok "fake"`, row, 1)}); err == nil {
+			t.Fatalf("malformed native fixture admitted: %s", row)
+		}
+	}
+}

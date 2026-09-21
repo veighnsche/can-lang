@@ -18,7 +18,11 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 			return nil, err
 		}
 	}
-	out := &ir.Coordination{Span: n.Span, Result: expected}
+	site, err := c.lexicalSite("coordination", n.Span)
+	if err != nil {
+		return nil, err
+	}
+	out := &ir.Coordination{Site: site, Span: n.Span, Result: expected}
 	switch n.Mode {
 	case "concurrent":
 		out.Mode = "all"

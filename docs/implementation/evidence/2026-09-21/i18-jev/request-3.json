@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "We need deterministic Can when fixtures over otherwise real pure execution. A lexical table has exactly one root-local ordered queue, shared even by recursion and concurrent helper calls, and expected arguments validate the assigned row rather than choose it. Invocation paths include typed-tree preorder declaration sites, per-parent occurrence, direct/spread indexes reserved before launch, and frozen callable creation/capture identity. The runtime already transports private assertion contexts and owns late participants; boxed completions and native all/allSettled/any/race must remain the production mechanism. Assertion delivery begins only after all participants start and their live continuations are either fixture-blocked or finished. The least path is released, then the same barrier must be re-established. Arbitrarily long pure asynchronous call chains rule out a fixed tick count as proof. Explicit generated-call frames can distinguish executing, waiting on descendants, waiting on a fixture and completed states, reactivate parents, and include nested groups. Isolated roots, fail-closed token validation, loser drain before unused-row errors and conformance-only alternate schedules are required.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which implementation approach preserves the complete barrier and identity contract?",
+      "criteria": {
+        "explicit_frames": "Represent each invocation with an immutable context view and tracked frame lifecycle; reserve the entire participant batch first, then release ordered fixture requests from shared root queues only when all relevant frames are quiescent, leaving native production Promise selection intact.",
+        "tick_heuristic": "Choose an arbitrary microtask budget and assume that pending requests collected when it expires form a complete barrier.",
+        "arrival_order": "Let host arrival order assign FIFO entries immediately and attach canonical identities after allocation."
+      }
+    }
+  }
+}

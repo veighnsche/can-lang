@@ -1,4 +1,4 @@
-import {fixtureIndex,registerFixtureTable,rawProviderEvidence,violation,type AssertionContext} from "./context.ts";
+import {contextOwner,fixtureIndex,registerFixtureTable,rawProviderEvidence,violation,type AssertionContext} from "./context.ts";
 import type {FailureOrigin} from "../failure.ts";
 
 // Compiler conformance data only: no authored Can constructor or public input
@@ -8,10 +8,10 @@ export type RawHTTPFixture=Readonly<{
  response:Readonly<{status:number;headers:readonly (readonly [string,string])[];body:Uint8Array}>;
 }>;
 export type HTTPExchange=(url:URL,init:RequestInit)=>Promise<Response>;
-const fixtures=new WeakMap<AssertionContext,readonly RawHTTPFixture[]>();
+const fixtures=new WeakMap<object,readonly RawHTTPFixture[]>();
 const origin:FailureOrigin=Object.freeze({source:"can:raw-provider",start:0,end:0,invocation:Object.freeze([])});
 export function provideHTTP(context:AssertionContext,rows:readonly RawHTTPFixture[]):void{
- if(fixtures.has(context))throw violation(context,"malformed fixture",origin);
+ if(fixtures.has(contextOwner(context)))throw violation(context,"malformed fixture",origin);
  const headers=(entries:readonly (readonly [string,string])[])=>Object.freeze(entries.map(([name,value])=>Object.freeze([name,value] as const)));
  let copied:readonly RawHTTPFixture[];
  try {
@@ -24,12 +24,12 @@ export function provideHTTP(context:AssertionContext,rows:readonly RawHTTPFixtur
   fixtureResponse(row.response);
  }
  }catch{throw violation(context,"malformed fixture",origin);}
- fixtures.set(context,copied);
+ fixtures.set(contextOwner(context),copied);
  registerFixtureTable(context,"can:raw-http",rows.length,origin);
 }
 export function providerHTTP(context:AssertionContext|undefined,where:FailureOrigin):HTTPExchange|undefined{
  if(context===undefined)return undefined;
- const rows=fixtures.get(context);if(rows===undefined)return undefined;
+ const rows=fixtures.get(contextOwner(context));if(rows===undefined)return undefined;
  return async(url,init)=>{
   const row=rows[fixtureIndex(context,"can:raw-http",rows.length,where)];
   const actualHeaders=Array.from(new Headers(init.headers).entries());

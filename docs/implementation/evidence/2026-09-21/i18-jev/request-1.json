@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can assertions must execute real pure bodies while replacing only exact when-table invocations. Each root has one shared FIFO per lexical table across recursive and concurrent visits; allocation never searches arguments. Calls need declaration plus typed-AST preorder sites, parent-scoped occurrence counts, pre-reserved written/spread participant paths and frozen callable creation/capture fingerprints. Native Promise operations retain production selection, protected completion boxes and loser ownership. During assertion coordination every participant must start before any supplied fixture settles; then the scheduler releases the least full invocation path only after all live participant continuations have reached a fixture await or completed, repeating after each release. Pure async nested calls may require arbitrarily many microtasks, so elapsed ticks cannot prove quiescence. Generated calls already carry a private assertion context. Consider tracking each generated call frame as running, awaiting children, fixture-blocked or done; parent frames resume on child completion, nested coordination tracks all children, and root completion still drains losers before unused-row checks. Malformed identities must fail closed, roots must remain isolated, and alternate release orders are conformance-only inputs.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which scheduling architecture can satisfy these identity, FIFO and barrier obligations?",
+      "criteria": {
+        "explicit_frames": "Thread immutable invocation-context views through generated call and coordination boundaries, reserve participant identities before launch, and use explicit frame activity to release sorted pending fixture requests only at proven barriers. Keep shared root queues and separate native production settlement.",
+        "tick_heuristic": "Wait a fixed number of microtasks after requests arrive, then sort the currently visible requests and allocate rows.",
+        "arrival_order": "Allocate a shared FIFO row immediately on each arriving request and use identities only in diagnostics."
+      }
+    }
+  }
+}

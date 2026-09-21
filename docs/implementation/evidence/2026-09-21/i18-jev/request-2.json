@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The assertion contract requires one isolated root state and a single FIFO for each lexical when site, including recursive helpers and concurrent callers; matching later arguments must never skip a row. Stable identity combines a declaration/typed-syntax preorder call site, occurrence relative to its parent, reserved direct/spread positions, and immutable callable-instance capture evidence. Ordinary pure Can execution continues, completion values remain boxed, native Promise combinators choose production results, and owners retain losers. In tests all participant bodies start before fixture delivery. Each delivery waits until every active continuation is parked at a harness request or finished, picks the smallest complete path, and establishes the barrier again afterward. Pure awaited code can span an unbounded number of microtask turns. Existing generated calls pass a private context, making running/child-waiting/fixture-waiting/finished frames possible, with parents reactivated when children finish and nested coordination included. Root drain must precede leftover checks, invalid tokens must be rejected, and only conformance tooling can request other schedules.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Select the mechanism that provides the specified deterministic allocation without replacing native production coordination.",
+      "criteria": {
+        "explicit_frames": "Create immutable child context views at compiler-marked invocation boundaries, register all participant positions ahead of launch, and maintain explicit continuation states so the root scheduler can assign its shared queues in full-path order at actual barriers.",
+        "tick_heuristic": "Use a bounded microtask delay as a quiet-period estimate before ordering whatever fixture requests have arrived.",
+        "arrival_order": "Consume the next queue entry as soon as a fixture request arrives, retaining the computed path only for later reporting."
+      }
+    }
+  }
+}

@@ -91,7 +91,11 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 	if !types.Equal(binding.Type, declaration.Contract) || (receiver != nil) != declaration.Receiver {
 		return nil, fmt.Errorf("callable target/receiver contract mismatch")
 	}
-	out := &ir.Expression{Kind: ir.CallableValue, Span: n.Span, Callable: &ir.Callable{Site: c.identity("callable"), Target: binding.Identity, Contract: binding.Type}}
+	site, err := c.lexicalSite("callable", n.Span)
+	if err != nil {
+		return nil, err
+	}
+	out := &ir.Expression{Kind: ir.CallableValue, Span: n.Span, Callable: &ir.Callable{Site: site, Target: binding.Identity, Contract: binding.Type}}
 	var inputs []*types.Type
 	captures := []string{}
 	for i, typ := range binding.Type.Inputs() {

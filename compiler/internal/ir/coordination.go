@@ -8,6 +8,7 @@ import (
 // Coordination retains preparation separately from launched invocations. Spread
 // entries remain dynamic until their immutable callable arrays are snapshotted.
 type Coordination struct {
+	Site          string
 	Span          source.Span
 	Mode          string // all, settled, any, race: the selected native Promise operation
 	Result        *types.Type

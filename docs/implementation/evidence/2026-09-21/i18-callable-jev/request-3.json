@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Assertion fixtures in Can require a callable creation coordinate (lexical identity, occurrence) within each invocation path, together with immutable private receiver/near capture evidence. Native frozen closures provide execution, and private WeakMap tokens plus creation-coordinate digests prevent structural identity forgery without leaking captures. Each assertion already owns explicit context views, parent-relative counts and isolated FIFO scheduling state. A closure made during an assertion has an available root and parent invocation path and must not be adopted into an unrelated assertion. However, deterministic top-level initialization occurs before roots exist and may create one callable reused by many assertions. Those legitimate setup values cannot obtain a root at creation. The proposed distinction is construction-time, site-local numbering for a root-neutral initialization token, versus root-attached dynamic tokens; invocationIdentity uses either receipt within its own root path, and ownCallable stores frozen captures. Initialization receipts carry identity only, never queue state or scheduling machinery. Other candidates allocate an instance on first use separately for every root, or prohibit initialization callables because their creation had no assertion context. Production must continue using the native closure in all cases.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Choose the policy that satisfies the stated creation provenance, sharing and root isolation constraints.",
+      "criteria": {
+        "construction_receipt": "Capture initialization provenance in a branded immutable root-neutral receipt when the closure is made; preserve root/path ownership for assertion-time construction and embed a reused initialization receipt into otherwise isolated invocation paths.",
+        "first_use": "Use the first call in each assertion to invent that root's callable instance, postponing occurrence assignment until use.",
+        "reject_initialization": "Treat absence of a construction-time assertion root as invalid and reject top-level callables during assertion execution."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can compiles references and near/receiver captures to frozen native closures. P3 requires each substitutable invocation path to contain a callable instance identified by creation lexical site and occurrence, retaining frozen capture evidence privately. Generated calls now carry explicit assertion context views with per-root queues and parent-local counters; dynamic creation can record its current root and full parent invocation path. Top-level pure initialization runs once before all assertion roots, so its immutable closures are legitimately reused by independent assertions and have no root context at creation. Production calls must remain native closures and assertions may not forge tokens or share queue state. Current identity tokens use private WeakMaps and a hash of creation path/site/occurrence, avoiding disclosure or serialization of captures. A dynamic receipt from one assertion must not silently become another assertion instance. Consider giving initialization-created closures a separate root-neutral immutable creation receipt, with site-local creation occurrence assigned when ownCallable executes, while dynamic receipts remain root-bound. Invocation paths embed the same neutral creation identity inside each root-local path; no scheduling or queues live in the receipt. Alternative approaches are minting a new root-bound identity on first invocation in each root, or rejecting closure reuse outside its creation root and therefore rejecting initialization-created callable use. Exact API names ownCallable and invocationIdentity are internal.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Which identity strategy best preserves creation-time evidence and isolated assertion scheduling for both initialization and dynamic callables?",
+      "criteria": {
+        "construction_receipt": "Issue a private root-neutral initialization creation token at actual closure construction, carrying lexical site, site-local occurrence and frozen captures; keep dynamic tokens bound to their creation root/path and allow only initialization tokens to be reused under independent root-local invocation paths.",
+        "first_use": "Delay identity assignment until each assertion first invokes the closure, minting a separate instance from the invoking root and its counters.",
+        "reject_initialization": "Require every callable to have an assertion root at construction and reject initialization-created closures when assertions use them."
+      }
+    }
+  }
+}

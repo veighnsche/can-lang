@@ -4,7 +4,7 @@ import { invoke, success, type Completion } from "../completion.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "../data.ts";
 import { domainFailureDiagnostics } from "../domain.ts";
 import { standardFailureDiagnostics, type FailureOrigin } from "../failure.ts";
-import { assertionContext, closeContext, contextReport, type AssertionContext, type AssertionRoot } from "./context.ts";
+import { assertionContext, finishAssertionExecution, closeContext, contextReport, type AssertionContext, type AssertionRoot } from "./context.ts";
 
 import { diagnosticFrames } from "../diagnostics.ts";
 
@@ -58,6 +58,7 @@ export async function runAssertion(test: AssertionCase) {
   const diagnostics:OwnerDiagnostic[]=[];
   try {
     const owned=await runOwnedRoot(async()=>{
+    try {
     const expected = await invoke(() => test.expected(context), origin);
     if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
     else {
@@ -69,6 +70,7 @@ export async function runAssertion(test: AssertionCase) {
       }
     }
     return success(undefined);
+    } finally {finishAssertionExecution(context);}
     },diagnostic=>{diagnostics.push(diagnostic);});
     if(owned.cleanupFailed)reason="harness violation";
   } catch { reason = "outcome mismatch"; }

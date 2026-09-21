@@ -488,7 +488,7 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	if e != nil {
 		return CompletionContext{}, e
 	}
-	context := CompletionContext{Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables}
+	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables}
 	context.Specialize = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
 		return c.specialize(file, scope, name, args)
 	}

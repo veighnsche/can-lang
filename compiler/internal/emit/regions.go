@@ -2,6 +2,7 @@ package emit
 
 import (
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 )
 
 func CompletionImports(path string) string {
-	return "import { success as $canSuccess, failure as $canFailure, value as $canValue, invoke as $canInvoke, caught as $canCaught, errorType as $canErrorType, errorPayload as $canErrorPayload, type Completion as $canCompletion, type AssertionContext as $canAssertionContext } from " + quote(path) + ";\n"
+	return "import {callableInstance as $canCallableInstance} from " + quote(filepath.ToSlash(filepath.Join(filepath.Dir(path), "callable.ts"))) + ";\n" + "import {callContext as $canCallContext} from " + quote(filepath.ToSlash(filepath.Join(filepath.Dir(path), "assert/context.ts"))) + ";\n" + "import { success as $canSuccess, failure as $canFailure, value as $canValue, invoke as $canInvoke, caught as $canCaught, errorType as $canErrorType, errorPayload as $canErrorPayload, type Completion as $canCompletion, type AssertionContext as $canAssertionContext } from " + quote(path) + ";\n"
 }
 func PatternImports(dataPath, failurePath string) string {
 	return "import { recordIdentity as $canRecordIdentity } from " + quote(dataPath) + ";\nimport { isStandardFailure as $canIsStandardFailure, standardFailureMessage as $canStandardMessage } from " + quote(failurePath) + ";\n"
@@ -230,7 +231,7 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			e.expression.Bindings[prepared.Local.Identity] = name
 			fmt.Fprintf(&out, "const %s = %s;\n", name, value.Value)
 		}
-		if step.Native != nil {
+		if step.Native != nil && step.Fixtures == nil {
 			value, err := e.expression.Lower(step.Native)
 			if err != nil {
 				return LoweredExpression{}, err
@@ -239,7 +240,7 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			fmt.Fprintf(&out, "%s = %s;\n%s = $canSuccess(%s);\n", e.expression.Bindings[step.SuccessBinding], value.Value, result, e.expression.Bindings[step.SuccessBinding])
 			continue
 		}
-		if target == "" {
+		if target == "" && step.Native == nil {
 			var err error
 			target, err = e.target(step.Identity)
 			if err != nil {
@@ -255,7 +256,16 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			out.WriteString(lowered.Statements)
 			args = append(args, lowered.Value)
 		}
-		invocation := target + "(" + strings.Join(append(args, "$canContext"), ", ") + ")"
+		var invocation string
+		if step.Native != nil {
+			value, err := e.expression.Lower(step.Native)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			invocation = "(() => {\n" + value.Statements + "return $canSuccess(" + value.Value + ");\n})()"
+		} else {
+			invocation = target + "(" + strings.Join(append(args, "$canContext"), ", ") + ")"
+		}
 		if step.Fixtures != nil {
 			var rows []string
 			for _, row := range step.Fixtures.Rows {
@@ -287,6 +297,11 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
 		}
+		instance := "undefined"
+		if step.Native == nil {
+			instance = "$canCallableInstance(" + target + ")"
+		}
+		invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"
 		out.WriteString(e.mark(step.Span, "call"))
 		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
 	}

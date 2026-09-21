@@ -1,0 +1,24 @@
+package native_fixture
+    provides []
+    uses []
+fn str sample
+    emits []
+    asserts
+        selected: => ok "fake"
+        actual: => ok "bc"
+    match call "abc".slice(1, 3)
+        when
+            selected: 1, 3 => ok "fake"
+        ok
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    str value = call sample()
+    match value is "bc"
+        true => ok
+        false => do
+            int invalid = 1 / 0
+            ok

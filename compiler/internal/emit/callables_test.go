@@ -83,12 +83,12 @@ func TestNativeCallableInstancesAndCaptureTiming(t *testing.T) {
 		t.Fatal(err)
 	}
 	runtimeRoot, _ := filepath.Abs("../../../runtime")
-	code := `import {strict as assert} from "node:assert";` + "\n" + CompletionImports(filepath.Join(runtimeRoot, "completion.ts")) + fmt.Sprintf("import {assertionContext} from %s;\n", quote(filepath.Join(runtimeRoot, "assert/context.ts"))) + fmt.Sprintf("import {ownCallable as $canOwnCallable, callableReceipt} from %s;\n", quote(filepath.Join(runtimeRoot, "callable.ts"))) + declarations + a + b + `
+	code := `import {strict as assert} from "node:assert";` + "\n" + CompletionImports(filepath.Join(runtimeRoot, "completion.ts")) + fmt.Sprintf("import {assertionContext,contextReport} from %s;\n", quote(filepath.Join(runtimeRoot, "assert/context.ts"))) + fmt.Sprintf("import {ownCallable as $canOwnCallable, callableReceipt} from %s;\n", quote(filepath.Join(runtimeRoot, "callable.ts"))) + declarations + a + b + `
 const root=(name:string)=>assertionContext({package:"p",declaration:"d",name});
 const creator=root("creator"), caller=root("caller"), later=root("later");
 const callbacks:any[]=[];const observed:any[]=[];
 async function $combine(prefix:bigint,value:bigint,suffix:bigint,context?:$canAssertionContext){observed.push(context);return $canSuccess(prefix+value+suffix);}
-async function $consume(action:any,value:bigint,context?:$canAssertionContext){assert.equal(context,creator);callbacks.push(action);return action(value,caller);}
+async function $consume(action:any,value:bigint,context?:$canAssertionContext){assert.deepEqual(contextReport(context!).root,contextReport(creator).root);callbacks.push(action);return action(value,caller);}
 assert.equal($canValue(await $compute(3n,5n,4n,creator)),12n);
 assert.equal($canValue(await $compute(7n,11n,4n,creator)),22n);
 assert.notEqual(callbacks[0],callbacks[1]);
@@ -102,7 +102,7 @@ assert.equal($canValue(await callbacks[1](1n,later)),19n);
 assert.deepEqual(observed,[caller,caller,later,later]);
 const box=Object.freeze({value:7n});let creations=0;const receivers:any[]=[];
 async function $makeBox(){creations++;return $canSuccess(box);}
-async function $read(value:any,increment:bigint,context?:$canAssertionContext){assert.equal(context,creator);receivers.push(value);return $canSuccess(value.value+increment);}
+async function $read(value:any,increment:bigint,context?:$canAssertionContext){assert.deepEqual(contextReport(context!).root,contextReport(creator).root);receivers.push(value);return $canSuccess(value.value+increment);}
 assert.equal($canValue(await $receiver(3n,creator)),10n);
 assert.equal($canValue(await $receiver(5n,creator)),12n);
 assert.equal(creations,2);assert.equal(receivers[0],box);assert.equal(receivers[1],box);
