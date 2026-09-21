@@ -138,15 +138,22 @@ function launch(participants:readonly Participant[],native:boolean):OwnedGroup{
  try{for(const participant of participants)retained.push(retain(participant.captures,child));}
  catch(cause){for(const release of retained.reverse())release();throw cause;}
  current.root.groups.add(group);
- function finish():void{
+ function observe(index:number):void{
+  const result=group.tasks[index].completion;
+  if(result?.kind==="standard"&&!group.selected.has(index))emit(group.root,result.value,"late");
+ }
+ function finish(index?:number):void{
   if(!group.sealed)return;
-  for(let i=0;i<group.tasks.length;i++){const result=group.tasks[i].completion;if(result?.kind==="standard"&&!group.selected.has(i))emit(group.root,result.value,"late");}
+  // Publication observes completions already available. Each later settlement
+  // observes only its own outcome, so draining a batch takes linear work.
+  if(index===undefined){for(let i=0;i<group.tasks.length;i++)observe(i);}
+  else observe(index);
   if(group.pending===0){group.root.groups.delete(group);signal(group.root);}
  }
  for(let i=0;i<participants.length;i++){
   const task:Task={scope:group.scope,dynamic:[],captures:Object.freeze([...participants[i].captures]),promise:undefined!,release:retained[i]};group.tasks.push(task);
   task.promise=context.run({...child,task},()=>invoke(participants[i].run,origin)).then(completion=>{
-   task.completion=completion;task.release();for(const release of task.dynamic)release();task.dynamic=[];task.captures=undefined;group.pending--;finish();return completion;
+   task.completion=completion;task.release();for(const release of task.dynamic)release();task.dynamic=[];task.captures=undefined;group.pending--;finish(i);return completion;
   });
  }
  return Object.freeze({promises:Object.freeze(group.tasks.map(task=>task.promise)),publish(selected:readonly number[]){

@@ -30,3 +30,11 @@ Date: 2026-09-21. Runtime: the exact Bun/archive/revision/OS/architecture in `di
 Design consultations: [ownership publication](i19-jev/README.md), [contextual aggregate constraints](i19-aggregate-jev/README.md), and [chain preparation](i19-chain-jev/README.md). Requests, responses and wording audits are retained. The lower-confidence ownership result was investigated against Q7/Q10 and controlled pre-/post-winner failures; classifier agreement is not treated as proof.
 
 I18 remains separate: deterministic fixture queues and participant invocation-path allocation are not claimed by this report. I21 likewise owns the broader immutable collection callback catalogue.
+
+## Independent review correction: linear late drain
+
+Review found that every completion after group publication scanned all participants again. This made draining an early winner's remaining participants quadratic even when none failed. Publication now scans outcomes once; each subsequent completion examines only its own participant. Pending-count removal, wakeups, selected outcomes and original-failure occurrence deduplication retain their existing behavior.
+
+The count-based owner regression releases 256 losing participants carrying one shared standard-failure occurrence after publication. It requires exactly 256 selected-index inspections and one diagnostic. Restoring the full-group scan makes the same test fail with 32,896 inspections. The regression uses operation counts rather than timing thresholds and restores its temporary Set instrumentation in a finally block.
+
+Validation: owner and coordination suites pass (32 tests, 191 expectations), and strict TypeScript checking passes for the owner implementation and tests. `TestCurrentBundledAssertions` and `TestCurrentBundledCoordination` also pass using the qualified staged archive, absolute Bun, network denial and strict generated TypeScript checking. These staged checks include the in-progress I18 changes; the owner correction is committed separately.

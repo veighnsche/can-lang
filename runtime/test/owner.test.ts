@@ -6,6 +6,33 @@ const origin={source:"test:owner",start:0,end:0,invocation:[]};
 function deferred<T>(){let resolve!:(value:T)=>void,reject!:(cause:unknown)=>void;const promise=new Promise<T>((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};}
 const empty=()=>success(undefined);
 
+test("published groups inspect each losing outcome once while preserving occurrence dedup",async()=>{
+ const count=256,ready=deferred<void>(),release=deferred<Completion>();
+ const occurrence=captureStandard(new Error("shared losing occurrence"),origin),failed=failure(occurrence);
+ const diagnostics:OwnerDiagnostic[]=[];
+ const original=Set.prototype.has;let inspections=0;
+ // Count selected-index queries, not elapsed time. The selected set contains
+ // index zero; object-valued ownership/diagnostic sets are excluded.
+ Set.prototype.has=function(value:unknown){
+  if(typeof value==="number"&&this.size===1&&original.call(this,0))inspections++;
+  return original.call(this,value);
+ };
+ try{
+  const root=runOwnedRoot(async()=>{
+   const group=launchOwned([
+    {captures:[],run:empty},
+    ...Array.from({length:count},()=>({captures:[],run:()=>release.promise})),
+   ]);
+   const selected=await group.promises[0];group.publish([0]);ready.resolve();return selected;
+  },diagnostic=>{diagnostics.push(diagnostic)});
+  await ready.promise;release.resolve(failed);
+  const result=await root;
+  expect(result.completion.kind).toBe("ok");expect(result.cleanupFailed).toBe(false);
+  expect(inspections).toBe(count);expect(diagnostics).toHaveLength(1);
+  expect(diagnostics[0].message).toBe("Error: shared losing occurrence");
+ }finally{Set.prototype.has=original;}
+});
+
 test("late standard failures stay observed without replacing the selected success",async()=>{
  const winner=deferred<Completion>(),loser=deferred<Completion>(),selected=deferred<void>();
  const diagnostics:OwnerDiagnostic[]=[];let done=false;
