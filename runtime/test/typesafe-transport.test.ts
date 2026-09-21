@@ -94,3 +94,23 @@ test("raw provider assertions cross request encoding, native response parsing an
  const leftover=await runAssertion({root:{package:"conformance",declaration:"noul",name:"unused-wire-input"},actual:async context=>{provideHTTP(context,[row]);return success(0);},expected:async()=>success(0)});
  expect(leftover.passed).toBe(false);expect(leftover.violations).toEqual(["unused fixture"]);
 });
+
+
+test("invalid raw HTTP configuration stays a harness failure after handling",async()=>{
+ const body=new Uint8Array([123]);
+ for(const response of [
+  {status:999,headers:[],body},
+  {status:200,headers:[["bad\nname","value"]],body},
+  ...[204,205,304].map(status=>({status,headers:[],body})),
+ ]){
+  let registered=false;
+  const report=await runAssertion({root:{package:"conformance",declaration:"noul",name:"bad-configuration"},actual:async context=>{
+   try{provideHTTP(context,[{request:{method:"POST",url:"https://fixture.invalid/",headers:[],body},response:response as RawHTTPFixture["response"]}]);registered=true;}catch{/* Authored recovery cannot clear the harness violation. */}
+   return success(0);
+  },expected:async()=>success(0)});
+  expect(registered).toBe(false);
+  expect(report.passed).toBe(false);
+  expect(report.violations).toEqual(["malformed fixture"]);
+  expect(report.evidence).not.toContain("raw-provider-fixture");
+ }
+});
