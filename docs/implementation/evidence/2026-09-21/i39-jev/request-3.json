@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Resolve the remaining shape questions for qualifying Can releases offline: what single artifact represents a version, how the install root flips between immutable versions without disturbing running processes, and what role read-only upstream signature readings play.",
+   "fixed_constraints": [
+    "A version bundles the manifest-stamped launcher binary, the pinned unmodified Bun 1.4.2 runtime executable, all runtime and tooling sources, pinned assets with notices and the target record, and a manifest of SHA-256 digests keyed by relative path. Staging completes fully before one rename publishes the version; the tree never contains symlinks and existing versions are never overwritten.",
+    "The install location is an ordinary user directory on qualifying macOS arm64 hardware at OS 13.0+, reached without elevation and without network access. Smoke tests execute the installed launcher with no developer tools on PATH under a network-denying sandbox, and Gatekeeper stays fully enforced throughout.",
+    "Old and new versions rest side by side untouched while publication moves just the selection; in-flight processes are never affected by newly staged bytes. Verification failures keep the earlier selection live, and each of tampered content, wrong platform, partial staging, and foreign-file removal is refused distinctly.",
+    "Because no signing credentials exist here, real signing, notarization submission, and release upload remain a reported open gate with prepared commands awaiting authorization; nothing in this task performs them. Local read-only examination of pinned upstream bytes is allowed, and any network retrieval is forbidden."
+   ]
+  },
+  "topics": {
+   "release_container": {
+    "facts": "The release input is a finished version directory that needs a shippable form and an integrity record of its own. Zipped form keeps modes intact and travels as one file with one hash, whereas copying the directory verbatim skips containers at the expense of a scattered artifact."
+   },
+   "version_selection": {
+    "facts": "Immutable per-version directories share one root where a lone selection entry steers fresh launches and parallel readers observe it. An atomic rename exchanges the entry while processes already running hold their handles steady."
+   },
+   "inspection_gate": {
+    "facts": "Exact-byte assurance comes from staged hash checks against the manifest, and the pinned runtime's signature facts stay readable through a local display tool needing no credentials. Quarantine decisions at first launch remain Gatekeeper's on clean hardware, outside this task's scope."
+   }
+  }
+ },
+ "questions": {
+  "release_container": {
+   "type": "choice",
+   "instructions": "Select the shippable form of one versioned release. Use common and topics.release_container.",
+   "criteria": {
+    "zip_archive": "Publish each version as a single zip accompanied by its detached SHA-256 record; installers expand into staging, validate the manifest, and rename the result into place. Modes persist and distribution handles one file.",
+    "directory_copy": "Publish the version directory as-is with per-file manifest validation. There is no container code to maintain, and the release occupies many paths.",
+    "review_needed": "This evidence leaves the containers indistinguishable, or neither upholds the contracts."
+   }
+  },
+  "version_selection": {
+   "type": "choice",
+   "instructions": "Select the indivisible switch between installed versions. Use common and topics.version_selection.",
+   "criteria": {
+    "symlink_swap": "Direct a current symlink at the live versions/<v>/ tree and republish via fresh-link-plus-rename. Established processes stay on open handles while new ones enter the new tree.",
+    "pointer_file": "Write the live version name into a current file exchanged by rename, read by the launcher at startup. Indirection costs one file read on every launch.",
+    "review_needed": "This evidence leaves the mechanisms indistinguishable, or neither upholds the contracts."
+   }
+  },
+  "inspection_gate": {
+   "type": "choice",
+   "instructions": "Select the release-blocking role, if any, of read-only upstream inspection. Use common and topics.inspection_gate.",
+   "criteria": {
+    "gate_on_inspection": "Refuse releases whose credential-free signature display fails or disagrees with the recorded upstream state. Manifest hashes keep binding bytes while the signature check guards the upstream half.",
+    "record_only": "Attach the inspection transcript to the release record and decide verification from hashes and manifest shape. Byte hashes rule; signature notes stay advisory.",
+    "review_needed": "This evidence leaves the strictness levels indistinguishable, or neither upholds the contracts."
+   }
+  }
+ }
+}

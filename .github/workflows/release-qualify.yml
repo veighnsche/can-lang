@@ -1,0 +1,58 @@
+name: release qualification
+
+# Offline release/install/update qualification (I39). This workflow builds a
+# bundle, releases it to one zip plus integrity and inspection records,
+# installs and updates it in a temporary root, and smoke-tests the installed
+# layout with runtime networking denied. It performs no signing,
+# notarization, or release upload: those steps need authorized credentials
+# and a separate user authorization, and are documented as prepared commands
+# in distribution/README.md rather than executed here.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  release-offline:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Acquire the pinned upstream archive
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          target = json.loads(pathlib.Path('distribution/target.json').read_text())
+          urllib.request.urlretrieve(target['upstream']['url'], pathlib.Path(os.environ['RUNNER_TEMP']) / 'bun.zip')
+          PY
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Build, release, install, and smoke-test offline
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+        run: |
+          set -euo pipefail
+          go run ./tools/distbuild --archive "$CAN_BUN_ARCHIVE" --out "$RUNNER_TEMP/bundles" --version "ci-$GITHUB_SHA" --release-out "$RUNNER_TEMP/releases"
+          ls "$RUNNER_TEMP/releases"
+          ARTIFACT=( "$RUNNER_TEMP/releases"/*.zip )
+          go run ./tools/distbuild install --archive "$ARTIFACT" --sha "$ARTIFACT.sha256" --root "$RUNNER_TEMP/install-root"
+          test "$(/usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network*)' "$RUNNER_TEMP/install-root/current/bin/canlc" runtime-check | python3 -c 'import json,sys; print(json.load(sys.stdin)["bun"])')" = "1.4.2"
+          mkdir -p "$RUNNER_TEMP/empty-home"
+          /usr/bin/sandbox-exec -p '(version 1)(allow default)(deny network*)' env -i PATH=/nonexistent HOME="$RUNNER_TEMP/empty-home" "$RUNNER_TEMP/install-root/current/bin/canlc" runtime-check >/dev/null
+      - name: Run release, install, and update tests
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+        run: |
+          set -o pipefail
+          go test -count=1 -v ./distribution | tee "$RUNNER_TEMP/release-unit-v1.txt"
+          go test -count=1 -v -run 'TestReleaseInstallUpdate|TestInstallRootRefusals|TestDevelopmentSidecar' ./tests/integration | tee "$RUNNER_TEMP/release-integration-v1.txt"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-qualification-v1
+          path: |
+            ${{ runner.temp }}/releases/*.sha256
+            ${{ runner.temp }}/releases/*.inspection.json
+            ${{ runner.temp }}/release-unit-v1.txt
+            ${{ runner.temp }}/release-integration-v1.txt
+          if-no-files-found: error

@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Design the offline release, install, and update qualifier for the Can distribution: how a built version ships as one shippable artifact, how an install root selects one version atomically while older ones keep running, and how far read-only upstream inspection goes as a release gate.",
+   "fixed_constraints": [
+    "The development build assembles bin/canlc (a Go launcher stamped with the manifest digest), runtime/bun (the exact pinned Bun 1.4.2 upstream executable), runtime sources, tools/runtime, distribution assets/notices/target.json, and manifest.json holding a SHA-256 per file. The bundle holds no symlinks; the builder stages everything in a sibling directory and publishes by rename, and refuses to overwrite an existing version.",
+    "All work is offline in a user-owned install root with no privilege escalation, on macOS arm64 with minimum OS 13.0. Tests must not bypass Gatekeeper, must not auto-acquire dependencies, and must run the installed layout with development tools absent from PATH and runtime network access denied.",
+    "Running processes keep open file handles into the selected version, so an update must never overwrite live files; versions coexist side by side and only the selection moves. Failed verification must preserve the previous selection, and tampered archives, wrong architecture or OS, partial updates, and unowned cleanup must each refuse with a specific error.",
+    "Signing credentials are unavailable in this task, so actual codesigning, notarization submission, and release upload are out of scope and are recorded as a remaining gate; only reviewable prepared commands ship. Upstream inspection is read-only observation of the pinned bytes, never a network fetch or a publisher-trust decision made here."
+   ]
+  },
+  "topics": {
+   "release_container": {
+    "facts": "The builder outputs a versioned directory; the release step must turn it into one shippable versioned artifact plus an integrity record. A zip archive carries Unix modes and needs no symlinks here; a bare directory copy is the simplest possible artifact but ships as many files rather than one."
+   },
+   "version_selection": {
+    "facts": "Several immutable version directories coexist under one install root while exactly one is selected for new launches. Concurrent readers resolve the selection while older versions keep serving already-running processes, and POSIX rename is atomic on APFS so the switch itself can be one indivisible step."
+   },
+   "inspection_gate": {
+    "facts": "SHA-256 hashes over every file bind the exact assembled bytes, and the macOS codesign display operation can read the pinned runtime's signature and entitlement state without credentials or network. Gatekeeper evaluates quarantine policy at first run on a clean machine, which this task's tests do not simulate."
+   }
+  }
+ },
+ "questions": {
+  "release_container": {
+   "type": "choice",
+   "instructions": "Choose the shippable release artifact for one versioned bundle. Use common and topics.release_container.",
+   "criteria": {
+    "zip_archive": "The release is one zip archive plus a detached SHA-256 record. Install extracts into staging, verifies every manifest hash, then renames into place; modes survive the round trip and the single file is shippable.",
+    "directory_copy": "The release is a bare versioned directory verified file by file against the manifest. No container tooling exists at all, at the cost of shipping many files instead of one artifact.",
+    "review_needed": "The evidence cannot separate these containers, or neither keeps the required contracts."
+   }
+  },
+  "version_selection": {
+   "type": "choice",
+   "instructions": "Choose the atomic version-selection mechanism inside the install root. Use common and topics.version_selection.",
+   "criteria": {
+    "symlink_swap": "Versions live in versions/<v>/ and a current symlink selects one; publication creates the new link and renames it over the old one atomically. Running processes keep their open handles while new launches resolve the new target.",
+    "pointer_file": "Versions live in versions/<v>/ and a current text file naming the version is replaced by atomic rename; the launcher reads the pointer at startup. Selection costs one extra read hop per launch.",
+    "review_needed": "The evidence cannot separate these mechanisms, or neither keeps the required contracts."
+   }
+  },
+  "inspection_gate": {
+   "type": "choice",
+   "instructions": "Choose how far read-only upstream inspection goes as a release gate. Use common and topics.inspection_gate.",
+   "criteria": {
+    "gate_on_inspection": "The release refuses unless read-only codesign display succeeds on the pinned runtime and reports the expected signature state. Bytes stay hash-bound and an unexpected upstream signature blocks the release.",
+    "record_only": "Inspection output is recorded as release evidence while verification gates on hashes and manifest completeness alone. A signature observation never blocks what the byte hashes already prove.",
+    "review_needed": "The evidence cannot separate these strictness levels, or neither keeps the required contracts."
+   }
+  }
+ }
+}

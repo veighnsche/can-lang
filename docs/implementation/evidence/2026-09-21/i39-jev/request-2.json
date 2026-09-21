@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Settle three open design points of the Can offline distribution qualifier: the shape of the shippable per-version artifact, the indivisible selection switch between coexisting installed versions, and the strictness of read-only upstream signature observation.",
+   "fixed_constraints": [
+    "Each built version contains the stamped Go launcher at bin/canlc, the unmodified pinned Bun 1.4.2 binary at runtime/bun, the runtime and tool sources, the distribution assets, notices and target pin, and a manifest.json mapping every relative path to its SHA-256. Publication assembles into a sibling staging directory and renames it once; symlink entries never appear and clobbering an existing version is refused.",
+    "Installation targets a user-owned directory on macOS arm64 requiring OS 13.0 or newer, with no administrator rights and no network use. Qualification runs the installed tree while developer tooling is missing from PATH and the sandbox denies runtime networking, and no test may weaken Gatekeeper enforcement to force a pass.",
+    "An update adds a new immutable version beside the old one and moves only the selection pointer; bytes belonging to a running version are never rewritten. Any verification failure leaves the previous selection untouched, and corruption, platform mismatch, interrupted staging, and removal of files the installer does not own are distinct refusals.",
+    "No signing identity is available, so genuine signing, notarization, and uploading stay a documented remaining gate rather than executed steps; the task ships prepared command text for later review. Read-only inspection of the pinned upstream binary is permitted, while fetching anything from the network is not."
+   ]
+  },
+  "topics": {
+   "release_container": {
+    "facts": "Downstream of the build sits a plain versioned directory that must become a shippable unit with its own integrity record. Zip preserves the permission bits this bundle needs and introduces one file to move and hash, while handing over the directory as-is avoids container handling entirely at the price of a multi-file artifact."
+   },
+   "version_selection": {
+    "facts": "The install root keeps each version immutable under versions/<v>/ and resolves new launches through a single selection entry that concurrent readers consult. APFS rename swaps that entry indivisibly, and already-open handles in running processes are unaffected by the swap."
+   },
+   "inspection_gate": {
+    "facts": "Byte identity rests on per-file SHA-256 records checked at staging time, while the signature and entitlement details of the pinned runtime remain observable through a credential-free local display command. First-run quarantine verdicts belong to Gatekeeper on a clean machine and lie outside these tests."
+   }
+  }
+ },
+ "questions": {
+  "release_container": {
+   "type": "choice",
+   "instructions": "Pick which artifact shape ships one versioned release. Use common and topics.release_container.",
+   "criteria": {
+    "zip_archive": "Ship one zip per version next to its detached SHA-256 record; installation unpacks to staging, checks all manifest hashes, and renames the verified tree into place. Permission bits round-trip and the artifact moves as a unit.",
+    "directory_copy": "Ship the versioned directory itself and check it file by file against the manifest. Container logic disappears completely while the release spreads across many files.",
+    "review_needed": "Neither artifact can be separated on this evidence, or neither preserves the contracts."
+   }
+  },
+  "version_selection": {
+   "type": "choice",
+   "instructions": "Pick which mechanism switches the selected version indivisibly. Use common and topics.version_selection.",
+   "criteria": {
+    "symlink_swap": "Keep versions/<v>/ immutable and point a current symlink at the active one, publishing through symlink creation plus an atomic rename over the old link. Old processes continue on their handles and fresh launches see the new tree.",
+    "pointer_file": "Keep versions/<v>/ immutable and store the active version name in a current file swapped by atomic rename, which the launcher reads when starting. Launches pay one pointer read for the indirection.",
+    "review_needed": "Neither mechanism can be separated on this evidence, or neither preserves the contracts."
+   }
+  },
+  "inspection_gate": {
+   "type": "choice",
+   "instructions": "Pick whether read-only upstream inspection blocks the release or is recorded only. Use common and topics.inspection_gate.",
+   "criteria": {
+    "gate_on_inspection": "Block the release unless the credential-free signature display succeeds and matches the expected upstream state on the pinned binary. Hash verification still binds the bytes while surprising signatures stop publication.",
+    "record_only": "File the inspection transcript with the release evidence and verify on hashes plus manifest completeness. Signature readings inform reviewers without ever overriding byte identity.",
+    "review_needed": "Neither strictness can be separated on this evidence, or neither preserves the contracts."
+   }
+  }
+ }
+}

@@ -1,0 +1,125 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1365,
+   "output_tokens": 128
+  },
+  "answers": {
+   "release_container": {
+    "type": "choice",
+    "choice": "zip_archive",
+    "confidence": 1.0,
+    "probabilities": {
+     "zip_archive": 1.0,
+     "directory_copy": 0.0,
+     "review_needed": 0.0
+    }
+   },
+   "version_selection": {
+    "type": "choice",
+    "choice": "pointer_file",
+    "confidence": 0.23,
+    "probabilities": {
+     "pointer_file": 0.48,
+     "review_needed": 0.22,
+     "symlink_swap": 0.3
+    }
+   },
+   "inspection_gate": {
+    "type": "choice",
+    "choice": "record_only",
+    "confidence": 0.91,
+    "probabilities": {
+     "review_needed": 0.03,
+     "gate_on_inspection": 0.03,
+     "record_only": 0.94
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1336,
+   "output_tokens": 128
+  },
+  "answers": {
+   "release_container": {
+    "type": "choice",
+    "choice": "zip_archive",
+    "confidence": 0.98,
+    "probabilities": {
+     "directory_copy": 0.01,
+     "review_needed": 0.0,
+     "zip_archive": 0.99
+    }
+   },
+   "version_selection": {
+    "type": "choice",
+    "choice": "pointer_file",
+    "confidence": 0.83,
+    "probabilities": {
+     "pointer_file": 0.89,
+     "review_needed": 0.05,
+     "symlink_swap": 0.06
+    }
+   },
+   "inspection_gate": {
+    "type": "choice",
+    "choice": "record_only",
+    "confidence": 0.95,
+    "probabilities": {
+     "gate_on_inspection": 0.01,
+     "review_needed": 0.02,
+     "record_only": 0.97
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1262,
+   "output_tokens": 128
+  },
+  "answers": {
+   "release_container": {
+    "type": "choice",
+    "choice": "zip_archive",
+    "confidence": 1.0,
+    "probabilities": {
+     "review_needed": 0.0,
+     "zip_archive": 1.0,
+     "directory_copy": 0.0
+    }
+   },
+   "version_selection": {
+    "type": "choice",
+    "choice": "pointer_file",
+    "confidence": 0.39,
+    "probabilities": {
+     "symlink_swap": 0.23,
+     "review_needed": 0.18,
+     "pointer_file": 0.59
+    }
+   },
+   "inspection_gate": {
+    "type": "choice",
+    "choice": "record_only",
+    "confidence": 0.76,
+    "probabilities": {
+     "review_needed": 0.01,
+     "record_only": 0.84,
+     "gate_on_inspection": 0.15
+    }
+   }
+  }
+ }
+]

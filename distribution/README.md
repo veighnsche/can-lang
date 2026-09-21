@@ -105,3 +105,85 @@ The I47 development command `canlc catalogue-check` accepts the fixed catalogue
 conformance fixture on stdin and runs generated-registry checks through the
 same isolated sidecar. It verifies identity/payload agreement and reports its
 source digest; it does not accept arbitrary code or register host operations.
+
+# Offline release, install, and updates (I39)
+
+A release packages one verified version directory into a single shippable
+zip plus a detached SHA-256 record and a read-only inspection transcript.
+Entry order and timestamps are fixed, so identical bundles release
+identical bytes. Install stages the zip into a user-owned root, verifies
+the staged tree against its manifest, then publishes it beside older
+versions and swings the `current` symlink atomically:
+
+```sh
+# Build, then release (or pass --release-out to distbuild directly).
+go run ./tools/distbuild --archive /absolute/path/bun-darwin-aarch64.zip \
+  --out /tmp/bundles --version 0.1.0 --release-out /tmp/releases
+# Install into a fresh root and run through the selected link.
+go run ./tools/distbuild install --archive /tmp/releases/can-0.1.0-*.zip \
+  --sha /tmp/releases/can-0.1.0-*.zip.sha256 --root /tmp/can-root
+/tmp/can-root/current/bin/canlc runtime-check
+# Update to a newer release; the old version keeps serving.
+go run ./tools/distbuild install --archive /tmp/releases/can-0.2.0-*.zip \
+  --sha /tmp/releases/can-0.2.0-*.zip.sha256 --root /tmp/can-root --update
+```
+
+Install-root layout:
+
+```text
+versions/can-<version>-<target>/   immutable installed bundle
+current -> versions/...            atomically swapped selection link
+.can-lock                          installer serialization lock
+```
+
+The installed launcher resolves through the real executable path exactly
+like the development sidecar, so running processes keep their open file
+handles while new launches enter the new tree. Updates never rewrite a
+live version, never remove old versions, and never call `bun upgrade`;
+any verification failure preserves the previous selection. Only
+installer-owned `.can-stage-*`/`.can-current-*` staging names are ever
+removed, via `PruneStaging`; foreign files are left alone and unowned
+patterns refuse.
+
+Each refusal names its cause: detached-record mismatch or malformed
+record, archive escapes/absolute paths/symlinks/non-regular entries,
+case-aliasing names, more than one top-level version, manifest or target
+mismatch, modified or unknown files, non-arm64 or unpinned runtime,
+missing executable bit, unstamped launcher, symlinked or foreign-owned
+root, and selection escaping the install root. The inspection transcript
+records read-only `codesign` display and entitlement output for the pinned
+runtime as evidence; verification itself gates on hashes and manifest
+completeness, never on signature content.
+
+Upstream obligations ship inside every bundle under
+`distribution/notices/`: the Bun license, HTMX 4.0.0 with its lock, the
+acorn parser with its lock, the four Jridgewell source-map packages with
+their lock, and the pinned `pg_query_go/v6` CGo binding with the
+PostgreSQL/libpg-query/protobuf licenses recorded in
+`sql-binding.lock.json`, consistent with `go.mod`/`go.sum`.
+
+## Prepared signing commands (not executed)
+
+Actual signing, notarization, and release upload require authorized
+credentials and a separate user authorization; this task performs none of
+them. When that authorization exists, the reviewed sequence is:
+
+```sh
+# 1. Sign the installed version tree (identifier/identity supplied then).
+codesign --sign "$DEVELOPER_ID_APPLICATION" --timestamp --options runtime \
+  --entitlements /path/to/can.entitlements \
+  /path/to/install-root/versions/can-<version>-<target>/bin/canlc
+# 2. Archive the signed tree for notarization.
+ditto -c -k --keepParent \
+  /path/to/install-root/versions/can-<version>-<target> /tmp/can-submit.zip
+# 3. Submit and wait (credentials supplied then, never stored here).
+xcrun notarytool submit /tmp/can-submit.zip --keychain-profile "$PROFILE" --wait
+# 4. Staple the ticket to the shipped tree and verify the gate.
+xcrun stapler staple /path/to/install-root/versions/can-<version>-<target>/bin/canlc
+spctl -a -t exec -vvv /path/to/install-root/versions/can-<version>-<target>/bin/canlc
+```
+
+Until those steps run with real credentials on a clean machine, the
+bundle is a qualified unsigned release: install/run/update behavior is
+proven, and publisher signature plus notarization stay a reported open
+gate. No release upload occurs merely because this documentation exists.

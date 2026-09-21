@@ -606,6 +606,9 @@ Commit a reviewable deletion/change list and link replacement evidence.
 
 ## I39 — Signed offline distribution, install and updates
 
+**CLOSED 2026-09-21 for the offline-qualifiable scope; credentialed signing/notarization/upload plus the clean-machine quarantined run stay a reported open gate.** Acceptance: [evidence/2026-09-21/i39](evidence/2026-09-21/i39/README.md).
+The plan below is kept as dependency context for I45.
+
 **Files:** add `distribution/release.go`, `install.go`, `update.go` and adjacent
 Go tests; extend `build.go`, `manifest.go`, `target.json` only when justified,
 `notices/`, `distribution/README.md`, `tools/distbuild/main.go` and a dedicated
