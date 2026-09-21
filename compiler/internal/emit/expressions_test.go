@@ -29,7 +29,7 @@ func expressionContext(ts map[string]*types.Type) *check.Expressions {
 			return check.ValueBinding{Identity: name.Name, Type: typ}, nil
 		}
 	}
-	return &check.Expressions{Scalars: ts, Value: resolver(values), Function: resolver(functions), Constructor: func(n *syntax.ConstructorExpr, expected *types.Type) (*types.Type, error) {
+	return &check.Expressions{Scalars: ts, Value: resolver(values), Function: resolver(functions), Constructor: func(n *syntax.ConstructorExpr, expected *types.Type, _ *check.Expressions) (*types.Type, error) {
 		name := n.Name.Name
 		if n.Name.Package != "" {
 			name = n.Name.Package + "::" + name

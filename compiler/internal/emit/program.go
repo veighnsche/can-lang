@@ -107,7 +107,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	sort.Strings(nativeIDs)
 	for i, fn := range program.Functions {
-		functions[fn.Symbol.ID] = fmt.Sprintf("$canFunction%d", i)
+		functions[fn.Identity()] = fmt.Sprintf("$canFunction%d", i)
 	}
 	for _, value := range program.Initializers {
 		bindings[value.Identity] = "($canValues[" + quote(value.Identity) + "] as " + TypeName(value.Type) + ")"
@@ -242,7 +242,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		body.WriteString(localTypes)
 		for _, fn := range byPath[path] {
 			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID}
-			code, err := emitter.Function(functions[fn.Symbol.ID], fn.Region)
+			code, err := emitter.Function(functions[fn.Identity()], fn.Region)
 			if err != nil {
 				return nil, err
 			}
@@ -297,7 +297,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		for _, fn := range program.Functions {
 			target := fn.Symbol.Source.OutputPath
 			if target != path {
-				imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{functions[fn.Symbol.ID], functions[fn.Symbol.ID]}}})
+				imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{functions[fn.Identity()], functions[fn.Identity()]}}})
 			}
 		}
 		modules = append(modules, Module{Path: path, Imports: imports, Body: body.String()})
@@ -324,7 +324,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 			}
 			for _, fn := range program.Functions {
-				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Symbol.ID], functions[fn.Symbol.ID]}}})
+				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Identity()], functions[fn.Identity()]}}})
 			}
 			for _, id := range nativeIDs {
 				target := nativePaths[id]
@@ -370,7 +370,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		{Target: runtime + "/entry.ts", Names: []ImportName{{"runEntry", "$canRunEntry"}}},
 		{Target: statePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
 		{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
-		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{functions[main.Symbol.ID], "$canMain"}}},
+		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{functions[main.Identity()], "$canMain"}}},
 	}, Body: "process.exitCode = await $canRunEntry(() => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, $canMain, process.argv.slice(2));\n"})
 	return Modules(modules, dependencies...)
 }

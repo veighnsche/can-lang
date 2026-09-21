@@ -27,7 +27,7 @@ type Expressions struct {
 	Value       func(syntax.QualifiedName) (ValueBinding, error)
 	Reference   func(syntax.QualifiedName) (ValueBinding, error)
 	Function    func(syntax.QualifiedName) (ValueBinding, error)
-	Constructor func(*syntax.ConstructorExpr, *types.Type) (*types.Type, error)
+	Constructor func(*syntax.ConstructorExpr, *types.Type, *Expressions) (*types.Type, error)
 }
 
 func (c *Expressions) scalar(name string) (*types.Type, error) {
@@ -304,7 +304,7 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		if c.Constructor == nil {
 			return nil, fmt.Errorf("constructor requires nominal resolution")
 		}
-		typ, e := c.Constructor(n, expected)
+		typ, e := c.Constructor(n, expected, c)
 		if e != nil {
 			return nil, e
 		}

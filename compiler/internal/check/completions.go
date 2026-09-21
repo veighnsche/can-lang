@@ -12,7 +12,8 @@ import (
 )
 
 // CompletionContext consumes sealed declaration types and the current file's
-// eligible-kind resolvers. Type resolution cannot grow the graph during bodies.
+// eligible-kind resolvers. Concrete discovery adds sealed graphs during bodies;
+// previously admitted graphs remain immutable.
 // Handlers use their own Identity/Parent and selected Result, with the enclosing
 // escaping error contract. Their callers later assemble coordination/native data.
 type CompletionContext struct {
@@ -28,10 +29,13 @@ type CompletionContext struct {
 	ErrorName        func(syntax.QualifiedName) (string, error)
 	PatternName      func(syntax.QualifiedName) (string, error)
 	// Variadic declaration contracts have a final array input in the private ABI.
-	Specialize func(syntax.QualifiedName, []syntax.TypeNode) (ValueBinding, error)
-	Callables  map[string]CallableDeclaration
-	Variadic   map[string]bool
-	Method     func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	Specialize     func(*resolve.Scope, syntax.QualifiedName, []syntax.TypeNode) (ValueBinding, error)
+	InferReference func(*resolve.Scope, syntax.QualifiedName, *types.Type, *Expressions) (ValueBinding, bool, error)
+	InferCall      func(*resolve.Scope, syntax.QualifiedName, []syntax.Argument, *types.Type, *Expressions) (ValueBinding, bool, error)
+	Callables      map[string]CallableDeclaration
+	Variadic       map[string]bool
+	Method         func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	ResolveMethod  func(MethodApplication) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
 }
@@ -126,11 +130,11 @@ func (c *regionChecker) expressions(scope bodyScope) *Expressions {
 		return c.context.Expressions.Function(name)
 	}
 	e.ReferenceCheck = func(n *syntax.ReferenceExpr, expected *types.Type) (*ir.Expression, error) {
-		return c.reference(n, scope)
+		return c.reference(n, scope, expected)
 	}
 	e.ResolvedValue = func(n *syntax.NameExpr, b ValueBinding) { c.uses.Names[n] = b.Identity }
 	e.CallCheck = func(n *syntax.CallExpr, expected *types.Type) (*ir.Expression, error) {
-		call, err := c.invocation(n, scope)
+		call, err := c.invocation(n, scope, expected)
 		if err != nil {
 			return nil, err
 		}
@@ -242,7 +246,7 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 		}
 	case *syntax.RelayBody:
 		out.Kind = ir.RelayCompletion
-		out.Call, err = c.invocation(n.Call, scope)
+		out.Call, err = c.invocation(n.Call, scope, c.context.Result)
 		if err == nil && !types.Assignable(out.Call.Result, c.region.Result) {
 			err = fmt.Errorf("relay success does not fit current region")
 		}
@@ -288,13 +292,22 @@ func unionErrors(groups ...[]*types.Type) []*types.Type {
 	}
 	return out
 }
-func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Invocation, error) {
+func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected ...*types.Type) (*ir.Invocation, error) {
 	if n == nil {
 		return nil, fmt.Errorf("missing invocation")
 	}
 	if len(n.Invocation.Types) != 0 {
-		if _, ok := n.Invocation.Callee.(*syntax.NameExpr); !ok || c.context.Specialize == nil {
-			return nil, fmt.Errorf("generic invocation requires specialization")
+		switch n.Invocation.Callee.(type) {
+		case *syntax.NameExpr:
+			if c.context.Specialize == nil {
+				return nil, fmt.Errorf("generic invocation requires specialization")
+			}
+		case *syntax.FieldExpr:
+			if c.context.ResolveMethod == nil {
+				return nil, fmt.Errorf("generic method requires specialization")
+			}
+		default:
+			return nil, fmt.Errorf("generic arguments require a named declaration")
 		}
 	}
 	out := &ir.Invocation{Span: n.Span}
@@ -314,8 +327,22 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 	var err error
 	switch callee := n.Invocation.Callee.(type) {
 	case *syntax.NameExpr:
+		if len(n.Invocation.Types) == 0 && c.context.InferCall != nil {
+			var want *types.Type
+			if len(expected) > 0 && len(n.Methods) == 0 {
+				want = expected[0]
+			}
+			var handled bool
+			first, handled, err = c.context.InferCall(scope.symbols, callee.Name, n.Invocation.Arguments, want, e)
+			if handled {
+				if err == nil {
+					c.uses.Names[callee] = first.Identity
+				}
+				break
+			}
+		}
 		if len(n.Invocation.Types) > 0 {
-			first, err = c.context.Specialize(callee.Name, n.Invocation.Types)
+			first, err = c.context.Specialize(scope.symbols, callee.Name, n.Invocation.Types)
 		} else {
 			first, err = e.Function(callee.Name)
 		}
@@ -334,16 +361,26 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 				}
 			}
 			if directCallee != nil {
+				if len(n.Invocation.Types) != 0 {
+					return nil, fmt.Errorf("callable value does not accept generic arguments")
+				}
 				break
 			}
 			if callee.Field.Text == "slice" && (receiver.Type.Kind() == types.Array || scalar(receiver.Type, "str")) {
+				if len(n.Invocation.Types) != 0 {
+					return nil, fmt.Errorf("slice does not take type arguments")
+				}
 				err = appendSlice(receiver, n.Invocation.Arguments, n.Invocation.Span)
 				break
 			}
-			if c.context.Method == nil {
+			if c.context.Method == nil && c.context.ResolveMethod == nil {
 				return nil, fmt.Errorf("missing resolved method contract")
 			}
-			first, err = c.context.Method(receiver.Type, callee.Field, nil)
+			var want *types.Type
+			if len(expected) > 0 && len(n.Methods) == 0 {
+				want = expected[0]
+			}
+			first, err = c.resolveMethod(MethodApplication{Receiver: receiver.Type, Name: callee.Field, Types: n.Invocation.Types, Arguments: n.Invocation.Arguments, Expected: want, Expressions: e})
 		}
 	default:
 		directCallee, err = e.Check(n.Invocation.Callee, nil)
@@ -374,7 +411,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 			return nil, err
 		}
 	}
-	for _, method := range n.Methods {
+	for methodIndex, method := range n.Methods {
 		if out.Result.Kind() == types.Void {
 			return nil, fmt.Errorf("void cannot be a method receiver")
 		}
@@ -405,10 +442,14 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope) (*ir.Inv
 			}
 			continue
 		}
-		if c.context.Method == nil {
+		if c.context.Method == nil && c.context.ResolveMethod == nil {
 			return nil, fmt.Errorf("missing resolved method contract")
 		}
-		binding, err := c.context.Method(out.Result, method.Name, method.Types)
+		var want *types.Type
+		if len(expected) > 0 && methodIndex == len(n.Methods)-1 {
+			want = expected[0]
+		}
+		binding, err := c.resolveMethod(MethodApplication{Receiver: out.Result, Name: method.Name, Types: method.Types, Arguments: method.Arguments, Expected: want, Expressions: e})
 		if err != nil {
 			return nil, err
 		}

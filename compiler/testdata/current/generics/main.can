@@ -1,0 +1,19 @@
+package generics
+    provides []
+    uses []
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    box<int> value = call make()
+    box<int> same = call identity(value)
+    int direct = call same.read<int>()
+    callable int () emits [] action = callable value.read
+    int result = call action()
+    match direct is 7 and result is 7 and value is same
+        true => ok
+        false => do
+            int invalid = 1 / 0
+            ok

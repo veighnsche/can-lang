@@ -130,7 +130,7 @@ func (f *regionFixture) region(t *testing.T, body, result string, errors []strin
 			return b, nil
 		}
 		return check.ValueBinding{}, fmt.Errorf("unknown function %s", name.Name)
-	}, Constructor: func(node *syntax.ConstructorExpr, expected *types.Type) (*types.Type, error) {
+	}, Constructor: func(node *syntax.ConstructorExpr, expected *types.Type, _ *check.Expressions) (*types.Type, error) {
 		return lookupType(&syntax.NamedType{Name: node.Name, Arguments: node.Types}, false)
 	}}
 	expr.Reference = expr.Function

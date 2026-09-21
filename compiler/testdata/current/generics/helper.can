@@ -1,0 +1,8 @@
+package generics
+    provides []
+    uses []
+fn box<int> make
+    emits []
+    asserts
+        sample: => ok box(7, [])
+    relay call identity(box<int>(7, []))

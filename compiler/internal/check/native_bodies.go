@@ -26,27 +26,6 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 			ctx.Parameters = append(ctx.Parameters, ir.Local{Identity: id, Type: c.bindings[id]})
 		}
 	}
-	ctx.Method = func(receiver *types.Type, name syntax.Token, args []syntax.TypeNode) (ValueBinding, error) {
-		if len(args) != 0 {
-			return ValueBinding{}, fmt.Errorf("generic method specialization is not implemented")
-		}
-		for _, pkg := range c.world.Packages {
-			for _, symbol := range pkg.Scope.Symbols {
-				if symbol.ID == receiver.Declaration() {
-					method, e := file.Method(symbol, name.Text)
-					if e != nil {
-						return ValueBinding{}, e
-					}
-					typ := c.bindings[method.ID]
-					if typ == nil {
-						return ValueBinding{}, fmt.Errorf("method requires concrete specialization")
-					}
-					return ValueBinding{Identity: method.ID, Type: typ}, nil
-				}
-			}
-		}
-		return ValueBinding{}, fmt.Errorf("unknown native-region method receiver")
-	}
 	ctx.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
 		return c.annotation(file, node, allowVoid)
 	}
@@ -64,8 +43,15 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 		}
 		return symbol.ID, nil
 	}
-	ctx.Specialize = func(name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
-		return c.specializeCodec(file, scope, name, args)
+	ctx.Specialize = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
+		return c.specialize(file, scope, name, args)
+	}
+	ctx.ResolveMethod = func(application MethodApplication) (ValueBinding, error) { return c.method(file, application) }
+	ctx.InferReference = func(scope *resolve.Scope, name syntax.QualifiedName, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferReference(file, scope, name, expected, e)
+	}
+	ctx.InferCall = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.Argument, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferCall(file, scope, name, args, expected, e)
 	}
 	for _, name := range native.Descriptor.Names {
 		id := native.Symbol.ID + "/input/" + name

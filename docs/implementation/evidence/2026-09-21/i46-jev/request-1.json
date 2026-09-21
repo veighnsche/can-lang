@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can currently gathers annotations into a mutable nominal graph, seals that graph, and then checks ordinary bodies using sealed types only. Generic function bodies are skipped; explicit codecs have a separate finite specialization path. Concrete type identity hashes resolved declarations and argument identities, so equal contracts can compare across sealed graphs. Implement reachable generic functions, constructors and callable references with exact parameter equalities from fixed arguments and available expected types. Conflicting or ambiguous constraints must diagnose: no unions, numeric widening, guessed instantiations or inferred error sets. Each reachable specialization checks its complete body, including unexecuted branches, and caches by resolved declaration plus concrete argument IDs. Same-instance recursion is legal; expanding polymorphic recursion must fail. Uninstantiated public templates still need grammar, names and parameter-independent checks. Dynamic discovery can reveal new recursive nominal types during body checking; sealed evidence must never become mutable or be used before validation. All candidate designs preserve these requirements and bounded implementation diagnostics.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Which approach should bridge body-driven specialization discovery with the existing sealed-type checker?",
+      "criteria": {
+        "sealed_extensions": "Resolve newly required concrete types in fresh builders importing copies of their needed sealed argument graphs, seal each extension, merge immutable type inventories by identity, and process specialized bodies on a cached worklist.",
+        "symbolic_first": "Add a symbolic discovery and inference pass over all reachable bodies before sealing one complete graph, followed by full ordinary checking of concrete instances.",
+        "restart_graph": "When body checking discovers a new concrete requirement, restart graph construction and affected checking until the reachable specialization set stops growing."
+      }
+    }
+  }
+}

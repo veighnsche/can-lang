@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The existing compiler validates a collected nominal type graph before allowing expression compatibility checks; it cannot extend that sealed graph. It currently omits generic source function bodies while maintaining a small explicit codec specialization path. Type equality is based on hashes of resolved declaration identities and concrete parameters, not shared graph pointers. The implementation must add generic calls, constructors and named callable references, solving only exact constraints from fixed inputs and usable expected contracts. It must reject unresolved or inconsistent parameters without union creation, int/float coercion, candidate searches or effect inference. Cache each declaration/argument tuple, validate every branch of each reachable instance, allow recursion back to the identical instance, and reject type-expanding recursion. Public templates never instantiated still receive syntax/name/parameter-independent validation. New recursive data shapes may arise while checking bodies. Prior checked graphs must stay immutable and no unsealed shape can count as proof. Each offered strategy must uphold these rules and terminate with a bounded diagnostic when needed.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "Select a design for admitting types discovered by generic body checking while preserving validated type evidence.",
+      "criteria": {
+        "sealed_extensions": "Build each new type requirement in an isolated graph seeded with cloned sealed dependencies, validate it, combine immutable inventories under stable identities, and check pending function instances through memoized work items.",
+        "symbolic_first": "Determine concrete reachability and parameter solutions in an added symbolic body pass, seal the resulting unified graph once, then run the ordinary concrete checker.",
+        "restart_graph": "Reconstruct the complete type graph and redo dependent checks after each new requirement, iterating to a fixed set of specializations."
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+package generics
+    provides []
+    uses []
+record box<item>
+    item value
+    box<item>[] children
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        integer: 3 => ok 3
+        text: "x" => ok "x"
+    ok value
+fn item read<item>
+    on box<item> self
+    emits []
+    asserts
+        integer: box(3, []) => => ok 3
+        text: box("x", []) => => ok "x"
+    ok self.value

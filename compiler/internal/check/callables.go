@@ -40,12 +40,7 @@ func (d CallableDeclaration) validate() error {
 	}
 	return nil
 }
-func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir.Expression, error) {
-	if len(n.Types) != 0 {
-		if _, ok := n.Callee.(*syntax.NameExpr); !ok || c.context.Specialize == nil {
-			return nil, fmt.Errorf("generic callable reference requires concrete specialization")
-		}
-	}
+func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expected *types.Type) (*ir.Expression, error) {
 	e := c.expressions(scope)
 	var binding ValueBinding
 	var receiver *ir.Expression
@@ -56,9 +51,18 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir
 			return nil, fmt.Errorf("missing named reference resolver")
 		}
 		if len(n.Types) > 0 {
-			binding, err = c.context.Specialize(callee.Name, n.Types)
+			if c.context.Specialize == nil {
+				return nil, fmt.Errorf("missing generic reference resolver")
+			}
+			binding, err = c.context.Specialize(scope.symbols, callee.Name, n.Types)
 		} else {
-			binding, err = e.Reference(callee.Name)
+			handled := false
+			if c.context.InferReference != nil {
+				binding, handled, err = c.context.InferReference(scope.symbols, callee.Name, expected, e)
+			}
+			if !handled {
+				binding, err = e.Reference(callee.Name)
+			}
 		}
 		if err == nil {
 			c.uses.Names[callee] = binding.Identity
@@ -66,10 +70,10 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir
 	case *syntax.FieldExpr:
 		receiver, err = e.Check(callee.Receiver, nil)
 		if err == nil {
-			if c.context.Method == nil {
+			if c.context.Method == nil && c.context.ResolveMethod == nil {
 				return nil, fmt.Errorf("missing receiver method resolver")
 			}
-			binding, err = c.context.Method(receiver.Type, callee.Field, nil)
+			binding, err = c.resolveMethod(MethodApplication{Receiver: receiver.Type, Name: callee.Field, Types: n.Types, Expected: expected, Reference: true, Expressions: e})
 		}
 	default:
 		return nil, fmt.Errorf("callable reference requires a named declaration or receiver method")

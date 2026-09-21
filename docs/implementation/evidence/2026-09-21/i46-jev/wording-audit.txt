@@ -1,0 +1,1 @@
+Before submission: all explanatory contexts, instructions and option descriptions were rewritten; stable labels only are shared. Each version carries the same starting architecture, generic language requirements, immutable validation condition and three alternatives. Agreement is advice, not proof or guaranteed bias removal.

@@ -31,11 +31,28 @@ type Program struct {
 	Assertions   []*ir.Assertion
 }
 type ProgramFunction struct {
-	Symbol *resolve.Symbol
-	Region *ir.Region
+	Symbol        *resolve.Symbol
+	Region        *ir.Region
+	Instance      string
+	TypeArguments []*types.Type
+	Parameters    map[string]*types.Type
+	Requests      []string
+	Ancestors     []*ProgramFunction
+}
+
+func (f *ProgramFunction) Identity() string {
+	if f.Instance != "" {
+		return f.Instance
+	}
+	return f.Symbol.ID
 }
 
 type programChecker struct {
+	program     *Program
+	specializer *types.Specializer
+	instances   map[string]*ProgramFunction
+	callables   map[string]CallableDeclaration
+	current     *ProgramFunction
 	codecs      map[string]*CodecSpecialization
 	codecParts  map[string][]*types.Type
 	world       *resolve.World
@@ -46,6 +63,9 @@ type programChecker struct {
 }
 
 func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*types.Type, error) {
+	if c.specializer != nil {
+		return c.specializer.Resolve(file, node, c.parameters(), true)
+	}
 	key := syntax.FormatType(node)
 	if t := c.annotations[file][key]; t != nil {
 		return t, nil
@@ -58,6 +78,9 @@ func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*type
 	return t, nil
 }
 func (c *programChecker) annotation(file *resolve.File, node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
+	if c.specializer != nil && (c.current != nil && c.current.Instance != "" || c.annotations[file][syntax.FormatType(node)] == nil) {
+		return c.specializer.Resolve(file, node, c.parameters(), allowVoid)
+	}
 	t := c.annotations[file][syntax.FormatType(node)]
 	if t == nil {
 		return nil, fmt.Errorf("concrete type was not gathered: %s", syntax.FormatType(node))
@@ -97,8 +120,14 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 			}
 		}
 		if constructor, ok := value.Interface().(*syntax.ConstructorExpr); ok {
-			if _, err := c.gather(file, &syntax.NamedType{Name: constructor.Name, Arguments: constructor.Types}); err != nil {
+			symbol, err := file.Lookup(nil, constructor.Name, resolve.ConstructorUse)
+			if err != nil {
 				return err
+			}
+			if len(constructor.Types) != 0 || len(symbol.Parameters) == 0 {
+				if _, err = c.gather(file, &syntax.NamedType{Name: constructor.Name, Arguments: constructor.Types}); err != nil {
+					return err
+				}
 			}
 		}
 		var name *syntax.QualifiedName
@@ -151,19 +180,24 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 		if err != nil {
 			return ValueBinding{}, err
 		}
-		typ := c.bindings[symbol.ID]
+		identity := c.bindingIdentity(symbol.ID)
+		typ := c.bindings[identity]
 		if typ == nil {
 			return ValueBinding{}, fmt.Errorf("%s requires an unimplemented specialization or intrinsic lowering", symbol.ID)
 		}
-		return ValueBinding{Identity: symbol.ID, Type: typ}, nil
+		return ValueBinding{Identity: identity, Type: typ}, nil
 	}
 	return &Expressions{Scalars: c.annotations[file],
 		Value:     func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
 		Reference: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ReferenceUse) },
 		Function:  func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
-		Constructor: func(node *syntax.ConstructorExpr, expected *types.Type) (*types.Type, error) {
-			if _, err := file.Lookup(nil, node.Name, resolve.ConstructorUse); err != nil {
+		Constructor: func(node *syntax.ConstructorExpr, expected *types.Type, expressions *Expressions) (*types.Type, error) {
+			symbol, err := file.Lookup(nil, node.Name, resolve.ConstructorUse)
+			if err != nil {
 				return nil, err
+			}
+			if len(node.Types) == 0 && len(symbol.Parameters) != 0 {
+				return c.inferConstructor(symbol, node, expected, expressions)
 			}
 			return c.annotation(file, &syntax.NamedType{Name: node.Name, Arguments: node.Types}, false)
 		},
@@ -338,6 +372,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	c.program = p
+	c.instances = map[string]*ProgramFunction{}
+	c.specializer, err = types.NewSpecializer(world, p.Model)
+	if err != nil {
+		return nil, err
+	}
 	if err = c.checkNativeContracts(p); err != nil {
 		return nil, err
 	}
@@ -355,6 +395,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		p.Intrinsics[id] = special.Contract
 	}
 	callables := map[string]CallableDeclaration{}
+	c.callables = callables
 	for _, native := range p.Natives {
 		callables[native.Symbol.ID] = native.Descriptor
 	}
@@ -381,80 +422,40 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.checkNativeBodies(p, callables); err != nil {
 		return nil, err
 	}
-	for _, fn := range p.Functions {
+	if err = c.genericAssertions(files); err != nil {
+		return nil, err
+	}
+	for index := 0; index < len(p.Functions); index++ {
+		fn := p.Functions[index]
+		c.current = fn
 		symbol := fn.Symbol
 		file := world.Files[symbol.Source]
 		d := symbol.Declaration.(*syntax.FunctionDecl)
-		signature := c.bindings[symbol.ID]
-		scope := world.Functions[d]
-		bound, e := registry.Bound(signature.Errors())
+		if fn.Instance != "" {
+			if err = c.gatherBody(file, reflect.ValueOf(d.Body)); err != nil {
+				return nil, fmt.Errorf("specialization %s requested at %s: %w", fn.Identity(), strings.Join(fn.Requests, "; "), err)
+			}
+		}
+		context, e := c.functionContext(fn)
 		if e != nil {
 			return nil, e
 		}
-		context := CompletionContext{Identity: symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: callables}
-		context.Specialize = func(name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
-			return c.specializeCodec(file, scope, name, args)
-		}
-		context.Method = func(receiver *types.Type, name syntax.Token, args []syntax.TypeNode) (ValueBinding, error) {
-			if len(args) != 0 {
-				return ValueBinding{}, fmt.Errorf("generic method specialization is not implemented")
-			}
-			var receiverSymbol *resolve.Symbol
-			for _, pkg := range world.Packages {
-				for _, candidate := range pkg.Scope.Symbols {
-					if candidate.ID == receiver.Declaration() {
-						receiverSymbol = candidate
-					}
-				}
-			}
-			method, e := file.Method(receiverSymbol, name.Text)
+		if fn.Instance == "" {
+			assertions, e := c.assertions(file, fn, context)
 			if e != nil {
-				return ValueBinding{}, e
+				return nil, e
 			}
-			typ := c.bindings[method.ID]
-			if typ == nil {
-				return ValueBinding{}, fmt.Errorf("method requires concrete specialization")
-			}
-			return ValueBinding{Identity: method.ID, Type: typ}, nil
+			p.Assertions = append(p.Assertions, assertions...)
 		}
-		context.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
-			return c.annotation(file, node, allowVoid)
-		}
-		context.ErrorName = func(name syntax.QualifiedName) (string, error) {
-			s, e := file.Lookup(nil, name, resolve.ErrorUse)
-			if e != nil {
-				return "", e
-			}
-			return s.ID, nil
-		}
-		context.PatternName = func(name syntax.QualifiedName) (string, error) {
-			s, e := file.Lookup(nil, name, resolve.TypeUse)
-			if e != nil {
-				return "", e
-			}
-			return s.ID, nil
-		}
-		var names []string
-		if d.Receiver != nil {
-			names = append(names, d.Receiver.Name.Text)
-		}
-		for _, input := range d.Inputs {
-			names = append(names, input.Name.Text)
-		}
-		for _, name := range names {
-			id := symbol.ID + "/input/" + name
-			context.Parameters = append(context.Parameters, ir.Local{Identity: id, Type: c.bindings[id]})
-		}
-		assertions, e := c.assertions(file, fn, context)
-		if e != nil {
-			return nil, e
-		}
-		p.Assertions = append(p.Assertions, assertions...)
 		fn.Region, err = CheckRegion(context, d.Body)
 		if err != nil {
-			return nil, err
+			if fn.Instance != "" {
+				return nil, fmt.Errorf("concrete function %s (generic source %s, requested at %s): %w", fn.Identity(), symbol.Source.Syntax.Source.Name(), strings.Join(fn.Requests, "; "), err)
+			}
+			return nil, fmt.Errorf("concrete function %s: %w", fn.Identity(), err)
 		}
 	}
+	c.current = nil
 	var initial []InitialValue
 	for _, file := range files {
 		for _, declaration := range file.Source.Syntax.Declarations {
@@ -474,5 +475,58 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	p.Model = c.specializer.Model()
 	return p, nil
+}
+
+func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext, error) {
+	symbol := fn.Symbol
+	file := c.world.Files[symbol.Source]
+	d := symbol.Declaration.(*syntax.FunctionDecl)
+	signature := c.bindings[fn.Identity()]
+	scope := c.world.Functions[d]
+	bound, e := c.program.Registry.Bound(signature.Errors())
+	if e != nil {
+		return CompletionContext{}, e
+	}
+	context := CompletionContext{Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables}
+	context.Specialize = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {
+		return c.specialize(file, scope, name, args)
+	}
+	context.ResolveMethod = func(application MethodApplication) (ValueBinding, error) { return c.method(file, application) }
+	context.InferReference = func(scope *resolve.Scope, name syntax.QualifiedName, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferReference(file, scope, name, expected, e)
+	}
+	context.InferCall = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.Argument, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+		return c.inferCall(file, scope, name, args, expected, e)
+	}
+	context.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
+		return c.annotation(file, node, allowVoid)
+	}
+	context.ErrorName = func(name syntax.QualifiedName) (string, error) {
+		s, e := file.Lookup(nil, name, resolve.ErrorUse)
+		if e != nil {
+			return "", e
+		}
+		return s.ID, nil
+	}
+	context.PatternName = func(name syntax.QualifiedName) (string, error) {
+		s, e := file.Lookup(nil, name, resolve.TypeUse)
+		if e != nil {
+			return "", e
+		}
+		return s.ID, nil
+	}
+	var names []string
+	if d.Receiver != nil {
+		names = append(names, d.Receiver.Name.Text)
+	}
+	for _, input := range d.Inputs {
+		names = append(names, input.Name.Text)
+	}
+	for _, name := range names {
+		id := fn.Identity() + "/input/" + name
+		context.Parameters = append(context.Parameters, ir.Local{Identity: id, Type: c.bindings[id]})
+	}
+	return context, nil
 }

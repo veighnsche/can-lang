@@ -1,0 +1,297 @@
+package check
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/syntax"
+	"github.com/veighnsche/can-lang/compiler/internal/types"
+)
+
+type argumentConstraint struct {
+	annotation syntax.TypeNode
+	expression syntax.Expr
+}
+
+func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, name syntax.QualifiedName, args []syntax.Argument, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+	symbol, err := file.Lookup(scope, name, resolve.CallUse)
+	if err != nil {
+		return ValueBinding{}, false, nil
+	}
+	declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
+	if !ok || len(symbol.Parameters) == 0 {
+		return ValueBinding{}, false, nil
+	}
+	if declaration.Receiver != nil {
+		return ValueBinding{}, true, fmt.Errorf("generic method requires receiver application")
+	}
+	constraints, err := genericArguments(declaration.Inputs, args)
+	if err != nil {
+		return ValueBinding{}, true, err
+	}
+	arguments, err := c.inferArguments(c.world.Files[symbol.Source], symbol.Parameters, declaration.Result, expected, constraints, e)
+	if err != nil {
+		return ValueBinding{}, true, fmt.Errorf("generic call %s at byte %d: %w", symbol.ID, name.Span.Start, err)
+	}
+	binding, err := c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start))
+	return binding, true, err
+}
+
+func genericArguments(inputs []syntax.Input, args []syntax.Argument) ([]argumentConstraint, error) {
+	fixed := len(inputs)
+	variadic := fixed > 0 && inputs[fixed-1].Variadic
+	if variadic {
+		fixed--
+	}
+	position := 0
+	var constraints []argumentConstraint
+	add := func(expression syntax.Expr) error {
+		index := position
+		if index >= fixed {
+			if !variadic {
+				return fmt.Errorf("generic call arity mismatch")
+			}
+			index = fixed
+		}
+		constraints = append(constraints, argumentConstraint{inputs[index].Type, expression})
+		position++
+		return nil
+	}
+	for _, arg := range args {
+		if arg.Group != nil {
+			return nil, fmt.Errorf("generic function does not accept a state group")
+		}
+		if !arg.Spread {
+			if err := add(arg.Value); err != nil {
+				return nil, err
+			}
+			continue
+		}
+		length, known := literalSpreadLength(arg.Value)
+		if !known {
+			if position < fixed || !variadic {
+				return nil, fmt.Errorf("runtime-length spread cannot supply generic fixed inputs")
+			}
+			constraints = append(constraints, argumentConstraint{&syntax.ArrayType{Element: inputs[fixed].Type}, arg.Value})
+			continue
+		}
+		for i := 0; i < length; i++ {
+			index := &syntax.LiteralExpr{ExpressionLocation: syntax.ExpressionLocation{Span: arg.Span}, Token: syntax.Token{Kind: syntax.Integer, Text: strconv.Itoa(i), Value: strconv.Itoa(i), Span: arg.Span}}
+			if err := add(&syntax.IndexExpr{ExpressionLocation: syntax.ExpressionLocation{Span: arg.Span}, Receiver: arg.Value, Index: index}); err != nil {
+				return nil, err
+			}
+		}
+	}
+	if position < fixed {
+		return nil, fmt.Errorf("generic call arity mismatch")
+	}
+	return constraints, nil
+}
+
+func (c *programChecker) inferArguments(file *resolve.File, parameters []string, result syntax.TypeNode, expected *types.Type, constraints []argumentConstraint, e *Expressions, seeds ...typeConstraint) ([]*types.Type, error) {
+	solver, err := types.NewInference(parameters)
+	if err != nil {
+		return nil, err
+	}
+	for _, seed := range seeds {
+		pattern, err := types.Pattern(file, seed.annotation, parameters)
+		if err != nil {
+			return nil, err
+		}
+		if err = solver.Constrain(pattern, seed.actual); err != nil {
+			return nil, err
+		}
+	}
+	if expected != nil {
+		pattern, err := types.Pattern(file, result, parameters)
+		if err != nil {
+			return nil, err
+		}
+		if pattern.HasParameters() {
+			if err = solver.Constrain(pattern, expected); err != nil {
+				return nil, err
+			}
+		}
+	}
+	patterns := make([]*types.InferencePattern, len(constraints))
+	for i, constraint := range constraints {
+		patterns[i], err = types.Pattern(file, constraint.annotation, parameters)
+		if err != nil {
+			return nil, err
+		}
+	}
+	done := make([]bool, len(constraints))
+	remaining := len(done)
+	var unresolved error
+	for remaining > 0 {
+		progress := false
+		for i, constraint := range constraints {
+			if done[i] {
+				continue
+			}
+			var want *types.Type
+			if solver.Resolved(patterns[i]) {
+				want, err = c.specializer.Resolve(file, constraint.annotation, solver.Bindings(), false)
+				if err != nil {
+					return nil, err
+				}
+			}
+			value, err := e.Check(constraint.expression, want)
+			if err != nil {
+				unresolved = err
+				continue
+			}
+			if patterns[i].HasParameters() {
+				if err = solver.Constrain(patterns[i], value.Type); err != nil {
+					return nil, err
+				}
+			}
+			done[i] = true
+			remaining--
+			progress = true
+		}
+		if !progress {
+			if _, err := solver.Arguments(); err != nil {
+				return nil, err
+			}
+			return nil, unresolved
+		}
+	}
+	return solver.Arguments()
+}
+
+func (c *programChecker) inferReference(file *resolve.File, scope *resolve.Scope, name syntax.QualifiedName, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
+	symbol, err := file.Lookup(scope, name, resolve.CallUse)
+	if err != nil {
+		return ValueBinding{}, false, nil
+	}
+	d, ok := symbol.Declaration.(*syntax.FunctionDecl)
+	if !ok || len(symbol.Parameters) == 0 {
+		return ValueBinding{}, false, nil
+	}
+	if d.Receiver != nil {
+		return ValueBinding{}, true, fmt.Errorf("generic method reference requires receiver application")
+	}
+	return c.inferDeclaredReference(symbol, d, expected, e, applicationSite(file, name.Span.Start))
+}
+
+func (c *programChecker) inferDeclaredReference(symbol *resolve.Symbol, d *syntax.FunctionDecl, expected *types.Type, e *Expressions, request string, seeds ...typeConstraint) (ValueBinding, bool, error) {
+	solver, err := types.NewInference(symbol.Parameters)
+	if err != nil {
+		return ValueBinding{}, true, err
+	}
+	declaring := c.world.Files[symbol.Source]
+	for _, seed := range seeds {
+		pattern, err := types.Pattern(declaring, seed.annotation, symbol.Parameters)
+		if err != nil {
+			return ValueBinding{}, true, err
+		}
+		if err = solver.Constrain(pattern, seed.actual); err != nil {
+			return ValueBinding{}, true, err
+		}
+	}
+	residual := &syntax.CallableType{Result: d.Result, Errors: d.Errors}
+	for _, input := range d.Inputs {
+		if input.Near {
+			continue
+		}
+		node := input.Type
+		if input.Variadic {
+			node = &syntax.ArrayType{Element: node}
+		}
+		residual.Inputs = append(residual.Inputs, node)
+	}
+	if expected != nil {
+		pattern, err := types.Pattern(declaring, residual, symbol.Parameters)
+		if err != nil {
+			return ValueBinding{}, true, err
+		}
+		if err = solver.Constrain(pattern, expected); err != nil {
+			return ValueBinding{}, true, err
+		}
+	}
+	for _, input := range d.Inputs {
+		if !input.Near {
+			continue
+		}
+		value, err := e.Check(&syntax.NameExpr{ExpressionLocation: syntax.ExpressionLocation{Span: d.Span}, Name: syntax.QualifiedName{Name: input.Name.Text}}, nil)
+		if err != nil {
+			return ValueBinding{}, true, err
+		}
+		node := input.Type
+		if input.Variadic {
+			node = &syntax.ArrayType{Element: node}
+		}
+		pattern, err := types.Pattern(declaring, node, symbol.Parameters)
+		if err != nil {
+			return ValueBinding{}, true, err
+		}
+		if err = solver.Constrain(pattern, value.Type); err != nil {
+			return ValueBinding{}, true, err
+		}
+	}
+	args, err := solver.Arguments()
+	if err != nil {
+		return ValueBinding{}, true, fmt.Errorf("generic reference %s at byte %d: %w", symbol.ID, d.Span.Start, err)
+	}
+	binding, err := c.instantiateFunction(symbol, d, args, request)
+	return binding, true, err
+}
+
+func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.ConstructorExpr, expected *types.Type, e *Expressions) (*types.Type, error) {
+	var fields []syntax.Field
+	switch d := symbol.Declaration.(type) {
+	case *syntax.RecordDecl:
+		fields = d.Fields
+	case *syntax.ErrorDecl:
+		fields = d.Fields
+	default:
+		return nil, fmt.Errorf("generic constructor requires record or error declaration")
+	}
+	if len(fields) != len(node.Arguments) {
+		return nil, fmt.Errorf("constructor arity mismatch")
+	}
+	constraints := make([]argumentConstraint, len(fields))
+	for i, field := range fields {
+		argument := node.Arguments[i]
+		if argument.Spread || argument.Group != nil {
+			return nil, fmt.Errorf("constructor requires fixed field arguments")
+		}
+		constraints[i] = argumentConstraint{field.Type, argument.Value}
+	}
+	template := &syntax.NamedType{Name: syntax.QualifiedName{Name: symbol.Name}}
+	for _, parameter := range symbol.Parameters {
+		template.Arguments = append(template.Arguments, named(parameter))
+	}
+	// Only a unique matching concrete nominal expectation contributes equalities.
+	// Fields can still determine the application when a wider variant is expected.
+	if expected != nil && expected.Declaration() != symbol.ID {
+		var candidate *types.Type
+		for _, leaf := range expected.Leaves() {
+			if leaf.Declaration() == symbol.ID {
+				if candidate != nil {
+					candidate = nil
+					break
+				}
+				candidate = leaf
+			}
+		}
+		expected = candidate
+	}
+	file := c.world.Files[symbol.Source]
+	arguments, err := c.inferArguments(file, symbol.Parameters, template, expected, constraints, e)
+	if err != nil {
+		return nil, fmt.Errorf("generic constructor %s at byte %d: %w", symbol.ID, node.Span.Start, err)
+	}
+	parameters := map[string]*types.Type{}
+	for i, name := range symbol.Parameters {
+		parameters[name] = arguments[i]
+	}
+	return c.specializer.Resolve(file, template, parameters, false)
+}
+
+type typeConstraint struct {
+	annotation syntax.TypeNode
+	actual     *types.Type
+}

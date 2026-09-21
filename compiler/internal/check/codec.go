@@ -63,6 +63,31 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 	// Residual signatures can be derived after graph sealing; retain ingredients.
 	c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data}
 	c.codecParts[key] = []*types.Type{result, input, invalid}
+	if c.specializer != nil {
+		if err = c.finishCodec(key); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *programChecker) finishCodec(key string) error {
+	special := c.codecs[key]
+	parts := c.codecParts[key]
+	var err error
+	special.Schema, err = types.Schema(special.Data)
+	if err != nil {
+		return err
+	}
+	special.Contract, err = types.CallableOfChecked(parts[0], []*types.Type{parts[1]}, []*types.Type{parts[2]})
+	if err != nil {
+		return err
+	}
+	c.program.Intrinsics[key] = special.Contract
+	c.program.Codecs = c.codecs
+	if c.callables != nil {
+		c.callables[key] = CallableDeclaration{Kind: resolve.Function, Contract: special.Contract, Names: []string{"input0"}, Near: []bool{false}}
+	}
 	return nil
 }
 func (c *programChecker) specializeCodec(file *resolve.File, scope *resolve.Scope, name syntax.QualifiedName, args []syntax.TypeNode) (ValueBinding, error) {

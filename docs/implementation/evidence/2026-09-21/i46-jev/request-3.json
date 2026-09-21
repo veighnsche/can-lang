@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Starting facts: annotation collection produces one graph that becomes read-only before normal body analysis; source generic bodies are not yet compiled, though concrete codec instances exist. Stable type hashes encode declaration identity and argument IDs and permit equality between separately sealed graphs. The required generic feature covers functions, nominal construction and callable references. Inference obtains parameter equalities from fixed actual arguments and known expected result/reference types, never synthesizing unions, coercing numbers, guessing applications or inferring error bounds. Specialization keys contain the resolved declaration and concrete arguments. Fully check reachable bodies regardless of tested branches. Identical-instance recursion is allowed; growing polymorphic recursion is refused. Unused exported templates are checked for grammar, names and errors independent of parameter choices. Body-driven instantiation may introduce recursive nominal shapes after initial sealing. Checked evidence must remain immutable, with validation preceding compatibility use, and each architectural alternative must offer finite resource refusal without weakening these obligations.",
+  "questions": {
+    "architecture": {
+      "type": "choice",
+      "instructions": "How should this compiler accommodate newly discovered generic type instances within its sealed-graph architecture?",
+      "criteria": {
+        "sealed_extensions": "Use independent builders with copies of required checked argument graphs for fresh instances; seal them, intern the resulting immutable inventory by identity, and schedule concrete bodies in a specialization worklist.",
+        "symbolic_first": "Move specialization discovery into a new symbolic inference stage ahead of graph sealing, then validate every concrete body against the single sealed graph.",
+        "restart_graph": "Treat discovery as invalidation: rebuild the global type graph and repeat relevant body checks until no further concrete instances are requested."
+      }
+    }
+  }
+}
