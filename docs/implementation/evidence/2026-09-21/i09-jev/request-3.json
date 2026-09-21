@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can build output task I09 requires content-derived generation directories under dist, with ownership restricted to absent or empty non-symlink output and a canonical-project marker. Unknown entries or symbolic links must be refused; writers must serialize; current.json is replaced only after validating a complete generation; active child runs retain their generations; interrupted staging must remain recognizable for conservative reclamation. The admitted platform is macOS arm64, and local Go is 1.27.1. Directory-relative os.Root calls stay attached to an opened directory across renames and prevent escape; they do follow confined links, so separate symlink rejection remains necessary. An actual macOS probe successfully flocked the project directory; OS locks disappear with process termination. A read lease can lock the immutable build manifest shared, with its descriptor inherited and retained by the child. Candidate foundations are rooted descriptors plus kernel locks and exact file inventories, ordinary pathname operations after prefix/lstat checks with PID locking, or recursive replacement of dist. Choosing descriptors implies requiring Go 1.25, explicit no-link checks, fsync/rename publication ordering and failure/race/unowned-content tests. No existing external users impose compatibility, and speed has not been measured.",
+  "questions": {
+    "foundation": {
+      "type": "choice",
+      "instructions": "Choose the foundation that satisfies this stated filesystem ownership and process-lifetime model.",
+      "criteria": {
+        "confined": "Combine rooted directory access, operating-system writer and run leases, and validation of every owned entry.",
+        "paths": "Rely on checked path spellings and preceding link inspection, using PID marker files to lock ordinary operations.",
+        "replace": "Wipe the dist tree recursively and create a new tree for each build."
+      }
+    }
+  }
+}

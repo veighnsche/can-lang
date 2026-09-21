@@ -1,9 +1,9 @@
 // Compiler-private typed domain errors. Plans are emitted checked declarations,
 // never authored runtime registrations or untrusted wire schemas.
 import { createHash } from "node:crypto";
-import { catalogue, catalogueTypeShapes } from "./catalogue";
-import { dataArray, dataKeys, dataProperty, recordIdentity } from "./data";
-import { allocateOccurrenceID, isStandardFailure, type FailureOrigin } from "./failure";
+import { catalogue, catalogueTypeShapes } from "./catalogue.ts";
+import { dataArray, dataKeys, dataProperty, recordIdentity } from "./data.ts";
+import { allocateOccurrenceID, isStandardFailure, type FailureOrigin } from "./failure.ts";
 
 export type ErrorDeclaration = Readonly<{ identity: string; name: string; id: number; parameters: number }>;
 export type FailureShape = Readonly<{

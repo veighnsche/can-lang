@@ -6,6 +6,7 @@ import (
 	"context"
 	"debug/macho"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/veighnsche/can-lang/distribution"
 )
@@ -178,6 +180,10 @@ func (r *Runtime) RunTool(ctx context.Context, entry string, args, environment [
 	if r.manifest.Files[entry] == "" || !strings.HasPrefix(entry, "tools/runtime/") || !strings.HasSuffix(entry, ".ts") {
 		return fmt.Errorf("CAN-DIST-ENTRY: tool is not in distribution manifest")
 	}
+	return r.runEntry(ctx, filepath.Join(r.Root, entry), args, environment, stdin, stdout, stderr, nil)
+}
+
+func (r *Runtime) runEntry(ctx context.Context, entry string, args, environment []string, stdin io.Reader, stdout, stderr io.Writer, leases []*os.File) error {
 	work, err := os.MkdirTemp("", "can-runtime-")
 	if err != nil {
 		return err
@@ -205,14 +211,14 @@ func (r *Runtime) RunTool(ctx context.Context, entry string, args, environment [
 	}
 	defer read.Close()
 	defer write.Close()
-	arguments := []string{"--no-install", "--no-env-file", "--no-macros", "--config=" + filepath.Join(r.Root, "tools/runtime/bunfig.toml"), filepath.Join(r.Root, entry)}
+	arguments := []string{"--no-install", "--no-env-file", "--no-macros", "--config=" + filepath.Join(r.Root, "tools/runtime/bunfig.toml"), entry}
 	arguments = append(arguments, args...)
 	cmd := exec.CommandContext(ctx, r.Executable, arguments...)
 	cmd.Dir = filepath.Join(work, "cwd")
 	// Application state travels on fd 3, never on argv, disk, or Bun's startup
 	// environment. This allowlist avoids an incomplete denylist of launch knobs.
 	cmd.Env = []string{"HOME=" + filepath.Join(work, "home"), "XDG_CONFIG_HOME=" + filepath.Join(work, "config"), "TMPDIR=" + filepath.Join(work, "tmp"), "PATH=/nonexistent"}
-	cmd.ExtraFiles = []*os.File{read}
+	cmd.ExtraFiles = append([]*os.File{read}, leases...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = stdin, stdout, stderr
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("CAN-DIST-EXEC: %w", err)
@@ -226,7 +232,9 @@ func (r *Runtime) RunTool(ctx context.Context, entry string, args, environment [
 	if err != nil {
 		return err
 	}
-	if writeErr != nil {
+	// A program that never needs env/auth may exit without reading fd 3.
+	// Closing that unused pipe must not turn successful execution into failure.
+	if writeErr != nil && !errors.Is(writeErr, syscall.EPIPE) && !errors.Is(writeErr, os.ErrClosed) {
 		return fmt.Errorf("CAN-DIST-ENV: %w", writeErr)
 	}
 	return nil

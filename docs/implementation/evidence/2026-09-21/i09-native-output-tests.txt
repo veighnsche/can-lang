@@ -1,0 +1,9 @@
+=== RUN   TestPackagedOutputValidationAndExecution
+    output_runtime_test.go:31: === RUN   TestPackagedOutputValidationAndExecution
+            output_runtime_test.go:139: native parser validated exact imports; published entry executed; inherited child lease survived launcher close
+        --- PASS: TestPackagedOutputValidationAndExecution (2.08s)
+        PASS
+        
+--- PASS: TestPackagedOutputValidationAndExecution (2.10s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	2.187s

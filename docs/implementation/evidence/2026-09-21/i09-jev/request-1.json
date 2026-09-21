@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I09 publishes compiler-owned content-addressed generations under project dist. Requirements: claim only missing or empty real dist; bind ownership to canonical project; reject symlinks and unknown files; serialize writers; publish current.json atomically only after complete validation; keep active generations; reclaim recognized interrupted staging safely. The supported runtime target is macOS arm64. Go 1.27.1 is installed; Go Root APIs support directory-relative confinement and track directory handles across renames, but allow contained symlinks, so explicit no-symlink checks are still required. flock on this macOS project directory was experimentally successful and releases on process exit. A shared lock on an immutable generation manifest can represent a run lease, provided the child inherits the descriptor for its lifetime. Alternatives are descriptor-confined operations plus OS locks and strict owned inventories; string-prefix/lstat checks with ordinary path writes/deletion and PID lock files; or deleting and recreating all dist. The descriptor approach requires raising the Go minimum to 1.25, no-follow validation, atomic temporary-file rename, fsync ordering, tests for races/interruption and safe refusal of unknown contents. No external users require backward compatibility and no performance evidence exists.",
+  "questions": {
+    "foundation": {
+      "type": "choice",
+      "instructions": "Which publication foundation best meets the supplied ownership, crash and active-run constraints?",
+      "criteria": {
+        "confined": "Use directory-confined operations, OS-held project and manifest lease locks, and complete owned-file inventories before publication or removal.",
+        "paths": "Use validated path strings with ordinary filesystem calls and PID-file locking.",
+        "replace": "Remove dist recursively and regenerate it on every successful build."
+      }
+    }
+  }
+}

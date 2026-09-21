@@ -1,7 +1,7 @@
 // Compiler-private failure occurrences. Can projections never contain native
 // causes, stacks, diagnostic origins, or mutable host objects.
 import { types as nativeTypes } from "node:util";
-import { primitiveFailureKind, primitiveFailureMessage } from "./primitive";
+import { primitiveFailureKind, primitiveFailureMessage } from "./primitive.ts";
 
 export type StandardKind = "arithmetic" | "bounds" | "resource_state" | "assertion" | "native_exception" | "cleanup";
 export type FailureOrigin = Readonly<{ source: string; start: number; end: number; invocation: readonly string[] }>;

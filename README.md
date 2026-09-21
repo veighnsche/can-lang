@@ -17,7 +17,7 @@ emits typed TS plus machine-readable artifacts.
 
 ## Install
 
-Requires Go 1.21+. Easiest, no clone needed:
+Requires Go 1.25+. Easiest, no clone needed:
 
 ```
 go install github.com/veighnsche/can-lang/compiler@latest
@@ -56,7 +56,8 @@ proxy by a few minutes; to upgrade immediately, pin the commit instead:
 ## Quickstart
 
 ```
-canlc --out /tmp/can-out sketches/auth-login/db.can sketches/auth-login/auth.can
+canlc inspect-project compiler/testdata/current/project
+canlc inspect-types compiler/testdata/current/project
 ```
 
 From the repo root, `go test ./...` runs the golden gates
@@ -77,3 +78,9 @@ producer-owned contracts with complete observations. See
 [`docs/a11-recursion.md`](docs/a11-recursion.md),
 [`docs/a12-contracts.md`](docs/a12-contracts.md), and the
 [`docs/ASTRA_AUDIT.md`](docs/ASTRA_AUDIT.md) trail that drove them.
+
+The current compiler publishes checked ESM through owned, content-addressed
+`dist` generations. The former `--out` compiler is retired; its historical
+fixtures are test-only. `canlc clean PROJECT_DIRECTORY` validates ownership and
+preserves unknown files and active generations. Current-language build/run entry
+integration follows the completion-region task; see [implementation progress](docs/implementation/tasks.md).

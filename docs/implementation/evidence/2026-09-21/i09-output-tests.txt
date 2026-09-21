@@ -1,0 +1,85 @@
+=== RUN   TestArtifactIdentityAndClosedImports
+=== RUN   TestArtifactIdentityAndClosedImports/../entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports//entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/../entry.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/A.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/CON.ts
+=== RUN   TestArtifactIdentityAndClosedImports/packages/a.ts.
+=== RUN   TestArtifactIdentityAndClosedImports/packages/a\b.ts
+=== RUN   TestArtifactIdentityAndClosedImports/ambient
+=== RUN   TestArtifactIdentityAndClosedImports//absolute.ts
+=== RUN   TestArtifactIdentityAndClosedImports/./missing.ts
+=== RUN   TestArtifactIdentityAndClosedImports/../../../outside.ts
+=== RUN   TestArtifactIdentityAndClosedImports/./packages/p-a/a.ts?x
+=== RUN   TestArtifactIdentityAndClosedImports/./packages/p-a/a
+--- PASS: TestArtifactIdentityAndClosedImports (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/../entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports//entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/../entry.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/A.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/CON.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/a.ts. (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/packages/a\b.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/ambient (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports//absolute.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./missing.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/../../../outside.ts (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./packages/p-a/a.ts?x (0.00s)
+    --- PASS: TestArtifactIdentityAndClosedImports/./packages/p-a/a (0.00s)
+=== RUN   TestArtifactMetadataAndPayloadRefusals
+--- PASS: TestArtifactMetadataAndPayloadRefusals (0.00s)
+=== RUN   TestPackagedOutputValidationAndExecution
+    output_runtime_test.go:20: set CAN_BUN_ARCHIVE for staged native output validation
+--- SKIP: TestPackagedOutputValidationAndExecution (0.00s)
+=== RUN   TestOwnedOutputPublicationAndLeases
+--- PASS: TestOwnedOutputPublicationAndLeases (0.12s)
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/unowned
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/symlink
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/wrong_owner
+=== RUN   TestOutputRefusesUnownedSymlinkedAndChangedInputs/source_overlap
+--- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs (0.02s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/unowned (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/symlink (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/wrong_owner (0.00s)
+    --- PASS: TestOutputRefusesUnownedSymlinkedAndChangedInputs/source_overlap (0.00s)
+=== RUN   TestInterruptedPublicationRecovery
+=== RUN   TestInterruptedPublicationRecovery/reserved
+=== RUN   TestInterruptedPublicationRecovery/file:entry.ts
+=== RUN   TestInterruptedPublicationRecovery/staged
+=== RUN   TestInterruptedPublicationRecovery/generation
+=== RUN   TestInterruptedPublicationRecovery/published
+--- PASS: TestInterruptedPublicationRecovery (0.57s)
+    --- PASS: TestInterruptedPublicationRecovery/reserved (0.11s)
+    --- PASS: TestInterruptedPublicationRecovery/file:entry.ts (0.12s)
+    --- PASS: TestInterruptedPublicationRecovery/staged (0.13s)
+    --- PASS: TestInterruptedPublicationRecovery/generation (0.10s)
+    --- PASS: TestInterruptedPublicationRecovery/published (0.10s)
+=== RUN   TestOutputPreservesUnexpectedGenerationContents
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/unknown_file
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/unknown_directory
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/modified_file
+=== RUN   TestOutputPreservesUnexpectedGenerationContents/symlink
+--- PASS: TestOutputPreservesUnexpectedGenerationContents (0.40s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/unknown_file (0.10s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/unknown_directory (0.09s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/modified_file (0.09s)
+    --- PASS: TestOutputPreservesUnexpectedGenerationContents/symlink (0.11s)
+=== RUN   TestCurrentManifestIsAuthoritative
+--- PASS: TestCurrentManifestIsAuthoritative (0.06s)
+=== RUN   TestOwnerRevalidationAndInputAssets
+=== RUN   TestOwnerRevalidationAndInputAssets/owner_changed_after_opening
+=== RUN   TestOwnerRevalidationAndInputAssets/asset_mutation_invalidates_snapshot
+--- PASS: TestOwnerRevalidationAndInputAssets (0.07s)
+    --- PASS: TestOwnerRevalidationAndInputAssets/owner_changed_after_opening (0.06s)
+    --- PASS: TestOwnerRevalidationAndInputAssets/asset_mutation_invalidates_snapshot (0.01s)
+=== RUN   TestSourceRemovalPublishesOnlyNewGraph
+--- PASS: TestSourceRemovalPublishesOnlyNewGraph (0.13s)
+=== RUN   TestProjectLockAcrossProcesses
+--- PASS: TestProjectLockAcrossProcesses (0.02s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	1.479s
+=== RUN   TestExactESMEdges
+--- PASS: TestExactESMEdges (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.089s

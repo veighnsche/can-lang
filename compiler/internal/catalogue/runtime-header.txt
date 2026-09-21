@@ -1,5 +1,5 @@
 // Code generated from compiler/internal/catalogue/catalogue.json; DO NOT EDIT.
-import { dataArray, dataKeys, dataProperty } from "./data";
+import { dataArray, dataKeys, dataProperty } from "./data.ts";
 function freeze<T>(value: T): Readonly<T> {
   if (value !== null && typeof value === 'object') {
     for (const child of Object.values(value)) freeze(child);

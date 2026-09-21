@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The I09 output contract for Can uses hashed build generations inside project dist. It must own only a new or empty real directory, verify the canonical project marker, refuse links/unrecognized files, exclude concurrent writers, select complete validated output through atomic current.json replacement, preserve live runs and safely clean identifiable interrupted staging. Execution targets macOS arm64. The available Go version is 1.27.1; os.Root confines operations to a directory handle even after renames but permits internal links, requiring additional link rejection. A local experiment confirmed project-directory flock on macOS, whose lifetime ends on process death. Active builds can carry shared immutable-manifest locks if the executed child retains an inherited descriptor. Choices are rooted filesystem handles with kernel locks and exact inventory checks, path-prefix/lstat guards with ordinary operations and PID lockfiles, or wholesale dist removal/recreation. The rooted design needs a Go 1.25 minimum, no-symlink checks, temporary rename publication with fsync ordering, and interruption/race/unknown-file tests. There are zero compatibility consumers and no benchmarks.",
+  "questions": {
+    "foundation": {
+      "type": "choice",
+      "instructions": "Select the filesystem and locking strategy consistent with those publication and cleanup guarantees.",
+      "criteria": {
+        "confined": "Confine access through directory handles and pair kernel writer/lease locks with strict ownership inventory validation.",
+        "paths": "Check textual containment and lstat results, then operate by ordinary paths while coordinating via PID files.",
+        "replace": "Delete the existing output tree recursively before reconstructing all generated artifacts."
+      }
+    }
+  }
+}

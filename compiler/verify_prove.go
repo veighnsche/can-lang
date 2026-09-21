@@ -1272,3 +1272,25 @@ func topoContracted(a *admission) []string {
 	}
 	return order
 }
+
+func recordShapes(mods []*Module) map[string][][2]string {
+	recs := map[string][][2]string{}
+	for _, b := range builtinTypeDecls() {
+		recs[b.Name] = b.Fields
+	}
+	for _, m := range mods {
+		for _, d := range m.Decls {
+			if td, ok := d.(*TypeDecl); ok {
+				if _, seen := recs[td.Name]; !seen {
+					recs[td.Name] = td.Fields
+				}
+			}
+		}
+	}
+	return recs
+}
+
+// variantShapes indexes declared variants by parent name, first
+// wins across modules, matching the checker and the evaluator
+// (a74). Collisions are rejected at the registry, so first wins is
+// deterministic, exactly like records.
