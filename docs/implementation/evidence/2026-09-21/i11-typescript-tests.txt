@@ -1,0 +1,2 @@
+TypeScript 7.0.2 strict check: emitted multi-file CLI and maintained runtime/test modules
+Exit status: 0

@@ -1,6 +1,9 @@
 {
   "schemaVersion": 1,
   "modules": {
+    "bytes.ts": [
+      "./failure.ts"
+    ],
     "catalogue.ts": [
       "./data.ts"
     ],
@@ -17,12 +20,26 @@
       "./data.ts",
       "./failure.ts"
     ],
+    "entry.ts": [
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts",
+      "./failure.ts"
+    ],
     "environment.ts": [
       "node:fs"
     ],
     "failure.ts": [
       "node:util",
       "./primitive.ts"
+    ],
+    "platform/cli.ts": [
+      "node:util",
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts"
     ],
     "primitive.ts": []
   }

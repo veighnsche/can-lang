@@ -5,17 +5,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/veighnsche/can-lang/distribution"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/distribution"
 )
 
 type RuntimeArtifacts struct {
 	Directory, Identity string
-	Files               []OutputArtifact
+	Files               []ir.Artifact
 }
 
 // PrivateArtifacts reads only the distribution's closed inventory and verifies
@@ -62,7 +64,7 @@ func (r *Runtime) PrivateArtifacts() (RuntimeArtifacts, error) {
 	id := hashBytes(encoded)
 	result := RuntimeArtifacts{Directory: "runtime/r-" + id, Identity: id}
 	for _, name := range sortedOutputKeys(inventory.Modules) {
-		artifact := OutputArtifact{Path: result.Directory + "/" + name, Bytes: contents[name], Runtime: true}
+		artifact := ir.Artifact{Path: result.Directory + "/" + name, Bytes: contents[name], Runtime: true}
 		for _, specifier := range inventory.Modules[name] {
 			if strings.HasPrefix(specifier, "node:") {
 				artifact.NativeImports = append(artifact.NativeImports, specifier)

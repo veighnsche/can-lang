@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "For I11, the current Can frontend must feed generated modules to its exact offline Bun distribution. Its async function ABI resolves private nonthenable Completion objects carrying ok/domain/standard, with an existing invoke adapter for exceptions and branding checks. Although top-level source values admit no effects, evaluation may fail; dependency order and completion before main are required, while imports remain free of authored evaluation. The accepted entry is void main(str[] args), supplied solely with app arguments. Awaiting root work and diagnostic output at module top level must precede exit, and only a void success is status zero. Reports cannot disclose raw causes, stacks, local filesystem paths or arbitrary error payloads; native messages themselves are potentially sensitive. Private projections supply validated domain information and standard failure categories. Later ownership work will add draining, and today's language subset has no detached launches. Alternatives: supervise an explicit initialization callback followed by boxed main; run initialization in module scope and catch main alone; evaluate startup and main with a Go interpreter rather than Bun. The callback approach entails common value storage plus fault-before-main, delayed-completion and sanitized-report tests. Measurements and a security proof have not been supplied.",
+  "questions": {
+    "entry": {
+      "type": "choice",
+      "instructions": "Which entry supervision arrangement fits the stated first-CLI constraints?",
+      "criteria": {
+        "supervisor": "Sequence an initialization thunk and boxed main under the root supervisor, finishing safe reports before returning.",
+        "module": "Let imports perform source initialization and install exception handling solely for main.",
+        "interpreter": "Replace Bun execution with Go evaluation of the program and its initial values."
+      }
+    }
+  }
+}

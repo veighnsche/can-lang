@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
 )
 
 func artifactInputs() BuildInputs {
 	id := strings.Repeat("a", 64)
 	return BuildInputs{id, id, id, id, id, id}
 }
-func artifactFixture() []OutputArtifact {
-	return []OutputArtifact{{Path: "entry.ts", Bytes: []byte("import './packages/p-a/a.ts';\n"), Imports: []string{"./packages/p-a/a.ts"}}, {Path: "packages/p-a/a.ts", Bytes: []byte("export const value=1n;\n")}}
+func artifactFixture() []ir.Artifact {
+	return []ir.Artifact{{Path: "entry.ts", Bytes: []byte("import './packages/p-a/a.ts';\n"), Imports: []string{"./packages/p-a/a.ts"}}, {Path: "packages/p-a/a.ts", Bytes: []byte("export const value=1n;\n")}}
 }
 func TestArtifactIdentityAndClosedImports(t *testing.T) {
 	original := artifactFixture()
@@ -20,7 +22,7 @@ func TestArtifactIdentityAndClosedImports(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	reversed := []OutputArtifact{original[1], original[0]}
+	reversed := []ir.Artifact{original[1], original[0]}
 	b, err := PrepareOutput(artifactInputs(), "entry.ts", reversed)
 	if err != nil || !bytes.Equal(a.ManifestJSON(), b.ManifestJSON()) {
 		t.Fatal("input enumeration changed content identity", err)
@@ -45,7 +47,7 @@ func TestArtifactIdentityAndClosedImports(t *testing.T) {
 	for _, name := range []string{"manifest.json/extra.ts", "MANIFEST.JSON/extra.ts", "Manifest.Json", "../entry.ts", "/entry.ts", "packages/../entry.ts", "packages/A.ts", "packages/CON.ts", "packages/a.ts.", "packages/a\\b.ts"} {
 		t.Run(name, func(t *testing.T) {
 			items := artifactFixture()
-			items = append(items, OutputArtifact{Path: name, Bytes: []byte("x")}, OutputArtifact{Path: "packages/a.ts", Bytes: []byte("x")})
+			items = append(items, ir.Artifact{Path: name, Bytes: []byte("x")}, ir.Artifact{Path: "packages/a.ts", Bytes: []byte("x")})
 			if _, err := PrepareOutput(artifactInputs(), "entry.ts", items); err == nil {
 				t.Fatal("unsafe output admitted")
 			}
@@ -66,7 +68,7 @@ func TestArtifactIdentityAndClosedImports(t *testing.T) {
 		t.Fatal("authored native import admitted")
 	}
 	items = artifactFixture()
-	items = append(items, OutputArtifact{Path: "packages/p-a", Bytes: []byte("x")})
+	items = append(items, ir.Artifact{Path: "packages/p-a", Bytes: []byte("x")})
 	if _, err := PrepareOutput(artifactInputs(), "entry.ts", items); err == nil {
 		t.Fatal("directory/file conflict")
 	}
@@ -79,7 +81,7 @@ func TestArtifactMetadataAndPayloadRefusals(t *testing.T) {
 			t.Fatal("duplicate metadata admitted")
 		}
 	}
-	for _, artifact := range []OutputArtifact{
+	for _, artifact := range []ir.Artifact{
 		{Path: "assets/incorrect/logo.svg", Bytes: []byte("logo")},
 		{Path: "entry.ts.map", Bytes: []byte(`{"version":2,"file":"entry.ts","sources":[],"sourcesContent":[]}`)},
 		{Path: "entry.ts.map", Bytes: []byte(`{"version":3,"file":"other.ts","sources":[],"sourcesContent":[]}`)},

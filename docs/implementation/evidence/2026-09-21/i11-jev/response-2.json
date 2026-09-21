@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"entry":{"type":"choice","choice":"supervisor","confidence":0.85,"probabilities":{"interpreter":0.08,"supervisor":0.9,"module":0.02}}},"usage":{"input_tokens":611,"output_tokens":44}}

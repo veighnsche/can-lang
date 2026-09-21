@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/distribution"
 )
 
@@ -53,10 +54,10 @@ func TestPackagedOutputValidationAndExecution(t *testing.T) {
 	root := outputProject(t)
 	store := outputBegin(t, root)
 	inputs := store.BuildInputs(strings.Repeat("a", 64), strings.Repeat("b", 64), assets.Identity, strings.Repeat("c", 64))
-	makeOutput := func(source string, imports []string, additional ...OutputArtifact) *PreparedOutput {
-		artifacts := append([]OutputArtifact{}, assets.Files...)
+	makeOutput := func(source string, imports []string, additional ...ir.Artifact) *PreparedOutput {
+		artifacts := append([]ir.Artifact{}, assets.Files...)
 		artifacts = append(artifacts, additional...)
-		artifacts = append(artifacts, OutputArtifact{Path: "entry.ts", Bytes: []byte(source), Imports: imports})
+		artifacts = append(artifacts, ir.Artifact{Path: "entry.ts", Bytes: []byte(source), Imports: imports})
 		p, err := PrepareOutput(inputs, "entry.ts", artifacts)
 		if err != nil {
 			t.Fatal(err)
@@ -83,7 +84,7 @@ const a=captureStandard("same",{source:"app::main",start:0,end:1,invocation:[]})
 const b=captureStandard("same",{source:"app::main",start:0,end:1,invocation:[]});
 if(standardFailureOccurrenceID(a)===standardFailureOccurrenceID(b))throw new Error("merged occurrence");
 console.log("published generation executed");`
-	helper := OutputArtifact{Path: "packages/p-helper/helper.ts", Imports: []string{"../../" + assets.Directory + "/failure.ts"}, Bytes: []byte(`import {captureStandard} from "../../` + assets.Directory + `/failure.ts"; export function makeFailure(){return captureStandard("helper",{source:"helper",start:0,end:1,invocation:[]})}`)}
+	helper := ir.Artifact{Path: "packages/p-helper/helper.ts", Imports: []string{"../../" + assets.Directory + "/failure.ts"}, Bytes: []byte(`import {captureStandard} from "../../` + assets.Directory + `/failure.ts"; export function makeFailure(){return captureStandard("helper",{source:"helper",start:0,end:1,invocation:[]})}`)}
 	p := makeOutput(program, []string{specifier, "./packages/p-helper/helper.ts"}, helper)
 	if err = runtime.ValidateOutput(ctx, p); err != nil {
 		t.Fatal(err)

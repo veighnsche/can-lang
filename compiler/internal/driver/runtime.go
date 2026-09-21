@@ -211,7 +211,9 @@ func (r *Runtime) runEntry(ctx context.Context, entry string, args, environment 
 	}
 	defer read.Close()
 	defer write.Close()
-	arguments := []string{"--no-install", "--no-env-file", "--no-macros", "--config=" + filepath.Join(r.Root, "tools/runtime/bunfig.toml"), entry}
+	arguments := []string{"--no-install", "--no-env-file", "--no-macros", "--config=" + filepath.Join(r.Root, "tools/runtime/bunfig.toml"), entry, "--"}
+	// Bun consumes this separator even after the script path. Supplying it
+	// ourselves preserves an application argument whose literal value is --.
 	arguments = append(arguments, args...)
 	cmd := exec.CommandContext(ctx, r.Executable, arguments...)
 	cmd.Dir = filepath.Join(work, "cwd")

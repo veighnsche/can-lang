@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The first Can CLI must execute newly emitted checked code using the bundled, pinned Bun without online acquisition. Async generated functions fulfill with opaque branded Completion carriers distinguishing ok, domain and standard outcomes, and invoke already captures exceptions while checking carrier identity. Initialization expressions are effect-inert but can fault; their dependency-sorted evaluation must precede main and cannot occur as authored import-time execution. Only void main(str[] args) is an entry, with application-only argv. A top-level await must cover root completion and diagnostic writes; successful void returns status zero. Native causes, stack data, host paths and unconstrained domain payloads must stay out of root reports, and even native message strings may carry secrets. Trusted private accessors expose domain identity and standard category. Resource draining comes later; detached work is unavailable in the present source subset. Consider a runtime supervisor that calls an explicit initializer and then boxed main, top-level ESM initialization protected only by main's catch, and interpreting both phases in Go instead of launching Bun. A thunk-based implementation requires shared initialized-value storage and startup/async/diagnostic tests. There is no performance evidence or formal security assurance.",
+  "questions": {
+    "entry": {
+      "type": "choice",
+      "instructions": "Select the startup architecture most consistent with these compiler and runtime requirements.",
+      "criteria": {
+        "supervisor": "Use a supervised initializer callback before invoking main through its completion carrier, awaiting sanitized reports.",
+        "module": "Place startup values at module top level and catch failures only around main invocation.",
+        "interpreter": "Interpret the source entry and its startup in Go without native sidecar execution."
+      }
+    }
+  }
+}

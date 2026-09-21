@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -35,6 +36,39 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
+	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
+		if len(argv) < 2 || argv[1] == "" || (argv[0] == "build" && len(argv) != 2) || (argv[0] == "run" && len(argv) > 2 && argv[2] != "--") {
+			fmt.Fprintln(os.Stderr, "usage: canlc build PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
+			return 2
+		}
+		sidecar, err := driver.Resolve(bundleManifestSHA256)
+		if err == nil {
+			if argv[0] == "build" {
+				var report driver.BuildReport
+				report, err = sidecar.Build(context.Background(), argv[1])
+				if err == nil {
+					err = json.NewEncoder(os.Stdout).Encode(report)
+				}
+			} else {
+				var args []string
+				if len(argv) > 2 {
+					args = argv[3:]
+				}
+				err = sidecar.Run(context.Background(), argv[1], args, os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+			}
+		}
+		if err != nil {
+			if exit, ok := err.(*exec.ExitError); ok && argv[0] == "run" {
+				if code := exit.ExitCode(); code > 0 {
+					return code
+				}
+				return 1
+			}
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		return 0
+	}
 	if len(argv) > 0 && argv[0] == "inspect-types" {
 		return runInspectTypes(os.Stdout, os.Stderr, argv[1:])
 	}

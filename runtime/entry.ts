@@ -1,0 +1,57 @@
+// Compiler-private root supervisor. Generated entry modules await runEntry at
+// top level and assign its status to process.exitCode only after it settles.
+import { invoke, success, type Completion } from "./completion.ts";
+import { array } from "./data.ts";
+import { domainFailureDiagnostics } from "./domain.ts";
+import { standardFailureDiagnostics, type FailureOrigin } from "./failure.ts";
+
+type Main = (args: readonly string[]) => Completion<void> | Promise<Completion<void>>;
+type Reporter = (line: string) => void | Promise<void>;
+const rootOrigin: FailureOrigin = Object.freeze({source: "can:entry", start: 0, end: 0, invocation: Object.freeze([])});
+
+// Only explicitly selected stable fields cross the diagnostic boundary. Error
+// payloads can contain application secrets; native messages can contain paths,
+// credentials, or response bodies. Neither is serialized by the root reporter.
+function diagnostic(completion: Exclude<Completion<void>, {kind: "ok"}>, phase: "initialization" | "main"): string {
+  const base = {schemaVersion: 1, kind: "can.runtime-failure", phase};
+  if (completion.kind === "domain") {
+    const details = domainFailureDiagnostics(completion.value);
+    return JSON.stringify({...base, channel: "domain", id: details.declaration.id,
+      error: details.declaration.name, typeIdentity: details.typeIdentity,
+      occurrence: String(details.occurrenceID), payload: "<redacted>"}) + "\n";
+  }
+  const details = standardFailureDiagnostics(completion.value);
+  return JSON.stringify({...base, channel: "standard", category: details.kind,
+    occurrence: String(details.occurrenceID)}) + "\n";
+}
+async function reportToStderr(line: string): Promise<void> { await Bun.write(Bun.stderr, line); }
+
+export async function runEntry(
+  initialize: () => void,
+  main: Main,
+  applicationArgs: readonly string[],
+  report: Reporter = reportToStderr,
+): Promise<0 | 1> {
+  let phase: "initialization" | "main" = "initialization";
+  let completion: Completion<void> = await invoke(() => {
+    initialize();
+    return success(undefined);
+  }, rootOrigin);
+  if (completion.kind === "ok") {
+    phase = "main";
+    completion = await invoke(async () => {
+      // The CLI already removes its flags and project selector. Copy before
+      // freezing so neither the caller nor the application retains a mutable alias.
+      const result = await invoke(() => main(array([...applicationArgs])), rootOrigin);
+      if (result.kind === "ok" && result.value !== undefined) throw new TypeError("main returned a non-void result");
+      return result;
+    }, rootOrigin);
+  }
+  if (completion.kind === "ok") return 0;
+  try { await report(diagnostic(completion, phase)); }
+  catch {
+    // A closed diagnostic pipe must not become an unhandled rejection or turn
+    // a failed program into a successful exit. There is no fallback output sink.
+  }
+  return 1;
+}

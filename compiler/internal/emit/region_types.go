@@ -9,6 +9,9 @@ import (
 // signatures. ArrayOfChecked may create a sealed node outside the initial model;
 // collecting only the declaration graph would omit its TypeScript alias.
 func RegionTypeDeclarations(regions ...*ir.Region) (string, error) {
+	return NativeTypeDeclarations(regionTypes(regions...))
+}
+func regionTypes(regions ...*ir.Region) []*types.Type {
 	var roots []*types.Type
 	add := func(t *types.Type) {
 		if t != nil {
@@ -118,5 +121,5 @@ func RegionTypeDeclarations(regions ...*ir.Region) (string, error) {
 		}
 		block(region.Body)
 	}
-	return NativeTypeDeclarations(roots)
+	return roots
 }

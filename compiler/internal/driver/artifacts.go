@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
 )
 
 // BuildInputs is semantic input identity. Absolute workspace paths, timestamps,
@@ -21,16 +23,6 @@ type BuildInputs struct {
 	Compiler     string `json:"compiler"`
 	Runtime      string `json:"runtime"`
 	Options      string `json:"options"`
-}
-
-type OutputArtifact struct {
-	Path  string
-	Bytes []byte
-	// Imports are complete structured emission edges, including import type.
-	// Only verified distribution runtime artifacts may carry NativeImports.
-	Imports       []string
-	NativeImports []string
-	Runtime       bool
 }
 
 type OutputManifest struct {
@@ -93,7 +85,7 @@ func sortedOutputKeys[V any](values map[string]V) []string {
 // PrepareOutput validates the complete artifact inventory before any output tree
 // is claimed. Callers supply compiler-generated modules and hash-verified private
 // runtime bytes; authored TypeScript and ambient package discovery are not inputs.
-func PrepareOutput(inputs BuildInputs, entry string, artifacts []OutputArtifact) (*PreparedOutput, error) {
+func PrepareOutput(inputs BuildInputs, entry string, artifacts []ir.Artifact) (*PreparedOutput, error) {
 	for _, id := range []string{inputs.Source, inputs.Dependencies, inputs.Catalogue, inputs.Compiler, inputs.Runtime, inputs.Options} {
 		if !digestPattern.MatchString(id) {
 			return nil, fmt.Errorf("every semantic build input requires a SHA-256 identity")

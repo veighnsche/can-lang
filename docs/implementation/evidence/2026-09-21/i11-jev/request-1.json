@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I11 connects the current checked compiler to a pinned offline Bun sidecar. Generated ESM has async functions returning privately branded nonthenable Completion boxes with ok/domain/standard categories. Existing invoke catches thrown failures and validates boxes. Inert top-level value initializers can fail and must finish in deterministic dependency order before main; imports must not perform authored work. The entry has exactly void main(str[] args), and receives only application arguments. Root execution uses top-level await and awaited diagnostics, exits zero only for successful void completion, and must not leak raw native causes, stacks, machine paths or arbitrary domain payloads. Domain metadata and standard kinds have private trusted projections; native error messages can contain secrets. Owned-work draining is a later task and no current construct launches detached work. Options are an explicit initialization thunk followed by boxed main inside a runtime supervisor; initialization at ESM module scope with a catch around main only; or a Go evaluator that interprets initialization and main without Bun. The explicit-thunk design needs shared state for ordered values and tests for startup failure, async main completion and safe root diagnostics. No benchmark or security proof is available.",
+  "questions": {
+    "entry": {
+      "type": "choice",
+      "instructions": "Which root execution design best satisfies the supplied initialization, completion and confidentiality contracts?",
+      "criteria": {
+        "supervisor": "Run initialization explicitly inside a runtime supervisor, then await boxed main and safe diagnostic output.",
+        "module": "Evaluate initializers during ESM import and protect only main with a catch.",
+        "interpreter": "Execute initialization and main with a Go interpreter instead of the bundled Bun."
+      }
+    }
+  }
+}

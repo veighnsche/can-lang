@@ -1,0 +1,54 @@
+bun test v1.4.2 (744846f84)
+
+runtime/data.test.ts:
+(pass) native strict deep equality observes nominal identity [0.10ms]
+(pass) native copy preserves original aliases, tags and field spelling [0.06ms]
+
+runtime/domain.test.ts:
+(pass) domain occurrences preserve exact payload, allocation and private origin [0.96ms]
+(pass) malformed payloads and hostile identity metadata fail without getters or traps [0.38ms]
+(pass) compiler plan rejects wrong allocations, catalogue fields, and variant cycles [0.70ms]
+(pass) recursive payloads admit shared immutable data and reject circular native values [0.16ms]
+
+runtime/completion.test.ts:
+(pass) async calls, continuations, elements and native Promise bridges never assimilate then data [0.60ms]
+(pass) void and distinct failure categories round trip with original occurrences [0.47ms]
+(pass) selected handler failure is never redispatched and nested handlers complete locally [0.39ms]
+(pass) forged carriers and immediate unboxed thenables are refused without executing data [0.17ms]
+
+runtime/primitive.test.ts:
+(pass) native bigint contract and exact fault identities [0.17ms]
+(pass) index validates bigint range before narrowing [0.08ms]
+(pass) bigint-normalized native slicing and UTF-16 boundaries [0.07ms]
+(pass) finite slice bounds agree with native array/string slice [0.52ms]
+
+runtime/failure.test.ts:
+(pass) native descriptions never invoke application behavior [0.17ms]
+(pass) native scalar and Error descriptions follow fixed rules [0.14ms]
+(pass) origins are distinct and propagation preserves an occurrence [0.07ms]
+(pass) primitive and maintained categories use fixed messages [0.15ms]
+(pass) description adapter defects retain the original cause with a fixed fallback [0.04ms]
+
+runtime/test/entry.test.ts:
+(pass) root awaits main and passes only a frozen copy of the supplied application arguments [0.17ms]
+(pass) initialization failure prevents main and awaits its diagnostic [0.19ms]
+(pass) root report preserves failure identity without native message, stack or origin disclosure [0.08ms]
+(pass) forged and non-void main results fail without invoking a then getter [0.09ms]
+(pass) diagnostic write rejection retains nonzero status [0.04ms]
+
+runtime/test/catalogue.test.ts:
+(pass) closed generated runtime catalogue [0.87ms]
+
+runtime/test/cli.test.ts:
+(pass) native UTF-8 conversion preserves scalar text, BOM and immutable byte ownership [0.34ms]
+(pass) unpaired surrogates yield the exact codec domain error [0.10ms]
+(pass) forged byte handles fail before native output and without running traps [0.17ms]
+
+tools/runtime/output-graph.test.ts:
+(pass) closed graph rejects computed edges anywhere in generated syntax [2.34ms]
+(pass) upstream grammar distinguishes data/comments and exact static edges [2.50ms]
+
+ 30 pass
+ 0 fail
+ 1154 expect() calls
+Ran 30 tests across 9 files. [37.00ms]

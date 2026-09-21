@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/veighnsche/can-lang/compiler/internal/driver"
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
 )
 
 type ModuleImport struct {
@@ -28,7 +28,7 @@ var jsBinding = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$]*$`)
 // Modules resolves structured import edges once and renders exact relative ESM
 // specifiers. All modules refer to one generation-private runtime location;
 // no helper state is duplicated per source module.
-func Modules(modules []Module, dependencies ...driver.OutputArtifact) ([]driver.OutputArtifact, error) {
+func Modules(modules []Module, dependencies ...ir.Artifact) ([]ir.Artifact, error) {
 	paths := map[string]bool{}
 	for _, artifact := range dependencies {
 		if paths[artifact.Path] {
@@ -44,7 +44,7 @@ func Modules(modules []Module, dependencies ...driver.OutputArtifact) ([]driver.
 	}
 	ordered := append([]Module(nil), modules...)
 	sort.Slice(ordered, func(i, j int) bool { return ordered[i].Path < ordered[j].Path })
-	result := append([]driver.OutputArtifact{}, dependencies...)
+	result := append([]ir.Artifact{}, dependencies...)
 	for _, m := range ordered {
 		var code strings.Builder
 		edges := map[string]bool{}
@@ -92,7 +92,7 @@ func Modules(modules []Module, dependencies ...driver.OutputArtifact) ([]driver.
 			imports = append(imports, name)
 		}
 		sort.Strings(imports)
-		result = append(result, driver.OutputArtifact{Path: m.Path, Bytes: []byte(code.String()), Imports: imports})
+		result = append(result, ir.Artifact{Path: m.Path, Bytes: []byte(code.String()), Imports: imports})
 	}
 	return result, nil
 }
