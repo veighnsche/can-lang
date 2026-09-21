@@ -197,6 +197,17 @@
       "./data.ts",
       "./domain.ts",
       "./primitive.ts"
+    ],
+    "collections/map.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./set.ts"
+    ],
+    "collections/set.ts": [
+      "../completion.ts",
+      "../failure.ts"
     ]
   }
 }

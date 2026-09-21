@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The collection work covers a fixed inventory of twelve polymorphic operations. Admissible keys are bigint-backed int, bool and str, while V must satisfy data. A finite equality-based inference engine, immutable checked types, callable contracts and async boxed invocation already exist; invocation also owns fixture handling and single evaluation of arguments. Operation signatures and finite errors are authoritative catalogue data. Runtime Map/Set adapters own native copies behind frozen WeakMap-backed tokens; a left-array native filter against right.has repairs intersection order. Admission must distinguish each concrete map/set type and produce entries branded with their exact ordinary nominal record specialization. Source code cannot manufacture opaque values; widening, fallback, conversions and legacy support are excluded. Both written and inferred type applications, contextual results, first-class function references and collection callbacks need support without running user effects in the checker. One route derives catalogue inference patterns, solves with the established engine, stores concrete sealed contracts and lowers via type-specific factories and the existing call ABI; shared private backing registration admits matching types across factory instances. Other routes discard runtime concrete-type provenance or synthesize source-level generic bodies for the current specialization pipeline.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "How should these maintained generic operations enter the compiler while retaining their full typing and opaque provenance?",
+      "criteria": {
+        "sealed_catalogue": "Resolve metadata with the established solver, register checked specializations, and use factories tied to their exact types through normal fixture-aware invocation machinery.",
+        "erased_identity": "Treat runtime provenance as only map versus set, allowing distinct type arguments to share opaque admission despite compile-time distinctions.",
+        "synthetic_source": "Model native collection functions as invented source declarations with generic implementations and reuse the authored-function expansion route."
+      }
+    }
+  }
+}

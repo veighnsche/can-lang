@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can I25 has twelve closed generic collection functions. Keys are int, bool or str; map values are data. The existing compiler has a sealed type graph, an invariant finite generic solver, checked callable descriptors and ordinary async completion invocation with fixtures and once-only argument preparation. Catalogue metadata already defines exact signatures and errors. Concrete nominal map/set identities must be kept distinct for runtime opaque admission, and entries must carry the concrete ordinary entry record identity. Native runtime factories use private WeakMap storage, immutable tokens and Map/Set copies; intersection uses native left array filter with right membership to preserve order. No authored opaque constructor, coercion, fallback, loose placeholder type or backwards compatibility is allowed. Integration must handle explicit and inferred type arguments, expected result constraints, callable references and array callback hints without evaluating authored effects. The candidate design parses only this catalogue into inference patterns, reuses the existing solver, records sealed concrete specializations, and emits per-specialization factories through the ordinary invocation ABI. Factory instances of the same concrete collection type must recognize each other through shared private storage. Alternatives erase specialization identity at runtime, or fabricate generic authored function bodies and route through source specialization.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Which integration preserves the required collection contracts across every supported invocation form?",
+      "criteria": {
+        "sealed_catalogue": "Reuse finite inference for catalogue patterns, retain concrete identities and contracts, generate identity-bound native factories, and preserve ordinary calls, fixtures and callback/reference preparation.",
+        "erased_identity": "Keep compile-time generic types but accept all map or all set tokens interchangeably at runtime, independent of their concrete instantiation.",
+        "synthetic_source": "Create artificial authored generic function bodies for these maintained operations and send them through source specialization."
+      }
+    }
+  }
+}

@@ -20,6 +20,9 @@ func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, nam
 	if err != nil {
 		return ValueBinding{}, false, nil
 	}
+	if op := collectionOperation(symbol.ID); op != nil {
+		return c.inferCollection(op, args, expected, e)
+	}
 	declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
 	if !ok || len(symbol.Parameters) == 0 {
 		return ValueBinding{}, false, nil
@@ -166,6 +169,9 @@ func (c *programChecker) inferReference(file *resolve.File, scope *resolve.Scope
 	symbol, err := file.Lookup(scope, name, resolve.CallUse)
 	if err != nil {
 		return ValueBinding{}, false, nil
+	}
+	if op := collectionOperation(symbol.ID); op != nil {
+		return c.referenceCollection(op, expected, nil, nil)
 	}
 	d, ok := symbol.Declaration.(*syntax.FunctionDecl)
 	if !ok || len(symbol.Parameters) == 0 {

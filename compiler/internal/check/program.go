@@ -27,6 +27,7 @@ type Program struct {
 	Initializers []ir.Initializer
 	Entry        *ProgramFunction
 	Intrinsics   map[string]*types.Type
+	Collections  map[string]*CollectionSpecialization
 	Codecs       map[string]*CodecSpecialization
 	Assertions   []*ir.Assertion
 }

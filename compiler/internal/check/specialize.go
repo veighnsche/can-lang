@@ -30,6 +30,16 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 	if err != nil {
 		return ValueBinding{}, err
 	}
+	if op := collectionOperation(symbol.ID); op != nil {
+		arguments := make([]*types.Type, len(args))
+		for i, arg := range args {
+			arguments[i], err = c.annotation(file, arg, false)
+			if err != nil {
+				return ValueBinding{}, err
+			}
+		}
+		return c.instantiateCollection(op, arguments)
+	}
 	if codecOperation(symbol.ID) {
 		return c.specializeCodec(file, scope, name, args)
 	}

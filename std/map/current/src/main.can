@@ -1,0 +1,156 @@
+package maps
+    provides []
+    uses [collections]
+fn collections::entry<int,str>[] sample
+    emits [collections::key_exists]
+    asserts
+        ordered: => ok [collections::entry<int,str>(3, "three"), collections::entry<int,str>(2, "two")]
+    collections::map<int,str> empty = call collections::empty_map<int,str>()
+    match call collections::insert(empty, 3, "three")
+        ok collections::map<int,str> first => match call collections::insert(first, 2, "two")
+            ok collections::map<int,str> second => ok call collections::entries(second)
+            collections::key_exists
+        collections::key_exists
+fn bool sets
+    emits []
+    asserts
+        sample: => ok true
+    collections::set<int> empty = call collections::empty_set<int>()
+    collections::set<int> first = call collections::add(empty, 3)
+    collections::set<int> second = call collections::add(first, 2)
+    collections::set<int> right = call collections::add(empty, 2)
+    collections::set<int> shared = call collections::intersection(second, right)
+    ok call collections::contains(shared, 2)
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call alias()
+        ok str original => match original
+            "original" => match call folded()
+                ok bool found => match found
+                    true => ok
+                    false => do
+                        int invalid = 1 / 0
+                        ok
+            _ => do
+                int invalid = 1 / 0
+                ok
+        collections::key_exists => do
+            int invalid = 1 / 0
+            ok
+        collections::key_absent => do
+            int invalid = 1 / 0
+            ok
+fn str absent
+    emits [collections::key_absent]
+    asserts
+        sample: => collections::key_absent()
+    collections::map<int,str> empty = call collections::empty_map()
+    match call collections::get(empty, 1)
+        ok str output => ok output
+        collections::key_absent
+fn collections::entry<int,str>[] changed
+    emits [collections::key_exists, collections::key_absent]
+    given
+        int operation
+    asserts
+        replacement: 0 => ok [collections::entry<int,str>(3, "changed")]
+        removal: 1 => ok []
+        duplicate: 2 => collections::key_exists()
+        absent_replace: 3 => collections::key_absent()
+        absent_remove: 4 => collections::key_absent()
+    collections::map<int,str> empty = call collections::empty_map()
+    match call collections::insert(empty, 3, "original")
+        ok collections::map<int,str> first => match operation
+            0 => match call collections::replace(first, 3, "changed")
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
+                collections::key_absent
+            1 => match call collections::remove(first, 3)
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
+                collections::key_absent
+            2 => match call collections::insert(first, 3, "duplicate")
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
+                collections::key_exists
+            3 => match call collections::replace(first, 2, "missing")
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
+                collections::key_absent
+            _ => match call collections::remove(first, 2)
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
+                collections::key_absent
+        collections::key_exists
+fn str alias
+    emits [collections::key_exists, collections::key_absent]
+    asserts
+        sample: => ok "original"
+    collections::map<int,str> empty = call collections::empty_map<int,str>()
+    match call collections::insert(empty, 3, "original")
+        ok collections::map<int,str> first => match call collections::replace(first, 3, "changed")
+            ok collections::map<int,str> updated => match call collections::get(first, 3)
+                ok str original => ok original
+                collections::key_absent
+            collections::key_absent
+        collections::key_exists
+fn bool set_operations
+    emits []
+    given
+        int operation
+    asserts
+        union: 0 => ok true
+        difference: 1 => ok false
+        original: 2 => ok true
+        empty: 3 => ok false
+    collections::set<str> empty = call collections::empty_set()
+    collections::set<str> first = call collections::add(empty, "a")
+    collections::set<str> second = call collections::add(empty, "b")
+    match operation
+        0 => do
+            collections::set<str> joined = call collections::union(first, second)
+            ok call collections::contains(joined, "b")
+        1 => do
+            collections::set<str> removed = call collections::difference(first, first)
+            ok call collections::contains(removed, "a")
+        2 => ok call collections::contains(first, "a")
+        _ => ok call collections::contains(empty, "a")
+fn bool bool_keys
+    emits []
+    asserts
+        sample: => ok true
+    collections::set<bool> empty = call collections::empty_set<bool>()
+    collections::set<bool> first = call collections::add(empty, false)
+    collections::set<bool> second = call collections::add(first, true)
+    ok call collections::contains(second, true)
+fn bool reference
+    emits []
+    asserts
+        sample: => ok true
+    callable collections::set<int> () emits [] empty_factory = callable collections::empty_set<int>
+    callable collections::set<int> (collections::set<int>, int) emits [] add = callable collections::add
+    collections::set<int> empty = call empty_factory()
+    collections::set<int> first = call add(empty, 1)
+    ok call collections::contains(first, 1)
+fn str fixture
+    emits [collections::key_absent]
+    asserts
+        sample: => ok "fixture"
+    collections::map<int,str> empty = call collections::empty_map()
+    match call collections::get(empty, 1)
+        when
+            sample: empty, 1 => ok "fixture"
+        ok str output => ok output
+        collections::key_absent
+fn bool folded
+    emits []
+    asserts
+        sample: => ok true
+    collections::set<int> empty = call collections::empty_set()
+    collections::set<int> result = call [1, 2, 3].fold(empty, callable collections::add)
+    ok call collections::contains(...[result], 2)
+fn collections::entry<int,str>[][] mapped_entries
+    emits []
+    asserts
+        sample: => ok [[]]
+    collections::map<int,str> empty = call collections::empty_map()
+    ok call [empty].map(callable collections::entries)

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Twelve generic functions comprise the entire I25 catalogue. K is restricted to int, bool or str and V to data. Present infrastructure supplies sealed nominal types, invariant finite inference, checked function-value descriptors, completion-boxed asynchronous calls, fixture substitution and once-prepared arguments. The catalogue fixes every input, result and error bound. Native collection code stores owned Map/Set copies privately under immutable tokens in WeakMaps, with intersection selecting left elements through native array filtering and right-side membership. Different concrete opaque types must remain distinguishable; entry records require their own exact nominal instantiation. Do not introduce source opaque construction, permissive unknowns, coercion, compatibility or fallback. Required syntax includes explicit specialization, inference from arguments or results, callable references and hints passed by array callbacks; checking must not perform application effects. Consider turning maintained catalogue types into patterns for the existing solver, retaining sealed specialization records and generating factory-bound calls using the ordinary ABI. A common private storage registry allows separate factories with identical concrete types to share tokens safely. Compare this with throwing away concrete runtime identity or adding fabricated generic source implementations.",
+  "questions": {
+    "integration": {
+      "type": "choice",
+      "instructions": "Select the lowering strategy most consistent with the stated finite catalogue and existing invocation guarantees.",
+      "criteria": {
+        "sealed_catalogue": "Admit the closed signatures using existing inference, preserve sealed instantiation evidence, and bind native adapters to those identities while retaining the current completion and preparation ABI.",
+        "erased_identity": "Remove the type-argument distinction from runtime token validation so every token of the same collection family qualifies.",
+        "synthetic_source": "Generate pretend application-language generic bodies and depend on source-function specialization to expose native collection behavior."
+      }
+    }
+  }
+}

@@ -100,6 +100,28 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		functions[id] = name + "." + method
 	}
+
+	collectionNames := map[string]string{}
+	collectionTypes := map[string]*check.CollectionSpecialization{}
+	collectionIDs := []string{}
+	for _, special := range program.Collections {
+		id := special.Collection.Identity()
+		if collectionTypes[id] == nil {
+			collectionIDs = append(collectionIDs, id)
+			collectionTypes[id] = special
+		}
+	}
+	sort.Strings(collectionIDs)
+	for i, id := range collectionIDs {
+		collectionNames[id] = fmt.Sprintf("$canCollection%d", i)
+	}
+	for id, special := range program.Collections {
+		method := strings.Split(special.Operation, "::")[1]
+		if method == "empty_map" || method == "empty_set" {
+			method = "empty"
+		}
+		functions[id] = collectionNames[special.Collection.Identity()] + "." + method
+	}
 	bindings := map[string]string{}
 	nativeNames := map[string]string{}
 	nativePaths := map[string]string{}
@@ -196,6 +218,15 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	for _, id := range codecIDs {
 		fmt.Fprintf(&state, "export let %s: ReturnType<typeof $canCreateCodec<%s>>;\n", codecNames[id], TypeName(program.Codecs[id].Data))
 	}
+	for _, id := range collectionIDs {
+		special := collectionTypes[id]
+		args := special.Collection.Arguments()
+		factory := "$canCreateSet<" + TypeName(args[0]) + ">"
+		if special.Entry != nil {
+			factory = "$canCreateMap<" + TypeName(args[0]) + "," + TypeName(args[1]) + ">"
+		}
+		fmt.Fprintf(&state, "export let %s: ReturnType<typeof %s>;\n", collectionNames[id], factory)
+	}
 	state.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	var invalidData, writeFailed, bytesID string
 	for _, typ := range program.Model.Types() {
@@ -208,7 +239,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			bytesID = typ.Identity()
 		}
 	}
-	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => identity === %s && $canIsBytes(value));\n", plan, quote(bytesID))
+	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	numberIDs := map[string]string{}
 	for _, typ := range program.Model.Types() {
@@ -217,6 +248,15 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
 	fmt.Fprintf(&state, "$canAmounts = $canCreateExactAmounts($canDomain, {zeroDivisor:%s,division:%s,rounded:%s});\n", quote(numberIDs["can.std.number@1::zero_divisor"]), quote(numberIDs["can.std.number@1::division"]), quote(numberIDs["can.std.number@1::rounded"]))
 	fmt.Fprintf(&state, "$canText = $canCreateText($canDomain, {emptySeparator:%s,emptyPattern:%s,invalidUnicode:%s});\n", quote(numberIDs["can.std.text@1::empty_separator"]), quote(numberIDs["can.std.text@1::empty_pattern"]), quote(numberIDs["can.std.text@1::invalid_unicode"]))
+	for _, id := range collectionIDs {
+		special := collectionTypes[id]
+		args := special.Collection.Arguments()
+		if special.Entry != nil {
+			fmt.Fprintf(&state, "%s = $canCreateMap<%s,%s>($canDomain,{map:%s,entry:%s,absent:%s,exists:%s},%s);\n", collectionNames[id], TypeName(args[0]), TypeName(args[1]), quote(id), quote(special.Entry.Identity()), quote(numberIDs["can.std.collections@1::key_absent"]), quote(numberIDs["can.std.collections@1::key_exists"]), quote(args[0].Declaration()))
+		} else {
+			fmt.Fprintf(&state, "%s = $canCreateSet<%s>(%s,%s);\n", collectionNames[id], TypeName(args[0]), quote(id), quote(args[0].Declaration()))
+		}
+	}
 	if judges {
 		ids := map[string]string{}
 		for _, typ := range program.Model.Types() {
@@ -246,6 +286,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	state.WriteString("Object.freeze($canValues);\n}\n")
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/collections/map.ts", Names: []ImportName{{"createMap", "$canCreateMap"}, {"isMap", "$canIsMap"}}}, ModuleImport{Target: runtime + "/collections/set.ts", Names: []ImportName{{"createSet", "$canCreateSet"}, {"isSet", "$canIsSet"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/text.ts", Names: []ImportName{{"createText", "$canCreateText"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
@@ -337,6 +378,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 				imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{nativeNames[id], nativeNames[id]}}})
 			}
 		}
+		for _, id := range collectionIDs {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})
+		}
 		for _, id := range codecIDs {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 		}
@@ -366,6 +410,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
 			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}}})
+			for _, id := range collectionIDs {
+				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})
+			}
 			for _, id := range codecIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{codecNames[id], codecNames[id]}}})
 			}
