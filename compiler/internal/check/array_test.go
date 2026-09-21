@@ -75,6 +75,7 @@ func TestArrayInferenceAndSpreadRejections(t *testing.T) {
 		{"append(...[items], ...[3])", "append(...[items, 3])"},
 		{"[].fold(0, callable generic_add)", "[].fold(false, callable generic_add)"},
 		{"[].map(callable identity)", "[].map(callable generic_add)"},
+		{"[].map(callable ([1]).concat)", "[].map(callable ([1]).map)"},
 	} {
 		text := strings.Replace(string(source), change[0], change[1], 1)
 		if text == string(source) {

@@ -236,6 +236,16 @@ fn int[] empty_generic_spread
     asserts
         empty: => ok []
     ok call [].map(...[callable identity])
+fn int[][] empty_bound_concat
+    emits []
+    asserts
+        empty: => ok []
+    ok call [].map(callable ([1]).concat)
+fn int[] empty_append_fold
+    emits []
+    asserts
+        empty: => ok []
+    ok call [].fold([], callable append<int>)
 fn void main
     emits []
     given

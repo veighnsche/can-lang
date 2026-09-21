@@ -237,6 +237,11 @@ func (c *regionChecker) arrayContract(name, site string, receiver *types.Type, a
 	if receiver == nil || receiver.Kind() != types.Array || len(arguments) != arity || op.Lowering.Task != "I21" {
 		return fail("invalid receiver or argument arity")
 	}
+	for _, argument := range arguments {
+		if argument == nil || !types.Equal(argument.Type, argument.Type) {
+			return fail("missing concrete argument type")
+		}
+	}
 	parameters := map[string]*types.Type{"T": receiver.Element()}
 	var errors []*types.Type
 	if name == "slice" {
@@ -347,6 +352,15 @@ func (c *regionChecker) arrayReference(n *syntax.ReferenceExpr, name string, rec
 		} else if len(inputs) == 2 {
 			receiverType = inputs[0]
 		}
+		if receiverType != nil && receiverType.Kind() == types.Array && len(inputs) == 2 {
+			inputs = append([]*types.Type(nil), inputs...)
+			if inputs[0] == nil {
+				inputs[0] = receiverType
+			}
+			if inputs[1] == nil {
+				inputs[1] = receiverType.Element()
+			}
+		}
 		if receiverType == nil || receiverType.Kind() != types.Array || len(inputs) != 2 || !types.Equal(inputs[0], receiverType) {
 			return nil, fmt.Errorf("append reference requires a concrete array and element contract")
 		}
@@ -373,8 +387,17 @@ func (c *regionChecker) arrayReference(n *syntax.ReferenceExpr, name string, rec
 			}
 		}
 	}
+	// Partial callback hints carry absent equalities, not concrete types. A
+	// bound concat already determines its sole input from the captured receiver.
+	if name == "concat" && len(inputs) == 1 && inputs[0] == nil {
+		inputs = []*types.Type{receiver.Type}
+	}
 	var arguments []*ir.Expression
 	for _, typ := range inputs {
+		if !types.Equal(typ, typ) {
+			return nil, fmt.Errorf("array callback reference requires a concrete callable input contract")
+		}
+
 		arguments = append(arguments, &ir.Expression{Type: typ})
 	}
 	site, err := c.lexicalSite("callable", n.Span)
