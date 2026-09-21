@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Record Choice derives a nominal record from written inline options plus the declared fields of each arm-record spread, preserving their order and then appending explicit metadata. Spread values are evaluated at runtime, even when choosing among existing records. Name resolution installs the record/question pair in advance. Type construction currently precedes graph sealing, whereas full expression validation consumes sealed types. One proposed bridge reads only declared type evidence for value names, constructors, field selection, indexing, copy updates and callable return annotations to establish field names, followed by complete ordinary checking after sealing. Inconclusive or recursive shape discovery is an error, never guessed data.Two other architectures could construct temporary checked types and regenerate the final graph once field discovery finishes, or separate ordinary expression checking into a pre-seal shape stage and post-seal semantic stage. None may execute source computations, contact providers, guess cyclic shapes, or omit full validation.",
+  "questions": {
+    "shape": {
+      "type": "choice",
+      "instructions": "Choose the approach that respects nominal record completeness without executing source expressions.",
+      "criteria": {
+        "project": "Add a narrow declaration-evidence projection while leaving the sealed checker authoritative.",
+        "rebuild": "Construct an initial graph for expression analysis and reconstruct the graph once spread fields are known.",
+        "refactor": "Refactor ordinary expression typing into shape discovery before sealing and compatibility checks after sealing."
+      }
+    }
+  }
+}

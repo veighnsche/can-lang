@@ -1,0 +1,3 @@
+ok  	github.com/veighnsche/can-lang/tests/integration	26.247s
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	6.424s
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	5.890s

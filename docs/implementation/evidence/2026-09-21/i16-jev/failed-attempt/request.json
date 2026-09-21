@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can has static generated records for record Choice: inline option names and fields of a statically typed arm-record spread become generated fields in source order, followed by metadata. The source spread expression runs only at runtime and may select an existing arm record. The current nominal type builder resolves declarations then seals the graph; the ordinary expression checker requires sealed types. Resolver already reserves both generated record and question names before signatures. To discover spread fields before sealing, consider a limited annotation-driven shape query over named values, constructors, field/index/update expressions and declared call results; after sealing, the normal checker must still validate the whole expression, exact result/arm contracts and error bounds. Missing shape evidence or cyclic shape dependency must diagnose rather than guess. Alternatives are sealing an incomplete record and treating unknown fields as any, or executing expressions during compilation. No provider call or runtime evaluation may occur in compilation.",
+  "questions": {
+    "shape": {
+      "type": "choice",
+      "instructions": "Which shape-discovery strategy preserves the staged type pipeline and static-only compilation?",
+      "criteria": {
+        "project": "Discover fields from declared annotations before sealing, then validate the complete expressions afterward.",
+        "guess": "Seal partial records and use any for spread fields that were not discovered.",
+        "execute": "Evaluate each spread expression during compilation to inspect its actual record."
+      }
+    }
+  }
+}

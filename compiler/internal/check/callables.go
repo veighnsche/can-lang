@@ -12,6 +12,8 @@ import (
 // Native front ends use the same eligibility gate: fetch has ordinary arguments;
 // questions, judges and LLMs have no selected ordinary reference contract.
 type CallableDeclaration struct {
+	Grouped  bool
+	State    int
 	Kind     resolve.Kind
 	Contract *types.Type
 	Names    []string

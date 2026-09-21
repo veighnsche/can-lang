@@ -30,6 +30,11 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 			var alternatives []syntax.TypeNode
 			var nominalName string
 			switch d := declaration.(type) {
+			case *syntax.ConnectionDecl:
+				continue
+			case *syntax.ChoiceArmDecl:
+				result = d.Result
+				bound = &d.Errors
 			case *syntax.RecordDecl:
 				nominalName = d.Name.Text
 				for _, p := range d.Parameters {
@@ -63,7 +68,21 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 					fields = append(fields, input.Field)
 				}
 			default:
-				return nil, fmt.Errorf("unhandled declaration %T", declaration)
+				header := syntax.NativeSignature(declaration)
+				if header == nil {
+					return nil, fmt.Errorf("unhandled declaration %T", declaration)
+				}
+				result = header.Result
+				bound = &header.Errors
+				for _, input := range header.Inputs {
+					fields = append(fields, input.Field)
+				}
+				switch native := declaration.(type) {
+				case *syntax.JudgeDecl:
+					fields = append(fields, native.State...)
+				case *syntax.LLMDecl:
+					fields = append(fields, native.State...)
+				}
 			}
 			for _, f := range fields {
 				if _, err := b.template(file, f.Type, params, false); err != nil {

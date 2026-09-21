@@ -16,6 +16,7 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
+	Probability    *ValueBinding
 	ResolvedValue  func(*syntax.NameExpr, ValueBinding)
 	Scalars        map[string]*types.Type
 	ReferenceCheck func(*syntax.ReferenceExpr, *types.Type) (*ir.Expression, error)
@@ -67,6 +68,13 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 			return nil, fmt.Errorf("value match requires its owning region")
 		}
 		return c.MatchCheck(n, expected)
+	case *syntax.ProbabilityExpr:
+		if c.Probability == nil {
+			return nil, fmt.Errorf("probability is not available in this region")
+		}
+		out.Kind = ir.Binding
+		out.Text = c.Probability.Identity
+		out.Type = c.Probability.Type
 	case *syntax.LiteralExpr:
 		out.Kind = ir.Literal
 		out.Text = n.Token.Text

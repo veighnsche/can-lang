@@ -17,6 +17,8 @@ import (
 type Kind string
 
 const (
+	Connection    Kind = "connection"
+	ChoiceArm     Kind = "choice_arm"
 	Record        Kind = "record"
 	Error         Kind = "error"
 	Variant       Kind = "variant"
@@ -34,6 +36,8 @@ const (
 type Usage string
 
 const (
+	ConnectionUse  Usage = "connection"
+	QuestionUse    Usage = "question"
 	ReferenceUse   Usage = "reference"
 	TypeUse        Usage = "type"
 	ConstructorUse Usage = "constructor"
@@ -49,6 +53,7 @@ type Symbol struct {
 	Package                         *Package
 	Source                          *project.Source
 	Declaration                     syntax.Declaration
+	GeneratedQuestion               *syntax.QuestionDecl
 	Type                            syntax.TypeNode
 	Receiver                        *Symbol
 	Parameters                      []string
@@ -56,6 +61,10 @@ type Symbol struct {
 
 func (s *Symbol) Eligible(usage Usage) bool {
 	switch usage {
+	case ConnectionUse:
+		return s.Kind == Connection
+	case QuestionUse:
+		return s.Kind == Question
 	case ReferenceUse:
 		return (s.Kind == Function || s.Kind == Fetch) && s.Receiver == nil
 	case TypeUse:
@@ -63,9 +72,9 @@ func (s *Symbol) Eligible(usage Usage) bool {
 	case ConstructorUse:
 		return s.Constructible
 	case CallUse:
-		return (s.Kind == Function && s.Receiver == nil) || s.Kind == Value && s.Callable
+		return (s.Kind == Function && s.Receiver == nil) || s.Kind == Fetch || s.Kind == Judge || s.Kind == LLM || s.Kind == Value && s.Callable
 	case ValueUse:
-		return s.Kind == Value
+		return s.Kind == Value || s.Kind == ChoiceArm
 	case ErrorUse:
 		return s.Kind == Error
 	default:
@@ -123,15 +132,16 @@ type File struct {
 	Imports map[string]*Package
 }
 type World struct {
-	Graph     *project.Graph
-	Prelude   *Scope
-	Packages  map[string]*Package
-	Files     map[*project.Source]*File
-	Functions map[*syntax.FunctionDecl]*Scope
+	Graph        *project.Graph
+	Prelude      *Scope
+	Packages     map[string]*Package
+	Files        map[*project.Source]*File
+	Functions    map[*syntax.FunctionDecl]*Scope
+	NativeScopes map[syntax.Declaration]*Scope
 }
 
 func Build(graph *project.Graph) (*World, error) {
-	w := &World{Graph: graph, Prelude: NewScope(nil), Packages: map[string]*Package{}, Files: map[*project.Source]*File{}, Functions: map[*syntax.FunctionDecl]*Scope{}}
+	w := &World{Graph: graph, Prelude: NewScope(nil), Packages: map[string]*Package{}, Files: map[*project.Source]*File{}, Functions: map[*syntax.FunctionDecl]*Scope{}, NativeScopes: map[syntax.Declaration]*Scope{}}
 	if err := w.catalogue(); err != nil {
 		return nil, err
 	}
@@ -150,6 +160,13 @@ func Build(graph *project.Graph) (*World, error) {
 				symbol.Declaration = declaration
 				if err := pkg.Scope.Define(symbol); err != nil {
 					return nil, fmt.Errorf("%s: %w", src.Path, err)
+				}
+				if q, ok := declaration.(*syntax.QuestionDecl); ok && q.RecordName != nil {
+					generated := generatedQuestionRecord(q)
+					record := &Symbol{Name: q.RecordName.Text, ID: p.ID + "::" + q.RecordName.Text, Kind: Record, Constructible: true, Package: pkg, Source: src, Declaration: generated, GeneratedQuestion: q}
+					if err := pkg.Scope.Define(record); err != nil {
+						return nil, fmt.Errorf("%s: %w", src.Path, err)
+					}
 				}
 			}
 		}
@@ -227,6 +244,24 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 	s := &Symbol{}
 	var parameters []syntax.Token
 	switch d := declaration.(type) {
+	case *syntax.ConnectionDecl:
+		s.Name = d.Name.Text
+		s.Kind = Connection
+	case *syntax.FetchDecl:
+		s.Name = d.Name.Text
+		s.Kind = Fetch
+	case *syntax.LLMDecl:
+		s.Name = d.Name.Text
+		s.Kind = LLM
+	case *syntax.JudgeDecl:
+		s.Name = d.Name.Text
+		s.Kind = Judge
+	case *syntax.QuestionDecl:
+		s.Name = d.Name.Text
+		s.Kind = Question
+	case *syntax.ChoiceArmDecl:
+		s.Name = d.Name.Text
+		s.Kind = ChoiceArm
 	case *syntax.RecordDecl:
 		s.Name = d.Name.Text
 		s.Kind = Record
@@ -411,7 +446,17 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 		}
 		return nil
 	}
+	if syntax.NativeSignature(declaration) != nil {
+		return w.nativeSignature(file, scope, symbol, declaration)
+	}
 	switch d := declaration.(type) {
+	case *syntax.ConnectionDecl:
+		return nil
+	case *syntax.ChoiceArmDecl:
+		if err := check(d.Result); err != nil {
+			return err
+		}
+		return file.checkBound(scope, d.Errors, symbol.Public)
 	case *syntax.RecordDecl:
 		return fields(d.Fields)
 	case *syntax.ErrorDecl:

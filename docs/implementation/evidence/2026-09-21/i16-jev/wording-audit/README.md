@@ -1,0 +1,1 @@
+These consultations shared an explanatory suffix, contrary to the full-rewording requirement. They are retained as audit evidence and superseded by three fully rewritten requests in the parent directory.

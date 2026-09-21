@@ -46,6 +46,8 @@ func formatArguments(arguments []Argument) string {
 // nodes retain the grouping needed by the original precedence structure.
 func FormatExpression(expression Expr) string {
 	switch n := expression.(type) {
+	case *ProbabilityExpr:
+		return "%"
 	case *LiteralExpr:
 		return n.Token.Text
 	case *NameExpr:
@@ -154,6 +156,38 @@ func Format(file *File) string {
 	for _, declaration := range file.Declarations {
 		f.WriteByte('\n')
 		switch n := declaration.(type) {
+		case *JudgeDecl:
+			f.nativeHeader("judge", n.NativeHeader)
+			f.nativeState(n.State)
+			for _, entry := range n.Registrations {
+				text := FormatExpression(entry.Call)
+				if entry.Binding != nil {
+					text += " as " + formatField(*entry.Binding)
+				}
+				f.line(1, text)
+			}
+			f.body(1, "ok => ", n.Continuation)
+		case *ChoiceArmDecl:
+			f.line(0, "choice_arm "+FormatType(n.Result)+" "+n.Name.Text)
+			f.line(1, formatBound(n.Errors))
+			f.line(1, "describes "+FormatExpression(n.Description))
+			f.block(1, n.Body)
+		case *QuestionDecl:
+			f.question(n)
+		case *ConnectionDecl:
+			f.connection(n)
+		case *FetchDecl:
+			f.nativeHeader("fetch", n.NativeHeader)
+			f.line(1, n.Method.Text+" "+FormatExpression(n.Path))
+			f.nativeEntries("query", n.Query)
+			f.nativeEntries("headers", n.Headers)
+			if n.BodyEncoding != nil {
+				f.line(1, "body "+n.BodyEncoding.Text+" "+FormatExpression(n.Body))
+			}
+		case *LLMDecl:
+			f.nativeHeader("llm", n.NativeHeader)
+			f.nativeState(n.State)
+			f.line(1, "asks "+FormatExpression(n.Asks))
 		case *RecordDecl:
 			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters))
 			for _, field := range n.Fields {

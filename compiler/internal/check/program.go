@@ -18,6 +18,8 @@ import (
 // Program contains only sealed types and checked bodies. Source files retain
 // their own import scopes even when they contribute to the same flat package.
 type Program struct {
+	Natives      []*NativeDeclaration
+	Connections  map[string]ConnectionPolicy
 	World        *resolve.World
 	Model        *types.Model
 	Registry     *ErrorRegistry
@@ -188,7 +190,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.builder.SeedDeclarations(); err != nil {
 		return nil, err
 	}
-	p := &Program{World: world, Registry: registry, Intrinsics: map[string]*types.Type{}}
+	p := &Program{World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
 	// Resolve maintained contracts from the catalogue in a private canonical scope.
 	// Authored calls still require their declaring file's explicit imports.
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
@@ -248,6 +250,18 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		}
 		for _, declaration := range file.Source.Syntax.Declarations {
 			switch d := declaration.(type) {
+			case *syntax.FetchDecl, *syntax.LLMDecl, *syntax.JudgeDecl, *syntax.QuestionDecl, *syntax.ChoiceArmDecl:
+				native, e := c.gatherNative(file, declaration)
+				if e != nil {
+					return nil, e
+				}
+				p.Natives = append(p.Natives, native)
+			case *syntax.ConnectionDecl:
+				policy, e := ConnectionDeclaration(d)
+				if e != nil {
+					return nil, e
+				}
+				p.Connections[file.Package.Scope.Symbols[d.Name.Text].ID] = policy
 			case *syntax.FunctionDecl:
 				if err = validateAssertionNames(d); err != nil {
 					return nil, err
@@ -324,6 +338,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
+	if err = c.checkNativeContracts(p); err != nil {
+		return nil, err
+	}
 	p.Codecs = c.codecs
 	for id, special := range c.codecs {
 		parts := c.codecParts[id]
@@ -338,6 +355,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		p.Intrinsics[id] = special.Contract
 	}
 	callables := map[string]CallableDeclaration{}
+	for _, native := range p.Natives {
+		callables[native.Symbol.ID] = native.Descriptor
+	}
 	for id, typ := range p.Intrinsics {
 		names := make([]string, len(typ.Inputs()))
 		for i := range names {
@@ -357,6 +377,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			descriptor.Near = append(descriptor.Near, input.Near)
 		}
 		callables[fn.Symbol.ID] = descriptor
+	}
+	if err = c.checkNativeBodies(p, callables); err != nil {
+		return nil, err
 	}
 	for _, fn := range p.Functions {
 		symbol := fn.Symbol
@@ -441,7 +464,13 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 		}
 	}
-	p.Initializers, err = Initialization(initial, nil)
+	var namedArms []ValueBinding
+	for _, native := range p.Natives {
+		if native.Symbol.Kind == resolve.ChoiceArm {
+			namedArms = append(namedArms, ValueBinding{Identity: native.Symbol.ID, Type: c.bindings[native.Symbol.ID]})
+		}
+	}
+	p.Initializers, err = Initialization(initial, namedArms)
 	if err != nil {
 		return nil, err
 	}

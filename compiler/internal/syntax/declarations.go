@@ -107,12 +107,30 @@ func (p *parser) field() Field {
 func (p *parser) declaration() Declaration {
 	start := p.peek().Span.Start
 	switch {
+	case p.word("judge"):
+		return p.judge()
+	case p.word("choice_arm") && p.index+1 < len(p.tokens) && p.tokens[p.index+1].Kind != "<":
+		return p.choiceArm()
+	case p.word("noul") || p.word("choice") || p.word("score"):
+		return p.question(start, nil)
+	case p.word("connection"):
+		return p.connection()
+	case p.word("fetch"):
+		return p.fetch()
+	case p.word("llm"):
+		return p.llm()
 	case p.word("fn"):
 		return p.function()
 	case p.word("record"):
 		p.take()
 		name := p.expect(Name)
 		parameters := p.parameters()
+		if p.word("choice") || p.word("score") {
+			if len(parameters) > 0 {
+				p.fail("native generated records cannot declare type parameters")
+			}
+			return p.question(start, &name)
+		}
 		p.expect(Newline)
 		var fields []Field
 		if p.at(Indent) {

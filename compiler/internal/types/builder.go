@@ -166,6 +166,16 @@ func (b *Builder) instantiate(symbol *resolve.Symbol, arguments []*Type) (*Type,
 		return b.catalogueShape(symbol, n, env)
 	}
 	file := b.world.Files[symbol.Source]
+	if symbol.GeneratedQuestion != nil {
+		fields, e := b.generatedQuestionFields(file, symbol.GeneratedQuestion)
+		if e != nil {
+			return nil, e
+		}
+		if e = b.graph.define(n, fields, nil); e != nil {
+			return nil, e
+		}
+		return n, nil
+	}
 	var sourceFields []syntax.Field
 	var sourceAlternatives []syntax.TypeNode
 	switch d := symbol.Declaration.(type) {

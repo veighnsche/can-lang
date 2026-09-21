@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The generated-record contract concatenates inline Choice names and static arm-record field names in written order, with metadata last. Runtime still evaluates each spread expression and may choose a previously defined arm record. Both source names are reserved before signature inspection. The compiler builds nominal shapes before sealing; its normal expression checker uses sealed types. A pre-seal projection could inspect annotations on named values, constructor types, fields, indexes, updates and declared function results only to discover shapes. Full expression and arm/error compatibility checks would remain mandatory afterward. Projection cycles or unavailable evidence would produce diagnostics.Compare projection with using an initial graph solely for checked spread analysis and discarding it before final graph creation, and with factoring a reusable shape-only stage out of expression typing. All alternatives retain full semantic checks, diagnose unresolved shape recursion, and perform no runtime or provider computation during compilation.",
+  "questions": {
+    "shape": {
+      "type": "choice",
+      "instructions": "Which alternative best fits the described type-sealing and runtime-evaluation constraints?",
+      "criteria": {
+        "project": "Discover record fields from annotations and separately require complete semantic validation.",
+        "rebuild": "Derive fields using a temporary checked graph, discard it, and produce a fresh final type graph.",
+        "refactor": "Make a reusable shape-only portion of expression checking available during nominal graph construction."
+      }
+    }
+  }
+}

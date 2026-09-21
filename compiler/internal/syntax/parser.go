@@ -10,12 +10,13 @@ import (
 // parser owns a private token stream: splitting a generic closing angle must
 // not alter a lexer result retained by diagnostics or editor callers.
 type parser struct {
-	file    *source.File
-	tokens  []Token
-	pending *Token
-	index   int
-	last    Token
-	depth   int
+	file             *source.File
+	tokens           []Token
+	pending          *Token
+	index            int
+	last             Token
+	depth            int
+	probabilityDepth int
 }
 
 type parseFailure struct{ diagnostic Diagnostic }

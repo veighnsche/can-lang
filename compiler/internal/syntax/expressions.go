@@ -122,6 +122,12 @@ func (p *parser) expressionTail(left Expr, minimum int) Expr {
 func (p *parser) primary(constructors bool) Expr {
 	start := p.peek().Span.Start
 	switch {
+	case p.at("%"):
+		if p.probabilityDepth == 0 {
+			p.fail("% requires a native probability handler")
+		}
+		p.take()
+		return &ProbabilityExpr{ExpressionLocation: p.location(start)}
 	case p.at(Integer) || p.at(Float) || p.at(String) || p.word("true") || p.word("false"):
 		t := p.take()
 		return &LiteralExpr{ExpressionLocation: p.location(start), Token: t}

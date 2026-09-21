@@ -40,6 +40,31 @@ func literalSpreadLength(node syntax.Expr) (int, bool) {
 // across that boundary references one prepared immutable array, never reevaluates.
 func (c *regionChecker) arguments(e *Expressions, callee ValueBinding, args []syntax.Argument, receiver *ir.Expression) ([]ir.Preparation, []*ir.Expression, error) {
 	inputs := callee.Type.Inputs()
+	descriptor := c.context.Callables[callee.Identity]
+	var state []syntax.Expr
+	var stateTypes []*types.Type
+	if descriptor.Grouped {
+		if descriptor.State < 0 || descriptor.State > len(inputs) || len(args) == 0 {
+			return nil, nil, fmt.Errorf("native invocation requires its final state argument group")
+		}
+		last := args[len(args)-1]
+		if last.Spread {
+			return nil, nil, fmt.Errorf("state group cannot be spread")
+		}
+		if last.Group != nil {
+			state = last.Group.Values
+		} else if group, ok := last.Value.(*syntax.GroupExpr); ok {
+			state = []syntax.Expr{group.Value}
+		} else {
+			return nil, nil, fmt.Errorf("native invocation requires its final state argument group")
+		}
+		if len(state) != descriptor.State {
+			return nil, nil, fmt.Errorf("native state group arity mismatch")
+		}
+		args = args[:len(args)-1]
+		stateTypes = inputs[len(inputs)-descriptor.State:]
+		inputs = inputs[:len(inputs)-descriptor.State]
+	}
 	fixed := len(inputs)
 	variadic := c.context.Variadic[callee.Identity]
 	var tail *ir.Expression
@@ -156,6 +181,13 @@ func (c *regionChecker) arguments(e *Expressions, callee ValueBinding, args []sy
 	}
 	if tail != nil {
 		values = append(values, tail)
+	}
+	for i, node := range state {
+		value, err := e.Check(node, stateTypes[i])
+		if err != nil {
+			return nil, nil, err
+		}
+		values = append(values, save(value))
 	}
 	return prepared, values, nil
 }
