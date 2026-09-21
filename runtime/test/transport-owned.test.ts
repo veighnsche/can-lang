@@ -8,7 +8,7 @@ test("deadline returns before native settlement but root retains the actual work
  const native=deferred<number>(),timed=deferred<void>();let done=false;
  const root=runOwnedRoot(async()=>{
   const deadline=new Deadline(10);
-  try{await deadline.wait(nativeOperation(()=>native.promise));throw new Error("unexpected settlement");}
+  try{await nativeOperation(()=>native.promise,[],deadline);throw new Error("unexpected settlement");}
   catch(cause){expect(transportProblem(cause)).toEqual({kind:"timeout"});}
   finally{deadline.dispose();}
   timed.resolve();return success(1n);

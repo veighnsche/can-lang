@@ -1,0 +1,1 @@
+ok  	github.com/veighnsche/can-lang/tests/integration	3.738s

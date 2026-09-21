@@ -36,3 +36,5 @@ The parser and connection declaration wiring are I16. Named body/media-type mode
 are I26; provider envelopes remain I17/I28. I15 supplies the common checked policy,
 protected-result adapter and real native HTTP boundary without claiming those
 later source forms are complete.
+
+Follow-up: [independent review corrections](i15-review-corrections.md) preserve late standard outcomes and document explicit native capture retention.

@@ -46,3 +46,20 @@ including results with a then-named data field. HTTP failures are constructed
 through the sealed domain runtime as catalogue IDs 1100–1105 with exact typed
 payloads and immutable header records. Wire body modes, media-type adapters and
 provider-specific response validation remain the corresponding later tasks.
+
+## Late outcomes and explicit native captures
+
+A bounded native action passes its Deadline into nativeOperation or
+nativeCompletion. The helper publishes selection only after the deadline decision;
+wrapping an already-selected helper promise in an unrelated timeout cannot convey
+that decision to its owner. Native-value operations classify only recognized
+transport outcomes as expected. Decoder operations preserve their protected
+Completion kind directly, including a returned standard failure. A losing standard
+occurrence is therefore reported once without replacing a selected timeout.
+
+Maintained adapters must list any retained Can resource handles in the helper's
+captures argument. The current HTTP operations retain native Response/stream
+objects and the codec operates on closed data, so their Can-handle capture lists
+are empty. Future resource adapters cannot assume a parent's lease survives that
+parent's deadline. A regression demonstrates that an explicit child capture keeps
+the resource live until the native continuation settles and close waits for it.

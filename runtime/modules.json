@@ -111,7 +111,8 @@
     ],
     "transport/owned.ts": [
       "../owner.ts",
-      "../completion.ts"
+      "../completion.ts",
+      "./deadline.ts"
     ],
     "transport/fetch.ts": [
       "../completion.ts",

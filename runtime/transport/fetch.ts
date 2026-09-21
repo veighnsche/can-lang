@@ -1,7 +1,7 @@
 import {checkedCompletion,type Completion} from "../completion.ts";
 import {Deadline,transportFault} from "./deadline.ts";
 import {readBody} from "./body.ts";
-import {nativeOperation,cleanupOperation} from "./owned.ts";
+import {nativeOperation,nativeCompletion,cleanupOperation} from "./owned.ts";
 import {prepareRequest,headerSnapshot,type Connection,type Entries} from "./request.ts";
 
 export type NativeRequest=Readonly<{path:string;method:"GET"|"HEAD"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS";query:Entries;headers:Entries;body?:Uint8Array;envelope?:boolean;ownerSignal?:AbortSignal}>;
@@ -16,7 +16,7 @@ export async function performRequest<T>(connection:Connection,request:NativeRequ
  const deadline=new Deadline(connection.timeoutMilliseconds,request.ownerSignal);
  let response:Response|undefined,consuming=false;
  try{
-  response=await deadline.wait(nativeOperation(async()=>{
+  response=await nativeOperation(async()=>{
    let received:Response;
    try{received=await fetch(prepared.url,{method:request.method,headers:prepared.headers,body,redirect:"manual",credentials:"omit",signal:deadline.signal});}
    catch(cause){
@@ -28,14 +28,14 @@ export async function performRequest<T>(connection:Connection,request:NativeRequ
    }
    if(deadline.signal.aborted&&received.body)cleanupOperation(()=>received.body!.cancel());
    return received;
-  }));
+  },[],deadline);
   deadline.check();
   const metadata=Object.freeze({status:response.status,headers:headerSnapshot(response.headers)});
   if(response.status<200||response.status>599)throw transportFault({kind:"transport",phase:"protocol"});
   if(!request.envelope&&(response.status<200||response.status>=300))throw transportFault({kind:"status",...metadata});
   consuming=true;
-  const bytes=await readBody(response,connection.maxBodyBytes,deadline,()=>{},nativeOperation,cleanupOperation);
-  const result=await deadline.wait(nativeOperation(()=>Promise.resolve(decode(bytes,metadata))));
+  const bytes=await readBody(response,connection.maxBodyBytes,deadline,()=>{},operation=>nativeOperation(operation,[],deadline),cleanupOperation);
+  const result=await nativeCompletion(()=>decode(bytes,metadata),[],deadline);
   deadline.check();return checkedCompletion(result);
  }finally{
   if(response?.body&&!consuming)cleanupOperation(()=>response!.body!.cancel());
