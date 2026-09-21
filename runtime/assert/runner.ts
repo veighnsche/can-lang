@@ -1,5 +1,6 @@
 import {runOwnedRoot,type OwnerDiagnostic} from "../owner.ts";
 import { types as nativeTypes } from "node:util";
+import { callableEqual } from "../callable.ts";
 import { invoke, success, type Completion } from "../completion.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "../data.ts";
 import { domainFailureDiagnostics } from "../domain.ts";
@@ -40,7 +41,18 @@ function opaqueIdentitiesAgree(left: unknown, right: unknown, seen = new WeakMap
   return a.length === b.length && a.every(key => b.includes(key) && opaqueIdentitiesAgree(dataProperty(left, key), dataProperty(right, key), seen));
 }
 export function assertionEqual(left: unknown, right: unknown): boolean {
-  return Object.is(left, right) || opaqueIdentitiesAgree(left, right) && Bun.deepEquals(left, right, true);
+  if (Object.is(left, right)) return true;
+  // Owned callables compare by receipt (target plus captures): distinct
+  // functions are never deep-equal, but the same `callable name` named by
+  // a call and its fixture row is one callable.
+  if (typeof left === "function" || typeof right === "function") return callableEqual(left, right, assertionEqual);
+  // Argument lists compare element-wise so callable arguments reach receipt
+  // equality; whole-array deep equality would reject distinct functions.
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+    return left.every((value, index) => assertionEqual(value, right[index]));
+  }
+  return opaqueIdentitiesAgree(left, right) && Bun.deepEquals(left, right, true);
 }
 function isOpaqueToken(value: unknown): boolean {
   if (value === null || (typeof value !== "object" && typeof value !== "function")) return false;

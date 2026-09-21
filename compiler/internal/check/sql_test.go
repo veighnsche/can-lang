@@ -299,7 +299,7 @@ func TestSQLQueryRejects(t *testing.T) {
 		), "needs cardinality many"},
 		{"missing type args", strings.Replace(sqlQuerySource, `sql::query_one<id_parameters, account_row>`, `sql::query_one`, 1), "explicit type arguments"},
 		{"non record parameters", strings.Replace(sqlQuerySource, `sql::execute<search_parameters>`, `sql::execute<str>`, 1), "concrete ordinary record"},
-		{"transaction waits", strings.Replace(sqlQuerySource, `sql::query_one<id_parameters, account_row>`, `sql::transaction_query_one<id_parameters, account_row>`, 1), "admitted by I38"},
+		{"transaction handle required", strings.Replace(sqlQuerySource, `sql::query_one<id_parameters, account_row>`, `sql::transaction_query_one<id_parameters, account_row>`, 1), "does not fit expected type"},
 	}
 	for _, c := range cases {
 		graph, err := project.Load(writeSQLQueryProject(t, sqlQueryManifest, c.source))

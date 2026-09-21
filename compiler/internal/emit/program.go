@@ -172,6 +172,16 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		sqlNames[id] = fmt.Sprintf("$canSQLQuery%d", i)
 		functions[id] = sqlNames[id] + ".run"
 	}
+	txIDs := make([]string, 0, len(program.Transactions))
+	for id := range program.Transactions {
+		txIDs = append(txIDs, id)
+	}
+	sort.Strings(txIDs)
+	txNames := map[string]string{}
+	for i, id := range txIDs {
+		txNames[id] = fmt.Sprintf("$canSQLTransaction%d", i)
+		functions[id] = txNames[id] + ".run"
+	}
 	codecIDs := make([]string, 0, len(program.Codecs))
 	for id := range program.Codecs {
 		codecIDs = append(codecIDs, id)
@@ -315,7 +325,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	var state strings.Builder
 	state.WriteString(declarations)
-	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\nexport let $canSQLPools:ReturnType<typeof $canCreateSQLPools>;\n")
+	state.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\nexport let $canSQLPools:ReturnType<typeof $canCreateSQLPools>;\nexport let $canTransactions:ReturnType<typeof $canCreateSQLTransactions>;\n")
 	fmt.Fprintf(&state, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", headerType)
 	state.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&state, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", optionType)
@@ -396,10 +406,15 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	sqlKinds := map[string]string{}
 	for _, typ := range program.Model.Types() {
-		if typ.Kind() != types.Opaque || typ.Declaration() != "can.std.sql@1::pool" {
+		if typ.Kind() != types.Opaque {
 			continue
 		}
-		sqlKinds[typ.Identity()] = "pool"
+		switch typ.Declaration() {
+		case "can.std.sql@1::pool":
+			sqlKinds[typ.Identity()] = "pool"
+		case "can.std.sql@1::transaction":
+			sqlKinds[typ.Identity()] = "transaction"
+		}
 	}
 	sqlKindsJSON, err := json.Marshal(sqlKinds)
 	if err != nil {
@@ -408,7 +423,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	fmt.Fprintf(&state, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
 	fmt.Fprintf(&state, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
 	fmt.Fprintf(&state, "const $canSQLKinds:Readonly<Record<string,string>>=%s;\n", sqlKindsJSON)
-	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value));\n", plan, quote(bytesID))
+	fmt.Fprintf(&state, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value));\n", plan, quote(bytesID))
 	fmt.Fprintf(&state, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	numberIDs := map[string]string{}
 	for _, typ := range program.Model.Types() {
@@ -435,6 +450,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	fmt.Fprintf(&state, "$canSQL=$canCreateSQLDescriptors(%s);\n", sqlDescriptors)
 	fmt.Fprintf(&state, "$canSQLPools=$canCreateSQLPools($canDomain,{credentialsMissing:%s,connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,closeFailed:%s,rowLimit:%s,unsupportedValue:%s},$canOriginalEnvironment,$canSQL);\n", quote(numberIDs["can.std.http@1::credentials_missing"]), quote(numberIDs["can.std.sql@1::connection_failed"]), quote(numberIDs["can.std.sql@1::query_failed"]), quote(numberIDs["can.std.sql@1::row_missing"]), quote(numberIDs["can.std.sql@1::row_count"]), quote(numberIDs["can.std.sql@1::schema_mismatch"]), quote(numberIDs["can.std.sql@1::constraint_failed"]), quote(numberIDs["can.std.sql@1::close_failed"]), quote(numberIDs["can.std.sql@1::row_limit"]), quote(numberIDs["can.std.sql@1::unsupported_value"]))
+	fmt.Fprintf(&state, "$canTransactions=$canCreateSQLTransactions($canDomain,{connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,rowLimit:%s,unsupportedValue:%s,transactionFailed:%s,commitUnknown:%s},$canSQL);\n", quote(numberIDs["can.std.sql@1::connection_failed"]), quote(numberIDs["can.std.sql@1::query_failed"]), quote(numberIDs["can.std.sql@1::row_missing"]), quote(numberIDs["can.std.sql@1::row_count"]), quote(numberIDs["can.std.sql@1::schema_mismatch"]), quote(numberIDs["can.std.sql@1::constraint_failed"]), quote(numberIDs["can.std.sql@1::row_limit"]), quote(numberIDs["can.std.sql@1::unsupported_value"]), quote(numberIDs["can.std.sql@1::transaction_failed"]), quote(numberIDs["can.std.sql@1::commit_unknown"]))
 	fmt.Fprintf(&state, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s});\n", headerType, quote(numberIDs["can.std.http@1::invalid_request"]), quote(numberIDs["can.std.http@1::body_limit"]), quote(invalidData), quote(numberIDs["can.std.http@1::header"]))
 	fmt.Fprintf(&state, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s});\n", quote(numberIDs["can.std.http@1::invalid_request"]), quote(invalidData))
 	fmt.Fprintf(&state, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(numberIDs["can.std.http@1::invalid_route"]), quote(numberIDs["can.std.http@1::duplicate_route"]), quote(numberIDs["can.std.http@1::ambiguous_route"]))
@@ -543,11 +559,19 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		// fixture matching; the bound descriptor value arrives spliced per
 		// call site and is the only value the runtime method consumes.
 		descriptor := "Parameters<typeof $canSQL.template>[0]"
-		shape := "run:(pool:unknown,_name:unknown,params:unknown,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canSQLPools." + method + "(descriptor," + plan + ",pool,params,$canContext)"
-		if special.Operation == "can.std.sql@1::query_rows" {
-			shape = "run:(pool:unknown,_name:unknown,params:unknown,maxRows:bigint,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canSQLPools." + method + "(descriptor," + plan + ",pool,params,maxRows,$canContext)"
+		receiver := sqlReceiver(special.Operation)
+		shape := "run:(pool:unknown,_name:unknown,params:unknown,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,$canContext)"
+		if special.Operation == "can.std.sql@1::query_rows" || special.Operation == "can.std.sql@1::transaction_query_rows" {
+			shape = "run:(pool:unknown,_name:unknown,params:unknown,maxRows:bigint,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,maxRows,$canContext)"
 		}
 		fmt.Fprintf(&state, "export const %s = Object.freeze({%s});\n", sqlNames[id], shape)
+	}
+	for _, id := range txIDs {
+		special := program.Transactions[id]
+		// The commit/rollback leaves are nominal identities, so the runtime
+		// classifies the callback decision without consulting bindings.
+		shape := "run:(pool:unknown,callback:unknown,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canTransactions.withTransaction(pool,callback,{commit:" + quote(special.Commit) + ",rollback:" + quote(special.Rollback) + "},$canContext)"
+		fmt.Fprintf(&state, "export const %s = Object.freeze({%s});\n", txNames[id], shape)
 	}
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
@@ -560,6 +584,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql-descriptor.ts", Names: []ImportName{{"createSQLDescriptors", "$canCreateSQLDescriptors"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql.ts", Names: []ImportName{{"createSQLPools", "$canCreateSQLPools"}, {"isSQLPoolValue", "$canIsSQLPool"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/transaction.ts", Names: []ImportName{{"createSQLTransactions", "$canCreateSQLTransactions"}, {"isSQLTransactionValue", "$canIsSQLTransaction"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
@@ -718,6 +743,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		for _, id := range sqlIDs {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{sqlNames[id], sqlNames[id]}}})
 		}
+		for _, id := range txIDs {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{txNames[id], txNames[id]}}})
+		}
 		for _, fn := range program.Functions {
 			target := fn.Symbol.Source.OutputPath
 			if target != path {
@@ -756,6 +784,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			for _, id := range sqlIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{sqlNames[id], sqlNames[id]}}})
+			}
+			for _, id := range txIDs {
+				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{txNames[id], txNames[id]}}})
 			}
 			for _, fn := range program.Functions {
 				imports = append(imports, ModuleImport{Target: fn.Symbol.Source.OutputPath, Names: []ImportName{{functions[fn.Identity()], functions[fn.Identity()]}}})

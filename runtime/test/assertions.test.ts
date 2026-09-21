@@ -5,6 +5,7 @@ import { withFixture } from "../assert/fixtures.ts";
 import { success } from "../completion.ts";
 import { array, record } from "../data.ts";
 import { ownBytes } from "../bytes.ts";
+import { ownCallable } from "../callable.ts";
 
 const root = Object.freeze({package: "can.project.root/app", declaration: "can.project.root/app::subject", name: "sample"});
 const origin = {source: "can:test", start: 0, end: 1, invocation: []};
@@ -58,6 +59,21 @@ test("native assertion equality preserves nominal, float and opaque identities",
   expect(assertionEqual(hostile, 1n)).toBe(false);
   expect(assertionEqual(null, hostile)).toBe(false);
   expect(reads).toBe(0);
+});
+
+test("argument lists compare callables by receipt, not construction site", () => {
+  const term = "Zed";
+  const call = ownCallable("app::run#2", "app::decide", [term], async () => success(1n));
+  const row = ownCallable("app::run#3", "app::decide", [term], async () => success(1n));
+  expect(call).not.toBe(row);
+  expect(assertionEqual([1n, call], [1n, row])).toBe(true);
+  const other = ownCallable("app::run#4", "app::other", [term], async () => success(1n));
+  expect(assertionEqual([1n, call], [1n, other])).toBe(false);
+  const recaptured = ownCallable("app::run#5", "app::decide", ["Hank"], async () => success(1n));
+  expect(assertionEqual([1n, call], [1n, recaptured])).toBe(false);
+  expect(assertionEqual([1n, call], [1n, async () => success(1n)])).toBe(false);
+  expect(assertionEqual([1n, call], [1n])).toBe(false);
+  expect(assertionEqual([1n, call], [2n, row])).toBe(false);
 });
 
 test("supplied completion replaces only the exact call and labels its evidence", async () => {

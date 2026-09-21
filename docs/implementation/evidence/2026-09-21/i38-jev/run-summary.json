@@ -1,0 +1,125 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1395,
+   "output_tokens": 135
+  },
+  "answers": {
+   "begin_failure_error": {
+    "type": "choice",
+    "choice": "connection_begin",
+    "confidence": 0.16,
+    "probabilities": {
+     "review_needed": 0.27,
+     "connection_begin": 0.44,
+     "transaction_begin": 0.29
+    }
+   },
+   "commit_unknown_id": {
+    "type": "choice",
+    "choice": "review_needed",
+    "confidence": 0.72,
+    "probabilities": {
+     "review_needed": 0.81,
+     "opaque_random": 0.16,
+     "structured_sequence": 0.03
+    }
+   },
+   "drain_bound": {
+    "type": "choice",
+    "choice": "unbounded_drain",
+    "confidence": 0.79,
+    "probabilities": {
+     "review_needed": 0.13,
+     "unbounded_drain": 0.87,
+     "bounded_drain": 0.0
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1406,
+   "output_tokens": 135
+  },
+  "answers": {
+   "begin_failure_error": {
+    "type": "choice",
+    "choice": "review_needed",
+    "confidence": 0.4,
+    "probabilities": {
+     "transaction_begin": 0.12,
+     "connection_begin": 0.28,
+     "review_needed": 0.6
+    }
+   },
+   "commit_unknown_id": {
+    "type": "choice",
+    "choice": "review_needed",
+    "confidence": 0.3,
+    "probabilities": {
+     "structured_sequence": 0.38,
+     "opaque_random": 0.09,
+     "review_needed": 0.53
+    }
+   },
+   "drain_bound": {
+    "type": "choice",
+    "choice": "unbounded_drain",
+    "confidence": 0.49,
+    "probabilities": {
+     "unbounded_drain": 0.66,
+     "review_needed": 0.32,
+     "bounded_drain": 0.02
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "usage": {
+   "input_tokens": 1355,
+   "output_tokens": 131
+  },
+  "answers": {
+   "begin_failure_error": {
+    "type": "choice",
+    "choice": "connection_begin",
+    "confidence": 0.53,
+    "probabilities": {
+     "review_needed": 0.29,
+     "connection_begin": 0.6799999999999999,
+     "transaction_begin": 0.03
+    }
+   },
+   "commit_unknown_id": {
+    "type": "choice",
+    "choice": "review_needed",
+    "confidence": 0.78,
+    "probabilities": {
+     "opaque_random": 0.1,
+     "review_needed": 0.85,
+     "structured_sequence": 0.05
+    }
+   },
+   "drain_bound": {
+    "type": "choice",
+    "choice": "review_needed",
+    "confidence": 0.43,
+    "probabilities": {
+     "review_needed": 0.62,
+     "unbounded_drain": 0.37,
+     "bounded_drain": 0.01
+    }
+   }
+  }
+ }
+]

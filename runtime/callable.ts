@@ -19,3 +19,14 @@ export function callableReceipt(value:unknown):Receipt|undefined {
 }
 
 export function callableInstance(value:unknown):CallableIdentity|undefined{return callableReceipt(value)?.identity;}
+// callableEqual compares owned callables by target and captures, not by
+// construction site: the same `callable name` expression evaluated for a
+// call and for its fixture row names one callable. Foreign functions and
+// differing targets or captures never compare equal. The element equality
+// arrives as a parameter so this module never imports the assert runner.
+export function callableEqual(left:unknown,right:unknown,equal:(a:unknown,b:unknown)=>boolean):boolean{
+ if(typeof left!=="function"||typeof right!=="function")return false;
+ const a=receipts.get(left),b=receipts.get(right);
+ if(!a||!b||a.target!==b.target||a.captures.length!==b.captures.length)return false;
+ return a.captures.every((capture,i)=>equal(capture,b.captures[i]));
+}

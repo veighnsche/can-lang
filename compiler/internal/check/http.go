@@ -49,10 +49,14 @@ func routeOperation(identity string) bool {
 }
 
 // isScopeRequest reports whether the type is an ingress-only harness scope
-// value. The set is intentionally explicit: I32 admits http::request; later
-// ingress types extend this predicate with their own admission task.
+// value. The set is intentionally explicit: I32 admits http::request and
+// I38 admits the transaction handle; later ingress types extend this
+// predicate with their own admission task.
 func isScopeRequest(typ *types.Type) bool {
-	return typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == "can.std.http@1::request"
+	if typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == "can.std.http@1::request" {
+		return true
+	}
+	return isTransactionScopeRequest(typ)
 }
 
 // expandScopeArguments binds provided assertion-row arguments to non-scope

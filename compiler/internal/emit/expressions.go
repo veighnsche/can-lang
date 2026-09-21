@@ -108,7 +108,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		}
 		return bind(value), nil
 	case ir.ScopeRequest:
-		if node.Type.Declaration() != "can.std.http@1::request" {
+		switch node.Type.Declaration() {
+		case "can.std.http@1::request", "can.std.sql@1::transaction":
+		default:
 			return LoweredExpression{}, fmt.Errorf("harness scope requires an ingress request type")
 		}
 		return bind("$canScopeRequest($canContext)"), nil

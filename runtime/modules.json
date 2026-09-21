@@ -19,6 +19,7 @@
     "assert/runner.ts": [
       "node:util",
       "../completion.ts",
+      "../callable.ts",
       "../data.ts",
       "../domain.ts",
       "../failure.ts",
@@ -341,6 +342,17 @@
       "../failure.ts",
       "../bytes.ts",
       "../owner.ts",
+      "./sql-descriptor.ts"
+    ],
+    "platform/transaction.ts": [
+      "node:async_hooks",
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../owner.ts",
+      "./sql.ts",
       "./sql-descriptor.ts"
     ]
   }

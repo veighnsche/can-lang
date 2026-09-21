@@ -441,6 +441,9 @@ unrelated developer database. Report PostgreSQL/driver versions and cleanup.
 
 ## I38 — Transaction decisions and uncertain commit
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i38](evidence/2026-09-21/i38/README.md).
+The plan below is kept as dependency context for I42.
+
 **Files:** create `runtime/platform/transaction.ts`,
 `runtime/test/transaction.test.ts`, `check/transaction.go`,
 `check/transaction_test.go`, `tests/integration/transactions_test.go`, and

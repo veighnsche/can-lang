@@ -1,0 +1,19 @@
+{
+ "exercise": "I38 begin-failure error, commit_unknown ID shape, pre-commit drain bound",
+ "finished_utc": "2026-09-21T22:23:33+00:00",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "aba0c5643554ea8eb62f529b0db1bdcbab9746f7d244454c338d3af32185aaed",
+  "request-2.json": "bdd098054a0bbe503c000ee3f71e53e989e6d8ad9c78b00012a38a734083ca09",
+  "request-3.json": "9bc1d52b0f28bd6b2b40016b815f8eefd22e5d3f088b2e9ac9d8da340ffe8642"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and measured facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 60/60 strings pairwise distinct.",
+ "verdicts": {
+  "begin_failure_error": "connection_begin (2/3: 0.44, review 0.60, 0.68; decided on module consistency)",
+  "commit_unknown_id": "review_needed 3/3 (0.81, 0.53, 0.85); structured_sequence decided on correlation merit",
+  "drain_bound": "unbounded_drain (2/3: 0.87, 0.66, review 0.62; no timeout input exists)"
+ }
+}

@@ -72,10 +72,10 @@ func sqlPlan(special *check.SQLSpecialization) (string, error) {
 		Some   string  `json:"some,omitempty"`
 		None   string  `json:"none,omitempty"`
 	}{Params: special.Params}
-	if special.Operation != "can.std.sql@1::execute" {
+	if special.Operation != "can.std.sql@1::execute" && special.Operation != "can.std.sql@1::transaction_execute" {
 		plan.Rows = &special.Rows
 	}
-	if special.Operation == "can.std.sql@1::query_optional" {
+	if special.Operation == "can.std.sql@1::query_optional" || special.Operation == "can.std.sql@1::transaction_query_optional" {
 		plan.Some, plan.None = special.ResultSome, special.ResultNone
 	}
 	raw, err := json.Marshal(plan)
@@ -85,17 +85,30 @@ func sqlPlan(special *check.SQLSpecialization) (string, error) {
 	return string(raw), nil
 }
 
-// sqlMethod maps a pool query operation to its $canSQLPools method.
+// sqlMethod maps a pool or transaction query operation to its runtime
+// method. Transaction operations share method names with their pool
+// twins; only the receiver differs.
 func sqlMethod(operation string) (string, error) {
 	switch operation {
-	case "can.std.sql@1::query_one":
+	case "can.std.sql@1::query_one", "can.std.sql@1::transaction_query_one":
 		return "queryOne", nil
-	case "can.std.sql@1::query_optional":
+	case "can.std.sql@1::query_optional", "can.std.sql@1::transaction_query_optional":
 		return "queryOptional", nil
-	case "can.std.sql@1::query_rows":
+	case "can.std.sql@1::query_rows", "can.std.sql@1::transaction_query_rows":
 		return "queryRows", nil
-	case "can.std.sql@1::execute":
+	case "can.std.sql@1::execute", "can.std.sql@1::transaction_execute":
 		return "execute", nil
 	}
 	return "", fmt.Errorf("unknown SQL specialization %s", operation)
+}
+
+// sqlReceiver selects the runtime query receiver: pools own their
+// clients, while transaction operations run against the scoped handle.
+func sqlReceiver(operation string) string {
+	switch operation {
+	case "can.std.sql@1::transaction_query_one", "can.std.sql@1::transaction_query_optional",
+		"can.std.sql@1::transaction_query_rows", "can.std.sql@1::transaction_execute":
+		return "$canTransactions"
+	}
+	return "$canSQLPools"
 }

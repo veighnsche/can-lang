@@ -149,9 +149,13 @@ func sqlPoolQueryOperation(identity string) bool {
 }
 
 // sqlGenericOperation covers every generic SQL query operation so the
-// fixed-signature admission loop skips them: P and R bind per call site.
+// fixed-signature admission loop skips them: P and R bind per call site,
+// and with_transaction binds T with its callback contract.
 func sqlGenericOperation(identity string) bool {
 	if sqlPoolQueryOperation(identity) {
+		return true
+	}
+	if identity == sqlWithTransaction {
 		return true
 	}
 	switch identity {
@@ -277,11 +281,11 @@ func (c *programChecker) specializeSQL(file *resolve.File, scope *resolve.Scope,
 	if err != nil {
 		return ValueBinding{}, err
 	}
-	if sqlGenericOperation(symbol.ID) && !sqlPoolQueryOperation(symbol.ID) {
-		return ValueBinding{}, fmt.Errorf("sql transaction queries are admitted by I38")
+	if symbol.ID == sqlWithTransaction {
+		return c.specializeTransaction(file, scope, name, args)
 	}
-	if !sqlPoolQueryOperation(symbol.ID) {
-		return ValueBinding{}, fmt.Errorf("generic invocation requires specialization; SQL expects a pool query operation")
+	if !sqlPoolQueryOperation(symbol.ID) && !sqlTransactionQueryOperation(symbol.ID) {
+		return ValueBinding{}, fmt.Errorf("generic invocation requires specialization; SQL expects a pool or transaction query operation")
 	}
 	op := sqlOperation(symbol.ID)
 	if op == nil {
@@ -300,11 +304,12 @@ func (c *programChecker) specializeSQL(file *resolve.File, scope *resolve.Scope,
 	return c.instantiateSQLQuery(op, arguments)
 }
 
-// sqlQueryKey recovers the pool query operation from a specialization key,
-// or "" when the key is not a SQL query specialization.
+// sqlQueryKey recovers the pool or transaction query operation from a
+// specialization key, or "" when the key is not a SQL query
+// specialization. with_transaction carries no descriptor site.
 func sqlQueryKey(key string) string {
 	operation, _, ok := strings.Cut(key, "/instance/")
-	if !ok || !sqlPoolQueryOperation(operation) {
+	if !ok || (!sqlPoolQueryOperation(operation) && !sqlTransactionQueryOperation(operation)) {
 		return ""
 	}
 	return operation
@@ -316,7 +321,7 @@ func sqlQueryKey(key string) string {
 // literal stays in the lowered arguments so supplied fixtures keep matching.
 func (c *regionChecker) resolveSQLSite(operation, key string, args []syntax.Argument) (ir.SQLCallSite, error) {
 	want := 3
-	if operation == sqlQueryRows {
+	if operation == sqlQueryRows || operation == sqlTransactionQueryRows {
 		want = 4
 	}
 	if len(args) != want {
@@ -324,7 +329,11 @@ func (c *regionChecker) resolveSQLSite(operation, key string, args []syntax.Argu
 		if want == 4 {
 			suffix = " and max rows"
 		}
-		return ir.SQLCallSite{}, fmt.Errorf("sql query requires a pool, a static descriptor, parameters%s", suffix)
+		handle := "a pool"
+		if sqlTransactionQueryOperation(operation) {
+			handle = "a transaction handle"
+		}
+		return ir.SQLCallSite{}, fmt.Errorf("sql query requires %s, a static descriptor, parameters%s", handle, suffix)
 	}
 	for _, arg := range args {
 		if arg.Spread || arg.Group != nil {
@@ -373,19 +382,19 @@ func CheckSQLCallSites(sqls map[string]*SQLSpecialization, sites []SQLSiteRecord
 		}
 		want := ""
 		switch special.Operation {
-		case sqlQueryOne:
+		case sqlQueryOne, sqlTransactionQueryOne:
 			want = "one"
-		case sqlQueryOptional:
+		case sqlQueryOptional, sqlTransactionQueryOption:
 			want = "optional"
-		case sqlQueryRows:
+		case sqlQueryRows, sqlTransactionQueryRows:
 			want = "many"
-		case sqlExecute:
+		case sqlExecute, sqlTransactionExecute:
 			want = "execute"
 		}
 		if descriptor.Checked.Cardinality != want {
 			return fmt.Errorf("sql query site %s/%s needs cardinality %s, descriptor has %s", site.Owner, site.Name, want, descriptor.Checked.Cardinality)
 		}
-		if special.Operation != sqlExecute && special.R.Identity() != descriptor.RowType {
+		if special.Operation != sqlExecute && special.Operation != sqlTransactionExecute && special.R.Identity() != descriptor.RowType {
 			return fmt.Errorf("sql query site %s/%s binds rows %s, descriptor wants %s", site.Owner, site.Name, special.R.Identity(), descriptor.RowType)
 		}
 	}

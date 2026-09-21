@@ -1,0 +1,276 @@
+package app
+    provides []
+    uses [sql, http, option, codec, bytes, io]
+record search_parameters
+    str term
+record id_parameters
+    int id
+record account_row
+    int id
+    str display_name
+fn sql::decision<int> decide_add
+    emits []
+    given
+        near str term
+        sql::transaction tx
+    asserts
+        sample: "Zed" => ok sql::commit<int>(1)
+    match call sql::transaction_execute<search_parameters>(tx, "tx_add", search_parameters(term))
+        when
+            sample: tx, "tx_add", search_parameters("Zed") => ok 1
+        ok int affected => ok sql::commit<int>(affected)
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+fn sql::decision<int> decide_rollback
+    emits []
+    given
+        near str term
+        sql::transaction tx
+    asserts
+        sample: "TxNo" => ok sql::rollback<int>(1)
+    match call sql::transaction_execute<search_parameters>(tx, "tx_add", search_parameters(term))
+        when
+            sample: tx, "tx_add", search_parameters("TxNo") => ok 1
+        ok int affected => ok sql::rollback<int>(affected)
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+fn sql::decision<int> decide_fetch
+    emits []
+    given
+        near int id
+        sql::transaction tx
+    asserts
+        sample: 4 => ok sql::commit<int>(4)
+        missing: 999 => ok sql::rollback<int>(0)
+    match call sql::transaction_query_one<id_parameters, account_row>(tx, "tx_get", id_parameters(id))
+        when
+            sample: tx, "tx_get", id_parameters(4) => ok account_row(4, "Bob")
+            missing: tx, "tx_get", id_parameters(999) => sql::row_missing("tx_get")
+        ok account_row row => ok sql::commit<int>(row.id)
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+        sql::row_missing => ok sql::rollback<int>(0)
+        sql::row_count => ok sql::rollback<int>(0)
+        sql::schema_mismatch => ok sql::rollback<int>(0)
+fn sql::decision<int> decide_inner
+    emits []
+    given
+        sql::transaction tx
+    asserts
+        sample: => ok sql::commit<int>(7)
+    ok sql::commit<int>(7)
+fn sql::decision<int> decide_nested
+    emits []
+    given
+        sql::transaction tx
+    asserts
+        sample: => ok sql::commit<int>(7)
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool2 => match call sql::with_transaction<int>(pool2, callable decide_inner)
+            when
+                sample: pool2, callable decide_inner => ok 7
+            ok int inner => match call sql::pool_close(pool2, 1000)
+                when
+                    sample: pool2, 1000 => ok
+                ok => ok sql::commit<int>(inner)
+                sql::close_failed => ok sql::rollback<int>(-3)
+            sql::connection_failed => match call sql::pool_close(pool2, 1000)
+                ok => ok sql::rollback<int>(0)
+                sql::close_failed => ok sql::rollback<int>(-3)
+            sql::transaction_failed => match call sql::pool_close(pool2, 1000)
+                ok => ok sql::rollback<int>(0)
+                sql::close_failed => ok sql::rollback<int>(-3)
+            sql::commit_unknown => match call sql::pool_close(pool2, 1000)
+                ok => ok sql::rollback<int>(0)
+                sql::close_failed => ok sql::rollback<int>(-3)
+            [_] => match call sql::pool_close(pool2, 1000)
+                ok => ok sql::rollback<int>(-1)
+                sql::close_failed => ok sql::rollback<int>(-3)
+        http::credentials_missing => ok sql::rollback<int>(-2)
+        sql::connection_failed => ok sql::rollback<int>(-2)
+fn int run_add
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str term
+    asserts
+        sample: "Zed" => ok 1
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_add)
+            when
+                sample: pool, callable decide_add => ok 1
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok total
+                sql::close_failed
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+        http::credentials_missing
+        sql::connection_failed
+fn int run_rollback
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str term
+    asserts
+        sample: "TxNo" => ok 1
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_rollback)
+            when
+                sample: pool, callable decide_rollback => ok 1
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok total
+                sql::close_failed
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+        http::credentials_missing
+        sql::connection_failed
+fn int run_fetch
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        int id
+    asserts
+        sample: 4 => ok 4
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_fetch)
+            when
+                sample: pool, callable decide_fetch => ok 4
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok total
+                sql::close_failed
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+        http::credentials_missing
+        sql::connection_failed
+fn int run_nested
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    asserts
+        sample: => ok -1
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_nested)
+            when
+                sample: pool, callable decide_nested => ok -1
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                ok => ok total
+                sql::close_failed
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+        http::credentials_missing
+        sql::connection_failed
+fn void main
+    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: commit <term> | rollback <term> | fetch <id> | nested")
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                ok int written => ok
+                io::write_failed
+            codec::invalid_data
+        false => match args[0]
+            "commit" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<str>(raw) as str term
+                    call run_add(term) as int total
+                    call codec::encode_json<int>(total) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::transaction_failed
+                    sql::commit_unknown
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: commit <term>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "rollback" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<str>(raw) as str term
+                    call run_rollback(term) as int total
+                    call codec::encode_json<int>(total) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::transaction_failed
+                    sql::commit_unknown
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: rollback <term>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "fetch" => match args.length is 2
+                true => match chain
+                    call bytes::from_utf8(args[1]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call run_fetch(id) as int total
+                    call codec::encode_json<int>(total) as bytes::buffer body
+                    call io::stdout_write(body) as int written
+                    ok => ok
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::transaction_failed
+                    sql::commit_unknown
+                    sql::close_failed
+                false => match call bytes::from_utf8("usage: fetch <id>")
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        ok int written => ok
+                        io::write_failed
+                    codec::invalid_data
+            "nested" => match chain
+                call run_nested() as int total
+                call codec::encode_json<int>(total) as bytes::buffer body
+                call io::stdout_write(body) as int written
+                ok => ok
+                codec::invalid_data
+                io::write_failed
+                http::credentials_missing
+                sql::connection_failed
+                sql::transaction_failed
+                sql::commit_unknown
+                sql::close_failed
+            _ => match call bytes::from_utf8("usage: commit <term> | rollback <term> | fetch <id> | nested")
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        badop: message => ok 0
+                    ok int written => ok
+                    io::write_failed
+                codec::invalid_data

@@ -15,11 +15,15 @@ import { createSQLDescriptors, type SQLDescriptor } from "./sql-descriptor.ts";
 
 const origin = Object.freeze({ source: "can:sql", start: 0, end: 0, invocation: Object.freeze([]) });
 type Descriptors = ReturnType<typeof createSQLDescriptors>;
-type Native = InstanceType<typeof Bun.SQL>;
-type Contracts = Readonly<{
-  credentialsMissing: string; connectionFailed: string; queryFailed: string;
+export type SQLNative = InstanceType<typeof Bun.SQL>;
+type Native = SQLNative;
+export type SQLCoreContracts = Readonly<{
+  connectionFailed: string; queryFailed: string;
   rowMissing: string; rowCount: string; schemaMismatch: string; constraintFailed: string;
-  closeFailed: string; rowLimit: string; unsupportedValue: string;
+  rowLimit: string; unsupportedValue: string;
+}>;
+type Contracts = SQLCoreContracts & Readonly<{
+  credentialsMissing: string; closeFailed: string;
 }>;
 export interface SQLPlanField {
   readonly name: string;
@@ -56,23 +60,21 @@ function isPostgresFailure(value: unknown): value is Error & { code: string; err
   return value instanceof Error && value.name === "PostgresError" && typeof (value as { code?: unknown }).code === "string";
 }
 
-export function createSQLPools(
+// createSQLOperations owns the query behavior shared by pools and scoped
+// transactions: pre-launch validation, native classification, and immutable
+// decoding. The token kind selects which registered resource holds the
+// native client lease; pool-only open/close/credential logic stays out.
+export function createSQLOperations(
   domain: ReturnType<typeof createDomainRuntime>,
-  contracts: Contracts,
-  lookup: (name: string) => string | undefined,
+  contracts: SQLCoreContracts,
   descriptors: Descriptors,
 ) {
   const fail = (identity: string, fields: readonly (readonly [string, unknown])[]): Completion<never> =>
     failure(domain.create(identity, record(identity, fields), origin));
-  const missingCredential = (variable: string) => fail(contracts.credentialsMissing, [["variable", variable]]);
   const connectionFailed = (phase: string) => fail(contracts.connectionFailed, [["phase", phase]]);
   const queryFailed = (operation: string, code: string) => fail(contracts.queryFailed, [["operation", operation], ["code", code]]);
   const mismatch = (path: string, reason: string) => fail(contracts.schemaMismatch, [["path", path], ["reason", reason]]);
   const badValue = (path: string, reason: string) => fail(contracts.unsupportedValue, [["path", path], ["reason", reason]]);
-  function readPool(value: unknown): PoolState {
-    if (!object(value) || !pools.has(value)) throw resourceStateFailure(undefined, origin);
-    return pools.get(value)!;
-  }
   function classify(operation: string, cause: unknown): Completion<never> {
     // Only PostgresError classifies; anything else is a driver defect and
     // propagates to the generic fault path. Sanitized fields only: never
@@ -193,13 +195,13 @@ export function createSQLPools(
     | { readonly kind: "failed"; readonly completion: Completion<never> }
     | { readonly kind: "rows"; readonly rows: readonly unknown[] };
   async function launch(
-    operation: string, descriptor: SQLDescriptor, plan: SQLPlan, pool: unknown, params: unknown, limit: unknown, context?: AssertionContext,
+    operation: string, descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, limit: unknown, context?: AssertionContext,
   ): Promise<Launched> {
     denyLiveBoundary(context, origin);
     const encoded = encodeParams(plan, params);
     if (!encoded.ok) return { kind: "failed", completion: encoded.failure };
     const template = descriptors.template(descriptor, [...encoded.values, limit]);
-    const outcome = await useResource(pool, "sql-pool", async (native: unknown): Promise<Completion<readonly unknown[]>> => {
+    const outcome = await useResource(token, kind, async (native: unknown): Promise<Completion<readonly unknown[]>> => {
       const client = native as Native;
       let result: unknown;
       try {
@@ -213,6 +215,86 @@ export function createSQLPools(
     if (outcome.kind !== "ok") return { kind: "failed", completion: outcome };
     return { kind: "rows", rows: outcome.value };
   }
+  return Object.freeze({
+    async queryOne(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
+      const outcome = await launch("query_one", descriptor, plan, token, kind, params, 2, context);
+      if (outcome.kind === "failed") return outcome.completion;
+      const rows = outcome.rows;
+      if (rows.length === 0) return fail(contracts.rowMissing, [["query", descriptor.name]]);
+      if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
+      const decoded = decodeRow(plan.rows, rows[0]);
+      return decoded.ok ? success(decoded.value) : decoded.failure;
+    },
+    async queryOptional(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      if (plan.rows === undefined || plan.some === undefined || plan.none === undefined) throw new TypeError("invalid compiler sql plan");
+      const outcome = await launch("query_optional", descriptor, plan, token, kind, params, 2, context);
+      if (outcome.kind === "failed") return outcome.completion;
+      const rows = outcome.rows;
+      if (rows.length === 0) return success(record(plan.none, []));
+      if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
+      const decoded = decodeRow(plan.rows, rows[0]);
+      if (!decoded.ok) return decoded.failure;
+      return success(record(plan.some, [["value", decoded.value]]));
+    },
+    async queryRows(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, maxRows: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
+      if (typeof maxRows !== "bigint") throw new TypeError("invalid compiler sql bound");
+      if (maxRows < 0n) return badValue("max_rows", "negative");
+      if (maxRows >= MAX_INT64) return badValue("max_rows", "overflow");
+      // The bound is validated before conversion; the fetch asks for one
+      // past the bound so observed overflow is exact, never estimated.
+      const outcome = await launch("query_rows", descriptor, plan, token, kind, params, maxRows + 1n, context);
+      if (outcome.kind === "failed") return outcome.completion;
+      const rows = outcome.rows;
+      if (BigInt(rows.length) > maxRows) return fail(contracts.rowLimit, [["limit", maxRows]]);
+      const decoded: unknown[] = [];
+      for (const row of rows) {
+        const one = decodeRow(plan.rows, row);
+        if (!one.ok) return one.failure;
+        decoded.push(one.value);
+      }
+      return success(array(decoded));
+    },
+    async execute(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      denyLiveBoundary(context, origin);
+      const encoded = encodeParams(plan, params);
+      if (!encoded.ok) return encoded.failure;
+      const template = descriptors.template(descriptor, encoded.values);
+      const outcome = await useResource(token, kind, async (native: unknown): Promise<Completion<unknown>> => {
+        const client = native as Native;
+        let result: unknown;
+        try {
+          result = await client(template.strings, ...template.values);
+        } catch (cause) {
+          return classify("execute", cause);
+        }
+        const count = (result as { count?: unknown } | null)?.count;
+        if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
+          return queryFailed("execute", "bad_count");
+        }
+        return success(BigInt(count));
+      });
+      return outcome;
+    },
+  });
+}
+
+export function createSQLPools(
+  domain: ReturnType<typeof createDomainRuntime>,
+  contracts: Contracts,
+  lookup: (name: string) => string | undefined,
+  descriptors: Descriptors,
+) {
+  const fail = (identity: string, fields: readonly (readonly [string, unknown])[]): Completion<never> =>
+    failure(domain.create(identity, record(identity, fields), origin));
+  const missingCredential = (variable: string) => fail(contracts.credentialsMissing, [["variable", variable]]);
+  const connectionFailed = (phase: string) => fail(contracts.connectionFailed, [["phase", phase]]);
+  function readPool(value: unknown): PoolState {
+    if (!object(value) || !pools.has(value)) throw resourceStateFailure(undefined, origin);
+    return pools.get(value)!;
+  }
+  const core = createSQLOperations(domain, contracts, descriptors);
   return Object.freeze({
     async open(variable: unknown, maxConnections: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
@@ -268,65 +350,16 @@ export function createSQLPools(
       return completion.kind === "ok" ? success(undefined) : completion;
     },
     async queryOne(descriptor: SQLDescriptor, plan: SQLPlan, pool: unknown, params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
-      if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
-      const outcome = await launch("query_one", descriptor, plan, pool, params, 2, context);
-      if (outcome.kind === "failed") return outcome.completion;
-      const rows = outcome.rows;
-      if (rows.length === 0) return fail(contracts.rowMissing, [["query", descriptor.name]]);
-      if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
-      const decoded = decodeRow(plan.rows, rows[0]);
-      return decoded.ok ? success(decoded.value) : decoded.failure;
+      return core.queryOne(descriptor, plan, pool, "sql-pool", params, context);
     },
     async queryOptional(descriptor: SQLDescriptor, plan: SQLPlan, pool: unknown, params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
-      if (plan.rows === undefined || plan.some === undefined || plan.none === undefined) throw new TypeError("invalid compiler sql plan");
-      const outcome = await launch("query_optional", descriptor, plan, pool, params, 2, context);
-      if (outcome.kind === "failed") return outcome.completion;
-      const rows = outcome.rows;
-      if (rows.length === 0) return success(record(plan.none, []));
-      if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
-      const decoded = decodeRow(plan.rows, rows[0]);
-      if (!decoded.ok) return decoded.failure;
-      return success(record(plan.some, [["value", decoded.value]]));
+      return core.queryOptional(descriptor, plan, pool, "sql-pool", params, context);
     },
     async queryRows(descriptor: SQLDescriptor, plan: SQLPlan, pool: unknown, params: unknown, maxRows: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
-      if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
-      if (typeof maxRows !== "bigint") throw new TypeError("invalid compiler sql bound");
-      if (maxRows < 0n) return badValue("max_rows", "negative");
-      if (maxRows >= MAX_INT64) return badValue("max_rows", "overflow");
-      // The bound is validated before conversion; the fetch asks for one
-      // past the bound so observed overflow is exact, never estimated.
-      const outcome = await launch("query_rows", descriptor, plan, pool, params, maxRows + 1n, context);
-      if (outcome.kind === "failed") return outcome.completion;
-      const rows = outcome.rows;
-      if (BigInt(rows.length) > maxRows) return fail(contracts.rowLimit, [["limit", maxRows]]);
-      const decoded: unknown[] = [];
-      for (const row of rows) {
-        const one = decodeRow(plan.rows, row);
-        if (!one.ok) return one.failure;
-        decoded.push(one.value);
-      }
-      return success(array(decoded));
+      return core.queryRows(descriptor, plan, pool, "sql-pool", params, maxRows, context);
     },
     async execute(descriptor: SQLDescriptor, plan: SQLPlan, pool: unknown, params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
-      denyLiveBoundary(context, origin);
-      const encoded = encodeParams(plan, params);
-      if (!encoded.ok) return encoded.failure;
-      const template = descriptors.template(descriptor, encoded.values);
-      const outcome = await useResource(pool, "sql-pool", async (native: unknown): Promise<Completion<unknown>> => {
-        const client = native as Native;
-        let result: unknown;
-        try {
-          result = await client(template.strings, ...template.values);
-        } catch (cause) {
-          return classify("execute", cause);
-        }
-        const count = (result as { count?: unknown } | null)?.count;
-        if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
-          return queryFailed("execute", "bad_count");
-        }
-        return success(BigInt(count));
-      });
-      return outcome;
+      return core.execute(descriptor, plan, pool, "sql-pool", params, context);
     },
   });
 }

@@ -31,6 +31,7 @@ type Program struct {
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
 	SQLs         map[string]*SQLSpecialization
+	Transactions map[string]*TransactionSpecialization
 	Assertions   []*ir.Assertion
 	Assets       []project.Asset
 	SQL          []ir.SQLDescriptor
