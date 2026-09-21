@@ -100,7 +100,7 @@ choice float spread from classifier
     given
         arms choices
     asks "Spread"
-        ...choices
+        ...call identity(choices)
 
 record arm_weights choice float spread_weights from classifier
     emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
@@ -109,7 +109,7 @@ record arm_weights choice float spread_weights from classifier
     confidence as certainty
     asks "Spread weights"
         before "Before" => relay call report(%, "G")
-        ...choices
+        ...call identity(choices)
         after "After" => relay call report(%, "H")
 
 judge float assess from classifier
@@ -164,3 +164,11 @@ fn void main
         ai::invalid_question
         ai::invalid_answer
         io::write_failed
+
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        sample: 1 => ok 1
+    ok value

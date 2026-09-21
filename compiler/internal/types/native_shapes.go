@@ -60,7 +60,7 @@ func (b *Builder) nativeShape(file *resolve.File, scope *resolve.Scope, node syn
 			if e != nil {
 				return nil, e
 			}
-			result, err = b.nativeCallResult(file, symbol, n.Invocation.Types)
+			result, err = b.nativeCallResult(file, scope, symbol, n.Invocation.Types, n.Invocation.Arguments, nil)
 		case *syntax.FieldExpr:
 			receiver, e := b.nativeShape(file, scope, callee.Receiver)
 			if e != nil {
@@ -73,7 +73,7 @@ func (b *Builder) nativeShape(file *resolve.File, scope *resolve.Scope, node syn
 				}
 			}
 			if result == nil {
-				result, err = b.nativeMethodResult(file, receiver, callee.Field.Text, n.Invocation.Types)
+				result, err = b.nativeMethodResult(file, receiver, callee.Field.Text, n.Invocation.Types, n.Invocation.Arguments, scope)
 			}
 		default:
 			callable, e := b.nativeShape(file, scope, n.Invocation.Callee)
@@ -89,7 +89,7 @@ func (b *Builder) nativeShape(file *resolve.File, scope *resolve.Scope, node syn
 			return nil, err
 		}
 		for _, method := range n.Methods {
-			result, err = b.nativeMethodResult(file, result, method.Name.Text, method.Types)
+			result, err = b.nativeMethodResult(file, result, method.Name.Text, method.Types, method.Arguments, scope)
 			if err != nil {
 				return nil, err
 			}
@@ -141,7 +141,7 @@ func (b *Builder) generatedQuestionFields(file *resolve.File, q *syntax.Question
 	return fields, nil
 }
 
-func (b *Builder) nativeCallResult(file *resolve.File, symbol *resolve.Symbol, args []syntax.TypeNode) (*Type, error) {
+func (b *Builder) nativeCallResult(file *resolve.File, scope *resolve.Scope, symbol *resolve.Symbol, args []syntax.TypeNode, values []syntax.Argument, receiver *Type) (*Type, error) {
 	var result syntax.TypeNode
 	switch declaration := symbol.Declaration.(type) {
 	case *syntax.FunctionDecl:
@@ -156,10 +156,25 @@ func (b *Builder) nativeCallResult(file *resolve.File, symbol *resolve.Symbol, a
 	if result == nil {
 		return nil, fmt.Errorf("spread call has no declared result shape")
 	}
-	if len(args) != len(symbol.Parameters) {
-		return nil, fmt.Errorf("spread call requires explicit concrete type arguments")
+	declaringFile := file
+	if symbol.Source != nil {
+		declaringFile = b.world.Files[symbol.Source]
 	}
 	env := map[string]*Type{}
+	if len(args) == 0 && len(symbol.Parameters) > 0 {
+		declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
+		if !ok {
+			return nil, fmt.Errorf("generic spread target lacks a function declaration")
+		}
+		inferred, err := b.inferNativeShape(file, scope, declaringFile, symbol, declaration, values, receiver)
+		if err != nil {
+			return nil, err
+		}
+		env = inferred
+	} else if len(args) != len(symbol.Parameters) {
+		return nil, fmt.Errorf("spread call type argument arity mismatch")
+	}
+
 	for i, arg := range args {
 		typ, e := b.Resolve(file, arg, nil, false)
 		if e != nil {
@@ -167,13 +182,9 @@ func (b *Builder) nativeCallResult(file *resolve.File, symbol *resolve.Symbol, a
 		}
 		env[symbol.Parameters[i]] = typ
 	}
-	declaringFile := file
-	if symbol.Source != nil {
-		declaringFile = b.world.Files[symbol.Source]
-	}
 	return b.Resolve(declaringFile, result, env, false)
 }
-func (b *Builder) nativeMethodResult(file *resolve.File, receiver *Type, name string, args []syntax.TypeNode) (*Type, error) {
+func (b *Builder) nativeMethodResult(file *resolve.File, receiver *Type, name string, args []syntax.TypeNode, values []syntax.Argument, scope *resolve.Scope) (*Type, error) {
 	if name == "slice" && receiver.kind == Array {
 		return receiver, nil
 	}
@@ -184,7 +195,7 @@ func (b *Builder) nativeMethodResult(file *resolve.File, receiver *Type, name st
 				if err != nil {
 					return nil, err
 				}
-				return b.nativeCallResult(file, method, args)
+				return b.nativeCallResult(file, scope, method, args, values, receiver)
 			}
 		}
 	}

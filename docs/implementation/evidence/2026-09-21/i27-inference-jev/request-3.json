@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The language contract gives Can generic calls equality inference from concrete evidence. No widening, candidate enumeration or arbitrary instantiation is admitted. Review found that a concrete arms value passed to identity<T>(T)->T works in ordinary Choice but fails in a generated-record spread because native shape discovery insists on explicit generic arguments. The generated field list is needed before the graph can be sealed; the later sealed checker remains responsible for valid expressions, effects and arm result/error compatibility. Existing inference walks nominal/array/callable templates transactionally, refuses conflicting bindings and reports unresolved parameters, but only accepts sealed types. Before sealing, builder-owned complete nodes have stable interned identity inside one mutable graph and must not be treated as general compatibility proof. Consider reusing the same equality walker behind a private builder-graph evidence check: infer from actual arguments and method receiver, compare interned node identity, retain ambiguity/conflict/cycle rejection, and keep the exported solver sealed-only. Contrast premature graph sealing with preserving an explicit-only generated-spread rule. Evaluate correctness of this bounded shape discovery while requiring ordinary final checking and forbidding type-search fallback.",
+  "questions": {
+    "shape_inference": {
+      "type": "choice",
+      "instructions": "Which architecture meets the stated inference and graph-construction constraints?",
+      "criteria": {
+        "shared_private": "Project supplied concrete argument/receiver shapes through the existing constraint walk under a private builder boundary, then validate normally.",
+        "seal_early": "Prematurely freeze the type graph to satisfy inference evidence requirements during field expansion.",
+        "explicit_only": "Leave inferred generic spread applications unavailable in generated records despite ordinary Choice support."
+      }
+    }
+  }
+}

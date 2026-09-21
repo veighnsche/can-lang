@@ -159,13 +159,19 @@ func NewInference(parameters []string) (*Inference, error) {
 // same structural constraint bound. The owning checker retains source locations
 // for diagnostics and validates assignability after concrete instantiation.
 func (i *Inference) Constrain(pattern *InferencePattern, actual *Type) error {
+	return i.constrain(pattern, actual, func(t *Type) bool { return Equal(t, t) }, Equal)
+}
+
+// constrain is shared with builder-only declaration-shape inference. Public
+// compatibility evidence remains sealed; callers cannot supply their own policy.
+func (i *Inference) constrain(pattern *InferencePattern, actual *Type, valid func(*Type) bool, equal func(*Type, *Type) bool) error {
 	bindings := map[string]*Type{}
 	for name, value := range i.bindings {
 		bindings[name] = value
 	}
 	var visit func(*InferencePattern, *Type) error
 	visit = func(p *InferencePattern, t *Type) error {
-		if p == nil || !Equal(t, t) {
+		if p == nil || !valid(t) {
 			return fmt.Errorf("inference requires a pattern and sealed concrete evidence")
 		}
 		if p.parameter != "" {
@@ -176,7 +182,7 @@ func (i *Inference) Constrain(pattern *InferencePattern, actual *Type) error {
 			if t.kind == Void {
 				return fmt.Errorf("void is not a generic data argument")
 			}
-			if prior != nil && !Equal(prior, t) {
+			if prior != nil && !equal(prior, t) {
 				return fmt.Errorf("conflicting inference for %s: %s and %s", p.parameter, CanonicalName(prior), CanonicalName(t))
 			}
 			bindings[p.parameter] = t

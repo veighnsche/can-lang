@@ -147,3 +147,88 @@ score float rating from classifier
 		})
 	}
 }
+
+func TestGeneratedArmSpreadInfersOrdinaryGenericCalls(t *testing.T) {
+	declarations := `record arms
+    choice_arm<float> emits [] left
+    choice_arm<float> emits [] right
+
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        sample: 1 => ok 1
+    ok value
+
+fn item first<item>
+    emits []
+    given
+        item[] values
+    asserts
+        sample: [1] => ok 1
+    ok values[0]
+
+fn item keep<item>
+    emits []
+    given
+        item[] ignored
+        item value
+    asserts
+        sample: [], 1 => ok 1
+    ok value
+
+fn item variadic<item>
+    emits []
+    given
+        item ...values
+    asserts
+        sample: 1 => ok 1
+    ok values[0]
+
+record box<item>
+    item value
+
+fn item unwrap<item>
+    on box<item> self
+    emits []
+    asserts
+        sample: box<int>(1) => => ok 1
+    ok self.value
+
+record weights choice float weighted from classifier
+    emits [ai::invalid_question, ai::invalid_answer]
+    given
+        arms choices
+        box<arms> wrapped
+    asks "Choose"
+        ...SPREAD
+`
+	for _, spread := range []string{"call identity(choices)", "call identity<arms>(choices)", "call identity(call identity(choices))", "call first([choices])", "call keep([], choices)", "call variadic(...[choices])", "call wrapped.unwrap()"} {
+		t.Run(spread, func(t *testing.T) {
+			text := nativeHeader + nativeClassifier + strings.Replace(declarations, "SPREAD", spread, 1) + programMain + "    ok\n"
+			p, err := programFixture(t, map[string]string{"src/main.can": text})
+			if err != nil {
+				t.Fatal(err)
+			}
+			fields := p.Natives[0].Signature.Result().Fields()
+			if len(fields) != 2 || fields[0].Name != "left" || fields[1].Name != "right" {
+				t.Fatal("inferred spread lost generated field order")
+			}
+		})
+	}
+	for name, change := range map[string][2]string{
+		"ambiguous": {"identity<item>", "identity<item,unused>"},
+		"conflict":  {"...SPREAD", "...call keep([1], choices)"},
+		"arity":     {"...SPREAD", "...call identity<arms,int>(choices)"},
+		"cycle":     {"arms choices", "weights choices"},
+	} {
+		t.Run(name, func(t *testing.T) {
+			text := strings.Replace(declarations, change[0], change[1], 1)
+			text = strings.Replace(text, "SPREAD", "call identity(choices)", 1)
+			if _, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeClassifier + text + programMain + "    ok\n"}); err == nil {
+				t.Fatal("invalid generic shape admitted")
+			}
+		})
+	}
+}

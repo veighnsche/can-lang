@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "A confirmed compiler mismatch affects Can generated Choice records: identity<T>(T)->T can be inferred from a concrete arms argument in an ordinary Choice spread, but the record-producing form refuses unless T is written explicitly. Field projection happens while declaration types are being built, before graph sealing; ordinary expression/effect checks and arm contracts run later. Can inference is a finite set of equality constraints, never conversion or a search over possible instantiations. Its established solver requires sealed evidence, traverses nominal, array and callable patterns, commits constraints transactionally, and diagnoses conflicting or missing bindings. At construction time all candidate shape nodes belong to a single interned graph and complete nodes already have fixed identities, though compatibility is not yet proven. One repair factors the structural walker for an internal graph-restricted shape inference path, preserving the public sealed-only API. Supplied argument shapes and receiver shape constrain the declaration patterns; missing, inconsistent or cyclic shapes remain errors, and the full checker still approves the eventual expression and error bounds. Other approaches finish/seal types early or keep generated spreads uniquely explicit. Choose a design that preserves the phase separation and normal inferred-call behavior without guessing types or relaxing general compatibility.",
+  "questions": {
+    "shape_inference": {
+      "type": "choice",
+      "instructions": "Select the approach that fixes this admission discrepancy without weakening evidence requirements.",
+      "criteria": {
+        "shared_private": "Add graph-local shape evidence to an internal shared solver path while keeping public inference sealed and final checks mandatory.",
+        "seal_early": "Finish graph construction before generated field discovery and invoke the ordinary sealed solver.",
+        "explicit_only": "Maintain the special explicit-argument requirement for record-producing questions."
+      }
+    }
+  }
+}

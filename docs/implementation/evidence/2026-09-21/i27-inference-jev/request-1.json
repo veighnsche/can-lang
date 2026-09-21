@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can supports finite equality-based generic inference with no candidate search or conversions. Ordinary Choice accepts a static arm-record spread call identity(choices), where identity<T>(T)->T and choices has a concrete arms record type. Generated-record Choice rejects that same call because early declaration-shape projection demands explicit type arguments before sealed expression checking. Generated fields must exist before the type graph seals; afterward the normal checker validates expressions, effects, arm result/error bounds and compatibility. The current Inference solver accepts only sealed types and transactionally checks nominal/array/callable patterns, equal parameter bindings, and unresolved-hole ambiguity. Builder nodes are interned in one mutable graph; complete concrete nodes have stable identities but are not compatibility evidence until sealing. Proposed correction shares the existing structural constraint walk through a private builder-only entry that accepts complete nodes from that exact builder graph and compares interned identity, while public Constrain keeps sealed evidence requirements. Shape projection maps ordinary inputs and method receiver to those patterns, infers only from supplied concrete shapes, rejects conflicts/ambiguity/cycles, and leaves final admission to the existing checker. Alternatives seal the graph prematurely to use public inference, or retain an explicit-argument exception for generated spreads. Assess the phase boundary and semantic parity; no arbitrary instantiation search or weakening public type compatibility is allowed.",
+  "questions": {
+    "shape_inference": {
+      "type": "choice",
+      "instructions": "Which repair restores ordinary generic inference while preserving the type-checking phase boundary?",
+      "criteria": {
+        "shared_private": "Reuse structural equality solving with private same-builder complete-node evidence, then retain sealed expression admission.",
+        "seal_early": "Seal the incomplete declaration graph immediately so the public solver can infer the spread call.",
+        "explicit_only": "Continue requiring explicit type arguments only for generated-record spread calls."
+      }
+    }
+  }
+}

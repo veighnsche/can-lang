@@ -139,3 +139,18 @@ func TestInferenceRequiresSealedEvidence(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestPublicInferenceStillRejectsUnsealedEvidence(t *testing.T) {
+	g := newGraph()
+	value := g.scalar("int")
+	solver, err := NewInference([]string{"T"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = solver.Constrain(&InferencePattern{parameter: "T"}, value); err == nil {
+		t.Fatal("public inference accepted builder-only evidence")
+	}
+	if len(solver.Bindings()) != 0 {
+		t.Fatal("failed constraint mutated bindings")
+	}
+}
