@@ -1,0 +1,38 @@
+package app
+    provides []
+    uses [option, bytes]
+/// Parameters for the manifest search descriptor.
+record search_parameters
+    str term
+/// One validated account row.
+record account_row
+    int id
+    str display_name
+/// Parameters plus binary and optional cover.
+record cover_parameters
+    int lower
+    bytes::buffer prefix
+    option::value<str> note
+/// Nullable row cover.
+record cover_row
+    int id
+    option::value<str> display_name
+/// Empty parameter record for static statements.
+record no_params
+/// Single integer parameter.
+record id_parameters
+    int id
+/// Non-scalar parameter record for negative checks.
+record bad_parameters
+    int[] scores
+/// Ordered pair for correspondence checks.
+record pair
+    str a
+    str b
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

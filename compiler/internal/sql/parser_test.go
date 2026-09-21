@@ -206,6 +206,41 @@ func TestStatementKindsAndLimitParams(t *testing.T) {
 	}
 }
 
+func TestStatementLimitAndReturningShapes(t *testing.T) {
+	cases := []struct {
+		input      string
+		kind       string
+		hasLimit   bool
+		limitParam int
+		returning  bool
+	}{
+		{"SELECT id, display_name FROM accounts WHERE display_name ILIKE $1 ORDER BY id LIMIT $2", "SelectStmt", true, 2, false},
+		{"SELECT id FROM t LIMIT 10", "SelectStmt", true, 0, false},
+		{"SELECT id FROM t", "SelectStmt", false, 0, false},
+		{"SELECT * FROM (SELECT id FROM t LIMIT $1) s", "SelectStmt", false, 0, false},
+		{"SELECT * FROM (SELECT id FROM t LIMIT $1) s LIMIT $2", "SelectStmt", true, 2, false},
+		{"SELECT id FROM t LIMIT ALL", "SelectStmt", true, 0, false},
+		{"WITH active AS (SELECT id FROM t WHERE x = $1) SELECT id FROM active LIMIT $2", "SelectStmt", true, 2, false},
+		{"SELECT id FROM a UNION SELECT id FROM b LIMIT $1", "SelectStmt", true, 1, false},
+		{"INSERT INTO t (a) VALUES ($1)", "InsertStmt", false, 0, false},
+		{"INSERT INTO t (a) VALUES ($1) RETURNING id", "InsertStmt", false, 0, true},
+		{"UPDATE t SET a = $1 WHERE id = $2", "UpdateStmt", false, 0, false},
+		{"UPDATE t SET a = $1 RETURNING id", "UpdateStmt", false, 0, true},
+		{"DELETE FROM t WHERE id = $1", "DeleteStmt", false, 0, false},
+		{"DELETE FROM t RETURNING id", "DeleteStmt", false, 0, true},
+	}
+	for _, c := range cases {
+		stmts, failure, err := Parse(c.input)
+		if err != nil || failure != nil || len(stmts) != 1 {
+			t.Fatalf("%q: %v %v %d", c.input, err, failure, len(stmts))
+		}
+		got := stmts[0]
+		if got.Kind != c.kind || got.HasLimit != c.hasLimit || got.LimitParam != c.limitParam || got.Returning != c.returning {
+			t.Fatalf("%q: %+v", c.input, got)
+		}
+	}
+}
+
 func TestKeywordKindsRideAlong(t *testing.T) {
 	tokens, failure, err := Scan("SELECT $1")
 	if err != nil || failure != nil {

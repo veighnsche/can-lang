@@ -331,6 +331,7 @@
       "./assets.ts",
       "./http.ts",
       "./router.ts"
-    ]
+    ],
+    "platform/sql-descriptor.ts": []
   }
 }

@@ -32,10 +32,16 @@ const Major = 17
 
 // Statement is one parsed statement: its byte span plus the top-level node
 // tag such as SelectStmt. See the package notes on Length and Location.
+// HasLimit reports a top-level LIMIT clause; LimitParam is its parameter
+// number when the limit is exactly $N, else 0. Returning reports a
+// RETURNING list on INSERT/UPDATE/DELETE.
 type Statement struct {
-	Location int
-	Length   int
-	Kind     string
+	Location   int
+	Length     int
+	Kind       string
+	HasLimit   bool
+	LimitParam int
+	Returning  bool
 }
 
 // Token is one scanner token with byte offsets into the input. Kind holds
@@ -95,6 +101,29 @@ func failureOf(err error) (*Failure, error) {
 	return &Failure{Message: upstream.Message, Cursor: upstream.Cursorpos}, nil
 }
 
+// limitShape reads only the top-level statement node: a LIMIT clause with
+// its parameter number for SELECT, and RETURNING presence for mutations.
+// Subquery limits and nested shapes are invisible here by construction.
+func limitShape(node *pg_query.Node) Statement {
+	var out Statement
+	if selectStmt := node.GetSelectStmt(); selectStmt != nil {
+		if limit := selectStmt.GetLimitCount(); limit != nil {
+			out.HasLimit = true
+			out.LimitParam = int(limit.GetParamRef().GetNumber())
+		}
+		return out
+	}
+	switch {
+	case node.GetInsertStmt() != nil:
+		out.Returning = len(node.GetInsertStmt().GetReturningList()) > 0
+	case node.GetUpdateStmt() != nil:
+		out.Returning = len(node.GetUpdateStmt().GetReturningList()) > 0
+	case node.GetDeleteStmt() != nil:
+		out.Returning = len(node.GetDeleteStmt().GetReturningList()) > 0
+	}
+	return out
+}
+
 func checkSpan(start, end, length int) error {
 	if start < 0 || end < start || end > length {
 		return fmt.Errorf("sql parser span [%d:%d] outside input of %d bytes", start, end, length)
@@ -123,6 +152,7 @@ func Parse(input string) ([]Statement, *Failure, error) {
 			return nil, nil, err
 		}
 		kind := ""
+		var shaped Statement
 		if stmt.Stmt != nil {
 			raw := fmt.Sprintf("%T", stmt.Stmt.Node)
 			trimmed, ok := strings.CutPrefix(raw, "*pg_query.Node_")
@@ -130,8 +160,10 @@ func Parse(input string) ([]Statement, *Failure, error) {
 				return nil, nil, fmt.Errorf("sql parser node shape: %s", raw)
 			}
 			kind = trimmed
+			shaped = limitShape(stmt.Stmt)
 		}
-		out = append(out, Statement{Location: location, Length: length, Kind: kind})
+		shaped.Location, shaped.Length, shaped.Kind = location, length, kind
+		out = append(out, shaped)
 	}
 	return out, nil, nil
 }

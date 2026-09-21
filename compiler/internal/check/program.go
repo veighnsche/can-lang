@@ -32,6 +32,7 @@ type Program struct {
 	HTTPs        map[string]*HTTPSpecialization
 	Assertions   []*ir.Assertion
 	Assets       []project.Asset
+	SQL          []ir.SQLDescriptor
 }
 type ProgramFunction struct {
 	Symbol        *resolve.Symbol
@@ -518,6 +519,10 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	p.Model = c.specializer.Model()
 	for _, key := range projectKeys(graph) {
 		p.Assets = append(p.Assets, graph.Projects[key].CheckedAssets...)
+	}
+	p.SQL, err = CheckSQLDescriptors(graph, world, p.Model)
+	if err != nil {
+		return nil, err
 	}
 	return p, nil
 }
