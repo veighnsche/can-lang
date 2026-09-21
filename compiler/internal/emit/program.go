@@ -212,7 +212,8 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		policy := program.Connections[id]
 		headers := make([]map[string]string, 0, len(policy.Headers))
 		for _, header := range policy.Headers {
-			headers = append(headers, map[string]string{"name": header.Name, "value": header.Value})
+			// Checked policy uses wire names; transport entries use authored identifiers.
+			headers = append(headers, map[string]string{"name": strings.ReplaceAll(header.Name, "-", "_"), "value": header.Value})
 		}
 		connection := map[string]any{"endpoint": policy.Endpoint, "timeoutMilliseconds": policy.TimeoutMilliseconds, "maxBodyBytes": policy.MaxBodyBytes, "headers": headers}
 		if policy.BearerEnvironment != "" {

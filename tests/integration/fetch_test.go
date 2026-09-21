@@ -33,12 +33,16 @@ func TestCurrentBundledFetch(t *testing.T) {
 	var mu sync.Mutex
 	requests := 0
 	mode := "normal"
+	credential := "test-only"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		defer mu.Unlock()
 		requests++
 		if r.Header.Get("Authorization") != "Bearer test-only" {
 			t.Error("missing named-fetch credential")
+		}
+		if r.Header.Get("X-Default") != "inherited" {
+			t.Error("missing normalized connection default")
 		}
 		body, _ := io.ReadAll(r.Body)
 		switch r.URL.Path {
@@ -128,7 +132,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		argv = append(argv, args...)
 		cmd := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", argv...)
 		cmd.Dir = t.TempDir()
-		cmd.Env = []string{"PATH=/nonexistent", "HOME=" + cmd.Dir, "CAN_I26_TOKEN=test-only"}
+		cmd.Env = []string{"PATH=/nonexistent", "HOME=" + cmd.Dir, "CAN_I26_TOKEN=" + credential}
 		var out, diag bytes.Buffer
 		cmd.Stdout = &out
 		cmd.Stderr = &diag
@@ -150,7 +154,12 @@ func TestCurrentBundledFetch(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		write("src/main.can", strings.Replace(string(data), "http://127.0.0.1:1/", server.URL+"/", 1))
+		source := strings.Replace(string(data), "http://127.0.0.1:1/", server.URL+"/", 1)
+		source = strings.Replace(source, "    max_body_bytes 8192", "    max_body_bytes 8192\n    headers\n        content_type = \"text/plain\"\n        x_default = \"inherited\"\n        x_omitted = \"remove-me\"", 1)
+		// Empty overrides remove defaults before body-specific native defaults apply.
+		source = strings.Replace(source, "    post \"/text\"", "    post \"/text\"\n    headers\n        content_type = []", 1)
+		source = strings.Replace(source, "    patch \"/bytes\"", "    patch \"/bytes\"\n    headers\n        content_type = []", 1)
+		write("src/main.can", source)
 		status, out, diag := run("assert")
 		if status != 0 || diag != "" {
 			t.Fatalf("fetch assertions: %d %s %s", status, out, diag)
@@ -178,6 +187,26 @@ func TestCurrentBundledFetch(t *testing.T) {
 				t.Fatalf("fetch error %s: %d %s", bad.mode, status, diag)
 			}
 		}
+		mu.Lock()
+		before := requests
+		mu.Unlock()
+		credential = ""
+		invalid := source
+		// The computed value reaches runtime validation; no credential is available.
+		invalid = strings.Replace(invalid, `x_probe = call [["yes"]].map(callable extract)`, `x_probe = "bad" + "Ā"`, 1)
+		write("src/main.can", invalid)
+		status, _, diag = run("run")
+		if status == 0 || !strings.Contains(diag, "1100") {
+			t.Fatalf("header validation must precede credentials: %d %s", status, diag)
+		}
+		mu.Lock()
+		after := requests
+		mu.Unlock()
+		if after != before {
+			t.Fatal("invalid header launched a request")
+		}
+		credential = "test-only"
+		write("src/main.can", source)
 		if compiler := os.Getenv("CAN_TSC"); compiler != "" {
 			nodeModules := filepath.Dir(filepath.Dir(filepath.Dir(compiler)))
 			args := []string{compiler, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(nodeModules, "@types"), "--types", "bun,node"}
