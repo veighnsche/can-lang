@@ -119,6 +119,91 @@ func TestDevelopmentSidecar(t *testing.T) {
 			t.Fatalf("obsolete grammar accepted: %v\n%s", err, rejected)
 		}
 	})
+	t.Run("current-project-identities-offline", func(t *testing.T) {
+		fixture := filepath.Join(source, "compiler/testdata/current/project")
+		inspect := func(directory string) ([]byte, error) {
+			command := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", link, "inspect-project", directory)
+			command.Dir = cwd
+			command.Env = env
+			return command.CombinedOutput()
+		}
+		var first []byte
+		for i := 0; i < 2; i++ {
+			directory := t.TempDir()
+			err := filepath.WalkDir(fixture, func(name string, entry os.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+				rel, err := filepath.Rel(fixture, name)
+				if err != nil {
+					return err
+				}
+				target := filepath.Join(directory, rel)
+				if entry.IsDir() {
+					return os.MkdirAll(target, 0700)
+				}
+				data, err := os.ReadFile(name)
+				if err != nil {
+					return err
+				}
+				return os.WriteFile(target, data, 0600)
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			before := treeHashes(t, directory, []string{"."})
+			report, err := inspect(directory)
+			if err != nil {
+				t.Fatalf("offline project inspection: %v\n%s", err, report)
+			}
+			var decoded struct {
+				Kind     string `json:"kind"`
+				Packages []struct {
+					ID      string `json:"id"`
+					Sources []struct {
+						ID         string `json:"id"`
+						OutputPath string `json:"outputPath"`
+					} `json:"sources"`
+				} `json:"packages"`
+			}
+			if err := json.Unmarshal(report, &decoded); err != nil {
+				t.Fatal(err)
+			}
+			if decoded.Kind != "can.package-resolution" || len(decoded.Packages) != 4 {
+				t.Fatalf("wrong resolution report: %s", report)
+			}
+			paths := map[string]bool{}
+			for _, pkg := range decoded.Packages {
+				for _, file := range pkg.Sources {
+					if paths[strings.ToLower(file.OutputPath)] {
+						t.Fatal("independent source identities collided")
+					}
+					paths[strings.ToLower(file.OutputPath)] = true
+				}
+			}
+			if strings.Contains(string(report), directory) || strings.Contains(string(report), "never-print-this") {
+				t.Fatal("machine/environment state entered report")
+			}
+			if i == 0 {
+				first = report
+			} else if string(first) != string(report) {
+				t.Fatal("relocating project changed resolution/output identities")
+			}
+			if !reflect.DeepEqual(before, treeHashes(t, directory, []string{"."})) {
+				t.Fatal("project inspection wrote files")
+			}
+			changed := filepath.Join(directory, "vendor/sample/src/shared.can")
+			data, err := os.ReadFile(changed)
+			if err != nil {
+				t.Fatal(err)
+			}
+			write(changed, string(data)+"\n// stale lock\n")
+			rejected, err := inspect(directory)
+			if err == nil || !strings.Contains(string(rejected), "stale dependency digest") {
+				t.Fatalf("stale lock admitted: %v\n%s", err, rejected)
+			}
+		}
+	})
 	if !reflect.DeepEqual(bundleBefore, treeHashes(t, root, []string{"."})) {
 		t.Fatal("execution wrote to bundle")
 	}

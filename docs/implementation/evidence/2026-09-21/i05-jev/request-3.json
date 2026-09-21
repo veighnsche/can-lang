@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "There is no backwards-compatibility mandate in Can because external users do not exist. Its P2 project graph has a root and explicitly keyed local dependencies; every repeated key must resolve to the same canonical directory and keys are global. Authored source packages have unique flat names across the graph. C3 requires package-wide declarations with separate per-file aliases. The implementation plan calls for nominal IDs that survive moving a checkout, deterministic output locations, case-insensitive filesystem safety and collision detection. The historical basename-plus-counter scheme is being retired in I05. Candidate replacements derive identity from a root/dependency namespace plus key and package, from absolute canonical source paths, or from visitation-order integers. The first can use fixed-prefix domain-separated SHA256 package/file path components, checking a reverse mapping for any collision; each file is identified by package plus basename. Such components have bounded size and avoid reserved names, while adding a mapping obligation. Absolute paths are readily available but relocation-sensitive; order-based IDs are cheap but move when preceding inputs change. Realpath checks still govern confinement and internal-package access regardless of nominal strategy. No benchmark evidence exists. Validation must compare moved copies and graphs extended with unrelated files sharing basenames.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Select the identity approach that meets these constraints most directly; do not seek facts beyond the supplied evidence.",
+      "criteria": {
+        "semantic": "Derive stable namespace/key/package ownership and produce fixed-size hashed paths with explicit collision rejection.",
+        "absolute": "Identify declarations and output ownership through full canonical absolute source directories.",
+        "enumerated": "Assign sequential package/file identifiers as inputs are visited and emit under those identifiers."
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "source_root": "src",
+  "dependencies": { "sample": "vendor/sample" },
+  "error_registry": "can.errors.json"
+}

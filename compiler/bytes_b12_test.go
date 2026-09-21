@@ -86,7 +86,7 @@ fn m__go(value: PARAM) -> Encoding__Text rev 1
 // G3: the kernel contract exists explicitly (never absent).
 func TestBytesG3ContractsRegistered(t *testing.T) {
 	dir := writeLSPDir(t, map[string]string{"m.can": bytesB64Base})
-	mods, texts, _, err := parsePaths([]string{dir + "/m.can"})
+	mods, texts, _, err := legacyParsePaths([]string{dir + "/m.can"})
 	if err != nil {
 		t.Fatal(err)
 	}

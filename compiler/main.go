@@ -38,6 +38,9 @@ var version = "dev"
 var bundleManifestSHA256 string
 
 func run(argv []string) int {
+	if len(argv) > 0 && argv[0] == "inspect-project" {
+		return runInspectProject(os.Stdout, os.Stderr, argv[1:])
+	}
 	if len(argv) > 0 && argv[0] == "parse" {
 		return runCurrentParse(os.Stdout, os.Stderr, argv[1:])
 	}
@@ -137,7 +140,7 @@ func runBaseline(argv []string) int {
 		fmt.Fprintln(os.Stderr, "usage: canlc baseline --out BASE.json [--origin ID] file.can [...]")
 		return 2
 	}
-	mods, texts, collected, err := parsePaths(args)
+	mods, texts, collected, err := legacyParsePaths(args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "canlc FAILED: %v\n", err)
 		return 1
@@ -180,7 +183,7 @@ func compileBaselined(out string, paths []string, jsonOut bool, baselinePath str
 }
 
 func compileAll(out string, paths []string, jsonOut bool, baselinePath string) error {
-	mods, texts, collected, err := parsePaths(paths)
+	mods, texts, collected, err := legacyParsePaths(paths)
 	if err != nil {
 		return err
 	}
@@ -347,7 +350,7 @@ func runNormalize(w io.Writer, paths []string) error {
 	if len(paths) == 0 {
 		return fmt.Errorf("usage: canlc normalize file.can [...]")
 	}
-	mods, _, collected, err := parsePaths(paths)
+	mods, _, collected, err := legacyParsePaths(paths)
 	if err != nil {
 		return err
 	}
@@ -378,7 +381,10 @@ func runNormalize(w io.Writer, paths []string) error {
 	return nil
 }
 
-// parsePaths reads and parses every path, collecting CAN1000 diagnostics
+// Predecessor-only loading. Current projects use project.Load and resolve.Build;
+// this historical entry point remains solely for the scheduled old pipeline
+// retirement, with no adaptation into current identities or output paths.
+// legacyParsePaths reads and parses every path, collecting CAN1000 diagnostics
 // for files that do not parse instead of failing fast, so one broken file
 // never hides the rest. Raw IO errors still fail immediately.
 //
@@ -387,7 +393,7 @@ func runNormalize(w io.Writer, paths []string) error {
 // Output stems stay bare while unique, then disambiguate by directory;
 // the same identity twice is an CAN5007 collision, rejected before
 // evaluation or writing.
-func parsePaths(paths []string) (mods []*Module, texts map[string]string, collected []Diag, err error) {
+func legacyParsePaths(paths []string) (mods []*Module, texts map[string]string, collected []Diag, err error) {
 	texts = map[string]string{}
 	seen := map[string]bool{}
 	for _, p := range paths {
@@ -410,18 +416,18 @@ func parsePaths(paths []string) (mods []*Module, texts map[string]string, collec
 		mods = append(mods, m)
 		texts[m.ID] = string(data)
 	}
-	assignStems(mods)
+	legacyAssignStems(mods)
 	return mods, texts, collected, nil
 }
 
-// assignStems gives every module an injective output stem. The bare
+// legacyAssignStems gives every module an injective output stem. The bare
 // stem (filename without extension) wins while unique, so single-file
 // and distinct-name inputs emit exactly as before; every sharer of a
 // basename takes the sanitized identity path instead (in sorted
 // identity order), with numeric suffixes breaking residual ties.
 // Deterministic in the input set, never silently merging two owners
 // into one artifact.
-func assignStems(mods []*Module) {
+func legacyAssignStems(mods []*Module) {
 	count := map[string]int{}
 	for _, m := range mods {
 		count[m.Stem]++
@@ -446,7 +452,7 @@ func assignStems(mods []*Module) {
 // sanitizeStem maps an identity path to stem characters: every run of
 // non-letters-and-digits (separators included) becomes one underscore,
 // with leading/trailing underscores trimmed. Underscore itself maps to
-// itself, so "a/b" and "a_b" can still collide — assignStems breaks
+// itself, so "a/b" and "a_b" can still collide — legacyAssignStems breaks
 // that tie with a numeric suffix.
 func sanitizeStem(id string) string {
 	var b strings.Builder

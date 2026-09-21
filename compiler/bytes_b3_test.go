@@ -125,7 +125,7 @@ func TestBytesN4NoGiven(t *testing.T) {
 // N5: both kernel contracts exist explicitly (never absent entries).
 func TestBytesN5ContractsRegistered(t *testing.T) {
 	dir := writeLSPDir(t, map[string]string{"m.can": bytesEncodeFull()})
-	mods, texts, _, err := parsePaths([]string{dir + "/m.can"})
+	mods, texts, _, err := legacyParsePaths([]string{dir + "/m.can"})
 	if err != nil {
 		t.Fatal(err)
 	}

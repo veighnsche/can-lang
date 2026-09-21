@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "sample": {
+      "path": "vendor/sample",
+      "manifest_sha256": "308c9b8ebb362476e4118612b55e4f1e87d9ea96659f3af0c73b38058a8a96e0",
+      "source_sha256": "5792b3b3647efcab4e2dc69f44d3586af5b23d287fcc74d1a0718744fa131300",
+      "error_registry": {
+        "active": [
+          {
+            "id": 1000000,
+            "kind": "utils::unavailable"
+          }
+        ],
+        "retired": []
+      }
+    }
+  }
+}

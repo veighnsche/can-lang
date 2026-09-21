@@ -86,7 +86,7 @@ func runLinkedPure(t *testing.T, files map[string]string, order []string, root s
 		}
 		full = append(full, fp)
 	}
-	mods, texts, collected, err := parsePaths(full)
+	mods, texts, collected, err := legacyParsePaths(full)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,24 @@
+=== RUN   TestDevelopmentSidecar
+=== RUN   TestDevelopmentSidecar/current-parser-is-inert
+=== RUN   TestDevelopmentSidecar/current-project-identities-offline
+=== RUN   TestDevelopmentSidecar/missing
+=== RUN   TestDevelopmentSidecar/non-executable
+=== RUN   TestDevelopmentSidecar/tampered
+=== RUN   TestDevelopmentSidecar/wrong-architecture
+=== RUN   TestDevelopmentSidecar/symlinked-sidecar
+=== RUN   TestDevelopmentSidecar/tampered-manifest.json
+=== RUN   TestDevelopmentSidecar/tampered-tools/runtime/check.ts
+=== NAME  TestDevelopmentSidecar
+    distribution_test.go:293: offline absolute sidecar and symlink execution passed; hostile config ignored; identity bun-1.4.2-darwin-arm64-v1
+--- PASS: TestDevelopmentSidecar (3.07s)
+    --- PASS: TestDevelopmentSidecar/current-parser-is-inert (0.04s)
+    --- PASS: TestDevelopmentSidecar/current-project-identities-offline (0.06s)
+    --- PASS: TestDevelopmentSidecar/missing (0.02s)
+    --- PASS: TestDevelopmentSidecar/non-executable (0.02s)
+    --- PASS: TestDevelopmentSidecar/tampered (0.06s)
+    --- PASS: TestDevelopmentSidecar/wrong-architecture (0.04s)
+    --- PASS: TestDevelopmentSidecar/symlinked-sidecar (0.02s)
+    --- PASS: TestDevelopmentSidecar/tampered-manifest.json (0.01s)
+    --- PASS: TestDevelopmentSidecar/tampered-tools/runtime/check.ts (0.06s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	3.150s

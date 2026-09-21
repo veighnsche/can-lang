@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.package-resolution",
+  "catalogueRevision": 1,
+  "projects": [
+    {
+      "id": "can.project.dependency/sample",
+      "manifestSHA256": "308c9b8ebb362476e4118612b55e4f1e87d9ea96659f3af0c73b38058a8a96e0",
+      "sourceSHA256": "5792b3b3647efcab4e2dc69f44d3586af5b23d287fcc74d1a0718744fa131300"
+    },
+    {
+      "id": "can.project.root",
+      "manifestSHA256": "5003b478706cb215efbf49155817e56ce7276edbe985df056c20466db831e792",
+      "sourceSHA256": "5b2ba9695af072a50c06367f3916556440fa0b786789ab94b70ad849fc18b2dd"
+    }
+  ],
+  "packages": [
+    {
+      "id": "can.project.dependency/sample/utils",
+      "name": "utils",
+      "outputDirectory": "packages/p-cade7ac0556fed1981739053ce2886ef4dfa66d8dc13fcb829e88a3fb87b2891",
+      "sources": [
+        {
+          "id": "can.project.dependency/sample/utils/shared.can",
+          "sourcePath": "shared.can",
+          "outputPath": "packages/p-cade7ac0556fed1981739053ce2886ef4dfa66d8dc13fcb829e88a3fb87b2891/s-acd20d9965190503673963e165586e4706033f00b5b62a3cf253503cf66ea2c6.ts",
+          "imports": {}
+        }
+      ],
+      "symbols": [
+        {
+          "id": "can.project.dependency/sample/utils::item",
+          "name": "item",
+          "kind": "record",
+          "public": true
+        },
+        {
+          "id": "can.project.dependency/sample/utils::unavailable",
+          "name": "unavailable",
+          "kind": "error",
+          "public": true
+        }
+      ]
+    },
+    {
+      "id": "can.project.root/alpha",
+      "name": "alpha",
+      "outputDirectory": "packages/p-2389274b1153c4cf1ebbb72f0c869eb4c83def805a736563f93ba9fef5295f18",
+      "sources": [
+        {
+          "id": "can.project.root/alpha/alpha/second.can",
+          "sourcePath": "alpha/second.can",
+          "outputPath": "packages/p-2389274b1153c4cf1ebbb72f0c869eb4c83def805a736563f93ba9fef5295f18/s-fb298d239deac7a1a93949cab48ca678d03152396806f85072905c9f6deb0879.ts",
+          "imports": {}
+        },
+        {
+          "id": "can.project.root/alpha/alpha/shared.can",
+          "sourcePath": "alpha/shared.can",
+          "outputPath": "packages/p-2389274b1153c4cf1ebbb72f0c869eb4c83def805a736563f93ba9fef5295f18/s-bf333c503ff233cbe07db8ab65a4e7a8fd6d2f2605a1f9ea4f404743135bd297.ts",
+          "imports": {
+            "other": "can.project.root/beta"
+          }
+        }
+      ],
+      "symbols": [
+        {
+          "id": "can.project.root/alpha::holder",
+          "name": "holder",
+          "kind": "record",
+          "public": true
+        },
+        {
+          "id": "can.project.root/alpha::identity",
+          "name": "identity",
+          "kind": "function",
+          "public": true
+        },
+        {
+          "id": "can.project.root/alpha::item",
+          "name": "item",
+          "kind": "record",
+          "public": true
+        }
+      ]
+    },
+    {
+      "id": "can.project.root/beta",
+      "name": "beta",
+      "outputDirectory": "packages/p-3686c29cdfa3d94adc6cce50bc07ad1d126dcec38daf9da9e1b4a4db6e162203",
+      "sources": [
+        {
+          "id": "can.project.root/beta/beta/shared.can",
+          "sourcePath": "beta/shared.can",
+          "outputPath": "packages/p-3686c29cdfa3d94adc6cce50bc07ad1d126dcec38daf9da9e1b4a4db6e162203/s-6f9e84cdc62fab2fa53467c4f7ecf4256c9032e558619648bd1233f57199163f.ts",
+          "imports": {}
+        }
+      ],
+      "symbols": [
+        {
+          "id": "can.project.root/beta::item",
+          "name": "item",
+          "kind": "record",
+          "public": true
+        }
+      ]
+    },
+    {
+      "id": "can.project.root/main",
+      "name": "main",
+      "outputDirectory": "packages/p-c83a9d1af673c006f53873a0f9cfc159a632a5456f7eb836238c45a20e7cc4db",
+      "sources": [
+        {
+          "id": "can.project.root/main/main/main.can",
+          "sourcePath": "main/main.can",
+          "outputPath": "packages/p-c83a9d1af673c006f53873a0f9cfc159a632a5456f7eb836238c45a20e7cc4db/s-7b7e79153c151dfddd3813f7d412876e52ef34512350c89bf48f46645e98b262.ts",
+          "imports": {
+            "alpha": "can.project.root/alpha",
+            "beta": "can.project.root/beta",
+            "utils": "can.project.dependency/sample/utils"
+          }
+        }
+      ],
+      "symbols": [
+        {
+          "id": "can.project.root/main::main",
+          "name": "main",
+          "kind": "function",
+          "public": true
+        },
+        {
+          "id": "can.project.root/main::not_executed",
+          "name": "not_executed",
+          "kind": "value",
+          "public": false
+        }
+      ]
+    }
+  ]
+}

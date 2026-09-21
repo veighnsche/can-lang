@@ -1,0 +1,14 @@
+ok  	github.com/veighnsche/can-lang/compiler	10.008s
+ok  	github.com/veighnsche/can-lang/compiler/internal/catalogue	0.264s
+?   	github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen	[no test files]
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	0.178s
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	0.261s
+ok  	github.com/veighnsche/can-lang/compiler/internal/resolve	0.328s
+ok  	github.com/veighnsche/can-lang/compiler/internal/source	0.179s
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.199s
+ok  	github.com/veighnsche/can-lang/distribution	0.180s
+ok  	github.com/veighnsche/can-lang/internal/scan	0.178s
+ok  	github.com/veighnsche/can-lang/tests/integration	0.173s
+?   	github.com/veighnsche/can-lang/tools/distbuild	[no test files]
+ok  	github.com/veighnsche/can-lang/tools/gramcheck	0.158s
+ok  	github.com/veighnsche/can-lang/tools/modcheck	0.220s

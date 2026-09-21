@@ -1,0 +1,6 @@
+package beta
+    provides [item]
+    uses []
+
+record item
+    str value

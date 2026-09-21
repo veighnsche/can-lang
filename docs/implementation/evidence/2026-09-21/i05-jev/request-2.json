@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "This replacement compiler has no outside consumers and owes no old-layout compatibility. P2 resolves a root and explicit local dependency mappings whose keys must be globally consistent with canonical directories. Package names form one unique flat namespace across that graph. According to C3, declaration tables belong to packages and import scopes belong to files. The output contract demands machine-location-independent nominal names, repeatable output paths, explicit case-fold handling and no silent collisions. I05 replaces basename stems with collision counters. Choices are semantic root-or-dependency ownership combined with dependency key/package name, real absolute directories, or loader-assigned sequence IDs. Under semantic ownership, bounded ASCII output segments encode domain-separated SHA256 digests and a checked mapping rejects different identities claiming one hashed path; source file identity combines package ownership and basename. Fixed prefixes avoid reserved filesystem names at the cost of keeping that mapping. Absolute paths need little derivation but differ by checkout; sequence IDs are straightforward but shift with new earlier inputs. Canonical paths remain necessary for confinement and internal visibility even when omitted from nominal identity. There are no measured performance results. Relocation and unrelated same-basename additions must be executable stability tests.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Choose the strategy most consistent with the given identity and output requirements, relying only on this context.",
+      "criteria": {
+        "semantic": "Construct ownership/package identities from root or dependency keys, then map them to checked, bounded hash-based path segments.",
+        "absolute": "Use resolved machine filesystem paths as the package/file identity source.",
+        "enumerated": "Allocate identity numbers during graph loading and use them for emitted paths."
+      }
+    }
+  }
+}

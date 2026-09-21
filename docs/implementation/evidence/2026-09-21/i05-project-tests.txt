@@ -1,0 +1,82 @@
+=== RUN   TestGraphIdentityAndOutputStability
+--- PASS: TestGraphIdentityAndOutputStability (0.03s)
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/source
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/manifest
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/registry
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/missing
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/unused
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/path
+--- PASS: TestGraphRejectsStaleOrIncompleteLocks (0.04s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/source (0.01s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/manifest (0.01s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/registry (0.00s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/missing (0.00s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/unused (0.00s)
+    --- PASS: TestGraphRejectsStaleOrIncompleteLocks/path (0.01s)
+=== RUN   TestGraphRejectsPackageAndSourceAliases
+=== RUN   TestGraphRejectsPackageAndSourceAliases/package-collision
+=== RUN   TestGraphRejectsPackageAndSourceAliases/folder-mismatch
+=== RUN   TestGraphRejectsPackageAndSourceAliases/reserved
+=== RUN   TestGraphRejectsPackageAndSourceAliases/source-escape
+=== RUN   TestGraphRejectsPackageAndSourceAliases/source-alias
+=== RUN   TestGraphRejectsPackageAndSourceAliases/directory-cycle
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-escape
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-cycle
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-key-alias
+--- PASS: TestGraphRejectsPackageAndSourceAliases (0.07s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/package-collision (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/folder-mismatch (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/reserved (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/source-escape (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/source-alias (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/directory-cycle (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/dependency-escape (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/dependency-cycle (0.01s)
+    --- PASS: TestGraphRejectsPackageAndSourceAliases/dependency-key-alias (0.01s)
+=== RUN   TestGraphRegistrySourceAndGlobalAgreement
+--- PASS: TestGraphRegistrySourceAndGlobalAgreement (0.02s)
+=== RUN   TestGraphRepeatedDependencyKeyMustKeepItsDirectory
+--- PASS: TestGraphRepeatedDependencyKeyMustKeepItsDirectory (0.08s)
+=== RUN   TestContainedSourceSymlinkPreservesCanonicalPackageOwner
+--- PASS: TestContainedSourceSymlinkPreservesCanonicalPackageOwner (0.00s)
+=== RUN   TestManifestExactShapeAndInertSQL
+--- PASS: TestManifestExactShapeAndInertSQL (0.00s)
+=== RUN   TestManifestRejectsUnknownDuplicateAndWrongTypedFields
+--- PASS: TestManifestRejectsUnknownDuplicateAndWrongTypedFields (0.00s)
+=== RUN   TestSQLDescriptorShapeRefusals
+--- PASS: TestSQLDescriptorShapeRefusals (0.00s)
+=== RUN   TestRealpathConfinement
+--- PASS: TestRealpathConfinement (0.00s)
+=== RUN   TestRegistryAndLockExactContracts
+--- PASS: TestRegistryAndLockExactContracts (0.00s)
+=== RUN   TestSourceDigestExactFramingAndOrder
+--- PASS: TestSourceDigestExactFramingAndOrder (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	0.359s
+=== RUN   TestFlatPackagesFileImportsAndIndependentIdentities
+--- PASS: TestFlatPackagesFileImportsAndIndependentIdentities (0.01s)
+=== RUN   TestEligibleKindLookupSkipsIneligibleShadowing
+--- PASS: TestEligibleKindLookupSkipsIneligibleShadowing (0.01s)
+=== RUN   TestQualifiedLookupBypassesLocalValuesAndKeepsOpacity
+--- PASS: TestQualifiedLookupBypassesLocalValuesAndKeepsOpacity (0.01s)
+=== RUN   TestReceiverPackageMethodOwnership
+--- PASS: TestReceiverPackageMethodOwnership (0.01s)
+=== RUN   TestResolutionRejectsScopeAndSignatureViolations
+--- PASS: TestResolutionRejectsScopeAndSignatureViolations (0.15s)
+=== RUN   TestGenericParametersPrecedeReturnTypeResolution
+--- PASS: TestGenericParametersPrecedeReturnTypeResolution (0.03s)
+=== RUN   TestSignatureBoundsRequireEligibleVisibleErrors
+--- PASS: TestSignatureBoundsRequireEligibleVisibleErrors (0.03s)
+=== RUN   TestInternalVisibilityUsesCanonicalSourceLocations
+--- PASS: TestInternalVisibilityUsesCanonicalSourceLocations (0.01s)
+=== RUN   TestTransitiveDependencyDoesNotGrantDirectImport
+--- PASS: TestTransitiveDependencyDoesNotGrantDirectImport (0.01s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/resolve	0.333s
+=== RUN   TestCurrentProjectInspectionIsInertAndRelocatable
+--- PASS: TestCurrentProjectInspectionIsInertAndRelocatable (0.05s)
+=== RUN   TestCurrentProjectRefusesStaleDependencyWithoutOutput
+--- PASS: TestCurrentProjectRefusesStaleDependencyWithoutOutput (0.03s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler	0.168s

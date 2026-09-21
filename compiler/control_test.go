@@ -60,7 +60,7 @@ func TestMalformedSourceRefused(t *testing.T) {
 	if err := os.WriteFile(srcPath, []byte(bad), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, _, collected, err := parsePaths([]string{srcPath})
+	_, _, collected, err := legacyParsePaths([]string{srcPath})
 	if err != nil {
 		t.Fatal(err)
 	}

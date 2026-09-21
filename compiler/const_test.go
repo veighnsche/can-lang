@@ -31,7 +31,7 @@ const constDeclSrc = `mod m
 const m__COLON: int rev 1 = 58
 `
 
-// TestConstParses pins the declaration shape: parsePaths yields a
+// TestConstParses pins the declaration shape: legacyParsePaths yields a
 // ConstDecl carrying name, type, revision, and literal value.
 func TestConstParses(t *testing.T) {
 	dir := t.TempDir()
@@ -39,7 +39,7 @@ func TestConstParses(t *testing.T) {
 	if err := os.WriteFile(fp, []byte(constDeclSrc), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	mods, _, _, err := parsePaths([]string{fp})
+	mods, _, _, err := legacyParsePaths([]string{fp})
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}

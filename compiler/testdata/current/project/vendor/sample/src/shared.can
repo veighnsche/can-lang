@@ -1,0 +1,8 @@
+package utils
+    provides [item, unavailable]
+    uses []
+
+record item
+    int value
+
+error 1000000 unavailable(str reason)

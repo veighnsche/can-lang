@@ -12,7 +12,7 @@ import (
 // to disclose one brand as Bytes through the bytes__utf8__export
 // kernel. E-rows are the scope-doc acceptance rows. Single-module
 // rows reuse seqClean/seqCode; multi-module order rows run the real
-// CLI pipeline (parsePaths + checkProgram) in both input orders.
+// CLI pipeline (legacyParsePaths + checkProgram) in both input orders.
 
 // checkTwo runs the real CLI pipeline over files written to a temp dir
 // in paths order and returns every diagnostic with codes. Paths may
@@ -31,9 +31,9 @@ func checkTwo(t *testing.T, paths []string, files map[string]string) []Diag {
 		}
 		full = append(full, fp)
 	}
-	mods, texts, collected, err := parsePaths(full)
+	mods, texts, collected, err := legacyParsePaths(full)
 	if err != nil {
-		t.Fatalf("parsePaths: %v", err)
+		t.Fatalf("legacyParsePaths: %v", err)
 	}
 	_, collected = checkProgram(mods, texts, collected, nil)
 	return collected

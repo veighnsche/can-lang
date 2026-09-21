@@ -54,7 +54,7 @@ func revisionProg(t *testing.T, files map[string]string, order []string) (*Progr
 		}
 		paths = append(paths, fp)
 	}
-	mods, texts, collected, err := parsePaths(paths)
+	mods, texts, collected, err := legacyParsePaths(paths)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}

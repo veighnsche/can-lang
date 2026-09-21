@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can has no external users and no compatibility requirement. P2 declares one root project plus explicitly named local dependencies; dependency keys are globally unique and must identify the same real directory wherever repeated. Source package names are flat and unique across the resolved graph. C3 separates package declarations from file-local imports, and the output plan requires canonical identities independent of machine absolute paths, deterministic output filenames, case-folding safety, and collision refusal. I05 needs to replace basename-based numeric suffix assignment. Possible identities are a root/dependency namespace plus dependency key and package name, absolute real source directories, or enumeration numbers assigned while loading. For the semantic namespace option, package/file output paths use domain-separated SHA256 encodings with fixed ASCII prefixes and a table that refuses any digest-path collision between different identities; file identity includes its owning package and source basename. This keeps component lengths bounded and avoids filesystem-reserved names, but requires the identity/path mapping. Absolute directories are easy to derive but change across checkouts; enumeration is simple but changes when earlier inputs are added. Real paths are still used for containment/internal visibility, never for nominal IDs. No performance claim has been measured. Tests must relocate identical projects and add unrelated same-basename files to verify identity/path stability.",
+  "questions": {
+    "identity": {
+      "type": "choice",
+      "instructions": "Which identity strategy best satisfies these stated nominal and output invariants? Use the supplied facts without research.",
+      "criteria": {
+        "semantic": "Use root/dependency-key/package semantic identities and fixed domain-separated hashed output components, refusing conflicting identity-to-path mappings.",
+        "absolute": "Base package and file identities on their canonical absolute filesystem locations.",
+        "enumerated": "Number packages and files in loading order and derive identities/output names from those numbers."
+      }
+    }
+  }
+}

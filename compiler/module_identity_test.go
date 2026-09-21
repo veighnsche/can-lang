@@ -137,7 +137,7 @@ fn beta__forge() -> Beta__Out rev 1
   Ok(seal Alpha__Seal("s"))
 `
 	_, a, b := writeSameBasename(t, forge)
-	mods, texts, collected, err := parsePaths([]string{a, b})
+	mods, texts, collected, err := legacyParsePaths([]string{a, b})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +161,7 @@ func TestDuplicateIdentityIsCAN5007(t *testing.T) {
 	if err := os.WriteFile(f, []byte(identProvider), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	_, _, collected, err := parsePaths([]string{f, f})
+	_, _, collected, err := legacyParsePaths([]string{f, f})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,14 +195,14 @@ func TestAssignStems(t *testing.T) {
 	}
 	t.Run("distinct keeps bare stems", func(t *testing.T) {
 		mods := []*Module{mk("a/x.can"), mk("b/y.can")}
-		assignStems(mods)
+		legacyAssignStems(mods)
 		if mods[0].Stem != "x" || mods[1].Stem != "y" {
 			t.Fatalf("stems = %q, %q", mods[0].Stem, mods[1].Stem)
 		}
 	})
 	t.Run("shared basename disambiguates", func(t *testing.T) {
 		mods := []*Module{mk("b/same.can"), mk("a/same.can")}
-		assignStems(mods)
+		legacyAssignStems(mods)
 		got := map[string]bool{mods[0].Stem: true, mods[1].Stem: true}
 		if len(got) != 2 {
 			t.Fatalf("stems collide: %q, %q", mods[0].Stem, mods[1].Stem)
@@ -210,7 +210,7 @@ func TestAssignStems(t *testing.T) {
 	})
 	t.Run("sanitize tie breaks with suffix", func(t *testing.T) {
 		mods := []*Module{mk("a_b.can"), mk("p/a_b.can"), mk("p_a_b.can")}
-		assignStems(mods)
+		legacyAssignStems(mods)
 		got := map[string]bool{}
 		for _, m := range mods {
 			got[m.Stem] = true

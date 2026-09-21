@@ -88,7 +88,7 @@ fn m__go(value: PARAM) -> Encoding__Text rev 1
 // H3: the kernel contract exists explicitly (never absent).
 func TestBytesH3ContractsRegistered(t *testing.T) {
 	dir := writeLSPDir(t, map[string]string{"m.can": bytesHexBase})
-	mods, texts, _, err := parsePaths([]string{dir + "/m.can"})
+	mods, texts, _, err := legacyParsePaths([]string{dir + "/m.can"})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -50,7 +50,7 @@ func TestGoldenJSONDiags(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	mods, texts, collected, err := parsePaths([]string{filepath.Join(dir, "db.can"), filepath.Join(dir, "auth.can")})
+	mods, texts, collected, err := legacyParsePaths([]string{filepath.Join(dir, "db.can"), filepath.Join(dir, "auth.can")})
 	if err != nil {
 		t.Fatal(err)
 	}

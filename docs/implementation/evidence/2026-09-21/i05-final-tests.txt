@@ -1,0 +1,3 @@
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	0.349s
+ok  	github.com/veighnsche/can-lang/compiler/internal/resolve	0.357s
+ok  	github.com/veighnsche/can-lang/compiler	8.996s

@@ -178,7 +178,7 @@ fn m__go(value: PARAM) -> Encoding__Text rev 1
 // the compiler-owned error registration (fields ["value"]).
 func TestBytesD5ContractsRegistered(t *testing.T) {
 	dir := writeLSPDir(t, map[string]string{"m.can": bytesDecodeFull()})
-	mods, texts, _, err := parsePaths([]string{dir + "/m.can"})
+	mods, texts, _, err := legacyParsePaths([]string{dir + "/m.can"})
 	if err != nil {
 		t.Fatal(err)
 	}

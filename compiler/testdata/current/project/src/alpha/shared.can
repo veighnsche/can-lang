@@ -1,0 +1,6 @@
+package alpha
+    provides [item]
+    uses [beta as other]
+
+record item
+    other::item value

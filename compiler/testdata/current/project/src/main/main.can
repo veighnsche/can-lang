@@ -1,0 +1,14 @@
+package main
+    provides [main]
+    uses [alpha, beta, utils]
+
+// Project inspection is inert: this initializer must not execute.
+int not_executed = 1 / 0
+
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

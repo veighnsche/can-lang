@@ -1,0 +1,14 @@
+package alpha
+    provides [holder, identity]
+    uses []
+
+record holder
+    item value
+
+fn value identity<value>
+    emits []
+    given
+        value input
+    asserts
+        one: 1 => ok 1
+    ok input
