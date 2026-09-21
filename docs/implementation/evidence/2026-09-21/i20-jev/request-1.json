@@ -1,0 +1,23 @@
+{
+  "model": "jev-latest",
+  "state": "I20 adds Can ownership beneath an existing protected Completion ABI and optional assertion context. Q10 requires a coordination owner before launch, retention of every participant/capture/resource lease until settlement, no loser cancellation, one sanitized diagnostic for an unselected standard occurrence, and no retroactive result or status change from that diagnostic. P6 requires per-process opaque resource provenance, owning scopes, open/closing/closed state, owner-keyed leases, subleases for an existing owner during closing, denial of new owners, scoped callback drain, reverse cleanup, and nonzero status for leaks/cleanup/deadline violations. A close deadline only bounds its caller; actual close cannot invalidate a live lease, and hung work needs external supervision. Native promise bridges and immutable capture receipts exist; coordination lowering and resource-specific adapters are later tasks. We need root and scope context across arbitrary awaited native callbacks, isolated assertions drained before completion, and a runtime core testable without claiming later SQL/server functionality. Context candidates are private AsyncLocalStorage of root/scope/owner, another explicit hidden context threaded through all calls, or process-global mutable current context. Lifecycle candidates are retained normalized participant promises and observer/lease records with a separate bounded close-wait promise, or cancellation and lease release at aggregate/deadline settlement.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Which context strategy best supports isolated awaited roots and native callbacks here?",
+      "criteria": {
+        "async_local": "Use native AsyncLocalStorage for private root/scope/owner state without replacing the protected completion ABI.",
+        "explicit": "Add and propagate a separate hidden execution context through every compiler call and adapter.",
+        "global": "Store the current root/scope/owner in shared mutable process variables."
+      }
+    },
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "Which lifecycle treatment satisfies the stated close and late-result rules?",
+      "criteria": {
+        "retain": "Keep normalized participant observations and leases until actual settlement; separate close waiting deadlines from actual close.",
+        "release": "Cancel outstanding participants or drop leases when aggregate results or close deadlines arrive."
+      }
+    }
+  }
+}

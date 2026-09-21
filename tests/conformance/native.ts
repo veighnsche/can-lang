@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { types } from "node:util";
 import { readFileSync, realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -10,11 +11,19 @@ export function identityFailures(target: any, actual: any): string[] {
     .filter(key => target[key] !== actual[key]).map(key => `runtime.${key}: expected ${target[key]}, got ${actual[key]}`);
 }
 export function apiAvailable(name: string): boolean {
+  if(name === "node:async_hooks.AsyncLocalStorage")return typeof AsyncLocalStorage === "function";
   if (name === "node:util.types.isProxy") return typeof types.isProxy === "function";
   if (name === "node:util.types.isNativeError") return typeof types.isNativeError === "function";
   return typeof name.split(".").reduce((value, key) => value?.[key], globalThis as any) === "function";
 }
 const probes: Record<string, () => unknown> = {
+  "isolated-async-context": async()=>{
+    const storage=new AsyncLocalStorage<string>();let release!:()=>void;
+    const gate=new Promise<void>(resolve=>{release=resolve;});
+    const first=storage.run("first",async()=>{await gate;await Promise.resolve();assert.equal(storage.getStore(),"first");});
+    const second=storage.run("second",async()=>{await Promise.resolve();assert.equal(storage.getStore(),"second");release();});
+    await Promise.all([first,second]);assert.equal(storage.getStore(),undefined);storage.disable();
+  },
   "json-source-and-raw-integers": () => {
     const tokens: string[] = [];
     const value = JSON.parse('{"large":9007199254740993,"zero":-0}', (key, value, context) => {

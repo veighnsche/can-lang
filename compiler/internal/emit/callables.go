@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
+	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -11,6 +13,13 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	declaration := node.Callable
 	if declaration == nil || declaration.Site == "" || !types.Equal(declaration.Contract, declaration.Contract) || declaration.Contract.Kind() != types.Callable || node.Type.Kind() != types.Callable || len(declaration.Positions) != len(node.Inputs) {
 		return LoweredExpression{}, fmt.Errorf("incomplete checked callable")
+	}
+	if !slices.Equal(declaration.ResourceCaptures, ir.ResourceCaptureIndices(node.Inputs)) {
+		return LoweredExpression{}, fmt.Errorf("invalid checked resource capture evidence")
+	}
+	retained := make([]string, len(declaration.ResourceCaptures))
+	for i, index := range declaration.ResourceCaptures {
+		retained[i] = strconv.Itoa(index)
 	}
 	target, err := e.target(declaration.Target)
 	if err != nil {
@@ -66,6 +75,6 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	arguments = append(arguments, "$canContext")
 	name := e.temp()
 	out.WriteString(e.mark(node.Span, "callable"))
-	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s(%s));\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), savedTarget, strings.Join(arguments, ", "))
+	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s(%s), [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), savedTarget, strings.Join(arguments, ", "), strings.Join(retained, ", "))
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

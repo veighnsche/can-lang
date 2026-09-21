@@ -113,6 +113,7 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope) (*ir
 	if err != nil {
 		return nil, err
 	}
+	out.Callable.ResourceCaptures = ir.ResourceCaptureIndices(out.Inputs)
 	c.uses.Captures[n] = captures
 	return out, nil
 }

@@ -18,7 +18,8 @@
       "../domain.ts",
       "../failure.ts",
       "./context.ts",
-      "../diagnostics.ts"
+      "../diagnostics.ts",
+      "../owner.ts"
     ],
     "bytes.ts": [
       "./failure.ts",
@@ -48,7 +49,8 @@
       "./data.ts",
       "./domain.ts",
       "./failure.ts",
-      "./diagnostics.ts"
+      "./diagnostics.ts",
+      "./owner.ts"
     ],
     "environment.ts": [
       "node:fs"
@@ -74,7 +76,9 @@
       "./failure.ts"
     ],
     "vendor/trace-mapping.ts": [],
-    "callable.ts": [],
+    "callable.ts": [
+      "./owner.ts"
+    ],
     "codec/budget.ts": [],
     "codec/numbers.ts": [
       "./budget.ts"
@@ -90,6 +94,13 @@
       "./budget.ts",
       "./numbers.ts",
       "./duplicates.ts"
+    ],
+    "owner.ts": [
+      "node:async_hooks",
+      "node:util",
+      "./completion.ts",
+      "./data.ts",
+      "./failure.ts"
     ]
   }
 }

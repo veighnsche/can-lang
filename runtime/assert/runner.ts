@@ -1,3 +1,4 @@
+import {runOwnedRoot,type OwnerDiagnostic} from "../owner.ts";
 import { types as nativeTypes } from "node:util";
 import { invoke, success, type Completion } from "../completion.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "../data.ts";
@@ -54,7 +55,9 @@ export async function runAssertion(test: AssertionCase) {
   const context = assertionContext(test.root);
   let frames: ReturnType<typeof diagnosticFrames> = [];
   let reason: "expected evaluation failed" | "outcome mismatch" | "harness violation" | undefined;
+  const diagnostics:OwnerDiagnostic[]=[];
   try {
+    const owned=await runOwnedRoot(async()=>{
     const expected = await invoke(() => test.expected(context), origin);
     if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
     else {
@@ -65,11 +68,14 @@ export async function runAssertion(test: AssertionCase) {
         else if (actual.kind === "domain") {const details=domainFailureDiagnostics(actual.value);frames=diagnosticFrames(undefined,details.origin);}
       }
     }
+    return success(undefined);
+    },diagnostic=>{diagnostics.push(diagnostic);});
+    if(owned.cleanupFailed)reason="harness violation";
   } catch { reason = "outcome mismatch"; }
   finally { closeContext(context); }
   const report = contextReport(context);
   if (report.violations.length) {reason = "harness violation"; if (report.frames.length) frames=report.frames;}
-  return Object.freeze({...report, passed: reason === undefined, ...(reason ? {reason,frames} : {})});
+  return Object.freeze({...report, ...(diagnostics.length?{diagnostics:Object.freeze(diagnostics)}:{}), passed: reason === undefined, ...(reason ? {reason,frames} : {})});
 }
 export async function runAssertions(tests: readonly AssertionCase[], initialize: () => void): Promise<0 | 1> {
   const setup = await invoke(() => {initialize(); return success(undefined);}, origin);

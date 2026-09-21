@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "I20 currently registers immutable callable capture receipts and launchOwned leases every resource reachable through participant captures until settlement. P6 says catalogue operations validate handle kind/scope/state and acquire leases before native access. A maintained host callback must not run user code after its owning operation closes. It also says returning, recording or capturing scoped handles introduces no general static ownership meaning; runtime use outside scope or after closure fails. Q10 specifically requires resource captures of coordination participants to remain leased. Ordinary Can functions and named callables remain ordinary async functions; no separate ordinary invocation ownership policy is specified. A proposed protectCallable adds a lease around every invocation with a resource capture. A concrete counterexample is an ordinary non-coordination callable whose body closes its captured pool: the wrapper lease lasts until the call returns, while close waits for that lease, causing a self-deadlock introduced solely by the wrapper. Coordination participant capture leases must still not be released for self-close. Compare retaining metadata and enforcing leases only at coordination launch/native operations plus explicit host callback scope guards; validating all ordinary callable resource captures at invocation without retaining leases; and keeping unconditional whole-invocation capture leases.",
+  "questions": {
+    "capture_scope": {
+      "type": "choice",
+      "instructions": "Which implementation most closely follows the stated ownership scope without adding the demonstrated deadlock?",
+      "criteria": {
+        "boundaries": "Keep ordinary callable capture receipts; acquire leases at participant/native-operation boundaries and guard maintained host callback lifetime.",
+        "validate": "Check every ordinary callable captured handle at invocation, even if its body never uses that handle, but do not retain a lease.",
+        "lease": "Lease all captured resources for the entire duration of every ordinary callable invocation."
+      }
+    }
+  }
+}

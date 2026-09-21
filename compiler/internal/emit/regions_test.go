@@ -25,6 +25,7 @@ type regionFixture struct {
 	ts        map[string]*types.Type
 	registry  *check.ErrorRegistry
 	scope     *resolve.Scope
+	callables map[string]check.CallableDeclaration
 	functions map[string]check.ValueBinding
 	values    map[string]check.ValueBinding
 }
@@ -34,7 +35,7 @@ func newRegionFixture(t *testing.T) *regionFixture {
 	root := t.TempDir()
 	text := `package app
     provides []
-    uses []
+    uses [sql, bytes]
 error 1000000 missing(int code)
 error 1000001 other()
 error 1000002 wrapped<item>(item value)
@@ -79,7 +80,7 @@ record node
 	if err = builder.SeedDeclarations(); err != nil {
 		t.Fatal(err)
 	}
-	names := []string{"callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]"}
+	names := []string{"sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]"}
 	fixture := &regionFixture{ts: map[string]*types.Type{}, registry: registry, scope: file.Scope, functions: map[string]check.ValueBinding{}, values: map[string]check.ValueBinding{}}
 	for _, name := range names {
 		src, _ := source.New("type.can", name)
@@ -132,6 +133,7 @@ func (f *regionFixture) region(t *testing.T, body, result string, errors []strin
 	}, Constructor: func(node *syntax.ConstructorExpr, expected *types.Type) (*types.Type, error) {
 		return lookupType(&syntax.NamedType{Name: node.Name, Arguments: node.Types}, false)
 	}}
+	expr.Reference = expr.Function
 	var boundTypes []*types.Type
 	for _, name := range errors {
 		boundTypes = append(boundTypes, f.ts[name])
@@ -140,7 +142,7 @@ func (f *regionFixture) region(t *testing.T, body, result string, errors []strin
 	if err != nil {
 		t.Fatal(err)
 	}
-	context := check.CompletionContext{Identity: "app::run", Kind: kind, File: src, Scope: f.scope, Result: f.ts[result], Registry: f.registry, Errors: bound, Expressions: expr, Type: lookupType}
+	context := check.CompletionContext{Identity: "app::run", Kind: kind, File: src, Scope: f.scope, Result: f.ts[result], Registry: f.registry, Errors: bound, Expressions: expr, Type: lookupType, Callables: f.callables}
 	context.Method = func(receiver *types.Type, name syntax.Token, args []syntax.TypeNode) (check.ValueBinding, error) {
 		if types.Equal(receiver, f.ts["left"]) && len(args) == 0 && (name.Text == "bump" || name.Text == "read") {
 			return f.functions[name.Text], nil

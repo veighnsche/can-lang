@@ -1,0 +1,23 @@
+{
+  "model": "jev-latest",
+  "state": "Can currently boxes completions and threads an optional assertion context; I20 must supply lifecycle machinery. Before coordination starts, create an owner that keeps launched promises, captured values and leases until each finishes. Losing work is not cancelled; ignored standard failures produce one sanitized occurrence diagnostic without changing a result already returned or successful status. Resource policy tracks private nominal handles by root scope, open/closing/closed lifecycle and counts per owner. Closing permits existing owners to take subleases but blocks new ones, waits for scoped work, and performs reverse cleanup. Leaks, cleanup faults and close deadline violations make shutdown nonzero. Deadline expiry ends only the waiting caller, never the underlying ownership; an external supervisor handles indefinite hangs. Native completion adapters and immutable callable captures are implemented, while coordination syntax and SQL/server adapters come later. Assertions require isolated roots and draining before reports. Compare native AsyncLocalStorage propagation, expanding the hidden argument ABI for root/scope/owner, and a shared mutable process context. Compare persistent normalized promise observers and leases with an independently timed close wait against freeing or cancelling work when an aggregate or timer settles.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Choose a runtime context mechanism for these constraints.",
+      "criteria": {
+        "async_local": "Propagate internal execution identity with AsyncLocalStorage across native asynchronous callbacks.",
+        "explicit": "Extend all generated signatures and host adapter calls with another context argument.",
+        "global": "Switch one process-wide mutable context as operations enter and leave."
+      }
+    },
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "How should the runtime account for work after an early result?",
+      "criteria": {
+        "retain": "Maintain promise observers and owner lease counts through settlement, with an independently bounded close-caller wait.",
+        "release": "Treat aggregate completion or deadline expiry as permission to discard or cancel outstanding work."
+      }
+    }
+  }
+}

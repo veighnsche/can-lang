@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The resource implementation already keeps callable capture metadata, and coordination launch walks it to lease handles through participant completion. The specification assigns kind/state/scope validation and native-access leases to catalogue operations, with separate before-user-code checks for host callbacks invoked after their operation closes. Returning or storing captured scoped handles does not create a general ownership type rule; actual invalid use is rejected dynamically. Q10 mandates leases for coordination captures, but there is no analogous stated policy for every ordinary function invocation. Adding a resource lease around all named-callable invocations makes a regular callable that explicitly closes its near-captured pool await its own wrapper lease forever. That self-deadlock is absent without the added wrapper. Coordination-owned captures cannot be dropped to solve it. Candidate designs are metadata-only ordinary callables combined with coordination/native-operation leases and maintained host callback guards, unconditional ordinary capture validity checks without leases, or full-invocation leases for every captured resource.",
+  "questions": {
+    "capture_scope": {
+      "type": "choice",
+      "instructions": "Select the callable treatment justified by the specified runtime boundaries.",
+      "criteria": {
+        "boundaries": "Use metadata for ordinary closures, coordination and catalogue leases for actual ownership, and explicit operation-scope host callback checks.",
+        "validate": "Eagerly reject any ordinary invocation containing an invalid captured handle, without holding it leased.",
+        "lease": "Wrap each named callable invocation in capture leases that release only when it settles."
+      }
+    }
+  }
+}

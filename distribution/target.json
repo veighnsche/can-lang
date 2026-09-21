@@ -24,7 +24,7 @@
     "provenanceEvidence": "docs/implementation/evidence/2026-09-21/bun-release.json"
   },
   "requiredNativeAPIs": [
-    "JSON.parse", "JSON.stringify", "JSON.rawJSON", "Array.fromAsync",
+    "node:async_hooks.AsyncLocalStorage", "JSON.parse", "JSON.stringify", "JSON.rawJSON", "Array.fromAsync",
     "Array.prototype.toSorted", "Array.prototype.toReversed",
     "Set.prototype.intersection", "Map", "Set", "Object.is",
     "Promise.all", "Promise.allSettled", "Promise.any", "Promise.race",
@@ -37,7 +37,7 @@
     "Bun.serve", "Bun.SQL", "Bun.Transpiler.prototype.scanImports", "Bun.Transpiler.prototype.transformSync", "node:util.types.isProxy", "node:util.types.isNativeError"
   ],
   "requiredBehaviorProbes": [
-    "json-source-and-raw-integers", "ordered-fromAsync", "nonthenable-box",
+    "isolated-async-context", "json-source-and-raw-integers", "ordered-fromAsync", "nonthenable-box",
     "strict-equality", "immutable-arrays", "unicode-and-literal-replacement",
     "fatal-utf8", "native-intersection-order", "bun-io-handles"
   ]

@@ -1,5 +1,6 @@
 // Compiler-private root supervisor. Generated entry modules await runEntry at
 // top level and assign its status to process.exitCode only after it settles.
+import {runOwnedRoot} from "./owner.ts";
 import { invoke, success, type Completion } from "./completion.ts";
 import { array } from "./data.ts";
 import { domainFailureDiagnostics } from "./domain.ts";
@@ -11,9 +12,10 @@ type Main = (args: readonly string[]) => Completion<void> | Promise<Completion<v
 type Reporter = (line: string) => void | Promise<void>;
 const rootOrigin: FailureOrigin = Object.freeze({source: "can:entry", start: 0, end: 0, invocation: Object.freeze([])});
 
-// Only explicitly selected stable fields cross the diagnostic boundary. Error
+// Terminal completion reports select stable fields. Q10 late-owner reports
+// separately include their specified C9 message projection. Error
 // payloads can contain application secrets; native messages can contain paths,
-// credentials, or response bodies. Neither is serialized by the root reporter.
+// credentials, or response bodies. Neither is serialized by this terminal reporter.
 function diagnostic(completion: Exclude<Completion<void>, {kind: "ok"}>, phase: "initialization" | "main"): string {
   const base = {schemaVersion: 1, kind: "can.runtime-failure", phase};
   if (completion.kind === "domain") {
@@ -35,6 +37,7 @@ export async function runEntry(
   report: Reporter = reportToStderr,
 ): Promise<0 | 1> {
   let phase: "initialization" | "main" = "initialization";
+  const owned=await runOwnedRoot(async()=>{
   let completion: Completion<void> = await invoke(() => {
     initialize();
     return success(undefined);
@@ -49,7 +52,10 @@ export async function runEntry(
       return result;
     }, rootOrigin);
   }
-  if (completion.kind === "ok") return 0;
+  return completion;
+  }, diagnostic=>report(JSON.stringify({schemaVersion:1,...diagnostic})+"\n"));
+  const completion=owned.completion;
+  if (completion.kind === "ok") return owned.cleanupFailed?1:0;
   try { await report(diagnostic(completion, phase)); }
   catch {
     // A closed diagnostic pipe must not become an unhandled rejection or turn

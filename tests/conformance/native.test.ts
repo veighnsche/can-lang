@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
 import manifest from "../../distribution/target.json";
-import { qualify, sha256 } from "./native";
+import { qualify, sha256, apiAvailable } from "./native";
 import { readFileSync } from "node:fs";
 import { types } from "node:util";
 
@@ -29,3 +29,8 @@ for (const [key, value] of Object.entries({ name: "node", version: "0.0.0", revi
     expect(report.failures.some(message => message.startsWith(`runtime.${key}:`))).toBe(true);
   });
 }
+
+test("refuse missing AsyncLocalStorage without fallback",async()=>{
+ const report=await qualify(manifest,actual,name=>name!=="node:async_hooks.AsyncLocalStorage"&&apiAvailable(name));
+ expect(report.passed).toBe(false);expect(report.failures).toContain("missing native API: node:async_hooks.AsyncLocalStorage");
+});

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Existing I20 machinery records immutable captures and retains resource leases when a coordination participant launches. P6 requires maintained catalogue operations to check provenance, scope and lifecycle before using native handles; host callbacks have an owning-operation lifetime guard before entering authored code. Scoped handles may be returned, put in records or captured without a new static ownership regime, while out-of-scope or closed-handle use must fail dynamically. The explicit Q10 retention requirement concerns coordination participants. No whole-call lease requirement is stated for ordinary named functions. If every ordinary callable invocation leases its captures, a callable that closes its captured pool cannot finish: close waits for a lease released only after that same call returns. Removing coordination leases would violate the contract, so the ordinary-call wrapper is the disputed layer. Alternatives retain only ordinary capture metadata with leases at coordination/native boundaries and host lifetime guards, perform eager ordinary capture validation but no leases, or retain all resources across every callable invocation.",
+  "questions": {
+    "capture_scope": {
+      "type": "choice",
+      "instructions": "Which policy preserves required resource safety with the least additional ordinary-call semantics?",
+      "criteria": {
+        "boundaries": "Record captures without changing plain call behavior; let owned participants, native handle operations and host callback guards enforce their respective contracts.",
+        "validate": "Add pre-body lifecycle validation to all resource-capturing ordinary functions but omit lease retention.",
+        "lease": "Retain whole-invocation resource leases around ordinary function values as well as coordination participants."
+      }
+    }
+  }
+}

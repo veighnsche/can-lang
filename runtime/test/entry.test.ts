@@ -30,14 +30,14 @@ test("root awaits main and passes only a frozen copy of the supplied application
 
 test("initialization failure prevents main and awaits its diagnostic", async () => {
   let mainCalls = 0, line = "";
+  let reported!:()=>void;const delivered=new Promise<void>(resolve=>{reported=resolve;});
   let release!: () => void;
   const gate = new Promise<void>(resolve => {release = resolve;});
   let settled = false;
   const pending = runEntry(() => {intDivide(1n, 0n);}, () => {
     mainCalls++; return success(undefined);
-  }, [], async report => {line = report; await gate;}).then(status => {settled = true; return status;});
-  await Promise.resolve();
-  await Promise.resolve();
+  }, [], async report => {line = report; reported(); await gate;}).then(status => {settled = true; return status;});
+  await delivered;
   expect(mainCalls).toBe(0);
   expect(settled).toBe(false);
   expect(JSON.parse(line)).toMatchObject({phase: "initialization", channel: "standard", category: "arithmetic"});

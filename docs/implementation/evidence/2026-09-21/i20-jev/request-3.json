@@ -1,0 +1,23 @@
+{
+  "model": "jev-latest",
+  "state": "The next milestone needs root supervision and resource leases over Can protected completion carriers; the current extra function argument is assertion context. Owners must exist before participant launch and survive early aggregate outcomes while retaining promises and captures. No automatic loser cancellation is allowed. One redacted standard-failure occurrence diagnostic may be emitted for unused outcomes, but it must not revise the delivered completion or alone make success nonzero. Opaque resources need process-local provenance, scope checks, three lifecycle states, and leases indexed by owner. Once closing begins, only already-leased owners may acquire finishing subleases; native close follows complete drain and automatic cleanup uses reverse creation order. Leaks, cleanup errors and missed close deadlines remain failure conditions. A deadline limits a close caller only; live leases survive, possibly forever until externally killed. Existing native completion bridges and callable capture receipts can be reused, and isolated assertion roots must drain. Coordination lowering and concrete SQL/server operations are future consumers, not evidence to claim now. Select context transport among private AsyncLocalStorage, an additional compiler-threaded context parameter, and a global current-context variable. Select ownership handling between persistent observer/lease records with a separate timed waiting result and cancellation or lease disposal at early settlement.",
+  "questions": {
+    "context": {
+      "type": "choice",
+      "instructions": "Which approach should carry the runtime ownership identity?",
+      "criteria": {
+        "async_local": "Use AsyncLocalStorage to bind private lifecycle state to each asynchronous execution chain.",
+        "explicit": "Thread ownership state explicitly through a newly expanded hidden function ABI.",
+        "global": "Keep ownership identity in an ambient process singleton updated around calls."
+      }
+    },
+    "lifecycle": {
+      "type": "choice",
+      "instructions": "Which shutdown design matches the retained-work contract?",
+      "criteria": {
+        "retain": "Retain all unfinished participant evidence and leases while timing only the close caller awaiting it.",
+        "release": "End ownership by cancelling or releasing unfinished participants on early aggregate or timer completion."
+      }
+    }
+  }
+}
