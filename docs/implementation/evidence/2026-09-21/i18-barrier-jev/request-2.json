@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The scheduler for Can test fixtures admits exactly one lexically earliest complete invocation identity when every frame is parked, done, or requesting a fixture. Reserved and executing frames block admission. Upon choosing a request its frame becomes active through the native Promise reaction and only explicit suspension/completion clears it. Fresh requests, potentially ordered before existing ones, may appear during traversal; identities never duplicate. Normal ordering is immutable and total, while test-only comparators may reverse it, throw, or return nonfinite numbers. Any comparison error must reject all outstanding requests and reactivate their frames. The current frame walk plus repeated whole-array sort/shift costs 499510 comparisons at size1000 and 7998010 at size4000. Selection gates for empty settling coordination were fixed separately and cannot regress. Host language operations still use native Bun primitives; internal fixture arbitration is a contract adapter with no host priority-queue API. Required costs are constant-time quiescence and logarithmic queue insertion/removal. Consider phase-maintained active counts and a stable binary min-heap using increasing insertion serials for ties, with arrivals buffered until the quiescent pump and a distinct set retaining all queued promises for failure recovery. Alternatives retain a native sorted cache invalidated on each arrival, which still repeatedly sorts under interleaving, or retain the present algorithm.",
+  "questions": {
+    "scheduler": {
+      "type": "choice",
+      "instructions": "Select the approach meeting both the behavioral invariants and the stated per-update complexity.",
+      "criteria": {
+        "priority_heap": "Use active-frame bookkeeping plus a stable heap, buffer new arrivals until arbitration, and retain a recovery set so comparator errors reject every waiting promise without altering native sequential release semantics.",
+        "sorted_cache": "Reuse a sorted native array until the next arrival forces another full sort; keep only the quiescence counter optimization.",
+        "unchanged": "Continue the existing all-frame scan and full pending-array sort before each selection."
+      }
+    }
+  }
+}

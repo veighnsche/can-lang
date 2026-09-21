@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Fixture requests in Can assertions are ordered by full lexical invocation paths and may proceed only with zero reserved/running frames. Each admission activates the chosen frame before native Promise delivery; explicit park/finish operations determine when another admission is possible. Requests can be inserted between selections at positions earlier than queued paths. All invocation identities are distinct. The production comparator is a stable total order, but conformance supplies reversed, throwing or nonfinite comparisons; a bad comparison must fail every pending request and return those frames to running. Repeated scanning, sorting and front-removal currently produces 499510 comparisons for1000 requests and7998010 for4000, a quadratic growth defect. Existing empty-aggregate selection guards must be preserved. Native Can operations remain native; the internal scheduling adapter has no Bun priority queue available. Target complexity is O(1) to establish quiescence and O(log n) to update ordering on insertion/removal. One design counts blocking phases during transitions and retains a binary minimum heap with enqueue sequence numbers to break ties, staging arrivals until the scheduler pump and tracking all pending requests in a separate set for safe comparator-error rejection. Other designs keep a sorted-array cache and re-sort on arrivals, leaving an interleaved worst case, or make no algorithmic change.",
+  "questions": {
+    "scheduler": {
+      "type": "choice",
+      "instructions": "Identify the design that preserves the required semantics while removing the repeated-work bound.",
+      "criteria": {
+        "priority_heap": "Track blocking-frame counts and use a stable minimum heap with staged additions and an independent pending set for failure cleanup, retaining explicit barriers and single native delivery at a time.",
+        "sorted_cache": "Maintain a cached array order and invalidate it on incoming requests, then perform a fresh native sort alongside constant-time active tracking.",
+        "unchanged": "Preserve the current repeated frame enumeration, queue sorting and shifting."
+      }
+    }
+  }
+}

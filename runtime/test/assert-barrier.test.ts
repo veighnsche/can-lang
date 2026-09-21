@@ -79,3 +79,55 @@ test("invalid conformance ordering rejects every pending request without strandi
  expect(()=>participantIdentities(identity,"p::main#1",[[1],[0]])).toThrow("flattened source order");
  expect(()=>participantIdentities(identity,"p::main#1",[[0],[0,0]])).toThrow("flattened source order");
 });
+
+test("fixture arbitration stays within a logarithmic comparison budget while draining and reinserting",async()=>{
+ for(const count of [1000,4000]){
+  let comparisons=0;
+  const identity=root(),owner=createBarrier(identity,(a,b)=>{comparisons++;return compareInvocations(a,b)});
+  const ready=participantIdentities(identity,"p::scale#0",Array.from({length:count},(_,index)=>[index])).map(value=>reserveFrame(owner,value));
+  ready.forEach(startFrame);
+  const events:number[]=[];
+  // Reverse arrivals require ordering work. The first frame then repeatedly
+  // rejoins ahead of the retained queue, exercising incremental insertion too.
+  const outcomes=ready.toReversed().map((value,reverseIndex)=>{
+   const index=count-1-reverseIndex;
+   return (async()=>{
+    const visits=index===0?count:1;
+    for(let visit=0;visit<visits;visit++)await fixtureEvent(value,()=>{events.push(index);return success(index)});
+    finishFrame(value);
+   })();
+  });
+  await Promise.all(outcomes);
+  expect(events).toEqual([...Array(count).fill(0),...Array.from({length:count-1},(_,index)=>index+1)]);
+  expect(comparisons).toBeLessThan(4*(2*count-1)*Math.ceil(Math.log2(count+1)));
+  expect(barrierState(owner)).toEqual({pending:0,frames:[]});
+ }
+});
+
+test("comparison failures during heap removal reject every retained request and allow recovery",async()=>{
+ const identity=root();let armed=false,afterArm=0;
+ const cause=new Error("comparison failed during removal");
+ const owner=createBarrier(identity,(a,b)=>{if(armed&&++afterArm===2)throw cause;return compareInvocations(a,b)});
+ const ready=participantIdentities(identity,"p::failure#0",Array.from({length:16},(_,index)=>[index])).map(value=>reserveFrame(owner,value));
+ ready.forEach(startFrame);
+ const events:number[]=[];
+ const outcomes=await Promise.allSettled(ready.map((value,index)=>fixtureEvent(value,()=>{
+  events.push(index);armed=true;return success(index);
+ }).finally(()=>finishFrame(value))));
+ expect(events).toEqual([0]);
+ expect(outcomes[0].status).toBe("fulfilled");
+ for(const outcome of outcomes.slice(1)){expect(outcome.status).toBe("rejected");if(outcome.status==="rejected")expect(outcome.reason).toBe(cause)}
+ expect(barrierState(owner)).toEqual({pending:0,frames:[]});
+ armed=false;
+ const next=reserveFrame(owner,invocationIdentity(identity,"p::recovery#0"));startFrame(next);
+ expect((await fixtureEvent(next,()=>success(7))).kind).toBe("ok");finishFrame(next);
+ expect(barrierState(owner)).toEqual({pending:0,frames:[]});
+});
+
+test("equal conformance priorities retain arrival order",async()=>{
+ const identity=root(),owner=createBarrier(identity,()=>0);
+ const ready=participantIdentities(identity,"p::ties#0",[[0],[1],[2],[3]]).map(value=>reserveFrame(owner,value));
+ ready.forEach(startFrame);const events:number[]=[];
+ await Promise.all([2,0,3,1].map(index=>fixtureEvent(ready[index],()=>{events.push(index);return success(index)}).finally(()=>finishFrame(ready[index]))));
+ expect(events).toEqual([2,0,3,1]);
+});

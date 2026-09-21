@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can assertion fixture scheduling must release the smallest full invocation path only when no frame is reserved or running. It releases one request, marks its frame running, and keeps that frame active across native Promise delivery until an explicit park or finish. New requests can arrive between releases, including earlier paths. Invocation identities are unique. Canonical comparison is a fixed total order; conformance can inject reverse comparison or a throwing/nonfinite comparator. Comparison failure must reject every queued request and restore all affected frames to running. Current code scans every frame, sorts all pending requests and shifts the first on each release. Measured comparator calls are 499510 for 1000 requests and 7998010 for 4000, proving quadratic work. Empty settling aggregate continuation gates have already been corrected and must remain. Native language operations should remain native; this scheduler is an internal contract adapter and Bun offers no native priority queue. We need bounded O(log n) incremental queue updates and O(1) quiescence checks without changing authored scheduling or promise ordering. Candidate implementation maintains an active count on every phase transition and uses a binary min-heap with a monotonic enqueue tie key, plus a separate pending request set to recover all promises if heap comparison throws; arrivals are staged until the quiescent pump. Another choice caches a sorted array until arrivals invalidate it and sorts again, retaining worst-case repeated full sorting under interleaved arrivals. A third leaves the existing scans and sort unchanged.",
+  "questions": {
+    "scheduler": {
+      "type": "choice",
+      "instructions": "Which implementation satisfies the scheduler semantics and worst-case incremental cost requirements?",
+      "criteria": {
+        "priority_heap": "Maintain the running/reserved count and a binary priority heap with stable enqueue ties, staged arrivals, and a separate recovery set; preserve one-at-a-time native delivery and reject all pending work on comparator failure.",
+        "sorted_cache": "Cache a native sorted array and resort it whenever new requests arrive, while tracking active frames with a counter.",
+        "unchanged": "Keep scanning all frames and sorting the entire queue for every release."
+      }
+    }
+  }
+}
