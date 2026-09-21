@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"representation":{"type":"choice","choice":"bridge","confidence":0.97,"probabilities":{"bridge":0.98,"bypass":0.02,"duplicate":0.0}}},"usage":{"input_tokens":622,"output_tokens":40}}

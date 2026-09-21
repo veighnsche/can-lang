@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Backward compatibility is unnecessary in this Can repository because it has no external consumers. The C2/C4 contract permits callable and choice_arm data and generic nesting while preserving their result, input and error bounds. A6 disallows those structures in wire data, and key admission rejects them too. Resolve currently receives concrete type spellings plus a checked-project admission hook, but its nominal/array/template parser rejects functional spellings before consulting that hook. The newly tested I04 source parser has explicit nodes and knows how emits and array suffixes attach; its lowercase naming rules differ from the uppercase placeholders in the authored catalogue. The alternatives are a conversion from existing source-parser nodes for concrete arguments into richer structural catalogue nodes alongside unchanged template notation, another callable/arm source grammar inside the catalogue parser, or unconditional reliance on hook-approved opaque strings. Required invariants include lossless nested substitution, full bounds, void only in result slots, and unchanged wire/key/opaque restrictions. Nominal data and error identities need distribution declarations or checked project proof. The correction stays entirely inert and does not require runtime work.",
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Choose the approach that repairs concrete functional-type admission without creating competing source-grammar authorities, based on this context.",
+      "criteria": {
+        "bridge": "Reuse I04 to read concrete type spellings and structurally adapt the result, keeping uppercase template descriptors distinct.",
+        "duplicate": "Implement a separate callable/arm grammar in the existing catalogue descriptor reader.",
+        "bypass": "Treat unrecognized type text as admissible whenever the checked-project hook returns true, without constructing its structure."
+      }
+    }
+  }
+}

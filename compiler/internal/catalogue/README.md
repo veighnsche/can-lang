@@ -21,6 +21,19 @@ nominal constraints are established by the later type checker through
 `TypeAdmission`; it cannot override opaque catalogue types or primitive key
 restrictions. Whole-project ID registry validation belongs to I49/P2.
 
+Concrete type arguments use `syntax.ParseType`, the same grammar as authored
+source. `source_types.go` converts its explicit nodes to structural catalogue
+types, preserving nested callable inputs/results/emits and choice-arm results/
+emits. The small private descriptor grammar handles only inventory templates
+(including uppercase placeholders); it is never a fallback for concrete types.
+Substitution operates structurally, so a generic container cannot erase a nested
+functional contract. Functional values are data, with void allowed only in their
+result slot; wire, key, form and SQL scalar/row boundaries still refuse them.
+Checked project nominal error kinds in functional bounds use TypeAdmission's
+`error` constraint. A hook cannot invent a member of a reserved catalogue package.
+This representation does not grant new invocation or executable-arm spread forms;
+those remain governed by their checker contracts.
+
 `RequiredNativeBound` computes fixed, conditional authentication/codec, and
 question/handler/body bounds. Authored native declarations must still spell
 and satisfy their complete exported bound in I16. `ErrorIdentity` describes an

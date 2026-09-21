@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "There are zero external Can users and no need to preserve the old representation. Under C2/C4, callable and choice_arm values can participate in data contracts and generic containers without dropping results, inputs or emits bounds; A6 forbids them at wire boundaries, and keys cannot contain them. Concrete strings enter catalogue Resolve with a callback supplying already checked project-type evidence. The catalogue\u2019s current mini-parser knows nominal applications, array suffixes and uppercase parameter placeholders only, so functional types fail before the callback. A tested I04 parser already produces explicit source type nodes with correct callable-bound and array association. That parser admits lowercase source identifiers, not uppercase inventory variables. Available changes are to parse concrete arguments with I04 and convert them to structural catalogue representations while retaining separate template notation, reproduce the new source productions in the mini-parser, or let unparsed strings pass through on callback approval. Any solution must preserve nested substitution and error contracts, restrict void to result positions, and keep wire/key/opaque refusals. Catalogue declarations or validated project evidence establish nominal types and errors. This work needs neither evaluation nor a new runtime adapter.",
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Select the fix that resolves this failure with the clearest single ownership of source type syntax, using the stated evidence alone.",
+      "criteria": {
+        "bridge": "Convert concrete I04 type nodes to catalogue structures, reserving the existing descriptor grammar for inventory template variables.",
+        "duplicate": "Expand the catalogue mini-parser to independently recognize callable and choice_arm source forms.",
+        "bypass": "Skip structural recognition of unfamiliar argument strings and rely solely on the admission callback accepting them."
+      }
+    }
+  }
+}

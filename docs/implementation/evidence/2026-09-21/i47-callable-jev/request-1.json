@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can project has no compatibility obligation. C2 and C4 make callable contracts and choice_arm contracts ordinary typed data, including generic containers, with their result/input/error structure preserved; A6 excludes these values from wire data and key constraints also exclude them. The catalogue Resolve API accepts concrete type strings and a checked project-type admission callback. Its private descriptor parser handles nominal names, arrays and uppercase template variables, but rejects callable/arm strings before admission. I04 now supplies a tested source type parser with explicit nodes and exact emits/array ownership; source identifiers are lowercase, so the inventory\u2019s uppercase placeholders cannot be fed to it unchanged. Consider bridging concrete arguments through the existing source parser into richer structural catalogue nodes while leaving the small inventory template grammar separate; extending the private parser with a second copy of callable source grammar; or sending every unknown string directly to the admission callback. Structural substitution must preserve nested contracts, permit void only as a result, and retain wire/key/opaque exclusions. Names and nominal error kinds still require catalogue or checked project evidence. Parsing is inert, and no runtime adapter is needed for this correction.",
+  "questions": {
+    "representation": {
+      "type": "choice",
+      "instructions": "Which representation boundary best fixes the demonstrated rejection while keeping one authority for authored type grammar? Judge only these supplied facts.",
+      "criteria": {
+        "bridge": "Use the existing source parser for concrete types and bridge its nodes into structural substitution and admission; keep inventory placeholders in their own descriptor notation.",
+        "duplicate": "Teach the private template parser the callable and arm source productions as a second grammar implementation.",
+        "bypass": "Allow opaque unknown type strings whenever the project admission callback approves them, without structural parsing."
+      }
+    }
+  }
+}

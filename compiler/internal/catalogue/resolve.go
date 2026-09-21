@@ -30,13 +30,15 @@ func (c *Catalogue) ErrorIdentity(name string, arguments []string) (ErrorIdentit
 	if len(arguments) != len(d.Parameters) {
 		return ErrorIdentity{}, fmt.Errorf("error specialization arity: %s", name)
 	}
-	for _, a := range arguments {
-		r, err := parseType(a)
+	canonical := make([]string, len(arguments))
+	for i, a := range arguments {
+		r, err := parseConcreteType(a)
 		if err != nil || r.name == "void" {
 			return ErrorIdentity{}, fmt.Errorf("invalid error type argument")
 		}
+		canonical[i] = r.String()
 	}
-	return ErrorIdentity{Name: d.Name, Identity: d.Identity, ID: d.ID, TypeArguments: append([]string{}, arguments...)}, nil
+	return ErrorIdentity{Name: d.Name, Identity: d.Identity, ID: d.ID, TypeArguments: canonical}, nil
 }
 func (c *Catalogue) validateError(e ErrorIdentity) error {
 	if d, ok := c.errors[e.Name]; ok {
@@ -49,7 +51,7 @@ func (c *Catalogue) validateError(e ErrorIdentity) error {
 		}
 	}
 	for _, arg := range e.TypeArguments {
-		if _, err := parseType(arg); err != nil {
+		if _, err := parseConcreteType(arg); err != nil {
 			return err
 		}
 	}
@@ -119,6 +121,15 @@ func (c *Catalogue) Resolve(name, target string, revision int, args map[string]s
 	if len(args) != len(op.Parameters) {
 		return Specialization{}, fmt.Errorf("generic argument arity for %s", name)
 	}
+	canonical := map[string]string{}
+	for name, text := range args {
+		typ, err := parseConcreteType(text)
+		if err != nil {
+			return Specialization{}, err
+		}
+		canonical[name] = typ.String()
+	}
+	args = canonical
 	for _, p := range op.Parameters {
 		if !c.admits(args[p.Name], p.Constraint, project) {
 			return Specialization{}, fmt.Errorf("%s requires %s for %s", name, p.Constraint, p.Name)
@@ -138,13 +149,15 @@ func (c *Catalogue) Resolve(name, target string, revision int, args map[string]s
 		}
 		for j, typ := range cb.Inputs {
 			expected := substitute(typ, args)
-			if expected != actual.Inputs[j] {
+			input, parseErr := parseConcreteType(actual.Inputs[j])
+			if parseErr != nil || expected != input.String() {
 				return Specialization{}, fmt.Errorf("callback input mismatch")
 			}
 			op.Callbacks[i].Inputs[j] = expected
 		}
 		expected := substitute(cb.Result, args)
-		if actual.Result != expected {
+		result, parseErr := parseConcreteType(actual.Result)
+		if parseErr != nil || result.String() != expected {
 			return Specialization{}, fmt.Errorf("callback result mismatch")
 		}
 		op.Callbacks[i].Result = expected

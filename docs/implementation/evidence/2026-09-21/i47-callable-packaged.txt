@@ -1,0 +1,5 @@
+=== RUN   TestPackagedCatalogueBoundary
+    integration_test.go:72: packaged Bun 1.4.2; native network denied; 9 runtime checks; error ID 1110, nominal identity, payload and occurrence retained; source cbe788155f88e13bcfac50cc271cf4887d5ffbacaec12af92b7a5f9fc8476435
+--- PASS: TestPackagedCatalogueBoundary (2.13s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/catalogue	2.211s
