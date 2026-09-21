@@ -16,7 +16,6 @@ type Builder struct {
 	graph       *graph
 	catalogue   map[string]*resolve.Symbol
 	constraints []constraint
-	leafGroups  [][]*Type
 	pending     map[*Type]bool
 	active      map[string]int
 	failure     error
@@ -287,21 +286,6 @@ func (b *Builder) Finish() (model *Model, err error) {
 	}
 	if err := b.graph.seal(); err != nil {
 		return nil, err
-	}
-	for _, group := range b.leafGroups {
-		seen := map[string]bool{}
-		for _, alternative := range group {
-			leaves := []*Type{alternative}
-			if alternative.kind == Variant {
-				leaves = alternative.Leaves()
-			}
-			for _, leaf := range leaves {
-				if seen[leaf.id] {
-					return nil, fmt.Errorf("duplicate variant leaf in generic template: %s", leaf.declaration)
-				}
-				seen[leaf.id] = true
-			}
-		}
 	}
 	for _, c := range b.constraints {
 		accepted := false

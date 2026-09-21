@@ -16,8 +16,12 @@ import (
 
 func buildSource(t *testing.T, text string) (*Builder, *resolve.File) {
 	t.Helper()
+	return buildRegisteredSource(t, text, `{"active":[],"retired":[]}`)
+}
+func buildRegisteredSource(t *testing.T, text, registry string) (*Builder, *resolve.File) {
+	t.Helper()
 	root := t.TempDir()
-	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":[],"retired":[]}`, "src/main.can": text} {
+	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": registry, "src/main.can": text} {
 		path := filepath.Join(root, name)
 		if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
 			t.Fatal(err)

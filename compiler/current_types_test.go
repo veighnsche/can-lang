@@ -49,3 +49,25 @@ func TestDeclarationTypeInspection(t *testing.T) {
 		}
 	}
 }
+
+func TestDeclarationInspectionRejectsUnusedGenericErrors(t *testing.T) {
+	cases := []struct{ name, source, registry, diagnostic string }{
+		{"variant", "record box<item>\n    item value\n\nvariant impossible<item>\n    box<item>\n    box<item>\n", `{"active":[],"retired":[]}`, "duplicate variant leaf"},
+		{"constraint", "record holder<item>\n    collections::map<float,item> value\n", `{"active":[],"retired":[]}`, "catalogue constraint map_key"},
+		{"bound", "error 1000000 failed<item>(item value)\nfn item work<item>\n    emits [failed<item>,failed<item>]\n    given\n        item value\n    asserts\n        sample: 1 => ok 1\n    ok value\n", `{"active":[{"id":1000000,"kind":"app::failed"}],"retired":[]}`, "duplicate error in bound"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			root := t.TempDir()
+			for name, data := range map[string]string{"can.project.json": `{"source_root":".","error_registry":"can.errors.json"}`, "can.errors.json": tc.registry, "main.can": "package app\n    provides []\n    uses [collections]\n" + tc.source} {
+				if err := os.WriteFile(filepath.Join(root, name), []byte(data), 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var out, diagnostics bytes.Buffer
+			if code := runInspectTypes(&out, &diagnostics, []string{root}); code == 0 || out.Len() != 0 || !strings.Contains(diagnostics.String(), tc.diagnostic) {
+				t.Fatalf("unused generic admitted: code=%d output=%s diagnostics=%s", code, out.String(), diagnostics.String())
+			}
+		})
+	}
+}

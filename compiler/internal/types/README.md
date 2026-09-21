@@ -55,3 +55,14 @@ string shapes or old success wrappers.
 inference. It cannot create new nominal declarations or recursive shape edges,
 does not reopen the original graph, and uses the same framed identity as an
 explicit array annotation.
+
+Unused generic alternatives and error bounds also have resolved symbolic
+identities: declaration aliases normalize, parameter identities remain distinct,
+and callable error sets are order-insensitive. Variant-only expansion substitutes
+these symbols through nested source/catalogue variants to detect definite overlap
+without choosing any concrete parameter value. Possible overlap between different
+parameters is deferred to specialization. Catalogue constraints are checked per
+argument using its known outer kind; dependent siblings do not suppress checks.
+For inhabitation, symbolic parameters are potentially inhabited bases. A mandatory
+record cycle that remains impossible even under that maximum allowance rejects
+without specialization; arrays/options and plain generic fields remain valid.

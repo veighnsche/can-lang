@@ -1,0 +1,112 @@
+=== RUN   TestSourceTypeGraphAndCatalogueOption
+--- PASS: TestSourceTypeGraphAndCatalogueOption (0.01s)
+=== RUN   TestSourceConcreteTypeRefusals
+=== RUN   TestSourceConcreteTypeRefusals/node/finite_inhabitant
+=== RUN   TestSourceConcreteTypeRefusals/box/arity
+=== RUN   TestSourceConcreteTypeRefusals/box<void>/void
+=== RUN   TestSourceConcreteTypeRefusals/void[]/void
+=== RUN   TestSourceConcreteTypeRefusals/callable_int_(void)_emits_[]/void
+=== RUN   TestSourceConcreteTypeRefusals/callable_int_()_emits_[leaf]/nominal_errors
+=== RUN   TestSourceConcreteTypeRefusals/collections::set<float>/map_key
+=== RUN   TestSourceConcreteTypeRefusals/all_failed<leaf>/failure_variant
+=== RUN   TestSourceConcreteTypeRefusals/invalid/ineligible_variant_leaf
+=== RUN   TestSourceConcreteTypeRefusals/invalid/duplicate_variant_leaf
+=== RUN   TestSourceConcreteTypeRefusals/invalid/variant-only
+=== RUN   TestSourceConcreteTypeRefusals/growing<int>/expansion_exceeds
+--- PASS: TestSourceConcreteTypeRefusals (0.04s)
+    --- PASS: TestSourceConcreteTypeRefusals/node/finite_inhabitant (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/box/arity (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/box<void>/void (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/void[]/void (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/callable_int_(void)_emits_[]/void (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/callable_int_()_emits_[leaf]/nominal_errors (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/collections::set<float>/map_key (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/all_failed<leaf>/failure_variant (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/invalid/ineligible_variant_leaf (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/invalid/duplicate_variant_leaf (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/invalid/variant-only (0.00s)
+    --- PASS: TestSourceConcreteTypeRefusals/growing<int>/expansion_exceeds (0.00s)
+=== RUN   TestGenericPermutationHasFiniteConcreteGraph
+--- PASS: TestGenericPermutationHasFiniteConcreteGraph (0.00s)
+=== RUN   TestDeclarationAnnotationsCheckUnusedTemplates
+--- PASS: TestDeclarationAnnotationsCheckUnusedTemplates (0.01s)
+=== RUN   TestGeneratedFieldMetadataCollisions
+--- PASS: TestGeneratedFieldMetadataCollisions (0.00s)
+=== RUN   TestFiniteSpecializationCanChangeThenStabilize
+--- PASS: TestFiniteSpecializationCanChangeThenStabilize (0.00s)
+=== RUN   TestLongFiniteNominalChain
+--- PASS: TestLongFiniteNominalChain (0.00s)
+=== RUN   TestClosedCatalogueTypeShapes
+--- PASS: TestClosedCatalogueTypeShapes (0.00s)
+=== RUN   TestUnusedGenericSymbolicVariantDuplicates
+--- PASS: TestUnusedGenericSymbolicVariantDuplicates (0.01s)
+=== RUN   TestSymbolicCallableArgumentsNormalizeBounds
+--- PASS: TestSymbolicCallableArgumentsNormalizeBounds (0.00s)
+=== RUN   TestUnusedGenericSymbolicErrorBounds
+--- PASS: TestUnusedGenericSymbolicErrorBounds (0.00s)
+=== RUN   TestIndependentCatalogueConstraintsInUnusedGenerics
+--- PASS: TestIndependentCatalogueConstraintsInUnusedGenerics (0.01s)
+=== RUN   TestDistinctSymbolicParametersDeferPotentialOverlap
+--- PASS: TestDistinctSymbolicParametersDeferPotentialOverlap (0.01s)
+=== RUN   TestUnusedGenericVariantOnlyCycle
+--- PASS: TestUnusedGenericVariantOnlyCycle (0.00s)
+=== RUN   TestUnusedGenericRequiredCycles
+--- PASS: TestUnusedGenericRequiredCycles (0.01s)
+=== RUN   TestFiniteInhabitation
+=== RUN   TestFiniteInhabitation/array
+=== RUN   TestFiniteInhabitation/option
+=== RUN   TestFiniteInhabitation/required
+=== RUN   TestFiniteInhabitation/mutual-required
+=== RUN   TestFiniteInhabitation/variant-exit
+--- PASS: TestFiniteInhabitation (0.00s)
+    --- PASS: TestFiniteInhabitation/array (0.00s)
+    --- PASS: TestFiniteInhabitation/option (0.00s)
+    --- PASS: TestFiniteInhabitation/required (0.00s)
+    --- PASS: TestFiniteInhabitation/mutual-required (0.00s)
+    --- PASS: TestFiniteInhabitation/variant-exit (0.00s)
+=== RUN   TestVariantLeafRules
+=== RUN   TestVariantLeafRules/record
+=== RUN   TestVariantLeafRules/error
+=== RUN   TestVariantLeafRules/standard_failure
+=== RUN   TestVariantLeafRules/primitive
+=== RUN   TestVariantLeafRules/array
+=== RUN   TestVariantLeafRules/opaque
+=== RUN   TestVariantLeafRules/callable
+=== RUN   TestVariantLeafRules/arm
+=== RUN   TestVariantLeafRules/duplicate
+=== RUN   TestVariantLeafRules/overlap
+=== RUN   TestVariantLeafRules/cycle
+=== RUN   TestVariantLeafRules/mutual-cycle
+--- PASS: TestVariantLeafRules (0.00s)
+    --- PASS: TestVariantLeafRules/record (0.00s)
+    --- PASS: TestVariantLeafRules/error (0.00s)
+    --- PASS: TestVariantLeafRules/standard_failure (0.00s)
+    --- PASS: TestVariantLeafRules/primitive (0.00s)
+    --- PASS: TestVariantLeafRules/array (0.00s)
+    --- PASS: TestVariantLeafRules/opaque (0.00s)
+    --- PASS: TestVariantLeafRules/callable (0.00s)
+    --- PASS: TestVariantLeafRules/arm (0.00s)
+    --- PASS: TestVariantLeafRules/duplicate (0.00s)
+    --- PASS: TestVariantLeafRules/overlap (0.00s)
+    --- PASS: TestVariantLeafRules/cycle (0.00s)
+    --- PASS: TestVariantLeafRules/mutual-cycle (0.00s)
+=== RUN   TestNominalAndVariantCompatibility
+--- PASS: TestNominalAndVariantCompatibility (0.00s)
+=== RUN   TestCallableCompatibility
+--- PASS: TestCallableCompatibility (0.00s)
+=== RUN   TestRecursiveEqualityRejectsReachableExcludedData
+=== RUN   TestRecursiveEqualityRejectsReachableExcludedData/callable
+=== RUN   TestRecursiveEqualityRejectsReachableExcludedData/choice_arm
+=== RUN   TestRecursiveEqualityRejectsReachableExcludedData/opaque
+--- PASS: TestRecursiveEqualityRejectsReachableExcludedData (0.00s)
+    --- PASS: TestRecursiveEqualityRejectsReachableExcludedData/callable (0.00s)
+    --- PASS: TestRecursiveEqualityRejectsReachableExcludedData/choice_arm (0.00s)
+    --- PASS: TestRecursiveEqualityRejectsReachableExcludedData/opaque (0.00s)
+=== RUN   TestCopyUpdateContractsAndGraphEncapsulation
+--- PASS: TestCopyUpdateContractsAndGraphEncapsulation (0.00s)
+=== RUN   TestIdentitySizeAndGraphValidation
+--- PASS: TestIdentitySizeAndGraphValidation (0.00s)
+=== RUN   TestPhantomVariantArgumentsRemainInvariant
+--- PASS: TestPhantomVariantArgumentsRemainInvariant (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/types	0.360s

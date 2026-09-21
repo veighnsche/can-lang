@@ -28,18 +28,22 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 			var result syntax.TypeNode
 			var bound *syntax.ErrorBound
 			var alternatives []syntax.TypeNode
+			var nominalName string
 			switch d := declaration.(type) {
 			case *syntax.RecordDecl:
+				nominalName = d.Name.Text
 				for _, p := range d.Parameters {
 					params[p.Text] = true
 				}
 				fields = d.Fields
 			case *syntax.ErrorDecl:
+				nominalName = d.Name.Text
 				for _, p := range d.Parameters {
 					params[p.Text] = true
 				}
 				fields = d.Fields
 			case *syntax.VariantDecl:
+				nominalName = d.Name.Text
 				for _, p := range d.Parameters {
 					params[p.Text] = true
 				}
@@ -66,18 +70,15 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 					return nil, fmt.Errorf("%s annotation %s: %w", file.Source.ID, f.Name.Text, err)
 				}
 			}
-			var concreteLeaves []*Type
-			for _, a := range alternatives {
-				known, err := b.template(file, a, params, false)
-				if err != nil {
+			if len(alternatives) != 0 {
+				if err := b.checkSymbolicLeaves(file, alternatives, params); err != nil {
 					return nil, err
 				}
-				if known {
-					concrete, err := b.Resolve(file, a, nil, false)
-					if err != nil {
-						return nil, err
-					}
-					concreteLeaves = append(concreteLeaves, concrete)
+			}
+			for _, a := range alternatives {
+				_, err := b.template(file, a, params, false)
+				if err != nil {
+					return nil, err
 				}
 				if n, ok := a.(*syntax.NamedType); ok {
 					if n.Name.Package == "" && params[n.Name.Name] {
@@ -94,8 +95,10 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 					return nil, fmt.Errorf("variant alternatives require nominal leaves")
 				}
 			}
-			if len(params) != 0 && len(concreteLeaves) != 0 {
-				b.leafGroups = append(b.leafGroups, concreteLeaves)
+			if nominalName != "" && len(params) != 0 {
+				if err := b.checkSymbolicInhabitation(file.Package.Scope.Symbols[nominalName], params); err != nil {
+					return nil, err
+				}
 			}
 			if result != nil {
 				if _, err := b.template(file, result, params, true); err != nil {
@@ -138,6 +141,9 @@ func (b *Builder) template(file *resolve.File, node syntax.TypeNode, params map[
 				return false, err
 			}
 			concrete = concrete && known
+		}
+		if err := b.templateCatalogueConstraints(file, s, n.Arguments, params); err != nil {
+			return false, err
 		}
 	case *syntax.ArrayType:
 		known, err := b.template(file, n.Element, params, false)
@@ -196,7 +202,16 @@ func (b *Builder) template(file *resolve.File, node syntax.TypeNode, params map[
 }
 func (b *Builder) templateBound(file *resolve.File, bound syntax.ErrorBound, params map[string]bool) error {
 	seen := map[string]bool{}
+	env := parameterEnvironment(params)
 	for _, node := range bound.Types {
+		symbolic, err := b.symbolicType(file, node, env)
+		if err != nil {
+			return err
+		}
+		if seen[symbolic.key] {
+			return fmt.Errorf("duplicate error in bound")
+		}
+		seen[symbolic.key] = true
 		known, err := b.template(file, node, params, false)
 		if err != nil {
 			return err
@@ -209,10 +224,6 @@ func (b *Builder) templateBound(file *resolve.File, bound syntax.ErrorBound, par
 			if typ.kind != Error {
 				return fmt.Errorf("emits requires nominal errors")
 			}
-			if seen[typ.id] {
-				return fmt.Errorf("duplicate error in bound")
-			}
-			seen[typ.id] = true
 		} else if n, ok := node.(*syntax.NamedType); ok {
 			if n.Name.Package == "" && params[n.Name.Name] {
 				continue
