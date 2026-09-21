@@ -128,8 +128,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	questions := map[string]*ir.Question{}
 	judges := false
 	fetches := false
+	llms := false
 	for i, native := range program.Natives {
-		if native.Question == nil && native.Judge == nil && native.Fetch == nil && native.ArmDescription == nil {
+		if native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil {
 			continue
 		}
 		name := fmt.Sprintf("$canNative%d", i)
@@ -139,6 +140,10 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		if native.Question != nil {
 			questions[native.Symbol.ID] = native.Question
+		}
+		if native.LLM != nil {
+			functions[native.Symbol.ID] = name
+			llms = true
 		}
 		if native.Fetch != nil {
 			functions[native.Symbol.ID] = name
@@ -155,7 +160,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	connectionNames := map[string]string{}
 	for _, native := range program.Natives {
-		if native.Judge != nil || native.Fetch != nil {
+		if native.Judge != nil || native.Fetch != nil || native.LLM != nil {
 			connectionNames[native.Connection] = ""
 		}
 	}
@@ -229,6 +234,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if fetches {
 		state.WriteString("export let $canFetch: ReturnType<typeof $canCreateNamedFetch>;\n")
 	}
+	if llms {
+		state.WriteString("export let $canResponses: ReturnType<typeof $canCreateResponses>;\n")
+	}
 	if judges {
 		state.WriteString("export let $canAI: ReturnType<typeof $canCreateTypeSafe>;\n")
 	}
@@ -285,6 +293,17 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		fmt.Fprintf(&state, "$canFetch=$canCreateNamedFetch($canDomain,%s,$canOriginalEnvironment);\n", encoded)
 	}
+	if llms {
+		ids := map[string]string{}
+		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data", "refused": "can.std.llm@1::refused", "truncated": "can.std.llm@1::truncated", "invalidResponse": "can.std.llm@1::invalid_response"} {
+			ids[name] = numberIDs[declaration]
+		}
+		encoded, e := json.Marshal(ids)
+		if e != nil {
+			return nil, e
+		}
+		fmt.Fprintf(&state, "$canResponses=$canCreateResponses($canDomain,%s,$canOriginalEnvironment);\n", encoded)
+	}
 	if judges {
 		ids := map[string]string{}
 		for _, typ := range program.Model.Types() {
@@ -324,7 +343,10 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	if fetches {
 		imports = append(imports, ModuleImport{Target: runtime + "/transport/named.ts", Names: []ImportName{{"createNamedFetch", "$canCreateNamedFetch"}}})
 	}
-	if judges || fetches {
+	if llms {
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/responses.ts", Names: []ImportName{{"createResponses", "$canCreateResponses"}}})
+	}
+	if judges || fetches || llms {
 		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}})
 	}
 
@@ -358,7 +380,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			regions = append(regions, fn.Region)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.ArmDescription != nil) {
+			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.LLM != nil || native.ArmDescription != nil) {
 				regions = append(regions, native.Regions...)
 				if f := native.Fetch; f != nil {
 					descriptors = append(descriptors, f.Path, f.Body)
@@ -368,6 +390,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 					for _, entry := range f.Headers {
 						descriptors = append(descriptors, entry.Value)
 					}
+				}
+				if l := native.LLM; l != nil {
+					descriptors = append(descriptors, l.Instructions)
 				}
 				if q := native.Question; q != nil {
 					descriptors = append(descriptors, q.Instructions, q.Minimum)
@@ -402,7 +427,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString(code)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.ArmDescription == nil {
+			if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil {
 				continue
 			}
 			for _, region := range native.Regions {
@@ -420,6 +445,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 				code, e = emitter.QuestionPreparation(nativeNames[native.Symbol.ID], native.Question, nativeNames)
 			} else if native.ArmDescription != nil {
 				continue
+			} else if native.LLM != nil {
+				policy := program.Connections[native.Connection]
+				code, e = emitter.LLM(nativeNames[native.Symbol.ID], native.LLM, connectionNames[native.Connection], policy.Model, policy.MaxOutputTokens)
 			} else if native.Fetch != nil {
 				code, e = emitter.Fetch(nativeNames[native.Symbol.ID], native.Fetch, connectionNames[native.Connection])
 			} else {
@@ -436,6 +464,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})
+		}
+		if llms {
+			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canResponses", "$canResponses"}}})
 		}
 		if judges {
 			imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{"$canAI", "$canAI"}}})

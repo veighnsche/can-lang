@@ -19,6 +19,7 @@ type NativeDeclaration struct {
 	State          []syntax.Field
 	Regions        []*ir.Region
 	Registrations  []ir.JudgeRegistration
+	LLM            *ir.LLM
 	Fetch          *ir.Fetch
 	Question       *ir.Question
 	ArmDescription *ir.Expression

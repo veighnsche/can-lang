@@ -234,6 +234,20 @@
       "../codec/json.ts",
       "../codec/document.ts",
       "../codec/budget.ts"
+    ],
+    "ai/responses.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../codec/json.ts",
+      "../codec/document.ts",
+      "../codec/budget.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../assert/context.ts",
+      "../assert/provider.ts",
+      "../transport/http.ts",
+      "../transport/request.ts"
     ]
   }
 }

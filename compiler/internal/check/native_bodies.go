@@ -211,6 +211,24 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if err = scalarExpression(d.Asks, "str"); err != nil {
 				return err
 			}
+			state, inputs, err := judgeState(native, ctx.Parameters)
+			if err != nil {
+				return err
+			}
+			plan := &ir.LLM{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), StateInputs: inputs, State: state, Instructions: checkedDescriptors[d.Asks], Result: native.Signature.Result()}
+			if !scalar(plan.Result, "str") {
+				format, err := types.LLMSchema(plan.Result)
+				if err != nil {
+					return err
+				}
+				output, err := types.Schema(plan.Result)
+				if err != nil {
+					return err
+				}
+				plan.Format = &format
+				plan.Output = &output
+			}
+			native.LLM = plan
 		case *syntax.FetchDecl:
 			plan := &ir.Fetch{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Result: native.Signature.Result(), Method: strings.ToUpper(d.Method.Text)}
 			if err = checkFetchContentType(d, program.Connections[native.Connection]); err != nil {
