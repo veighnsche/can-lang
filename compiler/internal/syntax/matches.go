@@ -112,9 +112,10 @@ func (p *parser) outcomePattern() OutcomePattern {
 			pattern.Binding = &field
 		}
 	case p.at(Name):
-		pattern.Error = p.parseType()
-		if _, ok := pattern.Error.(*NamedType); !ok {
-			p.fail("completion error arm requires a named error type")
+		name := p.qualified()
+		pattern.Error = &NamedType{Span: name.Span, Name: name}
+		if p.at("<") {
+			p.fail("completion error patterns do not accept generic arguments")
 		}
 	default:
 		p.fail("expected an explicit success, named error, or [_] completion arm")

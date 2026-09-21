@@ -69,7 +69,13 @@ func FormatExpression(expression Expr) string {
 	case *ArrayExpr:
 		return "[" + formatArguments(n.Elements) + "]"
 	case *FieldExpr:
-		return FormatExpression(n.Receiver) + "." + n.Field.Text
+		separator := "."
+		if literal, ok := n.Receiver.(*LiteralExpr); ok && (literal.Token.Kind == Integer || literal.Token.Kind == Float) {
+			// Preserve lexical separation even in diagnostic fixtures where a
+			// numeric receiver has no such field. Parentheses change the AST.
+			separator = " ."
+		}
+		return FormatExpression(n.Receiver) + separator + n.Field.Text
 	case *IndexExpr:
 		return FormatExpression(n.Receiver) + "[" + FormatExpression(n.Index) + "]"
 	case *SliceExpr:
