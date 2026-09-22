@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Resolve for the I42 admission work how pool inputs become assertable, how example sources are organized, and which harness proves each P13 outcome row.",
+   "fixed_constraints": [
+    "Each of the four examples is a complete manifest-backed program with can.project.json, can.errors.json, src/, README, and declared-only assets and dependencies that builds from scratch, passes real assertions, and completes its documented flow end-to-end from a staged layout.",
+    "Account-search follows P13 exactly: ordinary records, four named callbacks, one open sql::pool via near capture, a static descriptor, and the eleven-row outcome table; partial fragments plus harness-side behavior do not qualify.",
+    "Assertion rows map onto non-elided inputs in order and every function requires them; http::request and sql::transaction are harness-elided while sql::pool is an ordinary assertable input no expression can produce, leaving pool functions unassertable.",
+    "Statuses, headers, and bodies are provable over staged HTTP, swapping only in the pinned browser; raw versus supplied evidence is labeled per result; live provider calls never support a verdict."
+   ]
+  },
+  "topics": {
+   "pool_assertion_inputs": {
+    "background": "Mandatory assertions cannot supply the near sql::pool inputs of the loader and callback functions, because the harness elides requests and transactions but leaves pools as ordinary values no syntax constructs.",
+    "facts": [
+     "Supplying pools from the harness reuses the frozen token object with no type-specific runtime work, and rows must still when-supply every pool operation or the live boundary refuses them.",
+     "Elision changes no green fixture since none takes a pool input; per-body open and close is today's only pool pattern and keeps checking exactly as before.",
+     "Keeping pools out of signatures forces per-request lifecycles inside callbacks, contradicting capture and multiplying connection work by request count."
+    ]
+   },
+   "app_source_layout": {
+    "background": "Four small servers share one anatomy of records, models, renderers, callbacks, routes, boot, and main, differing mainly in query and interaction focus.",
+    "facts": [
+     "Single-file sources concentrate each program for linear review and remove provides and uses bookkeeping entirely.",
+     "Multiple src/ modules mirror genuine project layout and put cross-file checking, overlays, and definition jumps under admission coverage.",
+     "Both organizations clear the same completion bar of fresh build, real assertions, and documented runs; only review texture and realism differ."
+    ]
+   },
+   "negative_allocation": {
+    "background": "The eleven outcome rows divide into wire-visible facts and engine-visible swap decisions that demand different harnesses for direct proof.",
+    "facts": [
+     "Raw HTTP staging asserts codes, headers, payloads, repeated parameters, and body limits quickly and repeatably for all trigger rows.",
+     "Browser runs assert fragment insertion on 200 and 422 plus its absence on 404, 405, 500, and 503 inside the pinned engine, row by row.",
+     "Localhost request policing and structured per-check output already exist in the I34 scenarios and extend to new ones unchanged."
+    ]
+   }
+  }
+ },
+ "questions": {
+  "pool_assertion_inputs": {
+   "type": "choice",
+   "instructions": "Select the assertability approach for captured pools, grounding the call in common and topics.pool_assertion_inputs.",
+   "criteria": {
+    "elide_pool": "Elide sql::pool inputs so the harness provides them: unassertable signatures become testable, historic results are untouched, and unprovisioned live use is still refused.",
+    "per_request_open": "Keep pools out of signatures with per-request open and close: no checker edit, but capture is dropped and each request repeats connection setup.",
+    "review_needed": "This evidence separates neither approach, or no approach holds the contracts."
+   }
+  },
+  "app_source_layout": {
+   "type": "choice",
+   "instructions": "Select the source organization per example, grounding the call in common and topics.app_source_layout.",
+   "criteria": {
+    "single_file": "Concentrate each example in one src/main.can: linear review with no module bookkeeping and no multi-file demonstration.",
+    "multi_module": "Decompose into src/ modules: authentic project shape with resolution and navigation coverage, plus linkage to keep coherent.",
+    "review_needed": "This evidence separates neither organization, or none holds the contracts."
+   }
+  },
+  "negative_allocation": {
+   "type": "choice",
+   "instructions": "Select the harness split for outcome rows, grounding the call in common and topics.negative_allocation.",
+   "criteria": {
+    "split_by_observability": "Match rows to harnesses by visibility: wire facts over staged HTTP, swap facts in the browser, one native witness per row.",
+    "http_first": "Cover the full table over staged HTTP and use the browser for happy paths only: cheap deterministic rows with engine swap gaps on errors.",
+    "review_needed": "This evidence separates neither split, or no split holds the contracts."
+   }
+  }
+ }
+}

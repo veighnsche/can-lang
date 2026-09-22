@@ -1,0 +1,52 @@
+package model
+    provides [sample_loader, search_accounts_model, pool_loader]
+    uses [records, sql]
+
+/// Supply a named loader value for consumer assertions.
+fn records::account_row[] sample_loader
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    given
+        str query
+    asserts
+        empty: "x" => ok []
+    ok []
+
+/// Map the loader's complete domain bound to response data.
+fn records::search_view search_accounts_model
+    emits []
+    given
+        str query
+        callable records::account_row[] (str) emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] loader
+    asserts
+        found: "ann", callable sample_loader => ok records::search_view(200, [records::account_row(7, "Ann")], "")
+        unavailable: "ann", callable sample_loader => ok records::search_view(503, [], "Temporarily unavailable.")
+    match call loader(query)
+        when
+            found: "ann" => ok [records::account_row(7, "Ann")]
+            unavailable: "ann" => sql::query_failed("search_accounts", "08006")
+        ok records::account_row[] rows => ok records::search_view(200, rows, "")
+        sql::connection_failed => ok records::search_view(503, [], "Temporarily unavailable.")
+        sql::query_failed => ok records::search_view(503, [], "Temporarily unavailable.")
+        sql::unsupported_value => ok records::search_view(500, [], "Internal error.")
+        sql::constraint_failed => ok records::search_view(500, [], "Internal error.")
+        sql::row_limit => ok records::search_view(500, [], "Internal error.")
+        sql::schema_mismatch => ok records::search_view(500, [], "Internal error.")
+
+/// Query the manifest search descriptor through the captured pool.
+fn records::account_row[] pool_loader
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    given
+        str query
+        near sql::pool pool
+    asserts
+        sample: "x" => ok []
+    match call sql::query_rows<records::search_parameters, records::account_row>(pool, "search_accounts", records::search_parameters("%" + query + "%"), 25)
+        when
+            sample: pool, "search_accounts", records::search_parameters("%x%"), 25 => ok []
+        ok records::account_row[] rows => ok rows
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        sql::row_limit
+        sql::schema_mismatch

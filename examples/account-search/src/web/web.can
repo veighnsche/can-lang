@@ -1,0 +1,188 @@
+package web
+    provides [show_accounts, search_accounts, validate_account, dashboard_summary, search_routes, boot, main]
+    uses [records, model, render, http, html, htmx, sql, clock, text, codec, bytes, io]
+
+/// Serve the accounts page.
+fn http::server_response show_accounts
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call render::page()
+        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_target => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_interval => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Answer one account search from the query string.
+fn http::server_response search_accounts
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+    asserts
+        missing: => ok
+        blank: => ok
+        found: => ok
+        down: => ok
+    callable records::account_row[] (str) emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] loader = callable model::pool_loader
+    match call http::query_one(req, "query")
+        when
+            missing: req, "query" => http::invalid_request("query_missing")
+            blank: req, "query" => ok ""
+            found: req, "query" => ok "ann"
+            down: req, "query" => ok "ann"
+        ok str query => match query is ""
+            true => match call render::feedback("Enter a search term.")
+                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            false => match call model::search_accounts_model(query, loader)
+                when
+                    found: "ann", loader => ok records::search_view(200, [records::account_row(7, "Ann")], "")
+                    down: "ann", loader => ok records::search_view(503, [], "Temporarily unavailable.")
+                ok records::search_view view => match view.status
+                    200 => match call render::results_list(view.rows)
+                        ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+                    503 => match call render::feedback(view.message)
+                        ok html::safe fragment => ok call http::response_html(call http::status_unavailable(), call http::empty_server_headers(), fragment)
+                        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+                    _ => match call render::feedback(view.message)
+                        ok html::safe fragment => ok call http::response_html(call http::status_internal(), call http::empty_server_headers(), fragment)
+                        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        http::invalid_request => match call render::feedback("Enter a search term.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Validate one submitted account name.
+fn http::server_response validate_account
+    emits []
+    given
+        http::request req
+    asserts
+        blank: => ok
+        named: => ok
+    match call http::request_form<records::account_form>(req, 2048)
+        when
+            blank: req, 2048 => ok records::account_form("")
+            named: req, 2048 => ok records::account_form("Ann")
+        ok records::account_form form => match form.name is ""
+            true => match call render::feedback("Name is required.")
+                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            false => match call render::feedback(form.name)
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        http::body_limit => match call render::feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        http::invalid_request => match call render::feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        codec::invalid_data => match call render::feedback("Name is required.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Summarize the dashboard clock reading.
+fn http::server_response dashboard_summary
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call clock::wall_millis()
+        when
+            sample: => ok 1000
+        ok int millis => match call text::from_int(millis)
+            ok str label => match call render::feedback(label)
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Mount the four account callbacks, capturing the open pool.
+fn http::router search_routes
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/accounts", callable show_accounts) as http::route home
+        call http::route_get("/accounts/search", callable search_accounts) as http::route search
+        call http::route_post("/accounts/validate", callable validate_account) as http::route submit
+        call http::route_get("/dashboard/summary", callable dashboard_summary) as http::route summary
+        call http::make_router([home, search, submit, summary]) as http::router built
+        ok => ok built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+
+/// Open the pool and start the account server on one port.
+fn http::server boot
+    emits [http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call sql::pool_open("ACCOUNTS_DB", 5)
+        when
+            sample: "ACCOUNTS_DB", 5 => ok
+        ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+            ok http::server_config config => match call search_routes(pool)
+                ok http::router built => match call http::server_start(config, built)
+                    when
+                        sample: config, built => ok
+                    ok http::server sturdy => ok sturdy
+                    http::bind_failed
+                http::invalid_route
+                http::duplicate_route
+                http::ambiguous_route
+            http::invalid_server_config
+        http::credentials_missing
+        sql::connection_failed
+
+/// Serve accounts until a shutdown signal, then close the pool.
+fn void main
+    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        serve: ["18484"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: account-search <port>")
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                ok int written => ok
+                io::write_failed
+            codec::invalid_data
+        false => match call bytes::from_utf8(args[0])
+            ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+                ok int port => match call sql::pool_open("ACCOUNTS_DB", 5)
+                    when
+                        serve: "ACCOUNTS_DB", 5 => ok
+                    ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                        ok http::server_config config => match call search_routes(pool)
+                            ok http::router built => match call http::server_start(config, built)
+                                when
+                                    serve: config, built => ok
+                                ok http::server sturdy => match call http::server_wait(sturdy)
+                                    when
+                                        serve: sturdy => ok
+                                    ok => match call sql::pool_close(pool, 1000)
+                                        when
+                                            serve: pool, 1000 => ok
+                                        ok => ok
+                                        sql::close_failed
+                                    http::shutdown_failed
+                                http::bind_failed
+                            http::invalid_route
+                            http::duplicate_route
+                            http::ambiguous_route
+                        http::invalid_server_config
+                    http::credentials_missing
+                    sql::connection_failed
+                codec::invalid_data
+            codec::invalid_data

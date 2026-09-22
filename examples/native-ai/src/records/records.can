@@ -1,0 +1,48 @@
+package records
+    provides [triage_plan, triage_report, triage_bundle, triage_scored, search_parameters, count_params, account_row, total_row, count_value]
+    uses []
+
+/// A generated triage plan for one account.
+record triage_plan
+    str[] keywords
+    bool ready
+
+/// The typed triage output.
+record triage_report
+    str keyword
+    str level
+    float score
+    int total
+    int recent
+
+/// One review bundle of dynamic options and names.
+record triage_bundle
+    choice_option[] options
+    str[] names
+
+/// One scored review bundle.
+record triage_scored
+    str keyword
+    float score
+
+/// Parameters for the recent-accounts descriptor.
+record search_parameters
+    str term
+
+/// Parameters for the account-total descriptor.
+record count_params
+    int minimum
+
+/// One validated account row.
+record account_row
+    int id
+    str display_name
+
+/// One validated account total.
+record total_row
+    int total
+
+/// A count that may be unknown when its query fails.
+record count_value
+    int value
+    bool known

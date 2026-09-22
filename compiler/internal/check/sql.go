@@ -22,7 +22,18 @@ const (
 	sqlQueryOptional = "can.std.sql@1::query_optional"
 	sqlQueryRows     = "can.std.sql@1::query_rows"
 	sqlExecute       = "can.std.sql@1::execute"
+
+	sqlPoolHandle = "can.std.sql@1::pool"
 )
+
+// isPoolScopeRequest reports whether the type is the opaque connection
+// pool. No Can expression constructs a pool, so assertion rows omit
+// pool inputs while the harness splices its scope token; any pool
+// operation the row does not when-supply fails at the denied live
+// boundary, exactly like transaction handles.
+func isPoolScopeRequest(typ *types.Type) bool {
+	return typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == sqlPoolHandle
+}
 
 // sqlRecord resolves a manifest type name to an ordinary record in the
 // owning project. The name must be a bare package-qualified nominal; type

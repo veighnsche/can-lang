@@ -185,7 +185,10 @@ func TestSQLTransactionRejects(t *testing.T) {
 	}{
 		{"callback emits", strings.Replace(sqlTransactionSource, "fn sql::decision<int> decide\n    emits []", "fn sql::decision<int> decide\n    emits [sql::query_failed]", 1), "does not fit expected type"},
 		{"callback result", strings.Replace(strings.Replace(sqlTransactionSource, "fn sql::decision<int> decide", "fn int decide", 1), "sample: => ok sql::commit<int>(1)", "sample: => ok 1", 1), "does not fit expected type"},
-		{"callback scope input", strings.Replace(sqlTransactionSource, "        sql::transaction tx", "        sql::pool tx", 1), "call arity mismatch"},
+		// Pool inputs are scope-elided like transaction handles (I42), so
+		// the zero-argument assert row stays arity-correct and the pool
+		// passed to transaction_execute fails as a type mismatch instead.
+		{"callback scope input", strings.Replace(sqlTransactionSource, "        sql::transaction tx", "        sql::pool tx", 1), "does not fit expected type"},
 		{"void result", strings.Replace(sqlTransactionSource, "sql::with_transaction<int>", "sql::with_transaction<void>", 1), "void is not a data type"},
 		{"missing type args", strings.Replace(sqlTransactionSource, "sql::with_transaction<int>(pool, callable decide)", "sql::with_transaction(pool, callable decide)", 1), "explicit type arguments"},
 		{"wrong callback target", strings.Replace(sqlTransactionSource, "callable decide", "callable run", 1), "does not fit expected type"},

@@ -1,0 +1,3 @@
+body{font-family:system-ui,sans-serif;max-width:48rem;margin:2rem auto}
+.htmx-indicator{opacity:0;transition:opacity 200ms ease-in 200ms}
+.htmx-request .htmx-indicator{opacity:1}

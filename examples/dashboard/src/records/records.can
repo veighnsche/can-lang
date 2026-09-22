@@ -1,0 +1,33 @@
+package records
+    provides [search_parameters, count_params, account_row, total_row, count_value, dashboard_view]
+    uses []
+
+/// Parameters for the recent-accounts descriptor.
+record search_parameters
+    str term
+
+/// Parameters for the account-total descriptor.
+record count_params
+    int minimum
+
+/// One validated account row.
+record account_row
+    int id
+    str display_name
+
+/// One validated account total.
+record total_row
+    int total
+
+/// A count that may be unknown when its query fails.
+record count_value
+    int value
+    bool known
+
+/// Data passed to the summary renderer.
+record dashboard_view
+    int status
+    int total
+    int recent
+    str stamp
+    str message

@@ -1,0 +1,111 @@
+package render
+    provides [feedback, account_item, results_list, page]
+    uses [records, html, htmx, asset]
+
+/// Render one message as a safe single-paragraph fragment.
+fn html::safe feedback
+    emits [html::invalid_structure]
+    given
+        str message
+    asserts
+        plain: "Ann" => ok
+        hostile: "<script>window.__pwned=1</script>" => ok
+    match chain
+        call html::text(message) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+
+/// Render one account row as a list item, escaping the display name.
+fn html::node account_item
+    emits [html::invalid_structure]
+    given
+        records::account_row row
+    asserts
+        sample: records::account_row(7, "Ann") => ok
+        hostile: records::account_row(8, "</li><script>bad()</script>") => ok
+    match chain
+        call html::text(row.display_name) as html::node label
+        call html::make_tag("li") as html::tag item_tag
+        call html::element(item_tag, [], [label]) as html::node item
+        ok => ok item
+        html::invalid_structure
+
+/// Render result rows as a trusted list fragment.
+fn html::safe results_list
+    emits [html::invalid_structure]
+    given
+        records::account_row[] rows
+    asserts
+        sample: [records::account_row(7, "Ann")] => ok
+        empty: [] => ok
+    match call rows.map(callable account_item)
+        ok html::node[] items => match chain
+            call html::make_tag("ul") as html::tag list_tag
+            call html::element(list_tag, [], items) as html::node list
+            call html::fragment([list]) as html::safe body
+            ok => ok body
+            html::invalid_structure
+        html::invalid_structure
+
+/// Build the accounts page: search form, validation form, and dashboard.
+fn html::safe page
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call htmx::runtime_head() as html::node runtime
+        call html::parse_url("/accounts/search") as html::url search_url
+        call htmx::get(search_url) as html::attribute search_get
+        call htmx::target_id("account_results") as htmx::target search_target
+        call htmx::target_attribute(search_target) as html::attribute search_selector
+        call htmx::swap_inner() as html::attribute swap
+        call htmx::trigger_change() as html::attribute trigger
+        call html::text_attribute("id", "account_search") as html::attribute search_id
+        call html::make_tag("form") as html::tag form_tag
+        call html::text_attribute("name", "query") as html::attribute query_name
+        call html::text_attribute("id", "account_query") as html::attribute query_id
+        call html::make_tag("input") as html::tag input_tag
+        call html::element(input_tag, [query_name, query_id], []) as html::node query_field
+        call html::text_attribute("id", "account_results") as html::attribute results_id
+        call html::text("waiting") as html::node waiting
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [results_id], [waiting]) as html::node results
+        call html::element(form_tag, [search_id, search_get, search_selector, swap, trigger], [query_field, results]) as html::node search_form
+        call html::parse_url("/accounts/validate") as html::url validate_url
+        call htmx::post(validate_url) as html::attribute post
+        call htmx::target_id("validation_results") as htmx::target validation_target
+        call htmx::target_attribute(validation_target) as html::attribute validation_selector
+        call html::text_attribute("method", "post") as html::attribute method
+        call html::text_attribute("id", "account_form") as html::attribute form_id
+        call html::text_attribute("name", "name") as html::attribute field_name
+        call html::text_attribute("id", "account_name") as html::attribute field_id
+        call html::element(input_tag, [field_name, field_id], []) as html::node field
+        call html::text_attribute("type", "submit") as html::attribute submit_type
+        call htmx::disable_this() as html::attribute disable
+        call html::text("Save") as html::node submit_label
+        call html::make_tag("button") as html::tag button_tag
+        call html::element(button_tag, [submit_type, disable], [submit_label]) as html::node submit
+        call html::text_attribute("id", "validation_results") as html::attribute validation_id
+        call html::text("unvalidated") as html::node validation_waiting
+        call html::element(paragraph, [validation_id], [validation_waiting]) as html::node validation_results
+        call html::element(form_tag, [form_id, method, post, validation_selector, swap], [field, submit, validation_results]) as html::node validation_form
+        call html::parse_url("/dashboard/summary") as html::url dashboard_url
+        call htmx::get(dashboard_url) as html::attribute dashboard_get
+        call htmx::target_id("dashboard") as htmx::target dashboard_target
+        call htmx::target_attribute(dashboard_target) as html::attribute dashboard_selector
+        call htmx::trigger_every(5000) as html::attribute poll
+        call html::text_attribute("id", "dashboard") as html::attribute dashboard_id
+        call html::text("dashboard-before") as html::node dashboard_text
+        call html::make_tag("div") as html::tag division
+        call html::element(division, [dashboard_id, dashboard_get, dashboard_selector, swap, poll], [dashboard_text]) as html::node dashboard
+        call html::document("Accounts", [css, runtime], [search_form, validation_form, dashboard]) as html::safe document
+        ok => ok document
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target
+        htmx::invalid_interval

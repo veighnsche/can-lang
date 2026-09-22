@@ -1,0 +1,16 @@
+package model
+    provides [validate_signup]
+    uses [records, option]
+
+/// Map a decoded signup form to a response view.
+fn records::signup_view validate_signup
+    emits []
+    given
+        records::signup_form form
+    asserts
+        blank: records::signup_form("", [], option::none()) => ok records::signup_view(422, "", 0, "Name is required.")
+        named: records::signup_form("Ann", ["a", "b"], option::none()) => ok records::signup_view(200, "Ann", 2, "")
+        noted: records::signup_form("Bo", [], option::some("hi")) => ok records::signup_view(200, "Bo", 0, "")
+    match form.name is ""
+        true => ok records::signup_view(422, "", 0, "Name is required.")
+        false => ok records::signup_view(200, form.name, form.tags.length, "")

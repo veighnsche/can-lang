@@ -1,0 +1,100 @@
+package app
+    provides [main]
+    uses [records, oracles, model, http, codec, llm, ai, sql, bytes, io]
+
+/// Triage one account through the native pipeline and print the report.
+fn void main
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, sql::connection_failed, sql::close_failed, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        triage: ["Ann"] => ok
+        down: ["Ann"] => ok
+        unclosed: ["Ann"] => sql::close_failed("drain")
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: native-ai <account> [names...]")
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                ok int written => ok
+                io::write_failed
+            codec::invalid_data
+        false => match call oracles::draft_account(args[0])
+            when
+                triage: "Ann" => ok records::triage_plan(["vip", "new"], true)
+                down: "Ann" => ok records::triage_plan(["vip"], true)
+                unclosed: "Ann" => ok records::triage_plan(["vip", "new"], true)
+            ok records::triage_plan plan => match call model::plan_options(plan)
+                ok choice_option[] options => match call oracles::review_bundle(records::triage_bundle(options, args))
+                    when
+                        triage: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
+                        down: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
+                        unclosed: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
+                    ok records::triage_scored scored => match call model::gate(scored.score)
+                        ok str level => match call sql::pool_open("TRIAGE_DB", 5)
+                            when
+                                triage: "TRIAGE_DB", 5 => ok
+                                down: "TRIAGE_DB", 5 => ok
+                                unclosed: "TRIAGE_DB", 5 => ok
+                            ok sql::pool pool => match call concurrent_counts(pool)
+                                ok records::count_value[] numbers => match numbers[0].known and numbers[1].known
+                                    true => match call codec::encode_json<records::triage_report>(records::triage_report(scored.keyword, level, scored.score, numbers[1].value, numbers[0].value))
+                                        ok bytes::buffer encoded => match call io::stdout_write(encoded)
+                                            when
+                                                triage: encoded => ok 64
+                                                unclosed: encoded => ok 64
+                                            ok int written => match call sql::pool_close(pool, 1000)
+                                                when
+                                                    triage: pool, 1000 => ok
+                                                    unclosed: pool, 1000 => sql::close_failed("drain")
+                                                ok => ok
+                                                sql::close_failed
+                                            io::write_failed
+                                        codec::invalid_data
+                                    false => match call sql::pool_close(pool, 1000)
+                                        when
+                                            down: pool, 1000 => ok
+                                        ok => match call bytes::from_utf8("unavailable")
+                                            ok bytes::buffer message => match call io::stdout_write(message)
+                                                when
+                                                    down: message => ok 11
+                                                ok int written => ok
+                                                io::write_failed
+                                            codec::invalid_data
+                                        sql::close_failed
+                            http::credentials_missing
+                            sql::connection_failed
+                    http::invalid_request
+                    http::credentials_missing
+                    http::transport_failed
+                    http::timeout
+                    http::body_limit
+                    http::status_error
+                    codec::invalid_data
+                    ai::invalid_question
+                    ai::invalid_answer
+            http::invalid_request
+            http::credentials_missing
+            http::transport_failed
+            http::timeout
+            http::body_limit
+            http::status_error
+            codec::invalid_data
+            llm::refused
+            llm::truncated
+            llm::invalid_response
+
+/// Read the recent count and account total together.
+fn records::count_value[] concurrent_counts
+    emits []
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok [records::count_value(2, true), records::count_value(2, true)]
+    records::count_value[] numbers = match call concurrent
+        model::recent_count(pool)
+            ok records::count_value count => ok count
+        model::account_total(pool)
+            ok records::count_value count => ok count
+    ok numbers

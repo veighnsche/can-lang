@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Decide the assertion story for near-captured database pools, the file layout of the four example programs, and the test boundary for every P13 outcome in the Can admission suite.",
+   "fixed_constraints": [
+    "Native-ai, account-search, form-validation, and dashboard each arrive as a manifest-backed project with can.project.json, can.errors.json, src/, a README, and strictly declared assets and dependencies, building fresh and running end-to-end from staged layouts with genuine Can assertions.",
+    "P13 pins the account-search shape: ordinary records, four named mounted callbacks, a single open sql::pool captured via near, one static descriptor, and eleven outcome rows; fragments plus harness behavior are explicitly not complete programs.",
+    "Mandatory assertions bind row arguments to non-elided inputs positionally; the checker elides http::request and sql::transaction to a harness token but not sql::pool, and since no expression yields a pool, pool-taking functions are unassertable as the checker stands.",
+    "Raw staged HTTP sees statuses, headers, and bodies; HTMX swap versus no-swap is visible solely in the pinned browser; raw-provider and supplied evidence carry separate labels; shipped verdicts never rest on live provider calls."
+   ]
+  },
+  "topics": {
+   "pool_assertion_inputs": {
+    "background": "Near-captured pools reach the production loader and the search callback as assertable inputs the assertion language cannot value, so the P13-mandated assertions for those functions cannot be written today.",
+    "facts": [
+     "A pool elision would hand rows the identical frozen harness token already served for all elided positions, and pool operations lacking a when supply die at the assertion live-boundary denial.",
+     "Current fixtures never declare pool inputs because each query function opens its pool in its body, hence elision widens acceptance without altering any recorded pass or fail.",
+     "Per-request open and close inside callbacks avoids checker work yet breaks the capture contract and repeats connection setup on every request the server fields."
+    ]
+   },
+   "app_source_layout": {
+    "background": "The largest application covers records, model mapping, page and fragment rendering, four mounted callbacks, routing, boot, and the serving main; its siblings repeat the pattern at smaller scale.",
+    "facts": [
+     "A single src/main.can holds each application near four hundred lines maximum, reviewable in one pass with zero inter-file linkage to maintain.",
+     "Module splits across src/ route through provides and uses like production code, exercising resolution, overlays, and jumps across files in every admission run.",
+     "Fresh builds, true assertions, and documented end-to-end runs gate both shapes identically; the choice trades review locality against project realism."
+    ]
+   },
+   "negative_allocation": {
+    "background": "Validation, SQL mapping, routing, rendering, and shutdown rows in the outcome table surface through different channels that no single harness observes alone.",
+    "facts": [
+     "Deterministic raw-HTTP staging covers every status, header, body, multiplicity, and limit row cheaply, but stays blind to fragment swapping.",
+     "Pinned-browser scenarios witness genuine 200/422 swaps and 404/405/500/503 withholds per row, trading engine fidelity for slower execution.",
+     "Localhost-only routing plus per-check records come free with the I34 browser harness for any scenario added beneath it."
+    ]
+   }
+  }
+ },
+ "questions": {
+  "pool_assertion_inputs": {
+   "type": "choice",
+   "instructions": "Pick the assertion design for near-captured pools. Consult common and topics.pool_assertion_inputs.",
+   "criteria": {
+    "elide_pool": "Treat sql::pool inputs as harness-supplied like transaction handles: previously unassertable functions gain assertions, shipped verdicts stay fixed, and live pool use without supply keeps failing closed.",
+    "per_request_open": "Open and close pools inside each callback body instead: zero checker delta, at the price of abandoning near capture and paying connection setup per request.",
+    "review_needed": "Neither design is separable on this evidence, or neither preserves the contracts."
+   }
+  },
+  "app_source_layout": {
+   "type": "choice",
+   "instructions": "Pick one source layout per application. Consult common and topics.app_source_layout.",
+   "criteria": {
+    "single_file": "One src/main.can each: minimal linkage, single-pass review, and fixtures that never demonstrate multi-file structure.",
+    "multi_module": "Modules under src/ for records plus model, renderers, callbacks plus routes, and main: realistic linkage and resolution coverage with a wider consistency surface.",
+    "review_needed": "Neither layout is separable on this evidence, or neither preserves the contracts."
+   }
+  },
+  "negative_allocation": {
+   "type": "choice",
+   "instructions": "Pick the boundary allocation for outcome rows. Consult common and topics.negative_allocation.",
+   "criteria": {
+    "split_by_observability": "Send status, header, and body rows to staged HTTP and swap and no-swap rows to the browser: each outcome is witnessed at the single boundary that can see it.",
+    "http_first": "Establish all rows over staged HTTP and reserve the browser for happy-path swaps: full deterministic coverage with error-swap behavior never exercised in an engine.",
+    "review_needed": "Neither allocation is separable on this evidence, or neither preserves the contracts."
+   }
+  }
+ }
+}

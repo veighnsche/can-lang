@@ -1,0 +1,62 @@
+package render
+    provides [feedback, summary, page]
+    uses [records, html, htmx, asset, text]
+
+/// Render one message as a safe single-paragraph fragment.
+fn html::safe feedback
+    emits [html::invalid_structure]
+    given
+        str message
+    asserts
+        plain: "Ann" => ok
+        hostile: "<script>window.__pwned=1</script>" => ok
+    match chain
+        call html::text(message) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+
+/// Render the dashboard summary as a safe fragment.
+fn html::safe summary
+    emits [html::invalid_structure]
+    given
+        records::dashboard_view view
+    asserts
+        sample: records::dashboard_view(200, 7, 2, "1000", "") => ok
+    match chain
+        call text::from_int(view.total) as str total
+        call text::from_int(view.recent) as str recent
+        call html::text(total + " accounts " + recent + " recent " + view.stamp) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+
+/// Build the dashboard page with its polling section.
+fn html::safe page
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call htmx::runtime_head() as html::node runtime
+        call html::parse_url("/dashboard/data") as html::url data_url
+        call htmx::get(data_url) as html::attribute data_get
+        call htmx::target_id("dashboard") as htmx::target dashboard_target
+        call htmx::target_attribute(dashboard_target) as html::attribute dashboard_selector
+        call htmx::swap_inner() as html::attribute swap
+        call htmx::trigger_every(5000) as html::attribute poll
+        call html::text_attribute("id", "dashboard") as html::attribute dashboard_id
+        call html::text("dashboard-before") as html::node dashboard_text
+        call html::make_tag("div") as html::tag division
+        call html::element(division, [dashboard_id, data_get, dashboard_selector, swap, poll], [dashboard_text]) as html::node dashboard
+        call html::document("Dashboard", [css, runtime], [dashboard]) as html::safe document
+        ok => ok document
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target
+        htmx::invalid_interval

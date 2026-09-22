@@ -1,0 +1,101 @@
+{
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "base": "http://127.0.0.1:18542",
+  "passed": true,
+  "checks": [
+    {
+      "name": "htmx-loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "single-pinned-script",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "search-200-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "search-422-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "search-hostile-escaped",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "validate-422-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "validate-200-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "dashboard-poll",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-external-requests",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "aborted": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/accounts",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/__can/project/92484a48ffcea790eee02e52058a883cf5822b6bbbca4718162f0040e6a41e44/site.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/__can/assets/htmx-4.0.0.min.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/accounts/search?query=Ann",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/accounts/search?query=",
+      "status": 422
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/accounts/search?query=%3Cem%3E",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18542/accounts/validate",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18542/accounts/validate",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18542/dashboard/summary",
+      "status": 200
+    }
+  ]
+}

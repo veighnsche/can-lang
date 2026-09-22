@@ -1,0 +1,16 @@
+package records
+    provides [signup_form, signup_view]
+    uses [option]
+
+/// The signup form body: one name, repeated tags, an optional note.
+record signup_form
+    str name
+    str[] tags
+    option::value<str> note
+
+/// Validated signup data passed to the renderer.
+record signup_view
+    int status
+    str name
+    int tag_count
+    str message

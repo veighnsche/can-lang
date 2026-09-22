@@ -1,0 +1,82 @@
+package render
+    provides [feedback, signup_result, page]
+    uses [records, html, htmx, asset, text]
+
+/// Render one message as a safe single-paragraph fragment.
+fn html::safe feedback
+    emits [html::invalid_structure]
+    given
+        str message
+    asserts
+        plain: "Ann" => ok
+        hostile: "<script>window.__pwned=1</script>" => ok
+    match chain
+        call html::text(message) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+
+/// Render a validated signup as a safe fragment.
+fn html::safe signup_result
+    emits [html::invalid_structure]
+    given
+        records::signup_view view
+    asserts
+        sample: records::signup_view(200, "Ann", 2, "") => ok
+    match chain
+        call text::from_int(view.tag_count) as str count
+        call html::text(view.name + " tags " + count) as html::node text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [text]) as html::node line
+        call html::fragment([line]) as html::safe body
+        ok => ok body
+        html::invalid_structure
+
+/// Build the signup page with its validation form.
+fn html::safe page
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call htmx::runtime_head() as html::node runtime
+        call html::parse_url("/signup/validate") as html::url validate_url
+        call htmx::post(validate_url) as html::attribute post
+        call htmx::target_id("signup_results") as htmx::target results_target
+        call htmx::target_attribute(results_target) as html::attribute results_selector
+        call htmx::swap_inner() as html::attribute swap
+        call htmx::indicator_id("signup_progress") as html::attribute progress
+        call html::text_attribute("method", "post") as html::attribute method
+        call html::text_attribute("id", "signup_form") as html::attribute form_id
+        call html::make_tag("form") as html::tag form_tag
+        call html::text_attribute("name", "name") as html::attribute field_name
+        call html::text_attribute("id", "signup_name") as html::attribute field_id
+        call html::make_tag("input") as html::tag input_tag
+        call html::element(input_tag, [field_name, field_id], []) as html::node field
+        call html::text_attribute("name", "tags") as html::attribute tags_name
+        call html::element(input_tag, [tags_name], []) as html::node tags
+        call html::text_attribute("name", "note") as html::attribute note_name
+        call html::element(input_tag, [note_name], []) as html::node note
+        call html::text_attribute("type", "submit") as html::attribute submit_type
+        call htmx::disable_this() as html::attribute disable
+        call html::text("Sign up") as html::node submit_label
+        call html::make_tag("button") as html::tag button_tag
+        call html::element(button_tag, [submit_type, disable], [submit_label]) as html::node submit
+        call html::text_attribute("id", "signup_progress") as html::attribute progress_id
+        call html::text_attribute("class", "htmx-indicator") as html::attribute progress_class
+        call html::text("…") as html::node progress_text
+        call html::make_tag("span") as html::tag span_tag
+        call html::element(span_tag, [progress_id, progress_class], [progress_text]) as html::node indicator
+        call html::text_attribute("id", "signup_results") as html::attribute results_id
+        call html::text("unvalidated") as html::node waiting
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [results_id], [waiting]) as html::node results
+        call html::element(form_tag, [form_id, method, post, results_selector, swap, progress], [field, tags, note, submit, indicator, results]) as html::node form
+        call html::document("Signup", [css, runtime], [form]) as html::safe document
+        ok => ok document
+        html::invalid_structure
+        html::invalid_url
+        htmx::invalid_target

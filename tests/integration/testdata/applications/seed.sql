@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS can_i42_accounts;
+DROP TABLE IF EXISTS can_i42_dashboard;
+DROP TABLE IF EXISTS can_i42_triage;
+CREATE TABLE can_i42_accounts (id SERIAL PRIMARY KEY, display_name TEXT UNIQUE NOT NULL);
+INSERT INTO can_i42_accounts (display_name) VALUES ('Ann'), ('Jason'), ('Mason'), ('Bob'), ('O''Brien'), ('Zoë'), ('<em>Hax</em>');
+CREATE TABLE can_i42_dashboard (id SERIAL PRIMARY KEY, display_name TEXT NOT NULL);
+INSERT INTO can_i42_dashboard (display_name) VALUES ('Ann'), ('Bo'), ('Cy');
+CREATE TABLE can_i42_triage (id SERIAL PRIMARY KEY, display_name TEXT NOT NULL);
+INSERT INTO can_i42_triage (display_name) VALUES ('Ann'), ('Bo');
+DROP TABLE IF EXISTS can_i42_accounts;
+DROP TABLE IF EXISTS can_i42_dashboard;
+DROP TABLE IF EXISTS can_i42_triage;

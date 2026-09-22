@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Settle three I42 admission-application design points for Can: how functions that capture sql::pool through near satisfy mandatory assertions, whether each example program stays in one source file or splits into modules, and where each P13 outcome row is proven.",
+   "fixed_constraints": [
+    "Four manifest-backed example programs (native-ai, account-search, form-validation, dashboard) each ship can.project.json, can.errors.json, src/, a README, and only declared assets and dependencies; each builds fresh, asserts real ordinary Can computation, and runs its documented interaction end-to-end from a staged release layout.",
+    "The P13 account-search contract fixes ordinary records, four named mounted callbacks, capture of one open sql::pool through the wrapper's near input, a static SQL descriptor, and an eleven-row outcome table; spec fragments plus test-harness behavior never count as complete source programs.",
+    "The current checker requires at least one assertion per function and binds each row argument to one non-elided input; http::request and sql::transaction inputs elide to a harness token, sql::pool inputs do not, and no Can expression constructs a pool value, so today no function taking a pool can be asserted.",
+    "Staged HTTP observes statuses, headers, and bodies while only the pinned browser observes HTMX swap and no-swap behavior; raw-provider and supplied boundary results stay labeled separately, and no live provider call backs any shipped verdict."
+   ]
+  },
+  "topics": {
+   "pool_assertion_inputs": {
+    "background": "The account-search production loader and its search callback take sql::pool through near, which the checker treats as an ordinary assertable input with no constructible value, blocking the mandatory assertions P13 demands.",
+    "facts": [
+     "Eliding sql::pool would splice the same frozen typeless harness token the runtime already serves for every elided input, and any pool use the row does not when-supply fails closed at the denied live boundary.",
+     "No shipped fixture declares a pool input today: queries.can opens and closes pools inside function bodies, so widening elision accepts strictly new programs and renames no existing verdict.",
+     "The alternative is restructuring every callback to open and close its own pool per request, which keeps the checker untouched but contradicts the near-capture contract and churns one connection lifecycle per HTTP hit."
+    ]
+   },
+   "app_source_layout": {
+    "background": "Account-search spans records, the search_view model, HTML renderers, four callbacks, route mounting, boot, and main; the other three applications are smaller but share the same section mix.",
+    "facts": [
+     "One src/main.can per application keeps every behavior in a single reviewable unit of roughly four hundred lines at the largest, with no cross-file provides or uses to keep aligned.",
+     "Splitting records plus model, renderers, callbacks plus routes, and main across src/ files exercises multi-file resolution, overlays, and navigation exactly as real projects use them.",
+     "Completion demands fresh builds, real assertions, and end-to-end runs either way; layout changes review shape and fixture realism, never the admission bar."
+    ]
+   },
+   "negative_allocation": {
+    "background": "P13's outcome table mixes query-validation 422s, SQL 503/500 mappings, route 404/405s, renderer failures, and shutdown behavior, each observable at a different boundary.",
+    "facts": [
+     "Staged raw-HTTP runs prove statuses, headers, bodies, multiplicity, and limits deterministically, including every trigger row, but cannot observe whether HTMX swaps or withholds a fragment.",
+     "The pinned-browser harness proves 200 and 422 swaps plus 404, 405, 500, and 503 no-swap handling in a real engine at the cost of slower, heavier scenarios per row.",
+     "The I34 harness already aborts non-localhost requests and records per-check evidence, so browser scenarios inherit localhost-only proof and labeled results."
+    ]
+   }
+  }
+ },
+ "questions": {
+  "pool_assertion_inputs": {
+   "type": "choice",
+   "instructions": "Choose how pool-capturing functions meet mandatory assertions. Use common and topics.pool_assertion_inputs.",
+   "criteria": {
+    "elide_pool": "Elide sql::pool assertion inputs to the harness token, mirroring transaction handles: new programs check, no existing verdict moves, and unsupplied pool use still fails closed.",
+    "per_request_open": "Restructure callbacks to open and close a pool per request with no pool inputs: the checker stays frozen while every HTTP hit pays a fresh connection lifecycle against the P13 capture contract.",
+    "review_needed": "The evidence cannot separate these designs, or neither keeps the required contracts."
+   }
+  },
+  "app_source_layout": {
+   "type": "choice",
+   "instructions": "Choose the per-application source layout. Use common and topics.app_source_layout.",
+   "criteria": {
+    "single_file": "Keep one src/main.can per application: the whole behavior reviews as one unit and nothing cross-file can drift, at the cost of single-file-only fixture realism.",
+    "multi_module": "Split records plus model, renderers, callbacks plus routes, and main into src/ modules: fixture projects look and resolve like real ones, with more provides and uses surface to maintain.",
+    "review_needed": "The evidence cannot separate these layouts, or neither keeps the required contracts."
+   }
+  },
+  "negative_allocation": {
+   "type": "choice",
+   "instructions": "Choose where each P13 outcome row is proven. Use common and topics.negative_allocation.",
+   "criteria": {
+    "split_by_observability": "Prove each row where its observation lives: statuses, headers, and bodies over staged raw HTTP, swap and no-swap handling in the pinned browser; every row lands exactly once at its native boundary.",
+    "http_first": "Prove every table row over staged raw HTTP and keep the browser to happy-path swaps: deterministic negatives with a light browser surface, leaving error-row swap behavior unproven in a real engine.",
+    "review_needed": "The evidence cannot separate these allocations, or neither keeps the required contracts."
+   }
+  }
+ }
+}

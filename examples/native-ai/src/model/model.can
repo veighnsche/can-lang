@@ -1,0 +1,81 @@
+package model
+    provides [keyword_option, plan_options, gate, recent_count, account_total]
+    uses [records, sql]
+
+/// Wrap one keyword as a dynamic choice option.
+fn choice_option keyword_option
+    emits []
+    given
+        str word
+    asserts
+        sample: "vip" => ok choice_option("vip", "vip")
+    ok choice_option(word, word)
+
+/// Transform a generated plan into dynamic choice options.
+fn choice_option[] plan_options
+    emits []
+    given
+        records::triage_plan plan
+    asserts
+        sample: records::triage_plan(["vip", "new"], true) => ok [choice_option("vip", "vip"), choice_option("new", "new")]
+        empty: records::triage_plan([], false) => ok []
+    match call plan.keywords.map(callable keyword_option)
+        ok choice_option[] options => ok options
+
+/// Decide the triage level from an explicit confidence threshold.
+fn str gate
+    emits []
+    given
+        float score
+    asserts
+        ship: 0.9 => ok "ship"
+        hold: 0.1 => ok "hold"
+        edge: 0.7 => ok "ship"
+    match score >= 0.7
+        true => ok "ship"
+        false => ok "hold"
+
+/// Count recent accounts through the captured pool.
+fn records::count_value recent_count
+    emits []
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok records::count_value(2, true)
+        down: => ok records::count_value(0, false)
+    match call sql::query_rows<records::search_parameters, records::account_row>(pool, "recent_accounts", records::search_parameters("%"), 25)
+        when
+            sample: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
+            down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
+            triage: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
+            unclosed: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
+        ok records::account_row[] rows => ok records::count_value(rows.length, true)
+        sql::unsupported_value => ok records::count_value(0, false)
+        sql::connection_failed => ok records::count_value(0, false)
+        sql::query_failed => ok records::count_value(0, false)
+        sql::constraint_failed => ok records::count_value(0, false)
+        sql::row_limit => ok records::count_value(0, false)
+        sql::schema_mismatch => ok records::count_value(0, false)
+
+/// Read the account total through the captured pool.
+fn records::count_value account_total
+    emits []
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok records::count_value(2, true)
+        down: => ok records::count_value(0, false)
+    match call sql::query_one<records::count_params, records::total_row>(pool, "account_total", records::count_params(0))
+        when
+            sample: pool, "account_total", records::count_params(0) => ok records::total_row(2)
+            down: pool, "account_total", records::count_params(0) => sql::query_failed("account_total", "08006")
+            triage: pool, "account_total", records::count_params(0) => ok records::total_row(2)
+            unclosed: pool, "account_total", records::count_params(0) => ok records::total_row(2)
+        ok records::total_row row => ok records::count_value(row.total, true)
+        sql::unsupported_value => ok records::count_value(0, false)
+        sql::connection_failed => ok records::count_value(0, false)
+        sql::query_failed => ok records::count_value(0, false)
+        sql::constraint_failed => ok records::count_value(0, false)
+        sql::row_missing => ok records::count_value(0, false)
+        sql::row_count => ok records::count_value(0, false)
+        sql::schema_mismatch => ok records::count_value(0, false)

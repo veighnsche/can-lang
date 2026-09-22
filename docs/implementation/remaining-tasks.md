@@ -514,6 +514,9 @@ activity while editing. Gate grammar/modcheck on maintained fixtures, not old go
 
 ## I42 — Complete admission applications
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i42](evidence/2026-09-21/i42/README.md).
+The plan below is kept as dependency context for I43/I45.
+
 **Files:** create manifest-backed projects in `examples/native-ai/`,
 `examples/account-search/`, `examples/form-validation/`, and `examples/dashboard/`.
 Each needs `can.project.json`, `can.errors.json`, `src/`, README and only declared

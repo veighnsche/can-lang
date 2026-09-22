@@ -1,0 +1,128 @@
+package web
+    provides [show_dashboard, dashboard_data, dashboard_routes, boot, main]
+    uses [records, model, render, http, html, htmx, sql, clock, text, codec, bytes, io]
+
+/// Serve the dashboard page.
+fn http::server_response show_dashboard
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call render::page()
+        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_target => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        htmx::invalid_interval => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Answer one dashboard poll from two coordinated reads.
+fn http::server_response dashboard_data
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+    asserts
+        ready: => ok
+        down: => ok
+    records::count_value[] numbers = match call concurrent
+        model::recent_count(pool)
+            ok records::count_value count => ok count
+        model::account_total(pool)
+            ok records::count_value count => ok count
+    match numbers[0].known and numbers[1].known
+        true => match call clock::wall_millis()
+            when
+                ready: => ok 1000
+            ok int millis => match call text::from_int(millis)
+                ok str stamp => match call render::summary(records::dashboard_view(200, numbers[1].value, numbers[0].value, stamp, ""))
+                    ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+                    html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        false => match call render::feedback("Temporarily unavailable.")
+            ok html::safe fragment => ok call http::response_html(call http::status_unavailable(), call http::empty_server_headers(), fragment)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+
+/// Mount the dashboard callbacks, capturing the open pool.
+fn http::router dashboard_routes
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/dashboard", callable show_dashboard) as http::route home
+        call http::route_get("/dashboard/data", callable dashboard_data) as http::route data
+        call http::make_router([home, data]) as http::router built
+        ok => ok built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+
+/// Open the pool and start the dashboard server on one port.
+fn http::server boot
+    emits [http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call sql::pool_open("DASHBOARD_DB", 5)
+        when
+            sample: "DASHBOARD_DB", 5 => ok
+        ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+            ok http::server_config config => match call dashboard_routes(pool)
+                ok http::router built => match call http::server_start(config, built)
+                    when
+                        sample: config, built => ok
+                    ok http::server sturdy => ok sturdy
+                    http::bind_failed
+                http::invalid_route
+                http::duplicate_route
+                http::ambiguous_route
+            http::invalid_server_config
+        http::credentials_missing
+        sql::connection_failed
+
+/// Serve the dashboard until a shutdown signal, then close the pool.
+fn void main
+    emits [codec::invalid_data, io::write_failed, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        serve: ["18486"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: dashboard <port>")
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                ok int written => ok
+                io::write_failed
+            codec::invalid_data
+        false => match call bytes::from_utf8(args[0])
+            ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+                ok int port => match call sql::pool_open("DASHBOARD_DB", 5)
+                    when
+                        serve: "DASHBOARD_DB", 5 => ok
+                    ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                        ok http::server_config config => match call dashboard_routes(pool)
+                            ok http::router built => match call http::server_start(config, built)
+                                when
+                                    serve: config, built => ok
+                                ok http::server sturdy => match call http::server_wait(sturdy)
+                                    when
+                                        serve: sturdy => ok
+                                    ok => match call sql::pool_close(pool, 1000)
+                                        when
+                                            serve: pool, 1000 => ok
+                                        ok => ok
+                                        sql::close_failed
+                                    http::shutdown_failed
+                                http::bind_failed
+                            http::invalid_route
+                            http::duplicate_route
+                            http::ambiguous_route
+                        http::invalid_server_config
+                    http::credentials_missing
+                    sql::connection_failed
+                codec::invalid_data
+            codec::invalid_data

@@ -352,3 +352,57 @@ func TestSQLDescriptorRejects(t *testing.T) {
 		}
 	}
 }
+
+// TestPoolInputsElideInAssertions pins I42 pool capture: assertion
+// rows omit pool inputs while the harness splices its scope token, so
+// mounted callbacks can capture one open pool through near and still
+// carry mandatory assertions. Unsupplied pool operations keep failing
+// at the denied live boundary like transaction handles.
+func TestPoolInputsElideInAssertions(t *testing.T) {
+	manifest := `{"source_root":"src","error_registry":"can.errors.json","sql":{"search_accounts":{"dialect":"postgresql","statement":"SELECT id, display_name FROM accounts WHERE display_name ILIKE $1 ORDER BY id LIMIT $2","parameters":["term"],"parameter_type":"app::search_parameters","row_type":"app::account_row","cardinality":"many","row_limit_parameter":2}}}`
+	root := writeSQLProject(t, manifest)
+	source := `package app
+    provides []
+    uses [sql]
+record search_parameters
+    str term
+record account_row
+    int id
+    str display_name
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok
+fn account_row[] load
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
+    given
+        str query
+        near sql::pool pool
+    asserts
+        sample: "x" => ok []
+    match call sql::query_rows<search_parameters, account_row>(pool, "search_accounts", search_parameters("%" + query + "%"), 25)
+        when
+            sample: pool, "search_accounts", search_parameters("%x%"), 25 => ok []
+        ok account_row[] rows => ok rows
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        sql::row_limit
+        sql::schema_mismatch
+`
+	path := filepath.Join(root, "src", "main.can")
+	if err := os.WriteFile(path, []byte(source), 0600); err != nil {
+		t.Fatal(err)
+	}
+	graph, err := project.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CheckAssertionProgram(graph); err != nil {
+		t.Fatalf("pool-input assertions rejected: %v", err)
+	}
+}

@@ -1,0 +1,22 @@
+package records
+    provides [search_parameters, account_row, search_view, account_form]
+    uses []
+
+/// Parameters for the manifest search descriptor.
+record search_parameters
+    str term
+
+/// One validated account row.
+record account_row
+    int id
+    str display_name
+
+/// Data passed to the safe fragment renderer.
+record search_view
+    int status
+    account_row[] rows
+    str message
+
+/// The account validation form body.
+record account_form
+    str name

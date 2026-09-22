@@ -1,0 +1,39 @@
+{
+ "model": "jev-1.13.0",
+ "answers": {
+  "pool_assertion_inputs": {
+   "type": "choice",
+   "choice": "elide_pool",
+   "confidence": 0.22,
+   "probabilities": {
+    "per_request_open": 0.11,
+    "elide_pool": 0.48,
+    "review_needed": 0.41
+   }
+  },
+  "app_source_layout": {
+   "type": "choice",
+   "choice": "multi_module",
+   "confidence": 0.78,
+   "probabilities": {
+    "single_file": 0.09,
+    "multi_module": 0.85,
+    "review_needed": 0.06
+   }
+  },
+  "negative_allocation": {
+   "type": "choice",
+   "choice": "split_by_observability",
+   "confidence": 0.96,
+   "probabilities": {
+    "split_by_observability": 0.97,
+    "http_first": 0.0,
+    "review_needed": 0.03
+   }
+  }
+ },
+ "usage": {
+  "input_tokens": 1474,
+  "output_tokens": 140
+ }
+}

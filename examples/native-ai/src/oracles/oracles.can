@@ -1,0 +1,123 @@
+package oracles
+    provides [generator, classifier, tap, draft_account, review_bundle]
+    uses [records, http, codec, llm, ai]
+
+/// Pass a native score through for relay arms.
+fn float tap
+    emits []
+    given
+        float value
+    asserts
+        sample: 0.5 => ok 0.5
+    ok value
+
+connection generator
+    endpoint "http://127.0.0.1:1/responses"
+    auth bearer env "CAN_I28_TOKEN"
+    timeout_ms 5000
+    max_body_bytes 65536
+    metadata
+        protocol "openai_responses_v1"
+        model "fixture-model"
+        max_output_tokens 512
+
+connection classifier
+    endpoint "http://127.0.0.1:1/systemone"
+    auth bearer env "CAN_I28_TOKEN"
+    timeout_ms 5000
+    metadata
+        protocol "typesafe_systemone_v1"
+        model "jev-latest"
+
+/// Draft a triage plan for one account name.
+llm records::triage_plan draft from generator
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    state
+        str account
+    asks "Draft"
+
+/// Pick one keyword from the plan's dynamic options.
+choice str pick from classifier
+    emits [ai::invalid_question, ai::invalid_answer]
+    given
+        choice_option[] options
+    asks "Pick"
+        ...options
+        ok str selected => match selected is ""
+            true => ok "fallback"
+            false => ok selected
+
+/// Judge whether the batch merits attention.
+noul float likely from classifier
+    emits [ai::invalid_question, ai::invalid_answer]
+    asks "Likely"
+        true "Yes" => relay call tap(%)
+        false "No" => relay call tap(%)
+
+/// Rate the batch quality.
+score float rate from classifier
+    emits [ai::invalid_question, ai::invalid_answer]
+    score as measured
+    asks "Rate"
+        low "Low"
+        medium "Medium"
+        high "High"
+        ok => relay call tap(measured)
+
+/// Review one bundle through the batched natives.
+judge records::triage_scored review from classifier
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    state
+        records::triage_bundle bundle
+    call pick(bundle.options) as str keyword
+    call likely() as float n
+    call rate() as float s
+    ok => ok records::triage_scored(keyword, (n + s) / 2.0)
+
+/// Draft a triage plan for one account name.
+fn records::triage_plan draft_account
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
+    given
+        str account
+    asserts
+        sample: "Ann" => ok records::triage_plan(["vip", "new"], true)
+        garbage: "Ann" => llm::invalid_response("shape")
+    match call draft((account))
+        when
+            sample: ("Ann") => ok records::triage_plan(["vip", "new"], true)
+            garbage: ("Ann") => llm::invalid_response("shape")
+        ok records::triage_plan plan => ok plan
+        http::invalid_request
+        http::credentials_missing
+        http::transport_failed
+        http::timeout
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        llm::refused
+        llm::truncated
+        llm::invalid_response
+
+
+/// Review one bundle of options and names.
+fn records::triage_scored review_bundle
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    given
+        records::triage_bundle bundle
+    asserts
+        sample: records::triage_bundle([choice_option("vip", "vip")], ["Ann"]) => ok records::triage_scored("vip", 0.9)
+        garbage: records::triage_bundle([choice_option("vip", "vip")], ["Ann"]) => ai::invalid_answer("q1", "range")
+    match call review((bundle))
+        when
+            sample: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ok records::triage_scored("vip", 0.9)
+            garbage: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ai::invalid_answer("q1", "range")
+        ok records::triage_scored scored => ok scored
+        http::invalid_request
+        http::credentials_missing
+        http::transport_failed
+        http::timeout
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        ai::invalid_question
+        ai::invalid_answer
