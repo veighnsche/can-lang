@@ -10,13 +10,13 @@ fn void main
     match call io::stdin_text(16)
         when
             sample: 16 => ok "fixture"
-        ok str input => match call bytes::from_utf8(input)
-            ok bytes::buffer encoded => match call io::stdout_write(encoded)
-                when
-                    sample: encoded => ok 7
-                ok int written => ok
-                io::write_failed
-            codec::invalid_data
         io::limit_exceeded
         io::read_failed
         codec::invalid_data
+        ok str input => match call bytes::from_utf8(input)
+            codec::invalid_data
+            ok bytes::buffer encoded => match call io::stdout_write(encoded)
+                when
+                    sample: encoded => ok 7
+                io::write_failed
+                ok int written => ok

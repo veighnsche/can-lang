@@ -10,10 +10,10 @@ fn http::server_response show_signup
     asserts
         sample: => ok
     match call render::page()
-        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
         html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         htmx::invalid_target => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
 
 /// Validate one submitted signup.
 fn http::server_response validate_signup
@@ -27,24 +27,24 @@ fn http::server_response validate_signup
         when
             blank: req, 2048 => ok records::signup_form("", [], option::none())
             named: req, 2048 => ok records::signup_form("Ann", ["a", "b"], option::some("hi"))
+        http::body_limit => match call render::feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+        http::invalid_request => match call render::feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+        codec::invalid_data => match call render::feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+
         ok records::signup_form form => match call model::validate_signup(form)
             ok records::signup_view view => match view.status
                 200 => match call render::signup_result(view)
+                    html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                     ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
-                    html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 _ => match call render::feedback(view.message)
-                    ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
                     html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        http::body_limit => match call render::feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        http::invalid_request => match call render::feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        codec::invalid_data => match call render::feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-
+                    ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
 /// Mount the signup callbacks.
 fn http::router signup_routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
@@ -54,10 +54,10 @@ fn http::router signup_routes
         call http::route_get("/signup", callable show_signup) as http::route home
         call http::route_post("/signup/validate", callable validate_signup) as http::route submit
         call http::make_router([home, submit]) as http::router built
-        ok => ok built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok => ok built
 
 /// Start the signup server on one port.
 fn http::server boot
@@ -67,16 +67,16 @@ fn http::server boot
     asserts
         sample: 0 => ok
     match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
         ok http::server_config config => match call signup_routes()
-            ok http::router built => match call http::server_start(config, built)
-                when
-                    sample: config, built => ok
-                ok http::server sturdy => ok sturdy
-                http::bind_failed
             http::invalid_route
             http::duplicate_route
             http::ambiguous_route
-        http::invalid_server_config
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => ok sturdy
 
 /// Serve signups until a shutdown signal.
 fn void main
@@ -88,28 +88,28 @@ fn void main
         serve: ["18485"] => ok
     match args.length is 0
         true => match call bytes::from_utf8("usage: form-validation <port>")
+            codec::invalid_data
             ok bytes::buffer message => match call io::stdout_write(message)
                 when
                     empty: message => ok 0
-                ok int written => ok
                 io::write_failed
-            codec::invalid_data
+                ok int written => ok
         false => match call bytes::from_utf8(args[0])
+            codec::invalid_data
             ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+                codec::invalid_data
                 ok int port => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                    http::invalid_server_config
                     ok http::server_config config => match call signup_routes()
-                        ok http::router built => match call http::server_start(config, built)
-                            when
-                                serve: config, built => ok
-                            ok http::server sturdy => match call http::server_wait(sturdy)
-                                when
-                                    serve: sturdy => ok
-                                ok => ok
-                                http::shutdown_failed
-                            http::bind_failed
                         http::invalid_route
                         http::duplicate_route
                         http::ambiguous_route
-                    http::invalid_server_config
-                codec::invalid_data
-            codec::invalid_data
+                        ok http::router built => match call http::server_start(config, built)
+                            when
+                                serve: config, built => ok
+                            http::bind_failed
+                            ok http::server sturdy => match call http::server_wait(sturdy)
+                                when
+                                    serve: sturdy => ok
+                                http::shutdown_failed
+                                ok => ok

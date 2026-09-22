@@ -69,6 +69,7 @@ func TestCoordinationAggregateComposition(t *testing.T) {
 		t.Fatal("authored local shadowed reserved aggregate name")
 	}
 }
+
 func TestCheckedConcurrentHandlers(t *testing.T) {
 	for _, tc := range []struct{ header, body string }{
 		{"concurrent", `        number()
@@ -78,8 +79,8 @@ func TestCheckedConcurrentHandlers(t *testing.T) {
         codec::invalid_data => ok []
 `},
 		{"concurrent with error", `        number()
-            ok int value => ok value
             codec::invalid_data => ok 0
+            ok int value => ok value
         text()
             ok str value => ok value.length
 `},
@@ -109,8 +110,8 @@ func TestCheckedRaceAndSpread(t *testing.T) {
     int result = match call race with error
         ...operations
         number()
-        ok int value => ok value
         codec::invalid_data => ok 0
+        ok int value => ok value
 `
 	if _, err := coordinationProgram(t, body); err != nil {
 		t.Fatal(err)
@@ -135,8 +136,8 @@ func TestCoordinationSpreadUsesDeclaredCommonBound(t *testing.T) {
 	body := `    callable int () emits [codec::invalid_data][] operations = [callable pure]
     int result = match call race with error
         ...operations
-        ok int value => ok value
         codec::invalid_data => ok 0
+        ok int value => ok value
     ok
 `
 	if _, err := programFixture(t, map[string]string{"src/main.can": prefix + body}); err != nil {
@@ -275,11 +276,11 @@ fn int other
 	prefix := strings.Replace(programHeader, "uses []", "uses [codec]", 1) + coordinationDeclarations + declaration + programMain
 	body := `    int result = match call race
         number()
-        ok int value => ok value
         all_failed => do
             int count = all_failed.failures.length
             int summarized = call summarize(all_failed.failures)
             ok count + summarized
+        ok int value => ok value
     ok
 `
 	p, err := programFixture(t, map[string]string{"src/main.can": prefix + body})
@@ -305,13 +306,13 @@ fn int other
     all_failed<alternate>([])
 `
 	nested := `    match call outer_failure()
-        ok int value => ok
         all_failed => do
             int result = match call race
                 number()
-                ok int value => ok value
                 all_failed => ok call summarize(all_failed.failures)
+                ok int value => ok value
             ok
+        ok int value => ok
 `
 	if _, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(prefix, programMain, outer+programMain, 1) + nested}); err != nil {
 		t.Fatalf("outer aggregate alias captured nested race alias: %v", err)

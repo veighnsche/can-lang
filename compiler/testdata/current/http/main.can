@@ -23,8 +23,8 @@ fn http::server_response handle
             when
                 method: req, "q" => ok "v"
                 missing: req, "q" => http::invalid_request("query_missing")
-            ok str value => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), method)
             http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "missing")
+            ok str value => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), method)
 fn http::server_response submit
     emits []
     given
@@ -36,17 +36,17 @@ fn http::server_response submit
         when
             created: req, 1024 => ok item("a", 1)
             bad: req, 1024 => http::invalid_request("unsupported_media_type")
-        ok item found => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), found.name)
         http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok item found => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), found.name)
 fn bool json_ok
     emits [codec::invalid_data]
     asserts
         sample: => ok true
     match call http::response_json<item>(call http::status_ok(), call http::empty_server_headers(), item("a", 1))
-        ok http::server_response response => ok true
         codec::invalid_data
+        ok http::server_response response => ok true
 fn http::server_response search
     emits []
     given
@@ -58,10 +58,10 @@ fn http::server_response search
         when
             found: req, 2048 => ok search_form("ann", ["x"], option::none())
             incomplete: req, 2048 => http::invalid_request("form_missing")
-        ok search_form form => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.query)
         http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok search_form form => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.query)
 fn http::server_response inspect
     emits [http::body_limit]
     given
@@ -74,15 +74,15 @@ fn http::server_response inspect
         ok str path => match call http::query_all(req, "x")
             when
                 path: req, "x" => ok ["1", "2"]
+            http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
             ok str[] values => match call http::request_headers(req)
                 when
                     path: req => ok [http::header("x-test", "1")]
                 ok http::header[] headers => match call http::request_body(req, 64)
                     when
                         path: req, 64 => ok call bytes::empty()
-                    ok bytes::buffer content => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), path)
                     http::body_limit
-            http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                    ok bytes::buffer content => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), path)
 fn http::server_response tagged<mark>
     emits []
     given
@@ -118,9 +118,9 @@ fn bool responses
         call html::text("ok") as html::node node
         call html::fragment([node]) as html::safe page
         call http::response_html(oops, headers, page) as http::server_response h
-        ok => ok true
         http::invalid_request
         html::invalid_structure
+        ok => ok true
 fn http::router mounted
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     asserts
@@ -133,10 +133,10 @@ fn http::router mounted
         call http::route_post("/w", callable wrapped) as http::route wrap
         call http::route_post("/s", callable search) as http::route form
         call http::make_router([first, second, generic, wrap, form]) as http::router router
-        ok => ok router
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok => ok router
 fn void main
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
@@ -144,7 +144,7 @@ fn void main
     asserts
         sample: [] => ok
     match call mounted()
-        ok http::router router => ok
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok http::router router => ok

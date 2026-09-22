@@ -64,8 +64,8 @@ fn str[] split
         empty: "", "," => ok [""]
         bad: "a", "" => text::empty_separator()
     match call value.split(separator)
-        ok str[] output => ok output
         text::empty_separator
+        ok str[] output => ok output
 fn str replace
     emits [text::empty_pattern]
     given
@@ -76,8 +76,8 @@ fn str replace
         sample: "aba", "a", "$&" => ok "$&b$&"
         bad: "abc", "", "x" => text::empty_pattern()
     match call value.replace_all(search, replacement)
-        ok str output => ok output
         text::empty_pattern
+        ok str output => ok output
 fn str joined
     emits []
     given
@@ -95,8 +95,8 @@ fn int[] scalars
         empty: "" => ok []
         bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
     match call text::scalars(value)
-        ok int[] output => ok output
         text::invalid_unicode
+        ok int[] output => ok output
 fn str from_scalars
     emits [text::invalid_unicode]
     given
@@ -107,8 +107,8 @@ fn str from_scalars
         surrogate: [55296] => text::invalid_unicode("invalid scalar value")
         range: [1114112] => text::invalid_unicode("invalid scalar value")
     match call text::from_scalars(items)
-        ok str output => ok output
         text::invalid_unicode
+        ok str output => ok output
 fn str[] graphemes
     emits [text::invalid_unicode]
     given
@@ -117,8 +117,8 @@ fn str[] graphemes
         sample: "A😀é👩‍👩‍👧‍👦" => ok ["A", "😀", "é", "👩‍👩‍👧‍👦"]
         bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
     match call text::graphemes(value)
-        ok str[] output => ok output
         text::invalid_unicode
+        ok str[] output => ok output
 fn str normalized
     emits [text::invalid_unicode]
     given
@@ -127,8 +127,8 @@ fn str normalized
         sample: "é" => ok "é"
         bad: "😀"[0] => text::invalid_unicode("unpaired surrogate")
     match call text::normalize_nfc(value)
-        ok str output => ok output
         text::invalid_unicode
+        ok str output => ok output
 fn bool[] references
     emits []
     given
@@ -156,8 +156,8 @@ fn str spread_replace
     asserts
         sample: => ok "$&b$&"
     match call "aba".replace_all(...["a", "$&"])
-        ok str output => ok output
         text::empty_pattern
+        ok str output => ok output
 fn void main
     emits []
     given

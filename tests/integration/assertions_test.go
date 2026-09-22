@@ -207,18 +207,18 @@ fn void boundary
     asserts
         guarded: => ok
     match call bytes::from_utf8("must-not-be-written")
+        codec::invalid_data
         ok bytes::buffer payload => match call io::stdout_write(payload)
-            ok int written => ok
             io::write_failed
             [_] => ok
-        codec::invalid_data
+            ok int written => ok
 `
 	write("src/main.can", boundary)
 	code, out, diag = run()
 	if code != 1 || diag != "" || report(out)["passed"] != false || strings.Contains(out, "must-not-be-written") || !strings.Contains(out, "missing fixture") {
 		t.Fatalf("caught external boundary: %d %q %q", code, out, diag)
 	}
-	supplied := strings.Replace(boundary, "            ok int written => ok", "            when\n                guarded: payload => ok 19\n            ok int written => ok", 1)
+	supplied := strings.Replace(boundary, "            io::write_failed", "            when\n                guarded: payload => ok 19\n            io::write_failed", 1)
 	write("src/main.can", supplied)
 	code, out, diag = run()
 	if code != 0 || diag != "" || report(out)["passed"] != true || !strings.Contains(out, "supplied-completion") {
@@ -243,8 +243,8 @@ fn int consume
     match call failure(1)
         when
             supplied: 1 => failed(7)
-        ok
         failed => ok failed.code
+        ok
 `)
 	code, out, diag = run()
 	if code != 0 || diag != "" || report(out)["passed"] != true {
@@ -354,10 +354,10 @@ fn void sample
     asserts
         guarded: => ok
     match call bytes::from_utf8("must-not-write")
+        codec::invalid_data
         ok bytes::buffer payload => match call io::stdout_write(payload)
-            ok int written => ok
             io::write_failed
             [_] => ok
-        codec::invalid_data
+            ok int written => ok
 `, "io::stdout_write(payload)", false)
 }

@@ -28,9 +28,11 @@ fn void main
             ok float monotonic => match call sleep(0)
                 when
                     sample: 0 => ok
+                clock::invalid_duration
                 ok => match call random::secure_bytes(0)
                     when
                         sample: 0 => ok empty
+                    random::invalid_length
                     ok bytes::buffer entropy => match call random::uuid_v4()
                         when
                             sample: => ok "00000000-0000-4000-8000-000000000000"
@@ -40,14 +42,12 @@ fn void main
                                 true => match call write_info("secret info")
                                     when
                                         sample: "secret info" => ok
+                                    log::write_failed
                                     ok => match call write_error("secret error")
                                         when
                                             sample: "secret error" => ok
-                                        ok => ok
                                         log::write_failed
-                                    log::write_failed
+                                        ok => ok
                                 false => do
                                     int invalid = 1 / 0
                                     ok
-                    random::invalid_length
-                clock::invalid_duration

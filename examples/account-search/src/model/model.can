@@ -24,13 +24,13 @@ fn records::search_view search_accounts_model
         when
             found: "ann" => ok [records::account_row(7, "Ann")]
             unavailable: "ann" => sql::query_failed("search_accounts", "08006")
-        ok records::account_row[] rows => ok records::search_view(200, rows, "")
         sql::connection_failed => ok records::search_view(503, [], "Temporarily unavailable.")
         sql::query_failed => ok records::search_view(503, [], "Temporarily unavailable.")
         sql::unsupported_value => ok records::search_view(500, [], "Internal error.")
         sql::constraint_failed => ok records::search_view(500, [], "Internal error.")
         sql::row_limit => ok records::search_view(500, [], "Internal error.")
         sql::schema_mismatch => ok records::search_view(500, [], "Internal error.")
+        ok records::account_row[] rows => ok records::search_view(200, rows, "")
 
 /// Query the manifest search descriptor through the captured pool.
 fn records::account_row[] pool_loader
@@ -43,10 +43,10 @@ fn records::account_row[] pool_loader
     match call sql::query_rows<records::search_parameters, records::account_row>(pool, "search_accounts", records::search_parameters("%" + query + "%"), 25)
         when
             sample: pool, "search_accounts", records::search_parameters("%x%"), 25 => ok []
-        ok records::account_row[] rows => ok rows
         sql::unsupported_value
         sql::connection_failed
         sql::query_failed
         sql::constraint_failed
         sql::row_limit
         sql::schema_mismatch
+        ok records::account_row[] rows => ok rows

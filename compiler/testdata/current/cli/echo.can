@@ -10,6 +10,6 @@ fn void main
     match chain
         call bytes::from_utf8(args[0]) as bytes::buffer message
         call io::stdout_write(message) as int written
-        ok => ok
         codec::invalid_data
         io::write_failed
+        ok => ok

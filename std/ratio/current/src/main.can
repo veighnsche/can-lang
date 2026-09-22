@@ -16,8 +16,8 @@ fn number::division truncating
         both_negative: -7, -3 => ok number::division(2, -1)
         zero: 7, 0 => number::zero_divisor()
     match call number::divmod(numerator, denominator)
-        ok number::division output => ok output
         number::zero_divisor
+        ok number::division output => ok output
 fn number::division euclidean
     emits [number::zero_divisor]
     given
@@ -30,8 +30,8 @@ fn number::division euclidean
         exact: -6, 3 => ok number::division(-2, 0)
         zero: 7, 0 => number::zero_divisor()
     match call number::euclidean_divmod(numerator, denominator)
-        ok number::division output => ok output
         number::zero_divisor
+        ok number::division output => ok output
 fn number::rounded rounded
     emits [number::zero_divisor]
     given
@@ -48,8 +48,8 @@ fn number::rounded rounded
         unreduced: 2, 4 => ok number::rounded(0, 2, 4)
         zero: 7, 0 => number::zero_divisor()
     match call number::round_ratio_half_even(numerator, denominator)
-        ok number::rounded output => ok output
         number::zero_divisor
+        ok number::rounded output => ok output
 fn account deposit
     emits []
     given
@@ -65,20 +65,20 @@ fn str encoded_share
     asserts
         large: account(9007199254740995, "EUR") => ok "{\"value\":4503599627370498,\"remainder_numerator\":-1,\"denominator\":2}"
     match call number::round_ratio_half_even(balance.minor_units, 2)
-        ok number::rounded share => match call codec::encode_json<number::rounded>(share)
-            ok bytes::buffer encoded => match call bytes::to_utf8(encoded)
-                ok str text => ok text
-                codec::invalid_data
-            codec::invalid_data
         number::zero_divisor
+        ok number::rounded share => match call codec::encode_json<number::rounded>(share)
+            codec::invalid_data
+            ok bytes::buffer encoded => match call bytes::to_utf8(encoded)
+                codec::invalid_data
+                ok str text => ok text
 fn number::division reference
     emits [number::zero_divisor]
     asserts
         sample: => ok number::division(-3, 2)
     callable number::division (int, int) emits [number::zero_divisor] operation = callable number::euclidean_divmod
     match call operation(-7, 3)
-        ok number::division output => ok output
         number::zero_divisor
+        ok number::division output => ok output
 fn void main
     emits []
     given
@@ -87,14 +87,14 @@ fn void main
         sample: [] => ok
     account updated = call deposit(account(9007199254740993, "EUR"), 2)
     match call encoded_share(updated)
-        ok str text => match text
-            "{\"value\":4503599627370498,\"remainder_numerator\":-1,\"denominator\":2}" => ok
-            _ => do
-                int invalid = 1 / 0
-                ok
         number::zero_divisor => do
             int invalid = 1 / 0
             ok
         codec::invalid_data => do
             int invalid = 1 / 0
             ok
+        ok str text => match text
+            "{\"value\":4503599627370498,\"remainder_numerator\":-1,\"denominator\":2}" => ok
+            _ => do
+                int invalid = 1 / 0
+                ok

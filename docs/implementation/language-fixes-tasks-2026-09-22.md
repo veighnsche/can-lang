@@ -84,7 +84,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF05-summary.json), [emit](evidence/2026-09-22/language-fixes/LF05-emit.txt), [compiler log](evidence/2026-09-22/language-fixes/LF05-gotest.log), [integration log](evidence/2026-09-22/language-fixes/LF05-integration.log). Exact heads + aliases across parse/check/race; 25/25 fixture roots incl. nested outer aggregate; 9 negative subtests + span + generic-spec tests; all 23 bundled suites + strict tsc green.
 
-- [ ] **LF06 — Enforce failure arms before final success**
+- [x] **LF06 — Enforce failure arms before final success**
 
   **Depends on:** LF05. **Acceptance:** AE11.
 
@@ -98,7 +98,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Compare runtime dispatch/settlement before and after source migration; changing source order must not change native Promise combinators or scheduling.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF06-summary.json, LF06-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF06-integration.log (integration+driver+emit all ok), LF06-runtime.log (321 pass), LF06-emit-diff.txt (branch-order-only diff; settle multiset identical). Reproduction commands in the summary.
 
 - [ ] **LF07 — Expose standard snapshots in ordinary catches**
 

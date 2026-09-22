@@ -34,8 +34,8 @@ fn float int_float
         exact: 9007199254740992 => ok 9007199254740992.0
         inexact: 9007199254740993 => number::inexact("not exactly representable as float")
     match call number::int_to_float(value)
-        ok float output => ok output
         number::inexact
+        ok float output => ok output
 fn int float_int
     emits [number::inexact]
     given
@@ -45,8 +45,8 @@ fn int float_int
         negative_zero: -0.0 => ok 0
         fraction: 1.5 => number::inexact("not a finite integer")
     match call number::float_to_int(value)
-        ok int output => ok output
         number::inexact
+        ok int output => ok output
 fn int bool_int
     emits []
     given
@@ -64,8 +64,8 @@ fn bool int_bool
         no: 0 => ok false
         invalid: 2 => number::invalid_bool(2)
     match call number::int_to_bool(value)
-        ok bool output => ok output
         number::invalid_bool
+        ok bool output => ok output
 fn float floor_value
     emits []
     given
@@ -121,8 +121,8 @@ fn int parse_int
         space: " 1" => text::invalid_number(" 1")
         zero: "-0" => ok 0
     match call text::to_int(value)
-        ok int output => ok output
         text::invalid_number
+        ok int output => ok output
 fn float parse_float
     emits [text::invalid_number]
     given
@@ -134,8 +134,8 @@ fn float parse_float
         leading_zero_integer: "01" => text::invalid_number("01")
         overflow: "1e309" => text::invalid_number("1e309")
     match call text::to_float(value)
-        ok float output => ok output
         text::invalid_number
+        ok float output => ok output
 fn bool parse_bool
     emits [text::invalid_bool]
     given
@@ -144,8 +144,8 @@ fn bool parse_bool
         yes: "true" => ok true
         invalid: "True" => text::invalid_bool("True")
     match call text::to_bool(value)
-        ok bool output => ok output
         text::invalid_bool
+        ok bool output => ok output
 fn str[] referenced_format
     emits []
     given

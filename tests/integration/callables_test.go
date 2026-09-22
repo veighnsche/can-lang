@@ -90,9 +90,9 @@ fn void write
     match chain
         call bytes::from_utf8(message) as bytes::buffer payload
         call io::stdout_write(payload) as int written
-        ok => ok
         codec::invalid_data
         io::write_failed
+        ok => ok
 fn void guarded
     emits [codec::invalid_data, io::write_failed]
     asserts

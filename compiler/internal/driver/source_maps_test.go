@@ -68,9 +68,9 @@ fn void main
     match chain
         call bytes::from_utf8(call first(args)) as bytes::buffer message
         call io::stdout_write(message) as int written
-        ok => ok
         codec::invalid_data
         io::write_failed
+        ok => ok
 `
 	if err = os.WriteFile(filepath.Join(root, "src/main.can"), []byte(text), 0600); err != nil {
 		t.Fatal(err)

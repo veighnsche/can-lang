@@ -15,8 +15,8 @@ fn html::safe feedback
         call html::make_tag("p") as html::tag paragraph
         call html::element(paragraph, [], [text]) as html::node line
         call html::fragment([line]) as html::safe body
-        ok => ok body
         html::invalid_structure
+        ok => ok body
 
 /// Render one account row as a list item, escaping the display name.
 fn html::node account_item
@@ -30,8 +30,8 @@ fn html::node account_item
         call html::text(row.display_name) as html::node label
         call html::make_tag("li") as html::tag item_tag
         call html::element(item_tag, [], [label]) as html::node item
-        ok => ok item
         html::invalid_structure
+        ok => ok item
 
 /// Render result rows as a trusted list fragment.
 fn html::safe results_list
@@ -42,13 +42,13 @@ fn html::safe results_list
         sample: [records::account_row(7, "Ann")] => ok
         empty: [] => ok
     match call rows.map(callable account_item)
+        html::invalid_structure
         ok html::node[] items => match chain
             call html::make_tag("ul") as html::tag list_tag
             call html::element(list_tag, [], items) as html::node list
             call html::fragment([list]) as html::safe body
-            ok => ok body
             html::invalid_structure
-        html::invalid_structure
+            ok => ok body
 
 /// Build the accounts page: search form, validation form, and dashboard.
 fn html::safe page
@@ -104,8 +104,8 @@ fn html::safe page
         call html::make_tag("div") as html::tag division
         call html::element(division, [dashboard_id, dashboard_get, dashboard_selector, swap, poll], [dashboard_text]) as html::node dashboard
         call html::document("Accounts", [css, runtime], [search_form, validation_form, dashboard]) as html::safe document
-        ok => ok document
         html::invalid_structure
         html::invalid_url
         htmx::invalid_target
         htmx::invalid_interval
+        ok => ok document

@@ -70,95 +70,6 @@ fn void main
     match call load_json()
         when
             sample:  => ok receipt(9007199254740993)
-        ok receipt received => do
-            call require(received.count is 9007199254740993)
-            match call load_envelope()
-                when
-                    sample:  => ok http::response<bytes::buffer>(418, [], payload)
-                ok http::response<bytes::buffer> envelope => do
-                    call require(envelope.status is 418)
-                    match call send_text("hello")
-                        when
-                            sample: "hello" => ok "hello"
-                        ok str text => do
-                            call require(text is "hello")
-                            match call send_json(receipt(9007199254740993))
-                                when
-                                    sample: receipt(9007199254740993) => ok receipt(9007199254740993)
-                                ok receipt sent => do
-                                    call require(sent.count is 9007199254740993)
-                                    match call send_bytes(payload)
-                                        when
-                                            sample: payload => ok payload
-                                        ok bytes::buffer binary => do
-                                            int[] binary_values = call bytes::to_ints(binary)
-                                            int[] no_values = []
-                                            call require(binary_values is no_values)
-                                            match call head_text()
-                                                when
-                                                    sample:  => ok ""
-                                                ok str head => do
-                                                    call require(head is "")
-                                                    match call delete_text()
-                                                        when
-                                                            sample:  => ok "delete"
-                                                        ok str deleted => do
-                                                            call require(deleted is "delete")
-                                                            match call options_text()
-                                                                when
-                                                                    sample:  => ok "options"
-                                                                ok str options => do
-                                                                    call require(options is "options")
-                                                                    ok
-                                                                http::invalid_request
-                                                                http::credentials_missing
-                                                                http::transport_failed
-                                                                http::timeout
-                                                                http::body_limit
-                                                                http::status_error
-                                                                codec::invalid_data
-                                                        http::invalid_request
-                                                        http::credentials_missing
-                                                        http::transport_failed
-                                                        http::timeout
-                                                        http::body_limit
-                                                        http::status_error
-                                                        codec::invalid_data
-                                                http::invalid_request
-                                                http::credentials_missing
-                                                http::transport_failed
-                                                http::timeout
-                                                http::body_limit
-                                                http::status_error
-                                                codec::invalid_data
-                                        http::invalid_request
-                                        http::credentials_missing
-                                        http::transport_failed
-                                        http::timeout
-                                        http::body_limit
-                                        http::status_error
-                                        codec::invalid_data
-                                http::invalid_request
-                                http::credentials_missing
-                                http::transport_failed
-                                http::timeout
-                                http::body_limit
-                                http::status_error
-                                codec::invalid_data
-                        http::invalid_request
-                        http::credentials_missing
-                        http::transport_failed
-                        http::timeout
-                        http::body_limit
-                        http::status_error
-                        codec::invalid_data
-                http::invalid_request
-                http::credentials_missing
-                http::transport_failed
-                http::timeout
-                http::body_limit
-                http::status_error
-                codec::invalid_data
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -166,6 +77,95 @@ fn void main
         http::body_limit
         http::status_error
         codec::invalid_data
+        ok receipt received => do
+            call require(received.count is 9007199254740993)
+            match call load_envelope()
+                when
+                    sample:  => ok http::response<bytes::buffer>(418, [], payload)
+                http::invalid_request
+                http::credentials_missing
+                http::transport_failed
+                http::timeout
+                http::body_limit
+                http::status_error
+                codec::invalid_data
+                ok http::response<bytes::buffer> envelope => do
+                    call require(envelope.status is 418)
+                    match call send_text("hello")
+                        when
+                            sample: "hello" => ok "hello"
+                        http::invalid_request
+                        http::credentials_missing
+                        http::transport_failed
+                        http::timeout
+                        http::body_limit
+                        http::status_error
+                        codec::invalid_data
+                        ok str text => do
+                            call require(text is "hello")
+                            match call send_json(receipt(9007199254740993))
+                                when
+                                    sample: receipt(9007199254740993) => ok receipt(9007199254740993)
+                                http::invalid_request
+                                http::credentials_missing
+                                http::transport_failed
+                                http::timeout
+                                http::body_limit
+                                http::status_error
+                                codec::invalid_data
+                                ok receipt sent => do
+                                    call require(sent.count is 9007199254740993)
+                                    match call send_bytes(payload)
+                                        when
+                                            sample: payload => ok payload
+                                        http::invalid_request
+                                        http::credentials_missing
+                                        http::transport_failed
+                                        http::timeout
+                                        http::body_limit
+                                        http::status_error
+                                        codec::invalid_data
+                                        ok bytes::buffer binary => do
+                                            int[] binary_values = call bytes::to_ints(binary)
+                                            int[] no_values = []
+                                            call require(binary_values is no_values)
+                                            match call head_text()
+                                                when
+                                                    sample:  => ok ""
+                                                http::invalid_request
+                                                http::credentials_missing
+                                                http::transport_failed
+                                                http::timeout
+                                                http::body_limit
+                                                http::status_error
+                                                codec::invalid_data
+                                                ok str head => do
+                                                    call require(head is "")
+                                                    match call delete_text()
+                                                        when
+                                                            sample:  => ok "delete"
+                                                        http::invalid_request
+                                                        http::credentials_missing
+                                                        http::transport_failed
+                                                        http::timeout
+                                                        http::body_limit
+                                                        http::status_error
+                                                        codec::invalid_data
+                                                        ok str deleted => do
+                                                            call require(deleted is "delete")
+                                                            match call options_text()
+                                                                when
+                                                                    sample:  => ok "options"
+                                                                http::invalid_request
+                                                                http::credentials_missing
+                                                                http::transport_failed
+                                                                http::timeout
+                                                                http::body_limit
+                                                                http::status_error
+                                                                codec::invalid_data
+                                                                ok str options => do
+                                                                    call require(options is "options")
+                                                                    ok
 fn str referenced
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     asserts
@@ -174,7 +174,6 @@ fn str referenced
     match call action("value")
         when
             sample: "value" => ok "fixture"
-        ok str output => ok output
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -182,6 +181,7 @@ fn str referenced
         http::body_limit
         http::status_error
         codec::invalid_data
+        ok str output => ok output
 
 fn str extract
     emits []

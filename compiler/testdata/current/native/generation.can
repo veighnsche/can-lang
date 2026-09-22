@@ -58,36 +58,6 @@ fn void main
     match call describe("private-not-disclosed", (9007199254740993))
         when
             sample: "private-not-disclosed", (9007199254740993) => ok "description"
-        ok str description => match call generate((description))
-            when
-                sample: ("description") => ok plan([item<int>("First", 9007199254740993)], true, 0.5)
-            ok plan generated => match call decide((generated))
-                when
-                    sample: (plan([item<int>("First", 9007199254740993)], true, 0.5)) => ok "chosen"
-                ok str selected => match selected is "chosen" and generated.choices[0].count is 9007199254740993 and generated.ready and generated.ratio is 0.5
-                    true => ok
-                    false => do
-                        int invalid = 1 / 0
-                        ok
-                http::invalid_request
-                http::credentials_missing
-                http::transport_failed
-                http::timeout
-                http::body_limit
-                http::status_error
-                codec::invalid_data
-                ai::invalid_question
-                ai::invalid_answer
-            http::invalid_request
-            http::credentials_missing
-            http::transport_failed
-            http::timeout
-            http::body_limit
-            http::status_error
-            codec::invalid_data
-            llm::refused
-            llm::truncated
-            llm::invalid_response
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -98,3 +68,33 @@ fn void main
         llm::refused
         llm::truncated
         llm::invalid_response
+        ok str description => match call generate((description))
+            when
+                sample: ("description") => ok plan([item<int>("First", 9007199254740993)], true, 0.5)
+            http::invalid_request
+            http::credentials_missing
+            http::transport_failed
+            http::timeout
+            http::body_limit
+            http::status_error
+            codec::invalid_data
+            llm::refused
+            llm::truncated
+            llm::invalid_response
+            ok plan generated => match call decide((generated))
+                when
+                    sample: (plan([item<int>("First", 9007199254740993)], true, 0.5)) => ok "chosen"
+                http::invalid_request
+                http::credentials_missing
+                http::transport_failed
+                http::timeout
+                http::body_limit
+                http::status_error
+                codec::invalid_data
+                ai::invalid_question
+                ai::invalid_answer
+                ok str selected => match selected is "chosen" and generated.choices[0].count is 9007199254740993 and generated.ready and generated.ratio is 0.5
+                    true => ok
+                    false => do
+                        int invalid = 1 / 0
+                        ok

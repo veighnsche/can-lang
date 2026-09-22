@@ -33,10 +33,10 @@ fn sql::decision<int> decide
     match call sql::transaction_execute<search_parameters>(tx, "add_account", search_parameters("Zed"))
         when
             sample: tx, "add_account", search_parameters("Zed") => ok 1
-        ok int affected => ok sql::commit<int>(affected)
         sql::unsupported_value => ok sql::rollback<int>(0)
         sql::query_failed => ok sql::rollback<int>(0)
         sql::constraint_failed => ok sql::rollback<int>(0)
+        ok int affected => ok sql::commit<int>(affected)
 fn int run
     emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
     asserts
@@ -44,15 +44,15 @@ fn int run
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide)
             when
                 sample: pool, callable decide => ok 1
-            ok int total => ok total
             sql::connection_failed
             sql::transaction_failed
             sql::commit_unknown
-        http::credentials_missing
-        sql::connection_failed
+            ok int total => ok total
 fn void main
     emits []
     given
@@ -81,13 +81,13 @@ fn sql::decision<int> decide
     match call sql::transaction_query_one<search_parameters, account_row>(tx, "add_account", search_parameters("Zed"))
         when
             sample: tx, "add_account", search_parameters("Zed") => ok account_row(7, "Zed")
-        ok account_row row => ok sql::commit<int>(row.id)
         sql::unsupported_value => ok sql::rollback<int>(0)
         sql::query_failed => ok sql::rollback<int>(0)
         sql::constraint_failed => ok sql::rollback<int>(0)
         sql::row_missing => ok sql::rollback<int>(0)
         sql::row_count => ok sql::rollback<int>(0)
         sql::schema_mismatch => ok sql::rollback<int>(0)
+        ok account_row row => ok sql::commit<int>(row.id)
 fn int run
     emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
     asserts
@@ -95,15 +95,15 @@ fn int run
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide)
             when
                 sample: pool, callable decide => ok 1
-            ok int total => ok total
             sql::connection_failed
             sql::transaction_failed
             sql::commit_unknown
-        http::credentials_missing
-        sql::connection_failed
+            ok int total => ok total
 fn void main
     emits []
     given

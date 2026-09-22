@@ -15,8 +15,8 @@ fn html::safe feedback
         call html::make_tag("p") as html::tag paragraph
         call html::element(paragraph, [], [text]) as html::node line
         call html::fragment([line]) as html::safe body
-        ok => ok body
         html::invalid_structure
+        ok => ok body
 fn html::safe page
     emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, htmx::invalid_interval]
     asserts
@@ -78,11 +78,11 @@ fn html::safe page
         call html::text_attribute("id", "hostile") as html::attribute hostile_id
         call html::element(paragraph, [hostile_id], [hostile_text]) as html::node hostile
         call html::document("Accounts", [css, runtime], [form, quiet_button, quiet_region, boom_button, boom_region, dashboard, hostile]) as html::safe document
-        ok => ok document
         html::invalid_structure
         html::invalid_url
         htmx::invalid_target
         htmx::invalid_interval
+        ok => ok document
 fn http::server_response show
     emits []
     given
@@ -90,11 +90,11 @@ fn http::server_response show
     asserts
         sample: => ok
     match call page()
-        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
         html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         htmx::invalid_target => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
         htmx::invalid_interval => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
 fn http::server_response validate
     emits []
     given
@@ -106,22 +106,22 @@ fn http::server_response validate
         when
             blank: req, 2048 => ok account_form("")
             named: req, 2048 => ok account_form("Ann")
+        http::body_limit => match call feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+        http::invalid_request => match call feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+        codec::invalid_data => match call feedback("Name is required.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
         ok account_form form => match form.name is ""
             true => match call feedback("Name is required.")
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
             false => match call feedback(form.name)
-                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        http::body_limit => match call feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        http::invalid_request => match call feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        codec::invalid_data => match call feedback("Name is required.")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
 fn http::server_response quiet
     emits []
     given
@@ -129,8 +129,8 @@ fn http::server_response quiet
     asserts
         sample: => ok
     match call http::make_status(204)
-        ok http::status status => ok call http::response_empty(status, call http::empty_server_headers())
         http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::status status => ok call http::response_empty(status, call http::empty_server_headers())
 fn http::server_response boom
     emits []
     given
@@ -149,8 +149,8 @@ fn http::server_response dashboard
             sample: => ok 1000
         ok int millis => match call text::from_int(millis)
             ok str label => match call feedback(label)
-                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
 fn http::router routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     asserts
@@ -162,10 +162,10 @@ fn http::router routes
         call http::route_get("/boom", callable boom) as http::route failure
         call http::route_get("/dashboard", callable dashboard) as http::route summary
         call http::make_router([home, submit, silence, failure, summary]) as http::router built
-        ok => ok built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok => ok built
 fn http::server boot
     emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
     given
@@ -173,16 +173,16 @@ fn http::server boot
     asserts
         sample: 0 => ok
     match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
         ok http::server_config config => match call routes()
-            ok http::router built => match call http::server_start(config, built)
-                when
-                    sample: config, built => ok
-                ok http::server sturdy => ok sturdy
-                http::bind_failed
             http::invalid_route
             http::duplicate_route
             http::ambiguous_route
-        http::invalid_server_config
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => ok sturdy
 fn void main
     emits []
     given

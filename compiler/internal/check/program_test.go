@@ -80,11 +80,11 @@ fn int read
         sample: item(7) => => ok 7
     ok self.number
 ` + programMain + `    match call initial.read()
-        ok int number => match number
-            7 => ok
-            _ => ok
         [_] as str message => match message
             "" => ok
+            _ => ok
+        ok int number => match number
+            7 => ok
             _ => ok
 `})
 	if err != nil {

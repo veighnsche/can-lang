@@ -7,10 +7,10 @@ fn collections::entry<int,str>[] sample
         ordered: => ok [collections::entry<int,str>(3, "three"), collections::entry<int,str>(2, "two")]
     collections::map<int,str> empty = call collections::empty_map<int,str>()
     match call collections::insert(empty, 3, "three")
-        ok collections::map<int,str> first => match call collections::insert(first, 2, "two")
-            ok collections::map<int,str> second => ok call collections::entries(second)
-            collections::key_exists
         collections::key_exists
+        ok collections::map<int,str> first => match call collections::insert(first, 2, "two")
+            collections::key_exists
+            ok collections::map<int,str> second => ok call collections::entries(second)
 fn bool sets
     emits []
     asserts
@@ -28,6 +28,12 @@ fn void main
     asserts
         sample: [] => ok
     match call alias()
+        collections::key_exists => do
+            int invalid = 1 / 0
+            ok
+        collections::key_absent => do
+            int invalid = 1 / 0
+            ok
         ok str original => match original
             "original" => match call folded()
                 ok bool found => match found
@@ -38,20 +44,14 @@ fn void main
             _ => do
                 int invalid = 1 / 0
                 ok
-        collections::key_exists => do
-            int invalid = 1 / 0
-            ok
-        collections::key_absent => do
-            int invalid = 1 / 0
-            ok
 fn str absent
     emits [collections::key_absent]
     asserts
         sample: => collections::key_absent()
     collections::map<int,str> empty = call collections::empty_map()
     match call collections::get(empty, 1)
-        ok str output => ok output
         collections::key_absent
+        ok str output => ok output
 fn collections::entry<int,str>[] changed
     emits [collections::key_exists, collections::key_absent]
     given
@@ -64,35 +64,35 @@ fn collections::entry<int,str>[] changed
         absent_remove: 4 => collections::key_absent()
     collections::map<int,str> empty = call collections::empty_map()
     match call collections::insert(empty, 3, "original")
+        collections::key_exists
         ok collections::map<int,str> first => match operation
             0 => match call collections::replace(first, 3, "changed")
-                ok collections::map<int,str> updated => ok call collections::entries(updated)
                 collections::key_absent
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
             1 => match call collections::remove(first, 3)
-                ok collections::map<int,str> updated => ok call collections::entries(updated)
                 collections::key_absent
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
             2 => match call collections::insert(first, 3, "duplicate")
-                ok collections::map<int,str> updated => ok call collections::entries(updated)
                 collections::key_exists
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
             3 => match call collections::replace(first, 2, "missing")
-                ok collections::map<int,str> updated => ok call collections::entries(updated)
                 collections::key_absent
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
             _ => match call collections::remove(first, 2)
-                ok collections::map<int,str> updated => ok call collections::entries(updated)
                 collections::key_absent
-        collections::key_exists
+                ok collections::map<int,str> updated => ok call collections::entries(updated)
 fn str alias
     emits [collections::key_exists, collections::key_absent]
     asserts
         sample: => ok "original"
     collections::map<int,str> empty = call collections::empty_map<int,str>()
     match call collections::insert(empty, 3, "original")
-        ok collections::map<int,str> first => match call collections::replace(first, 3, "changed")
-            ok collections::map<int,str> updated => match call collections::get(first, 3)
-                ok str original => ok original
-                collections::key_absent
-            collections::key_absent
         collections::key_exists
+        ok collections::map<int,str> first => match call collections::replace(first, 3, "changed")
+            collections::key_absent
+            ok collections::map<int,str> updated => match call collections::get(first, 3)
+                collections::key_absent
+                ok str original => ok original
 fn bool set_operations
     emits []
     given
@@ -139,8 +139,8 @@ fn str fixture
     match call collections::get(empty, 1)
         when
             sample: empty, 1 => ok "fixture"
-        ok str output => ok output
         collections::key_absent
+        ok str output => ok output
 fn bool folded
     emits []
     asserts

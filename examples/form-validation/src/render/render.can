@@ -15,8 +15,8 @@ fn html::safe feedback
         call html::make_tag("p") as html::tag paragraph
         call html::element(paragraph, [], [text]) as html::node line
         call html::fragment([line]) as html::safe body
-        ok => ok body
         html::invalid_structure
+        ok => ok body
 
 /// Render a validated signup as a safe fragment.
 fn html::safe signup_result
@@ -31,8 +31,8 @@ fn html::safe signup_result
         call html::make_tag("p") as html::tag paragraph
         call html::element(paragraph, [], [text]) as html::node line
         call html::fragment([line]) as html::safe body
-        ok => ok body
         html::invalid_structure
+        ok => ok body
 
 /// Build the signup page with its validation form.
 fn html::safe page
@@ -76,7 +76,7 @@ fn html::safe page
         call html::element(paragraph, [results_id], [waiting]) as html::node results
         call html::element(form_tag, [form_id, method, post, results_selector, swap, progress], [field, tags, note, submit, indicator, results]) as html::node form
         call html::document("Signup", [css, runtime], [form]) as html::safe document
-        ok => ok document
         html::invalid_structure
         html::invalid_url
         htmx::invalid_target
+        ok => ok document

@@ -49,13 +49,13 @@ fn records::count_value recent_count
             down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
             triage: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             unclosed: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
-        ok records::account_row[] rows => ok records::count_value(rows.length, true)
         sql::unsupported_value => ok records::count_value(0, false)
         sql::connection_failed => ok records::count_value(0, false)
         sql::query_failed => ok records::count_value(0, false)
         sql::constraint_failed => ok records::count_value(0, false)
         sql::row_limit => ok records::count_value(0, false)
         sql::schema_mismatch => ok records::count_value(0, false)
+        ok records::account_row[] rows => ok records::count_value(rows.length, true)
 
 /// Read the account total through the captured pool.
 fn records::count_value account_total
@@ -71,7 +71,6 @@ fn records::count_value account_total
             down: pool, "account_total", records::count_params(0) => sql::query_failed("account_total", "08006")
             triage: pool, "account_total", records::count_params(0) => ok records::total_row(2)
             unclosed: pool, "account_total", records::count_params(0) => ok records::total_row(2)
-        ok records::total_row row => ok records::count_value(row.total, true)
         sql::unsupported_value => ok records::count_value(0, false)
         sql::connection_failed => ok records::count_value(0, false)
         sql::query_failed => ok records::count_value(0, false)
@@ -79,3 +78,4 @@ fn records::count_value account_total
         sql::row_missing => ok records::count_value(0, false)
         sql::row_count => ok records::count_value(0, false)
         sql::schema_mismatch => ok records::count_value(0, false)
+        ok records::total_row row => ok records::count_value(row.total, true)

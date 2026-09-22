@@ -23,7 +23,7 @@ func TestHTMLHasOnlyCatalogueConstructors(t *testing.T) {
 			t.Fatal("legacy HTML authority accepted")
 		}
 	}
-	source := header + strings.Replace(main, "emits []", "emits [html::invalid_structure]", 1) + "    match call html::make_tag(\"div\")\n        ok html::tag tag => ok\n        html::invalid_structure\n"
+	source := header + strings.Replace(main, "emits []", "emits [html::invalid_structure]", 1) + "    match call html::make_tag(\"div\")\n        html::invalid_structure\n        ok html::tag tag => ok\n"
 	if _, err := programFixture(t, map[string]string{"src/main.can": source}); err != nil {
 		t.Fatal(err)
 	}

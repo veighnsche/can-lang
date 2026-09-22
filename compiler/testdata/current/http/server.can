@@ -15,25 +15,25 @@ fn http::router table
     match chain
         call http::route_get("/health", callable health) as http::route probe
         call http::make_router([probe]) as http::router built
-        ok => ok built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok => ok built
 fn bool settings
     emits []
     asserts
         sample: => ok true
     match call http::make_server_config("127.0.0.1", 0, 0, 1000)
-        ok http::server_config config => ok false
         http::invalid_server_config => ok true
+        ok http::server_config config => ok false
 fn bool bounds
     emits [http::invalid_server_config]
     asserts
         sample: => ok true
     match chain
         call http::make_server_config("127.0.0.1", 0, 67108864, 2147483647) as http::server_config config
-        ok => ok true
         http::invalid_server_config
+        ok => ok true
 fn http::server boot
     emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
     given
@@ -41,16 +41,16 @@ fn http::server boot
     asserts
         sample: 0 => ok
     match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
         ok http::server_config config => match call table()
-            ok http::router built => match call http::server_start(config, built)
-                when
-                    sample: config, built => ok
-                ok http::server sturdy => ok sturdy
-                http::bind_failed
             http::invalid_route
             http::duplicate_route
             http::ambiguous_route
-        http::invalid_server_config
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => ok sturdy
 fn void serve
     emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
     given
@@ -58,24 +58,24 @@ fn void serve
     asserts
         sample: 0 => ok
     match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
         ok http::server_config config => match call table()
-            ok http::router built => match call http::server_start(config, built)
-                when
-                    sample: config, built => ok
-                ok http::server sturdy => match call http::server_stop(sturdy)
-                    when
-                        sample: sturdy => ok
-                    ok => match call http::server_wait(sturdy)
-                        when
-                            sample: sturdy => ok
-                        ok => ok
-                        http::shutdown_failed
-                    http::shutdown_failed
-                http::bind_failed
             http::invalid_route
             http::duplicate_route
             http::ambiguous_route
-        http::invalid_server_config
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => match call http::server_stop(sturdy)
+                    when
+                        sample: sturdy => ok
+                    http::shutdown_failed
+                    ok => match call http::server_wait(sturdy)
+                        when
+                            sample: sturdy => ok
+                        http::shutdown_failed
+                        ok => ok
 fn void main
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
@@ -83,7 +83,7 @@ fn void main
     asserts
         sample: [] => ok
     match call table()
-        ok http::router built => ok
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
+        ok http::router built => ok

@@ -11,8 +11,8 @@ fn str roundtrip
     match chain
         call bytes::from_utf8(text) as bytes::buffer original
         call bytes::to_utf8(original) as str decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded
 fn int[] integers
     emits [codec::invalid_data]
     given
@@ -24,8 +24,8 @@ fn int[] integers
     match chain
         call bytes::from_ints(values) as bytes::buffer original
         call bytes::to_ints(original) as int[] decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded
 fn int empty_size
     emits []
     asserts
@@ -46,10 +46,10 @@ fn str callable_roundtrip
     asserts
         sample: "héllo 😀" => ok "héllo 😀"
     match call bytes::from_utf8(text)
+        codec::invalid_data
         ok bytes::buffer original => do
             callable str () emits [codec::invalid_data] action = callable captured
             relay call action()
-        codec::invalid_data
 fn void main
     emits [codec::invalid_data]
     given
@@ -57,6 +57,7 @@ fn void main
     asserts
         sample: [] => ok
     match call callable_roundtrip("héllo 😀")
+        codec::invalid_data
         ok str decoded => do
             int checked = 1
             match decoded
@@ -64,4 +65,3 @@ fn void main
                 _ => do
                     int invalid = 1 / 0
                     ok
-        codec::invalid_data

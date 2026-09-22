@@ -34,10 +34,10 @@ fn int normalized_a
     asserts
         sample: => all_failed<combined_failure>([codec::invalid_data("a", "type")])
     match call original_a()
-        ok
         all_failed => do
             combined_failure[] values = call widen_a(all_failed.failures)
             all_failed<combined_failure>(values)
+        ok
 fn int original_b
     emits [all_failed<b_failure>]
     asserts
@@ -62,10 +62,10 @@ fn int normalized_b
     asserts
         sample: => all_failed<combined_failure>([codec::invalid_data("b", "type")])
     match call original_b()
-        ok
         all_failed => do
             combined_failure[] values = call widen_b(all_failed.failures)
             all_failed<combined_failure>(values)
+        ok
 fn str describe
     emits []
     given
@@ -205,15 +205,15 @@ fn void main
     str selected = match call race with error
         normalized_a()
         normalized_b()
-        ok int value => ok "unexpected"
         all_failed => ok call describe(all_failed.failures[0])
+        ok int value => ok "unexpected"
     str[] ordered = match call concurrent with error
         normalized_a()
-            ok int value => ok "unexpected"
             all_failed => ok call describe(all_failed.failures[0])
+            ok int value => ok "unexpected"
         normalized_b()
-            ok int value => ok "unexpected"
             all_failed => ok call describe(all_failed.failures[0])
+            ok int value => ok "unexpected"
     match (selected is "a" or selected is "b") and ordered is ["a", "b"]
         true => ok
         false => do

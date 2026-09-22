@@ -86,7 +86,6 @@ fn records::triage_plan draft_account
         when
             sample: ("Ann") => ok records::triage_plan(["vip", "new"], true)
             garbage: ("Ann") => llm::invalid_response("shape")
-        ok records::triage_plan plan => ok plan
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -97,6 +96,7 @@ fn records::triage_plan draft_account
         llm::refused
         llm::truncated
         llm::invalid_response
+        ok records::triage_plan plan => ok plan
 
 
 /// Review one bundle of options and names.
@@ -111,7 +111,6 @@ fn records::triage_scored review_bundle
         when
             sample: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ok records::triage_scored("vip", 0.9)
             garbage: (records::triage_bundle([choice_option("vip", "vip")], ["Ann"])) => ai::invalid_answer("q1", "range")
-        ok records::triage_scored scored => ok scored
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -121,3 +120,4 @@ fn records::triage_scored review_bundle
         codec::invalid_data
         ai::invalid_question
         ai::invalid_answer
+        ok records::triage_scored scored => ok scored

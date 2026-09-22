@@ -259,7 +259,7 @@ func TestHTTPHandlerContractRefusals(t *testing.T) {
 		{"fallible handler", "fn http::server_response handle\n    emits [http::invalid_request]\n    given\n        http::request req\n    asserts\n        sample: => http::invalid_request(\"x\")\n    http::invalid_request(\"x\")\n"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			mount := "fn bool mounted\n    emits [http::invalid_route]\n    asserts\n        sample: => ok true\n    match call http::route_get(\"/a\", callable handle)\n        ok http::route route => ok true\n        http::invalid_route\n"
+			mount := "fn bool mounted\n    emits [http::invalid_route]\n    asserts\n        sample: => ok true\n    match call http::route_get(\"/a\", callable handle)\n        http::invalid_route\n        ok http::route route => ok true\n"
 			source := header + tc.handler + mount + main
 			if _, err := programFixture(t, map[string]string{"src/main.can": source}); err == nil {
 				t.Fatalf("accepted %s", tc.name)

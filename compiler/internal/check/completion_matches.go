@@ -162,6 +162,13 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 		if seen[key] {
 			return nil, c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
 		}
+		// C5.1 order: every error arm, with the optional standard arm
+		// anywhere among those failures, precedes exactly one final ok.
+		// Individual failure order is unconstrained; only success-last is
+		// enforced, at the failure head that breaks it.
+		if a.Outcome != "ok" && seen["ok"] {
+			return nil, c.locate(pattern.Span, fmt.Errorf("failure arms precede the final ok"))
+		}
 		seen[key] = true
 		if pattern.Binding != nil {
 			if a.Outcome == "domain" {

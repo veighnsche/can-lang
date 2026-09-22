@@ -25,16 +25,16 @@ fn int fail_all
         sample: => all_failed<failure>([codec::invalid_data("", "type")])
     int result = match call race
         unavailable()
-        ok int value => ok value
         all_failed
+        ok int value => ok value
     ok result
 fn int aggregate_size
     emits []
     asserts
         sample: => ok 1
     match call fail_all()
-        ok int value => ok value
         all_failed => ok all_failed.failures.length
+        ok int value => ok value
 fn int summarize
     emits []
     given
@@ -48,11 +48,11 @@ fn int observe
         sample: => ok 2
     int result = match call race
         unavailable()
-        ok int value => ok value
         all_failed => do
             int count = all_failed.failures.length
             int summarized = call summarize(all_failed.failures)
             ok count + summarized
+        ok int value => ok value
     ok result
 fn void main
     emits []
@@ -69,24 +69,24 @@ fn void main
             ok str value => ok value.length
     int[] settled = match call concurrent with error
         unavailable()
-            ok int value => ok value
             codec::invalid_data => ok 2
+            ok int value => ok value
         one()
             ok int value => ok value
     int raced = match call race with error
         unavailable()
         one()
-        ok int value => ok value
         codec::invalid_data => ok 9
+        ok int value => ok value
     int first_success = match call race
         unavailable()
         one()
-        ok int value => ok value
         all_failed => ok 0
+        ok int value => ok value
     int all_failed_result = match call race
         unavailable()
-        ok int value => ok value
         all_failed => ok 5
+        ok int value => ok value
     callable int () emits [][] empty_operations = []
     int[] empty_all = match call concurrent
         ...empty_operations

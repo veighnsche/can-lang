@@ -63,8 +63,8 @@ fn int any
     int result = match call race
         helper(0)
         transitive(1)
-        ok int value => ok value
         all_failed => ok -1
+        ok int value => ok value
     ok result
 fn int race
     emits []

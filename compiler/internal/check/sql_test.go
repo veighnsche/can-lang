@@ -111,10 +111,11 @@ fn account_row by_id
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::query_one<id_parameters, account_row>(pool, "account_by_id", id_parameters(id))
             when
                 sample: pool, "account_by_id", id_parameters(4) => ok account_row(4, "Bob")
-            ok account_row row => ok row
             sql::unsupported_value
             sql::connection_failed
             sql::query_failed
@@ -122,8 +123,7 @@ fn account_row by_id
             sql::row_missing
             sql::row_count
             sql::schema_mismatch
-        http::credentials_missing
-        sql::connection_failed
+            ok account_row row => ok row
 fn option::value<account_row> by_term
     emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch]
     given
@@ -133,18 +133,18 @@ fn option::value<account_row> by_term
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::query_optional<search_parameters, account_row>(pool, "account_by_term", search_parameters(term))
             when
                 sample: pool, "account_by_term", search_parameters("Bob") => ok option::some(account_row(4, "Bob"))
-            ok option::value<account_row> found => ok found
             sql::unsupported_value
             sql::connection_failed
             sql::query_failed
             sql::constraint_failed
             sql::row_count
             sql::schema_mismatch
-        http::credentials_missing
-        sql::connection_failed
+            ok option::value<account_row> found => ok found
 fn account_row[] by_rows
     emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch]
     given
@@ -154,18 +154,18 @@ fn account_row[] by_rows
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::query_rows<search_parameters, account_row>(pool, "accounts_by_term", search_parameters(term), 10)
             when
                 sample: pool, "accounts_by_term", search_parameters("son"), 10 => ok [account_row(2, "Jason")]
-            ok account_row[] rows => ok rows
             sql::unsupported_value
             sql::connection_failed
             sql::query_failed
             sql::constraint_failed
             sql::row_limit
             sql::schema_mismatch
-        http::credentials_missing
-        sql::connection_failed
+            ok account_row[] rows => ok rows
 fn int add_one
     emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]
     given
@@ -175,16 +175,16 @@ fn int add_one
     match call sql::pool_open("CAN_TEST_POSTGRES", 5)
         when
             sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
         ok sql::pool pool => match call sql::execute<search_parameters>(pool, "add_account", search_parameters(term))
             when
                 sample: pool, "add_account", search_parameters("Zed") => ok 1
-            ok int affected => ok affected
             sql::unsupported_value
             sql::connection_failed
             sql::query_failed
             sql::constraint_failed
-        http::credentials_missing
-        sql::connection_failed
+            ok int affected => ok affected
 fn void main
     emits []
     given
@@ -386,13 +386,13 @@ fn account_row[] load
     match call sql::query_rows<search_parameters, account_row>(pool, "search_accounts", search_parameters("%" + query + "%"), 25)
         when
             sample: pool, "search_accounts", search_parameters("%x%"), 25 => ok []
-        ok account_row[] rows => ok rows
         sql::unsupported_value
         sql::connection_failed
         sql::query_failed
         sql::constraint_failed
         sql::row_limit
         sql::schema_mismatch
+        ok account_row[] rows => ok rows
 `
 	path := filepath.Join(root, "src", "main.can")
 	if err := os.WriteFile(path, []byte(source), 0600); err != nil {

@@ -1,0 +1,53 @@
+=== aggregate-composition/normalized_a (call dispatch, normalized paths/spans) ===
+10,13c10
+< if ($canRegion14.kind === 'ok') {
+< return $canRegion14 as $canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>;
+< }
+< else if ($canRegion14.kind === 'domain' && $canErrorType($canRegion14) === "483d601ca6d1f8d86d2cc57ac9e28f699994663d1f09f3d5f54478a36313546c") {
+---
+> if ($canRegion14.kind === 'domain' && $canErrorType($canRegion14) === "483d601ca6d1f8d86d2cc57ac9e28f699994663d1f09f3d5f54478a36313546c") {
+30a28,30
+> }
+> else if ($canRegion14.kind === 'ok') {
+> return $canRegion14 as $canCompletion<$canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71>;
+
+=== coordination/main per-function normalized change counts (0 = byte-identical) ===
+aggregate_size.ts: 18
+fail_all.ts: 0
+main.ts: 24
+observe.ts: 0
+one.ts: 0
+summarize.ts: 0
+text.ts: 0
+unavailable.ts: 0
+
+=== coordination/main aggregate_size normalized dispatch diff ===
+10,13c10,15
+< if ($canRegion15.kind === 'ok') {
+< const $canRegion18 = $canValue($canRegion15) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+< const $canExpr1 = ($canRegion18) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+< return $canSuccess($canExpr1);
+---
+> if ($canRegion15.kind === 'domain' && $canErrorType($canRegion15) === "7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f") {
+> const $canRegion18 = $canErrorPayload($canRegion15) as $canType7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f;
+> const $canExpr1 = ($canRegion18) as unknown as $canType7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f;
+> const $canExpr2 = $canExpr1["failures"];
+> const $canExpr3 = BigInt($canExpr2.length);
+> return $canSuccess($canExpr3);
+15,19c17,19
+< else if ($canRegion15.kind === 'domain' && $canErrorType($canRegion15) === "7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f") {
+< const $canRegion19 = $canErrorPayload($canRegion15) as $canType7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f;
+< const $canExpr2 = ($canRegion19) as unknown as $canType7753ffd9e52dc8ba73ed1d8982d8b0364c4ff37f1ffb1137b86abdf61578186f;
+< const $canExpr3 = $canExpr2["failures"];
+< const $canExpr4 = BigInt($canExpr3.length);
+---
+> else if ($canRegion15.kind === 'ok') {
+> const $canRegion19 = $canValue($canRegion15) as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+> const $canExpr4 = ($canRegion19) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+
+=== settle-call multiset old vs new (must match) ===
+SETTLE-IDENTICAL
+   5 CoordinateSettle("all"
+   5 CoordinateSettle("any"
+   1 CoordinateSettle("race"
+   2 CoordinateSettle("settled"

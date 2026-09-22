@@ -11,24 +11,24 @@ fn void main
     match call env::required(args[0])
         when
             sample: "VALUE" => ok "fixture"
+        env::invalid_name
+        http::credentials_missing
         ok str value => match call env::optional("EMPTY")
             when
                 sample: "EMPTY" => ok option::some<str>("")
+            env::invalid_name
             ok option::value<str> present => match call env::optional("MISSING")
                 when
                     sample: "MISSING" => ok option::none()
+                env::invalid_name
                 ok option::value<str> absent => match present is option::some<str>("") and absent is option::none()
                     true => match call bytes::from_utf8(value)
+                        codec::invalid_data
                         ok bytes::buffer encoded => match call io::stdout_write(encoded)
                             when
                                 sample: encoded => ok 7
-                            ok int written => ok
                             io::write_failed
-                        codec::invalid_data
+                            ok int written => ok
                     false => do
                         int invalid = 1 / 0
                         ok
-                env::invalid_name
-            env::invalid_name
-        env::invalid_name
-        http::credentials_missing

@@ -20,13 +20,13 @@ fn records::account_row[] read_recent
             down: pool, "recent_accounts", records::search_parameters("%"), 25 => sql::connection_failed("recent_accounts")
             ready: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
             ready: pool, "recent_accounts", records::search_parameters("%"), 25 => ok [records::account_row(1, "Ann"), records::account_row(2, "Bo")]
-        ok records::account_row[] rows => ok rows
         sql::unsupported_value
         sql::connection_failed
         sql::query_failed
         sql::constraint_failed
         sql::row_limit
         sql::schema_mismatch
+        ok records::account_row[] rows => ok rows
 
 /// Count recent accounts, racing two identical reads through the pool.
 /// The first success wins with the same rows either way; only all_failed,
@@ -41,8 +41,8 @@ fn records::count_value recent_count
     records::count_value count = match call race
         read_recent(pool)
         read_recent(pool)
-        ok records::account_row[] won => ok records::count_value(won.length, true)
         all_failed => ok records::count_value(0, false)
+        ok records::account_row[] won => ok records::count_value(won.length, true)
     ok count
 
 /// Read the account total through the captured pool.
@@ -58,7 +58,6 @@ fn records::count_value account_total
             sample: pool, "account_total", records::count_params(0) => ok records::total_row(2)
             down: pool, "account_total", records::count_params(0) => sql::query_failed("account_total", "08006")
             ready: pool, "account_total", records::count_params(0) => ok records::total_row(2)
-        ok records::total_row row => ok records::count_value(row.total, true)
         sql::unsupported_value => ok records::count_value(0, false)
         sql::connection_failed => ok records::count_value(0, false)
         sql::query_failed => ok records::count_value(0, false)
@@ -66,3 +65,4 @@ fn records::count_value account_total
         sql::row_missing => ok records::count_value(0, false)
         sql::row_count => ok records::count_value(0, false)
         sql::schema_mismatch => ok records::count_value(0, false)
+        ok records::total_row row => ok records::count_value(row.total, true)

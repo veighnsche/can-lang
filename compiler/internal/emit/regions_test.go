@@ -177,7 +177,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 	}{
 		{"    ok\n", "void", nil},
 
-		{"    match call build().bump(1).read()\n        ok\n        missing => ok 0\n        other => ok 0\n", "int", nil},
+		{"    match call build().bump(1).read()\n        missing => ok 0\n        other => ok 0\n        ok\n", "int", nil},
 		{"    ok call pair(...[1,2])\n", "int", nil},
 		{"    ok call sum(1, ...items)\n", "int", nil},
 		{"    ok call sum(...[1,2,3])\n", "int", nil},
@@ -185,8 +185,8 @@ func TestCompletionRegionContracts(t *testing.T) {
 		{"    match call items.slice(0, 1)\n        ok int[] found => ok found.length\n", "int", nil},
 		{"    ok call first() + 1\n", "int", nil},
 		{"    relay call lookup(1)\n", "int", []string{"missing"}},
-		{"    match call lookup(1)\n        ok\n        missing => ok missing.code\n", "int", nil},
-		{"    match chain\n        call lookup(1) as int found\n        call increment(found) as int next\n        call log()\n        ok => ok next\n        missing => ok missing.code\n", "int", nil},
+		{"    match call lookup(1)\n        missing => ok missing.code\n        ok\n", "int", nil},
+		{"    match chain\n        call lookup(1) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok missing.code\n        ok => ok next\n", "int", nil},
 		{"    match flag\n        true => do\n            call log()\n            relay call first()\n        false => ok 0\n", "int", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", nil},
 		{"    match items\n        [] => ok 0\n        [head, ...tail] => ok head + tail.length\n", "int", nil},
@@ -214,11 +214,11 @@ func TestCompletionRegionContracts(t *testing.T) {
 	}
 	bad := []string{
 		"    ok call build().bump(1).read()\n",
-		"    match call build().bump(1).read()\n        ok\n        missing => ok 0\n",
+		"    match call build().bump(1).read()\n        missing => ok 0\n        ok\n",
 		"    ok call pair(...items)\n",
 		"    ok call sum(...items)\n",
 		"    ok call pair(...[1,2,3])\n",
-		"    match call ambiguous()\n        ok\n        wrapped => ok 0\n",
+		"    match call ambiguous()\n        wrapped => ok 0\n        ok\n",
 		"    match flag, flag\n        true, true => ok 1\n        false, _ => ok 2\n",
 		"    match flag, flag\n        true, _ => ok 1\n        false, _ => ok 2\n        _, true => ok 3\n",
 		"    match number\n        0..5 => ok 1\n        6..10 => ok 2\n        0..10 => ok 3\n        _ => ok 4\n",
@@ -231,12 +231,12 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    ok call lookup(1) + 1\n",
 		"    call first()\n    ok 1\n",
 		"    match call lookup(1)\n        ok => ok 1\n",
-		"    match call first()\n        ok\n        missing => ok 1\n",
-		"    match call lookup(1)\n        ok\n        missing\n",
-		"    match call lookup(1)\n        ok\n        ok => ok 2\n        missing => ok 3\n",
-		"    match call lookup(1)\n        ok str text => ok 1\n        missing => ok 2\n",
-		"    match call lookup(1)\n        ok\n        missing => other()\n",
-		"    match chain\n        call lookup(1) as int found\n        ok => ok found\n        missing => ok found\n",
+		"    match call first()\n        missing => ok 1\n        ok\n",
+		"    match call lookup(1)\n        missing\n        ok\n",
+		"    match call lookup(1)\n        missing => ok 3\n        ok\n        ok => ok 2\n",
+		"    match call lookup(1)\n        missing => ok 2\n        ok str text => ok 1\n",
+		"    match call lookup(1)\n        missing => other()\n        ok\n",
+		"    match chain\n        call lookup(1) as int found\n        missing => ok found\n        ok => ok found\n",
 		"    match chain\n        call first()\n        ok => ok 1\n",
 		"    match flag\n        true => ok 1\n",
 		"    match flag\n        _ => ok 1\n        true => ok 2\n",
@@ -252,7 +252,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 			}
 		})
 	}
-	escaped, err := f.region(t, "    match call lookup(1)\n        ok\n        missing => other()\n", "int", []string{"other", "missing"}, ir.HandlerRegion)
+	escaped, err := f.region(t, "    match call lookup(1)\n        missing => other()\n        ok\n", "int", []string{"other", "missing"}, ir.HandlerRegion)
 	if err != nil || len(escaped.Escapes) != 1 || !types.Equal(escaped.Escapes[0], f.ts["other"]) {
 		t.Fatal("handler escape set includes handled participant", err)
 	}
@@ -331,8 +331,8 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 		{"    ok false and call truth()\n", "bool", "false", nil},
 		{"    ok 3 < call first() < call first()\n", "bool", "false", nil},
 
-		{"    match call build().bump(1).read()\n        ok\n        missing => ok 0\n        other => ok 0\n", "int", "7n", nil},
-		{"    match call build().bump(-1).read()\n        ok\n        missing => ok missing.code\n        other => ok 0\n", "int", "-1n", nil},
+		{"    match call build().bump(1).read()\n        missing => ok 0\n        other => ok 0\n        ok\n", "int", "7n", nil},
+		{"    match call build().bump(-1).read()\n        missing => ok missing.code\n        other => ok 0\n        ok\n", "int", "-1n", nil},
 		{"    ok call pair(...[call first(), call first()])\n", "int", "6n", nil},
 		{"    ok call sum(1, ...items)\n", "int", "10n", nil},
 		{"    ok call sum(...[1,2,3])\n", "int", "6n", nil},
@@ -341,9 +341,9 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 		{"    match call items.slice(0, 1)\n        ok int[] found => ok found.length\n", "int", "1n", nil},
 		{"    ok call first() + call first()\n", "int", "6n", nil},
 		{"    relay call make()\n", "receipt", "payload", nil},
-		{"    match call lookup(-4)\n        ok\n        missing => ok missing.code\n", "int", "-4n", nil},
-		{"    match call lookup(1 / 0)\n        ok\n        missing => ok 0\n        [_] as str message => ok message.length\n", "int", "BigInt('arithmetic: integer division by zero'.length)", nil},
-		{"    match chain\n        call lookup(8) as int found\n        call increment(found) as int next\n        call log()\n        ok => ok next\n        missing => ok 0\n", "int", "9n", nil},
+		{"    match call lookup(-4)\n        missing => ok missing.code\n        ok\n", "int", "-4n", nil},
+		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] as str message => ok message.length\n        ok\n", "int", "BigInt('arithmetic: integer division by zero'.length)", nil},
+		{"    match chain\n        call lookup(8) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok 0\n        ok => ok next\n", "int", "9n", nil},
 		{"    match flag\n        true => do\n            call log()\n            match call first()\n                ok int found => ok found + 1\n        false => ok 0\n", "int", "4n", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", "3n", nil},
 		{"    match items\n        [] => ok 0\n        [head, ...tail] => ok head + tail.length\n", "int", "5n", nil},
@@ -395,10 +395,10 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 	}
 
 	failureCases := []struct{ body, check string }{
-		{"    match call lookup(1)\n        ok => missing(9)\n        missing => ok 0\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===9n"},
-		{"    match call lookup(-1)\n        ok\n        missing => match call first()\n            ok => missing(7)\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===7n"},
-		{"    match call lookup(1 / 0)\n        ok\n        missing => ok 0\n        [_] => ok 2 / 0\n", "r.kind==='standard'"},
-		{"    match chain\n        call lookup(-1) as int found\n        call increment(found) as int next\n        ok => ok next\n        missing\n", "r.kind==='domain' && !events.includes('increment')"},
+		{"    match call lookup(1)\n        missing => ok 0\n        ok => missing(9)\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===9n"},
+		{"    match call lookup(-1)\n        missing => match call first()\n            ok => missing(7)\n        ok\n", "r.kind==='domain' && ($canErrorPayload(r) as {code:bigint}).code===7n"},
+		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] => ok 2 / 0\n        ok\n", "r.kind==='standard'"},
+		{"    match chain\n        call lookup(-1) as int found\n        call increment(found) as int next\n        missing\n        ok => ok next\n", "r.kind==='domain' && !events.includes('increment')"},
 	}
 	for i, tc := range failureCases {
 		region, err := f.region(t, tc.body, "int", []string{"missing"}, ir.HandlerRegion)

@@ -86,16 +86,16 @@ fn int[] stops
     asserts
         sample: => codec::invalid_data("array", "stop")
     match call [1, 2, 3].map(callable fallible)
-        ok int[] output => ok output
         codec::invalid_data
+        ok int[] output => ok output
 fn int[] referenced_stops
     emits [codec::invalid_data]
     asserts
         sample: => codec::invalid_data("array", "stop")
     callable int[] (callable int (int) emits [codec::invalid_data]) emits [codec::invalid_data] action = callable ([1, 2, 3]).map
     match call action(callable fallible)
-        ok int[] output => ok output
         codec::invalid_data
+        ok int[] output => ok output
 fn int quotient
     emits []
     given
@@ -108,8 +108,8 @@ fn str standard_stop
     asserts
         sample: => ok "arithmetic: integer division by zero"
     match call [1, 0, 3].map(callable quotient)
-        ok int[] output => ok "unexpected"
         [_] as str message => ok message
+        ok int[] output => ok "unexpected"
 fn int source
     emits []
     given
@@ -173,8 +173,8 @@ fn str nonfinite_sort
     asserts
         sample: => ok "arithmetic: nonfinite sort key"
     match call [1.0, 1.0 / 0.0, 2.0].sort_by(callable identity)
-        ok float[] output => ok "unexpected"
         [_] as str message => ok message
+        ok float[] output => ok "unexpected"
 fn int once
     emits []
     given

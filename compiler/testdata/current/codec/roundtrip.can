@@ -13,8 +13,8 @@ fn receipt roundtrip
     match chain
         call codec::encode_json<receipt>(original) as bytes::buffer encoded
         call codec::decode_json<receipt>(encoded) as receipt decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded
 fn int decode_integer
     emits [codec::invalid_data]
     given
@@ -27,8 +27,8 @@ fn int decode_integer
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call codec::decode_json<int>(encoded) as int decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded
 fn int via_callable
     emits [codec::invalid_data]
     given
@@ -39,8 +39,8 @@ fn int via_callable
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call decode(encoded) as int decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded
 fn void main
     emits [codec::invalid_data]
     given
@@ -48,6 +48,7 @@ fn void main
     asserts
         sample: [] => ok
     match call roundtrip(receipt(9007199254740993, "héllo 😀"))
+        codec::invalid_data
         ok receipt decoded => do
             int amount = decoded.amount
             match amount
@@ -55,7 +56,6 @@ fn void main
                 _ => do
                     int invalid = 1 / 0
                     ok
-        codec::invalid_data
 fn str encode_option
     emits [codec::invalid_data]
     given
@@ -65,8 +65,8 @@ fn str encode_option
     match chain
         call codec::encode_json<option::value<int>>(option::some<int>(value)) as bytes::buffer encoded
         call bytes::to_utf8(encoded) as str text
-        ok => ok text
         codec::invalid_data
+        ok => ok text
 fn option::value<int> decode_option
     emits [codec::invalid_data]
     given
@@ -77,5 +77,5 @@ fn option::value<int> decode_option
     match chain
         call bytes::from_utf8(text) as bytes::buffer encoded
         call codec::decode_json<option::value<int>>(encoded) as option::value<int> decoded
-        ok => ok decoded
         codec::invalid_data
+        ok => ok decoded

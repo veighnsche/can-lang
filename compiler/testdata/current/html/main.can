@@ -26,11 +26,11 @@ fn html::safe render
         call html::meta_viewport() as html::node viewport
         call htmx::runtime_head() as html::node runtime
         call html::document(message, [viewport, style, runtime], [body]) as html::safe document
-        ok => ok document
         html::invalid_structure
         html::invalid_url
         htmx::invalid_target
         htmx::invalid_interval
+        ok => ok document
 fn html::safe fragment
     emits [html::invalid_structure]
     given
@@ -45,8 +45,8 @@ fn void main
     asserts
         hostile: ["<script>not executable</script>"] => ok
     match call render(args[0], "section")
-        ok html::safe output => ok
         html::invalid_structure
         html::invalid_url
         htmx::invalid_target
         htmx::invalid_interval
+        ok html::safe output => ok
