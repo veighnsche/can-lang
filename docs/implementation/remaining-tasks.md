@@ -1,5 +1,7 @@
 # Remaining implementation: file ownership and agent handoff
 
+Current revision work: [September 22 implementation plan](language-fixes-plan-2026-09-22.md) and [ordered LF01–LF21 tasks](language-fixes-tasks-2026-09-22.md). The completed record below remains historical; its checked tasks do not cover the new fixes.
+
 This is the execution companion to [tasks.md](tasks.md), not a new language
 specification. It expanded the fourteen then-unchecked tasks without changing
 their acceptance criteria. The C/Q/A/P specifications linked

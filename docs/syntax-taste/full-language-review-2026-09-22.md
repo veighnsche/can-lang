@@ -1,8 +1,14 @@
 # Full Can language design review — 2026-09-22
 
+> Selected behavior designs: [final contracts and acceptance cases](../implementation/language-behavior-contracts-2026-09-22.md). Use those rules instead of the unresolved behavior sketches below.
+
+> Current scope: [finding dispositions](../implementation/language-design-dispositions-2026-09-22.md). That ledger supersedes the recommendation status and suggested sequence below; proposed examples remain sketches, including retained or deferred alternatives.
+
 Status: recommendations for discussion, not adopted language rules or implementation authorization. This review preserves the three input documents and changes no compiler, runtime or admitted fixture. Every proposed source form below is a sketch unless explicitly described as current syntax.
 
 Inputs: [redundancy review](redundancy-review-2026-09-22.md), [design review](design-review-2026-09-22.md), and [confirmed design revisions](../implementation/design-revisions.md). Evidence includes the four specifications, current implementation guides, checker/runtime code, the four applications, and focused regression fixtures. Three independent reviews are saved in the [evidence directory](evidence/2026-09-22/full-language-review/). Current implementation evidence takes precedence over old planning/status prose.
+
+For concrete code comparisons, see [Before and after](language-design-before-after-2026-09-22.md).
 
 ## Assessment
 

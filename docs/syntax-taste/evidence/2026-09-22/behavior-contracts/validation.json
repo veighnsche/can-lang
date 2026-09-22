@@ -1,0 +1,25 @@
+{
+  "kind": "documentation-integrity",
+  "local_links_checked": 33,
+  "acceptance_cases": 24,
+  "dispositions": {
+    "retain current design": 18,
+    "defer with a reason": 15,
+    "implement": 16
+  },
+  "consultations": 3,
+  "choices_per_request": 9,
+  "catalogue_payloads_checked": 7,
+  "proposed_id_1106_currently_available": true,
+  "json_examples_checked": 1,
+  "contract_index_sha256": "abf4b1d21524ad729396783775a6d7fbf7657883255f5c778ed269b5c33666e6",
+  "authoritative_sha256": {
+    "decisions.md": "1de67134a5746df0db1a55a2c5f4ba8109b996f422b813caaf1f535fb29f8be7",
+    "technical-spec.md": "68620c39ef2ee7dabd69df7c0c7166f1399298e6c3df16e9d9d9be486a76b9bd",
+    "ai-io-spec.md": "6283b856a6652984ad8ed640867dbdb6beaf6c8b371a69e4713c396297a229b7",
+    "coordination-spec.md": "58efa3ff157b20590a99420b710e95fdda454b8e4e4000ced62d547c69b6c490",
+    "platform-testing-spec.md": "0161298761c633198520ffa036140ddd7a2aab4c9d7d18a5a91b354263d78e06"
+  },
+  "proposed_can_compiled": false,
+  "compiler_runtime_tests_run": false
+}

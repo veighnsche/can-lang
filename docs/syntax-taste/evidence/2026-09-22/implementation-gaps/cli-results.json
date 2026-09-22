@@ -1,0 +1,625 @@
+[
+  {
+    "label": "passing build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/passing"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 1.632,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"625cc22bda6953ea22a19ec2cc24f2219575bc151e9c7603c894aa9274a53b14\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/passing/dist/builds/625cc22bda6953ea22a19ec2cc24f2219575bc151e9c7603c894aa9274a53b14\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "625cc22bda6953ea22a19ec2cc24f2219575bc151e9c7603c894aa9274a53b14",
+      "manifestSHA256": "e867d1d9220759be73a791ce556ee1d58e0ddf54ff1d09c6b9dbb6b866c10eba"
+    }
+  },
+  {
+    "label": "failing-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/failing-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.56,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"c145565e1a79c5a5962d557ccabc3ee666ab20c076f3c51f9b30170cdff868bd\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/failing-assertion/dist/builds/c145565e1a79c5a5962d557ccabc3ee666ab20c076f3c51f9b30170cdff868bd\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "c145565e1a79c5a5962d557ccabc3ee666ab20c076f3c51f9b30170cdff868bd",
+      "manifestSHA256": "90760581708676ffc45beff8bfdbc725fbbfd4dfbfd934dd37821ec4d88bbaaa"
+    }
+  },
+  {
+    "label": "pending-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/pending-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.648,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"3ed8f5043c54c5c2bf46630717b4f8425b7379e1fd1854b536a3f17e081dc294\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/pending-assertion/dist/builds/3ed8f5043c54c5c2bf46630717b4f8425b7379e1fd1854b536a3f17e081dc294\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "3ed8f5043c54c5c2bf46630717b4f8425b7379e1fd1854b536a3f17e081dc294",
+      "manifestSHA256": "6b5ab9eeaf55902982b00eba6e7e506e74ab4bab236dc1f7fd68a09253f360cb"
+    }
+  },
+  {
+    "label": "cpu-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/cpu-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.565,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"2e08ed8e02a903bd5bbd18bb79af0d2c5314c9790ed2df3a56cf2777ff14422c\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/cpu-assertion/dist/builds/2e08ed8e02a903bd5bbd18bb79af0d2c5314c9790ed2df3a56cf2777ff14422c\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "2e08ed8e02a903bd5bbd18bb79af0d2c5314c9790ed2df3a56cf2777ff14422c",
+      "manifestSHA256": "50225e849e16fc8e78d469d41ffae7211a24f8429f21c0fd8188504f1fe8f287"
+    }
+  },
+  {
+    "label": "diagnostic-semantic build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.131,
+    "stdout": "",
+    "stderr": "concrete function can.project.root/app::wrong_type: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114\n",
+    "current_after_build": null
+  },
+  {
+    "label": "diagnostic-resolve build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.116,
+    "stdout": "",
+    "stderr": "concrete function can.project.root/app::missing_name: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \"absent\"\n",
+    "current_after_build": null
+  },
+  {
+    "label": "diagnostic-parse build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/diagnostic-parse"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.055,
+    "stdout": "",
+    "stderr": "/private/tmp/can-gap-verification-gzw7ofq8/diagnostic-parse/src/main.can:8:8: CAN-LEX-PUNCTUATION: character is not part of Can syntax\n",
+    "current_after_build": null
+  },
+  {
+    "label": "resource-direct build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-direct"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.45,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"c8edd1f93e13c926daca41819efece47cf2d0d6159e3c54054324991c0119b2e\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-direct/dist/builds/c8edd1f93e13c926daca41819efece47cf2d0d6159e3c54054324991c0119b2e\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "c8edd1f93e13c926daca41819efece47cf2d0d6159e3c54054324991c0119b2e",
+      "manifestSHA256": "746bfc652c620b3aca98426209edff8046d22c058bbd467dffc83dacda7b8965"
+    }
+  },
+  {
+    "label": "resource-record build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-record"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.536,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"baf8799e58382a2f4c3228dbe56c9f732376412abd2a0945877984fdbfd5d7fd\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-record/dist/builds/baf8799e58382a2f4c3228dbe56c9f732376412abd2a0945877984fdbfd5d7fd\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "baf8799e58382a2f4c3228dbe56c9f732376412abd2a0945877984fdbfd5d7fd",
+      "manifestSHA256": "ba0b3c3c7b7c76e5696906c26e715b90e5ccde2b026de9bf966fb0443d682420"
+    }
+  },
+  {
+    "label": "resource-array build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-array"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.416,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"dc7b5444f70e630efddcfcc0357d1867ddaf7aab34b130cbd98aaeeb43c644e2\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-array/dist/builds/dc7b5444f70e630efddcfcc0357d1867ddaf7aab34b130cbd98aaeeb43c644e2\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "dc7b5444f70e630efddcfcc0357d1867ddaf7aab34b130cbd98aaeeb43c644e2",
+      "manifestSHA256": "6238126e543b0066f9594d1722092345d6fe6b5fc4a5f1828f2f1f66ca9cec70"
+    }
+  },
+  {
+    "label": "resource-closure build",
+    "argv": [
+      "build",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-closure"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.403,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"c86142576d46b317715c7feb4eb4eff84a81c88cb6611a9ecb0ab7f9de189e71\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-closure/dist/builds/c86142576d46b317715c7feb4eb4eff84a81c88cb6611a9ecb0ab7f9de189e71\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "c86142576d46b317715c7feb4eb4eff84a81c88cb6611a9ecb0ab7f9de189e71",
+      "manifestSHA256": "970065f2f3d139baa90bd1f0d198d2b6da5523b853af2b5f2f964e360ae9904f"
+    }
+  },
+  {
+    "label": "passing assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/passing"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.666,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "625cc22bda6953ea22a19ec2cc24f2219575bc151e9c7603c894aa9274a53b14",
+      "manifestSHA256": "e867d1d9220759be73a791ce556ee1d58e0ddf54ff1d09c6b9dbb6b866c10eba"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "11c58da831e9bd1c9def3a9ec63a63c521863c45acc26a5fbc4763a75300f528",
+      "manifestSHA256": "1650f806564b738c13b50b7bcbab4819fe82eeec26dae5c628aaf5b12ec273e1"
+    }
+  },
+  {
+    "label": "failing-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/failing-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.593,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"wrong\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "c145565e1a79c5a5962d557ccabc3ee666ab20c076f3c51f9b30170cdff868bd",
+      "manifestSHA256": "90760581708676ffc45beff8bfdbc725fbbfd4dfbfd934dd37821ec4d88bbaaa"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "c6157aab8922752492cd6a102b89a4711128c817f3d11275a23524e7b46f0250",
+      "manifestSHA256": "f9b31c8dc5f6369f4c24654b2e0c6a28b835d121f7f33a4e9135e386dc14ce09"
+    }
+  },
+  {
+    "label": "pending-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/pending-assertion"
+    ],
+    "external_limit_seconds": 4,
+    "externally_terminated": true,
+    "exit_code": -9,
+    "elapsed_seconds": 4.01,
+    "stdout": "",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "3ed8f5043c54c5c2bf46630717b4f8425b7379e1fd1854b536a3f17e081dc294",
+      "manifestSHA256": "6b5ab9eeaf55902982b00eba6e7e506e74ab4bab236dc1f7fd68a09253f360cb"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "1871a1ffd0631957dcfcc6adedd8e5cde3e2ad1a17fa631a2c5d1c317eb19395",
+      "manifestSHA256": "83a951225357280bcbdee4387c2e04506b2580c558e3e36ee837323afc44d2a8"
+    }
+  },
+  {
+    "label": "cpu-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/cpu-assertion"
+    ],
+    "external_limit_seconds": 4,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 2.211,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::spin\",\"name\":\"never\"},\"frames\":[{\"source\":\"can.project.root/app/main.can\",\"file\":\"main.can\",\"line\":10,\"column\":16,\"endLine\":10,\"endColumn\":31,\"start\":145,\"end\":160,\"operation\":\"call\",\"synthetic\":false},{\"source\":\"can.project.root/app/main.can\",\"file\":\"main.can\",\"line\":10,\"column\":16,\"endLine\":10,\"endColumn\":31,\"start\":145,\"end\":160,\"operation\":\"call\",\"synthetic\":false}],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "2e08ed8e02a903bd5bbd18bb79af0d2c5314c9790ed2df3a56cf2777ff14422c",
+      "manifestSHA256": "50225e849e16fc8e78d469d41ffae7211a24f8429f21c0fd8188504f1fe8f287"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "68c5e039971ed1d1f8ed8c9ad12f4361d4db6ac5416b8db495b5f3b972ef9a18",
+      "manifestSHA256": "ea11a434165f6003af75d1ef65eeff94d9060459206ddd9dbdda38fabdcc6a00"
+    }
+  },
+  {
+    "label": "resource-direct assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-direct"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.601,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::identity\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "c8edd1f93e13c926daca41819efece47cf2d0d6159e3c54054324991c0119b2e",
+      "manifestSHA256": "746bfc652c620b3aca98426209edff8046d22c058bbd467dffc83dacda7b8965"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "9961c27f320546d73e82831a81c95f69cd4209e315582cb6537131f6b96db508",
+      "manifestSHA256": "d86be71a019363828913341210eb41e22d9ccd8f98cb90eda1455290765d70a1"
+    }
+  },
+  {
+    "label": "resource-record assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-record"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.573,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::capture\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "baf8799e58382a2f4c3228dbe56c9f732376412abd2a0945877984fdbfd5d7fd",
+      "manifestSHA256": "ba0b3c3c7b7c76e5696906c26e715b90e5ccde2b026de9bf966fb0443d682420"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "aa18116d9db64a207b962cfbeebdfa47baa4b4761ea7c443f760bb7e6c7db1e3",
+      "manifestSHA256": "cfdb5e5f04b7547936d7a754bf166f8f89bec522ba2e3445bae004e6de3aba4d"
+    }
+  },
+  {
+    "label": "resource-array assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-array"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.583,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::capture\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "dc7b5444f70e630efddcfcc0357d1867ddaf7aab34b130cbd98aaeeb43c644e2",
+      "manifestSHA256": "6238126e543b0066f9594d1722092345d6fe6b5fc4a5f1828f2f1f66ca9cec70"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "4aec315df1bfee4f3ded8551e6eaca23c89de8d8c28ab29c74a9aa25941d1347",
+      "manifestSHA256": "014213513597d4d9db5ae1406834fdb8aea8b44aedaee3a0de345f842dad27f6"
+    }
+  },
+  {
+    "label": "resource-closure assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-gap-verification-gzw7ofq8/resource-closure"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.591,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::capture\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "c86142576d46b317715c7feb4eb4eff84a81c88cb6611a9ecb0ab7f9de189e71",
+      "manifestSHA256": "970065f2f3d139baa90bd1f0d198d2b6da5523b853af2b5f2f964e360ae9904f"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "408f75b4f3eaa8642ffecd38711f5f2d9f4183ec52ade22f7c21e8b826c556b8",
+      "manifestSHA256": "df6c843eceeacf7f1d93c443582ec7d6a10902a0cba8663a14e031fb3b417115"
+    }
+  },
+  {
+    "label": "passing lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.066,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 179\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[],\"uri\":\"file:///private/tmp/can-gap-verification-gzw7ofq8/passing/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [],
+          "uri": "file:///private/tmp/can-gap-verification-gzw7ofq8/passing/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int answer",
+      "    emits []",
+      "    asserts",
+      "        exact: => ok 1",
+      "    ok 1",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-semantic lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.068,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 533\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"message\":\"concrete function can.project.root/app::wrong_type: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114\",\"range\":{\"end\":{\"character\":11,\"line\":0},\"start\":{\"character\":0,\"line\":0}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "message": "concrete function can.project.root/app::wrong_type: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114",
+              "range": {
+                "end": {
+                  "character": 11,
+                  "line": 0
+                },
+                "start": {
+                  "character": 0,
+                  "line": 0
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-semantic/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int wrong_type",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok \"wrong\"",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-resolve lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.064,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 543\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"message\":\"concrete function can.project.root/app::missing_name: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \\\"absent\\\"\",\"range\":{\"end\":{\"character\":11,\"line\":0},\"start\":{\"character\":0,\"line\":0}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "message": "concrete function can.project.root/app::missing_name: /private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \"absent\"",
+              "range": {
+                "end": {
+                  "character": 11,
+                  "line": 0
+                },
+                "start": {
+                  "character": 0,
+                  "line": 0
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-resolve/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_name",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok absent",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-parse lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.005,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 370\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"code\":\"CAN-LEX-PUNCTUATION\",\"message\":\"character is not part of Can syntax\",\"range\":{\"end\":{\"character\":8,\"line\":7},\"start\":{\"character\":7,\"line\":7}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-parse/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "code": "CAN-LEX-PUNCTUATION",
+              "message": "character is not part of Can syntax",
+              "range": {
+                "end": {
+                  "character": 8,
+                  "line": 7
+                },
+                "start": {
+                  "character": 7,
+                  "line": 7
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-gap-verification-gzw7ofq8/diagnostic-parse/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_value",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok @",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  }
+]

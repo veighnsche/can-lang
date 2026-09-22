@@ -1,0 +1,45 @@
+{
+  "model": "jev-latest",
+  "state": "The task is to close Can finding LD29: replace a fixture check that intentionally executes int invalid = 1 / 0 on false with a direct diagnostic carrying a reason and the originating source location. Its current declaration is fn void require with emits [], a bool condition input and one attached assertion yes: true => ok. A useful replacement serves authored application execution as well as fixture validation. Can has zero outside users; backward compatibility has no value here. Keep its native noul/choice/score/judge/llm/fetch operations, explicit grouped state, immutable nominal values, written domain contracts and assertions attached to source owners. A separate testing language is outside this repair.\nExisting catalogue calls can express this capability without adding grammar. Consider checks::require(bool condition, str reason) -> void, succeeding on true and reporting the condition on false. Both arguments, even a reason for a true condition, run once in normal left-to-right order. The emitted implementation is a JavaScript/Bun boolean branch plus the established failure/completion adapter. Neither a recursive implementation nor a second assertion runner nor hidden platform effects nor production disabling is admitted. Another shape is checks::fail(str reason) -> void within an explicit false branch. Can has not selected a bottom type.\nOne failure design declares checks::failed(str reason) with a fresh distribution domain-error ID. This gives ordinary constructor expectations in attached assertions and existing whole-completion equality. Callers must handle every declared error with match/relay or a named adapter; forwarding callers write it in emits. Simply placing an errorful call as an unchecked statement is invalid. The error value is normal nominal data with occurrence/source diagnostics held privately. Authored checks::failed escaping a fetch/judge belongs to emitted provenance and cannot be infrastructure-normalized.\nThe other main channel is standard failure: it bypasses emits, propagates by default and is catchable using [_] as standard_failure f. Currently the category vocabulary is arithmetic, bounds, resource_state, assertion, native_exception, cleanup. A new check category would avoid conflating a purposeful condition check with an arithmetic fault or harness malfunction. Its opaque snapshot exposes occurrence_id, kind and message but hides the cause, prohibits constructors/updates and has no wire representation. No direct standard expectation exists in assertion rows today. Ordinary recovery may apply to application checks, while making them sticky is another policy to compare. Regardless, harness faults such as missing, wrong or unused fixtures and live calls permanently fail the root even when caught. Out-of-process timeouts cannot be caught or counted as expected successes.\nIf standard checking wins, either keep the assertion language and exercise false through a named handler that returns observed snapshot data, or allow the row-only matcher => standard_failure(\"check\", \"reason\"). The latter spelling would not construct a value: it matches just the new check kind and message, after successful drain and harness validation, and cannot match occurrence IDs, assertion infrastructure, supervisor expiry or hidden causes. A broader expectation facility for other standard categories is a third possibility that expands design scope. Selecting domain errors needs none of these additions because existing expectations already represent checks::failed.\nReason strings are authored explicitly, with existing diagnostic escaping and private source-location metadata. Do not auto-serialize requests/exceptions, invoke arbitrary object conversion, introduce identity-based failure comparisons or let fixtures bypass the real check. Decide only from these supplied facts and alternatives; your classification is advisory evidence, not research or a correctness guarantee.",
+  "questions": {
+    "channel": {
+      "type": "choice",
+      "instructions": "Select the completion model that most appropriately implements the named condition check under these constraints.",
+      "criteria": {
+        "domain": "Return a declared checks::failed(str reason) completion; permit normal recovery and require explicit error contracts and current value expectations.",
+        "standard": "Raise the distinct check standard category, catchable normally and outside emits, with assertion handling chosen independently.",
+        "sticky": "Make a false authored check permanently fail its assertion root despite catching it, while production uses the standard channel.",
+        "unresolved": "The available facts do not justify any listed completion model."
+      }
+    },
+    "api": {
+      "type": "choice",
+      "instructions": "Assuming the channel is resolved independently, what authored interface should provide the condition diagnostic?",
+      "criteria": {
+        "require": "Expose a single catalogue operation checks::require(bool condition, str reason) -> void with success for true and failure for false.",
+        "fail": "Provide checks::fail(str reason) -> void alone and let source-level matching implement every condition.",
+        "keyword": "Create condition-check statement grammar with condition/reason operands rather than using ordinary calls.",
+        "unresolved": "Keep the interface open because none of these designs is ready."
+      }
+    },
+    "standard_expectations": {
+      "type": "choice",
+      "instructions": "Suppose the outcome is a normal catchable standard check failure. Choose the negative-test design appropriate to this change.",
+      "criteria": {
+        "catcher": "Retain the existing expectation language and observe a false check in a named handler that returns snapshot data.",
+        "check_only": "Permit => standard_failure(\"check\", \"reason\") solely as a check-specific expectation pattern after clean harness validation.",
+        "general": "Design expectations for the wider standard-category set now, explicitly defining matching and excluding sticky infrastructure.",
+        "unresolved": "Leave negative testing unresolved for this hypothetical channel."
+      }
+    },
+    "domain_expectations": {
+      "type": "choice",
+      "instructions": "If false is represented by the declared domain completion checks::failed, choose the needed test-language change.",
+      "criteria": {
+        "existing": "Keep current rows expecting checks::failed(reason); this repair then needs no direct standard expectation addition.",
+        "general": "Extend rows to standard failures as well, despite domain constructor expectations already covering the operation.",
+        "unresolved": "The evidence does not support either test-language scope."
+      }
+    }
+  }
+}

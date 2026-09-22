@@ -1,0 +1,357 @@
+# Acceptance evidence for accepted language changes — 2026-09-22
+
+Status: acceptance specification for **all 16 `implement` dispositions**, not an implementation task list or a passing conformance report. The [disposition ledger](language-design-dispositions-2026-09-22.md) owns scope; the [selected decisions and incorporated C/A/Q/P specifications](../syntax-taste/decisions.md) own semantics, located by the stable [behavior-contract index](language-behavior-contracts-2026-09-22.md); the [gap verification](implementation-gap-verification-2026-09-22.md) establishes current implementation observations. This document defines how to demonstrate completion without silently changing any of them.
+
+## Evidence rules
+
+Each accepted change below has a before/after comparison, accepted programs, rejected programs, runtime observations, fixture observations, native-lowering evidence and a completion gate. Source snippets are **fragments** unless identified as complete saved projects. New source forms follow the behavior contracts but are not claimed to compile today. Negative fragments are intentionally invalid. LD29 now follows the selected checks catalogue contract in C9.2; its examples still require implementation evidence.
+
+For each implemented change, preserve:
+
+1. The baseline and revised complete project sources, manifests, registry/lock and required raw fixture data, pinned by hashes. Include comments and attached assertions in source-cost reporting.
+2. Compiler/checker outcomes for positive and negative cases. Every negative case must fail for the intended obligation, not an unrelated parse/import/fixture error. Record diagnostic code, offending span and expected obligation; avoid pinning incidental prose.
+3. Emitted TypeScript plus a checkable mapping from each affected source operation to its native operation/contract adapter. Execute the affected path, not just grep for a native API name.
+4. Structured runtime/assertion reports with expected values, errors, ordering, counts and private occurrence checks where required. Keep test-only private inspection out of the public Can API and ordinary diagnostics.
+5. Fixture identity/evidence reports identifying the actual boundary exercised. Supplied completions establish consumer behavior; they cannot substitute for request construction, adapter, ownership or target-conformance evidence.
+6. A result manifest containing source/fixture hashes, compiler/catalogue/Bun identities, exact commands, expected and actual outcomes, exit status, evidence labels, and links to logs. A skipped, timed-out or design-gated case is not a pass.
+
+Current-source examples belong in complete admitted/rejected project fixtures when implemented. Host-only probes are clearly labelled. Use controlled promises/fake transports and fake SQL for deterministic checks; live model quality and real service availability are not build acceptance criteria. Do not require compatibility with replaced syntax, generated layouts or old goldens. Golden updates alone are never proof of changed behavior.
+
+## Coverage index
+
+| Acceptance ID | Disposition | Change | Current evidence state |
+| --- | --- | --- | --- |
+| AE07 | LD07 | Fetch/judge normalization | Baseline source counts; revised behavior unimplemented |
+| AE09 | LD09 | Derived wrapper policies | Selected contract; implementation evidence required |
+| AE11 | LD11 | Errors-first match order | Selected contract; implementation evidence required |
+| AE15 | LD15 | Standard-failure snapshots | Existing aggregate runtime; ordinary catch change unimplemented |
+| AE17 | LD17 | Exact generic-error patterns | Selected contract; implementation evidence required |
+| AE18 | LD18 | Explicit map-based aggregate conversion | Existing verbose fixture; shorter executable comparison required |
+| AE22 | LD22 | Verified build/publication | G1/G2 executable baseline reproduced |
+| AE23 | LD23 | Assertion deadlines | G3 pending assertion reproduced; CPU stress did not hang |
+| AE25 | LD25 | Authored native request/handler testing | Existing consumer/conformance distinction; new source coverage required |
+| AE27 | LD27 | Lexical fixture templates | Selected contract; implementation evidence required |
+| AE29 | LD29 | Named failed-check operation | C9.2 selected after three fresh consultations; implementation evidence required |
+| AE33 | LD33 | Capability admission/evolution documentation | Documentation acceptance; no new extension mechanism |
+| AE44 | LD44 | Semantic diagnostics and validated fixes | G4 semantic LSP fallback reproduced |
+| AE45 | LD45 | Safe source formatter | Renderer exists; write-back/trivia evidence required |
+| AE47 | LD47 | Accurate language/implementation descriptions | Claims identified; examples and documentation reconciliation required |
+| AE49 | LD49 | Comparable ergonomics measurements | Source-only baseline measured; workflow/after evidence required |
+
+No `retain current design` or deferred finding is promoted by this acceptance specification. Resource checks from G5 are regression constraints where relevant, not authorization for static escape analysis. Error-set parameters, changed captures and state-callable redesign remain gated on demonstrated need.
+
+## AE07 — Normalized fetch/judge errors
+
+**Before/after.** Use the original eight-fetch project and the frozen [normalization baseline](../syntax-taste/evidence/2026-09-22/acceptance-contracts/eight-fetch-before.can.txt). Before: each fetch and `main` declare seven infrastructure names; each call has seven forwarding arms. After, the nine public declarations use `emits [http::request_failed]`, and the eight ordinary call matches have one infrastructure arm each, with final `ok`. Preserve the same eight operations, input expressions, successful results, sequencing and nesting. Add the B7 native assertions required by the final design; report those costs separately and in the full-project total.
+
+| Metric, fixed comparison region | Before | Required after |
+| --- | ---: | ---: |
+| Fetch declarations / calls in `main` | 8 / 8 | 8 / 8 |
+| Infrastructure-bound declarations: eight fetches plus `main` | 9 | 9 |
+| Infrastructure entries in those bounds | 63 | 9 |
+| Infrastructure forwarding arms in the eight main call matches | 56 | 8 |
+| Standard transport/codec distinctions recoverable from detail | 7 | 7 |
+
+The original fixture overdeclares some mode-inapplicable raw errors. These are counts of source obligations, not seven dynamically reachable failures per operation. Do not manufacture envelope status failures merely to hit a count. The separate callable-reference helper after the original line 168 stays outside the fixed comparison region, but remains present in full-project evidence. The old projected after sketch predates mandatory native assertions and **cannot** be the finished accepted program.
+
+**Successful programs.** Compile and execute a complete after project with all required attached assertions; body-only, envelope, text, bytes and JSON operations must work. Add a selective recovery caller with this arm structure:
+
+```can
+http::request_failed => match http::request_failed.detail
+    http::status_error => match http::status_error.status
+        404 => ok receipt(0)
+        _ => http::request_failed
+    _ => http::request_failed
+ok receipt found => ok found
+```
+
+Use a separate judge project retaining native questions, explicit connection, ordinary `given` and grouped `state`. Its public bounds include `http::request_failed` and still include applicable AI/application errors. Prove pure codec calls outside the boundary keep `codec::invalid_data`.
+
+**Rejected programs.** Reject a normalized native declaration omitting its required public failure; a caller omitting its normalized arm/bound; nonexistent detail fields; an incompatible detail constructor; and any attempt to catch a standard fault as a domain member. A raw error arm outside the exported bound must not be accepted as if it still handled native transport. Old raw names remain valid where an authored declared error actually permits them.
+
+**Runtime evidence.** Exercise every reachable raw leaf across a suitable mode/authentication matrix. Assert exact leaf identity and all fields, including header ordering/sanitization, codec path/reason, configured timeout/body limit and credential **name only**. For 404 recover to the fallback; for 429, timeout and malformed JSON forward the same normalized occurrence. Body-only 404 fails; envelope 418 succeeds. Invalid JSON normalizes; valid malformed judgment answers remain `ai::invalid_answer`. Native decoder `codec::invalid_data` normalizes while an authored descriptor helper/handler emitting the same nominal type does not. Standard failures and pre-entry argument failures keep their original channels and catch ownership. Verify the judge validates all answers before any handler, preserves handler order and sends once.
+
+Inspect private provenance in runtime tests: the mapped occurrence is fresh and retains the original occurrence as its cause; forwarding preserves mapped identity; separately produced equal payloads remain different occurrences. Negative checks must show that raw native exception objects, credentials, response bodies and private causes are not newly exposed. Mere equality of public payloads is insufficient proof of provenance.
+
+**Fixture evidence.** Keep eight main call-site supplied completions as consumer evidence. Add raw request/response cases at native declarations for actual mapping and decoding, and controlled adapter failures for timeout/transport/body-limit branches. Missing/wrong arguments, unused raw exchanges and changed prepared requests must fail. Policy injection alone cannot prove normalization from the real adapter. No live request is permitted.
+
+**Native lowering.** Inspect and run the existing native `fetch`/Headers/body/codec path with only the origin-specific boundary adapter added. Native request count remains eight on the main success path and one per judge batch. No retry, per-question request, broad catch around authored code or reimplementation of HTTP/JSON is allowed. Lowered public signatures and consumer coverage must contain the normalized bound. Test counters and protected completion/cause identities demonstrate behavior, not generated symbol spelling.
+
+**Completion gate.** All of the above plus BC01–BC05 and BC23 pass; the eight-call metrics are recalculated from compiled after source. Save normalized public-contract output, full raw/consumer reports and the mode/origin matrix. Documentation-only counts are not completion.
+
+## AE09 — Derived wrappers, inheritance and calculated errors
+
+**Before/after.** Before, an ordinary function cannot replace a failure policy already consumed by its callee. After, a base → child → grandchild chain of `wrap name from target` declarations uses `emits calculated`; a status override recovers 404 and uses terminal `inherit` for 429. Keep the B2 `cached_load` example, expanded into a complete tested project. A child declares additions/overrides only, with no repeated inputs, state, connection or inherited arms.
+
+**Successful programs.** Test fetch and grouped-state judge wrappers, native and emitted tables, overridden keys no longer visible in the parent's public bound, aliases, omitted rules and multi-level delegation. Include an emitted `codec::invalid_data` beside a native decoder key of the same name. Caller `emits` lists stay explicit. Fetch wrapper callable references retain the inherited capture contract.
+
+**Rejected programs.** Reject base cycles; multiple/invalid targets; individual question or LLM wrapping; duplicate/impossible keys; changed signatures/connections; `inherit` outside its owning handler or as an expression; non-wrapper `emits calculated`; a missing marker; and calculated-bound dependency cycles. Reject a judge-wrapper call that flattens the state group. A normal caller whose explicit public bound no longer covers the changed wrapper must fail at that obligation.
+
+**Runtime evidence.** Grandchild wins; an omitted timeout rule retains its predecessor; 404 recovers while 429 delegates; default native delegation normalizes once. Assert one underlying operation and one policy selection. A selected handler producing another table key escapes without redispatch; a standard handler fault escapes too. Recovery completes the target and does not resume the judge batch or undo prior effects.
+
+Prove calculated errors with exact sets: (a) a fully replaced base handler's `cache_failed` disappears, (b) a branch using `inherit` restores that predecessor error, (c) another native key keeps `http::request_failed` even when status is fully recovered, (d) authored passthrough errors remain, and (e) standard faults never enter `emits`. Compare published contract/provenance, not only examples that happen to pass.
+
+**Fixture evidence.** Each local key must be selected by an attached wrapper assertion. Injected origin-tagged failures test policy; raw fixtures test the target plus policy. Missing local-key coverage fails build. Parent assertions run independently, and a child may intentionally change the parent's result without inheriting an inappropriate expected value. Nested handler calls retain their own lexical fixtures. Cross-origin injection and injected standard failures reject.
+
+**Native lowering.** Resolve the finite handler chain into operation-specific dispatch metadata or equivalent direct code before invocation. Parent delegation cannot invoke `fetch`/judge again. Inspect finite declared-bound union and cause handling; no whole-function effect inference, generic inheritance engine or general retry scheduler appears.
+
+**Completion gate.** BC06–BC09, BC21/BC22 and AE07 provenance checks pass, with a saved three-generation override trace and contract-set comparisons.
+
+## AE11 — Errors first, success last
+
+**Before/after.** Move `ok T value => ...` from before error arms to the final position in the same ordinary/coordination completion region. Preserve handler bodies and values. Use current fetch and coordination fixtures as before inputs, then migrate every affected example rather than accepting both orders.
+
+**Successful programs.** Cover ordinary call/chain, `concurrent`, `concurrent with error` entry/spread arms, plain race's aggregate arm and `race with error`. Accept different relative orderings of domain and optional standard-failure arms before final `ok`. Zero-error calls retain their one success arm.
+
+**Rejected programs.** Reject success before any failure, multiple/missing successes, missing errors and errors after success at the correct owning region. Do not erroneously reject ordinary data matches or question bool/option/level layouts merely because their written order differs.
+
+**Runtime evidence.** Before/after branch results, invocation counts and side effects are identical for each outcome. Shared recovery still returns the whole result where required; per-entry recovery still returns one element. Preserve native settlement versus input-order distinctions.
+
+**Fixture evidence.** Migrated attached assertions and `when` queues keep the same rows and identity behavior. Moving outcome arms does not move a lexical call or change fixture allocation. A success-first negative must fail compilation before running fixtures.
+
+**Native lowering.** Keep existing Promise.all/allSettled/any/race selections and completion-owner adapters. Source-order enforcement must not introduce sequential execution or change runtime dispatch priority.
+
+**Completion gate.** BC12 plus one executed result/error case per mode and rejected-order cases pass. Source migration and diagnostics are part of completion, not only a parser restriction.
+
+## AE15 — Ordinary standard-failure snapshots
+
+**Before/after.** Replace `[_] as str message => ok message` with `[_] as standard_failure failure => ok failure.message`; add a case returning `failure.kind`. Keep the existing unbound `[_] => ...` form.
+
+**Successful programs.** Compile ordinary call and chain catches, all coordination forms permitting a standard arm, and a data match on an aggregate snapshot. Compare fields through ordinary Can expressions. Include an argument-evaluation fault and a callback fault.
+
+**Rejected programs.** Reject the old string binder, wrong binder types, snapshot construction/update, raw-cause access, snapshot in `emits`, and forbidden `[_]` participant arms on plain race. Require complete domain coverage independently of the standard arm.
+
+**Runtime evidence.** Check canonical kind/message and same-run occurrence stability across ordinary/aggregate observations of one failure. Distinct failures do not merge. Argument faults are caught by ordinary call matches; coordination preparation remains outside participant arms; a selected handler's new failure is not recaught. Returning snapshot data does not rethrow it. Do not assert cross-run numeric occurrence IDs.
+
+**Fixture evidence.** Trigger arithmetic/bounds faults by executing real deterministic Can code, not forged snapshot fixtures. A caught missing-fixture violation still fails its assertion. Public tests compare stable projections; private runtime tests inspect occurrence/cause retention. Serialization/opaque-forgery rejection stays enforced.
+
+**Native lowering.** Reuse the existing standard-failure occurrence/snapshot adapter and native-safe description path. No new wrapper occurrence or arbitrary exception serialization is introduced just to bind the snapshot.
+
+**Completion gate.** BC13/BC14 pass; reports demonstrate preserved catch ownership and private cause behavior, not just a changed binder type.
+
+## AE17 — Exact generic-error matching
+
+**Before/after.** Replace aggregate-normalizing wrappers used only to disambiguate `all_failed` with distinct heads `all_failed<a_failure> as first` and `all_failed<b_failure> as second`. Use the existing aggregate-composition fixture; keep explicit normalization only when a downstream API truly requires a common variant.
+
+**Successful programs.** Cover exact heads, aliases, unaliased forwarding and unique-specialization bare heads in data matches, call/chain matches and each applicable coordination region. Test concrete generic instantiations. For plain race, a named outer variant containing both nested specializations plus `standard_failure` must accept one `all_failed<outer_failure>` arm.
+
+**Rejected programs.** Reject an ambiguous bare name, duplicate bare/exact coverage, missing specialization, wrong type-argument arity, absent error key and a plain-race outer variant missing a possible leaf. Reject implicit array/generic covariance and participant-error arms at plain race's outer level. Alternative-pattern binding rules in ordinary data matches still apply.
+
+**Runtime evidence.** Dispatch by nominal declaration plus complete type arguments, never shared numeric error ID alone. Preserve payloads, ordering, repeated occurrences and nested aggregate structure. Nested `all_failed<A>` must not be flattened into `A`. Successful race winners and mode-specific ownership remain unchanged.
+
+**Fixture evidence.** Supplied failures of both specializations exercise separate arms; a wrong-specialization fixture rejects. Controlled native promise failures exercise actual outer race aggregation; a supplied aggregate alone does not prove its construction. Existing callable/participant identity rules continue to allocate rows.
+
+**Native lowering.** Emit exact nominal identity tests using existing concrete type representations. Continue native Promise operations with the smallest aggregate adapter; do not introduce dynamic source-type inference, lossy unions or covariance helpers.
+
+**Completion gate.** BC10/BC11 pass and emitted traces distinguish both specializations, including at least one genuinely constructed nested race aggregate.
+
+## AE18 — Shorter explicit aggregate conversion
+
+**Before/after.** The current `widen_a` recursively splits `[head, ...tail]`, converts an element and rebuilds arrays. After, use a named element converter and the existing `.map` operation, retaining explicit `all_failed<combined_failure>` reconstruction:
+
+```can
+// Signature/body fragments; add attached cases for both error and snapshot leaves.
+fn combined_failure widen_one
+    emits []
+    given
+        a_failure item
+    // asserts omitted in this fragment
+    ok item
+
+// Inside the relevant error handler:
+combined_failure[] values = call all_failed.failures.map(callable widen_one)
+all_failed<combined_failure>(values)
+```
+
+The element inclusion is permitted only if `a_failure`'s full leaf set is included in `combined_failure`. Verify this program rather than presuming `.map` works from its API name.
+
+**Successful programs.** Test empty, singleton, repeated and mixed-leaf inputs; both original variants; a larger finite array; and a downstream function requiring the combined aggregate. Compare the recursive baseline and map version on identical inputs.
+
+**Rejected programs.** Reject assignment of an existing narrow array directly to a wider array, a converter whose target omits a possible leaf, and callback result/error contracts incompatible with the expected map result. Do not reject valid element inclusion as if it were container covariance.
+
+**Runtime evidence.** Preserve length, order, data and nested failure identity. Standard snapshots retain their original occurrence IDs; normalization of the enclosing aggregate creates only the intended new outer occurrence. The source conversion is explicit and immutability preserved.
+
+**Fixture evidence.** Attached converter cases cover data leaves; private snapshot tests cover opaque occurrences. Consumer fixtures must use the newly declared aggregate specialization. No provider substitution or live I/O is required.
+
+**Native lowering.** Use the existing collection mapping lowering: `Array.fromAsync` over source indices with protected callback completions, followed by native projection into an immutable result. See [the current array adapter](../../runtime/collections/array.ts). Do not replace it with recursive slicing/concatenation or a new Can collection implementation. Execute the emitted call path and keep protected completion boxing so data-valued `then` fields are not assimilated as promises.
+
+**Completion gate.** A complete shorter program compiles and runs equivalently; source scaffolding and changed call sites are counted. If it fails, save the actual failure and revisit the proposal—do not invent a new implicit conversion to force acceptance.
+
+## AE22 — Assertion-verified build and publication
+
+**Before/after.** Use G1/G2's saved passing/wrong-assertion projects. Before: `build` exits 0 for the wrong expected value, and a later `assert` changes current output before failing. After: the same build exits nonzero and leaves the prior production selection unchanged; a full passing build publishes a verified production generation.
+
+**Successful programs.** Build a graph with roots in the application and a locked local dependency; verify every required root ran on the captured inputs. Execute the published production artifact and compare output. Run a selected assertion separately and verify its report is partial and nonpublishing.
+
+**Rejected programs.** Reject type-correct failing assertions, missing required native/handler coverage, invalid generated TS/import inventory, stale dependency/fixture digests and invalid manifests. Test source or raw-fixture edits during verification. Selected-root success and cached results cannot substitute for all-root build verification. These cases must fail for their intended stage.
+
+**Runtime evidence.** Record ordered stage events, captured identity, root counts, exit status and `current` before/after. Exercise passing build, assertion failure, worker crash/timeout, output validation failure and publication interruption. A failure before publication preserves old current; interruption around atomic selection leaves one complete verified generation. Active readers keep their leased old generation. No live `main` is run to establish build verification.
+
+**Fixture evidence.** Change fixture bytes without changing source and show lock/build identity validation detects it. Workers use captured bytes and fake environment, not ambient credentials. Assert staging never becomes production current, including on success. A sticky fixture violation prevents publication even if Can catches it.
+
+**Native lowering.** Production code keeps its existing native operations. The Go driver stages, supervises bundled Bun, validates and atomically selects output using existing native process/filesystem operations and leases. No assertions or fixture transport are shipped as the production entry path. This item is primarily driver behavior, not new Can runtime semantics.
+
+**Completion gate.** BC15–BC17 and BC24 pass with generation/identity reports. Preserve the before reproducer result as evidence of the repair, not just a new successful build.
+
+## AE23 — Supervised assertion deadlines
+
+**Before/after.** Use G3's current empty-race project. Before: external termination at four seconds with no assertion report. After: the compiler's supervisor reports the timed-out root under B5's configured finite deadline and prevents publication. Do not treat the earlier recursive probe—which exited on its own—as an established CPU-loop hang.
+
+**Successful programs.** Run a quick passing root and a controlled settling root inside their budget. Exercise valid boundary timeout values and the 5000ms default. The report records the selected policy and observed duration. A full suite with multiple roots identifies which one timed out.
+
+**Rejected programs.** Reject zero, negative, noninteger, excessive or unlimited timeout options. Pending roots, drain hangs, failed startup, worker crashes and late pass messages cannot produce a successful suite. Supervisor isolation/reaping failure prevents publication.
+
+**Runtime evidence.** Inject a genuinely non-yielding worker body in a labelled host-level harness test to prove an external deadline, separately from admitted Can examples. Test exact deadline boundary and stale progress using a controlled supervisor clock where possible; real wall-time smoke tests use generous scheduling tolerance, not flaky millisecond equality. Verify timeout wins at the contract's equality boundary, worker termination/reaping is bounded, and reports carry last-known paths or explicitly unavailable progress. Production empty race remains pending.
+
+**Fixture evidence.** A pending root with queued/started participants reports relevant invocation paths; a timed-out root cannot pass unused-row checks. Killing one isolated worker must not leak its queues/resources into a later root. Timeout is a supervisor outcome, not a fixture-supplied catchable failure.
+
+**Native lowering.** Use a driver monotonic clock and native process termination for the Bun worker. An in-worker `setTimeout` or `Promise.race` alone fails acceptance because a busy loop can block it. Do not add timeouts to generated production race operations.
+
+**Completion gate.** BC15 plus fast, pending, busy-worker, drain and crash controls pass under both build and assert, with no remaining test workers or production-selection changes after failure.
+
+## AE25 — Authored native-request and handler testing
+
+**Before/after.** Before, a caller's `when ... => ok result` skips native construction/decoding. After, fetch/judge/LLM owners have B7 attached `asserts` with `using raw "fixtures/case.json"`; consumer substitutions remain separately labelled. Use B7's complete raw-file schema and existing native question fixture as the comparison basis.
+
+**Successful programs.** Exercise fetch method/path/query/header/body, judge `given` plus grouped state and question descriptors, and LLM request/output mapping. Include a valid request/decoder case for each native owner and a valid-answer handler-dispatch case for every judge. Test negative preparation with `exchange: null` in addition to, not instead of, required request evidence.
+
+**Rejected programs.** Reject missing/empty assertions, only pretransport coverage, raw mode on an ordinary function, multiple modes, wrong fixture target, path escape/symlink escape, unknown/duplicate JSON fields, wrong expected argument types and forged opaque/native values. Distinguish malformed fixture configuration from deliberately malformed provider bytes.
+
+**Runtime evidence.** Mutate one prompt, model, threshold, state field, query/header/body field and handler result individually; each relevant owner case must fail. A later invalid batch answer prevents all handlers; valid answers trigger real handlers in source order. Fake transport invocation counts prove one judge request. Simulated missing credentials expose only the variable name. Test decoder/status/AI distinction using AE07.
+
+**Fixture evidence.** Compare exact prepared method, resolved URL, normalized authored headers and body using the selected bytes/exact-token JSON modes. Request mismatch prevents response delivery. Null exchange forbids transport; non-null unused exchange fails. Nested handler I/O retains its local `when` selector/queue; the owner's raw exchange cannot intercept a nested operation. Reports distinguish real-can, supplied-completion, raw-provider-fixture and policy-fixture. Offline passes never claim live-quality or complete Bun conformance.
+
+**Native lowering.** Execute the same request builder, codec, protocol validator and handlers as production, substituting only at the owned transport boundary. Fake credentials come through the test context, not ambient environment. No parallel test-only request implementation is acceptable.
+
+**Completion gate.** BC04/BC20–BC24 and the request mutation matrix pass; absence of live I/O and correct local ownership are demonstrated, not assumed from labels.
+
+## AE27 — Lexically expanded fixture content
+
+**Before/after.** Replace repeated literal rows with an inert exact-target template while keeping each local selector:
+
+```can
+fixture absent_receipt for find_receipt
+    given
+        str key
+    cases
+        key => missing_receipt(key)
+
+// At the existing lexical when table:
+sample: use absent_receipt("r-7")
+```
+
+The baseline is equivalent literal `sample: "r-7" => missing_receipt("r-7")` rows at the same sites. Include attached assertions and template definitions in total source-cost comparisons.
+
+**Successful programs.** Expand one template at two sites and two roots, mix expansion/literal rows, and revisit one site recursively and concurrently. Cover exact generic targets, imported fixture content and grouped-state native inputs. Raw-template paths resolve relative to the definition and participate in dependency locking.
+
+**Rejected programs.** Reject wrong target/specialization, arity/type mismatch, runtime-local/`near` capture, callable/template execution, nested template use, selector ownership in a template and wildcard argument matching. Equal-signature base and derived wrappers are still different targets. Malformed raw files reject under AE25.
+
+**Runtime evidence.** Expanded and literal programs produce identical values, effect order, queue allocation and failure paths. Definitions create no runtime call or callable instance. Different sites have independent queues; repeated visits to one site share its existing FIFO. No argument-search or settlement-order allocation is introduced.
+
+**Fixture evidence.** Deliberately mutate explicit arguments, receiver and frozen captures; each mismatches at the same owned invocation. Check missing/unused rows, concurrent shared helpers and a wrong template case. Diagnostics show definition, expansion and invocation path. A template never acquires root-owned override powers.
+
+**Native lowering.** Expand checked inert rows into the existing fixture representation before runtime; erase fixture declarations from production output. Continue the existing deterministic scheduler and native Promise coordination. No template interpreter, new scheduler or host-generated closure capture is required.
+
+**Completion gate.** BC18/BC19 plus imported/raw/grouped-state cases pass. The literal-versus-template comparison must show preserved checks and local edit behavior; fewer visible rows alone is insufficient.
+
+## AE29 — Direct failed-check reporting
+
+**Before/after.** Replace the false branch containing `int invalid = 1 / 0` with `checks::require(condition, reason)` under [C9.2](../syntax-taste/technical-spec.md#c92-named-runtime-checks). Save the migrated complete helper and callers: its public bound includes `checks::failed`, forwarding uses explicit arms/relay, and errors report the authored reason rather than arithmetic division. Include these contract/handling costs in comparison. The API is selected, not claimed implemented.
+
+**Successful programs.** Run the C9.2 complete positive/zero/negative library example and a normal recovery function. Verify `relay call` and exhaustive matching, same error payload through forwarding, and emitted provenance from authored fetch/judge helpers. Both inputs evaluate once left to right, including a reason expression when condition is true. Empty reason remains valid str data. Both literal-true and dynamic calls retain the same declared bound.
+
+**Rejected programs.** Reject a non-bool condition, non-str reason, wrong arity, an unchecked errorful call statement, omitted forwarding bounds, and missing domain arms even when a standard catch is present. Reject direct `standard_failure(...)` expectation construction; no new standard matcher is selected. Allocate catalogue error ID 1010 without collisions and reject project redeclaration under existing registry rules.
+
+**Runtime evidence.** True gives void success with no arithmetic operation or external side effect; false produces `checks::failed(reason)` with exact authored data, invocation span and private diagnostic path. Recovering an application check may succeed. A missing/mismatched/unused fixture or live-boundary violation remains sticky even when a later completion matches an expected check or the violation is caught. Timeout/crash cannot become an expected pass. Test reason escaping and absence of automatic input/exception dumps, plus argument-evaluation failures before the operation.
+
+**Fixture evidence.** Execute the deterministic check as real code, not supplied successes. An intentional codec/native fixture value mismatch should report its explicit condition reason and correct call-site span. Attached rows compare `checks::failed(reason)` through existing whole-domain-value semantics. Cover negative tests, legitimate recovery and sticky-infrastructure contamination independently; do not forge opaque standard snapshots.
+
+**Native lowering.** Verify a native boolean branch and existing typed domain-completion/diagnostic adapters, with strict single argument evaluation. No deliberate divide by zero, recursive replacement, production-disabled check or duplicated assertion engine. Error recovery/forwarding must execute generated paths, not merely match a source spelling.
+
+**Completion gate.** The [three-packet consultation record](../syntax-taste/evidence/2026-09-22/ld29-checks/README.md) closes the design gate. All positive/negative/runtime/fixture/lowering evidence above must pass before marking LD29 implemented; changing documentation or goldens alone is insufficient.
+
+## AE33 — Capability admission/evolution process
+
+**Before/after.** Before, catalogue-only access is selected but the request/admission/retirement process is scattered. After, one linked guide walks a concrete capability request through its complete Can signature, native mapping, error translation, immutability/lifetime, fixture and conformance requirements, plus the distribution/registry update and retirement procedure. Do not promise backwards compatibility or require a new foreign-binding mechanism.
+
+**Successful programs.** Walk an existing supported pure capability and an existing resource-bearing capability through the guide using their actual source programs and catalogue entries. A maintainer can locate every required artifact and reproduce the bounded checks.
+
+**Rejected programs.** Include an unknown catalogue operation and an unsupported project-authored native binding as examples of the current rejection boundary. A typed signature alone is an incomplete admission proposal; mark missing lifetime/fixture/native evidence as a failed review gate, not a compiler test of a newly invented manifest.
+
+**Runtime evidence.** No runtime behavior changes for this documentation item. Existing operation conformance supplies the examples' outcomes and resource guarantees. The guide must not claim a capability is supported on the strength of a consumer mock alone.
+
+**Fixture evidence.** The worked admission examples identify substitution, raw-adapter and target-conformance evidence separately. A resource example includes opaque token ownership and rejected forged values.
+
+**Native lowering.** Each worked capability links its current native Bun recipe and minimal adapters. The guide explicitly requires this evidence for future admission; it does not add an extensibility runtime.
+
+**Completion gate.** Documentation links and worked artifact inventories validate; one deliberately incomplete request is correctly classified by the checklist. Compiler behavior stays unchanged, so no unrelated compiler test expansion is required.
+
+## AE44 — Semantic locations, obligation explanations and safe fixes
+
+**Before/after.** Use G4's complete line-8 type/name failures. Before: LSP highlights line 1 despite byte offsets in messages. After: diagnostics identify the actual expression on line 8. Add missing-arm, outward-error, fixture mismatch, exact-specialization inference and capture-dependency examples.
+
+**Successful programs.** Clean programs produce no diagnostic; repaired programs pass the actual checker. Include multiline text, non-ASCII/astral characters, imported declarations and editor overlays so byte offsets convert correctly to UTF-16 positions. A diagnostic can point to both the use and the originating obligation.
+
+**Rejected programs.** Each negative must carry a stable diagnostic code, precise primary span and relevant secondary provenance. Retain the lexical-token negative as a control. Do not attach every semantic error to the first line or mistake an incomplete source overlay for a stale disk program.
+
+**Runtime evidence.** Pure diagnostic inspection must not build, run, read runtime environment or make platform calls. Preserve existing emitted runtime source-map locations. A source edit offered as a fix is applied to an isolated snapshot and checked before presentation; reject fixes that hide an error, flatten state or alter recovery ownership to obtain a passing check.
+
+**Fixture evidence.** Mismatch reports identify root, lexical site, reserved invocation and template definition/use when applicable without dumping private captures. For inferred/captured obligations, describe the relevant declaration and expected type. Include a wrong-argument and unused-row case, not just type-error examples.
+
+**Native lowering.** Carry source spans/provenance through compiler IR and source-map adapters; user program lowering/Promise semantics remain unchanged. Show the same emitted runtime behavior after a location-only change.
+
+**Completion gate.** G4 before cases now highlight the correct spans; all requested obligation classes have focused cases. Validated fixes pass the checker and retain the stated public contracts. Unavailable safe fixes are omitted rather than guessed.
+
+## AE45 — Comment-preserving source formatting
+
+**Before/after.** Give the existing `parse --render` renderer a small program with documentation comments, inline/trailing comments, blank-line groups and strings that contain comment-like text. Before: comments are lost. After: the supported formatting entry point preserves comment content/attachment and formats admitted source canonically. Select/document the concrete command interface before its command-line tests; no new language grammar is implied.
+
+**Successful programs.** Format representative functions, native declarations, grouped state, attached assertions, fixtures, wrappers and exact error heads once those forms exist. Include raw/triple strings, CRLF input, UTF-8 and long currently legal lines. Parse/check both versions and require idempotence on the second format.
+
+**Rejected programs.** Invalid source yields precise diagnostics and leaves the file untouched. An attempted write-back must not truncate source on parse/write failure. Do not silently “repair” a wrong bound, reorder semantic data arms or delete an unsupported comment.
+
+**Runtime evidence.** Formatted and original complete examples produce the same values/errors and normalized semantic IR. Comment placement relative to the owning declaration/section/call remains stable; string token contents are byte-for-byte unchanged. No new multiline syntax is required for acceptance.
+
+**Fixture evidence.** Assertion roots and semantic call ordering stay the same; compare full invocation allocation and FIFO results, including imported templates and captures. Trivia-only edits must not move the lexical call's AST preorder identity.
+
+**Native lowering.** Formatting changes source trivia, not native operations. Compare emitted semantic structure ignoring source-map position changes and execute selected before/after programs. Reuse the source parser/renderer with preserved trivia; no generated runtime formatter is introduced.
+
+**Completion gate.** Comment preservation, semantic equivalence, idempotence, invalid-input no-write and fixture-identity checks pass. A snapshot showing attractive output alone is insufficient.
+
+## AE47 — Correct documentation of finite language rules
+
+**Before/after.** Replace absolute “no inference/coercion” claims with the actual finite rules, and “JSON Schema validated” with the actual compiler validation mechanism. Keep the verified distinction between current build/assert behavior and the future guarantee. Replace “no renderer” with the current renderer's precise comment-preservation limitation.
+
+**Successful programs.** Attach small executable examples for expected typing of empty literals, exact generic equality inference, leaf/narrower-variant inclusion, callable error-subset compatibility and explicit numeric conversion. Include native numeric/string edge cases: signed zero/NaN equality, truncating negative integer division, half-open slices, UTF-16 indexing and explicit scalar/grapheme operations.
+
+**Rejected programs.** Pair those with mixed int/float arithmetic without conversion, unconstrained empty-array typing, incompatible nominal records, container covariance and unresolved generic inference. Invalid manifest keys/duplicates/path escape fail compiler configuration validation. Do not describe broader structural subtyping or arbitrary inference than the checker accepts.
+
+**Runtime evidence.** Record exact observed outputs for the surprising numeric/string cases under the pinned Bun version. Source documentation agrees with those outputs and existing native contracts. Do not silently change primitive semantics to make the prose easier to write.
+
+**Fixture evidence.** The examples use attached assertions and deterministic pure operations. Fixture evidence levels remain accurate; documentation does not call supplied provider answers request/quality verification. Historical measurements and unimplemented source forms stay labelled.
+
+**Native lowering.** Show native bigint operations, explicit conversions, `Object.is`, native slices/indexing and existing adapters for range/immutability/Unicode boundaries. Configuration checking is compiler-side; no Can runtime JSON-Schema subsystem is invented.
+
+**Completion gate.** Each corrected claim links to a positive/negative example or measured implementation fact. Cross-check all normative companions and current guides for contradictory remaining claims; historical review quotes may remain when clearly marked as superseded.
+
+## AE49 — Comparable source and authoring evidence
+
+**Before/after.** Preserve the four current application measurements and the fixed eight-fetch baseline. After implementation, rerun the same metrics and add full-project test/fixture cost plus defined edit scenarios. Report both production-source and total-source/test/fixture results; do not trade away error handling or tests to make the after version shorter.
+
+**Successful programs.** Each compared project passes the relevant compiler/assertion/native evidence gates with equivalent behavior. Source variants differ only by the claimed change. For a TypeScript comparison, include equivalent typed failure boundaries, fixtures, assertions, immutable data adapters and native behavior; otherwise label it non-equivalent and exclude claims of superiority.
+
+**Rejected programs.** Keep mutation cases that omit an error, change a request/state field, break a fixture or misuse a capture. Report whether the workflow detects and repairs each defect. A cheaper version that accepts a formerly rejected unsafe/incorrect program is not a successful ergonomics result.
+
+**Runtime evidence.** Compare outputs, error identities, operation counts and relevant ordering before measuring cost. Record failures and incomplete tasks, not only successes. For agent workflow experiments, fix task text/starting projects, identify model/version/settings and report attempts, correct completions, edits, diagnostic cycles and token usage when actually available. Do not report characters as tokens or claim statistical generality from one run.
+
+**Fixture evidence.** Count assertion/fixture source, definitions and raw data separately and in total. Measure adding one domain failure, changing one request field, changing one callback capture value under existing syntax, and reusing one scenario at two lexical sites. Report the affected declarations, callers, tests and diagnostic locations. Such measurements do not automatically admit changed capture syntax or general abstractions.
+
+**Native lowering.** Verify equivalent native operation counts and adapters. Do not compare a native-backed after implementation to a hand-written before reimplementation and attribute the speedup to syntax. No language runtime feature is needed just to collect evidence.
+
+**Completion gate.** Reproducible source metrics and task-level observations are saved with denominators, boundaries, hashes and negative outcomes. No arbitrary Can/TypeScript ratio or token-saving threshold is invented. Larger abstractions still need their separate demonstrated-need disposition change.
+
+## Existing evidence versus required evidence
+
+The [acceptance evidence directory](../syntax-taste/evidence/2026-09-22/acceptance-contracts/README.md) freezes the source baseline and mechanically checks that every accepted disposition has all evidence dimensions. Its validation result is **document coverage only**, not language acceptance. Current G1–G5 observations remain linked rather than rerun without a new reason. BC01–BC24 are reused where applicable; they are extended here to cover accepted changes that were outside the earlier behavior pass.
+
+No implementation can mark an acceptance record complete while its decisive cases are only projected, mocked at the wrong boundary, skipped or design-gated. AE29 has a selected contract and remains unimplemented, like the other behavior changes. Documentation-only items use relevant worked examples and link checks rather than invented runtime modifications. Completing this evidence specification does not create implementation tasks or promote deferred scope.

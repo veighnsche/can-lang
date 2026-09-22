@@ -1,8 +1,7 @@
 # Platform and deterministic testing specification
 
 Status: technical specification for the approved Can surface and Bun boundary.
-This document does not approve additional syntax. It fixes compiler, runtime,
-catalogue, and test-harness behavior needed to make the approved surface usable.
+Reconciled 22 September 2026. It incorporates the selected fixture/native-assertion syntax and fixes compiler, runtime, catalogue and test-harness behavior. This is a design specification, not a claim that all revisions are implemented.
 
 The normative words **must**, **must not**, **should**, and **may** have their
 usual specification meanings. Contract signatures below use mathematical
@@ -145,7 +144,7 @@ are valid. Registry JSON rejects duplicate keys and unknown fields.
 
 `can.lock.json` has exactly one field, `dependencies`, whose value is an object
 keyed by those graph identities. Each value has exactly `path`,
-`manifest_sha256`, `source_sha256`, and `error_registry`. `path` is the
+`manifest_sha256`, `source_sha256`, `fixtures_sha256`, and `error_registry`. The fixture digest uses the precise P15.1 framing over statically referenced raw fixture files. `path` is the
 dependency's normalized directory relative to the root project manifest;
 digests are lowercase 64-character hexadecimal strings; `error_registry` is
 an embedded registry object of the exact shape above. Object field order and
@@ -184,7 +183,7 @@ or other platform calls.
 ### Technical contract
 
 The test compiler creates an **assertion run** for one named assertion. An
-assertion run has an immutable root identity:
+assertion run has an immutable root identity (for function, fetch, judge, LLM or operation-wrapper assertions):
 
 ```text
 (package identity, declaration identity, assertion name)
@@ -219,7 +218,7 @@ Direct entries reserve in written order and spread entries reserve in collection
 order. Runtime completion order cannot change an identity.
 
 The text before `:` in a `when` row is an assertion selector. Assertion names
-are scoped by their declaring function; they are not globally unique. For one
+are scoped by their declaring executable declaration; they are not globally unique. For one
 compiled root assertion, the harness activates rows at dynamically entered call
 sites whose selector text equals that root assertion's name. A helper row with
 the same selector may intentionally serve multiple reachable roots; each root
@@ -309,6 +308,39 @@ coordination result. That controlled suite is target evidence for the emitted
 operations; it does not claim that an assertion fixture schedule reproduces
 uncontrolled production timing.
 
+
+
+<a id="p31-typed-fixture-reuse-with-local-ownership"></a>
+### P3.1. Typed fixture reuse with local ownership
+
+Add an inert top-level `fixture` declaration for one exact executable target, with optional typed `given` parameters and a nonempty `cases` section. Its name follows ordinary package lookup/import/export rules. It is test data, not a callable or an assertion root, and is erased from production output.
+
+```can
+// Reusable content for the exact function find_receipt(str).
+fixture absent_receipt for find_receipt
+    given
+        str key
+    cases
+        key => missing_receipt(key)
+
+// Fragment at one lexical invocation; sample is still a local root selector.
+match call find_receipt(requested)
+    when
+        sample: use absent_receipt("r-7")
+    missing_receipt => ok receipt(0)
+    ok receipt found => ok found
+```
+
+`for` and `use` are contextual within fixture productions. The template target can be an ordinary function, supported catalogue operation, fetch/judge/LLM or wrapper; native questions/arms are not independently invokable targets. A generic target must specify concrete type arguments in the template header. No generic template parameters or target-as-parameter mechanism is introduced.
+
+Case input lists use the target's exact existing call grammar, including grouped state. Outcomes use the declared target result/error contract. Parameters have explicitly written types; no `near`, receiver capture, state section, effects or body execution is allowed in a template. Case expressions are restricted to the existing inert initialization expression subset with template parameters as additional immutable names. No calls, runtime locals, opaque-value constructors or new fixture-expression evaluator is introduced. Opaque values remain possible only through existing compiler-issued fixture representations, not template forgery.
+
+At a lexical `when`, `selector: use template(arguments)` expands its cases **in place**, in source order, under that selector. Template arguments use the same inert subset in the site's static declaration environment, not runtime local bindings. Check target identity and exact generic specialization, arity, argument/result/error types at definition and expansion. Do not accept a template for a base operation at a derived wrapper site merely because signatures match. Existing ordinary literal rows can appear before or after an expansion; their relative FIFO order is preserved.
+
+Expansion creates no extra call, root, callable instance or dispatch point. It owns no queue. Each use retains the existing queue identity `(root, lexical when-table)` and existing dynamic invocation/participant/callable fingerprint; repeated concurrent visits share that site's canonical FIFO assignment. Different sites/root runs get independent queues. Never search ahead for matching values. Preserve explicit-argument checks and frozen receiver/`near` comparisons. Diagnostics point to both template definition/case and local expansion plus the reserved invocation path.
+
+Templates cannot include templates in this revision; recursive expansion and cycles are therefore impossible. A supplied-completion case remains consumer evidence and bypasses native work. A case may instead use [P4.1](platform-testing-spec.md#p41-attached-native-and-wrapper-assertions)'s raw mode to execute a native target. The same target/ownership checks apply. Raw paths in templates resolve relative to the defining source file, and their content hashes enter build inputs. Template file bytes and referenced raw files in dependencies must also be covered by lock source identity; P15.1 specifies that revision. No function-ordinal root override, root selector in the template, wildcard argument match or detached expected-output registry is introduced.
+
 ## P4. Real execution, supplied completions, and provider fixtures
 
 ### Policy
@@ -326,6 +358,7 @@ The test report assigns every assertion one or more evidence labels:
 | `real-can` | Ordinary Can bodies and native-equivalent pure operations | Can logic and compiler lowering |
 | `supplied-completion` | A `when` result replaces the target invocation | Consumer handling of that declared completion |
 | `raw-provider-fixture` | Raw request/response or driver data crosses the real compiler-owned adapter | Encoding, decoding, validation, and error mapping |
+| `policy-fixture` | Typed origin-tagged failure injection runs actual wrapper handlers | Local override/delegation behavior, not request or decoder coverage |
 | `bun-conformance` | Generated TypeScript runs against the pinned Bun API | Target integration and lifecycle behavior |
 | `live-quality` | Explicit external quality/evaluation job | External service quality; outside ordinary assertions |
 
@@ -334,11 +367,11 @@ real bodies unless their exact call has a `when` row. Side-effecting or
 nondeterministic platform calls and native provider declarations require a
 fixture in ordinary assertions; this includes HTTP, SQL, I/O, clock, random,
 environment, and log calls, while HTML encoding, codecs, hashing, and collection
-operations run for real. A fixture result is delivered through the
-same completion adapter used after a real call, but it starts after native I/O:
+operations run for real. A supplied-completion fixture result is delivered through the
+same completion adapter used after a real call, but bypasses native I/O:
 it must not claim coverage of request construction or raw response parsing.
 
-Raw provider fixtures are compiler conformance data, not Can syntax. A fixture
+Raw provider fixtures are external data attached either to compiler conformance or to authored native assertions/local call sites through P4.1. They are not executable Can adapters. A fixture
 contains the raw boundary input and raw boundary output or driver failure. The
 real adapter must serialize the input, consume the fixture, validate it, and
 produce the Can completion. HTTP fixtures use raw method, URL, headers, and
@@ -352,9 +385,94 @@ or another opaque type.
 
 ### Evidence
 
-Release reports must keep the five labels separate. A capability is marked
+Release reports must keep all six labels separate. A capability is marked
 supported only when its required labels are green; a consumer assertion alone
 cannot graduate a provider or platform operation.
+
+
+
+<a id="p41-attached-native-and-wrapper-assertions"></a>
+### P4.1. Attached native and wrapper assertions
+
+#### Source attachment and execution modes
+
+Fetch, judge, LLM and `wrap` declarations now require a nonempty attached `asserts` section. Place it after `given` and optional grouped `state`, before the method/asks/registration body; on wrappers it follows `emits calculated`. Existing ordinary function/arm rules remain otherwise unchanged. Individual questions continue to be tested through judge-owned cases, not separate transport roots.
+
+`using`, `raw` and `failure` are contextual only in the assertion/fixture execution-mode production; they are not newly reserved data names. Native rows use the exact invocation inputs and final state group, followed by an expected success/domain completion. Under each row, indent exactly one execution-mode line:
+
+```can
+fetch receipt load_json from service
+    emits [http::request_failed]
+    asserts
+        decoded: => ok receipt(7)
+            using raw "fixtures/receipt-7.json"
+    get "/receipt"
+```
+
+A named judge assertion supplying one state value writes `sample: (input_value) => ...`, not a flattened ordinary argument. The root invokes the declaration for real. `using raw "relative/path.json"` supplies a native exchange fixture at its owned target boundary while executing request construction, validation, decoder and handlers. Local calls made by those handlers retain their own lexical `when` tables and selected root name. A nested native call needs its own local fixture; the root's raw file cannot intercept another operation.
+
+For wrappers, select either `using raw` for the underlying fetch/judge exchange, or `using failure native error_value` / `using failure emitted error_value` for a policy-only test. Injected values must typecheck against the exact original `N` or `E` key set. Injection occurs after root inputs are bound and before the policy lookup, skips the underlying operation and makes a fresh private occurrence with the selected origin. It cannot forge a standard failure or accept an arbitrary phase string. Parent delegation executes real handler code. Report this as `policy-fixture`, not request/decoder evidence.
+
+At a native lexical `when` case, an indented `using raw` line changes that row from supplied-completion substitution to real-target execution with the local raw exchange. The row first checks actual arguments/fingerprints, then runs the operation and compares the resulting completion against the row expectation before delivering it to the caller. A mismatch is a sticky harness failure. Raw mode is allowed on fetch/judge/LLM/wrapper targets only; ordinary function calls cannot use it to seize nested boundaries. Raw/injected modes on inappropriate declarations, multiple mode lines and modes on a supplied opaque mock are compile errors. Injection is confined to attached wrapper assertions, not consumer `when` rows.
+
+#### Raw HTTP fixture contract
+
+Use an external, strictly checked UTF-8 JSON object, identified by `schema: "can.native-fixture.v1"`. These are test artefacts, not arbitrary executable host adapters. Reject duplicate/unknown fields. Paths are source-relative, resolved within the owning project under the existing symlink/path confinement rules; no network loading. Required top-level fields are:
+
+| Field | Contract |
+| --- | --- |
+| `schema` | Exactly `"can.native-fixture.v1"` |
+| `target` | Canonical `package::declaration` of the lexical/root invoked target, including the wrapper name when applicable |
+| `environment` | Object of fake credential-variable string values; only credential names read by the inherited connection are allowed, missing key simulates absence |
+| `exchange` | `null` for expected failure before transport, or one request/response exchange object below |
+
+An exchange has exactly `request` and `outcome`. Request has `method` (uppercase string), `url` (complete resolved request URL, including query, before redirects), `headers` (ordered `[name,value]` pairs) and `body` (body expectation). Compare headers at the compiler-owned pre-send boundary using A4's native Header normalization and order, before host-added transport headers. Exact equality is required; no ignored/unmatched authored headers. Simulated authorization is included in expectations. Host-generated connection/content-length headers are not authored request obligations and are not included at that boundary.
+
+Body expectation is exactly one of `{"bytes_base64":"..."}` or `{"json_utf8":"..."}`. Base64 must be canonical and decodes exact bytes; empty bytes express no body. The JSON mode first validates UTF-8 and uses the existing exact-token JSON reader on both expected text and actual body, rejecting duplicate keys and ignoring object member order/insignificant whitespace. Compare decoded strings, booleans, null and arrays normally; compare number-token spellings exactly, without converting integer tokens through binary64. Thus `1` and `1.0` differ, and a numeric formatting change intentionally requires updated request expectations. Field additions/removals, changed state, prompt, thresholds, criteria or model fail equality. This comparison is test-only reuse of the selected codec, not another production JSON implementation. Response body always uses raw bytes so malformed payloads can reach the decoder.
+
+`outcome` has exactly one of:
+
+- `response`: object with `status` (integer 200..599), `headers` (raw ordered string pairs), `body_base64` (canonical base64). Run the real response/header/body/codec/protocol validation on it.
+- `failure`: one of `{"kind":"transport","phase":"connect"}`, with phase any existing A2 transport phase; `{"kind":"timeout"}`; or `{"kind":"body_limit"}`. These represent the selected native boundary failure and derive limits from the connection, not untrusted arbitrary payload fields. They execute the real native-error normalization path without wall-clock waits. Body-limit injection denotes inbound consumption; outbound overflow must be caused by the actual prepared request.
+
+Request comparison happens before releasing any outcome. A malformed *fixture schema* fails harness validation. A well-formed fixture containing malformed *provider bytes* is deliberate input and must produce the adapter's declared error, not a fixture-configuration error. A request mismatch fails the root before response delivery. `exchange: null` forbids a transport attempt; a pretransport failure can pass its expected completion, while attempted transport is sticky unexpected-boundary failure. Conversely a non-null exchange left unused by preparation failure fails the root as unused fixture. Each owned exchange is consumed exactly once; redirects are represented by the final response according to the existing adapter contract, not by extra Can invocations. No fixture enables live I/O.
+
+A minimal response fixture for the preceding root:
+
+```json
+{
+  "schema": "can.native-fixture.v1",
+  "target": "app::load_json",
+  "environment": {},
+  "exchange": {
+    "request": {
+      "method": "GET",
+      "url": "https://example.invalid/receipt",
+      "headers": [],
+      "body": {"bytes_base64": ""}
+    },
+    "outcome": {
+      "response": {
+        "status": 200,
+        "headers": [],
+        "body_base64": "eyJpZCI6N30="
+      }
+    }
+  }
+}
+```
+
+This fragment assumes `receipt` has `int id` and `service` has that endpoint, no auth/default headers and no additional generated request headers. Fixtures for actual modes must include their complete generated header contract; this example is not proof of today's adapter output. Raw HTTP protocol tests do not claim live transport or target conformance coverage.
+
+#### Required coverage and evidence
+
+Native declarations require their own nonempty attached cases. At least one attached raw case must compare a prepared request and reach its post-response decoder; a supplied result, wrapper injection or pretransport-only failure cannot satisfy this obligation. Additional `exchange: null` cases cover preparation failures. A declaration without any passing request/decoder case cannot claim the required native coverage and fails the build; there is no inferred exception or unchecked coverage waiver.
+
+Each locally authored wrapper key must be selected in at least one **attached** wrapper assertion; either raw or injected evidence can establish policy selection. Inherited keys need no duplicate child source assertions. Run the base's assertions independently; do not inherit their expected outputs, because an override can intentionally change them. Cover handler branch behavior with ordinary named cases; selection coverage alone is not full branch proof. A wrapper exposing only recovery still tests raw request behavior on its original native declaration.
+
+Judge-owned raw cases must exercise its actual registered question preparation, whole-batch validation, and handlers. Require at least one valid-answer raw case reaching handler dispatch for every judge. Dynamic registrations may vary by input; the build report lists reached question/handler identities rather than claiming universal coverage. Catalogue conformance independently covers probability/threshold boundaries, generated-record assembly, static/dynamic choices, malformed later answers and source-ordered handlers. Authors add named cases for their own thresholds/fallbacks. No live model-quality requirement is introduced into build.
+
+Keep evidence labels distinct: `real-can`, `supplied-completion`, `raw-provider-fixture`, new `policy-fixture`, `bun-conformance`, `live-quality`. A root can have several labels; report mode/path per exercised boundary. Mutating a prompt, request argument, grouped state field, expected header, handler result or frozen callable capture must fail the appropriate test with local ownership intact.
 
 ## P5. Deterministic coordination harness
 
@@ -1078,13 +1196,13 @@ documentation and assertions:
 
 ```text
 match call sql::query_rows(pool, "search_accounts", search_parameters("%" + query + "%"), 25)
-    ok
     sql::unsupported_value
     sql::connection_failed
     sql::query_failed
     sql::constraint_failed
     sql::row_limit
     sql::schema_mismatch
+    ok
 ```
 
 The consumer's assertion input uses a capture-free named callable whose body
@@ -1130,13 +1248,13 @@ fn search_view search_accounts_model
         when
             found: "ann" => ok [account_row(7, "Ann")]
             unavailable: "ann" => sql::query_failed("search_accounts", "08006")
-        ok account_row[] rows => ok search_view(200, rows, "")
         sql::connection_failed => ok search_view(503, [], "Temporarily unavailable.")
         sql::query_failed => ok search_view(503, [], "Temporarily unavailable.")
         sql::unsupported_value => ok search_view(500, [], "Internal error.")
         sql::constraint_failed => ok search_view(500, [], "Internal error.")
         sql::row_limit => ok search_view(500, [], "Internal error.")
         sql::schema_mismatch => ok search_view(500, [], "Internal error.")
+        ok account_row[] rows => ok search_view(200, rows, "")
 ```
 
 The declarations and body excerpt use current Can syntax. The manifest and
@@ -1309,6 +1427,47 @@ The initial platform slice is complete when all of these gates pass:
 
 The initial target is macOS on arm64. Linux requires the same conformance suite
 before support is claimed. Windows is outside the approved distribution scope.
+
+
+
+<a id="p151-verified-build-and-publication"></a>
+### P15.1. Verified build and publication
+
+#### Successful `build`
+
+A successful `build` means all of the following were true for one captured build input identity:
+
+1. The complete resolved source/dependency graph, manifests, registries, lock, referenced assets and fixture files passed their required validation.
+2. Every required attached assertion in the graph, including dependency roots and native/wrapper roots, executed offline and passed; no selectors or cached passes omitted roots. Generic rows exercise their selected concrete instances, not all possible future instantiations.
+3. No missing, ambiguous, malformed, mismatched or unused fixture, live-boundary attempt, sticky harness violation, root timeout, worker crash or required-coverage failure occurred. Every started participant was drained or the root failed its deadline.
+4. Production generated TypeScript and its source maps passed existing output validation for the same checked snapshot and pinned compiler/catalogue/Bun/runtime identities.
+5. The exact verified production generation was atomically selected as current.
+
+Success does not certify live model quality, database/network availability, untested inputs, termination in general or runtime branches never exercised. It does not execute `main` against live services. A project with no reachable executable roots may have zero assertions; every declaration that requires attached assertions must still satisfy that static requirement.
+
+#### State machine and identity
+
+The driver holds the existing exclusive writer protection and captures immutable input bytes before emission. Compile assertion and production plans from that captured graph, not independently reread working files. Fixture/asset bytes used by workers come from the captured snapshot. Hash all source/config/lock/catalogue/runtime inputs, raw fixtures, assets, assertion roots, timeout policy and relevant compiler options into verification identity; report the exact Bun version. Tests use fixture environment only, never ambient credentials.
+
+For dependency locks, add required `fixtures_sha256` to each dependency entry. It hashes `can-fixture-tree-v1` followed by a zero byte, then all raw files statically referenced by that dependency's declarations/templates, sorted by UTF-8 bytes of their normalized manifest-relative paths. Encode each path byte length, path bytes, content byte length and content bytes using P2's unsigned 64-bit big-endian length framing. Deduplicate paths, retain distinct paths even for equal bytes, and hash just the prefix plus zero for an empty set. Resolve paths using the existing confinement rules before reading. Source fixture templates remain covered by `source_sha256`; external raw bytes are covered by this new digest. The build validates both against the captured dependency graph and never silently rewrites the lock. This prevents a dependency's test fixture from changing independently of its locked source identity.
+
+`capture → check → private test staging → supervise every root → validate production staging → revalidate inputs → publish production`
+
+Staged test artifacts are never production current. `assert` likewise stages privately and runs selected or all roots without calling production publication. A selected assertion success is labelled partial and cannot be reused as a full build attestation. No `--skip-asserts` or unlimited deadline exists on the verified build path. Existing checking/parsing commands may still be used as explicitly nonpublishing operations.
+
+A failure at any prepublication step reports nonzero status, removes temporary executable staging when possible, and leaves the previous production current unchanged. Keep bounded diagnostic reports independently of current selection. Recheck the captured input identity immediately before publication; if inputs changed during verification, fail with `inputs changed` and require a new build. A later workspace edit cannot retroactively alter the artifact's captured identity; it simply makes the workspace differ from the published generation.
+
+Publish an immutable generation through the existing atomic current-selection mechanism. An interrupted or failed publication must leave either the prior complete generation or the new fully verified generation selected, never a partial generation. The successful build report identifies generation ID, input identity, assertion totals/evidence/timeout policy and validation status. A publication interrupted after atomic selection but before response is an uncertain command result, not an unverified artifact. Existing reader leases remain valid for their complete generation.
+
+#### Deadlines and failures
+
+Both `build` and `assert` accept `--assert-timeout-ms N`, a decimal integer in **1..600000**, default **5000**. No zero, negative, infinite or environment-derived value is accepted. This is a per-root wall-time budget recorded in reports and verification identity, not a Can source annotation. Run roots sequentially in stable `(package, declaration, assertion)` order initially; each uses its own Bun worker and fresh harness state.
+
+The driver starts a monotonic deadline immediately before worker launch. It includes startup, assertion execution, all started-participant draining, fixture exhaustion checks and final root-result delivery. A worker cannot pass after its deadline: the supervisor's observed completion time decides, with timeout winning at equality. A CPU loop cannot prevent driver expiry. A pass received while participants/queues remain outstanding is an invalid worker result.
+
+On expiry, terminate the worker through the platform process API; do not wait for Can cleanup or an in-worker timer. Allow at most 1000ms for process reaping after termination, then report a supervisor failure if exit cannot be confirmed. No production publication follows an unconfirmed termination. Worker launch/crash/protocol errors fail that root; safe subsequent roots may run for a complete report, but a supervisor isolation failure stops the suite. Any failure prevents build publication. Host suspension or scheduling delay can delay observation; this is not a hard real-time guarantee.
+
+Workers report root start and invocation/fixture progress to the driver. A timeout report contains root identity, configured/observed durations, last-known pending paths and last-known executing source span when available. Mark stale or unavailable progress honestly. Reports do not include ambient secrets or raw private causes. Timeout is not recoverable in authored Can and does not alter production `Promise.race([])` pending semantics.
 
 ### Evidence basis and native reuse
 

@@ -1,0 +1,6 @@
+{
+  "source": "compiler/testdata/current/fetch/main.can",
+  "sha256": "de57d2376e0903bf71191812dc23c1722f048d9f6633c2883ac810f54e65a766",
+  "comparison_end_marker": "fn str referenced",
+  "note": "Entire source retained; fixed metrics stop immediately before the separate referenced helper. This is current source, not the complete final after project."
+}

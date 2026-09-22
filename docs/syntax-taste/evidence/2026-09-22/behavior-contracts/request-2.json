@@ -1,0 +1,78 @@
+{
+  "model": "jev-latest",
+  "state": "The requested deliverable is a settled set of Can behavioral contracts, now including reusable fixtures. This language serves AI coding agents. Keep dedicated noul/choice/score/judge/llm constructs, visibly grouped state, nominal immutable data, explicit exported errors and assertions beside declarations. With zero outside users, backwards compatibility is irrelevant. Lower to native JavaScript/Bun wherever equivalent; add adapters only for language obligations. Evaluate the supplied facts as advisory evidence, not external investigation or a correctness certificate.\nThe required fetch/judge translation covers precisely seven native-lifecycle families: http::invalid_request(reason), http::credentials_missing(variable), http::transport_failed(phase), http::timeout(timeout_ms), http::body_limit(limit), http::status_error(status,headers), codec::invalid_data(path,reason). Their existing sanitized typed payloads can be used as ordinary nominal values. HTTP envelope results accept non-2xx whereas body-only requests reject them. Malformed JSON and malformed AI answers in otherwise valid JSON differ. ai::invalid_question/ai::invalid_answer and authored failures must remain distinct; an authored codec::invalid_data is not a decoder-origin failure. One judge sends one batch, validates it completely, and invokes handlers in written order. Standard faults do not belong in emits.\nRequired wrapper behavior is derivation with inherited defaults and most-derived precedence at fetch/judge only. An ordinary callable adapter cannot intercept an outcome its callee already handled. The candidate uses one base, unchanged inputs/result/connection, separate native/emitted dispatch keys, terminal inherit delegation, and neither retries nor repeated dispatch. New failures from a handler leave the policy. Reject duplicate keys and inheritance cycles. The current problem does not require multi-base or signature-changing inheritance.\nExplicit emits remains mandatory for ordinary and native declarations. For derived policies, finite analysis could combine declared callee errors, explicit completions and parent delegation; no semantic branch proof is attempted. Overridden ancestor errors should disappear when no effective handler emits them. An overt emits calculated marker would request that calculation, whereas the competing design repeats an exact checked list at each wrapper.\nNominal generic errors are distinct today, yet the arm spelling cannot separate specializations sharing a name. Preserve invariant all_failed<A>/all_failed<B> while admitting exact specialization patterns in ordinary and coordination contexts. Keep concurrent shared arms, concurrent with error entry arms, race's single aggregate outcome and race with error's first outcome. Do not flatten nested aggregates. Unique-specialization bare spelling is possible. Put failure arms before the final successful arm.\nAggregates already expose an unconstructible, non-updateable standard_failure with kind:str, occurrence_id:int and message:str and private retained cause. Normal standard catches expose only message text. Preserve their region: arguments are covered in ordinary calls, preparation is not in coordination participant arms, and an arm never catches its own failure. An assertion infrastructure violation must still fail the root after local recovery.\nThe inspected driver publishes checked production directly for build; assert instead checks the graph, publishes test modules and executes them. Existing publication checks inputs and changes current atomically. Desired build success means the exact captured sources and fixtures passed every offline graph assertion and production output validation before selection; a failure keeps the prior production artifact selected. A selected assert invocation cannot certify the graph or publish production. Neither live-service quality nor termination for all inputs follows.\nPending tests and non-yielding loops require a supervisor outside the executing worker. The candidate starts one worker per root, defaults to 5000ms wall time, allows a recorded 1..600000ms override, and forbids an unlimited build setting. Startup, work and participant drain consume that budget; on expiry terminate the worker and report the latest known paths. Leave empty race pending in production. Host suspension prevents promising precise timer delivery.\nCurrently each when queue is owned by a lexical call site under the selected attached assertion. Reservation uses root, call, occurrence, participant and callable identities; FIFO assignment precedes completion timing and compares arguments/captures. Function-ordinal root overrides lose these guarantees. Typed inert templates could share rows for an exact target while local selectors allocate all queues and roots; no runtime-local capture is allowed. External scenario data also requires local binding and target checks.\nA mocked completion bypasses the request and decoder, so it cannot certify authored handlers. Raw adapter fixtures currently exist only as compiler conformance inputs. The candidate adds attached assertions to fetch/judge/llm and wrappers with lexical raw-file references, checking the complete method/URL/header/body request plus simulated credentials and executing actual decoding and handlers. Origin-tagged typed injection can test wrapper policy without a request, with every declared override covered and separately reported from raw evidence. Base assertions remain independent rather than copying their expected outcomes to children. Network access is prohibited; question behavior runs in judge-owned cases. Named cases exercise dynamic branches without claiming exhaustive model-quality proof.",
+  "questions": {
+    "payload": {
+      "type": "choice",
+      "instructions": "How should the normalized failure preserve selective recovery data?",
+      "criteria": {
+        "reuse": "Keep the original seven nominal payload values as alternatives inside http::request_failed; distinguish origin internally and preserve the private cause.",
+        "new_records": "Copy each original payload into a dedicated new detail record while preserving identical fields and lifecycle filtering."
+      }
+    },
+    "wrapper_policy": {
+      "type": "choice",
+      "instructions": "What operation-specific derivation design fits these requirements?",
+      "criteria": {
+        "origin_tables": "Use one targeted wrap declaration with distinct native and emitted rules; delegate through inherit without reinvocation or redispatch.",
+        "native_only": "Expose only native-origin handler overrides and leave all emitted-outcome handling to named function adapters."
+      }
+    },
+    "bounds": {
+      "type": "choice",
+      "instructions": "Choose the public-bound spelling for derived policies.",
+      "criteria": {
+        "calculated_marker": "Make wrappers opt visibly into finite computed errors with emits calculated; retain written lists on all ordinary and native executables.",
+        "exact_list": "Have authors restate an exact wrapper error list and reject either missing or extra calculated members."
+      }
+    },
+    "patterns": {
+      "type": "choice",
+      "instructions": "How should exact specialization coexist with short arm names?",
+      "criteria": {
+        "unique_bare": "Allow exact applied error types with an optional alias, retaining short names only when their specialization resolves uniquely.",
+        "always_explicit": "Disallow all unspecialized generic arm names and always demand the complete applied type."
+      }
+    },
+    "snapshot": {
+      "type": "choice",
+      "instructions": "Which catch value keeps failure handling coherent?",
+      "criteria": {
+        "snapshot": "Expose the opaque snapshot in a bound standard catch and keep no-binding catches, with unchanged occurrence and region semantics.",
+        "both": "Keep message-string catches alongside snapshot catches with type-directed selection."
+      }
+    },
+    "publication": {
+      "type": "choice",
+      "instructions": "How should build relate assertion success to production selection?",
+      "criteria": {
+        "all_roots": "Publish production only after full-graph offline assertions and output validation of the captured inputs; isolate selected test runs.",
+        "changed_roots": "Run a dependency-selected subset of impacted assertions and carry forward previous successes for the remainder."
+      }
+    },
+    "deadline": {
+      "type": "choice",
+      "instructions": "Choose the timeout mechanism for verified builds.",
+      "criteria": {
+        "root_worker": "Enforce each root budget from the driver across worker launch, execution and cleanup, with the supplied default/range recorded.",
+        "run_worker": "Bound only the complete test worker, scaling its total allowance with the number of roots rather than limiting each root."
+      }
+    },
+    "reuse": {
+      "type": "choice",
+      "instructions": "How should repeated scenario rows be shared?",
+      "criteria": {
+        "lexical_templates": "Use compile-time typed templates whose local expansions keep root/queue ownership at each when site and preserve complete matching.",
+        "external_only": "Avoid source template syntax; provide only typed scenario files with local call-site attachment and the same ownership checks."
+      }
+    },
+    "native_tests": {
+      "type": "choice",
+      "instructions": "How should deterministic tests attach to native operations and policies?",
+      "criteria": {
+        "attached": "Introduce declaration-attached native and wrapper cases; raw fixtures exercise preparation/decoding, and typed origin injection separately covers overrides.",
+        "function_roots": "Require all tests to live on ordinary function adapters while tracking whether their raw fixtures and policy cases cover each native declaration."
+      }
+    }
+  }
+}

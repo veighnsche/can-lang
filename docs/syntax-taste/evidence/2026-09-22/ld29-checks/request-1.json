@@ -1,0 +1,45 @@
+{
+  "model": "jev-latest",
+  "state": "Can is an AI-agent-oriented language with native noul/choice/score/judge/llm/fetch declarations, grouped state, nominal immutable data, explicit domain-error bounds and source-attached assertions. There are no external users or compatibility obligations. LD29 accepts replacing deliberate division by zero in runtime fixture checks with a named operation that reports the failed condition and source span. It does not approve a broader testing DSL. The existing helper has signature fn void require, emits [], given bool condition, asserts yes: true => ok; its false branch runs int invalid = 1 / 0. Both application bodies and fixture validation may need the replacement.\nOrdinary named catalogue calls are available; a new keyword is unnecessary for expressibility. A candidate signature is checks::require(bool condition, str reason) -> void. True returns void success; false reports the reason and call-site location. Evaluate arguments exactly once left to right, including the reason when true. Lower to a native boolean branch and the existing completion/failure adapter. No recursion, duplicated test engine, ambient side effects or assertions-disabled production mode. An alternative is checks::fail(str reason) -> void called only in an authored false branch; no bottom type is selected.\nA declared checks::failed(str reason) uses an allocated distribution domain ID, ordinary construction, full explicit emits checking and exhaustive handling. A nonempty error bound cannot be used as an unchecked statement: consumers need match/relay or an explicit named adapter, and callers forwarding it declare the error. Success/domain expected assertion rows already compare complete values. Domain failures are ordinary data; error occurrence diagnostics stay private. Fetch/judge normalization must leave authored checks::failed in emitted origin.\nStandard failures are outside emits, automatically propagate and optionally use [_] as standard_failure f. Existing six kinds are arithmetic, bounds, resource_state, assertion, native_exception, cleanup. The snapshot has read-only occurrence_id, kind, message and a private cause; application code cannot construct, copy-update or wire-encode it. A distinct check kind could be added instead of mislabelling an application condition as arithmetic or a harness assertion. Direct standard-failure assertion expectations are not selected. Production failures should be recoverable if the chosen channel permits ordinary recovery; whether authored checks should be sticky is one competing alternative. Missing/mismatched/unused fixtures, live-boundary attempts and other harness violations are ALWAYS sticky independently of any caught completion. Supervisor deadlines are not catchable and never expected passes.\nTwo complete candidate standard-expectation policies are available if a standard channel is selected: retain existing assertion grammar and test through a named catcher returning snapshot data; or add assertion-only => standard_failure(\"check\", \"reason\") as a matcher, NOT a value constructor. That matcher would accept only the new check category/message after clean harness/drain validation; never occurrence IDs, harness assertion, timeout or private causes. General standard-failure expectation expansion is a separate alternative requiring broader design. Under a domain channel the current constructor expectations suffice and no extension is needed.\nThe reason is authored str data, not an automatic dump of inputs or exceptions. Existing renderer escaping and private diagnostic source spans remain; no new arbitrary-object coercion, failure-occurrence equality or fixture bypass is permitted. This consultation compares supplied alternatives only; classifier preference is advice and cannot establish correctness. Preserve the same language foundations whichever choice is selected.",
+  "questions": {
+    "channel": {
+      "type": "choice",
+      "instructions": "Which failure policy best fits the LD29 repair and Can contracts described in the state?",
+      "criteria": {
+        "domain": "Use checks::failed(str reason) as an ordinary recoverable declared domain error, with explicit bounds and existing constructor expectations.",
+        "standard": "Introduce standard kind check, allow ordinary standard recovery, preserve emits and decide negative-test policy separately.",
+        "sticky": "Classify authored failed checks as sticky harness assertion violations during tests, even if recovered; use standard failure in production.",
+        "unresolved": "None of these policies is ready to select from the supplied evidence."
+      }
+    },
+    "api": {
+      "type": "choice",
+      "instructions": "Regardless of failure-channel choice, choose the smallest useful source API for LD29.",
+      "criteria": {
+        "require": "Add only checks::require(bool condition, str reason) -> void as a normal catalogue call; pass on true and report on false.",
+        "fail": "Add only checks::fail(str reason) -> void, requiring the existing match condition branch at each use.",
+        "keyword": "Introduce a special check statement taking a condition and reason instead of a callable catalogue operation.",
+        "unresolved": "No offered API shape is adequate yet."
+      }
+    },
+    "standard_expectations": {
+      "type": "choice",
+      "instructions": "Conditionally assume the ordinary recoverable standard check channel is selected. What assertion policy should accompany LD29?",
+      "criteria": {
+        "catcher": "Keep current assertion rows; test false via a named catch helper returning snapshot observations.",
+        "check_only": "Add only the assertion-row matcher => standard_failure(\"check\", \"reason\"), never value construction or a harness-failure escape.",
+        "general": "Expand assertion expectations to other standard kinds too, with a full separate matching contract and sticky-harness exclusions.",
+        "unresolved": "The supplied alternatives do not settle standard negative tests."
+      }
+    },
+    "domain_expectations": {
+      "type": "choice",
+      "instructions": "Conditionally assume checks::failed is a normal domain error. What assertion scope is justified by LD29?",
+      "criteria": {
+        "existing": "Use the existing checks::failed(reason) constructor expectation and leave direct standard-failure expectations out of this revision.",
+        "general": "Also introduce a direct standard-failure expectation feature even though checks::failed is already expressible.",
+        "unresolved": "Neither assertion scope is sufficiently justified."
+      }
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Emitted assertions
 
+This document describes the current implementation. The selected revised contract is [P15.1](../syntax-taste/platform-testing-spec.md#p151-verified-build-and-publication), with native assertions in [P4.1](../syntax-taste/platform-testing-spec.md#p41-attached-native-and-wrapper-assertions). The [targeted verification report](implementation-gap-verification-2026-09-22.md) records the confirmed gaps; the selected behavior is not yet an implementation claim.
+
 ```sh
 /absolute/version/bin/canlc assert /absolute/canonical/project
 /absolute/version/bin/canlc assert /absolute/canonical/project PACKAGE ASSERTION

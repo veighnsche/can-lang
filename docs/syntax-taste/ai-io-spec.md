@@ -2,7 +2,7 @@
 
 ## A1. Status, authority, and scope
 
-This is an authorized documentation specification, dated 20 September 2026, completing technical contracts left open by [the current decisions](decisions.md) and findings F01, F04–F08, F12–F13 of [the deep review](deep-design-review-2026-09-20.md). It is not an implementation claim. The complete current decision record, review, project AGENTS.md, and ASTRA_STDLIB capability catalogue were read. Historical syntax, adapters, decimal arithmetic, uncertainty bands, and proof machinery are not inherited.
+This is the selected AI/I/O specification, reconciled 22 September 2026, completing technical contracts recorded in [the current decisions](decisions.md) and findings F01, F04–F08, F12–F13 of [the deep review](deep-design-review-2026-09-20.md). It is not an implementation claim. The complete current decision record, review, project AGENTS.md, and ASTRA_STDLIB capability catalogue were read. Historical syntax, adapters, decimal arithmetic, uncertainty bands, and proof machinery are not inherited.
 
 **User-selected surface:** native `emits` sections; typed `choice_arm<T> emits [...]` values; `llm str` and record results; ordinary `given` inputs followed by grouped `state` arguments; named fetch method/query/headers, explicit `body json`, immutable `http::response<T>`; explicit numeric-to-string library calls. The error names, numeric IDs, data fields, metadata keys, protocol profiles, validation limits, and operational policies below are **technical specification choices**, not additional user taste selections. Body encoding names `text` and `bytes` complete the previously approved encoding-slot design. Examples labeled fragments omit surrounding declarations deliberately.
 
@@ -59,7 +59,8 @@ IDs 1100–1199 are reserved for this specification in the distribution catalogu
 | 1102 | `http::transport_failed(str phase)` | A recognized native transport/body failure; phase is `connect`, `body`, `protocol`, or `cancelled`. No complete usable result is available; headers may already have arrived. |
 | 1103 | `http::timeout(int timeout_ms)` | This request's A4 deadline expires. |
 | 1104 | `http::body_limit(int limit)` | Encoded outbound bytes or consumed inbound bytes exceed the selected byte bound. |
-| 1105 | `http::status_error(int status, http::header[] headers)` | A final non-2xx response in body-only fetch or an AI protocol request. No arbitrary response-body text is included. |
+| 1105 | `http::status_error(int status, http::header[] headers)` | Raw final non-2xx response in body-only fetch or an AI protocol request; fetch/judge normalize it under A2.4. No arbitrary response-body text is included. |
+| 1106 | `http::request_failed(http::failure_detail detail)` | Public fetch/judge infrastructure failure; A2.4 fixes its seven typed detail alternatives and origin boundary. |
 | 1110 | `codec::invalid_data(str path, str reason)` | Invalid UTF-8/JSON, duplicate member, schema mismatch, unsupported runtime value, nonfinite numeric input, depth/node/byte budget, or exact numeric representation failure. |
 | 1120 | `ai::invalid_question(str reason)` | Invalid evaluated instructions, criteria, option/level support, threshold, or batch count. |
 | 1121 | `ai::invalid_answer(str question, str reason)` | Valid JSON fails the selected judgment envelope/answer/distribution contract. `question` is the stable registration identifier, or empty for a whole-envelope defect. |
@@ -71,22 +72,109 @@ Reasons are finite catalogue tokens defined at their production sites below; the
 
 ### A2.3 Full authored bounds and standard failures
 
-Every native executable declaration writes `emits [...]`. It is the **entire exported finite domain-error upper bound**, including applicable intrinsic errors and escaping handler errors. The compiler checks the required set is a subset; it never silently adds an error. Extra declared kinds remain part of the public bound and must be handled by callers even when a particular implementation cannot currently produce them. Examples with `emits []` on network declarations in earlier sketches are not complete valid signatures under this rule.
+Every question, arm, fetch, judge and LLM declaration writes `emits [...]`; derived `wrap` declarations use the explicit `emits calculated` rule in A3.2. It is the **entire exported finite domain-error upper bound**, including applicable intrinsic errors and escaping handler errors. The compiler checks the required set is a subset; it never silently adds an error. Extra declared kinds remain part of the public bound and must be handled by callers even when a particular implementation cannot currently produce them. Examples with `emits []` on network declarations in earlier sketches are not complete valid signatures under this rule.
 
-Required intrinsic sets, before adding authored errors, are:
+Required exported obligations, before adding escaping authored errors, are:
 
 | Declaration/operation | Required kinds |
 |---|---|
 | Native `noul`, ordinary/record `choice`, ordinary/record `score` | `ai::invalid_question`, `ai::invalid_answer` |
 | `choice_arm` | No intrinsic domain kinds; its authored computation determines its bound |
-| `judge` | All required HTTP kinds 1100,1102–1105; 1101 if connection authentication is selected; `codec::invalid_data`; union of the **declared** question bounds; `ai::invalid_question`/`ai::invalid_answer` for request-level defects |
-| Body-only named fetch | 1100,1102–1105; 1101 if authenticated; `codec::invalid_data` when encoding/decoding text or JSON |
-| Envelope named fetch | Same, excluding 1105; no status-based error. Byte-only, bodyless requests need no codec error. |
+| `judge` | `http::request_failed` for native infrastructure; union of the **declared** question bounds; `ai::invalid_question`/`ai::invalid_answer` for request-level defects. Authored errors sharing raw infrastructure names are preserved. |
+| Body-only named fetch | `http::request_failed`; its raw native set contains 1100,1102–1105, plus 1101 if authenticated and 1110 for applicable codecs. |
+| Envelope named fetch | `http::request_failed`; raw set excludes 1105. Byte-only, bodyless requests need no raw codec obligation. |
 | `llm` | 1100,1102–1105; 1101 if authenticated; 1110; 1130–1132 |
 
-Intrinsic sets are fixed by declaration mode, not narrowed by constant-success speculation. Fetch/LLM have no executable success body; their authored `emits` may conservatively expose extra errors but cannot manufacture user error conversions. Handle those in an ordinary caller. Static invalid schemas/configuration/options are compile diagnostics, not errors to hide behind a caller arm.
+Intrinsic sets are fixed by declaration mode, not narrowed by constant-success speculation. Fetch/LLM have no executable success body; their authored `emits` may conservatively expose extra errors but cannot manufacture user error conversions. Fetch/judge operation wrappers can convert their original boundary failures under A3.2; ordinary callers remain available. LLM conversions still use ordinary callers. Static invalid schemas/configuration/options are compile diagnostics, not errors to hide behind a caller arm.
 
 Standard failures remain separate: primitive faults, unexpected compiler-generated defects and recoverable native exceptions outside the classified adapter boundary propagate by the ordinary standard-failure rules. Fatal process termination is not promised recoverable. Adapter catches surround only their own native URL/header/transport/codec boundary calls, never user handlers or the judge continuation. Known validation failures become the specific declared errors above; unexpected defects do not become successful defaults. Native failure strings are sanitized by the common standard-failure contract, not copied into these domain payloads.
+
+
+
+<a id="a24-fetchjudge-normalization"></a>
+### A2.4. Fetch/judge normalization
+
+#### Public value and identity
+
+Allocate distribution error ID **1106** to `http::request_failed`. The catalogue declarations are:
+
+```can
+// Catalogue contracts; these are not project declarations.
+variant failure_detail
+    http::invalid_request
+    http::credentials_missing
+    http::transport_failed
+    http::timeout
+    http::body_limit
+    http::status_error
+    codec::invalid_data
+
+error 1106 request_failed(http::failure_detail detail)
+```
+
+The qualified variant is `http::failure_detail`. Its leaves are the existing nominal error values, not new copies of their record types. `http::request_failed(detail)` is ordinary constructible error data; construction alone does not prove a request occurred. Existing error construction/forwarding rules distinguish data from failure completion. The finite variant is an infrastructure-detail contract, not a closed union of all application failures.
+
+| Detail leaf | Public fields retained unchanged |
+| --- | --- |
+| `http::invalid_request` | `str reason` |
+| `http::credentials_missing` | `str variable` |
+| `http::transport_failed` | `str phase` |
+| `http::timeout` | `int timeout_ms` |
+| `http::body_limit` | `int limit` |
+| `http::status_error` | `int status`, `http::header[] headers` |
+| `codec::invalid_data` | `str path`, `str reason` |
+
+Preserve A2/A4's finite reason tokens, phase values, normalized response headers and exposure rules. Do not append credentials, request/response bodies, raw provider messages or native exception objects. No new public `cause`, phase field or occurrence field is added. The original runtime occurrence remains a private diagnostic cause of the mapped occurrence. Mapping allocates a new occurrence at the boundary; forwarding preserves that occurrence. Reconstructing an equal error creates new failure identity as under C9.
+
+#### Which failures are normalized
+
+Classification is determined by the executing boundary, not by an error's name or the dynamic call stack alone.
+
+| Origin | Default behavior |
+| --- | --- |
+| Compiler-owned dynamic request/config/credential validation for fetch/judge | Map an applicable one of the seven leaves to `http::request_failed` |
+| Compiler-owned request encoding, bounded HTTP transport/body consumption and response decoding for fetch/judge | Same mapping |
+| Body-only fetch or judge non-2xx response | Map `http::status_error` |
+| Envelope fetch with a complete non-2xx response | Return the existing response success; no intrinsic status error |
+| Judge question preparation or answer-envelope validation producing `ai::invalid_question` / `ai::invalid_answer` | Preserve the AI error |
+| Invalid UTF-8/JSON during judge native decoding | Map `codec::invalid_data` |
+| Valid JSON that violates the judgment answer contract | Preserve `ai::invalid_answer` |
+| Ordinary `given`/grouped `state` argument evaluation before entering the target | Outside the wrapper/normalization boundary; ordinary enclosing call-match rules apply |
+| An authored helper called in a descriptor expression, question handler or judge continuation emits one of the seven names | Preserve its authored error, including `codec::invalid_data` |
+| An ordinary explicit call to `codec::decode_json`, a standalone catalogue HTTP operation, LLM or SQL | Preserve its existing contract; this revision does not wrap it implicitly |
+| Standard failure, including an unexpected adapter defect | Preserve the standard channel; never relabel it `http::request_failed` |
+| Static invalid declaration, schema or configuration | Compile diagnostic; not a recoverable native outcome |
+
+Compiler-owned encoding of values returned by descriptor expressions is inside normalization; evaluation of authored code that produces those values is outside the **native-origin** set even though it executes inside the declaration. The emitted-origin wrapper table in [A3.2](ai-io-spec.md#a32-operation-wrappers) can handle such authored domain failures after target entry.
+
+The raw intrinsic set `N` is computed by declaration mode using A2.3: credential failure only with selected authentication; no intrinsic status failure for envelope fetch; codec obligations only for applicable encoding/decoding. Do not infer absence from constant-success speculation. Each member of `N` has default handler `e => http::request_failed(e)`.
+
+Ordinary fetch/judge source explicitly declares the normalized upper bound, including all additional AI/authored errors:
+
+```can
+// Signature fragments: bodies and P4.1 assertions omitted.
+fetch receipt load_json from service
+    emits [http::request_failed]
+
+judge float assess from classifier
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, output_failed]
+```
+
+An explicitly declared surplus error remains public. Raw infrastructure names are no longer required solely because native transport can produce them. Question `emits` bounds remain explicit and unchanged; they are not normalized independently. Judge still prepares the batch, sends once, validates all answers before any handler, then runs handlers in registration order. Earlier authored effects are not rolled back on later failure.
+
+Selective recovery uses ordinary data matching:
+
+```can
+// Completion-arm fragment inside a call match.
+http::request_failed => match http::request_failed.detail
+    http::status_error => match http::status_error.status
+        404 => ok receipt(0)
+        _ => http::request_failed
+    _ => http::request_failed
+ok receipt found => ok found
+```
+
+No retry, additional request, cancellation, aggregate flattening or nesting change follows from normalization.
 
 ## A3. Executable regions, signatures, and visibility
 
@@ -100,7 +188,7 @@ Question declaration scope contains its ordinary inputs, inherited package decla
 
 Within one native declaration, inputs and named confidence/score/selected-key binders cannot duplicate each other. Generated field names occupy the generated record's field table; their explicit metadata names are checked there too. Handler locals have ordinary child scopes. `%` is a contextual float expression in its owning Noul/Choice/level handler, not an identifier, a capture, an argument to an implicit global, or a general prefix operator. It remains available in nested expressions lexically inside that handler; it is not available in a separately declared function called from it. Pass it as an ordinary argument when needed.
 
-Native executable forms are named and top-level. They do not acquire the function-only mandatory `asserts` grammar by implication. A11 defines their declaration/adapter test obligations without adding source fixture syntax. Ordinary named wrappers retain ordinary mandatory assertions.
+Native executable forms are named and top-level. Fetch, judge, LLM and operation wrappers require nonempty attached assertions under P4.1; their raw cases execute request construction, decoding and actual handlers. Questions and arms do not acquire independent transport roots. Ordinary named function adapters retain mandatory assertions. A11 supplies complementary catalogue/adapter conformance.
 
 ### A3.1 Section grammar and indentation closure
 
@@ -109,18 +197,86 @@ Each executable native header is followed by exactly one `emits` section, then o
 - Noul: `asks expression`, then optional same-indent `minimum expression`. True/false described handler lines are indented one level beneath the minimum when present, otherwise beneath asks. Exactly one of each, either written order; dispatch still uses its bool meaning. No confidence setting.
 - Ordinary/record Choice has two admitted productions. Without minimum, optional `confidence as name` precedes `asks`, whose option block follows immediately. With ordinary Choice minimum, `asks expression` is followed at the same indentation by optional confidence then `minimum expression => fallback`, and options nest beneath minimum. Confidence may instead precede asks in that second form, but cannot appear twice. A confidence setting after asks without a following minimum is rejected; it would leave the option block without its selected parent. Record Choice has no minimum and uses the first production. These preserve both shown layouts without general section reordering. Dynamic description mode ends its option block with the shared selected-key handler. Static mode has an inline described handler or record spread on each option line.
 - Ordinary/record Score: optional confidence and score binders, then optional ordinary-only minimum/fallback, all before the final asks section. Binder order may be either; it determines generated metadata field order. Levels nest beneath asks. Ordinary levels have descriptions only and end with exactly one `ok =>` handler; record levels each have their own described handler and no shared ok.
-- Judge: given, optional nonempty state, one or more registration lines, final `ok =>` continuation. Question `call` registration lines cannot have their own when/match handlers. Registrations with nonvoid results require `as type name`; void registrations omit it.
-- LLM: given, optional nonempty state, final asks expression, and no executable success handler.
-- Fetch: given, method/path line, optional nonempty query, optional nonempty headers, optional body encoding/expression, in that order. Fetch has no state/asks or authored success body. Query/header entries are identifier `=` expression.
+- Judge: given, optional nonempty state, mandatory asserts, one or more registration lines, final `ok =>` continuation. Question `call` registration lines cannot have their own when/match handlers. Registrations with nonvoid results require `as type name`; void registrations omit it.
+- LLM: given, optional nonempty state, mandatory asserts, final asks expression, and no executable success handler.
+- Fetch: given, mandatory asserts, method/path line, optional nonempty query, optional nonempty headers, optional body encoding/expression, in that order. Fetch has no state/asks or authored success body. Query/header entries are identifier `=` expression.
 - Choice arm: emits, describes expression, ordinary completion body. No given/state/from section.
 
 Connection settings may appear in any order, each once. Endpoint/auth/timeout/max-body use named single-value lines; auth alone has its selected `bearer env` prefix. Metadata entries are identifier followed by a literal (no `=`), while header defaults use identifier `=` literal as other header sections do. Compiler-known metadata keys are data names, not new global reserved words. Option/level descriptions and their completion arrows stay on one physical line unless the description is a selected multiline-string token or the handler is the ordinary `do`/match block form. Standard indentation and one-line rules otherwise apply. This grammar accepts both approved Choice confidence placements without imposing Score's different selected ordering on them.
+
+
+
+<a id="a32-operation-wrappers"></a>
+### A3.2. Operation wrappers
+
+#### Declaration and scope
+
+Add contextual `wrap`, `handles`, `native`, `emitted`, `calculated` and `inherit` in their owning productions. A wrapper is a named top-level executable declaration:
+
+```can
+wrap cached_load from load_json
+    emits calculated
+    asserts
+        absent: => ok receipt(0)
+            using failure native http::status_error(404, [])
+        busy: => http::request_failed(http::status_error(429, []))
+            using failure native http::status_error(429, [])
+    handles native
+        http::status_error => match http::status_error.status
+            404 => ok receipt(0)
+            _ => inherit
+```
+
+This fragment assumes nullary `load_json` returns `receipt` and is a body-only fetch. `asserts` uses the exact inherited invocation grammar, including grouped state for a judge wrapper. Section order is `emits calculated`, nonempty `asserts`, optional `handles native`, optional `handles emitted`. At least one handling section and one arm are required. A second occurrence of any section is rejected.
+
+`from` names exactly one fetch, judge or wrapper ultimately based on one. Inherit the complete ordinary input list, `near` flags where already permitted, grouped state, result type and connection identity. No repeated header return type, `given`, `state`, `from` connection replacement, generic wrapper parameter list or type-changing wrapper is admitted. Inherited input names are in scope in handlers; they are immutable. Judge state remains grouped and is not newly disclosed. A wrapper can be exported and called by its own name. Fetch wrappers have the same callable-reference eligibility as their target; judge wrappers remain subject to the existing grouped-state callable restriction.
+
+Reject self/mutual base cycles, multiple bases, individual question/arm/LLM/ordinary-function targets, and repeated keys in one table. Declaration order within a package does not affect base resolution. Wrappers are operation-specific policy, not general inheritance.
+
+#### Two tables, one execution
+
+Maintain two finite sets at the original operation boundary:
+
+- `N`: raw native infrastructure obligations from [A2.4](ai-io-spec.md#a24-fetchjudge-normalization).
+- `E`: the original operation's non-native domain obligations, including complete declared bounds of called questions/helpers, escaping authored completions, native AI validation errors, and explicitly declared surplus errors. The intrinsic normalized contribution alone is not an emitted-origin entry. Preserve provenance where an authored `http::request_failed` or `codec::invalid_data` coexists with an intrinsic contribution.
+
+A key is `(native | emitted, exact error specialization)`. `handles native` keys must belong to `N`. `handles emitted` keys must belong to `E`. An impossible key is a compile error. A derived wrapper can override a key that an ancestor has already consumed: lookup is against the original boundary sets, not just the ancestor's outward bound. A base-handler output is not a new input key. Default native rules normalize; default emitted rules forward unchanged.
+
+Resolve each base chain before execution. The most-derived definition for a key replaces the predecessor; absent definitions inherit. Invoke the original target exactly once, observe its first terminal outcome, then apply at most one selected policy rule. A success bypasses policy. A domain failure carries private provenance established at its production boundary. Success from a native recovery completes the entire fetch/judge; it does not resume partially prepared questions or rerun handlers. A failure from authored code before target entry is not handled here.
+
+An emitted-origin example is `handles emitted` with `ai::invalid_answer => ok fallback_value`. It recovers the judge's terminal outcome, not an individual question, and does not undo handlers already run. A handler that fails, including by calling another wrapped fetch, propagates out immediately. Never look up its new error in either table. Standard faults also escape directly.
+
+#### `inherit`, aliases and completions
+
+Wrapper arms use [C5.1](technical-spec.md#c51-exact-generic-error-patterns-and-match-order) exact error patterns and optional aliases. They require `=>` and a terminal body, with ordinary `do`, value matching, call matching and named helper calls available. They have the inherited result type; returning another type is rejected. No standard catch or `ok` input arm belongs in a policy table.
+
+`inherit` is a terminal completion statement allowed lexically in a wrapper handler, including its nested `do`/match branches. It invokes the immediately preceding rule for **that key and original failure**, with the same original inputs and occurrence. The predecessor can itself delegate. At the end of the finite chain, default native mapping or emitted forwarding runs. It cannot accept arguments, be stored, appear as an expression, escape through a callable or be called from a separate helper. It cannot retry the target.
+
+A bare terminal error alias forwards that error under existing completion rules. In a native handler this deliberately exposes the raw error and adds it to the public contract. Authors wanting normal fallback use `inherit`. Returning a newly constructed `http::request_failed` explicitly maps a value but does not redispatch. `inherit` preserves the predecessor's behavior, not the currently selected child's rule.
+
+#### Calculated public errors
+
+`emits calculated` is mandatory **only for `wrap`**. An explicit marker and target make the contract dependency visible; the compiler publishes the exact expanded finite upper bound and its provenance. Ordinary functions, questions, fetches, judges and LLMs still write `emits [...]`. An omitted wrapper marker, an explicit list on a wrapper, or `emits calculated` elsewhere is rejected. There is one source rule, not two equivalent wrapper spellings.
+
+For each effective rule `h(k)`, calculate `escape(h)` from checked completion control flow:
+
+1. `ok` contributes nothing; a forwarded or constructed error contributes its exact type.
+2. A matched call contributes unhandled propagated outcomes plus errors escaping its selected handlers. Declared callee bounds remain upper bounds; do not inspect callee bodies to infer smaller sets.
+3. `relay call` contributes the callee's full declared domain bound. Standard faults never enter this set.
+4. Conditional/match branches contribute their union without proving branch feasibility. Incompatible or incomplete arms are still errors.
+5. `inherit` contributes the immediately preceding rule's bound for the same key.
+
+The wrapper bound is `union(escape(h(k)) for k in N ∪ E)`, with default rules included where not overridden. Distinguish native/emitted keys even if their error types match. Use exact nominal type identities, not registry numbers alone. Fully replaced rules contribute nothing unless delegated to. Do not subtract a normalized error just because one raw key is recovered: another native key can still normalize to it.
+
+Handle dependency cycles explicitly: base cycles are rejected; calculated-bound dependencies through handler calls must be acyclic after ordinary explicit-bound calls are treated as leaves. Reject direct or indirect dependence on the same wrapper's calculated contract, including an `inherit` predecessor body calling the child wrapper. A named explicit-bound function can be a boundary, but its body must still typecheck against the calculated wrapper signature. No recursive effect-set solver is introduced.
+
+A compile diagnostic for an escaping obligation includes its key, original target, selected handler and any `inherit` chain. Caller checking and callable compatibility consume the published calculated bound exactly as a written list. A changed base can therefore cause an ordinary caller's explicit contract check to fail; it cannot silently expand that caller's contract.
 
 ## A4. Connections and native transport policy
 
 ### A4.1 Configuration
 
-A connection is an immutable compile-time declaration, not a runtime mutable client. `from` is mandatory on native questions, judges, fetches and LLM declarations. There is no implicit default connection, parent-directory configuration search, project-provided implementation, or live provider discovery during compilation.
+A connection is an immutable compile-time declaration, not a runtime mutable client. `from` selects a connection on native questions, judges, fetches and LLM declarations. On `wrap`, `from` selects one operation/base wrapper and inherits its connection; it never implicitly selects a connection by value or lexical proximity. There is no implicit default connection, parent-directory configuration search, project-provided implementation, or live provider discovery during compilation.
 
 Connection setting names are entries in the selected named-setting grammar, not globally reserved language keywords. The initial complete setting schema is:
 
@@ -160,6 +316,8 @@ The compiler owns `host`, `content-length`, `transfer-encoding`, `connection`, `
 Fetch returns a **normalized header snapshot**, not original header-line bytes. Lowercase names sort lexicographically. For every name except `set-cookie`, retain the single normalized native Headers value; native combination may have erased physical repeated-line boundaries. For `set-cookie`, use native `getSetCookie()` and retain separate entries in its returned order. Do not comma-split arbitrary response values. Repeated `http::header` records remain representable as ordinary data; this normalization is the fetch-production contract, not a universal record invariant. Status-error headers use the same snapshot.
 
 Query entries are `name = expression`, where name is a literal source identifier retained exactly, including underscores. Values are str or str[]; repeated values preserve array order; empty arrays omit that key. Query values must contain scalar Unicode; invalid surrogate code units produce invalid_request `query_value` before native URLSearchParams could substitute a replacement character. No automatic int/bool/float conversion, `null`, missing sentinel, or map-to-query coercion exists. Entries preserve source order. Use native URLSearchParams append/encoding: spaces become `+`, literal plus signs become `%2B`, percent signs are encoded, and an empty str produces `name=`. Do not pre-escape values. The native URL receives the resulting search string. Dynamic query/header expressions are evaluated once, in written section/entry order, before I/O; ordinary expression calls obey ordinary awaiting/error typing.
+
+The following request/transport clauses name raw failures at their production sites. Fetch/judge apply A2.4 before exposing them to callers; authored expression failures remain emitted. LLM uses its separately specified public bounds.
 
 ## A5. Named fetch: request and result modes
 
@@ -338,7 +496,7 @@ The official [structured outputs guide](https://developers.openai.com/api/docs/g
 
 ## A11. Conformance, native reuse and evidence boundary
 
-Use the platform specification's deterministic raw-provider fixture harness for compiler/adapter conformance. These fixtures supply raw HTTP status/headers/bytes after matching the emitted method, URL, sanitized header shape and exact body. They exercise the real adapter; they are distinct from ordinary assertion supplied completions, which exercise consumer logic without codec coverage. Fixtures never require credentials or paid traffic; explicit fixture credential substitution occurs in the external harness, not new Can syntax or hidden production environment defaults.
+Use the platform specification's deterministic raw-provider fixture harness for compiler/adapter conformance. These fixtures supply raw HTTP status/headers/bytes after matching the emitted method, URL, sanitized header shape and exact body. They exercise the real adapter; they are distinct from ordinary assertion supplied completions, which exercise consumer logic without codec coverage. Fixtures never require real credentials or paid traffic. P4.1 attaches authored raw fixture files through `using raw` and supplies fake credential inputs only in that test context, never as hidden production defaults.
 
 The minimum fixture matrix includes:
 
@@ -354,7 +512,7 @@ Read-only local probes used Bun 1.4.2. The native parse reviver received origina
 
 ## A12. Closed execution traces
 
-These are specification examples for the selected compiler, not claims that the current compiler accepts the syntax. Catalogue imports and error-qualified names follow the core/package specification. No native declaration hides transport failures behind `emits []`. Source blocks are declaration fragments inside a package whose `uses` imports the shown catalogue packages; they are not standalone source files.
+These are specification examples for the selected compiler, not claims that the current compiler accepts the syntax. Catalogue imports and error-qualified names follow the core/package specification. No native declaration hides transport failures behind `emits []`. Native declaration fragments omit the mandatory P4.1 attached assertions and raw files; complete declarations must include them. Source blocks are declaration fragments inside a package whose `uses` imports the shown catalogue packages; they are not standalone source files.
 
 ### A12.1 Generated data followed by runtime Choice
 
@@ -401,7 +559,7 @@ choice str select_route from classifier
         ok str selected_key => ok selected_key
 
 judge str route from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     given
         str question
         choice_option[] candidates
@@ -425,7 +583,7 @@ Invocation trace, in an ordinary caller's explicitly handled chain:
 1. `call propose((email)) as suggestion proposed` invokes generation with state `{"email":"Refund my duplicate payment."}`. Its schema has required `question` string and `candidates` array of closed key/description objects. A raw completed assistant output_text containing `{"question":"Which department handles this?","candidates":[{"key":"billing","description":"Payments."},{"key":"technical","description":"Product faults."}]}` decodes to suggestion. It has no handlers or executable values.
 2. `call proposed.candidates.map(callable to_option) as choice_option[] options` performs an ordinary empty-error-bound data transformation. The output keys/descriptions retain their values/order. The generic mapper's error bound is empty because the named callback's bound is empty.
 3. `call route(proposed.question, options, (email)) as str selected` prepares q0 and validates the complete candidate set before a separate TypeSafe request. Its descriptor has `type:"choice"`, `instructions` equal to proposed.question, and `criteria` mapping billing/technical to the descriptions. State is the same explicitly passed email object. The generation result was not a question within this batch.
-4. Synthetic TypeSafe response `{"model":"jev-fixture","answers":{"q0":{"type":"choice","choice":"billing","probabilities":{"billing":0.9,"technical":0.1},"confidence":0.8}},"usage":{"input_tokens":1,"output_tokens":1}}` validates. The shared handler receives key billing and `%` 0.9, returns str billing, and the judge returns that str. The caller's chain success continuation receives selected. Its error arms must cover the union of both network declarations, including generation-only refusal/truncation and judgment validation errors; root C11 gives a complete equivalent consumer using nested `match call` and named assertion fixtures.
+4. Synthetic TypeSafe response `{"model":"jev-fixture","answers":{"q0":{"type":"choice","choice":"billing","probabilities":{"billing":0.9,"technical":0.1},"confidence":0.8}},"usage":{"input_tokens":1,"output_tokens":1}}` validates. The shared handler receives key billing and `%` 0.9, returns str billing, and the judge returns that str. The caller's chain success continuation receives selected. Its error arms must cover the union of both network declarations, including generation-only refusal/truncation and judgment validation errors; C11 gives an equivalent consumer fragment using nested `match call` and named assertion fixtures.
 
 The response is a fabricated raw fixture, not an observed model judgment. TypeSafe model aliases may resolve to another name; this fixture's name is intentionally irrelevant to routing. Thresholds were omitted, so confidence 0.8 does not introduce an implicit minimum.
 
@@ -438,7 +596,8 @@ Failure traces close at explicit completions:
 | Generated JSON omits candidates | `codec::invalid_data("/candidates", "missing_member")`; no map/judge |
 | Generated two candidates have the same key | suggestion decoding succeeds because keys are ordinary str data; later judge preparation returns `ai::invalid_question("duplicate_option")`; no TypeSafe request |
 | TypeSafe q0 selects billing but gives technical probability 0.9 and billing 0.1 | `ai::invalid_answer("q0", "selected_probability")`; no handler |
-| HTTP 429 from either provider | `http::status_error(429, normalized_headers)`; no hidden retry |
+| HTTP 429 from the generation provider | `http::status_error(429, normalized_headers)`; no hidden retry |
+| HTTP 429 from the judge provider | `http::request_failed(http::status_error(429, normalized_headers))`; no hidden retry |
 
 ### A12.2 Envelope fetch and exact integer trace
 
@@ -456,14 +615,14 @@ connection service
     timeout_ms 5000
 
 fetch http::response<receipt> save_receipt from service
-    emits [http::invalid_request, http::transport_failed, http::timeout, http::body_limit, codec::invalid_data]
+    emits [http::request_failed]
     given
         receipt_request payload
     post "receipts"
     body json payload
 ```
 
-For payload receipt_request(9007199254740993), the one request is POST `https://example.test/api/receipts`, Content-Type application/json, raw body `{"amount_minor":9007199254740993}`. A fixture status 201, Content-Type application/json and body `{"id":9007199254740993}` returns `http::response<receipt>(201, normalized_headers, receipt(9007199254740993))` exactly. A status 409 with that same valid body also returns an envelope with status 409. Status 409 with `{"message":"duplicate"}` instead returns `codec::invalid_data("/id", "missing_member")`; use a bytes envelope for arbitrary error shapes. No status_error appears in this declaration's intrinsic bound, whereas the otherwise identical body-only fetch must declare it and would stop at 409 before decoding.
+For payload receipt_request(9007199254740993), the one request is POST `https://example.test/api/receipts`, Content-Type application/json, raw body `{"amount_minor":9007199254740993}`. A fixture status 201, Content-Type application/json and body `{"id":9007199254740993}` returns `http::response<receipt>(201, normalized_headers, receipt(9007199254740993))` exactly. A status 409 with that same valid body also returns an envelope with status 409. Status 409 with `{"message":"duplicate"}` instead returns `http::request_failed(codec::invalid_data("/id", "missing_member"))`; use a bytes envelope for arbitrary error shapes. No raw status_error belongs to this envelope mode; an otherwise identical body-only fetch stops at 409 before decoding and exposes `http::request_failed` with status-error detail.
 
 ### A12.3 Full distribution and phase failure trace
 

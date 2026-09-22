@@ -1,5 +1,7 @@
 # Can redundancy review — 2026-09-22
 
+> Current scope: [finding dispositions](../implementation/language-design-dispositions-2026-09-22.md). That ledger supersedes the recommendation status and suggested sequence below; proposed examples remain sketches, including retained or deferred alternatives.
+
 Status: design input, not decisions. Nothing here is approved until it goes
 through the normal decision process. Per `AGENTS.md`, adopting any redesign
 below requires three fresh Jev consultations (fully reworded packets, saved

@@ -1,19 +1,17 @@
-# Can implementation preparation
+# Can implementation work
 
-The five preparation stages are complete. **Implementation has not started and is not authorized by this packet.** The compiler, runtime, stdlib and current language decisions are unchanged.
+The current work queue is the September 22 language-design revision. The previous I01–I50 compiler implementation is recorded as completed; these new fixes have **not** been implemented merely because their designs are settled.
 
 Read in order:
 
-1. [Research](research.md) — actual code inventory, native probes, upstream facts and limitations.
-2. [Brainstorm](brainstorm.md) — compiler replacement, Bun packaging and library alternatives.
-3. [Reconciliation](reconciliation.md) — engineering choices, three fresh Jev consultations and investigated disagreements.
-4. [Implementation plan](plan.md) — executable milestones, safe dist tree, source maps and distribution.
-5. [Actionable tasks](tasks.md) — 50 unchecked tasks with dependencies, code areas, contract references and positive/negative/integration tests.
+1. [Finding dispositions](language-design-dispositions-2026-09-22.md) — all 49 findings: 16 implement, 18 retain, 15 defer.
+2. [Selected decisions](../syntax-taste/decisions.md) and incorporated specifications — current language contract, including the resolved LD29 check API.
+3. [Acceptance evidence](language-change-acceptance-2026-09-22.md) and [verified gaps](implementation-gap-verification-2026-09-22.md) — what must pass and what has actually been reproduced.
+4. [Language-fixes implementation plan](language-fixes-plan-2026-09-22.md) — milestones, code ownership, evidence and scope boundaries.
+5. [Ordered language-fixes task list](language-fixes-tasks-2026-09-22.md) — **21 pending tasks**, in dependency order, starting with LF01.
 
-Supporting ledgers: [native reuse](native-reuse.md), [full coverage and exclusions](coverage.md), [saved evidence](evidence/2026-09-21/).
+The [behavior-contract index](language-behavior-contracts-2026-09-22.md) locates detailed contracts in the canonical specifications. Native AI forms, grouped state, explicit contracts and attached assertions remain the baseline. Deferred abstractions are not prerequisites for this work.
 
-The first executable milestone is **M1**: a manifest-backed current Can CLI program and real generated-code assertion running on a private bundled Bun, with output exclusively in dist and diagnostics mapped to Can. **M2** immediately adds the native Noul/judge vertical slice with grouped state and real local HTTP/raw-provider validation.
+## Completed implementation history
 
-The plan chooses a new typed Go pipeline and a versioned sidecar bundle containing upstream Bun; users install no separate runtime. An embedded/extracted alternative was evaluated. The PostgreSQL parser binding remains a bounded implementation spike between two upstream integrations; no custom SQL parser is authorized.
-
-Research observed Bun1.4.2 on macOS arm64 and a passing legacy Go suite. These do not prove new-language conformance. Real PostgreSQL/HTMX application tests, full codecs/ownership, source-map composition and signed offline distribution remain implementation/release gates. No new author-visible syntax question blocks beginning M0/M1. Stage6 requires a subsequent request to implement.
+The September 21 preparation and execution records remain available: [research](research.md), [brainstorm](brainstorm.md), [reconciliation](reconciliation.md), [original plan](plan.md), [completed I01–I50 tasks](tasks.md), [closed file-level handoff](remaining-tasks.md), [coverage](coverage.md), [native reuse](native-reuse.md) and [saved evidence](evidence/2026-09-21/). Those records describe their own baseline and do not establish acceptance of the September 22 revisions.

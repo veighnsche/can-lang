@@ -1,0 +1,15 @@
+package app
+    provides []
+    uses []
+fn int missing_value
+    emits []
+    asserts
+        sample: => ok 1
+    ok @
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

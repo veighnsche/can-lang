@@ -1,5 +1,7 @@
 # Can language design review — 2026-09-22
 
+> Current scope: [finding dispositions](../implementation/language-design-dispositions-2026-09-22.md). That ledger supersedes the recommendation status and suggested sequence below; proposed examples remain sketches, including retained or deferred alternatives.
+
 Status: design input, not decisions. Companion to
 [redundancy-review-2026-09-22.md](redundancy-review-2026-09-22.md), which covers
 surface-form duplication in detail; this document covers the rest of the design:

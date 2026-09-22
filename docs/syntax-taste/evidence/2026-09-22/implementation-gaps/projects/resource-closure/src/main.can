@@ -1,0 +1,24 @@
+package app
+    provides []
+    uses [sql]
+fn sql::transaction read
+    emits []
+    given
+        near sql::transaction tx
+    asserts
+        sample: => ok
+    ok tx
+fn callable sql::transaction () emits [] capture
+    emits []
+    given
+        sql::transaction tx
+    asserts
+        sample: => ok
+    ok callable read
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

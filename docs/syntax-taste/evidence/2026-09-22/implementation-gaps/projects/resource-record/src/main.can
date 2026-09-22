@@ -1,0 +1,22 @@
+package app
+    provides []
+    uses [sql]
+record held
+    sql::transaction[] handles
+fn sql::decision<held> capture
+    emits []
+    given
+        near bool take
+        sql::transaction tx
+    asserts
+        harmless: false => ok sql::commit<held>(held([]))
+    match take
+        true => ok sql::commit<held>(held([tx]))
+        false => ok sql::commit<held>(held([]))
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

@@ -1,0 +1,17 @@
+package app
+    provides []
+    uses [sql]
+fn sql::transaction identity
+    emits []
+    given
+        sql::transaction tx
+    asserts
+        sample: => ok
+    ok tx
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

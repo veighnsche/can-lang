@@ -1,11 +1,11 @@
 # Can technical specification
 
-20 September 2026. Documentation specification; no implementation authorization.
+Reconciled 22 September 2026. Selected design specification; no implementation claim or authorization.
 
 <a id="c1"></a>
 ## C1. Authority, scope and reading map
 
-[Current decisions](decisions.md) records the approved source forms and product boundaries. This document and its three incorporated companions complete their technical contracts. The seven user answers are constraints, not recommendations to revisit. Technical choices below select defaults where the decisions previously said “undecided”; they do not claim those choices were individually selected by the user. A conflict with a recorded user choice is a specification defect, not permission to implement a different language.
+[Current decisions](decisions.md) records the approved source forms and product boundaries. This document and its three incorporated companions complete their technical contracts. The recorded user choices and the September 22 scope dispositions are constraints, not recommendations to revisit. Technical choices below select defaults where the decisions previously said “undecided”; they do not claim those choices were individually selected by the user. A conflict with a recorded user choice is a specification defect, not permission to implement a different language.
 
 | Part | Normative contents |
 | --- | --- |
@@ -28,7 +28,7 @@ Source is valid UTF-8. Accept LF or CRLF, normalize each to a source newline bef
 
 No implicit continuation, backslash continuation or semicolon exists. Parenthesized expressions, call arguments, constructors, array literals and method chains remain on one physical line. A multiline string is one literal token and may span lines outside the explicitly one-line assertion, call, constructor and array forms. Only grammar-defined blocks (`match`, `do`, declaration sections, handlers) span multiple significant lines. A typed initializer may be a multiline `match` or coordination expression because its block is grammar, not continuation.
 
-Identifiers match `[a-z][a-z0-9]*(?:_[a-z0-9]+)*`. The standalone `_` is a wildcard. Hard reserved words are `package provides uses as fn record variant error given near emits asserts call callable match chain do ok relay on with and or not is true false void int float bool str`. The other declaration/section words (`connection noul choice score judge choice_arm fetch llm from state asks minimum confidence describes endpoint auth bearer env timeout_ms metadata query headers body get post put patch delete head options concurrent race when`) are contextual tokens recognized in the productions that own them. They remain usable as data names elsewhere, including `int score` and `int minimum`; they cannot displace required tokens in those productions. `choice_arm` is also contextual at the beginning of a type. This completes the previously unspecified keyword inventory without invalidating selected examples.
+Identifiers match `[a-z][a-z0-9]*(?:_[a-z0-9]+)*`. The standalone `_` is a wildcard. Hard reserved words are `package provides uses as fn record variant error given near emits asserts call callable match chain do ok relay on with and or not is true false void int float bool str`. The other declaration/section words (`connection noul choice score judge choice_arm fetch llm from state asks minimum confidence describes endpoint auth bearer env timeout_ms metadata query headers body get post put patch delete head options concurrent race when wrap handles native emitted calculated inherit fixture for use using raw failure`) are contextual tokens recognized in the productions that own them. They remain usable as data names elsewhere, including `int score` and `int minimum`; they cannot displace required tokens in those productions. `choice_arm` is also contextual at the beginning of a type. This completes the previously unspecified keyword inventory without invalidating selected examples.
 
 Unsigned decimal integers are `0` or a nonzero digit followed by digits; reject decimal leading zeros. Base-prefixed integers use lowercase `0x`, `0b`, `0o` and at least one digit of that base; hexadecimal digits may be either case. A float is decimal digits with `.` and at least one fractional digit, or decimal digits with an exponent, or both. Exponents are `e`/`E`, optional `+`/`-`, then at least one decimal digit. `1e3` is a float; `.5` and `1.` are rejected. No underscores. Two dots begin an integer range token rather than a decimal point; `1..5` is integer/range/integer. Sign is an expression operator, not part of a literal except inside an exponent. Reject float literals that overflow to infinity; finite underflow follows binary64 rounding. Infinity/NaN can result from computation and are not reserved literals.
 
@@ -50,6 +50,8 @@ primary_type  = qualified, [ '<', types, '>' ]
               | 'callable', type, '(', types?, ')', error_bound
               | 'choice_arm', '<', type, '>', error_bound ;
 error_bound   = 'emits', '[', error_types?, ']' ;
+wrapper_bound = 'emits', 'calculated' ;
+error_head    = qualified, [ '<', types, '>' ], [ 'as', name ] ;
 parameters    = '<', names, '>' ;
 function      = 'fn', type, name, parameters?, NL, INDENT,
                 receiver?, error_bound, NL, given?, assertions,
@@ -72,16 +74,18 @@ argument      = expression | '...', expression ;
 reference     = 'callable', callee, type_args? ;
 completion    = 'ok', expression? | error_construction ;
 terminal      = completion | ordinary_match | call_match | chain_match
-              | 'relay', call_expr ;
+              | 'relay', call_expr | 'inherit' ;
 steps         = { binding, NL | empty_error_void_call, NL
                 | unbound_coordination }, terminal, NL ;
 arm_body      = expression | completion | terminal | 'do', NL,
                 INDENT, steps, DEDENT ;
 ```
 
+`wrapper_bound` belongs only to `wrap`; ordinary/native declarations and callable types retain `error_bound`. [A3.2](ai-io-spec.md#a32-operation-wrappers) defines the complete wrapper production and the lexical restriction on terminal `inherit`. [P3.1](platform-testing-spec.md#p31-typed-fixture-reuse-with-local-ownership) and [P4.1](platform-testing-spec.md#p41-attached-native-and-wrapper-assertions) define fixture declarations, local expansion and native assertion mode lines. An assertion row stays on one physical line; its optional indented mode line is a separate grammar production.
+
 Type parsing consumes a callable result type up to its input `(`, then its mandatory `emits [...]`, then any suffixes belonging to the completed callable type. Thus `callable int[] () emits []` returns an array; `callable int () emits [][]` is an array of nullary integer callables. A nested callable result is distinguishable by its own input list and error bound. Prefer storing such complex types in record fields when legibility matters; there is no new type-alias or parenthesized-type syntax.
 
-Only judges and LLM invocations have a final state group inside their argument list. The group is required at every arity: `call name(())`, `call name((value))`, `call name(arg, (left, right))`. It is recognized from the resolved declaration, never constructed as an anonymous tuple. Ordinary functions do not accept a grouped comma expression. An empty state group has no values. Neither state groups nor ordinary call arguments allow spread into fixed state positions; use explicitly listed values.
+Judges, LLMs and judge-derived wrappers have a final state group inside their argument list. The group is required at every arity: `call name(())`, `call name((value))`, `call name(arg, (left, right))`. It is recognized from the resolved declaration, never constructed as an anonymous tuple. Ordinary functions do not accept a grouped comma expression. An empty state group has no values. Neither state groups nor ordinary call arguments allow spread into fixed state positions; use explicitly listed values.
 
 Generic declaration parameters are registered before checking the entire signature, including a return type written before the declared name. In explicit call/reference/constructor contexts, `<...>` immediately after the callee is type application when followed by the corresponding arguments or reference terminator. Elsewhere `<` is comparison. Whitespace does not make application optional; no implicit generic application exists on arbitrary expressions.
 
@@ -113,7 +117,7 @@ The prelude supplies `append`, `choice_option`, `all_failed` and `standard_failu
 
 Scopes are: package; file imports; generic parameters; receiver plus all function/native input declarations; each executable body; each `do`; each match arm; each native handler; each chain's success continuation; each coordination handler, including per-entry and shared success/error handlers. Inputs/receiver occupy a single frame and cannot duplicate each other or a type parameter. Locals enter scope only after their initializer, to the end of that block. A nested match inherits visible values; its arm bindings do not escape. Sibling arms never share bindings. All chain success names are visible to later steps and its `ok` arm, not failure arms. Native registration and answer scopes are defined by A's phase rules.
 
-A matched error name is an arm-local value binding in addition to remaining an eligible constructor in constructor position. Bare `missing` in a completion arm forwards; `missing()` in its body constructs. Records in variant patterns narrow the existing scrutinee binding; error alternatives also bind their declared error name to payload data. Matching a non-binding expression still supports destructuring patterns, but a bare record-alternative pattern creates no implicit name for that expression.
+A matched error name is an arm-local value binding in addition to remaining an eligible constructor in constructor position. Bare `missing` in a completion arm forwards; `missing()` in its body constructs. Records in variant patterns narrow the existing scrutinee binding; error alternatives bind their explicit alias, or their short error name when unaliased, to payload data. Matching a non-binding expression still supports destructuring patterns, but a bare record-alternative pattern creates no implicit name for that expression.
 
 Methods are top-level named functions owned by the package declaring their nominal receiver record. A package cannot add methods to somebody else's record, primitive, array or catalogue type. Receiver method names must be unique in that package declaration table; no overloads. Exported method lookup requires its owning package in `uses`, except within that package. Catalogue methods have fixed compiler-owned resolution. `call panel.area()` supplies the receiver once; `callable panel.area` captures it once. Methods cannot be invoked as static functions with a hidden receiver argument.
 
@@ -149,11 +153,43 @@ A `match` in an ordinary-value context has value arms of one expected type and n
 
 An unbound coordination is a void step: its handlers use bare `ok`, no `void[]` is created, subsequent steps are allowed, and an explicit enclosing terminal completion remains required. Coordination's selected typed-binding form introduces a local completion region; Q defines its `ok`/failure behavior. Native question handlers similarly complete a selected result/field region; A defines assembly and propagation. An inner ordinary match/call match inside either of these completes that handler, not the outer function. A domain failure leaving a handler crosses the enclosing native/coordination contract without being redispatched to that construct's participant-error arms. Ordinary handler bodies and earlier effects are not rolled back.
 
-Ordinary matching is ordered and exhaustive. Patterns are literals; `_`; record constructors with one positional subpattern per field; bare variant leaf names; bare error names; integer literal inclusive ranges; arrays with required positional subpatterns and optional final `...name`; and `|` alternatives. A lower-case name in an array/record field pattern binds the statically known field type; typed declaration syntax is not allowed inside a pattern. In a bare-name pattern position, a resolvable leaf of the expected variant denotes that leaf; otherwise a non-keyword name binds the entire expected value. No existing value name is implicitly a constant-equality pattern. Arrays without a remainder require exact length. A rest binding receives a new immutable slice. Range bounds are integer literals optionally negated, with lower <= upper; no float, open or computed ranges. Alternatives must bind exactly the same names with the same types and compatible narrowing in all alternatives; bindings have their common admitted type.
+Ordinary matching is ordered and exhaustive. Patterns are literals; `_`; record constructors with one positional subpattern per field; bare variant leaf names; exact error heads under C5.1; integer literal inclusive ranges; arrays with required positional subpatterns and optional final `...name`; and `|` alternatives. A lower-case name in an array/record field pattern binds the statically known field type; typed declaration syntax is not allowed inside a field pattern; C5.1 permits an untyped alias on an error head. In a bare-name pattern position, a resolvable leaf of the expected variant denotes that leaf; otherwise a non-keyword name binds the entire expected value. No existing value name is implicitly a constant-equality pattern. Arrays without a remainder require exact length. A rest binding receives a new immutable slice. Range bounds are integer literals optionally negated, with lower <= upper; no float, open or computed ranges. Alternatives must bind exactly the same names with the same types and compatible narrowing in all alternatives; bindings have their common admitted type.
 
-The exhaustive-check algorithm covers bool's two values, every finite variant leaf, constructor products of covered patterns, literal/range unions for integers, and array length partitions (fixed lengths plus minimum-length rests). Infinite string/float/int spaces otherwise require `_` or a variable binding. Do not perform semantic theorem proving over guards; there are none. Reject arms proved fully covered by earlier arms. Overlapping nonempty regions remain first-match. Completion dispatch requires exactly one success arm and one arm for each declared domain error kind/instantiation, plus at most one optional `[_]`; no `_`, range, `|`, positional error payload or omitted-outcome wildcard is admitted there.
+The exhaustive-check algorithm covers bool's two values, every finite variant leaf, constructor products of covered patterns, literal/range unions for integers, and array length partitions (fixed lengths plus minimum-length rests). Infinite string/float/int spaces otherwise require `_` or a variable binding. Do not perform semantic theorem proving over guards; there are none. Reject arms proved fully covered by earlier arms. Overlapping nonempty regions remain first-match. Completion dispatch requires exactly one success arm and one arm for each declared domain error kind/instantiation, plus at most one optional `[_]`. All failure arms precede the final success arm within a region that handles both. Exact generic heads and aliases follow C5.1; no `_`, range, `|`, positional error payload or omitted-outcome wildcard is admitted in completion heads.
 
 Source call spread flattens an array at the position written. For fixed parameters a statically known literal spread may supply known positions; a runtime-length spread is permitted only in the trailing variadic portion after every fixed argument has been supplied. Reject a runtime-length spread into fixed arity instead of inventing undefined or a late arity exception. A variadic `near` input is rejected: `near` represents one captured declared value, not a changeable number of invocation positions. Method receiver arguments do not participate in spread.
+
+
+
+<a id="c51-exact-generic-error-patterns-and-match-order"></a>
+### C5.1. Exact generic-error patterns and match order
+
+Extend an error-type arm head to `qualified_error [<type_arguments>] [as alias]`. Qualification uses existing package lookup. Type arguments use existing type grammar, with no new wildcards, inference search or constraints. For completion/policy arms, `as alias` binds the exact error **value**, not its message or fields.
+
+```can
+// Completion-arm fragment; a_failure and b_failure are named variants.
+all_failed<a_failure> as first => relay call summarize_a(first.failures)
+all_failed<b_failure> as second => relay call summarize_b(second.failures)
+ok receipt value => ok value
+```
+
+An unaliased exact head may use the existing no-arrow forwarding shorthand, for example `all_failed<a_failure>` on its own line. An aliased head requires `=>`; it forwards explicitly through its alias when desired. Without an alias the existing short error-name alias is introduced in that arm's scope. With `as alias`, only that explicit alias is introduced by the head. The scrutinee retains ordinary narrowing in data matches. Explicit aliases avoid ambiguity and collisions; they do not change error identity. Forward with the bound value, such as terminal `first`, using the existing bare-error-value completion rule. No payload destructuring is added to completion heads.
+
+A bare generic name is allowed only when its applicable input set has one concrete specialization. With two, diagnose ambiguity and show the exact alternatives. Explicit application matches that exact nominal specialization. It is not a wildcard over one type parameter, a subtype test or an implicit union. Bare/exact spellings covering the same instance are duplicates. Two exact specializations of the same declaration are distinct and can coexist. An explicit type-parameter reference in a generic body is checked at each concrete specialization.
+
+| Context | Applicable set / ownership |
+| --- | --- |
+| Ordinary `match call` / `match chain` | Complete declared error union of the matched call/chain |
+| Ordinary data match on an error-containing variant | Its exact nominal leaves; apply normal data exhaustiveness and narrowing |
+| `concurrent` | Shared union of participants' domain bounds |
+| `concurrent with error` | Each entry/spread's own bound, separately |
+| `race with error` | Shared union of participants' domain bounds |
+| Plain `race` | One newly created outer `all_failed<F>`; no direct participant-error arms |
+| Wrapper policy | [A3.2](ai-io-spec.md#a32-operation-wrappers)'s origin-specific original key set |
+
+For plain race, distinct generic specializations are permitted in the collected leaf set. Keep complete types and deduplicate only identical types; retain all runtime occurrences. An explicit `all_failed<F>` arm selects a named finite failure variant `F`: every possible participant domain error plus `standard_failure` must inject into its leaves. Existing variants can list `all_failed<A>` and `all_failed<B>` as distinct leaves. The outer aggregate preserves those nested values without flattening. Reject an `F` omitting any required leaf. A bare `all_failed` can use the existing unique expected-variant inference, or remain private when the payload is ignored. Explicit `F` and expected uses must agree; no global variant search.
+
+All success/error completion matches require every error arm, then the optional standard arm anywhere among those failures, then exactly one final `ok`. Individual error ordering is otherwise unconstrained. The rule applies to applicable shared/per-entry coordination regions and ordinary call/chain matches. It does not reorder ordinary data matches, question boolean/options/levels, or policy tables with no success input arm. Preserve existing mode-specific recovery result types. Standard failures in plain race remain aggregate members; `[_]` is not an outer participant arm.
 
 <a id="c6"></a>
 ## C6. Primitive semantics and native mappings
@@ -240,9 +276,9 @@ The exact registry and dependency-lock formats, and their required agreement wit
 
 Every domain error has a stable positive integer ID at most 2147483647, unique in the resolved application and dependency graph. Identity is its declaring package/declaration plus concrete generic arguments, not its integer alone. All instantiations of a generic kind share one ID. Catalogue IDs1–999999 are distribution-reserved; project/dependency declarations allocate1000000–2147483647. The distribution registry allocates100 to `all_failed`,1000–1099 to this core catalogue,1100–1199 to A and1200–1299 to P. Unallocated reserved IDs are not usable. A dependency lock records its published allocations; resolving duplicate IDs is a compile error, not renumbering. A project registry records retired IDs; do not reuse a retired ID for another kind. Renaming/replacing an obsolete unpublished design may explicitly update the registry; no compatibility obligation is implied. Compiler diagnostic codes use a separate string namespace and are not domain IDs.
 
-Bare error-arm lookup must identify one concrete payload type for that kind in the matched bound. If composition introduces the same generic error kind with incompatible concrete payload types, normalize through named wrappers into a common named variant/error contract before matching. Reject ambiguity rather than infer an anonymous union. Q defines `all_failed<F>`'s expected named-variant inference and payload preservation; the arm spelling remains `all_failed`.
+Error-arm lookup uses exact nominal specializations under C5.1. A bare generic name requires one applicable specialization; two exact heads can distinguish two instances of the same declaration. Q5/Q6 define the mode-specific sets and outer aggregate inference. No common aggregate conversion is required merely to disambiguate dispatch.
 
-Standard failures are outside every `emits` bound. Propagatable kinds are `arithmetic`, `bounds`, `resource_state`, `assertion`, `native_exception` and `cleanup`. Runtime owns a unique occurrence identity, original native cause and source/invocation path. Use the prelude opaque `standard_failure` data projection only where Q/P explicitly expose it; it is not a constructible application error or an untyped JSON escape. Its stable observations are kind, message and occurrence ID. The original cause is retained internally and never coerced into a declared domain error without an explicit handler.
+Standard failures are outside every `emits` bound. Propagatable kinds are `arithmetic`, `bounds`, `resource_state`, `assertion`, `native_exception` and `cleanup`. Runtime owns a unique occurrence identity, original native cause and source/invocation path. Use the prelude opaque `standard_failure` data projection in ordinary standard catches and Q/P aggregate contexts; it is not a constructible application error or an untyped JSON escape. Its stable observations are kind, message and occurrence ID. The original cause is retained internally and never coerced into a declared domain error without an explicit handler.
 
 The standard-message templates for Can-created failures are fixed:
 
@@ -258,9 +294,73 @@ The standard-message templates for Can-created failures are fixed:
 
 Arguments, source locations and underlying causes remain structured runtime diagnostics rather than variable additions to these templates. Native capacity/engine exceptions without a selected Can primitive guard use native_exception.
 
-For `[_] as str message`, primitive Can failures use these templates. For a non-proxy native Error, use string-valued own data descriptors for name/message; missing name falls back to the recognized built-in prototype name or `Error`, and missing/non-data message to an empty string. Join nonempty message with `: `. Native `node:util` type predicates reject proxies before descriptor inspection; unknown objects/functions/proxies/symbols get fixed type labels. A thrown string uses that string; number/bigint/bool/null/undefined native primitives use native String. Never invoke a getter, proxy trap, arbitrary toString, constructor property or whole-object serialization while describing a failure. Native detection uses [util.types](https://nodejs.org/api/util.html#utiltypesisnativeerrorvalue), verified with Bun1.4.2; a diagnostic-adapter defect falls back to `native failure` without replacing the original occurrence. No stack trace, credential or response body is automatically appended to the handler string. Platform adapters translate their specified expected errors before this boundary; unknown programming exceptions remain standard failures.
+For the `.message` field of `[_] as standard_failure f`, primitive Can failures use these templates. For a non-proxy native Error, use string-valued own data descriptors for name/message; missing name falls back to the recognized built-in prototype name or `Error`, and missing/non-data message to an empty string. Join nonempty message with `: `. Native `node:util` type predicates reject proxies before descriptor inspection; unknown objects/functions/proxies/symbols get fixed type labels. A thrown string uses that string; number/bigint/bool/null/undefined native primitives use native String. Never invoke a getter, proxy trap, arbitrary toString, constructor property or whole-object serialization while describing a failure. Native detection uses [util.types](https://nodejs.org/api/util.html#utiltypesisnativeerrorvalue), verified with Bun1.4.2; a diagnostic-adapter defect falls back to `native failure` without replacing the original occurrence. No stack trace, credential or response body is automatically appended to the handler string. Platform adapters translate their specified expected errors before this boundary; unknown programming exceptions remain standard failures.
 
 An ordinary `match call` standard catch covers receiver/callee and argument evaluation, the invoked body, and each method-chain step; a `match chain` catch covers the corresponding evaluation of every reached step. Coordination preparation instead lies outside participant arms under Q2. No catch covers exceptions raised by its selected handler itself. Uncaught standard failures propagate automatically, with the explicit coordination observation qualification in Q. An uncaught root failure emits a diagnostic and nonzero exit. Fatal process termination, abort, stack exhaustion that prevents handler execution or out-of-memory is not promised recoverable. No catch-all domain-error wildcard follows from this standard channel.
+
+
+
+<a id="c91-standard-failure-snapshots"></a>
+### C9.1. Standard-failure snapshots
+
+Use one value in ordinary and coordination standard catches:
+
+```can
+// Complete shape of a call-match fragment.
+match call work()
+    domain_failed
+    [_] as standard_failure failure => ok failure.message
+    ok str result => ok result
+```
+
+`[_] => body` remains an unbound catch. A bound catch must use `[_] as standard_failure name`; `str` and other binder types are rejected. There is no compatibility string-binder form. `.message` provides the former canonical text.
+
+The opaque snapshot has read-only `int occurrence_id`, `str kind` and `str message`. Preserve C9's six propagatable kinds and message construction/sanitization rules. IDs are unique within one program run, stable for repeated observations of the same failure, and not promised stable between assertion workers or builds. Retain the native cause privately; no constructor, copy-update, wire encoding, raw exception access or public identity forgery is introduced. Snapshots remain admitted aggregate leaves; they are not domain errors and cannot occur in `emits`.
+
+Taking a snapshot does not allocate another failure occurrence. An aggregate snapshot of the same occurrence has the same ID and observations. Storing/returning a snapshot as data does not rethrow it. This revision adds no new snapshot-rethrow expression; omitting a catch preserves automatic standard propagation. Do not coerce it into a domain failure or `ok` implicitly.
+
+Ordinary catches still cover receiver/callee/argument evaluation and the matched invocation; coordination preparation stays outside participant catch regions. A fault raised by the selected catch body escapes that region. Fatal process failure is not promised catchable. Harness violations are separately recorded as sticky root failures: returning success after catching one cannot pass its assertion. Timeout termination is a supervisor result, not an injected catchable standard failure.
+
+<a id="c92-named-runtime-checks"></a>
+### C9.2. Named runtime checks
+
+LD29 selects the distribution catalogue package `checks` and ordinary callable signature `checks::require(bool condition, str reason) -> void emits [checks::failed]`. Allocate core distribution error ID **1010** to `checks::failed(str reason)`. This is a selected catalogue contract, not a new keyword or an implemented API. The error is ordinary nominal domain data with one positional `str reason` field; existing constructor, identity, equality and registry rules apply.
+
+Evaluate condition then reason, once each, using ordinary call semantics. The reason evaluates even when condition is true; errors during argument evaluation follow the ordinary caller boundary, before the check itself. True returns void success. False produces a fresh `checks::failed(reason)` occurrence. The call never disables checks in production, reads ambient state or invokes user code beyond ordinary argument evaluation. The condition must be bool and reason must be str, with exactly two arguments and no implicit conversion.
+
+Lower to a native JavaScript boolean branch and the existing domain-completion adapter. Record the Can invocation span and invocation path in private diagnostic metadata. Preserve the exact authored reason as error data; apply existing renderer escaping when displaying it. Do not append arguments, response bodies, stack traces or arbitrary native exceptions to the reason. Empty reasons are legal str values; the error kind and source location still identify the failed check. No separate message limit or truncation changes the payload. No arithmetic trap, recursive helper, new assertion engine or native exception coercion is involved.
+
+The declared bound is always `[checks::failed]`, including constant-true calls. A caller must handle it with existing completion matching or forward it through `relay call`/an explicit error arm and its own declared bound. An unchecked errorful call statement rejects. `[_]` does not catch this domain error. Authored checks in fetch/judge helpers or handlers keep emitted provenance under A2.4/A3.2. Recovery is ordinary domain recovery: it may intentionally return success and is not a sticky harness event.
+
+Attached assertions use existing complete-error constructor expectations. There is no direct standard-failure expectation addition and no change to C9's six standard categories or opaque snapshots. Missing/mismatched/unused fixtures, live-boundary attempts and other harness violations remain independently sticky even when caught; an expected `checks::failed` completion cannot conceal them. Supervisor timeout/crash never counts as an expected check result. Check acceptance exercises the real deterministic operation, labelled `real-can`; supplied completions cannot establish its correctness.
+
+The following complete library source example targets the selected catalogue; its admission and runtime evidence are required at implementation time:
+
+```can
+package positive_checks
+    provides [require_positive]
+    uses [checks]
+
+fn void require_positive
+    emits [checks::failed]
+    given
+        int value
+    asserts
+        positive: 3 => ok
+        zero: 0 => checks::failed("expected a positive value")
+        negative: -1 => checks::failed("expected a positive value")
+    relay call checks::require(value > 0, "expected a positive value")
+```
+
+Recovery can use an ordinary completion fragment:
+
+```can
+match call checks::require(value > 0, "expected a positive value")
+    checks::failed => ok false
+    ok => ok true
+```
+
+Migration replaces deliberate divide-by-zero helpers with explicit check completions and updates the real forwarding bounds/arms and attached negative tests. Do not keep the misleading arithmetic fault as a compatibility path. The [three consultations and disagreement analysis](evidence/2026-09-22/ld29-checks/README.md) support this selection; [AE29](../implementation/language-change-acceptance-2026-09-22.md#ae29--direct-failed-check-reporting) defines its acceptance evidence.
 
 <a id="c10"></a>
 ## C10. Complete primitive and callback traces
@@ -295,7 +395,7 @@ fn void main
         true => ok
         false => match call pair(values[2])
             ok int[] unexpected => ok
-            [_] as str message => ok
+            [_] as standard_failure failure => ok
 ```
 
 The exact assertion compares data, not allocation identity. `arguments` contains application arguments only (P). The false branch deliberately traces an indexing fault while evaluating the matched invocation's arguments: it is within that call's standard-failure catch boundary. No element at index2 is synthesized. The branch is not reached for the shown values; P's target fixtures separately exercise it. No extra declaration is allowed to reuse the same name as `pair` in this package.
@@ -307,7 +407,7 @@ Exact quantity trace: balance9007199254740993 minor units plus2 remains900719925
 <a id="c11"></a>
 ## C11. End-to-end closure and traceability
 
-The following integration sequence uses the exact component contracts; companion traces supply complete declarations and failure tables rather than requiring a new source form at a transition.
+The following integration sequence uses the exact component contracts; companion traces supply declaration fragments and failure tables with omitted native assertions identified rather than requiring a new source form at a transition.
 
 | Stage | Typed crossing and observable failures |
 | --- | --- |
@@ -321,9 +421,9 @@ The following integration sequence uses the exact component contracts; companion
 | Browser continuation | Upstream HTMX submits/query-fetches from Bun routes and swaps safe rendered fragments; form validation, pending state and dashboard refresh are server-driven. No Can code or credentials compile into a browser target. |
 | Test | P's root assertion/dynamic-path identity chooses fixtures before concurrency timing matters. Consumer substitution tests callers; raw protocol fixtures test codecs/native handlers; target conformance tests Bun/SQL/HTML adapters. None claims live model quality. |
 
-### Complete consumer of generation and judgment
+### Consumer of generation and judgment
 
-Combine the declarations in [A12.1](ai-io-spec.md#a121-generated-data-followed-by-runtime-choice) and the function below in one package with this header. This is a library package; its public function may be called from an application's main or HTTP handler. The two assertions replace only the specified native calls. Candidate mapping executes real Can code, and the refused path never reaches mapping or judgment.
+The following consumer fragment combines with the declarations in [A12.1](ai-io-spec.md#a121-generated-data-followed-by-runtime-choice). Add the owning native assertions/raw files required by P4.1 to form a complete package. This is a library package; its public function may be called from an application's main or HTTP handler. The two assertions replace only the specified native calls. Candidate mapping executes real Can code, and the refused path never reaches mapping or judgment.
 
 ```text
 package ticket_routing
@@ -334,7 +434,7 @@ package ticket_routing
 
 /// Generates routing criteria, then judges the email against them.
 fn str route_email
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer]
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, http::request_failed, ai::invalid_question, ai::invalid_answer]
     given
         str email
     asserts
@@ -344,19 +444,6 @@ fn str route_email
         when
             routed: ("Refund please.") => ok suggestion("Which team?", [candidate("billing", "Payments."), candidate("technical", "Product faults.")])
             refused: ("Cannot summarize.") => llm::refused("provider_refusal")
-        ok suggestion proposed => match call route(proposed.question, call proposed.candidates.map(callable to_option), (email))
-            when
-                routed: "Which team?", [choice_option("billing", "Payments."), choice_option("technical", "Product faults.")], ("Refund please.") => ok "billing"
-            ok
-            http::invalid_request
-            http::credentials_missing
-            http::transport_failed
-            http::timeout
-            http::body_limit
-            http::status_error
-            codec::invalid_data
-            ai::invalid_question
-            ai::invalid_answer
         http::invalid_request
         http::credentials_missing
         http::transport_failed
@@ -367,9 +454,16 @@ fn str route_email
         llm::refused
         llm::truncated
         llm::invalid_response
+        ok suggestion proposed => match call route(proposed.question, call proposed.candidates.map(callable to_option), (email))
+            when
+                routed: "Which team?", [choice_option("billing", "Payments."), choice_option("technical", "Product faults.")], ("Refund please.") => ok "billing"
+            http::request_failed
+            ai::invalid_question
+            ai::invalid_answer
+            ok
 ```
 
-Native-call `when` rows use the invocation's final state group, matching the declared native input grammar; these groups are not ordinary assertion input tuples. A whole package formed as stated declares every referenced application name. The full emitted domain bound remains visible even though these two supplied completions exercise only success and refusal. Raw fixtures in A12 exercise actual native construction/decoding and the duplicate-option rejection; P's reports distinguish that evidence from this consumer test.
+Native-call `when` rows use the invocation's final state group, matching the declared native input grammar; these groups are not ordinary assertion input tuples. The illustrated consumer declares every referenced application name once combined with A12.1; the native-owner test sections omitted from those fragments are still required. The full emitted domain bound remains visible even though these two supplied completions exercise only success and refusal. Raw fixtures in A12 exercise actual native construction/decoding and the duplicate-option rejection; P's reports distinguish that evidence from this consumer test.
 
 
 Finding resolution map (all fifteen are retained; “resolved” means a written contract, not implementation evidence):

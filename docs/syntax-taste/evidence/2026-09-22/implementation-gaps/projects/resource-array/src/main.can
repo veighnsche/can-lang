@@ -1,0 +1,20 @@
+package app
+    provides []
+    uses [sql]
+fn sql::decision<sql::transaction[]> capture
+    emits []
+    given
+        near bool take
+        sql::transaction tx
+    asserts
+        harmless: false => ok sql::commit<sql::transaction[]>([])
+    match take
+        true => ok sql::commit<sql::transaction[]>([tx])
+        false => ok sql::commit<sql::transaction[]>([])
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

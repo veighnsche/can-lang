@@ -1,0 +1,34 @@
+{
+  "kind": "acceptance-document-validation",
+  "accepted_dispositions": [
+    "LD07",
+    "LD09",
+    "LD11",
+    "LD15",
+    "LD17",
+    "LD18",
+    "LD22",
+    "LD23",
+    "LD25",
+    "LD27",
+    "LD29",
+    "LD33",
+    "LD44",
+    "LD45",
+    "LD47",
+    "LD49"
+  ],
+  "records": 16,
+  "dimensions_per_record": 7,
+  "local_links_checked": 9,
+  "before_metrics": {
+    "fetch_declarations": 8,
+    "main_fetch_calls": 8,
+    "infrastructure_bound_declarations": 9,
+    "infrastructure_bound_entries": 63,
+    "infrastructure_forwarding_arms": 56
+  },
+  "after_metrics_status": "required targets; not measured from implemented syntax",
+  "design_gated": [],
+  "implementation_tests_run": false
+}

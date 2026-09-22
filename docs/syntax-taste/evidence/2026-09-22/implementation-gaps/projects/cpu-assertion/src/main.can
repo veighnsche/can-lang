@@ -1,0 +1,17 @@
+package app
+    provides []
+    uses []
+fn int spin
+    emits []
+    given
+        int value
+    asserts
+        never: 0 => ok 0
+    relay call spin(value + 1)
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

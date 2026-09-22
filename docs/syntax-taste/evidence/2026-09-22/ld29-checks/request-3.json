@@ -1,0 +1,45 @@
+{
+  "model": "jev-latest",
+  "state": "Review an unfinished Can language repair, LD29. The compiler targets AI coding agents and native JavaScript/Bun operations; its identity includes noul/choice/score/judge/llm/fetch forms, grouped state inputs, nominal immutable types, explicit emits contracts and locally attached assertions. No external adoption constrains changes and no compatibility layer is wanted. A runtime fixture helper currently declares fn void require, emits [], given bool condition, asserts yes: true => ok and deliberately evaluates int invalid = 1 / 0 when condition is false. The accepted outcome is meaningful failed-condition diagnostics with an authored reason and source span, useful both in applications and fixture verification, without creating a general testing DSL.\nThere is already a named-call catalogue mechanism. One proposed ordinary operation, checks::require(bool condition, str reason) -> void, returns void success for true and fails for false. It uses strict once-only left-to-right input evaluation, so even a true condition evaluates its reason. Native lowering uses a boolean test and the current typed completion/standard adapter; exclude recursion, an additional assertion engine, unexpected external work and switches that remove checks in production. A second candidate only exposes checks::fail(str reason) -> void, leaving the branch in Can. There is no approved never/bottom type.\nFor an explicit domain solution, allocate a distribution ID for checks::failed(str reason). It is constructible ordinary nominal error data with private runtime occurrence and location diagnostics. Existing assertion rows can expect that complete error payload, and normal exhaustive dispatch applies. A forwarding function includes it in emits; match, relay or a named adapter is necessary because errorful calls cannot stand unchecked in statement position. A check produced in authored fetch/judge code stays on the emitted side of the normalized boundary, preserving provenance.\nFor a standard solution, emits stays unchanged and unhandled failures bubble automatically; [_] as standard_failure f can catch them. The selected snapshot exposes kind/message/occurrence_id without permitting construction, mutation, serialization or raw-cause access. Current standard kinds are arithmetic, bounds, resource_state, assertion, native_exception and cleanup. A separate check kind would name this failure honestly. Assertion rows currently have no expected-standard form. The alternatives include ordinary recoverability for an authored check or making that condition a sticky assertion-root violation. Harness violations MUST remain sticky in every option: caught missing, mismatched or unused fixtures and live-boundary attempts still fail the root. Supervisor timeouts stay uncatchable and cannot pass as expected behavior.\nUnder a standard-channel choice, false can be tested using existing assertions around a named catcher that returns snapshot observations. Alternatively introduce only the assertion-row pattern => standard_failure(\"check\", \"reason\"), distinct from value construction. It compares just check category and message, requires clean harness state and finished participant draining, and excludes occurrence IDs, harness assertion failures, deadlines and internal causes. Opening expectations to all standard categories is a broader third design. With the domain-channel option, ordinary checks::failed constructor expectations already solve negative tests, so standard-expectation syntax need not change.\nKeep reasons as explicit authored strings, apply current renderer escaping, and retain source spans privately. No implicit exception/input dumping, arbitrary toString coercion, occurrence-identity matching or substitution that skips actual checks is allowed. You are a classifier supplied with the evidence, not a researching designer; recommend among the alternatives without treating confidence as proof.",
+  "questions": {
+    "channel": {
+      "type": "choice",
+      "instructions": "For this runtime-check capability, which treatment of false should Can adopt?",
+      "criteria": {
+        "domain": "Represent false with the nominal domain error checks::failed(str reason), ordinary catch/forward rules and existing payload-based assertion syntax.",
+        "standard": "Represent false as a recoverable standard check occurrence; leave domain bounds alone and settle how to test it separately.",
+        "sticky": "Use standard runtime failure and additionally mark the test root irreversibly failed whenever an authored check is false.",
+        "unresolved": "Leave the channel undecided because the presented candidates are not sufficiently supported."
+      }
+    },
+    "api": {
+      "type": "choice",
+      "instructions": "Which interface offers the appropriate scope for the repair, independently of how errors propagate?",
+      "criteria": {
+        "require": "Use the ordinary callable checks::require(bool condition, str reason) -> void as the only new operation, testing the boolean itself.",
+        "fail": "Limit the addition to checks::fail(str reason) -> void and retain explicit boolean branching in authored code.",
+        "keyword": "Add dedicated statement syntax for checking a boolean and supplying its diagnostic reason.",
+        "unresolved": "Do not select an interface from this candidate set."
+      }
+    },
+    "standard_expectations": {
+      "type": "choice",
+      "instructions": "If a recoverable standard check occurrence becomes the chosen representation, how should attached assertions verify it?",
+      "criteria": {
+        "catcher": "Have a named catching adapter expose snapshot observations to existing input/output assertions, without new row grammar.",
+        "check_only": "Introduce the row-local pattern => standard_failure(\"check\", \"reason\") for only this category, with no constructible snapshot or harness bypass.",
+        "general": "Include additional standard categories in a newly specified expectation system, retaining strict infrastructure-failure exclusions.",
+        "unresolved": "No listed expectation approach can be selected on these facts."
+      }
+    },
+    "domain_expectations": {
+      "type": "choice",
+      "instructions": "Given a domain-error implementation of the check, what should happen to assertion grammar?",
+      "criteria": {
+        "existing": "Rely on ordinary checks::failed(reason) expected values and exclude new standard-failure matching from LD29.",
+        "general": "Add standard-failure matching too, beyond the domain expectations sufficient for the new operation.",
+        "unresolved": "Defer the assertion-grammar decision rather than accept either option."
+      }
+    }
+  }
+}

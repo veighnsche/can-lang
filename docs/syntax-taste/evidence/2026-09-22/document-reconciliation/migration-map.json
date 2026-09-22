@@ -1,0 +1,37 @@
+{
+  "B1": {
+    "file": "ai-io-spec.md",
+    "anchor": "a24-fetchjudge-normalization",
+    "section": "A2.4"
+  },
+  "B2": {
+    "file": "ai-io-spec.md",
+    "anchor": "a32-operation-wrappers",
+    "section": "A3.2"
+  },
+  "B3": {
+    "file": "technical-spec.md",
+    "anchor": "c51-exact-generic-error-patterns-and-match-order",
+    "section": "C5.1"
+  },
+  "B4": {
+    "file": "technical-spec.md",
+    "anchor": "c91-standard-failure-snapshots",
+    "section": "C9.1"
+  },
+  "B5": {
+    "file": "platform-testing-spec.md",
+    "anchor": "p151-verified-build-and-publication",
+    "section": "P15.1"
+  },
+  "B6": {
+    "file": "platform-testing-spec.md",
+    "anchor": "p31-typed-fixture-reuse-with-local-ownership",
+    "section": "P3.1"
+  },
+  "B7": {
+    "file": "platform-testing-spec.md",
+    "anchor": "p41-attached-native-and-wrapper-assertions",
+    "section": "P4.1"
+  }
+}

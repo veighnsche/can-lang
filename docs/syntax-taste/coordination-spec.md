@@ -1,6 +1,6 @@
 # Coordination and callable-completion contract
 
-Status: technical companion for implementation planning, 20 September 2026.
+Status: technical companion for implementation planning, reconciled 22 September 2026.
 
 This document completes the technical contract around the four selected
 coordination forms. It does not authorize compiler implementation. The surface
@@ -205,25 +205,17 @@ Coverage by mode is exact:
 
 | Form | Domain arms | Standard arm |
 |---|---|---|
-| `concurrent` | One shared arm using the bare error-name pattern for every distinct error type in the union of participant bounds | One optional shared `[_]` arm |
-| `concurrent with error` | Beneath each direct entry, one arm using the bare error-name pattern for every error that entry declares; beneath a spread, the corresponding arms for its element bound | One optional `[_]` beneath each direct entry or spread |
-| `race` | No participant-error arms; one mandatory arm using the bare `all_failed` pattern replaces all of them | No `[_]` participant arm; standard failures are aggregate members |
-| `race with error` | One shared arm using the bare error-name pattern for every distinct error type in the union of participant bounds | One optional shared `[_]` arm |
+| `concurrent` | One shared arm using an exact error head (or unambiguous bare name) for every distinct error type in the union of participant bounds | One optional shared `[_]` arm |
+| `concurrent with error` | Beneath each direct entry, one arm using an exact error head (or unambiguous bare name) for every error that entry declares; beneath a spread, the corresponding arms for its element bound | One optional `[_]` beneath each direct entry or spread |
+| `race` | No participant-error arms; one mandatory arm using `all_failed<F>` (or an unambiguous inferred bare `all_failed`) replaces all of them | No `[_]` participant arm; standard failures are aggregate members |
+| `race with error` | One shared arm using an exact error head (or unambiguous bare name) for every distinct error type in the union of participant bounds | One optional shared `[_]` arm |
 
 Omitting `[_]` never claims freedom from standard failures. It selects the
 automatic propagation rule in Q7. A domain arm not present in the applicable
 bound, a duplicate arm, a participant-error arm under unmodified `race`, or an
-`all_failed` arm under another mode is a compile-time error.
+`all_failed` arm absent from the declared input bound under another mode is a compile-time error.
 
-Every generic error specialization is a distinct error type for bounds. A
-single completion match cannot contain two specializations of the same error
-kind when both use the same bare error-name pattern. For example, an outer block
-whose participants expose both `all_failed<a_failure>` and
-`all_failed<b_failure>` is ambiguous and must be rejected. The author must use
-named wrappers that consume both specializations, explicitly widen their data
-to one declared failure variant, and emit one common specialization. Generic
-parameters remain invariant; the compiler must not silently choose a lossy
-union.
+Every generic error specialization is distinct. [C5.1](technical-spec.md#c51-exact-generic-error-patterns-and-match-order) supplies exact heads and optional aliases; a bare name rejects only when its specialization is ambiguous. Two exact `all_failed<a_failure>` and `all_failed<b_failure>` heads can coexist in applicable ordinary/shared/per-entry input sets. This does not add container covariance or flatten nested aggregates. All failure arms precede final success within a region handling both; direct entry success mappings and mode-specific result ownership remain as Q4 specifies.
 
 ## Q6. What exactly is `all_failed`?
 
@@ -236,8 +228,7 @@ error 100 all_failed<failure>(failure[] failures)
 Application code cannot redeclare or shadow this prelude name or allocate ID
 100. All generic specializations are the same error kind and share ID 100, as
 all specializations of an ordinary generic error share their declaration ID.
-The arm pattern remains the selected bare `all_failed`; generic arguments do not
-appear in an error pattern.
+The arm may spell exact `all_failed<F>`; a bare `all_failed` uses the unique expected variant or remains compiler-private when its payload is ignored, as below.
 
 Every source-denotable specialization `all_failed<F>` requires `F` to be a
 named finite variant. That variant may list record types, declared error types,
@@ -257,8 +248,7 @@ has read-only projections:
 - `int occurrence_id`, unique within one program run and stable for that captured
   occurrence;
 - `str kind`, supplied by the shared standard-failure adapter;
-- `str message`, the same canonical diagnostic description that an ordinary
-  bound `[_]` handler would receive.
+- `str message`, the same canonical diagnostic description exposed through `.message` in an ordinary bound `[_]` snapshot handler.
 
 The runtime retains the exact original native value behind that snapshot until
 the snapshot is unreachable. `kind` and `message` are projections; they do not
@@ -298,8 +288,7 @@ For one `race`, the checker computes a closed internal leaf set `U`:
 
 1. flatten the declared domain-error bounds of every direct and spread entry;
 2. retain complete generic specializations;
-3. collapse identical error types but reject two specializations of the same
-   bare-pattern error kind as ambiguous;
+3. collapse only identical exact error types; retain distinct generic specializations, including nested `all_failed` values;
 4. add `standard_failure`, because standard failure remains possible even for
    `emits []`.
 
@@ -313,7 +302,7 @@ exactly one leaf of `F`. Extra leaves in `F` are allowed so a named handler can
 serve several races. The compiler does not search all declared variants for a
 least common type and does not invent a source-visible anonymous union.
 
-Two contexts provide the normal inference:
+An explicit `all_failed<F>` head selects F directly, subject to complete leaf inclusion. With a bare head, two contexts provide the normal inference:
 
 - a typed named call such as
   `call summarize_failures(all_failed.failures)`, whose parameter is
@@ -350,8 +339,8 @@ fn lookup_result summarize_failures
 lookup_result result = match call race
     primary::lookup(user_id)
     backup::lookup(user_id)
-    ok profile found => ok lookup_result(true, found.name, 0)
     all_failed => ok call summarize_failures(all_failed.failures)
+    ok profile found => ok lookup_result(true, found.name, 0)
 ```
 
 The call supplies the expected `lookup_failure[]` type. If every participant
@@ -659,12 +648,7 @@ with a standard failure and with the `all_failed` handler itself failing.
 
 ### Trace 9: generic aggregate composition
 
-Create two functions emitting `all_failed<a_failure>` and
-`all_failed<b_failure>`. Putting both directly in a completion form with one
-bare `all_failed` pattern must fail static checking. Then add wrappers that
-exhaustively transform their arrays into one declared `combined_failure[]` and
-emit `all_failed<combined_failure>`. The normalized participants must typecheck
-with one bare arm, preserving every original leaf payload.
+Create two functions emitting `all_failed<a_failure>` and `all_failed<b_failure>`. One ambiguous bare `all_failed` arm rejects; two exact specialization arms accept in ordinary matches and applicable coordination modes, preserving every payload. An outer plain race selects one named aggregate variant containing both nested specializations and `standard_failure`, without flattening their values. If a downstream API actually requires `combined_failure[]`, use an explicit named element converter with native-backed `.map`, then reconstruct `all_failed<combined_failure>`; existing arrays remain invariant.
 
 ### Source assertion integration
 

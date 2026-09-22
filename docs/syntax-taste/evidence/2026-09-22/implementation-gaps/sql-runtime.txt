@@ -1,0 +1,16 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/transaction.test.ts:
+(pass) sql transactions > commit runs scoped queries and returns the committed value [7.95ms]
+
+docs/syntax-taste/evidence/2026-09-22/implementation-gaps/sql-escape.test.ts:
+(pass) transaction commit returns direct, but escaped use cannot reach native SQL [1.42ms]
+(pass) transaction commit returns record, but escaped use cannot reach native SQL [0.09ms]
+(pass) transaction commit returns array, but escaped use cannot reach native SQL [0.08ms]
+(pass) transaction commit returns callable, but escaped use cannot reach native SQL [0.07ms]
+
+ 5 pass
+ 14 filtered out
+ 0 fail
+ 40 expect() calls
+Ran 5 tests across 2 files. [109.00ms]

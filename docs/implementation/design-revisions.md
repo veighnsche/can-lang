@@ -1,6 +1,10 @@
 # Design revisions
 
-Status: draft requirements captured from discussion on 2026-09-21. The normalization mechanism and syntax are not yet selected. This document does not change the implementation plan or authorize implementation changes.
+> Design completion: [September 22 behavior contracts](language-behavior-contracts-2026-09-22.md) resolves the normalization, wrapper, match and testing details discussed here. The original discussion record below is preserved.
+
+> Scope follow-up: [finding dispositions](language-design-dispositions-2026-09-22.md) covers every requirement and additional candidate below. This document remains the original requirements record; final grammar and implementation tasks are separate work.
+
+Status: historical requirements captured on 2026-09-21. The then-open questions below are preserved as discussion history; current selections live in [decisions.md](../syntax-taste/decisions.md) and its incorporated specifications. This document does not change the implementation plan or authorize implementation changes.
 
 ## Problem
 
@@ -28,7 +32,7 @@ The language should own this standard normalization. Merely asking every applica
 
 Nesting is not currently considered a problem to solve in this revision. The user explicitly narrowed the discussion to normalization of the seven standard errors. Changes to sequential composition, success-branch indentation, or new control-flow syntax are out of scope for now.
 
-## Decisions still open
+## Questions open at the time of this record
 
 - What normalized error contract does a fetch expose: one error with structured details, a named error family, or another representation?
 - Which details remain available for diagnosis and selective recovery?

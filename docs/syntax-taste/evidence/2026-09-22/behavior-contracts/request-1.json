@@ -1,0 +1,78 @@
+{
+  "model": "jev-latest",
+  "state": "Can targets AI coding agents with native noul/choice/score/judge/llm forms, grouped state, explicit public domain errors, immutable nominal values and source-attached assertions. There are no external users or compatibility requirements. The user now requests finished behavior designs, including fixture reuse. Preserve these foundations. Use equivalent native JavaScript/Bun operations with only necessary contract adapters. You are advising from supplied evidence, not researching or proving correctness.\nSeven infrastructure errors must normalize at fetch/judge native preparation, transport and codec phases: http::invalid_request(reason), http::credentials_missing(variable), http::transport_failed(phase), http::timeout(timeout_ms), http::body_limit(limit), http::status_error(status,headers), codec::invalid_data(path,reason). Existing fields are typed/sanitized; errors are ordinary nominal data. Body-only non-2xx fails; envelope non-2xx succeeds; invalid JSON differs from valid JSON with an invalid AI answer. Handler-origin errors, even codec::invalid_data, and ai::invalid_question/ai::invalid_answer must retain their meaning. Judge uses one request, validates all answers, then runs handlers in source order. Standard failures are separate from emits.\nFetch/judge wrappers must derive, inherit omissions and let the last override win; individual questions must not be wrapped. Existing ordinary function wrappers cannot override already consumed failures. Candidate policy design has one fixed target signature/connection, native and emitted origin tables, no retries, one dispatch and terminal parent delegation called inherit. A handler-produced error escapes rather than entering another policy arm. Cycles and duplicate keys must be rejected. Multiple bases and type-changing wrappers are unnecessary for the present requirement.\nOrdinary/native declarations retain explicit emits lists. Calculated wrapper bounds would use finite declared callee bounds, explicit outcomes and inherited delegation, without path-sensitive theorem proving. Replaced parent handlers should not retain obsolete output errors. The proposed marker emits calculated makes this exception visible; an alternative is an exact checked list on every derived wrapper.\nEvery generic error specialization is already nominally distinct, but bare error patterns collide. all_failed<A> and all_failed<B> must stay invariant. Ordinary matching and coordination need exact specialization discrimination. Coordination meanings stay distinct: concurrent/shared recovery; concurrent with error/per-entry recovery; race/one outer aggregate; race with error/first completion. Nested all_failed values remain nested. Bare names could remain valid only when one specialization is available. Errors precede final ok.\nstandard_failure already has readonly kind:str, occurrence_id:int and message:str projections in aggregates. It is opaque, cannot be constructed or updated, and retains the original cause privately. Ordinary catches currently receive only a string. Their catch region includes argument evaluation; coordination preparation is outside participant catches; selected handler faults are never recaught by that region. Harness violations stay fatal to a test even if caught.\nSource inspection shows build checks and publishes production without executing assertions; assert checks all, publishes assertion modules and runs them. Publication already uses input checks and atomic current selection. A successful build should verify the same immutable source/fixture snapshot it publishes, run all graph assertion roots offline, validate emitted production code, and leave the previous production current on failure. Selected assert runs must not publish production or establish full verification. Live service quality and universal termination are not guaranteed.\nThe harness can hang on a pending operation or CPU loop. Propose a driver-supervised worker per root, a finite 5000ms default per-root wall deadline and configurable 1..600000ms limit recorded in the report/build identity; no disabling it in build. Include startup, execution and draining; kill timed-out workers and preserve last reported paths. Production empty race remains pending. Absolute timer accuracy during host suspension is not guaranteed.\nCurrent when tables belong to lexical sites and select a source assertion root. FIFO rows are reserved by root/call/occurrence/participant/callable identity before settlement, with argument and captured-value checks. Hoisting to function ordinals would weaken this. Proposed typed fixture templates are inert reusable row content for one exact target, expanded only under a local selector; they own no root or queue and cannot capture runtime locals. A separate external data file still needs a lexical binding and checked target.\nSupplied completions skip native preparation/decoding and cannot test handlers. Existing raw fixtures are compiler conformance data, not authored native assertions. Proposed attached asserts on fetch/judge/llm and wrappers use local raw-fixture references; whole-request checks cover method, URL, header policy, body and fake credentials, then real decoders/handlers run. Wrapper assertions may instead inject a typed origin-tagged failure without issuing a request and must cover each local override; these are labelled policy tests, not raw-request evidence. Parent tests run independently, not inherited expected results. Live I/O stays forbidden. Question behavior is covered through attached judge tests; dynamic alternative paths need named cases but tests do not prove all model quality.",
+  "questions": {
+    "payload": {
+      "type": "choice",
+      "instructions": "Which public representation best meets the normalization requirement?",
+      "criteria": {
+        "reuse": "Use http::request_failed with a closed detail variant containing the seven existing typed error payloads; retain cause privately and gate conversion by origin.",
+        "new_records": "Introduce seven new public detail records with the same fields and translate into those, using the same origin restrictions."
+      }
+    },
+    "wrapper_policy": {
+      "type": "choice",
+      "instructions": "Which wrapper handling model should be selected?",
+      "criteria": {
+        "origin_tables": "Adopt single-base wrap name from target with native/emitted tables, terminal inherit and one dispatch over the underlying operation.",
+        "native_only": "Limit derived policies to native failures; require ordinary functions for every authored/AI failure conversion."
+      }
+    },
+    "bounds": {
+      "type": "choice",
+      "instructions": "How should a wrapper expose its calculated public errors?",
+      "criteria": {
+        "calculated_marker": "Require emits calculated on wrappers and publish the finite effective bound with provenance; ordinary/native declarations keep explicit lists.",
+        "exact_list": "Require an explicit emits list on every wrapper and check it equals the calculated bound."
+      }
+    },
+    "patterns": {
+      "type": "choice",
+      "instructions": "Which generic error arm contract is preferable?",
+      "criteria": {
+        "unique_bare": "Admit error<T> as binder and keep bare generic names only for one applicable specialization; reject ambiguous or duplicate coverage.",
+        "always_explicit": "Require generic arguments on every generic error arm, even when there is only one specialization."
+      }
+    },
+    "snapshot": {
+      "type": "choice",
+      "instructions": "What should ordinary standard catches bind?",
+      "criteria": {
+        "snapshot": "Replace the string binder with standard_failure, preserving identity and existing catch regions; retain an unbound catch.",
+        "both": "Permit both string and snapshot binders, selecting representation from the requested type."
+      }
+    },
+    "publication": {
+      "type": "choice",
+      "instructions": "Which build verification/publication contract should be adopted?",
+      "criteria": {
+        "all_roots": "Run all graph roots on an immutable input snapshot before atomic production selection; selected assert runs stay separate.",
+        "changed_roots": "Verify only roots considered affected by changed source and reuse the rest of prior assertion results in build."
+      }
+    },
+    "deadline": {
+      "type": "choice",
+      "instructions": "Which assertion deadline policy fits the described failures?",
+      "criteria": {
+        "root_worker": "Use externally supervised per-root workers with the stated 5000ms default and finite recorded override, counting startup and draining.",
+        "run_worker": "Use one externally supervised worker for the whole suite with a budget proportional to root count; individual roots have no deadline."
+      }
+    },
+    "reuse": {
+      "type": "choice",
+      "instructions": "Which fixture reuse design preserves local ownership?",
+      "criteria": {
+        "lexical_templates": "Add inert typed exact-target row templates expanded beneath local when selectors; retain all existing FIFO and argument/capture checks.",
+        "external_only": "Keep reusable rows exclusively in checked external data files referenced at lexical sites, without a template declaration in Can."
+      }
+    },
+    "native_tests": {
+      "type": "choice",
+      "instructions": "Which authored native and wrapper testing surface should be selected?",
+      "criteria": {
+        "attached": "Attach asserts directly to fetch/judge/llm/wrappers, using raw cases for native requests and labelled injection cases for local policy overrides.",
+        "function_roots": "Keep assertion roots exclusively on ordinary named functions that call natives/wrappers, and enforce request/override coverage across those roots."
+      }
+    }
+  }
+}

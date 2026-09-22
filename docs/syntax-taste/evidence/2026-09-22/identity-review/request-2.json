@@ -1,0 +1,16 @@
+{
+  "model": "jev-latest",
+  "state": "The language under discussion, Can, targets AI coding agents and already has an implementation. Native judgments belong to its core purpose and use their own noul/choice/score/judge/llm forms instead of being supplied solely by a normal library. Functional programming, immutable nominal values, explicit declared domain failures and assertions beside source are central. Function values exist, but their definitions must be named and top-level. Saving human typing is not the leading goal. External user count is zero, so backwards compatibility imposes no constraint. Confirmed revisions demand compiler-owned seven-error normalization around fetch and judge rather than separate questions, inherited unspecified wrapper handling with the newest override prevailing, and failure arms followed by a last ok. The review retains AI declaration kinds, all four native Promise behaviors, nominal connections, match chain and the closed capability boundary. Its immediate recommendations cover structured normalized failures, assertion execution before build publication, time limits, snapshot catches and specialized generic-error arms. Additional candidates examine marked flat state inputs or group-aware callable signatures, explicit capture assignments or name-based near, finite error-bound variables, and reusable content expanded at lexical fixtures with input validation. Grouped-versus-flat calls and bound variables await prototypes; they are unapproved. Earlier three-way consultations disagreed about state calls and some error representations, and their advice was not proof. Counts establish repeated source text, but no measured agent-task study establishes better completion or fewer mistakes from the broader changes. Every offered strategy preserves native AI syntax, locally declared assertions, nominal immutable data, named functions, explicit public errors and required normalization. Evaluate the user’s concern about identity using only this supplied evidence.",
+  "questions": {
+    "identity_fit": {
+      "type": "choice",
+      "instructions": "What scope of change is best supported when preserving this language’s intended character?",
+      "criteria": {
+        "focused_first": "Prioritize confirmed failure normalization and grounded improvements to contracts, test execution and diagnostics; retain grouped state, near and local fixture association pending comparative agent-task evidence for wider syntax and abstraction changes.",
+        "uniformity_first": "Combine normalization and the concrete quality work with a coordinated change to flat marked state signatures, explicit capture bindings, finite error polymorphism and lexical fixture templates, preserving the given AI-native and source-assertion foundations.",
+        "generality_with_surface": "Deliver normalization and concrete quality changes while preserving existing state grouping and near; immediately favor callable contracts for groups, finite bound polymorphism and lexical fixture reuse as functional extensions without first requiring agent-task measurements.",
+        "undetermined": "Withhold a preference between these revision scopes because the supplied identity and evaluation facts are insufficient."
+      }
+    }
+  }
+}

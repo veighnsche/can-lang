@@ -1,0 +1,16 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/transaction.test.ts:
+(pass) sql transactions > the handle dies with its scope [8.15ms]
+
+docs/syntax-taste/evidence/2026-09-22/implementation-gaps/resource-lifetime.test.ts:
+(pass) escaped direct: in-scope use succeeds, post-scope work is rejected [0.19ms]
+(pass) escaped record: in-scope use succeeds, post-scope work is rejected [0.23ms]
+(pass) escaped array: in-scope use succeeds, post-scope work is rejected [0.38ms]
+(pass) escaped callable: in-scope use succeeds, post-scope work is rejected [0.03ms]
+
+ 5 pass
+ 14 filtered out
+ 0 fail
+ 32 expect() calls
+Ran 5 tests across 2 files. [104.00ms]

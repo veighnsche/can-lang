@@ -5,7 +5,7 @@ coding-agent audience, including syntax and the Can-to-Bun architecture. It take
 precedence over conflicting rules in other design documents. These are design
 requirements, not claims about implemented or compiler-validated behavior.
 
-Decision: SURFACE-069.
+Decision: SURFACE-069, with the selected September 22 revisions below.
 
 The source forms and product choices recorded here establish the current design.
 The incorporated [technical specification](technical-spec.md) and its
@@ -24,6 +24,22 @@ Effects are deferred for later reconsideration; no effect-checking requirement
 or effects mechanism is currently accepted. No effects or foreign-code mechanism
 is inherited from earlier drafts or the existing implementation. The separately
 recorded Can-to-Bun platform boundary remains in force.
+
+## September 22 revisions and implementation scope
+
+The [49-finding disposition ledger](../implementation/language-design-dispositions-2026-09-22.md) selects 16 changes, retains 18 current designs and defers 15 findings with reasons. The [acceptance specification](../implementation/language-change-acceptance-2026-09-22.md) defines evidence for every accepted change. These incorporated records fix scope; they do not imply that implementation has passed acceptance.
+
+- Preserve native AI forms, grouped state, explicit contracts, attached assertions and mode-specific coordination ownership.
+- Fetch/judge expose `http::request_failed(http::failure_detail detail)` for their native infrastructure failures. The seven existing typed errors form its detail variant; authored failures preserve their origin and identity. [A2.4](ai-io-spec.md#a24-fetchjudge-normalization) owns the boundary, provenance and public bounds.
+- `wrap name from target` derives a fetch/judge operation. It has explicit `emits calculated`, attached assertions and origin-specific `handles native`/`handles emitted` tables. Single inheritance, terminal `inherit`, finite calculated bounds and handler coverage follow [A3.2](ai-io-spec.md#a32-operation-wrappers).
+- Exact generic error heads and optional aliases distinguish specializations. Bare names require one applicable specialization. Failure arms precede final success in completion regions; coordination keeps its own per-entry/shared ownership. [C5.1](technical-spec.md#c51-exact-generic-error-patterns-and-match-order) and [Q5/Q6](coordination-spec.md#q5-which-completion-arms-are-required-and-what-do-they-cover) define coverage.
+- Bound standard catches use `[_] as standard_failure f`; immutable `kind`, `message` and `occurrence_id` preserve occurrence identity while keeping the cause private. [C9.1](technical-spec.md#c91-standard-failure-snapshots) owns this projection.
+- A successful build verifies all assertion roots against captured inputs before atomic publication. Root workers have bounded deadlines; assertion commands never publish. [P15.1](platform-testing-spec.md#p151-verified-build-and-publication) owns the exact guarantee, CLI bounds and dependency fixture digests.
+- Typed inert fixture templates expand into locally owned queues under [P3.1](platform-testing-spec.md#p31-typed-fixture-reuse-with-local-ownership). Fetch/judge/LLM/wrapper declarations require attached native assertions; raw requests and wrapper policy injections have distinct evidence labels under [P4.1](platform-testing-spec.md#p41-attached-native-and-wrapper-assertions).
+
+Error-set parameters, changed capture syntax and state-callable redesign remain deferred until concrete programs demonstrate a need. LD29 selects `checks::require(bool condition, str reason) -> void emits [checks::failed]`, with ordinary domain recovery and existing constructor expectations. [C9.2](technical-spec.md#c92-named-runtime-checks) fixes its complete contract after [three fresh consultations](evidence/2026-09-22/ld29-checks/README.md); its design gate is closed, while implementation evidence remains required. No new standard category or assertion grammar is introduced. Resource escape analysis remains deferred: the verified escape admits a handle but subsequent use fails with `resource_state`; no safety bypass was established.
+
+The [existing behavior consultations](evidence/2026-09-22/behavior-contracts/README.md), including the [payload disagreement investigation](evidence/2026-09-22/behavior-contracts/disagreement-investigation.md), support these already selected rules. The [reconciliation record](evidence/2026-09-22/document-reconciliation/README.md) records their canonical locations. The behavior-contract document is now a navigation and acceptance-case index, not an overriding addendum.
 
 ## Maintaining this reference
 
@@ -113,11 +129,11 @@ choice str route from service
 ```
 
 Every declaration spells its full domain-error upper bound, including applicable
-intrinsic validation/transport errors and handler errors. No hidden fixed domain
+public intrinsic validation/transport errors and escaping handler errors. Fetch/judge normalize native infrastructure under A2.4; LLM retains its specified raw errors. Only operation wrappers use the explicit calculated-bound marker. No hidden fixed domain
 set is added to `emits`. [AI/I/O](ai-io-spec.md) defines those finite sets;
 [C5/C9](technical-spec.md#c5) and [coordination](coordination-spec.md) define
 completion ownership. Standard failures remain outside `emits`. Examples below
-are declaration or body excerpts unless expressly identified as whole programs.
+are declaration or body excerpts unless expressly identified as whole programs. Native examples omit P4.1 assertion rows and raw files for brevity; complete declarations must supply them.
 
 ## Native Noul declaration direction
 
@@ -304,7 +320,7 @@ approved and differs from ordinary sequential `call` execution outside a judge.
 
 ```text
 judge str assess_urgency from default_wrapper
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     given
         str question
     state
@@ -467,7 +483,7 @@ the name and `from` selecting shared connection configuration:
 
 ```text
 fetch user_profile load_profile from account_service
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
+    emits [http::request_failed]
     given
         str user_id
     get "/profile"
@@ -481,14 +497,8 @@ Invoke it using ordinary call syntax and completion handling:
 
 ```text
 match call load_profile("42")
+    http::request_failed
     ok user_profile profile => ok profile
-    http::invalid_request
-    http::credentials_missing
-    http::transport_failed
-    http::timeout
-    http::body_limit
-    http::status_error
-    codec::invalid_data
 ```
 
 `user_profile` is a separately declared record describing the expected decoded
@@ -503,7 +513,7 @@ status and immutable header data. A body-only `fetch receipt ...` remains availa
 
 ```text
 fetch http::response<receipt> save_receipt from service
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, codec::invalid_data]
+    emits [http::request_failed]
     given
         receipt_request payload
     post "/receipts"
@@ -903,7 +913,7 @@ strings. Indentation spaces inside multiline strings are preserved exactly;
 shared indentation is not automatically stripped. A newline immediately after
 the opening triple quotes or immediately before the closing triple quotes is
 preserved. The listed escapes are the complete inventory under [C2](technical-spec.md#c2).
-Assertions still occupy one source line; this
+Assertion input/expectation rows still occupy one source line; this
 choice does not create an exception for multiline literals inside assertions.
 
 Raw strings use a lowercase `r` prefix, for example `r"C:\files\notes"`.
@@ -1238,8 +1248,7 @@ declaration order, checking the expected whole completion:
 small_sum: 1, 2 => ok 3
 ```
 
-Every complete assertion must occupy one source line, including its inputs and
-expected completion. There are no grouping parentheses around the input list.
+Each assertion input/expectation row occupies one source line. Native assertion rows may have the separate indented mode line specified in P4.1. There are no grouping parentheses around the input list.
 Record and error constructor parentheses remain. Success expectations use
 `ok expression`, or bare `ok` for void; error expectations use the error
 constructor and complete payload.
@@ -1294,7 +1303,7 @@ policy is inherited automatically.
 Reuse ordinary `asserts` and approved call-site `when` tables when testing
 consumers of AI and fetch declarations. Do not introduce a separate top-level
 assertion declaration or declaration-level `when` fixture section through this
-selection. The excerpt below assumes `user_profile` has one string field:
+selection. The excerpt below assumes `user_profile` has one string field and its enclosing function permits `http::request_failed`:
 
 ```text
 // Inside a calling function:
@@ -1303,6 +1312,7 @@ asserts
 match call load_profile("42")
     when
         example: "42" => ok user_profile("Sam")
+    http::request_failed
     ok user_profile profile => ok profile
 ```
 
@@ -1366,14 +1376,7 @@ runtime failures that can propagate to a Can handler; it does not guarantee
 recovery from fatal process termination, such as fatal out-of-memory.
 If no handler catches a standard failure, it is fatal. The standard-failure inventory and coordination qualification are fixed by
 [C9](technical-spec.md#c9) and [Q7](coordination-spec.md#q7-what-is-the-priority-of-domain-errors-and-standard-failures).
-The standard-failure handler can inspect a string description of the caught
-failure, including runtime exceptions originating in generated TypeScript or
-JavaScript/Bun operations rather than declared Can domain errors. This value
-is exposed as a string, not as a declared Can error type. Bind the description
-with `[_] as str message => expression`, using `as <type> <name>`.
-The unbound `[_] => expression` form remains available when the description is
-not needed. Canonical conversion of thrown values to strings is defined in
-[C9](technical-spec.md#c9); arbitrary object coercion is not invoked.
+The bound handler uses `[_] as standard_failure f => expression`. Its immutable `f.kind`, `f.message` and opaque `f.occurrence_id` describe the caught occurrence, including failures from generated TypeScript or native operations. The underlying cause remains private; the snapshot is not a constructible domain error. The unbound `[_] => expression` form remains available. C9/C9.1 define canonical messages without arbitrary object coercion and preserve sticky harness failures even if caught.
 
 Direct successful-payload binding is a compile-time error when the callee's
 declared `emits` set is nonempty, even if a particular invocation would succeed.
@@ -1393,8 +1396,8 @@ fn int lookup_or_zero
         known_key: "answer" => ok 42
         missing_becomes_zero: "other" => ok 0
     match call lookup(key)
-        ok int number => ok number
         missing => ok 0
+        ok int number => ok number
 ```
 
 Here `lookup` has success type `int` and declared error set `[missing]`, returning
@@ -1405,16 +1408,16 @@ A bare `ok` arm forwards the matched success and its whole payload unchanged:
 
 ```text
 match call lookup(key)
-    ok
     missing => ok 0
+    ok
 ```
 
 A bare named error arm forwards that exact error and its complete payload:
 
 ```text
 match call lookup(key)
-    ok
     missing
+    ok
 ```
 
 Every declared outcome requires an explicit arm. There is no omitted-success
@@ -1452,10 +1455,10 @@ match chain
     call find_user(user_id) as user found_user
     call load_account(found_user.account_id) as account found_account
     call check_balance(found_account) as account checked_account
-    ok => ok checked_account
     user_not_found => access_denied()
     account_not_found => access_denied()
     insufficient_balance
+    ok => ok checked_account
 ```
 
 Each binding uses `as <type> <name>`, with an explicit type before the name.
@@ -1603,9 +1606,7 @@ match number
 
 Only inclusive integer literal bounds are admitted under [C5](technical-spec.md#c5).
 
-Match an error with its bare name. Within that arm, the error name refers to
-the matched error and its payload fields are accessed by their declared names
-using a dot. Positional error-payload binding patterns are not supported;
+Match an error with its qualified name and optional exact generic arguments. A bare generic name requires one applicable specialization. An optional `as alias` binds the payload and requires `=>`; without an alias the short error name is the binding. Access payload fields by their declared names using a dot. C5.1 applies these heads to ordinary and coordination completion regions. Positional error-payload binding patterns are not supported;
 unused payload fields require no placeholder. This rule applies to error
 matching, not ordinary record patterns or the ordinary-data wildcard.
 
@@ -1665,8 +1666,8 @@ fn int clamp_minimum
         unchanged: 5, 3 => ok 5
         raised: 2, 3 => ok 3
     match call require_minimum(value, minimum)
-        ok
         below_minimum => ok below_minimum.minimum
+        ok
 ```
 
 ## Records
@@ -1888,8 +1889,7 @@ numbers.length
 The compiler must translate approved methods and properties to the equivalent
 TypeScript/JavaScript built-in prototype methods or instance properties used
 by Bun, rather than reimplementing an equivalent standard operation in Can.
-This includes lowering `.map` and `.slice` through their corresponding native
-methods and `.length` through the native property. Compiler-owned adapters may
+This includes sequential `.map` through native `Array.fromAsync` with the completion adapter in C7, `.slice` through the native copying method and `.length` through the native property. Compiler-owned adapters may
 bridge Can's types, callable/completion conventions and declared errors; native
 lowering must preserve those contracts rather than bypass them.
 
@@ -2027,24 +2027,24 @@ match call concurrent
 
 match call concurrent with error
     primary::lookup(user_id)
-        ok profile primary_profile => ...
         primary_unavailable => ...
+        ok profile primary_profile => ...
     backup::lookup(user_id)
-        ok profile backup_profile => ...
         backup_unavailable => ...
+        ok profile backup_profile => ...
 
 match call race
     primary::lookup(user_id)
     backup::lookup(user_id)
-    ok profile found_profile => ...
     all_failed => ...
+    ok profile found_profile => ...
 
 match call race with error
     primary::lookup(user_id)
     backup::lookup(user_id)
-    ok profile found_profile => ...
     primary_unavailable => ...
     backup_unavailable => ...
+    ok profile found_profile => ...
 ```
 
 - `match call concurrent`: success arms are beneath their calls; shared domain-error
@@ -2073,7 +2073,7 @@ Standard failures remain distinct from declared domain errors and use the
 existing optional `[_]` handler where applicable. [Q6–Q9](coordination-spec.md#q6-what-exactly-is-all_failed) defines standard
 failures within aggregates, spread typing, empty inputs and dispatch priority.
 
-These layouts retain lowercase `ok` and bare error-name patterns. Capitalized
+These layouts retain lowercase `ok` and exact error heads, including unambiguous bare names under C5.1. Capitalized
 success markers and constructor-shaped error patterns in earlier sketches did
 not revise those established rules.
 
@@ -2085,11 +2085,11 @@ not an `as` suffix or a separate binding line inside the block:
 ```text
 save_result[] results = match call concurrent with error
     postgres::save(account)
-        ok receipt saved => ok save_result("postgres", true)
         postgres_failed => ok save_result("postgres", false)
+        ok receipt saved => ok save_result("postgres", true)
     redis::save(account)
-        ok receipt saved => ok save_result("redis", true)
         redis_failed => ok save_result("redis", false)
+        ok receipt saved => ok save_result("redis", true)
 ```
 
 This excerpt assumes a declared `save_result` record containing a database name
@@ -2140,9 +2140,9 @@ successful payloads form the bound array in collection order:
 ```text
 bool[] results = match call concurrent with error
     ...operations
-        ok receipt saved => ok true
         postgres_failed => ok false
         redis_failed => ok false
+        ok receipt saved => ok true
 ```
 
 This excerpt assumes compatible callable inputs returning `receipt` with the

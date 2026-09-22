@@ -1,5 +1,7 @@
 # Stage 4 — Implementation plan
 
+Current revision work: [September 22 implementation plan](language-fixes-plan-2026-09-22.md) and [ordered LF01–LF21 tasks](language-fixes-tasks-2026-09-22.md). The completed record below remains historical; its checked tasks do not cover the new fixes.
+
 Prepared after [reconciliation](reconciliation.md). Stage6 implementation subsequently ran to completion: [tasks](tasks.md) records all fifty tasks checked with evidence, and [coverage](coverage.md) maps contracts to owners and evidence. The earlier pause is over and the [file-level handoff](remaining-tasks.md) now records every plan closed. This plan targeted the whole approved redesign, not repairs to the predecessor compiler.
 
 ## Milestones and exit gates

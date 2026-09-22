@@ -1,0 +1,15 @@
+package app
+    provides []
+    uses []
+fn int answer
+    emits []
+    asserts
+        wrong: => ok 2
+    ok 1
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

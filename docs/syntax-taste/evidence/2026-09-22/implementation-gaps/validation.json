@@ -1,0 +1,9 @@
+{
+  "local_links_checked": 37,
+  "project_files_hash_verified": 39,
+  "initial_cli_lsp_invocations": 23,
+  "transaction_followup_invocations": 4,
+  "selected_runtime_tests_passed": 10,
+  "compiler_runtime_changed": false,
+  "full_suite_run": false
+}

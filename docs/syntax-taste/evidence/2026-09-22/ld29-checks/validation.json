@@ -1,0 +1,21 @@
+{
+  "kind": "ld29-consultation-evidence",
+  "requests": 3,
+  "questions_per_request": 4,
+  "all_prose_fields_distinct": true,
+  "full_request_semantics_review": "pre-dispatch-audit.md",
+  "selected": {
+    "api": "checks::require",
+    "channel": "domain",
+    "error": "checks::failed",
+    "assertions": "existing constructor expectations"
+  },
+  "unused_conditional_disagreement": "standard_expectations",
+  "reported_tokens": 5265,
+  "local_links_checked": 3,
+  "proposed_core_id_1010_available": true,
+  "design_gate_closed": true,
+  "compiler_runtime_tests_run": false,
+  "implementation_acceptance_passed": false,
+  "contract_sha256": "68620c39ef2ee7dabd69df7c0c7166f1399298e6c3df16e9d9d9be486a76b9bd"
+}

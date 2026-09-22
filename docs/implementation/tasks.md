@@ -1,5 +1,7 @@
 # Stage 5 — Actionable implementation tasks
 
+Current revision work: [September 22 implementation plan](language-fixes-plan-2026-09-22.md) and [ordered LF01–LF21 tasks](language-fixes-tasks-2026-09-22.md). The completed record below remains historical; its checked tasks do not cover the new fixes.
+
 Implementation was paused at the user’s request as of 2026-09-21, resumed under renewed authorization the same day, and completed with all 50 tasks checked and evidenced. Checkboxes record completed, verified tasks. The handoff baseline had 36 of 50 tasks complete. IDs are stable; dependencies are task IDs, not chronological numbering. New paths below are proposed implementation locations. Existing files are to be replaced/adapted, not treated as policy. [Plan](plan.md) defines output/distribution invariants; [coverage](coverage.md) defines completeness.
 
 Reference key: [C](../syntax-taste/technical-spec.md), [Q](../syntax-taste/coordination-spec.md), [A](../syntax-taste/ai-io-spec.md), [P](../syntax-taste/platform-testing-spec.md). Every task includes positive (P+), negative (N−), and integration (INT) evidence. “Done” requires the observable result and its tests, not only changed source. Test source belongs under `compiler/testdata/current`, pass tests beside new Go code, runtime tests under `runtime/test`, and end-to-end release tests under `tests/integration`.

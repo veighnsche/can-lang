@@ -1,0 +1,89 @@
+{
+  "kind": "language-fixes-plan-validation",
+  "ordered_tasks": 21,
+  "pending_tasks": 21,
+  "completed_tasks": 0,
+  "dependency_edges": 72,
+  "topological_order_valid": true,
+  "all_tasks_reach_final_gate": true,
+  "accepted_changes": 16,
+  "acceptance_task_coverage": {
+    "AE49": [
+      "LF01",
+      "LF20",
+      "LF21"
+    ],
+    "AE44": [
+      "LF02",
+      "LF17",
+      "LF21"
+    ],
+    "AE22": [
+      "LF03",
+      "LF14",
+      "LF15",
+      "LF21"
+    ],
+    "AE23": [
+      "LF04",
+      "LF21"
+    ],
+    "AE17": [
+      "LF05",
+      "LF21"
+    ],
+    "AE11": [
+      "LF06",
+      "LF21"
+    ],
+    "AE15": [
+      "LF07",
+      "LF21"
+    ],
+    "AE29": [
+      "LF08",
+      "LF21"
+    ],
+    "AE07": [
+      "LF09",
+      "LF10",
+      "LF21"
+    ],
+    "AE09": [
+      "LF09",
+      "LF12",
+      "LF21"
+    ],
+    "AE25": [
+      "LF11",
+      "LF12",
+      "LF21"
+    ],
+    "AE27": [
+      "LF13",
+      "LF14",
+      "LF21"
+    ],
+    "AE18": [
+      "LF16",
+      "LF21"
+    ],
+    "AE45": [
+      "LF18",
+      "LF21"
+    ],
+    "AE33": [
+      "LF19",
+      "LF21"
+    ],
+    "AE47": [
+      "LF19",
+      "LF21"
+    ]
+  },
+  "local_links_checked": 38,
+  "plan_sha256": "0b001fe99856e612e92a2625730b3eb71cd02f50337d547a64ead401dd19e2e2",
+  "task_list_sha256": "89765a899ce6dd25c3a2fd51d1ef31b995135ae37c600971c726385237dff0c4",
+  "implementation_tests_run": false,
+  "implementation_acceptance_passed": false
+}

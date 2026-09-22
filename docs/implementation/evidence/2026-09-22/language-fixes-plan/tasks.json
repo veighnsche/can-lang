@@ -1,0 +1,556 @@
+{
+  "schema": "can.language-fixes-plan.v1",
+  "status": "planned",
+  "tasks": [
+    {
+      "id": "LF01",
+      "title": "Freeze revision inputs and the acceptance baseline",
+      "depends": [],
+      "acceptance": [
+        "AE49"
+      ],
+      "areas": [
+        "docs/implementation",
+        "docs/syntax-taste/evidence/2026-09-22",
+        "distribution/target.json"
+      ],
+      "work": "Capture the implementation starting commit, working changes, canonical specification hashes, catalogue and bundled Bun identity. Reuse the saved eight-call source, four application measurements and G1\u2013G5 projects. Create a result manifest for all 16 AE records; preserve original before evidence unchanged. Record actual commands/environment for reruns and keep raw data outside normal diagnostic output.",
+      "positive": "All accepted records have source/fixture/native evidence slots and the known baseline hashes resolve.",
+      "negative": "Refuse a comparison with changed operations, missing failure cases or substituted acceptance for implemented evidence.",
+      "integration": "Rerun only the bounded G1\u2013G4 controls needed to establish the actual starting checkout; preserve G5 as the resource regression constraint. Save any drift rather than reclassifying it silently.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF02",
+      "title": "Carry precise semantic source spans through diagnostics",
+      "depends": [
+        "LF01"
+      ],
+      "acceptance": [
+        "AE44"
+      ],
+      "areas": [
+        "compiler/internal/source",
+        "compiler/internal/resolve",
+        "compiler/internal/check/errors.go",
+        "compiler/internal/driver/diagnostics.go",
+        "tools"
+      ],
+      "work": "Introduce/extend structured primary and related spans from resolver/checker through diagnostic serialization and the existing editor bridge. Preserve source identity and byte-to-UTF-16 conversion. Establish span support before new wrapper/template diagnostics; do not infer offsets from message prose.",
+      "positive": "G4 line-8 name/type errors point to the expression, including astral text and unsaved overlays.",
+      "negative": "Lexical control diagnostics retain their correct locations; imported/absent or stale overlay locations cannot silently become line 1.",
+      "integration": "Read-only editor diagnostics do not build or run a program. Existing runtime source-map locations stay correct. Broader obligation explanations and validated fixes close in LF17.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF03",
+      "title": "Separate assertion staging from production publication",
+      "depends": [
+        "LF01"
+      ],
+      "acceptance": [
+        "AE22"
+      ],
+      "areas": [
+        "compiler/internal/driver/commands.go",
+        "compiler/internal/driver/assert.go",
+        "compiler/internal/driver/output.go",
+        "compiler/internal/driver/output_metadata.go"
+      ],
+      "work": "Split emission/output validation and private assertion staging from atomic production selection. Reuse owned dist confinement, writer protection and reader leases. Give assert a nonpublishing path on success, failure and interruption; do not replace the existing atomic selection mechanism.",
+      "positive": "An assertion run uses staged checked modules and leaves an existing production current selection unchanged.",
+      "negative": "Failed/hanging assertion execution never selects test output; malformed staging, ownership or confinement still rejects.",
+      "integration": "G2 reproducer no longer changes current, including a project with no prior current. Full build verification is deliberately not claimed until LF15.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF04",
+      "title": "Supervise assertion roots with bounded external deadlines",
+      "depends": [
+        "LF02",
+        "LF03"
+      ],
+      "acceptance": [
+        "AE23"
+      ],
+      "areas": [
+        "compiler/internal/driver/assert.go",
+        "compiler/internal/driver/runtime.go",
+        "runtime/assert",
+        "compiler/internal/ir/assertions.go"
+      ],
+      "work": "Implement P15.1 per-root workers, stable root order and fresh harness contexts. Add --assert-timeout-ms 1..600000, default 5000. Measure monotonic time before launch through result/drain delivery; timeout wins at equality. Kill outside the worker, cap reaping at 1000ms and stop on isolation failure. Extend worker/report protocol for root and last-known source/invocation progress without secrets.",
+      "positive": "Passing roots drain and report within budget; CLI selection remains explicitly partial and nonpublishing.",
+      "negative": "Test pending empty race, noncooperating CPU worker, late pass, crash/protocol failure, invalid budgets and unconfirmed reaping. The prior recursive stress case is not claimed as an established CPU hang.",
+      "integration": "G3 now returns a bounded failure report. Production empty-race semantics stay native and pending; shutdown deadlines cannot be caught in Can. Share this supervisor with build in LF15.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF05",
+      "title": "Implement exact generic-error heads and aliases",
+      "depends": [
+        "LF02"
+      ],
+      "acceptance": [
+        "AE17"
+      ],
+      "areas": [
+        "compiler/internal/syntax/matches.go",
+        "compiler/internal/check/patterns.go",
+        "compiler/internal/check/pattern_coverage.go",
+        "compiler/internal/check/aggregate.go",
+        "compiler/internal/ir/regions.go",
+        "compiler/internal/emit/regions.go"
+      ],
+      "work": "Parse/resolve exact qualified error heads with type arguments and optional aliases under C5.1. Match complete nominal specializations, allow unambiguous bare heads and retain exact unaliased forwarding shorthand. Apply ordinary data/call/chain and Q ownership sets, including distinct nested all_failed leaves in one named outer race variant. No covariance, payload flattening or global variant search.",
+      "positive": "Two exact all_failed specializations dispatch correctly across every applicable mode; aliases bind only the chosen payload.",
+      "negative": "Ambiguous bare heads, duplicate coverage, missing specializations, alias without arrow and incomplete outer failure variants reject with spans.",
+      "integration": "Execute emitted matches and nested aggregates, preserving payloads and occurrence data. Add the pattern representation required by wrapper policy in LF12.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF06",
+      "title": "Enforce failure arms before final success",
+      "depends": [
+        "LF05"
+      ],
+      "acceptance": [
+        "AE11"
+      ],
+      "areas": [
+        "compiler/internal/check/completion_matches.go",
+        "compiler/internal/check/coordination.go",
+        "compiler/internal/syntax/matches.go",
+        "compiler/testdata/current"
+      ],
+      "work": "Enforce C5.1 order in each applicable completion region and migrate affected admitted fixtures/goldens. Keep shared and per-entry coordination owners distinct; do not reorder ordinary data patterns, native question options or handler execution.",
+      "positive": "Failure-first call/chain and applicable coordination arms accept and retain original recovery result types.",
+      "negative": "Success before a later error/standard arm, missing success and duplicate success reject at the actual offending head.",
+      "integration": "Compare runtime dispatch/settlement before and after source migration; changing source order must not change native Promise combinators or scheduling.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF07",
+      "title": "Expose standard snapshots in ordinary catches",
+      "depends": [
+        "LF05",
+        "LF06"
+      ],
+      "acceptance": [
+        "AE15"
+      ],
+      "areas": [
+        "compiler/internal/check/completions.go",
+        "compiler/internal/emit/regions.go",
+        "runtime/failure.ts",
+        "runtime/coordination.ts",
+        "runtime/assert"
+      ],
+      "work": "Replace string binders with standard_failure snapshot binders in ordinary and applicable coordination catches. Reuse occurrence_id, kind, message, six standard categories, canonical sanitization and private cause storage. Update current sources directly; no legacy binder alias.",
+      "positive": "The same failure observed through ordinary catch and aggregate snapshot retains identity and projections.",
+      "negative": "Reject str binders, snapshot construction/update/wire encoding or snapshot domain bounds. Proxy/getter/throwing-toString descriptions cannot execute arbitrary code.",
+      "integration": "Run argument-failure catch boundaries, handler-failure escape and sticky harness recovery cases. Timeout remains outside Can catches.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF08",
+      "title": "Add named runtime checks and migrate arithmetic traps",
+      "depends": [
+        "LF02",
+        "LF06"
+      ],
+      "acceptance": [
+        "AE29"
+      ],
+      "areas": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/catalogue/cmd/cataloguegen",
+        "runtime",
+        "compiler/testdata/current/fetch"
+      ],
+      "work": "Implement C9.2 checks::require(bool, str) -> void emits [checks::failed], core ID 1010 and exact reason payload. Generate catalogue mirrors through the existing generator. Lower to a native boolean branch with existing domain/diagnostic adapters. Replace deliberate divide-by-zero helpers and update real caller bounds/arms and attached negative assertions.",
+      "positive": "True, false, empty reason and ordinary recovery behave as specified; both arguments evaluate once in order.",
+      "negative": "Wrong types/arity, unchecked errorful calls, missing bounds/arms and manufactured standard expectations reject. A caught check cannot clear a separate harness violation.",
+      "integration": "Execute the complete C9.2 library and migrated helpers. Check correct call-site spans, exact expected domain errors, native lowering and no production disabling. No new standard category or assertion DSL.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF09",
+      "title": "Represent failure origin at native operation boundaries",
+      "depends": [
+        "LF02",
+        "LF05"
+      ],
+      "acceptance": [
+        "AE07",
+        "AE09"
+      ],
+      "areas": [
+        "compiler/internal/check/error_plan.go",
+        "compiler/internal/ir/fetch.go",
+        "compiler/internal/ir/judge.go",
+        "runtime/domain.ts",
+        "runtime/transport",
+        "runtime/ai",
+        "compiler/internal/emit"
+      ],
+      "work": "Add compiler-private native/emitted origin and original-operation metadata where failures arise. Keep raw native obligations N distinct from declared authored obligations E, including same-named errors. Preserve original cause and forwarding identity; argument failures before target entry stay outside the wrapper boundary. This task supplies infrastructure, not a new public error API.",
+      "positive": "Native codec failure and authored codec::invalid_data remain distinguishable even with identical payloads.",
+      "negative": "Broad catch-around-handlers, nominal-name-only classification, relabelling unknown native exceptions or caller argument failures fails targeted regression checks.",
+      "integration": "Exercise one-request judge preparation, whole-answer validation and ordered handlers; authored/check failures retain emitted provenance. Save private occurrence traces for LF10/LF12.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF10",
+      "title": "Normalize public fetch/judge infrastructure errors",
+      "depends": [
+        "LF06",
+        "LF09"
+      ],
+      "acceptance": [
+        "AE07"
+      ],
+      "areas": [
+        "compiler/internal/catalogue/catalogue.json",
+        "compiler/internal/check/fetch.go",
+        "compiler/internal/check/judge.go",
+        "compiler/internal/emit/fetch.go",
+        "runtime/transport",
+        "runtime/ai",
+        "compiler/testdata/current"
+      ],
+      "work": "Implement A2.4 request_failed with ID 1106 and failure_detail containing the seven existing exact typed errors. Change required fetch/judge public bounds and adapter completion mapping at native origins only. Migrate current source and catalogue references as one coherent change, retaining explicit authored surplus errors.",
+      "positive": "All seven detail payloads survive selective recovery. Body-only status fails; envelope non-2xx succeeds; valid JSON with invalid AI answer remains ai::invalid_answer.",
+      "negative": "Unknown standard exceptions, authored raw-named failures, LLM/SQL/standalone codec errors and pre-entry arguments must not be swept into normalization.",
+      "integration": "Run eight-call equivalent source and actual decoder/transport fixtures; raw cause is private, mapped occurrence is fresh and forwarding stable. Source-count targets alone do not close AE07.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF11",
+      "title": "Attach native assertion roots and raw exchange fixtures",
+      "depends": [
+        "LF04",
+        "LF08",
+        "LF10"
+      ],
+      "acceptance": [
+        "AE25"
+      ],
+      "areas": [
+        "compiler/internal/syntax/native.go",
+        "compiler/internal/check/assertions.go",
+        "compiler/internal/ir/assertions.go",
+        "compiler/internal/emit",
+        "runtime/assert",
+        "runtime/transport",
+        "runtime/ai"
+      ],
+      "work": "Implement P4.1 mandatory fetch/judge/LLM assertions, inherited input/state binding and using raw mode for attached roots and native lexical when rows. Validate can.native-fixture.v1 request/environment/exchange data, execute real preparation/decoder/handlers and compare actual completion before delivery. Questions/arms retain judge-owned transport tests. Migrate existing native declarations and add their raw files in this task; dependency fixture hashing completes in LF14.",
+      "positive": "Test request method/URL/header/body comparison, exact JSON integer tokens, fake credentials, envelope responses, full judge validation/dispatch and preparation failures with null exchange.",
+      "negative": "Reject malformed/extra modes, wrong targets/inputs, missing request/decoder coverage, live calls, unused exchanges, wrong outcomes and raw mode on ordinary function targets.",
+      "integration": "Run real native roots under LF04 supervision; keep supplied-completion, raw-provider-fixture and real-can evidence distinct. Exercise dependency and grouped-state roots; no real credentials or live quality calls.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF12",
+      "title": "Implement derived wrappers, calculated bounds and handler tests",
+      "depends": [
+        "LF05",
+        "LF07",
+        "LF09",
+        "LF10",
+        "LF11"
+      ],
+      "acceptance": [
+        "AE09",
+        "AE25"
+      ],
+      "areas": [
+        "compiler/internal/syntax",
+        "compiler/internal/resolve",
+        "compiler/internal/check/error_plan.go",
+        "compiler/internal/ir",
+        "compiler/internal/emit",
+        "runtime/assert"
+      ],
+      "work": "Implement A3.2 wrap declarations with one base, explicit emits calculated, attached tests and origin-specific handlers. Resolve original N/E tables, overrides and terminal inherit; compute finite public bounds with explicit-bound callees as leaves. Extend native roots/raw execution to wrappers and add attached-only typed policy injection and policy-fixture reports. Keep complete target signature, grouped state, connection and callable eligibility.",
+      "positive": "Three-generation wrappers override consumed keys, delegate selectively, retain omitted handlers and expose exact calculated bounds. Test each locally declared key without borrowing parent coverage.",
+      "negative": "Reject base/bound cycles, impossible/duplicate keys, multiple bases, signature changes, ordinary/LLM/question targets, misplaced inherit, injected standard failures and consumer policy injection.",
+      "integration": "Run eight-call selective recovery, 404 override/429 inherit and same-type native/emitted failures. Original operation runs once; handler failures never redispatch; fully replaced bounds disappear only when no other path emits them.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF13",
+      "title": "Expand typed fixture templates at lexical owners",
+      "depends": [
+        "LF11",
+        "LF12"
+      ],
+      "acceptance": [
+        "AE27"
+      ],
+      "areas": [
+        "compiler/internal/syntax",
+        "compiler/internal/resolve",
+        "compiler/internal/check/assertions.go",
+        "compiler/internal/check/sites.go",
+        "compiler/internal/project",
+        "runtime/assert"
+      ],
+      "work": "Implement P3.1 fixture declarations and local selector: use expansion with typed inert arguments and an exact target identity, including supported concrete generic targets and wrappers. Preserve queue ownership, invocation/participant/callable fingerprints and FIFO assignment. Resolve raw paths at the defining source file; retain definition/case/use provenance for LF14/LF17.",
+      "positive": "One template reused at two sites creates independent local queues; imported/raw/grouped-state cases behave like equivalent inline rows.",
+      "negative": "Reject executable/captured template arguments, wrong exact targets, nested templates, wildcard matching, duplicate claims and missing/unused rows.",
+      "integration": "Compare inline versus expanded argument/capture checks, repeated concurrent visits and source-relative raw files in dependencies. No root/ordinal override mechanism or extra runtime dispatch is introduced.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF14",
+      "title": "Capture complete verification inputs and lock raw fixtures",
+      "depends": [
+        "LF03",
+        "LF11",
+        "LF12",
+        "LF13"
+      ],
+      "acceptance": [
+        "AE22",
+        "AE27"
+      ],
+      "areas": [
+        "compiler/internal/project/graph.go",
+        "compiler/internal/project/lock.go",
+        "compiler/internal/project/assets.go",
+        "compiler/internal/driver/output_metadata.go"
+      ],
+      "work": "Extend immutable input capture to every referenced fixture/asset and all assertion/native/wrapper roots. Implement required dependency fixtures_sha256 using exact P15.1 prefix, path ordering, deduplication and 64-bit length framing. Resolve confinement before reading and feed workers captured bytes. Bind source/config/lock/catalogue/runtime/compiler/options/root/timeout identities without silently rewriting locks.",
+      "positive": "Empty/shared/imported template fixture trees produce stable digests; lock and staged workers observe the same bytes.",
+      "negative": "Path escape, symlink violations, stale locks, missing files and source/fixture/asset edits between capture and revalidation reject.",
+      "integration": "Change only a dependency raw fixture and prove verification identity/lock mismatch changes. Keep active generation leases and owned dist invariants intact.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF15",
+      "title": "Gate atomic production publication on all-root verification",
+      "depends": [
+        "LF04",
+        "LF08",
+        "LF11",
+        "LF12",
+        "LF13",
+        "LF14"
+      ],
+      "acceptance": [
+        "AE22"
+      ],
+      "areas": [
+        "compiler/internal/driver/commands.go",
+        "compiler/internal/driver/assert.go",
+        "compiler/internal/driver/output.go",
+        "runtime/assert",
+        "tests/integration"
+      ],
+      "work": "Wire P15.1 capture \u2192 check \u2192 private test staging \u2192 supervise every root \u2192 validate production staging \u2192 revalidate inputs \u2192 publish. Include required dependency/native/wrapper roots, no selected-only or cached-pass bypass. Publish exactly the verified production generation and report identities, evidence totals and deadline policy. Assert remains nonpublishing; build does not execute live main.",
+      "positive": "All required passing roots publish one complete verified generation; selected assert runs report their partial scope.",
+      "negative": "Any failed/missing/timed-out root, sticky violation, coverage gap, invalid generated TS, worker isolation failure or input drift prevents publication. No skip/disabled-deadline flag.",
+      "integration": "G1/G2 regressions pass; fault-inject interrupted publication and preserve either the old complete generation or fully verified new one. Existing readers retain leases. No unexpected live work occurs.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF16",
+      "title": "Replace recursive aggregate widening with explicit native mapping",
+      "depends": [
+        "LF05",
+        "LF07"
+      ],
+      "acceptance": [
+        "AE18"
+      ],
+      "areas": [
+        "compiler/testdata/current",
+        "tests/integration",
+        "runtime/collections/array.ts",
+        "docs/implementation/coordination.md"
+      ],
+      "work": "Build the AE18 named element converter and explicit all_failed reconstruction against the implemented exact heads/snapshots. Replace demonstrated recursive slicing scaffolding where a shared aggregate is actually needed. Reuse the existing protected native Array.fromAsync mapping; do not add a covariance rule or collection implementation.",
+      "positive": "Empty, singleton, repeated, large and mixed/nested failure arrays preserve values, order and snapshot identity.",
+      "negative": "Implicit narrow-array-to-wide-array assignment, missing target variant leaves and incompatible callback bounds still reject.",
+      "integration": "Run recursive and map baselines on identical data, including data-valued then fields; measure actual reduced scaffolding. If the idiom fails, save the reproducer and resolve the defect without inventing an abstraction.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF17",
+      "title": "Complete obligation diagnostics and checker-validated fixes",
+      "depends": [
+        "LF02",
+        "LF05",
+        "LF06",
+        "LF07",
+        "LF12",
+        "LF13",
+        "LF15"
+      ],
+      "acceptance": [
+        "AE44"
+      ],
+      "areas": [
+        "compiler/internal/check",
+        "compiler/internal/driver/diagnostics.go",
+        "compiler/internal/project/overlay.go",
+        "tools",
+        "runtime/assert"
+      ],
+      "work": "Add explanations and related spans for missing arms, calculated bounds/override chains, generic alternatives, fixture definition/use, capture requirements and pending invocation progress. Generate only fixes that can be checked against an isolated current overlay snapshot. Preserve declared contracts and recovery ownership; omit unavailable safe fixes.",
+      "positive": "Valid repairs typecheck with exact primary/secondary locations, including cross-package astral/overlay cases.",
+      "negative": "Reject stale edits and fixes that suppress errors, flatten state, silently widen APIs or change completion ownership. Reports never dump private captures/causes.",
+      "integration": "Run AE44 end to end across the final new source forms; read-only tooling never builds, publishes or calls providers. Keep existing runtime source mappings unchanged except corrected metadata.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF18",
+      "title": "Preserve source trivia and provide safe formatting",
+      "depends": [
+        "LF05",
+        "LF06",
+        "LF11",
+        "LF12",
+        "LF13",
+        "LF17"
+      ],
+      "acceptance": [
+        "AE45"
+      ],
+      "areas": [
+        "compiler/internal/syntax/lexer.go",
+        "compiler/internal/syntax/format.go",
+        "compiler/internal/syntax/native_format.go",
+        "compiler",
+        "tests/integration"
+      ],
+      "work": "Extend the existing parser/renderer with owned trivia, not a second parser. Document and implement a single-file canlc format <file> interface: stdout by default, --write for validated replacement. Resolve the containing project for semantic validation; check proposed content through an overlay before write, recheck original file identity and use atomic replacement. Add command help and tests together. This is a planned tooling interface, not already available syntax.",
+      "positive": "Comments/docstrings/blank groups/raw and triple strings survive; output is idempotent across all new forms and CRLF/UTF-8 inputs.",
+      "negative": "Invalid syntax/semantics, stale source, failed validation/write or unsupported trivia leaves source untouched. Never repair arm order or change string contents silently.",
+      "integration": "Before/after checked IR and runtime completions agree, ignoring source-position shifts; lexical preorder and fixture FIFO allocation stay equivalent. No multiline language extension or runtime formatter.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF19",
+      "title": "Publish accurate capability and language guides",
+      "depends": [
+        "LF08",
+        "LF10",
+        "LF12",
+        "LF13",
+        "LF15",
+        "LF16",
+        "LF17",
+        "LF18"
+      ],
+      "acceptance": [
+        "AE33",
+        "AE47"
+      ],
+      "areas": [
+        "docs/implementation",
+        "docs/syntax-taste",
+        "std/catalogue",
+        "README.md",
+        "compiler/testdata/current"
+      ],
+      "work": "Write one capability admission/evolution guide with a real pure operation and resource operation: signature, native mapping, error translation, immutability/lifetime, fixture/conformance and registry artifacts. Correct finite inference/variant inclusion/container invariance, explicit numeric conversion, configuration validation, formatter and build/assert claims using actual results. Keep historical review quotes labelled; update current docs when behavior really exists.",
+      "positive": "Executable positive examples cover finite expected typing/inference, leaf inclusion, callable subsets and native numeric/string edge cases.",
+      "negative": "Pair with mixed numeric, unresolved inference, nominal mismatch/covariance and invalid manifest negatives; classify an incomplete capability proposal as incomplete.",
+      "integration": "Cross-check current guides/specs/catalogue and reported outputs. Pure documentation changes need link/worked-example checks rather than unrelated runtime rewrites; no third-party native binding mechanism.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF20",
+      "title": "Measure equivalent programs and authoring workflows",
+      "depends": [
+        "LF01",
+        "LF10",
+        "LF12",
+        "LF13",
+        "LF15",
+        "LF16",
+        "LF17",
+        "LF18",
+        "LF19"
+      ],
+      "acceptance": [
+        "AE49"
+      ],
+      "areas": [
+        "docs/syntax-taste/evidence/2026-09-22",
+        "compiler/testdata/current",
+        "tests/integration"
+      ],
+      "work": "Rerun the frozen eight-call comparison and four application baselines after behavior acceptance. Keep eight operations/nesting and full error/fixture coverage. Measure adding a domain failure, changing a request field, changing an existing capture value and reusing a scenario at two sites. Separate production and total test/fixture source costs. Record model/settings/attempts/edits/diagnostic cycles/tokens when actually measured.",
+      "positive": "Equivalent complete projects pass behavioral gates before source-cost comparisons; target 63\u21929 bound entries and 56\u21928 infrastructure arms in the frozen region.",
+      "negative": "Omitted errors/tests, altered requests/order, wrong-boundary mocks or non-equivalent TypeScript baselines invalidate comparisons, even if shorter.",
+      "integration": "Publish raw metrics and edit traces including failures; no arbitrary ratio or statistical generality from one run. Deferred abstractions require their separate demonstrated-need gate, not automatic promotion from counts.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "LF21",
+      "title": "Qualify the integrated revision and close evidence records",
+      "depends": [
+        "LF15",
+        "LF16",
+        "LF17",
+        "LF18",
+        "LF19",
+        "LF20"
+      ],
+      "acceptance": [
+        "AE07",
+        "AE09",
+        "AE11",
+        "AE15",
+        "AE17",
+        "AE18",
+        "AE22",
+        "AE23",
+        "AE25",
+        "AE27",
+        "AE29",
+        "AE33",
+        "AE44",
+        "AE45",
+        "AE47",
+        "AE49"
+      ],
+      "areas": [
+        "tests/integration",
+        "tests/conformance",
+        "distribution",
+        "docs/implementation/evidence/2026-09-22/language-fixes-plan"
+      ],
+      "work": "Run the relevant complete compiler/runtime/bundled integration suites on the pinned target, regenerate/check catalogue mirrors and audit every AE dimension and BC case. Regress retained native AI/state/capture/contracts/coordination/resource behavior. Qualify a local bundle with no external runtime or live credentials. Update per-task evidence and the current implementation docs only from passing results; release upload/signing is separate authorization.",
+      "positive": "Every accepted AE record has a complete result manifest, correct negative diagnostics, runtime/native/fixture evidence and no unresolved completion gate.",
+      "negative": "Skipped, timed-out, stale, wrong-boundary, contradictory or documentation-only behavior evidence cannot close an item. G5 runtime resource enforcement must remain intact without adding static escape scope.",
+      "integration": "Exercise the end-to-end normalized request \u2192 inherited wrapper \u2192 local/raw/template assertion \u2192 verified build \u2192 reader/run flow. Preserve old complete generation on failure. Task list closure means these revisions passed, not that arbitrary live services or untested inputs are certified.",
+      "status": "pending",
+      "evidence": []
+    }
+  ]
+}

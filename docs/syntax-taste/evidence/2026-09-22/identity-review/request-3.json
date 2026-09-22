@@ -1,0 +1,16 @@
+{
+  "model": "jev-latest",
+  "state": "Can has a working compiler and an AI coding-agent audience. Its stated identity places probabilistic judgment in the language through distinct noul/choice/score/judge/llm syntax, not merely library calls. Its baseline is functional: nominal immutable data, first-class references to named top-level functions, visible domain-error contracts and assertion declarations in source. Human keystroke reduction is a secondary consideration. No outside users exist and preserving previous interfaces is unnecessary. The user has fixed seven-infrastructure-error normalization owned by the language at fetch/judge, never at each question, plus inheritance of omitted wrapper rules, priority for the final override, and ok after the error arms. The review keeps native question kinds, four Promise selection semantics, nominal connection choice, match chain and distribution-controlled host access. Recommended fixes include one typed normalized error, build publication conditional on assertions, assertion deadlines, structured standard failures and exact generic-error discrimination. Broader possibilities are flat explicitly marked state arguments or callable types carrying groups, explicit capture maps or exact-name near, finite error-set polymorphism, and lexical fixture-template sharing that retains argument checks. The state alternatives and error-set feature are explicitly pending prototypes rather than adopted design. Three earlier advisory classifications differed over state signatures and certain failure shapes; none constituted validation. There is source-repetition evidence but no measured coding-agent error/completion benefit for those broader syntax proposals. Each candidate strategy below retains dedicated AI forms, inline assertion declarations, immutable nominal values, named functions, explicit public failures and all confirmed normalization behavior. Judge whether the proposal direction preserves identity, without seeking external facts or claiming certainty.",
+  "questions": {
+    "identity_fit": {
+      "type": "choice",
+      "instructions": "Choose the revision approach that most closely fits Can’s purpose and the available validation.",
+      "criteria": {
+        "focused_first": "Start with mandated normalization and demonstrated contract, harness and diagnostic repairs; keep grouped state, near and local test binding until agent-workflow experiments justify expanding signatures, error parameters or fixture syntax.",
+        "uniformity_first": "Pursue the full unification package together with required normalization and quality repairs: ordinary flat state-callable signatures, visible capture assignments, finite bound variables and checked fixture sharing, keeping the specified AI grammar and inline assertions.",
+        "generality_with_surface": "Retain the grouped-state and near surface, carry out required normalization and quality fixes, and advance group-aware callables, finite error parameters and checked fixture templates on functional-composability grounds before comparative agent-workflow testing.",
+        "undetermined": "Keep all three adoption approaches open because the available purpose statements and observations do not determine their priority."
+      }
+    }
+  }
+}

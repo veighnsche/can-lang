@@ -1,0 +1,16 @@
+{
+  "model": "jev-latest",
+  "state": "Can is an implemented language for AI coding agents. Its current design direction makes native probabilistic judgments foundational, with dedicated noul/choice/score/judge/llm grammar, rather than ordinary library wrappers. It is primarily functional, with immutable nominal data, first-class functions but only named top-level function declarations, explicit domain-error bounds and source-attached assertions. Human convenience and fewer keystrokes are not primary design goals. There are zero external users and no compatibility requirement. The user requires language-owned normalization of seven infrastructure errors at fetch/judge boundaries, not individual question wrappers; inherited wrapper omissions and last-override precedence; error arms before final ok. The new review preserves native AI kinds, four Promise coordination meanings, connection identity, match chain and the controlled platform catalogue. It recommends normalized typed failure detail, assertion-gated builds/deadlines, structured standard catches and precise generic error patterns. It also proposes evaluating flat state markers versus grouped callable contracts, explicit capture bindings versus exact-name near captures, finite error-set parameters and shared lexical fixture content with argument checks. State/callable alternatives and error-set parameters are prototype candidates, not selected changes. The three prior consultations split on state calls and some failure representations; agreement was advisory. No measured coding-agent workflow comparison yet shows that those wider syntax changes improve error rate or task completion. Source metrics only show raw repetition. All alternatives below keep dedicated native AI grammar, inline assertion declarations, nominal immutable data, named functions, explicit public errors and the confirmed normalization requirements. The user now asks whether the proposals dilute Can identity. Assess fit from these facts, not new research or a guarantee.",
+  "questions": {
+    "identity_fit": {
+      "type": "choice",
+      "instructions": "Which adoption strategy best protects Can’s stated identity given the current evidence?",
+      "criteria": {
+        "focused_first": "Adopt the required normalization and concrete contract/testing/diagnostic improvements; preserve state grouping, near and locally bound testing structure for now, and require measured agent-workflow prototypes before broader signature, effect or fixture syntax changes.",
+        "uniformity_first": "Alongside required normalization and contract/testing/diagnostic fixes, advance uniform flat state-callable inputs, explicit capture maps, finite error-set parameters and checked lexical fixture reuse as one coherent redesign while retaining the stated native AI and assertion commitments.",
+        "generality_with_surface": "Implement normalization and quality fixes, keep grouped state and near, but prioritize grouped-callable support, finite error-set parameters and checked lexical fixture sharing now as functional abstraction improvements rather than waiting for measured agent-task prototypes.",
+        "undetermined": "The stated purpose and evidence do not suffice to select an adoption strategy; leave the relative scope of the three approaches unresolved."
+      }
+    }
+  }
+}

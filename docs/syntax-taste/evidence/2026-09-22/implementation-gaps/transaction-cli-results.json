@@ -1,0 +1,30 @@
+[
+  {
+    "label": "resource-transaction-record build",
+    "exit_code": 0,
+    "elapsed_seconds": 0.614,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"c69e89cb406e4db92c2131a329bb795cf3b161611207048d0a24f5c03320f744\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-transaction-record/dist/builds/c69e89cb406e4db92c2131a329bb795cf3b161611207048d0a24f5c03320f744\",\"entry\":\"entry.ts\"}\n",
+    "stderr": ""
+  },
+  {
+    "label": "resource-transaction-record assert",
+    "exit_code": 0,
+    "elapsed_seconds": 0.614,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::capture\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::attempt\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\",\"supplied-completion\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": ""
+  },
+  {
+    "label": "resource-transaction-array build",
+    "exit_code": 0,
+    "elapsed_seconds": 0.521,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"2ae93d3eb29e7bd9e518645db528e1ffc04a85354de8ae7c9afdb57530a70108\",\"directory\":\"/private/tmp/can-gap-verification-gzw7ofq8/resource-transaction-array/dist/builds/2ae93d3eb29e7bd9e518645db528e1ffc04a85354de8ae7c9afdb57530a70108\",\"entry\":\"entry.ts\"}\n",
+    "stderr": ""
+  },
+  {
+    "label": "resource-transaction-array assert",
+    "exit_code": 0,
+    "elapsed_seconds": 0.622,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::capture\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::attempt\",\"name\":\"harmless\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\",\"supplied-completion\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": ""
+  }
+]

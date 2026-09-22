@@ -1,0 +1,36 @@
+package app
+    provides []
+    uses [sql]
+record held
+    sql::transaction[] handles
+fn sql::decision<held> capture
+    emits []
+    given
+        near bool take
+        sql::transaction tx
+    asserts
+        harmless: false => ok sql::commit<held>(held([]))
+    match take
+        true => ok sql::commit<held>(held([tx]))
+        false => ok sql::commit<held>(held([]))
+fn held attempt
+    emits [sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    given
+        sql::pool pool
+        bool take
+    asserts
+        harmless: false => ok held([])
+    match call sql::with_transaction<held>(pool, callable capture)
+        when
+            harmless: pool, callable capture => ok held([])
+        ok held escaped => ok escaped
+        sql::connection_failed
+        sql::transaction_failed
+        sql::commit_unknown
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok
