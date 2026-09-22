@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { catalogue, catalogueTypeShapes } from "./catalogue.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "./data.ts";
-import { allocateOccurrenceID, isStandardFailure, type FailureOrigin } from "./failure.ts";
+import { allocateOccurrenceID, freezeProvenance, isStandardFailure, type FailureOrigin, type FailureProvenance } from "./failure.ts";
 
 export type ErrorDeclaration = Readonly<{ identity: string; name: string; id: number; parameters: number }>;
 export type FailureShape = Readonly<{
@@ -16,7 +16,7 @@ type Descriptor = Readonly<{name:string;arguments:readonly Descriptor[] | null}>
 type CatalogueShape = Readonly<{name:string;identity:string;kind:string;parameters:readonly {name:string;constraint:string}[];fields:readonly {name:string;type:Descriptor}[];leaves:readonly Descriptor[]}>;
 declare const domainBrand: unique symbol;
 export type DomainFailure = Readonly<{readonly [domainBrand]:true}>;
-export type DomainDetails = Readonly<{occurrenceID:bigint;declaration:ErrorDeclaration;typeIdentity:string;typeArguments:readonly string[];payload:unknown;cause:unknown;origin:FailureOrigin}>;
+export type DomainDetails = Readonly<{occurrenceID:bigint;declaration:ErrorDeclaration;typeIdentity:string;typeArguments:readonly string[];payload:unknown;cause:unknown;origin:FailureOrigin;provenance:FailureProvenance}>;
 const occurrences = new WeakMap<object, DomainDetails>();
 const objectLike = (value:unknown):value is object => value!==null&&(typeof value==="object"||typeof value==="function");
 export const isDomainFailure = (value:unknown):value is DomainFailure => objectLike(value)&&occurrences.has(value);
@@ -122,11 +122,11 @@ export function createDomainRuntime(plan:ErrorPlan, opaqueAdmission?:OpaqueAdmis
       return true;
     }catch{return false;}
   }
-  function create(typeIdentity:string,payload:unknown,origin:FailureOrigin,cause?:unknown):DomainFailure{
+  function create(typeIdentity:string,payload:unknown,origin:FailureOrigin,cause?:unknown,provenance?:unknown):DomainFailure{
     const s=get(typeIdentity);const declaration=declarations.get(s.declaration??"");
     if(s.kind!=="error"||!declaration||!accepts(typeIdentity,payload))throw new TypeError("invalid domain error payload");
     const token=Object.freeze(Object.create(null));
-    occurrences.set(token,Object.freeze({occurrenceID:allocateOccurrenceID(),declaration,typeIdentity,typeArguments:Object.freeze([...s.arguments]),payload,cause,origin:Object.freeze({...origin,invocation:Object.freeze([...origin.invocation])})}));
+    occurrences.set(token,Object.freeze({occurrenceID:allocateOccurrenceID(),declaration,typeIdentity,typeArguments:Object.freeze([...s.arguments]),payload,cause,origin:Object.freeze({...origin,invocation:Object.freeze([...origin.invocation])}),provenance:freezeProvenance(provenance)}));
     return token;
   }
   function checkBound(occurrence:DomainFailure,allowed:readonly string[]):DomainFailure{

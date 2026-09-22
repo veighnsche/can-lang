@@ -44,13 +44,13 @@ test("named fetch loopback decodes exact JSON, text BOM, bytes and immutable env
  }});
  try{const root=await runOwnedRoot(async()=>{
   const api=createNamedFetch(domain,ids,()=>undefined),c={...connection,endpoint:server.url.href,maxBodyBytes:1024};
-  const json=value(await api.request<any>(c,{...request,path:"/json"},undefined,{mode:"json",schema:responseSchema},origin));expect(json.count).toBe(9007199254740993n);expect(Object.isFrozen(json)).toBe(true);
-  expect(value(await api.request<string>(c,{...request,path:"/text"},undefined,{mode:"text"},origin))).toBe("\ufeffA");
-  const envelope=value(await api.request<any>(c,request,undefined,{mode:"bytes",envelope:"response-bytes"},origin));
+  const json=value(await api.request<any>(c,{...request,path:"/json"},undefined,{mode:"json",schema:responseSchema},origin,"test:http/fetch"));expect(json.count).toBe(9007199254740993n);expect(Object.isFrozen(json)).toBe(true);
+  expect(value(await api.request<string>(c,{...request,path:"/text"},undefined,{mode:"text"},origin,"test:http/fetch"))).toBe("\ufeffA");
+  const envelope=value(await api.request<any>(c,request,undefined,{mode:"bytes",envelope:"response-bytes"},origin,"test:http/fetch"));
   expect(envelope.status).toBe(418n);expect([...copyBytes(envelope.body,origin)]).toEqual([0,255,1]);expect(Object.isFrozen(envelope)).toBe(true);expect(Object.isFrozen(envelope.headers)).toBe(true);
   expect(envelope.headers.filter((h:any)=>h.name==="set-cookie").map((h:any)=>h.value)).toEqual(["a=1","b=2"]);
   expect(envelope.headers.find((h:any)=>h.name==="x-repeat").value).toBe("a, b");
-  check(await api.request(c,request,undefined,{mode:"bytes"},origin),1105,{status:418n});
+  check(await api.request(c,request,undefined,{mode:"bytes"},origin,"test:http/fetch"),1105,{status:418n});
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
 });
@@ -59,7 +59,7 @@ test("named fetch encodes explicit bodies and captures credentials once before l
  const server=Bun.serve({hostname:"127.0.0.1",port:0,async fetch(req){received.push({method:req.method,body:[...new Uint8Array(await req.arrayBuffer())],type:req.headers.get("content-type"),auth:req.headers.get("authorization"),query:new URL(req.url).searchParams.getAll("q")});return new Response("ok");}});
  try{const root=await runOwnedRoot(async()=>{
   let reads=0;const api=createNamedFetch(domain,ids,()=>{reads++;return "token"}),c={...connection,endpoint:server.url.href,maxBodyBytes:1024,bearerEnvironment:"TOKEN"};
-  for(const body of [{mode:"json" as const,value:record("sample",[["count",9007199254740993n]]),schema:responseSchema},{mode:"text" as const,value:"😀"},{mode:"bytes" as const,value:ownBytes(new Uint8Array([0,255]))}])expect(value(await api.request<string>(c,{...request,method:"POST",query:[{name:"q",value:["a b","+"]}]},body,{mode:"text"},origin))).toBe("ok");
+  for(const body of [{mode:"json" as const,value:record("sample",[["count",9007199254740993n]]),schema:responseSchema},{mode:"text" as const,value:"😀"},{mode:"bytes" as const,value:ownBytes(new Uint8Array([0,255]))}])expect(value(await api.request<string>(c,{...request,method:"POST",query:[{name:"q",value:["a b","+"]}]},body,{mode:"text"},origin,"test:http/fetch"))).toBe("ok");
   expect(reads).toBe(3);expect(received.map(r=>r.type)).toEqual(["application/json","text/plain; charset=utf-8","application/octet-stream"]);
   expect(new TextDecoder().decode(new Uint8Array(received[0].body))).toBe('{"count":9007199254740993}');expect(received[1].body).toEqual([...new TextEncoder().encode("😀")]);expect(received[2].body).toEqual([0,255]);
   expect(received.every(r=>r.auth==="Bearer token"&&r.query.join("|")==="a b|+")).toBe(true);
@@ -76,11 +76,11 @@ test("named fetch maps invalid bodies, media and malformed replies to exact erro
  }});
  try{const root=await runOwnedRoot(async()=>{
   const api=createNamedFetch(domain,ids,()=>undefined),c={...connection,endpoint:server.url.href,maxBodyBytes:1024};
-  for(const [path,mode,reason] of [["/utf8","text","utf8"],["/charset","text","charset"],["/empty","json","invalid_json"],["/wrong","json","media_type"],["/duplicate","json","duplicate_member"]] as const)check(await api.request(c,{...request,path},undefined,{mode,schema:responseSchema},origin),1110,{reason});
+  for(const [path,mode,reason] of [["/utf8","text","utf8"],["/charset","text","charset"],["/empty","json","invalid_json"],["/wrong","json","media_type"],["/duplicate","json","duplicate_member"]] as const)check(await api.request(c,{...request,path},undefined,{mode,schema:responseSchema},origin,"test:http/fetch"),1110,{reason});
   const before=launches;
-  check(await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"text/plain"}]},{mode:"json",value:record("sample",[["count",1n]]),schema:responseSchema},{mode:"text"},origin),1100,{reason:"content_type"});
-  check(await api.request(c,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin),1110,{reason:"unicode_scalar"});
-  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST"},{mode:"text",value:"é"},{mode:"text"},origin),1104,{limit:1n});
+  check(await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"text/plain"}]},{mode:"json",value:record("sample",[["count",1n]]),schema:responseSchema},{mode:"text"},origin,"test:http/fetch"),1100,{reason:"content_type"});
+  check(await api.request(c,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin,"test:http/fetch"),1110,{reason:"unicode_scalar"});
+  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST"},{mode:"text",value:"é"},{mode:"text"},origin,"test:http/fetch"),1104,{limit:1n});
   expect(launches).toBe(before);
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
@@ -91,13 +91,13 @@ import {runAssertion} from "../assert/runner.ts";
 test("named fetch raw fixtures handle bodyless requests and unprovided assertions deny authentication",async()=>{
  let reads=0;const api=createNamedFetch(domain,ids,()=>{reads++;return "token"});
  const context=assertionContext({package:"test",declaration:"fetch",name:"unprovided"});
- const root=await runOwnedRoot(()=>api.request({...connection,bearerEnvironment:"TOKEN"},request,undefined,{mode:"text"},origin,context));
+ const root=await runOwnedRoot(()=>api.request({...connection,bearerEnvironment:"TOKEN"},request,undefined,{mode:"text"},origin,"test:http/fetch",context));
  expect(root.completion.kind).toBe("standard");expect(reads).toBe(0);expect(contextReport(context).violations).toEqual(["missing fixture"]);
  const c={...connection,endpoint:"https://fixture.invalid/",maxBodyBytes:1024};
  for(const status of [200,299,300,418,599]){
   const report=await runAssertion({root:{package:"test",declaration:"fetch",name:"raw-"+status},actual:async context=>{
    provideHTTP(context,[{request:{method:"GET",url:c.endpoint,headers:[],body:new Uint8Array()},response:{status,headers:[["content-type","text/plain"]],body:new TextEncoder().encode("ok")}}]);
-   const result=await api.request<any>(c,request,undefined,{mode:"text",envelope:"text-response"},origin,context);
+   const result=await api.request<any>(c,request,undefined,{mode:"text",envelope:"text-response"},origin,"test:http/fetch",context);
    if(result.kind!=="ok")return result;return success([result.value.status,result.value.body]);
   },expected:async()=>success([BigInt(status),"ok"])});
   expect(report.passed).toBe(true);expect(report.evidence).toContain("raw-provider-fixture");
@@ -108,14 +108,14 @@ test("named fetch body Content-Type defaults and overrides preserve explicit enc
  const exchange=async(_url:URL,init:RequestInit)=>{last=init;return new Response(new Uint8Array([255]),{headers:{"content-type":"bad; charset=latin1"}})};
  const root=await runOwnedRoot(async()=>{
   for(const body of [{mode:"text" as const,value:"é"},{mode:"bytes" as const,value:ownBytes(new Uint8Array([255]))}]){
-   const result=await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"custom/example; charset=latin1"}],exchange},body,{mode:"bytes"},origin);
+   const result=await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"custom/example; charset=latin1"}],exchange},body,{mode:"bytes"},origin,"test:http/fetch");
    expect(result.kind).toBe("ok");expect(new Headers(last!.headers).get("content-type")).toBe("custom/example; charset=latin1");
    expect([...(last!.body as Uint8Array)]).toEqual(body.mode==="text"?[195,169]:[255]);
   }
   const body={mode:"json" as const,value:record("sample",[["count",1n]]),schema:responseSchema};
-  expect((await api.request({...c,headers:[{name:"content_type",value:"bad/type"}]},{...request,method:"POST",headers:[{name:"content_type",value:[]}],exchange},body,{mode:"bytes"},origin)).kind).toBe("ok");
+  expect((await api.request({...c,headers:[{name:"content_type",value:"bad/type"}]},{...request,method:"POST",headers:[{name:"content_type",value:[]}],exchange},body,{mode:"bytes"},origin,"test:http/fetch")).kind).toBe("ok");
   expect(new Headers(last!.headers).get("content-type")).toBe("application/json");
-  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST",exchange},body,{mode:"bytes"},origin),1104,{limit:1n});
+  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST",exchange},body,{mode:"bytes"},origin,"test:http/fetch"),1104,{limit:1n});
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");
  for(const bad of ["application/json; x=\"a\u0001b\"","application/json\u00a0; charset=utf-8"])expect(()=>responseMedia(bad,true)).toThrow("media_type");
@@ -134,7 +134,7 @@ test("raw HEAD fixtures reject impossible bodies even after authored recovery",a
  }
  const report=await runAssertion({root:{package:"conformance",declaration:"head",name:"empty"},actual:async context=>{
   provideHTTP(context,[{request:{method:"HEAD",url:c.endpoint,headers:[],body:new Uint8Array()},response:{status:200,headers:[["content-type","text/plain"]],body:new Uint8Array()}}]);
-  return api.request<string>(c,{...request,method:"HEAD"},undefined,{mode:"text"},origin,context);
+  return api.request<string>(c,{...request,method:"HEAD"},undefined,{mode:"text"},origin,"test:http/fetch",context);
  },expected:async()=>success("")});
  expect(report.passed).toBe(true);expect(report.evidence).toEqual(["raw-provider-fixture","real-can"]);
 });

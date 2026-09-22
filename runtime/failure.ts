@@ -5,6 +5,12 @@ import { primitiveFailureKind, primitiveFailureMessage } from "./primitive.ts";
 
 export type StandardKind = "arithmetic" | "bounds" | "resource_state" | "assertion" | "native_exception" | "cleanup";
 export type FailureOrigin = Readonly<{ source: string; start: number; end: number; invocation: readonly string[] }>;
+// Compiler-private production provenance for domain occurrences. The boundary
+// selects the consuming table (native infrastructure versus emitted domain
+// obligations); the operation is the statically known producing operation — a
+// fetch/judge/LLM declaration for boundary machinery, otherwise unattributed.
+// Classification uses this pair, never the error name alone.
+export type FailureProvenance = Readonly<{ boundary: "native" | "emitted"; operation: string }>;
 declare const standardFailureBrand: unique symbol;
 export type StandardFailure = Readonly<{ readonly [standardFailureBrand]: true }>;
 type StandardDetails = Readonly<{ occurrenceID: bigint; kind: StandardKind; message: string; cause: unknown; origin: FailureOrigin; boundaryOrigin?: FailureOrigin }>;
@@ -14,6 +20,14 @@ export function allocateOccurrenceID(): bigint { return nextOccurrence++; }
 const objectLike = (value: unknown): value is object => value !== null && (typeof value === "object" || typeof value === "function");
 function freezeOrigin(origin: FailureOrigin): FailureOrigin {
   return Object.freeze({ source: origin.source, start: origin.start, end: origin.end, invocation: Object.freeze([...origin.invocation]) });
+}
+export function freezeProvenance(provenance?: unknown): FailureProvenance {
+  if (provenance === undefined) return Object.freeze({ boundary: "emitted", operation: "" });
+  if (typeof provenance !== "object" || provenance === null) throw new TypeError("invalid failure provenance");
+  const { boundary, operation } = provenance as Partial<FailureProvenance>;
+  if ((boundary !== "native" && boundary !== "emitted") || typeof operation !== "string") throw new TypeError("invalid failure provenance");
+  if (boundary === "native" && operation === "") throw new TypeError("native failure requires its producing operation");
+  return Object.freeze({ boundary, operation });
 }
 
 const nativeErrorNames: readonly (readonly [object, string])[] = [

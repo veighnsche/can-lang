@@ -8,7 +8,7 @@ import type {Connection} from "./request.ts";
 
 export type HTTPTypes=Readonly<{invalid:string;credential:string;transport:string;timeout:string;limit:string;status:string;header:string}>;
 export function createTransport(domain:ReturnType<typeof createDomainRuntime>,types:HTTPTypes,readEnvironment:(name:string)=>string|undefined){
- return Object.freeze({async request<T>(connection:Connection,request:NativeRequest,decode:(bytes:Uint8Array,metadata:ResponseMetadata)=>Completion<T>|Promise<Completion<T>>,origin:FailureOrigin):Promise<Completion<T>>{
+ return Object.freeze({async request<T>(connection:Connection,request:NativeRequest,decode:(bytes:Uint8Array,metadata:ResponseMetadata)=>Completion<T>|Promise<Completion<T>>,origin:FailureOrigin,operation:string):Promise<Completion<T>>{
   return invoke(async()=>{
    try{return await performRequest(connection,request,readEnvironment,decode);}
    catch(cause){
@@ -22,7 +22,7 @@ export function createTransport(domain:ReturnType<typeof createDomainRuntime>,ty
      case "limit":identity=types.limit;fields=[["limit",BigInt(problem.limit)]];break;
      case "status":identity=types.status;fields=[["status",BigInt(problem.status)],["headers",array(problem.headers.map(h=>record(types.header,[["name",h.name],["value",h.value]])))]];break;
     }
-    return failure(domain.create(identity,record(identity,fields),origin));
+    return failure(domain.create(identity,record(identity,fields),origin,undefined,{boundary:"native",operation}));
    }
   },origin);
  }});

@@ -92,25 +92,27 @@ export function decodeResponse(input:unknown,format:ResponseFormat|undefined,byt
 
 export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:ResponseTypes,readEnvironment:(name:string)=>string|undefined){
  const transport=createTransport(domain,types,readEnvironment);
- function issue(cause:unknown,where:FailureOrigin,requestLimit?:number):Completion<never>{
+ function issue(cause:unknown,where:FailureOrigin,operation:string,requestLimit?:number):Completion<never>{
   let identity:string,fields:readonly (readonly [string,unknown])[];
+  let boundary:"native"|"emitted"="emitted";
   if(cause instanceof CodecIssue){
+   boundary="native";
    if(cause.reason==="byte_limit"&&requestLimit!==undefined){identity=types.limit;fields=[["limit",BigInt(requestLimit)]];}
    else{identity=types.invalidData;fields=[["path",cause.path],["reason",cause.reason]];}
   }else if(cause instanceof ResponseIssue){
    identity=cause.kind==="instructions"?types.invalid:cause.kind==="invalid"?types.invalidResponse:cause.kind==="refused"?types.refused:types.truncated;
    fields=cause.kind==="truncated"?[]:[["reason",cause.reason]];
   }else throw cause;
-  return failure(domain.create(identity,record(identity,fields),where));
+  return failure(domain.create(identity,record(identity,fields),where,undefined,{boundary,operation}));
  }
- return Object.freeze({async generate<T>(connection:Connection,model:string,maxOutputTokens:number,instructions:string,stateSchema:Schema,state:unknown,format:ResponseFormat|undefined,where:FailureOrigin,context?:AssertionContext):Promise<Completion<T>>{
+ return Object.freeze({async generate<T>(connection:Connection,model:string,maxOutputTokens:number,instructions:string,stateSchema:Schema,state:unknown,format:ResponseFormat|undefined,where:FailureOrigin,operation:string,context?:AssertionContext):Promise<Completion<T>>{
   return invoke(async()=>{
    let body:Uint8Array;
-   try{body=copyBytes(encodeResponseRequest(model,instructions,stateSchema,state,maxOutputTokens,format,connection.maxBodyBytes),where);}catch(cause){return issue(cause,where,connection.maxBodyBytes);}
+   try{body=copyBytes(encodeResponseRequest(model,instructions,stateSchema,state,maxOutputTokens,format,connection.maxBodyBytes),where);}catch(cause){return issue(cause,where,operation,connection.maxBodyBytes);}
    const exchange=providerHTTP(context,where);if(exchange===undefined)denyLiveBoundary(context,where);
    return transport.request(connection,{path:"",method:"POST",query:[],headers:[{name:"content_type",value:"application/json"},{name:"accept",value:"application/json"}],body,exchange},bytes=>{
-    try{return success(decodeResponse(ownBytes(bytes),format,connection.maxBodyBytes) as T);}catch(cause){return issue(cause,where);}
-   },where);
+    try{return success(decodeResponse(ownBytes(bytes),format,connection.maxBodyBytes) as T);}catch(cause){return issue(cause,where,operation);}
+   },where,operation);
   },where);
  }});
 }

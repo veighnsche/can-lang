@@ -206,7 +206,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			if e != nil {
 				return e
 			}
-			native.Judge = &ir.Judge{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: judgeInputs, State: state, StateInputs: stateInputs, Registrations: native.Registrations, Continuation: native.Regions[0]}
+			native.Judge = &ir.Judge{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: judgeInputs, State: state, StateInputs: stateInputs, Registrations: native.Registrations, Continuation: native.Regions[0], Native: append([]string(nil), native.Native...), Emitted: append([]string(nil), native.Emitted...)}
 		case *syntax.LLMDecl:
 			if err = scalarExpression(d.Asks, "str"); err != nil {
 				return err
@@ -230,7 +230,7 @@ func (c *programChecker) checkNativeBodies(program *Program, callables map[strin
 			}
 			native.LLM = plan
 		case *syntax.FetchDecl:
-			plan := &ir.Fetch{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Result: native.Signature.Result(), Method: strings.ToUpper(d.Method.Text)}
+			plan := &ir.Fetch{Identity: native.Symbol.ID, Source: file.Source.ID, Connection: native.Connection, Span: d.Span, Inputs: append([]ir.Local(nil), ctx.Parameters...), Result: native.Signature.Result(), Method: strings.ToUpper(d.Method.Text), Native: append([]string(nil), native.Native...), Emitted: append([]string(nil), native.Emitted...)}
 			if err = checkFetchContentType(d, program.Connections[native.Connection]); err != nil {
 				return err
 			}

@@ -40,6 +40,10 @@ type Judge struct {
 	StateInputs                  []Local
 	Registrations                []JudgeRegistration
 	Continuation                 *Region
+	// Native lists the raw intrinsic obligations N by exact error identity;
+	// Emitted lists the declared authored obligations E, including AI
+	// validation. The same identity may appear in both sets.
+	Native, Emitted []string
 }
 
 type JudgeRegistration struct {

@@ -23,6 +23,7 @@ test("true completes void while false produces checks::failed with the exact aut
  expect(details.declaration.id).toBe(1010);
  expect(details.declaration.name).toBe("checks::failed");
  expect(details.payload).toMatchObject({reason:"reason text"});
+ expect(details.provenance).toEqual({boundary:"emitted",operation:""});
 });
 
 test("call-site span and invocation path stay in private occurrence metadata",async()=>{

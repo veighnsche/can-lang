@@ -16,27 +16,29 @@ export {encodeQuestions,decodeAnswers,validateQuestions,QuestionIssue,AnswerIssu
 export type AITypes=HTTPTypes&Readonly<{invalidData:string;invalidQuestion:string;invalidAnswer:string}>;
 export function createTypeSafe(domain:ReturnType<typeof createDomainRuntime>,types:AITypes,readEnvironment:(name:string)=>string|undefined){
  const transport=createTransport(domain,types,readEnvironment);
- function issue(cause:unknown,origin:FailureOrigin,requestLimit?:number):Completion<never>{
+ function issue(cause:unknown,origin:FailureOrigin,operation:string,requestLimit?:number):Completion<never>{
   let identity:string,fields:readonly (readonly [string,unknown])[];
+  let boundary:"native"|"emitted"="emitted";
   if(cause instanceof QuestionIssue){identity=types.invalidQuestion;fields=[["reason",cause.reason]];}
   else if(cause instanceof AnswerIssue){identity=types.invalidAnswer;fields=[["question",cause.question],["reason",cause.reason]];}
   else if(cause instanceof CodecIssue){
+   boundary="native";
    if(cause.reason==="byte_limit"&&requestLimit!==undefined){identity=types.limit;fields=[["limit",BigInt(requestLimit)]];}
    else{identity=types.invalidData;fields=[["path",cause.path],["reason",cause.reason]];}
   }else throw cause;
-  return failure(domain.create(identity,record(identity,fields),origin));
+  return failure(domain.create(identity,record(identity,fields),origin,undefined,{boundary,operation}));
  }
- return Object.freeze({async ask(connection:Connection,model:string,stateSchema:Schema,state:unknown,questions:readonly QuestionDescriptor[],origin:FailureOrigin,context?:AssertionContext):Promise<Completion<readonly Answer[]>>{
+ return Object.freeze({async ask(connection:Connection,model:string,stateSchema:Schema,state:unknown,questions:readonly QuestionDescriptor[],origin:FailureOrigin,operation:string,context?:AssertionContext):Promise<Completion<readonly Answer[]>>{
   return invoke(async()=>{
    let body:Uint8Array;
    try{body=copyBytes(encodeQuestions(model,stateSchema,state,questions,connection.maxBodyBytes),origin);}
-   catch(cause){return issue(cause,origin,connection.maxBodyBytes);}
+   catch(cause){return issue(cause,origin,operation,connection.maxBodyBytes);}
    const exchange=providerHTTP(context,origin);
    if(exchange===undefined)denyLiveBoundary(context,origin);
    return transport.request(connection,{path:"",method:"POST",query:[],headers:[{name:"content_type",value:"application/json"},{name:"accept",value:"application/json"}],body,exchange},bytes=>{
     try{return success(decodeAnswers(ownBytes(bytes),questions,connection.maxBodyBytes));}
-    catch(cause){return issue(cause,origin);}
-   },origin);
+    catch(cause){return issue(cause,origin,operation);}
+   },origin,operation);
   },origin);
  }});
 }

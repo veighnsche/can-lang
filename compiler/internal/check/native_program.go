@@ -7,6 +7,7 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 	"reflect"
+	"sort"
 )
 
 // NativeDeclaration retains checked contracts independently from provider
@@ -24,6 +25,11 @@ type NativeDeclaration struct {
 	Question       *ir.Question
 	ArmDescription *ir.Expression
 	Judge          *ir.Judge
+	// Native holds the raw intrinsic obligations N and Emitted the declared
+	// authored obligations E, both by exact error identity. Membership is
+	// tracked per set: one identity may belong to both.
+	Native  []string
+	Emitted []string
 }
 
 func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Declaration) (*NativeDeclaration, error) {
@@ -161,18 +167,53 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 			required = append(required, 1101)
 		}
 		ids := map[uint64]bool{}
+		emitted := []string{}
 		for _, typ := range native.Signature.Errors() {
 			allocation, ok := program.Registry.declarations[typ.Declaration()]
 			if !ok {
 				return fmt.Errorf("unregistered native error")
 			}
 			ids[allocation.ID] = true
+			emitted = append(emitted, typ.Declaration())
 		}
 		for _, id := range required {
 			if !ids[id] {
 				return fmt.Errorf("native declaration %s emits omits required intrinsic error %d", native.Symbol.Name, id)
 			}
 		}
+		// N holds the raw infrastructure obligations and E the declared
+		// authored obligations, both by exact error identity. Fetch keeps
+		// every required intrinsic; judges exclude AI validation, which is
+		// required but preserved and hence E-only; questions, arms and LLM
+		// declarations hold no raw obligations of their own.
+		raw := map[uint64]bool{}
+		switch native.Symbol.Kind {
+		case resolve.Fetch:
+			for _, id := range required {
+				raw[id] = true
+			}
+		case resolve.Judge:
+			for _, id := range required {
+				if id != 1120 && id != 1121 {
+					raw[id] = true
+				}
+			}
+		}
+		byID := map[uint64]string{}
+		for _, declaration := range program.Registry.Declarations() {
+			byID[declaration.ID] = declaration.Identity
+		}
+		native.Native = []string{}
+		for id := range raw {
+			identity, ok := byID[id]
+			if !ok {
+				return fmt.Errorf("intrinsic error %d has no registered identity", id)
+			}
+			native.Native = append(native.Native, identity)
+		}
+		sort.Strings(native.Native)
+		sort.Strings(emitted)
+		native.Emitted = emitted
 	}
 	return nil
 }

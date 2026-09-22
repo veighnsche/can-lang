@@ -1,0 +1,162 @@
+{
+  "kind": "language-fixes-LF09-traces",
+  "note": "Private occurrence provenance for LF10 normalization and LF12 wrapper dispatch. Payload bigints render as {$bigint:N}.",
+  "traces": [
+    {
+      "label": "native-transport-connect",
+      "declaration": {
+        "id": 1102,
+        "name": "http::transport_failed"
+      },
+      "payload": {
+        "phase": "connect"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/fetches::load_json"
+      },
+      "occurrenceID": "1",
+      "causeOccurrenceID": null,
+      "note": "N member: compiler-owned transport; LF10 maps, LF12 native table"
+    },
+    {
+      "label": "native-codec-encode",
+      "declaration": {
+        "id": 1110,
+        "name": "codec::invalid_data"
+      },
+      "payload": {
+        "path": "",
+        "reason": "unicode_scalar"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/fetches::send_text"
+      },
+      "occurrenceID": "2",
+      "causeOccurrenceID": null,
+      "note": "N member: compiler-owned body encoding; same nominal name as authored below"
+    },
+    {
+      "label": "authored-codec-same-payload",
+      "declaration": {
+        "id": 1110,
+        "name": "codec::invalid_data"
+      },
+      "payload": {
+        "path": "",
+        "reason": "unicode_scalar"
+      },
+      "provenance": {
+        "boundary": "emitted",
+        "operation": ""
+      },
+      "occurrenceID": "3",
+      "causeOccurrenceID": null,
+      "note": "E member: identical payload shape, emitted provenance; name-only classification would conflate"
+    },
+    {
+      "label": "authored-check",
+      "declaration": {
+        "id": 1010,
+        "name": "checks::failed"
+      },
+      "payload": {
+        "reason": "expected a positive value"
+      },
+      "provenance": {
+        "boundary": "emitted",
+        "operation": ""
+      },
+      "occurrenceID": "4",
+      "causeOccurrenceID": null,
+      "note": "E member: authored check keeps emitted provenance"
+    },
+    {
+      "label": "judge-question-validation",
+      "declaration": {
+        "id": 1120,
+        "name": "ai::invalid_question"
+      },
+      "payload": {
+        "reason": "instructions"
+      },
+      "provenance": {
+        "boundary": "emitted",
+        "operation": "can.project.root/app::assess"
+      },
+      "occurrenceID": "5",
+      "causeOccurrenceID": null,
+      "note": "E member: native AI validation error, preserved not normalized"
+    },
+    {
+      "label": "judge-state-decode",
+      "declaration": {
+        "id": 1110,
+        "name": "codec::invalid_data"
+      },
+      "payload": {
+        "path": "/state/amount",
+        "reason": "type"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/app::assess"
+      },
+      "occurrenceID": "6",
+      "causeOccurrenceID": null,
+      "note": "N member: invalid judge state decoding normalizes"
+    },
+    {
+      "label": "forwarded-identity",
+      "declaration": {
+        "id": 1102,
+        "name": "http::transport_failed"
+      },
+      "payload": {
+        "phase": "connect"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/fetches::load_json"
+      },
+      "occurrenceID": "7",
+      "causeOccurrenceID": null,
+      "note": "forwarding preserves the mapped occurrence token and ID"
+    },
+    {
+      "label": "reconstructed-equal-payload",
+      "declaration": {
+        "id": 1102,
+        "name": "http::transport_failed"
+      },
+      "payload": {
+        "phase": "connect"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/fetches::load_json"
+      },
+      "occurrenceID": "8",
+      "causeOccurrenceID": null,
+      "note": "equal payload, fresh occurrence: reconstruction never reuses identity"
+    },
+    {
+      "label": "cause-chain",
+      "declaration": {
+        "id": 1100,
+        "name": "http::invalid_request"
+      },
+      "payload": {
+        "reason": "url"
+      },
+      "provenance": {
+        "boundary": "native",
+        "operation": "can.project.root/fetches::load_json"
+      },
+      "occurrenceID": "9",
+      "causeOccurrenceID": "7",
+      "note": "mapping shape for LF10: fresh occurrence retains the original as private cause"
+    }
+  ]
+}

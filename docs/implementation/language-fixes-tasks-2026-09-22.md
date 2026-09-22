@@ -132,7 +132,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF08-summary.json, LF08-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF08-integration.log (integration+driver+emit all ok), LF08-runtime.log (326 pass), LF08-emit.txt (single-evaluation lowering + runtime branch). Reproduction commands in the summary.
 
-- [ ] **LF09 — Represent failure origin at native operation boundaries**
+- [x] **LF09 — Represent failure origin at native operation boundaries**
 
   **Depends on:** LF02, LF05. **Acceptance:** AE07, AE09.
 
@@ -146,7 +146,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Exercise one-request judge preparation, whole-answer validation and ordered handlers; authored/check failures retain emitted provenance. Save private occurrence traces for LF10/LF12.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF09-summary.json, LF09-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF09-integration.log (integration+driver+emit all ok), LF09-runtime.log (332 pass), LF09-traces.json (9 private occurrence traces for LF10/LF12). Reproduction commands in the summary.
 
 - [ ] **LF10 — Normalize public fetch/judge infrastructure errors**
 

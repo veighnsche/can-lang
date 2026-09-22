@@ -37,11 +37,11 @@ test("Noul sends one exact POST and reads credentials only after all input admis
  }});
  try{const root=await runOwnedRoot(async()=>{
   const c={...connection,endpoint:new URL("/systemone",server.url).href};
-  check(await api.ask(c,"jev-latest",schema,state,[question,{...question,instructions:""}],origin),1120,{reason:"instructions"});
-  check(await api.ask({...c,maxBodyBytes:10},"jev-latest",schema,state,[question],origin),1104,{limit:10n});
-  check(await api.ask(c,"jev-latest",schema,record("state",[["amount",1]]),[question],origin),1110,{path:"/state/amount",reason:"type"});
+  check(await api.ask(c,"jev-latest",schema,state,[question,{...question,instructions:""}],origin,"test:ai/judge"),1120,{reason:"instructions"});
+  check(await api.ask({...c,maxBodyBytes:10},"jev-latest",schema,state,[question],origin,"test:ai/judge"),1104,{limit:10n});
+  check(await api.ask(c,"jev-latest",schema,record("state",[["amount",1]]),[question],origin,"test:ai/judge"),1110,{path:"/state/amount",reason:"type"});
   expect(reads).toBe(0);expect(requests).toBe(0);
-  const result=await api.ask(c,"jev-latest",schema,state,[question,question],origin);
+  const result=await api.ask(c,"jev-latest",schema,state,[question,question],origin,"test:ai/judge");
   expect(result.kind).toBe("ok");if(result.kind!=="ok")throw Error("expected answers");
   expect(result.value).toEqual([{kind:"noul",probability:0.5},{kind:"noul",probability:0.25}]);expect(reads).toBe(1);expect(requests).toBe(1);
   expect(authorization).toBe("Bearer fixture-secret");expect(contentType).toBe("application/json");expect(accept).toBe("application/json");
@@ -56,12 +56,12 @@ test("Noul malformed responses stay distinct from status failures without retry"
  const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch(){requests++;return new Response(reply,{status});}});
  try{const root=await runOwnedRoot(async()=>{
   const c={...connection,endpoint:server.url.href};
-  check(await api.ask(c,"jev-latest",schema,state,[question],origin),1110,{reason:"invalid_json"});
+  check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1110,{reason:"invalid_json"});
   reply='{"model":"resolved","answers":{}}';
-  check(await api.ask(c,"jev-latest",schema,state,[question],origin),1121,{question:"",reason:"question_ids"});
+  check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1121,{question:"",reason:"question_ids"});
   reply='{"model":"resolved","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"noul","noul":2}}}';
-  check(await api.ask(c,"jev-latest",schema,state,[question,question],origin),1121,{question:"q1",reason:"probability"});
-  for(const code of [401,422,429,529]){status=code;check(await api.ask(c,"jev-latest",schema,state,[question],origin),1105,{status:BigInt(code)});}
+  check(await api.ask(c,"jev-latest",schema,state,[question,question],origin,"test:ai/judge"),1121,{question:"q1",reason:"probability"});
+  for(const code of [401,422,429,529]){status=code;check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1105,{status:BigInt(code)});}
   expect(requests).toBe(7);
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
@@ -70,7 +70,7 @@ test("Noul malformed responses stay distinct from status failures without retry"
 test("assertion context refuses a live Noul boundary before authentication",async()=>{
  let reads=0;const api=createTypeSafe(domain,aiTypes,()=>{reads++;return "secret";});
  const context=assertionContext({package:"app",declaration:"judge",name:"unprovided"});
- const root=await runOwnedRoot(()=>api.ask(connection,"jev-latest",schema,state,[question],origin,context));
+ const root=await runOwnedRoot(()=>api.ask(connection,"jev-latest",schema,state,[question],origin,"test:ai/judge",context));
  expect(root.completion.kind).toBe("standard");expect(reads).toBe(0);expect(contextReport(context).violations).toEqual(["missing fixture"]);
 });
 
@@ -82,13 +82,13 @@ test("raw provider assertions cross request encoding, native response parsing an
  for(const malformed of [false,true]){
   const report=await runAssertion({root:{package:"conformance",declaration:"noul",name:malformed?"raw-invalid":"raw-valid"},actual:async context=>{
    provideHTTP(context,[malformed?{...row,response:{...row.response,body:encode('{"model":"resolved","answers":{}}')}}:row]);
-   const result=await api.ask(c,"jev-latest",schema,state,[question],origin,context);if(result.kind!=="ok")return result;return success(result.value.map(answer=>{if(answer.kind!=="noul")throw Error("wrong answer kind");return answer.probability;}));
+   const result=await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge",context);if(result.kind!=="ok")return result;return success(result.value.map(answer=>{if(answer.kind!=="noul")throw Error("wrong answer kind");return answer.probability;}));
   },expected:async()=>malformed?failure(domain.create(aiTypes.invalidAnswer,record(aiTypes.invalidAnswer,[["question",""],["reason","question_ids"]]),origin)):success([0.5])});
   expect(report.passed).toBe(true);expect(report.evidence).toEqual(["raw-provider-fixture","real-can"]);
  }
  const mismatch=await runAssertion({root:{package:"conformance",declaration:"noul",name:"wrong-wire-input"},actual:async context=>{
   provideHTTP(context,[{...row,request:{...row.request,body:encode("{}")}}]);
-  const result=await api.ask(c,"jev-latest",schema,state,[question],origin,context);if(result.kind!=="ok")return result;return success(result.value.map(answer=>{if(answer.kind!=="noul")throw Error("wrong answer kind");return answer.probability;}));
+  const result=await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge",context);if(result.kind!=="ok")return result;return success(result.value.map(answer=>{if(answer.kind!=="noul")throw Error("wrong answer kind");return answer.probability;}));
  },expected:async()=>success([0.5])});
  expect(mismatch.passed).toBe(false);expect(mismatch.violations).toEqual(["argument mismatch"]);expect(mismatch.evidence).not.toContain("raw-provider-fixture");
  const leftover=await runAssertion({root:{package:"conformance",declaration:"noul",name:"unused-wire-input"},actual:async context=>{provideHTTP(context,[row]);return success(0);},expected:async()=>success(0)});

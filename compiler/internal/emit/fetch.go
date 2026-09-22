@@ -77,6 +77,6 @@ func (e *RegionEmitter) Fetch(name string, plan *ir.Fetch, connection string) (s
 		return "", err
 	}
 	body.WriteString(e.mark(plan.Span, "fetch_request"))
-	fmt.Fprintf(&body, "return await $canFetch.request<%s>(%s,{path:%s,method:%s,query:%s,headers:%s},%s,%s,$canOrigin,$canContext);\n", TypeName(plan.Result), connection, path, quote(plan.Method), query, headers, requestBody, encoded)
+	fmt.Fprintf(&body, "return await $canFetch.request<%s>(%s,{path:%s,method:%s,query:%s,headers:%s},%s,%s,$canOrigin,%s,$canContext);\n", TypeName(plan.Result), connection, path, quote(plan.Method), query, headers, requestBody, encoded, quote(plan.Identity))
 	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\nlet $canOrigin = %s;\ntry {\n%s} catch ($canCause) { return $canCaught($canCause, $canOrigin); }\n}\n", name, strings.Join(args, ", "), TypeName(plan.Result), e.origin(plan.Span), body.String()), nil
 }

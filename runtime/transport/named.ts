@@ -16,9 +16,10 @@ export type FetchBody=Readonly<{mode:FetchMode;value:unknown;schema?:Schema}>;
 export type FetchResult=Readonly<{mode:FetchMode;schema?:Schema;envelope?:string}>;
 export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,types:HTTPTypes&Readonly<{invalidData:string}>,readEnvironment:(name:string)=>string|undefined){
  const transport=createTransport(domain,types,readEnvironment);
- return Object.freeze({async request<T>(connection:Connection,request:Omit<NativeRequest,"body"|"bodyEncoding"|"envelope">,body:FetchBody|undefined,result:FetchResult,origin:FailureOrigin,context?:AssertionContext):Promise<Completion<T>>{
-  function invalid(cause:CodecIssue):Completion<never>{return failure(domain.create(types.invalidData,record(types.invalidData,[["path",cause.path],["reason",cause.reason]]),origin));}
-  function limit():Completion<never>{return failure(domain.create(types.limit,record(types.limit,[["limit",BigInt(connection.maxBodyBytes)]]),origin));}
+ return Object.freeze({async request<T>(connection:Connection,request:Omit<NativeRequest,"body"|"bodyEncoding"|"envelope">,body:FetchBody|undefined,result:FetchResult,origin:FailureOrigin,operation:string,context?:AssertionContext):Promise<Completion<T>>{
+  const native={boundary:"native",operation} as const;
+  function invalid(cause:CodecIssue):Completion<never>{return failure(domain.create(types.invalidData,record(types.invalidData,[["path",cause.path],["reason",cause.reason]]),origin,undefined,native));}
+  function limit():Completion<never>{return failure(domain.create(types.limit,record(types.limit,[["limit",BigInt(connection.maxBodyBytes)]]),origin,undefined,native));}
   return invoke(async()=>{
    let encoded:Uint8Array|undefined;
    if(body){
@@ -43,7 +44,7 @@ export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,t
     }catch(cause){if(cause instanceof CodecIssue)return invalid(cause);throw cause;}
     if(result.envelope!==undefined)value=record(result.envelope,[["status",BigInt(metadata.status)],["headers",array(metadata.headers.map(header=>record(types.header,[["name",header.name],["value",header.value]])))],["body",value]]);
     return success(value as T);
-   },origin);
+   },origin,operation);
   },origin);
  }});
 }

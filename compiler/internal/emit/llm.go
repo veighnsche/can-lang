@@ -45,6 +45,6 @@ func (e *RegionEmitter) LLM(name string, plan *ir.LLM, connection, model string,
 		format = fmt.Sprintf("{name:%s,schema:%s,codec:%s}", quote(plan.Format.Name), quote(string(plan.Format.Schema)), output)
 	}
 	body.WriteString(e.mark(plan.Span, "llm_request"))
-	fmt.Fprintf(&body, "return await $canResponses.generate<%s>(%s,%s,%d,%s,%s,%s,%s,$canOrigin,$canContext);\n", TypeName(plan.Result), connection, quote(model), maxTokens, instructions.Value, schema, state, format)
+	fmt.Fprintf(&body, "return await $canResponses.generate<%s>(%s,%s,%d,%s,%s,%s,%s,$canOrigin,%s,$canContext);\n", TypeName(plan.Result), connection, quote(model), maxTokens, instructions.Value, schema, state, format, quote(plan.Identity))
 	return fmt.Sprintf("async function %s(%s):Promise<$canCompletion<%s>>{\nlet $canOrigin=%s;\ntry{\n%s}catch($canCause){return $canCaught($canCause,$canOrigin);}\n}\n", name, strings.Join(args, ","), TypeName(plan.Result), e.origin(plan.Span), body.String()), nil
 }

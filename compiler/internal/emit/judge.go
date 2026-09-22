@@ -275,7 +275,7 @@ func (e *RegionEmitter) Judge(name string, judge *ir.Judge, questions map[string
 	}
 	answers := e.temp()
 	body.WriteString(e.mark(judge.Span, "judge_request"))
-	fmt.Fprintf(&body, "const %s = await $canAI.ask(%s,%s,%s,%s,[%s],$canOrigin,$canContext);\nif (%s.kind !== \"ok\") return %s;\n", answers, connection, quote(model), schema, stateValue, strings.Join(descriptors, ","), answers, answers)
+	fmt.Fprintf(&body, "const %s = await $canAI.ask(%s,%s,%s,%s,[%s],$canOrigin,%s,$canContext);\nif (%s.kind !== \"ok\") return %s;\n", answers, connection, quote(model), schema, stateValue, strings.Join(descriptors, ","), quote(judge.Identity), answers, answers)
 	for i, prepared := range registrations {
 		result := e.temp()
 		fmt.Fprintf(&body, "const %s=await %s.run(%s.value[%d]);\nif(%s.kind!==\"ok\")return %s;\n", result, prepared.descriptor, answers, i, result, result)

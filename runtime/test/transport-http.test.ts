@@ -21,10 +21,10 @@ const request={path:"/",method:"GET" as const,query:[],headers:[]};
 function check(result:Completion,id:number,payload:object){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw new Error("expected domain");const d=domainFailureDiagnostics(result.value);expect(d.declaration.id).toBe(id);expect(d.payload).toMatchObject(payload);}
 test("transport failures construct exact nominal catalogue occurrences",async()=>{
  const root=await runOwnedRoot(async()=>{
-  check(await api.request(connection,{...request,path:"https://other.test"},()=>success(0n),origin),1100,{reason:"origin"});
-  check(await api.request({...connection,bearerEnvironment:"TOKEN"},request,()=>success(0n),origin),1101,{variable:"TOKEN"});
-  check(await api.request(connection,{...request,method:"POST",body:new Uint8Array(4)},()=>success(0n),origin),1104,{limit:3n});
-  check(await api.request(connection,request,()=>success(0n),origin),1102,{phase:"connect"});
+  check(await api.request(connection,{...request,path:"https://other.test"},()=>success(0n),origin,"test:http/transport"),1100,{reason:"origin"});
+  check(await api.request({...connection,bearerEnvironment:"TOKEN"},request,()=>success(0n),origin,"test:http/transport"),1101,{variable:"TOKEN"});
+  check(await api.request(connection,{...request,method:"POST",body:new Uint8Array(4)},()=>success(0n),origin,"test:http/transport"),1104,{limit:3n});
+  check(await api.request(connection,request,()=>success(0n),origin,"test:http/transport"),1102,{phase:"connect"});
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");
 });
@@ -32,9 +32,9 @@ test("status and timeout use typed payloads while unexpected decoder faults stay
  const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch(req){return new Response("ok",{status:new URL(req.url).pathname==="/bad"?401:200,headers:{"x-test":"yes"}});}});
  try{const root=await runOwnedRoot(async()=>{
   const c={...connection,endpoint:server.url.href};
-  check(await api.request(c,{...request,path:"/bad"},()=>success(0n),origin),1105,{status:401n});
-  check(await api.request({...c,timeoutMilliseconds:5},request,()=>{const start=performance.now();while(performance.now()-start<10){}return success(0n);},origin),1103,{timeout_ms:5n});
-  const unexpected=await api.request(c,request,()=>{throw new TypeError("decoder defect");},origin);expect(unexpected.kind).toBe("standard");
+  check(await api.request(c,{...request,path:"/bad"},()=>success(0n),origin,"test:http/transport"),1105,{status:401n});
+  check(await api.request({...c,timeoutMilliseconds:5},request,()=>{const start=performance.now();while(performance.now()-start<10){}return success(0n);},origin,"test:http/transport"),1103,{timeout_ms:5n});
+  const unexpected=await api.request(c,request,()=>{throw new TypeError("decoder defect");},origin,"test:http/transport");expect(unexpected.kind).toBe("standard");
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
 });
