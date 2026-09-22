@@ -13,19 +13,34 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
 
-// Diagnostic is one editor squiggle: a canonical file, a zero-based line,
-// UTF-16 columns, the pipeline's own code and message, and a severity.
-// Only lexing and parsing supply codes and token spans; resolve and check
-// failures reuse the CLI-identical message anchored to the attributed
-// file's first line, never to a guessed token.
+// Diagnostic is one editor squiggle: a canonical file, zero-based lines,
+// UTF-16 columns, the pipeline's own code and message, a severity, and
+// optional secondary locations. Lexing, parsing, resolution, and checking
+// supply structured spans; only spanless failures reuse the CLI-identical
+// message anchored to the attributed file's first line, never to a
+// guessed token.
 type Diagnostic struct {
 	File     string
 	Line     int
+	EndLine  int
 	Start    int
 	End      int
 	Code     string
 	Message  string
 	Severity string
+	Related  []RelatedDiagnostic
+}
+
+// RelatedDiagnostic is one secondary location for a diagnostic: the
+// canonical file, zero-based line range, UTF-16 columns, and the note
+// naming its relationship to the primary span.
+type RelatedDiagnostic struct {
+	File    string
+	Line    int
+	EndLine int
+	Start   int
+	End     int
+	Message string
 }
 
 // Location is a go-to-definition target in editor coordinates.
@@ -63,14 +78,79 @@ func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snaps
 	snapshot.Graph = graph
 	world, err := compileresolve.Build(graph)
 	if err != nil {
-		snapshot.Diagnostics = []Diagnostic{anchored(graph, openFile, "", err.Error())}
+		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
 		return snapshot, nil
 	}
 	snapshot.World = world
 	if _, err := check.CheckAssertionProgram(graph); err != nil {
-		snapshot.Diagnostics = []Diagnostic{anchored(graph, openFile, "", err.Error())}
+		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
 	}
 	return snapshot, nil
+}
+
+// semanticDiagnostic converts a structured resolver or checker failure to
+// its primary editor position with related locations. Spanless failures
+// keep the first-line anchor; a structured span whose file has no loaded
+// bytes or whose offsets are invalid keeps the true file with an explicit
+// unavailable marker instead of silently becoming another file's line 1.
+func semanticDiagnostic(graph *project.Graph, openFile string, err error) Diagnostic {
+	located, ok := source.AsLocated(err)
+	if !ok {
+		return anchored(graph, openFile, "", err.Error())
+	}
+	diagnostic := Diagnostic{File: located.File, Code: located.Code, Message: err.Error(), Severity: "error"}
+	text, ok := fileText(graph, located.File)
+	if !ok {
+		diagnostic.Code = unavailableCode(located.Code)
+		return diagnostic
+	}
+	file, fileErr := source.New(located.File, text)
+	if fileErr != nil {
+		diagnostic.Code = unavailableCode(located.Code)
+		return diagnostic
+	}
+	start, startErr := file.UTF16Position(located.Span.Start)
+	end, endErr := file.UTF16Position(located.Span.End)
+	if startErr != nil || endErr != nil {
+		diagnostic.Code = unavailableCode(located.Code)
+		return diagnostic
+	}
+	diagnostic.Line, diagnostic.Start = start.Line, start.Character
+	diagnostic.EndLine, diagnostic.End = end.Line, end.Character
+	for _, related := range located.Related {
+		diagnostic.Related = append(diagnostic.Related, convertRelated(graph, related))
+	}
+	return diagnostic
+}
+
+func convertRelated(graph *project.Graph, related source.RelatedSpan) RelatedDiagnostic {
+	converted := RelatedDiagnostic{File: related.File, Message: related.Note}
+	text, ok := fileText(graph, related.File)
+	if !ok {
+		converted.Message += " [position unavailable]"
+		return converted
+	}
+	file, fileErr := source.New(related.File, text)
+	if fileErr != nil {
+		converted.Message += " [position unavailable]"
+		return converted
+	}
+	start, startErr := file.UTF16Position(related.Span.Start)
+	end, endErr := file.UTF16Position(related.Span.End)
+	if startErr != nil || endErr != nil {
+		converted.Message += " [position unavailable]"
+		return converted
+	}
+	converted.Line, converted.Start = start.Line, start.Character
+	converted.EndLine, converted.End = end.Line, end.Character
+	return converted
+}
+
+func unavailableCode(code string) string {
+	if code == "" {
+		return source.SpanUnavailable
+	}
+	return code + " " + source.SpanUnavailable
 }
 
 func loadDiagnostics(graph *project.Graph, openFile string, err error) []Diagnostic {
@@ -98,10 +178,12 @@ func loadDiagnostics(graph *project.Graph, openFile string, err error) []Diagnos
 			return []Diagnostic{anchored(graph, sourceErr.Path, first.Code, message)}
 		}
 		diagnostic.Line = line
+		diagnostic.EndLine = line
 		diagnostic.Start, diagnostic.End = 0, lineWidth(sourceErr.File, line)
 		return []Diagnostic{diagnostic}
 	}
 	diagnostic.Line, diagnostic.Start, diagnostic.End = start.Line, start.Character, end.Character
+	diagnostic.EndLine = end.Line
 	return []Diagnostic{diagnostic}
 }
 
@@ -162,7 +244,7 @@ func anchored(graph *project.Graph, openFile, code, message string) Diagnostic {
 	if text, ok := fileText(graph, file); ok {
 		width = utf16Width(firstLine(text))
 	}
-	return Diagnostic{File: file, Line: 0, Start: 0, End: width, Code: code, Message: message, Severity: "error"}
+	return Diagnostic{File: file, Line: 0, EndLine: 0, Start: 0, End: width, Code: code, Message: message, Severity: "error"}
 }
 
 func fileText(graph *project.Graph, file string) (string, bool) {

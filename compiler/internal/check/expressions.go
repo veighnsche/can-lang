@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -16,6 +17,9 @@ type ValueBinding struct {
 	Type     *types.Type
 }
 type Expressions struct {
+	// File is the owning source file for structured failure spans. The
+	// owning body pass sets it; a nil file leaves errors unlocated.
+	File                *source.File
 	DeferredCheck       func(syntax.Expr, *types.Type, *Expressions, error) (*ir.Expression, error)
 	AggregateFieldCheck func(*syntax.FieldExpr, *types.Type) (*ir.Expression, bool, error)
 	CoordinationCheck   func(*syntax.CoordinationExpr, *types.Type) (*ir.Expression, error)
@@ -53,12 +57,21 @@ func (c *Expressions) Check(node syntax.Expr, expected *types.Type) (*ir.Express
 		out, err = c.DeferredCheck(node, expected, c, err)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("expression at byte %d: %w", node.ExprSpan().Start, err)
+		return nil, c.locate(node, fmt.Errorf("expression at byte %d: %w", node.ExprSpan().Start, err))
 	}
 	if expected != nil && !types.Assignable(out.Type, expected) {
-		return nil, fmt.Errorf("expression type does not fit expected type at byte %d", node.ExprSpan().Start)
+		return nil, c.locate(node, fmt.Errorf("expression type does not fit expected type at byte %d", node.ExprSpan().Start))
 	}
 	return out, nil
+}
+
+// locate attaches the checked expression's file span to err, keeping the
+// innermost span when nested checks already located the failure.
+func (c *Expressions) locate(node syntax.Expr, err error) error {
+	if c.File == nil {
+		return err
+	}
+	return source.Locate(c.File.Name(), node.ExprSpan(), err)
 }
 func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Expression, error) {
 	out := &ir.Expression{Span: node.ExprSpan()}

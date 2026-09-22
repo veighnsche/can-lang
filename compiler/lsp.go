@@ -357,17 +357,24 @@ func publishBridgeDiagnostics(out *bufio.Writer, uri string, version *int64, dia
 		if line < 0 {
 			line = 0
 		}
+		endLine := d.EndLine
+		if endLine < line {
+			endLine = line
+		}
 		start, end := d.Start, d.End
 		if start < 0 {
 			start = 0
 		}
-		if end < start {
+		if endLine == line && end < start {
 			end = start
+		}
+		if end < 0 {
+			end = 0
 		}
 		item := map[string]any{
 			"range": map[string]any{
 				"start": map[string]any{"line": line, "character": start},
-				"end":   map[string]any{"line": line, "character": end},
+				"end":   map[string]any{"line": endLine, "character": end},
 			},
 			"severity": 1,
 			"source":   "canlc",
@@ -375,6 +382,40 @@ func publishBridgeDiagnostics(out *bufio.Writer, uri string, version *int64, dia
 		}
 		if d.Code != "" {
 			item["code"] = d.Code
+		}
+		if len(d.Related) > 0 {
+			related := []any{}
+			for _, r := range d.Related {
+				rLine := r.Line
+				if rLine < 0 {
+					rLine = 0
+				}
+				rEndLine := r.EndLine
+				if rEndLine < rLine {
+					rEndLine = rLine
+				}
+				rStart, rEnd := r.Start, r.End
+				if rStart < 0 {
+					rStart = 0
+				}
+				if rEndLine == rLine && rEnd < rStart {
+					rEnd = rStart
+				}
+				if rEnd < 0 {
+					rEnd = 0
+				}
+				related = append(related, map[string]any{
+					"location": map[string]any{
+						"uri": uriFromPath(r.File),
+						"range": map[string]any{
+							"start": map[string]any{"line": rLine, "character": rStart},
+							"end":   map[string]any{"line": rEndLine, "character": rEnd},
+						},
+					},
+					"message": r.Message,
+				})
+			}
+			item["relatedInformation"] = related
 		}
 		items = append(items, item)
 	}

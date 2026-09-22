@@ -20,7 +20,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [baseline](evidence/2026-09-22/language-fixes/LF01-baseline.json), [controls](evidence/2026-09-22/language-fixes/LF01-controls.json), [AE manifest](evidence/2026-09-22/language-fixes/LF01-AE-results.json), [runner](evidence/2026-09-22/language-fixes/LF01-probes.py). Starting commit 7b1542c, clean tree, docs-only drift from 760405f; G1–G4 reproduced, G5 preserved.
 
-- [ ] **LF02 — Carry precise semantic source spans through diagnostics**
+- [x] **LF02 — Carry precise semantic source spans through diagnostics**
 
   **Depends on:** LF01. **Acceptance:** AE44.
 
@@ -34,7 +34,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Read-only editor diagnostics do not build or run a program. Existing runtime source-map locations stay correct. Broader obligation explanations and validated fixes close in LF17.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF02-summary.json), [LSP results](evidence/2026-09-22/language-fixes/LF02-lsp.json), [runner](evidence/2026-09-22/language-fixes/LF02-lsp.py), [full suite log](evidence/2026-09-22/language-fixes/LF02-gotest.log). G4 semantic/resolve now highlight line 8; lexical control unchanged; astral/overlay/imported/unavailable covered; driver/source/resolve/check/compiler suites green (1 pre-existing syntax failure documented, untouched).
 
 - [ ] **LF03 — Separate assertion staging from production publication**
 

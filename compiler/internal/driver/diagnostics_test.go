@@ -1,13 +1,16 @@
 package driver
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 )
 
 const bridgeMain = `package app
@@ -142,7 +145,7 @@ func TestCheckSnapshotParseError(t *testing.T) {
 	}
 }
 
-func TestCheckSnapshotCheckErrorAnchored(t *testing.T) {
+func TestCheckSnapshotCheckErrorSpan(t *testing.T) {
 	root := writeBridgeProject(t, map[string]string{"src/main.can": bridgeMain, "src/second.can": bridgeSecond})
 	second := canonical(t, filepath.Join(root, "src/second.can"))
 	broken := strings.Replace(bridgeSecond, "ok config.display_name", "ok call missing_fn(row)", 1)
@@ -159,11 +162,11 @@ func TestCheckSnapshotCheckErrorAnchored(t *testing.T) {
 		t.Fatalf("expected one diagnostic, got %+v", snapshot.Diagnostics)
 	}
 	diagnostic := snapshot.Diagnostics[0]
-	// Spanless checker failures anchor to the attributed file's first line
-	// with the CLI-identical message; the world still resolves, so
-	// navigation keeps working beneath the error.
-	if diagnostic.File != second || diagnostic.Line != 0 || diagnostic.Start != 0 {
-		t.Fatalf("check diagnostic misanchored: %+v", diagnostic)
+	// Located checker failures point at the offending expression in the
+	// true file with the CLI-identical message; the world still resolves,
+	// so navigation keeps working beneath the error.
+	if diagnostic.File != second || diagnostic.Line != 10 || diagnostic.EndLine != 10 || diagnostic.Start != 7 || diagnostic.End != 27 {
+		t.Fatalf("check diagnostic mislocated: %+v", diagnostic)
 	}
 	if !strings.Contains(diagnostic.Message, "missing_fn") {
 		t.Fatalf("check diagnostic lost the CLI message: %+v", diagnostic)
@@ -181,6 +184,85 @@ func TestCheckSnapshotCheckErrorAnchored(t *testing.T) {
 	_, cliErr := check.CheckAssertionProgram(graph)
 	if cliErr == nil || cliErr.Error() != diagnostic.Message {
 		t.Fatalf("editor message %q differs from CLI %q", diagnostic.Message, cliErr)
+	}
+	saved, saveErr := CheckSnapshot(root, open, project.NewOverlay())
+	if saveErr != nil {
+		t.Fatal(saveErr)
+	}
+	if len(saved.Diagnostics) != 1 || !reflect.DeepEqual(saved.Diagnostics[0], diagnostic) {
+		t.Fatalf("overlay diagnosis %+v differs from saved %+v", diagnostic, saved.Diagnostics)
+	}
+}
+
+func TestCheckSnapshotResolveErrorSpan(t *testing.T) {
+	duplicate := bridgeMain + "\nfn int helper\n    emits []\n    given\n        int seed\n    asserts\n        sample: 1 => ok 1\n    ok seed\n"
+	root := writeBridgeProject(t, map[string]string{"src/main.can": duplicate})
+	open := canonical(t, filepath.Join(root, "src/main.can"))
+	snapshot, err := CheckSnapshot(root, open, project.NewOverlay())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Diagnostics) != 1 {
+		t.Fatalf("expected one diagnostic, got %+v", snapshot.Diagnostics)
+	}
+	diagnostic := snapshot.Diagnostics[0]
+	// The duplicate name token sits on its own declaration line.
+	wantLine := strings.Count(duplicate[:strings.LastIndex(duplicate, "fn int helper")], "\n")
+	if diagnostic.File != open || diagnostic.Line != wantLine || diagnostic.EndLine != wantLine || diagnostic.Start != 7 || diagnostic.End != 13 {
+		t.Fatalf("resolve diagnostic mislocated: %+v", diagnostic)
+	}
+	if !strings.Contains(diagnostic.Message, `duplicate name "helper"`) {
+		t.Fatalf("resolve diagnostic lost the CLI message: %+v", diagnostic)
+	}
+}
+
+func TestCheckSnapshotAstralSpan(t *testing.T) {
+	astral := "package app\n    provides [describe]\n    uses []\n\nfn str describe\n    emits []\n    given\n        str row\n    asserts\n        sample: \"x\" => ok \"x\"\n    ok \"\U0001D11E\" + missing\n"
+	root := writeBridgeProject(t, map[string]string{"src/main.can": astral})
+	open := canonical(t, filepath.Join(root, "src/main.can"))
+	snapshot, err := CheckSnapshot(root, open, project.NewOverlay())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(snapshot.Diagnostics) != 1 {
+		t.Fatalf("expected one diagnostic, got %+v", snapshot.Diagnostics)
+	}
+	diagnostic := snapshot.Diagnostics[0]
+	// The astral clef counts two UTF-16 code units, so the failing name
+	// starts at column 14 rather than byte column 16.
+	if diagnostic.File != open || diagnostic.Line != 10 || diagnostic.EndLine != 10 || diagnostic.Start != 14 || diagnostic.End != 21 {
+		t.Fatalf("astral diagnostic mislocated: %+v", diagnostic)
+	}
+}
+
+func TestSemanticDiagnosticUnavailable(t *testing.T) {
+	root := writeBridgeProject(t, map[string]string{"src/main.can": bridgeMain})
+	open := canonical(t, filepath.Join(root, "src/main.can"))
+	graph, err := project.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	absent := source.Locate(filepath.Join(root, "src", "ghost.can"), source.Span{Start: 0, End: 5}, errors.New("boom"))
+	diagnostic := semanticDiagnostic(graph, open, absent)
+	if diagnostic.File != filepath.Join(root, "src", "ghost.can") || diagnostic.Code != source.SpanUnavailable {
+		t.Fatalf("absent file silently relocated: %+v", diagnostic)
+	}
+	stale := source.Locate(open, source.Span{Start: 1 << 30, End: (1 << 30) + 5}, errors.New("boom"))
+	diagnostic = semanticDiagnostic(graph, open, stale)
+	if diagnostic.File != open || diagnostic.Code != source.SpanUnavailable {
+		t.Fatalf("out-of-range span silently anchored: %+v", diagnostic)
+	}
+	related := source.Relate(filepath.Join(root, "src", "ghost.can"), source.Span{Start: 0, End: 1}, "origin", source.Locate(open, source.Span{Start: 0, End: 7}, errors.New("boom")))
+	diagnostic = semanticDiagnostic(graph, open, related)
+	if len(diagnostic.Related) != 1 || !strings.Contains(diagnostic.Related[0].Message, "position unavailable") {
+		t.Fatalf("unavailable related span silently dropped: %+v", diagnostic)
+	}
+	if diagnostic.Code != "" || diagnostic.Line != 0 || diagnostic.Start != 0 || diagnostic.End != 7 {
+		t.Fatalf("primary span lost beside unavailable related: %+v", diagnostic)
+	}
+	spanless := semanticDiagnostic(graph, open, errors.New("boom"))
+	if spanless.File != open || spanless.Line != 0 || spanless.Code != "" {
+		t.Fatalf("spanless failure lost its anchor: %+v", spanless)
 	}
 }
 

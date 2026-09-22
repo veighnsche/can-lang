@@ -201,7 +201,7 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 		}
 		return ValueBinding{Identity: identity, Type: typ}, nil
 	}
-	return &Expressions{Scalars: c.annotations[file],
+	expressions := &Expressions{Scalars: c.annotations[file],
 		Value:     func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
 		Reference: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ReferenceUse) },
 		Function:  func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
@@ -216,6 +216,10 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 			return c.annotation(file, &syntax.NamedType{Name: node.Name, Arguments: node.Types}, false)
 		},
 	}
+	if file.Source != nil && file.Source.Syntax != nil {
+		expressions.File = file.Source.Syntax.Source
+	}
+	return expressions
 }
 
 // CheckProgram connects project resolution, declaration checking, initialization

@@ -11,8 +11,18 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
+
+// located attaches the failing source span to a Build error so editor
+// bridges convert positions from structure instead of message prose.
+func located(src *project.Source, span source.Span, err error) error {
+	if src == nil {
+		return err
+	}
+	return source.Locate(src.Path, span, err)
+}
 
 type Kind string
 
@@ -159,13 +169,13 @@ func Build(graph *project.Graph) (*World, error) {
 				symbol.Source = src
 				symbol.Declaration = declaration
 				if err := pkg.Scope.Define(symbol); err != nil {
-					return nil, fmt.Errorf("%s: %w", src.Path, err)
+					return nil, located(src, declarationNameSpan(declaration), fmt.Errorf("%s: %w", src.Path, err))
 				}
 				if q, ok := declaration.(*syntax.QuestionDecl); ok && q.RecordName != nil {
 					generated := generatedQuestionRecord(q)
 					record := &Symbol{Name: q.RecordName.Text, ID: p.ID + "::" + q.RecordName.Text, Kind: Record, Constructible: true, Package: pkg, Source: src, Declaration: generated, GeneratedQuestion: q}
 					if err := pkg.Scope.Define(record); err != nil {
-						return nil, fmt.Errorf("%s: %w", src.Path, err)
+						return nil, located(src, q.RecordName.Span, fmt.Errorf("%s: %w", src.Path, err))
 					}
 				}
 			}
@@ -180,10 +190,10 @@ func Build(graph *project.Graph) (*World, error) {
 			for _, export := range src.Syntax.Header.Provides {
 				symbol := file.Package.Scope.Symbols[export.Text]
 				if symbol == nil || symbol.Source != src {
-					return nil, fmt.Errorf("%s: provides %q is not declared by this file", src.Path, export.Text)
+					return nil, located(src, export.Span, fmt.Errorf("%s: provides %q is not declared by this file", src.Path, export.Text))
 				}
 				if seen[export.Text] {
-					return nil, fmt.Errorf("%s: duplicate provides entry %q", src.Path, export.Text)
+					return nil, located(src, export.Span, fmt.Errorf("%s: duplicate provides entry %q", src.Path, export.Text))
 				}
 				seen[export.Text] = true
 				symbol.Public = true
@@ -196,17 +206,17 @@ func Build(graph *project.Graph) (*World, error) {
 			for _, entry := range src.Syntax.Header.Uses {
 				target := w.Packages[entry.Package.Text]
 				if target == nil {
-					return nil, fmt.Errorf("%s: unknown package %q", src.Path, entry.Package.Text)
+					return nil, located(src, entry.Package.Span, fmt.Errorf("%s: unknown package %q", src.Path, entry.Package.Text))
 				}
 				alias := entry.Package.Text
 				if entry.Alias != nil {
 					alias = entry.Alias.Text
 				}
 				if file.Imports[alias] != nil || file.Package.Scope.Symbols[alias] != nil || w.Prelude.reserved[alias] {
-					return nil, fmt.Errorf("%s: import alias %q collides with another name", src.Path, alias)
+					return nil, located(src, importEntrySpan(entry), fmt.Errorf("%s: import alias %q collides with another name", src.Path, alias))
 				}
 				if catalogue.Builtin().IsReservedPackage(alias) && alias != target.Name {
-					return nil, fmt.Errorf("import alias %q claims a reserved catalogue package", alias)
+					return nil, located(src, importEntrySpan(entry), fmt.Errorf("import alias %q claims a reserved catalogue package", alias))
 				}
 				if target.Source != nil {
 					owner := src.Package.Owner
@@ -217,10 +227,10 @@ func Build(graph *project.Graph) (*World, error) {
 						}
 					}
 					if !permitted {
-						return nil, fmt.Errorf("%s: package %q belongs to an undeclared direct dependency", src.Path, target.Name)
+						return nil, located(src, entry.Package.Span, fmt.Errorf("%s: package %q belongs to an undeclared direct dependency", src.Path, target.Name))
 					}
 					if err := internalVisibility(src, target.Source); err != nil {
-						return nil, err
+						return nil, located(src, entry.Package.Span, err)
 					}
 				}
 				file.Imports[alias] = target
@@ -232,7 +242,7 @@ func Build(graph *project.Graph) (*World, error) {
 			file := w.Files[src]
 			for _, declaration := range src.Syntax.Declarations {
 				if err := w.signature(file, declaration); err != nil {
-					return nil, fmt.Errorf("%s: %w", src.Path, err)
+					return nil, located(src, declaration.DeclSpan(), fmt.Errorf("%s: %w", src.Path, err))
 				}
 			}
 		}
@@ -292,6 +302,45 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 		s.Parameters = append(s.Parameters, p.Text)
 	}
 	return s
+}
+
+// declarationNameSpan points at the declared name token, falling back to
+// the whole declaration when the form carries no name token.
+func declarationNameSpan(declaration syntax.Declaration) source.Span {
+	switch d := declaration.(type) {
+	case *syntax.ConnectionDecl:
+		return d.Name.Span
+	case *syntax.FetchDecl:
+		return d.Name.Span
+	case *syntax.LLMDecl:
+		return d.Name.Span
+	case *syntax.JudgeDecl:
+		return d.Name.Span
+	case *syntax.QuestionDecl:
+		return d.Name.Span
+	case *syntax.ChoiceArmDecl:
+		return d.Name.Span
+	case *syntax.RecordDecl:
+		return d.Name.Span
+	case *syntax.ErrorDecl:
+		return d.Name.Span
+	case *syntax.VariantDecl:
+		return d.Name.Span
+	case *syntax.FunctionDecl:
+		return d.Name.Span
+	case *syntax.ValueDecl:
+		return d.Binding.Name.Span
+	default:
+		return declaration.DeclSpan()
+	}
+}
+
+// importEntrySpan points at the alias when one is written, else the package.
+func importEntrySpan(entry syntax.Import) source.Span {
+	if entry.Alias != nil {
+		return entry.Alias.Span
+	}
+	return entry.Package.Span
 }
 
 func (w *World) catalogue() error {
