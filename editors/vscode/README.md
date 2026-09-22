@@ -7,7 +7,7 @@ Install (from the repo root; manual copy into the extensions dir does
 NOT register — the editor only loads manifest-registered extensions):
 
 ```
-go build -o editors/vscode/bin/canlc ./compiler
+go build -ldflags "-X main.version=$(git describe --tags --always --dirty)" -o editors/vscode/bin/canlc ./compiler
 (cd editors/vscode && npm install --no-audit --no-fund)
 (cd editors/vscode && npx -y @vscode/vsce package -o /tmp/can-lang.vsix)
 cursor --install-extension /tmp/can-lang.vsix --force   # or: code --install-extension ...
@@ -27,7 +27,7 @@ See a squiggle and disagree? The diagnosis comes from the inert bridge
 (`compiler/internal/driver/diagnostics.go`, proven by
 `compiler/internal/driver/diagnostics_test.go` and the protocol
 exchanges in `compiler/lsp_server_test.go`) — fix it there, rebuild
-`bin/canlc` (`go build -o editors/vscode/bin/canlc ./compiler`), reinstall.
+`bin/canlc` with the stamped command above, reinstall.
 The server parses, resolves, and checks an in-memory overlay snapshot on
 every keystroke; it never builds, runs, asserts, dials out, or writes.
 Unsaved sibling buffers diagnose as one coherent snapshot, and the
