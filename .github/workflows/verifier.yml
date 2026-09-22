@@ -1,5 +1,12 @@
 name: target qualification
 
+# Complete macOS release-candidate gates (I45). One macos-15 job
+# operates every required service — pinned Bun archive, PostgreSQL
+# 17, Node 24 with pinned Playwright Chromium, pinned TypeScript —
+# and runs the unnarrowed suite: gofmt, vet, cataloguegen, modcheck,
+# gramcheck, go test ./..., and bun test runtime/test/. No release
+# upload, credentialed signing, or live provider call happens here.
+
 on:
   push:
   pull_request:
@@ -7,6 +14,9 @@ on:
 jobs:
   native-capabilities:
     runs-on: macos-15
+    env:
+      CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+      CAN_TEST_POSTGRES_URL: postgres://can@127.0.0.1:5433/can_test
     steps:
       - uses: actions/checkout@v6
       - name: Acquire the pinned upstream archive
@@ -21,12 +31,58 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: Test compiler foundations and the development sidecar offline
-        env:
-          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tests/integration/browser/package-lock.json
+      - name: Extract and pin-check the Bun binary
+        run: |
+          set -euo pipefail
+          unzip -q -o "$RUNNER_TEMP/bun.zip" -d "$RUNNER_TEMP/bun-dist"
+          test "$(shasum -a 256 "$RUNNER_TEMP/bun.zip" | cut -d' ' -f1)" = "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f"
+          test "$("$RUNNER_TEMP/bun-dist/bun-darwin-aarch64/bun" --revision)" = "1.4.2+744846f84"
+          echo "CAN_BUN=$RUNNER_TEMP/bun-dist/bun-darwin-aarch64/bun" >> "$GITHUB_ENV"
+          echo "$RUNNER_TEMP/bun-dist/bun-darwin-aarch64" >> "$GITHUB_PATH"
+      - name: Operate disposable PostgreSQL 17
+        run: |
+          set -euo pipefail
+          brew install postgresql@17
+          export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+          initdb -D "$RUNNER_TEMP/can-pgdata" -U can --auth=trust
+          pg_ctl -D "$RUNNER_TEMP/can-pgdata" -l "$RUNNER_TEMP/can-pg.log" -o "-c listen_addresses=127.0.0.1 -p 5433" start
+          createdb -h 127.0.0.1 -p 5433 -U can can_test
+          psql -h 127.0.0.1 -p 5433 -U can -d can_test -c 'select version();'
+      - name: Install the pinned browser harness
+        working-directory: tests/integration/browser
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npx playwright install chromium
+      - name: Install the pinned TypeScript leg
+        working-directory: tscheck
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          echo "CAN_TSC=$GITHUB_WORKSPACE/tscheck/node_modules/typescript/bin/tsc" >> "$GITHUB_ENV"
+      - name: Check formatting, vet, and generated mirrors
+        run: |
+          set -euo pipefail
+          test -z "$(gofmt -l compiler/ tests/ tools/ distribution/ internal/)"
+          go vet ./...
+          go run ./compiler/internal/catalogue/cmd/cataloguegen --check
+          go run ./tools/modcheck
+          go run ./tools/gramcheck
+      - name: Test everything with all services operated
         run: |
           set -o pipefail
-          go test -count=1 -v ./distribution ./compiler ./compiler/internal/... ./tests/integration | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          go test -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          test "${PIPESTATUS[0]}" -eq 0
+      - name: Test the Bun runtime suite
+        run: |
+          set -o pipefail
+          bun test runtime/test/ 2>&1 | tee "$RUNNER_TEMP/bun-runtime-v1.txt"
+          test "${PIPESTATUS[0]}" -eq 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -38,4 +94,10 @@ jobs:
         with:
           name: native-capabilities-v1
           path: ${{ runner.temp }}/native-capabilities-v1.json
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bun-runtime-v1
+          path: ${{ runner.temp }}/bun-runtime-v1.txt
           if-no-files-found: error

@@ -1,0 +1,113 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "emit_evidence": {
+    "type": "choice",
+    "choice": "upload_emit",
+    "confidence": 0.75,
+    "probabilities": {
+     "logs_only": 0.14,
+     "upload_emit": 0.84,
+     "review_needed": 0.02
+    }
+   },
+   "gate_topology": {
+    "type": "choice",
+    "choice": "extend_verifier",
+    "confidence": 0.55,
+    "probabilities": {
+     "extend_verifier": 0.7,
+     "review_needed": 0.05,
+     "separate_gates": 0.25
+    }
+   },
+   "tscheck_mechanism": {
+    "type": "choice",
+    "choice": "env_copy",
+    "confidence": 1.0,
+    "probabilities": {
+     "dedicated_tool": 0.0,
+     "review_needed": 0.0,
+     "env_copy": 1.0
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "emit_evidence": {
+    "type": "choice",
+    "choice": "upload_emit",
+    "confidence": 0.68,
+    "probabilities": {
+     "logs_only": 0.14,
+     "upload_emit": 0.79,
+     "review_needed": 0.07
+    }
+   },
+   "gate_topology": {
+    "type": "choice",
+    "choice": "extend_verifier",
+    "confidence": 0.74,
+    "probabilities": {
+     "separate_gates": 0.12,
+     "review_needed": 0.06,
+     "extend_verifier": 0.82
+    }
+   },
+   "tscheck_mechanism": {
+    "type": "choice",
+    "choice": "env_copy",
+    "confidence": 1.0,
+    "probabilities": {
+     "env_copy": 1.0,
+     "review_needed": 0.0,
+     "dedicated_tool": 0.0
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "emit_evidence": {
+    "type": "choice",
+    "choice": "upload_emit",
+    "confidence": 0.65,
+    "probabilities": {
+     "review_needed": 0.04,
+     "logs_only": 0.19,
+     "upload_emit": 0.77
+    }
+   },
+   "gate_topology": {
+    "type": "choice",
+    "choice": "extend_verifier",
+    "confidence": 0.37,
+    "probabilities": {
+     "review_needed": 0.11,
+     "extend_verifier": 0.58,
+     "separate_gates": 0.31
+    }
+   },
+   "tscheck_mechanism": {
+    "type": "choice",
+    "choice": "env_copy",
+    "confidence": 1.0,
+    "probabilities": {
+     "review_needed": 0.0,
+     "dedicated_tool": 0.0,
+     "env_copy": 1.0
+    }
+   }
+  }
+ }
+]

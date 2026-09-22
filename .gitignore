@@ -13,6 +13,7 @@ dist/
 build/
 out/
 *.test
+tscheck/.fresh-emit/
 
 # linked git worktrees nested under .agents (see git worktree list)
 /.agents/worktrees/

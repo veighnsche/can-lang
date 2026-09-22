@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "emit_evidence": {
+   "criteria": {
+    "logs_only": "Keep the TypeScript job log-only: tsc output streams to the workflow log and the job passes or fails on its exit code, with no stored emit tree.",
+    "review_needed": "The evidence cannot separate these evidence levels, or neither records the TS gate safely.",
+    "upload_emit": "Upload the fresh emit tree plus the tsc log as workflow artifacts, so the exact typechecked output stays inspectable after the run."
+   },
+   "instructions": "Choose the evidence level for the fresh-emit TypeScript gate. Use common and topics.emit_evidence.",
+   "type": "choice"
+  },
+  "gate_topology": {
+   "criteria": {
+    "extend_verifier": "Extend the single verifier job to operate PostgreSQL, Browser, and Bun services and run the complete suite (full go tests, bun tests, mirrors, fresh-emit tsc) in one macos-15 job.",
+    "review_needed": "The evidence cannot separate these topologies, or neither gates the candidate safely.",
+    "separate_gates": "Split gating into separately operated jobs or workflows per family (go suite, bun suite, sql/browser legs, fresh-emit tsc), each with its own services and failure signal."
+   },
+   "instructions": "Choose the release-gate topology. Use common and topics.gate_topology.",
+   "type": "choice"
+  },
+  "tscheck_mechanism": {
+   "criteria": {
+    "dedicated_tool": "Write a new Go emitter tool that builds the development bundle and emits all eight examples to a target directory, which the workflow runs before tsc.",
+    "env_copy": "Teach the existing staged stdlib test to copy each project's dist under CAN_FRESH_EMIT_DIR, so the workflow runs that one test and then tsc over the copies.",
+    "review_needed": "The evidence cannot separate these mechanisms, or neither emits safely."
+   },
+   "instructions": "Choose how fresh emit reaches the TypeScript gate. Use common and topics.tscheck_mechanism.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "I45 enforces complete macos-15 release-candidate gates with operated PostgreSQL 17, Node 24 plus pinned Playwright Chromium, the pinned Bun archive, and TypeScript 7.0.2; no release upload, credentialed signing, or live provider call is permitted.",
+    "The full suite runs unnarrowed: go test across every package, the 850 bun runtime tests, cataloguegen, modcheck, gramcheck, gofmt, vet, and strict tsc over freshly emitted output; with all services present the local run reports zero skips.",
+    "tscheck/ and tsc.yml were deleted with their committed-golden subjects in I44, so TypeScript gating must be recreated around fresh emit rather than adapted from golden includes.",
+    "Every required service needs a setup script or command, every pin needs a committed lockfile or target record, and any genuine no-run row needs a recorded justification."
+   ],
+   "purpose": "Settle three I45 release-gate design points for Can: the CI gate topology, the mechanism that feeds fresh emit to TypeScript, and the evidence level for the TS gate."
+  },
+  "topics": {
+   "emit_evidence": {
+    "background": "The recreated TypeScript gate typechecks freshly emitted output in CI, and the run can either stream tsc output to the log or additionally store the emit tree and log as artifacts.",
+    "facts": [
+     "The verifier and release-qualify workflows already upload test logs, qualification reports, and integrity records as artifacts, so artifact upload is an established gate idiom.",
+     "A stored emit tree lets a later reader inspect the exact typechecked output, while log-only output disappears into the run log after retention.",
+     "Artifacts cost storage and upload time on every push and pull request, while logs cost nothing beyond the existing runner minutes."
+    ]
+   },
+   "gate_topology": {
+    "background": "Release gating must cover the Go suite, the bun suite, live SQL/browser legs, mirrors, and fresh-emit tsc on macos-15, either inside one extended job or across separately operated gates.",
+    "facts": [
+     "The verifier job today runs a go test subset with only the Bun archive operated, so database, browser, and strict-TS legs silently skip in CI.",
+     "macos-15 runners offer no docker, so PostgreSQL arrives via brew services, the browser via npm plus pinned Playwright install, and tsc via a committed lockfile.",
+     "One job shares one service setup and fails as a unit, while separate gates isolate failures per family at the price of duplicated setup and more workflow files."
+    ]
+   },
+   "tscheck_mechanism": {
+    "background": "Strict tsc must run over freshly emitted TypeScript from all eight maintained examples, and the workflow needs a reviewable, locally runnable step that produces that emit tree.",
+    "facts": [
+     "TestStdlibMaintained already asserts and builds all eight projects from staged layouts with byte-identical rebuilds, so an env-gated dist copy reuses the exact staged path with about ten new lines.",
+     "A dedicated Go emitter tool would duplicate staging, bundle, and build logic outside the tested path, adding a second emitter that can drift from the suite.",
+     "Both mechanisms run before tsc in the same job and read the same bundle archive, so their outputs converge whenever the shared build logic agrees."
+    ]
+   }
+  }
+ }
+}

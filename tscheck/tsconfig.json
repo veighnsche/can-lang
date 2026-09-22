@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["bun", "node"]
+  },
+  "include": [".fresh-emit/**/*.ts"]
+}

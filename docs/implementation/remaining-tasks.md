@@ -652,6 +652,9 @@ is useful evidence but cannot be labelled a signed release candidate.
 
 ## I45 — Mandatory macOS release-candidate gates
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i45](evidence/2026-09-21/i45/README.md).
+The plan below is kept as dependency context for I50.
+
 **Files:** adapt `.github/workflows/verifier.yml` and `tsc.yml`; add focused workflow
 files only if separately operated release/browser/SQL gates warrant them. Update
 `tscheck/package.json`, lock and tsconfig; `tests/conformance/`; maintained

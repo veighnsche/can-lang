@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "emit_evidence": {
+   "criteria": {
+    "logs_only": "Stream tsc output to the job log and judge the gate by its exit code alone, storing no emit tree afterward.",
+    "review_needed": "This evidence cannot separate the evidence levels, or neither records the TS gate safely.",
+    "upload_emit": "Store the fresh emit tree and the tsc log as workflow artifacts, preserving the exact typechecked output beyond the run."
+   },
+   "instructions": "Pick the evidence level for the fresh-emit TS gate. Consult common and topics.emit_evidence.",
+   "type": "choice"
+  },
+  "gate_topology": {
+   "criteria": {
+    "extend_verifier": "Grow the single verifier job to operate PostgreSQL, Browser, and Bun services and execute the whole suite with mirrors and fresh-emit tsc on one macos-15 runner.",
+    "review_needed": "This evidence cannot separate the topologies, or neither gates the candidate safely.",
+    "separate_gates": "Divide gating into independently operated jobs or workflows per family, giving each its own services and failure signal."
+   },
+   "instructions": "Pick the release-gate topology. Consult common and topics.gate_topology.",
+   "type": "choice"
+  },
+  "tscheck_mechanism": {
+   "criteria": {
+    "dedicated_tool": "Author a fresh Go emitter that builds the development bundle plus all eight examples into a target directory ahead of tsc.",
+    "env_copy": "Extend the staged stdlib test with a dist copy behind CAN_FRESH_EMIT_DIR, letting one test run plus tsc cover the whole mechanism.",
+    "review_needed": "This evidence cannot separate the mechanisms, or neither emits safely."
+   },
+   "instructions": "Pick how fresh emit reaches TypeScript. Consult common and topics.tscheck_mechanism.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "I45 imposes complete macos-15 candidate gates operating PostgreSQL 17, Node 24 with pinned Playwright Chromium, the pinned Bun archive, and TypeScript 7.0.2, while release uploads, credentialed signing, and live provider calls stay forbidden.",
+    "The suite runs whole: go tests in all packages, 850 bun runtime tests, cataloguegen, modcheck, gramcheck, gofmt, vet, and strict tsc across fresh emit; a fully serviced local run shows zero skips.",
+    "I44 removed tscheck/ and tsc.yml together with their committed goldens, forcing TypeScript gating to be rebuilt on fresh emit instead of adapted from includes.",
+    "Each required service gets a setup script or command, each pin gets a committed lockfile or target record, and each real no-run row gets a written justification."
+   ],
+   "purpose": "Resolve three I45 gate design points for the Can tree: the CI topology, the fresh-emit-to-TypeScript mechanism, and the TS gate evidence level."
+  },
+  "topics": {
+   "emit_evidence": {
+    "background": "Fresh-emit TypeScript gating in CI may live in the job log alone or also persist the emit tree and tsc log as downloadable artifacts.",
+    "facts": [
+     "Verifier and release-qualify already store test logs, qualification reports, and integrity records as artifacts, making upload an established idiom.",
+     "Persisted emit lets future readers audit precisely what tsc accepted, whereas log-only output fades with run-log retention.",
+     "Uploads spend storage and minutes per push and pull request; log streaming spends only the runner time already paid."
+    ]
+   },
+   "gate_topology": {
+    "background": "Candidate gating spans the Go suite, bun suite, live SQL/browser legs, mirrors, and fresh-emit tsc on macos-15, inside either one grown job or several operated gates.",
+    "facts": [
+     "Today verifier executes a go test subset operating just the Bun archive, leaving database, browser, and strict-TS legs to skip quietly in CI.",
+     "Without docker on macos-15, PostgreSQL comes from brew services, Chromium from npm with a pinned Playwright install, and tsc from a committed lockfile.",
+     "A single job shares one setup and reports one verdict; split gates localize failures per family while duplicating setup and workflow files."
+    ]
+   },
+   "tscheck_mechanism": {
+    "background": "Strict tsc needs fresh TypeScript from every maintained example, produced by a reviewable step that also runs locally.",
+    "facts": [
+     "The staged stdlib test already asserts plus builds all eight projects with identical rebuilds, so a dist copy under an env flag reuses the proven path in roughly ten lines.",
+     "A separate Go emitter would restage bundles and builds beside the suite, creating a parallel emitter free to drift from tested behavior.",
+     "Either path executes ahead of tsc in one job against one bundle archive, converging whenever the common build logic agrees."
+    ]
+   }
+  }
+ }
+}

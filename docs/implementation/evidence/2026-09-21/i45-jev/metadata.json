@@ -1,0 +1,13 @@
+{
+ "exercise": "I45 gate topology, fresh-emit mechanism, TS evidence level",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "6bb54eeb76e43d193efde00697b3fa97c29ec4f8f3a20245587f8ef3e971dc61",
+  "request-2.json": "268f87b81e01dec21a19c38d45141a0378f402d856af8b7de29db790714cf9f3",
+  "request-3.json": "728f16e49fa4d556fca599e7599830428f9e200666f13e14056f691c77ad31ea"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and measured facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 87/87 strings pairwise distinct."
+}

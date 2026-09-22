@@ -1,0 +1,56 @@
+name: tsc gate
+
+# Strict TypeScript over freshly emitted output (I45). This workflow
+# rebuilds every maintained example from a staged bundle, copies each
+# dist under tscheck/.fresh-emit, and typechecks the whole tree with
+# the pinned toolchain. It replaces the I44-retired committed-golden
+# gate: nothing emitted is checked in.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  fresh-emit-tsc:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Acquire the pinned upstream archive
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          target = json.loads(pathlib.Path('distribution/target.json').read_text())
+          urllib.request.urlretrieve(target['upstream']['url'], pathlib.Path(os.environ['RUNNER_TEMP']) / 'bun.zip')
+          PY
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: tscheck/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        working-directory: tscheck
+      - name: Emit every maintained example fresh
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+          CAN_FRESH_EMIT_DIR: ${{ github.workspace }}/tscheck/.fresh-emit
+        run: |
+          set -o pipefail
+          rm -rf "$CAN_FRESH_EMIT_DIR"
+          go test -count=1 -run 'TestStdlibMaintained' ./tests/integration
+      - name: Typecheck the fresh emit tree
+        working-directory: tscheck
+        run: |
+          set -o pipefail
+          ./node_modules/.bin/tsc -p tsconfig.json 2>&1 | tee "${{ runner.temp }}/fresh-emit-tsc-v1.txt"
+          test "${PIPESTATUS[0]}" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fresh-emit-tsc-v1
+          path: |
+            tscheck/.fresh-emit
+            ${{ runner.temp }}/fresh-emit-tsc-v1.txt
+          if-no-files-found: error

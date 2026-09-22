@@ -99,6 +99,14 @@ func stageProject(t *testing.T, sourceRoot, rel string) (root, home string) {
 	return root, home
 }
 
+func copyFreshEmit(t *testing.T, dir, dst string) {
+	t.Helper()
+	if err := os.MkdirAll(dst, 0700); err != nil {
+		t.Fatal(err)
+	}
+	copyDir(t, dir, dst)
+}
+
 func assertNoStrayEmit(t *testing.T, root, dir string) {
 	t.Helper()
 	owned := filepath.Join(root, "dist")
@@ -167,6 +175,9 @@ func TestStdlibMaintained(t *testing.T) {
 			t.Fatalf("%s rebuild drifted: %s vs %s", rel, firstID, secondID)
 		}
 		assertNoStrayEmit(t, root, firstDir)
+		if fresh := os.Getenv("CAN_FRESH_EMIT_DIR"); fresh != "" {
+			copyFreshEmit(t, firstDir, filepath.Join(fresh, strings.ReplaceAll(rel, "/", "-")))
+		}
 		ran := "server/cli run covered by applications suite"
 		if strings.HasPrefix(rel, "std/") {
 			status, out, diag := canlcOffline(t, ctx, bundle, home, "run", root)
