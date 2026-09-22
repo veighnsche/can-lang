@@ -1,86 +1,91 @@
 # can-lang
 
-A small contract-first language (`.can`) that transpiles to TypeScript.
-You write specs with named errors, exchange scripts, and proofs
-(termination, effects, exact numerics); the compiler checks them and
-emits typed TS plus machine-readable artifacts.
+Can is a small contract-first language (`.can`) that compiles to
+TypeScript. You write records, functions with mandatory assertions,
+and native declarations for AI, HTTP, SQL, and HTML; the compiler
+checks them and emits typed TS plus machine-readable reports. Every
+function carries its assertion rows; running them in emitted code is
+part of every build.
 
 ## Layout
 
-- [`REQUIREMENTS.md`](REQUIREMENTS.md) — the language contract, versioned by amendment
-- [`docs/`](docs/README.md) — version history (`a02`–`a12`), the audit trail, and reviewer notes
-- [`compiler/`](compiler/README.md) — `canlc`, the Go transpiler (stdlib only)
-- [`sketches/`](sketches/README.md) — example programs (auth-login, retry-loop, counter, broken-login)
-- [`std/`](std/README.md) — the blessed standard library (quota, scalars)
-- [`editors/vscode/`](editors/vscode/README.md) — syntax highlighting + LSP client
-- [`tools/`](tools/) — grammar and module checkers
+- [`compiler/`](compiler/README.md) — `canlc`, the Go launcher plus
+  the current parse/resolve/check/emit pipeline
+- [`runtime/`](runtime/) — the private TypeScript runtime (partitioned
+  by contract, never hand-edited per program)
+- [`examples/`](examples/) — four admitted end-to-end applications
+  (native-ai, account-search, form-validation, dashboard)
+- [`std/`](std/README.md) — package dispositions and the four
+  maintained `current/` example projects
+- [`sketches/`](sketches/README.md) — retired predecessor gallery
+  (historical note only; sources deleted)
+- [`distribution/`](distribution/README.md) — pinned target,
+  qualification, bundles, offline install/update, release notes
+- [`tests/`](tests/integration/) — staged integration suites
+  (incl. SQL, browser, applications, stdlib)
+- [`docs/`](docs/README.md) — design records and the implementation
+  ledger ([tasks](docs/implementation/tasks.md),
+  [coverage](docs/implementation/coverage.md),
+  [evidence](docs/implementation/evidence/2026-09-21/))
+- [`editors/vscode/`](editors/vscode/README.md) — syntax highlighting
+  plus an LSP client over `canlc lsp`
+- [`tools/`](tools/) — distbuild, gramcheck, modcheck
+- [`tscheck/`](tscheck/README.md) — strict TypeScript over fresh emit
 
-## Install
+## Install (end users)
 
-Requires Go 1.25+. Easiest, no clone needed:
+End users install a qualified release into a user-owned root.
+Releases are unsigned until signing credentials are authorized (see
+[release notes](distribution/README.md#release-notes)):
 
-```
-go install github.com/veighnsche/can-lang/compiler@latest
-mv "$(go env GOPATH)/bin/compiler" ~/.local/bin/canlc
-```
-
-(`go install` names the binary after the package directory; the `mv`
-gives it its real name. Make sure `~/.local/bin` is on your `PATH`.)
-
-Or from a clone:
-
-```
-make install   # builds ./bin/canlc and copies it to ~/.local/bin/canlc
-```
-
-## Upgrade
-
-Re-run whichever install you used — both resolve to the newest commit:
-
-```
-go install github.com/veighnsche/can-lang/compiler@latest   # then re-mv to canlc
-```
-
-```
-git pull && make install
+```sh
+# From the source tree (a standalone installer binary is future work).
+go run ./tools/distbuild install --archive can-<version>-<target>.zip \
+  --sha can-<version>-<target>.zip.sha256 --root ~/.can-root
+~/.can-root/current/bin/canlc version
 ```
 
-`canlc --version` prints the build stamp (`make install` stamps the git
-revision; plain `go install` reports `dev`). No tags or releases yet,
-so "latest" means latest `main` — check the
-[commits](https://github.com/veighnsche/can-lang/commits/main) to see
-what changed. Note: right after a push, `@latest` can lag the Go module
-proxy by a few minutes; to upgrade immediately, pin the commit instead:
-`go install github.com/veighnsche/can-lang/compiler@<sha>`.
+Running an installed release needs no Bun, Node, npm, C compiler,
+or database: the bundle carries the exact pinned Bun sidecar and
+every runtime asset. PostgreSQL is required only to run the
+SQL-backed examples against a live database; everything else runs
+offline. Only the installer itself runs from the Go source tree
+today.
+
+## Build from source (developers)
+
+```sh
+# Prereqs: Go 1.25+, plus the pinned Bun archive acquired once.
+make build        # builds ./bin/canlc
+make bundle BUN_ARCHIVE=/absolute/path/bun-darwin-aarch64.zip VERSION=dev-1
+```
+
+Source builds additionally need Node 24 + npm for the TypeScript
+and browser legs, and PostgreSQL 17 for the live SQL legs; see the
+[verifier workflow](.github/workflows/verifier.yml) for the exact
+operated services. CGo (`pg_query_go`) needs a C compiler at Go
+build time only.
 
 ## Quickstart
 
-```
-canlc inspect-project compiler/testdata/current/project
-canlc inspect-types compiler/testdata/current/project
+```sh
+bin/canlc parse compiler/testdata/current/project/src/main/main.can
+bin/canlc inspect-project compiler/testdata/current/project
+CAN_BUN_ARCHIVE=/absolute/path/bun.zip go test ./tests/integration/ -run TestStdlibMaintained -count=1
 ```
 
-From the repo root, `go test ./...` runs the golden gates
-(byte-identical emit for the gallery sketches) plus the diagnosis
-suites: any parse, proof, evaluation, or emit change that alters output
-or diagnostics fails the build.
-
-`go test` runs the golden gates (byte-identical emit for the gallery
-sketches) plus the diagnosis suites: any parse, proof, evaluation, or
-emit change that alters output or diagnostics fails the build.
+From the repo root, `go test ./...` runs the compiler, mirror,
+integration, and retirement gates; `bun test runtime/test/` runs
+the 850-test runtime suite; `tscheck/` typechecks fresh emit.
+CI runs all of it with zero skips on `macos-15`.
 
 ## Status
 
-Through **a12**: unbounded exact numerics (bigint/decimal agreement),
-program-wide guarded termination with a returned-outcome theorem, and
-producer-owned contracts with complete observations. See
-[`docs/a10-numerics.md`](docs/a10-numerics.md),
-[`docs/a11-recursion.md`](docs/a11-recursion.md),
-[`docs/a12-contracts.md`](docs/a12-contracts.md), and the
-[`docs/ASTRA_AUDIT.md`](docs/ASTRA_AUDIT.md) trail that drove them.
-
-The current compiler publishes checked ESM through owned, content-addressed
-`dist` generations. The former `--out` compiler is retired; its historical
-fixtures are test-only. `canlc clean PROJECT_DIRECTORY` validates ownership and
-preserves unknown files and active generations. Current-language build/run entry
-integration follows the completion-region task; see [implementation progress](docs/implementation/tasks.md).
+Implementation is complete: all fifty ledger tasks are checked
+with evidence, the predecessor toolchain is deleted, and the
+release candidate passes the mandatory macOS gates. Open gates
+are publisher signature, notarization, and release upload, which
+require authorized credentials. No Linux support is claimed, no
+provider quality is claimed, and no proof/termination/effect
+inference is offered — behavior is checked assertions plus
+explicit contracts.

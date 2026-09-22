@@ -1,6 +1,6 @@
 # Stage 4 — Implementation plan
 
-Prepared after [reconciliation](reconciliation.md). Stage6 implementation subsequently began; [tasks](tasks.md) now records verified completion and dependencies, while [coverage](coverage.md) maps contracts to their owners. Implementation is paused at the user’s request as of 2026-09-21. The [file-level continuation handoff](remaining-tasks.md) expands the remaining work while preserving the established architecture. This plan targets the whole approved redesign, not repairs to the predecessor compiler.
+Prepared after [reconciliation](reconciliation.md). Stage6 implementation subsequently ran to completion: [tasks](tasks.md) records all fifty tasks checked with evidence, and [coverage](coverage.md) maps contracts to owners and evidence. The earlier pause is over and the [file-level handoff](remaining-tasks.md) now records every plan closed. This plan targeted the whole approved redesign, not repairs to the predecessor compiler.
 
 ## Milestones and exit gates
 
@@ -54,7 +54,7 @@ Source maps preserve Can filenames and source content policy without embedding s
 
 ## Distribution, installation and upgrades
 
-Ship a versioned macOS arm64 archive/container with Go launcher, exact upstream Bun sidecar, closed stdlib/runtime/tool assets and notices. M0 uses an unmodified upstream runtime in the same intended layout; M5 qualifies the complete signed artifact. Users need no global Bun, Node, npm, Go, C compiler or Z3. Building Can from source may require Go/C tools according to the SQL binding chosen; that is a developer prerequisite, not a user runtime dependency.
+Ship a versioned macOS arm64 archive/container with Go launcher, exact upstream Bun sidecar, closed stdlib/runtime/tool assets and notices. M0 uses an unmodified upstream runtime in the same intended layout; M5 qualifies the complete artifact, which ships unsigned until signing credentials are authorized (see the distribution release notes). Users need no global Bun, Node, npm, Go, C compiler or Z3. Building Can from source may require Go/C tools according to the SQL binding chosen; that is a developer prerequisite, not a user runtime dependency.
 
 Use exact Bun1.4.2/revision/digest as the initial candidate from research; freeze actual archive and extracted executable hashes in the release manifest. Never silently follow `latest`. Resolve runtime from the real launcher installation root, verify platform/minimum OS and expected manifest, then execute with an argument vector, controlled cwd and explicit configuration isolation. Preserve application environment required by approved env/auth operations, while blocking ambient Bun preload/config/auto-install behavior from injecting backend code. Qualify the exact supported isolation flags against the pinned executable.
 
@@ -72,4 +72,4 @@ Replacement tests are derived from current spec examples and edge contracts. Kee
 
 ## Stop conditions
 
-An unsupported native feature, parser scanner mismatch, incorrect deadline/drain behavior, incomplete source mapping or unsafe output deletion blocks its dependent milestone. Record the failing minimal case and upstream version before considering another upstream version/library. A change to a Can contract requires a separate design correction; this plan does not preauthorize it. Implementation was authorized and partially completed, then paused by the user. Resume only with renewed authorization; this planning update does not restart execution.
+An unsupported native feature, parser scanner mismatch, incorrect deadline/drain behavior, incomplete source mapping or unsafe output deletion blocks its dependent milestone. Record the failing minimal case and upstream version before considering another upstream version/library. A change to a Can contract requires a separate design correction; this plan does not preauthorize it. Implementation was authorized, paused, resumed under renewed authorization, and completed with all fifty tasks checked.

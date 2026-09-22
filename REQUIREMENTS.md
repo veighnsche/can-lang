@@ -1,4 +1,13 @@
-# can-lang — Requirements (v0.1 freeze)
+# can-lang — Requirements (v0.1 freeze) — HISTORICAL
+
+> This frozen predecessor contract is superseded and no longer
+> enforced: the shipped compiler retired decision tables,
+> given/call evidence, revision pins, `e"..."` literals, and CAN
+> codes, and its sketch programs were deleted. The body below is
+> preserved untouched per its own no-silent-rewrite rule; current
+> authority lives in [tasks](docs/implementation/tasks.md),
+> [coverage](docs/implementation/coverage.md), the package READMEs,
+> and [evidence](docs/implementation/evidence/2026-09-21/).
 
 Status: living — v0.1 freeze plus ratified amendments, each tagged
 with its version (a04–a09). Rules are never rewritten silently.

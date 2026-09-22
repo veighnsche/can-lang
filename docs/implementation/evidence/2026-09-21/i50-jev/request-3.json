@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "index_scope": {
+   "criteria": {
+    "relabel_index": "Retain index shape, correct false claims, flag the status map historical, remove the live-sketch step, and aim current readers at ledger, coverage, and evidence.",
+    "review_needed": "The material at hand supports neither scope, or neither treats the index safely.",
+    "rewrite_index": "Reorganize the index around current records and gather predecessor pointers beneath one historical heading."
+   },
+   "instructions": "Decide the docs index scope, drawing on common and topics.index_scope.",
+   "type": "choice"
+  },
+  "release_notes_shape": {
+   "criteria": {
+    "distribution_section": "Attach release notes to distribution/README.md near install/upgrade and prepared-signing material, unifying shipping truth in a single file.",
+    "implementation_notes": "Create docs/implementation/release-notes.md covering candidate state, pins, open gates, install flow, and limits, with a root README link.",
+    "review_needed": "The material at hand supports neither shape, or neither records the release safely."
+   },
+   "instructions": "Decide the release-notes shape, drawing on common and topics.release_notes_shape.",
+   "type": "choice"
+  },
+  "requirements_fate": {
+   "criteria": {
+    "banner_historical": "Hold REQUIREMENTS.md at root with a historical banner marking the v0.1 freeze superseded, keeping the frozen body untouched per its own rule.",
+    "relocate_archive": "Transfer REQUIREMENTS.md to docs/historical/ with a root forwarding note, ceasing to show a superseded contract as living.",
+    "review_needed": "The material at hand supports neither fate, or neither treats the contract safely."
+   },
+   "instructions": "Decide the fate of REQUIREMENTS.md, drawing on common and topics.requirements_fate.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "Docs must match shipped behavior: READMEs, index, ledger, coverage, plan, CLI guides, and new release notes follow actual command output, minus proof, compatibility, obsolete-syntax, and unsupported-platform claims.",
+    "Historical design material keeps labels plus links and is never silently recast as current authority, honoring the frozen contract's bar on quiet rewrites.",
+    "No release notes exist; signing, notarization, and upload remain open gates served by prepared commands only, with provider quality unclaimed.",
+    "Verified contract-to-evidence links, exact pins and limits, a clean-machine install-to-run pass, and a recount of fifty checkboxes gate completion."
+   ],
+   "purpose": "Determine the three open I50 design points for Can documentation: REQUIREMENTS.md fate, release-notes shape, and docs index scope."
+  },
+  "topics": {
+   "index_scope": {
+    "background": "The docs index pairs dated design links against a status map plus reading steps that assume live sketches, sketch-side goldens, and a CAN-code registry, none surviving.",
+    "facts": [
+     "Lower-half historical-incomplete labels exist, yet the reading order still tours deleted sketches and golden gates as though live.",
+     "The ledger, coverage mapping, evidence directories, and package READMEs form current authority without index prominence.",
+     "Anchor-preserving relabels contrast with rebuilds that threaten deep links from evidence and review notes aimed at existing headings."
+    ]
+   },
+   "release_notes_shape": {
+    "background": "Shipped state, pins, open gates, install flow, and limits need one release-notes home, either new under implementation or inside the distribution guide.",
+    "facts": [
+     "I01/I02/I39 sections of distribution/README.md already span install, upgrade, prepared signing, and the unsigned-release open gate.",
+     "No consolidated notes bind version, pins, gates, and limits despite outward links from root README, ledger, and evidence.",
+     "Implementation files own task evidence and distribution files own shipping steps, stranding notes between two readerships."
+    ]
+   },
+   "requirements_fate": {
+    "background": "A 288-line frozen v0.1 contract of decision tables, given/call evidence, revision pins, and CAN codes fills root REQUIREMENTS.md, retired throughout by the shipped compiler.",
+    "facts": [
+     "Silent rewrites stand banned by its freeze rule with tagged amendments as the sole legal change, barring quiet modernization.",
+     "Living-contract billing in index and root README still funnels readers past it into deleted sketch programs.",
+     "Enforcement moved entirely to ledger, coverage mapping, and evidence directories; no present test, gate, or example honors its clauses."
+    ]
+   }
+  }
+ }
+}

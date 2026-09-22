@@ -1,28 +1,28 @@
-# canlc — the can-lang transpiler (Go, stdlib only)
+# canlc — the can-lang launcher (Go)
 
-Stages: `parse.go` (scanner + file parser), `check.go` (static proofs:
-naming, calls, given, emits, decreases, effects, cycles), `types.go`
-(exact type discipline), `eval.go` (hermetic signature-test evaluator,
-per-test stores), `emit.go` (TypeScript emitter), `lsp.go` (diagnose +
-prove-first gate), `main.go` (CLI + program assembly), `catalog.go`
-(`errors.json`), `code.go` (`CANnnnn` registry).
+The launcher is five files: `main.go` (command dispatch),
+`lsp.go` (stdio Language Server over the current bridge),
+`current_parse.go`, `current_project.go`, and `current_types.go`
+(inspect commands). The parse/resolve/check/emit pipeline lives in
+`internal/`; the predecessor toolchain was deleted in I44.
 
-From repo root:
+Commands: `assert`, `build`, `run`, `parse`, `inspect-project`,
+`inspect-types`, `runtime-check`, `catalogue-check`, `version`,
+`lsp`, `clean`. The removed `explain`, `lint`, `baseline`, and
+`normalize` modes exit 2 naming their retirement. `build` and `run`
+refuse without a qualified sidecar; see the
+[CLI guide](../docs/implementation/cli.md) and
+[assertions guide](../docs/implementation/assertions.md).
+
+From the repo root:
 
 ```
 go build -o /tmp/canlc ./compiler
-/tmp/canlc --out /tmp/can-out sketches/auth-login/db.can sketches/auth-login/auth.can
-go test ./...
+/tmp/canlc parse compiler/testdata/current/project/src/main/main.can
+go test ./compiler/
 ```
 
-`go test` runs the golden gates (`emit_golden_test.go` covers
-`auth-login/`, `retry-loop/`, `counter/` byte-identical) plus the
-diagnosis suites (`lsp_test.go`, `arith_test.go`, `helper_test.go`,
-`loop_test.go`, `effects_test.go`): any parse, proof, evaluation, or
-emit change that alters output or diagnostics fails the build.
-
-Editor mode: `canlc lsp` speaks minimal LSP over stdio (initialize,
-didOpen/didChange → publishDiagnostics, shutdown/exit). The
-Cursor/VSCode client in `editors/vscode/` installs to the editor's
-extensions dir with a signed `bin/canlc`; rebuild + reinstall + sign
-after compiler changes, then verify live against `sketches/`.
+`go test ./...` runs the compiler, mirror, integration, and
+retirement gates (`retirement_test.go` pins the five-file launcher
+and forbids retired symbols). Editor mode: `canlc lsp` speaks
+minimal LSP over stdio; the client lives in `editors/vscode/`.

@@ -2,8 +2,7 @@
 
 **Build six separate closures in this order: constants → forward arms → ranges → or-patterns → boolean operators → unary minus.** Ranges depend on constants; or-patterns depend on ranges. Forwarding retains a61’s design rather than introducing a different error mechanism.
 
-[Read the complete design records and implementation plan](sandbox:/mnt/data/a78-gap-closures-design.md)
-[Download the package, including migration bodies, diagnostic specifications, and rerunnable probes](sandbox:/mnt/data/a78-gap-closures-design.zip)
+Review-harness artifacts, not in repo: `sandbox:/mnt/data/a78-gap-closures-design.md`, `sandbox:/mnt/data/a78-gap-closures-design.zip` (migration bodies, diagnostic specifications, rerunnable probes).
 
 The package targets commit `e87e5cb997aa12a7c9d54453270b00fcc6205e96`. It contains six individual records, per-phase gates and rollback instructions, thirteen proposed diagnostic allocations, complete replacement-body sketches, and an evidence map.
 

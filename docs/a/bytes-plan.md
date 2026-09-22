@@ -12,9 +12,9 @@ fixtures) → B4 pre-implementation review folded (v3 example rows joined —
 split outcomes are `CAN1000`; promotion-chain audit; NUL vector; escaping
 regressions; artifact expectations; downstream unresolved). Reviewer caveat: it saw v1/v2 + prompt only (v3 and the B1
 doc failed to retrieve on its side; both exist locally) — its cited
-anchors were re-verified here against `de82756` before folding. Prior docs: [bytes-workstream.md](/Users/vince/Projects/can-lang/docs/bytes-workstream.md),
-[bytes-plan-review-prompt.md](/Users/vince/Projects/can-lang/docs/bytes-plan-review-prompt.md),
-[bytes-open-items-prompt.md](/Users/vince/Projects/can-lang/docs/bytes-open-items-prompt.md).
+anchors were re-verified here against `de82756` before folding. Prior docs: [bytes-workstream.md](bytes-workstream.md),
+`bytes-plan-review-prompt.md` (referenced prompt bundle; file not in repo),
+[bytes-open-items-prompt.md](bytes-open-items-prompt.md).
 
 **No compiler gates have been run.** Below are implementation decisions and
 required acceptance evidence — not claims of compiling/passing code.

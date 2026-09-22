@@ -1,7 +1,7 @@
 # a47 S3: Generic UTF-8 encode kernel (B3)
 
 Third execution slice of the Bytes workstream
-([bytes-plan.md](/Users/vince/Projects/can-lang/docs/bytes-plan.md) B3).
+([bytes-plan.md](bytes-plan.md) B3).
 
 ## Scope (one operation)
 

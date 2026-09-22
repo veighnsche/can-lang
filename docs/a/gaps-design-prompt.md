@@ -1,6 +1,6 @@
 # Prompt: design the a78 gap closures + implementation plan
 
-Paste this into the designer bot with [docs/a78-classification-gaps.md](docs/a78-classification-gaps.md)
+Paste this into the designer bot with [docs/a78-classification-gaps.md](a78-classification-gaps.md)
 attached plus the context files below. a78's investigation is
 closed (all gaps verified); nothing is designed yet. This
 prompt commissions the designs and the build plan. It

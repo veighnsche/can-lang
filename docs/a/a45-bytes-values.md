@@ -1,8 +1,8 @@
 # a45 S1: Bytes value admission and literal construction (B1)
 
 First execution slice of the Bytes workstream
-([bytes-plan.md](/Users/vince/Projects/can-lang/docs/bytes-plan.md) B1).
-Template: [a36-seq-typed-construction.md](/Users/vince/Projects/can-lang/docs/a36-seq-typed-construction.md).
+([bytes-plan.md](bytes-plan.md) B1).
+Template: [a36-seq-typed-construction.md](a36-seq-typed-construction.md).
 
 ## Scope (one admission boundary)
 

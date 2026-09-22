@@ -1,0 +1,113 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "index_scope": {
+    "type": "choice",
+    "choice": "relabel_index",
+    "confidence": 1.0,
+    "probabilities": {
+     "review_needed": 0.0,
+     "relabel_index": 1.0,
+     "rewrite_index": 0.0
+    }
+   },
+   "release_notes_shape": {
+    "type": "choice",
+    "choice": "distribution_section",
+    "confidence": 0.47,
+    "probabilities": {
+     "review_needed": 0.02,
+     "distribution_section": 0.65,
+     "implementation_notes": 0.33
+    }
+   },
+   "requirements_fate": {
+    "type": "choice",
+    "choice": "banner_historical",
+    "confidence": 0.52,
+    "probabilities": {
+     "review_needed": 0.01,
+     "banner_historical": 0.67,
+     "relocate_archive": 0.32
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "index_scope": {
+    "type": "choice",
+    "choice": "relabel_index",
+    "confidence": 1.0,
+    "probabilities": {
+     "rewrite_index": 0.0,
+     "review_needed": 0.0,
+     "relabel_index": 1.0
+    }
+   },
+   "release_notes_shape": {
+    "type": "choice",
+    "choice": "distribution_section",
+    "confidence": 0.19,
+    "probabilities": {
+     "distribution_section": 0.46,
+     "review_needed": 0.1,
+     "implementation_notes": 0.44
+    }
+   },
+   "requirements_fate": {
+    "type": "choice",
+    "choice": "banner_historical",
+    "confidence": 0.64,
+    "probabilities": {
+     "banner_historical": 0.76,
+     "relocate_archive": 0.23,
+     "review_needed": 0.01
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "index_scope": {
+    "type": "choice",
+    "choice": "relabel_index",
+    "confidence": 0.99,
+    "probabilities": {
+     "rewrite_index": 0.01,
+     "review_needed": 0.0,
+     "relabel_index": 0.99
+    }
+   },
+   "release_notes_shape": {
+    "type": "choice",
+    "choice": "distribution_section",
+    "confidence": 0.82,
+    "probabilities": {
+     "implementation_notes": 0.09,
+     "review_needed": 0.03,
+     "distribution_section": 0.88
+    }
+   },
+   "requirements_fate": {
+    "type": "choice",
+    "choice": "banner_historical",
+    "confidence": 0.77,
+    "probabilities": {
+     "relocate_archive": 0.14,
+     "review_needed": 0.01,
+     "banner_historical": 0.85
+    }
+   }
+  }
+ }
+]

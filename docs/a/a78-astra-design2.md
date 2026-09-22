@@ -2,7 +2,7 @@
 
 The designs are pinned to commit `b5525eac54e563fdabdb41a1bc98bb66b10f35e0`.
 
-[Read the complete design records and implementation plans](sandbox:/mnt/data/a78-design-and-implementation-plan.md) · [Download the full bundle](sandbox:/mnt/data/a78-design-bundle.zip)
+Review-harness artifacts, not in repo: `sandbox:/mnt/data/a78-design-and-implementation-plan.md`, `sandbox:/mnt/data/a78-design-bundle.zip`.
 
 The bundle includes six decision records, per-item phased plans, complete migration sketches, nine proposed diagnostic fixtures, boundary-test rows, and rerunnable design probes. **No compiler changes were made, and no repository compiler gates were run.**
 

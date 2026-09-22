@@ -46,7 +46,7 @@ UTF-8 conversion rejects unpaired surrogates, and writes return exact byte count
 These are foundations for I13 and I29, not completion of their full inventories.
 Unsupported intrinsics, specialization and capture lowering fail explicitly.
 The [assert command](assertions.md) executes mandatory assertions in emitted code.
-Generic specialization is I46; ownership/draining is I20. Those tasks remain unchecked.
+Generic specialization is I46; ownership/draining is I20. Both tasks are checked with evidence.
 
 Runtime reports now include [mapped Can locations](source-maps.md), with exact
 byte spans and displayed UTF-16 coordinates. Raw native stacks remain private.

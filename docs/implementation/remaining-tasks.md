@@ -1,14 +1,16 @@
 # Remaining implementation: file ownership and agent handoff
 
 This is the execution companion to [tasks.md](tasks.md), not a new language
-specification. It expands the fourteen unchecked tasks without changing their
-acceptance criteria or marking drafts complete. The C/Q/A/P specifications linked
+specification. It expanded the fourteen then-unchecked tasks without changing
+their acceptance criteria. The C/Q/A/P specifications linked
 from the ledger remain authoritative. Paths here are repository-relative.
 
-**Implementation is paused at the user's request.** This handoff was prepared on
-2026-09-21, against committed baseline `a2531f7`, with 36 of 50 tasks checked.
-Resume implementation only when the user authorizes it. Planning does not authorize
-release upload, signing with credentials, or live provider calls.
+**All fourteen plans are closed.** This handoff was prepared on
+2026-09-21, against committed baseline `a2531f7`, with 36 of 50 tasks checked;
+implementation resumed under renewed authorization and completed with all
+fifty tasks checked and evidenced. The per-task sections below are the
+historical record of the file work executed. No release upload, signing
+with credentials, or live provider call was performed.
 
 ## Preserve the existing architecture
 
@@ -712,7 +714,9 @@ current authority.
 
 ## Before the next agent edits code
 
-Read the user’s latest authorization, `AGENTS.md`, `tasks.md`, this handoff and the
+**Superseded: implementation is complete; this section is retained as the
+historical pre-execution checklist, not current instruction.** It read:
+read the user’s latest authorization, `AGENTS.md`, `tasks.md`, this handoff and the
 relevant current specification sections. Inspect `git status` and the actual files
 named by the next task. Reconfirm that the I32 drafts and unrelated user files have
 not changed since this snapshot. Choose a bounded task, preserve the directory

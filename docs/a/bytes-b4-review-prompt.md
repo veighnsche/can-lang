@@ -1,6 +1,6 @@
 # Prompt: adversarial pre-implementation review of B4 (issue #42)
 
-Paste this into the reviewer with [docs/bytes-plan.md](docs/bytes-plan.md)
+Paste this into the reviewer with [docs/bytes-plan.md](bytes-plan.md)
 (v3, items 1–2 + B4 row) attached plus the context files below.
 B4 is not implemented yet — this review attacks the consumer design
 before it lands in the standard library. B1–B3 (values, export

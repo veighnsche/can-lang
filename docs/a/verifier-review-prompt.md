@@ -1,12 +1,12 @@
 # Prompt: adversarial design review of the verifier core (§2.2)
 
 Paste this into the reviewer with
-[docs/a67-testing-contracts-design.md](docs/a67-testing-contracts-design.md)
+[docs/a67-testing-contracts-design.md](a67-testing-contracts-design.md)
 (§2.2, §2.5, §2.6, Part 3),
-[docs/a69-contract-grammar.md](docs/a69-contract-grammar.md),
-[docs/a77-revision-identity.md](docs/a77-revision-identity.md),
-[docs/a68-linked-pure.md](docs/a68-linked-pure.md), and
-[docs/a13-stdlib.md](docs/a13-stdlib.md) (Order 0) attached.
+[docs/a69-contract-grammar.md](a69-contract-grammar.md),
+[docs/a77-revision-identity.md](a77-revision-identity.md),
+[docs/a68-linked-pure.md](a68-linked-pure.md), and
+[docs/a13-stdlib.md](a13-stdlib.md) (Order 0) attached.
 
 Nothing here is implemented — this review attacks the design
 before any verifier slice lands. a68 (linked runner), a69

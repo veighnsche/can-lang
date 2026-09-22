@@ -1,6 +1,6 @@
 # Prompt: resolve the Bytes plan open items (issue #42)
 
-Paste this into a fresh agent/reviewer with [docs/bytes-plan.md](docs/bytes-plan.md)
+Paste this into a fresh agent/reviewer with [docs/bytes-plan.md](bytes-plan.md)
 (v2) attached plus the context files listed at the bottom.
 
 ---

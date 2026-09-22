@@ -187,3 +187,37 @@ Until those steps run with real credentials on a clean machine, the
 bundle is a qualified unsigned release: install/run/update behavior is
 proven, and publisher signature plus notarization stay a reported open
 gate. No release upload occurs merely because this documentation exists.
+
+## Release notes
+
+Candidate: `can-b5026cc-darwin-arm64-v1` lineage (versions derive
+from `git describe`; no tags exist yet, so installer versions read
+`can-<sha>-darwin-arm64-v1`). Admitted target only:
+darwin-arm64. No Linux support is claimed.
+
+Shipped: Go launcher (`canlc`) with parse/resolve/check/emit plus
+stdio LSP; the exact pinned Bun 1.4.2 sidecar
+(`744846f84`, archive sha256 `90987a3a…6be1`); the closed
+native catalogue (21 packages, 144 operations); the private TS
+runtime; packaged HTMX 4.0.0; eight maintained examples; offline
+install/update with versioned roots and current-symlink swaps.
+
+Gates: the [verifier](../.github/workflows/verifier.yml) runs
+gofmt, vet, cataloguegen, modcheck, gramcheck, the full Go suite,
+and the 850-test Bun suite with PostgreSQL 17, pinned Chromium,
+and TypeScript 7.0.2 operated — zero skips. The
+[tsc gate](../.github/workflows/tsc.yml) typechecks 504 freshly
+emitted files. Conformance (14 native checks) runs inside
+`qualify.py`. Full results: [I45 acceptance](../docs/implementation/evidence/2026-09-21/i45/README.md).
+
+Open gates: publisher signature, notarization, and release upload
+(prepared commands above; no credentials authorized). The
+installer runs from the Go source tree; a standalone installer
+binary is future work.
+
+Limits: Bun 1.4.4+ features refused at qualification; SQL is
+PostgreSQL 17 wire behavior through pooled `Bun.SQL` with
+statement timeouts and no migrations; the browser boundary is
+upstream HTMX only with no authored client JS; AI evidence is
+loopback stub data only — no provider quality is claimed; proof,
+termination, and effect inference are not offered.

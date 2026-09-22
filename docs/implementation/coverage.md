@@ -1,6 +1,10 @@
 # Coverage and admission ledger
 
-This ledger maps approved contracts to their owning tasks and required evidence. Completion status is recorded in [tasks](tasks.md): 36 of 50 tasks were checked at the 2026-09-21 planning handoff, and I32 closed under renewed authorization the same day (37 of 50). The [remaining task plans](remaining-tasks.md) describe unfinished work, not passing evidence. C/Q/A/P refer to the linked current specs there. A task's absence from the first runnable milestone does not defer it from the final initial distribution.
+This ledger maps approved contracts to their owning tasks and required evidence. Completion status is recorded in [tasks](tasks.md): all fifty tasks are checked with evidence as of 2026-09-21. The [remaining task plans](remaining-tasks.md) now record every plan closed. C/Q/A/P refer to the linked current specs there. A task's absence from the first runnable milestone does not defer it from the final initial distribution.
+
+## Traceability
+
+Every row below resolves through its owning tasks to passing evidence: each task row in [tasks](tasks.md) links its acceptance evidence, which records source, runtime, and integration proof with exact pins. Catalogue operations additionally resolve mechanically — `TestCatalogueInclusionInventory` walks all 144 operations to owning-task evidence — and the [std inventory](../../std/README.md) maps each included row to its operations, assertions, and integration suite. The chain ends at the admitted release report: [I45 acceptance](evidence/2026-09-21/i45/README.md) plus the [distribution release notes](../../distribution/README.md#release-notes). Intentional P14 exclusions are listed in the std inventory and fail cleanly; they never reach a legacy path.
 
 ## Every specification section
 

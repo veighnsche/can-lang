@@ -1,7 +1,7 @@
 # a46 S2: Owner-authorized typed UTF-8 export (B2)
 
 Second execution slice of the Bytes workstream
-([bytes-plan.md](/Users/vince/Projects/can-lang/docs/bytes-plan.md) B2,
+([bytes-plan.md](bytes-plan.md) B2,
 as corrected by the B2 pre-implementation review).
 
 ## Scope (one capability)

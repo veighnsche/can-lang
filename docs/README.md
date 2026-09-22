@@ -1,9 +1,11 @@
 # docs — can-lang design records (reviewer index)
 
-Start with the current decisions and technical specification. Older implementation
-records below describe the previous design and are not current language policy.
+Current authority lives in the [task ledger](implementation/tasks.md),
+[coverage](implementation/coverage.md), [evidence](implementation/evidence/2026-09-21/),
+and package READMEs — implementation is complete and all fifty tasks
+are checked. The design inputs below are dated records, not policy.
 
-## Current design
+## Design records (2026-09-20)
 
 - [Approved syntax decisions](syntax-taste/decisions.md)
 - [Technical specification](syntax-taste/technical-spec.md)
@@ -15,7 +17,7 @@ records below describe the previous design and are not current language policy.
 
 ## Implementation preparation
 
-- [Five-stage implementation packet](implementation/README.md) — research, alternatives, reconciliation, plan, and unchecked tasks for the current design.
+- [Five-stage implementation packet](implementation/README.md) — research, alternatives, reconciliation, plan, and task ledger for the current design.
 
 ## Historical records
 
@@ -32,7 +34,7 @@ documents generally live under `a/`.
 
 | Doc | Status | One line |
 |---|---|---|
-| `REQUIREMENTS.md` (repo root) | Living: v0.1 freeze + ratified amendments tagged a04–a12 | The rules; see freeze note below |
+| `REQUIREMENTS.md` (repo root) | Historical: v0.1 freeze superseded, bannered, body untouched | Predecessor rules; see banner |
 | `a02-machine-artifacts.md` | Shipped | Codes, `--format=json`, `normalize`, catalog |
 | `a03-branch-coverage.md` | Shipped | Test-per-arm law over green tables |
 | `a04-type-discipline.md` | Shipped | Brands, `seal`, exact `dec`, no floats |
@@ -65,22 +67,25 @@ documents generally live under `a/`.
 
 ## Historical reading order for a reviewer
 
-1. `REQUIREMENTS.md` Goal + R1–R9 (the thesis and the shape).
+1. `REQUIREMENTS.md` Goal + R1–R9 (the predecessor thesis and shape;
+   superseded — see its banner).
 2. `a05-expressiveness.md` (what was missing and in what order).
 3. `a06` → `a09` in order (each spec pairs a power with its proof).
-4. `sketches/` live shape: `auth-login/`, `retry-loop/`, `counter/`;
-   `std/` blessed library: `quota/`, `scalars/`.
-5. `can-idioms.md` before writing or refactoring any `.can` file.
-5. `CLEAN_ROOM_REVIEW.md` (design input; historical record, see note).
+4. The retired gallery as recorded in `sketches/README.md` and the
+   `std/` package histories (sources deleted in I44).
+5. `can-idioms.md` (predecessor style; not current guidance).
+6. `CLEAN_ROOM_REVIEW.md` (design input; historical record, see note).
 
 ## Historical reading and editing rules
 
-- The v0.1 freeze means: no silent drift. Amendments land tagged with
-  their version (`(a07)`), never by rewriting a ratified rule.
-- Every expressive power names its proof cost; a feature whose proof
-  is "future work" is a bug with a roadmap.
-- One rule, one `CANnnnn` code (`compiler/code.go` is the registry).
-- Verify claims mechanically: `go test ./...`,
-  `go run ./tools/modcheck`, `go run ./tools/gramcheck`.
-  Goldens live beside their sketches; `broken-login/` titles are
-  enforced by the suite, not by inspection.
+- The v0.1 freeze meant: no silent drift. Amendments landed tagged
+  with their version (`(a07)`), never by rewriting a ratified rule.
+- Every expressive power named its proof cost; a feature whose proof
+  was "future work" was a bug with a roadmap.
+- One rule, one `CANnnnn` code (the registry was deleted with the
+  predecessor toolchain in I44).
+- Verify current claims mechanically: `go test ./...`,
+  `bun test runtime/test/`, `go run ./tools/modcheck`,
+  `go run ./tools/gramcheck`, plus the `tscheck/` fresh-emit gate.
+  Committed goldens are gone; maintained examples assert and build
+  fresh from staged layouts.

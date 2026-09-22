@@ -1,6 +1,6 @@
 # Prompt: adversarial pre-implementation review of B2 (issue #42)
 
-Paste this into the reviewer with [docs/bytes-plan.md](docs/bytes-plan.md)
+Paste this into the reviewer with [docs/bytes-plan.md](bytes-plan.md)
 (v3, item 1 + item 6 + B2 row) attached plus the context files below.
 B2 is not implemented yet — this review attacks the design before code
 lands. B1 (value admission) is already shipped and tested; do not

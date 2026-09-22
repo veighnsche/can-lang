@@ -1,7 +1,6 @@
 **The design is six separate builds, ordered: constants → forward arms → range arms → or-patterns → unary minus → boolean operators.** Constant bounds ship with the first range implementation; ASCII predicate functions follow boolean operators as a separate stdlib change.
 
-[Download the complete design package](sandbox:/mnt/data/a78-design-package.zip)
-[Read the consolidated design records and implementation plan](sandbox:/mnt/data/a78-design-records-and-plan.md)
+Review-harness artifacts, not in repo: `sandbox:/mnt/data/a78-design-package.zip`, `sandbox:/mnt/data/a78-design-records-and-plan.md`.
 
 The package contains six decision records, grammar and proof deltas, proposed diagnostic goldens, migration bodies, per-item phased plans, and rerunnable probes. It is pinned to **`7c33f7cd980c667aa39bbfa4848ccff6759370f6`**. No repository files, compiler code, branches, commits, or accepted baselines were changed.
 

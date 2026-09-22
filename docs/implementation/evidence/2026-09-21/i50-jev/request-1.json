@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "index_scope": {
+   "criteria": {
+    "relabel_index": "Keep the docs index structure and repair only false claims: mark the status map historical, drop the live-sketch reading step, and point current readers at the task ledger, coverage, and evidence.",
+    "review_needed": "The evidence cannot separate these scopes, or neither treats the index safely.",
+    "rewrite_index": "Rebuild the docs index around current records (task ledger, coverage, evidence, READMEs), moving every predecessor pointer into an explicitly historical section."
+   },
+   "instructions": "Choose the docs index scope. Use common and topics.index_scope.",
+   "type": "choice"
+  },
+  "release_notes_shape": {
+   "criteria": {
+    "distribution_section": "Extend distribution/README.md with a release-notes section beside the install/upgrade and prepared-signing material, keeping all shipping truth in one file.",
+    "implementation_notes": "Write a new docs/implementation/release-notes.md recording the candidate state, pins, open gates, install flow, and limits, linked from the root README.",
+    "review_needed": "The evidence cannot separate these shapes, or neither records the release safely."
+   },
+   "instructions": "Choose the release-notes shape. Use common and topics.release_notes_shape.",
+   "type": "choice"
+  },
+  "requirements_fate": {
+   "criteria": {
+    "banner_historical": "Keep REQUIREMENTS.md in place with a historical banner stating its v0.1 freeze is superseded, preserving its no-silent-rewrite rule by refusing to edit the frozen body.",
+    "relocate_archive": "Move REQUIREMENTS.md under docs/historical/ with a forwarding note at the root, so the root path no longer presents a superseded contract as living.",
+    "review_needed": "The evidence cannot separate these fates, or neither treats the contract safely."
+   },
+   "instructions": "Choose the fate of REQUIREMENTS.md. Use common and topics.requirements_fate.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "I50 reconciles documentation with shipped behavior: READMEs, the docs index, task ledger, coverage, plan, CLI guides, and new release notes must match actual command output, with proof, compatibility, obsolete-syntax, and unsupported-platform claims removed.",
+    "Historical design material stays labelled and linked, never silently rewritten as current authority; the v0.1 freeze rule itself forbids silent rewrites of the frozen contract.",
+    "No release notes file exists yet; signing, notarization, and upload stay open gates with prepared commands only, and no live provider quality is claimed.",
+    "Completion requires verified contract-to-evidence links, exact pins and limits, a clean-machine install-to-run pass, and a recount of all fifty checkboxes."
+   ],
+   "purpose": "Settle three I50 documentation design points for Can: the fate of REQUIREMENTS.md, the release-notes shape, and the docs index scope."
+  },
+  "topics": {
+   "index_scope": {
+    "background": "The docs index mixes dated design links with a status map and reading steps that assert live sketches, beside-sketch goldens, and a CAN-code registry that no longer exist.",
+    "facts": [
+     "The index already labels its lower half historical and incomplete, yet its reading order still sends reviewers to deleted sketch programs and golden gates.",
+     "The authoritative current records are the task ledger, the coverage mapping, the evidence directories, and the package READMEs, none of which the index centers.",
+     "A minimal relabel keeps every existing anchor while a rebuild risks breaking deep links from evidence and review notes that cite current headings."
+    ]
+   },
+   "release_notes_shape": {
+    "background": "The candidate needs release notes recording shipped state, pins, open gates, install flow, and limits, either as a new implementation document or inside the distribution guide.",
+    "facts": [
+     "distribution/README.md already documents install, upgrade, prepared signing commands, and the unsigned-release open gate across its I01/I02/I39 sections.",
+     "The root README, task ledger, and evidence READMEs all link outward for release truth, but no single notes file gathers version, pins, gates, and limits.",
+     "Implementation documents hold task evidence while distribution documents hold shipping procedure, so the notes sit at the boundary between the two audiences."
+    ]
+   },
+   "requirements_fate": {
+    "background": "The 288-line root REQUIREMENTS.md freezes a v0.1 contract of decision tables, given/call evidence, revision pins, and CAN codes that the shipped compiler retired.",
+    "facts": [
+     "Its own freeze rule states rules are never rewritten silently and amendments land tagged, which a quiet in-place modernization would violate.",
+     "The docs index and root README cite it as the living contract and map readers to deleted sketch programs through it.",
+     "No current test, gate, or example enforces its clauses; enforcement lives in the task ledger, coverage mapping, and evidence directories."
+    ]
+   }
+  }
+ }
+}
