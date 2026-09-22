@@ -129,7 +129,7 @@ is a type error—the right operand is an integer. The well-typed fault-contract
 false and ((1 / 0) == 0)
 ```
 
-That must fault loudly, as must the corresponding `true or` expression. It must not become a typed returned error or a successful boolean result. This follows the repository’s distinction between typed outcomes and primitive domain faults. Source: `docs/fault-contracts.md:7–15`.
+That must fault loudly, as must the corresponding `true or` expression. It must not become a typed returned error or a successful boolean result. This follows the repository’s distinction between typed outcomes and primitive domain faults. Source: `docs/archive/a/fault-contracts.md:7–15`.
 
 The proposed target shape is:
 

@@ -32,7 +32,7 @@ positional-construction rejection the Bytes branch must precede
 (`compiler/check.go:763–810`); `checkCoverage`/`relayStatus`
 (`compiler/lsp.go:357–405`); UTF-8 source gate
 (`compiler/parse.go:1042–1050`); fault triptych
-(`docs/fault-contracts.md:9–14`); `text.empty_separator` declared+raised
+(`docs/archive/a/fault-contracts.md:9–14`); `text.empty_separator` declared+raised
 but header-omitted (`std/text/text.can:21,27,390–405`); brand base
 (`std/html/html.can:8–12,28–30`); Seq atomic-boundary + `vEq`-as-support
 (`docs/archive/a/a36-seq-typed-construction.md:106–118`); one-operation + kernel

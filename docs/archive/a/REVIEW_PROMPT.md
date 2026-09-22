@@ -6,7 +6,7 @@ braces, every program ships with machine-checkable proofs (termination via
 effects via `emits`). It compiles to dependency-free TypeScript.
 
 READING ORDER
-1. `docs/FOR_REVIEWER.md` — the guided tour, read first.
+1. `docs/archive/a/FOR_REVIEWER.md` — the guided tour, read first.
 2. `REQUIREMENTS.md` — the rules (R1–R11) plus the open-questions list.
 3. `docs/archive/a/a05-expressiveness.md` — the original plan and its scoring method.
 4. `docs/archive/a/a06-arithmetic.md` through `docs/archive/a/a09-effects.md` — the four shipped

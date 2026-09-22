@@ -22,7 +22,7 @@ language layer, like Functions, Async, and Resources (see
 ## Input: settled trust model (gating)
 
 This workstream starts from the rulings produced under
-`docs/schema-design-prompt.md`, after adversarial security review —
+`docs/archive/a/schema-design-prompt.md`, after adversarial security review —
 not alongside them, not before them. The twelve attack-surface items
 arrive as settled rulings with rationale and failure rows; the open
 questions above arrive answered. If any ruling is missing or marked

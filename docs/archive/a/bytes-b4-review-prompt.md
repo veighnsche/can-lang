@@ -1,6 +1,6 @@
 # Prompt: adversarial pre-implementation review of B4 (issue #42)
 
-Paste this into the reviewer with [docs/bytes-plan.md](bytes-plan.md)
+Paste this into the reviewer with [docs/archive/a/bytes-plan.md](bytes-plan.md)
 (v3, items 1–2 + B4 row) attached plus the context files below.
 B4 is not implemented yet — this review attacks the consumer design
 before it lands in the standard library. B1–B3 (values, export
@@ -76,12 +76,12 @@ would expose it.
 
 ## Context files
 
-- `docs/bytes-plan.md` (v3 — the design under review)
-- `docs/bytes-workstream.md` (requirements, acceptance, non-goals)
+- `docs/archive/a/bytes-plan.md` (v3 — the design under review)
+- `docs/archive/a/bytes-workstream.md` (requirements, acceptance, non-goals)
 - `docs/archive/a/a46-bytes-export.md` (shipped B2: grants, kernel, barrier)
 - `docs/archive/a/a47-bytes-encode.md` (shipped B3: generic encoder)
 - `std/html/html.can` (the module B4 changes)
 - `std/html/html.ts` (the committed artifact B4 regenerates)
 - `std/html/errors.json` (the registry B4 must justify touching or not)
-- `docs/encoder-nul-policy.md` (NUL boundary the design relies on)
+- `docs/archive/a/encoder-nul-policy.md` (NUL boundary the design relies on)
 - `compiler/export.go` (the shape predicate and certifier B4 must satisfy)

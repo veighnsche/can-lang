@@ -22,7 +22,7 @@ the outcomes design.
 - The one generic-like facility, `Seq<T>`, is handled
   structurally per site (literals, indexing, emit).
 - Standing rejections: inferred generic parameters
-  (`docs/ASTRA_FSHARP_BORROW.md`); generics in the
+  (`docs/archive/a/ASTRA_FSHARP_BORROW.md`); generics in the
   variant first cut (a72, "start without ... generics").
 - Pilot surface is free: zero in-repo callers of
   `std__select__*` / `std__compare__*` outside their

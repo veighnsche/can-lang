@@ -46,7 +46,7 @@ that do not exist:
    generically: field access is static (`r.field`). The
    existing `std/schema` is asset approval only — "the
    asset minimum of Schema, not the general layer"
-   (`docs/schema-design-prompt.md`).
+   (`docs/archive/a/schema-design-prompt.md`).
 3. **A reuse mechanism for arbitrary `T`.** Even with
    generics, nameable `Schema<T>` does not create record
    traversal; checked field binding and interpretation

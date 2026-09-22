@@ -4,7 +4,7 @@ Status: decided; slices shipped (a73 registry,
 a74 values, a75 elimination, a76 pilot). Variant
 sequences in field position remain deferred
 (`checkDeclFields` Decision 6).
-Parent: `docs/ASTRA_FSHARP_BORROW.md` §3 (finite,
+Parent: `docs/archive/a/ASTRA_FSHARP_BORROW.md` §3 (finite,
 monomorphic, closed unions). This doc adapts that
 sketch to CAN specifics. Verdicts: keep closed
 unions; semantic boundaries and slice order revised

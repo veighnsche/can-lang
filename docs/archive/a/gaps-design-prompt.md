@@ -16,7 +16,7 @@ item 2 (item 2 refines it, do not redesign it), `std/html/html.can`
 `std/scalars/scalars.can` (`std__dec__round_half_even` —
 the `let` exhibit, out of scope, see below),
 `compiler/parse.go` (`parsePattern`, operator tables),
-`docs/ASTRA_FSHARP_BORROW.md` (only to confirm `let` and
+`docs/archive/a/ASTRA_FSHARP_BORROW.md` (only to confirm `let` and
 friends live elsewhere — do not design them here).
 
 ---

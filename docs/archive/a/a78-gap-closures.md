@@ -418,7 +418,7 @@ A left fault still stops execution before the right
 operand — strictness is not execution after failure.
 The well-typed fault cases must fault loudly, never
 become typed `emits` outcomes or boolean results
-(`docs/fault-contracts.md` typed-outcome vs
+(`docs/archive/a/fault-contracts.md` typed-outcome vs
 primitive-fault distinction, verified present):
 
 ```can
@@ -694,7 +694,7 @@ kept what holds, cut or fixed what does not:
   concept in eval. `std__dec__divide_round_half_even_result`
   present. `$can_kind`, `$canDecSub` present.
   `std__int__negate` (scalars.can:394) present.
-  `docs/fault-contracts.md` present.
+  `docs/archive/a/fault-contracts.md` present.
 - `TestDivZeroLoud` pins loud faults. Parser comment
   pins literals-only unary minus. `0 - scale` at 3
   sites. Variant `case` rows live

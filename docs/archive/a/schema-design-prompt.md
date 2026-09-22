@@ -1,11 +1,11 @@
 # Prompt: settle the Schema trust model (before any implementation plan)
 
-Paste this into a fresh designer with `docs/schema-workstream.md`
+Paste this into a fresh designer with `docs/archive/a/schema-workstream.md`
 attached. No code in this phase. The deliverable is rulings, not slices.
 
 ---
 
-`docs/schema-workstream.md` scopes the minimum asset-approval surface:
+`docs/archive/a/schema-workstream.md` scopes the minimum asset-approval surface:
 `ApprovedAsset`, `AssetPolicy`, a registry. Your job is the trust model
 behind those three names. For each question below, return a ruling, a
 one-paragraph rationale, and the failure rows it implies (what input,

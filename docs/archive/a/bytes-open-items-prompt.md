@@ -1,11 +1,11 @@
 # Prompt: resolve the Bytes plan open items (issue #42)
 
-Paste this into a fresh agent/reviewer with [docs/bytes-plan.md](bytes-plan.md)
+Paste this into a fresh agent/reviewer with [docs/archive/a/bytes-plan.md](bytes-plan.md)
 (v2) attached plus the context files listed at the bottom.
 
 ---
 
-`docs/bytes-plan.md` v2 records the verdict on the original plan. Everything
+`docs/archive/a/bytes-plan.md` v2 records the verdict on the original plan. Everything
 below is still open. Resolve each item with a concrete, implementable decision
 backed by file:line evidence from the attached context. Do not bundle
 independently shippable surfaces into one slice; do not strengthen the brand
@@ -78,10 +78,10 @@ execute as B1…Bn.
 
 ## Context files
 
-- `docs/bytes-plan.md` (the v2 plan under resolution)
-- `docs/bytes-workstream.md` (requirements, acceptance)
+- `docs/archive/a/bytes-plan.md` (the v2 plan under resolution)
+- `docs/archive/a/bytes-workstream.md` (requirements, acceptance)
 - `docs/archive/a/a36-seq-typed-construction.md`, `docs/archive/a/a37-seq-length.md` (template)
-- `docs/encoder-nul-policy.md`, `docs/fault-contracts.md` (boundaries)
+- `docs/archive/a/encoder-nul-policy.md`, `docs/archive/a/fault-contracts.md` (boundaries)
 - `std/text/text.can`, `std/html/html.can` (consumers)
 - `compiler/emit.go`, `compiler/check.go`, `compiler/eval.go`,
   `compiler/parse.go`, `compiler/types.go`, `compiler/lsp.go` (follow the

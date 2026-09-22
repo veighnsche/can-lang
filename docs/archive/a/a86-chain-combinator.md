@@ -63,7 +63,7 @@ scrutinee-`and`, which already compiles today.
    The elaborated ladder is byte-equivalent in outcomes to today's.
 6. **Fault contract.** Short-circuit is explicit: unevaluated steps
    cannot fault; evaluated steps fault loudly per
-   `docs/fault-contracts.md` (never become typed outcomes).
+   `docs/archive/a/fault-contracts.md` (never become typed outcomes).
 7. **Termination.** Inside `decreases` functions each call site counts
    as today — free via elaboration, no new guard syntax.
 

@@ -1,8 +1,8 @@
 # std — package dispositions and the maintained example inventory
 
 Every directory here is live: four packages ship maintained
-current-language projects under `current/`, `html/` documents the
-current constructors, and the closed native catalogue itself is
+current-language projects under `current/`, the `html` section below
+documents the current constructors, and the closed native catalogue itself is
 generated into [`catalogue/`](catalogue/) from
 `compiler/internal/catalogue/catalogue.json` — explanations and
 domain examples live in the owning package, never as a second
@@ -18,7 +18,7 @@ for retired packages were merged into the
 | `catalogue/` | Generated mirror (see below) | `cataloguegen --check` |
 | [`division/`](../docs/archive/std-package-history.md#division) | `number::divmod`, `euclidean_divmod` | `ratio/current` |
 | [`host/`](../docs/archive/std-package-history.md#host) | Finite `clock`/`random`/`crypto`/`env`/`log` catalogue | `cli` fixtures, admitted applications |
-| `html/` | Catalogue-owned safe constructors | `html` fixtures, admitted applications |
+| [`html/`](#html) | Catalogue-owned safe constructors | `html` fixtures, admitted applications |
 | [`json/`](../docs/archive/std-package-history.md#json) | Exact typed `codec` JSON | `codec` fixtures, native-ai report |
 | `map/` | Native immutable maps and sets | `map/current` (shared with `set/`) |
 | [`quota/`](../docs/archive/std-package-history.md#quota) | Ordinary Can validation pattern | form-validation application |
@@ -32,6 +32,27 @@ for retired packages were merged into the
 No new maintained project was authored: every domain above is
 already demonstrated by a current program, so per-package
 replacements would duplicate coverage for no behavioral gain.
+
+## html
+
+The current standard library exposes the catalogue-owned opaque constructors in
+[P9](../docs/syntax-taste/platform-testing-spec.md#p9-safe-html-and-htmx-constructors).
+Their implementation is [runtime/platform/html.ts](../runtime/platform/html.ts).
+Use `html::text` for text, typed attributes for attributes, `html::element` for
+validated structure, and `html::document` or `html::fragment` for immutable safe
+output. Native `Bun.escapeHTML` performs all escaping.
+
+The current compiler never accepts brands, seals, `asset_bridge` grants, raw
+markup, inline scripts, style attributes or arbitrary HTMX selectors. The pinned
+runtime-head constructor is the sole script-producing operation; its asset
+serving and browser admission belong to I34.
+
+[Current source example](../compiler/testdata/current/html/main.can) and
+[staged integration](../tests/integration/html_test.go) exercise real rendering
+of request-derived hostile text. The old Can/TS sources and `compiler/bridge.go`
+were deleted by the I43/I44 retirement; the
+[html history notes](../docs/archive/std-package-history.md#html-history)
+record what they were.
 
 ## Maintained example inventory
 
@@ -122,9 +143,10 @@ automatic retries, and rollback guarantees after cancellation.
 - `go test ./tests/integration/ -run TestStdlibMaintained`
   (every maintained project asserts and builds fresh from staging)
 
-Old sources beside these READMEs are retired artifacts; the I44
-deletion list is every `std/*/*.can` and `std/*/*.ts` outside
+Old sources beside the package READMEs were retired artifacts; the I44
+deletion list was every `std/*/*.can` and `std/*/*.ts` outside
 `current/` and `catalogue/`, the twelve `std/*/errors.json` files
 beside them, `std/host/host.externs.ts`,
 `std/host/platform.d.ts`, and all twenty `docs/archive/sketches/*/` programs.
-`std/html/HISTORY.md` stays as a labelled historical document.
+The [html history notes](../docs/archive/std-package-history.md#html-history)
+stay as a labelled historical document.

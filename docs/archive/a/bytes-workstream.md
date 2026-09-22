@@ -32,7 +32,7 @@ don't collide.
 - `Seq` slices are the process template: one capability per version,
   each with direct-row tests before the next lands.
 - Fault contracts hold for the new type: every failure is a declared,
-  value-carrying error kind; NUL policy (`docs/encoder-nul-policy.md`)
+  value-carrying error kind; NUL policy (`docs/archive/a/encoder-nul-policy.md`)
   applies to the utf8 boundary in both directions.
 - If you write std-level wrappers with tests, the checker enforces
   three rules we learned the hard way: a caller declares every kind
