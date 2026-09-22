@@ -5,7 +5,7 @@ import { invoke, success, type Completion } from "../completion.ts";
 import { dataArray, dataKeys, dataProperty, recordIdentity } from "../data.ts";
 import { domainFailureDiagnostics } from "../domain.ts";
 import { standardFailureDiagnostics, type FailureOrigin } from "../failure.ts";
-import { assertionContext, finishAssertionExecution, closeContext, contextReport, type AssertionContext, type AssertionRoot } from "./context.ts";
+import { assertionContext, finishAssertionExecution, closeContext, contextReport, contextProgress, type AssertionContext, type AssertionRoot } from "./context.ts";
 
 import { diagnosticFrames } from "../diagnostics.ts";
 
@@ -72,11 +72,18 @@ function sameCompletion(actual: Completion, expected: Completion): boolean {
   }
   return false;
 }
-export async function runAssertion(test: AssertionCase) {
+// ProgressSink receives best-effort progress records while a root runs. A
+// throwing sink never fails the root; a blocked worker simply emits nothing
+// further and the supervisor marks its last record stale.
+export type ProgressSink = (record: Record<string, unknown>) => void;
+export async function runAssertion(test: AssertionCase, sink?: ProgressSink) {
   const context = assertionContext(test.root);
   let frames: ReturnType<typeof diagnosticFrames> = [];
   let reason: "expected evaluation failed" | "outcome mismatch" | "harness violation" | undefined;
   const diagnostics:OwnerDiagnostic[]=[];
+  const beat = sink === undefined ? undefined : setInterval(() => {
+    try { sink({phase: "running", progress: contextProgress(context)}); } catch {}
+  }, 250);
   try {
     const owned=await runOwnedRoot(async()=>{
     try {
@@ -95,33 +102,52 @@ export async function runAssertion(test: AssertionCase) {
     },diagnostic=>{diagnostics.push(diagnostic);});
     if(owned.cleanupFailed)reason="harness violation";
   } catch { reason = "outcome mismatch"; }
-  finally { closeContext(context); }
+  finally {
+    if (beat !== undefined) clearInterval(beat);
+    closeContext(context);
+  }
   const report = contextReport(context);
   if (report.violations.length) {reason = "harness violation"; if (report.frames.length) frames=report.frames;}
   return Object.freeze({...report, ...(diagnostics.length?{diagnostics:Object.freeze(diagnostics)}:{}), passed: reason === undefined, ...(reason ? {reason,frames} : {})});
 }
-export async function runAssertions(tests: readonly AssertionCase[], initialize: () => void): Promise<0 | 1> {
-  const setup = await invoke(() => {initialize(); return success(undefined);}, origin);
+// runAssertionRoot executes one selected root in a fresh worker. argv carries
+// exactly one selector of the form root=<index> into tests. It prints one
+// can.assertion-root-report object to stdout and returns 0/1 by delivery;
+// exit 2 without a report means the selector itself was unusable. Progress
+// records travel on stderr behind the CAN-PROGRESS prefix; every other
+// stderr byte is worker diagnostic, never part of the report protocol.
+export async function runAssertionRoot(tests: readonly AssertionCase[], initialize: () => void, argv: readonly string[]): Promise<number> {
+  const emit = async (record: Record<string, unknown>): Promise<void> => {
+    try { await Bun.write(Bun.stderr, "CAN-PROGRESS " + JSON.stringify(record) + "\n"); } catch {}
+  };
+  const selection = argv.length === 1 ? /^root=(\d+)$/.exec(argv[0] ?? "") : null;
+  const index = selection === null ? NaN : Number(selection[1]);
+  if (!Number.isInteger(index) || index < 0 || index >= tests.length) {
+    await emit({version: 1, phase: "protocol-error", detail: "root selector must be root=<index>"});
+    return 2;
+  }
+  const test = tests[index];
   // Use a real box for setup, just like source functions. The initialized state
   // is private and contains no effectful source initialization.
-  try { return await finishSuite(tests, setup); }
+  try {
+    await emit({version: 1, phase: "started", root: test.root});
+    const setup = await invoke(() => {initialize(); return success(undefined);}, origin);
+    if (setup.kind !== "ok") {
+      const details=setup.kind==="standard" ? standardFailureDiagnostics(setup.value) : domainFailureDiagnostics(setup.value);
+      const boundary="boundaryOrigin" in details ? details.boundaryOrigin : undefined;
+      const frames=diagnosticFrames(details.cause,boundary ?? details.origin);
+      await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-root-report", root: test.root, passed: false, reason: "initialization failed", frames}) + "\n");
+      return 1;
+    }
+    const assertion = await runAssertion(test, record => void emit({version: 1, root: test.root, ...record}));
+    const passed = (assertion as {passed: boolean}).passed === true;
+    await emit({version: 1, phase: "finished", root: test.root, passed});
+    await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-root-report", root: test.root, passed, assertion}) + "\n");
+    return passed ? 0 : 1;
+  }
   catch {
     // Report delivery failure is nonzero, without an uncaught native stack or
     // an alternate output channel that could disclose private runtime paths.
     return 1;
   }
-}
-async function finishSuite(tests: readonly AssertionCase[], setup: Completion): Promise<0 | 1> {
-  if (setup.kind !== "ok") {
-    const details=setup.kind==="standard" ? standardFailureDiagnostics(setup.value) : domainFailureDiagnostics(setup.value);
-    const boundary="boundaryOrigin" in details ? details.boundaryOrigin : undefined;
-    const frames=diagnosticFrames(details.cause,boundary ?? details.origin);
-    await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-report", passed: false, reason: "initialization failed", frames, assertions: []}) + "\n");
-    return 1;
-  }
-  const assertions = [];
-  for (const test of tests) assertions.push(await runAssertion(test));
-  const passed = assertions.length !== 0 && assertions.every(result => result.passed);
-  await Bun.write(Bun.stdout, JSON.stringify({schemaVersion: 1, kind: "can.assertion-report", passed, assertions}) + "\n");
-  return passed ? 0 : 1;
 }

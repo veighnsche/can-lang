@@ -4,7 +4,7 @@ import { assertionFailure, standardFailureDiagnostics, type FailureOrigin, type 
 
 import { diagnosticFrames } from "../diagnostics.ts";
 import {rootIdentity,invocationIdentity,participantIdentities,invocationPath,type InvocationIdentity,type InvocationPath,type CallableIdentity} from "./identity.ts";
-import {createBarrier,reserveFrame,startFrame,suspendFrame,resumeFrame,finishFrame,abandonFrame,fixtureEvent,type Barrier,type Frame} from "./barrier.ts";
+import {createBarrier,reserveFrame,startFrame,suspendFrame,resumeFrame,finishFrame,abandonFrame,fixtureEvent,barrierState,type Barrier,type Frame} from "./barrier.ts";
 import {fixtureQueues,allocateFixture,closeQueues,FixtureQueueError,type FixtureQueues,type Allocation} from "./queue.ts";
 import type {Completion} from "../completion.ts";
 import {createEvidence,recordEvidence,evidenceReport,type Evidence} from "./report.ts";
@@ -144,3 +144,7 @@ export function coordinationContexts(context:AssertionContext,site:string,positi
 }
 
 export function contextOwner(context:AssertionContext):object{return state(context).owner;}
+// contextProgress exposes the barrier's structural pending count and frame
+// paths/phases for supervisor progress. Paths carry invocation structure
+// only, never argument values, captures, or secrets.
+export function contextProgress(context:AssertionContext){return barrierState(state(context).barrier);}

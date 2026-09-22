@@ -24,7 +24,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore) (BuildReport, e
 	if err != nil {
 		return BuildReport{}, err
 	}
-	buildID, prepared, err := r.stageProgram(ctx, store, program, false)
+	buildID, prepared, err := r.stageProgram(ctx, store, program, false, DefaultAssertTimeoutMs)
 	if err != nil {
 		return BuildReport{}, err
 	}
@@ -38,7 +38,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore) (BuildReport, e
 // stageProgram emits, validates, and privately stages checked modules. It
 // never selects production current; callers choose SelectCurrent (build)
 // or a generation lease (assert).
-func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool) (string, *PreparedOutput, error) {
+func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool, timeoutMs int) (string, *PreparedOutput, error) {
 	assets, err := r.PrivateArtifacts()
 	if err != nil {
 		return "", nil, err
@@ -70,7 +70,8 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 		Schema     int
 		Assertions bool
 		Roots      []ir.AssertionRoot
-	}{1, assertions, roots})
+		TimeoutMs  int
+	}{1, assertions, roots, timeoutMs})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
 	prepared, err := PrepareOutput(inputs, "entry.ts", artifacts)
 	if err != nil {

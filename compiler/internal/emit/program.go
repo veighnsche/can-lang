@@ -759,7 +759,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			return nil, fmt.Errorf("project has no concrete assertions")
 		}
 		entry := Module{Path: "entry.ts", Imports: []ModuleImport{
-			{Target: runtime + "/assert/runner.ts", Names: []ImportName{{"runAssertions", "$canRunAssertions"}}},
+			{Target: runtime + "/assert/runner.ts", Names: []ImportName{{"runAssertionRoot", "$canRunAssertionRoot"}}},
 			{Target: statePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
 			{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
 		}}
@@ -826,7 +826,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			cases = append(cases, name)
 			entry.Imports = append(entry.Imports, ModuleImport{Target: path, Names: []ImportName{{"$canCase", name}}})
 		}
-		entry.Body = "process.exitCode = await $canRunAssertions([" + strings.Join(cases, ",") + "], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();});\n"
+		entry.Body = "process.exitCode = await $canRunAssertionRoot([" + strings.Join(cases, ",") + "], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, process.argv.slice(2));\n"
 		modules = append(modules, entry)
 		artifacts, err := Modules(modules, dependencies...)
 		if err != nil {

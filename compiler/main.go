@@ -5,6 +5,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -32,19 +33,38 @@ var bundleManifestSHA256 string
 
 func run(argv []string) int {
 	if len(argv) > 0 && argv[0] == "assert" {
-		if len(argv) != 2 && len(argv) != 4 && len(argv) != 5 {
-			fmt.Fprintln(os.Stderr, "usage: canlc assert PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+		timeoutMs := driver.DefaultAssertTimeoutMs
+		rest := argv[1:]
+		if len(rest) >= 1 && rest[0] == "--assert-timeout-ms" {
+			if len(rest) < 3 {
+				fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+				return 2
+			}
+			parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
+			if parseErr != nil {
+				fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+				fmt.Fprintln(os.Stderr, parseErr)
+				return 2
+			}
+			timeoutMs = parsed
+			rest = rest[2:]
+		}
+		if len(rest) != 1 && len(rest) != 3 && len(rest) != 4 {
+			fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
 			return 2
 		}
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
-			err = sidecar.Assert(context.Background(), argv[1], argv[2:], os.Environ(), os.Stdin, os.Stdout, os.Stderr)
+			err = sidecar.Assert(context.Background(), rest[0], rest[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr, timeoutMs)
 		}
 		if err != nil {
 			if exit, ok := err.(*exec.ExitError); ok {
 				if code := exit.ExitCode(); code > 0 {
 					return code
 				}
+				return 1
+			}
+			if errors.Is(err, driver.ErrAssertionsFailed) {
 				return 1
 			}
 			fmt.Fprintln(os.Stderr, err)

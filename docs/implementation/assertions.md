@@ -6,7 +6,21 @@ This document describes the current implementation. The selected revised contrac
 /absolute/version/bin/canlc assert /absolute/canonical/project
 /absolute/version/bin/canlc assert /absolute/canonical/project PACKAGE ASSERTION
 /absolute/version/bin/canlc assert /absolute/canonical/project PACKAGE DECLARATION ASSERTION
+/absolute/version/bin/canlc assert --assert-timeout-ms 5000 /absolute/canonical/project
 ```
+
+Roots run sequentially in stable package/declaration/name order, each in its
+own worker with a fresh harness under an external wall-time budget
+(`--assert-timeout-ms`, a decimal integer in 1..600000, default 5000). The
+budget covers worker startup, execution, drain, and report delivery; the
+supervisor's own clock decides, so a result observed at or after the budget
+is a timeout even when the worker passed. Over-budget workers are terminated
+outside the worker and reaped within 1000ms; an unconfirmed worker stops the
+suite. The suite report records `scope` (`full`, or `partial` when a
+selector runs one root explicitly), the `timeoutMs` policy, per-root observed
+`elapsedMs`, and the
+last-known worker progress for timed-out roots. Assertion execution stages
+privately and never selects production output.
 
 Use the full package/declaration identities printed in the report, such as
 `can.project.root/arithmetic` and `can.project.root/arithmetic::square`.

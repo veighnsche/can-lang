@@ -1,0 +1,189 @@
+[
+  {
+    "label": "passing assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 1.386,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":26,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\",\"package\":\"can.project.root/app\"},\"violations\":[]},{\"elapsedMs\":22,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"violations\":[]}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":true,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":5000}\n",
+    "stderr": ""
+  },
+  {
+    "label": "failing assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf04c-work/failing-assertion"
+    ],
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.603,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":25,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":false,\"reason\":\"outcome mismatch\",\"root\":{\"declaration\":\"can.project.root/app::answer\",\"name\":\"wrong\",\"package\":\"can.project.root/app\"},\"violations\":[]},{\"elapsedMs\":23,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"violations\":[]}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":false,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":5000}\n",
+    "stderr": ""
+  },
+  {
+    "label": "pending assert default budget",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf04c-work/pending-assertion"
+    ],
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 5.615,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":25,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"violations\":[]},{\"diagnostic\":\"worker for can.project.root/app/can.project.root/app::pending/never exceeded 5000ms budget\",\"elapsedMs\":5004,\"passed\":false,\"progress\":{\"phase\":\"running\",\"progress\":{\"frames\":[{\"path\":{\"root\":{\"declaration\":\"can.project.root/app::pending\",\"name\":\"never\",\"package\":\"can.project.root/app\"},\"segments\":[]},\"phase\":\"waiting\"},{\"path\":{\"root\":{\"declaration\":\"can.project.root/app::pending\",\"name\":\"never\",\"package\":\"can.project.root/app\"},\"segments\":[{\"occurrence\":0,\"participant\":[],\"site\":\"can.project.root/app::pending/assert/never/actual#0\"}]},\"phase\":\"waiting\"}],\"pending\":0},\"root\":{\"declaration\":\"can.project.root/app::pending\",\"name\":\"never\",\"package\":\"can.project.root/app\"},\"version\":1},\"reason\":\"timeout\",\"root\":{\"declaration\":\"can.project.root/app::pending\",\"name\":\"never\",\"package\":\"can.project.root/app\"},\"timeoutMs\":5000}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":false,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":5000}\n",
+    "stderr": ""
+  },
+  {
+    "label": "cpu assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf04c-work/cpu-assertion"
+    ],
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 1.756,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":26,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"violations\":[]},{\"elapsedMs\":1150,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[{\"column\":16,\"end\":160,\"endColumn\":31,\"endLine\":10,\"file\":\"main.can\",\"line\":10,\"operation\":\"call\",\"source\":\"can.project.root/app/main.can\",\"start\":145,\"synthetic\":false},{\"column\":16,\"end\":160,\"endColumn\":31,\"endLine\":10,\"file\":\"main.can\",\"line\":10,\"operation\":\"call\",\"source\":\"can.project.root/app/main.can\",\"start\":145,\"synthetic\":false},{\"column\":16,\"end\":160,\"endColumn\":31,\"endLine\":10,\"file\":\"main.can\",\"line\":10,\"operation\":\"call\",\"source\":\"can.project.root/app/main.can\",\"start\":145,\"synthetic\":false}],\"passed\":false,\"reason\":\"outcome mismatch\",\"root\":{\"declaration\":\"can.project.root/app::spin\",\"name\":\"never\",\"package\":\"can.project.root/app\"},\"violations\":[]}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":false,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":5000}\n",
+    "stderr": ""
+  },
+  {
+    "label": "passing assert tiny budget",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "1",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.237,
+    "stdout": "{\"assertions\":[{\"diagnostic\":\"worker for can.project.root/app/can.project.root/app::answer/exact exceeded 1ms budget\",\"elapsedMs\":1,\"passed\":false,\"progress\":null,\"reason\":\"timeout\",\"root\":{\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\",\"package\":\"can.project.root/app\"},\"timeoutMs\":1},{\"diagnostic\":\"worker for can.project.root/app/can.project.root/app::main/empty exceeded 1ms budget\",\"elapsedMs\":1,\"passed\":false,\"progress\":null,\"reason\":\"timeout\",\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"timeoutMs\":1}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":false,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":1}\n",
+    "stderr": ""
+  },
+  {
+    "label": "selector partial",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf04c-work/passing",
+      "can.project.root/app",
+      "can.project.root/app::answer",
+      "exact"
+    ],
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.563,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":25,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\",\"package\":\"can.project.root/app\"},\"violations\":[]}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":true,\"schemaVersion\":1,\"scope\":\"partial\",\"timeoutMs\":5000}\n",
+    "stderr": ""
+  },
+  {
+    "label": "invalid budget 0",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "0",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.004,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms 0: want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "invalid budget -5",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "-5",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.004,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms -5: want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "invalid budget abc",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "abc",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.003,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms \"abc\": want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "invalid budget 600001",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "600001",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.003,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms 600001: want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "invalid budget 1.5",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "1.5",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.003,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms \"1.5\": want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "invalid budget unlimited",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "unlimited",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.003,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\ninvalid --assert-timeout-ms \"unlimited\": want a decimal integer in 1..600000\n"
+  },
+  {
+    "label": "missing budget value",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms"
+    ],
+    "exit_code": 2,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.003,
+    "stdout": "",
+    "stderr": "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]\n"
+  },
+  {
+    "label": "boundary max budget accepted",
+    "argv": [
+      "assert",
+      "--assert-timeout-ms",
+      "600000",
+      "/private/tmp/can-lf04c-work/passing"
+    ],
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.277,
+    "stdout": "{\"assertions\":[{\"elapsedMs\":22,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\",\"package\":\"can.project.root/app\"},\"violations\":[]},{\"elapsedMs\":22,\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"frames\":[],\"passed\":true,\"root\":{\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\",\"package\":\"can.project.root/app\"},\"violations\":[]}],\"complete\":true,\"kind\":\"can.assertion-report\",\"passed\":true,\"schemaVersion\":1,\"scope\":\"full\",\"timeoutMs\":600000}\n",
+    "stderr": ""
+  }
+]

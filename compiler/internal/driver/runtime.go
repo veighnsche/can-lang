@@ -184,14 +184,42 @@ func (r *Runtime) RunTool(ctx context.Context, entry string, args, environment [
 }
 
 func (r *Runtime) runEntry(ctx context.Context, entry string, args, environment []string, stdin io.Reader, stdout, stderr io.Writer, leases []*os.File) error {
-	work, err := os.MkdirTemp("", "can-runtime-")
+	launch, err := r.prepareEntry(ctx, entry, args, environment, stdin, stdout, stderr, leases)
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(work)
+	defer launch.cleanup()
+	wrote, err := launch.begin()
+	if err != nil {
+		return err
+	}
+	return finishEntry(launch.write, wrote, launch.cmd.Wait())
+}
+
+// entryLaunch is one isolated child with its environment channel. Both the
+// plain runner and the assertion supervisor build children here so the
+// workdir, environment allowlist, and fd plumbing cannot diverge.
+type entryLaunch struct {
+	cmd         *exec.Cmd
+	work        string
+	input       []byte
+	read, write *os.File
+}
+
+func (r *Runtime) prepareEntry(ctx context.Context, entry string, args, environment []string, stdin io.Reader, stdout, stderr io.Writer, leases []*os.File) (*entryLaunch, error) {
+	work, err := os.MkdirTemp("", "can-runtime-")
+	if err != nil {
+		return nil, err
+	}
+	failed := true
+	defer func() {
+		if failed {
+			os.RemoveAll(work)
+		}
+	}()
 	for _, dir := range []string{"home", "config", "tmp", "cwd"} {
 		if err := os.Mkdir(filepath.Join(work, dir), 0700); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	snapshot := map[string]string{}
@@ -203,14 +231,12 @@ func (r *Runtime) runEntry(ctx context.Context, entry string, args, environment 
 	}
 	input, err := json.Marshal(snapshot)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	read, write, err := os.Pipe()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer read.Close()
-	defer write.Close()
 	arguments := []string{"--no-install", "--no-env-file", "--no-macros", "--config=" + filepath.Join(r.Root, "tools/runtime/bunfig.toml"), entry, "--"}
 	// Bun consumes this separator even after the script path. Supplying it
 	// ourselves preserves an application argument whose literal value is --.
@@ -222,20 +248,39 @@ func (r *Runtime) runEntry(ctx context.Context, entry string, args, environment 
 	cmd.Env = []string{"HOME=" + filepath.Join(work, "home"), "XDG_CONFIG_HOME=" + filepath.Join(work, "config"), "TMPDIR=" + filepath.Join(work, "tmp"), "PATH=/nonexistent"}
 	cmd.ExtraFiles = append([]*os.File{read}, leases...)
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = stdin, stdout, stderr
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("CAN-DIST-EXEC: %w", err)
+	failed = false
+	return &entryLaunch{cmd: cmd, work: work, input: input, read: read, write: write}, nil
+}
+
+// begin starts the child and its environment delivery. It reports the
+// delivery result once the child exits and finishEntry drains it.
+func (l *entryLaunch) begin() (chan error, error) {
+	if err := l.cmd.Start(); err != nil {
+		l.read.Close()
+		l.write.Close()
+		return nil, fmt.Errorf("CAN-DIST-EXEC: %w", err)
 	}
-	read.Close()
+	l.read.Close()
 	wrote := make(chan error, 1)
-	go func() { _, err := write.Write(input); write.Close(); wrote <- err }()
-	err = cmd.Wait()
+	go func() { _, err := l.write.Write(l.input); l.write.Close(); wrote <- err }()
+	return wrote, nil
+}
+
+func (l *entryLaunch) cleanup() {
+	l.read.Close()
+	l.write.Close()
+	os.RemoveAll(l.work)
+}
+
+// finishEntry completes environment delivery after the child exits. A
+// program that never needs env/auth may exit without reading fd 3;
+// closing that unused pipe must not turn successful execution into failure.
+func finishEntry(write *os.File, wrote chan error, waitErr error) error {
 	write.Close() // Unblock the writer if the child exited before reading fd 3.
 	writeErr := <-wrote
-	if err != nil {
-		return err
+	if waitErr != nil {
+		return waitErr
 	}
-	// A program that never needs env/auth may exit without reading fd 3.
-	// Closing that unused pipe must not turn successful execution into failure.
 	if writeErr != nil && !errors.Is(writeErr, syscall.EPIPE) && !errors.Is(writeErr, os.ErrClosed) {
 		return fmt.Errorf("CAN-DIST-ENV: %w", writeErr)
 	}

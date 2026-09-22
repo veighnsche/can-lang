@@ -52,7 +52,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF03-summary.json), [G2 results](evidence/2026-09-22/language-fixes/LF03-g2.json), [runner](evidence/2026-09-22/language-fixes/LF03-g2.py). Stage/SelectCurrent split with generation leases; assert never selects current on success/failure/kill; driver suite green.
 
-- [ ] **LF04 — Supervise assertion roots with bounded external deadlines**
+- [x] **LF04 — Supervise assertion roots with bounded external deadlines**
 
   **Depends on:** LF02, LF03. **Acceptance:** AE23.
 
@@ -66,7 +66,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** G3 now returns a bounded failure report. Production empty-race semantics stay native and pending; shutdown deadlines cannot be caught in Can. Share this supervisor with build in LF15.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF04-summary.json), [CLI results](evidence/2026-09-22/language-fixes/LF04-assert.json), [runner](evidence/2026-09-22/language-fixes/LF04-assert.py), [full suite log](evidence/2026-09-22/language-fixes/LF04-gotest.log). Per-root workers with 5000ms default budget; G3 bounded; crash/protocol/late-pass judged; init-failure shape + broken-pipe contracts preserved; assert/coordination/fetch/generation/judge suites green.
 
 - [ ] **LF05 — Implement exact generic-error heads and aliases**
 
