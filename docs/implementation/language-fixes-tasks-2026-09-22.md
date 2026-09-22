@@ -4,7 +4,7 @@ Status: **21 pending tasks; implementation has not started for this revision lis
 
 Execute LF01 through LF21 in the written order. Every declared prerequisite occurs earlier; numeric order is a safe topological order. A task is complete only when its code, necessary current-source migration and listed evidence pass. Do not check a box because a specification already exists. Each task contributes to the full linked AE contract; LF21 audits integrated closure. Paths below are current owner directories/files; new focused files may be added inside them.
 
-- [ ] **LF01 — Freeze revision inputs and the acceptance baseline**
+- [x] **LF01 — Freeze revision inputs and the acceptance baseline**
 
   **Depends on:** none. **Acceptance:** AE49.
 
@@ -18,7 +18,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Rerun only the bounded G1–G4 controls needed to establish the actual starting checkout; preserve G5 as the resource regression constraint. Save any drift rather than reclassifying it silently.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [baseline](evidence/2026-09-22/language-fixes/LF01-baseline.json), [controls](evidence/2026-09-22/language-fixes/LF01-controls.json), [AE manifest](evidence/2026-09-22/language-fixes/LF01-AE-results.json), [runner](evidence/2026-09-22/language-fixes/LF01-probes.py). Starting commit 7b1542c, clean tree, docs-only drift from 760405f; G1–G4 reproduced, G5 preserved.
 
 - [ ] **LF02 — Carry precise semantic source spans through diagnostics**
 

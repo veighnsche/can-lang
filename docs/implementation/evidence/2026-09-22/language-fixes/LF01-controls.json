@@ -1,0 +1,461 @@
+[
+  {
+    "label": "passing build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/passing"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 1.462,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"3e81a01adad1f21f938a9a4db4d53426aecdcc60feec705eb101f8f8b2b3d712\",\"directory\":\"/private/tmp/can-lf01-work/passing/dist/builds/3e81a01adad1f21f938a9a4db4d53426aecdcc60feec705eb101f8f8b2b3d712\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "3e81a01adad1f21f938a9a4db4d53426aecdcc60feec705eb101f8f8b2b3d712",
+      "manifestSHA256": "c1946c97b9f6d62775f261f4e3901ddd85c6de9be55ae4a382a77afe109f7598"
+    }
+  },
+  {
+    "label": "failing-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/failing-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.538,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"5dd8c44b70d44e4e890f5167a397f601a4a30c642308febf6b2dd10b73fabaac\",\"directory\":\"/private/tmp/can-lf01-work/failing-assertion/dist/builds/5dd8c44b70d44e4e890f5167a397f601a4a30c642308febf6b2dd10b73fabaac\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "5dd8c44b70d44e4e890f5167a397f601a4a30c642308febf6b2dd10b73fabaac",
+      "manifestSHA256": "07e0415a312bee5dfea35293f6f849981dffe7ee3898d21237ca7d2d8e25fdfd"
+    }
+  },
+  {
+    "label": "pending-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/pending-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.543,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"42a3c18fc376e7a2328d0e58df050c74ebe285db1bd116554b0bccd8bc42f464\",\"directory\":\"/private/tmp/can-lf01-work/pending-assertion/dist/builds/42a3c18fc376e7a2328d0e58df050c74ebe285db1bd116554b0bccd8bc42f464\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "42a3c18fc376e7a2328d0e58df050c74ebe285db1bd116554b0bccd8bc42f464",
+      "manifestSHA256": "ffd268fcb85cff37ebcbed9b07fb66b8c3a1950313842bd4883cb5e5d4747fb3"
+    }
+  },
+  {
+    "label": "cpu-assertion build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/cpu-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.541,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"ad62996daa6f751f0acdeac43b62da16e95b1fd7dcbbe5ee41ce56ce2f7293ef\",\"directory\":\"/private/tmp/can-lf01-work/cpu-assertion/dist/builds/ad62996daa6f751f0acdeac43b62da16e95b1fd7dcbbe5ee41ce56ce2f7293ef\",\"entry\":\"entry.ts\"}\n",
+    "stderr": "",
+    "current_after_build": {
+      "schemaVersion": 1,
+      "buildID": "ad62996daa6f751f0acdeac43b62da16e95b1fd7dcbbe5ee41ce56ce2f7293ef",
+      "manifestSHA256": "51a163b3844e5039076d62ba6db58933acf7063f43862a665d979464d92db6ae"
+    }
+  },
+  {
+    "label": "diagnostic-semantic build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/diagnostic-semantic"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.129,
+    "stdout": "",
+    "stderr": "concrete function can.project.root/app::wrong_type: /private/tmp/can-lf01-work/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114\n",
+    "current_after_build": null
+  },
+  {
+    "label": "diagnostic-resolve build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/diagnostic-resolve"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.108,
+    "stdout": "",
+    "stderr": "concrete function can.project.root/app::missing_name: /private/tmp/can-lf01-work/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \"absent\"\n",
+    "current_after_build": null
+  },
+  {
+    "label": "diagnostic-parse build",
+    "argv": [
+      "build",
+      "/private/tmp/can-lf01-work/diagnostic-parse"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.051,
+    "stdout": "",
+    "stderr": "/private/tmp/can-lf01-work/diagnostic-parse/src/main.can:8:8: CAN-LEX-PUNCTUATION: character is not part of Can syntax\n",
+    "current_after_build": null
+  },
+  {
+    "label": "passing assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf01-work/passing"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.588,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "3e81a01adad1f21f938a9a4db4d53426aecdcc60feec705eb101f8f8b2b3d712",
+      "manifestSHA256": "c1946c97b9f6d62775f261f4e3901ddd85c6de9be55ae4a382a77afe109f7598"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "f2a5c4f14b99df636705602edce8c68e92c21e3d849f039cc3d0a516f91f3796",
+      "manifestSHA256": "f3105ef00f7369e91cbe4f13bdec8b3feda1371213d53db02bc591bc151d5573"
+    }
+  },
+  {
+    "label": "failing-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf01-work/failing-assertion"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 0.642,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"wrong\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "5dd8c44b70d44e4e890f5167a397f601a4a30c642308febf6b2dd10b73fabaac",
+      "manifestSHA256": "07e0415a312bee5dfea35293f6f849981dffe7ee3898d21237ca7d2d8e25fdfd"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "be3422229773612c3d714b575cd03a8d2d685750a51be4adab00e8ae796aca63",
+      "manifestSHA256": "7e77f91b723b08cb62cbb5030e56cac9071c9253dac9ab5e97714eac581c613f"
+    }
+  },
+  {
+    "label": "pending-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf01-work/pending-assertion"
+    ],
+    "external_limit_seconds": 4,
+    "externally_terminated": true,
+    "exit_code": -9,
+    "elapsed_seconds": 4.006,
+    "stdout": "",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "42a3c18fc376e7a2328d0e58df050c74ebe285db1bd116554b0bccd8bc42f464",
+      "manifestSHA256": "ffd268fcb85cff37ebcbed9b07fb66b8c3a1950313842bd4883cb5e5d4747fb3"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "2f11729da93f33e01c314ec08507f0791fdbf7c3b2f6e813edbe70c7b9dad9fa",
+      "manifestSHA256": "040eaf7fc8c3992baa977c567806af3366cbd32b7b0b84a479415d85eabc2591"
+    }
+  },
+  {
+    "label": "cpu-assertion assert",
+    "argv": [
+      "assert",
+      "/private/tmp/can-lf01-work/cpu-assertion"
+    ],
+    "external_limit_seconds": 4,
+    "externally_terminated": false,
+    "exit_code": 1,
+    "elapsed_seconds": 1.755,
+    "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::spin\",\"name\":\"never\"},\"frames\":[{\"source\":\"can.project.root/app/main.can\",\"file\":\"main.can\",\"line\":10,\"column\":16,\"endLine\":10,\"endColumn\":31,\"start\":145,\"end\":160,\"operation\":\"call\",\"synthetic\":false},{\"source\":\"can.project.root/app/main.can\",\"file\":\"main.can\",\"line\":10,\"column\":16,\"endLine\":10,\"endColumn\":31,\"start\":145,\"end\":160,\"operation\":\"call\",\"synthetic\":false}],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr": "",
+    "current_before_assert": {
+      "schemaVersion": 1,
+      "buildID": "ad62996daa6f751f0acdeac43b62da16e95b1fd7dcbbe5ee41ce56ce2f7293ef",
+      "manifestSHA256": "51a163b3844e5039076d62ba6db58933acf7063f43862a665d979464d92db6ae"
+    },
+    "current_after_assert": {
+      "schemaVersion": 1,
+      "buildID": "d5ea1b531d13e38d3e9e970beb4d6b6085e181bd3376f23bbed2be786937df75",
+      "manifestSHA256": "15c4908356e0104dff23b2112a4eb828496ebb4136c093da39732868e9976999"
+    }
+  },
+  {
+    "label": "passing lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.06,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 163\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[],\"uri\":\"file:///private/tmp/can-lf01-work/passing/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [],
+          "uri": "file:///private/tmp/can-lf01-work/passing/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int answer",
+      "    emits []",
+      "    asserts",
+      "        exact: => ok 1",
+      "    ok 1",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-semantic lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.058,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 501\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"message\":\"concrete function can.project.root/app::wrong_type: /private/tmp/can-lf01-work/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114\",\"range\":{\"end\":{\"character\":11,\"line\":0},\"start\":{\"character\":0,\"line\":0}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-lf01-work/diagnostic-semantic/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "message": "concrete function can.project.root/app::wrong_type: /private/tmp/can-lf01-work/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114",
+              "range": {
+                "end": {
+                  "character": 11,
+                  "line": 0
+                },
+                "start": {
+                  "character": 0,
+                  "line": 0
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-lf01-work/diagnostic-semantic/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int wrong_type",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok \"wrong\"",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-resolve lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.059,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 511\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"message\":\"concrete function can.project.root/app::missing_name: /private/tmp/can-lf01-work/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \\\"absent\\\"\",\"range\":{\"end\":{\"character\":11,\"line\":0},\"start\":{\"character\":0,\"line\":0}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-lf01-work/diagnostic-resolve/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "message": "concrete function can.project.root/app::missing_name: /private/tmp/can-lf01-work/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \"absent\"",
+              "range": {
+                "end": {
+                  "character": 11,
+                  "line": 0
+                },
+                "start": {
+                  "character": 0,
+                  "line": 0
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-lf01-work/diagnostic-resolve/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_name",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok absent",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "label": "diagnostic-parse lsp",
+    "argv": [
+      "lsp",
+      "--stdio"
+    ],
+    "external_limit_seconds": 15,
+    "externally_terminated": false,
+    "exit_code": 0,
+    "elapsed_seconds": 0.004,
+    "stdout": "Content-Length: 99\r\n\r\n{\"id\":1,\"jsonrpc\":\"2.0\",\"result\":{\"capabilities\":{\"definitionProvider\":true,\"textDocumentSync\":1}}}Content-Length: 354\r\n\r\n{\"jsonrpc\":\"2.0\",\"method\":\"textDocument/publishDiagnostics\",\"params\":{\"diagnostics\":[{\"code\":\"CAN-LEX-PUNCTUATION\",\"message\":\"character is not part of Can syntax\",\"range\":{\"end\":{\"character\":8,\"line\":7},\"start\":{\"character\":7,\"line\":7}},\"severity\":1,\"source\":\"canlc\"}],\"uri\":\"file:///private/tmp/can-lf01-work/diagnostic-parse/src/main.can\",\"version\":1}}",
+    "stderr": "",
+    "messages": [
+      {
+        "id": 1,
+        "jsonrpc": "2.0",
+        "result": {
+          "capabilities": {
+            "definitionProvider": true,
+            "textDocumentSync": 1
+          }
+        }
+      },
+      {
+        "jsonrpc": "2.0",
+        "method": "textDocument/publishDiagnostics",
+        "params": {
+          "diagnostics": [
+            {
+              "code": "CAN-LEX-PUNCTUATION",
+              "message": "character is not part of Can syntax",
+              "range": {
+                "end": {
+                  "character": 8,
+                  "line": 7
+                },
+                "start": {
+                  "character": 7,
+                  "line": 7
+                }
+              },
+              "severity": 1,
+              "source": "canlc"
+            }
+          ],
+          "uri": "file:///private/tmp/can-lf01-work/diagnostic-parse/src/main.can",
+          "version": 1
+        }
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_value",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok @",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  }
+]
