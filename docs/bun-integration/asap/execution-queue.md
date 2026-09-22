@@ -2,6 +2,8 @@
 
 Start implementation as soon as a safe integration checkout is available. This is the Bun milestone, separate from LF01–LF21. Do not message, pause or overwrite the current implementer. All entries below are pending implementation; writing a plan does not complete a task.
 
+Read the [readiness audit](readiness.md) before interpreting a prepared task as a settled design.
+
 ## How to use this queue
 
 The default sequence follows dependencies. If a test service or a bounded design gate blocks one branch, record the exact missing evidence and immediately take another entry whose prerequisites are satisfied. Numeric order is a recommended execution path, not a requirement to sit idle behind unavailable MySQL. No capability is dropped from ASAP.
@@ -28,12 +30,16 @@ All implementation files are assigned in the linked capability plans. Shared cat
 | 12 | [B1-11 — Typed TOML, YAML, JSON5 and JSONL codecs](b1-11-document-formats.md) | B1-05 | Every acceptance row in plan + shared completion contract |
 | 13 | [B1-12 — Markdown rendering and structured processing](b1-12-markdown.md) | Baseline only | Every acceptance row in plan + shared completion contract |
 
+The [required filetree](filetree.md) applies to all entries. Before each DONE step, run the size guard and review protected hubs; no per-feature body belongs in program.go or the generic provider/owner.
+
 ## Ordered implementation checklist
 
 The machine-readable [queue](execution-queue.json) has explicit prerequisites for every item. A `DONE` item is a required verification step, not a placeholder. Cross-capability dependencies reference verified completion.
 
 - [ ] **ASAP-00** — Obtain an integration checkout containing completed required LF contracts, or isolate work without contacting or disturbing the current implementer. Read AGENTS.md and authoritative specs; record baseline.
-- [ ] **ASAP-01** — Verify pinned runtime/archive and rerun supplied native probes; inspect current catalogue and register concrete SQL/event/HTML gate outputs. Arrange local MySQL and S3 test services without using production credentials.
+- [ ] **ASAP-01** — Verify pinned runtime/archive and rerun supplied native probes; inspect current catalogue and register concrete SQL/event/HTML gate outputs. Record MySQL and S3 service readiness without using production credentials; unavailable services block only their own acceptance branches and do not block completion of this preflight.
+- [ ] **ASAP-ARCH** — Record the integration base and implement the emitter responsibility extraction in filetree.md with existing behavior tests. Adopt per-feature binding/runtime modules, protected-hub rules and the changed-file size guard. Perform the prescribed SQL split when starting B1-02; do not refactor unrelated LF code.
+
 - [ ] **B1-01.01** — Specify missing-vs-denied-vs-invalid-path failures, supported file kinds, overwrite/exclusive-create behavior, symlink following, recursive removal and ordering. Return absence only for actual missing paths, not permission failures.
 - [ ] **B1-01.02** — Implement bounded chunk reads; check each chunk before accumulating. Decode text with fatal UTF-8. Copy native views before exposing immutable Can bytes. A stat size check is an optimization, not enforcement against a growing file.
 - [ ] **B1-01.03** — Use Bun.file/Bun.write for applicable operations and node:fs/promises for directories, lstat, rename, copy and removal. Exclusive creation must use an atomic native flag, not exists-then-write. Do not call replacement writes atomic unless the implementation and tests support that promise.

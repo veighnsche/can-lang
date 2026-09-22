@@ -30,13 +30,22 @@
         "ASAP-00"
       ],
       "status": "pending",
-      "action": "Verify pinned runtime/archive and rerun supplied native probes; inspect current catalogue and register concrete SQL/event/HTML gate outputs. Arrange local MySQL and S3 test services without using production credentials."
+      "action": "Verify pinned runtime/archive and rerun supplied native probes; inspect current catalogue and register concrete SQL/event/HTML gate outputs. Record MySQL and S3 service readiness without using production credentials; unavailable services block only their own acceptance branches and do not block completion of this preflight."
+    },
+    {
+      "id": "ASAP-ARCH",
+      "capability": null,
+      "depends": [
+        "ASAP-01"
+      ],
+      "status": "pending",
+      "action": "Record the integration base and implement the emitter responsibility extraction in filetree.md with existing behavior tests. Adopt per-feature binding/runtime modules, protected-hub rules and the changed-file size guard. Perform the prescribed SQL split when starting B1-02; do not refactor unrelated LF code."
     },
     {
       "id": "B1-01.01",
       "capability": "B1-01",
       "depends": [
-        "ASAP-01"
+        "ASAP-ARCH"
       ],
       "status": "pending",
       "action": "Specify missing-vs-denied-vs-invalid-path failures, supported file kinds, overwrite/exclusive-create behavior, symlink following, recursive removal and ordering. Return absence only for actual missing paths, not permission failures."
@@ -99,7 +108,7 @@
       "id": "B1-04.01",
       "capability": "B1-04",
       "depends": [
-        "ASAP-01"
+        "ASAP-ARCH"
       ],
       "status": "pending",
       "action": "Define binary output, explicit UTF-8 conversion, exit-vs-signal representation, environment inheritance opt-in and path resolution. Validate durations and byte caps before spawning."
@@ -171,7 +180,7 @@
       "id": "B1-05.01",
       "capability": "B1-05",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-01-DONE",
         "B1-04-DONE"
       ],
@@ -254,7 +263,7 @@
       "id": "B1-02.01",
       "capability": "B1-02",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-01-DONE"
       ],
       "status": "pending",
@@ -336,7 +345,7 @@
       "id": "B1-03.01",
       "capability": "B1-03",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-02-DONE"
       ],
       "status": "pending",
@@ -409,7 +418,7 @@
       "id": "B1-08.01",
       "capability": "B1-08",
       "depends": [
-        "ASAP-01"
+        "ASAP-ARCH"
       ],
       "status": "pending",
       "action": "Inventory existing SHA/random operations; add names without duplicate functionality. Specify Argon2id cost presets and validation; retain native encoded hashes so verification can recognize recorded parameters."
@@ -481,7 +490,7 @@
       "id": "B1-13.01",
       "capability": "B1-13",
       "depends": [
-        "ASAP-01"
+        "ASAP-ARCH"
       ],
       "status": "pending",
       "action": "Diff desired operations against the current catalogue and list omissions before adding names. Reuse existing normalize/scalars/graphemes/join and clock APIs."
@@ -553,7 +562,7 @@
       "id": "B1-06.01",
       "capability": "B1-06",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-05-DONE"
       ],
       "status": "pending",
@@ -635,7 +644,7 @@
       "id": "B1-07.01",
       "capability": "B1-07",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-05-DONE",
         "B1-06-DONE"
       ],
@@ -718,7 +727,7 @@
       "id": "B1-09.01",
       "capability": "B1-09",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-06-DONE",
         "B1-08-DONE"
       ],
@@ -783,7 +792,7 @@
       "id": "B1-10.01",
       "capability": "B1-10",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-01-DONE",
         "B1-05-DONE"
       ],
@@ -857,7 +866,7 @@
       "id": "B1-11.01",
       "capability": "B1-11",
       "depends": [
-        "ASAP-01",
+        "ASAP-ARCH",
         "B1-05-DONE"
       ],
       "status": "pending",
@@ -939,7 +948,7 @@
       "id": "B1-12.01",
       "capability": "B1-12",
       "depends": [
-        "ASAP-01"
+        "ASAP-ARCH"
       ],
       "status": "pending",
       "action": "Qualify Bun.markdown.html and render callback inputs/order. Do not invent a token/AST API because callbacks exist; record whether callbacks receive source text, escaped text or already-rendered children."

@@ -4,7 +4,7 @@ Copy the prompt below into the implementation task once its checkout is ready. T
 
 ---
 
-Implement all thirteen ASAP Bun-to-Can integrations in `/Users/vince/Projects/can-lang`. Start from `docs/bun-integration/asap/README.md`, follow `execution-queue.md` / `execution-queue.json`, read every capability plan and `integration-contract.md`, and resolve the bounded gates in `decisions.md`. The objective is working Can capabilities with evidence, not another roadmap.
+Implement all thirteen ASAP Bun-to-Can integrations in `/Users/vince/Projects/can-lang`. Start from `docs/bun-integration/asap/README.md`, follow `execution-queue.md` / `execution-queue.json`, read every capability plan and `integration-contract.md`, and resolve the bounded gates in `decisions.md`. Read `readiness.md` first: a prepared plan is not proof that all native feasibility and contracts are settled. Follow `filetree.md` as the authoritative module layout; it supersedes coarse existing-file ownership in individual plans. Complete ASAP-ARCH before feature additions. Do not grow program.go or other protected hubs with feature bodies. Run the changed-file size guard against the recorded implementation base at every capability completion. The objective is working Can capabilities with evidence, not another roadmap.
 
 Do not interrupt the current LF01–LF21 implementer. Do not send it messages, pause it, overwrite its files or change its task list. Use the integrated result of its required language contracts, or an isolated checkout for independent work. Check repository state and AGENTS.md first. Preserve user changes. If the active checkout is still changing, perform independent implementation in isolation and integrate deliberately after the required work is available.
 

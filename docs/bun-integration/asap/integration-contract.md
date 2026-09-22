@@ -4,6 +4,8 @@ This handoff prepares the thirteen ASAP capabilities. It does not amend the acti
 
 ## Repository ownership
 
+The [required filetree](filetree.md) refines this table and takes precedence for new code placement. Extract feature bindings from `emit/program.go`; keep it as orchestration, with per-feature bindings in `emit/runtime_<feature>.go`. Apply the layout size guard and responsibility review before every capability DONE step.
+
 | Layer | Existing location | Required action |
 |---|---|---|
 | Public inventory | `compiler/internal/catalogue/catalogue.json` | Declare types, operations, fixed/callback error bounds, native lowering and assertion policy. Allocate identities against the current registry; never pre-reserve numeric IDs from this moving snapshot. |

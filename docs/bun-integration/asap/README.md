@@ -4,6 +4,14 @@ Prepared 2026-09-22. This directory turns all **13 ASAP capabilities** into an i
 
 Start with [agent instructions](agent-prompt.md), follow the [ordered execution queue](execution-queue.md), and apply the [shared integration contract](integration-contract.md). The [decision ledger](decisions.md) distinguishes settled recommendations from bounded gates. [Evidence](evidence/README.md) includes actual pinned-Bun probes and three fresh Jev consultations.
 
+## Readiness
+
+**Not all thirteen designs are closed or free of blockers.** The [readiness audit](readiness.md) lists every capability, what can start, known blockers, unresolved scope and required proof. SQL grammar, event syntax, streaming multipart, process-tree cleanup, safe Markdown and real-service qualification need particular attention.
+
+## File boundaries
+
+Follow the [required filetree](filetree.md): feature-owned Go and runtime modules, an emitter extraction prerequisite, protected orchestration hubs and an executable changed-file size guard. The per-capability tables below identify integration areas; they do not permit appending every feature to existing large files.
+
 ## Capability plans
 
 | Task | Detailed plan | Primary implementation area |

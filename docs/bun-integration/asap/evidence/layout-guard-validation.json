@@ -1,0 +1,13 @@
+{
+  "status": "passed",
+  "isolatedTemporaryRepository": true,
+  "cases": {
+    "reject new production over 400": "passed",
+    "accept new production at 400": "passed",
+    "reject growth in oversized legacy file": "passed",
+    "accept reduction of oversized legacy file": "passed",
+    "reject tests over 600": "passed",
+    "accept test ceiling and named generated exemption": "passed"
+  },
+  "note": "Synthetic boundary tests only; no current implementer code was modified or qualified."
+}
