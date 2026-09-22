@@ -1,6 +1,6 @@
 package fetches
     provides []
-    uses [http, codec, bytes]
+    uses [http, codec, bytes, checks]
 record receipt
     int count
 connection service
@@ -49,19 +49,8 @@ fetch str delete_text from service
 fetch str options_text from service
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     options "/options"
-fn void require
-    emits []
-    given
-        bool condition
-    asserts
-        yes: true => ok
-    match condition
-        true => ok
-        false => do
-            int invalid = 1 / 0
-            ok
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, checks::failed]
     given
         str[] args
     asserts
@@ -77,9 +66,9 @@ fn void main
         http::body_limit
         http::status_error
         codec::invalid_data
-        ok receipt received => do
-            call require(received.count is 9007199254740993)
-            match call load_envelope()
+        ok receipt received => match call checks::require(received.count is 9007199254740993, "receipt count")
+            checks::failed
+            ok => match call load_envelope()
                 when
                     sample:  => ok http::response<bytes::buffer>(418, [], payload)
                 http::invalid_request
@@ -89,9 +78,9 @@ fn void main
                 http::body_limit
                 http::status_error
                 codec::invalid_data
-                ok http::response<bytes::buffer> envelope => do
-                    call require(envelope.status is 418)
-                    match call send_text("hello")
+                ok http::response<bytes::buffer> envelope => match call checks::require(envelope.status is 418, "envelope status")
+                    checks::failed
+                    ok => match call send_text("hello")
                         when
                             sample: "hello" => ok "hello"
                         http::invalid_request
@@ -101,9 +90,9 @@ fn void main
                         http::body_limit
                         http::status_error
                         codec::invalid_data
-                        ok str text => do
-                            call require(text is "hello")
-                            match call send_json(receipt(9007199254740993))
+                        ok str text => match call checks::require(text is "hello", "text echo")
+                            checks::failed
+                            ok => match call send_json(receipt(9007199254740993))
                                 when
                                     sample: receipt(9007199254740993) => ok receipt(9007199254740993)
                                 http::invalid_request
@@ -113,9 +102,9 @@ fn void main
                                 http::body_limit
                                 http::status_error
                                 codec::invalid_data
-                                ok receipt sent => do
-                                    call require(sent.count is 9007199254740993)
-                                    match call send_bytes(payload)
+                                ok receipt sent => match call checks::require(sent.count is 9007199254740993, "sent count")
+                                    checks::failed
+                                    ok => match call send_bytes(payload)
                                         when
                                             sample: payload => ok payload
                                         http::invalid_request
@@ -128,44 +117,45 @@ fn void main
                                         ok bytes::buffer binary => do
                                             int[] binary_values = call bytes::to_ints(binary)
                                             int[] no_values = []
-                                            call require(binary_values is no_values)
-                                            match call head_text()
-                                                when
-                                                    sample:  => ok ""
-                                                http::invalid_request
-                                                http::credentials_missing
-                                                http::transport_failed
-                                                http::timeout
-                                                http::body_limit
-                                                http::status_error
-                                                codec::invalid_data
-                                                ok str head => do
-                                                    call require(head is "")
-                                                    match call delete_text()
-                                                        when
-                                                            sample:  => ok "delete"
-                                                        http::invalid_request
-                                                        http::credentials_missing
-                                                        http::transport_failed
-                                                        http::timeout
-                                                        http::body_limit
-                                                        http::status_error
-                                                        codec::invalid_data
-                                                        ok str deleted => do
-                                                            call require(deleted is "delete")
-                                                            match call options_text()
-                                                                when
-                                                                    sample:  => ok "options"
-                                                                http::invalid_request
-                                                                http::credentials_missing
-                                                                http::transport_failed
-                                                                http::timeout
-                                                                http::body_limit
-                                                                http::status_error
-                                                                codec::invalid_data
-                                                                ok str options => do
-                                                                    call require(options is "options")
-                                                                    ok
+                                            match call checks::require(binary_values is no_values, "binary roundtrip")
+                                                checks::failed
+                                                ok => match call head_text()
+                                                    when
+                                                        sample:  => ok ""
+                                                    http::invalid_request
+                                                    http::credentials_missing
+                                                    http::transport_failed
+                                                    http::timeout
+                                                    http::body_limit
+                                                    http::status_error
+                                                    codec::invalid_data
+                                                    ok str head => match call checks::require(head is "", "head text")
+                                                        checks::failed
+                                                        ok => match call delete_text()
+                                                            when
+                                                                sample:  => ok "delete"
+                                                            http::invalid_request
+                                                            http::credentials_missing
+                                                            http::transport_failed
+                                                            http::timeout
+                                                            http::body_limit
+                                                            http::status_error
+                                                            codec::invalid_data
+                                                            ok str deleted => match call checks::require(deleted is "delete", "deleted text")
+                                                                checks::failed
+                                                                ok => match call options_text()
+                                                                    when
+                                                                        sample:  => ok "options"
+                                                                    http::invalid_request
+                                                                    http::credentials_missing
+                                                                    http::transport_failed
+                                                                    http::timeout
+                                                                    http::body_limit
+                                                                    http::status_error
+                                                                    codec::invalid_data
+                                                                    ok str options => match call checks::require(options is "options", "options text")
+                                                                        checks::failed
+                                                                        ok => ok
 fn str referenced
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
     asserts

@@ -149,7 +149,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 4}} {
+	}{{"main", 3}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/fetch", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)

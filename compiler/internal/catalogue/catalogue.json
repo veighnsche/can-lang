@@ -16,6 +16,10 @@
       "identity": "can.std.bytes@1"
     },
     {
+      "name": "checks",
+      "identity": "can.std.checks@1"
+    },
+    {
       "name": "cli",
       "identity": "can.std.cli@1"
     },
@@ -705,6 +709,18 @@
       "identity": "can.std.number@1::zero_divisor",
       "parameters": [],
       "fields": []
+    },
+    {
+      "id": 1010,
+      "name": "checks::failed",
+      "identity": "can.std.checks@1::failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
     },
     {
       "id": 1100,
@@ -6254,6 +6270,42 @@
       "refs": [
         "P6",
         "P12"
+      ]
+    },
+    {
+      "name": "checks::require",
+      "identity": "can.std.checks@1::require",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "condition",
+          "type": "bool"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "checks::failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Boolean branch",
+          "domain.create"
+        ],
+        "adapter": "Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata.",
+        "task": "LF08"
+      },
+      "assertion": "real",
+      "refs": [
+        "C9.2"
       ]
     }
   ],

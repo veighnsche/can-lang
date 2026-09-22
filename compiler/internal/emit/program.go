@@ -147,6 +147,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	functions["can.std.number@1::round"] = "$canNumbers.round"
 	functions["can.std.number@1::is_finite"] = "$canNumbers.isFinite"
 	functions["can.std.number@1::is_nan"] = "$canNumbers.isNaN"
+	functions["can.std.checks@1::require"] = "$canChecks.require"
 	httpIDs := make([]string, 0, len(program.HTTPs))
 	for id := range program.HTTPs {
 		httpIDs = append(httpIDs, id)
@@ -368,7 +369,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 		}
 		fmt.Fprintf(&state, "export let %s: ReturnType<typeof %s>;\n", collectionNames[id], factory)
 	}
-	state.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	state.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	var invalidData, writeFailed, bytesID string
 	for _, typ := range program.Model.Types() {
 		switch typ.Declaration() {
@@ -458,6 +459,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	fmt.Fprintf(&state, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(numberIDs["can.std.clock@1::invalid_duration"]), quote(numberIDs["can.std.random@1::invalid_length"]), quote(numberIDs["can.std.log@1::write_failed"]))
 	fmt.Fprintf(&state, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(numberIDs["can.std.io@1::read_failed"]), quote(numberIDs["can.std.io@1::limit_exceeded"]), quote(invalidData), optionType, quote(numberIDs["can.std.env@1::invalid_name"]), quote(numberIDs["can.std.http@1::credentials_missing"]), quote(optionIDs["can.std.option@1::some"]), quote(optionIDs["can.std.option@1::none"]))
 	fmt.Fprintf(&state, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(numberIDs["can.std.number@1::inexact"]), quote(numberIDs["can.std.text@1::invalid_number"]), quote(numberIDs["can.std.text@1::invalid_bool"]), quote(numberIDs["can.std.number@1::invalid_bool"]))
+	fmt.Fprintf(&state, "$canChecks = $canCreateChecks($canDomain, {failed:%s});\n", quote(numberIDs["can.std.checks@1::failed"]))
 	fmt.Fprintf(&state, "$canAmounts = $canCreateExactAmounts($canDomain, {zeroDivisor:%s,division:%s,rounded:%s});\n", quote(numberIDs["can.std.number@1::zero_divisor"]), quote(numberIDs["can.std.number@1::division"]), quote(numberIDs["can.std.number@1::rounded"]))
 	fmt.Fprintf(&state, "$canText = $canCreateText($canDomain, {emptySeparator:%s,emptyPattern:%s,invalidUnicode:%s});\n", quote(numberIDs["can.std.text@1::empty_separator"]), quote(numberIDs["can.std.text@1::empty_pattern"]), quote(numberIDs["can.std.text@1::invalid_unicode"]))
 	for _, id := range collectionIDs {
@@ -578,6 +580,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	imports = append(imports, ModuleImport{Target: runtime + "/collections/map.ts", Names: []ImportName{{"createMap", "$canCreateMap"}, {"isMap", "$canIsMap"}}}, ModuleImport{Target: runtime + "/collections/set.ts", Names: []ImportName{{"createSet", "$canCreateSet"}, {"isSet", "$canIsSet"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/text.ts", Names: []ImportName{{"createText", "$canCreateText"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/checks.ts", Names: []ImportName{{"createChecks", "$canCreateChecks"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
@@ -709,7 +712,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			body.WriteString("export " + code)
 		}
-		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
+		imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
 		if fetches {
@@ -771,7 +774,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			}
 			digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 			path := fmt.Sprintf("assertions/%x.ts", digest)
-			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
+			imports := append(programImports(runtime), ModuleImport{Target: statePath, Names: []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}})
 			imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 			for _, id := range collectionIDs {
 				imports = append(imports, ModuleImport{Target: statePath, Names: []ImportName{{collectionNames[id], collectionNames[id]}}})

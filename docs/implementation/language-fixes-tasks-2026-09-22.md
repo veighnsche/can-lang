@@ -116,7 +116,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF07-summary.json, LF07-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF07-integration.log (integration+driver+emit all ok), LF07-runtime.log (321 pass). Reproduction commands in the summary.
 
-- [ ] **LF08 — Add named runtime checks and migrate arithmetic traps**
+- [x] **LF08 — Add named runtime checks and migrate arithmetic traps**
 
   **Depends on:** LF02, LF06. **Acceptance:** AE29.
 
@@ -130,7 +130,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Execute the complete C9.2 library and migrated helpers. Check correct call-site spans, exact expected domain errors, native lowering and no production disabling. No new standard category or assertion DSL.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF08-summary.json, LF08-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF08-integration.log (integration+driver+emit all ok), LF08-runtime.log (326 pass), LF08-emit.txt (single-evaluation lowering + runtime branch). Reproduction commands in the summary.
 
 - [ ] **LF09 — Represent failure origin at native operation boundaries**
 

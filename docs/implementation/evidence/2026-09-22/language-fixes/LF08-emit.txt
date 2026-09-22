@@ -1,0 +1,38 @@
+C9.2 native lowering: require_positive's relay call emits one native call.
+Condition lowers once (comparison into $canRegion4), reason lowers once after
+it (const $canExpr4), and the single $canChecks.require call passes both by
+temp reference plus the hidden origin literal and assertion context. The
+origin span [338,393) covers exactly the require call expression in
+compiler/testdata/current/checks/main.can. Pinned by
+TestChecksRequireSingleEvaluation.
+
+        const $canExpr1 = ($canArg0) as unknown as $canType<int>;
+        let $canExpr2 = true;
+        const $canExpr3 = 0n;
+        $canExpr2 = ($canExpr1) > ($canExpr3);
+        const $canRegion4 = $canExpr2;
+        const $canExpr4 = "expected a positive value";
+        const $canRegion5 = $canExpr4;
+        const $canExpr5 = ($canRegion4) as unknown as $canType<bool>;
+        const $canExpr6 = ($canRegion5) as unknown as $canType<str>;
+        $canRegion1 = await $canInvoke(() => $canCallContext($canContext,"can.project.root/positive_checks::require_positive#0",($canContext) => $canChecks.require($canExpr5, $canExpr6, {source:"<main.can>",start:338,end:393,invocation:["can.project.root/positive_checks::require_positive"]}, $canContext),$canCallableInstance($canChecks.require)), {source:"<main.can>",start:338,end:393,invocation:["can.project.root/positive_checks::require_positive"]});
+
+The runtime branch itself (runtime/checks.ts, complete):
+
+import {success,failure,type Completion,type AssertionContext} from "./completion.ts";
+import {record} from "./data.ts";
+import {createDomainRuntime} from "./domain.ts";
+import type {FailureOrigin} from "./failure.ts";
+
+export type ChecksErrors=Readonly<{failed:string}>;
+export function createChecks(domain:ReturnType<typeof createDomainRuntime>,errors:ChecksErrors){
+ return Object.freeze({
+  async require(condition:boolean,reason:string,origin:FailureOrigin,_context?:AssertionContext):Promise<Completion<void>>{
+   if(condition)return success(undefined);
+   return failure(domain.create(errors.failed,record(errors.failed,[["reason",reason]]),origin));
+  },
+ });
+}
+
+No arithmetic trap, no environment read, no production gate, no user callback:
+one native boolean branch plus the existing domain-completion adapter.

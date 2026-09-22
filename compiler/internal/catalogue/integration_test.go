@@ -196,6 +196,16 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		}
 		held["I"+digits] = true
 	}
+	languageFixes, err := filepath.Glob(filepath.Join(sourceRoot, "docs", "implementation", "evidence", "*", "language-fixes", "LF??-summary.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range languageFixes {
+		base := filepath.Base(path)
+		if len(base) >= 4 && base[0:2] == "LF" && base[2] >= '0' && base[2] <= '9' && base[3] >= '0' && base[3] <= '9' {
+			held[base[0:4]] = true
+		}
+	}
 	for task, ops := range tasks {
 		if task == "" {
 			continue

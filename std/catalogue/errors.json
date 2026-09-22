@@ -45,6 +45,10 @@
       "kind": "number::zero_divisor"
     },
     {
+      "id": 1010,
+      "kind": "checks::failed"
+    },
+    {
       "id": 1100,
       "kind": "http::invalid_request"
     },

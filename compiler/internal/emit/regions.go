@@ -265,6 +265,12 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			// the authored arguments, including the static name literal.
 			callArgs = append(append([]string{}, args...), "$canSQL.declareDescriptor("+quote(step.SQL.Owner)+","+quote(step.SQL.Name)+")")
 		}
+		if step.Identity == "can.std.checks@1::require" {
+			// C9.2: the call-site span and invocation path travel as a
+			// hidden argument into private occurrence metadata. Fixture
+			// matching still compares the two authored arguments only.
+			callArgs = append(append([]string{}, args...), e.origin(step.Span))
+		}
 		var invocation string
 		if step.Array != nil {
 			var err error

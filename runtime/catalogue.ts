@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "c1517500a51df8d56f3147c7cc7bf29e31bd75902ea6b0fb6b87a124b12ed1f8";
+export const catalogueSHA256 = "d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -24,6 +24,10 @@ export const catalogue = freeze({
     {
       "name": "bytes",
       "identity": "can.std.bytes@1"
+    },
+    {
+      "name": "checks",
+      "identity": "can.std.checks@1"
     },
     {
       "name": "cli",
@@ -715,6 +719,18 @@ export const catalogue = freeze({
       "identity": "can.std.number@1::zero_divisor",
       "parameters": [],
       "fields": []
+    },
+    {
+      "id": 1010,
+      "name": "checks::failed",
+      "identity": "can.std.checks@1::failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
     },
     {
       "id": 1100,
@@ -6265,6 +6281,42 @@ export const catalogue = freeze({
         "P6",
         "P12"
       ]
+    },
+    {
+      "name": "checks::require",
+      "identity": "can.std.checks@1::require",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "condition",
+          "type": "bool"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "checks::failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Boolean branch",
+          "domain.create"
+        ],
+        "adapter": "Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata.",
+        "task": "LF08"
+      },
+      "assertion": "real",
+      "refs": [
+        "C9.2"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -7127,6 +7179,22 @@ export const catalogueTypeShapes = freeze([
     "kind": "error",
     "parameters": [],
     "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "checks::failed",
+    "identity": "can.std.checks@1::failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
     "leaves": []
   },
   {

@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 21 || len(inv.Types) != 34 || len(inv.Errors) != 51 || len(inv.Operations) != 144 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 22 || len(inv.Types) != 34 || len(inv.Errors) != 52 || len(inv.Operations) != 145 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {
@@ -24,7 +24,7 @@ func TestCompleteInventoryAndMirrors(t *testing.T) {
 	if err := Generate("../../..", true); err != nil {
 		t.Fatal(err)
 	}
-	for _, p := range strings.Fields("ai asset bytes cli clock codec collections crypto env html htmx http io json llm log number option random sql text") {
+	for _, p := range strings.Fields("ai asset bytes checks cli clock codec collections crypto env html htmx http io json llm log number option random sql text") {
 		if err := c.CheckProjectPackage(p); err == nil {
 			t.Errorf("allowed project catalogue owner %s", p)
 		}
@@ -281,5 +281,32 @@ func TestCallbackUnionRejectsConflictingIDs(t *testing.T) {
 	right := ErrorIdentity{Name: "shipping::missing", Identity: "project.shipping::missing", ID: 1000000, TypeArguments: []string{}}
 	if _, err := c.union([]ErrorIdentity{left, right}); err == nil {
 		t.Fatal("accepted duplicate ID across callback kinds")
+	}
+}
+
+func TestChecksRequireContract(t *testing.T) {
+	c := Builtin()
+	failed, ok := c.Error("checks::failed")
+	if !ok || failed.ID != 1010 || failed.Identity != "can.std.checks@1::failed" {
+		t.Fatalf("checks::failed allocation lost: %+v %v", failed, ok)
+	}
+	if len(failed.Fields) != 1 || failed.Fields[0].Name != "reason" || failed.Fields[0].Type != "str" {
+		t.Fatalf("checks::failed payload differs from C9.2: %+v", failed.Fields)
+	}
+	op, err := c.Operation("checks::require", c.Inventory().TargetID, c.Inventory().Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if op.Identity != "can.std.checks@1::require" || op.Kind != "function" || op.Result != "void" {
+		t.Fatalf("checks::require descriptor differs from C9.2: %+v", op)
+	}
+	if len(op.Inputs) != 2 || op.Inputs[0].Name != "condition" || op.Inputs[0].Type != "bool" || op.Inputs[1].Name != "reason" || op.Inputs[1].Type != "str" {
+		t.Fatalf("checks::require inputs differ from C9.2: %+v", op.Inputs)
+	}
+	if len(op.Emits) != 1 || op.Emits[0] != "checks::failed" {
+		t.Fatalf("checks::require bound differs from C9.2: %+v", op.Emits)
+	}
+	if op.Assertion != "real" || len(op.Refs) != 1 || op.Refs[0] != "C9.2" || op.Lowering.Task != "LF08" || len(op.Lowering.Native) == 0 {
+		t.Fatalf("checks::require evidence contract differs from C9.2: %+v", op)
 	}
 }

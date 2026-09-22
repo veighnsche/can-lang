@@ -36,6 +36,12 @@
     "catalogue.ts": [
       "./data.ts"
     ],
+    "checks.ts": [
+      "./completion.ts",
+      "./data.ts",
+      "./domain.ts",
+      "./failure.ts"
+    ],
     "completion.ts": [
       "./domain.ts",
       "./failure.ts",

@@ -1,0 +1,36 @@
+package positive_checks
+    provides [require_positive]
+    uses [checks]
+fn void require_positive
+    emits [checks::failed]
+    given
+        int value
+    asserts
+        positive: 3 => ok
+        zero: 0 => checks::failed("expected a positive value")
+        negative: -1 => checks::failed("expected a positive value")
+    relay call checks::require(value > 0, "expected a positive value")
+fn bool recovered_sign
+    emits []
+    given
+        int value
+    asserts
+        positive: 3 => ok true
+        zero: 0 => ok false
+    match call checks::require(value > 0, "expected a positive value")
+        checks::failed => ok false
+        ok => ok true
+fn str empty_reason
+    emits []
+    asserts
+        sample: => ok ""
+    match call checks::require(false, "")
+        checks::failed as failed => ok failed.reason
+        ok => ok "unexpected"
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

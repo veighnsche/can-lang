@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "c1517500a51df8d56f3147c7cc7bf29e31bd75902ea6b0fb6b87a124b12ed1f8"
+const GeneratedSourceSHA256 = "d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -71,6 +71,9 @@ const ErrorCollectionsKeyExistsIdentity = "can.std.collections@1::key_exists"
 const ErrorNumberZeroDivisorID = 1009
 const ErrorNumberZeroDivisorName = "number::zero_divisor"
 const ErrorNumberZeroDivisorIdentity = "can.std.number@1::zero_divisor"
+const ErrorChecksFailedID = 1010
+const ErrorChecksFailedName = "checks::failed"
+const ErrorChecksFailedIdentity = "can.std.checks@1::failed"
 const ErrorHttpInvalidRequestID = 1100
 const ErrorHttpInvalidRequestName = "http::invalid_request"
 const ErrorHttpInvalidRequestIdentity = "can.std.http@1::invalid_request"
@@ -335,3 +338,4 @@ const OpSqlTransactionQueryOptional = "sql::transaction_query_optional"
 const OpSqlTransactionQueryRows = "sql::transaction_query_rows"
 const OpSqlTransactionExecute = "sql::transaction_execute"
 const OpSqlWithTransaction = "sql::with_transaction"
+const OpChecksRequire = "checks::require"

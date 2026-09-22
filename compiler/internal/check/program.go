@@ -260,7 +260,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		if sqlGenericOperation(op.Identity) {
 			continue
 		} // I35 query generics specialize per P/R on use; transaction variants wait for I38.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" {
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" {
 			continue
 		}
 		signature := &syntax.CallableType{}

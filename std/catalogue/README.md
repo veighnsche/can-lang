@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: c1517500a51df8d56f3147c7cc7bf29e31bd75902ea6b0fb6b87a124b12ed1f8.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -16,6 +16,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - ai → can.std.ai@1
 - asset → can.std.asset@1
 - bytes → can.std.bytes@1
+- checks → can.std.checks@1
 - cli → can.std.cli@1
 - clock → can.std.clock@1
 - codec → can.std.codec@1
@@ -89,6 +90,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1007 | collections::key_absent |  |  |
 | 1008 | collections::key_exists |  |  |
 | 1009 | number::zero_divisor |  |  |
+| 1010 | checks::failed |  | str reason |
 | 1100 | http::invalid_request |  | str reason |
 | 1101 | http::credentials_missing |  | str variable |
 | 1102 | http::transport_failed |  | str phase |
@@ -284,6 +286,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | sql::transaction_query_rows | P:sql_parameters, R:sql_row; sql::transaction handle, str descriptor, P parameters, int max_rows → R[]; static descriptor | [sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |
 | sql::transaction_execute | P:sql_parameters; sql::transaction handle, str descriptor, P parameters → int; static descriptor | [sql::unsupported_value, sql::query_failed, sql::constraint_failed] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |
 | sql::with_transaction | T:data; sql::pool pool, $callback callback → T | [sql::connection_failed, sql::transaction_failed, sql::commit_unknown] | callback(sql::transaction) → sql::decision&lt;T&gt; emits [] | Bun.SQL.begin | Drain scoped leases; private rollback sentinel; retain commit uncertainty and original standard failures. | scoped | I38 / P6,P12 |
+| checks::require | bool condition, str reason → void | [checks::failed] |  | Boolean branch, domain.create | Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata. | real | LF08 / C9.2 |
 
 ## Native declaration profiles
 
