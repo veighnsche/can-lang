@@ -2,7 +2,7 @@
 
 > Status note: design-input record, not a live spec — do not edit the
 > review below. Its cuts (`reach`, spec layer, flat error numbers) were
-> adopted; the v0.5 plan (`docs/a05-expressiveness.md`) and the a06–a09
+> adopted; the v0.5 plan (`docs/a/a05-expressiveness.md`) and the a06–a09
 > builds answer the gaps it left open. Line citations refer to the 01–05
 > sketches as read.
 

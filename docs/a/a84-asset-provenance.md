@@ -16,7 +16,7 @@ from then. That distinction is provenance, and it lives outside the
 language — this paper puts the boundary in one place so no slice
 has to re-argue it.
 
-Rulings consumed (all settled in `docs/a83-astra-schema.md`): external
+Rulings consumed (all settled in `docs/a/a83-astra-schema.md`): external
 approver with pinned key and no self-approval (§2); one policy per
 program deployment (§3); full binding incl. snapshot, site, and
 validity interval (§4); construction-time authorization only (§5);

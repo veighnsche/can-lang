@@ -141,7 +141,7 @@ Accepting this note means: implement as one slice
 `buildWorld` wire-up, `forwardcall_test.go` probes
 mirroring `forward_test.go`, escape-worker migration with
 regenerated goldens, `REQUIREMENTS.md` + can-idioms Tier 1
-amendments), with emit parity — elaborated vs handwritten
+(guide since removed) amendments), with emit parity — elaborated vs handwritten
 byte-identical TS — as the strong check. Migration edits
 `std/html/html.can` byte-exactly with the NUL count
 asserted before and after. Only then consider follow-ups.

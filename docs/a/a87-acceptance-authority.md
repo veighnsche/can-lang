@@ -1,7 +1,7 @@
 # a87 — Acceptance authority, A-light (draft, pre-decision)
 
 Status: shipped (ratified). Answers the open decision from
-`a85-agent-language-research.md` §4.1 at A-light strength: provenance
+`a85-agent-language-research.md` (removed) §4.1 at A-light strength: provenance
 labels plus loud weakening reports. Rejection (A-strong) remains
 deferred. Slices landed: parser marker, baseline recording, CAN6017
 warning, committed tests, REQUIREMENTS amendment.

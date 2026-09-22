@@ -5,7 +5,7 @@ Status: decided 2026-09-18. Consumer 3
 ops; the comparison below is measured, not estimated.
 The call migrates consumers 1–2; execution is the next
 step, under the rule in §4.
-Parent: `docs/a91-schema-s2-design.md` (S2b gate);
+Parent: `docs/a/a91-schema-s2-design.md` (S2b gate);
 consumers 2–3: `sketches/reserve/`, `sketches/notify/`.
 
 ## Method

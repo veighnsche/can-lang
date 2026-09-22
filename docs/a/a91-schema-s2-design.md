@@ -5,8 +5,8 @@ implements here, S2b follows. No separate verdict round:
 a90 already recorded the admission verdict, and this doc
 fills exactly its bounds — anything outside them needs a
 new decision, not a broad reading of this one.
-Parent: `docs/a90-schema-s2-exhibits.md` (exhibits 1–5);
-`docs/a89-schema-validation-design.md` (proof list).
+Parent: `docs/a/a90-schema-s2-exhibits.md` (exhibits 1–5);
+`docs/a/a89-schema-validation-design.md` (proof list).
 
 ## What S2 is (honest split)
 

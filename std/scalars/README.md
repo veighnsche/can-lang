@@ -44,5 +44,5 @@ I43/I44 inventory retirement. They are not the current library or a fallback.
   std/scalars std/scalars/scalars.can`;
   verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/a13-stdlib.md` (row 2).
+Rules: `/REQUIREMENTS.md`. Program: `docs/a/a13-stdlib.md` (row 2).
 Names follow the brief verbatim (issue 5).

@@ -35,7 +35,7 @@ implementation.
   `Validate__Membership`): one constraint in, frozen
   `validation.schema_violation` triple out, so consumers bind
   checks to fields without rewriting reconstruction arms
-  (see `docs/a91-schema-s2-design.md`).
+  (see `docs/a/a91-schema-s2-design.md`).
   (`quota__consume`, `quota__usage`) that reuses them through
   same-file local calls, so every call executes its body.
   Validators return the accepted value or a producer-owned typed
@@ -55,4 +55,4 @@ implementation.
   need their own emit slice; see the a89 implementation
   amendment.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/a13-stdlib.md` (row 1).
+Rules: `/REQUIREMENTS.md`. Program: `docs/a/a13-stdlib.md` (row 1).

@@ -46,5 +46,5 @@ is selected by the current CLI.
   (tests stripped). Regenerate: `go run ./compiler --out
   std/text std/text/text.can`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/a16-text.md`,
-surface: `docs/a20-text-operators.md` (`#`, `s[i]`, `s[a:b]`).
+Rules: `/REQUIREMENTS.md`. Program: `docs/a/a16-text.md`,
+surface: `docs/a/a20-text-operators.md` (`#`, `s[i]`, `s[a:b]`).

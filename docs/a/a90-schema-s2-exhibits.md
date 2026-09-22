@@ -3,7 +3,7 @@
 Status: decided 2026-09-18. Exhibits below are committed code;
 the verdict admits closed-descriptor *design* under the bounds
 in §5. No descriptor code in this step.
-Parent: `docs/a89-schema-validation-design.md` (S2 gate);
+Parent: `docs/a/a89-schema-validation-design.md` (S2 gate);
 consumers: `std/quota/quota.can` (S1a pilot),
 `sketches/reserve/reserve.can` (S2 second consumer).
 

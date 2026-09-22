@@ -93,7 +93,7 @@ Pinned by `TestMultiShapeEmit` and
 ## Deferred with blockers (not silently dropped)
 
 - Integer division family: the kernel landed as
-  `docs/a17-division.md` (`/`, `%`, `divmod`, `mod`,
+  `docs/a/a17-division.md` (`/`, `%`, `divmod`, `mod`,
   `is_multiple`, `is_even`, `is_odd`). `binomial` still needs
   its fuel-pattern home, and `gcd`, `lcm`, `sqrt_floor`,
   `is_prime`, `next_power_of_two` wait on fuel-pattern
@@ -102,11 +102,11 @@ Pinned by `TestMultiShapeEmit` and
   digit-extraction kernel that does not exist without
   division. `dec_to_int_exact`, `int_to_str`, `str_to_int`,
   `dec_to_str`, `str_to_dec`: need the Numeric/Text layers.
-- Text operations: concatenation landed as `docs/a16-text.md`
+- Text operations: concatenation landed as `docs/a/a16-text.md`
   (`+` on strings, `std__str__concat` blessed); measurement and
   indexing wait on the scalar-access surface decision recorded
   there. Issue 3 stays open.
-- Constructor-controlled brands: landed as `docs/a15-brands.md`.
+- Constructor-controlled brands: landed as `docs/a/a15-brands.md`.
   Bodies seal only their own module's brands (CAN6004); tests and
   scripts may name any declared brand. `Html__Safe` and its sibling
   brands will arrive under this rule, unforgable by consumers.

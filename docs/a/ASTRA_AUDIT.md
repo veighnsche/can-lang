@@ -2,9 +2,9 @@
 
 **The language has gained real expressiveness, but its strongest correctness claims outrun its specified guarantees.** The main problems are not missing async or missing syntax. They are changes in what “proved” means when crossing from evaluator to TypeScript, from local calls to imported calls, and from complete values to error-kind-only expectations.
 
-My re-rating is **7/10 → 8/10 for shipped, scenario-checked expressiveness**. That is **not** a soundness endorsement. The uploaded a05 plan provides the original 7/10 baseline, but no numerical subscore rubric; the more granular assessments below are mine, not reconstructed panel scores. *Source: `docs/a05-expressiveness.md`, “Consequences.”* 
+My re-rating is **7/10 → 8/10 for shipped, scenario-checked expressiveness**. That is **not** a soundness endorsement. The uploaded a05 plan provides the original 7/10 baseline, but no numerical subscore rubric; the more granular assessments below are mine, not reconstructed panel scores. *Source: `docs/a/a05-expressiveness.md`, “Consequences.”* 
 
-This is a language/specification audit. I did not execute the can-lang compiler. I distinguish **findings supported directly by the files** from **deduced counterexamples whose compiler acceptance remains unverified**. Example citations refer to the real repository paths embedded in `docs/ALL_EXAMPLES.can`.
+This is a language/specification audit. I did not execute the can-lang compiler. I distinguish **findings supported directly by the files** from **deduced counterexamples whose compiler acceptance remains unverified**. Example citations refer to the real repository paths embedded in `docs/ALL_EXAMPLES.can` (removed with the archived design records).
 
 ---
 
@@ -18,7 +18,7 @@ This is a language/specification audit. I did not execute the can-lang compiler.
 
 > “exact or loud”
 
-But `docs/a06-arithmetic.md`, “TS emit,” specifies native operators over `number` and claims:
+But `docs/a/a06-arithmetic.md`, “TS emit,” specifies native operators over `number` and claims:
 
 > “`dec` within 15 significant digits”
 

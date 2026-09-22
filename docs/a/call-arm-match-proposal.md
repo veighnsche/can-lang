@@ -9,7 +9,7 @@ under the defer-without-a-consumer precedent.
 ## 1. Background (preserved)
 
 - a28 added multi-scrutinee product matches for pure values
-  (`docs/a28-multi-scrutinee-match.md`): eager exactly-once LTR
+  (`docs/a/a28-multi-scrutinee-match.md`): eager exactly-once LTR
   scrutinee evaluation, first fully-matching arm wins, proved `else`,
   proof before emit, one test obligation per arm.
 - Migration converted ~45 pure tables (`std/scalars`, `std/quota`,

@@ -75,7 +75,7 @@ not event-handler, not style" an incomplete definition.
 ## Still scheduled (not silently dropped)
 
 Note: the a28 number went to parallel multi-scrutinee-match
-research, so this work shipped as a29 (`docs/a29-attribute-value.md`).
+research, so this work shipped as a29 (`docs/a/a29-attribute-value.md`).
 
 a29 owns the attribute-value encoder and the fate of the specified
 `invalid_attribute_value`: with names arriving as brands and the

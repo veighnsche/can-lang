@@ -4,7 +4,7 @@ Status: decided 2026-09-18. Order-8 part 1 of 3,
 second slice (G1 generic fns landed per a93; this doc:
 generic records; the shape `Schema<T>` will later
 reuse — no schema semantics here). Parent:
-`docs/a93-generics-design.md` (method + verdicts) and
+`docs/a/a93-generics-design.md` (method + verdicts) and
 `docs/ASTRA_STDLIB.md` §6 order 8.
 Verdict (principal, same day): Q1a `Ratio__Value<T>`
 3→1 pilot (+ first ratio golden/linked/parity), Q2a

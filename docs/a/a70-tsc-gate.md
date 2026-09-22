@@ -12,7 +12,7 @@ the priced consequence — never suppressions).
    `tsconfig.json`, lockfile committed).
 2. Green run on current goldens, incl. multi-shape
    ok unions. Real strict failures get emit fixes.
-3. Ownership policy (`docs/a70-tsc-ownership.md` or
+3. Ownership policy (`docs/a70-tsc-ownership.md`, never written, or
    a14 amendment): `tsc` owns type + contract shape;
    `canlc` exclusively owns exhaustiveness,
    termination, decision tables. REQUIREMENTS R11

@@ -6,7 +6,7 @@ positional args with names optional, calls unchanged.
 Parent: a74 ("positional construction stays outside the
 subset" — this amendment admits it), a12 (complete
 constructions: all fields still required, named or not),
-can-idioms C6 (redundant names).
+can-idioms C6 (redundant names; guide since removed).
 
 ## Rulings
 
@@ -26,8 +26,8 @@ can-idioms C6 (redundant names).
   invariant, keeping the honesty proof total for positional
   outcomes. Both checks are defensive about the other's
   faults, so the swap is safe.
-- **C6 expands to constructions.** can-idioms C6 ("the only
-  lists with a positional spelling") lapses its construction
+- **C6 expands to constructions.** can-idioms C6 (guide since removed;
+  "the only lists with a positional spelling") lapses its construction
   exemption: an in-order named field is reported. Exchange
   args stay exempt (grammar-mandated names).
 - **Faults stay CAN6003.** Unknown, missing, and repeated

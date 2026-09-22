@@ -78,8 +78,8 @@ would expose it.
 
 - `docs/bytes-plan.md` (v3 — the design under review)
 - `docs/bytes-workstream.md` (requirements, acceptance, non-goals)
-- `docs/a46-bytes-export.md` (shipped B2: grants, kernel, barrier)
-- `docs/a47-bytes-encode.md` (shipped B3: generic encoder)
+- `docs/a/a46-bytes-export.md` (shipped B2: grants, kernel, barrier)
+- `docs/a/a47-bytes-encode.md` (shipped B3: generic encoder)
 - `std/html/html.can` (the module B4 changes)
 - `std/html/html.ts` (the committed artifact B4 regenerates)
 - `std/html/errors.json` (the registry B4 must justify touching or not)

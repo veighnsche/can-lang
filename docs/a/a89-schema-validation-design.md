@@ -9,7 +9,7 @@ Parent: `docs/ASTRA_STDLIB.md` §1.5 (`validate__schema`),
 ## Provenance
 
 Design-agent verdict returned against pin `67b27c78da49`.
-At that pin `docs/a89-schema-validation-design.md` was an
+At that pin `docs/a/a89-schema-validation-design.md` was an
 untracked local file, so the verdict adjudicates the
 proposal as quoted in the task, not the full a89 text.
 This update reconciles the gate by recording the rulings

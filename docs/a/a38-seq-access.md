@@ -40,7 +40,7 @@ traversal proof the customers need (`str__join` walks forward;
   `[]` over Seq is therefore a three-site extension (checker
   operand rule + element-typed `typeOf`, evaluator member fetch,
   emitter lowering), same size as S2.
-- The existing termination rule (`docs/a08-termination.md`,
+- The existing termination rule (`docs/a/a08-termination.md`,
   `checkDecreases`): `decreases fuel` decl, canonical `fuel <= 0`
   guard, self-call under the false arm with exactly `fuel - 1`.
   `std__str__find_from` is the house worker shape (guard match,

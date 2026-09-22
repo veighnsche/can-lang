@@ -72,7 +72,7 @@ concrete fixture that would expose it.
 ## Context files
 
 - `docs/bytes-plan.md` (v3 — the design under review)
-- `docs/a45-bytes-values.md` (shipped B1 foundation B2 builds on)
+- `docs/a/a45-bytes-values.md` (shipped B1 foundation B2 builds on)
 - `docs/bytes-workstream.md` (requirements, acceptance, non-goals)
 - `compiler/types.go` (sealing, `seals_from`, nominal-type rule)
 - `compiler/parse.go` (`Module.ID`, declaration parsing, ctor branch)

@@ -1,6 +1,6 @@
 # Prompt: design the a78 gap closures + implementation plan
 
-Paste this into the designer bot with [docs/a78-classification-gaps.md](a78-classification-gaps.md)
+Paste this into the designer bot with [docs/a/a78-classification-gaps.md](a78-classification-gaps.md)
 attached plus the context files below. a78's investigation is
 closed (all gaps verified); nothing is designed yet. This
 prompt commissions the designs and the build plan. It
@@ -8,9 +8,9 @@ authorizes no compiler changes — output is design records
 plus a phased plan, one per item.
 
 Context to attach: `REQUIREMENTS.md` (R1–R11 + open
-questions), `docs/a28-multi-scrutinee-match.md` (the
-deferral item 3 reopens), `docs/a61-error-design.md` item 2
-(item 2 refines it, do not redesign it), `std/html/html.can`
+questions), `docs/a/a28-multi-scrutinee-match.md` (the
+deferral item 3 reopens), `docs/a61-error-design.md` (removed)
+item 2 (item 2 refines it, do not redesign it), `std/html/html.can`
 (`html__url__scheme_token`, `html__url__authority`,
 `html__attribute__value_from` — the exhibits),
 `std/scalars/scalars.can` (`std__dec__round_half_even` —

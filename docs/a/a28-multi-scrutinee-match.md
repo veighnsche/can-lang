@@ -74,8 +74,8 @@ to value matches.
 - Codes: registry + uniqueness test in `compiler/code.go`
   (`CAN4101` missing arm, `CAN4103` bool arms, `CAN4104` value-no-wild,
   `CAN4105` bad arm kind, `CAN4106` variant-on-value, `CAN4107` arm untaken).
-- Precedent docs: `docs/a03-branch-coverage.md` (test-per-arm law),
-  `docs/a05-expressiveness.md` (proof-cost sequencing rule).
+- Precedent docs: `docs/a/a03-branch-coverage.md` (test-per-arm law),
+  `docs/a/a05-expressiveness.md` (proof-cost sequencing rule).
 
 ## Constraints And Non-goals
 

@@ -8,10 +8,10 @@ effects via `emits`). It compiles to dependency-free TypeScript.
 READING ORDER
 1. `docs/FOR_REVIEWER.md` — the guided tour, read first.
 2. `REQUIREMENTS.md` — the rules (R1–R11) plus the open-questions list.
-3. `docs/a05-expressiveness.md` — the original plan and its scoring method.
-4. `docs/a06-arithmetic.md` through `docs/a09-effects.md` — the four shipped
+3. `docs/a/a05-expressiveness.md` — the original plan and its scoring method.
+4. `docs/a/a06-arithmetic.md` through `docs/a/a09-effects.md` — the four shipped
    feature specs, each with its proof argument.
-5. `docs/ALL_EXAMPLES.can` — every program in the language: 4 shipped modules
+5. `docs/ALL_EXAMPLES.can` (removed with the archived design records) — every program in the language: 4 shipped modules
    first (`auth-login/`, `retry-loop/`, `counter/`), then `broken-login/`, a
    gallery of 10 programs the compiler intentionally REJECTS (one per squiggle
    class). Section headers give the real repo path of each file.

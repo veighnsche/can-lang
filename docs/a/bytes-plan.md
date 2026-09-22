@@ -35,8 +35,8 @@ positional-construction rejection the Bytes branch must precede
 (`docs/fault-contracts.md:9–14`); `text.empty_separator` declared+raised
 but header-omitted (`std/text/text.can:21,27,390–405`); brand base
 (`std/html/html.can:8–12,28–30`); Seq atomic-boundary + `vEq`-as-support
-(`docs/a36-seq-typed-construction.md:106–118`); one-operation + kernel
-plumbing warning (`docs/a37-seq-length.md:39–55`); `checkCalls`/`checkGiven`/
+(`docs/a/a36-seq-typed-construction.md:106–118`); one-operation + kernel
+plumbing warning (`docs/a/a37-seq-length.md:39–55`); `checkCalls`/`checkGiven`/
 `evCallMatch`/`emitValue`/`emitModule`/`ctor` parse sites exist. Not
 line-verified: emit/eval/check interior sub-spans (function-level
 touchpoints confirmed by name; drift risk cosmetic only). `checkStateDecl` admits four scalars with `CAN6002` rejection

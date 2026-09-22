@@ -1,10 +1,10 @@
 # Prompt: adversarial design review of §2.3 revision identity
 
-Paste this into the reviewer with [docs/a67-testing-contracts-design.md](a67-testing-contracts-design.md)
-(§2.3 especially), [docs/a72-variant-design.md](a72-variant-design.md)
-(decision 4), [docs/a69-contract-grammar.md](a69-contract-grammar.md),
-[docs/a73-variant-registry.md](a73-variant-registry.md), and
-[docs/a13-stdlib.md](a13-stdlib.md) (Order 0) attached.
+Paste this into the reviewer with [docs/a/a67-testing-contracts-design.md](a67-testing-contracts-design.md)
+(§2.3 especially), [docs/a/a72-variant-design.md](a72-variant-design.md)
+(decision 4), [docs/a/a69-contract-grammar.md](a69-contract-grammar.md),
+[docs/a/a73-variant-registry.md](a73-variant-registry.md), and
+[docs/a/a13-stdlib.md](a13-stdlib.md) (Order 0) attached.
 
 Nothing here is implemented — this review attacks the design before
 any slice lands. a68 (linked runner), a69 (contract grammar), and the

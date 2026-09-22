@@ -760,11 +760,12 @@ with no users, they need not supply adapters for every historical format.
 
 ## 8. Async and resources: resolve B05, do not invent a competing B12
 
-Both B05 documents are design-only and differ materially:
+Both B05 documents were design-only (removed with the archived design web)
+and differed materially:
 
-- `b05-async-design.md` §Q6 proposes a uniform completion-capable ABI, possibly
+- `b05-async-design.md` §Q6 proposed a uniform completion-capable ABI, possibly
   `Promise<Result>`.
-- `b05-async-design-pro.md` §D4 proposes a uniform private control-frame/machine
+- `b05-async-design-pro.md` §D4 proposed a uniform private control-frame/machine
   ABI for a join-capable world, with a separate root embedding boundary.
 
 They also differ in join presentation (labeled versus positional product arms).
@@ -831,7 +832,7 @@ Concrete drift found:
 - root README reports status through a12 despite B11;
 - REQUIREMENTS describes interface revision drift as code-content drift,
   Python evaluation, and no emitted match default; current code differs;
-- can-idioms describes foreign externs as uncallable despite B02/B10;
+- can-idioms (guide since removed) described foreign externs as uncallable despite B02/B10;
 - std/seq says bare sequence returns are rejected despite B10;
 - B01 says `rev N` must remain, yet its brand example uses `@1` and its
   implementation plan says to parse `@N` headers;

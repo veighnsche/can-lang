@@ -17,7 +17,7 @@ arbitrary script sources (stored XSS by construction), and
 `stylesheet` would be a bare `link` wrapper adding nothing. The HTML
 library cannot invent this model from inside; it must arrive as a
 language layer, like Functions, Async, and Resources (see
-`docs/a13-stdlib.md:118`, where Schema is named with those layers).
+`docs/a/a13-stdlib.md:118`, where Schema is named with those layers).
 
 ## Input: settled trust model (gating)
 
