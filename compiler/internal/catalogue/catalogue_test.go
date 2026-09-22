@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 22 || len(inv.Types) != 34 || len(inv.Errors) != 52 || len(inv.Operations) != 145 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 22 || len(inv.Types) != 35 || len(inv.Errors) != 53 || len(inv.Operations) != 145 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {
@@ -215,8 +215,9 @@ func TestNativeModeBounds(t *testing.T) {
 		want  []string
 	}{
 		{"noul", nil, []string{"ai::invalid_question", "ai::invalid_answer"}},
-		{"fetch_envelope", nil, []string{"http::invalid_request", "http::transport_failed", "http::timeout", "http::body_limit"}},
-		{"fetch_body", map[string]bool{"authenticated": true, "uses_codec": true}, []string{"http::invalid_request", "http::credentials_missing", "http::transport_failed", "http::timeout", "http::body_limit", "http::status_error", "codec::invalid_data"}},
+		{"fetch_envelope", nil, []string{"http::request_failed"}},
+		{"fetch_body", nil, []string{"http::request_failed"}},
+		{"judge", nil, []string{"http::request_failed", "ai::invalid_question", "ai::invalid_answer"}},
 		{"llm", map[string]bool{"authenticated": true}, []string{"http::invalid_request", "http::credentials_missing", "http::transport_failed", "http::timeout", "http::body_limit", "http::status_error", "codec::invalid_data", "llm::refused", "llm::truncated", "llm::invalid_response"}},
 	}
 	for _, tc := range cases {
@@ -281,6 +282,30 @@ func TestCallbackUnionRejectsConflictingIDs(t *testing.T) {
 	right := ErrorIdentity{Name: "shipping::missing", Identity: "project.shipping::missing", ID: 1000000, TypeArguments: []string{}}
 	if _, err := c.union([]ErrorIdentity{left, right}); err == nil {
 		t.Fatal("accepted duplicate ID across callback kinds")
+	}
+}
+
+func TestRequestFailedContract(t *testing.T) {
+	c := Builtin()
+	failed, ok := c.Error("http::request_failed")
+	if !ok || failed.ID != 1106 || failed.Identity != "can.std.http@1::request_failed" {
+		t.Fatalf("http::request_failed allocation lost: %+v %v", failed, ok)
+	}
+	if len(failed.Fields) != 1 || failed.Fields[0].Name != "detail" || failed.Fields[0].Type != "http::failure_detail" {
+		t.Fatalf("http::request_failed payload differs from A2.4: %+v", failed.Fields)
+	}
+	detail, ok := c.Type("http::failure_detail")
+	if !ok || detail.Kind != "variant" || detail.Identity != "can.std.http@1::failure_detail" || len(detail.Parameters) != 0 {
+		t.Fatalf("http::failure_detail declaration lost: %+v %v", detail, ok)
+	}
+	want := []string{"http::invalid_request", "http::credentials_missing", "http::transport_failed", "http::timeout", "http::body_limit", "http::status_error", "codec::invalid_data"}
+	if !reflect.DeepEqual(detail.Leaves, want) {
+		t.Fatalf("http::failure_detail leaves differ from A2.4: %v", detail.Leaves)
+	}
+	for _, leaf := range want {
+		if _, ok := c.Error(leaf); !ok {
+			t.Fatalf("detail leaf %s is not an allocated error", leaf)
+		}
 	}
 }
 

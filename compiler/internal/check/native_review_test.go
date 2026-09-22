@@ -128,7 +128,7 @@ func TestNativeStateCodecAdmission(t *testing.T) {
 
 func TestNativeExportedConnection(t *testing.T) {
 	for _, declaration := range []string{
-		"fetch str exposed from generator\n    emits [" + nativeHTTP + "]\n    get \"/\"\n",
+		"fetch str exposed from generator\n    emits [http::request_failed]\n    get \"/\"\n",
 		"llm str exposed from generator\n    emits [" + nativeLLM + "]\n    asks \"Generate\"\n",
 		strings.Replace(nativeQuestion, "bool question", "bool exposed", 1),
 		strings.Replace(nativeJudge, "bool assess", "bool exposed", 1) + nativeQuestion,

@@ -349,6 +349,24 @@
       "constructible": true
     },
     {
+      "name": "http::failure_detail",
+      "identity": "can.std.http@1::failure_detail",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "http::invalid_request",
+        "http::credentials_missing",
+        "http::transport_failed",
+        "http::timeout",
+        "http::body_limit",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "projections": [],
+      "constructible": false
+    },
+    {
       "name": "bytes::buffer",
       "identity": "can.std.bytes@1::buffer",
       "kind": "opaque",
@@ -795,6 +813,18 @@
         {
           "name": "headers",
           "type": "http::header[]"
+        }
+      ]
+    },
+    {
+      "id": 1106,
+      "name": "http::request_failed",
+      "identity": "can.std.http@1::request_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "detail",
+          "type": "http::failure_detail"
         }
       ]
     },
@@ -6412,93 +6442,45 @@
     {
       "name": "judge",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data",
+        "http::request_failed",
         "ai::invalid_question",
         "ai::invalid_answer"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [
         "questions",
         "handlers",
         "continuation"
       ],
-      "task": "I17",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },
     {
       "name": "fetch_body",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error"
+        "http::request_failed"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        },
-        {
-          "condition": "uses_codec",
-          "emits": [
-            "codec::invalid_data"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [],
-      "task": "I26",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },
     {
       "name": "fetch_envelope",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit"
+        "http::request_failed"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        },
-        {
-          "condition": "uses_codec",
-          "emits": [
-            "codec::invalid_data"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [],
-      "task": "I26",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },

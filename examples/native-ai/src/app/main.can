@@ -4,7 +4,7 @@ package app
 
 /// Triage one account through the native pipeline and print the report.
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, sql::connection_failed, sql::close_failed, io::write_failed]
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed, sql::connection_failed, sql::close_failed, io::write_failed]
     given
         str[] args
     asserts
@@ -41,13 +41,7 @@ fn void main
                         triage: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
                         down: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
                         unclosed: records::triage_bundle(options, ["Ann"]) => ok records::triage_scored("vip", 0.9)
-                    http::invalid_request
-                    http::credentials_missing
-                    http::transport_failed
-                    http::timeout
-                    http::body_limit
-                    http::status_error
-                    codec::invalid_data
+                    http::request_failed
                     ai::invalid_question
                     ai::invalid_answer
                     ok records::triage_scored scored => match call model::gate(scored.score)

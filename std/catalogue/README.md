@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: fe9f29fa37128c05a0f6f73c8162e8d7c7237f6b2032b7d4aa34e1d27ea49bd3.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -52,6 +52,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | collections::set | opaque | K:map_key |  | false |
 | http::header | record |  | str name, str value | true |
 | http::response | record | T:data | int status, http::header[] headers, T body | true |
+| http::failure_detail | variant |  | http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data | false |
 | bytes::buffer | opaque |  |  | false |
 | html::node | opaque |  |  | false |
 | html::safe | opaque |  |  | false |
@@ -97,6 +98,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1103 | http::timeout |  | int timeout_ms |
 | 1104 | http::body_limit |  | int limit |
 | 1105 | http::status_error |  | int status, http::header[] headers |
+| 1106 | http::request_failed |  | http::failure_detail detail |
 | 1110 | codec::invalid_data |  | str path, str reason |
 | 1120 | ai::invalid_question |  | str reason |
 | 1121 | ai::invalid_answer |  | str question, str reason |
@@ -302,9 +304,9 @@ speculation. Bound unions use the declared question/handler/body contracts.
 | score | ai::invalid_question, ai::invalid_answer |  | handlers | I27 |
 | record_score | ai::invalid_question, ai::invalid_answer |  | handlers | I27 |
 | choice_arm |  |  | body | I27 |
-| judge | http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer | authenticated: http::credentials_missing | questions, handlers, continuation | I17 |
-| fetch_body | http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error | authenticated: http::credentials_missing; uses_codec: codec::invalid_data |  | I26 |
-| fetch_envelope | http::invalid_request, http::transport_failed, http::timeout, http::body_limit | authenticated: http::credentials_missing; uses_codec: codec::invalid_data |  | I26 |
+| judge | http::request_failed, ai::invalid_question, ai::invalid_answer |  | questions, handlers, continuation | LF10 |
+| fetch_body | http::request_failed |  |  | LF10 |
+| fetch_envelope | http::request_failed |  |  | LF10 |
 | llm | http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response | authenticated: http::credentials_missing |  | I28 |
 
 Standard failure categories: arithmetic, bounds, resource_state, assertion, native_exception, cleanup.

@@ -1,11 +1,11 @@
 import {test,expect} from "bun:test";
 import {createHash} from "node:crypto";
 import {catalogue} from "../catalogue.ts";
-import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
+import {createDomainRuntime,domainFailureDiagnostics,isDomainFailure,type FailureShape} from "../domain.ts";
 import {createTypeSafe,type AITypes,type NoulDescriptor} from "../ai/typesafe.ts";
 import {runOwnedRoot} from "../owner.ts";
 import {success,failure,type Completion} from "../completion.ts";
-import {record} from "../data.ts";
+import {record,recordIdentity,dataProperty} from "../data.ts";
 import {assertionContext,contextReport} from "../assert/context.ts";
 import {provideHTTP,type RawHTTPFixture} from "../assert/provider.ts";
 import {runAssertion} from "../assert/runner.ts";
@@ -14,18 +14,21 @@ const shape=(kind:string,declaration:string,fields:{name:string;type:string}[]=[
 const str=shape("primitive","str"),int=shape("primitive","int");
 const header=shape("record","can.std.http@1::header",[{name:"name",type:str.identity},{name:"value",type:str.identity}]);
 const headers:FailureShape={...shape("array",""),identity:hash(["array","",header.identity]),element:header.identity};
-const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1105||e.id===1110||e.id===1120||e.id===1121);
-const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:headers.identity}))));
-const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors]});
+const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1106||e.id===1110||e.id===1120||e.id===1121);
+const detailIdentity=hash(["variant","can.std.http@1::failure_detail"]);
+const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:f.type==="http::failure_detail"?detailIdentity:headers.identity}))));
+const detail:FailureShape={identity:detailIdentity,kind:"variant",declaration:"can.std.http@1::failure_detail",fields:[],arguments:[],leaves:errors.filter((_,i)=>declarations[i].id!==1106&&declarations[i].id<1120).map(e=>e.identity),inputs:[],errors:[]};
+const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors,detail]});
 const types=Object.fromEntries(["invalid","credential","transport","timeout","limit","status"].map((name,i)=>[name,errors[i].identity])) as unknown as AITypes;
 
-const aiTypes={...types,header:header.identity,invalidData:errors[6].identity,invalidQuestion:errors[7].identity,invalidAnswer:errors[8].identity};
+const aiTypes={...types,header:header.identity,invalidData:errors[7].identity,invalidQuestion:errors[8].identity,invalidAnswer:errors[9].identity,failed:errors[6].identity};
 const origin={source:"test:typesafe-transport",start:0,end:0,invocation:[]};
 const schema={root:"state",nodes:[{identity:"state",kind:"record",name:"state",fields:[{name:"amount",type:"int"}]},{identity:"int",kind:"primitive",name:"int"}]};
 const state=record("state",[["amount",9007199254740993n]]);
 const question:NoulDescriptor={kind:"noul",instructions:"Check amount",trueDescription:"Yes",falseDescription:"No",minimum:0.5};
 const connection={endpoint:"http://127.0.0.1:1/systemone",timeoutMilliseconds:1000,maxBodyBytes:8192,headers:[],bearerEnvironment:"TOKEN"};
 function check(result:Completion,id:number,payload:object){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw Error("expected domain");const d=domainFailureDiagnostics(result.value);expect(d.declaration.id).toBe(id);expect(d.payload).toMatchObject(payload);}
+function checkDetail(result:Completion,leaf:string,payload:object){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw Error("expected domain");const d=domainFailureDiagnostics(result.value);expect(d.declaration.id).toBe(1106);expect(d.provenance.boundary).toBe("native");const detail=dataProperty(d.payload,"detail");expect(recordIdentity(detail)).toBe(leaf);expect(detail).toMatchObject(payload);if(!isDomainFailure(d.cause))throw new Error("expected private original cause");}
 
 test("Noul sends one exact POST and reads credentials only after all input admission",async()=>{
  let reads=0,requests=0,body="",authorization="",contentType="",accept="";
@@ -38,8 +41,8 @@ test("Noul sends one exact POST and reads credentials only after all input admis
  try{const root=await runOwnedRoot(async()=>{
   const c={...connection,endpoint:new URL("/systemone",server.url).href};
   check(await api.ask(c,"jev-latest",schema,state,[question,{...question,instructions:""}],origin,"test:ai/judge"),1120,{reason:"instructions"});
-  check(await api.ask({...c,maxBodyBytes:10},"jev-latest",schema,state,[question],origin,"test:ai/judge"),1104,{limit:10n});
-  check(await api.ask(c,"jev-latest",schema,record("state",[["amount",1]]),[question],origin,"test:ai/judge"),1110,{path:"/state/amount",reason:"type"});
+  checkDetail(await api.ask({...c,maxBodyBytes:10},"jev-latest",schema,state,[question],origin,"test:ai/judge"),errors[4].identity,{limit:10n});
+  checkDetail(await api.ask(c,"jev-latest",schema,record("state",[["amount",1]]),[question],origin,"test:ai/judge"),errors[7].identity,{path:"/state/amount",reason:"type"});
   expect(reads).toBe(0);expect(requests).toBe(0);
   const result=await api.ask(c,"jev-latest",schema,state,[question,question],origin,"test:ai/judge");
   expect(result.kind).toBe("ok");if(result.kind!=="ok")throw Error("expected answers");
@@ -56,12 +59,12 @@ test("Noul malformed responses stay distinct from status failures without retry"
  const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch(){requests++;return new Response(reply,{status});}});
  try{const root=await runOwnedRoot(async()=>{
   const c={...connection,endpoint:server.url.href};
-  check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1110,{reason:"invalid_json"});
+  checkDetail(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),errors[7].identity,{reason:"invalid_json"});
   reply='{"model":"resolved","answers":{}}';
   check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1121,{question:"",reason:"question_ids"});
   reply='{"model":"resolved","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"noul","noul":2}}}';
   check(await api.ask(c,"jev-latest",schema,state,[question,question],origin,"test:ai/judge"),1121,{question:"q1",reason:"probability"});
-  for(const code of [401,422,429,529]){status=code;check(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),1105,{status:BigInt(code)});}
+  for(const code of [401,422,429,529]){status=code;checkDetail(await api.ask(c,"jev-latest",schema,state,[question],origin,"test:ai/judge"),errors[5].identity,{status:BigInt(code)});}
   expect(requests).toBe(7);
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}

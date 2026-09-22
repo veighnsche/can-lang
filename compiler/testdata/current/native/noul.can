@@ -35,7 +35,7 @@ noul float likelihood from classifier
         false "No" => relay call report(%, "F")
 
 judge float assess from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
     state
         int amount
         float signed_zero
@@ -45,7 +45,7 @@ judge float assess from classifier
     ok => ok first + second
 
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
     given
         str[] args
     asserts
@@ -53,15 +53,10 @@ fn void main
     match call assess((9007199254740993, -0.0))
         when
             sample: (9007199254740993, -0.0) => ok 0.75
-        http::invalid_request
-        http::credentials_missing
-        http::transport_failed
-        http::timeout
-        http::body_limit
-        http::status_error
-        codec::invalid_data
+        http::request_failed
         ai::invalid_question
         ai::invalid_answer
+        codec::invalid_data
         io::write_failed
         ok float measured => match measured is 0.75
             true => ok

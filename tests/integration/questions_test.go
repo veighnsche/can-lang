@@ -160,7 +160,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	mu.Unlock()
 	// A later request may depend on the fully completed first judge.
 	followup := `judge void complete from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         float previous
     call dynamic([choice_option("ten", call text::from_float(previous))], [choice_option("other", "Other")]) as str selected

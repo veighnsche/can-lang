@@ -113,7 +113,7 @@ record arm_weights choice float spread_weights from classifier
         after "After" => relay call report(%, "H")
 
 judge float assess from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
     state
         str message
     call likelihood() as float n
@@ -141,7 +141,7 @@ fn choice_weights roundtrip
         ok => ok decoded
 
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer, io::write_failed]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
     given
         str[] args
     asserts
@@ -149,15 +149,10 @@ fn void main
     match call assess(("evidence"))
         when
             sample: ("evidence") => ok 10.0
-        http::invalid_request
-        http::credentials_missing
-        http::transport_failed
-        http::timeout
-        http::body_limit
-        http::status_error
-        codec::invalid_data
+        http::request_failed
         ai::invalid_question
         ai::invalid_answer
+        codec::invalid_data
         io::write_failed
         ok float measured => match measured is 10.0
             true => ok

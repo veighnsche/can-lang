@@ -163,7 +163,8 @@
       "../codec/json.ts",
       "../codec/budget.ts",
       "../assert/provider.ts",
-      "./questions.ts"
+      "./questions.ts",
+      "../transport/normalize.ts"
     ],
     "assert/provider.ts": [
       "./context.ts",
@@ -233,7 +234,13 @@
       "./fetch.ts",
       "./media.ts",
       "../assert/provider.ts",
-      "../assert/context.ts"
+      "../assert/context.ts",
+      "./normalize.ts"
+    ],
+    "transport/normalize.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
     ],
     "ai/questions.ts": [
       "../completion.ts",

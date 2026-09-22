@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce";
+export const catalogueSHA256 = "fe9f29fa37128c05a0f6f73c8162e8d7c7237f6b2032b7d4aa34e1d27ea49bd3";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -357,6 +357,24 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "http::failure_detail",
+      "identity": "can.std.http@1::failure_detail",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "http::invalid_request",
+        "http::credentials_missing",
+        "http::transport_failed",
+        "http::timeout",
+        "http::body_limit",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "projections": [],
+      "constructible": false
     },
     {
       "name": "bytes::buffer",
@@ -805,6 +823,18 @@ export const catalogue = freeze({
         {
           "name": "headers",
           "type": "http::header[]"
+        }
+      ]
+    },
+    {
+      "id": 1106,
+      "name": "http::request_failed",
+      "identity": "can.std.http@1::request_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "detail",
+          "type": "http::failure_detail"
         }
       ]
     },
@@ -6422,93 +6452,45 @@ export const catalogue = freeze({
     {
       "name": "judge",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error",
-        "codec::invalid_data",
+        "http::request_failed",
         "ai::invalid_question",
         "ai::invalid_answer"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [
         "questions",
         "handlers",
         "continuation"
       ],
-      "task": "I17",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },
     {
       "name": "fetch_body",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit",
-        "http::status_error"
+        "http::request_failed"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        },
-        {
-          "condition": "uses_codec",
-          "emits": [
-            "codec::invalid_data"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [],
-      "task": "I26",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },
     {
       "name": "fetch_envelope",
       "emits": [
-        "http::invalid_request",
-        "http::transport_failed",
-        "http::timeout",
-        "http::body_limit"
+        "http::request_failed"
       ],
-      "conditionalEmits": [
-        {
-          "condition": "authenticated",
-          "emits": [
-            "http::credentials_missing"
-          ]
-        },
-        {
-          "condition": "uses_codec",
-          "emits": [
-            "codec::invalid_data"
-          ]
-        }
-      ],
+      "conditionalEmits": [],
       "unionBounds": [],
-      "task": "I26",
+      "task": "LF10",
       "refs": [
-        "A2",
-        "A3"
+        "A2.4"
       ],
       "assertion": "raw-provider"
     },
@@ -6808,6 +6790,43 @@ export const catalogueTypeShapes = freeze([
       }
     ],
     "leaves": []
+  },
+  {
+    "name": "http::failure_detail",
+    "identity": "can.std.http@1::failure_detail",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "http::invalid_request",
+        "arguments": null
+      },
+      {
+        "name": "http::credentials_missing",
+        "arguments": null
+      },
+      {
+        "name": "http::transport_failed",
+        "arguments": null
+      },
+      {
+        "name": "http::timeout",
+        "arguments": null
+      },
+      {
+        "name": "http::body_limit",
+        "arguments": null
+      },
+      {
+        "name": "http::status_error",
+        "arguments": null
+      },
+      {
+        "name": "codec::invalid_data",
+        "arguments": null
+      }
+    ]
   },
   {
     "name": "bytes::buffer",
@@ -7300,6 +7319,22 @@ export const catalogueTypeShapes = freeze([
               "arguments": null
             }
           ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::request_failed",
+    "identity": "can.std.http@1::request_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "detail",
+        "type": {
+          "name": "http::failure_detail",
+          "arguments": null
         }
       }
     ],

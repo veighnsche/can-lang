@@ -44,13 +44,13 @@ choice str select from classifier
         first description => ok "chosen"
         second "Other" => ok "other"
 judge str decide from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         plan generated
     call select(generated.choices[0].label + " transformed") as str selected
     ok => ok selected
 fn void main
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer]
+    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response, ai::invalid_question, ai::invalid_answer, http::request_failed]
     given
         str[] args
     asserts
@@ -84,13 +84,7 @@ fn void main
             ok plan generated => match call decide((generated))
                 when
                     sample: (plan([item<int>("First", 9007199254740993)], true, 0.5)) => ok "chosen"
-                http::invalid_request
-                http::credentials_missing
-                http::transport_failed
-                http::timeout
-                http::body_limit
-                http::status_error
-                codec::invalid_data
+                http::request_failed
                 ai::invalid_question
                 ai::invalid_answer
                 ok str selected => match selected is "chosen" and generated.choices[0].count is 9007199254740993 and generated.ready and generated.ratio is 0.5

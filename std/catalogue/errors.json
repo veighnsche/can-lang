@@ -73,6 +73,10 @@
       "kind": "http::status_error"
     },
     {
+      "id": 1106,
+      "kind": "http::request_failed"
+    },
+    {
       "id": 1110,
       "kind": "codec::invalid_data"
     },

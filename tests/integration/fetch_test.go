@@ -149,7 +149,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 3}} {
+	}{{"main", 11}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/fetch", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)
@@ -178,7 +178,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		if count != 8 {
 			t.Fatalf("expected 8 runtime requests and no assertion requests, got %d", count)
 		}
-		for _, bad := range []struct{ mode, id, reason string }{{"status", "1105", ""}, {"media", "1110", "media_type"}, {"charset", "1110", "charset"}, {"malformed", "1110", "type"}} {
+		for _, bad := range []struct{ mode, id, reason string }{{"status", "1106", ""}, {"media", "1106", "media_type"}, {"charset", "1106", "charset"}, {"malformed", "1106", "type"}} {
 			mu.Lock()
 			mode = bad.mode
 			mu.Unlock()
@@ -196,7 +196,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		invalid = strings.Replace(invalid, `x_probe = call [["yes"]].map(callable extract)`, `x_probe = "bad" + "Ā"`, 1)
 		write("src/main.can", invalid)
 		status, _, diag = run("run")
-		if status == 0 || !strings.Contains(diag, "1100") {
+		if status == 0 || !strings.Contains(diag, "1106") {
 			t.Fatalf("header validation must precede credentials: %d %s", status, diag)
 		}
 		mu.Lock()

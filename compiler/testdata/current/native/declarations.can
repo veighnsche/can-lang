@@ -28,7 +28,7 @@ noul bool question from classifier
         false "No" => ok false
 
 judge bool assess from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         str message
     call question("First") as bool first
@@ -68,7 +68,7 @@ llm str generate from generator
     asks "Describe the message"
 
 fetch str retrieve from classifier
-    emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data]
+    emits [http::request_failed]
     get "/resource"
     query
         q = ["one", "two"]

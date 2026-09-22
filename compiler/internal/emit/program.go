@@ -473,7 +473,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	if fetches {
 		ids := map[string]string{}
-		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data"} {
+		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data", "failed": "can.std.http@1::request_failed"} {
 			ids[name] = numberIDs[declaration]
 		}
 		encoded, e := json.Marshal(ids)
@@ -499,7 +499,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			ids[typ.Declaration()] = typ.Identity()
 		}
 		fields := map[string]string{}
-		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data", "invalidQuestion": "can.std.ai@1::invalid_question", "invalidAnswer": "can.std.ai@1::invalid_answer"} {
+		for name, declaration := range map[string]string{"invalid": "can.std.http@1::invalid_request", "credential": "can.std.http@1::credentials_missing", "transport": "can.std.http@1::transport_failed", "timeout": "can.std.http@1::timeout", "limit": "can.std.http@1::body_limit", "status": "can.std.http@1::status_error", "header": "can.std.http@1::header", "invalidData": "can.std.codec@1::invalid_data", "invalidQuestion": "can.std.ai@1::invalid_question", "invalidAnswer": "can.std.ai@1::invalid_answer", "failed": "can.std.http@1::request_failed"} {
 			fields[name] = ids[declaration]
 		}
 		encoded, e := json.Marshal(fields)

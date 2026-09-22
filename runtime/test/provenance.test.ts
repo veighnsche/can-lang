@@ -1,7 +1,7 @@
 import {test,expect} from "bun:test";
 import {createHash} from "node:crypto";
 import {catalogue} from "../catalogue.ts";
-import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
+import {createDomainRuntime,domainFailureDiagnostics,isDomainFailure,type FailureShape} from "../domain.ts";
 import {createTransport,type HTTPTypes} from "../transport/http.ts";
 import {createNamedFetch} from "../transport/named.ts";
 import {createTypeSafe,type AITypes,type NoulDescriptor} from "../ai/typesafe.ts";
@@ -14,11 +14,13 @@ const shape=(kind:string,declaration:string,fields:{name:string;type:string}[]=[
 const str=shape("primitive","str"),int=shape("primitive","int");
 const header=shape("record","can.std.http@1::header",[{name:"name",type:str.identity},{name:"value",type:str.identity}]);
 const headers:FailureShape={...shape("array",""),identity:hash(["array","",header.identity]),element:header.identity};
-const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1105||e.id===1110||e.id===1120||e.id===1121);
-const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:headers.identity}))));
-const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors]});
+const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1106||e.id===1110||e.id===1120||e.id===1121);
+const detailIdentity=hash(["variant","can.std.http@1::failure_detail"]);
+const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:f.type==="http::failure_detail"?detailIdentity:headers.identity}))));
+const detail:FailureShape={identity:detailIdentity,kind:"variant",declaration:"can.std.http@1::failure_detail",fields:[],arguments:[],leaves:errors.filter((_,i)=>declarations[i].id!==1106&&declarations[i].id<1120).map(e=>e.identity),inputs:[],errors:[]};
+const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors,detail]});
 const httpTypes=Object.fromEntries(["invalid","credential","transport","timeout","limit","status"].map((name,i)=>[name,errors[i].identity])) as unknown as HTTPTypes;
-const ids={...httpTypes,header:header.identity,invalidData:errors[6].identity,invalidQuestion:errors[7].identity,invalidAnswer:errors[8].identity};
+const ids={...httpTypes,header:header.identity,invalidData:errors[7].identity,invalidQuestion:errors[8].identity,invalidAnswer:errors[9].identity,failed:errors[6].identity};
 const origin={source:"test:provenance",start:0,end:0,invocation:[]};
 const connection={endpoint:"http://127.0.0.1:1/",timeoutMilliseconds:100,maxBodyBytes:1024,headers:[]};
 const request={path:"/",method:"GET" as const,query:[],headers:[]};
@@ -41,7 +43,11 @@ test("native transport failures carry their producing operation",async()=>{
 test("native and authored codec failures with identical payloads stay distinguishable",async()=>{
  const api=createNamedFetch(domain,ids,()=>undefined);
  const root=await runOwnedRoot(async()=>{
-  const native=domainDetails(await api.request(connection,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin,"test:provenance/fetch-b"));
+  const mapped=domainDetails(await api.request(connection,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin,"test:provenance/fetch-b"));
+  expect(mapped.declaration.id).toBe(1106);
+  expect(mapped.provenance).toEqual({boundary:"native",operation:"test:provenance/fetch-b"});
+  if(!isDomainFailure(mapped.cause))throw Error("expected private original cause");
+  const native=domainFailureDiagnostics(mapped.cause);
   expect(native.declaration.id).toBe(1110);
   expect(native.provenance).toEqual({boundary:"native",operation:"test:provenance/fetch-b"});
   const authored=domain.create(ids.invalidData,record(ids.invalidData,[["path",""],["reason","unicode_scalar"]]),origin);
@@ -63,7 +69,11 @@ test("judge validation keeps emitted provenance while judge decoding stays nativ
  const invalid=domainDetails(await api.ask(connection,"jev-latest",schema,state,[question,{...question,instructions:""}],origin,"test:provenance/judge"));
  expect(invalid.declaration.id).toBe(1120);
  expect(invalid.provenance).toEqual({boundary:"emitted",operation:"test:provenance/judge"});
- const undecodable=domainDetails(await api.ask(connection,"jev-latest",schema,record("state",[["amount",1]]),[question],origin,"test:provenance/judge"));
+ const mapped=domainDetails(await api.ask(connection,"jev-latest",schema,record("state",[["amount",1]]),[question],origin,"test:provenance/judge"));
+ expect(mapped.declaration.id).toBe(1106);
+ expect(mapped.provenance).toEqual({boundary:"native",operation:"test:provenance/judge"});
+ if(!isDomainFailure(mapped.cause))throw Error("expected private original cause");
+ const undecodable=domainFailureDiagnostics(mapped.cause);
  expect(undecodable.declaration.id).toBe(1110);
  expect(undecodable.provenance).toEqual({boundary:"native",operation:"test:provenance/judge"});
 });

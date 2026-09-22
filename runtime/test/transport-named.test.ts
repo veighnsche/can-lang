@@ -1,7 +1,7 @@
 import {test,expect} from "bun:test";
 import {createHash} from "node:crypto";
 import {catalogue} from "../catalogue.ts";
-import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
+import {createDomainRuntime,domainFailureDiagnostics,isDomainFailure,type FailureShape} from "../domain.ts";
 import {type HTTPTypes} from "../transport/http.ts";
 import {runOwnedRoot} from "../owner.ts";
 import {success,type Completion} from "../completion.ts";
@@ -10,22 +10,25 @@ const shape=(kind:string,declaration:string,fields:{name:string;type:string}[]=[
 const str=shape("primitive","str"),int=shape("primitive","int");
 const header=shape("record","can.std.http@1::header",[{name:"name",type:str.identity},{name:"value",type:str.identity}]);
 const headers:FailureShape={...shape("array",""),identity:hash(["array","",header.identity]),element:header.identity};
-const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1105||e.id===1110);
-const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:headers.identity}))));
-const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors]});
+const declarations=catalogue.errors.filter(e=>e.id>=1100&&e.id<=1106||e.id===1110);
+const detailIdentity=hash(["variant","can.std.http@1::failure_detail"]);
+const errors=declarations.map(d=>shape("error",d.identity,d.fields.map(f=>({name:f.name,type:f.type==="str"?str.identity:f.type==="int"?int.identity:f.type==="http::failure_detail"?detailIdentity:headers.identity}))));
+const detail:FailureShape={identity:detailIdentity,kind:"variant",declaration:"can.std.http@1::failure_detail",fields:[],arguments:[],leaves:errors.filter((_,i)=>declarations[i].id!==1106).map(e=>e.identity),inputs:[],errors:[]};
+const domain=createDomainRuntime({declarations:declarations.map(d=>({...d,parameters:0})),shapes:[str,int,header,headers,...errors,detail]});
 const types=Object.fromEntries(["invalid","credential","transport","timeout","limit","status"].map((name,i)=>[name,errors[i].identity])) as unknown as HTTPTypes;
 
 const origin={source:"test:http",start:0,end:0,invocation:[]};
 const connection={endpoint:"http://127.0.0.1:1/",timeoutMilliseconds:100,maxBodyBytes:3,headers:[]};
 const request={path:"/",method:"GET" as const,query:[],headers:[]};
 function check(result:Completion,id:number,payload:object){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw new Error("expected domain");const d=domainFailureDiagnostics(result.value);expect(d.declaration.id).toBe(id);expect(d.payload).toMatchObject(payload);}
+function checkDetail(result:Completion,leaf:string,payload:object){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw new Error("expected domain");const d=domainFailureDiagnostics(result.value);expect(d.declaration.id).toBe(1106);expect(d.provenance.boundary).toBe("native");const detail=dataProperty(d.payload,"detail");expect(recordIdentity(detail)).toBe(leaf);expect(detail).toMatchObject(payload);if(!isDomainFailure(d.cause))throw new Error("expected private original cause");expect(domainFailureDiagnostics(d.cause).provenance.boundary).toBe("native");}
 import {createNamedFetch} from "../transport/named.ts";
 import {ownBytes,copyBytes} from "../bytes.ts";
-import {record} from "../data.ts";
+import {record,recordIdentity,dataProperty} from "../data.ts";
 import {value} from "../completion.ts";
 import {responseMedia,jsonRequestMedia} from "../transport/media.ts";
 const responseSchema={root:"sample",nodes:[{identity:"sample",kind:"record",name:"sample",fields:[{name:"count",type:"int"}]},{identity:"int",kind:"primitive",name:"int"}]};
-const ids={...types,header:header.identity,invalidData:errors[6].identity};
+const ids={...types,header:header.identity,invalidData:errors[7].identity,failed:errors[6].identity};
 test("named fetch validates strict media types and charset without ambiguous parameters",()=>{
  for(const media of ["application/json","Application/JSON; Charset=\"UTF-8\"","application/problem+json; profile=\"a;b\""]){expect(()=>responseMedia(media,true)).not.toThrow();}
  for(const media of [undefined,"text/plain","application/json, application/json","application/json;","application/json; charset=utf-8; charset=utf-8","application/json; x", "application/json; charset=\"unterminated"]){expect(()=>responseMedia(media,true)).toThrow();}
@@ -50,7 +53,7 @@ test("named fetch loopback decodes exact JSON, text BOM, bytes and immutable env
   expect(envelope.status).toBe(418n);expect([...copyBytes(envelope.body,origin)]).toEqual([0,255,1]);expect(Object.isFrozen(envelope)).toBe(true);expect(Object.isFrozen(envelope.headers)).toBe(true);
   expect(envelope.headers.filter((h:any)=>h.name==="set-cookie").map((h:any)=>h.value)).toEqual(["a=1","b=2"]);
   expect(envelope.headers.find((h:any)=>h.name==="x-repeat").value).toBe("a, b");
-  check(await api.request(c,request,undefined,{mode:"bytes"},origin,"test:http/fetch"),1105,{status:418n});
+  checkDetail(await api.request(c,request,undefined,{mode:"bytes"},origin,"test:http/fetch"),errors[5].identity,{status:418n});
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
 });
@@ -76,11 +79,11 @@ test("named fetch maps invalid bodies, media and malformed replies to exact erro
  }});
  try{const root=await runOwnedRoot(async()=>{
   const api=createNamedFetch(domain,ids,()=>undefined),c={...connection,endpoint:server.url.href,maxBodyBytes:1024};
-  for(const [path,mode,reason] of [["/utf8","text","utf8"],["/charset","text","charset"],["/empty","json","invalid_json"],["/wrong","json","media_type"],["/duplicate","json","duplicate_member"]] as const)check(await api.request(c,{...request,path},undefined,{mode,schema:responseSchema},origin,"test:http/fetch"),1110,{reason});
+  for(const [path,mode,reason] of [["/utf8","text","utf8"],["/charset","text","charset"],["/empty","json","invalid_json"],["/wrong","json","media_type"],["/duplicate","json","duplicate_member"]] as const)checkDetail(await api.request(c,{...request,path},undefined,{mode,schema:responseSchema},origin,"test:http/fetch"),errors[7].identity,{reason});
   const before=launches;
-  check(await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"text/plain"}]},{mode:"json",value:record("sample",[["count",1n]]),schema:responseSchema},{mode:"text"},origin,"test:http/fetch"),1100,{reason:"content_type"});
-  check(await api.request(c,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin,"test:http/fetch"),1110,{reason:"unicode_scalar"});
-  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST"},{mode:"text",value:"é"},{mode:"text"},origin,"test:http/fetch"),1104,{limit:1n});
+  checkDetail(await api.request(c,{...request,method:"POST",headers:[{name:"content_type",value:"text/plain"}]},{mode:"json",value:record("sample",[["count",1n]]),schema:responseSchema},{mode:"text"},origin,"test:http/fetch"),errors[0].identity,{reason:"content_type"});
+  checkDetail(await api.request(c,{...request,method:"POST"},{mode:"text",value:"\ud800"},{mode:"text"},origin,"test:http/fetch"),errors[7].identity,{reason:"unicode_scalar"});
+  checkDetail(await api.request({...c,maxBodyBytes:1},{...request,method:"POST"},{mode:"text",value:"é"},{mode:"text"},origin,"test:http/fetch"),errors[4].identity,{limit:1n});
   expect(launches).toBe(before);
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");}finally{server.stop(true);}
@@ -115,7 +118,7 @@ test("named fetch body Content-Type defaults and overrides preserve explicit enc
   const body={mode:"json" as const,value:record("sample",[["count",1n]]),schema:responseSchema};
   expect((await api.request({...c,headers:[{name:"content_type",value:"bad/type"}]},{...request,method:"POST",headers:[{name:"content_type",value:[]}],exchange},body,{mode:"bytes"},origin,"test:http/fetch")).kind).toBe("ok");
   expect(new Headers(last!.headers).get("content-type")).toBe("application/json");
-  check(await api.request({...c,maxBodyBytes:1},{...request,method:"POST",exchange},body,{mode:"bytes"},origin,"test:http/fetch"),1104,{limit:1n});
+  checkDetail(await api.request({...c,maxBodyBytes:1},{...request,method:"POST",exchange},body,{mode:"bytes"},origin,"test:http/fetch"),errors[4].identity,{limit:1n});
   return success(undefined);
  });expect(root.completion.kind).toBe("ok");
  for(const bad of ["application/json; x=\"a\u0001b\"","application/json\u00a0; charset=utf-8"])expect(()=>responseMedia(bad,true)).toThrow("media_type");
@@ -137,4 +140,21 @@ test("raw HEAD fixtures reject impossible bodies even after authored recovery",a
   return api.request<string>(c,{...request,method:"HEAD"},undefined,{mode:"text"},origin,"test:http/fetch",context);
  },expected:async()=>success("")});
  expect(report.passed).toBe(true);expect(report.evidence).toEqual(["raw-provider-fixture","real-can"]);
+});
+
+test("named fetch normalizes invalid, credential, transport and timeout leaves",async()=>{
+ const server=Bun.serve({hostname:"127.0.0.1",port:0,async fetch(){await Bun.sleep(200);return new Response("slow");}});
+ try{
+  const api=createNamedFetch(domain,ids,()=>undefined);
+  const c={...connection,endpoint:server.url.href,bearerEnvironment:"TOKEN"};
+  const root=await runOwnedRoot(async()=>{
+   checkDetail(await api.request(c,{...request,path:"https://other.test"},undefined,{mode:"text"},origin,"test:http/fetch"),errors[0].identity,{reason:"origin"});
+   checkDetail(await api.request(c,request,undefined,{mode:"text"},origin,"test:http/fetch"),errors[1].identity,{variable:"TOKEN"});
+   checkDetail(await api.request({...c,endpoint:"http://127.0.0.1:1/",bearerEnvironment:undefined},request,undefined,{mode:"text"},origin,"test:http/fetch"),errors[2].identity,{phase:"connect"});
+   const authed=createNamedFetch(domain,ids,()=>"token");
+   checkDetail(await authed.request({...c,timeoutMilliseconds:20,bearerEnvironment:undefined},request,undefined,{mode:"text"},origin,"test:http/fetch"),errors[3].identity,{timeout_ms:20n});
+   return success(undefined);
+  });
+  expect(root.completion.kind).toBe("ok");
+ }finally{server.stop(true);}
 });

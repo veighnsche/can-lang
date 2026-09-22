@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "d46329f32ee8462de21693d79bb5ebe22f03b1a582fdc1fa50fd7b3ffc490dce"
+const GeneratedSourceSHA256 = "fe9f29fa37128c05a0f6f73c8162e8d7c7237f6b2032b7d4aa34e1d27ea49bd3"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -16,6 +16,7 @@ const TypeCollectionsMap = "collections::map"
 const TypeCollectionsSet = "collections::set"
 const TypeHttpHeader = "http::header"
 const TypeHttpResponse = "http::response"
+const TypeHttpFailureDetail = "http::failure_detail"
 const TypeBytesBuffer = "bytes::buffer"
 const TypeHtmlNode = "html::node"
 const TypeHtmlSafe = "html::safe"
@@ -92,6 +93,9 @@ const ErrorHttpBodyLimitIdentity = "can.std.http@1::body_limit"
 const ErrorHttpStatusErrorID = 1105
 const ErrorHttpStatusErrorName = "http::status_error"
 const ErrorHttpStatusErrorIdentity = "can.std.http@1::status_error"
+const ErrorHttpRequestFailedID = 1106
+const ErrorHttpRequestFailedName = "http::request_failed"
+const ErrorHttpRequestFailedIdentity = "can.std.http@1::request_failed"
 const ErrorCodecInvalidDataID = 1110
 const ErrorCodecInvalidDataName = "codec::invalid_data"
 const ErrorCodecInvalidDataIdentity = "can.std.codec@1::invalid_data"

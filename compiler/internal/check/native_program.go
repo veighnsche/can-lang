@@ -127,6 +127,7 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 			return fmt.Errorf("native declaration has no checked connection")
 		}
 		required := []uint64{}
+		intrinsic := []uint64{}
 		switch native.Symbol.Kind {
 		case resolve.Question:
 			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
@@ -137,20 +138,22 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
 				return err
 			}
-			required = []uint64{1100, 1102, 1103, 1104, 1105, 1110, 1120, 1121}
+			required = []uint64{1106, 1120, 1121}
+			intrinsic = []uint64{1100, 1102, 1103, 1104, 1105, 1110}
 		case resolve.LLM:
 			if err := policy.CheckAI("openai_responses_v1"); err != nil {
 				return err
 			}
 			required = []uint64{1100, 1102, 1103, 1104, 1105, 1110, 1130, 1131, 1132}
 		case resolve.Fetch:
-			required = []uint64{1100, 1102, 1103, 1104}
+			required = []uint64{1106}
+			intrinsic = []uint64{1100, 1102, 1103, 1104}
 			result := native.Signature.Result()
 			envelope := result.Declaration() == "can.std.http@1::response"
 			if envelope {
 				result = result.Arguments()[0]
 			} else {
-				required = append(required, 1105)
+				intrinsic = append(intrinsic, 1105)
 			}
 			if !(scalar(result, "str") || result.Declaration() == "can.std.bytes@1::buffer" || result.Kind() == types.Record && result.Declaration() != "can.std.http@1::response") {
 				return fmt.Errorf("fetch result requires record, str, bytes or one response envelope")
@@ -160,10 +163,14 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 				return fmt.Errorf("HEAD requires text or bytes result")
 			}
 			if result.Declaration() != "can.std.bytes@1::buffer" || declaration.BodyEncoding != nil && declaration.BodyEncoding.Text != "bytes" {
-				required = append(required, 1110)
+				intrinsic = append(intrinsic, 1110)
 			}
 		}
-		if native.Symbol.Kind != resolve.Question && native.Symbol.Kind != resolve.ChoiceArm && policy.BearerEnvironment != "" {
+		if native.Symbol.Kind == resolve.Fetch || native.Symbol.Kind == resolve.Judge {
+			if policy.BearerEnvironment != "" {
+				intrinsic = append(intrinsic, 1101)
+			}
+		} else if native.Symbol.Kind != resolve.Question && native.Symbol.Kind != resolve.ChoiceArm && policy.BearerEnvironment != "" {
 			required = append(required, 1101)
 		}
 		ids := map[uint64]bool{}
@@ -181,23 +188,14 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 				return fmt.Errorf("native declaration %s emits omits required intrinsic error %d", native.Symbol.Name, id)
 			}
 		}
-		// N holds the raw infrastructure obligations and E the declared
-		// authored obligations, both by exact error identity. Fetch keeps
-		// every required intrinsic; judges exclude AI validation, which is
-		// required but preserved and hence E-only; questions, arms and LLM
-		// declarations hold no raw obligations of their own.
+		// N holds the raw infrastructure obligations subject to boundary
+		// normalization; E holds the declared authored obligations. AI
+		// validation is required but preserved, hence E-only; only fetch
+		// and judge maintain a normalization boundary at all. The intrinsic
+		// normalized contribution alone is not an emitted-origin entry.
 		raw := map[uint64]bool{}
-		switch native.Symbol.Kind {
-		case resolve.Fetch:
-			for _, id := range required {
-				raw[id] = true
-			}
-		case resolve.Judge:
-			for _, id := range required {
-				if id != 1120 && id != 1121 {
-					raw[id] = true
-				}
-			}
+		for _, id := range intrinsic {
+			raw[id] = true
 		}
 		byID := map[uint64]string{}
 		for _, declaration := range program.Registry.Declarations() {
@@ -212,6 +210,15 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 			native.Native = append(native.Native, identity)
 		}
 		sort.Strings(native.Native)
+		if len(raw) > 0 {
+			kept := emitted[:0]
+			for _, identity := range emitted {
+				if identity != byID[1106] {
+					kept = append(kept, identity)
+				}
+			}
+			emitted = kept
+		}
 		sort.Strings(emitted)
 		native.Emitted = emitted
 	}

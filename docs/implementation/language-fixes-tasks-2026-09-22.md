@@ -148,7 +148,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF09-summary.json, LF09-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF09-integration.log (integration+driver+emit all ok), LF09-runtime.log (332 pass), LF09-traces.json (9 private occurrence traces for LF10/LF12). Reproduction commands in the summary.
 
-- [ ] **LF10 — Normalize public fetch/judge infrastructure errors**
+- [x] **LF10 — Normalize public fetch/judge infrastructure errors**
 
   **Depends on:** LF06, LF09. **Acceptance:** AE07.
 
@@ -162,7 +162,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run eight-call equivalent source and actual decoder/transport fixtures; raw cause is private, mapped occurrence is fresh and forwarding stable. Source-count targets alone do not close AE07.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF10-summary.json, LF10-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic proven on clean HEAD), LF10-integration.log (integration+driver+emit all ok), LF10-runtime.log (335 pass), LF10-normalize.log (17 pass). Reproduction commands in the summary.
 
 - [ ] **LF11 — Attach native assertion roots and raw exchange fixtures**
 

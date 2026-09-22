@@ -7,7 +7,8 @@ import (
 
 // Raw native obligations N stay distinct from declared authored obligations E
 // per native declaration, keyed by exact error identity so one identity may
-// belong to both sets with different provenance.
+// belong to both sets with different provenance. The intrinsic normalized
+// request_failed contribution alone is not an emitted-origin entry.
 func TestNativeOriginSets(t *testing.T) {
 	fetchSource, err := os.ReadFile("../../testdata/current/fetch/main.can")
 	if err != nil {
@@ -31,6 +32,7 @@ func TestNativeOriginSets(t *testing.T) {
 	}
 	codec := "can.std.codec@1::invalid_data"
 	status := "can.std.http@1::status_error"
+	failed := "can.std.http@1::request_failed"
 	loadJSON := byName["load_json"]
 	if loadJSON == nil || loadJSON.Fetch == nil {
 		t.Fatal("load_json native plan missing")
@@ -38,13 +40,8 @@ func TestNativeOriginSets(t *testing.T) {
 	if len(loadJSON.Native) != 7 || !in(loadJSON.Native, codec) {
 		t.Fatalf("load_json N is not the seven raw leaves: %v", loadJSON.Native)
 	}
-	if len(loadJSON.Emitted) != 7 {
-		t.Fatalf("load_json E is not the seven declared errors: %v", loadJSON.Emitted)
-	}
-	for _, identity := range loadJSON.Native {
-		if !in(loadJSON.Emitted, identity) {
-			t.Fatalf("load_json N member %s missing from E: %v", identity, loadJSON.Emitted)
-		}
+	if len(loadJSON.Emitted) != 0 {
+		t.Fatalf("load_json E holds the intrinsic normalized contribution: %v", loadJSON.Emitted)
 	}
 	envelope := byName["load_envelope"]
 	if envelope == nil || envelope.Fetch == nil {
@@ -61,8 +58,8 @@ func TestNativeOriginSets(t *testing.T) {
 		t.Fatalf("bytes N keeps a codec obligation: %v", sendBytes.Native)
 	}
 	for _, native := range []*NativeDeclaration{loadJSON, envelope, sendBytes} {
-		if len(native.Emitted) != 7 {
-			t.Fatalf("fetch %s E is not its declared errors: %v", native.Symbol.Name, native.Emitted)
+		if in(native.Emitted, failed) {
+			t.Fatalf("normalized contribution listed as emitted for %s", native.Symbol.Name)
 		}
 		if len(native.Fetch.Native) != len(native.Native) || len(native.Fetch.Emitted) != len(native.Emitted) {
 			t.Fatalf("IR fetch plan drops origin sets for %s", native.Symbol.Name)
@@ -100,6 +97,9 @@ func TestNativeOriginSets(t *testing.T) {
 	}
 	if !in(assess.Native, codec) {
 		t.Fatalf("judge N drops its intrinsic codec obligation: %v", assess.Native)
+	}
+	if in(assess.Emitted, failed) {
+		t.Fatalf("judge E holds the intrinsic normalized contribution: %v", assess.Emitted)
 	}
 	if len(assess.Judge.Native) != len(assess.Native) || len(assess.Judge.Emitted) != len(assess.Emitted) {
 		t.Fatal("IR judge plan drops origin sets")

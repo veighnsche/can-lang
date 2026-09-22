@@ -8,19 +8,21 @@ import type {FailureOrigin} from "../failure.ts";
 import {encodeJSON,decodeJSON,type Schema} from "../codec/json.ts";
 import {CodecIssue,reject} from "../codec/budget.ts";
 import {createTransport,type HTTPTypes} from "./http.ts";
+import {createNormalizer} from "./normalize.ts";
 import type {Connection} from "./request.ts";
 import type {NativeRequest} from "./fetch.ts";
 import {responseMedia} from "./media.ts";
 export type FetchMode="json"|"text"|"bytes";
 export type FetchBody=Readonly<{mode:FetchMode;value:unknown;schema?:Schema}>;
 export type FetchResult=Readonly<{mode:FetchMode;schema?:Schema;envelope?:string}>;
-export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,types:HTTPTypes&Readonly<{invalidData:string}>,readEnvironment:(name:string)=>string|undefined){
+export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,types:HTTPTypes&Readonly<{invalidData:string;failed:string}>,readEnvironment:(name:string)=>string|undefined){
  const transport=createTransport(domain,types,readEnvironment);
+ const normalize=createNormalizer(domain,{failed:types.failed,leaves:[types.invalid,types.credential,types.transport,types.timeout,types.limit,types.status,types.invalidData]});
  return Object.freeze({async request<T>(connection:Connection,request:Omit<NativeRequest,"body"|"bodyEncoding"|"envelope">,body:FetchBody|undefined,result:FetchResult,origin:FailureOrigin,operation:string,context?:AssertionContext):Promise<Completion<T>>{
   const native={boundary:"native",operation} as const;
   function invalid(cause:CodecIssue):Completion<never>{return failure(domain.create(types.invalidData,record(types.invalidData,[["path",cause.path],["reason",cause.reason]]),origin,undefined,native));}
   function limit():Completion<never>{return failure(domain.create(types.limit,record(types.limit,[["limit",BigInt(connection.maxBodyBytes)]]),origin,undefined,native));}
-  return invoke(async()=>{
+  return normalize.map(await invoke(async()=>{
    let encoded:Uint8Array|undefined;
    if(body){
     if(request.method==="GET"||request.method==="HEAD")throw new TypeError("checked fetch method cannot have body");
@@ -45,6 +47,6 @@ export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,t
     if(result.envelope!==undefined)value=record(result.envelope,[["status",BigInt(metadata.status)],["headers",array(metadata.headers.map(header=>record(types.header,[["name",header.name],["value",header.value]])))],["body",value]]);
     return success(value as T);
    },origin,operation);
-  },origin);
+  },origin),operation);
  }});
 }

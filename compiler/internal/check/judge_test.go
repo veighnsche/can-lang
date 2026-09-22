@@ -46,7 +46,7 @@ func TestJudgeRetainsCheckedPhases(t *testing.T) {
 
 func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
 	for _, state := range []string{"", "    state\n        str message\n        int count\n"} {
-		judge := "judge bool assess from classifier\n    emits [" + nativeHTTP + ", ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state + "    call question(private_description) as bool unused\n    ok => ok true\n"
+		judge := "judge bool assess from classifier\n    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state + "    call question(private_description) as bool unused\n    ok => ok true\n"
 		p, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeClassifier + nativeQuestion + judge + programMain + "    ok\n"})
 		if err != nil {
 			t.Fatal(err)

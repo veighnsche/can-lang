@@ -84,7 +84,7 @@ const nativeQuestion = `noul bool question from classifier
         false "No" => ok false
 `
 const nativeJudge = `judge bool assess from classifier
-    emits [` + nativeHTTP + `, ai::invalid_question, ai::invalid_answer]
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         str message
     call question("First") as bool first

@@ -1,0 +1,31 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/transport-named.test.ts:
+(pass) named fetch validates strict media types and charset without ambiguous parameters [6.06ms]
+(pass) named fetch loopback decodes exact JSON, text BOM, bytes and immutable envelopes [21.05ms]
+(pass) named fetch encodes explicit bodies and captures credentials once before launch [11.28ms]
+(pass) named fetch maps invalid bodies, media and malformed replies to exact errors [8.03ms]
+(pass) named fetch raw fixtures handle bodyless requests and unprovided assertions deny authentication [2.96ms]
+(pass) named fetch body Content-Type defaults and overrides preserve explicit encodings [0.74ms]
+(pass) raw HEAD fixtures reject impossible bodies even after authored recovery [0.36ms]
+(pass) named fetch normalizes invalid, credential, transport and timeout leaves [26.61ms]
+
+runtime/test/normalize.test.ts:
+(pass) all seven native leaves map to request_failed with exact Detail and private cause [0.18ms]
+(pass) emitted, foreign-operation, non-leaf, standard and success outcomes pass through [0.13ms]
+
+runtime/test/transport-http.test.ts:
+(pass) transport failures construct exact nominal catalogue occurrences [0.53ms]
+(pass) status and timeout use typed payloads while unexpected decoder faults stay standard [12.31ms]
+
+runtime/test/typesafe-transport.test.ts:
+(pass) Noul sends one exact POST and reads credentials only after all input admission [2.29ms]
+(pass) Noul malformed responses stay distinct from status failures without retry [2.16ms]
+(pass) assertion context refuses a live Noul boundary before authentication [0.17ms]
+(pass) raw provider assertions cross request encoding, native response parsing and error mapping [1.12ms]
+(pass) invalid raw HTTP configuration stays a harness failure after handling [0.40ms]
+
+ 17 pass
+ 0 fail
+ 332 expect() calls
+Ran 17 tests across 4 files. [147.00ms]
