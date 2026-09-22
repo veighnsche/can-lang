@@ -583,6 +583,11 @@ and editor gates are present; coordinate the deletion list with that task.
 
 ## I44 — Retire predecessor production paths
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i44](evidence/2026-09-21/i44/README.md).
+The plan below is kept as dependency context for I45/I50. Note: tscheck/ and
+tsc.yml were deleted with their golden subjects; I45 item 2 recreates the
+fresh-emit TypeScript gate.
+
 **Files:** inventory root-level `compiler/{parse,check,types,eval,emit,expand,result,bridge,verify_*}`
 and associated tests/commands before deletion; exact filenames must come from the
 checkout. Update `compiler/main.go`, `Makefile`, `go.mod`/`go.sum`, legacy test/data

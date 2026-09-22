@@ -49,12 +49,21 @@ fn int run
 }
 
 func TestCurrentParseRejectsLegacySyntaxAndHasNoPartialOutput(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "bad.can")
-	if err := os.WriteFile(path, []byte("rev 1\nextern fetch\n"), 0600); err != nil {
-		t.Fatal(err)
+	cases := map[string]string{
+		"rev/extern":  "rev 1\nextern fetch\n",
+		"mod header":  "mod scalars\n    provides [thing]\n",
+		"effects":     "package app\n    provides []\n    uses []\nfn int bump\n    effects [total.read]\n    ok 1\n",
+		"given table": "package app\n    provides []\n    uses []\nfn int f\n    emits []\n    given\n        int x\n    asserts\n        sample: 1 => ok 1\n    ok x\n    given\n        sample: 1 => ok 1\n",
+		"decreases":   "fn int loop\n    decreases n\n    ok 1\n",
 	}
-	var out, diagnostics bytes.Buffer
-	if code := runCurrentParse(&out, &diagnostics, []string{"--render", path}); code != 1 || out.Len() != 0 || !strings.Contains(diagnostics.String(), ":1:1: syntax:") {
-		t.Fatalf("%d %s %s", code, &out, &diagnostics)
+	for name, source := range cases {
+		path := filepath.Join(t.TempDir(), "bad.can")
+		if err := os.WriteFile(path, []byte(source), 0600); err != nil {
+			t.Fatal(err)
+		}
+		var out, diagnostics bytes.Buffer
+		if code := runCurrentParse(&out, &diagnostics, []string{"--render", path}); code != 1 || out.Len() != 0 || !strings.Contains(diagnostics.String(), "syntax:") {
+			t.Fatalf("%s: %d %s %s", name, code, &out, &diagnostics)
+		}
 	}
 }

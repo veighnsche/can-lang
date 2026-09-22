@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "residual_proof": {
+   "criteria": {
+    "behavior_probes": "Show extinction behaviorally: predecessor-syntax rejection fixtures plus searches confirming no Z3, extern, or old-syntax dispatch, with green current suites and no added static gate.",
+    "both_gates": "Show extinction twice: a static assertion that the launcher avoids legacy symbols, alongside rejection fixtures and dispatch searches.",
+    "static_gate": "Show extinction statically: a machine assertion that package main avoids legacy parser/checker/evaluator/prover symbols, with current suites as the only behavioral check."
+   },
+   "instructions": "Decide how I44 demonstrates that no predecessor path survives, drawing on common and topics.residual_proof.",
+   "type": "choice"
+  },
+  "retired_command_ux": {
+   "criteria": {
+    "explicit_retired": "Hold a per-command stub that exits 2 with a retired message naming the removal task, pointing stale callers at the change rather than generic usage.",
+    "silent_removal": "Cut the four commands without a trace so old names land on the generic usage error, minimizing launcher surface and avoiding retirement shims.",
+    "review_needed": "The material at hand supports neither experience, or neither experience is safe for removed commands."
+   },
+   "instructions": "Decide the fate awaiting removed launcher command names, drawing on common and topics.retired_command_ux.",
+   "type": "choice"
+  },
+  "tscheck_fate": {
+   "criteria": {
+    "delete_now": "Erase tscheck/ and tsc.yml during retirement since their subject disappears entirely, assigning I45 a clean recreation of fresh-emit TypeScript gating.",
+    "pause_gate": "Hold tscheck/ and tsc.yml steady with the workflow job paused behind an I45 pointer, framing fresh-emit repointing as adaptation rather than recreation.",
+    "review_needed": "The material at hand supports neither fate, or neither fate is safe for the TS gate."
+   },
+   "instructions": "Decide the outcome for the committed-golden TypeScript gate, drawing on common and topics.tscheck_fate.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "Retirement deletes 25 wholly predecessor root files, dead symbols in lsp.go and main.go, every retired std/sketches source on the I43 deletion list, and all superseded-contract tests, while current internal packages keep exact semantics free of compatibility flags or fallback parsers.",
+    "Surviving launcher commands are assert, build, run, parse, inspect-project, inspect-types, runtime-check, catalogue-check, version, lsp, and clean; explain, lint, baseline, and normalize are cut for executing predecessor parsing, checking, evaluation, or proving.",
+    "No external users exist, so backwards compatibility and deprecation windows are non-requirements for cut commands; I45 restores release gates and I50 restores documentation coherence.",
+    "The task closes on clean-checkout Go tests, current Can builds, strict emitted TypeScript, staged release tests, explicit rejection of predecessor syntax, and a reviewable deletion list with replacement evidence."
+   ],
+   "purpose": "Determine the three open I44 design points for Can retirement: the destiny of removed launcher command names, the demonstration that legacy paths are extinct, and the destiny of the committed-golden TypeScript gate."
+  },
+  "topics": {
+   "residual_proof": {
+    "background": "Post-deletion, I44 must evidence predecessor extinction through static gating of the source tree, behavioral probing with dispatch searches, or a pairing of both.",
+    "facts": [
+     "A reachability sweep from surviving dispatch roots strands every predecessor parser, checker, evaluator, prover, and Z3 symbol unreached, offering a static gate a crisp invariant to lock in.",
+     "Predecessor syntax already fails explicitly via current-parse fixtures, while tree searches can attest that Z3, extern-grant, and legacy dispatch vacated the launcher.",
+     "A static gate may slide toward allowlist maintenance whereas probes may skip over unreachable-yet-present code, so each route blinds a spot the other illuminates."
+    ]
+   },
+   "retired_command_ux": {
+    "background": "Names of four cut commands outlive their implementations across scripts, notes, and reflexes, demanding loud failure for stale calls rather than quiet success.",
+    "facts": [
+     "Traceless cutting drops explain, lint, baseline, and normalize onto the generic usage error at exit 2, costing zero code and pretending the names never lived.",
+     "One stub per name exits 2 with a retired message, orienting stale callers at the price of inscribing four dead names forever in the launcher shed of them.",
+     "Withdrawn lsp --baseline already fails with a retired-flag exit-2 error from I41, establishing explicit retirement errors as an existing codebase idiom."
+    ]
+   },
+   "tscheck_fate": {
+    "background": "Strict typechecking of committed .ts goldens under std and sketches flows through tscheck and tsc.yml, whose covered files all vanish in this task.",
+    "facts": [
+     "The gate currently fails over predecessor rot via missing modules and tag-type mismatches, so removal eliminates failing subjects instead of damaging a green signal.",
+     "An includes set matching zero files makes tsc fail on absent inputs, hence the existing configuration cannot survive retirement unchanged.",
+     "Fresh-emit CI output becomes the TypeScript gating basis under I45 item 2, whether by adapting retained tscheck files or by recreating them post-deletion."
+    ]
+   }
+  }
+ }
+}
