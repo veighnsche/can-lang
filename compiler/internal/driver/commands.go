@@ -24,12 +24,24 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore) (BuildReport, e
 	if err != nil {
 		return BuildReport{}, err
 	}
-	return r.publishProgram(ctx, store, program, false)
-}
-func (r *Runtime) publishProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool) (BuildReport, error) {
-	assets, err := r.PrivateArtifacts()
+	buildID, prepared, err := r.stageProgram(ctx, store, program, false)
 	if err != nil {
 		return BuildReport{}, err
+	}
+	directory, err := store.SelectCurrent(buildID)
+	if err != nil {
+		return BuildReport{}, err
+	}
+	return BuildReport{SchemaVersion: 1, Kind: "can.build", BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts"}, nil
+}
+
+// stageProgram emits, validates, and privately stages checked modules. It
+// never selects production current; callers choose SelectCurrent (build)
+// or a generation lease (assert).
+func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool) (string, *PreparedOutput, error) {
+	assets, err := r.PrivateArtifacts()
+	if err != nil {
+		return "", nil, err
 	}
 	var artifacts []ir.Artifact
 	if assertions {
@@ -38,15 +50,15 @@ func (r *Runtime) publishProgram(ctx context.Context, store *OutputStore, progra
 		artifacts, err = emit.ProgramModules(program, assets.Directory, assets.Files)
 	}
 	if err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
 	artifacts, err = r.encodeSourceMaps(ctx, program, artifacts)
 	if err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
 	launcher, err := regularFile(r.Root, "bin/canlc", true)
 	if err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
 	var roots []ir.AssertionRoot
 	if assertions {
@@ -62,16 +74,16 @@ func (r *Runtime) publishProgram(ctx context.Context, store *OutputStore, progra
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
 	prepared, err := PrepareOutput(inputs, "entry.ts", artifacts)
 	if err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
 	if err = r.ValidateOutput(ctx, prepared); err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
-	directory, err := store.Publish(prepared)
+	buildID, _, err := store.Stage(prepared)
 	if err != nil {
-		return BuildReport{}, err
+		return "", nil, err
 	}
-	return BuildReport{SchemaVersion: 1, Kind: "can.build", BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts"}, nil
+	return buildID, prepared, nil
 }
 func (r *Runtime) Build(ctx context.Context, projectDirectory string) (BuildReport, error) {
 	if r == nil {

@@ -446,3 +446,164 @@ func TestPublicationRechecksSnapshotBeforeCurrent(t *testing.T) {
 		}
 	}
 }
+
+func TestStageLeavesCurrentUnchanged(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	first := outputPrepared(t, s, "export const value=1n;")
+	if _, err := s.Publish(first); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := outputPrepared(t, s, "export const value=2n;")
+	id, directory, err := s.Stage(second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id != second.BuildID() {
+		t.Fatal("staged wrong generation", id)
+	}
+	if _, err = os.Stat(directory); err != nil {
+		t.Fatal("staged generation missing", err)
+	}
+	after, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+	if err != nil || !bytes.Equal(before, after) {
+		t.Fatal("staging selected test output", err)
+	}
+	lease, err := s.AcquireGeneration(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lease.Close()
+	if lease.Manifest.BuildID != id {
+		t.Fatal("generation lease mismatch")
+	}
+	current, err := s.AcquireCurrent()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer current.Close()
+	if current.Manifest.BuildID != first.BuildID() {
+		t.Fatal("current moved under staged generation")
+	}
+}
+
+func TestStageWithoutPriorCurrent(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	id, _, err := s.Stage(outputPrepared(t, s, "export const value=1n;"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = os.Stat(filepath.Join(root, "dist", "current.json")); !os.IsNotExist(err) {
+		t.Fatal("staging created production current", err)
+	}
+	lease, err := s.AcquireGeneration(id)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lease.Close()
+	if _, err = s.AcquireCurrent(); err == nil {
+		t.Fatal("empty current acquired")
+	}
+}
+
+func TestStageRejectsInvalidGenerations(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	unvalidated := outputPrepared(t, s, "invalid")
+	unvalidated.validated = false
+	if _, _, err := s.Stage(unvalidated); err == nil {
+		t.Fatal("unvalidated generation staged")
+	}
+	items := artifactFixture()
+	foreignInputs := s.BuildInputs(strings.Repeat("a", 64), strings.Repeat("a", 64), strings.Repeat("a", 64), strings.Repeat("a", 64))
+	foreignInputs.Source = strings.Repeat("b", 64)
+	foreign, err := PrepareOutput(foreignInputs, "entry.ts", items)
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreign.validated = true
+	if _, _, err := s.Stage(foreign); err == nil {
+		t.Fatal("foreign snapshot staged")
+	}
+	if _, err = os.Stat(filepath.Join(root, "dist", "current.json")); !os.IsNotExist(err) {
+		t.Fatal("rejected staging selected output", err)
+	}
+}
+
+func TestAcquireGenerationRejectsMalformed(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	id, directory, err := s.Stage(outputPrepared(t, s, "export const value=1n;"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.AcquireGeneration(strings.Repeat("0", 64)); err == nil {
+		t.Fatal("missing generation acquired")
+	}
+	if _, err = s.AcquireGeneration("../current"); err == nil {
+		t.Fatal("generation escape acquired")
+	}
+	if err = os.WriteFile(filepath.Join(directory, "packages", "p-a", "a.ts"), []byte("tampered"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.AcquireGeneration(id); err == nil {
+		t.Fatal("tampered generation acquired")
+	}
+}
+
+func TestSelectCurrentRequiresStaged(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	if _, err := s.SelectCurrent(strings.Repeat("0", 64)); err == nil {
+		t.Fatal("missing generation selected")
+	}
+	if _, err := s.SelectCurrent("../current"); err == nil {
+		t.Fatal("generation escape selected")
+	}
+	id, _, err := s.Stage(outputPrepared(t, s, "export const value=1n;"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.SelectCurrent(id); err != nil {
+		t.Fatal(err)
+	}
+	lease, err := s.AcquireCurrent()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lease.Close()
+	if lease.Manifest.BuildID != id {
+		t.Fatal("selected generation mismatch")
+	}
+}
+
+func TestInterruptedStageNeverSelects(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	s.testHook = func(point string) error {
+		if point == "staged" {
+			return errors.New("simulated interruption")
+		}
+		return nil
+	}
+	if _, _, err := s.Stage(outputPrepared(t, s, "one")); err == nil {
+		t.Fatal("injection did not fire")
+	}
+	if _, err := os.Stat(filepath.Join(root, "dist", "current.json")); !os.IsNotExist(err) {
+		t.Fatal("interrupted staging selected output", err)
+	}
+	s.Close()
+	reopened := outputBegin(t, root)
+	id, _, err := reopened.Stage(outputPrepared(t, reopened, "one"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = reopened.SelectCurrent(id); err != nil {
+		t.Fatal(err)
+	}
+}

@@ -43,10 +43,11 @@ func (r *Runtime) Assert(ctx context.Context, directory string, selector, enviro
 		}
 		program.Assertions = selected
 	}
-	if _, err = r.publishProgram(ctx, store, program, true); err != nil {
+	buildID, _, err := r.stageProgram(ctx, store, program, true)
+	if err != nil {
 		return err
 	}
-	lease, err := store.AcquireCurrent()
+	lease, err := store.AcquireGeneration(buildID)
 	if err != nil {
 		return err
 	}

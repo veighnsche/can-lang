@@ -380,74 +380,100 @@ func (s *OutputStore) hook(point string) error {
 }
 
 func (s *OutputStore) Publish(prepared *PreparedOutput) (string, error) {
+	id, _, err := s.Stage(prepared)
+	if err != nil {
+		return "", err
+	}
+	return s.SelectCurrent(id)
+}
+
+// Stage validates and stores a checked generation without selecting it as
+// production current. Assertion execution stages privately through this
+// path; only production publication calls SelectCurrent afterward.
+func (s *OutputStore) Stage(prepared *PreparedOutput) (string, string, error) {
 	if prepared == nil || !prepared.validated {
-		return "", fmt.Errorf("generation has not passed native syntax validation")
+		return "", "", fmt.Errorf("generation has not passed native syntax validation")
 	}
 	var err error
 	if err = s.Recover(); err != nil {
-		return "", err
+		return "", "", err
 	}
 	actual := s.BuildInputs("", "", "", "")
 	if prepared.manifest.Inputs.Source != actual.Source || prepared.manifest.Inputs.Dependencies != actual.Dependencies {
-		return "", fmt.Errorf("generation does not bind this project snapshot")
+		return "", "", fmt.Errorf("generation does not bind this project snapshot")
 	}
 	id := prepared.manifest.BuildID
 	final := "builds/" + id
 	if _, err = s.dist.Lstat(final); err == nil {
 		if _, _, err = s.generation(id, false); err != nil {
-			return "", err
+			return "", "", err
 		}
 	} else if !os.IsNotExist(err) {
-		return "", err
+		return "", "", err
 	} else {
 		var random [16]byte
 		if _, err = rand.Read(random[:]); err != nil {
-			return "", err
+			return "", "", err
 		}
 		stage := "builds/.stage-" + hex.EncodeToString(random[:])
 		pending := outputPending{1, stage, prepared.manifest}
 		if err = s.atomicMetadata("pending.json", ".pending.tmp", pending); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = s.hook("reserved"); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = s.dist.Mkdir(stage, 0700); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = writeOutputNew(s.dist, stage+"/manifest.json", prepared.manifestBytes); err != nil {
-			return "", err
+			return "", "", err
 		}
 		for _, name := range sortedOutputKeys(prepared.files) {
 			if err = s.dist.MkdirAll(path.Dir(stage+"/"+name), 0700); err != nil {
-				return "", err
+				return "", "", err
 			}
 			if err = writeOutputNew(s.dist, stage+"/"+name, prepared.files[name]); err != nil {
-				return "", err
+				return "", "", err
 			}
 			if err = s.hook("file:" + name); err != nil {
-				return "", err
+				return "", "", err
 			}
 		}
 		if err = validateOutputTree(s.dist, stage, prepared.manifest, false, false); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = syncOutputTree(s.dist, stage); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = s.hook("staged"); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = s.dist.Rename(stage, final); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = syncOutputDir(s.dist, "builds"); err != nil {
-			return "", err
+			return "", "", err
 		}
 		if err = s.hook("generation"); err != nil {
-			return "", err
+			return "", "", err
+		}
+		if err = s.dist.Remove("pending.json"); err != nil && !os.IsNotExist(err) {
+			return "", "", err
+		}
+		if err = syncOutputDir(s.dist, "."); err != nil {
+			return "", "", err
 		}
 	}
+	return id, filepath.Join(s.Graph.Root.Root, "dist", filepath.FromSlash(final)), nil
+}
+
+// SelectCurrent atomically selects an already staged generation as
+// production current. It revalidates the staged generation and rechecks
+// snapshot freshness immediately before selection, exactly as publication
+// always has; only the production build path calls it.
+func (s *OutputStore) SelectCurrent(id string) (string, error) {
+	var err error
 	if err = s.hook("before-current"); err != nil {
 		return "", err
 	}
@@ -459,9 +485,13 @@ func (s *OutputStore) Publish(prepared *PreparedOutput) (string, error) {
 	if err = s.checkLayout(); err != nil {
 		return "", err
 	}
-	current := outputCurrent{1, id, hashBytes(prepared.manifestBytes)}
-	if err = s.atomicMetadata("current.json", ".current.tmp", current); err != nil {
+	if _, encoded, err := s.generation(id, false); err != nil {
 		return "", err
+	} else {
+		current := outputCurrent{1, id, hashBytes(encoded)}
+		if err = s.atomicMetadata("current.json", ".current.tmp", current); err != nil {
+			return "", err
+		}
 	}
 	if err = s.hook("published"); err != nil {
 		return "", err
@@ -472,7 +502,7 @@ func (s *OutputStore) Publish(prepared *PreparedOutput) (string, error) {
 	if err = syncOutputDir(s.dist, "."); err != nil {
 		return "", err
 	}
-	return filepath.Join(s.Graph.Root.Root, "dist", filepath.FromSlash(final)), nil
+	return filepath.Join(s.Graph.Root.Root, "dist", "builds", filepath.FromSlash(id)), nil
 }
 
 func (s *OutputStore) generation(id string, partial bool) (OutputManifest, []byte, error) {
@@ -671,6 +701,29 @@ func (l *OutputLease) Close() error { return l.file.Close() }
 // File must be inherited by the generated child and retained until its exit.
 // Inheritance preserves the shared kernel lease if the launching parent dies.
 func (l *OutputLease) File() *os.File { return l.file }
+
+// AcquireGeneration leases one staged generation by build ID without
+// consulting production current. Assertion execution runs staged test
+// modules through this lease; it never selects test output.
+func (s *OutputStore) AcquireGeneration(buildID string) (*OutputLease, error) {
+	if err := s.checkLayout(); err != nil {
+		return nil, err
+	}
+	manifest, _, err := s.generation(buildID, false)
+	if err != nil {
+		return nil, err
+	}
+	file, err := outputOpen(s.dist, "builds/"+buildID+"/manifest.json", os.O_RDONLY, 0)
+	if err != nil {
+		return nil, err
+	}
+	if err = outputLock(file, false); err != nil {
+		file.Close()
+		return nil, err
+	}
+	return &OutputLease{Directory: filepath.Join(s.Graph.Root.Root, "dist", "builds", buildID), Manifest: manifest, file: file}, nil
+}
+
 func (s *OutputStore) AcquireCurrent() (*OutputLease, error) {
 	if err := s.checkLayout(); err != nil {
 		return nil, err

@@ -1,0 +1,84 @@
+[
+  {
+    "label": "passing build",
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 1.354,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"6c31faf639e9b601b7044361c63ea7c31e7b79633b991e2ba7eeaa40c4bc970d\",\"directory\":\"/private/tmp/can-lf03-work/passing/dist/builds/6c31faf639e9b601b7044361c63ea7c31e7b79633b991e2ba7eeaa40c4bc970d\",\"entry\":\"entry.ts\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "label": "passing assert",
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.6,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":true,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"exact\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr_tail": "",
+    "current_before_assert": "{\"schemaVersion\":1,\"buildID\":\"6c31faf639e9b601b7044361c63ea7c31e7b79633b991e2ba7eeaa40c4bc970d\",\"manifestSHA256\":\"da0d051c8bcb33d07831eb46e40590d0ea6eb460b4f0b542b26d51381d607415\"}",
+    "current_after_assert": "{\"schemaVersion\":1,\"buildID\":\"6c31faf639e9b601b7044361c63ea7c31e7b79633b991e2ba7eeaa40c4bc970d\",\"manifestSHA256\":\"da0d051c8bcb33d07831eb46e40590d0ea6eb460b4f0b542b26d51381d607415\"}",
+    "current_unchanged": true,
+    "staged_builds": [
+      "58caa4c296e4c99114bbb175bdcb3844cfc3ad6de477734b2b91264eb6207536",
+      "6c31faf639e9b601b7044361c63ea7c31e7b79633b991e2ba7eeaa40c4bc970d"
+    ]
+  },
+  {
+    "label": "failing-assertion build",
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.534,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"cc669d5b75e052e1e0cec1ec22c66345309e800cfd035c289ffa7cca8a24cda0\",\"directory\":\"/private/tmp/can-lf03-work/failing-assertion/dist/builds/cc669d5b75e052e1e0cec1ec22c66345309e800cfd035c289ffa7cca8a24cda0\",\"entry\":\"entry.ts\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "label": "failing-assertion assert",
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.582,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"wrong\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr_tail": "",
+    "current_before_assert": "{\"schemaVersion\":1,\"buildID\":\"cc669d5b75e052e1e0cec1ec22c66345309e800cfd035c289ffa7cca8a24cda0\",\"manifestSHA256\":\"4a02191ab455c41b44f80bd31e03e952840119ce6cc362be16c59130e0dafa8b\"}",
+    "current_after_assert": "{\"schemaVersion\":1,\"buildID\":\"cc669d5b75e052e1e0cec1ec22c66345309e800cfd035c289ffa7cca8a24cda0\",\"manifestSHA256\":\"4a02191ab455c41b44f80bd31e03e952840119ce6cc362be16c59130e0dafa8b\"}",
+    "current_unchanged": true,
+    "staged_builds": [
+      "b6bf7a70cba1a03356c203af5e6e6e2494a166b39f1095bb5ff09a56321e7217",
+      "cc669d5b75e052e1e0cec1ec22c66345309e800cfd035c289ffa7cca8a24cda0"
+    ]
+  },
+  {
+    "label": "pending-assertion build",
+    "exit_code": 0,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.534,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.build\",\"buildID\":\"4671f11404feedae9fe28f6fbf551e2dd6e8b2418d62b9ce1c014bfc435bfd90\",\"directory\":\"/private/tmp/can-lf03-work/pending-assertion/dist/builds/4671f11404feedae9fe28f6fbf551e2dd6e8b2418d62b9ce1c014bfc435bfd90\",\"entry\":\"entry.ts\"}\n",
+    "stderr_tail": ""
+  },
+  {
+    "label": "pending-assertion assert",
+    "exit_code": -9,
+    "externally_terminated": true,
+    "elapsed_seconds": 4.006,
+    "stdout_tail": "",
+    "stderr_tail": "",
+    "current_before_assert": "{\"schemaVersion\":1,\"buildID\":\"4671f11404feedae9fe28f6fbf551e2dd6e8b2418d62b9ce1c014bfc435bfd90\",\"manifestSHA256\":\"c5d5f3cdccba30b442456fb633aa2ec2884a88b5b4c9d292e6ced32d910b165a\"}",
+    "current_after_assert": "{\"schemaVersion\":1,\"buildID\":\"4671f11404feedae9fe28f6fbf551e2dd6e8b2418d62b9ce1c014bfc435bfd90\",\"manifestSHA256\":\"c5d5f3cdccba30b442456fb633aa2ec2884a88b5b4c9d292e6ced32d910b165a\"}",
+    "current_unchanged": true,
+    "staged_builds": [
+      "23a53981be67d7d290026eebc78b8e3544e215e43bf1c0d44e9a462cc2f36836",
+      "4671f11404feedae9fe28f6fbf551e2dd6e8b2418d62b9ce1c014bfc435bfd90"
+    ]
+  },
+  {
+    "label": "noprior assert-without-build",
+    "exit_code": 1,
+    "externally_terminated": false,
+    "elapsed_seconds": 0.59,
+    "stdout_tail": "{\"schemaVersion\":1,\"kind\":\"can.assertion-report\",\"passed\":false,\"assertions\":[{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::answer\",\"name\":\"wrong\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"},{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}]}\n",
+    "stderr_tail": "",
+    "current_after_assert": null,
+    "no_current_created": true,
+    "staged_builds": [
+      "b6bf7a70cba1a03356c203af5e6e6e2494a166b39f1095bb5ff09a56321e7217"
+    ]
+  }
+]

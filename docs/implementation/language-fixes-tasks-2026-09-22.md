@@ -36,7 +36,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF02-summary.json), [LSP results](evidence/2026-09-22/language-fixes/LF02-lsp.json), [runner](evidence/2026-09-22/language-fixes/LF02-lsp.py), [full suite log](evidence/2026-09-22/language-fixes/LF02-gotest.log). G4 semantic/resolve now highlight line 8; lexical control unchanged; astral/overlay/imported/unavailable covered; driver/source/resolve/check/compiler suites green (1 pre-existing syntax failure documented, untouched).
 
-- [ ] **LF03 — Separate assertion staging from production publication**
+- [x] **LF03 — Separate assertion staging from production publication**
 
   **Depends on:** LF01. **Acceptance:** AE22.
 
@@ -50,7 +50,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** G2 reproducer no longer changes current, including a project with no prior current. Full build verification is deliberately not claimed until LF15.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF03-summary.json), [G2 results](evidence/2026-09-22/language-fixes/LF03-g2.json), [runner](evidence/2026-09-22/language-fixes/LF03-g2.py). Stage/SelectCurrent split with generation leases; assert never selects current on success/failure/kill; driver suite green.
 
 - [ ] **LF04 — Supervise assertion roots with bounded external deadlines**
 
