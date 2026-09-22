@@ -4,9 +4,10 @@
 // must carry a parseable current-syntax package header, every uses
 // entry must name a catalogue package or another package in the tree
 // (mirroring resolve.Build's package graph), and retired predecessor
-// shapes must not reappear. Retired predecessor sources under
-// docs/archive/sketches/ and beside the std/ READMEs carry no can.project.json,
-// stay out of scope here, and are owned by I44.
+// shapes must not reappear. Retired predecessor sources were deleted
+// by I44; only their history notes remain under docs/archive/.
+// Those carry no can.project.json, stay out of scope here, and are
+// owned by I44.
 //
 // Run from anywhere inside the repo: go run ./tools/modcheck
 package main

@@ -1,31 +1,32 @@
 # std — package dispositions and the maintained example inventory
 
-Each directory holds one package README with its current disposition
-plus, until I44 deletes them, the retired predecessor sources it
-replaces. Four packages ship maintained current-language projects
-under `current/`; the closed native catalogue itself is generated
-into [`catalogue/`](catalogue/) from
+Every directory here is live: four packages ship maintained
+current-language projects under `current/`, `html/` documents the
+current constructors, and the closed native catalogue itself is
+generated into [`catalogue/`](catalogue/) from
 `compiler/internal/catalogue/catalogue.json` — explanations and
 domain examples live in the owning package, never as a second
-handwritten declaration source.
+handwritten declaration source. The per-package predecessor notes
+for retired packages were merged into the
+[package history](../docs/archive/std-package-history.md).
 
 ## Package dispositions
 
 | Package | Current disposition | Maintained demonstration |
 |---|---|---|
-| `ascii/` | Superseded; native `text::to_*` strict grammar | `scalars/current` |
+| [`ascii/`](../docs/archive/std-package-history.md#ascii) | Superseded; native `text::to_*` strict grammar | `scalars/current` |
 | `catalogue/` | Generated mirror (see below) | `cataloguegen --check` |
-| `division/` | `number::divmod`, `euclidean_divmod` | `ratio/current` |
-| `host/` | Finite `clock`/`random`/`crypto`/`env`/`log` catalogue | `cli` fixtures, admitted applications |
+| [`division/`](../docs/archive/std-package-history.md#division) | `number::divmod`, `euclidean_divmod` | `ratio/current` |
+| [`host/`](../docs/archive/std-package-history.md#host) | Finite `clock`/`random`/`crypto`/`env`/`log` catalogue | `cli` fixtures, admitted applications |
 | `html/` | Catalogue-owned safe constructors | `html` fixtures, admitted applications |
-| `json/` | Exact typed `codec` JSON | `codec` fixtures, native-ai report |
+| [`json/`](../docs/archive/std-package-history.md#json) | Exact typed `codec` JSON | `codec` fixtures, native-ai report |
 | `map/` | Native immutable maps and sets | `map/current` (shared with `set/`) |
-| `quota/` | Ordinary Can validation pattern | form-validation application |
+| [`quota/`](../docs/archive/std-package-history.md#quota) | Ordinary Can validation pattern | form-validation application |
 | `ratio/` | Exact-amount divmod and half-even rounding | `ratio/current` |
 | `scalars/` | I22 numeric/conversion catalogue | `scalars/current` |
-| `schema/` | Static build-time asset approval | `assets` fixtures, admitted applications |
-| `seq/` | Native array catalogue | `arrays` fixtures, admitted applications |
-| `set/` | Native immutable maps and sets | `map/current` (shared with `map/`) |
+| [`schema/`](../docs/archive/std-package-history.md#schema) | Static build-time asset approval | `assets` fixtures, admitted applications |
+| [`seq/`](../docs/archive/std-package-history.md#seq) | Native array catalogue | `arrays` fixtures, admitted applications |
+| [`set/`](../docs/archive/std-package-history.md#set) | Native immutable maps and sets | `map/current` (shared with `map/`) |
 | `text/` | Native text and Unicode catalogue | `text/current` |
 
 No new maintained project was authored: every domain above is

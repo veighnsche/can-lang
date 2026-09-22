@@ -20,3 +20,6 @@ test may depend on these files (frozen evidence snapshots under
 - [`research/sql-binding/`](research/sql-binding/README.md) — the
   I36 parser-binding comparison harness (own Go module, never
   imported by production code).
+- [`std-package-history.md`](std-package-history.md) — the merged
+  per-package predecessor notes for the eight retired `std/`
+  packages (their directories held nothing else).
