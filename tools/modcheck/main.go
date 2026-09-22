@@ -1,10 +1,12 @@
 // Command modcheck is the can-lang module check over the maintained
-// fixtures: every file under compiler/testdata/current must carry a
-// parseable current-syntax package header, every uses entry must name a
-// catalogue package or another fixture package in the tree (mirroring
-// resolve.Build's package graph), and retired predecessor shapes must
-// not reappear. Predecessor sources under sketches/ and std/ are owned
-// by I43/I44 and are out of scope here.
+// sources: every .can file under compiler/testdata/current and every
+// manifest-backed maintained example project under std/ and examples/
+// must carry a parseable current-syntax package header, every uses
+// entry must name a catalogue package or another package in the tree
+// (mirroring resolve.Build's package graph), and retired predecessor
+// shapes must not reappear. Retired predecessor sources under
+// sketches/ and beside the std/ READMEs carry no can.project.json,
+// stay out of scope here, and are owned by I44.
 //
 // Run from anywhere inside the repo: go run ./tools/modcheck
 package main
@@ -239,6 +241,25 @@ func check(roots []string, catalogue map[string]bool) (scanned int, errs []strin
 	return len(files), errs
 }
 
+// maintainedRoots is the fixture tree plus every manifest-backed
+// maintained example project under std/ and examples/. Discovery by
+// manifest keeps retired sources (which carry no can.project.json)
+// out of the gate without a hardcoded exclusion list.
+func maintainedRoots(root string) []string {
+	roots := []string{filepath.Join(root, "compiler", "testdata", "current")}
+	for _, tree := range []string{filepath.Join(root, "std"), filepath.Join(root, "examples")} {
+		_ = filepath.WalkDir(tree, func(path string, entry os.DirEntry, err error) error {
+			if err != nil || entry.IsDir() || entry.Name() != "can.project.json" {
+				return nil
+			}
+			roots = append(roots, filepath.Dir(path))
+			return nil
+		})
+	}
+	sort.Strings(roots[1:])
+	return roots
+}
+
 func main() {
 	root, err := scan.RepoRoot()
 	if err != nil {
@@ -252,7 +273,7 @@ func main() {
 		fmt.Println(" -", err)
 		os.Exit(1)
 	}
-	scanned, errs := check([]string{filepath.Join(root, "compiler", "testdata", "current")}, catalogue)
+	scanned, errs := check(maintainedRoots(root), catalogue)
 	if len(errs) > 0 {
 		fmt.Println("MODULE CHECK FAILED")
 		for _, e := range errs {
@@ -260,5 +281,5 @@ func main() {
 		}
 		os.Exit(1)
 	}
-	fmt.Printf("modules OK: %d current fixtures, uses resolve to catalogue or tree packages\n", scanned)
+	fmt.Printf("modules OK: %d maintained sources, uses resolve to catalogue or tree packages\n", scanned)
 }

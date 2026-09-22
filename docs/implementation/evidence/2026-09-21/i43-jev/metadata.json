@@ -1,0 +1,13 @@
+{
+ "exercise": "I43 replacement granularity, sketch disposition, inventory authority",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "99cea5ffbee5365dd8dc87b1808da3e3877243987aa1f93538567021f1128880",
+  "request-2.json": "e47ee199a4ddf6ed8c32e24f7d692ad3d74013be85f5dcfa73aeffebb7332f8f",
+  "request-3.json": "594c4bcd31c75d486cfa5ba57d594cdecfe826c073028c05d3054dc7ddfcbe67"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and measured facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 87/87 strings pairwise distinct."
+}

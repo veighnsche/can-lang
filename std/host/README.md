@@ -1,3 +1,22 @@
+# Current finite host catalogue
+
+The host shelf is the closed catalogue, not externs: `clock::wall_millis`,
+`clock::monotonic_millis`, and `clock::sleep_millis` for time;
+`random::secure_bytes` and `random::uuid_v4` for randomness;
+`crypto::sha256` for hashing; `env::required` and `env::optional` for
+validated names; `log::write_info` and `log::write_error` for JSON
+stderr lines. Sealed brands, `Secret__Value` timing comparison,
+ambient authority, the filesystem, subprocesses, and broader
+crypto/timezone surfaces are excluded. Current demonstrations live in
+the `cli` fixtures and the admitted applications (`clock` stamps in
+account-search and dashboard, `io`/`env` in native-ai).
+
+The adjacent legacy source, extern decls, ambient types, and generated
+files below are historical migration inputs scheduled for retirement
+by I43/I44, not the current implementation.
+
+## Historical implementation
+
 # host — the host shelf: explicit foreign observations
 
 - `host.can` — `mod host`: `std__clock__wall_now` and

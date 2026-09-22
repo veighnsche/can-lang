@@ -1,3 +1,34 @@
+# sketches — retired predecessor gallery (historical note)
+
+All twenty programs below are retired artifacts in predecessor
+syntax (`mod` blocks, `rev` markers, effects, fuel recursion, proof
+brands, lint squiggles). They do not compile under the current
+compiler, no gate or test may depend on them, and I44 deletes every
+`sketches/*/` program. Their domains live on in current syntax in
+the compiler fixtures and the admitted `examples/` applications.
+`CLEAN_ROOM_REVIEW.md` stays as a labelled historical document.
+
+The gallery once demonstrated, per program:
+
+- `auth-login/` — password login with one retry.
+- `retry-loop/` — retry with fuel; the termination demo.
+- `counter/` — a bounded counter; the effects demo.
+- `lint-errors/` — one fixture per `canlc lint` rule, each linting dirty.
+- `broken-login/` — one broken file per editor squiggle.
+- `bare-returns/`, `fn-callback/`, `fn-scalar/`, `fn-variant/`,
+  `generic-option/`, `success-values/`, `variant-return/` —
+  function-value, callback, and success-shape studies.
+- `fibonacci/`, `fizzbuzz/`, `leap-year/`, `hello-world/` — small
+  computation studies.
+- `form-state/`, `notify/`, `reserve/`, `host-clock/` — form,
+  notification, reservation, and clock studies.
+
+Historical claims below the line (zero diagnostics, lint-clean
+gallery, `given`-table checks) describe the predecessor toolchain
+and are no longer true; they are preserved for the record.
+
+## Historical gallery text
+
 # sketches — can-lang use-case examples, one folder per example
 
 - `auth-login/` — password login with one retry (`db.can` + `auth.can`).

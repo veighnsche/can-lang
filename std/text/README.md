@@ -1,6 +1,6 @@
 # Current native text and Unicode catalogue
 
-The maintained project is [current/src/main.can](current/src/main.can). Its 31
+The maintained project is [current/src/main.can](current/src/main.can). Its 36
 mandatory assertions cover every I24 operation, bound string methods, spreads,
 method chains, deterministic fixtures and the declared text errors. Run the
 staged `canlc assert std/text/current` or `canlc run std/text/current` command.

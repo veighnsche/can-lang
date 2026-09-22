@@ -1,0 +1,69 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "inventory_authority": {
+   "criteria": {
+    "catalogue_first": "Gate inclusion on catalogue.json operations: every one of the 144 operations resolves through its recorded owning task to passing implementation evidence, and anything absent from the catalogue fails as unknown instead of reaching a legacy path.",
+    "coverage_rows_first": "Gate inclusion on the coverage.md operation rows: each prose row links its owning tasks and required observable corner to passing evidence, with catalogue.json serving only as the spelling reference.",
+    "review_needed": "The evidence cannot separate these authorities, or neither yields a machine-checked inclusion gate."
+   },
+   "instructions": "Choose the machine-checked authority for the I43 inclusion inventory. Use common and topics.inventory_authority.",
+   "type": "choice"
+  },
+  "replacement_granularity": {
+   "criteria": {
+    "consolidate_domains": "Rewrite the five stale package READMEs as disposition pointers to catalogue operations, fixtures, and the four existing current projects, adding new maintained example projects only where no current program demonstrates the domain.",
+    "keep_per_package": "Give every surviving std package its own maintained current-language project beside its README, preserving the fourteen package directories as parallel example programs with separate manifests and assertions.",
+    "review_needed": "The evidence cannot separate these granularities, or neither satisfies the replacement contract."
+   },
+   "instructions": "Choose the replacement granularity for the std package directories. Use common and topics.replacement_granularity.",
+   "type": "choice"
+  },
+  "sketch_disposition": {
+   "criteria": {
+    "keep_historical_sketches": "Retire most sketch sources in I44 but preserve a labeled few as read-only historical documents that stay in the tree, never compile, and carry banners stating their syntax is superseded.",
+    "retire_all_sketches": "Label every sketch source retired, delete all twenty sketch programs in I44, and keep only a short historical note in sketches/README.md recording what the gallery demonstrated.",
+    "review_needed": "The evidence cannot separate these dispositions, or neither handles the gallery safely."
+   },
+   "instructions": "Choose the disposition of the twenty predecessor-syntax sketches. Use common and topics.sketch_disposition.",
+   "type": "choice"
+  }
+ },
+ "state": {
+  "common": {
+   "fixed_constraints": [
+    "I43 inventories the std and sketches trees, verifies replacements, and hands I44 a deletion list; I44 performs the physical deletion of retired sources afterward, so I43 must decide every label before any file is removed.",
+    "catalogue.json is the closed native inventory with 21 packages, 144 operations, and 51 errors, where each operation records its owning implementation task and one assertion kind of 109 real, 26 supplied, or 9 scoped; examples may call it but never extend it.",
+    "coverage.md fixes capability inclusion and exclusion through its operation inventory and the ASTRA disposition table under P14, so excluded capabilities must fail cleanly and no old helper name, kernel, or fuel algorithm may be silently restored.",
+    "Each maintained example is a current manifest-backed project with can.project.json, can.errors.json, src, a README, mandatory assertions, and explicit imports; it builds fresh from a staged layout, emits only into owned dist, and is gated by the catalogue integration test, modcheck, and the new stdlib_test.go."
+   ],
+   "purpose": "Settle three I43 stdlib and sample replacement design points for Can: the granularity of maintained replacements inside the fourteen std package directories, the disposition of the twenty predecessor-syntax sketches, and the machine-checked authority for the inclusion inventory."
+  },
+  "topics": {
+   "inventory_authority": {
+    "background": "Two candidate sources can anchor the machine-checked inclusion gate: the machine-readable catalogue.json operation records or the prose operation rows in coverage.md with their observable corners.",
+    "facts": [
+     "Each of the 144 catalogue operations already carries a lowering.task naming its owning implementation task plus an assertion kind, so a gate can resolve every operation to its task evidence directory mechanically today.",
+     "The coverage rows pair each surface with its owning tasks, required observable corners, and the ASTRA exclusion table, but they live in prose Markdown that a gate can only consume through a maintained mapping file.",
+     "The I45 and I50 gates consume this inventory directly: an included row without implementation evidence blocks closure, while a deferred row must be provably absent from every legacy fallback path."
+    ]
+   },
+   "replacement_granularity": {
+    "background": "Fourteen std package directories remain: nine READMEs already describe current dispositions while host, json, quota, schema, and seq still carry predecessor prose, and only map, ratio, scalars, and text ship current-language projects.",
+    "facts": [
+     "The ASTRA disposition table already maps most old helpers onto existing catalogue operations or ordinary Can patterns, so few domains genuinely need newly authored example programs to demonstrate them.",
+     "The plan keeps useful current projects until their replacement verifies and forbids renaming packages for visual uniformity, which protects the four existing projects but does not by itself require ten more.",
+     "One maintained project per package multiplies manifests, assertion suites, and staged build legs, while disposition pointers concentrate truth in catalogue.json and leave most package directories as prose shells until I44 deletes their old sources."
+    ]
+   },
+   "sketch_disposition": {
+    "background": "Twenty sketch programs remain, all written in predecessor syntax with mod blocks, rev markers, effects, fuel recursion, proof brands, and lint squiggles, while sketches/README.md still presents them as a clean live gallery.",
+    "facts": [
+     "Every sketch domain, from counters and fibonacci through auth-login, retry fuel, and the lint and error galleries, is already demonstrated in current syntax by compiler fixtures or the admitted I42 applications.",
+     "I44 deletes whatever I43 labels retired, so I43 must assign each sketch exactly one of maintained replacement, intentional historical document, or retired artifact before deletion happens.",
+     "A historical document may stay readable in the tree but must never compile or execute as a current program, and no gate, test, or example may depend on its contents."
+    ]
+   }
+  }
+ }
+}

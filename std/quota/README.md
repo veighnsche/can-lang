@@ -1,3 +1,20 @@
+# Current validation pattern
+
+Validation is ordinary Can, not a validator catalogue: named domain
+functions over records, errors, match, and arrays. The maintained
+demonstration is the admitted form-validation application, which
+validates repeated/optional form values and renders 422 feedback
+through safe server-side constructors. Monomorphic
+`std__validate__*` helpers, constraint descriptors, envelope
+witnesses, and pinned converter versions are excluded; each domain
+owns its checks and messages.
+
+The adjacent legacy source and generated files below are historical
+migration inputs scheduled for retirement by I43/I44, not the current
+implementation.
+
+## Historical implementation
+
 # quota-counter — validation plus a bounded counter
 
 - `quota.can` — `mod quota`: monomorphic scalar validators

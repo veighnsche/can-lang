@@ -550,6 +550,9 @@ into a test harness to make an incomplete source example appear to work.
 
 ## I43 — Replace maintained stdlib and samples
 
+**CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i43](evidence/2026-09-21/i43/README.md).
+The plan below is kept as dependency context for I44/I45.
+
 **Files:** update `std/README.md`, `std/<existing-package>/`, `sketches/`, current
 example manifests and catalogue references. Use
 `compiler/internal/catalogue/integration_test.go` and `tools/modcheck/` for the

@@ -1,3 +1,21 @@
+# Current array catalogue
+
+Ordered sequences are the native array catalogue: literals,
+copy-update, field/index/slice/length, `.map`, `.filter`,
+`.for_each`, `.fold`, `.find`, `.some`, `.every`, `.sort_by`,
+`.slice`, `.concat`, `.to_reversed`, and prelude `append`, all with
+native copies and sequential failure-stop traversal. `Seq__Values`
+wrappers, `Seq__Item` elements, comparator callbacks beyond
+`sort_by`, and group/zip/dedup helpers are excluded. Current
+demonstrations live in the `arrays` fixtures and throughout the
+admitted applications.
+
+The adjacent legacy source and generated files below are historical
+migration inputs scheduled for retirement by I43/I44, not the current
+implementation.
+
+## Historical implementation
+
 # seq — immutable ordered sequences
 
 - `seq.can` — `mod seq`: `std__seq__empty`, `std__seq__singleton`,

@@ -63,7 +63,7 @@ func TestRepoPasses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	scanned, errs := check([]string{filepath.Join(root, "compiler", "testdata", "current")}, catalogue)
+	scanned, errs := check(maintainedRoots(root), catalogue)
 	if len(errs) > 0 {
 		t.Fatalf("repo check failed: %v", errs)
 	}

@@ -1,3 +1,21 @@
+# Current static asset approval
+
+Asset approval happens once at build time, not through runtime
+witnesses: the manifest loader snapshots declared project assets,
+validates closed extension/MIME inventories with per-format
+signatures, and serves them at content-addressed immutable URLs
+resolved by `asset::url`. Sealed approval brands, policy handles,
+revocation walks, SRI ceremonies, and runtime registries are
+excluded. Current demonstrations live in the `assets` fixtures and
+the admitted applications, each serving its declared `site.css`
+through the manifest loader.
+
+The adjacent legacy source and generated files below are historical
+migration inputs scheduled for retirement by I43/I44, not the current
+implementation.
+
+## Historical implementation
+
 # schema — construction-time asset approval (S1: pure core)
 
 - `schema.can` — `mod schema`: the asset-approval value model and lookup.

@@ -1,3 +1,21 @@
+# Current exact JSON codec
+
+JSON is the exact typed codec, not a value-AST library:
+`codec::encode_json<T>` and `codec::decode_json<T>` over compiler
+schema descriptors, with `bytes::from_utf8` and `bytes::to_utf8` at
+the text boundary. Exact numbers, duplicate rejection, and shared
+finite budgets are enforced natively. Fuel parsers, `Json__Value`
+trees, monomorphic schema families, and standalone hex/base64
+codecs are excluded. Current demonstrations live in the `codec`
+fixtures and the admitted applications (native-ai encodes its typed
+report; account-search decodes forms at the server boundary).
+
+The adjacent legacy source and generated files below are historical
+migration inputs scheduled for retirement by I43/I44, not the current
+implementation.
+
+## Historical implementation
+
 # json — JSON value AST, render, scalar codecs, schemas
 
 - `json.can` — `mod json`: `Json__Value` is the parsed tree

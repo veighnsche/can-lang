@@ -1,0 +1,113 @@
+[
+ {
+  "round": 1,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "inventory_authority": {
+    "type": "choice",
+    "choice": "catalogue_first",
+    "confidence": 0.99,
+    "probabilities": {
+     "coverage_rows_first": 0.0,
+     "review_needed": 0.0,
+     "catalogue_first": 1.0
+    }
+   },
+   "replacement_granularity": {
+    "type": "choice",
+    "choice": "consolidate_domains",
+    "confidence": 1.0,
+    "probabilities": {
+     "consolidate_domains": 1.0,
+     "review_needed": 0.0,
+     "keep_per_package": 0.0
+    }
+   },
+   "sketch_disposition": {
+    "type": "choice",
+    "choice": "keep_historical_sketches",
+    "confidence": 0.29,
+    "probabilities": {
+     "review_needed": 0.02,
+     "keep_historical_sketches": 0.53,
+     "retire_all_sketches": 0.45
+    }
+   }
+  }
+ },
+ {
+  "round": 2,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "inventory_authority": {
+    "type": "choice",
+    "choice": "catalogue_first",
+    "confidence": 0.97,
+    "probabilities": {
+     "review_needed": 0.01,
+     "coverage_rows_first": 0.01,
+     "catalogue_first": 0.98
+    }
+   },
+   "replacement_granularity": {
+    "type": "choice",
+    "choice": "consolidate_domains",
+    "confidence": 1.0,
+    "probabilities": {
+     "review_needed": 0.0,
+     "keep_per_package": 0.0,
+     "consolidate_domains": 1.0
+    }
+   },
+   "sketch_disposition": {
+    "type": "choice",
+    "choice": "keep_historical_sketches",
+    "confidence": 0.65,
+    "probabilities": {
+     "review_needed": 0.22,
+     "retire_all_sketches": 0.02,
+     "keep_historical_sketches": 0.76
+    }
+   }
+  }
+ },
+ {
+  "round": 3,
+  "status": "received",
+  "model": "jev-1.13.0",
+  "answers": {
+   "inventory_authority": {
+    "type": "choice",
+    "choice": "catalogue_first",
+    "confidence": 1.0,
+    "probabilities": {
+     "coverage_rows_first": 0.0,
+     "catalogue_first": 1.0,
+     "review_needed": 0.0
+    }
+   },
+   "replacement_granularity": {
+    "type": "choice",
+    "choice": "consolidate_domains",
+    "confidence": 1.0,
+    "probabilities": {
+     "keep_per_package": 0.0,
+     "review_needed": 0.0,
+     "consolidate_domains": 1.0
+    }
+   },
+   "sketch_disposition": {
+    "type": "choice",
+    "choice": "keep_historical_sketches",
+    "confidence": 0.65,
+    "probabilities": {
+     "keep_historical_sketches": 0.76,
+     "review_needed": 0.09,
+     "retire_all_sketches": 0.15
+    }
+   }
+  }
+ }
+]
