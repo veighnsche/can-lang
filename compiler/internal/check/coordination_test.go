@@ -4,8 +4,12 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 )
 
 const coordinationDeclarations = `fn int number
@@ -321,5 +325,174 @@ fn int other
 				t.Fatal("invalid aggregate inference admitted")
 			}
 		})
+	}
+}
+
+func exactComposition(t *testing.T) string {
+	t.Helper()
+	data, err := os.ReadFile("../../testdata/current/coordination/aggregate-composition.can")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(data)
+}
+
+func TestExactHeadRejections(t *testing.T) {
+	source := exactComposition(t)
+	cases := map[string]struct {
+		edits [][2]string
+		want  string
+	}{
+		"ambiguous bare": {
+			edits: [][2]string{{"        all_failed<a_failure> as first => ok \"a\"\n        all_failed<b_failure> as second => ok \"b\"\n", "        all_failed => ok \"a\"\n"}},
+			want:  "ambiguous",
+		},
+		"duplicate bare/exact": {
+			edits: [][2]string{{"        all_failed<a_failure>\n", "        all_failed<a_failure>\n        all_failed\n"}},
+			want:  "duplicate",
+		},
+		"missing specialization": {
+			edits: [][2]string{{"        all_failed<b_failure> as second => ok \"b\"\n", ""}},
+			want:  "missing completion arm",
+		},
+		"wrong arity": {
+			edits: [][2]string{{"all_failed<a_failure> as first", "all_failed<a_failure, b_failure> as first"}},
+			want:  "arity",
+		},
+		"absent key": {
+			edits: [][2]string{{"all_failed<a_failure> as first", "nope<int> as first"}},
+			want:  "no eligible declaration",
+		},
+		"wrong specialization": {
+			edits: [][2]string{{"        all_failed<a_failure>\n", "        all_failed<b_failure>\n"}},
+			want:  "outside matched bound",
+		},
+		"incomplete outer": {
+			edits: [][2]string{
+				{"variant outer_failure\n    all_failed<a_failure>\n    all_failed<b_failure>\n    standard_failure\n", "variant outer_failure\n    all_failed<a_failure>\n    standard_failure\n"},
+				{", all_failed<b_failure>([codec::invalid_data(\"b\", \"type\")])", ""},
+			},
+			want: "does not cover",
+		},
+		"participant arm at outer race": {
+			edits: [][2]string{{"        all_failed<outer_failure> as agg => all_failed<outer_failure>(agg.failures)\n", "        codec::invalid_data => ok 0\n"}},
+			want:  "only handles success and all_failed",
+		},
+		"wrong-specification fixture": {
+			edits: [][2]string{{"sub_a: 1 => all_failed<a_failure>([codec::invalid_data(\"a\", \"type\")])", "sub_a: 1 => all_failed<combined_failure>([codec::invalid_data(\"a\", \"type\")])"}},
+			want:  "undeclared escaping domain error",
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			bad := source
+			for _, edit := range tc.edits {
+				next := strings.Replace(bad, edit[0], edit[1], 1)
+				if next == bad {
+					t.Fatalf("mutation missed: %q", edit[0])
+				}
+				bad = next
+			}
+			_, err := programFixture(t, map[string]string{"src/main.can": bad})
+			if err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("accepted or misdiagnosed: %v", err)
+			}
+		})
+	}
+}
+
+func TestAmbiguousBareHeadCarriesSpan(t *testing.T) {
+	text := exactComposition(t)
+	bad := strings.Replace(text, "        all_failed<a_failure> as first => ok \"a\"\n        all_failed<b_failure> as second => ok \"b\"\n", "        all_failed => ok \"a\"\n", 1)
+	_, err := programFixture(t, map[string]string{"src/main.can": bad})
+	if err == nil {
+		t.Fatal("ambiguous bare head admitted")
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Span.Start == 0 || located.Span.End <= located.Span.Start {
+		t.Fatalf("ambiguity lost its head span: %v", err)
+	}
+	if !strings.Contains(located.File, "main.can") {
+		t.Fatalf("ambiguity misattributed: %v", err)
+	}
+	for _, alternative := range []string{"all_failed<a_failure>", "all_failed<b_failure>"} {
+		if !strings.Contains(err.Error(), alternative) {
+			t.Fatalf("ambiguity hides %s: %v", alternative, err)
+		}
+	}
+}
+
+func TestDataMatchBareAmbiguityListsAlternatives(t *testing.T) {
+	text := programHeader + `variant a_failure
+    codec::invalid_data
+    standard_failure
+variant b_failure
+    codec::invalid_data
+    standard_failure
+variant both
+    all_failed<a_failure>
+    all_failed<b_failure>
+fn str classify
+    emits []
+    given
+        both value
+    asserts
+        sample: all_failed<a_failure>([codec::invalid_data("a", "type")]) => ok "a"
+    match value
+        all_failed => ok "a"
+        all_failed<b_failure> => ok "b"
+` + programMain + "    ok\n"
+	_, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(text, "uses []", "uses [codec]", 1)})
+	if err == nil || !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("data bare head admitted: %v", err)
+	}
+	if !strings.Contains(err.Error(), "all_failed") {
+		t.Fatalf("ambiguity hides alternatives: %v", err)
+	}
+}
+
+func programFixtureRegistry(t *testing.T, files map[string]string, registry string) (*Program, error) {
+	t.Helper()
+	files["can.project.json"] = `{"source_root":"src","error_registry":"can.errors.json"}`
+	files["can.errors.json"] = registry
+	root := t.TempDir()
+	for name, text := range files {
+		path := filepath.Join(root, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	graph, err := project.Load(root)
+	if err != nil {
+		return nil, err
+	}
+	return CheckProgram(graph)
+}
+
+func TestGenericBodyExactHeadPerSpecialization(t *testing.T) {
+	text := programHeader + `error 1000010 hold<item>(item value)
+fn str first<item>
+    emits [hold<item>]
+    given
+        item value
+    asserts
+        integer: 1 => hold<int>(1)
+    hold<item>(value)
+fn str describe<item>
+    emits []
+    given
+        item value
+    asserts
+        integer: 1 => ok "held"
+    match call first<item>(value)
+        hold<item> as kept => ok "held"
+        ok str value => ok "unexpected"
+` + programMain + "    ok\n"
+	registry := `{"active":[{"id":1000010,"kind":"app::hold"}],"retired":[]}`
+	if _, err := programFixtureRegistry(t, map[string]string{"src/main.can": text}, registry); err != nil {
+		t.Fatalf("generic exact head rejected: %v", err)
 	}
 }

@@ -118,15 +118,8 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 		out.Entries = append(out.Entries, participant)
 	}
 	if out.Mode == "any" {
-		bound, err := c.context.Registry.Bound(errors)
-		if err != nil {
-			return nil, err
-		}
-		for _, entry := range bound.Entries() {
-			if _, err = bound.ResolveBareArm(entry.Declaration.Identity); err != nil {
-				return nil, err
-			}
-		}
+		// Distinct generic specializations stay distinct in the collected
+		// leaf set; only identical types deduplicate via unionErrors.
 		var successArms []syntax.MatchArm
 		var aggregate *syntax.MatchArm
 		for index := range n.Arms {
@@ -139,15 +132,18 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 				continue
 			}
 			name, ok := arm.Outcome.Error.(*syntax.NamedType)
-			if !ok || len(name.Arguments) != 0 || arm.Outcome.StandardFailure {
-				return nil, fmt.Errorf("first-success race only handles success and all_failed")
+			if !ok || arm.Outcome.StandardFailure {
+				return nil, c.locate(arm.Outcome.Span, fmt.Errorf("first-success race only handles success and all_failed"))
 			}
 			declaration, err := c.context.ErrorName(name.Name)
 			if err != nil {
-				return nil, err
+				return nil, c.locate(arm.Outcome.Span, err)
 			}
-			if declaration != "can.prelude@1::all_failed" || aggregate != nil {
-				return nil, fmt.Errorf("race requires exactly one bare all_failed arm")
+			if declaration != "can.prelude@1::all_failed" {
+				return nil, c.locate(arm.Outcome.Span, fmt.Errorf("first-success race only handles success and all_failed"))
+			}
+			if aggregate != nil {
+				return nil, c.locate(arm.Outcome.Span, fmt.Errorf("race requires exactly one all_failed arm"))
 			}
 			aggregate = &n.Arms[index]
 		}
@@ -159,13 +155,34 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 			return nil, err
 		}
 
-		if aggregate.Forward {
+		head, _ := aggregate.Outcome.Error.(*syntax.NamedType)
+		if head != nil && len(head.Arguments) != 0 {
+			resolved, resolveErr := c.context.Type(head, false)
+			if resolveErr != nil {
+				return nil, c.locate(aggregate.Outcome.Span, resolveErr)
+			}
+			if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
+				return nil, c.locate(aggregate.Outcome.Span, concreteErr)
+			}
+			if err = c.aggregateCoverage(resolved, errors); err != nil {
+				return nil, c.locate(aggregate.Outcome.Span, err)
+			}
+			out.AggregateType = resolved
+			// The explicit head selects its specialization; the shared arm
+			// checker binds the alias (or short name), checks the body, and
+			// validates forwarding against the enclosing contract. Expected
+			// `.failures` uses agree through the fixed payload type.
+			out.Aggregate, err = c.coordinationHandler([]syntax.MatchArm{*aggregate}, nil, []*types.Type{resolved}, expected, scope, false)
+			if err != nil {
+				return nil, err
+			}
+		} else if aggregate.Forward {
 			concrete, err := c.context.Errors.ResolveBareArm("can.prelude@1::all_failed")
 			if err != nil {
-				return nil, fmt.Errorf("forwarded all_failed needs one enclosing named variant specialization: %w", err)
+				return nil, c.locate(aggregate.Outcome.Span, fmt.Errorf("forwarded all_failed needs one enclosing named variant specialization: %w", err))
 			}
 			if err = c.aggregateCoverage(concrete.Type, errors); err != nil {
-				return nil, err
+				return nil, c.locate(aggregate.Outcome.Span, err)
 			}
 			out.AggregateType = concrete.Type
 			out.Aggregate, err = c.coordinationHandler([]syntax.MatchArm{*aggregate}, nil, []*types.Type{concrete.Type}, expected, scope, false)

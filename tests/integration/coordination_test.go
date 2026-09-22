@@ -71,7 +71,7 @@ func TestCurrentBundledCoordination(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 8}, {"aggregate-composition", 8}, {"heterogeneous", 7}} {
+	}{{"main", 8}, {"aggregate-composition", 25}, {"heterogeneous", 7}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/coordination", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)

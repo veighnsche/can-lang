@@ -182,7 +182,7 @@ func (b ErrorBound) ResolveBareArm(declarationIdentity string) (ConcreteError, e
 	for _, entry := range b.entries {
 		if entry.Declaration.Identity == declarationIdentity {
 			if found != nil {
-				return ConcreteError{}, fmt.Errorf("ambiguous generic error arm; normalize concrete payloads through a named wrapper")
+				return ConcreteError{}, fmt.Errorf("ambiguous error head %q; write one of the exact specializations: %s", found.Declaration.Name, strings.Join(b.specializations(declarationIdentity), ", "))
 			}
 			copy := entry
 			found = &copy
@@ -193,4 +193,74 @@ func (b ErrorBound) ResolveBareArm(declarationIdentity string) (ConcreteError, e
 	}
 	found.Arguments = append([]string(nil), found.Arguments...)
 	return *found, nil
+}
+
+// ResolveExactArm matches one complete nominal specialization. It is not a
+// wildcard, a subtype test, or an implicit union over the bound.
+func (b ErrorBound) ResolveExactArm(identity string) (ConcreteError, error) {
+	for _, entry := range b.entries {
+		if entry.TypeIdentity == identity {
+			copy := entry
+			copy.Arguments = append([]string(nil), copy.Arguments...)
+			return copy, nil
+		}
+	}
+	return ConcreteError{}, fmt.Errorf("error arm %s is outside matched bound", identity)
+}
+
+// specializationChoices renders one exact specialization per type: the
+// short source-like spelling plus its exact identity, so an ambiguity
+// error names every alternative the author can write. When short forms
+// collide, the colliding entries keep their full declarations so every
+// alternative stays distinct.
+func specializationChoices(alternatives []*types.Type) []string {
+	out := make([]string, 0, len(alternatives))
+	names := make([]string, 0, len(alternatives))
+	for _, typ := range alternatives {
+		names = append(names, specializationName(typ, false))
+	}
+	seen := map[string]int{}
+	for _, name := range names {
+		seen[name]++
+	}
+	for i, typ := range alternatives {
+		name := names[i]
+		if seen[name] > 1 {
+			name = specializationName(typ, true)
+		}
+		out = append(out, name+" ("+typ.Identity()+")")
+	}
+	return out
+}
+
+func specializationName(typ *types.Type, full bool) string {
+	name := typ.Declaration()
+	if name == "" {
+		name = typ.Identity()
+	} else if !full {
+		if i := strings.LastIndex(name, "::"); i >= 0 {
+			name = name[i+2:]
+		}
+	}
+	args := typ.Arguments()
+	if len(args) == 0 {
+		return name
+	}
+	parts := make([]string, 0, len(args))
+	for _, arg := range args {
+		parts = append(parts, specializationName(arg, full))
+	}
+	return name + "<" + strings.Join(parts, ", ") + ">"
+}
+
+func (b ErrorBound) specializations(declarationIdentity string) []string {
+	var matches []*types.Type
+	for _, entry := range b.entries {
+		if entry.Declaration.Identity == declarationIdentity {
+			matches = append(matches, entry.Type)
+		}
+	}
+	out := specializationChoices(matches)
+	sort.Strings(out)
+	return out
 }

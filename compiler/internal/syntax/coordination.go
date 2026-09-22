@@ -94,8 +94,8 @@ func (p *parser) coordinationArm() MatchArm {
 	outcome := p.outcomePattern()
 	arm := MatchArm{Outcome: &outcome}
 	if p.at(Newline) {
-		if outcome.Binding != nil || outcome.StandardFailure {
-			p.fail("only bare ok or named errors can forward")
+		if outcome.Binding != nil || outcome.Alias != nil || outcome.StandardFailure {
+			p.fail("only bare ok or unaliased named errors can forward")
 		}
 		p.take()
 		arm.Forward = true

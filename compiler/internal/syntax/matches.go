@@ -67,8 +67,8 @@ func (p *parser) match(terminal bool) Match {
 			outcome := p.outcomePattern()
 			arm.Outcome = &outcome
 			if p.at(Newline) {
-				if outcome.Binding != nil || outcome.StandardFailure {
-					p.fail("only bare ok and named error arms may forward")
+				if outcome.Binding != nil || outcome.Alias != nil || outcome.StandardFailure {
+					p.fail("only bare ok and unaliased error arms may forward")
 				}
 				arm.Forward = true
 				p.take()
@@ -113,9 +113,12 @@ func (p *parser) outcomePattern() OutcomePattern {
 		}
 	case p.at(Name):
 		name := p.qualified()
-		pattern.Error = &NamedType{Span: name.Span, Name: name}
-		if p.at("<") {
-			p.fail("completion error patterns do not accept generic arguments")
+		types := p.typeArguments()
+		pattern.Error = &NamedType{Span: name.Span, Name: name, Arguments: types}
+		if p.word("as") {
+			p.take()
+			alias := p.expect(Name)
+			pattern.Alias = &alias
 		}
 	default:
 		p.fail("expected an explicit success, named error, or [_] completion arm")

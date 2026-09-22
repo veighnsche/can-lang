@@ -313,6 +313,9 @@ func (f *formatter) coordinationArm(level int, arm MatchArm) {
 		}
 		text += " " + formatField(*o.Binding)
 	}
+	if o.Alias != nil {
+		text += " as " + o.Alias.Text
+	}
 	if arm.Forward {
 		f.line(level, text)
 	} else {
@@ -387,6 +390,9 @@ func (f *formatter) match(level int, prefix string, m Match) {
 					text += " as"
 				}
 				text += " " + formatField(*o.Binding)
+			}
+			if o.Alias != nil {
+				text += " as " + o.Alias.Text
 			}
 		} else {
 			patterns := make([]string, len(arm.Patterns))

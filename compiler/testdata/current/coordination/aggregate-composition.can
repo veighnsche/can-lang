@@ -75,6 +75,127 @@ fn str describe
     match value
         codec::invalid_data => ok value.path
         standard_failure => ok value.message
+fn int pick
+    emits [all_failed<a_failure>, all_failed<b_failure>]
+    given
+        int which
+    asserts
+        first: 1 => all_failed<a_failure>([codec::invalid_data("a", "type")])
+        second: 2 => all_failed<b_failure>([codec::invalid_data("b", "type")])
+    match which is 1
+        true => all_failed<a_failure>([codec::invalid_data("a", "type")])
+        false => all_failed<b_failure>([codec::invalid_data("b", "type")])
+fn str dispatch_exact
+    emits []
+    given
+        int which
+    asserts
+        first: 1 => ok "a"
+        second: 2 => ok "b"
+    match call pick(which)
+        all_failed<a_failure> as first => ok "a"
+        all_failed<b_failure> as second => ok "b"
+        ok int value => ok "unexpected"
+fn int summarize_a
+    emits []
+    given
+        a_failure[] failures
+    asserts
+        empty: [] => ok 0
+        one: [codec::invalid_data("a", "type")] => ok 1
+    ok failures.length
+fn int relay_a
+    emits []
+    asserts
+        sample: => ok 1
+    match call original_a()
+        all_failed<a_failure> as first => relay call summarize_a(first.failures)
+        ok int value => ok value
+fn int relay_exact
+    emits [all_failed<a_failure>]
+    asserts
+        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
+    match call original_a()
+        all_failed<a_failure>
+        ok int value => ok value
+fn int relay_bare
+    emits [all_failed<a_failure>]
+    asserts
+        sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
+    match call original_a()
+        all_failed
+        ok int value => ok value
+fn str chain_exact
+    emits []
+    asserts
+        sample: => ok "a"
+    match chain
+        call original_a() as int wasted_a
+        call original_b() as int wasted_b
+        all_failed<a_failure> as first => ok "a"
+        all_failed<b_failure> as second => ok "b"
+        ok => ok "unexpected"
+fn str[] concurrent_exact
+    emits []
+    asserts
+        sample: => ok ["a", "b"]
+    str[] ordered = match call concurrent with error
+        original_a()
+            all_failed<a_failure> as first => ok "a"
+            ok int value => ok "unexpected"
+        original_b()
+            all_failed<b_failure> as second => ok "b"
+            ok int value => ok "unexpected"
+    ok ordered
+fn str race_single
+    emits []
+    asserts
+        sample: => ok "a"
+    str single = match call race with error
+        original_a()
+        all_failed<a_failure> as first => ok "a"
+        ok int value => ok "unexpected"
+    ok single
+variant outer_failure
+    all_failed<a_failure>
+    all_failed<b_failure>
+    standard_failure
+fn int gather
+    emits [all_failed<outer_failure>]
+    asserts
+        sample: => all_failed<outer_failure>([all_failed<a_failure>([codec::invalid_data("a", "type")]), all_failed<b_failure>([codec::invalid_data("b", "type")])])
+    int result = match call race
+        original_a()
+        original_b()
+        all_failed<outer_failure> as agg => all_failed<outer_failure>(agg.failures)
+        ok int value => ok value
+    ok result
+fn str classify
+    emits []
+    given
+        int which
+    asserts
+        first: 1 => ok "a-leaf"
+        second: 2 => ok "b"
+    match call pick(which)
+        all_failed<a_failure> as first => match first
+            all_failed<a_failure> => ok "a-leaf"
+        all_failed<b_failure> as second => ok "b"
+        ok int value => ok "unexpected"
+fn str via_supplied
+    emits []
+    given
+        int which
+    asserts
+        sub_a: 1 => ok "a"
+        sub_b: 2 => ok "b"
+    match call pick(which)
+        when
+            sub_a: 1 => all_failed<a_failure>([codec::invalid_data("a", "type")])
+            sub_b: 2 => all_failed<b_failure>([codec::invalid_data("b", "type")])
+        all_failed<a_failure> as first => ok "a"
+        all_failed<b_failure> as second => ok "b"
+        ok int value => ok "unexpected"
 fn void main
     emits []
     given

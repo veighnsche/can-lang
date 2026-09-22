@@ -1,0 +1,8 @@
+source: /private/tmp/exact1/src/main.can (describe over pick emitting all_failed<a_failure>, all_failed<b_failure>)
+build: 6c145ea9ec5124fb2f96eedf491302e9676b75bb0fb7fb2fec731a99dd84aef0 (lf05-final bundle)
+
+if ($canRegion1.kind === 'domain' && $canErrorType($canRegion1) === "4d1da9cd43041e54393a29f29895d71b219d8a8d4f5c7badd697c617a6b5c394") {
+if ($canRegion1.kind === 'domain' && $canErrorType($canRegion1) === "0d5a494c4b76ab505f2341487424f840b06894b5ad43fbd6f3c1c2bb833902bf") {
+
+const $canRegion6 = $canErrorPayload($canRegion1) as $canType4d1da9cd43041e54393a29f29895d71b219d8a8d4f5c7badd697c617a6b5c394
+const $canRegion7 = $canErrorPayload($canRegion1) as $canType0d5a494c4b76ab505f2341487424f840b06894b5ad43fbd6f3c1c2bb833902bf

@@ -344,6 +344,9 @@ type OutcomePattern struct {
 	StandardFailure bool
 	Error           TypeNode
 	Binding         *Field
+	// Alias is the explicit untyped error-value name from `head as alias`.
+	// Only completion error heads carry it; it always requires `=>`.
+	Alias *Token
 }
 type PatternNode interface {
 	PatternSpan() source.Span

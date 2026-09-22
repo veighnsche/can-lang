@@ -2,7 +2,9 @@ package check
 
 import (
 	"fmt"
+
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -111,39 +113,59 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 			bindingType = c.context.Expressions.Scalars["str"]
 		default:
 			name, ok := pattern.Error.(*syntax.NamedType)
-			if !ok || len(name.Arguments) != 0 {
-				return nil, fmt.Errorf("domain pattern must be a bare error name")
+			if !ok {
+				return nil, c.locate(pattern.Span, fmt.Errorf("domain pattern must be an error head"))
 			}
-			var declaration string
-			if c.context.ErrorName != nil {
-				declaration, err = c.context.ErrorName(name.Name)
-			} else {
-				var typ *types.Type
-				typ, err = c.context.Type(name, false)
-				if err == nil {
-					declaration = typ.Declaration()
+			var concrete ConcreteError
+			if len(name.Arguments) == 0 {
+				var declaration string
+				if c.context.ErrorName != nil {
+					declaration, err = c.context.ErrorName(name.Name)
+				} else {
+					var typ *types.Type
+					typ, err = c.context.Type(name, false)
+					if err == nil {
+						declaration = typ.Declaration()
+					}
 				}
-			}
-			if err != nil {
-				return nil, err
-			}
-			concrete, err := bound.ResolveBareArm(declaration)
-			if err != nil {
-				return nil, err
+				if err != nil {
+					return nil, c.locate(pattern.Span, err)
+				}
+				concrete, err = bound.ResolveBareArm(declaration)
+				if err != nil {
+					return nil, c.locate(pattern.Span, err)
+				}
+			} else {
+				resolved, resolveErr := c.context.Type(name, false)
+				if resolveErr != nil {
+					return nil, c.locate(pattern.Span, resolveErr)
+				}
+				if _, concreteErr := c.context.Registry.Concrete(resolved); concreteErr != nil {
+					return nil, c.locate(pattern.Span, concreteErr)
+				}
+				concrete, err = bound.ResolveExactArm(resolved.Identity())
+				if err != nil {
+					return nil, c.locate(pattern.Span, err)
+				}
 			}
 			a.Outcome = "domain"
 			a.Error = concrete.Type
 			key = "domain:" + concrete.TypeIdentity
 			bindingType = concrete.Type
+			// An explicit alias binds the chosen payload under its own name;
+			// otherwise the existing short error-name alias is introduced.
 			bindingName = name.Name.Name
+			if pattern.Alias != nil {
+				bindingName = pattern.Alias.Text
+			}
 		}
 		if seen[key] {
-			return nil, fmt.Errorf("duplicate completion arm")
+			return nil, c.locate(pattern.Span, fmt.Errorf("duplicate completion arm for %s", key))
 		}
 		seen[key] = true
 		if pattern.Binding != nil {
 			if a.Outcome == "domain" {
-				return nil, fmt.Errorf("domain arm binds its declared error name")
+				return nil, c.locate(pattern.Span, fmt.Errorf("domain arm binds its declared error name"))
 			}
 			declared, err := c.context.Type(pattern.Binding.Type, false)
 			if err != nil {
@@ -155,17 +177,17 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 			bindingName = pattern.Binding.Name.Text
 		}
 		if bindingName != "" && !arm.Forward {
-			if a.Outcome == "domain" {
+			if a.Outcome == "domain" && pattern.Alias == nil {
 				a.Binding, err = c.bindErrorAlias(armScope, bindingName, bindingType)
 			} else {
 				a.Binding, err = c.bind(armScope, bindingName, bindingType)
 			}
 			if err != nil {
-				return nil, err
+				return nil, c.locate(pattern.Span, err)
 			}
 		}
 		if arm.Forward {
-			if arm.Body != nil || pattern.Binding != nil {
+			if arm.Body != nil || pattern.Binding != nil || pattern.Alias != nil {
 				return nil, fmt.Errorf("forwarding arm cannot contain a body or binding")
 			}
 			if a.Outcome == "ok" {
@@ -189,12 +211,20 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 		}
 		checked = append(checked, a)
 	}
+	var matchSpan source.Span
+	if len(arms) != 0 {
+		matchSpan = arms[0].Span
+	}
 	if requireSuccess && !seen["ok"] {
-		return nil, fmt.Errorf("completion match requires exactly one success arm")
+		return nil, c.locate(matchSpan, fmt.Errorf("completion match requires exactly one success arm"))
 	}
 	for _, entry := range bound.Entries() {
 		if !seen["domain:"+entry.TypeIdentity] {
-			return nil, fmt.Errorf("missing completion arm for %s", entry.Declaration.Name)
+			missing := entry.Declaration.Name
+			if len(entry.Arguments) != 0 {
+				missing = entry.TypeIdentity
+			}
+			return nil, c.locate(matchSpan, fmt.Errorf("missing completion arm for %s", missing))
 		}
 	}
 	return checked, nil

@@ -276,3 +276,20 @@ const standard=captureStandard(new Error("safe"),origin);
 	}
 	t.Log(strings.TrimSpace(string(output)))
 }
+
+func TestResolveExactArm(t *testing.T) {
+	_, r, ts := errorFixture(t)
+	both := bound(t, r, ts["failed<int>"], ts["failed<str>"])
+	hit, err := both.ResolveExactArm(ts["failed<int>"].Identity())
+	if err != nil || hit.TypeIdentity != ts["failed<int>"].Identity() {
+		t.Fatalf("exact specialization missed: %+v %v", hit, err)
+	}
+	if _, err = both.ResolveExactArm(ts["nested"].Identity()); err == nil {
+		t.Fatal("foreign specialization admitted")
+	}
+	if _, err = both.ResolveBareArm(hit.Declaration.Identity); err == nil || !strings.Contains(err.Error(), "ambiguous") {
+		t.Fatalf("bare head over two specializations admitted: %v", err)
+	} else if !strings.Contains(err.Error(), ts["failed<int>"].Identity()) || !strings.Contains(err.Error(), ts["failed<str>"].Identity()) {
+		t.Fatalf("ambiguity hides alternatives: %v", err)
+	}
+}

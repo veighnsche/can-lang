@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/big"
 	"strconv"
+	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
@@ -63,13 +64,18 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 			if len(n.Types) == 0 && c.context.PatternName != nil {
 				declaration, err := c.context.PatternName(n.Name)
 				if err == nil {
+					var matches []*types.Type
 					for _, candidate := range candidates {
 						if candidate.Declaration() == declaration {
-							if leaf != nil {
-								return nil, fmt.Errorf("ambiguous concrete pattern leaf")
-							}
-							leaf = candidate
+							matches = append(matches, candidate)
 						}
+					}
+					if len(matches) > 1 {
+						alternatives := specializationChoices(matches)
+						return nil, c.locate(n.PatternSpan(), fmt.Errorf("ambiguous concrete pattern leaf %q; write one of the exact specializations: %s", n.Name.Name, strings.Join(alternatives, ", ")))
+					}
+					if len(matches) == 1 {
+						leaf = matches[0]
 					}
 				}
 			} else if t, err := nominal(n.Name, n.Types); err == nil {

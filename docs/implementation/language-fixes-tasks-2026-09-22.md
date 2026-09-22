@@ -68,7 +68,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF04-summary.json), [CLI results](evidence/2026-09-22/language-fixes/LF04-assert.json), [runner](evidence/2026-09-22/language-fixes/LF04-assert.py), [full suite log](evidence/2026-09-22/language-fixes/LF04-gotest.log). Per-root workers with 5000ms default budget; G3 bounded; crash/protocol/late-pass judged; init-failure shape + broken-pipe contracts preserved; assert/coordination/fetch/generation/judge suites green.
 
-- [ ] **LF05 — Implement exact generic-error heads and aliases**
+- [x] **LF05 — Implement exact generic-error heads and aliases**
 
   **Depends on:** LF02. **Acceptance:** AE17.
 
@@ -82,7 +82,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Execute emitted matches and nested aggregates, preserving payloads and occurrence data. Add the pattern representation required by wrapper policy in LF12.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF05-summary.json), [emit](evidence/2026-09-22/language-fixes/LF05-emit.txt), [compiler log](evidence/2026-09-22/language-fixes/LF05-gotest.log), [integration log](evidence/2026-09-22/language-fixes/LF05-integration.log). Exact heads + aliases across parse/check/race; 25/25 fixture roots incl. nested outer aggregate; 9 negative subtests + span + generic-spec tests; all 23 bundled suites + strict tsc green.
 
 - [ ] **LF06 — Enforce failure arms before final success**
 

@@ -113,6 +113,16 @@ func (c *regionChecker) bind(scope bodyScope, name string, typ *types.Type) (*ir
 	return local, nil
 }
 
+// locate attaches the checking file's span to an arm-level failure so editor
+// bridges highlight the head instead of guessing from message prose. The
+// innermost span wins when nested checks already located the failure.
+func (c *regionChecker) locate(span source.Span, err error) error {
+	if c.context.File == nil {
+		return err
+	}
+	return source.Locate(c.context.File.Name(), span, err)
+}
+
 // The prelude error name cannot be authored as a declaration, but its selected
 // domain arm still introduces the language-defined alias to the error value.
 func (c *regionChecker) bindErrorAlias(scope bodyScope, name string, typ *types.Type) (*ir.Local, error) {
