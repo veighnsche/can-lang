@@ -1,0 +1,54 @@
+{
+  "method": "Source characters and exact error-identifier occurrences; not model token counts or a TypeScript comparison. Existing regression fixtures include deliberately complex expressions.",
+  "applications": [
+    {
+      "application": "account-search",
+      "can_files": 4,
+      "source_lines": 373,
+      "maximum_line_characters": 257,
+      "emits_declarations": 14,
+      "emits_characters_excluding_indent": 997,
+      "seven_infrastructure_error_mentions": 13
+    },
+    {
+      "application": "dashboard",
+      "can_files": 4,
+      "source_lines": 291,
+      "maximum_line_characters": 257,
+      "emits_declarations": 11,
+      "emits_characters_excluding_indent": 823,
+      "seven_infrastructure_error_mentions": 8
+    },
+    {
+      "application": "form-validation",
+      "can_files": 4,
+      "source_lines": 229,
+      "maximum_line_characters": 187,
+      "emits_declarations": 9,
+      "emits_characters_excluding_indent": 535,
+      "seven_infrastructure_error_mentions": 7
+    },
+    {
+      "application": "native-ai",
+      "can_files": 4,
+      "source_lines": 352,
+      "maximum_line_characters": 314,
+      "emits_declarations": 15,
+      "emits_characters_excluding_indent": 1316,
+      "seven_infrastructure_error_mentions": 67
+    }
+  ],
+  "eight_fetch_baseline": {
+    "scope": "compiler/testdata/current/fetch/main.can lines 1-168; excludes referenced helper beginning line 169",
+    "fetch_declarations": 8,
+    "infrastructure_emits_lists": 9,
+    "infrastructure_emits_entries": 63,
+    "infrastructure_forward_arms": 56
+  },
+  "eight_fetch_proposal_projection": {
+    "public_error_entries": 9,
+    "forwarding_arms": 8,
+    "percentage_reduction_in_each_category": 85.71,
+    "note": "Analytical projection for one normalized failure per operation, retaining one explicit public bound per declaration. No proposed syntax compiled."
+  }
+}

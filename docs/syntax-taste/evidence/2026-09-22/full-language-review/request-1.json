@@ -1,0 +1,110 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "constraints": "Can is an implemented contract-first language compiling to TypeScript on bundled Bun. There are zero external users and no compatibility requirement. Reuse equivalent native operations with adapters only for contracts and immutability. This is a design review, not implementation approval. Confirmed requirements: language-owned normalization of seven transport/codec errors at fetch and judge wrappers, never separate noul/choice/score wrappers; derived wrappers inherit omissions and the last override wins; success/error matches put errors before final ok; nesting reduction is outside normalization acceptance. Judge sends one POST request, validates all answers, then runs handlers in source order. Your role is advisory classification from supplied facts, not research or proof.",
+    "evidence": {
+      "normalization": "The eight-fetch fixture repeats 63 infrastructure entries across eight fetch declarations and main, plus 56 forwarding arms. The raw errors are http::invalid_request(reason), http::credentials_missing(variable), http::transport_failed(phase), http::timeout(timeout_ms), http::body_limit(limit), http::status_error(status,headers), codec::invalid_data(path,reason). Existing domain occurrences retain diagnostic causes. Envelope mode does not intrinsically emit status_error; other raw subsets vary by mode. Unrelated AI, user-handler and standard failures must retain their channels. Normalization must distinguish adapter-origin errors from a handler returning the same nominal error.",
+      "inheritance": "Wrappers apply to fetch/judge operations with fixed success/input contracts. Overrides may recover with that success type or return domain errors; no implicit retry is allowed. Requirements demand inherited omissions and last override wins. A selected handler failure must escape instead of entering the same dispatch again. Selective overrides need a way to invoke inherited handling. Derived declarations should state only changes; their public bound can be calculated from effective handlers and untouched outcomes.",
+      "state_calling": "Judge/LLM calls require a separate final state group, even call name(()) for empty state. Their callable references are rejected because ordinary callable types cannot represent the group. Named forwarding functions adapt them today. The grouped spelling was previously selected by the user, so changing it is a new proposal requiring adoption. Serialization must remain explicit and preserve field names; normal record inputs must not become state accidentally.",
+      "error_polymorphism": "Built-in collection callbacks propagate an arbitrary finite domain-error bound, but authored higher-order functions can only name a fixed bound. Data generics do not stand for sets of errors. A named set alias shortens a concrete signature but does not parameterize it. Checked source callback contracts already contain exact nominal errors. Standard failures remain outside emits; transport normalization separately changes a public error identity.",
+      "aggregates": "all_failed<F> preserves typed domain failures and standard snapshots. Different generic specializations are distinct nominal types, but completion arms currently reject type arguments and bare same-kind arms become ambiguous. A fixture rebuilds two aggregates with identical leaf sets into one specialization. Arrays are invariant. Project authors define arbitrary errors; a distribution-closed global union cannot list them all. Plain race may ignore its aggregate without naming a variant.",
+      "standard_failures": "Ordinary [_] exposes a string, but coordination aggregates expose an opaque standard_failure snapshot with kind, message and occurrence_id. Standard failures automatically propagate outside emits and include arithmetic, bounds, resource_state, assertion, native_exception and cleanup. Original causes are private. Handler exceptions are not redispatched, and fatal termination is not promised recoverable.",
+      "fixtures": "Lexical when tables check expected arguments and use root, call-site ordinal, occurrence, participant path and callable receipts to allocate FIFO fixtures deterministically. A native-ai SQL example repeats rows for caller assertion names in helper code. Ordinals are stable under formatting, not insertion of an earlier call. Supplied completions bypass native request preparation; separate raw provider fixtures already exist. The question here concerns reuse of consumer fixture content, not replacing raw coverage.",
+      "extensibility": "The current product explicitly excludes general externs and uses a distribution-owned catalogue. Each operation requires a contract, native lowering, error mapping, immutability/resource behavior, fixture substitution and conformance tests. No concrete missing application capability has been demonstrated by this review. A typed signature alone cannot establish native runtime semantics. The closed HTML vocabulary is a separate surface from arbitrary host access.",
+      "error_identity": "Errors already have nominal package/declaration/specialization identity. They also require globally unique manually allocated integers across dependencies, with matching active/retired JSON registries and lock snapshots. Collisions reject otherwise separate packages. Stable numeric IDs intentionally support reports, but the review has not identified an external consumer requiring their global numeric form. There are zero external users. Removing authored IDs is a proposed contract change, not a claim that current validation is defective."
+    }
+  },
+  "questions": {
+    "normalization": {
+      "type": "choice",
+      "instructions": "Which public contract best meets the required reduction while retaining selective recovery?",
+      "criteria": {
+        "structured_single": "Use a built-in default fetch/judge wrapper exposing one http::request_failed with a closed nominal variant of the seven original typed payloads; preserve the original occurrence privately, convert only native request preparation/transport/codec-origin failures, and leave AI-specific, authored-handler and standard outcomes unchanged.",
+        "dedicated_details": "Provide the same default single http::request_failed boundary, but define a closed variant of seven new public detail records carrying every original field instead of reusing raw error types; retain the original occurrence privately, normalize only native preparation/transport/codec phases, and pass through AI-specific, authored-handler and standard outcomes.",
+        "alias_only": "Name the seven-member bound once but preserve seven public error kinds and exhaustive seven-way caller dispatch.",
+        "opaque_single": "Replace the seven with one string-bearing failure and omit typed cause details from the public payload.",
+        "defer": "Postpone choosing a public representation because this evidence is insufficient."
+      }
+    },
+    "inheritance": {
+      "type": "choice",
+      "instructions": "Which derivation model gives predictable precedence and a finite outward error contract?",
+      "criteria": {
+        "linear_overlay": "Use one base and exact error keys; resolve overrides before one dispatch, inherit omitted keys, offer explicit parent-handler delegation, reject cycles/duplicate local keys, and calculate the final escaping bound.",
+        "stacked_runtime": "Execute every wrapper as nested runtime catches, allowing transformed failures to enter outer layers and retaining each layer effect bound.",
+        "multiple_bases": "Introduce several ordered bases immediately, with a defined linearization and conflict rules alongside handler composition.",
+        "defer": "Do not choose inheritance semantics yet; gather another concrete use case."
+      }
+    },
+    "state_calling": {
+      "type": "choice",
+      "instructions": "Which candidate should be evaluated to remove purely calling-convention adapters?",
+      "criteria": {
+        "explicit_markers": "Use one positional input list with per-parameter state markers controlling serialization; ordinary callable inputs remain flat and state field names remain declaration-owned.",
+        "grouped_callable": "Retain grouped calls and extend callable types, references and higher-order invocations to represent state groups directly.",
+        "implicit_record": "Treat the last record argument as state without an explicit serialization designation.",
+        "defer": "Keep the current adapters until a callable prototype justifies revising the approved syntax."
+      }
+    },
+    "error_polymorphism": {
+      "type": "choice",
+      "instructions": "Which direction best addresses authored higher-order reuse without hiding public contracts?",
+      "criteria": {
+        "finite_parameters": "Prototype explicit finite error-set parameters inferred only from typed callbacks/expected signatures, with exact union, subset checks, and subtraction after complete handling; add handler errors and reject unresolved or expanding sets.",
+        "fixed_aliases": "Keep fixed authored bounds and optionally add named aliases; document the limitation as an intentional language boundary.",
+        "body_inference": "Infer outward effects from arbitrary function bodies and omit mandatory public emits annotations.",
+        "defer": "Defer the feature until a specific authored combinator demonstrates the benefit."
+      }
+    },
+    "aggregates": {
+      "type": "choice",
+      "instructions": "Which narrower change should precede redesigning the aggregate representation?",
+      "criteria": {
+        "exact_patterns": "Allow exact generic error specializations wherever an explicit declared bound is dispatched, including ordinary completion arms and applicable coordination error handlers; retain plain race’s one implicit aggregate arm and array invariance, and map payloads explicitly only when a common aggregate is actually needed.",
+        "global_failure": "Replace generic aggregates with one distribution-closed failure variant and a nongeneric all_failed.",
+        "array_covariance": "Keep bare error arms but introduce implicit widening for arrays and generic aggregate containers.",
+        "defer": "Keep explicit wrappers until a different composition example establishes a need."
+      }
+    },
+    "standard_failures": {
+      "type": "choice",
+      "instructions": "Which ordinary-catch contract best fits the existing failure channels?",
+      "criteria": {
+        "snapshot": "Bind the same opaque standard_failure snapshot in ordinary catches; keep automatic propagation, private causes and current handler boundaries.",
+        "string": "Keep message-only ordinary catches and structured observations only within aggregates.",
+        "checked_all": "Move all standard failures into mandatory explicit emits bounds for every operation.",
+        "defer": "Defer catch changes until an application needs kind-based recovery."
+      }
+    },
+    "fixtures": {
+      "type": "choice",
+      "instructions": "Which reuse design avoids weakening fixture targeting and argument validation?",
+      "criteria": {
+        "lexical_templates": "Add checked reusable fixture templates expanded at lexical when sites, retaining explicit assertion-root binding, expected arguments, occurrences and FIFO ownership.",
+        "ordinal_roots": "Move fixtures to assertion roots and target function-plus-ordinal references, omitting expected argument checks.",
+        "symbolic_roots": "Introduce explicit symbolic call-site labels and root-owned fixture overrides, retaining expected arguments and full occurrence/queue rules; accept new label and cross-package visibility design work.",
+        "defer": "Retain duplication until a fixture prototype shows a clear improvement."
+      }
+    },
+    "extensibility": {
+      "type": "choice",
+      "instructions": "Which platform-extension policy is warranted by the supplied evidence?",
+      "criteria": {
+        "closed_evidence": "Keep the distribution boundary, publish admission criteria, and evaluate a specific blocked program before adding a checked capability.",
+        "arbitrary_manifest": "Allow application manifests to bind arbitrary named native APIs based on declared types alone.",
+        "contract_plugins": "Design versioned third-party capability packages with all catalogue-equivalent contracts, adapters and conformance obligations immediately.",
+        "defer": "Do not select an extension direction until product scope is clarified."
+      }
+    },
+    "error_identity": {
+      "type": "choice",
+      "instructions": "Which identity direction should be investigated to reduce unrelated dependency coordination?",
+      "criteria": {
+        "nominal_primary": "Use canonical nominal identities as the public authority; generate report codes only if needed, and require explicit versioned wire identifiers at serialization boundaries that need them.",
+        "generate_global": "Keep globally stable numeric identities and active/retired registries but build a shared allocator and registry-generation workflow.",
+        "manual_current": "Continue author-assigned global IDs and registry duplication as an explicit library integration obligation.",
+        "defer": "Audit report and serialization consumers before choosing an identity redesign."
+      }
+    }
+  }
+}

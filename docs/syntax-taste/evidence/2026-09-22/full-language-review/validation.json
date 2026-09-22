@@ -1,0 +1,8 @@
+{
+  "local_markdown_links": "passed",
+  "fence_balance": "passed",
+  "sent_request_hashes_match": "passed",
+  "eight_call_error_before_success": "passed",
+  "compiler_runtime_tests": "not run; documentation-only review",
+  "proposed_syntax": "not compiled"
+}
