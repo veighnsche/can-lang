@@ -80,7 +80,7 @@ record node
 	if err = builder.SeedDeclarations(); err != nil {
 		t.Fatal(err)
 	}
-	names := []string{"collections::map<int,sql::pool>", "sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]"}
+	names := []string{"collections::map<int,sql::pool>", "sql::pool", "bytes::buffer", "callable int (sql::pool) emits []", "callable bool () emits []", "callable left () emits []", "callable left (left, int) emits [missing]", "callable int (left) emits [other]", "wrapped<int>", "wrapped<str>", "callable int () emits [wrapped<int>, wrapped<str>]", "int", "float", "str", "bool", "void", "missing", "other", "receipt", "left", "right", "either", "node", "int[]", "bool[]", "node[]", "callable int () emits []", "callable int (int) emits [missing]", "callable void () emits []", "callable receipt () emits []", "callable int (int, int[]) emits []", "callable int (int, int) emits []", "callable int (int) emits []", "callable int () emits [missing, other]", "standard_failure"}
 	fixture := &regionFixture{ts: map[string]*types.Type{}, registry: registry, scope: file.Scope, functions: map[string]check.ValueBinding{}, values: map[string]check.ValueBinding{}}
 	for _, name := range names {
 		src, _ := source.New("type.can", name)
@@ -287,6 +287,7 @@ func TestEmittedCompletionRegions(t *testing.T) {
 	var program strings.Builder
 	program.WriteString(CompletionImports(path("completion")))
 	program.WriteString(PatternImports(path("data"), path("failure")))
+	program.WriteString(FailureImports(path("failure")))
 	program.WriteString(DataImports(path("data")))
 	program.WriteString(PrimitiveImports(path("primitive")))
 	fmt.Fprintf(&program, "import {createDomainRuntime} from %s;\n", quote(path("domain")))
@@ -342,7 +343,7 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 		{"    ok call first() + call first()\n", "int", "6n", nil},
 		{"    relay call make()\n", "receipt", "payload", nil},
 		{"    match call lookup(-4)\n        missing => ok missing.code\n        ok\n", "int", "-4n", nil},
-		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] as str message => ok message.length\n        ok\n", "int", "BigInt('arithmetic: integer division by zero'.length)", nil},
+		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] as standard_failure failure => ok failure.message.length\n        ok\n", "int", "BigInt('arithmetic: integer division by zero'.length)", nil},
 		{"    match chain\n        call lookup(8) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok 0\n        ok => ok next\n", "int", "9n", nil},
 		{"    match flag\n        true => do\n            call log()\n            match call first()\n                ok int found => ok found + 1\n        false => ok 0\n", "int", "4n", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", "3n", nil},

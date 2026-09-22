@@ -100,7 +100,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF06-summary.json, LF06-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF06-integration.log (integration+driver+emit all ok), LF06-runtime.log (321 pass), LF06-emit-diff.txt (branch-order-only diff; settle multiset identical). Reproduction commands in the summary.
 
-- [ ] **LF07 — Expose standard snapshots in ordinary catches**
+- [x] **LF07 — Expose standard snapshots in ordinary catches**
 
   **Depends on:** LF05, LF06. **Acceptance:** AE15.
 
@@ -114,7 +114,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run argument-failure catch boundaries, handler-failure escape and sticky harness recovery cases. Timeout remains outside Can catches.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF07-summary.json, LF07-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF07-integration.log (integration+driver+emit all ok), LF07-runtime.log (321 pass). Reproduction commands in the summary.
 
 - [ ] **LF08 — Add named runtime checks and migrate arithmetic traps**
 

@@ -108,7 +108,7 @@ fn str standard_stop
     asserts
         sample: => ok "arithmetic: integer division by zero"
     match call [1, 0, 3].map(callable quotient)
-        [_] as str message => ok message
+        [_] as standard_failure failure => ok failure.message
         ok int[] output => ok "unexpected"
 fn int source
     emits []
@@ -173,7 +173,7 @@ fn str nonfinite_sort
     asserts
         sample: => ok "arithmetic: nonfinite sort key"
     match call [1.0, 1.0 / 0.0, 2.0].sort_by(callable identity)
-        [_] as str message => ok message
+        [_] as standard_failure failure => ok failure.message
         ok float[] output => ok "unexpected"
 fn int once
     emits []

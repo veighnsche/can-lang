@@ -25,7 +25,7 @@ func programImports(runtime string) []ModuleImport {
 		{Target: runtime + "/completion.ts", TypeOnly: true, Names: []ImportName{{"Completion", "$canCompletion"}, {"AssertionContext", "$canAssertionContext"}}},
 		{Target: runtime + "/data.ts", Names: []ImportName{{"record", "$canRecord"}, {"update", "$canUpdate"}, {"array", "$canArray"}, {"recordIdentity", "$canRecordIdentity"}}},
 		{Target: runtime + "/primitive.ts", Names: []ImportName{{"intDivide", "$canIntDivide"}, {"intRemainder", "$canIntRemainder"}, {"intPower", "$canIntPower"}, {"index", "$canIndex"}, {"slice", "$canSlice"}}},
-		{Target: runtime + "/failure.ts", Names: []ImportName{{"captureStandard", "$canCaptureStandard"}, {"isStandardFailure", "$canIsStandardFailure"}, {"standardFailureMessage", "$canStandardMessage"}, {"standardFailureKind", "$canFailureKind"}, {"standardFailureMessage", "$canFailureMessage"}, {"standardFailureOccurrenceID", "$canFailureOccurrenceID"}}},
+		{Target: runtime + "/failure.ts", Names: []ImportName{{"captureStandard", "$canCaptureStandard"}, {"isStandardFailure", "$canIsStandardFailure"}, {"standardFailureKind", "$canFailureKind"}, {"standardFailureMessage", "$canFailureMessage"}, {"standardFailureOccurrenceID", "$canFailureOccurrenceID"}}},
 	}
 }
 

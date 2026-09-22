@@ -49,8 +49,17 @@ func TestCompletionArmOrder(t *testing.T) {
 	t.Run("standard after success", func(t *testing.T) {
 		expectOrder(t, callProgram(t,
 			"        ok int value => ok\n"+
-				"        [_] as str message => ok\n",
+				"        [_] as standard_failure failure => ok\n",
 		))
+	})
+	t.Run("string binder rejected", func(t *testing.T) {
+		err := callProgram(t,
+			"        [_] as str message => ok\n"+
+				"        ok int value => ok\n",
+		)
+		if err == nil || !strings.Contains(err.Error(), "standard_failure snapshot") {
+			t.Fatalf("string binder admitted: %v", err)
+		}
 	})
 	t.Run("duplicate success", func(t *testing.T) {
 		expectOrder(t, callProgram(t,
@@ -84,7 +93,7 @@ func TestCompletionArmOrder(t *testing.T) {
 	t.Run("failure first accepts", func(t *testing.T) {
 		if err := callProgram(t,
 			"        codec::invalid_data => ok\n"+
-				"        [_] as str message => ok\n"+
+				"        [_] as standard_failure failure => ok\n"+
 				"        ok int value => ok\n",
 		); err != nil {
 			t.Fatalf("failure-first call rejected: %v", err)

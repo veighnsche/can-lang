@@ -6,8 +6,10 @@ const origin = { source: "app::run", start: 10, end: 20, invocation: ["root", "c
 test("native descriptions never invoke application behavior", () => {
   let invoked = 0;
   const trap = () => { invoked++; throw new Error("secret"); };
-  const hostile = { get message() { return trap(); }, get name() { return trap(); }, get constructor() { return trap(); }, toString: trap, toJSON: trap };
+  const hostile = { get message() { return trap(); }, get name() { return trap(); }, get constructor() { return trap(); }, toString: trap, toJSON: trap, valueOf: trap, get [Symbol.toPrimitive]() { return trap(); } };
   expect(describeNativeFailure(hostile)).toBe("native object");
+  const throwingToString = new TypeError("safe"); throwingToString.toString = trap;
+  expect(describeNativeFailure(throwingToString)).toBe("TypeError: safe");
   const proxy = new Proxy({}, { get: trap, getPrototypeOf: trap, ownKeys: trap, getOwnPropertyDescriptor: trap });
   expect(describeNativeFailure(proxy)).toBe("native proxy");
   const revoked = Proxy.revocable(new Error("secret"), {}); revoked.revoke();

@@ -110,7 +110,13 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 			}
 			a.Outcome = "standard"
 			key = "standard"
-			bindingType = c.context.Expressions.Scalars["str"]
+			// C9.1: a bound standard catch binds the opaque snapshot, never
+			// a string. The former canonical text is failure.message.
+			snapshot, err := c.context.Type(named("standard_failure"), false)
+			if err != nil {
+				return nil, c.locate(pattern.Span, err)
+			}
+			bindingType = snapshot
 		default:
 			name, ok := pattern.Error.(*syntax.NamedType)
 			if !ok {
@@ -179,6 +185,9 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 				return nil, err
 			}
 			if !types.Equal(declared, bindingType) {
+				if a.Outcome == "standard" {
+					return nil, c.locate(pattern.Span, fmt.Errorf("standard catch binds the standard_failure snapshot; str and other binder types are rejected"))
+				}
 				return nil, fmt.Errorf("completion arm binding type mismatch")
 			}
 			bindingName = pattern.Binding.Name.Text

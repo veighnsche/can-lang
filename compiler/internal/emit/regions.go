@@ -15,7 +15,7 @@ func CompletionImports(path string) string {
 	return "import {callableInstance as $canCallableInstance} from " + quote(filepath.ToSlash(filepath.Join(filepath.Dir(path), "callable.ts"))) + ";\n" + "import {callContext as $canCallContext} from " + quote(filepath.ToSlash(filepath.Join(filepath.Dir(path), "assert/context.ts"))) + ";\n" + "import { success as $canSuccess, failure as $canFailure, value as $canValue, invoke as $canInvoke, caught as $canCaught, errorType as $canErrorType, errorPayload as $canErrorPayload, type Completion as $canCompletion, type AssertionContext as $canAssertionContext } from " + quote(path) + ";\n"
 }
 func PatternImports(dataPath, failurePath string) string {
-	return "import { recordIdentity as $canRecordIdentity } from " + quote(dataPath) + ";\nimport { isStandardFailure as $canIsStandardFailure, standardFailureMessage as $canStandardMessage } from " + quote(failurePath) + ";\n"
+	return "import { recordIdentity as $canRecordIdentity } from " + quote(dataPath) + ";\nimport { isStandardFailure as $canIsStandardFailure } from " + quote(failurePath) + ";\n"
 }
 func TypeName(t *types.Type) string { return "$canType" + t.Identity() }
 
@@ -492,7 +492,9 @@ func (e *RegionEmitter) match(match *ir.Match, result string, supplied ...string
 					value = "$canErrorPayload(" + completion + ")"
 				}
 				if arm.Outcome == "standard" {
-					value = "$canStandardMessage(" + completion + ".value)"
+					// C9.1: bind the opaque snapshot itself. Projections
+					// read kind/message/occurrence_id through adapters.
+					value = completion + ".value"
 				}
 				setup = fmt.Sprintf("const %s = %s as %s;\n", local, value, TypeName(arm.Binding.Type))
 			}

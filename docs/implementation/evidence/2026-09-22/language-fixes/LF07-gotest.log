@@ -1,0 +1,36 @@
+ok  	github.com/veighnsche/can-lang/compiler	0.938s
+ok  	github.com/veighnsche/can-lang/compiler/internal/catalogue	0.224s
+?   	github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen	[no test files]
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	23.652s
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	2.989s
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.706s
+?   	github.com/veighnsche/can-lang/compiler/internal/ir	[no test files]
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/resolve	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/source	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/sql	(cached)
+--- FAIL: TestCoreConsumerSpecification (0.00s)
+panic: runtime error: index out of range [1] with length 1 [recovered, repanicked]
+
+goroutine 38 [running]:
+testing.tRunner.func1.2({0x104553de8, 0x12917197e150})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/testing/testing.go:2123 +0x1a0
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/testing/testing.go:2126 +0x2c8
+panic({0x104553de8?, 0x12917197e150?})
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/runtime/panic.go:859 +0x120
+github.com/veighnsche/can-lang/compiler/internal/syntax.TestCoreConsumerSpecification(0x12917195cd88)
+	/Users/vince/Projects/can-lang/compiler/internal/syntax/declarations_test.go:129 +0x100
+testing.tRunner(0x12917195cd88, 0x104563fd8)
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/testing/testing.go:2193 +0xc4
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.27.1/libexec/src/testing/testing.go:2258 +0x3b8
+FAIL	github.com/veighnsche/can-lang/compiler/internal/syntax	0.248s
+ok  	github.com/veighnsche/can-lang/compiler/internal/types	(cached)
+ok  	github.com/veighnsche/can-lang/distribution	(cached)
+ok  	github.com/veighnsche/can-lang/internal/scan	(cached)
+ok  	github.com/veighnsche/can-lang/tests/integration	0.078s
+?   	github.com/veighnsche/can-lang/tools/distbuild	[no test files]
+ok  	github.com/veighnsche/can-lang/tools/gramcheck	0.242s
+ok  	github.com/veighnsche/can-lang/tools/modcheck	0.257s
+FAIL

@@ -80,7 +80,7 @@ fn int read
         sample: item(7) => => ok 7
     ok self.number
 ` + programMain + `    match call initial.read()
-        [_] as str message => match message
+        [_] as standard_failure failure => match failure.message
             "" => ok
             _ => ok
         ok int number => match number
