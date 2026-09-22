@@ -1,0 +1,42 @@
+{
+  "model": "jev-latest",
+  "state": "The deliverable is an actionable ASAP plan covering all thirteen Bun integrations, separate from ongoing Can language repairs. Required language properties are native AI constructs, grouped state, explicit failure sets, assertions attached locally, immutable values, and lowering onto Bun/JavaScript. Legacy compatibility is unnecessary and third-party npm capability libraries are not allowed. Measurements used Bun 1.4.2 for darwin-arm64. A SQLite Bun.SQL query configured only with bigint:true rounded 9007199254740993n to 9007199254740992; the configuration also setting safeIntegers:true produced an exact bigint. Direct bun:sqlite with safeIntegers:true produced that exact value as well. The present Can SQL front end understands PostgreSQL syntax and its resource handling is asynchronous. Bun.SQL can connect to MySQL or SQLite, although live MySQL and transaction qualification remains outstanding. Stream consumption, incremental child output, and socket sessions all need cancellation and owned lifetimes; Can already implements resource tracking and scoped callbacks. There is no finished whole-program comparison between library calls, per-domain syntax and universal event syntax. Native YAML/JSON5/JSONL parsing rounded the test integer; TOML instead raised an error. JSONL.parse silently returned the well-formed prefix of a malformed document; parseChunk disclosed unconsumed input and a syntax error. Post-parse projection cannot recover numeric tokens or duplicate-key history. Safe-integer checks address unsafe integer outputs, not all fractional rounding at parse time. A native Markdown experiment kept both script markup and a javascript: link. Render callbacks are available and Can has a typed safe HTML builder. Replacing the Bun parser or importing a sanitizer package would violate scope. The four requested judgments concern SQL backend strategy, the timing of grammar decisions, parser guarantees and safe HTML exposure; classify independently and regard tests as the final evidence.",
+  "questions": {
+    "adapter": {
+      "type": "choice",
+      "instructions": "Which backend plan fits the observed SQLite integer behavior?",
+      "criteria": {
+        "unified": "Lead with safeIntegers:true on Bun.SQL and qualify transactions, shutdown, data mapping and file reopening; keep direct bun:sqlite available if qualification disproves suitability.",
+        "direct": "Immediately choose bun:sqlite plus an async bridge rather than qualify the exact-integer Bun.SQL configuration.",
+        "rounded": "Accept the inaccurate result from the bigint:true-only Bun.SQL configuration."
+      }
+    },
+    "syntax": {
+      "type": "choice",
+      "instructions": "What is the appropriate immediate step for lifecycle primitives?",
+      "criteria": {
+        "gate": "Build the stream, subprocess and WebSocket application comparisons plus owner tests now, defer only the syntax selection until evidence exists, and continue unrelated library integration.",
+        "commit": "Lock in a universal event syntax without comparison evidence.",
+        "forbid": "Disallow new primitives independent of demonstrated benefits."
+      }
+    },
+    "formats": {
+      "type": "choice",
+      "instructions": "Which document guarantee follows from these native parsing results?",
+      "criteria": {
+        "bounded": "Describe parser-specific behavior; check full consumption and reject nonfinite or unsafe integer values; disclose duplicate semantics and token-precision limits and qualify any exact-native extension separately.",
+        "exact": "Promise original exact values solely by projecting already-parsed native objects.",
+        "replace": "Rebuild the document parsing languages inside Can to preserve original spelling."
+      }
+    },
+    "html": {
+      "type": "choice",
+      "instructions": "Select a Markdown HTML trust policy.",
+      "criteria": {
+        "typed": "Native HTML remains a string; safe HTML requires a separate callback renderer using Can constructors, filtered link schemes and no raw HTML.",
+        "trust": "Give the normal Bun-rendered string the safe-HTML type without further processing.",
+        "remove": "Do not expose any Markdown operations in ASAP."
+      }
+    }
+  }
+}

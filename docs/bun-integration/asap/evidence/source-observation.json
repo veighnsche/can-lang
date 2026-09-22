@@ -1,0 +1,22 @@
+{
+  "observedUTC": "2026-09-22T13:49:02.901311+00:00",
+  "note": "Concurrent implementer active; per-file hashes, not an atomic checkout snapshot. Native standalone probe only.",
+  "bunPath": "/private/tmp/can-gap-verification-bundle-20260922/can-gap-verification-20260922-bun-1.4.2-darwin-arm64-v1/runtime/bun",
+  "bunSHA256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
+  "returncode": 0,
+  "files": {
+    "distribution/target.json": "89da263ec207ff4e47ecb5df898582b67fd3d071527a3c809b4f8cd623984a4f",
+    "compiler/internal/catalogue/catalogue.json": "fe9f29fa37128c05a0f6f73c8162e8d7c7237f6b2032b7d4aa34e1d27ea49bd3",
+    "compiler/internal/emit/program.go": "9a910c3cdc2c11795b7fd30001f8ec5e408e7b3dad673e4ab161af63901e178f",
+    "compiler/internal/sql/parser.go": "cff3059ee9896e4c8eae5be223305cc660b63547e66865659ce64ed7ed308eb4",
+    "compiler/internal/sql/descriptors.go": "10e0cd1117a6a029716e980bf05de96fc36716bc3a3fb0ecafdc76c4dea0f4a2",
+    "compiler/internal/project/manifest.go": "c6005c48b8f40009e8d8493be193edac82e663fd0f138fa624bba3e28f2d13cf",
+    "runtime/platform/sql.ts": "8e25d6e1d73b171ff8fc0bf63b60702a29bfb59c0f1756cc0e9c1ecdde42634f",
+    "runtime/platform/transaction.ts": "c770490674c2d534b3d0977c127fae345615d524b63b64d743563a5d1ab42a09",
+    "runtime/owner.ts": "910d8a379bd00a9a89f9c46b216416f65e8e74dd3f2cc3508cc0222b1d24e2f1",
+    "runtime/modules.json": "ee733197ec18443bc2589e4196b0366c873936704444cd8bc30a7deb731f377c",
+    "runtime/assert/provider.ts": "0b8e634f3423bf07652f92b188d342cb3692ea43985f8372a154d1b23b78aa33",
+    "runtime/codec/json.ts": "e663a0c1b977ef805994b0874df4947357fcec0116087ed205f29a5d2a971aac"
+  },
+  "finalProbeMetadata": "probe-run-metadata.json"
+}

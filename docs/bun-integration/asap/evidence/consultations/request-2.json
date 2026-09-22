@@ -1,0 +1,42 @@
+{
+  "model": "jev-latest",
+  "state": "Design an immediate integration handoff for thirteen Bun features in Can, leaving the concurrent language implementation alone. Can must retain AI forms, state groups, declared failures, local attached tests, immutable values and JavaScript/Bun execution. There are no users requiring backwards compatibility; adding an npm feature implementation is outside scope. The qualified platform is darwin-arm64 on Bun 1.4.2. Testing SQLite through Bun.SQL showed bigint:true alone changed 9007199254740993n into 9007199254740992; safeIntegers:true in addition yielded the original bigint. The safeIntegers:true option on bun:sqlite was exact too. Can currently validates PostgreSQL SQL and manages it asynchronously. Bun.SQL includes SQLite/MySQL adapters; this preparation has no live MySQL or transaction proof. Existing resource and callback ownership can support the overlapping lifetimes of streams, subprocess output and sockets. Whole Can applications comparing function APIs, separate domain forms and a common event form have not been constructed. For document input, YAML, JSON5 and JSONL converted the same large integer inaccurately, whereas TOML refused it. JSONL.parse returned early valid records despite a subsequent malformed record; parseChunk exposes the suffix and parse error. Once parsed, typed conversion cannot retrieve original number tokens or overwritten keys. Checking safe integer outputs rejects unsafe results but is insufficient to establish exact fractional source values. The Markdown HTML output retained a script and a javascript: URL. Bun offers render callbacks, alongside Can's existing safe HTML construction. Bun must do the grammar parsing and external parser/sanitizer packages are excluded. Judge separately how to pick a SQL adapter, schedule new syntax, constrain format projections and expose HTML. Every recommendation still needs executable validation.",
+  "questions": {
+    "adapter": {
+      "type": "choice",
+      "instructions": "Given the probes, choose the initial SQLite backend direction.",
+      "criteria": {
+        "unified": "Use the shared Bun.SQL route with safeIntegers:true provisionally, verify mapping, persistence, cancellation and transactions, and switch to bun:sqlite only upon a demonstrated gate failure.",
+        "direct": "Adopt the direct bun:sqlite backend at once, supplying async adaptation even though Bun.SQL has an exact integer setting.",
+        "rounded": "Keep only bigint:true on Bun.SQL and permit loss of integer accuracy."
+      }
+    },
+    "syntax": {
+      "type": "choice",
+      "instructions": "Choose the order for introducing event-oriented language forms.",
+      "criteria": {
+        "gate": "Immediately compare complete streaming, child-output and socket programs and test common ownership; let the resulting evidence settle syntax alongside ongoing independent APIs.",
+        "commit": "Adopt a single general event grammar before producing comparative programs.",
+        "forbid": "Rule out language primitives even if measured examples favor them."
+      }
+    },
+    "formats": {
+      "type": "choice",
+      "instructions": "Select an honest contract for parsed typed documents.",
+      "criteria": {
+        "bounded": "Expose documented native parsing behavior with nonfinite/unsafe integer rejection, complete-input verification, known duplicate rules and explicit source-number limitations; demand native proof for exact modes.",
+        "exact": "Advertise exact lossless numbers from standard parse-then-project conversion.",
+        "replace": "Write replacement Can parsers to preserve complete token information."
+      }
+    },
+    "html": {
+      "type": "choice",
+      "instructions": "Choose the boundary between Markdown output and safe HTML.",
+      "criteria": {
+        "typed": "Keep the default rendered string untrusted; offer distinct safe rendering through Bun callbacks, typed HTML building, URL checks and suppression of raw markup.",
+        "trust": "Treat the default Bun HTML string as inherently safe for response insertion.",
+        "remove": "Drop the entire Markdown capability from this milestone."
+      }
+    }
+  }
+}

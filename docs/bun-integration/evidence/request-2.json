@@ -1,0 +1,34 @@
+{
+  "model": "jev-latest",
+  "state": "We need an independent three-tier roadmap, labelled implement ASAP, implement later and implement whenever, for native Bun facilities exposed through Can libraries or suitable Can primitives. Leave the running LF01-LF21 agent, its files and current contracts untouched. Scope includes Bun built-ins plus Web/Node standard modules Bun actually implements, never arbitrary npm packages, application frameworks or additional AI backends. Existing Can covers AI declarations, HTTP, Bun.SQL restricted to PostgreSQL, JSON/bytes/collections, basic time/random/SHA256 and attached tests. Put MySQL and SQLite extensions in ASAP: their Bun implementations exist but their Can integration does not. The user explicitly asks for breadth and presents WebSockets as one illustrative primitive opportunity. Typed immutable data, written errors, grouped state, local assertion ownership and direct native lowering remain foundations. Candidate families include filesystem/path/glob, child processes, streams, cookies/password/WebCrypto, cloud objects via S3, Redis, parsing/Markdown, image conversion, compression/archives, TCP/UDP/DNS, Node-compatible file watches, scheduling, worker threads, WebView browser operations, native interop and Bun build/test/diagnostic tools. Verify each against the bundled release and OS rather than assuming current documentation proves qualification; Worker remains experimental. Durable OS scheduling and unrestricted interop require distinct product boundaries. Earlier deferred capabilities may be revisited by this separate roadmap without changing active implementation scope. Rank concrete application usefulness alongside dependency order, lifecycle effort and deterministic evidence. Neither callback resemblance nor the availability of ordinary calls should predetermine primitive selection. Repeated events need explicit ownership, message/end/error/drain behavior, buffering/backpressure, cancellation and local event tests. Test several full programs with library calls, domain-specific declarations and a shared event construct before choosing grammar. This consultation makes no syntax authoritative.",
+  "questions": {
+    "exposure": {
+      "type": "choice",
+      "instructions": "Choose the exposure policy that best fits the stated Can expansion.",
+      "criteria": {
+        "compare": "Compare real programs for event/lifecycle capabilities before grammar selection, while ordinary call-shaped features use typed libraries.",
+        "library": "Constrain the entire integration to ordinary calls and named callback values.",
+        "domain": "Decide immediately that every event family gets its own native Can declaration.",
+        "unified": "Select a universal event construct now and route every persistent native resource through it."
+      }
+    },
+    "priority": {
+      "type": "choice",
+      "instructions": "What first-tier breadth is appropriate in addition to mandatory MySQL and SQLite?",
+      "criteria": {
+        "broad": "Include local I/O/processes, stream foundations, web/session/security, data formats, S3 and WebSockets early, with more specialized resources subsequently.",
+        "small": "Limit immediate work to files and databases and defer all remaining built-ins as a group.",
+        "all": "Treat every candidate, including unstable threading and foreign/OS job APIs, as immediate implementation scope."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "Choose a practical validation set for candidate native event syntax.",
+      "criteria": {
+        "multi": "Exercise a stream pipeline, socket session and child-process output together, then assess file-watch, scheduler and worker compatibility.",
+        "websocket": "Use only a WebSocket echo example as the grammar design benchmark.",
+        "generic": "Start with a general event calculus and postpone concrete programs until the abstraction is defined."
+      }
+    }
+  }
+}

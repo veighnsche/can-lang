@@ -1,0 +1,179 @@
+{
+  "version": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "availability": {
+    "status": "observed",
+    "value": {
+      "SQL": "function",
+      "password": "object",
+      "CSRF": "object",
+      "Cookie": "function",
+      "CookieMap": "function",
+      "S3Client": "function",
+      "TOML": "object",
+      "YAML": "object",
+      "JSON5": "object",
+      "JSONL": "object",
+      "markdown": "object"
+    }
+  },
+  "files": {
+    "status": "observed",
+    "value": {
+      "text": "hello",
+      "glob": [
+        "nested/b.txt"
+      ],
+      "entries": [
+        "b.txt"
+      ]
+    }
+  },
+  "sqlite_sql": {
+    "status": "observed",
+    "value": [
+      {
+        "id": 9007199254740992,
+        "value": "x' OR 1=1 --"
+      }
+    ]
+  },
+  "sqlite_direct": {
+    "status": "observed",
+    "value": {
+      "n": {
+        "bigint": "9007199254740993"
+      }
+    }
+  },
+  "process": {
+    "status": "observed",
+    "value": {
+      "out": "$(echo unintended)",
+      "err": "err",
+      "exit": 7
+    }
+  },
+  "stream": {
+    "status": "observed",
+    "value": {
+      "first": [
+        1,
+        2
+      ],
+      "cancelled": true,
+      "locked": false
+    }
+  },
+  "password": {
+    "status": "observed",
+    "value": {
+      "valid": true,
+      "wrong": false
+    }
+  },
+  "webcrypto": {
+    "status": "observed",
+    "value": {
+      "roundtrip": "probe",
+      "extractable": false
+    }
+  },
+  "cookie_csrf": {
+    "status": "observed",
+    "value": {
+      "cookie": "session=abc; Path=/; Secure; HttpOnly; SameSite=Strict",
+      "valid": true,
+      "crossSession": false
+    }
+  },
+  "format_toml": {
+    "status": "error",
+    "name": "SyntaxError",
+    "message": "TOML Parse error: Integer cannot be losslessly represented as a JavaScript number; it must be within +/-(2^53 - 1)"
+  },
+  "format_yaml": {
+    "status": "observed",
+    "value": {
+      "n": 9007199254740992
+    }
+  },
+  "format_json5": {
+    "status": "observed",
+    "value": {
+      "n": 9007199254740992
+    }
+  },
+  "format_jsonl": {
+    "status": "observed",
+    "value": [
+      {
+        "n": 9007199254740992
+      }
+    ]
+  },
+  "jsonl_partial": {
+    "status": "observed",
+    "value": {
+      "partial": [
+        {
+          "ok": 1
+        }
+      ],
+      "chunk": {
+        "values": [
+          {
+            "ok": 1
+          }
+        ],
+        "read": 8,
+        "done": false,
+        "error": {
+          "name": "SyntaxError",
+          "message": "Failed to parse JSONL"
+        }
+      }
+    }
+  },
+  "sqlite_safe_option": {
+    "status": "observed",
+    "value": [
+      {
+        "n": {
+          "bigint": "9007199254740993"
+        }
+      }
+    ]
+  },
+  "markdown": {
+    "status": "observed",
+    "value": {
+      "html": "<h1>Hello</h1>\n<script>alert(1)</script>\n<p><a href=\"javascript:alert(1)\">x</a></p>\n",
+      "disabled": "<p>&lt;b&gt;hello&lt;/b&gt;</p>\n",
+      "render": "function"
+    }
+  },
+  "url_text_time": {
+    "status": "observed",
+    "value": {
+      "url": "https://example.test/b?x=1&x=2",
+      "query": [
+        "1",
+        "2"
+      ],
+      "utf8": [
+        226,
+        130,
+        172
+      ],
+      "iso": "1970-01-01T00:00:00.000Z"
+    }
+  },
+  "http_websocket": {
+    "status": "observed",
+    "value": {
+      "body": "onetwo",
+      "echo": "echo"
+    }
+  }
+}

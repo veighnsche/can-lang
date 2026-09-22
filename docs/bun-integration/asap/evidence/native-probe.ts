@@ -1,0 +1,34 @@
+// Standalone native observations, not Can acceptance tests. Run with the pinned Bun.
+import {mkdtemp, rm, mkdir, rename, readdir} from "node:fs/promises";
+import {tmpdir} from "node:os";
+import {join} from "node:path";
+import {Database} from "bun:sqlite";
+const results: Record<string, unknown> = {version:Bun.version,revision:Bun.revision};
+async function check(name:string,fn:()=>unknown){
+  try { results[name]={status:"observed",value:await fn()}; }
+  catch(e) { results[name]={status:"error",name:e.name,message:e.message}; }
+}
+const directory=await mkdtemp(join(tmpdir(),"can-bun-asap-"));
+try {
+await check("availability",()=>Object.fromEntries(["SQL","password","CSRF","Cookie","CookieMap","S3Client","TOML","YAML","JSON5","JSONL","markdown"].map(k=>[k,typeof Bun[k]])));
+await check("files",async()=>{await mkdir(join(directory,"nested"));await Bun.write(join(directory,"nested/a.txt"),"hello");await rename(join(directory,"nested/a.txt"),join(directory,"nested/b.txt"));return {text:await Bun.file(join(directory,"nested/b.txt")).text(),glob:await Array.fromAsync(new Bun.Glob("**/*.txt").scan({cwd:directory})),entries:await readdir(join(directory,"nested"))};});
+await check("sqlite_sql",async()=>{const sql=new Bun.SQL({adapter:"sqlite",filename:":memory:",bigint:true});try{await sql`CREATE TABLE t (id INTEGER, value TEXT)`;await sql`INSERT INTO t VALUES (${9007199254740993n}, ${"x' OR 1=1 --"})`;return await sql`SELECT id,value FROM t`;}finally{await sql.close();}});
+await check("sqlite_direct",()=>{const db=new Database(":memory:",{safeIntegers:true});try{return db.query("SELECT ? AS n").get(9007199254740993n);}finally{db.close();}});
+await check("process",async()=>{const p=Bun.spawn([process.execPath,"-e","process.stdout.write(process.argv[1]);process.stderr.write('err');process.exitCode=7","$(echo unintended)"],{stdout:"pipe",stderr:"pipe",env:{}});const [out,err,exit]=await Promise.all([new Response(p.stdout).text(),new Response(p.stderr).text(),p.exited]);return {out,err,exit};});
+await check("stream",async()=>{let cancelled=false;const stream=new ReadableStream({start(c){c.enqueue(new Uint8Array([1,2]));},cancel(){cancelled=true;}});const reader=stream.getReader();const first=await reader.read();await reader.cancel();reader.releaseLock();return {first:Array.from(first.value),cancelled,locked:stream.locked};});
+await check("password",async()=>{const hash=await Bun.password.hash("probe-password",{algorithm:"argon2id",memoryCost:4096,timeCost:2});return {valid:await Bun.password.verify("probe-password",hash),wrong:await Bun.password.verify("wrong",hash)};});
+await check("webcrypto",async()=>{const key=await crypto.subtle.generateKey({name:"AES-GCM",length:256},false,["encrypt","decrypt"]);const iv=crypto.getRandomValues(new Uint8Array(12));const plain=new TextEncoder().encode("probe");const cipher=await crypto.subtle.encrypt({name:"AES-GCM",iv},key,plain);return {roundtrip:new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv},key,cipher)),extractable:key.extractable};});
+await check("cookie_csrf",()=>{const token=Bun.CSRF.generate("probe-only",{sessionId:"A"});return {cookie:new Bun.Cookie("session","abc",{httpOnly:true,secure:true,sameSite:"strict"}).toString(),valid:Bun.CSRF.verify(token,{secret:"probe-only",sessionId:"A"}),crossSession:Bun.CSRF.verify(token,{secret:"probe-only",sessionId:"B"})};});
+for (const [name,parse,text] of [
+  ["toml",Bun.TOML.parse,"n = 9007199254740993"],
+  ["yaml",Bun.YAML.parse,"n: 9007199254740993"],
+  ["json5",Bun.JSON5.parse,"{n:9007199254740993}"],
+  ["jsonl",Bun.JSONL.parse,'{"n":9007199254740993}\n'],
+] as const) await check("format_"+name,()=>parse(text));
+await check("jsonl_partial",()=>{const chunk=Bun.JSONL.parseChunk('{"ok":1}\n{bad}\n');return {partial:Bun.JSONL.parse('{"ok":1}\n{bad}\n'),chunk:{...chunk,error:chunk.error?{name:chunk.error.name,message:chunk.error.message}:null}};});
+await check("sqlite_safe_option",async()=>{const sql=new Bun.SQL({adapter:"sqlite",filename:":memory:",safeIntegers:true,bigint:true});try{return await sql`SELECT ${9007199254740993n} AS n`;}finally{await sql.close();}});
+await check("markdown",()=>({html:Bun.markdown.html("# Hello\n\n<script>alert(1)</script>\n\n[x](javascript:alert(1))"),disabled:Bun.markdown.html("<b>hello</b>",{noHtmlBlocks:true,noHtmlSpans:true}),render:typeof Bun.markdown.render}));
+await check("url_text_time",()=>({url:new URL("../b?x=1&x=2","https://example.test/a/").href,query:new URLSearchParams("x=1&x=2").getAll("x"),utf8:Array.from(new TextEncoder().encode("€")),iso:new Date(0).toISOString()}));
+await check("http_websocket",async()=>{const server=Bun.serve({hostname:"127.0.0.1",port:0,fetch(req,s){if(new URL(req.url).pathname==="/ws"){if(s.upgrade(req))return;return new Response("failed",{status:400});}return new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode("one"));c.enqueue(new TextEncoder().encode("two"));c.close();}}));},websocket:{message(ws,message){ws.send(message);}}});try{const body=await(await fetch(server.url)).text();const echo=await new Promise((resolve,reject)=>{const ws=new WebSocket(`ws://127.0.0.1:${server.port}/ws`);const timer=setTimeout(()=>{ws.close();reject(new Error("probe deadline"));},3000);ws.onopen=()=>ws.send("echo");ws.onmessage=e=>{clearTimeout(timer);ws.close();resolve(e.data);};ws.onerror=()=>{clearTimeout(timer);reject(new Error("websocket failure"));};});return {body,echo};}finally{await server.stop(true);}});
+} finally {await rm(directory,{recursive:true,force:true});}
+console.log(JSON.stringify(results,(_,v)=>typeof v==="bigint"?{bigint:v.toString()}:v,2));

@@ -1,0 +1,34 @@
+{
+  "model": "jev-latest",
+  "state": "Prepare three separate Bun-to-Can integration queues: ASAP, later, whenever. Only built-in Bun APIs and its implemented Web/Node standard APIs qualify; exclude external npm frameworks and new AI providers. Do not contact or modify the active LF01-LF21 implementer or its authoritative files. Can already exposes native AI, HTTP, PostgreSQL through Bun.SQL, bytes/JSON, collections, basic clock/random/SHA256 and assertions. MySQL and SQLite are missing Can adapters despite Bun supporting them; include both in ASAP. The user wants broad capability coverage and allows Can primitives when useful, with WebSockets only an example. Preserve typed immutable values, explicit failure contracts, grouped state, local tests and native lowering. Bun offers files/paths/glob, processes, streams, cookies/password/WebCrypto, S3, Redis, document parsers, Markdown, images, archives, compression, TCP/UDP/DNS, watchers via Node APIs, cron, workers, browser WebView, and FFI/build/test/runtime tooling. API presence and platform support must be checked on the exact bundled target; workers are documented experimental. Persistent OS jobs and raw native interop have separate boundaries. These lists are a new roadmap; prior deferred choices are candidates for revision here, not changes already made to LF. Evaluate broad usefulness, dependencies, lifecycle complexity and testability. A callback-looking API does not alone prove a new primitive; function-shaped APIs can still deserve one if a full program shows benefit. Conversely existing calls are not an automatic veto. Candidate event surfaces must cover message/end/error/drain, repeated dispatch, ownership, backpressure, cancellation and attached deterministic tests. Compare libraries, per-domain primitives and a general event primitive on several complete programs before selecting syntax. No chosen syntax should be inferred from this advisory classification.",
+  "questions": {
+    "exposure": {
+      "type": "choice",
+      "instructions": "How should the roadmap decide library versus primitive exposure?",
+      "criteria": {
+        "compare": "Schedule complete-program comparisons for lifecycle/event families; use typed library operations for simple calls and select any new primitive from evidence.",
+        "library": "Require every capability to be exposed exclusively as catalogue calls and named callbacks.",
+        "domain": "Commit now to a distinct primitive for each event-oriented Bun family.",
+        "unified": "Commit now to one general event primitive for all persistent Bun resources."
+      }
+    },
+    "priority": {
+      "type": "choice",
+      "instructions": "Beyond the required ASAP MySQL/SQLite additions, choose the near-term portfolio.",
+      "criteria": {
+        "broad": "ASAP includes files/processes, foundational streams, HTTP/session/security, typed formats, object storage and WebSocket integration; later adds specialized event/platform families.",
+        "small": "ASAP includes only filesystem and database work; move all other capability families to later regardless of available independent work.",
+        "all": "Put the entire Bun inventory in ASAP, including experimental workers, raw interop and OS-persistent jobs."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "What evidence best tests the primitive idea without narrowing it to WebSockets?",
+      "criteria": {
+        "multi": "Compare at least streaming ingestion, a WebSocket session and subprocess output, then check reuse against watches/schedules/workers.",
+        "websocket": "Choose the surface from a WebSocket echo server alone and apply it to other domains afterward.",
+        "generic": "Design an abstract universal event algebra without concrete end-to-end programs."
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+# Prompt for the implementing coding agent
+
+Copy the prompt below into the implementation task once its checkout is ready. This preparation does not create or interrupt a task.
+
+---
+
+Implement all thirteen ASAP Bun-to-Can integrations in `/Users/vince/Projects/can-lang`. Start from `docs/bun-integration/asap/README.md`, follow `execution-queue.md` / `execution-queue.json`, read every capability plan and `integration-contract.md`, and resolve the bounded gates in `decisions.md`. The objective is working Can capabilities with evidence, not another roadmap.
+
+Do not interrupt the current LF01–LF21 implementer. Do not send it messages, pause it, overwrite its files or change its task list. Use the integrated result of its required language contracts, or an isolated checkout for independent work. Check repository state and AGENTS.md first. Preserve user changes. If the active checkout is still changing, perform independent implementation in isolation and integrate deliberately after the required work is available.
+
+Keep all thirteen capabilities in scope: files/directories/paths/glob; SQLite and dialect-aware SQL; MySQL; bounded processes; streams/lifecycles; broader HTTP; WebSocket client/server; passwords/crypto; cookies/CSRF; S3; TOML/YAML/JSON5/JSONL; Markdown; URL/text/bytes/time. SQLite and MySQL both belong in this milestone. WebSockets are one capability, not the scope of the whole task.
+
+Preserve Can's native AI forms, grouped state, explicit error contracts and locally attached assertions. No external-user compatibility is required: avoid aliases, old ABI retention and duplicate legacy paths. Use native JavaScript/Bun operations, including Bun's implemented Web/Node standard APIs, with only adapters needed for Can contracts and immutability. Do not implement new drivers, cryptographic algorithms, SQL/document parsers, HTTP stacks or schedulers in Can. A compiler-side grammar dependency requires the concrete SQL qualification decision; do not sneak in an npm runtime implementation.
+
+Begin work immediately with baseline verification and small vertical slices. The supplied queue is topological, with explicit prerequisites; if one branch is blocked by service availability or a design gate, record it and continue another unblocked branch. Do not repeatedly ask whether to continue, produce another broad plan, or mark a capability complete because its easy subset works.
+
+Inspect the current canonical catalogue before allocating types/error IDs or naming APIs. The plans' interfaces are notation, not approved Can grammar. Existing library calls keep current syntax. For any new event primitive, first complete the three-workflow comparison in G-EVENT, then implement parser/formatter/checker/IR/emitter/assertion behavior together. Give difficult new design decisions three fresh Jev consultations using semantically equivalent but fully rewritten prose, save the raw requests/responses, investigate disagreement and rely on tests for correctness. Existing preparation consultations do not approve concrete syntax or a SQL parser dependency.
+
+Use the plan's file ownership. Edit `compiler/internal/catalogue/catalogue.json` and regenerate its mirrors, wire runtime operations through `compiler/internal/emit/program.go`, register runtime imports in `runtime/modules.json`, and qualify required APIs against the pinned distribution. Reuse `runtime/owner.ts`, immutable data/bytes, existing Completion/error provenance and the finished native-request fixture system. Keep local test ownership; reusable fixtures must not bypass it.
+
+Treat the native findings as regressions to preserve: SQLite needs `safeIntegers:true` on the tested Bun.SQL path; ordinary parse-and-project cannot recover rounded numeric tokens; JSONL must reject malformed suffixes; native Markdown HTML is not automatically `html::safe`. Qualify exact mappings, transactions, cancellation, backpressure, close races and publication behavior. A Promise timeout alone does not stop a native operation or reap a process.
+
+For each capability produce complete positive and rejected Can programs, locally attached assertions, expected diagnostic spans, operation/error mappings, native runtime tests, fixture tests, a maintained example and generated TypeScript showing native lowering. Reconcile authoritative decisions/specs at implementation time. Mark its `DONE` step only after all acceptance evidence is recorded. Update the matching parent Bun roadmap task and execution status consistently; never alter unrelated LF task status.
+
+Run actual SQLite, loopback HTTP/WebSocket and owned subprocess tests. MySQL and S3 require controlled real test services in addition to fixtures. Do not discover production credentials, contact a production service or create paid infrastructure as a workaround. Record unavailable service qualification as incomplete, proceed with independent work, and request only the specific missing configuration if it is ultimately necessary.
+
+Run focused tests while developing, required full compiler/runtime/catalogue/bundle checks at completion, and confirm that tests did not silently skip. Use the pinned Bun/archive, never an ambient replacement. Do not report all thirteen done while a native test service, grammar gate, unsafe rendering path, missing primitive assertion or resource cleanup case remains unresolved.
+
+Finish with the implemented capabilities, any genuinely remaining blockers, tests actually run, service/target versions, generated-native evidence and links to the updated contracts and examples. Persist until the complete authorized milestone is achieved or a concrete external dependency prevents the remaining work.

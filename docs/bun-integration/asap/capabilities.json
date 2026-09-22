@@ -1,0 +1,785 @@
+[
+  {
+    "id": "B1-01",
+    "slug": "files",
+    "summary": "Deliver application filesystem access, including paths and globbing, through typed library operations. Existing platform/io.ts is primarily standard-input handling; keep that purpose clear and add filesystem operations in their own module. Application paths are explicit authority, not compiler project confinement. An explicit base directory defines relative resolution; it is not a symlink-safe sandbox. Do not advertise race-free confinement without a native handle-relative proof.",
+    "files": [
+      [
+        "runtime/platform/files.ts",
+        "new",
+        "Bounded reads/writes, stat, directory operations and expected OS-error translation."
+      ],
+      [
+        "runtime/platform/path.ts",
+        "new",
+        "Native path operations, base-directory resolution and glob results."
+      ],
+      [
+        "runtime/platform/io.ts",
+        "existing",
+        "Reuse or extract compatible I/O error handling; do not broaden all catches indiscriminately."
+      ],
+      [
+        "tests/integration/files_test.go",
+        "new",
+        "Generated Can programs and temporary-tree cases."
+      ],
+      [
+        "runtime/test/files.test.ts",
+        "new",
+        "Limits, aliasing, failure and native filesystem behavior."
+      ]
+    ],
+    "api": "files::read_bytes(path, max_bytes) -> bytes\nfiles::read_text(path, max_bytes) -> str\nfiles::write_bytes(path, bytes, overwrite) -> write_result\nfiles::write_text(path, str, overwrite) -> write_result\nfiles::stat(path, follow_symlinks) -> file_info\nfiles::list(path, max_entries) -> [entry]\nfiles::mkdir(path, recursive); copy(source, destination, overwrite)\nfiles::move(source, destination, overwrite); remove(path, recursive)\npath::resolve(base, parts); join(parts); basename(path); extension(path)\nfiles::glob(base, pattern, follow_symlinks, max_entries) -> [path]",
+    "steps": [
+      "Specify missing-vs-denied-vs-invalid-path failures, supported file kinds, overwrite/exclusive-create behavior, symlink following, recursive removal and ordering. Return absence only for actual missing paths, not permission failures.",
+      "Implement bounded chunk reads; check each chunk before accumulating. Decode text with fatal UTF-8. Copy native views before exposing immutable Can bytes. A stat size check is an optimization, not enforcement against a growing file.",
+      "Use Bun.file/Bun.write for applicable operations and node:fs/promises for directories, lstat, rename, copy and removal. Exclusive creation must use an atomic native flag, not exists-then-write. Do not call replacement writes atomic unless the implementation and tests support that promise.",
+      "Use node:path and Bun.Glob; normalize returned paths consistently, impose result limits during enumeration, and sort only if deterministic ordering is in the contract. Keep URL conversion separate from filesystem normalization.",
+      "Add catalogue signatures, errors, immutable metadata and emitter bindings. Fixture-capable effect calls must use the native-boundary provider before touching disk.",
+      "Add owned streaming readers/writers once B1-05 settles the lifecycle; bounded operations can ship earlier. Test short writes, failure cleanup and release of locks/handles."
+    ],
+    "tests": [
+      "Success: binary including NUL and invalid UTF-8 through bytes; strict text round-trip; nested tree; empty directory; copy/move; reopen writes; glob dotfiles and symlinks.",
+      "Rejected/failed: wrong types, unhandled declared errors, negative limits, text decoding failure, missing parent, existing exclusive destination, directory-as-file, permission denial and recursive-delete opt-in.",
+      "Runtime: growing input cannot evade cap; cancelled reads close; failure cannot report complete write; symlink behavior agrees with declared policy; only a dedicated temporary tree is deleted."
+    ],
+    "fixtures": "Use a per-assertion temporary root for real filesystem tests. Fixture records bind operation, resolved logical path, mode, input digest and outcome; writes assert bytes and overwrite flags. Fixture reuse supplies data, never a global ambient mock. Add a strict no-live-filesystem assertion test. Paths in checked-in fixtures are symbolic test-root paths, not machine-specific absolute paths.",
+    "lowering": "const input = Bun.file(resolvedPath).stream();\n// Read through the shared byte-budget adapter; never await .bytes() first then check.\nawait fs.mkdir(resolvedDirectory, {recursive});\n// Native operations implement the filesystem; adapters enforce Can values/failures.",
+    "risks": "An application filesystem root is not a security sandbox. Do not apply compiler build-directory restrictions to arbitrary authorized application paths. Cross-device rename must either fail explicitly or use a separately documented copy/remove operation; silently losing atomicity is unacceptable.",
+    "file": "b1-01-files.md"
+  },
+  {
+    "id": "B1-02",
+    "slug": "sqlite-and-sql-boundary",
+    "summary": "Deliver SQLite memory/file connections and a genuine dialect-aware SQL contract, preserving PostgreSQL. Prefer Bun.SQL with safeIntegers:true for SQLite, supported by the native probe. bigint:true alone is insufficient on this target. Retain bun:sqlite as a fallback to investigate only if required native behavior fails; the direct synchronous API is not automatically compatible with Can asynchronous transaction bodies.",
+    "files": [
+      [
+        "compiler/internal/project/manifest.go",
+        "existing",
+        "Admit explicit postgres/mysql/sqlite connection and descriptor dialects."
+      ],
+      [
+        "compiler/internal/sql/parser.go",
+        "existing",
+        "Separate the PostgreSQL parser from the dialect-neutral entry point."
+      ],
+      [
+        "compiler/internal/sql/descriptors.go",
+        "existing",
+        "Dialect-tagged descriptor validation, parameter segments, cardinality and limits."
+      ],
+      [
+        "compiler/internal/check/sql.go",
+        "existing",
+        "Prove descriptor/pool dialect agreement and parameter/result contracts."
+      ],
+      [
+        "compiler/internal/ir/sql.go",
+        "existing",
+        "Carry checked dialect and descriptor evidence."
+      ],
+      [
+        "compiler/internal/emit/sql.go",
+        "existing",
+        "Emit dialect-aware execution from checked evidence."
+      ],
+      [
+        "runtime/platform/sql.ts",
+        "existing",
+        "Native connection options and per-dialect value/error mapping."
+      ],
+      [
+        "runtime/platform/sql-descriptor.ts",
+        "existing",
+        "Immutable descriptor materialization and native template bindings."
+      ],
+      [
+        "runtime/platform/transaction.ts",
+        "existing",
+        "SQLite transaction lifetime, rollback and async body handling."
+      ],
+      [
+        "tests/integration/sql_test.go",
+        "existing",
+        "SQLite persistence and PostgreSQL regression tests."
+      ],
+      [
+        "tests/integration/sql_descriptors_test.go",
+        "existing",
+        "Dialect grammar, placeholders and source spans."
+      ]
+    ],
+    "api": "connection dialect = postgres | mysql | sqlite\nsqlite config = memory | file(path, mode, busy_timeout)\nexisting typed SQL declarations + explicit descriptor dialect\nexisting one / optional / many / execute cardinalities\nexisting transaction body and error propagation\nresult metadata = dialect-appropriate exact affected_rows / optional insert_id",
+    "steps": [
+      "Create a three-dialect contract table covering placeholders, null, integers, decimals, booleans, text, blobs, dates, affected rows and insert IDs. Reject unsupported mappings; never silently cast an exact Can integer through Number.",
+      "Introduce dialect into manifest and checked descriptor identity. Keep PostgreSQL parsing in its backend. Do not feed MySQL backticks or SQLite syntax through libpg_query and call the result dialect validation.",
+      "Complete the SQL admission gate in decisions.md before declaring frontend support. Compare a pinned maintained dialect parser with native prepare qualification; preserve compile-time syntax guarantees or explicitly reconcile the contract. Runtime-only prepare does not prove offline build validation. A regex/semicolon splitter is forbidden as a substitute parser.",
+      "Continue static-string/parameter segment binding through native tag templates. No user values in SQL text. Prove repeated and out-of-order parameters, comments/literals and parameter-like text. Preserve row-limit/cardinality contracts per dialect instead of appending PostgreSQL-specific syntax blindly.",
+      "Open Bun.SQL with explicit sqlite adapter, filename and safeIntegers:true; qualify all numeric conversions. Implement memory lifetime, file open modes and close. File DB tests must reopen with a new connection. Never infer rollback from an in-memory disappearing connection.",
+      "Implement transaction begin/commit/rollback on the owned connection; a body can await. Test domain failure, standard failure, cancellation and commit failure independently, preserving primary occurrence and cleanup diagnostics.",
+      "Qualify lock contention, busy timeout and event-loop behavior. Bound connection acquisition and release. If the target cannot interrupt a long native SQLite operation, describe that limitation and require an enforceable execution design before promising hard query deadlines.",
+      "Complete PostgreSQL plus SQLite evidence, then pass the same descriptor/value tests to B1-03. Do not mark the three-engine milestone done before MySQL."
+    ],
+    "tests": [
+      "Success: memory and persistent DB, typed CRUD, one/optional/many/execute, NULL mapping, exact \u00b164-bit edge values, Unicode and blobs, transaction commit/rollback.",
+      "Rejected: pool/descriptor dialect mismatch, missing/extra bind values, multiple statements where one is required, malformed per-dialect grammar, unsupported row shape and loss-prone conversion.",
+      "Runtime: safeIntegers regression at 9007199254740993n; failure after first write really rolls back; await inside transaction; closing pool during leased operation; busy database; failed commit provenance.",
+      "Generated TS: native bindings remain separated from literals; no new SQL engine or interpolated values; target options include safeIntegers:true for SQLite."
+    ],
+    "fixtures": "Local attached tests own schemas and fixture sequences. Pure row-projection tests use immutable row data; native SQL request fixtures verify descriptor, dialect, parameters and transaction ordering. Real SQLite runs are mandatory and offline. Reusable SQL fixtures do not make an untested caller count as locally tested.",
+    "lowering": "const db = new Bun.SQL({adapter: \"sqlite\", filename, safeIntegers: true});\nconst rows = await db`SELECT ${9007199254740993n} AS n`;\n// Compiler-owned static template segments + separately supplied values remain bound.\nawait db.close();",
+    "risks": "The SQL grammar backend remains an explicit implementation gate, not a secretly decided new dependency. A probe verifies one integer, not every type or transaction. Native prepare against a database may depend on schema and cannot casually replace offline compiler parsing. Preserve exact diagnostics and existing approved statement restrictions.",
+    "file": "b1-02-sqlite-and-sql-boundary.md"
+  },
+  {
+    "id": "B1-03",
+    "slug": "mysql",
+    "summary": "Implement MySQL through Bun.SQL using the shared dialect boundary. This is a required ASAP deliverable, not a later optional adapter. Do not copy PostgreSQL assumptions about placeholders, booleans, datetime, decimal values, insert IDs or error codes.",
+    "files": [
+      [
+        "runtime/platform/sql.ts",
+        "existing",
+        "MySQL config, mapping and known operational errors."
+      ],
+      [
+        "runtime/platform/transaction.ts",
+        "existing",
+        "Native MySQL transaction ownership and rollback."
+      ],
+      [
+        "compiler/internal/project/manifest.go",
+        "existing",
+        "MySQL connection configuration and descriptor dialect."
+      ],
+      [
+        "compiler/internal/sql/descriptors.go",
+        "existing",
+        "MySQL frontend dispatch and binding evidence."
+      ],
+      [
+        "tests/integration/mysql_test.go",
+        "new",
+        "Real service qualification and shared three-engine workload."
+      ],
+      [
+        "tests/integration/testdata/mysql",
+        "new",
+        "Local schema, seeds, dialect cases and driver harness."
+      ]
+    ],
+    "api": "mysql connection(host, port, database, credentials, TLS, pool_limits)\nSQL typed descriptors declare mysql dialect\nquery cardinalities retain the common Can contract\nexecute -> affected_rows plus optional exact insert_id\ntransaction callback retains its calculated error set",
+    "steps": [
+      "Reuse B1-02 frontend/value tables; implement MySQL-specific options with explicit TLS and credentials. Never log credential-bearing URLs.",
+      "Use Bun.SQL native prepared bindings. Distinguish identifiers from values; dynamic identifiers require a separate checked operation, not interpolation into a parameter slot.",
+      "Qualify BIGINT signed/unsigned extremes and DECIMAL. If the driver emits decimal strings, validate and preserve them through an explicit exact representation; do not coerce to floating point.",
+      "Define DATETIME without timezone separately from instants; set test session timezone explicitly. Exercise bit/boolean, binary and NULL. Reject unsupported native result objects before exposing data.",
+      "Classify native errors by verified codes for connection/auth/constraint/deadlock/timeout; preserve private cause. Unknown or adapter-programming errors remain standard failures, not generic mysql errors.",
+      "Run shared typed CRUD/rollback workload across all three engines and dialect-specific cases against a provisioned local MySQL service. Do not add automatic retries to non-idempotent statements.",
+      "Add clean setup/teardown, version reporting and test-service configuration. Missing service is a visible qualification blocker, never a passing integration result."
+    ],
+    "tests": [
+      "Success: exact bindings containing quotes/comment markers, affected rows, generated IDs, nullable fields, transaction commit and rollback, prepared statement reuse.",
+      "Rejected: SQLite/PostgreSQL descriptor on MySQL pool, invalid grammar and unsupported types, unsigned integer outside Can conversion policy.",
+      "Runtime: disconnect mid-query, authentication failure, unique-key conflict, concurrent transactions, deadlock error, rollback failure does not replace original failure.",
+      "No fabricated evidence: service version and execution logs saved; fixture tests alone cannot close this task."
+    ],
+    "fixtures": "Request fixtures verify dialect, descriptor identity, typed values and transaction boundaries. Real tests use an isolated database name and a dedicated low-privilege test account. Do not discover production credentials. PostgreSQL regression evidence remains separate from MySQL evidence.",
+    "lowering": "const db = new Bun.SQL(mysqlURL, {adapter: \"mysql\", bigint: true});\n// Qualify exact MySQL behavior; option names alone are not evidence of every mapping.\nconst rows = await db`SELECT ${value} AS value`;",
+    "risks": "No MySQL service was exercised during this preparation. SQL modes, timezone, server version and TLS configuration affect behavior and belong in the qualification record. Bun is the wire driver; no npm MySQL client enters the runtime.",
+    "file": "b1-03-mysql.md"
+  },
+  {
+    "id": "B1-04",
+    "slug": "processes",
+    "summary": "Expose bounded process execution first, then incremental output through B1-05. Input is an executable and argument array. A shell-language API is not needed for this capability. A nonzero exit is a completed process result; an explicit checked helper may convert it to a declared domain error.",
+    "files": [
+      [
+        "runtime/platform/process.ts",
+        "new",
+        "Spawn, concurrent pipe draining, deadlines, termination and reaping."
+      ],
+      [
+        "runtime/owner.ts",
+        "existing",
+        "Register the child and its pipes under the current owner."
+      ],
+      [
+        "tests/integration/process_test.go",
+        "new",
+        "Can API and owned subprocess cases."
+      ],
+      [
+        "runtime/test/process.test.ts",
+        "new",
+        "Controlled child scripts and race tests."
+      ]
+    ],
+    "api": "process::run(executable, args, options) -> process_result\noptions = cwd, explicit_env, stdin_bytes, stdout_limit, stderr_limit,\n          deadline_ms, termination_grace_ms\nprocess_result = stdout_bytes, stderr_bytes, exit_code_or_signal\nprocess::require_success(result) -> result emits [process::nonzero]\nprocess::which(name, search_path) -> optional_path",
+    "steps": [
+      "Define binary output, explicit UTF-8 conversion, exit-vs-signal representation, environment inheritance opt-in and path resolution. Validate durations and byte caps before spawning.",
+      "Start native Bun.spawn with arrays, explicit cwd/env and piped I/O. Register ownership immediately after spawn, before waiting for any output.",
+      "Drain stdout and stderr concurrently while writing stdin with backpressure. Independent per-pipe limits prevent one blocked pipe deadlocking the other. Increment counts before retaining bytes.",
+      "On timeout, overflow, input error or owner cancellation: stop producing stdin, signal child, wait grace, escalate if supported, await exited and finish/cancel pipe drains under a bounded shutdown deadline.",
+      "Specify direct-child versus process-tree guarantees. Add an owned-grandchild reproducer; do not promise no descendant survives merely because child.kill() completed. Qualify a platform-native group strategy or make descendants an explicit unsupported contract.",
+      "Map spawn/permission/I/O errors separately from a successful nonzero status. Preserve original timeout/overflow failure when cleanup also fails.",
+      "Add catalogue and fixture provider binding. Pass incremental reader ownership to B1-05 instead of exposing mutable native subprocess objects."
+    ],
+    "tests": [
+      "Success: argument literally containing $(...) and semicolons; binary stdin/stdout; stderr concurrently larger than a pipe buffer; exit 0 and exit 7.",
+      "Rejected: wrong args type, invalid limits, unsupported environment value; missing executable and denied cwd are declared failures.",
+      "Runtime: endless writer bounded in memory; hanging child reaped; ignores graceful signal; cancellation while stdin blocked; exit simultaneous with deadline; descendant cleanup contract verified."
+    ],
+    "fixtures": "Use repository-owned tiny child scripts; never arbitrary installed tools for core tests. Fixture request includes executable identity, argv, selected env, cwd and stdin digest. Transcript records independent stdout/stderr chunks and terminal exit; do not invent a total ordering across the two OS pipes.",
+    "lowering": "const child = Bun.spawn([executable, ...args], {cwd, env, stdin: \"pipe\", stdout: \"pipe\", stderr: \"pipe\"});\n// Drain both pipes concurrently and await child.exited inside the resource owner.\n// Do not use `new Response(pipe).bytes()` for unbounded adversarial output.",
+    "risks": "A deadline promise race does not terminate a process. Bun.kill of one PID is not process-tree containment. Do not claim a hard shutdown bound for unsupported OS cases without a reproducer and implementation proof.",
+    "file": "b1-04-processes.md"
+  },
+  {
+    "id": "B1-05",
+    "slug": "streams-and-lifecycles",
+    "summary": "Implement reusable lifecycle machinery and determine the Can surface from three complete programs: large-document ingestion, incremental process output, and a stateful WebSocket session. Native AI, grouped state and attached assertions remain the baseline. A match-like event form may fit Can well, but an ordinary one-shot match must not silently become a subscription.",
+    "files": [
+      [
+        "runtime/transport/stream.ts",
+        "new",
+        "Owned pull/consume/write/cancel adapters and byte budgets."
+      ],
+      [
+        "runtime/owner.ts",
+        "existing",
+        "Reuse resource registration, useResource, closeResource and guarded callback scopes."
+      ],
+      [
+        "compiler/internal/ir/resources.go",
+        "existing",
+        "Capture/ownership evidence for any new opaque stream types."
+      ],
+      [
+        "compiler/internal/check/callables.go",
+        "existing",
+        "Handler contract and error-bound checking."
+      ],
+      [
+        "compiler/internal/syntax/native.go",
+        "existing",
+        "Only if the comparison selects new native event syntax."
+      ],
+      [
+        "compiler/internal/check/native.go",
+        "existing",
+        "Only selected primitive admission, no unchecked callback escape."
+      ],
+      [
+        "compiler/internal/emit/participant.go",
+        "existing",
+        "Native participant lowering if required by the chosen form."
+      ],
+      [
+        "runtime/test/streams.test.ts",
+        "new",
+        "Backpressure, reentrancy, ownership and terminal races."
+      ],
+      [
+        "tests/integration/streams_test.go",
+        "new",
+        "Surface acceptance and negative compile programs."
+      ]
+    ],
+    "api": "owned readable<chunk>, writable<chunk>  // conceptual types, not approved spelling\nconsume(source, handlers, limits) -> terminal_result\nhandlers = chunk, end, error; callback error bound is calculated\nwrite(sink, chunk) -> accepted_or_backpressured\ncancel(resource, reason); close(sink)\nbyte/text collection requires an explicit byte limit and deadline\noptional primitive candidates must express repeated dispatch explicitly",
+    "steps": [
+      "Write the three programs in library/callback, per-domain primitive and shared-event styles. Include grouped state, normal completion, handler failure, external failure, cancellation, early stop, backpressure and locally attached fixtures in each. Record diagnostic spans and generated-native sketches.",
+      "Choose the smallest surface justified by complete programs. Freeze its grammar and behavior in the authoritative specs at implementation time; do not wait to start independent library work. New parser/checker/IR files may be introduced only for an actually selected primitive.",
+      "Specify state transitions open -> closing -> closed, exactly one terminal publication, no new callbacks after closure, and observing late native rejections. Error events and handler-thrown failures remain distinguishable.",
+      "Prefer native pull/backpressure where available. Serialize handlers for one owned stream/session unless concurrency is explicitly requested. Await each handler before delivering its next item; bound any native event queue that cannot pause.",
+      "Register opaque resource contents with existing ownership/capture evidence. Reject use-after-close/foreign-owner consistently. Copy bytes at the boundary; no reusable native chunk alias crosses into immutable state.",
+      "Implement cancellation propagation to readers/writers/AbortController, release locks, bounded shutdown, and cleanup failure reporting without overwriting the primary completion.",
+      "Make fixtures drive the same dispatch/owner path as native events. Attach deadlines to assertions; a transcript that never ends cannot hang the build.",
+      "Wire file streams and process stdout/stderr first, then HTTP/S3/WebSocket. Do not invent a universal scheduler or resource system in parallel with owner.ts."
+    ],
+    "tests": [
+      "Success: multiple chunks with exact order within one source; slow consumer propagates backpressure; grouped state updates once per item; UTF-8 spanning chunks.",
+      "Rejected: mismatched handler type or error set, missing required terminal case under selected exhaustive syntax, escaping a disallowed borrowed resource, naked native JS stream data.",
+      "Runtime: chunk handler fails, abort during pending read, simultaneous end/error, close twice, cancelled read rejects late, queue cap reached, alias mutation attempt.",
+      "Generated TS uses ReadableStream/WritableStream and native hooks; no eager whole-stream buffering masquerading as streaming."
+    ],
+    "fixtures": "Transcript entries include item, normal end, native failure, cancellation, drain and logical timing. The test context owns each transcript and expected outgoing writes. Reusable transcript definitions remain inert until selected locally. Test extra/unconsumed events, missing terminal, handler failure and fixture exhaustion through real dispatch.",
+    "lowering": "const reader = nativeReadable.getReader();\ntry {\n  for (;;) {\n    const next = await reader.read();\n    if (next.done) break;\n    await invokeCheckedHandler(copyIntoCanValue(next.value));\n  }\n} finally {\n  // Cancel on early stop, observe rejection, then release the lock.\n  reader.releaseLock();\n}",
+    "risks": "Grammar is a bounded early implementation gate, not an approval request or a reason to defer streams. Bun client/server event APIs differ; do not fabricate backpressure support or erase domain-specific events merely to fit one primitive.",
+    "file": "b1-05-streams-and-lifecycles.md"
+  },
+  {
+    "id": "B1-06",
+    "slug": "http",
+    "summary": "Extend the existing HTTP/fetch/server forms and typed request/response operations. Cover methods, routing, repeated headers, multipart, streaming, SSE, TLS and cancellation. Preserve normalized fetch failures and local native-request tests from the language-fix implementation; inspect its completed contract before adding another boundary.",
+    "files": [
+      [
+        "runtime/platform/http.ts",
+        "existing",
+        "Typed methods, requests, headers and stream response constructors."
+      ],
+      [
+        "runtime/platform/router.ts",
+        "existing",
+        "Methods, path matching and method-not-allowed behavior."
+      ],
+      [
+        "runtime/platform/server.ts",
+        "existing",
+        "Bun server lifecycle, TLS and disconnect handling."
+      ],
+      [
+        "runtime/platform/form.ts",
+        "existing",
+        "Multipart field/file projection and limits."
+      ],
+      [
+        "runtime/transport/request.ts",
+        "existing",
+        "Native request construction and owned request bodies."
+      ],
+      [
+        "runtime/transport/body.ts",
+        "existing",
+        "Bounded and incremental body handling."
+      ],
+      [
+        "runtime/transport/named.ts",
+        "existing",
+        "Named fetch body/result integration."
+      ],
+      [
+        "compiler/internal/check/http.go",
+        "existing",
+        "Checked HTTP configuration and contracts."
+      ],
+      [
+        "tests/integration/http_test.go",
+        "existing",
+        "Method/header/body cases."
+      ],
+      [
+        "tests/integration/server_test.go",
+        "existing",
+        "Streaming, TLS and shutdown."
+      ]
+    ],
+    "api": "http routes for GET/HEAD/POST/PUT/PATCH/DELETE/OPTIONS\nheaders = ordered repeated fields with case-insensitive lookup\nrequest body = one owned byte stream or bounded typed decode\nresponse_stream(status, headers, body)\nresponse_sse(events, options)\nmultipart fields preserve repeated names; files have owned bounded readers",
+    "steps": [
+      "Inventory existing request/response operations and extend them, preserving native fetch/judge normalization semantics. Define redirect policy, HEAD body suppression, method fallback and duplicate-header behavior.",
+      "Keep body single-consumption explicit. Retain bounded whole-body convenience functions while using B1-05 for incremental reads/writes. Apply limits while consuming, including multipart boundaries and per-file/total caps.",
+      "Use Bun.serve, fetch, Request, Response and Headers; adapt immutable Can values at the boundary. Preserve Set-Cookie as separate fields instead of comma-joining it.",
+      "Implement HTTP method routing and typed body choices. Client disconnect cancels handlers/stream production under the correct owner; avoid continuing expensive work with no recipient.",
+      "Add SSE framing for id/event/data/retry with validation against line injection, multiline data, heartbeat policy and bounded queues. Native HTTP transport remains the engine.",
+      "Add TLS configuration from explicit certificate/key sources and test a local certificate chain; reject unsupported flags rather than ignoring them. Do not bake production credentials into examples.",
+      "Define failures before response publication versus after headers are sent. After publication, terminate/report the stream; never pretend a different status can still be sent.",
+      "Extend native-request fixtures to chunked input, repeated headers, disconnects and outgoing streaming bodies. Keep existing normalized failure identity and private provenance."
+    ],
+    "tests": [
+      "Success: complete method table, duplicate query/header values, multipart text+binary files, incremental upload/download, SSE framing and local TLS.",
+      "Rejected: invalid status/method/header, inconsistent body/status, multipart oversized input, invalid SSE fields, second read of consumed body.",
+      "Runtime: slow client caps buffering; disconnect cancels; pre-header failure emits planned response; post-header failure closes correctly; server stop drains with a deadline.",
+      "Generated output delegates native I/O to Bun.serve/fetch; no custom HTTP stack."
+    ],
+    "fixtures": "Add per-owner HTTP transcripts with request chunks, delays, close and expected output. Test real loopback servers in addition to deterministic fixtures. Native-request tests cover normalized errors and failure provenance; callback-only mocks do not qualify TLS, multipart or transport behavior.",
+    "lowering": "return new Response(nativeOwnedReadable, {status, headers});\nconst server = Bun.serve({hostname, port, fetch: checkedOwnedHandler, tls});\n// Request.signal and owner cancellation cooperate; publication is tracked once.",
+    "risks": "Do not claim native FormData buffering is streaming multipart parsing. If Bun lacks incremental multipart primitives for the required contract, identify the supported bounded path and keep the unresolved streaming subtask visible rather than reimplementing a parser silently.",
+    "file": "b1-06-http.md"
+  },
+  {
+    "id": "B1-07",
+    "slug": "websockets",
+    "summary": "Implement both client and server sessions, with a strong primitive candidate evaluated under B1-05. The user\u2019s match-arm analogy is worth testing through a complete Can program with grouped session state. It does not settle the syntax, and WebSockets are only one of the thirteen capabilities.",
+    "files": [
+      [
+        "runtime/platform/websocket.ts",
+        "new",
+        "Client/server adapters, typed frames and session ownership."
+      ],
+      [
+        "runtime/platform/server.ts",
+        "existing",
+        "Upgrade integration and server-owned session cleanup."
+      ],
+      [
+        "runtime/platform/http.ts",
+        "existing",
+        "Typed upgrade result, request headers and protocol validation."
+      ],
+      [
+        "compiler/internal/check/native.go",
+        "existing",
+        "Selected primitive/session contract checks if needed."
+      ],
+      [
+        "compiler/internal/ir/resources.go",
+        "existing",
+        "Owned session capture evidence."
+      ],
+      [
+        "runtime/test/websocket.test.ts",
+        "new",
+        "Session ordering, queue caps and close races."
+      ],
+      [
+        "tests/integration/websocket_test.go",
+        "new",
+        "Real loopback client/server and surface tests."
+      ]
+    ],
+    "api": "session events = open | text(str) | binary(bytes) | drain | close(code, reason) | failure\nsession operations = send_text, send_bytes, close\nserver = upgrade authenticated HTTP request with typed session data\nclient = connect URL with protocol/options and deadline\noptional native event declaration = result of B1-05 comparison, not invented here",
+    "steps": [
+      "Specify client/server event differences, frame types, connection handshake failure versus established-session failure, close code/reason validity and maximum message sizes.",
+      "Integrate Bun.serve upgrade and native WebSocket client. Authentication/authorization happens before server.upgrade; a rejected handshake remains ordinary HTTP.",
+      "Use per-session grouped state under serialized checked handlers. Native server hooks are installed once, with typed session data selecting the owner. Do not share mutable application state between sessions by accident.",
+      "Translate native send/backpressure results deliberately. Server drain can resume queued sends; the client API may need a different bounded strategy. Never claim the client exposes the same drain semantics as ServerWebSocket.",
+      "Handle cancellation, server stop, failed opening, terminal close and late callbacks through B1-05 ownership. Avoid automatic reconnect/replay; it changes delivery semantics.",
+      "Expose explicit protocol/subprotocol/TLS options supported by the target. Preserve close provenance; arbitrary event objects must not leak into Can.",
+      "If the primitive wins, add parser/format/check/IR/emitter support and attached event assertions together. Keep library connection operations available for straightforward operations.",
+      "Qualify server publication/subscription operations separately if included: distinguish socket publish excluding sender from server publish including all; do not conflate with a general message broker."
+    ],
+    "tests": [
+      "Success: real client/server text and binary echo, two independent stateful sessions, explicit protocol, graceful close, upgrade denial.",
+      "Rejected: wrong handler payload, invalid close code/reason length, unsupported protocol and invalid ws/wss address.",
+      "Runtime: oversized message, saturated send queue, slow handler, callback failure, abrupt disconnect, close during pending send, server shutdown with active sessions.",
+      "Acceptance includes selected primitive comparison evidence, not merely a working JavaScript echo server."
+    ],
+    "fixtures": "Script open/text/binary/drain/close/error events and verify sent frames through the actual adapter. Extra events after close must be rejected or ignored according to the terminal contract and must not invoke Can again. Real loopback tests qualify upgrade behavior; fixtures preserve local test ownership.",
+    "lowering": "const client = new WebSocket(url, protocols);\n// Server: Bun.serve({fetch(request, server) { ...server.upgrade(...) }, websocket: hooks})\n// Hooks enter the Can owner and checked handler path; they do not call unchecked callbacks.",
+    "risks": "WebSocket has no universal application delivery acknowledgment. Do not promise exactly-once network delivery from exactly-once terminal publication. Primitive comparison must also cover streams/processes, not extrapolate from this domain alone.",
+    "file": "b1-07-websockets.md"
+  },
+  {
+    "id": "B1-08",
+    "slug": "crypto",
+    "summary": "Extend the current SHA-256 operation with password hashing/verification, HMAC and a deliberately explicit WebCrypto key/encryption/signature subset. All cryptography remains native. Distinguish a verification mismatch (false) from malformed/unsupported input and native operational failure.",
+    "files": [
+      [
+        "runtime/platform/crypto.ts",
+        "existing",
+        "Native hashing, password and WebCrypto adapters."
+      ],
+      [
+        "runtime/platform/crypto-key.ts",
+        "new",
+        "Private opaque CryptoKey representation and usage checks."
+      ],
+      [
+        "runtime/platform/random.ts",
+        "existing",
+        "Reuse secure byte generation where appropriate."
+      ],
+      [
+        "compiler/internal/types/types.go",
+        "existing",
+        "Inspect opaque catalogue type admission; extend only if needed."
+      ],
+      [
+        "runtime/test/crypto.test.ts",
+        "new",
+        "Vectors, malformed inputs and tampered ciphertext."
+      ],
+      [
+        "tests/integration/crypto_test.go",
+        "new",
+        "Typed contracts, key misuse and native lowering."
+      ]
+    ],
+    "api": "password::hash(password, cost_profile) -> password_hash\npassword::verify(password, encoded_hash) -> bool\ncrypto::hmac_sha256(key, bytes) -> bytes\ncrypto::generate/import_key(algorithm, usages, export_policy) -> opaque_key\ncrypto::encrypt_aes_gcm(key, nonce, plaintext, associated_data) -> bytes\ncrypto::decrypt_aes_gcm(key, nonce, ciphertext, associated_data) -> bytes\ncrypto::sign / verify with explicitly qualified algorithms",
+    "steps": [
+      "Inventory existing SHA/random operations; add names without duplicate functionality. Specify Argon2id cost presets and validation; retain native encoded hashes so verification can recognize recorded parameters.",
+      "Use asynchronous Bun.password APIs to avoid synchronous event-loop blocking. Test wrong password, invalid hash and excessive-cost policy distinctly.",
+      "Choose the initial WebCrypto suite explicitly: AES-GCM, HMAC-SHA-256, and Ed25519 if target qualification succeeds. Fix nonce/tag lengths and supported key usages; reject other algorithms rather than silently falling back.",
+      "Keep CryptoKey in a private WeakMap-backed opaque value, nonextractable by default. Provide explicit import/export only for admitted formats/usages. No raw key material in fixture reports, logs or generic object projections.",
+      "Use native CryptoHasher/SubtleCrypto; add only bytes ownership, exact options, declared failure translation and opaque wrapping. Never implement cipher/HMAC primitives in Can.",
+      "Separate generated nonce convenience from explicit nonce encryption. Document nonce uniqueness as an encryption contract; generation is native randomness, not a guarantee of caller discipline.",
+      "Add native interoperability vectors and tampering tests. Ensure one adapter cannot use an encryption-only key for signing."
+    ],
+    "tests": [
+      "Success: password verify true/false, fixed hash vector, HMAC vector, AES-GCM round-trip with AAD, qualified signature interoperability.",
+      "Rejected: wrong key usage/type, forbidden export, invalid nonce length, unsupported algorithm, oversized cost, malformed import.",
+      "Runtime: tampered ciphertext/AAD fails without plaintext; key data is redacted in diagnostics; byte inputs cannot be mutated through native aliases."
+    ],
+    "fixtures": "Hash/verify/vector computation remains real inside attached assertions. Random key/nonce generation is a supplied nondeterministic boundary when deterministic fixtures are needed; immutable fixture material belongs to the assertion. Tests must still execute native encryption/verification, not return canned success.",
+    "lowering": "const hash = await Bun.password.hash(password, {algorithm: \"argon2id\", ...cost});\nconst ok = await Bun.password.verify(password, hash);\nconst cipher = await crypto.subtle.encrypt({name: \"AES-GCM\", iv, additionalData}, key, input);",
+    "risks": "Opaque does not imply secure hardware storage or guaranteed zeroization. Promise only what WebCrypto/Bun provide. Algorithm availability and import formats need pinned-target tests; preparation only probed password verify and AES-GCM.",
+    "file": "b1-08-crypto.md"
+  },
+  {
+    "id": "B1-09",
+    "slug": "cookies-csrf",
+    "summary": "Expose typed cookie parsing/serialization and session-bound CSRF generation/verification. Use the existing HTTP headers and crypto contracts. A valid token for one session must fail for another. Do not expose the native thread-local default secret as the normal application contract.",
+    "files": [
+      [
+        "runtime/platform/cookies.ts",
+        "new",
+        "Bun.Cookie/CookieMap conversion and response fields."
+      ],
+      [
+        "runtime/platform/csrf.ts",
+        "new",
+        "Explicit-secret, session-bound token operations."
+      ],
+      [
+        "runtime/platform/http.ts",
+        "existing",
+        "Repeated Set-Cookie integration."
+      ],
+      [
+        "runtime/test/cookies.test.ts",
+        "new",
+        "Attributes, repeats, expiry and injection."
+      ],
+      [
+        "tests/integration/cookies_csrf_test.go",
+        "new",
+        "Typed session flow and HTTP integration."
+      ]
+    ],
+    "api": "cookie::parse(request_cookie_header) -> cookie_collection\ncookie::make(name, value, attributes) -> cookie\ncookie::serialize(cookie) -> set_cookie_field\nattributes = path, domain?, secure, http_only, same_site, max_age?, expires?\ncsrf::generate(secret, session_id, expires_in) -> token\ncsrf::verify(secret, session_id, token, max_age) -> bool",
+    "steps": [
+      "Specify duplicate request-cookie lookup behavior, malformed input, name/value encoding and cookie attributes. Enforce admitted SameSite combinations and cookie prefix rules if the API claims them.",
+      "Lower parsing/serialization to Bun.CookieMap/Bun.Cookie and immutable projections. Keep multiple Set-Cookie fields separate. Do not manually concatenate unvalidated header strings.",
+      "Require caller-supplied CSRF secret and nonempty session identifier. Verify using matching algorithm/encoding and explicit age policy; do not rely on a per-thread secret that changes at restart.",
+      "Distinguish invalid/expired/mismatched tokens returning false from invalid configuration. No secret or raw token in assertion failure diagnostics.",
+      "Integrate safe response construction and deletion using matching path/domain. Verify serialization against actual response headers.",
+      "Document application responsibility for deriving the session from authenticated state and checking relevant unsafe HTTP requests. Token cryptography alone is not session authentication."
+    ],
+    "tests": [
+      "Success: parse/serialize attributes, repeated Set-Cookie, session A token accepted by A, invalidated by B or wrong secret.",
+      "Rejected: CRLF/name injection, unsupported SameSite/prefix combinations, invalid duration and missing session identity.",
+      "Runtime: expiry/max-age, deletion path/domain, malformed token false, concurrent sessions cannot share accepted tokens."
+    ],
+    "fixtures": "Cookie transformations execute for real. CSRF tests execute native verification; generation/time inputs use the assertion boundary where needed. A minimal loopback form submission must reject an A-token with B-session context. Do not assert whole random token strings.",
+    "lowering": "const token = Bun.CSRF.generate(secret, {sessionId, expiresIn});\nconst valid = Bun.CSRF.verify(token, {secret, sessionId, maxAge});\nconst field = new Bun.Cookie(name, value, attributes).toString();",
+    "risks": "The native probe verified cross-session rejection, not all expiration and cookie policy behavior. Session management remains application logic; this capability does not invent authentication or a session database.",
+    "file": "b1-09-cookies-csrf.md"
+  },
+  {
+    "id": "B1-10",
+    "slug": "s3",
+    "summary": "Provide S3-compatible object operations through Bun.S3Client, including bounded reads, streaming transfer, metadata, listing and presigned access where the pinned API supports them. Reuse file/stream contracts. Credentials stay private and test endpoints explicit.",
+    "files": [
+      [
+        "runtime/platform/s3.ts",
+        "new",
+        "Native client/object adapters, signing and error mapping."
+      ],
+      [
+        "runtime/transport/stream.ts",
+        "new",
+        "Shared bounded transfer and cancellation from B1-05."
+      ],
+      [
+        "runtime/test/s3.test.ts",
+        "new",
+        "Mapping/limits/fixture paths."
+      ],
+      [
+        "tests/integration/s3_test.go",
+        "new",
+        "Real local S3-compatible service qualification."
+      ],
+      [
+        "tests/integration/testdata/s3",
+        "new",
+        "Bucket setup, binary payloads and service harness."
+      ]
+    ],
+    "api": "s3::client(endpoint, region, bucket, credentials, options) -> opaque_client\ns3::read_bytes(client, key, limit); read_stream(client, key)\ns3::write_bytes / write_stream(client, key, body, metadata)\ns3::stat; delete; list(prefix, continuation, page_limit)\ns3::presign(method, key, expires, required_headers) -> signed_request",
+    "steps": [
+      "Qualify target-native methods and options for read/write/delete/stat/list/presign/multipart against official docs and the exact binary. Constructor presence alone proves none of these operations.",
+      "Separate object key semantics from local paths: slash is data, not local traversal. Require explicit endpoint/region/bucket and credential sourcing; never expose credentials in error payloads.",
+      "Implement immutable metadata and typed page continuation. Avoid collecting an entire bucket; enforce per-page/result limits and preserve opaque continuation values.",
+      "Use B1-05 streams for large transfers; enforce byte and deadline budgets during transfer, cancel on handler failure and observe native rejections.",
+      "Qualify native multipart behavior, abort cleanup and retry semantics. Do not write an S3 signing algorithm or multipart protocol implementation. If the native API lacks an operation, record that exact target gap before changing scope.",
+      "Represent presigned result as URL plus required method/headers and expiration metadata. Treat signed URLs as sensitive, redacting them in reports.",
+      "Run native integration against a provisioned local S3-compatible endpoint: create isolated bucket/prefix, verify bytes and metadata, delete only those test objects."
+    ],
+    "tests": [
+      "Success: binary round-trip, metadata, paginated listing, delete, signed GET/PUT, streaming transfer and qualified multipart.",
+      "Rejected: invalid config, unsupported signing method, invalid expiration, wrong type and missing key.",
+      "Runtime: denied credentials, missing object, service interruption, cancellation mid-upload, overflow and cleanup; signed request fails if required headers differ."
+    ],
+    "fixtures": "Native request fixtures verify logical bucket/key/method/metadata and content digests without persisting secrets or complete signed URLs. A real service suite validates wire compatibility; mock responses cannot close multipart or presigning acceptance.",
+    "lowering": "const client = new Bun.S3Client({endpoint, region, bucket, accessKeyId, secretAccessKey});\nconst object = client.file(key);\n// Use target-qualified native read/write/stream/presign methods through Can adapters.",
+    "risks": "No S3 service was contacted during preparation. Public cloud account creation is not part of the task. Service provisioning and exact signing/multipart tests are required evidence, not reasons to silently remove S3 from ASAP.",
+    "file": "b1-10-s3.md"
+  },
+  {
+    "id": "B1-11",
+    "slug": "document-formats",
+    "summary": "Expose typed TOML, YAML, JSON5 and JSONL using Bun parsers, preserving honest numeric/duplicate behavior. Bounded parse APIs can be built before B1-05; incremental JSONL completes after streams. Native YAML/JSON5/JSONL rounded an unsafe integer in the probe, TOML rejected it, and JSONL.parse silently returned a valid prefix. Never advertise ordinary parse-then-project as lossless.",
+    "files": [
+      [
+        "runtime/codec/formats.ts",
+        "new",
+        "Native format dispatch and typed immutable projection."
+      ],
+      [
+        "runtime/codec/jsonl.ts",
+        "new",
+        "Strict full-input JSONL and incremental framing."
+      ],
+      [
+        "runtime/codec/json.ts",
+        "existing",
+        "Reuse schema semantics without weakening exact JSON token handling."
+      ],
+      [
+        "runtime/codec/budget.ts",
+        "existing",
+        "Shared byte/node/depth/record caps."
+      ],
+      [
+        "compiler/internal/check/codec.go",
+        "existing",
+        "Admitted schema types and format-specific restrictions."
+      ],
+      [
+        "runtime/test/formats.test.ts",
+        "new",
+        "Precision, duplicate and malformed documents."
+      ],
+      [
+        "tests/integration/formats_test.go",
+        "new",
+        "Typed parse programs and native lowering."
+      ]
+    ],
+    "api": "toml::decode<T>(text, limits) -> T\n yaml::decode<T>(text, limits) -> T\njson5::decode<T>(text, limits) -> T\njsonl::decode<T>(bytes, limits) -> [T]\njsonl::consume<T>(byte_stream, handler, limits) -> terminal_result\nformat-specific native semantics are explicit; exact JSON keeps its existing contract",
+    "steps": [
+      "Define a format matrix: accepted scalar kinds, null/optional mapping, dates/times, duplicate keys, aliases/merges, multiple documents, nonfinite floats, integers and root shapes. Use native options only when verified; default behavior is not uniform across parsers.",
+      "Create typed projection sharing Can schema rules and immutable data constructors, with per-format scalar conversion policy. Native numbers used as ints must be finite safe integers; document that this is parsed-value semantics, not proof of every original fractional token.",
+      "Keep the existing JSON exact-integer decoder intact. For strict JSONL, prefer bounded line framing plus the existing native-backed exact JSON decode path per record when that satisfies the selected JSONL contract. Framing lines is not implementing JSON grammar.",
+      "If using Bun.JSONL.parseChunk, inspect error, read and done and reject malformed/truncated final input. Never use Bun.JSONL.parse prefix success as complete validation. Specify blank lines, CRLF, final line without newline and multiline JSON acceptance explicitly.",
+      "Incrementally decode UTF-8 across chunk boundaries; cap bytes per record, record count and total retained output. Await each typed handler. Retain only the incomplete suffix, not every prior chunk.",
+      "For YAML/TOML native special objects (dates, aliases, maps), project only admitted forms and reject cycles/unsupported values. Node/depth checks after parsing do not protect native parse CPU/memory; a preparse byte cap is still necessary.",
+      "Test duplicate behavior empirically. If exact duplicate rejection is promised but native metadata cannot support it, keep that mode explicitly blocked rather than writing an ad hoc YAML/JSON5 grammar.",
+      "Add declared syntax/type/limit errors with safe paths and native source locations when trustworthy. Preserve source offsets through framing."
+    ],
+    "tests": [
+      "Success: typed configuration from each format, nested records/arrays, strict JSONL records split across arbitrary UTF-8 chunks.",
+      "Rejected: malformed suffix after valid prefix, unsafe int, nonfinite float, wrong schema field, unsupported native date/cycle, excessive depth/record bytes.",
+      "Runtime: 9007199254740993 regression for every format; exact JSONL path preserves it if selected; duplicates documented; truncated last record fails; stream cancellation stops reads."
+    ],
+    "fixtures": "Parsing is real computation. Fixtures supply input byte streams only, and handlers remain locally tested. Compare bounded and incremental decoding over every split point of a short Unicode document. Store native parser failures as observations, not successful Can acceptance.",
+    "lowering": "const parsed = Bun.YAML.parse(text); // or TOML / JSON5\nreturn projectNativeDocument(schema, parsed, limits, formatPolicy);\n// JSONL: native-backed exact JSON decoder per bounded record, or checked parseChunk.\n// Never stringify a rounded parsed number and claim its original spelling was recovered.",
+    "risks": "Numeric exactness is a contract choice, not a postprocessing trick. A target parser losing source information may require a narrower accepted type/profile. Make limitations visible in API docs and tests; do not reduce the entire format capability to a silent TODO.",
+    "file": "b1-11-document-formats.md"
+  },
+  {
+    "id": "B1-12",
+    "slug": "markdown",
+    "summary": "Expose native Markdown rendering and structured rendering through supported Bun callbacks. Default rendered HTML is an ordinary string. Safe HTML requires a separately qualified path using the existing Can HTML contract; the probe preserved both script markup and javascript: URLs in default native output.",
+    "files": [
+      [
+        "runtime/platform/markdown.ts",
+        "new",
+        "Native options, string rendering and callback bridge."
+      ],
+      [
+        "runtime/platform/html.ts",
+        "existing",
+        "Reuse safe nodes/URLs and extend missing safe Markdown elements deliberately."
+      ],
+      [
+        "runtime/test/markdown.test.ts",
+        "new",
+        "Native structure and hostile markup regressions."
+      ],
+      [
+        "tests/integration/markdown_test.go",
+        "new",
+        "String versus safe HTML typing and response integration."
+      ]
+    ],
+    "api": "markdown::render_text_html(source, options, limits) -> str\nmarkdown::render_safe(source, safe_options, limits) -> html::safe\nmarkdown::render_with(source, typed_handlers, limits) -> rendered_result\nstructured output only where actual native callbacks expose required structure",
+    "steps": [
+      "Qualify Bun.markdown.html and render callback inputs/order. Do not invent a token/AST API because callbacks exist; record whether callbacks receive source text, escaped text or already-rendered children.",
+      "Return native HTML as str with an explicit raw-HTML policy. Prevent implicit conversion of that string into html::safe or a trusted HTTP HTML response.",
+      "Prototype safe rendering through native callbacks using private trusted construction. Disable raw HTML blocks/spans; enforce URL scheme and attribute rules; preserve escaping exactly once.",
+      "Audit native callback completeness before claiming safe mode. If callbacks cannot expose enough structured information for the existing builder, ship string rendering and keep safe mode blocked with a reproducer; never regex-sanitize HTML or brand it safe.",
+      "Extend the safe HTML element allowlist only for required Markdown structures such as code/pre, with precise attribute policy. Reuse existing node/URL validation rather than duplicate a sanitizer.",
+      "Specify options, input/output budgets and callback failure bounds. Native synchronous parsing cannot be interrupted by a JavaScript timeout; do not promise a hard per-render deadline without an execution strategy.",
+      "Add ordinary display, safe HTTP response and structured-renderer examples, with attached assertions that execute native parsing."
+    ],
+    "tests": [
+      "Success: headings, lists, code fences, tables, links and Unicode; safe rendering can enter response_html only through its typed result.",
+      "Rejected: raw rendered str used as html::safe; forbidden URL scheme, invalid option, unsupported callback type or unhandled callback error.",
+      "Runtime: script tags, event attributes, javascript/data URL policy, encoded schemes, quote injection, raw HTML, malformed nesting and double escaping.",
+      "Native rendering callbacks must be exercised; no handwritten Markdown parser."
+    ],
+    "fixtures": "Markdown conversion executes for real in attached tests. Keep a hostile-input corpus and stable expected safe output. Test rendered browser behavior with the existing integration browser harness when safe mode is implemented, not only string snapshots.",
+    "lowering": "const ordinaryHTML = Bun.markdown.html(source, nativeOptions);\n// ordinaryHTML stays str.\n// Separate safe path: Bun.markdown.render(source, verifiedCallbacks, safeNativeOptions).",
+    "risks": "Disabling raw HTML alone does not prove links safe. Existing html.ts lacks some Markdown elements; a string-based callback API may not directly create typed nodes. That compatibility is an early prototype gate, not a license to trust native output.",
+    "file": "b1-12-markdown.md"
+  },
+  {
+    "id": "B1-13",
+    "slug": "common-utilities",
+    "summary": "Fill actual gaps in URL/query, text/regex, byte encodings and time. Existing Can already has substantial text, bytes, clocks and number APIs: extend those instead of creating duplicate spellings. Keep exact integers, Unicode behavior and instant-versus-calendar distinctions explicit.",
+    "files": [
+      [
+        "runtime/platform/url.ts",
+        "new",
+        "URL and ordered duplicate-preserving query operations."
+      ],
+      [
+        "runtime/text.ts",
+        "existing",
+        "Only missing regex/text operations."
+      ],
+      [
+        "runtime/bytes.ts",
+        "existing",
+        "Immutable encoding/decoding bridges where appropriate."
+      ],
+      [
+        "runtime/platform/datetime.ts",
+        "new",
+        "Native Date/Intl projection and timezone operations."
+      ],
+      [
+        "runtime/platform/clock.ts",
+        "existing",
+        "Reuse existing wall/monotonic/sleep boundaries."
+      ],
+      [
+        "tests/integration/utilities_test.go",
+        "existing",
+        "Missing capability acceptance."
+      ],
+      [
+        "tests/integration/text_test.go",
+        "existing",
+        "Unicode/regex offsets."
+      ],
+      [
+        "tests/integration/bytes_test.go",
+        "existing",
+        "Encoding error and alias cases."
+      ]
+    ],
+    "api": "url::parse(text, base?) -> url; url::query_all(url, name) -> [str]\nurl::with_query(url, ordered_pairs) -> url\ntext::regex(pattern, explicit_flags) -> opaque_regex\ntext::matches(regex, text, limit) -> [match]\nbytes::decode_utf8(bytes, strict); encode_utf8(text)\nbytes::encode/decode_base64; encode/decode_hex\n time::instant_from_epoch_millis(int); format_instant(instant)\n time::format_in_zone(instant, zone, locale, options)",
+    "steps": [
+      "Diff desired operations against the current catalogue and list omissions before adding names. Reuse existing normalize/scalars/graphemes/join and clock APIs.",
+      "Use URL/URLSearchParams with typed immutable projections. Preserve repeated query keys and distinguish URL decoding from form decoding. Define relative URL resolution and admitted schemes.",
+      "Use native RegExp; reset or hide lastIndex and mutable state. Specify flags, capture absence, Unicode index units, zero-length match advancement and max result count.",
+      "Use native TextEncoder/TextDecoder and qualified Buffer/Web byte encoders. Reject malformed hex/base64 under the documented strict policy instead of silently truncating. Copy mutable views at both edges.",
+      "Represent an instant separately from local date/time and duration. Range-check exact Can int before Number conversion for Date. Use Intl for explicit locale/zone formatting; deterministic tests specify both.",
+      "Define DST ambiguity/nonexistence if local-time-to-instant conversion is exposed. Do not quietly pick native normalization as the Can contract. Restrict initial conversion to well-defined instant/offset inputs until this is specified.",
+      "Add known vectors and negative compiler examples. Keep wall time/randomness in their existing assertion boundary; pure parsing/formatting remains real."
+    ],
+    "tests": [
+      "Success: duplicate query values, relative URL resolution, escaped Unicode, strict UTF-8, encoding vectors, epoch and timezone formatting.",
+      "Rejected: malformed URL/regex/encoding, unsafe date range, unsupported flags, invalid timezone and ambiguous local conversion without policy.",
+      "Runtime: regex zero-length progression, native UTF-16 offsets converted or documented consistently, deterministic locale formatting, byte alias mutation prevented.",
+      "Catalogue inventory proves existing functions were reused rather than renamed with compatibility aliases."
+    ],
+    "fixtures": "Pure operations execute natively inside local tests. Supply explicit timezone/locale and fixed instants. Test DST transitions on the pinned ICU/runtime and record target sensitivity. Never snapshot the machine-local current date.",
+    "lowering": "const url = new URL(text, base);\nconst values = url.searchParams.getAll(name);\nconst regex = new RegExp(pattern, flags);\nconst date = new Date(checkedEpochMilliseconds);\nconst formatted = new Intl.DateTimeFormat(locale, options).format(date);",
+    "risks": "Native RegExp can consume substantial CPU; a result-count limit does not bound matching time. Admit that limitation or use an enforceable isolation strategy before claiming regex deadlines. Do not implement a new regex or calendar engine.",
+    "file": "b1-13-common-utilities.md"
+  }
+]

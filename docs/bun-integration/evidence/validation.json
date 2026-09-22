@@ -1,0 +1,28 @@
+{
+  "kind": "bun-integration-roadmap-validation",
+  "tasks": 36,
+  "tiers": {
+    "1": 13,
+    "2": 14,
+    "3": 9
+  },
+  "all_pending": true,
+  "dependency_order_valid": true,
+  "both_sql_backends_asap": true,
+  "primitive_candidate_tasks": 15,
+  "official_source_urls": 46,
+  "local_links_checked": 19,
+  "fresh_jev_requests": 3,
+  "questions_per_request": 3,
+  "reported_tokens": 3483,
+  "files_sha256": {
+    "README.md": "81097d798bcb91c7f91d747f349437c77d5b5c1a35f12c42d2a9c0b79d68b437",
+    "tasks.json": "acab5e228fd59b0aa42de94723849aded48be8ebf155ea0f4f41f4ff791e8e3b",
+    "1-implement-asap.md": "af7429ba94916315cfb83644ec333d84b194b1962ec783ba8d425ec368ccd026",
+    "2-implement-later.md": "924b2237cb2a7196812cb5985070130d468b051774e72ae4530d4009b8148f13",
+    "3-implement-whenever.md": "e1edcc225bdd110226fd6669258f65d58c450a91a4ac8a25c0fa15b11b7145fd"
+  },
+  "native_api_qualification_run": false,
+  "implementation_started": false,
+  "existing_implementer_contacted": false
+}

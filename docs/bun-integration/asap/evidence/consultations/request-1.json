@@ -1,0 +1,42 @@
+{
+  "model": "jev-latest",
+  "state": "Prepare 13 ASAP Bun-to-Can capabilities without touching an active language-fix implementer. Preserve native AI, grouped state, explicit errors, attached assertions, immutable data and native lowering. No compatibility constraint or external npm feature library. Target Bun 1.4.2 darwin-arm64. Actual probes: Bun.SQL SQLite with bigint:true returns 9007199254740992 for 9007199254740993n; adding safeIntegers:true returns the exact bigint. bun:sqlite with safeIntegers:true also preserves it. Existing Can SQL uses PostgreSQL grammar and async ownership; Bun.SQL supplies MySQL and SQLite, but MySQL transactions and services have not been exercised here. Streams, process output and WebSockets share cancellation and lifetime needs; the current owner runtime already tracks resources and callback scopes. No complete comparison of library, domain-specific and general-event Can programs exists yet. YAML/JSON5/JSONL probes round that integer; TOML rejects it. Bun.JSONL.parse accepts a valid prefix before malformed input while parseChunk reports remaining input and error. Typed projection after native parsing cannot restore lost numeric spelling or duplicate keys. A safe-integer output check prevents accepting unsafe integer results, but cannot detect every rounded fractional literal; do not promise lexical exactness. Bun.markdown.html preserves script tags and javascript: links in the probe. Native render callbacks exist, and Can already has a safe HTML builder. Native parsing must remain in Bun; no replacement parser or sanitizer dependency. These are four independent decisions about adapter preference, grammar sequencing, parser contract and HTML trust. Advice cannot substitute for acceptance evidence.",
+  "questions": {
+    "adapter": {
+      "type": "choice",
+      "instructions": "Which SQLite integration should preparation prefer given the measured options?",
+      "criteria": {
+        "unified": "Prefer Bun.SQL with safeIntegers:true, subject to transaction, cancellation, persistence and mapping qualification; retain bun:sqlite as a documented fallback if those gates fail.",
+        "direct": "Select bun:sqlite now and build a separate asynchronous adaptation path despite the exact Bun.SQL option.",
+        "rounded": "Use Bun.SQL with bigint:true alone and accept rounded integers."
+      }
+    },
+    "syntax": {
+      "type": "choice",
+      "instructions": "How should the ASAP work sequence event syntax?",
+      "criteria": {
+        "gate": "Start concrete stream/process/socket comparisons and shared ownership tests immediately; freeze grammar only from those results while independent library capabilities proceed.",
+        "commit": "Choose one universal event construct immediately without the full-program comparison.",
+        "forbid": "Exclude any new primitive regardless of comparison results."
+      }
+    },
+    "formats": {
+      "type": "choice",
+      "instructions": "What typed document promise is supportable?",
+      "criteria": {
+        "bounded": "Specify native parser semantics, reject unsafe integer and nonfinite outputs, require full consumption, document duplicate behavior and lexical precision limits; exact formats require a proven native path.",
+        "exact": "Claim lossless exact values after ordinary native parsing and typed projection.",
+        "replace": "Implement new document grammars in Can to recover all source tokens."
+      }
+    },
+    "html": {
+      "type": "choice",
+      "instructions": "How should Markdown reach HTTP HTML responses?",
+      "criteria": {
+        "typed": "Return native HTML as ordinary text; a separate safe mode uses native render callbacks and existing typed HTML constructors with validated URLs and raw HTML disabled.",
+        "trust": "Brand default native rendered output as safe HTML automatically.",
+        "remove": "Omit Markdown integration entirely."
+      }
+    }
+  }
+}

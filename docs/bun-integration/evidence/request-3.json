@@ -1,0 +1,34 @@
+{
+  "model": "jev-latest",
+  "state": "The requested deliverable is three Bun integration task lists for Can: ASAP/later/whenever. The active LF01-LF21 implementation must remain undisturbed, including its source-of-truth documents. Admit only Bun-native facilities and Web/Node standard-library implementations supplied by Bun; no third-party npm systems or AI providers. Can currently has native AI and HTTP, a PostgreSQL-only Bun.SQL adapter, typed JSON/bytes and collections, elementary clock/random/SHA256 operations and source-owned assertions. ASAP must cover both unexposed Bun SQL backends, MySQL and SQLite. The user is inviting a broad inventory of library additions and primitive opportunities, not asking for a WebSocket-only project. Keep immutability, typed failures, explicit contracts, grouped state, attached tests and equivalent native operations. The inventory spans paths/files/globs, subprocesses, streams, cookies/password/WebCrypto, S3 storage, Redis, text formats/Markdown, image work, archives/compression, socket protocols/DNS, filesystem watching through Node compatibility, cron, Workers, WebView, and native/toolchain/diagnostic APIs. Availability needs validation on the exact private Bun and supported platform; experimental Workers are not assumed production-qualified. OS-persistent schedules and raw foreign execution need their own boundary decisions. This roadmap may reopen former deferrals but must not silently amend the active LF plan. Weigh usefulness, prerequisites, stateful lifecycle cost and reproducible testing. A useful primitive is not established by the visual similarity of callbacks and match arms; equally, existing function syntax is not grounds to reject one. Compare complete examples using typed library operations, domain primitives or a shared event primitive, covering repeated messages, end/error/drain, ownership, pressure limits, cancellation and local fixtures. The classification should advise planning without approving any grammar.",
+  "questions": {
+    "exposure": {
+      "type": "choice",
+      "instructions": "Which approach should guide the choice of Can surface for these built-ins?",
+      "criteria": {
+        "compare": "Use ordinary typed APIs where appropriate and run multi-program lifecycle comparisons before adopting primitive syntax.",
+        "library": "Forbid new primitives and represent all built-ins through calls plus named handlers.",
+        "domain": "Approve separate domain primitives for all callback/event families before comparative prototypes.",
+        "unified": "Adopt a common event primitive immediately as the mandatory persistent-resource interface."
+      }
+    },
+    "priority": {
+      "type": "choice",
+      "instructions": "Select the immediate integration scope after accounting for both SQL backends.",
+      "criteria": {
+        "broad": "Prioritize a broad usable platform of files, child processes, streams, HTTP/auth, parsers, S3 and WebSockets; sequence specialized lifecycle domains afterward.",
+        "small": "Restrict ASAP to database and filesystem integration, postponing all other areas together.",
+        "all": "Assign all built-in families to ASAP without separating experimental or foreign/OS-persistent features."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "How should candidate event primitives be evaluated across capabilities?",
+      "criteria": {
+        "multi": "Test complete document-stream, WebSocket and process-output programs, with later watcher/timer/worker fit checks.",
+        "websocket": "Derive the design exclusively from one socket echo handler.",
+        "generic": "Settle a domain-independent event theory first without executable application comparisons."
+      }
+    }
+  }
+}

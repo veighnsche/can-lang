@@ -1,0 +1,36 @@
+{
+  "version": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "commit": [
+    {
+      "id": {
+        "bigint": "2"
+      },
+      "name": "after await"
+    },
+    {
+      "id": {
+        "bigint": "9007199254740993"
+      },
+      "name": "persisted"
+    }
+  ],
+  "rollback": {
+    "originalError": true,
+    "rows": []
+  },
+  "reopened": [
+    {
+      "id": {
+        "bigint": "2"
+      },
+      "name": "after await"
+    },
+    {
+      "id": {
+        "bigint": "9007199254740993"
+      },
+      "name": "persisted"
+    }
+  ]
+}
