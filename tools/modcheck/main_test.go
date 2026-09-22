@@ -5,50 +5,34 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/internal/scan"
 )
 
-const goodDB = `mod db
-  provides [db__get]
-  uses []
-  emits [db.down]
+const goodAlpha = `package alpha
+    provides [item]
+    uses [codec]
 
-error db.down()
-
-type Db__U rev 1 (
-  id: str
-)
-
-fn db__get(id: str) -> Db__U rev 1
-  emits [db.down]
-  tests
-    ok(id = "u") => Ok(id = "u")
-  match id
-    "u" => Ok(id = "u")
-    _ => db.down()
+record item
+    int id
 `
 
-const goodAuth = `mod auth
-  provides [auth__go]
-  uses [db__get@1]
-  emits [auth.bad]
+const goodBeta = `package beta
+    provides [describe]
+    uses [alpha, codec]
 
-error auth.bad()
-
-type Auth__S rev 1 (
-  id: str
-)
-
-fn auth__go(id: str) -> Auth__S rev 1
-  emits [auth.bad]
-  tests
-    ok(id = "u") => Ok(id = "u")
-    down(id = "u") => auth.bad
-  match call db__get(id)
+fn str describe
+    emits []
     given
-      ok => [Ok(id = "u")]
-      down => [db.down()]
-    on db.down _ => auth.bad()
-    on Ok u => Ok(id = u.id)
+        int seed
+    asserts
+        sample: 1 => ok "one"
+    ok "one"
+`
+
+const goodAliased = `package gamma
+    provides []
+    uses [alpha as other]
 `
 
 func writeFixtures(t *testing.T, files map[string]string) string {
@@ -66,223 +50,148 @@ func writeFixtures(t *testing.T, files map[string]string) string {
 	return dir
 }
 
+func testCatalogue() map[string]bool {
+	return map[string]bool{"codec": true, "http": true}
+}
+
 func TestRepoPasses(t *testing.T) {
-	if _, err := os.Stat("../../go.mod"); err != nil {
+	root, err := scan.RepoRoot()
+	if err != nil {
 		t.Skip("not in repo checkout")
 	}
-	_, _, _, errs := check([]string{"../../sketches", "../../std"})
+	catalogue, err := cataloguePackages(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scanned, errs := check([]string{filepath.Join(root, "compiler", "testdata", "current")}, catalogue)
 	if len(errs) > 0 {
 		t.Fatalf("repo check failed: %v", errs)
+	}
+	if scanned == 0 {
+		t.Fatal("no fixtures scanned")
 	}
 }
 
 func TestGoodPair(t *testing.T) {
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": goodAuth})
-	_, _, _, errs := check([]string{dir})
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": goodBeta})
+	scanned, errs := check([]string{dir}, testCatalogue())
 	if len(errs) > 0 {
-		t.Fatalf("expected pass, got %v", errs)
+		t.Fatalf("good pair failed: %v", errs)
+	}
+	if scanned != 2 {
+		t.Fatalf("scanned=%d", scanned)
 	}
 }
 
-func TestUnpinnedUses(t *testing.T) {
-	bad := strings.Replace(goodAuth, "db__get@1", "db__get", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": bad})
-	_, _, _, errs := check([]string{dir})
-	if !contains(errs, "must pin a rev") {
-		t.Fatalf("expected pin error, got %v", errs)
+func TestAliasUses(t *testing.T) {
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "gamma.can": goodAliased})
+	if _, errs := check([]string{dir}, testCatalogue()); len(errs) > 0 {
+		t.Fatalf("aliased uses failed: %v", errs)
 	}
 }
 
 func TestUnresolvableUses(t *testing.T) {
-	bad := strings.Replace(goodAuth, "db__get@1", "ghost@9", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": bad})
-	_, _, _, errs := check([]string{dir})
-	if !contains(errs, "resolves nowhere") {
-		t.Fatalf("expected resolve error, got %v", errs)
+	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [ghost]", 1)
+	dir := writeFixtures(t, map[string]string{"beta.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "uses ghost resolves nowhere") {
+		t.Fatalf("expected resolution violation, got %v", errs)
 	}
 }
 
-// TestSharedRootUses pins slice-1 stdlib sharing: a uses entry
-// resolves to a provider in another directory under the same root,
-// while a self-provided name still resolves nowhere.
-func TestSharedRootUses(t *testing.T) {
-	lib := "mod lib\n  provides [lib__K]\n  uses []\n  emits []\n\nconst lib__K: int rev 1 = 7\n"
-	app := "mod app\n  provides [app__go]\n  uses [lib__K@1]\n  emits []\n"
-	dir := writeFixtures(t, map[string]string{"lib/lib.can": lib, "app/app.can": app})
-	_, _, _, errs := check([]string{dir})
-	if len(errs) != 0 {
-		t.Fatalf("expected shared-root resolve, got %v", errs)
-	}
-	self := "mod self\n  provides [self__K]\n  uses [self__K@1]\n  emits []\n"
-	dir2 := writeFixtures(t, map[string]string{"self/self.can": self})
-	_, _, _, errs2 := check([]string{dir2})
-	if !contains(errs2, "resolves nowhere") {
-		t.Fatalf("expected self-uses resolve error, got %v", errs2)
+func TestDuplicateProvides(t *testing.T) {
+	bad := strings.Replace(goodAlpha, "provides [item]", "provides [item, item]", 1)
+	dir := writeFixtures(t, map[string]string{"alpha.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, `duplicate provides entry "item"`) {
+		t.Fatalf("expected dup-provides violation, got %v", errs)
 	}
 }
 
-// TestExampleUsesStd pins the S2 direction: an example program under a
-// non-std root resolves uses into std, while std itself still sees
-// only std and unknown names still resolve nowhere.
-func TestExampleUsesStd(t *testing.T) {
-	lib := "mod lib\n  provides [lib__K]\n  uses []\n  emits []\n\nconst lib__K: int rev 1 = 7\n"
-	app := "mod app\n  provides [app__go]\n  uses [lib__K@1]\n  emits []\n"
-	dir := writeFixtures(t, map[string]string{"std/lib.can": lib, "prog/app/app.can": app})
-	_, _, _, errs := check([]string{filepath.Join(dir, "std"), filepath.Join(dir, "prog")})
-	if len(errs) != 0 {
-		t.Fatalf("expected example-into-std resolve, got %v", errs)
+func TestDuplicateUses(t *testing.T) {
+	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [alpha, alpha]", 1)
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, `duplicate uses entry "alpha"`) {
+		t.Fatalf("expected dup-uses violation, got %v", errs)
 	}
 }
 
-func TestStdBlindToExamples(t *testing.T) {
-	app := "mod app\n  provides [app__go]\n  uses []\n  emits []\n"
-	lib := "mod lib\n  provides [lib__K]\n  uses [app__go@1]\n  emits []\n\nconst lib__K: int rev 1 = 7\n"
-	dir := writeFixtures(t, map[string]string{"std/lib.can": lib, "prog/app/app.can": app})
-	_, _, _, errs := check([]string{filepath.Join(dir, "std"), filepath.Join(dir, "prog")})
-	if !contains(errs, "resolves nowhere") {
-		t.Fatalf("expected std-into-example resolve error, got %v", errs)
+func TestAliasCollision(t *testing.T) {
+	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [alpha as codec, codec]", 1)
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, `import alias "codec" collides`) {
+		t.Fatalf("expected alias-collision violation, got %v", errs)
 	}
 }
 
-func TestExampleGhostNowhere(t *testing.T) {
-	lib := "mod lib\n  provides [lib__K]\n  uses []\n  emits []\n\nconst lib__K: int rev 1 = 7\n"
-	app := "mod app\n  provides [app__go]\n  uses [ghost@9]\n  emits []\n"
-	dir := writeFixtures(t, map[string]string{"std/lib.can": lib, "prog/app/app.can": app})
-	_, _, _, errs := check([]string{filepath.Join(dir, "std"), filepath.Join(dir, "prog")})
-	if !contains(errs, "resolves nowhere") {
-		t.Fatalf("expected ghost resolve error, got %v", errs)
+func TestMissingHeader(t *testing.T) {
+	dir := writeFixtures(t, map[string]string{"nope.can": "fn int main\n    ok 1\n"})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "no parseable package header") {
+		t.Fatalf("expected header violation, got %v", errs)
 	}
 }
 
-func TestExternRedeclare(t *testing.T) {
-	bad := "extern fn db__get(id: str) -> Db__U\n" + goodAuth
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": bad})
-	_, _, _, errs := check([]string{dir})
-	if !contains(errs, "re-declares") {
-		t.Fatalf("expected re-declare error, got %v", errs)
+func TestPinBanned(t *testing.T) {
+	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [alpha@2]", 1)
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "@N revision pin is gone") {
+		t.Fatalf("expected pin violation, got %v", errs)
+	}
+}
+
+func TestPinInStringAllowed(t *testing.T) {
+	withPin := goodBeta + "\nstr tag = \"can.std.option@1::some\"\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": withPin})
+	if _, errs := check([]string{dir}, testCatalogue()); len(errs) > 0 {
+		t.Fatalf("string pin failed: %v", errs)
+	}
+}
+
+func TestRetiredModHeader(t *testing.T) {
+	bad := "mod alpha\n  provides [item]\n  uses []\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "old.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "no parseable package header") {
+		t.Fatalf("expected header violation, got %v", errs)
+	}
+}
+
+func TestExternBanned(t *testing.T) {
+	bad := goodAlpha + "\nextern fn helper()\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "inline extern fn is gone") {
+		t.Fatalf("expected extern violation, got %v", errs)
+	}
+}
+
+func TestDecLiteralBanned(t *testing.T) {
+	bad := goodAlpha + "\ndec ratio = d\"1.5\"\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "dec literal is gone") {
+		t.Fatalf("expected dec violation, got %v", errs)
 	}
 }
 
 func TestBracesBanned(t *testing.T) {
-	bad := goodDB + "// { stray brace }\n"
-	dir := writeFixtures(t, map[string]string{"db.can": bad, "auth.can": goodAuth})
-	_, _, _, errs := check([]string{dir})
+	bad := goodAlpha + "\nrecord item { int id }\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
 	if !contains(errs, "curly braces are banned") {
-		t.Fatalf("expected braces error, got %v", errs)
+		t.Fatalf("expected brace violation, got %v", errs)
 	}
 }
 
-// R1 (a45): braces inside string literals are data, so a fixture
-// carrying "{u}" in a test row passes; a brace in code still fails.
 func TestBracesInStringsAllowed(t *testing.T) {
-	withBraces := strings.Replace(goodDB,
-		"    ok(id = \"u\") => Ok(id = \"u\")\n",
-		"    ok(id = \"u\") => Ok(id = \"u\")\n    braced(id = \"{u}\") => db.down()\n", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": withBraces, "auth.can": goodAuth})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected braces in strings to pass, got %v", errs)
-	}
-	bad := withBraces + "  { stray }\n"
-	dir = writeFixtures(t, map[string]string{"db.can": bad, "auth.can": goodAuth})
-	if _, _, _, errs := check([]string{dir}); !contains(errs, "curly braces are banned") {
-		t.Fatalf("expected braces error, got %v", errs)
-	}
-}
-
-func TestExternSectionGone(t *testing.T) {
-	bad := strings.Replace(goodAuth, "  tests", "  externals:\n  tests", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": bad})
-	_, _, _, errs := check([]string{dir})
-	if !contains(errs, "externals section is gone") {
-		t.Fatalf("expected externals error, got %v", errs)
-	}
-}
-
-// a91: omission claims non-reach — a block missing a row passes.
-func TestGivenOmissionAllowed(t *testing.T) {
-	partial := strings.Replace(goodAuth, "      down => [db.down()]\n", "", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": partial})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected omission to pass, got %v", errs)
-	}
-}
-
-// Partial keys (a91): a block in a multi-fn file scripts any
-// subset of the file's rows — omission claims non-reach —
-// while unknown keys still fail.
-const multiFn = `mod auth
-  provides [auth__go, auth__wrap, auth__other]
-  uses [db__get@1]
-  emits [auth.bad]
-
-error auth.bad()
-
-type Auth__S rev 1 (
-  id: str
-)
-
-fn auth__go(id: str) -> Auth__S rev 1
-  emits [auth.bad]
-  tests
-    ok(id = "u") => Ok(id = "u")
-    down(id = "u") => auth.bad
-  match call db__get(id)
-    given
-      ok => [Ok(id = "u")]
-      down => [db.down()]
-      caller => [db.down()]
-    on db.down _ => auth.bad()
-    on Ok u => Ok(id = u.id)
-
-fn auth__wrap(id: str) -> Auth__S rev 1
-  emits [auth.bad]
-  tests
-    caller(id = "u") => Ok(id = "u")
-  match call auth__go(id)
-    on auth.bad _ => auth.bad()
-    on Ok u => Ok(id = u.id)
-
-fn auth__other(id: str) -> Auth__S rev 1
-  emits []
-  tests
-    solo(id = "u") => Ok(id = "u")
-  match id
-    _ => Ok(id = id)
-`
-
-func TestGivenPartialKeys(t *testing.T) {
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": multiFn})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected partial keys to pass, got %v", errs)
-	}
-}
-
-func TestGivenOmitsCallerRow(t *testing.T) {
-	partial := strings.Replace(multiFn, "      caller => [db.down()]\n", "", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": partial})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected omitted caller row to pass, got %v", errs)
-	}
-}
-
-func TestGivenUnknownKey(t *testing.T) {
-	bad := strings.Replace(multiFn, "      caller => [db.down()]\n", "      caller => [db.down()]\n      zzz => [db.down()]\n", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": bad})
-	_, _, _, errs := check([]string{dir})
-	if !contains(errs, "given table") {
-		t.Fatalf("expected given-table error, got %v", errs)
-	}
-}
-
-func TestLegacySkipped(t *testing.T) {
-	old := goodAuth + "\n// SUPERSEDED-BY: whatever\n"
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": old})
-	current, skipped, _, errs := check([]string{dir})
-	if len(errs) > 0 {
-		t.Fatalf("expected pass, got %v", errs)
-	}
-	if current != 1 || skipped != 1 {
-		t.Fatalf("expected 1 current + 1 skipped, got %d + %d", current, skipped)
+	withBraces := goodBeta + "\nstr shape = \"{\\\"case\\\": 1}\"\n"
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": withBraces})
+	if _, errs := check([]string{dir}, testCatalogue()); len(errs) > 0 {
+		t.Fatalf("string braces failed: %v", errs)
 	}
 }
 
@@ -293,121 +202,4 @@ func contains(errs []string, sub string) bool {
 		}
 	}
 	return false
-}
-
-func TestDemoExpects(t *testing.T) {
-	unknown := strings.Replace(goodAuth, "      down => [db.down()]\n", "      down => [db.down()]\n      zzz => [db.down()]\n", 1)
-	marker := "// DEMO-EXPECTS: given table [down ok zzz] != tests [down ok]\n"
-	dir := writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": marker + unknown})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected declared demo violation to pass, got %v", errs)
-	}
-	healed := strings.Replace(unknown, "      zzz => [db.down()]\n", "", 1)
-	dir = writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": marker + healed})
-	if _, _, _, errs := check([]string{dir}); !contains(errs, "demo expects") {
-		t.Fatalf("expected healed-demo error, got %v", errs)
-	}
-	rotted := marker + unknown + "// { stray brace }\n"
-	dir = writeFixtures(t, map[string]string{"db.can": goodDB, "auth.can": rotted})
-	if _, _, _, errs := check([]string{dir}); !contains(errs, "curly braces are banned") {
-		t.Fatalf("expected extra-violation error, got %v", errs)
-	}
-}
-
-// G1 generics: bound rows (`pick<T=str>(...)`) join the
-// test-name set so given tables keying them compare equal,
-// and base-name provides/uses resolve exactly like
-// monomorphic pins (mangled stamps never appear in source).
-const genericLib = `mod lib
-  provides [lib__sel]
-  uses []
-  emits []
-
-fn lib__sel<T>(condition: bool, when_true: T, when_false: T) -> T rev 1
-  emits []
-  tests
-    pick_str_true<T=str>(true, "a", "b") => Ok("a")
-    pick_int_true<T=int>(true, 1, 2) => Ok(1)
-  match condition
-    true => Ok(when_true)
-    false => Ok(when_false)
-`
-
-const genericUser = `mod user
-  provides [user__go]
-  uses [lib__sel@1]
-  emits []
-
-fn user__go<T>(flag: bool, x: T) -> T rev 1
-  emits []
-  tests
-    go_str<T=str>(true, "a") => Ok("a")
-  match call lib__sel<str>(flag, "a", "b")
-    given
-      go_str => [Ok("a")]
-    on Ok v => Ok(v)
-`
-
-func TestGenericRowsAndBasePins(t *testing.T) {
-	dir := writeFixtures(t, map[string]string{"lib.can": genericLib, "user.can": genericUser})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected generic pair to pass, got %v", errs)
-	}
-}
-
-// G2 generics: type mentions (Box<str>) and constructions need no
-// text-level handling — provides/uses keep base names in source,
-// so the base pin resolves exactly like a monomorphic one.
-const genericTypeLib = `mod lib
-  provides [lib__wrap, Lib__Box]
-  uses []
-  emits []
-
-type Lib__Box<T> rev 1 (
-  value: T
-)
-
-fn lib__wrap(v: str) -> Lib__Box<str> rev 1
-  emits []
-  tests
-    one("a") => Ok("a")
-  Ok(v)
-`
-
-const genericTypeUser = `mod user
-  provides [user__go, User__O]
-  uses [Lib__Box@1]
-  emits []
-
-type User__O rev 1 (
-  value: str
-)
-
-fn user__go(b: Lib__Box<str>) -> User__O rev 1
-  emits []
-  tests
-    one(Lib__Box<str>(value = "a")) => Ok("a")
-  match b.value
-    _ => Ok(b.value)
-`
-
-func TestGenericTypeBasePins(t *testing.T) {
-	dir := writeFixtures(t, map[string]string{"lib.can": genericTypeLib, "user.can": genericTypeUser})
-	if _, _, _, errs := check([]string{dir}); len(errs) > 0 {
-		t.Fatalf("expected generic-type pair to pass, got %v", errs)
-	}
-}
-
-func TestNewDeclShapes(t *testing.T) {
-	db := strings.Replace(goodDB, "type Db__U rev 1 (\n  id: str\n)", "brand Db__Hash is str rev 1\n\ntype Db__U rev 1 (\n  id: str\n  pw_hash: Db__Hash\n)", 1)
-	db = strings.Replace(db, "provides [db__get]", "provides [db__get, Db__Hash]", 1)
-	auth := strings.Replace(goodAuth, "provides [auth__go]", "provides [auth__go, Auth__Pw, m__use]", 1)
-	auth = strings.Replace(auth, "uses [db__get@1]", "uses [db__get@1, Db__Hash@1]", 1)
-	auth += "\nbrand Auth__Pw is str rev 1\n\nextern m__use(pw: Auth__Pw) -> Auth__S rev 1\n  emits [auth.bad]\n"
-	auth = strings.Replace(auth, "ok(id = \"u\") => Ok(id = \"u\")", "ok(id = \"u\") => Ok(id = d\"1.5\")", 1)
-	dir := writeFixtures(t, map[string]string{"db.can": db, "auth.can": auth})
-	_, _, _, errs := check([]string{dir})
-	if len(errs) > 0 {
-		t.Fatalf("expected pass, got %v", errs)
-	}
 }

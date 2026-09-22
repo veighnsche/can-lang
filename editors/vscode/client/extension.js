@@ -2,6 +2,7 @@
 // squiggles come from `canlc lsp` over stdio (see compiler/lsp.go).
 // Server resolution: `canlc.serverPath` setting, else bundled bin/canlc,
 // else `canlc` on PATH.
+const fs = require("fs");
 const path = require("path");
 const vscode = require("vscode");
 const { LanguageClient, TransportKind } = require("vscode-languageclient/node");
@@ -14,7 +15,10 @@ function serverCommand(context) {
     return configured;
   }
   const bundled = path.join(context.extensionPath, "bin", "canlc");
-  return bundled;
+  if (fs.existsSync(bundled)) {
+    return bundled;
+  }
+  return "canlc";
 }
 
 function activate(context) {

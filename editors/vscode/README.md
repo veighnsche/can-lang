@@ -18,23 +18,27 @@ codesign --force --sign - ~/.antigravity-ide/extensions/can-lang.can-lang-*/bin/
 
 (`codesign` re-signs the server so macOS runs it; without this the OS
 kills it with "Code Signature Invalid".) Then Developer: Reload Window.
-Open any `sketches/*/*.can` or `std/*/*.can` file. Broken files under
-`sketches/broken-login/` should show red/yellow squiggles; clean files
-show none.
+Open any `compiler/testdata/current/*/*.can` file. Files with errors
+show squiggles; clean files show none. The server also answers
+go-to-definition for nominal types, calls, module values, and
+AI-generated record fields.
 
-See a squiggle and disagree? The diagnosis comes from `compiler/lsp.go`
-(`diagnose`), proven by `compiler/lsp_test.go` — fix it there, rebuild
+See a squiggle and disagree? The diagnosis comes from the inert bridge
+(`compiler/internal/driver/diagnostics.go`, proven by
+`compiler/internal/driver/diagnostics_test.go` and the protocol
+exchanges in `compiler/lsp_server_test.go`) — fix it there, rebuild
 `bin/canlc` (`go build -o editors/vscode/bin/canlc ./compiler`), reinstall.
-Strictness squiggles (redundant names, mergeable arms, chainable
-ladders, tableable nests, same-outcome matches, handwritten relays,
-mergeable ranges — CAN3410–3416) come from `compiler/lint.go` via the
-same `diagnose` path, proven by `compiler/lint_test.go` (including the
-`sketches/lint-errors/` folder golden). They publish only on files the
-compiler otherwise accepts; broken files show their real errors first.
+The server parses, resolves, and checks an in-memory overlay snapshot on
+every keystroke; it never builds, runs, asserts, dials out, or writes.
+Unsaved sibling buffers diagnose as one coherent snapshot, and the
+`--baseline` execution hook is retired: `canlc lsp --baseline` exits 2.
+
+Known limitation: strictness (lint) squiggles are not published yet;
+the editor shows parse, resolve, and check diagnostics only.
 
 Settings: `canlc.serverPath` overrides the server binary (default: bundled
-`bin/canlc`). Token colors (e.g. forcing `error` red) live in the user's
-`settings.json` via `editor.tokenColorCustomizations`:
+`bin/canlc`, else `canlc` on PATH). Token colors (e.g. forcing `error` red)
+live in the user's `settings.json` via `editor.tokenColorCustomizations`:
 
 ```json
 "editor.tokenColorCustomizations": {

@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Resolve what remains open in the Can editor refresh: where spanless checker messages land, which names go-to-definition resolves, and what happens to buffers the project loader cannot see.",
+   "fixed_constraints": [
+    "The rewrite keeps the transport loop and version tracking and replaces all predecessor-AST, proof, baseline, lint, and coverage semantics with one inert bridge over the current pipeline. No editor request may build, run, assert, dial out, query, read the environment, emit files, or mutate registries.",
+    "Coded span diagnostics flow from lexing and parsing; resolve and check contribute plain first-failure strings on both CLI and LSP. Matching the CLI means echoing that first message, positioned exactly when spans exist and filed honestly otherwise.",
+    "UTF-16 positions come from the shared source logic, identity from canonical paths, and each version publishes a complete replacement set whenever text, presence, or imports change. Old spellings, externs, and proof gates are gone from every surface.",
+    "Declarations already expose nominal identities with source spans including generated question shapes, and grammar plus gramcheck now cover current syntax alone with legacy patterns and checks retired."
+   ]
+  },
+  "topics": {
+   "check_error_anchor": {
+    "facts": "Unpositioned checker text may mention paths or names but never offsets. Filing it at the file's first line preserves the message without pretending at tokens, while guessing a token from the text manufactures precision the pipeline never had."
+   },
+   "navigation_depth": {
+    "facts": "Resolution walks the scopes visible to the file toward declaration spans. Locals live in per-body scopes outside that walk, so serving them demands parallel scope reconstruction at the cursor."
+   },
+   "unsaved_new_file": {
+    "facts": "The loader either walks a buffer's path or it does not. Holding novel buffers silent until save guarantees CLI agreement; virtualizing them into the graph offers early but potentially contradictory answers."
+   }
+  }
+ },
+ "questions": {
+  "check_error_anchor": {
+   "type": "choice",
+   "instructions": "Select the landing place for spanless checker messages. Use common and topics.check_error_anchor.",
+   "criteria": {
+    "file_line_anchor": "File the identical message on line 1 of the attributed or open file. Token-exact ranges stay exclusive to spanned diagnostics.",
+    "heuristic_token": "Guess a token from the message text and underline the match. Manufactured precision misfires on every ambiguous name.",
+    "review_needed": "This evidence leaves the anchors indistinguishable, or neither upholds the contracts."
+   }
+  },
+  "navigation_depth": {
+   "type": "choice",
+   "instructions": "Select which names definition jumps resolve. Use common and topics.navigation_depth.",
+   "criteria": {
+    "file_scope_symbols": "Serve jumps for scope-visible nominals, functions, constructors, and generated declarations and decline the rest. Each answer is a resolved declaration identity.",
+    "scope_aware_locals": "Serve locals too by reconstructing body scopes at the cursor. Coverage widens with dedicated scope machinery.",
+    "review_needed": "This evidence leaves the depths indistinguishable, or neither upholds the contracts."
+   }
+  },
+  "unsaved_new_file": {
+   "type": "choice",
+   "instructions": "Select the fate of buffers the loader cannot see. Use common and topics.unsaved_new_file.",
+   "criteria": {
+    "ignore_until_saved": "Keep novel buffers empty of diagnostics until save puts them in the load. CLI agreement holds by construction.",
+    "virtual_source": "Admit novel buffers as virtual sources and diagnose immediately. Early coverage can contradict the CLI.",
+    "review_needed": "This evidence leaves the treatments indistinguishable, or neither upholds the contracts."
+   }
+  }
+ }
+}

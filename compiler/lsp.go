@@ -19,11 +19,15 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/driver"
+	"github.com/veighnsche/can-lang/compiler/internal/project"
 )
 
 // Diag is one squiggle: 1-based Line, Sev "error"/"warning", human
@@ -904,6 +908,7 @@ func proofDiag(text string, err error) Diag {
 }
 
 // ------------------------------------------------------------- protocol ---
+
 type rpcMsg struct {
 	ID     *json.RawMessage `json:"id"`
 	Method string           `json:"method"`
@@ -915,7 +920,23 @@ type docID struct {
 }
 
 func pathFromURI(uri string) string {
-	return strings.TrimPrefix(uri, "file://")
+	parsed, err := url.ParseRequestURI(uri)
+	if err != nil || parsed.Scheme != "file" {
+		return ""
+	}
+	path, err := url.PathUnescape(parsed.Path)
+	if err != nil {
+		return ""
+	}
+	return path
+}
+
+func uriFromPath(path string) string {
+	segments := strings.Split(filepath.ToSlash(path), "/")
+	for i, segment := range segments {
+		segments[i] = url.PathEscape(segment)
+	}
+	return "file://" + strings.Join(segments, "/")
 }
 
 func writeFrame(w *bufio.Writer, v any) error {
@@ -928,122 +949,73 @@ func writeFrame(w *bufio.Writer, v any) error {
 	return w.Flush()
 }
 
-func publishDiagnostics(w *bufio.Writer, uri, text string, diags []Diag) error {
-	lines := strings.Split(text, "\n")
-	items := []any{}
-	for _, d := range diags {
-		line := d.Line - 1
-		if line < 0 {
-			line = 0
-		}
-		if line >= len(lines) {
-			line = len(lines) - 1
-		}
-		width := u16len(lines[line])
-		start, end := 0, width
-		if d.End > d.Start {
-			start, end = d.Start, d.End
-			if start < 0 {
-				start = 0
-			}
-			if end > width {
-				end = width
-			}
-			if end <= start {
-				start, end = 0, width
-			}
-		}
-		item := map[string]any{
-			"range": map[string]any{
-				"start": map[string]any{"line": line, "character": start},
-				"end":   map[string]any{"line": line, "character": end},
-			},
-			"severity": sevCode(d.Sev),
-			"source":   "canlc",
-			"message":  d.Msg,
-		}
-		// Slice 0: the stable code and the a71 payloads ride
-		// the wire (code string, data object); empty fields
-		// stay omitted so payload-free lines are byte-identical.
-		if d.Code != "" {
-			item["code"] = d.Code
-		}
-		data := map[string]any{}
-		if d.Expected != "" {
-			data["expected"] = d.Expected
-		}
-		if d.Found != "" {
-			data["found"] = d.Found
-		}
-		if d.Hint != "" {
-			data["hint"] = d.Hint
-		}
-		if len(data) > 0 {
-			item["data"] = data
-		}
-		items = append(items, item)
-	}
-	if items == nil {
-		items = []any{}
-	}
-	return writeFrame(w, map[string]any{
-		"jsonrpc": "2.0",
-		"method":  "textDocument/publishDiagnostics",
-		"params":  map[string]any{"uri": uri, "diagnostics": items},
-	})
+// ---------------------------------------------------------------- server ---
+
+// The I41 server keeps the stdio JSON-RPC transport and replaces every
+// semantic hook: each keystroke diagnoses an in-memory overlay snapshot
+// through the current parse, resolve, and check pipeline, and definition
+// requests resolve through file, package, prelude, and import scopes. No
+// request builds, runs, asserts, dials out, queries, reads the
+// environment, emits files, or mutates registries; the --baseline
+// execution hook is gone, and predecessor spellings diagnose as ordinary
+// current-syntax errors.
+type lspDoc struct {
+	path    string
+	text    string
+	version int64
 }
 
-// parseLSPArgs takes the flags after `lsp`: --baseline PATH plus the
-// --stdio marker LSP clients (vscode-languageclient over stdio
-// transport) always append to the server command. canlc only speaks
-// stdio, so --stdio is accepted and ignored. Bare means unenforced;
-// anything else is a usage error.
-func parseLSPArgs(argv []string) (string, error) {
+type lspServer struct {
+	docs      map[string]*lspDoc
+	overlay   *project.Overlay
+	published map[string]bool
+}
+
+func newLSPServer() *lspServer {
+	return &lspServer{docs: map[string]*lspDoc{}, overlay: project.NewOverlay(), published: map[string]bool{}}
+}
+
+func parseLSPArgs(argv []string) error {
+	for _, arg := range argv {
+		if arg == "--baseline" || strings.HasPrefix(arg, "--baseline=") {
+			return fmt.Errorf("canlc lsp: --baseline was retired with the baseline-veto handshake; the server now reports live diagnostics")
+		}
+	}
 	fs := flag.NewFlagSet("canlc lsp", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
-	baseline := fs.String("baseline", "", "accepted revision baseline (JSON)")
 	fs.Bool("stdio", false, "stdio transport marker from LSP clients (ignored)")
 	if err := fs.Parse(argv); err != nil {
-		return "", fmt.Errorf("usage: canlc lsp [--stdio] [--baseline BASE.json]")
+		return fmt.Errorf("usage: canlc lsp [--stdio]")
 	}
 	if fs.NArg() != 0 {
-		return "", fmt.Errorf("usage: canlc lsp [--stdio] [--baseline BASE.json]")
+		return fmt.Errorf("usage: canlc lsp [--stdio]")
 	}
-	return *baseline, nil
+	return nil
 }
 
 func runLSP(argv []string) int {
-	baselinePath, err := parseLSPArgs(argv)
-	if err != nil {
+	if err := parseLSPArgs(argv); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 2
 	}
-	// The baseline loads once at startup: per-keystroke reloads
-	// would re-read the file on every edit, and a mid-session
-	// baseline change takes effect on editor restart. A missing
-	// or unreadable baseline warns and runs unenforced: a bad
-	// flag must not brick editing, and the CLI stays the
-	// authority (it fails hard on the same input).
-	var base *RevisionBaseline
-	if baselinePath != "" {
-		base, err = LoadBaseline(baselinePath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "canlc lsp: cannot load baseline, revision enforcement off: %v\n", err)
-			base = nil
-		}
-	}
-	in := bufio.NewReader(os.Stdin)
-	out := bufio.NewWriter(os.Stdout)
-	docs := map[string]string{}
+	serveLSP(bufio.NewReader(os.Stdin), bufio.NewWriter(os.Stdout))
+	return 0
+}
+
+func serveLSP(in *bufio.Reader, out *bufio.Writer) {
+	server := newLSPServer()
 	respond := func(id *json.RawMessage, result any) {
 		writeFrame(out, map[string]any{"jsonrpc": "2.0", "id": id, "result": result})
+	}
+	respondErr := func(id *json.RawMessage, code int, message string) {
+		writeFrame(out, map[string]any{"jsonrpc": "2.0", "id": id, "error": map[string]any{"code": code, "message": message}})
 	}
 	for {
 		var length int
 		for {
 			line, err := in.ReadString('\n')
 			if err != nil {
-				return 0
+				return
 			}
 			line = strings.TrimSpace(line)
 			if line == "" {
@@ -1055,7 +1027,7 @@ func runLSP(argv []string) int {
 		}
 		body := make([]byte, length)
 		if _, err := io.ReadFull(in, body); err != nil {
-			return 0
+			return
 		}
 		var msg rpcMsg
 		if err := json.Unmarshal(body, &msg); err != nil {
@@ -1063,49 +1035,238 @@ func runLSP(argv []string) int {
 		}
 		switch msg.Method {
 		case "initialize":
-			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1}})
-		case "initialized", "$/cancelRequest", "textDocument/didClose":
-			if msg.Method == "textDocument/didClose" {
-				var p struct {
-					TextDocument docID `json:"textDocument"`
-				}
-				if json.Unmarshal(msg.Params, &p) == nil {
-					delete(docs, p.TextDocument.URI)
-				}
-			}
+			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true}})
+		case "initialized", "$/cancelRequest":
 		case "textDocument/didOpen":
 			var p struct {
 				TextDocument struct {
-					URI  string `json:"uri"`
-					Text string `json:"text"`
+					URI     string `json:"uri"`
+					Text    string `json:"text"`
+					Version int64  `json:"version"`
 				} `json:"textDocument"`
 			}
 			if json.Unmarshal(msg.Params, &p) != nil {
 				continue
 			}
-			docs[p.TextDocument.URI] = p.TextDocument.Text
-			path := pathFromURI(p.TextDocument.URI)
-			diags := diagnoseWith(filepath.Dir(path), filepath.Base(path), p.TextDocument.Text, base)
-			publishDiagnostics(out, p.TextDocument.URI, p.TextDocument.Text, diags)
+			server.open(p.TextDocument.URI, p.TextDocument.Text, p.TextDocument.Version)
+			server.diagnose(out, p.TextDocument.URI)
 		case "textDocument/didChange":
 			var p struct {
-				TextDocument docID `json:"textDocument"`
-				Changes      []struct {
+				TextDocument struct {
+					URI     string `json:"uri"`
+					Version int64  `json:"version"`
+				} `json:"textDocument"`
+				Changes []struct {
 					Text string `json:"text"`
 				} `json:"contentChanges"`
 			}
 			if json.Unmarshal(msg.Params, &p) != nil || len(p.Changes) == 0 {
 				continue
 			}
-			text := p.Changes[len(p.Changes)-1].Text
-			docs[p.TextDocument.URI] = text
-			path := pathFromURI(p.TextDocument.URI)
-			diags := diagnoseWith(filepath.Dir(path), filepath.Base(path), text, base)
-			publishDiagnostics(out, p.TextDocument.URI, text, diags)
+			server.change(p.TextDocument.URI, p.Changes[len(p.Changes)-1].Text, p.TextDocument.Version)
+			server.diagnose(out, p.TextDocument.URI)
+		case "textDocument/didClose":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+			}
+			if json.Unmarshal(msg.Params, &p) == nil {
+				server.close(out, p.TextDocument.URI)
+			}
+		case "textDocument/definition":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+				Position     struct {
+					Line      int `json:"line"`
+					Character int `json:"character"`
+				} `json:"position"`
+			}
+			if json.Unmarshal(msg.Params, &p) != nil {
+				if msg.ID != nil {
+					respondErr(msg.ID, -32602, "invalid definition params")
+				}
+				continue
+			}
+			if msg.ID != nil {
+				respond(msg.ID, server.definition(p.TextDocument.URI, p.Position.Line, p.Position.Character))
+			}
 		case "shutdown":
 			respond(msg.ID, nil)
 		case "exit":
-			return 0
+			return
+		default:
+			if msg.ID != nil {
+				respondErr(msg.ID, -32601, "unknown method "+msg.Method)
+			}
 		}
 	}
+}
+
+func (s *lspServer) open(uri, text string, version int64) {
+	path := pathFromURI(uri)
+	s.docs[uri] = &lspDoc{path: path, text: text, version: version}
+	if path == "" {
+		return
+	}
+	if err := s.overlay.Set(path, version, text); err != nil {
+		s.overlay.Clear(path)
+	}
+}
+
+func (s *lspServer) change(uri, text string, version int64) {
+	doc, ok := s.docs[uri]
+	if !ok {
+		doc = &lspDoc{path: pathFromURI(uri)}
+		s.docs[uri] = doc
+	}
+	doc.text, doc.version = text, version
+	if doc.path == "" {
+		return
+	}
+	if err := s.overlay.Set(doc.path, version, text); err != nil {
+		s.overlay.Clear(doc.path)
+	}
+}
+
+func (s *lspServer) close(out *bufio.Writer, uri string) {
+	doc, ok := s.docs[uri]
+	if !ok {
+		return
+	}
+	if doc.path != "" {
+		s.overlay.Clear(doc.path)
+	}
+	delete(s.docs, uri)
+	delete(s.published, uri)
+	publishBridgeDiagnostics(out, uri, nil, nil)
+}
+
+func (s *lspServer) diagnose(out *bufio.Writer, uri string) {
+	doc, ok := s.docs[uri]
+	if !ok || doc.path == "" {
+		publishBridgeDiagnostics(out, uri, nil, nil)
+		return
+	}
+	root := discoverRoot(doc.path)
+	snapshot, err := driver.CheckSnapshot(root, doc.path, s.overlay)
+	if err != nil {
+		publishBridgeDiagnostics(out, uri, &doc.version, nil)
+		return
+	}
+	byURI := map[string][]driver.Diagnostic{}
+	for _, diagnostic := range snapshot.Diagnostics {
+		uri := uriFromPath(diagnostic.File)
+		byURI[uri] = append(byURI[uri], diagnostic)
+	}
+	for openURI, openDoc := range s.docs {
+		version := openDoc.version
+		publishBridgeDiagnostics(out, openURI, &version, byURI[openURI])
+		if len(byURI[openURI]) > 0 {
+			s.published[openURI] = true
+		} else {
+			delete(s.published, openURI)
+		}
+	}
+	for diagnosedURI, diags := range byURI {
+		if _, open := s.docs[diagnosedURI]; open {
+			continue
+		}
+		publishBridgeDiagnostics(out, diagnosedURI, nil, diags)
+		s.published[diagnosedURI] = true
+	}
+	for publishedURI := range s.published {
+		if _, still := byURI[publishedURI]; still {
+			continue
+		}
+		if _, open := s.docs[publishedURI]; open {
+			continue
+		}
+		publishBridgeDiagnostics(out, publishedURI, nil, nil)
+		delete(s.published, publishedURI)
+	}
+}
+
+func (s *lspServer) definition(uri string, line, character int) any {
+	doc, ok := s.docs[uri]
+	if !ok || doc.path == "" {
+		return nil
+	}
+	snapshot, err := driver.CheckSnapshot(discoverRoot(doc.path), doc.path, s.overlay)
+	if err != nil || snapshot.World == nil {
+		return nil
+	}
+	location, ok, err := driver.Definition(snapshot, doc.path, line, character)
+	if err != nil || !ok {
+		return nil
+	}
+	return map[string]any{
+		"uri": uriFromPath(location.File),
+		"range": map[string]any{
+			"start": map[string]any{"line": location.Line, "character": location.Start},
+			"end":   map[string]any{"line": location.Line, "character": location.End},
+		},
+	}
+}
+
+// discoverRoot walks up from a source file to the enclosing project
+// manifest. Without one, the file's own directory becomes the diagnosis
+// root so the bridge reports the missing project instead of silence.
+func discoverRoot(path string) string {
+	abs, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		abs = path
+	}
+	dir := abs
+	if info, err := os.Lstat(dir); err != nil || !info.IsDir() {
+		dir = filepath.Dir(dir)
+	}
+	for i := 0; i < 256; i++ {
+		if info, err := os.Lstat(filepath.Join(dir, "can.project.json")); err == nil && info.Mode().IsRegular() {
+			return dir
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return filepath.Dir(abs)
+}
+
+func publishBridgeDiagnostics(out *bufio.Writer, uri string, version *int64, diags []driver.Diagnostic) error {
+	items := []any{}
+	for _, d := range diags {
+		line := d.Line
+		if line < 0 {
+			line = 0
+		}
+		start, end := d.Start, d.End
+		if start < 0 {
+			start = 0
+		}
+		if end < start {
+			end = start
+		}
+		item := map[string]any{
+			"range": map[string]any{
+				"start": map[string]any{"line": line, "character": start},
+				"end":   map[string]any{"line": line, "character": end},
+			},
+			"severity": 1,
+			"source":   "canlc",
+			"message":  d.Message,
+		}
+		if d.Code != "" {
+			item["code"] = d.Code
+		}
+		items = append(items, item)
+	}
+	params := map[string]any{"uri": uri, "diagnostics": items}
+	if version != nil {
+		params["version"] = *version
+	}
+	return writeFrame(out, map[string]any{
+		"jsonrpc": "2.0",
+		"method":  "textDocument/publishDiagnostics",
+		"params":  params,
+	})
 }

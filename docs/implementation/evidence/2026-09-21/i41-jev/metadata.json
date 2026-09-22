@@ -1,0 +1,19 @@
+{
+ "exercise": "I41 check-error anchor, navigation depth, unsaved new file",
+ "finished_utc": "2026-09-21T23:56:36+00:00",
+ "endpoint": "https://api.typesafe.ai/v1/systemone",
+ "requested_model": "jev-latest",
+ "live_request_count": 3,
+ "topics_per_request": 3,
+ "request_sha256": {
+  "request-1.json": "b405fe68fe574707563cd00677e0ee2662a93d9b6eb9e82507a6268a62a19252",
+  "request-2.json": "0d4671805db31d1b36ab91734858a915a9577c3a1249cc2664f1ae639b062171",
+  "request-3.json": "1deff5cf5999b5e19736e3aeecabdf2f20b8a3e0f0b4b35ee0ec2bf2dfa64390"
+ },
+ "method": "Every natural-language context, instruction and candidate description independently reworded across rounds; question IDs, option IDs, option order, exact technical identifiers and measured facts retained. No previous answers included. No voting or retry-for-agreement rule. Pre-send audit: identical structure, 60/60 strings pairwise distinct.",
+ "verdicts": {
+  "check_error_anchor": "file_line_anchor 3/3 (1.0, 1.0, 1.0)",
+  "navigation_depth": "file_scope_symbols 3/3 (0.81, 0.97, 0.99)",
+  "unsaved_new_file": "ignore_until_saved 3/3 (1.0, 0.96, 0.99)"
+ }
+}

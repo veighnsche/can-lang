@@ -5,13 +5,31 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/internal/scan"
 )
 
+func fullCorpus() string {
+	var sb strings.Builder
+	for _, c := range cases {
+		for _, s := range c.samples {
+			sb.WriteString(s)
+			sb.WriteByte('\n')
+		}
+	}
+	return sb.String()
+}
+
 func TestRepoGrammar(t *testing.T) {
-	if _, err := os.Stat("../../editors/vscode/syntaxes/can.tmGrammar.json"); err != nil {
+	root, err := scan.RepoRoot()
+	if err != nil {
 		t.Skip("not in repo checkout")
 	}
-	if errs := check("../../editors/vscode"); len(errs) > 0 {
+	corpus, err := loadCorpus(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if errs := check(filepath.Join(root, "editors", "vscode"), corpus); len(errs) > 0 {
 		t.Fatalf("repo grammar failed: %v", errs)
 	}
 }
@@ -41,17 +59,31 @@ const keywordRule = `{"match": "\\b(fn|on|rev)\\b", "name": "keyword.control.can
 
 func TestMissingErrorRule(t *testing.T) {
 	dir := writeGrammar(t, keywordRule)
-	if errs := check(dir); !contains(errs, "exactly one error rule") {
+	if errs := check(dir, fullCorpus()); !contains(errs, "exactly one error rule") {
 		t.Fatalf("expected error-rule violation, got %v", errs)
 	}
 }
 
-func TestMissingRevKeyword(t *testing.T) {
-	noRev := `{"match": "\\b(fn|on)\\b", "name": "keyword.control.can"}`
+func TestRetiredKeywordRejected(t *testing.T) {
+	dir := writeGrammar(t, errorRule+","+keywordRule)
+	if errs := check(dir, fullCorpus()); !contains(errs, "retired rev must not be a keyword") {
+		t.Fatalf("expected retired-keyword violation, got %v", errs)
+	}
+}
+
+func TestRetiredScopeRejected(t *testing.T) {
 	pin := `{"match": "@[0-9]+", "name": "constant.numeric.version.can"}`
-	dir := writeGrammar(t, errorRule+","+noRev+","+pin)
-	if errs := check(dir); !contains(errs, "rev must be a keyword") {
-		t.Fatalf("expected rev violation, got %v", errs)
+	dir := writeGrammar(t, errorRule+","+pin)
+	if errs := check(dir, fullCorpus()); !contains(errs, "retired scope constant.numeric.version.can must go") {
+		t.Fatalf("expected retired-scope violation, got %v", errs)
+	}
+}
+
+func TestSamplePinnedToFixtures(t *testing.T) {
+	types := `{"match": "\\b(str)\\b", "name": "storage.type.primitive.can"}`
+	dir := writeGrammar(t, errorRule+","+types)
+	if errs := check(dir, "unrelated corpus"); !contains(errs, "not in the maintained fixtures") {
+		t.Fatalf("expected fixture-pinning violation, got %v", errs)
 	}
 }
 
@@ -61,7 +93,7 @@ func TestBadJSON(t *testing.T) {
 	if err := os.WriteFile(bad, []byte(`{not json`), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if errs := check(dir); len(errs) == 0 {
+	if errs := check(dir, fullCorpus()); len(errs) == 0 {
 		t.Fatal("expected JSON violation, got none")
 	}
 }

@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Settle three open points of the Can language-server refresh: anchoring checker failures that lack spans, the resolution depth of go-to-definition, and the handling of never-saved buffers.",
+   "fixed_constraints": [
+    "Only the stdio JSON-RPC transport survives from the old server; every semantic hook moves to a bridge that parses, resolves, and checks an overlay snapshot with the current pipeline. Build, run, assertion, network, SQL, environment, artifact, and registry paths stay unreachable from editor operations.",
+    "Lex and parse stages emit coded diagnostics with spans while resolve and check stages emit unpositioned strings, and both surfaces stop at the first failure. CLI parity therefore means the same first message, with exact positions only where the stages supply them.",
+    "Position mapping reuses the shared UTF-16 source logic, file identity is the canonical absolute path, and each document version replaces its diagnostics wholesale on edits, closes, deletions, and import edits. Predecessor spellings and proof obligations have no place in the new surface.",
+    "Symbol records already pair each nominal and generated declaration with its source and span, and the TextMate grammar plus gramcheck fixtures are rewritten for current keywords, primitives, and operators, removing legacy tokens and obligations."
+   ]
+  },
+  "topics": {
+   "check_error_anchor": {
+    "facts": "Checker strings sometimes cite a file or declaration and sometimes neither, and none carries offsets. A first-line file anchor keeps the identical message without inventing precision, whereas token hunting in the file trades occasional exactness for frequent misplacement."
+   },
+   "navigation_depth": {
+    "facts": "Jump targets come from resolving the offset identifier across the visible scopes to declarations with spans. Body-local binders fall outside those scopes, so covering them means reconstructing the checker's scope at the offset."
+   },
+   "unsaved_new_file": {
+    "facts": "Buffers divide into project members the loader walks and novel paths it cannot see. Waiting for save preserves CLI agreement by construction, while virtual membership answers sooner and may answer differently than the CLI."
+   }
+  }
+ },
+ "questions": {
+  "check_error_anchor": {
+   "type": "choice",
+   "instructions": "Pick the anchor for checker failures without spans. Use common and topics.check_error_anchor.",
+   "criteria": {
+    "file_line_anchor": "Show the identical CLI message at the attributed file's first line, falling back to the open file. Precision is claimed only for spanned lexer and parser diagnostics.",
+    "heuristic_token": "Locate a named token inside the attributed file and underline it. Right guesses look exact while wrong guesses actively mislead.",
+    "review_needed": "Neither anchor can be separated on this evidence, or neither preserves the contracts."
+   }
+  },
+  "navigation_depth": {
+   "type": "choice",
+   "instructions": "Pick the resolution depth of definition jumps. Use common and topics.navigation_depth.",
+   "criteria": {
+    "file_scope_symbols": "Jump through file, package, prelude, and import scopes to nominal, function, constructor, and generated declarations, declining body-local names. Offered jumps always name resolved identities.",
+    "scope_aware_locals": "Reconstruct body scopes as well so locals jump to binders. Completeness grows together with machinery beside the checker.",
+    "review_needed": "Neither depth can be separated on this evidence, or neither preserves the contracts."
+   }
+  },
+  "unsaved_new_file": {
+   "type": "choice",
+   "instructions": "Pick the handling of never-saved buffers. Use common and topics.unsaved_new_file.",
+   "criteria": {
+    "ignore_until_saved": "Publish diagnostics solely for buffers present in the project load and empty results for novel paths until they are saved. Disk plus overlays always reproduces the report.",
+    "virtual_source": "Invent package membership for the novel buffer from its own header and check it at once. Faster answers can diverge from the saved verdict.",
+    "review_needed": "Neither treatment can be separated on this evidence, or neither preserves the contracts."
+   }
+  }
+ }
+}

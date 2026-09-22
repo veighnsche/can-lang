@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -86,36 +87,41 @@ func TestLSPBaselineUnaccepted(t *testing.T) {
 	}
 }
 
-// TestLSPArgsBaseline pins flag parsing: --baseline takes a path,
-// unknown flags are rejected, bare `lsp` means unenforced.
+// TestLSPArgsBaseline pins flag parsing: --baseline was retired with the
+// baseline-veto handshake and is now refused; bare `lsp` or --stdio
+// starts the stdio server.
 func TestLSPArgsBaseline(t *testing.T) {
-	path, err := parseLSPArgs([]string{"--baseline", "base.json"})
-	if err != nil || path != "base.json" {
-		t.Fatalf("parse --baseline: path=%q err=%v", path, err)
+	if err := parseLSPArgs([]string{"--baseline", "base.json"}); err == nil {
+		t.Fatalf("--baseline accepted")
 	}
-	path, err = parseLSPArgs(nil)
-	if err != nil || path != "" {
-		t.Fatalf("parse bare: path=%q err=%v", path, err)
+	if err := parseLSPArgs(nil); err != nil {
+		t.Fatalf("parse bare: err=%v", err)
 	}
-	if _, err := parseLSPArgs([]string{"--format", "json"}); err == nil {
+	if err := parseLSPArgs([]string{"--format", "json"}); err == nil {
 		t.Fatalf("unknown flag accepted")
 	}
 }
 
 // TestLSPArgsStdio pins the editor handshake: vscode-languageclient
 // over stdio transport always spawns `canlc lsp --stdio`, so the
-// marker must be accepted (and ignored) with or without --baseline.
+// marker must be accepted (and ignored).
 func TestLSPArgsStdio(t *testing.T) {
-	path, err := parseLSPArgs([]string{"--stdio"})
-	if err != nil || path != "" {
-		t.Fatalf("parse --stdio: path=%q err=%v", path, err)
+	if err := parseLSPArgs([]string{"--stdio"}); err != nil {
+		t.Fatalf("parse --stdio: err=%v", err)
 	}
-	path, err = parseLSPArgs([]string{"lsp", "--stdio"})
-	if err == nil {
+	if err := parseLSPArgs([]string{"lsp", "--stdio"}); err == nil {
 		t.Fatalf("positional arg accepted")
 	}
-	path, err = parseLSPArgs([]string{"--stdio", "--baseline", "base.json"})
-	if err != nil || path != "base.json" {
-		t.Fatalf("parse --stdio --baseline: path=%q err=%v", path, err)
+}
+
+// TestLSPBaselineRunGated pins the refusal: `lsp --baseline` is a
+// usage error naming the retired flag, so a server never starts.
+func TestLSPBaselineRunGated(t *testing.T) {
+	err := parseLSPArgs([]string{"--baseline", "base.json"})
+	if err == nil || !strings.Contains(err.Error(), "baseline") {
+		t.Fatalf("err=%v", err)
+	}
+	if code := runLSP([]string{"--baseline", "base.json"}); code != 2 {
+		t.Fatalf("code=%d", code)
 	}
 }

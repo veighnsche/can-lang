@@ -1,0 +1,54 @@
+{
+ "model": "jev-latest",
+ "state": {
+  "common": {
+   "purpose": "Design the current-language LSP diagnostics bridge for Can: how spanless checker failures are anchored, how far go-to-definition resolution goes, and how unsaved buffers outside the project tree are treated.",
+   "fixed_constraints": [
+    "The legacy server in compiler/lsp.go (predecessor AST, proof, baseline, and coverage hooks) is deleted and its JSON-RPC transport kept; the new bridge diagnoses an in-memory snapshot through the current parse, resolve, and check pipeline only, never through build, run, assert, network, SQL, environment reads, or generated artifacts.",
+    "Lexer failures carry CAN-LEX-* codes with exact source spans and parser failures carry the syntax code with a span; resolve and check failures are bare strings with no positions, and both the CLI and the bridge fail fast on the first error, so parity means reporting the identical first message.",
+    "Spans convert through the internal/source UTF-16 logic; files are identified by canonical absolute path, never by basename; stale diagnostics clear on every edit, close, deletion, and import change; editor operations must not execute assertions, touch the network or SQL, or accept predecessor spellings.",
+    "Resolve symbols carry their declaring source file and declaration node with spans, including generated question records; the grammar and its gramcheck gate move to current syntax only, dropping predecessor tokens such as extern, brand, fnref, dec, and E-codes."
+   ]
+  },
+  "topics": {
+   "check_error_anchor": {
+    "facts": "A resolve or check failure names a file, a declaration, or neither, but never a token span. Anchoring it to the attributed file's first line reports the CLI-identical message with honest scope, while searching the file for a named token risks squiggling the wrong occurrence."
+   },
+   "navigation_depth": {
+    "facts": "Definition jumps resolve an identifier at an offset through the file's package scope, prelude, and imports to nominal type, function, constructor, and generated declarations. Function parameters and match binders live in body scopes the file scope cannot see, so locals need extra scope-at-position machinery."
+   },
+   "unsaved_new_file": {
+    "facts": "An opened buffer may name a path that exists in the project tree or a brand-new path the manifest walk never sees. Ignoring the latter until save keeps every diagnosis CLI-reproducible, while synthesizing package membership for it can disagree with the CLI once saved."
+   }
+  }
+ },
+ "questions": {
+  "check_error_anchor": {
+   "type": "choice",
+   "instructions": "Choose the anchor for spanless resolve/check failures. Use common and topics.check_error_anchor.",
+   "criteria": {
+    "file_line_anchor": "Report the CLI-identical message on line 1 of the attributed file (or the open file when none is named). Scope stays honest: exact spans appear only where the pipeline provides them.",
+    "heuristic_token": "Search the attributed file for the token the message names and anchor the squiggle there. Matches feel precise when the guess lands and mislead whenever it does not.",
+    "review_needed": "The evidence cannot separate these anchors, or neither keeps the required contracts."
+   }
+  },
+  "navigation_depth": {
+   "type": "choice",
+   "instructions": "Choose how far definition resolution goes. Use common and topics.navigation_depth.",
+   "criteria": {
+    "file_scope_symbols": "Resolve through file, package, prelude, and import scopes to nominal and generated declarations; identifiers bound in bodies report no definition. Every jump the server offers is a resolved identity.",
+    "scope_aware_locals": "Additionally track body scopes so parameters and match binders jump to their binders. Local jumps work at the cost of scope-at-position machinery beside the checker.",
+    "review_needed": "The evidence cannot separate these depths, or neither keeps the required contracts."
+   }
+  },
+  "unsaved_new_file": {
+   "type": "choice",
+   "instructions": "Choose the treatment of unsaved buffers outside the project tree. Use common and topics.unsaved_new_file.",
+   "criteria": {
+    "ignore_until_saved": "Diagnose only buffers whose canonical path exists in the loaded project; brand-new paths publish empty diagnostics until saved. Every squiggle stays reproducible from disk plus overlays.",
+    "virtual_source": "Synthesize manifest membership and a package for the new buffer from its header and diagnose it immediately. Early feedback risks contradicting the CLI verdict after save.",
+    "review_needed": "The evidence cannot separate these treatments, or neither keeps the required contracts."
+   }
+  }
+ }
+}

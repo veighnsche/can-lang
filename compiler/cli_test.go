@@ -63,16 +63,14 @@ func TestParseBaselineArgs(t *testing.T) {
 }
 
 func TestParseLSPArgs(t *testing.T) {
-	base, err := parseLSPArgs(nil)
-	if err != nil || base != "" {
-		t.Fatalf("bare lsp: base=%q err=%v", base, err)
+	if err := parseLSPArgs(nil); err != nil {
+		t.Fatalf("bare lsp: err=%v", err)
 	}
-	base, err = parseLSPArgs([]string{"--baseline", "b.json"})
-	if err != nil || base != "b.json" {
-		t.Fatalf("--baseline: base=%q err=%v", base, err)
+	if err := parseLSPArgs([]string{"--stdio"}); err != nil {
+		t.Fatalf("--stdio: err=%v", err)
 	}
-	for _, argv := range [][]string{{"pos.can"}, {"--bogus", "x"}, {"--baseline"}} {
-		if _, err := parseLSPArgs(argv); err == nil {
+	for _, argv := range [][]string{{"pos.can"}, {"--bogus", "x"}, {"--baseline", "b.json"}, {"--baseline"}} {
+		if err := parseLSPArgs(argv); err == nil {
 			t.Fatalf("parseLSPArgs(%q) = nil error, want usage error", argv)
 		}
 	}

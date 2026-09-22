@@ -44,9 +44,29 @@ type Source struct {
 	Package                                  *Package
 }
 
+// SourceError reports a source file that could not be decoded or parsed. It
+// carries the structured diagnostics alongside the exact message the CLI has
+// always printed, so editor bridges can convert spans without changing CLI
+// output by a single byte.
+type SourceError struct {
+	Path        string
+	File        *source.File
+	Diagnostics []syntax.Diagnostic
+	Message     string
+}
+
+func (e *SourceError) Error() string { return e.Message }
+
 // Load reads exactly the named local project's manifest graph. It does not
 // search parent directories, download dependencies, execute hooks, or write locks.
 func Load(directory string) (*Graph, error) {
+	return load(directory, nil)
+}
+
+// load shares Load's implementation with overlay substitution: when
+// substitute reports bytes for a walked source path, those bytes parse
+// instead of the file on disk.
+func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph, error) {
 	root, err := filepath.EvalSymlinks(directory)
 	if err != nil {
 		return nil, err
@@ -132,7 +152,7 @@ func Load(directory string) (*Graph, error) {
 			}
 			project.Dependencies[name] = dep
 		}
-		if err := g.readSources(project, outputs); err != nil {
+		if err := g.readSources(project, outputs, substitute); err != nil {
 			return nil, err
 		}
 		if err := verifySourceRegistry(project); err != nil {
@@ -161,7 +181,7 @@ func readConfined(root, name string) ([]byte, error) {
 	return os.ReadFile(file)
 }
 
-func (g *Graph) readSources(project *Project, outputs map[string]string) error {
+func (g *Graph) readSources(project *Project, outputs map[string]string, substitute func(real string) ([]byte, bool)) error {
 	root, err := ConfinedPath(project.Root, project.Manifest.SourceRoot, true)
 	if err != nil {
 		return err
@@ -219,13 +239,18 @@ func (g *Graph) readSources(project *Project, outputs map[string]string) error {
 			if err != nil {
 				return err
 			}
+			if substitute != nil {
+				if overlaid, ok := substitute(real); ok {
+					data = overlaid
+				}
+			}
 			file, err := source.New(real, string(data))
 			if err != nil {
-				return err
+				return &SourceError{Path: real, Message: err.Error()}
 			}
 			parsed := syntax.Parse(file)
 			if !parsed.OK() {
-				return fmt.Errorf("%s", parsed.Diagnostics[0].Format(file))
+				return &SourceError{Path: real, File: file, Diagnostics: parsed.Diagnostics, Message: parsed.Diagnostics[0].Format(file)}
 			}
 			packageName := parsed.File.Header.Name.Text
 			// A source symlink cannot move an internal package into a public

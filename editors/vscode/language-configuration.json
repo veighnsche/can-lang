@@ -1,1 +1,1 @@
-{"brackets": [["{", "}"], ["[", "]"], ["(", ")"]], "comments": {"lineComment": "//"}, "surroundingPairs": [["{", "}"], ["[", "]"], ["(", ")"], ["\"", "\""]]}
+{"brackets": [["[", "]"], ["(", ")"]], "comments": {"lineComment": "//"}, "surroundingPairs": [["[", "]"], ["(", ")"], ["\"", "\""]]}
