@@ -52,7 +52,7 @@ Decision IDs identify the applicable choices; they are not a required sequence.
 
 ## Design direction
 
-The standard-library capabilities described in `../ASTRA_STDLIB.md` belong in
+The standard-library capabilities described in `../archive/ASTRA_STDLIB.md` belong in
 Can's language-design scope, including capabilities not yet implemented. Review
 and carry those requirements into the current design rather than discarding
 them because the document uses older language assumptions. Its proposed syntax,

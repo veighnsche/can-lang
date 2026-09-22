@@ -34,10 +34,10 @@ retirement; they are not an active catalogue or fallback.
   the pair is a transparent `Ratio__Fraction` record held by
   construction; a forged zero denominator surfaces
   `math.zero_divisor` (hence `add`/`multiply`/`to_dec_exact`
-  declare it — the one deviation from `docs/ASTRA_STDLIB.md`).
+  declare it — the one deviation from `docs/archive/ASTRA_STDLIB.md`).
 - `ratio.ts` + `errors.json` — committed golden TS prod emit
   (tests stripped). Regenerate: `go run ./compiler --out
   std/ratio std/ratio/ratio.can`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/ASTRA_STDLIB.md`
+Rules: `/REQUIREMENTS.md`. Program: `docs/archive/ASTRA_STDLIB.md`
 (1.3, exact fractions as records).

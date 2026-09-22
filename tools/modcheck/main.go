@@ -5,7 +5,7 @@
 // entry must name a catalogue package or another package in the tree
 // (mirroring resolve.Build's package graph), and retired predecessor
 // shapes must not reappear. Retired predecessor sources under
-// sketches/ and beside the std/ READMEs carry no can.project.json,
+// docs/archive/sketches/ and beside the std/ READMEs carry no can.project.json,
 // stay out of scope here, and are owned by I44.
 //
 // Run from anywhere inside the repo: go run ./tools/modcheck

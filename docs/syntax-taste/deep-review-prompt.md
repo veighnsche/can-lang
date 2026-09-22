@@ -8,7 +8,7 @@ Read `AGENTS.md` and the entire `docs/syntax-taste/decisions.md`, including exam
 
 Latest scope correction: **LLM tool calling is out of scope. We are not doing tools.** The decision document may still describe tools as deferred or required; flag that stale wording, but do not propose tool declarations, execution loops, or tool-calling features as missing requirements.
 
-Read `docs/ASTRA_STDLIB.md` for intended capability coverage. Its old syntax, type assumptions, implementation strategies, and roadmap are not authoritative. Review other design documents, examples, and source code as historical evidence and sources of candidate requirements, not as approved decisions. Relevant older native-AI proposals (the a94–a97 notes, since removed) and related documents. Find their actual locations instead of assuming every reference is current.
+Read `docs/archive/ASTRA_STDLIB.md` for intended capability coverage. Its old syntax, type assumptions, implementation strategies, and roadmap are not authoritative. Review other design documents, examples, and source code as historical evidence and sources of candidate requirements, not as approved decisions. Relevant older native-AI proposals (the a94–a97 notes, since removed) and related documents. Find their actual locations instead of assuming every reference is current.
 
 All existing implementation, including uncommitted changes, may be old or based on rejected research. Do not infer approval from implementation status, commit status, a legacy test, or an old golden. Preserve unrelated work.
 

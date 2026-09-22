@@ -125,5 +125,5 @@ Old sources beside these READMEs are retired artifacts; the I44
 deletion list is every `std/*/*.can` and `std/*/*.ts` outside
 `current/` and `catalogue/`, the twelve `std/*/errors.json` files
 beside them, `std/host/host.externs.ts`,
-`std/host/platform.d.ts`, and all twenty `sketches/*/` programs.
+`std/host/platform.d.ts`, and all twenty `docs/archive/sketches/*/` programs.
 `std/html/HISTORY.md` stays as a labelled historical document.

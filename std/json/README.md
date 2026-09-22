@@ -44,7 +44,7 @@ implementation.
   /tmp/jg std/json/json.can std/scalars/scalars.can`, copy
   `json.ts` + `errors.json`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/ASTRA_STDLIB.md` §1.8.
+Rules: `/REQUIREMENTS.md`. Program: `docs/archive/ASTRA_STDLIB.md` §1.8.
 Byte-level parse landed in S11b: `std__json__parse_value`
 guards empty input, then `std__json__parse_step` runs a
 single self-recursive 12-state machine over `Seq<Json__PFrame>`

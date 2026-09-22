@@ -36,7 +36,7 @@
   "rejected": {
     "module": "github.com/wasilibs/go-pgquery",
     "version": "v0.0.0-20260915022521-81f99195012b",
-    "reason": "byte-identical outputs but ~454 ms cold compile and ~300 MB transient peak per process, larger binary, untagged third-party pin; see research/sql-binding/README.md"
+    "reason": "byte-identical outputs but ~454 ms cold compile and ~300 MB transient peak per process, larger binary, untagged third-party pin; see docs/archive/research/sql-binding/README.md"
   },
   "buildInputs": "The binding ships inside the canlc launcher binary, whose content hash feeds every build ID via the compiler input; no separate manifest field is needed."
 }

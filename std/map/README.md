@@ -29,4 +29,4 @@ inputs scheduled for retirement by I43/I44, not the current implementation.
   (tests stripped). Regenerate: `go run ./compiler --out std/map
   std/map/map.can`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/ASTRA_STDLIB.md` §1.8.
+Rules: `/REQUIREMENTS.md`. Program: `docs/archive/ASTRA_STDLIB.md` §1.8.

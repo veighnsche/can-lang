@@ -1228,7 +1228,7 @@ The admission suite needs:
 
 ### Policy
 
-`docs/ASTRA_STDLIB.md` supplies capability intent. Its syntax, type system,
+`docs/archive/ASTRA_STDLIB.md` supplies capability intent. Its syntax, type system,
 effect, proof, ownership, frontend-runtime, and roadmap assumptions are not
 authority. A missing library operation does not imply missing language syntax.
 

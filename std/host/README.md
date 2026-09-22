@@ -42,6 +42,6 @@ by I43/I44, not the current implementation.
   (tests stripped). Regenerate: `go run ./compiler --out std/host
   std/host/host.can`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/ASTRA_STDLIB.md` §Host.
+Rules: `/REQUIREMENTS.md`. Program: `docs/archive/ASTRA_STDLIB.md` §Host.
 Consumers pin the wrappers (or externs) via `uses`; see
-`sketches/host-clock`.
+`docs/archive/sketches/host-clock`.

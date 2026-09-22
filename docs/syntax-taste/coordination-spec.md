@@ -513,8 +513,8 @@ invalidate a live lease. Each catalogue resource contract must either wait for
 leases or produce its declared busy/lifecycle failure. It must not silently
 close underneath the participant. This is runtime lifecycle checking, not a new
 general affine/effects type system. The need follows the resource-bearing
-capability intent in ASTRA's [web backend](../ASTRA_STDLIB.md#3-web-backend-standard)
-and [SQL connector](../ASTRA_STDLIB.md#4-standard-sql-connector), whose old
+capability intent in ASTRA's [web backend](../archive/ASTRA_STDLIB.md#3-web-backend-standard)
+and [SQL connector](../archive/ASTRA_STDLIB.md#4-standard-sql-connector), whose old
 surface mechanisms are not authoritative.
 
 An assertion runner must drain all owners before declaring the assertion passed,

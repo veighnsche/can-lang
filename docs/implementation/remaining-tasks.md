@@ -89,8 +89,8 @@ tests/
     browser/                     proposed I34/I42 browser-only test harness
     testdata/                    proposed SQL fixtures and test-only fault proxy
 examples/                        I42 complete manifest-backed applications
-std/ / sketches/                 I43 maintained catalogue/domain examples
-research/sql-binding/            I36 bounded comparison, never a runtime fallback
+std/ / docs/archive/sketches/                 I43 maintained catalogue/domain examples
+docs/archive/research/sql-binding/            I36 bounded comparison, never a runtime fallback
 docs/implementation/evidence/    dated task reports and consultation records
 ```
 
@@ -328,7 +328,7 @@ with the task report. Literal HTML snapshots alone cannot close I34.
 
 ## I36 — Select upstream PostgreSQL parser binding
 
-**Files:** create a bounded `research/sql-binding/` comparison with `README.md`,
+**Files:** create a bounded `docs/archive/research/sql-binding/` comparison with `README.md`,
 shared `corpus/`, candidate-specific harnesses and machine-readable results. Only
 after measuring, create `compiler/internal/sql/parser.go`, `parser_test.go`, and
 adopt the chosen dependency in `go.mod`/`go.sum`; record its notice/source duties
@@ -555,7 +555,7 @@ into a test harness to make an incomplete source example appear to work.
 **CLOSED 2026-09-21.** Acceptance: [evidence/2026-09-21/i43](evidence/2026-09-21/i43/README.md).
 The plan below is kept as dependency context for I44/I45.
 
-**Files:** update `std/README.md`, `std/<existing-package>/`, `sketches/`, current
+**Files:** update `std/README.md`, `std/<existing-package>/`, `docs/archive/sketches/`, current
 example manifests and catalogue references. Use
 `compiler/internal/catalogue/integration_test.go` and `tools/modcheck/` for the
 machine-checked inventory, adding `tests/integration/stdlib_test.go` for fresh
@@ -593,7 +593,7 @@ fresh-emit TypeScript gate.
 **Files:** inventory root-level `compiler/{parse,check,types,eval,emit,expand,result,bridge,verify_*}`
 and associated tests/commands before deletion; exact filenames must come from the
 checkout. Update `compiler/main.go`, `Makefile`, `go.mod`/`go.sum`, legacy test/data
-owners, `.github/workflows/`, `tscheck/`, `std/`, and `sketches/` only as required.
+owners, `.github/workflows/`, `tscheck/`, `std/`, and `docs/archive/sketches/` only as required.
 Keep `compiler/internal/` current semantics, authored `runtime/*.ts`, bundled tool
 sources and labelled historical design documents.
 

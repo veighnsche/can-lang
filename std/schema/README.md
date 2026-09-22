@@ -57,7 +57,7 @@ implementation.
   `TestAssetNoScriptedEvidence`). Fixture snapshots are explicit
   values; a sealed success-shaped value alone never approves, and
   fixture-signed material under production keys stays a future
-  `SchemaAuthorityInvalid` hook (see `docs/a/a84-asset-provenance.md`),
+  `SchemaAuthorityInvalid` hook (see `docs/archive/a/a84-asset-provenance.md`),
   never a committed row.
 - Hostile set (pinned by `TestAssetHostileSet`, each with its row):
   unapproved URL, wrong digest, policy mismatch, revocation,
@@ -70,9 +70,9 @@ implementation.
   carries registry contents, expected digests, or alternate
   entries.
 
-Rules: `docs/a/a83-astra-schema.md` (trust rulings, §§1, 6, 9–11 in this
-slice). Plan: the S1 working plan (agent plans removed; see `docs/a/a83-astra-schema.md`).
-Provenance design: `docs/a/a84-asset-provenance.md` (S4 paper).
+Rules: `docs/archive/a/a83-astra-schema.md` (trust rulings, §§1, 6, 9–11 in this
+slice). Plan: the S1 working plan (agent plans removed; see `docs/archive/a/a83-astra-schema.md`).
+Provenance design: `docs/archive/a/a84-asset-provenance.md` (S4 paper).
 `schema__asset__recheck` (S4) re-runs authorization and requires
 witness equality; currency is enforced on the supplied snapshot, not
 historically on the witness. Builders (`html__asset__stylesheet`,

@@ -15,7 +15,7 @@
 | [Platform and testing specification](platform-testing-spec.md) | Assertion identity, deterministic fixtures, catalogue opacity, CLI, HTTP, HTML/HTMX, SQL and capability coverage |
 | C11–C12 | Cross-document traces, finding/answer traceability, evidence boundary and readiness |
 
-The [independent review](deep-design-review-2026-09-20.md) is preserved as historical evidence. Its proposals, earlier unresolved verdicts and seven option recommendations are not present policy. [ASTRA_STDLIB](../ASTRA_STDLIB.md) supplies capability intent; its effects, exact-decimal base type, externs, revision syntax, proof obligations and browser component architecture are superseded. No compatibility layer, old generated ABI or golden output is a requirement. No LLM tools, anonymous functions, general foreign-code escape, browser Can compiler, or implicit cancellation is introduced.
+The [independent review](deep-design-review-2026-09-20.md) is preserved as historical evidence. Its proposals, earlier unresolved verdicts and seven option recommendations are not present policy. [ASTRA_STDLIB](../archive/ASTRA_STDLIB.md) supplies capability intent; its effects, exact-decimal base type, externs, revision syntax, proof obligations and browser component architecture are superseded. No compatibility layer, old generated ABI or golden output is a requirement. No LLM tools, anonymous functions, general foreign-code escape, browser Can compiler, or implicit cancellation is introduced.
 
 Catalogue signatures use `T`, `U`, `E` and arrows as mathematical notation. They are not new source syntax. Catalogue operations have fixed compiler-known type rules. Application declarations use only the selected Can grammar.
 

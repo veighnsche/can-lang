@@ -21,14 +21,14 @@ are checked. The design inputs below are dated records, not policy.
 
 ## Historical records
 
-- [Zero-compatibility syntax and ABI audit](can-language-audit.md) — older,
+- [Zero-compatibility syntax and ABI audit](archive/can-language-audit.md) — older,
   unapproved redesign recommendations. Its supporting probe archive was removed.
-- [Stdlib implementation record](stdlib-remaining.md) — previous implementation
+- [Stdlib implementation record](archive/stdlib-remaining.md) — previous implementation
   history, not the implementation plan for the current design.
 
 The status map and reviewer guidance below are historical and incomplete;
 they do not override the current decisions or specification. Older `aNN`
-documents generally live under `a/`.
+documents generally live under `archive/a/`.
 
 ## Status map
 
@@ -71,10 +71,10 @@ documents generally live under `a/`.
    superseded — see its banner).
 2. `a05-expressiveness.md` (what was missing and in what order).
 3. `a06` → `a09` in order (each spec pairs a power with its proof).
-4. The retired gallery as recorded in `sketches/README.md` and the
+4. The retired gallery as recorded in `docs/archive/sketches/README.md` and the
    `std/` package histories (sources deleted in I44).
 5. ~~`can-idioms.md`~~ (removed; predecessor style guide that misclaimed living status).
-6. `CLEAN_ROOM_REVIEW.md` (design input; historical record, see note).
+6. `docs/archive/sketches/CLEAN_ROOM_REVIEW.md` (design input; historical record, see note).
 
 ## Historical reading and editing rules
 

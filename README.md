@@ -17,8 +17,8 @@ part of every build.
   (native-ai, account-search, form-validation, dashboard)
 - [`std/`](std/README.md) — package dispositions and the four
   maintained `current/` example projects
-- [`sketches/`](sketches/README.md) — retired predecessor gallery
-  (historical note only; sources deleted)
+- [`docs/archive/`](docs/archive/README.md) — retired predecessor gallery,
+  historical design records, and the I36 binding comparison (history only)
 - [`distribution/`](distribution/README.md) — pinned target,
   qualification, bundles, offline install/update, release notes
 - [`tests/`](tests/integration/) — staged integration suites

@@ -41,4 +41,4 @@ implementation.
   (tests stripped). Regenerate: `go run ./compiler --out std/seq
   std/seq/seq.can`; verify: `go test ./...`.
 
-Rules: `/REQUIREMENTS.md`. Program: `docs/ASTRA_STDLIB.md` §1.8.
+Rules: `/REQUIREMENTS.md`. Program: `docs/archive/ASTRA_STDLIB.md` §1.8.
