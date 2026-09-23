@@ -60,10 +60,10 @@ func TestParseErrors(t *testing.T) {
 
 func TestParseKinds(t *testing.T) {
 	for input, want := range map[string]string{
-		"PRAGMA journal_mode=WAL": "pragma_statement",
-		"EXPLAIN SELECT 1":        "explain_statement",
-		"CREATE TABLE t(x)":       "create_table_statement",
-		"DELETE FROM t WHERE x=?": "delete_statement",
+		"PRAGMA journal_mode=WAL":  "pragma_statement",
+		"EXPLAIN SELECT 1":         "explain_statement",
+		"CREATE TABLE t(x)":        "create_table_statement",
+		"DELETE FROM t WHERE x=?":  "delete_statement",
 		"INSERT INTO t VALUES (?)": "insert_statement",
 	} {
 		root, hasError := parse(t, input)

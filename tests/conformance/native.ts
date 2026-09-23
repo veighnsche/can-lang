@@ -16,6 +16,8 @@ export function apiAvailable(name: string): boolean {
   if(name === "node:async_hooks.AsyncLocalStorage")return typeof AsyncLocalStorage === "function";
   if (name === "node:util.types.isProxy") return typeof types.isProxy === "function";
   if (name === "node:util.types.isNativeError") return typeof types.isNativeError === "function";
+  if (name === "crypto.subtle") return typeof crypto.subtle === "object";
+  if (name === "Bun.password") return typeof Bun.password === "object";
   const nodeModules: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {"node:fs/promises": nodeFsPromises as unknown as Readonly<Record<string, unknown>>, "node:path": nodePath as unknown as Readonly<Record<string, unknown>>};
   for (const prefix of Object.keys(nodeModules)) {
     if (name.startsWith(prefix + ".")) return typeof nodeModules[prefix][name.slice(prefix.length + 1)] === "function";

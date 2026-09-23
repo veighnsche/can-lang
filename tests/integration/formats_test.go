@@ -18,11 +18,11 @@ import (
 const formatsManifest = `{"source_root":"src","error_registry":"can.errors.json"}`
 
 var formatsDocuments = map[string]string{
-	"svc.toml":      "title = \"edge\"\nports = [80, 443]\n[primary]\nhost = \"h\"\nport = 8080\n",
-	"point.yaml":    "name: r\nn: 7\n",
-	"point.json5":   "{/* c */name: 'r', // d\nn: 7,}",
-	"points.jsonl":  "{\"name\":\"a\",\"n\":9007199254740993}\n\n{\"name\":\"b\",\"n\":-0}\r\n{\"name\":\"c\",\"n\":-12}",
-	"bad.toml":      "title = \"a\"\ntitle = \"b\"\n",
+	"svc.toml":        "title = \"edge\"\nports = [80, 443]\n[primary]\nhost = \"h\"\nport = 8080\n",
+	"point.yaml":      "name: r\nn: 7\n",
+	"point.json5":     "{/* c */name: 'r', // d\nn: 7,}",
+	"points.jsonl":    "{\"name\":\"a\",\"n\":9007199254740993}\n\n{\"name\":\"b\",\"n\":-0}\r\n{\"name\":\"c\",\"n\":-12}",
+	"bad.toml":        "title = \"a\"\ntitle = \"b\"\n",
 	"truncated.jsonl": "{\"name\":\"a\",\"n\":1}\n{\"name\":\"b\",\"n\":",
 }
 

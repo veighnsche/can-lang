@@ -13,9 +13,9 @@ func streamOperationBindings() bindingContribution {
 	// Generic reader operations resolve per specialization key in
 	// streamSpecializationBindings; only concrete operations bind here.
 	functions := map[string]string{
-		"can.std.stream@1::write_some":    "$canStreamWrites.writeSome",
-		"can.std.stream@1::close_writer":  "$canStreamWrites.closeWriter",
-		"can.std.stream@1::cancel_writer": "$canStreamWrites.cancelWriter",
+		"can.std.stream@1::write_some":       "$canStreamWrites.writeSome",
+		"can.std.stream@1::close_writer":     "$canStreamWrites.closeWriter",
+		"can.std.stream@1::cancel_writer":    "$canStreamWrites.cancelWriter",
 		"can.std.files@1::read_stream":       "$canFileStreams.readStream",
 		"can.std.files@1::read_lines_stream": "$canFileStreams.readLinesStream",
 		"can.std.files@1::write_stream":      "$canFileStreams.writeStream",
