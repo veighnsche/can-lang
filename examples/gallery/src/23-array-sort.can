@@ -1,0 +1,19 @@
+package gallery
+    provides []
+    uses []
+
+/// sort_by returns a sorted copy using each item's key.
+fn int key
+    emits []
+    given
+        int value
+    asserts
+        sample: 3 => ok 3
+    ok value
+fn int[] sorted
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [3, 1, 2] => ok [1, 2, 3]
+    ok call values.sort_by(callable key)

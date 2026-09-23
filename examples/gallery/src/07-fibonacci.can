@@ -1,0 +1,16 @@
+package gallery
+    provides []
+    uses []
+
+/// Recursion follows the mathematical definition for small nonnegative inputs.
+fn int fibonacci
+    emits []
+    given
+        int position
+    asserts
+        zero: 0 => ok 0
+        one: 1 => ok 1
+        six: 6 => ok 8
+    match position <= 1
+        false => ok call fibonacci(position - 1) + call fibonacci(position - 2)
+        true => ok position

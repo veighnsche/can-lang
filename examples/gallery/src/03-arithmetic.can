@@ -1,0 +1,13 @@
+package gallery
+    provides []
+    uses []
+
+/// Ordinary arithmetic uses int operators.
+fn int arithmetic
+    emits []
+    given
+        int left
+        int right
+    asserts
+        sample: 7, 3 => ok 17
+    ok (left + right) * 2 - 3

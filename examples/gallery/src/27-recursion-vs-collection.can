@@ -1,0 +1,31 @@
+package gallery
+    provides []
+    uses []
+
+/// Recursive summing and fold express the same small calculation.
+fn int recursive_sum
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2, 3] => ok 6
+        empty: [] => ok 0
+    match values.length is 0
+        false => ok values[0] + call recursive_sum(call values.slice(1, values.length))
+        true => ok 0
+fn int add_values
+    emits []
+    given
+        int total
+        int value
+    asserts
+        sample: 2, 3 => ok 5
+    ok total + value
+fn int folded_sum
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2, 3] => ok 6
+        empty: [] => ok 0
+    ok call values.fold(0, callable add_values)

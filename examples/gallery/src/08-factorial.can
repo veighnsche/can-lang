@@ -1,0 +1,15 @@
+package gallery
+    provides []
+    uses []
+
+/// A recursive call consumes a smaller nonnegative input.
+fn int factorial
+    emits []
+    given
+        int number
+    asserts
+        zero: 0 => ok 1
+        five: 5 => ok 120
+    match number <= 1
+        false => ok number * call factorial(number - 1)
+        true => ok 1

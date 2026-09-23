@@ -1,0 +1,30 @@
+package gallery
+    provides []
+    uses [collections]
+
+/// Fold words into an immutable map of counts.
+fn collections::map<str,int> count_one
+    emits []
+    given
+        collections::map<str,int> totals
+        str word
+    asserts
+        sample: call collections::empty_map<str,int>(), "a" => ok
+    match call collections::get(totals, word)
+        collections::key_absent => match call collections::insert(totals, word, 1)
+            collections::key_exists => ok totals
+            ok collections::map<str,int> next => ok next
+        ok int previous => match call collections::replace(totals, word, previous + 1)
+            collections::key_absent => ok totals
+            ok collections::map<str,int> next => ok next
+fn int frequency
+    emits [collections::key_absent]
+    given
+        str[] words
+        str word
+    asserts
+        sample: ["can", "code", "can"], "can" => ok 2
+    collections::map<str,int> totals = call words.fold(call collections::empty_map<str,int>(), callable count_one)
+    match call collections::get(totals, word)
+        collections::key_absent
+        ok int found => ok found

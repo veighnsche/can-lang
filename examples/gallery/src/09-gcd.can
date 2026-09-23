@@ -1,0 +1,16 @@
+package gallery
+    provides []
+    uses []
+
+/// Euclid's algorithm stops when the remainder is zero; use nonnegative inputs.
+fn int gcd
+    emits []
+    given
+        int left
+        int right
+    asserts
+        sample: 54, 24 => ok 6
+        exact: 12, 4 => ok 4
+    match right is 0
+        false => relay call gcd(right, left % right)
+        true => ok left

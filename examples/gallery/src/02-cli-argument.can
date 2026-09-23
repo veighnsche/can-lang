@@ -1,0 +1,15 @@
+package gallery
+    provides []
+    uses []
+
+/// A main function receives command-line arguments as strings.
+fn str greet_argument
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok "Hello, stranger!"
+        named: ["Ada"] => ok "Hello, Ada!"
+    match args.length is 0
+        false => ok "Hello, " + args[0] + "!"
+        true => ok "Hello, stranger!"

@@ -1,0 +1,13 @@
+package gallery
+    provides []
+    uses []
+
+/// A type parameter preserves the input type.
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 4 => ok 4
+        text: "Can" => ok "Can"
+    ok value

@@ -1,0 +1,30 @@
+package gallery
+    provides []
+    uses [text]
+
+/// Count nonempty space-separated words and Unicode scalar values.
+/// Spaces count as characters; this example treats whitespace as ASCII spaces.
+record counts
+    int words
+    int characters
+fn bool nonempty
+    emits []
+    given
+        str word
+    asserts
+        empty: "" => ok false
+        word: "one" => ok true
+    ok word.length > 0
+fn counts count_text
+    emits [text::empty_separator, text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "one two" => ok counts(2, 7)
+        repeated_spaces: "one  two" => ok counts(2, 8)
+        empty: "" => ok counts(0, 0)
+    match call value.split(" ")
+        text::empty_separator
+        ok str[] words => match call text::scalars(value)
+            text::invalid_unicode
+            ok int[] characters => ok counts((call words.filter(callable nonempty)).length, characters.length)

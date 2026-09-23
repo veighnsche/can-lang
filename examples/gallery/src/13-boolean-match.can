@@ -1,0 +1,15 @@
+package gallery
+    provides []
+    uses []
+
+/// A Boolean match puts false before true.
+fn str describe_boolean
+    emits []
+    given
+        bool value
+    asserts
+        no: false => ok "no"
+        yes: true => ok "yes"
+    match value
+        false => ok "no"
+        true => ok "yes"

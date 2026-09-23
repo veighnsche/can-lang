@@ -1,0 +1,14 @@
+package gallery
+    provides []
+    uses []
+
+/// `with` produces a new record value.
+record counter
+    int value
+fn counter increment
+    emits []
+    given
+        counter original
+    asserts
+        sample: counter(2) => ok counter(3)
+    ok original with value = original.value + 1

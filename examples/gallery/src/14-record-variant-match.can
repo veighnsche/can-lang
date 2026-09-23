@@ -1,0 +1,23 @@
+package gallery
+    provides []
+    uses []
+
+/// A variant can hold either record shape.
+record circle
+    int radius
+record rectangle
+    int width
+    int height
+variant shape
+    circle
+    rectangle
+fn int area_units
+    emits []
+    given
+        shape value
+    asserts
+        round: circle(3) => ok 9
+        square: rectangle(3, 4) => ok 12
+    match value
+        circle => ok value.radius * value.radius
+        rectangle => ok value.width * value.height
