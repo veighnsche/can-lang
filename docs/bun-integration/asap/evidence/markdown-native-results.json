@@ -1,0 +1,247 @@
+{
+ "bun": "1.4.2",
+ "rows": {
+  "surface": {
+   "status": "ok",
+   "value": {
+    "keys": [
+     "ansi",
+     "html",
+     "react",
+     "render"
+    ],
+    "htmlArity": 1,
+    "renderArity": 3
+   }
+  },
+  "string_default": {
+   "status": "ok",
+   "value": "<h1>Hello</h1>\n<script>alert(1)</script>\n<p><a href=\"javascript:alert(1)\">x</a></p>\n"
+  },
+  "string_nohtml": {
+   "status": "ok",
+   "value": "<p>&lt;b&gt;hello&lt;/b&gt;</p>\n"
+  },
+  "string_unknown_option": {
+   "status": "ok",
+   "value": "<ul>\n<li>a</li>\n</ul>\n"
+  },
+  "string_full": {
+   "status": "ok",
+   "value": "<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n<table>\n<thead>\n<tr><th>h</th></tr>\n</thead>\n<tbody>\n<tr><td>c</td></tr>\n</tbody>\n</table>\n"
+  },
+  "callbacks": {
+   "status": "ok",
+   "value": {
+    "calls": [
+     [
+      "heading",
+      "T",
+      {
+       "level": 1
+      }
+     ],
+     [
+      "link",
+      "lnk",
+      {
+       "href": "javascript:alert(1)"
+      }
+     ],
+     [
+      "image",
+      "alt",
+      {
+       "src": "https://img/x.png"
+      }
+     ],
+     [
+      "codespan",
+      "cs"
+     ],
+     [
+      "paragraph",
+      "Para with lnk and alt plus cs."
+     ],
+     [
+      "code",
+      "const x = 1;\n",
+      {
+       "language": "js"
+      }
+     ],
+     [
+      "paragraph",
+      "quote"
+     ],
+     [
+      "blockquote",
+      "quote"
+     ],
+     [
+      "list",
+      "li1",
+      {
+       "ordered": false,
+       "depth": 0
+      }
+     ],
+     [
+      "html",
+      "<div>raw</div>\n"
+     ]
+    ],
+    "out": "TPara with lnk and alt plus cs.const x = 1;\nquoteli1<div>raw</div>\n"
+   }
+  },
+  "flattening": {
+   "status": "ok",
+   "value": {
+    "seen": [
+     [
+      "list",
+      "T[one]T[two]",
+      {
+       "ordered": false,
+       "depth": 0
+      }
+     ],
+     [
+      "table",
+      "T[h1]T[h2]T[c1]T[c2]"
+     ]
+    ],
+    "out": "<list><table>T[line1]\nT[line2]\nT[line3]"
+   }
+  },
+  "span_routing": {
+   "status": "ok",
+   "value": {
+    "seen": [
+     [
+      "text",
+      "para "
+     ],
+     [
+      "text",
+      "<b>"
+     ],
+     [
+      "text",
+      "span"
+     ],
+     [
+      "text",
+      "</b>"
+     ],
+     [
+      "text",
+      " end"
+     ]
+    ],
+    "out": "para <b>span</b> end"
+   }
+  },
+  "href_rawness": {
+   "status": "ok",
+   "value": [
+    {
+     "href": "javascript:alert(1)"
+    },
+    {
+     "href": "JaVaScRiPt:x"
+    },
+    {
+     "href": "https://ok/x"
+    },
+    {
+     "href": "./rel"
+    },
+    {
+     "href": "#frag"
+    },
+    {
+     "href": "java&#x09;script:y"
+    },
+    {
+     "href": "data:text/html,x"
+    },
+    {
+     "href": "https://u",
+     "title": "ti"
+    }
+   ]
+  },
+  "meta_edges": {
+   "status": "ok",
+   "value": [
+    [
+     "code",
+     null
+    ],
+    [
+     "code",
+     {
+      "language": "js"
+     }
+    ],
+    [
+     "list",
+     "b",
+     {
+      "ordered": false,
+      "depth": 1
+     }
+    ],
+    [
+     "list",
+     "ab",
+     {
+      "ordered": false,
+      "depth": 0
+     }
+    ]
+   ]
+  },
+  "throw_propagates": {
+   "status": "error",
+   "name": "Error",
+   "message": "cb-boom"
+  },
+  "unknown_callback_ignored": {
+   "status": "ok",
+   "value": "x"
+  },
+  "nul_text": {
+   "status": "ok",
+   "value": {
+    "got": [
+     "a",
+     "b"
+    ],
+    "out": "[a]�[b]",
+    "html": "<p>a�b</p>\n"
+   }
+  },
+  "empty": {
+   "status": "ok",
+   "value": {
+    "html": "",
+    "render": ""
+   }
+  },
+  "no_gfm_extras": {
+   "status": "ok",
+   "value": {
+    "seen": [],
+    "out": "^1 note$math$ and - [ ] task"
+   }
+  },
+  "escaping": {
+   "status": "ok",
+   "value": [
+    "a < b & \"q\""
+   ]
+  }
+ }
+}
