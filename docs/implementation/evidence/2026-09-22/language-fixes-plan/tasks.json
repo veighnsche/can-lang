@@ -18,8 +18,13 @@
       "positive": "All accepted records have source/fixture/native evidence slots and the known baseline hashes resolve.",
       "negative": "Refuse a comparison with changed operations, missing failure cases or substituted acceptance for implemented evidence.",
       "integration": "Rerun only the bounded G1\u2013G4 controls needed to establish the actual starting checkout; preserve G5 as the resource regression constraint. Save any drift rather than reclassifying it silently.",
-      "status": "pending",
-      "evidence": []
+      "status": "complete",
+      "evidence": [
+        "../language-fixes/LF01-baseline.json",
+        "../language-fixes/LF01-controls.json",
+        "../language-fixes/LF01-AE-results.json",
+        "../language-fixes/LF01-probes.py"
+      ]
     },
     {
       "id": "LF02",
@@ -41,8 +46,13 @@
       "positive": "G4 line-8 name/type errors point to the expression, including astral text and unsaved overlays.",
       "negative": "Lexical control diagnostics retain their correct locations; imported/absent or stale overlay locations cannot silently become line 1.",
       "integration": "Read-only editor diagnostics do not build or run a program. Existing runtime source-map locations stay correct. Broader obligation explanations and validated fixes close in LF17.",
-      "status": "pending",
-      "evidence": []
+      "status": "complete",
+      "evidence": [
+        "../language-fixes/LF02-summary.json",
+        "../language-fixes/LF02-lsp.json",
+        "../language-fixes/LF02-lsp.py",
+        "../language-fixes/LF02-gotest.log"
+      ]
     },
     {
       "id": "LF03",
@@ -63,8 +73,12 @@
       "positive": "An assertion run uses staged checked modules and leaves an existing production current selection unchanged.",
       "negative": "Failed/hanging assertion execution never selects test output; malformed staging, ownership or confinement still rejects.",
       "integration": "G2 reproducer no longer changes current, including a project with no prior current. Full build verification is deliberately not claimed until LF15.",
-      "status": "pending",
-      "evidence": []
+      "status": "complete",
+      "evidence": [
+        "../language-fixes/LF03-summary.json",
+        "../language-fixes/LF03-g2.json",
+        "../language-fixes/LF03-g2.py"
+      ]
     },
     {
       "id": "LF04",
@@ -86,8 +100,13 @@
       "positive": "Passing roots drain and report within budget; CLI selection remains explicitly partial and nonpublishing.",
       "negative": "Test pending empty race, noncooperating CPU worker, late pass, crash/protocol failure, invalid budgets and unconfirmed reaping. The prior recursive stress case is not claimed as an established CPU hang.",
       "integration": "G3 now returns a bounded failure report. Production empty-race semantics stay native and pending; shutdown deadlines cannot be caught in Can. Share this supervisor with build in LF15.",
-      "status": "pending",
-      "evidence": []
+      "status": "complete",
+      "evidence": [
+        "../language-fixes/LF04-summary.json",
+        "../language-fixes/LF04-assert.json",
+        "../language-fixes/LF04-assert.py",
+        "../language-fixes/LF04-gotest.log"
+      ]
     },
     {
       "id": "LF05",
@@ -110,8 +129,13 @@
       "positive": "Two exact all_failed specializations dispatch correctly across every applicable mode; aliases bind only the chosen payload.",
       "negative": "Ambiguous bare heads, duplicate coverage, missing specializations, alias without arrow and incomplete outer failure variants reject with spans.",
       "integration": "Execute emitted matches and nested aggregates, preserving payloads and occurrence data. Add the pattern representation required by wrapper policy in LF12.",
-      "status": "pending",
-      "evidence": []
+      "status": "complete",
+      "evidence": [
+        "../language-fixes/LF05-summary.json",
+        "../language-fixes/LF05-emit.txt",
+        "../language-fixes/LF05-gotest.log",
+        "../language-fixes/LF05-integration.log"
+      ]
     },
     {
       "id": "LF06",

@@ -1,0 +1,155 @@
+{
+ "task": "LF21",
+ "kind": "can.language-fixes-qualification",
+ "ae_coverage": {
+  "AE07": {
+   "tasks": [
+    "LF09",
+    "LF10",
+    "LF11",
+    "LF12",
+    "LF20"
+   ]
+  },
+  "AE09": {
+   "tasks": [
+    "LF05",
+    "LF09",
+    "LF11",
+    "LF12"
+   ]
+  },
+  "AE11": {
+   "tasks": [
+    "LF05",
+    "LF06"
+   ]
+  },
+  "AE15": {
+   "tasks": [
+    "LF05",
+    "LF07"
+   ]
+  },
+  "AE17": {
+   "tasks": [
+    "LF05",
+    "LF06"
+   ]
+  },
+  "AE18": {
+   "tasks": [
+    "LF05",
+    "LF07",
+    "LF16"
+   ]
+  },
+  "AE22": {
+   "tasks": [
+    "LF03",
+    "LF04",
+    "LF11",
+    "LF12",
+    "LF13",
+    "LF14",
+    "LF15"
+   ]
+  },
+  "AE23": {
+   "tasks": [
+    "LF02",
+    "LF03",
+    "LF04",
+    "LF15"
+   ]
+  },
+  "AE25": {
+   "tasks": [
+    "LF11",
+    "LF12"
+   ]
+  },
+  "AE27": {
+   "tasks": [
+    "LF13",
+    "LF14"
+   ]
+  },
+  "AE29": {
+   "tasks": [
+    "LF08",
+    "LF09",
+    "LF15"
+   ]
+  },
+  "AE33": {
+   "tasks": [
+    "LF19"
+   ]
+  },
+  "AE44": {
+   "tasks": [
+    "LF02",
+    "LF17"
+   ]
+  },
+  "AE45": {
+   "tasks": [
+    "LF18"
+   ]
+  },
+  "AE47": {
+   "tasks": [
+    "LF19"
+   ]
+  },
+  "AE49": {
+   "tasks": [
+    "LF01",
+    "LF20"
+   ]
+  }
+ },
+ "ae_count": 16,
+ "bc_coverage": {
+  "BC01": "TestCurrentBundledFetch",
+  "BC02": "TestCurrentBundledCodec",
+  "BC03": "TestCurrentBundledFetch",
+  "BC04": "TestCurrentBundledCodec/TestCurrentBundledNoulJudge",
+  "BC05": "TestCurrentBundledWrappers",
+  "BC06": "TestCurrentBundledWrappers",
+  "BC07": "TestCurrentBundledWrappers",
+  "BC08": "TestCurrentBundledWrappers",
+  "BC09": "TestCurrentBundledWrappers",
+  "BC10": "TestCurrentBundledGenerics",
+  "BC11": "TestCurrentBundledCoordination",
+  "BC12": "TestCurrentBundledChecks/TestChecksMismatchSpan",
+  "BC13": "TestStandardSnapshotIdentity",
+  "BC14": "TestCurrentBundledAssertions",
+  "BC15": "TestCurrentBundledAssertions",
+  "BC16": "TestDevelopmentSidecar",
+  "BC17": "TestDevelopmentSidecar",
+  "BC18": "TestCurrentBundledTemplates",
+  "BC19": "TestCurrentBundledTemplates",
+  "BC20": "TestCurrentBundledNoulJudge",
+  "BC21": "TestCurrentBundledNoulJudge",
+  "BC22": "TestCurrentBundledWrappers",
+  "BC23": "TestCurrentBundledFetch",
+  "BC24": "TestCurrentBundledChecks"
+ },
+ "bc_count": 24,
+ "suites": {
+  "go_test_all": "15 packages ok; 1 pre-existing failure (TestCoreConsumerSpecification, proven identical on pristine HEAD 6b683ba) (LF21-gotest.log)",
+  "bun_runtime": "353 pass, 0 fail (LF21-runtime.log)",
+  "staged_trio": "integration + driver + emit ok x3 with CAN_BUN_ARCHIVE/CAN_BUN/CAN_TSC (LF21-trio.log)",
+  "catalogue": "cataloguegen --check clean",
+  "g5_resource": "8/8 resource-lifetime + sql-escape pass; no static escape scope added (LF21-g5.log)"
+ },
+ "e2e_flow": "fetch assert 20/20 (normalized request, raw+when) -> wrap assert 13/13 (inherited wrapper) -> templates assert 13/13 -> build ok (current.json e4dfdf58) -> failed build preserves old current -> run exit 0; local bundle lf21-qual, offline, no live credentials",
+ "audit_fixes": "LF18 completion evidence relinked LF18-fmt.log (missing) -> LF18-cli.log (existing format-CLI evidence); all 21 task evidence links now resolve",
+ "frozen_plan_validator": "language-fixes-plan/validate.py asserts plan-time pending state by design; post-completion failure of its pending assertions is expected, frozen artifact untouched",
+ "exceptions": [
+  "TestCoreConsumerSpecification panics identically on pristine HEAD (missing \"### Complete consumer\" heading in technical-spec.md, a file LF work never touched); red package is syntax unit tests only, all staged/integration gates green"
+ ],
+ "release_note": "No upload/signing performed (separate authorization); closure certifies these revisions passed, not live services or untested inputs"
+}

@@ -324,7 +324,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF20-summary.json), [fetch gate](evidence/2026-09-22/language-fixes/LF20-fetch-gate.log), [apps gate](evidence/2026-09-22/language-fixes/LF20-apps-gate.log), [after metrics](../syntax-taste/evidence/2026-09-22/lf20-after-metrics/after-metrics.json), [report](../syntax-taste/evidence/2026-09-22/lf20-after-metrics/README.md). 63→9 entries, 56→8 arms, 8/8, 9 decls, 7/7 details with gates green; prod/fixture cost split; 3 apps reproduce frozen counts, native-ai evolved; E1–E4 green with traces; M1–M4 detected+repaired; no TS comparison, no ratios.
 
-- [ ] **LF21 — Qualify the integrated revision and close evidence records**
+- [x] **LF21 — Qualify the integrated revision and close evidence records**
 
   **Depends on:** LF15, LF16, LF17, LF18, LF19, LF20. **Acceptance:** AE07, AE09, AE11, AE15, AE17, AE18, AE22, AE23, AE25, AE27, AE29, AE33, AE44, AE45, AE47, AE49.
 
@@ -338,7 +338,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Exercise the end-to-end normalized request → inherited wrapper → local/raw/template assertion → verified build → reader/run flow. Preserve old complete generation on failure. Task list closure means these revisions passed, not that arbitrary live services or untested inputs are certified.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF21-summary.json), [qualification](evidence/2026-09-22/language-fixes/LF21-qualification.json), [gotest](evidence/2026-09-22/language-fixes/LF21-gotest.log), [runtime](evidence/2026-09-22/language-fixes/LF21-runtime.log), [trio](evidence/2026-09-22/language-fixes/LF21-trio.log), [G5](evidence/2026-09-22/language-fixes/LF21-g5.log). 16/16 AE and 24/24 BC audited to tasks/tests; go 15 ok (1 proven pre-existing spec-drift panic on untouched file); bun 353/0; trio ok x3; catalogue clean; G5 8/8; E2E normalized→wrapper→template→build→run green with old generation preserved on failure; LF18 link fixed; no release.
 
 ## Contract and scope checks
 

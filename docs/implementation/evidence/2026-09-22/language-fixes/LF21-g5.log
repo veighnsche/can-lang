@@ -1,0 +1,18 @@
+bun test v1.4.2 (744846f84)
+
+docs/syntax-taste/evidence/2026-09-22/implementation-gaps/sql-escape.test.ts:
+(pass) transaction commit returns direct, but escaped use cannot reach native SQL [8.31ms]
+(pass) transaction commit returns record, but escaped use cannot reach native SQL [0.13ms]
+(pass) transaction commit returns array, but escaped use cannot reach native SQL [0.08ms]
+(pass) transaction commit returns callable, but escaped use cannot reach native SQL [0.15ms]
+
+docs/syntax-taste/evidence/2026-09-22/implementation-gaps/resource-lifetime.test.ts:
+(pass) escaped direct: in-scope use succeeds, post-scope work is rejected [0.28ms]
+(pass) escaped record: in-scope use succeeds, post-scope work is rejected [0.04ms]
+(pass) escaped array: in-scope use succeeds, post-scope work is rejected [0.03ms]
+(pass) escaped callable: in-scope use succeeds, post-scope work is rejected [0.04ms]
+
+ 8 pass
+ 0 fail
+ 56 expect() calls
+Ran 8 tests across 2 files. [74.00ms]
