@@ -169,8 +169,8 @@ func TestHTTPFixtureAdmitsHandlersMountsAndSpecializations(t *testing.T) {
 		}
 		blk(fn.Region.Body)
 	}
-	if routes != 10 {
-		t.Fatalf("expected ten mounted routes, got %d", routes)
+	if routes != 11 {
+		t.Fatalf("expected eleven mounted routes, got %d", routes)
 	}
 }
 

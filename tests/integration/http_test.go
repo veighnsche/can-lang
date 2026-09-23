@@ -73,7 +73,7 @@ func TestCurrentBundledHTTP(t *testing.T) {
 		t.Fatalf("HTTP assertions: %d %s %s", status, out, diag)
 	}
 	var report map[string]any
-	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 13 {
+	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 15 {
 		t.Fatalf("invalid HTTP report %v %s", err, out)
 	}
 	if !strings.Contains(out, "supplied-completion") || !strings.Contains(out, "real-can") {
@@ -136,16 +136,22 @@ func TestCurrentBundledHTTP(t *testing.T) {
 	harness := fmt.Sprintf(`import {strict as assert} from "node:assert";
 import {%s as mounted} from %s;
 import {$canInitialize} from %s;
-import {snapshotRequest} from %s;
-import {dispatch} from %s;
+import {snapshotRequest,snapshotRequestLazy,normalizedPath} from %s;
+import {dispatch,routeKind} from %s;
+import {runOwnedRoot} from %s;
+import {success} from %s;
 $canInitialize();
 const built=await mounted();assert.equal(built.kind,"ok");
 // PRIVATE TEST BRIDGE (not the I33 server API): loopback ingress only.
 const server=Bun.serve({port:0,hostname:"127.0.0.1",fetch:async native=>{
- const snap=await snapshotRequest(native,65536);
- if(snap.kind!=="request")return new Response(snap.status===413?"Content Too Large":"Bad Request",{status:snap.status});
- const routed=await dispatch(built.value,snap.value);
- assert.equal(routed.kind,"ok");return routed.value;
+ const outcome=await runOwnedRoot(async ()=>{
+  let lazy=false;try{lazy=routeKind(built.value,native.method,normalizedPath(new URL(native.url)))==="stream";}catch{lazy=false;}
+  const snap=lazy?await snapshotRequestLazy(native,65536):await snapshotRequest(native,65536);
+  if(snap.kind!=="request")return success(new Response(snap.status===413?"Content Too Large":"Bad Request",{status:snap.status}));
+  return dispatch(built.value,snap.value);
+ });
+ if(outcome.completion.kind!=="ok"||outcome.cleanupFailed)throw new Error("request failed");
+ return outcome.completion.value;
 }});
 const base="http://127.0.0.1:"+server.port;
 const text=(response)=>response.text();
@@ -197,9 +203,13 @@ const text=(response)=>response.text();
  const allow=await fetch(base+"/p",{method:"POST"});assert.equal(allow.status,405);assert.equal(allow.headers.get("allow"),"PATCH, PUT");
  const purge=await fetch(base+"/d",{method:"PURGE"});assert.equal(purge.status,405);assert.equal(purge.headers.get("allow"),"DELETE");
 }
+{
+ const up=await fetch(base+"/u",{method:"POST",body:"hello-world"});assert.equal(up.status,200);assert.equal(await text(up),"hell");
+ const drained=await fetch(base+"/u",{method:"POST",body:""});assert.equal(drained.status,200);assert.equal(await text(drained),"empty");
+}
 server.stop();
 console.log("compiled HTTP dispatch passed");
-`, mountedName, quote(module), quote(filepath.Join(build.Directory, "program/state.ts")), quote(filepath.Join(runtimes[0], "platform/http.ts")), quote(filepath.Join(runtimes[0], "platform/router.ts")))
+`, mountedName, quote(module), quote(filepath.Join(build.Directory, "program/state.ts")), quote(filepath.Join(runtimes[0], "platform/http.ts")), quote(filepath.Join(runtimes[0], "platform/router.ts")), quote(filepath.Join(runtimes[0], "owner.ts")), quote(filepath.Join(runtimes[0], "completion.ts")))
 	harnessPath := filepath.Join(t.TempDir(), "http.ts")
 	if err := os.WriteFile(harnessPath, []byte(harness), 0600); err != nil {
 		t.Fatal(err)

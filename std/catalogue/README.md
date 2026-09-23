@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 28da28148176ff51045ce38f63983fc65fde00c9a87c31bd7f9bb1818f626dee.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 8fca39df1c718d68ac1d8a3d3fc2a97885e3dbab9c08f997019a049138af3579.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -352,6 +352,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::route_options | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | B1-06 / P10 |
 | http::route_head | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | B1-06 / P10 |
 | http::make_router | http::route[] routes → http::router | [http::duplicate_route, http::ambiguous_route] |  | Map | Closed exact dispatch with 404/405/Allow, no implicit HEAD. | real | I32 / P10 |
+| http::route_stream | http::route route → http::route | [] |  | Map | Mark a route for lazy bodies consumed once through a stream reader. | real | B1-06 / P10 |
+| http::request_body_stream | http::request request, int max_chunk → stream::reader&lt;bytes::buffer&gt; | [http::body_limit, http::invalid_request] |  | ReadableStream | Open the one-shot body reader: live wire bytes or replayed buffered bytes. | supplied | B1-06 / P10 |
 | http::make_server_config | str host, int port, int body_limit, int shutdown_ms → http::server_config | [http::invalid_server_config] |  | Number | Validate bounded config before server start. | real | I33 / P10 |
 | http::server_start | http::server_config config, http::router router → http::server | [http::bind_failed] |  | Bun.serve | Register ownership; await each Can callback and sanitize standard failures. | supplied | I33 / P6,P10 |
 | http::make_tls_config | bytes::buffer cert, bytes::buffer key → http::tls_config | [http::invalid_server_config] |  | TextDecoder | Validate PEM certificate chain and private key structure before server start. | real | B1-06 / P10 |

@@ -27,7 +27,8 @@ export function createStreamWrites(domain:ReturnType<typeof createDomainRuntime>
         let result:unknown;
         try{result=await cell.sink.write(bytes);}
         catch(cause){
-          const reason=typeof cause==="object"&&cause!==null&&typeof (cause as {code?:unknown}).code==="string"?(cause as {code:string}).code:"io_error";
+          const aborted=typeof cause==="object"&&cause!==null&&(cause as {name?:unknown}).name==="AbortError";
+          const reason=aborted?"aborted":typeof cause==="object"&&cause!==null&&typeof (cause as {code?:unknown}).code==="string"?(cause as {code:string}).code:"io_error";
           return fail(types.writeFailed,[["reason",reason]],cause);
         }
         const accepted=acceptedOf(result);

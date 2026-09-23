@@ -14,19 +14,26 @@ import {assertionContext} from "../assert/context.ts";
 import {ownBytes} from "../bytes.ts";
 import {createServer,isServerValue} from "../platform/server.ts";
 import {createRouter} from "../platform/router.ts";
-import {createResponses} from "../platform/http.ts";
+import {createRequests,createResponses} from "../platform/http.ts";
+import {createStreamReads} from "../transport/stream/readable.ts";
+import {copyBytes} from "../bytes.ts";
 
 const origin={source:"can:test",start:0,end:0,invocation:[]};
 const identity=(kind:string,declaration:string)=>createHash("sha256").update("can-concrete-type-v1\0"+JSON.stringify([kind,declaration])).digest("hex");
 const textShape:FailureShape={identity:identity("primitive","str"),kind:"primitive",declaration:"str",arguments:[],fields:[],leaves:[],inputs:[],errors:[]};
-const fieldNames:Record<string,string[]>={"http::invalid_server_config":["reason"],"http::bind_failed":["address"],"http::shutdown_failed":["phase"],"http::invalid_route":["reason"],"http::duplicate_route":["method","path"],"http::ambiguous_route":["first","second"],"http::invalid_request":["reason"],"codec::invalid_data":["path","reason"]};
+const fieldNames:Record<string,string[]>={"http::invalid_server_config":["reason"],"http::bind_failed":["address"],"http::shutdown_failed":["phase"],"http::invalid_route":["reason"],"http::duplicate_route":["method","path"],"http::ambiguous_route":["first","second"],"http::invalid_request":["reason"],"http::body_limit":["limit"],"codec::invalid_data":["path","reason"],"stream::read_failed":["reason"],"stream::cancelled":["reason"],"stream::close_failed":["reason"],"files::limit_exceeded":["limit"]};
 const declarations=catalogue.errors.filter(e=>fieldNames[e.name]!==undefined).map(e=>({identity:e.identity,name:e.name,id:e.id,parameters:0}));
-const errorShapes:FailureShape[]=declarations.map(e=>({identity:identity("error",e.identity),kind:"error",declaration:e.identity,arguments:[],fields:fieldNames[e.name]!.map(name=>({name,type:textShape.identity})),leaves:[],inputs:[],errors:[]}));
-const domain=createDomainRuntime({declarations,shapes:[textShape,...errorShapes]});
+const intShape:FailureShape={identity:identity("primitive","int"),kind:"primitive",declaration:"int",arguments:[],fields:[],leaves:[],inputs:[],errors:[]};
+const fieldKinds=new Map(catalogue.errors.flatMap(e=>e.fields.map(f=>[e.name+":"+f.name,f.type])));
+const errorShapes:FailureShape[]=declarations.map(e=>({identity:identity("error",e.identity),kind:"error",declaration:e.identity,arguments:[],fields:fieldNames[e.name]!.map(name=>({name,type:fieldKinds.get(e.name+":"+name)==="int"?intShape.identity:textShape.identity})),leaves:[],inputs:[],errors:[]}));
+const domain=createDomainRuntime({declarations,shapes:[textShape,intShape,...errorShapes]});
 const id=(declaration:string)=>identity("error",declaration);
 const server=createServer(domain,{invalidConfig:id("can.std.http@1::invalid_server_config"),bindFailed:id("can.std.http@1::bind_failed"),shutdownFailed:id("can.std.http@1::shutdown_failed")});
 const router=createRouter(domain,{invalid:id("can.std.http@1::invalid_route"),duplicate:id("can.std.http@1::duplicate_route"),ambiguous:id("can.std.http@1::ambiguous_route")});
 const responses=createResponses(domain,{invalid:id("can.std.http@1::invalid_request"),invalidData:id("can.std.codec@1::invalid_data")});
+const requests=createRequests(domain,{invalid:id("can.std.http@1::invalid_request"),limit:id("can.std.http@1::body_limit"),invalidData:id("can.std.codec@1::invalid_data"),header:"header",close:id("can.std.stream@1::close_failed")});
+const reads=createStreamReads(domain,{readFailed:id("can.std.stream@1::read_failed"),cancelled:id("can.std.stream@1::cancelled"),closeFailed:id("can.std.stream@1::close_failed"),limitExceeded:id("can.std.files@1::limit_exceeded")});
+const textOf=(item:unknown)=>new TextDecoder().decode(copyBytes(item,origin));
 
 function domainOutcome(completion:Completion<unknown>,name:string):Record<string,string>{
  expect(completion.kind).toBe("domain");if(completion.kind!=="domain")throw new Error("wrong outcome");
@@ -490,4 +497,64 @@ test("TLS start maps unparseable DER to bind failures",async ()=>{
   return success(undefined);
  });
  expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+});
+
+test("stream routes read incrementally under per-request scope",async ()=>{
+ const seen:{status:number;head:string;leases:number}={status:0,head:"",leases:-1};
+ const owned=await runOwnedRoot(async ()=>{
+  const config=value(await server.makeConfig("127.0.0.1",18360n,1048576n,5000n));
+  const upload=value(await router.stream(value(await router.post("/u",async request=>{
+   const reader=value(await requests.bodyStream(request,4n));
+   const first=value(await reads.readMany(reader,1n));
+   const head=textOf(first[0]);
+   await reads.closeReader(reader);
+   return textResult(head);
+  }))));
+  const skip=value(await router.stream(value(await router.post("/skip",async ()=>textResult("skipped")))));
+  const table=value(await router.make([upload,skip]));
+  const token=value(await server.start(config,table));
+  const streamed=await fetch("http://127.0.0.1:18360/u",{method:"POST",body:"hello-world"});
+  seen.status=streamed.status;seen.head=await streamed.text();
+  const ignored=await fetch("http://127.0.0.1:18360/skip",{method:"POST",body:"x".repeat(1000)});
+  if(ignored.status!==200||await ignored.text()!=="skipped")throw new Error("abandoned body broke the route");
+  const again=await fetch("http://127.0.0.1:18360/u",{method:"POST",body:"abcd"});
+  if(again.status!==200||await again.text()!=="abcd")throw new Error("connection reuse broke after abandon");
+  seen.leases=resourceStatus(token).leases;
+  expect((await server.stop(token)).kind).toBe("ok");
+  return success(undefined);
+ });
+ expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+ expect(seen).toEqual({status:200,head:"hell",leases:0});
+});
+
+test("dropped connections abort live reads",async ()=>{
+ let observed="";
+ const owned=await runOwnedRoot(async ()=>{
+  let reached!:()=>void;const pending=new Promise<void>(resolve=>{reached=resolve;});
+  const config=value(await server.makeConfig("127.0.0.1",18361n,1048576n,5000n));
+  const upload=value(await router.stream(value(await router.post("/u",async request=>{
+   const reader=value(await requests.bodyStream(request,4n));
+   const first=value(await reads.readMany(reader,1n));
+   observed+=textOf(first[0])+":";
+   reached();
+   const second=await reads.readMany(reader,1n);
+   if(second.kind==="domain"){const details=domainFailureDiagnostics(second.value);observed+="failed:"+details.declaration.id+":"+JSON.stringify(details.payload);}
+   else observed+="unexpected:"+second.kind;
+   await reads.closeReader(reader);
+   return textResult("done");
+  }))));
+  const table=value(await router.make([upload]));
+  const token=value(await server.start(config,table));
+  const controller=new AbortController();
+  const body=new ReadableStream({start(c){c.enqueue(new TextEncoder().encode("ab"));}});
+  const settled=fetch("http://127.0.0.1:18361/u",{method:"POST",body,signal:controller.signal,duplex:"half"}).then(response=>response.text(),()=>"client-gone");
+  await pending;
+  await Bun.sleep(50);
+  controller.abort("client-gone");
+  await settled;
+  expect((await server.stop(token)).kind).toBe("ok");
+  return success(undefined);
+ });
+ expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+ expect(observed).toBe("ab:failed:1316:{\"reason\":\"aborted\"}");
 });

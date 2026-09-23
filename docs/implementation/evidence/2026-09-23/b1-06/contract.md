@@ -33,11 +33,21 @@ file grows until the capability closes.
 | Flags | the config carries no cipher/version flags, so none can be silently ignored; per-connection handshake failures stay inside Bun's error path and surface as fixed 500s |
 | Credentials | chains are generated per test run into tempdirs; nothing credential-shaped is committed or baked into examples |
 
-## Bodies, streams, SSE, multipart
+## Bodies and incremental reads
 
-Pending: route-marked lazy bodies with one-shot readers and
-buffered-repeatable consumption (Jev `route_marked` /
-`buffered_repeatable`, see
-`docs/bun-integration/asap/evidence/consultations-b1-06/decision-audit.md`),
-pending-response writer pairs, validated SSE records, and bounded
-generic multipart records.
+| Aspect | Contract |
+|---|---|
+| Selection | routes buffer unless wrapped in `http::route_stream`; the server peeks (`routeKind`) before snapshotting, and anything the peek cannot prove keeps drain-first ingress with the pre-dispatch 413 (Jev `route_marked`) |
+| Lazy ingress | stream routes skip the pre-read (`bodyUsed` false until first access); oversize surfaces in-handler as `body_limit{server cap}`, wire failures as `invalid_request{reason:"body_read"}` |
+| Consumption | buffered reads repeat from cache; `request_body_stream` opens the one-shot reader (live wire bytes, or replayed bytes when buffered first); buffered-after-live and second open fail `invalid_request{reason:"body_consumed"}` (Jev `buffered_repeatable`) |
+| Reader | `stream::reader<bytes::buffer>` with per-chunk `max_chunk` (`body_limit` when < 1); reads flow through `stream::read_many`/`close_reader` with stream failures |
+| Disconnect | a dropped client rejects the pending read with `AbortError`, mapped to `stream::read_failed{reason:"aborted"}` on both read and write sides |
+| Abandon | dispatch cancels an unread live body (or settles an open reader's native pull) before the per-request scope drains; handlers are not preempted, their stream IO fails fast |
+| Scope | each request dispatches in a child scope of the server scope, so readers die at request end with no server-lifetime leak |
+
+## SSE, multipart
+
+Pending: pending-response writer pairs, validated SSE records, and
+bounded generic multipart records (Jev `writer_pair` / `record_send`,
+see
+`docs/bun-integration/asap/evidence/consultations-b1-06/decision-audit.md`).

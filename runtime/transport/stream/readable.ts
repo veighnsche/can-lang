@@ -21,7 +21,12 @@ const origin:FailureOrigin=Object.freeze({source:"can:stream-read",start:0,end:0
 const CHUNK_CLAMP=2n**31n;
 type Contracts=Readonly<{readFailed:string;cancelled:string;closeFailed:string;limitExceeded:string}>;
 function reasonFor(cause:unknown):string{
-  if(typeof cause==="object"&&cause!==null&&typeof (cause as {code?:unknown}).code==="string")return (cause as {code:string}).code;
+  // A dropped connection aborts pending reads; file and process sources
+  // never raise AbortError, so the mapping stays source-faithful.
+  if(typeof cause==="object"&&cause!==null){
+    if((cause as {name?:unknown}).name==="AbortError")return "aborted";
+    if(typeof (cause as {code?:unknown}).code==="string")return (cause as {code:string}).code;
+  }
   return "io_error";
 }
 function utf8Length(value:string):bigint{

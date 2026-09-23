@@ -428,6 +428,8 @@
       "../codec/budget.ts",
       "../codec/json.ts",
       "../transport/media.ts",
+      "../transport/stream/lifecycle.ts",
+      "../transport/stream/readable.ts",
       "./form.ts",
       "./html.ts"
     ],

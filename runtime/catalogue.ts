@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "28da28148176ff51045ce38f63983fc65fde00c9a87c31bd7f9bb1818f626dee";
+export const catalogueSHA256 = "8fca39df1c718d68ac1d8a3d3fc2a97885e3dbab9c08f997019a049138af3579";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -7238,6 +7238,71 @@ export const catalogue = freeze({
         "task": "I32"
       },
       "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::route_stream",
+      "identity": "can.std.http@1::route_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "route",
+          "type": "http::route"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::route",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "Mark a route for lazy bodies consumed once through a stream reader.",
+        "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::request_body_stream",
+      "identity": "can.std.http@1::request_body_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        },
+        {
+          "name": "max_chunk",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::reader<bytes::buffer>",
+      "callbacks": [],
+      "emits": [
+        "http::body_limit",
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream"
+        ],
+        "adapter": "Open the one-shot body reader: live wire bytes or replayed buffered bytes.",
+        "task": "B1-06"
+      },
+      "assertion": "supplied",
       "refs": [
         "P10"
       ]

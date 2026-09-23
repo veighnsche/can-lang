@@ -5,8 +5,8 @@ import {copyBytes} from "../bytes.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
 import {registerResource,useResource,closeResource,guardCallback,withScope,type Resource,type Scope} from "../owner.ts";
-import {snapshotRequest} from "./http.ts";
-import {dispatch,isRouterValue} from "./router.ts";
+import {snapshotRequest,snapshotRequestLazy,normalizedPath} from "./http.ts";
+import {dispatch,isRouterValue,routeKind} from "./router.ts";
 import {browserPolicy,type AssetServer} from "./assets.ts";
 const origin=Object.freeze({source:"can:server",start:0,end:0,invocation:Object.freeze([])});
 type Config=Readonly<{host:string;port:bigint;bodyLimit:number;shutdownMs:number}>;
@@ -73,9 +73,15 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
   const scoped=withScope(async (scope):Promise<Completion<undefined>>=>{
    const guarded=guardCallback(scope,async (native:Request):Promise<Completion<Response>>=>{
     return useResource(token,"server",async ()=>{
-     const snapshot=await snapshotRequest(native,bodyLimit);
+     // Stream-marked routes skip the eager pre-read; anything the peek
+     // cannot prove keeps buffered ingress with its pre-dispatch 413.
+     let lazy=false;
+     try{lazy=routeKind(router,native.method,normalizedPath(new URL(native.url)))==="stream";}catch{lazy=false;}
+     const snapshot=lazy?await snapshotRequestLazy(native,bodyLimit):await snapshotRequest(native,bodyLimit);
      if(snapshot.kind==="rejected")return success(fixed(snapshot.status));
-     return dispatch(router,snapshot.value,context);
+     // Body readers live and die in this per-request scope; dispatch
+     // abandons an unread live body before the scope drains.
+     return withScope(async ()=>dispatch(router,snapshot.value,context));
     });
    });
    try{

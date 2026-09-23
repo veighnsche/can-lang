@@ -7,32 +7,37 @@ import {resourceStateFailure} from "../failure.ts";
 import {CodecIssue} from "../codec/budget.ts";
 import {decodeJSON,encodeJSON,type Schema} from "../codec/json.ts";
 import {mediaType} from "../transport/media.ts";
+import {openByteCell} from "../transport/stream/readable.ts";
+import {registerReader,type Fail,type ReaderCell} from "../transport/stream/lifecycle.ts";
 import {strictParameters,decodeForm,FormIssue,type FormSchema} from "./form.ts";
 import {renderSafe} from "./html.ts";
 const origin=Object.freeze({source:"can:http-server",start:0,end:0,invocation:Object.freeze([])});
 type Snapshot=Readonly<{method:string;path:string;query:readonly(readonly[string,string])[];queryInvalid:boolean;headers:readonly(readonly[string,string])[];body:Bytes}>;
-const requests=new WeakMap<object,Snapshot>();
+type BodyCell={kind:"buffered";reader:boolean}|{kind:"live";native:Request;limit:number;reader:boolean;buffered?:Bytes;cell?:ReaderCell};
+const requests=new WeakMap<object,Snapshot>(),bodies=new WeakMap<object,BodyCell>();
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
 export function requestSnapshot(value:unknown):Snapshot{if(!object(value)||!requests.has(value))throw resourceStateFailure(undefined,origin);return requests.get(value)!;}
 export function isRequest(value:unknown):boolean{return object(value)&&requests.has(value);}
+function bodyCell(value:unknown):BodyCell{if(!object(value)||!bodies.has(value))throw resourceStateFailure(undefined,origin);return bodies.get(value)!;}
 export type SnapshotResult=Readonly<{kind:"request";value:unknown}|{kind:"rejected";status:400|413}>;
 export function normalizedPath(url:URL):string{
  const path=decodeURIComponent(url.pathname);
  if(!path.startsWith("/")||/[\x00-\x1f\x7f\\]/.test(path))throw new URIError("invalid request path");
  return path;
 }
-// Private server ingress. Can receives only a detached immutable snapshot;
-// native Request/Headers/stream objects never enter source-level values.
-export async function snapshotRequest(request:Request,limit:number):Promise<SnapshotResult>{
- if(!Number.isSafeInteger(limit)||limit<1||limit>67108864)throw new TypeError("invalid server body budget");
+type Head=Readonly<{method:string;path:string;query:readonly(readonly[string,string])[];queryInvalid:boolean;headers:readonly(readonly[string,string])[]}>;
+function snapshotHead(request:Request):Readonly<{kind:"head";value:Head}|{kind:"rejected";status:400}>{
  let url:URL,path:string;
  try{url=new URL(request.url);path=normalizedPath(url);}catch(cause){if(!(cause instanceof TypeError)&&!(cause instanceof URIError))throw cause;return {kind:"rejected",status:400};}
  let query:readonly(readonly[string,string])[]=[],queryInvalid=false;
  try{query=Object.freeze(Array.from(strictParameters(url.search.slice(1)),entry=>Object.freeze(entry)));}
  catch(cause){if(!(cause instanceof FormIssue)&&!(cause instanceof CodecIssue))throw cause;queryInvalid=true;}
  const headers=Object.freeze(Array.from(request.headers.entries(),entry=>Object.freeze(entry)));
+ return {kind:"head",value:{method:request.method,path,query,queryInvalid,headers}};
+}
+async function drainBody(body:ReadableStream<Uint8Array>|null,limit:number):Promise<Readonly<{kind:"bytes";value:Bytes}|{kind:"rejected";status:400|413}>>{
  const chunks:Uint8Array[]=[];let size=0;
- if(request.body){const reader=request.body.getReader();let complete=false;
+ if(body){const reader=body.getReader();let complete=false;
   try{for(;;){
    let next:Awaited<ReturnType<typeof reader.read>>;try{next=await reader.read();}catch{return {kind:"rejected",status:400};}
    if(next.done){complete=true;break;}
@@ -41,8 +46,40 @@ export async function snapshotRequest(request:Request,limit:number):Promise<Snap
   }}finally{if(!complete)try{await reader.cancel();}catch{}reader.releaseLock();}
  }
  const data=new Uint8Array(size);let offset=0;for(const chunk of chunks){data.set(chunk,offset);offset+=chunk.byteLength;}
- const token=Object.freeze(Object.create(null));requests.set(token,Object.freeze({method:request.method,path,query,queryInvalid,headers,body:ownBytes(data)}));
+ return {kind:"bytes",value:ownBytes(data)};
+}
+// Private server ingress. Can receives only a detached immutable snapshot;
+// native Request/Headers/stream objects never enter source-level values.
+export async function snapshotRequest(request:Request,limit:number):Promise<SnapshotResult>{
+ if(!Number.isSafeInteger(limit)||limit<1||limit>67108864)throw new TypeError("invalid server body budget");
+ const head=snapshotHead(request);if(head.kind==="rejected")return head;
+ const drained=await drainBody(request.body,limit);if(drained.kind==="rejected")return drained;
+ const token=Object.freeze(Object.create(null));
+ requests.set(token,Object.freeze({...head.value,body:drained.value}));bodies.set(token,{kind:"buffered",reader:false});
  return {kind:"request",value:token};
+}
+// Lazy ingress for stream-marked routes: head only, no body read. The first
+// body access consumes the wire stream exactly once; dispatch abandons an
+// unread body so the connection never waits on handler inaction.
+export async function snapshotRequestLazy(request:Request,limit:number):Promise<SnapshotResult>{
+ if(!Number.isSafeInteger(limit)||limit<1||limit>67108864)throw new TypeError("invalid server body budget");
+ const head=snapshotHead(request);if(head.kind==="rejected")return head;
+ const token=Object.freeze(Object.create(null));
+ requests.set(token,Object.freeze({...head.value,body:ownBytes(new Uint8Array(0))}));bodies.set(token,{kind:"live",native:request,limit,reader:false});
+ return {kind:"request",value:token};
+}
+export async function abandonRequest(request:unknown):Promise<void>{
+ const cell=object(request)&&bodies.has(request)?bodies.get(request)!:undefined;
+ if(cell===undefined||cell.kind!=="live")return;
+ if(cell.cell!==undefined){try{await cell.cell.reader.cancel();}catch{}return;}
+ if(!cell.reader&&cell.buffered===undefined&&cell.native.body!==null){
+  const reader=cell.native.body.getReader();
+  try{await reader.cancel();}catch{}finally{reader.releaseLock();}
+ }
+}
+function memoryStream(bytes:Bytes):ReadableStream<Uint8Array>{
+ const copy=new Uint8Array(copyBytes(bytes,origin));
+ return new ReadableStream<Uint8Array>({start(controller){if(copy.byteLength!==0)controller.enqueue(copy);controller.close();}});
 }
 
 type ResponseSnapshot=Readonly<{status:number;headers:readonly(readonly[string,string])[];body:Bytes|null}>;
@@ -102,10 +139,27 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
   }
  });
 }
-type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string}>;
+type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string;close:string}>;
 export function createRequests<Header>(domain:ReturnType<typeof createDomainRuntime>,types:Types){
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
- const bounded=(snapshot:Snapshot,limit:bigint):Completion<Bytes>=>limit<0n||byteLength(snapshot.body)>limit?failure(domain.create(types.limit,record(types.limit,[["limit",limit]]),origin)):success(snapshot.body);
+ const overLimit=(value:bigint)=>failure(domain.create(types.limit,record(types.limit,[["limit",value]]),origin));
+ const fail:Fail=(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause));
+ // Buffered reads stay repeatable from cached bytes. A live body buffers on
+ // first buffered access; once its reader opens, the wire cannot rewind.
+ async function bufferedBody(token:unknown,snapshot:Snapshot,limit:bigint):Promise<Completion<Bytes>>{
+  const cell=bodyCell(token);
+  let bytes:Bytes;
+  if(cell.kind==="live"){
+   if(cell.buffered===undefined){
+    if(cell.reader)return invalid("body_consumed");
+    const drained=await drainBody(cell.native.body,cell.limit);
+    if(drained.kind==="rejected")return drained.status===413?overLimit(BigInt(cell.limit)):invalid("body_read");
+    cell.buffered=drained.value;
+   }
+   bytes=cell.buffered;
+  }else bytes=snapshot.body;
+  return limit<0n||byteLength(bytes)>limit?overLimit(limit):success(bytes);
+ }
  const codecFailure=(cause:unknown):Completion<never>=>{
   if(cause instanceof FormIssue)return invalid(cause.reason);
   if(cause instanceof CodecIssue)return failure(domain.create(types.invalidData,record(types.invalidData,[["path",cause.path],["reason",cause.reason]]),origin));
@@ -121,8 +175,22 @@ export function createRequests<Header>(domain:ReturnType<typeof createDomainRunt
   async headers(request:unknown,context?:AssertionContext):Promise<Completion<readonly Header[]>>{denyLiveBoundary(context,origin);return success(array(requestSnapshot(request).headers.map(([name,value])=>record(types.header,[["name",name],["value",value]]) as Header)));},
   async queryAll(request:unknown,name:string,context?:AssertionContext):Promise<Completion<readonly string[]>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request);if(!name.isWellFormed())return invalid("query_name");if(snapshot.queryInvalid)return invalid("query_value");return success(array(snapshot.query.filter(([key])=>key===name).map(([,value])=>value)));},
   async queryOne(request:unknown,name:string,context?:AssertionContext):Promise<Completion<string>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request);if(!name.isWellFormed())return invalid("query_name");if(snapshot.queryInvalid)return invalid("query_value");const values=snapshot.query.filter(([key])=>key===name);return values.length===0?invalid("query_missing"):values.length!==1?invalid("query_repeated"):success(values[0]![1]);},
-  async body(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<Bytes>>{denyLiveBoundary(context,origin);return bounded(requestSnapshot(request),limit);},
-  async json<T>(schema:Schema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=bounded(snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,false))return invalid("unsupported_media_type");try{return success(decodeJSON(schema,body.value,Math.max(1,Number(limit>67108864n?67108864n:limit))) as T);}catch(cause){return codecFailure(cause);}},
-  async form<T>(schema:FormSchema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=bounded(snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,true))return invalid("unsupported_media_type");try{return success(decodeForm(schema,body.value,Number(byteLength(body.value))) as T);}catch(cause){return codecFailure(cause);}}
+  async body(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<Bytes>>{denyLiveBoundary(context,origin);return bufferedBody(request,requestSnapshot(request),limit);},
+  async json<T>(schema:Schema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,false))return invalid("unsupported_media_type");try{return success(decodeJSON(schema,body.value,Math.max(1,Number(limit>67108864n?67108864n:limit))) as T);}catch(cause){return codecFailure(cause);}},
+  async form<T>(schema:FormSchema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,true))return invalid("unsupported_media_type");try{return success(decodeForm(schema,body.value,Number(byteLength(body.value))) as T);}catch(cause){return codecFailure(cause);}},
+  async bodyStream(request:unknown,maxChunk:bigint,context?:AssertionContext):Promise<Completion<object>>{
+   denyLiveBoundary(context,origin);
+   const snapshot=requestSnapshot(request),cell=bodyCell(request);
+   if(typeof maxChunk!=="bigint"||maxChunk<1n)return overLimit(typeof maxChunk==="bigint"?maxChunk:-1n);
+   if(cell.reader)return invalid("body_consumed");
+   cell.reader=true;
+   // A reader after buffered access replays retained bytes; only the first
+   // access to a live body observes the wire.
+   const source=cell.kind==="live"?(cell.buffered!==undefined?memoryStream(cell.buffered):cell.native.body??memoryStream(snapshot.body)):memoryStream(snapshot.body);
+   const opened=openByteCell(source,maxChunk);
+   const token=registerReader(opened,fail,types.close);
+   if(cell.kind==="live")cell.cell=opened;
+   return success(token);
+  }
  });
 }

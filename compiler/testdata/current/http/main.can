@@ -1,6 +1,6 @@
 package app
     provides []
-    uses [http, bytes, codec, option, html]
+    uses [http, bytes, codec, option, html, stream, files]
 record item
     str name
     int count
@@ -91,6 +91,36 @@ fn http::server_response tagged<mark>
     asserts
         sample: "t" => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), tag)
+fn http::server_response upload
+    emits []
+    given
+        http::request req
+    asserts
+        first: => ok
+        ended: => ok
+    match call http::request_body_stream(req, 4)
+        when
+            first: req, 4 => ok
+            ended: req, 4 => ok
+        http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok stream::reader<bytes::buffer> reader => match call stream::read_many(reader, 1)
+            when
+                first: reader, 1 => ok [call bytes::empty()]
+                ended: reader, 1 => ok []
+            stream::read_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+            stream::cancelled => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+            files::limit_exceeded => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+            ok bytes::buffer[] chunks => match call stream::close_reader(reader)
+                when
+                    first: reader => ok
+                    ended: reader => ok
+                stream::close_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                ok => match chunks.length is 0
+                    true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
+                    false => match call bytes::to_utf8(chunks[0])
+                        codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                        ok str head => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), head)
 fn http::server_response wrapped
     emits []
     given
@@ -137,7 +167,9 @@ fn http::router mounted
         call http::route_delete("/d", callable handle) as http::route delete
         call http::route_options("/o", callable handle) as http::route options
         call http::route_head("/h", callable handle) as http::route head
-        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head]) as http::router router
+        call http::route_post("/u", callable upload) as http::route raw_upload
+        call http::route_stream(raw_upload) as http::route streamed
+        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head, streamed]) as http::router router
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route

@@ -2,11 +2,11 @@ import {success,failure,invoke,type Completion,type AssertionContext} from "../c
 import {record,dataArray} from "../data.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
-import {normalizedPath,requestSnapshot,nativeResponse} from "./http.ts";
+import {normalizedPath,requestSnapshot,abandonRequest,nativeResponse} from "./http.ts";
 const origin=Object.freeze({source:"can:router",start:0,end:0,invocation:Object.freeze([])});
 export type MountedCallback=(request:unknown,context?:AssertionContext)=>Promise<Completion<unknown>>;
 type Method="GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD";
-type Route=Readonly<{method:Method;source:string;path:string;callback:MountedCallback}>;
+type Route=Readonly<{method:Method;source:string;path:string;stream:boolean;callback:MountedCallback}>;
 type Router=ReadonlyMap<string,ReadonlyMap<string,Route>>;
 const routes=new WeakMap<object,Route>(),routers=new WeakMap<object,Router>();
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
@@ -19,10 +19,19 @@ function fixed(status:number,allow?:string):Response{
 }
 export async function dispatch(router:unknown,request:unknown,context?:AssertionContext):Promise<Completion<Response>>{
  const table=read(routers,router),snapshot=requestSnapshot(request),methods=table.get(snapshot.path);
- if(!methods)return success(fixed(404));
- const route=methods.get(snapshot.method);if(!route)return success(fixed(405,[...methods.keys()].sort().join(", ")));
- const completed=await invoke(()=>route.callback(request,context),origin);if(completed.kind!=="ok")return completed;
- return success(nativeResponse(completed.value,snapshot.method==="HEAD"));
+ try{
+  if(!methods)return success(fixed(404));
+  const route=methods.get(snapshot.method);if(!route)return success(fixed(405,[...methods.keys()].sort().join(", ")));
+  const completed=await invoke(()=>route.callback(request,context),origin);if(completed.kind!=="ok")return completed;
+  return success(nativeResponse(completed.value,snapshot.method==="HEAD"));
+ }finally{await abandonRequest(request);}
+}
+// Ingress peek: the server consults the table before snapshotting so
+// stream-marked routes skip the eager bounded pre-read. Anything the
+// peek cannot prove falls back to buffered ingress downstream.
+export function routeKind(router:unknown,method:string,path:string):"stream"|"buffered"|undefined{
+ const table=read(routers,router),methods=table.get(path),route=methods?.get(method);
+ return route===undefined?undefined:route.stream?"stream":"buffered";
 }
 export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types:Readonly<{invalid:string;duplicate:string;ambiguous:string}>){
  const error=(type:string,fields:readonly(readonly[string,unknown])[])=>failure(domain.create(type,record(type,fields),origin));
@@ -32,7 +41,7 @@ export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types
   let path:string;try{path=normalizedPath(new URL(source,"http://can.invalid"));}catch(cause){if(!(cause instanceof URIError)&&!(cause instanceof TypeError))throw cause;return error(types.invalid,[["reason","path"]]);}
   if(path==="/__can"||path.startsWith("/__can/"))return error(types.invalid,[["reason","path"]]);
   if(typeof callback!=="function")throw new TypeError("invalid mounted callback");
-  return success(opaque(routes,Object.freeze({method,source,path,callback})));
+  return success(opaque(routes,Object.freeze({method,source,path,stream:false,callback})));
  }
  return Object.freeze({
   async get(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("GET",path,callback);},
@@ -42,6 +51,10 @@ export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types
   async delete(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("DELETE",path,callback);},
   async options(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("OPTIONS",path,callback);},
   async head(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("HEAD",path,callback);},
+  async stream(input:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
+   const route=read(routes,input);
+   return success(opaque(routes,Object.freeze({...route,stream:true})));
+  },
   async make(input:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
    const table=new Map<string,Map<string,Route>>();
    for(const token of dataArray(input)){
