@@ -1,98 +1,48 @@
-// B1-12 native Markdown qualification on the pinned Bun 1.4.2 binary.
+// Native probe: Bun.markdown callback model for B1-12 safe renderer design.
+//
 // Run: bun docs/bun-integration/asap/evidence/markdown-native-probe.ts
-// Rows pin the string renderer, the render callback protocol (names,
-// payloads, composition order), the list/table flattening gate, raw
-// HTML routing, href rawness, NUL handling, throw propagation and the
-// ignored-unknown policy.
-const M = (Bun as any).markdown;
-if (Bun.version !== "1.4.2") throw new Error(`pinned Bun 1.4.2 required, saw ${Bun.version}`);
-if (typeof M?.html !== "function" || typeof M?.render !== "function") throw new Error("missing native markdown");
-type Row = { status: "ok"; value: unknown } | { status: "error"; name: string; message: string };
-const rows: Record<string, Row> = {};
-const attempt = (k: string, f: () => unknown) => {
-  try { rows[k] = { status: "ok", value: f() }; }
-  catch (e: any) { rows[k] = { status: "error", name: e?.name ?? "Error", message: String(e?.message ?? e).slice(0, 200) }; }
+// Pins: Bun 1.4.2. Records render()/html() behavior the safe renderer relies on.
+
+const seen: Array<[string, string, string]> = [];
+const cb = (n: string) => (c: string, m?: unknown) => {
+  seen.push([n, JSON.stringify(c).slice(0, 100), m === undefined ? "" : JSON.stringify(m)]);
+  return n + "{" + c + "}";
 };
-attempt("surface", () => ({
-  keys: Object.getOwnPropertyNames(M).sort(), htmlArity: M.html.length, renderArity: M.render.length,
-}));
-attempt("string_default", () => M.html("# Hello\n\n<script>alert(1)</script>\n\n[x](javascript:alert(1))"));
-attempt("string_nohtml", () => M.html("<b>hello</b>", { noHtmlBlocks: true, noHtmlSpans: true }));
-attempt("string_unknown_option", () => M.html("- a", { bogusOption: true }));
-attempt("string_full", () => M.html("- a\n- b\n\n| h |\n|---|\n| c |\n"));
-attempt("callbacks", () => {
-  const calls: unknown[] = [];
-  const out = M.render("# T\n\nPara with [lnk](javascript:alert(1)) and ![alt](https://img/x.png) plus `cs`.\n\n```js\nconst x = 1;\n```\n\n> quote\n\n- li1\n\n<div>raw</div>\n", {
-    text: (t: string) => t,
-    heading: (c: string, m: unknown) => { calls.push(["heading", c, m]); return c; },
-    paragraph: (c: string) => { calls.push(["paragraph", c]); return c; },
-    blockquote: (c: string) => { calls.push(["blockquote", c]); return c; },
-    strong: (c: string) => { calls.push(["strong", c]); return c; },
-    emphasis: (c: string) => { calls.push(["emphasis", c]); return c; },
-    strikethrough: (c: string) => { calls.push(["strikethrough", c]); return c; },
-    codespan: (c: string) => { calls.push(["codespan", c]); return c; },
-    code: (c: string, m: unknown) => { calls.push(["code", c, m]); return c; },
-    link: (c: string, m: unknown) => { calls.push(["link", c, m]); return c; },
-    image: (c: string, m: unknown) => { calls.push(["image", c, m]); return c; },
-    list: (c: string, m: unknown) => { calls.push(["list", c, m]); return c; },
-    table: (c: string, m: unknown) => { calls.push(["table", c, m]); return c; },
-    hr: (c: string) => { calls.push(["hr", c]); return c; },
-    html: (c: string) => { calls.push(["html", c]); return c; },
-  });
-  return { calls, out };
-});
-attempt("flattening", () => {
-  const seen: unknown[] = [];
-  const cbs: any = { text: (t: string) => "T[" + t + "]" };
-  for (const n of ["list", "table", "listitem", "item", "tablerow", "tablecell", "softbreak", "hardbreak", "linebreak"])
-    cbs[n] = (...a: any[]) => { seen.push([n, ...a]); return `<${n}>`; };
-  const out = M.render("- one\n- two\n\n| h1 | h2 |\n|---|---|\n| c1 | c2 |\n\nline1\nline2  \nline3\n", cbs);
-  return { seen, out };
-});
-attempt("span_routing", () => {
-  const seen: unknown[] = [];
-  const out = M.render("para <b>span</b> end\n", {
-    html: (...a: unknown[]) => { seen.push(["html", ...a]); return "H"; },
-    text: (t: string) => { seen.push(["text", t]); return t; },
-  });
-  return { seen, out };
-});
-attempt("href_rawness", () => {
-  const hrefs: unknown[] = [];
-  M.render("[a](javascript:alert(1)) [b](JaVaScRiPt:x) [c](  https://ok/x  ) [d](./rel) [e](#frag) [f](java&#x09;script:y) [g](data:text/html,x) [t](https://u \"ti\")", {
-    link: (c: string, m: unknown) => { hrefs.push(m); return c; }, text: (t: string) => t,
-  });
-  return hrefs;
-});
-attempt("meta_edges", () => {
-  const seen: unknown[] = [];
-  M.render("####### h7\n\n```\nplain\n```\n\n```js extra\nc\n```\n\n- a\n  - b\n", {
-    heading: (c: string, m: unknown) => { seen.push(["heading", m]); return c; },
-    code: (c: string, m: unknown) => { seen.push(["code", m]); return c; },
-    list: (c: string, m: unknown) => { seen.push(["list", c, m]); return c; },
-    text: (t: string) => t,
-  });
-  return seen;
-});
-attempt("throw_propagates", () => M.render("# x", { heading: () => { throw new Error("cb-boom"); }, text: (t: string) => t }));
-attempt("unknown_callback_ignored", () => M.render("# x", { nope: () => "X", text: (t: string) => t }));
-attempt("nul_text", () => {
-  const got: unknown[] = [];
-  const out = M.render("a\0b", { text: (t: string) => { got.push(t); return "[" + t + "]"; } });
-  return { got, out, html: M.html("a\0b") };
-});
-attempt("empty", () => ({ html: M.html(""), render: M.render("", { text: (t: string) => t }) }));
-attempt("no_gfm_extras", () => {
-  const seen: unknown[] = [];
-  const cbs: any = { text: (t: string) => t };
-  for (const n of ["footnote", "math", "alert", "task", "tasklist", "del", "sub", "sup", "mark"])
-    cbs[n] = (...a: any[]) => { seen.push([n, ...a]); return a[0] ?? ""; };
-  const out = M.render("[^1] note\n\n[^1]: foot\n\n$math$ and - [ ] task\n", cbs);
-  return { seen, out };
-});
-attempt("escaping", () => {
-  const got: unknown[] = [];
-  M.render("a < b & \"q\"\n", { text: (t: string) => { got.push(t); return t; } });
-  return got;
-});
-console.log(JSON.stringify({ bun: Bun.version, rows }, null, 1));
+const callbacks = {
+  text: (t: string) => "T[" + t + "]",
+  heading: cb("h"), paragraph: cb("p"), blockquote: cb("bq"), code: cb("code"),
+  list: cb("list"), listItem: cb("li"), hr: cb("hr"), table: cb("table"),
+  thead: cb("thead"), tbody: cb("tbody"), tr: cb("tr"),
+  th: cb("th"), td: cb("td"), html: cb("html"), strong: cb("st"),
+  emphasis: cb("em"), link: cb("a"), image: cb("img"),
+  codespan: cb("cs"), strikethrough: cb("strike"),
+};
+
+console.log("=== render: lists + tables (camelCase names) ===");
+seen.length = 0;
+Bun.markdown.render("- one\n- two\n\n1. a\n2. b\n\n- [ ] t1\n- [x] t2\n\n| h1 | h2 |\n|:---|---:|\n| c1 | c2 |\n", callbacks);
+for (const s of seen) console.log(" ", s[0], "|", s[1], "|", s[2].slice(0, 140));
+
+console.log("=== render: breaks / inline / hr ===");
+seen.length = 0;
+Bun.markdown.render("one\ntwo  \nthree\n\n---\n\n*em* **st** ~~d~~ `c` __u__\n\n[t](https://x.test/u \"ti\") ![alt](https://x.test/i.png)\n", callbacks);
+for (const s of seen) console.log(" ", s[0], "|", s[1], "|", s[2].slice(0, 140));
+
+console.log("=== html: edge elements ===");
+const H = Bun.markdown.html;
+console.log("HARD:", JSON.stringify(H("a  \nb\n")));
+console.log("SOFT:", JSON.stringify(H("a\nb\n")));
+console.log("UNDERLINE-IGNORED:", JSON.stringify(H("__x__\n", { underline: true })));
+console.log("TASK:", JSON.stringify(H("- [ ] a\n- [x] b\n")));
+console.log("AUTO:", JSON.stringify(H("see https://x.test/a and www.y.test b@c.test\n", { autolinks: true })));
+console.log("HTMLBLK:", JSON.stringify(H('<div class="q">raw & <b>b</b></div>\n')));
+console.log("TAGF:", JSON.stringify(H("<script>alert(1)</script><div>ok</div>\n", { tagFilter: true })));
+console.log("WIKI-HTML:", JSON.stringify(H("[[Tgt|lbl]] [[Bare]]\n", { wikiLinks: true })));
+console.log("MATH-IGNORED:", JSON.stringify(H("$x^2$ and $$y$$\n", { latexMath: true })));
+console.log("HEAD-IDS:", JSON.stringify(H("## Hello World!\n", { headings: { ids: true } })));
+console.log("HEAD-AUTOLINK:", JSON.stringify(H("## Hello\n", { headings: true })));
+
+console.log("=== render: wiki target dropped / code meta / heading id ===");
+seen.length = 0;
+Bun.markdown.render("[[T| l]]\n\n    ind\n\n```js\nf\n```\n\n## Head One\n", callbacks, { wikiLinks: true, headings: { ids: true } });
+for (const s of seen) console.log(" ", s[0], "|", s[1], "|", s[2].slice(0, 140));
