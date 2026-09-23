@@ -52,10 +52,10 @@ fn str get_object
         codec::invalid_data
         ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
             s3::invalid_config
-            ok s3::client handle => match call s3::read_bytes(handle, key, 64)
+            ok s3::client handle => match call s3::read_bytes(handle, key, 65536)
                 when
-                    sample: handle, "doc.txt", 64 => ok chunk
-                    absent: handle, "missing.txt", 64 => s3::missing_key("missing.txt")
+                    sample: handle, "doc.txt", 65536 => ok chunk
+                    absent: handle, "missing.txt", 65536 => s3::missing_key("missing.txt")
                 s3::invalid_config
                 s3::missing_key
                 s3::access_denied
@@ -166,8 +166,39 @@ fn int list_first
                 s3::access_denied
                 s3::service_error
                 ok s3::page page => ok page.entries.length
-/// Count across a continuation: when the first page truncates, the
-/// opaque token threads into the second list. Continuation tokens
+/// Drain every page after the first: each truncated page threads
+/// its opaque token into the next list until the service reports the
+/// end. Continuation tokens have no fixture literal, so only the
+/// terminal branch asserts; threading is live-tested.
+fn int list_rest
+    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str dir
+        int limit
+        option::value<s3::continuation> cont
+        int acc
+    asserts
+        done: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10, option::none(), 5 => ok 5
+    match cont
+        option::none => ok acc
+        option::some => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::list(handle, s3::list_options(dir, limit, option::none(), option::some(cont.value)))
+                s3::invalid_config
+                s3::access_denied
+                s3::service_error
+                ok s3::page page => match call list_rest(endpoint, region, bucket, access, secret, dir, limit, page.continuation, acc + page.entries.length)
+                    s3::invalid_config
+                    s3::access_denied
+                    s3::service_error
+                    ok int total => ok total
+/// Count across every page: when the first page truncates, the
+/// opaque token threads into a recursive drain. Continuation tokens
 /// have no fixture literal, so only the single-page shape asserts;
 /// the threaded branch is live-tested.
 fn int list_all
@@ -194,15 +225,11 @@ fn int list_all
                 s3::service_error
                 ok s3::page first => match first.truncated
                     false => ok first.entries.length
-                    true => do
-                        option::value<s3::continuation> cont = first.continuation
-                        match cont
-                            option::some => match call s3::list(handle, s3::list_options(dir, limit, option::none(), option::some(cont.value)))
-                                s3::invalid_config
-                                s3::access_denied
-                                s3::service_error
-                                ok s3::page second => ok first.entries.length + second.entries.length
-                            option::none => ok first.entries.length
+                    true => match call list_rest(endpoint, region, bucket, access, secret, dir, limit, first.continuation, first.entries.length)
+                        s3::invalid_config
+                        s3::access_denied
+                        s3::service_error
+                        ok int total => ok total
 /// Mint a signed URL and reveal it through the bound describe method.
 /// The URL stays inside the opaque handle until described; assertion
 /// rows pin the plumbing while live runs mint real signatures.
