@@ -27,6 +27,7 @@ var expectedMaintained = []string{
 	"examples/form-validation",
 	"examples/process",
 	"examples/stream",
+	"examples/sqlite",
 	"examples/native-ai",
 	"std/map/current",
 	"std/ratio/current",
