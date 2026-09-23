@@ -1,5 +1,5 @@
 {
-  "status": "in progress; ASAP-00/01/ARCH, B1-01 bounded operations, B1-04, B1-05, B1-02 and B1-03 complete (B1-01.06 streaming remapped to B1-05.08)",
+  "status": "in progress; ASAP-00/01/ARCH, B1-01 bounded operations, B1-04, B1-05, B1-02, B1-03 and B1-08 complete (B1-01.06 streaming remapped to B1-05.08)",
   "recommendedCapabilityOrder": [
     "B1-01",
     "B1-04",
@@ -420,7 +420,7 @@
       "depends": [
         "ASAP-ARCH"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Inventory existing SHA/random operations; add names without duplicate functionality. Specify Argon2id cost presets and validation; retain native encoded hashes so verification can recognize recorded parameters."
     },
     {
@@ -429,7 +429,7 @@
       "depends": [
         "B1-08.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use asynchronous Bun.password APIs to avoid synchronous event-loop blocking. Test wrong password, invalid hash and excessive-cost policy distinctly."
     },
     {
@@ -438,7 +438,7 @@
       "depends": [
         "B1-08.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Choose the initial WebCrypto suite explicitly: AES-GCM, HMAC-SHA-256, and Ed25519 if target qualification succeeds. Fix nonce/tag lengths and supported key usages; reject other algorithms rather than silently falling back."
     },
     {
@@ -447,7 +447,7 @@
       "depends": [
         "B1-08.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Keep CryptoKey in a private WeakMap-backed opaque value, nonextractable by default. Provide explicit import/export only for admitted formats/usages. No raw key material in fixture reports, logs or generic object projections."
     },
     {
@@ -456,7 +456,7 @@
       "depends": [
         "B1-08.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use native CryptoHasher/SubtleCrypto; add only bytes ownership, exact options, declared failure translation and opaque wrapping. Never implement cipher/HMAC primitives in Can."
     },
     {
@@ -465,7 +465,7 @@
       "depends": [
         "B1-08.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Separate generated nonce convenience from explicit nonce encryption. Document nonce uniqueness as an encryption contract; generation is native randomness, not a guarantee of caller discipline."
     },
     {
@@ -474,7 +474,7 @@
       "depends": [
         "B1-08.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add native interoperability vectors and tampering tests. Ensure one adapter cannot use an encryption-only key for signing."
     },
     {
@@ -483,7 +483,7 @@
       "depends": [
         "B1-08.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
