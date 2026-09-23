@@ -67,9 +67,9 @@ file grows until the capability closes.
 
 | Aspect | Contract |
 |---|---|
-| Shape | `http::request_multipart(request, max_bytes)` returns a fixed `http::multipart_form{fields, files}`: repeated field names stay as separate ordered entries; files carry `{name, filename, content_type, content}` with binary-safe owned bytes |
+| Shape | `http::request_multipart(request, max_bytes, max_file_bytes)` returns a fixed `http::multipart_form{fields, files}`: repeated field names stay as separate ordered entries; files carry `{name, filename, content_type, content}` with binary-safe owned bytes |
 | Filenames | `filename=""` (empty file inputs) yields a file with empty filename; parts without filename are text fields; quoted escapes (`\"`, `\\`) unescape |
 | Framing | strict CRLF; preamble ignored, epilogue ignored, transport padding on the close line allowed; missing/invalid boundary fails `multipart_boundary`, malformed framing fails `multipart_frame`, part content-types validate strict but store raw, nested `multipart/*` parts fail `multipart_nested` (flat only, documented) |
 | Text | field values and header lines decode UTF-8 fatally; failures surface as `codec::invalid_data{path:"multipart",reason:"utf8"}` |
-| Bounds | parses the already-budgeted buffered body (buffered ingress or first buffered access on live routes), so no new byte budget is needed; per-part counts/sizes are bounded by the total cap |
+| Bounds | parses the already-budgeted buffered body (buffered ingress or first buffered access on live routes); each file's decoded bytes must also fit `max_file_bytes`, else the whole parse fails `body_limit{max_file_bytes}` (`nonnegative`/`nonpositive` on negative caps); fields stay under the total cap only |
 | Files as readers | true incremental multipart is out of scope (Bun buffers via `formData()`); the supported bounded path is the whole-body parse above, and file contents are owned bounded bytes within that budget |
