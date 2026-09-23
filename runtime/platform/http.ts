@@ -57,9 +57,12 @@ export function isHTTPValue(kind:string|undefined,value:unknown):boolean{
 }
 // Each dispatch converts its complete immutable value once. A later dispatch
 // can reuse the Can value without reusing an already-consumed native body.
-export function nativeResponse(value:unknown):Response{
- const response=read(responses,value);
- return new Response(response.body===null?null:new Uint8Array(copyBytes(response.body,origin)),{status:response.status,headers:response.headers.map(([name,value])=>[name,value])});
+export function nativeResponse(value:unknown,head=false):Response{
+ const response=read(responses,value),headers:[string,string][]=response.headers.map(([name,value])=>[name,value]);
+ // HEAD suppresses every body while keeping the entity length the complete
+ // value produced, so HEAD and GET agree on length by construction.
+ if(head&&response.body!==null)return new Response(null,{status:response.status,headers:[...headers,["content-length",byteLength(response.body).toString()]]});
+ return new Response(response.body===null?null:new Uint8Array(copyBytes(response.body,origin)),{status:response.status,headers});
 }
 const forbiddenResponseHeaders=new Set(["content-type","content-length","x-content-type-options","content-security-policy","content-security-policy-report-only","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade"]);
 export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData">){

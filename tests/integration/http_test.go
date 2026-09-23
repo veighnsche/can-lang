@@ -193,7 +193,7 @@ const text=(response)=>response.text();
  const patch=await fetch(base+"/p?q=v",{method:"PATCH"});assert.equal(patch.status,200);assert.equal(await text(patch),"PATCH");
  const del=await fetch(base+"/d?q=v",{method:"DELETE"});assert.equal(del.status,200);assert.equal(await text(del),"DELETE");
  const opt=await fetch(base+"/o?q=v",{method:"OPTIONS"});assert.equal(opt.status,200);assert.equal(await text(opt),"OPTIONS");
- const headed=await fetch(base+"/h?q=v",{method:"HEAD"});assert.equal(headed.status,200);
+ const headed=await fetch(base+"/h?q=v",{method:"HEAD"});assert.equal(headed.status,200);assert.equal(headed.headers.get("content-length"),"4");assert.equal(await text(headed),"");
  const allow=await fetch(base+"/p",{method:"POST"});assert.equal(allow.status,405);assert.equal(allow.headers.get("allow"),"PATCH, PUT");
  const purge=await fetch(base+"/d",{method:"PURGE"});assert.equal(purge.status,405);assert.equal(purge.headers.get("allow"),"DELETE");
 }

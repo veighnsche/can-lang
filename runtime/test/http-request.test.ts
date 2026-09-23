@@ -74,6 +74,10 @@ test("duplicate headers pin native coalescing and exact media precedence",async(
  const multi=await snapshot("http://localhost/",{headers:[["x-multi","1"],["x-multi","2"]]});
  const headers=value(await api.headers(multi));expect(headers).toHaveLength(1);
  const first=headers[0]!;expect(dataProperty(first,"name")).toBe("x-multi");expect(dataProperty(first,"value")).toBe("1, 2");
+ const cookies=await snapshot("http://localhost/",{headers:[["x-multi","1"],["set-cookie","a=1"],["set-cookie","b=2"],["x-multi","2"]]});
+ const seen=value(await api.headers(cookies));
+ expect(seen.filter(h=>dataProperty(h,"name")==="set-cookie").map(h=>dataProperty(h,"value"))).toEqual(["a=1","b=2"]);
+ expect(seen.filter(h=>dataProperty(h,"name")==="x-multi").map(h=>dataProperty(h,"value"))).toEqual(["1, 2"]);
  const wrong=await snapshot("http://localhost/",{method:"POST",body:"[1,\"x\"]",headers:{"content-type":"application/json"}});
  check(await api.json({root:"ints",nodes:[{identity:"ints",kind:"array",name:"",element:"int"},{identity:"int",kind:"primitive",name:"int"}]},wrong,100n),1110,{path:"/1",reason:"type"});
 });
@@ -94,6 +98,8 @@ test("native header validation rejects fixed sink overrides and hop-by-hop field
  for(const content of ["a\nb","a\rb","a\0b","\ud800","😀"])check(await responses.makeHeaders(header("x-test",content)),1100,{reason:"invalid_header"});
  const headers=value(await responses.makeHeaders(header("X-Test"," value "))),status=value(await responses.ok());
  const response=nativeResponse(value(await responses.text(status,headers,"body")));expect(response.headers.get("x-test")).toBe("value");expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+ const jar=value(await responses.makeHeaders(array([record("header",[["name","set-cookie"],["value","a=1"]]),record("header",[["name","set-cookie"],["value","b=2"]])])));
+ expect(nativeResponse(value(await responses.text(status,jar,"body"))).headers.getSetCookie()).toEqual(["a=1","b=2"]);
 });
 test("immutable response reuse makes independent native bodies with fixed encodings",async()=>{
  const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
@@ -129,7 +135,8 @@ test("method table routes all seven methods with sorted Allow fallback",async()=
  const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
  const callback=async(request:unknown)=>responses.text(status,headers,value(await api.method(request)));
  const router=value(await routing.make(array([value(await routing.get("/m",callback)),value(await routing.post("/m",callback)),value(await routing.put("/m",callback)),value(await routing.patch("/m",callback)),value(await routing.delete("/m",callback)),value(await routing.options("/m",callback)),value(await routing.head("/m",callback))])));
- for(const method of ["GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD"] as const){const response=value(await dispatch(router,await snapshot("http://localhost/m",{method})));expect(response.status).toBe(200);expect(await response.text()).toBe(method);}
+ for(const method of ["GET","POST","PUT","PATCH","DELETE","OPTIONS"] as const){const response=value(await dispatch(router,await snapshot("http://localhost/m",{method})));expect(response.status).toBe(200);expect(await response.text()).toBe(method);}
+ {const response=value(await dispatch(router,await snapshot("http://localhost/m",{method:"HEAD"})));expect(response.status).toBe(200);expect(await response.text()).toBe("");expect(response.headers.get("content-length")).toBe("4");}
  const trace=value(await dispatch(router,await snapshot("http://localhost/m",{method:"TRACE"})));
  expect(trace.status).toBe(405);expect(trace.headers.get("allow")).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT");
  check(await routing.make(array([value(await routing.put("/m",callback)),value(await routing.put("/m",callback))])),1231,{method:"PUT",path:"/m"});

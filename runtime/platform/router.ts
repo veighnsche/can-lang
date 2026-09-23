@@ -22,7 +22,7 @@ export async function dispatch(router:unknown,request:unknown,context?:Assertion
  if(!methods)return success(fixed(404));
  const route=methods.get(snapshot.method);if(!route)return success(fixed(405,[...methods.keys()].sort().join(", ")));
  const completed=await invoke(()=>route.callback(request,context),origin);if(completed.kind!=="ok")return completed;
- return success(nativeResponse(completed.value));
+ return success(nativeResponse(completed.value,snapshot.method==="HEAD"));
 }
 export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types:Readonly<{invalid:string;duplicate:string;ambiguous:string}>){
  const error=(type:string,fields:readonly(readonly[string,unknown])[])=>failure(domain.create(type,record(type,fields),origin));
