@@ -9,8 +9,8 @@ fn sql::decision<sql::transaction[]> capture
     asserts
         harmless: false => ok sql::commit<sql::transaction[]>([])
     match take
-        true => ok sql::commit<sql::transaction[]>([tx])
         false => ok sql::commit<sql::transaction[]>([])
+        true => ok sql::commit<sql::transaction[]>([tx])
 fn void main
     emits []
     given

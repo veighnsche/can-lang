@@ -116,12 +116,12 @@ fn http::server_response validate
             html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
             ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
         ok account_form form => match form.name is ""
-            true => match call feedback("Name is required.")
-                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
             false => match call feedback(form.name)
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
+            true => match call feedback("Name is required.")
+                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
 fn http::server_response quiet
     emits []
     given

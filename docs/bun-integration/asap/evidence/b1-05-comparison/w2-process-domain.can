@@ -30,8 +30,8 @@ fn process::drain_decision<progress> on_chunk
         1 => match call text::to_int(chunk.text)
             text::invalid_number
             ok int percent => match percent is 100
-                true => ok process::halt<progress>(progress(state.out_bytes + chunk.text.length, state.err_bytes, state.chunks + 1))
                 false => ok process::carry<progress>(progress(state.out_bytes + chunk.text.length, state.err_bytes, state.chunks + 1))
+                true => ok process::halt<progress>(progress(state.out_bytes + chunk.text.length, state.err_bytes, state.chunks + 1))
         2 => ok process::carry<progress>(progress(state.out_bytes, state.err_bytes + chunk.text.length, state.chunks + 1))
         _ => ok process::carry<progress>(progress(state.out_bytes, state.err_bytes, state.chunks + 1))
 

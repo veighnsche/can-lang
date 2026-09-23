@@ -97,7 +97,7 @@ fn void main
                 ai::invalid_question
                 ai::invalid_answer
                 ok str selected => match selected is "chosen" and generated.choices[0].count is 9007199254740993 and generated.ready and generated.ratio is 0.5
-                    true => ok
                     false => do
                         int invalid = 1 / 0
                         ok
+                    true => ok

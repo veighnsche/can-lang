@@ -173,15 +173,13 @@ fn void main
         empty: [] => ok
         badop: ["bogus"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: ping <variable> | add <variable> <id> <body> | get <variable> <id> | txcommit <variable> <id> <body> | txabort <variable> <id> <body>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match args[0]
             "ping" => match args.length is 2
+                false => match call bytes::from_utf8("usage: ping <variable>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
                 true => match call ping_roundtrip(args[1])
                     http::credentials_missing
                     sql::connection_failed
@@ -192,12 +190,12 @@ fn void main
                         codec::invalid_data
                         io::write_failed
                         ok => ok
-                false => match call bytes::from_utf8("usage: ping <variable>")
+            "add" => match args.length is 4
+                false => match call bytes::from_utf8("usage: add <variable> <id> <body>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "add" => match args.length is 4
                 true => match chain
                     call bytes::from_utf8(args[2]) as bytes::buffer raw
                     call codec::decode_json<int>(raw) as int id
@@ -215,12 +213,12 @@ fn void main
                     sql::constraint_failed
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: add <variable> <id> <body>")
+            "get" => match args.length is 3
+                false => match call bytes::from_utf8("usage: get <variable> <id>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "get" => match args.length is 3
                 true => match chain
                     call bytes::from_utf8(args[2]) as bytes::buffer raw
                     call codec::decode_json<int>(raw) as int id
@@ -239,12 +237,12 @@ fn void main
                     sql::schema_mismatch
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: get <variable> <id>")
+            "txcommit" => match args.length is 4
+                false => match call bytes::from_utf8("usage: txcommit <variable> <id> <body>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "txcommit" => match args.length is 4
                 true => match chain
                     call bytes::from_utf8(args[2]) as bytes::buffer raw
                     call codec::decode_json<int>(raw) as int id
@@ -261,12 +259,12 @@ fn void main
                     sql::commit_unknown
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: txcommit <variable> <id> <body>")
+            "txabort" => match args.length is 4
+                false => match call bytes::from_utf8("usage: txabort <variable> <id> <body>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "txabort" => match args.length is 4
                 true => match chain
                     call bytes::from_utf8(args[2]) as bytes::buffer raw
                     call codec::decode_json<int>(raw) as int id
@@ -283,11 +281,6 @@ fn void main
                     sql::commit_unknown
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: txabort <variable> <id> <body>")
-                    codec::invalid_data
-                    ok bytes::buffer message => match call io::stdout_write(message)
-                        io::write_failed
-                        ok int written => ok
             _ => match call bytes::from_utf8("usage: ping <variable> | add <variable> <id> <body> | get <variable> <id> | txcommit <variable> <id> <body> | txabort <variable> <id> <body>")
                 codec::invalid_data
                 ok bytes::buffer message => match call io::stdout_write(message)
@@ -295,3 +288,10 @@ fn void main
                         badop: message => ok 0
                     io::write_failed
                     ok int written => ok
+        true => match call bytes::from_utf8("usage: ping <variable> | add <variable> <id> <body> | get <variable> <id> | txcommit <variable> <id> <body> | txabort <variable> <id> <body>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

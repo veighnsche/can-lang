@@ -29,8 +29,8 @@ fn files::line_decision<scan_state> on_line
         call codec::decode_json<json_id>(raw) as json_id found
         codec::invalid_data
         ok => match found.id is 42
-            true => ok files::halt<scan_state>(scan_state(state.lines_seen + 1, state.bytes_seen + raw.length, found.id))
             false => ok files::keep<scan_state>(scan_state(state.lines_seen + 1, state.bytes_seen + raw.length, state.found_id))
+            true => ok files::halt<scan_state>(scan_state(state.lines_seen + 1, state.bytes_seen + raw.length, found.id))
 
 /// Scan a JSONL file and stop after the predicate match. Acquisition and
 /// mid-stream failure share the files:: error family; the deadline and

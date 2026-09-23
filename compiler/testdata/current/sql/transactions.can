@@ -187,15 +187,13 @@ fn void main
         empty: [] => ok
         badop: ["bogus"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: commit <term> | rollback <term> | fetch <id> | nested")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match args[0]
             "commit" => match args.length is 2
+                false => match call bytes::from_utf8("usage: commit <term>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
                 true => match chain
                     call bytes::from_utf8(args[1]) as bytes::buffer raw
                     call codec::decode_json<str>(raw) as str term
@@ -210,12 +208,12 @@ fn void main
                     sql::commit_unknown
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: commit <term>")
+            "rollback" => match args.length is 2
+                false => match call bytes::from_utf8("usage: rollback <term>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "rollback" => match args.length is 2
                 true => match chain
                     call bytes::from_utf8(args[1]) as bytes::buffer raw
                     call codec::decode_json<str>(raw) as str term
@@ -230,12 +228,12 @@ fn void main
                     sql::commit_unknown
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: rollback <term>")
+            "fetch" => match args.length is 2
+                false => match call bytes::from_utf8("usage: fetch <id>")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
                         io::write_failed
                         ok int written => ok
-            "fetch" => match args.length is 2
                 true => match chain
                     call bytes::from_utf8(args[1]) as bytes::buffer raw
                     call codec::decode_json<int>(raw) as int id
@@ -250,11 +248,6 @@ fn void main
                     sql::commit_unknown
                     sql::close_failed
                     ok => ok
-                false => match call bytes::from_utf8("usage: fetch <id>")
-                    codec::invalid_data
-                    ok bytes::buffer message => match call io::stdout_write(message)
-                        io::write_failed
-                        ok int written => ok
             "nested" => match chain
                 call run_nested() as int total
                 call codec::encode_json<int>(total) as bytes::buffer body
@@ -274,3 +267,10 @@ fn void main
                         badop: message => ok 0
                     io::write_failed
                     ok int written => ok
+        true => match call bytes::from_utf8("usage: commit <term> | rollback <term> | fetch <id> | nested")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

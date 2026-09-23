@@ -24,10 +24,10 @@ func TestExplicitGenericFunctionInstances(t *testing.T) {
     str second = call identity<str>("x")
     int repeated = call identity<int>(4)
     match first + repeated is 7 and second is "x"
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok
 `
 	p, err := programFixture(t, map[string]string{"src/main.can": text})
 	if err != nil {
@@ -54,12 +54,12 @@ func TestExplicitGenericFunctionInstances(t *testing.T) {
 func TestGenericWholeBodyAndRecursion(t *testing.T) {
 	for name, body := range map[string]string{
 		"same instance recursion": `    match count is 0
-        true => ok value
         false => relay call repeat<item>(value, count - 1)
+        true => ok value
 `,
 		"invalid unused branch": `    match count is 0
-        true => ok value
         false => ok "wrong"
+        true => ok value
 `,
 		"expanding recursion": `    match call repeat<item[]>([value], count)
         ok item[] ignored => ok value
@@ -118,8 +118,8 @@ func TestGenericCallInference(t *testing.T) {
     asserts
         sample: [], 3 => ok 3
     match items.length is 0
-        true => ok fallback
         false => ok items[0]
+        true => ok fallback
 
 fn item[] empty<item>
     emits []
@@ -354,8 +354,8 @@ func TestFiniteGenericTransitionsIgnoreCacheOrder(t *testing.T) {
     asserts
         sample: 1, 0 => ok 0
     match count is 0
-        true => ok 0
         false => relay call fixed<int[]>([1], count - 1)
+        true => ok 0
 `
 	for _, inferred := range []bool{false, true} {
 		for _, preloaded := range []bool{false, true} {

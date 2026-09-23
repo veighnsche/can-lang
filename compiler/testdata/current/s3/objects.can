@@ -369,11 +369,6 @@ fn str stream_text
                     stream::cancelled
                     files::limit_exceeded
                     ok bytes::buffer[] first => match first.length is 0
-                        true => match call stream::close_reader(reader)
-                            when
-                                empty: reader => ok
-                            stream::close_failed
-                            ok => ok ""
                         false => match call bytes::to_utf8(first[0])
                             codec::invalid_data
                             ok str head => match call stream::read_many(reader, 8)
@@ -387,6 +382,11 @@ fn str stream_text
                                         one: reader => ok
                                     stream::close_failed
                                     ok => ok head
+                        true => match call stream::close_reader(reader)
+                            when
+                                empty: reader => ok
+                            stream::close_failed
+                            ok => ok ""
 /// Copy one object through a reader pump: the download reader flows
 /// into the streaming write, so bytes never collect in one buffer.
 fn str copy_object
@@ -476,10 +476,6 @@ fn void main
         empty: [] => ok
         badop: ["bogus"] => ok
     match args.length is 0
-        true => match call emit("usage: put <key> <body> | get <key> | stat <key> | exists <key> | rm <key> | ls <dir> <limit> | lsall <dir> <limit> | sign <method> <key> <expires> | uput <key> <body> | range <key> <offset> <length> | stream <key> | copy <source> <target> | abort <key>")
-            codec::invalid_data
-            io::write_failed
-            ok int written => ok
         false => match call env::required("CAN_TEST_S3_ENDPOINT")
             when
                 badop: "CAN_TEST_S3_ENDPOINT" => ok "http://127.0.0.1:9"
@@ -739,3 +735,7 @@ fn void main
                                     codec::invalid_data
                                     io::write_failed
                                     ok int written => ok
+        true => match call emit("usage: put <key> <body> | get <key> | stat <key> | exists <key> | rm <key> | ls <dir> <limit> | lsall <dir> <limit> | sign <method> <key> <expires> | uput <key> <body> | range <key> <offset> <length> | stream <key> | copy <source> <target> | abort <key>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok

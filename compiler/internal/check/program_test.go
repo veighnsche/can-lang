@@ -73,7 +73,7 @@ const programMain = "fn void main\n    emits []\n    given\n        str[] argume
 func TestProgramConnectsFilesAndInitialization(t *testing.T) {
 	p, err := programFixture(t, map[string]string{
 		"src/main.can":   programHeader + "int answer = later + 1\n" + programMain + "    call check(answer, arguments.length)\n    ok\n",
-		"src/helper.can": programHeader + "int later = 41\nfn void check\n    emits []\n    given\n        int answer\n        int count\n    asserts\n        sample: 42, 0 => ok\n    match answer is 42 and count >= 0\n        true => ok\n        false => ok\n",
+		"src/helper.can": programHeader + "int later = 41\nfn void check\n    emits []\n    given\n        int answer\n        int count\n    asserts\n        sample: 42, 0 => ok\n    match answer is 42 and count >= 0\n        false => ok\n        true => ok\n",
 	})
 	if err != nil {
 		t.Fatal(err)

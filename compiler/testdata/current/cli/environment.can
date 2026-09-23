@@ -22,6 +22,9 @@ fn void main
                     sample: "MISSING" => ok option::none()
                 env::invalid_name
                 ok option::value<str> absent => match present is option::some<str>("") and absent is option::none()
+                    false => do
+                        int invalid = 1 / 0
+                        ok
                     true => match call bytes::from_utf8(value)
                         codec::invalid_data
                         ok bytes::buffer encoded => match call io::stdout_write(encoded)
@@ -29,6 +32,3 @@ fn void main
                                 sample: encoded => ok 7
                             io::write_failed
                             ok int written => ok
-                    false => do
-                        int invalid = 1 / 0
-                        ok

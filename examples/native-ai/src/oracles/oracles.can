@@ -47,8 +47,8 @@ choice str pick from classifier
     asks "Pick"
         ...options
         ok str selected => match selected is ""
-            true => ok "fallback"
             false => ok selected
+            true => ok "fallback"
 
 /// Judge whether the batch merits attention.
 noul float likely from classifier

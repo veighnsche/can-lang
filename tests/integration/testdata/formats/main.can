@@ -129,10 +129,6 @@ fn void main
         badop: ["bogus"] => ok
         arity: ["toml"] => ok
     match args.length is 0
-        true => match call emit("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>")
-            codec::invalid_data
-            io::write_failed
-            ok int written => ok
         false => match args[0]
             "toml" => match args.length is 2
                 false => match call emit("usage: toml <path>")
@@ -209,3 +205,7 @@ fn void main
                 codec::invalid_data
                 io::write_failed
                 ok int written => ok
+        true => match call emit("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok

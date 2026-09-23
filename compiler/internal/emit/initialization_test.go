@@ -77,7 +77,7 @@ func TestInitializationOrderingAndRefusals(t *testing.T) {
 		"str a = call env::get(\"TOKEN\")\n", "bytes::buffer a = call bytes::from_utf8(\"x\")\n",
 		"callable int () emits [] a = callable first\n", "int a = ints[0]\n",
 		"bytes::buffer a = resource\n",
-		"int a = match true\n    true => 1\n    false => 2\n",
+		"int a = match true\n    false => 2\n    true => 1\n",
 		"bool a = false and (call first() is 1)\n",
 	} {
 		t.Run(text, func(t *testing.T) {

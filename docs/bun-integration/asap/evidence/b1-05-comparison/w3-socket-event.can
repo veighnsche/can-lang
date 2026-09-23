@@ -42,7 +42,6 @@ fn int pump_write
         stream::cancelled as cause => stream::cancelled(cause.detail)
         stream::use_after_close
         ok int accepted => match accepted is pending.length
-            true => ok accepted
             false => match call pump_write(call pending.slice(accepted, pending.length), output)
                 stream::write_failed
                 stream::cancelled
@@ -51,6 +50,7 @@ fn int pump_write
                 ok int rest => do
                     int total = rest + accepted
                     ok total
+            true => ok accepted
 
 /// Pull loop over one session. Text messages are acknowledged; binary
 /// payloads are counted. Close ends the session; the reader and writer
@@ -85,12 +85,6 @@ fn session pump
             ok => stream::cancelled(cause.detail)
         stream::use_after_close
         ok session_event[] batch => match batch.length is 0
-            true => match call stream::close(peer.events)
-                when
-                    text: peer.events => ok
-                    binary: peer.events => ok
-                stream::use_after_close
-                ok => ok state
             false => match batch[0].kind
                 1 => match call socket::check_text(batch[0].text)
                     socket::protocol_error
@@ -107,6 +101,12 @@ fn session pump
                     stream::use_after_close
                     ok => ok state
                 _ => ok call pump(state, peer)
+            true => match call stream::close(peer.events)
+                when
+                    text: peer.events => ok
+                    binary: peer.events => ok
+                stream::use_after_close
+                ok => ok state
 
 /// Accept one session and serve it to close. No drain handling exists:
 /// bounded reads pace the sender instead of reacting to buffer signals.

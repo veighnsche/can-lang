@@ -37,10 +37,10 @@ fn void main
         ok str original => match original
             "original" => match call folded()
                 ok bool found => match found
-                    true => ok
                     false => do
                         int invalid = 1 / 0
                         ok
+                    true => ok
             _ => do
                 int invalid = 1 / 0
                 ok

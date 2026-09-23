@@ -57,7 +57,7 @@ fn void main
     str second = call describe(values[1])
     str winner = call describe(selected)
     match first is "left" and second is "two" and (winner is "left" or winner is "two")
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok

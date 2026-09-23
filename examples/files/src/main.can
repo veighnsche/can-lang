@@ -22,8 +22,8 @@ fn str render_entries
         empty: [], 0 => ok ""
         one: [files::entry("/tmp/reports/a.txt", "file")], 0 => ok "file a.txt\n"
     match index is entries.length
-        true => ok ""
         false => ok call text::join([call entry_label(entries[index]), call render_entries(entries, index + 1)], "\n")
+        true => ok ""
 
 /// List a directory, propagating every filesystem failure to the caller.
 fn files::entry[] catalog
@@ -54,13 +54,6 @@ fn void main
         empty: [] => ok
         sample: ["/tmp/reports"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: files <dir>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match call files::list(args[0], 100)
             when
                 sample: args[0], 100 => ok [files::entry("/tmp/reports/a.txt", "file")]
@@ -77,3 +70,10 @@ fn void main
                         sample: message => ok 0
                     io::write_failed
                     ok int written => ok
+        true => match call bytes::from_utf8("usage: files <dir>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

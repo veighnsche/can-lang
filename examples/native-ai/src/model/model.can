@@ -32,8 +32,8 @@ fn str gate
         hold: 0.1 => ok "hold"
         edge: 0.7 => ok "ship"
     match score >= 0.7
-        true => ok "ship"
         false => ok "hold"
+        true => ok "ship"
 
 /// Count recent accounts through the captured pool.
 fn records::count_value recent_count

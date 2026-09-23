@@ -48,23 +48,23 @@ fn scan_state pump
             ok => stream::cancelled(cause.detail)
         stream::use_after_close
         ok str[] batch => match batch.length is 0
+            false => match chain
+                call bytes::from_utf8(batch[0]) as bytes::buffer raw
+                call codec::decode_json<json_id>(raw) as json_id found
+                codec::invalid_data
+                ok => match found.id is 42
+                    false => ok call pump(scan_state(state.lines_seen + 1, state.bytes_seen + batch[0].length, state.found_id), input)
+                    true => match call stream::close(input)
+                        when
+                            hit: input => ok
+                        stream::use_after_close
+                        ok => ok scan_state(state.lines_seen + 1, state.bytes_seen + batch[0].length, found.id)
             true => match call stream::close(input)
                 when
                     end: input => ok
                     keep: input => ok
                 stream::use_after_close
                 ok => ok state
-            false => match chain
-                call bytes::from_utf8(batch[0]) as bytes::buffer raw
-                call codec::decode_json<json_id>(raw) as json_id found
-                codec::invalid_data
-                ok => match found.id is 42
-                    true => match call stream::close(input)
-                        when
-                            hit: input => ok
-                        stream::use_after_close
-                        ok => ok scan_state(state.lines_seen + 1, state.bytes_seen + batch[0].length, found.id)
-                    false => ok call pump(scan_state(state.lines_seen + 1, state.bytes_seen + batch[0].length, state.found_id), input)
 
 /// Scan a JSONL file and stop after the predicate match. Acquisition uses
 /// domain errors; the pull loop owns dispatch, state, backpressure demand,

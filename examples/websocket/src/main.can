@@ -44,8 +44,6 @@ fn int pump
         files::limit_exceeded => match call halt(session, events)
             ok int zero => ok zero
         ok ws::event[] batch => match batch.length is 0
-            true => match call halt(session, events)
-                ok int zero => ok zero
             false => do
                 ws::event head = batch[0]
                 match head
@@ -67,6 +65,8 @@ fn int pump
                         ok int rest => ok rest
                     ws::closed => match call halt(session, events)
                         ok int zero => ok zero
+            true => match call halt(session, events)
+                ok int zero => ok zero
 /// Upgrade a routed request, then pump until the peer closes. The dispatch
 /// drops the HTTP reply for upgraded requests, so the response below only
 /// shapes the refusal paths; the upgrade itself is live-tested because no

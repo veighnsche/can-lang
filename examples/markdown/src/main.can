@@ -60,10 +60,6 @@ fn void main
         empty: [] => ok
         arity: ["preview"] => ok
     match args.length is 0
-        true => match call emit("usage: notes preview <source>")
-            codec::invalid_data
-            io::write_failed
-            ok int written => ok
         false => match args[0]
             "preview" => match args.length is 2
                 false => match call emit("usage: notes preview <source>")
@@ -80,3 +76,7 @@ fn void main
                 codec::invalid_data
                 io::write_failed
                 ok int written => ok
+        true => match call emit("usage: notes preview <source>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok

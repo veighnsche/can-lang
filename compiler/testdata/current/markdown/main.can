@@ -54,10 +54,6 @@ fn void main
         badop: ["bogus"] => ok
         arity: ["html"] => ok
     match args.length is 0
-        true => match call emit("usage: md html <source>")
-            codec::invalid_data
-            io::write_failed
-            ok int written => ok
         false => match args[0]
             "html" => match args.length is 2
                 false => match call emit("usage: md html <source>")
@@ -74,3 +70,7 @@ fn void main
                 codec::invalid_data
                 io::write_failed
                 ok int written => ok
+        true => match call emit("usage: md html <source>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok

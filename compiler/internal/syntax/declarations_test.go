@@ -133,7 +133,7 @@ func TestCoreSpecificationPackage(t *testing.T) {
 	if match.Match.Kind != ValueMatch || len(match.Match.Arms) != 2 {
 		t.Fatal(match)
 	}
-	inner := match.Match.Arms[1].Body.(*MatchBody)
+	inner := match.Match.Arms[0].Body.(*MatchBody)
 	if !inner.Match.Arms[1].Outcome.StandardFailure {
 		t.Fatal(inner)
 	}
@@ -285,10 +285,10 @@ func TestFileParserRejectsObsoleteAndMalformedGrammar(t *testing.T) {
 func TestCompletionRegionsRejectAmbiguousOrUnadmittedForms(t *testing.T) {
 	function := testHeader + "fn int bad\n    emits []\n    asserts\n        sample: => ok 1\n"
 	for _, body := range []string{
-		"    match true\n        true => do\n            ok 1\n        false => ok 0\n",
+		"    match true\n        false => ok 0\n        true => do\n            ok 1\n",
 		"    int value = match call f()\n        ok int x => ok x\n    ok value\n",
 		"    int value = match chain\n        call f() as int x\n        ok => ok x\n    ok value\n",
-		"    int value = match true\n        true => ok 1\n        false => ok 0\n    ok value\n",
+		"    int value = match true\n        false => ok 0\n        true => ok 1\n    ok value\n",
 		"    match call f()\n        _ => ok 0\n",
 		"    match call f()\n        missing(_) => ok 0\n",
 		"    match call f()\n        missing | other => ok 0\n",

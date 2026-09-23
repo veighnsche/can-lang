@@ -1531,12 +1531,9 @@ Can has no `if` expression. Boolean branching uses `match` with `true` and
 
 **Ordinary Boolean match arm order — user decision, 2026-09-23:** In an ordinary
 `match` on a Boolean value, place the `false` branch before the `true` branch.
-This is the desired source order, pending implementation where applicable;
-this documentation-only decision does not claim compiler enforcement today.
-It does not change branch selection or extend to completion/coordination
+The compiler enforces this order for ordinary single-scrutinee Boolean data
+matches. It does not change branch selection or extend to completion/coordination
 matches, multi-scrutinee pattern ordering, or native AI true/false criteria.
-Compiler enforcement and migration of remaining examples and fixtures are
-follow-up work; no code or test changes are authorized by this entry.
 
 Simple arms use `pattern => expression`, including completion expressions.
 An ordinary-data `match` may produce an ordinary value, including as the
@@ -1559,10 +1556,10 @@ lines. Arms have no prefix keyword.
 
 ```text
 match eligible
+    false => ok 0
     true => do
         call record_decision()
         ok left + right
-    false => ok 0
 ```
 
 A nested match begins on its parent arm's line, immediately after `=>`. Its
@@ -1579,10 +1576,10 @@ fn int sign
         zero: 0 => ok 0
         positive: 7 => ok 1
     match number < 0
-        true => ok -1
         false => match number is 0
-            true => ok 0
             false => ok 1
+            true => ok 0
+        true => ok -1
 ```
 
 Multiple scrutinees and their patterns are comma-separated without enclosing
@@ -1663,8 +1660,8 @@ fn int require_minimum
         accepted: 5, 3 => ok 5
         rejected: 2, 3 => below_minimum(2, 3)
     match value < minimum
-        true => below_minimum(value, minimum)
         false => ok value
+        true => below_minimum(value, minimum)
 
 fn int clamp_minimum
     emits []
@@ -1790,8 +1787,8 @@ Match record alternatives using bare type names, without field parameters:
 match shape
     circle => ok shape
     rectangle => match shape.width < 6
-        true => ok shape with height = shape.height - 4
         false => ok shape
+        true => ok shape with height = shape.height - 4
 ```
 
 Within a variant arm, the original matched binding remains the value and is
@@ -2188,10 +2185,10 @@ Structure the remainder using existing `match` and `do` forms:
 
 ```text
 match ready
-    true => ok value
     false => do
         call prepare()
         ok fallback
+    true => ok value
 ```
 
 This selects no additional early-return syntax and does not change the already

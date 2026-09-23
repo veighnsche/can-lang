@@ -117,10 +117,10 @@ fn http::server_response upload
                     ended: reader => ok
                 stream::close_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                 ok => match chunks.length is 0
-                    true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
                     false => match call bytes::to_utf8(chunks[0])
                         codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                         ok str head => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), head)
+                    true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
 fn http::server_response stream_echo
     emits []
     given
@@ -200,10 +200,10 @@ fn http::server_response attach
         http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         ok http::multipart_form form => match form.fields.length is 0
-            true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
             false => match form.files.length is 0
-                true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value)
                 false => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value + "|" + form.files[0].filename)
+                true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value)
+            true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
 fn http::server_response wrapped
     emits []
     given
