@@ -325,7 +325,7 @@
   "ws_backpressure": {
     "status": "observed",
     "value": {
-      "saturated": 40,
+      "saturated": 42,
       "drains": 2,
       "bytes": 3276800
     }
@@ -371,6 +371,385 @@
       "offeredAfterBypass": null,
       "bypass-with-protocols": {
         "open": true
+      }
+    }
+  },
+  "cookie_parse": {
+    "status": "observed",
+    "value": {
+      "simple": {
+        "size": 2,
+        "json": {
+          "a": "1",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            "1"
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "duplicates": {
+        "size": 2,
+        "json": {
+          "a": "1"
+        },
+        "entries": [
+          [
+            "a",
+            "1"
+          ],
+          [
+            "a",
+            "2"
+          ]
+        ]
+      },
+      "case": {
+        "size": 2,
+        "json": {
+          "A": "1",
+          "a": "2"
+        },
+        "entries": [
+          [
+            "A",
+            "1"
+          ],
+          [
+            "a",
+            "2"
+          ]
+        ]
+      },
+      "no-equals": {
+        "size": 2,
+        "json": {
+          "a": "1",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            "1"
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "empty-value": {
+        "size": 2,
+        "json": {
+          "a": "",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            ""
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "empty-name": {
+        "size": 1,
+        "json": {
+          "b": "2"
+        },
+        "entries": [
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "empty": {
+        "size": 0,
+        "json": {},
+        "entries": []
+      },
+      "spaces": {
+        "size": 2,
+        "json": {
+          "a": "1",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            "1"
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "quoted": {
+        "size": 2,
+        "json": {
+          "a": "\"quoted",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            "\"quoted"
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "percent": {
+        "size": 1,
+        "json": {
+          "a": " ;"
+        },
+        "entries": [
+          [
+            "a",
+            " ;"
+          ]
+        ]
+      },
+      "unicode": {
+        "size": 1,
+        "json": {
+          "a": "€"
+        },
+        "entries": [
+          [
+            "a",
+            "€"
+          ]
+        ]
+      },
+      "semis": {
+        "size": 2,
+        "json": {
+          "a": "1",
+          "b": "2"
+        },
+        "entries": [
+          [
+            "a",
+            "1"
+          ],
+          [
+            "b",
+            "2"
+          ]
+        ]
+      },
+      "eq-value": {
+        "size": 1,
+        "json": {
+          "a": "b=c"
+        },
+        "entries": [
+          [
+            "a",
+            "b=c"
+          ]
+        ]
+      },
+      "missing": {
+        "get": null,
+        "has": false
+      },
+      "dupGet": "1"
+    }
+  },
+  "cookie_serialize": {
+    "status": "observed",
+    "value": {
+      "basic": {
+        "ok": "a=1; Path=/; SameSite=Lax"
+      },
+      "full": {
+        "ok": "s=v; Domain=example.com; Path=/admin; Max-Age=3600; Secure; HttpOnly; SameSite=Strict"
+      },
+      "expires": {
+        "ok": "e=v; Path=/; Expires=Tue, 01 Jan 2030 00:00:00 GMT; SameSite=Lax"
+      },
+      "samesite-lax": {
+        "ok": "a=1; Path=/; SameSite=Lax"
+      },
+      "samesite-none": {
+        "ok": "a=1; Path=/; Secure; SameSite=None"
+      },
+      "samesite-none-insecure": {
+        "ok": "a=1; Path=/; SameSite=None"
+      },
+      "samesite-bogus": {
+        "throws": "TypeError:Invalid sameSite value. Must be 'strict', 'lax', or 'none'"
+      },
+      "samesite-omitted": {
+        "ok": "a=1; Path=/; SameSite=Lax"
+      },
+      "partitioned": {
+        "ok": "a=1; Path=/; Partitioned; SameSite=Lax"
+      },
+      "maxage-zero": {
+        "ok": "a=1; Path=/; Max-Age=0; SameSite=Lax"
+      },
+      "maxage-negative": {
+        "ok": "a=1; Path=/; Max-Age=-5; SameSite=Lax"
+      },
+      "both-expiry": {
+        "ok": "e=v; Path=/; Expires=Tue, 01 Jan 2030 00:00:00 GMT; Max-Age=60; SameSite=Lax"
+      },
+      "crlf-name": {
+        "throws": "TypeError:Invalid cookie name: contains invalid characters"
+      },
+      "crlf-value": {
+        "ok": "a=1%0D%0AX%3A%20y; Path=/; SameSite=Lax"
+      },
+      "empty-name": {
+        "throws": "TypeError:name is required"
+      },
+      "semi-name": {
+        "throws": "TypeError:Invalid cookie name: contains invalid characters"
+      },
+      "space-name": {
+        "throws": "TypeError:Invalid cookie name: contains invalid characters"
+      },
+      "eq-name": {
+        "throws": "TypeError:Invalid cookie name: contains invalid characters"
+      },
+      "comma-name": {
+        "ok": "a,b=1; Path=/; SameSite=Lax"
+      },
+      "semi-value": {
+        "ok": "a=1%3B2; Path=/; SameSite=Lax"
+      },
+      "unicode-value": {
+        "ok": "a=%E2%82%AC; Path=/; SameSite=Lax"
+      },
+      "host-prefix-open": {
+        "ok": "__Host-s=v; Path=/; SameSite=Lax"
+      },
+      "host-prefix-locked": {
+        "ok": "__Host-s=v; Path=/; Secure; SameSite=Lax"
+      },
+      "secure-prefix-open": {
+        "ok": "__Secure-s=v; Path=/; SameSite=Lax"
+      },
+      "secure-prefix-locked": {
+        "ok": "__Secure-s=v; Path=/; Secure; SameSite=Lax"
+      },
+      "host-prefix-domain": {
+        "ok": "__Host-s=v; Domain=example.com; Path=/; Secure; SameSite=Lax"
+      },
+      "isExpired": {
+        "zero": true,
+        "session": false,
+        "past": true
+      }
+    }
+  },
+  "cookie_headers": {
+    "status": "observed",
+    "value": {
+      "setHeaders": [
+        "b=2; Path=/; SameSite=Lax",
+        "c=3; Path=/; HttpOnly; SameSite=Lax"
+      ],
+      "afterDelete": [
+        "b=2; Path=/; SameSite=Lax",
+        "c=3; Path=/; HttpOnly; SameSite=Lax",
+        "a=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+      ],
+      "afterDeleteScoped": [
+        "c=3; Path=/; HttpOnly; SameSite=Lax",
+        "a=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax",
+        "b=; Domain=example.com; Path=/admin; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+      ],
+      "getSetCookie": [
+        "c=3; Path=/; HttpOnly; SameSite=Lax",
+        "a=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax",
+        "b=; Domain=example.com; Path=/admin; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+      ],
+      "combined": "c=3; Path=/; HttpOnly; SameSite=Lax, a=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax, b=; Domain=example.com; Path=/admin; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+    }
+  },
+  "csrf_token": {
+    "status": "observed",
+    "value": {
+      "shape": {
+        "type": "string",
+        "length": 86,
+        "charset": true
+      },
+      "distinct": true,
+      "valid": true,
+      "crossSession": false,
+      "wrongSecret": false,
+      "garbage": false,
+      "truncated": false,
+      "flipped": false,
+      "noSessionVerify": true,
+      "noSessionWithSession": false,
+      "sessionWithoutSession": false,
+      "empty-session-generate": {
+        "throws": "TypeError:sessionId must be a non-empty string"
+      },
+      "empty-secret": {
+        "throws": "TypeError:Secret must be a non-empty string"
+      },
+      "nonstring-token": {
+        "throws": "TypeError:Token must be a non-empty string"
+      },
+      "missing-options": {
+        "ok": false
+      },
+      "default-secret": {
+        "ok": {
+          "length": 86,
+          "verified": true
+        }
+      },
+      "encode-mismatch": {
+        "ok": {
+          "verifyDefault": true,
+          "verifyB64": true
+        }
+      }
+    }
+  },
+  "csrf_expiry": {
+    "status": "observed",
+    "value": {
+      "fresh": true,
+      "maxAgeZero": {
+        "ok": true
+      },
+      "maxAgeNegative": {
+        "throws": "RangeError:The value of \"maxAge\" is out of range. It must be >= 0 and <= 9007199254740991. Received -1"
+      },
+      "maxAgeHuge": {
+        "throws": "RangeError:The value of \"maxAge\" is out of range. It must be >= 0 and <= 9007199254740991. Received 9007199254740992"
+      },
+      "tinyFresh": true,
+      "tinyStale": false,
+      "tinyMaxAge": false,
+      "expiresInZero": {
+        "ok": true
+      },
+      "expiresInNegative": {
+        "throws": "RangeError:The value of \"expiresIn\" is out of range. It must be >= 0 and <= 9007199254740991. Received -5"
       }
     }
   }
