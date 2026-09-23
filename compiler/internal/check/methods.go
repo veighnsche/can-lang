@@ -2,11 +2,11 @@ package check
 
 import (
 	"fmt"
-	"strings"
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
+	"strings"
 )
 
 type MethodApplication struct {

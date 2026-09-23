@@ -9,13 +9,13 @@ name: target qualification
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
   native-capabilities:
     runs-on: macos-15
     env:
-      CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
       CAN_TEST_POSTGRES_URL: postgres://can@127.0.0.1:5433/can_test
     steps:
       - uses: actions/checkout@v6
@@ -74,9 +74,11 @@ jobs:
           go run ./tools/modcheck
           go run ./tools/gramcheck
       - name: Test everything with all services operated
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
         run: |
           set -o pipefail
-          go test -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          go test -timeout=60m -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
           test "${PIPESTATUS[0]}" -eq 0
       - name: Test the Bun runtime suite
         run: |

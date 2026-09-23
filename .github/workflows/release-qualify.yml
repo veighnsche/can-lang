@@ -10,6 +10,7 @@ name: release qualification
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -27,6 +28,10 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
+      # distribution.Build runs its launcher build with GOPROXY=off.
+      # Prime the module cache while network access is available.
+      - name: Download Go modules for offline bundle build
+        run: go mod download
       - name: Build, release, install, and smoke-test offline
         env:
           CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
