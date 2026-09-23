@@ -64,5 +64,25 @@ export function createBytes(domain: ReturnType<typeof createDomainRuntime>, inva
         return invalid("", "utf8");
       }
     },
+    async encodeBase64(value: unknown, _context?: AssertionContext): Promise<Completion<string>> {
+      return success(Buffer.from(backing(value)).toString("base64"));
+    },
+    async decodeBase64(text: string, _context?: AssertionContext): Promise<Completion<Bytes>> {
+      // Buffer's base64 decoder silently skips whitespace and invalid
+      // trailing characters, so the strict shape gates first: standard
+      // alphabet, correct padding, no base64url.
+      if (typeof text !== "string" || text.length % 4 !== 0 || !/^[A-Za-z0-9+/]*={0,2}$/.test(text)) return invalid("", "base64");
+      return success(ownBytes(Buffer.from(text, "base64")));
+    },
+    async encodeHex(value: unknown, _context?: AssertionContext): Promise<Completion<string>> {
+      return success(Buffer.from(backing(value)).toString("hex"));
+    },
+    async decodeHex(text: string, _context?: AssertionContext): Promise<Completion<Bytes>> {
+      // Buffer's hex decoder silently truncates at the first invalid pair,
+      // so even length plus a full hex alphabet gates first. Uppercase
+      // decodes; encoding always emits lowercase.
+      if (typeof text !== "string" || !/^([0-9a-fA-F]{2})*$/.test(text)) return invalid("", "hex");
+      return success(ownBytes(Buffer.from(text, "hex")));
+    },
   });
 }

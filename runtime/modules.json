@@ -299,6 +299,11 @@
       "../data.ts",
       "../domain.ts"
     ],
+    "platform/datetime.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
+    ],
     "platform/random.ts": [
       "../assert/context.ts",
       "../completion.ts",
@@ -425,6 +430,11 @@
       "../transport/media.ts",
       "./form.ts",
       "./html.ts"
+    ],
+    "platform/url.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
     ],
     "platform/router.ts": [
       "../completion.ts",

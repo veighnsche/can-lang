@@ -82,3 +82,22 @@ test("raw transport fixture consumes copies and cannot mutate owned source bytes
  expect(value(await api.toUTF8(received))).toBe("héllo 😀");
  expect(value(await api.toUTF8(original))).toBe("héllo 😀");
 });
+
+test("base64 and hex round-trip strictly without silent truncation",async()=>{
+ const bytes=value(await api.fromUTF8("héllo 😀"));
+ expect(value(await api.encodeBase64(bytes))).toBe(Buffer.from("héllo 😀","utf8").toString("base64"));
+ expect(value(await api.encodeHex(bytes))).toBe(Buffer.from("héllo 😀","utf8").toString("hex"));
+ expect(value(await api.encodeBase64(value(await api.empty())))).toBe("");
+ expect(value(await api.encodeHex(value(await api.empty())))).toBe("");
+ expect(value(await api.toUTF8(value(await api.decodeBase64("aMOpbGxvIPCfmIA="))))).toBe("héllo 😀");
+ expect(value(await api.toUTF8(value(await api.decodeHex("68c3a96c6c6f20f09f9880"))))).toBe("héllo 😀");
+ expect(value(await api.toUTF8(value(await api.decodeHex("68C3A96C6C6F20F09F9880"))))).toBe("héllo 😀");
+ expect(value(await api.toInts(value(await api.decodeBase64(""))))).toEqual([]);
+ expect(value(await api.toInts(value(await api.decodeHex(""))))).toEqual([]);
+ for(const bad of ["QQ","QQ===","Q!Q=","Q Q=","AQ-_","QQQQ\nQQ=="]){
+  invalid(await api.decodeBase64(bad),"","base64");
+ }
+ for(const bad of ["0","0g","zz","0x12","12 34"]){
+  invalid(await api.decodeHex(bad),"","hex");
+ }
+});

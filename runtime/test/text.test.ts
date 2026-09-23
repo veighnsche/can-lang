@@ -3,12 +3,13 @@ import {createHash} from "node:crypto";
 import {catalogue} from "../catalogue.ts";
 import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
 import {createText} from "../text.ts";
+import {dataProperty} from "../data.ts";
 import {value,type Completion} from "../completion.ts";
 const shape=(kind:string,declaration:string):FailureShape=>({identity:createHash("sha256").update("can-concrete-type-v1\0"+JSON.stringify([kind,declaration])).digest("hex"),kind,declaration,arguments:[],fields:[],leaves:[],inputs:[],errors:[]});
-const text=shape("primitive","str"),declarations=catalogue.errors.filter(e=>[1004,1005,1006].includes(e.id));
-const errors=declarations.map(e=>({...shape("error",e.identity),fields:e.fields.map(f=>({name:f.name,type:text.identity}))}));
-const domain=createDomainRuntime({declarations:declarations.map(e=>({identity:e.identity,name:e.name,id:e.id,parameters:0})),shapes:[text,...errors]});
-const api=createText(domain,{emptySeparator:errors[0].identity,emptyPattern:errors[1].identity,invalidUnicode:errors[2].identity});
+const text=shape("primitive","str"),integers=shape("primitive","int"),declarations=catalogue.errors.filter(e=>[1004,1005,1006,1327,1328].includes(e.id));
+const errors=declarations.map(e=>({...shape("error",e.identity),fields:e.fields.map(f=>({name:f.name,type:f.type==="int"?integers.identity:text.identity}))}));
+const domain=createDomainRuntime({declarations:declarations.map(e=>({identity:e.identity,name:e.name,id:e.id,parameters:0})),shapes:[text,integers,...errors]});
+const api=createText(domain,{emptySeparator:errors[0].identity,emptyPattern:errors[1].identity,invalidUnicode:errors[2].identity,invalidRegex:errors[3].identity,invalidLimit:errors[4].identity,match:"text::regex_match"});
 function invalid(result:Completion,id:number){expect(result.kind).toBe("domain");if(result.kind!=="domain")throw Error("expected domain failure");expect(domainFailureDiagnostics(result.value).declaration.id).toBe(id)}
 
 test("search, case and trim delegate native code-unit and Unicode behavior",async()=>{
@@ -57,4 +58,35 @@ test("bulk fromCodePoint uses bounded native argument chunks",async()=>{
  const input=Object.freeze(Array.from({length:150000},(_,i)=>i%2===0?65n:0x1f600n));
  const result=value(await api.fromScalars(input));expect(result).toBe("A😀".repeat(75000));
  expect(input[1]).toBe(0x1f600n);
+});
+
+test("regex compiles validated flags and rejects bad patterns",async()=>{
+ expect(typeof value(await api.compileRegex("(a+)", "im"))).toBe("object");
+ for(const flags of ["g","y","d","z","ii "])invalid(await api.compileRegex("a",flags),1327);
+ invalid(await api.compileRegex("(a",""),1327);
+ invalid(await api.compileRegex("a","uv"),1327);
+});
+
+test("matches report UTF-16 offsets, groups, and absent captures",async()=>{
+ const handle=value(await api.compileRegex("(\\w+)@(\\w+)",""));
+ const hits=value(await api.findMatches(handle,"a@b c@d",10n)) as unknown[];
+ expect(hits.length).toBe(2);
+ expect([dataProperty(hits[0],"text"),dataProperty(hits[0],"start"),dataProperty(hits[0],"end"),dataProperty(hits[0],"groups")]).toEqual(["a@b",0n,3n,["a","b"]]);
+ const either=value(await api.compileRegex("(a)|(b)",""));
+ const lone=value(await api.findMatches(either,"b",10n)) as unknown[];
+ expect(dataProperty(lone[0],"groups")).toEqual(["","b"]);
+ const astral=value(await api.compileRegex(".","u"));
+ const first=value(await api.findMatches(astral,"\ud83d\ude00x",10n)) as unknown[];
+ expect([dataProperty(first[0],"start"),dataProperty(first[0],"end")]).toEqual([0n,2n]);
+});
+test("matches advance past empty hits without shared lastIndex and honor limits",async()=>{
+ const handle=value(await api.compileRegex("x*",""));
+ const first=value(await api.findMatches(handle,"ab",10n)) as unknown[];
+ expect(first.map(hit=>[dataProperty(hit,"text"),dataProperty(hit,"start")])).toEqual([["",0n],["",1n],["",2n]]);
+ const second=value(await api.findMatches(handle,"ab",10n)) as unknown[];
+ expect(second.length).toBe(3);
+ expect((value(await api.findMatches(handle,"ab",1n)) as unknown[]).length).toBe(1);
+ expect((value(await api.findMatches(handle,"ab",0n)) as unknown[]).length).toBe(0);
+ invalid(await api.findMatches(handle,"ab",-1n),1328);
+ invalid(await api.findMatches(handle,"ab",10001n),1328);
 });
