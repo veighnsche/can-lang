@@ -3,7 +3,7 @@
 export const standaloneBytes = 8_388_608;
 export const maxDepth = 64;
 export const maxNodes = 1_000_000;
-export type Reason = "utf8" | "unicode_scalar" | "byte_range" | "invalid_json" | "duplicate_member" | "missing_member" | "extra_member" | "type" | "integer_token" | "nonfinite" | "variant_tag" | "cycle" | "depth_limit" | "node_limit" | "byte_limit" | "media_type" | "charset";
+export type Reason = "utf8" | "unicode_scalar" | "byte_range" | "invalid_json" | "invalid_toml" | "invalid_yaml" | "invalid_json5" | "duplicate_member" | "missing_member" | "extra_member" | "type" | "integer_token" | "nonfinite" | "variant_tag" | "cycle" | "depth_limit" | "node_limit" | "byte_limit" | "media_type" | "charset";
 export class CodecIssue extends Error {
   constructor(readonly path: string, readonly reason: Reason) { super(reason); }
 }

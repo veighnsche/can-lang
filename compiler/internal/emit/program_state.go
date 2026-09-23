@@ -146,8 +146,8 @@ func (builder *stateBuilder) declareCoreState() {
 	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
 }
 
-// declareCodecState emits one codec binding per JSON specialization used by
-// the program.
+// declareCodecState emits one codec binding per JSON and document
+// specialization used by the program.
 func (builder *stateBuilder) declareCodecState() {
 	for _, id := range builder.assembly.codecIDs {
 		fmt.Fprintf(&builder.out, "export let %s: ReturnType<typeof $canCreateCodec<%s>>;\n", builder.assembly.codecNames[id], TypeName(builder.assembly.program.Codecs[id].Data))
@@ -265,14 +265,16 @@ func (builder *stateBuilder) initializeCoreState() {
 	fmt.Fprintf(&builder.out, "$canText = $canCreateText($canDomain, {emptySeparator:%s,emptyPattern:%s,invalidUnicode:%s,invalidRegex:%s,invalidLimit:%s,match:%s});\n", quote(builder.numberIDs["can.std.text@1::empty_separator"]), quote(builder.numberIDs["can.std.text@1::empty_pattern"]), quote(builder.numberIDs["can.std.text@1::invalid_unicode"]), quote(builder.numberIDs["can.std.text@1::invalid_regex"]), quote(builder.numberIDs["can.std.text@1::invalid_limit"]), quote(builder.numberIDs["can.std.text@1::regex_match"]))
 }
 
-// initializeCodecs constructs the JSON codec specializations of this program.
+// initializeCodecs constructs the JSON and document codec specializations
+// of this program. Consume shares the schema-bound factory: its reader,
+// handler and count contracts resolve in the checker.
 func (builder *stateBuilder) initializeCodecs() error {
 	for _, id := range builder.assembly.codecIDs {
 		encoded, err := json.Marshal(builder.assembly.program.Codecs[id].Schema)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(&builder.out, "%s = $canCreateCodec<%s>(%s, $canDomain, %s);\n", builder.assembly.codecNames[id], TypeName(builder.assembly.program.Codecs[id].Data), encoded, quote(builder.numberIDs["can.std.codec@1::invalid_data"]))
+		fmt.Fprintf(&builder.out, "%s = $canCreateCodec<%s>(%s, $canDomain, {invalidData:%s,readFailed:%s,cancelled:%s});\n", builder.assembly.codecNames[id], TypeName(builder.assembly.program.Codecs[id].Data), encoded, quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.stream@1::read_failed"]), quote(builder.numberIDs["can.std.stream@1::cancelled"]))
 	}
 	return nil
 }

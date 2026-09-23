@@ -4,14 +4,17 @@ import { scanJSON } from "./duplicates.ts";
 
 const origin = Object.freeze({source:"can:codec",start:0,end:0,invocation:Object.freeze([])});
 
-// Private maintained protocol adapters and typed decoding share this bounded
-// native parser. Its output is never an authored Can untyped-JSON value.
-export function parseDocument(input:unknown,bytes=standaloneBytes) {
+// decodeText enforces the byte cap and fatal UTF-8 once. BOM preservation
+// makes a leading BOM fail native JSON syntax, as required.
+export function decodeText(input:unknown,bytes=standaloneBytes):string {
   if(byteLength(input)>BigInt(bytes))reject("","byte_limit");
-  let text:string;
-  try{text=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(copyBytes(input,origin));}
+  try{return new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(copyBytes(input,origin));}
   catch(cause){if(cause instanceof TypeError)reject("","utf8");throw cause;}
-  // BOM preservation makes a leading BOM fail native JSON syntax, as required.
+}
+
+// parseJSONText runs duplicate detection and the token-capturing native
+// parse over decoded text. JSONL records reuse this exact path per line.
+export function parseJSONText(text:string) {
   const duplicate=scanJSON(text);
   const tokens=new WeakMap<object,Map<string,string>>();
   let rootHolder:object|undefined;
@@ -25,4 +28,10 @@ export function parseDocument(input:unknown,bytes=standaloneBytes) {
   }catch(cause){if(cause instanceof SyntaxError)reject("","invalid_json");throw cause;}
   if(duplicate!==undefined)reject(duplicate,"duplicate_member");
   return {parsed,rootHolder:rootHolder!,tokens};
+}
+
+// Private maintained protocol adapters and typed decoding share this bounded
+// native parser. Its output is never an authored Can untyped-JSON value.
+export function parseDocument(input:unknown,bytes=standaloneBytes) {
+  return parseJSONText(decodeText(input,bytes));
 }

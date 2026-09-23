@@ -428,17 +428,10 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		return nil, err
 	}
 	p.Codecs = c.codecs
-	for id, special := range c.codecs {
-		parts := c.codecParts[id]
-		special.Schema, err = types.Schema(special.Data)
-		if err != nil {
+	for id := range c.codecs {
+		if err = c.finishCodec(id); err != nil {
 			return nil, err
 		}
-		special.Contract, err = types.CallableOfChecked(parts[0], []*types.Type{parts[1]}, []*types.Type{parts[2]})
-		if err != nil {
-			return nil, err
-		}
-		p.Intrinsics[id] = special.Contract
 	}
 	p.HTTPs = c.https
 	for id := range c.https {

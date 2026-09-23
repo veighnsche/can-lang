@@ -7,8 +7,9 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
-// CodecSpecialization admits only the two maintained catalogue operations.
-// General source function specialization and inference remain separate work.
+// CodecSpecialization admits the maintained catalogue codec operations:
+// JSON encode/decode plus the B1-11 document decoders. General source
+// function specialization and inference remain separate work.
 type CodecSpecialization struct {
 	Operation string
 	Data      *types.Type
@@ -16,8 +17,34 @@ type CodecSpecialization struct {
 	Schema    types.CodecSchema
 }
 
+const (
+	codecEncodeJSON   = "can.std.codec@1::encode_json"
+	codecDecodeJSON   = "can.std.codec@1::decode_json"
+	codecDecodeTOML   = "can.std.codec@1::decode_toml"
+	codecDecodeYAML   = "can.std.codec@1::decode_yaml"
+	codecDecodeJSON5  = "can.std.codec@1::decode_json5"
+	codecDecodeJSONL  = "can.std.codec@1::decode_jsonl"
+	codecConsumeJSONL = "can.std.codec@1::consume_jsonl"
+)
+
 func codecOperation(identity string) bool {
-	return identity == "can.std.codec@1::encode_json" || identity == "can.std.codec@1::decode_json"
+	switch identity {
+	case codecEncodeJSON, codecDecodeJSON, codecDecodeTOML, codecDecodeYAML,
+		codecDecodeJSON5, codecDecodeJSONL, codecConsumeJSONL:
+		return true
+	}
+	return false
+}
+
+// codecDecodeOperation admits the single-document decoders that map a
+// buffer onto exactly T. JSONL decode and consume shape their own
+// contracts below.
+func codecDecodeOperation(identity string) bool {
+	switch identity {
+	case codecDecodeJSON, codecDecodeTOML, codecDecodeYAML, codecDecodeJSON5:
+		return true
+	}
+	return false
 }
 func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, args []syntax.TypeNode) error {
 	name, ok := callee.(*syntax.NameExpr)
@@ -56,8 +83,23 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 	if err != nil {
 		return err
 	}
+	// Consume keeps data plus the failure ingredient; the reader, count
+	// and handler contracts resolve at finish time through the sealed
+	// specializer, which also serves the deferred program path.
+	if symbol.ID == codecConsumeJSONL {
+		c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data}
+		c.codecParts[key] = []*types.Type{data, invalid}
+		if c.specializer != nil {
+			if err = c.finishCodec(key); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	// JSONL decode keeps the row: the array result derives at finish
+	// time once the row graph seals.
 	result, input := buffer, data
-	if symbol.ID == "can.std.codec@1::decode_json" {
+	if codecDecodeOperation(symbol.ID) || symbol.ID == codecDecodeJSONL {
 		result, input = data, buffer
 	}
 	// Residual signatures can be derived after graph sealing; retain ingredients.
@@ -79,7 +121,17 @@ func (c *programChecker) finishCodec(key string) error {
 	if err != nil {
 		return err
 	}
-	special.Contract, err = types.CallableOfChecked(parts[0], []*types.Type{parts[1]}, []*types.Type{parts[2]})
+	if special.Operation == codecConsumeJSONL {
+		return c.finishConsume(key, special, parts)
+	}
+	result := parts[0]
+	if special.Operation == codecDecodeJSONL {
+		result, err = types.ArrayOfChecked(special.Data)
+		if err != nil {
+			return err
+		}
+	}
+	special.Contract, err = types.CallableOfChecked(result, []*types.Type{parts[1]}, []*types.Type{parts[2]})
 	if err != nil {
 		return err
 	}
@@ -87,6 +139,50 @@ func (c *programChecker) finishCodec(key string) error {
 	c.program.Codecs = c.codecs
 	if c.callables != nil {
 		c.callables[key] = CallableDeclaration{Kind: resolve.Function, Contract: special.Contract, Names: []string{"input0"}, Near: []bool{false}}
+	}
+	return nil
+}
+
+// finishConsume binds consume_jsonl<T> to (reader, handler) -> int. The
+// handler is total: every record crosses as T into a void callback with
+// an empty error bound, so failures stay the pump's own invalid_data,
+// read_failed and cancelled. Parts carry data plus invalid_data; the
+// reader, count and handler contracts resolve here through the sealed
+// specializer.
+func (c *programChecker) finishConsume(key string, special *CodecSpecialization, parts []*types.Type) error {
+	data, invalid := parts[0], parts[1]
+	count, err := c.catalogueType("int", map[string]*types.Type{})
+	if err != nil {
+		return err
+	}
+	unit, err := c.catalogueType("void", map[string]*types.Type{})
+	if err != nil {
+		return err
+	}
+	reader, err := c.catalogueType("stream::reader<bytes::buffer>", map[string]*types.Type{})
+	if err != nil {
+		return err
+	}
+	failed, err := c.catalogueType("stream::read_failed", map[string]*types.Type{})
+	if err != nil {
+		return err
+	}
+	cancelled, err := c.catalogueType("stream::cancelled", map[string]*types.Type{})
+	if err != nil {
+		return err
+	}
+	handler, err := types.CallableOfChecked(unit, []*types.Type{data}, nil)
+	if err != nil {
+		return err
+	}
+	special.Contract, err = types.CallableOfChecked(count, []*types.Type{reader, handler}, []*types.Type{invalid, failed, cancelled})
+	if err != nil {
+		return err
+	}
+	c.program.Intrinsics[key] = special.Contract
+	c.program.Codecs = c.codecs
+	if c.callables != nil {
+		c.callables[key] = CallableDeclaration{Kind: resolve.Function, Contract: special.Contract, Names: []string{"reader", "callback"}, Near: []bool{false, false}}
 	}
 	return nil
 }

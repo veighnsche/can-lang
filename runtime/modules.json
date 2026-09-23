@@ -116,7 +116,11 @@
       "../domain.ts",
       "./budget.ts",
       "./numbers.ts",
-      "./document.ts"
+      "./document.ts",
+      "./formats.ts",
+      "./jsonl.ts",
+      "./project.ts",
+      "../transport/stream/lifecycle.ts"
     ],
     "owner.ts": [
       "node:async_hooks",
@@ -159,6 +163,23 @@
       "../bytes.ts",
       "./budget.ts",
       "./duplicates.ts"
+    ],
+    "codec/project.ts": [
+      "../data.ts",
+      "./budget.ts",
+      "./numbers.ts"
+    ],
+    "codec/formats.ts": [
+      "./budget.ts",
+      "./document.ts",
+      "./project.ts"
+    ],
+    "codec/jsonl.ts": [
+      "../bytes.ts",
+      "../data.ts",
+      "./budget.ts",
+      "./document.ts",
+      "./project.ts"
     ],
     "ai/typesafe.ts": [
       "../data.ts",

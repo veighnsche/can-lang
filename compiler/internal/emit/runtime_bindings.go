@@ -135,8 +135,19 @@ func (assembly *programAssembly) specializationBindings() bindingContribution {
 		name := fmt.Sprintf("$canCodec%d", i)
 		assembly.codecNames[id] = name
 		method := "encode"
-		if program.Codecs[id].Operation == "can.std.codec@1::decode_json" {
+		switch program.Codecs[id].Operation {
+		case "can.std.codec@1::decode_json":
 			method = "decode"
+		case "can.std.codec@1::decode_toml":
+			method = "decodeToml"
+		case "can.std.codec@1::decode_yaml":
+			method = "decodeYaml"
+		case "can.std.codec@1::decode_json5":
+			method = "decodeJson5"
+		case "can.std.codec@1::decode_jsonl":
+			method = "decodeJsonl"
+		case "can.std.codec@1::consume_jsonl":
+			method = "consume"
 		}
 		functions[id] = name + "." + method
 	}
