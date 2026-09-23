@@ -30,7 +30,11 @@ Owner: B1-02 frontend slice; B1-03 consumes its result. Output: a decision recor
 
 Exit: a genuine dialect-aware validation implementation is selected and its corpus passes. Until then SQLite native-adapter prototypes can proceed, but full B1-02/B1-03 cannot be marked complete.
 
-Status recorded 2026-09-23: corpus (44 cases) in [sql-corpus.json](evidence/sql-corpus.json); three unanimous Jev rounds in [consultations-b1-02](evidence/consultations-b1-02/decision-audit.md) advise tidb/parser for MySQL and defin/tree-sitter-sqlite3 for SQLite; spikes in [sql-spike-notes](evidence/sql-spike-notes.md) confirm every corpus verdict plus a 20-row engine differential with zero disagreement (my-06 reconciled syntax→returning). Full exit when the implemented backends pass the corpus in-repo.
+Status recorded 2026-09-23: corpus (48 cases) in [sql-corpus.json](evidence/sql-corpus.json); three unanimous Jev rounds in [consultations-b1-02](evidence/consultations-b1-02/decision-audit.md) advise tidb/parser for MySQL and defin/tree-sitter-sqlite3 for SQLite; spikes in [sql-spike-notes](evidence/sql-spike-notes.md) confirm every corpus verdict plus a 20-row engine differential with zero disagreement (my-06 reconciled syntax→returning).
+
+Exit recorded 2026-09-23 for PostgreSQL and SQLite: the in-repo backends pass the corpus in `compiler/internal/sql/corpus_test.go` (48/48, including segment-tiling proofs per valid case and an explicit unsupported-dialect boundary for the 13 MySQL cases). Named-site spelling and the SQLite number/name mapping are pinned by lite-03/10/13/19/20/21. MySQL exits in B1-03 with the tidb backend plus its live-service differential.
+
+Runtime qualification recorded 2026-09-23: Bun.SQL on SQLite offers no per-query interrupt; ownership close drains leases but never interrupts an in-flight native call, and `busy_timeout` bounds lock waits only. Hard query deadlines are therefore not promised: a close that outlasts its deadline reports `sql::close_failed`/`timeout` while the operation continues owned, and the primary completion is preserved (`sqlite close timeout keeps the commit and records cleanup`). A failed COMMIT leaves its transaction open on the connection (observed: the violating row stays readable), so the shared transaction path issues a static cleanup ROLLBACK on SQLite before reporting `sql::commit_unknown`; PostgreSQL aborts on its own and is untouched.
 
 ## G-EVENT: choose source form without turning preparation into an indefinite redesign
 
