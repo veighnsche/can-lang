@@ -212,8 +212,8 @@ func TestFormatTriviaTestdataRoundTrip(t *testing.T) {
 		t.Fatalf("testdata walk: %v %d", err, len(entries))
 	}
 	sort.Strings(entries)
-	if len(entries) != 47 {
-		t.Fatalf("round-trip file inventory: found %d, expected 47", len(entries))
+	if len(entries) != 48 {
+		t.Fatalf("round-trip file inventory: found %d, expected 48", len(entries))
 	}
 	for _, path := range entries {
 		t.Run(strings.TrimPrefix(path, "../../testdata/current/"), func(t *testing.T) {

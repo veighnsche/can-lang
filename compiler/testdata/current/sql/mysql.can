@@ -1,0 +1,297 @@
+package app
+    provides []
+    uses [sql, codec, bytes, io, http]
+/// One stored note.
+record note_row
+    int id
+    str body
+/// Single integer parameter.
+record id_parameters
+    int id
+/// Insert parameters in statement order.
+record note_insert
+    int id
+    str body
+/// Pools open against the named credential and close cleanly.
+fn str ping_roundtrip
+    emits [http::credentials_missing, sql::connection_failed, sql::close_failed]
+    given
+        str variable
+    asserts
+        sample: "CAN_TEST_MYSQL" => ok "mysql-ok"
+    match call sql::mysql_open(variable, 2)
+        when
+            sample: "CAN_TEST_MYSQL", 2 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::pool_close(pool, 1000)
+            when
+                sample: pool, 1000 => ok
+            sql::close_failed
+            ok => ok "mysql-ok"
+/// Insert one note into the shared database.
+fn int add_note
+    emits [http::credentials_missing, sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::close_failed]
+    given
+        str variable
+        int id
+        str body
+    asserts
+        sample: "CAN_TEST_MYSQL", 7, "remember" => ok 1
+    match call sql::mysql_open(variable, 2)
+        when
+            sample: "CAN_TEST_MYSQL", 2 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::execute<note_insert>(pool, "note_add", note_insert(id, body))
+            when
+                sample: pool, "note_add", note_insert(7, "remember") => ok 1
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            ok int affected => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                sql::close_failed
+                ok => ok affected
+/// Fetch one note through a fresh connection.
+fn note_row get_note
+    emits [http::credentials_missing, sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    given
+        str variable
+        int id
+    asserts
+        sample: "CAN_TEST_MYSQL", 7 => ok note_row(7, "remember")
+    match call sql::mysql_open(variable, 2)
+        when
+            sample: "CAN_TEST_MYSQL", 2 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::query_one<id_parameters, note_row>(pool, "note_by_id", id_parameters(id))
+            when
+                sample: pool, "note_by_id", id_parameters(7) => ok note_row(7, "remember")
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_missing
+            sql::row_count
+            sql::schema_mismatch
+            ok note_row row => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                sql::close_failed
+                ok => ok row
+/// Insert, then commit the write.
+fn sql::decision<int> decide_commit
+    emits []
+    given
+        near int id
+        near str body
+        sql::transaction tx
+    asserts
+        sample: 8, "kept" => ok sql::commit<int>(1)
+    match call sql::transaction_execute<note_insert>(tx, "note_add", note_insert(id, body))
+        when
+            sample: tx, "note_add", note_insert(8, "kept") => ok 1
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+        ok int affected => ok sql::commit<int>(affected)
+/// Insert, then roll the write back.
+fn sql::decision<int> decide_abort
+    emits []
+    given
+        near int id
+        near str body
+        sql::transaction tx
+    asserts
+        sample: 9, "gone" => ok sql::rollback<int>(1)
+    match call sql::transaction_execute<note_insert>(tx, "note_add", note_insert(id, body))
+        when
+            sample: tx, "note_add", note_insert(9, "gone") => ok 1
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+        ok int affected => ok sql::rollback<int>(affected)
+/// Run the committing transaction on the shared database.
+fn int run_commit
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str variable
+        int id
+        str body
+    asserts
+        sample: "CAN_TEST_MYSQL", 8, "kept" => ok 1
+    match call sql::mysql_open(variable, 2)
+        when
+            sample: "CAN_TEST_MYSQL", 2 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_commit)
+            when
+                sample: pool, callable decide_commit => ok 1
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                sql::close_failed
+                ok => ok total
+/// Run the aborting transaction on the shared database.
+fn int run_abort
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str variable
+        int id
+        str body
+    asserts
+        sample: "CAN_TEST_MYSQL", 9, "gone" => ok 1
+    match call sql::mysql_open(variable, 2)
+        when
+            sample: "CAN_TEST_MYSQL", 2 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide_abort)
+            when
+                sample: pool, callable decide_abort => ok 1
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+            ok int total => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                sql::close_failed
+                ok => ok total
+fn void main
+    emits [http::credentials_missing, codec::invalid_data, io::write_failed, sql::connection_failed, sql::unsupported_value, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::transaction_failed, sql::commit_unknown, sql::close_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: ping <variable> | add <variable> <id> <body> | get <variable> <id> | txcommit <variable> <id> <body> | txabort <variable> <id> <body>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match args[0]
+            "ping" => match args.length is 2
+                true => match call ping_roundtrip(args[1])
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::close_failed
+                    ok str label => match chain
+                        call bytes::from_utf8(label) as bytes::buffer body
+                        call io::stdout_write(body) as int written
+                        codec::invalid_data
+                        io::write_failed
+                        ok => ok
+                false => match call bytes::from_utf8("usage: ping <variable>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            "add" => match args.length is 4
+                true => match chain
+                    call bytes::from_utf8(args[2]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call bytes::from_utf8(args[3]) as bytes::buffer rawbody
+                    call codec::decode_json<str>(rawbody) as str body
+                    call add_note(args[1], id, body) as int affected
+                    call codec::encode_json<int>(affected) as bytes::buffer out
+                    call io::stdout_write(out) as int written
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::unsupported_value
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::close_failed
+                    ok => ok
+                false => match call bytes::from_utf8("usage: add <variable> <id> <body>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            "get" => match args.length is 3
+                true => match chain
+                    call bytes::from_utf8(args[2]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call get_note(args[1], id) as note_row row
+                    call codec::encode_json<note_row>(row) as bytes::buffer out
+                    call io::stdout_write(out) as int written
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::unsupported_value
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_missing
+                    sql::row_count
+                    sql::schema_mismatch
+                    sql::close_failed
+                    ok => ok
+                false => match call bytes::from_utf8("usage: get <variable> <id>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            "txcommit" => match args.length is 4
+                true => match chain
+                    call bytes::from_utf8(args[2]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call bytes::from_utf8(args[3]) as bytes::buffer rawbody
+                    call codec::decode_json<str>(rawbody) as str body
+                    call run_commit(args[1], id, body) as int total
+                    call codec::encode_json<int>(total) as bytes::buffer out
+                    call io::stdout_write(out) as int written
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::transaction_failed
+                    sql::commit_unknown
+                    sql::close_failed
+                    ok => ok
+                false => match call bytes::from_utf8("usage: txcommit <variable> <id> <body>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            "txabort" => match args.length is 4
+                true => match chain
+                    call bytes::from_utf8(args[2]) as bytes::buffer raw
+                    call codec::decode_json<int>(raw) as int id
+                    call bytes::from_utf8(args[3]) as bytes::buffer rawbody
+                    call codec::decode_json<str>(rawbody) as str body
+                    call run_abort(args[1], id, body) as int total
+                    call codec::encode_json<int>(total) as bytes::buffer out
+                    call io::stdout_write(out) as int written
+                    codec::invalid_data
+                    io::write_failed
+                    http::credentials_missing
+                    sql::connection_failed
+                    sql::transaction_failed
+                    sql::commit_unknown
+                    sql::close_failed
+                    ok => ok
+                false => match call bytes::from_utf8("usage: txabort <variable> <id> <body>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            _ => match call bytes::from_utf8("usage: ping <variable> | add <variable> <id> <body> | get <variable> <id> | txcommit <variable> <id> <body> | txabort <variable> <id> <body>")
+                codec::invalid_data
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        badop: message => ok 0
+                    io::write_failed
+                    ok int written => ok

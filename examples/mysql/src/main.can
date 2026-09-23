@@ -1,0 +1,110 @@
+package mysql_example
+    provides [note_label, rename_note, main]
+    uses [bytes, codec, io, sql, text, http]
+
+/// One stored note.
+record note_row
+    int id
+    str body
+/// Single integer parameter.
+record id_parameters
+    int id
+/// Rename parameters in statement order.
+record note_rename
+    str body
+    int id
+
+/// Label a note as "7: remember".
+fn str note_label
+    emits []
+    given
+        int id
+        str body
+    asserts
+        sample: 7, "remember" => ok "7: remember"
+        empty: 1, "" => ok "1: "
+    ok call text::join([call text::from_int(id), body], ": ")
+
+/// Rename a note on an open pool; returns affected rows.
+fn int rename_note
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]
+    given
+        str body
+        int id
+        sql::pool pool
+    asserts
+        sample: "remember", 7 => ok 1
+    match call sql::execute<note_rename>(pool, "rename_note", note_rename(body, id))
+        when
+            sample: pool, "rename_note", note_rename("remember", 7) => ok 1
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        ok int affected => ok affected
+
+/// Fetch one note from an open pool.
+fn note_row fetch_note
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch]
+    given
+        int id
+        sql::pool pool
+    asserts
+        sample: 7 => ok note_row(7, "remember")
+    match call sql::query_one<id_parameters, note_row>(pool, "note_by_id", id_parameters(id))
+        when
+            sample: pool, "note_by_id", id_parameters(7) => ok note_row(7, "remember")
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        sql::row_missing
+        sql::row_count
+        sql::schema_mismatch
+        ok note_row row => ok row
+
+/// Rename note 7 in the database named by the first argument, then print it.
+fn void main
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        sample: ["CAN_MYSQL_URL"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: notes <variable>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match call sql::mysql_open(args[0], 5)
+            when
+                sample: "CAN_MYSQL_URL", 5 => ok
+            http::credentials_missing
+            sql::connection_failed
+            ok sql::pool pool => match call rename_note("remember", 7, pool)
+                sql::unsupported_value
+                sql::connection_failed
+                sql::query_failed
+                sql::constraint_failed
+                ok int affected => match call fetch_note(7, pool)
+                    sql::unsupported_value
+                    sql::connection_failed
+                    sql::query_failed
+                    sql::constraint_failed
+                    sql::row_missing
+                    sql::row_count
+                    sql::schema_mismatch
+                    ok note_row row => match call sql::pool_close(pool, 1000)
+                        when
+                            sample: pool, 1000 => ok
+                        sql::close_failed
+                        ok => match call bytes::from_utf8(call note_label(row.id, row.body))
+                            codec::invalid_data
+                            ok bytes::buffer message => match call io::stdout_write(message)
+                                when
+                                    sample: message => ok 11
+                                io::write_failed
+                                ok int written => ok

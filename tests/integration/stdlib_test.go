@@ -28,6 +28,7 @@ var expectedMaintained = []string{
 	"examples/process",
 	"examples/stream",
 	"examples/sqlite",
+	"examples/mysql",
 	"examples/native-ai",
 	"std/map/current",
 	"std/ratio/current",
