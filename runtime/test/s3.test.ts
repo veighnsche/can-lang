@@ -26,20 +26,23 @@ function check(result:Completion,id:number,payload:object){const d=failOf(result
 function standardOf(thrown:unknown){expect(isStandardFailure(thrown)).toBe(true);return standardFailureKind(thrown as never);}
 const METADATA="can.std.s3@1::metadata",ENTRY="can.std.s3@1::entry",PAGE="can.std.s3@1::page",INFO="can.std.s3@1::presigned_info";
 const METHOD_GET="can.std.s3@1::method_get",METHOD_PUT="can.std.s3@1::method_put",METHOD_DELETE="can.std.s3@1::method_delete",METHOD_HEAD="can.std.s3@1::method_head";
-const SOME="can.std.option@1::some",NONE="can.std.option@1::none";
-const s3=createS3(domain,{invalid:identity("can.std.s3@1::invalid_config"),missing:identity("can.std.s3@1::missing_key"),denied:identity("can.std.s3@1::access_denied"),service:identity("can.std.s3@1::service_error"),closed:identity("can.std.s3@1::upload_closed"),overLimit:identity("can.std.s3@1::over_limit"),metadata:METADATA,entry:ENTRY,page:PAGE,info:INFO,methodGet:METHOD_GET,methodPut:METHOD_PUT,methodDelete:METHOD_DELETE,methodHead:METHOD_HEAD,some:SOME,none:NONE,readFailed:identity("can.std.stream@1::read_failed"),cancelled:identity("can.std.stream@1::cancelled"),closeFailed:identity("can.std.stream@1::close_failed")});
+const SOME_TEXT="can.std.option@1::some<str>",SOME_INT="can.std.option@1::some<int>",SOME_CONT="can.std.option@1::some<s3::continuation>",NONE="can.std.option@1::none";
+const s3=createS3(domain,{invalid:identity("can.std.s3@1::invalid_config"),missing:identity("can.std.s3@1::missing_key"),denied:identity("can.std.s3@1::access_denied"),service:identity("can.std.s3@1::service_error"),closed:identity("can.std.s3@1::upload_closed"),overLimit:identity("can.std.s3@1::over_limit"),metadata:METADATA,entry:ENTRY,page:PAGE,info:INFO,methodGet:METHOD_GET,methodPut:METHOD_PUT,methodDelete:METHOD_DELETE,methodHead:METHOD_HEAD,someText:SOME_TEXT,someInt:SOME_INT,someContinuation:SOME_CONT,none:NONE,readFailed:identity("can.std.stream@1::read_failed"),cancelled:identity("can.std.stream@1::cancelled"),closeFailed:identity("can.std.stream@1::close_failed")});
 const reads=createStreamReads(domain,{readFailed:identity("can.std.stream@1::read_failed"),cancelled:identity("can.std.stream@1::cancelled"),closeFailed:identity("can.std.stream@1::close_failed"),limitExceeded:identity("can.std.files@1::limit_exceeded")});
 const times=createDateTimes(domain,{outOfRange:identity("can.std.time@1::out_of_range"),invalidZone:identity("can.std.time@1::invalid_zone"),nonexistent:identity("can.std.time@1::nonexistent_time"),invalidOption:identity("can.std.time@1::invalid_option")});
 const origin={source:"test",start:0,end:0,invocation:[]};
 const fail=(id:string,fields:readonly (readonly [string,unknown])[],cause?:unknown)=>failure(domain.create(id,record(id,fields),origin,cause));
-const some=(v:unknown)=>record(SOME,[["value",v]]);
+const someText=(v:unknown)=>record(SOME_TEXT,[["value",v]]);
+const someInt=(v:unknown)=>record(SOME_INT,[["value",v]]);
+const someCont=(v:unknown)=>record(SOME_CONT,[["value",v]]);
 const none=()=>record(NONE,[]);
 const writeOpts=(contentType:unknown)=>record("can.std.s3@1::write_options",[["content_type",contentType]]);
 const uploadOpts=(contentType:unknown,partSize:unknown)=>record("can.std.s3@1::upload_options",[["content_type",contentType],["part_size",partSize]]);
 const listOpts=(prefix:string,limit:bigint,delimiter:unknown,continuation:unknown)=>record("can.std.s3@1::list_options",[["prefix",prefix],["limit",limit],["delimiter",delimiter],["continuation",continuation]]);
 const settled=async()=>{
-  // Absence after cancel must settle: a native close() completes
-  // asynchronously, so only a settled check catches a close leak.
+  // Absence after cancel must settle: cleanup completes the native
+  // upload synchronously and deletes the key, so only a settled
+  // check catches a completion leak.
   try{(globalThis as unknown as {Bun?:{gc?:(force?:boolean)=>void}}).Bun?.gc?.(true);}catch{/* best effort */}
   await new Promise(resolve=>setTimeout(resolve,1200));
 };
@@ -122,17 +125,17 @@ test("write validation fails before any wire call",async()=>{
   await owned(async()=>{
     const client=value(await s3.clientOpen("http://127.0.0.1:9","us-east-1","b","a","s")) as object;
     check(await s3.writeBytes(client,"",buf("x"),writeOpts(none())),1343,{reason:"key"});
-    check(await s3.writeBytes(client,"k",buf("x"),writeOpts(some(""))),1343,{reason:"content_type"});
-    check(await s3.writeBytes(client,"k",buf("x"),writeOpts(some("text/plain\r\nX: y"))),1343,{reason:"content_type"});
+    check(await s3.writeBytes(client,"k",buf("x"),writeOpts(someText(""))),1343,{reason:"content_type"});
+    check(await s3.writeBytes(client,"k",buf("x"),writeOpts(someText("text/plain\r\nX: y"))),1343,{reason:"content_type"});
     check(await s3.list(client,listOpts("p",0n,none(),none())),1343,{reason:"max_keys"});
-    check(await s3.list(client,listOpts("p",10n,some(""),none())),1343,{reason:"delimiter"});
+    check(await s3.list(client,listOpts("p",10n,someText(""),none())),1343,{reason:"delimiter"});
     check(await s3.presign(client,record(METHOD_GET,[]),"",300n,none()),1343,{reason:"key"});
     check(await s3.presign(client,record(METHOD_GET,[]),"k",0n,none()),1343,{reason:"expires"});
     check(await s3.presign(client,record(METHOD_GET,[]),"k",-5n,none()),1343,{reason:"expires"});
     check(await s3.presign(client,record(METHOD_GET,[]),"k",604801n,none()),1343,{reason:"expires"});
     check(await s3.beginUpload(client,"",uploadOpts(none(),none())),1343,{reason:"key"});
-    check(await s3.beginUpload(client,"k",uploadOpts(none(),some(1024n))),1343,{reason:"part_size"});
-    check(await s3.beginUpload(client,"k",uploadOpts(some(""),none())),1343,{reason:"content_type"});
+    check(await s3.beginUpload(client,"k",uploadOpts(none(),someInt(1024n))),1343,{reason:"part_size"});
+    check(await s3.beginUpload(client,"k",uploadOpts(someText(""),none())),1343,{reason:"content_type"});
   });
 });
 test("presign mints locally and describe reveals method and expiry",async()=>{
@@ -216,7 +219,7 @@ live("roundtrip writes, stats, reads and deletes bytes",async()=>{
     const client=await openLive();
     const key=PREFIX+"round.bin";
     keys.push(key);
-    const meta=await metaOf(value(await s3.writeBytes(client,key,buf("hello s3"),writeOpts(some("text/plain")))));
+    const meta=await metaOf(value(await s3.writeBytes(client,key,buf("hello s3"),writeOpts(someText("text/plain")))));
     expect(meta.size).toBe(8n);
     expect(meta.etag).toBe("\"b60d991fa6dbd33863c7cec70d15dbac\"");
     expect(meta.type.startsWith("text/plain")).toBe(true);
@@ -286,7 +289,7 @@ live("write_stream pumps readers under byte budgets",async()=>{
     const client=await openLive();
     const key=PREFIX+"pump.bin";
     keys.push(key);
-    const meta=await metaOf(value(await s3.writeStream(client,key,byteReader([new TextEncoder().encode("ab"),new TextEncoder().encode("cd")]),writeOpts(some("application/octet-stream")),64n,30000n)));
+    const meta=await metaOf(value(await s3.writeStream(client,key,byteReader([new TextEncoder().encode("ab"),new TextEncoder().encode("cd")]),writeOpts(someText("application/octet-stream")),64n,30000n)));
     expect(meta.size).toBe(4n);
     expect(meta.type).toBe("application/octet-stream");
     expect(textOf(value(await s3.readBytes(client,key,64n)))).toBe("abcd");
@@ -330,7 +333,7 @@ live("multipart upload finishes, guards terminals and abandons cleanly",async()=
     const client=await openLive();
     const key=PREFIX+"multi.bin";
     keys.push(key);
-    const upload=value(await s3.beginUpload(client,key,uploadOpts(some("application/octet-stream"),some(5242880n)))) as object;
+    const upload=value(await s3.beginUpload(client,key,uploadOpts(someText("application/octet-stream"),someInt(5242880n)))) as object;
     const part=new Uint8Array(3145728);
     for(let i=0;i<part.length;i++)part[i]=i%251;
     expect(value(await s3.uploadWrite(upload,ownBytes(part)))).toBe(BigInt(part.length));
@@ -381,17 +384,17 @@ live("list pages, continues and groups with opaque tokens",async()=>{
     const entries=dataArray(dataProperty(first,"entries"));
     expect(entries.length).toBe(1);
     const cont=dataProperty(first,"continuation");
-    expect(recordIdentity(cont)).toBe(SOME);
+    expect(recordIdentity(cont)).toBe(SOME_CONT);
     const token=dataProperty(cont,"value") as object;
     expect(isS3Value(S3_CONTINUATION_KIND,token)).toBe(true);
-    const second=value(await s3.list(client,listOpts(base,10n,none(),some(token))));
+    const second=value(await s3.list(client,listOpts(base,10n,none(),someCont(token))));
     const keys2=dataArray(dataProperty(second,"entries")).map(e=>dataProperty(e,"key"));
     expect(dataProperty(entries[0],"key")!==keys2[0]).toBe(true);
     const full=value(await s3.list(client,listOpts(base,10n,none(),none())));
     expect(dataProperty(full,"truncated")).toBe(false);
     expect(dataArray(dataProperty(full,"entries")).length).toBe(3);
     expect(recordIdentity(dataProperty(full,"continuation"))).toBe(NONE);
-    const grouped=value(await s3.list(client,listOpts(base,10n,some("/"),none())));
+    const grouped=value(await s3.list(client,listOpts(base,10n,someText("/"),none())));
     expect(dataArray(dataProperty(grouped,"prefixes"))).toEqual([base+"dir/"]);
     const entry=dataArray(dataProperty(full,"entries"))[0];
     expect(typeof dataProperty(entry,"etag")).toBe("string");

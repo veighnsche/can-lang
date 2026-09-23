@@ -50,10 +50,44 @@ func (builder *stateBuilder) declareS3State() {
 	builder.out.WriteString("export let $canS3:ReturnType<typeof $canCreateS3>;\n")
 }
 
+// s3OptionSomeID resolves the some-member identity of the option
+// union over the named value type. Generic some<T> members carry
+// per-instantiation identities, so the shared optionIDs table (which
+// holds the env-optional instantiation) cannot serve the S3 surface.
+// Missing instantiations resolve to "" like any other absent ID; the
+// adapter only decodes options the program actually constructs.
+func s3OptionSomeID(builder *stateBuilder, value string) string {
+	for _, typ := range builder.assembly.program.Model.Types() {
+		if typ.Declaration() != "can.std.option@1::some" {
+			continue
+		}
+		fields := typ.Fields()
+		if len(fields) != 1 || fields[0].Name != "value" {
+			continue
+		}
+		if fields[0].Type == nil || fields[0].Type.Declaration() != value {
+			continue
+		}
+		return typ.Identity()
+	}
+	return ""
+}
+
+// s3OptionNoneID resolves the none-member identity. None takes no
+// type arguments, so every option union references the same leaf.
+func s3OptionNoneID(builder *stateBuilder) string {
+	for _, typ := range builder.assembly.program.Model.Types() {
+		if typ.Declaration() == "can.std.option@1::none" {
+			return typ.Identity()
+		}
+	}
+	return ""
+}
+
 // initializeS3State constructs the S3 factory inside the shared
 // initializer, after the domain runtime exists.
 func (builder *stateBuilder) initializeS3State() {
-	fmt.Fprintf(&builder.out, "$canS3=$canCreateS3($canDomain,{invalid:%s,missing:%s,denied:%s,service:%s,closed:%s,overLimit:%s,metadata:%s,entry:%s,page:%s,info:%s,methodGet:%s,methodPut:%s,methodDelete:%s,methodHead:%s,some:%s,none:%s,readFailed:%s,cancelled:%s,closeFailed:%s});\n", quote(builder.numberIDs["can.std.s3@1::invalid_config"]), quote(builder.numberIDs["can.std.s3@1::missing_key"]), quote(builder.numberIDs["can.std.s3@1::access_denied"]), quote(builder.numberIDs["can.std.s3@1::service_error"]), quote(builder.numberIDs["can.std.s3@1::upload_closed"]), quote(builder.numberIDs["can.std.s3@1::over_limit"]), quote(builder.numberIDs["can.std.s3@1::metadata"]), quote(builder.numberIDs["can.std.s3@1::entry"]), quote(builder.numberIDs["can.std.s3@1::page"]), quote(builder.numberIDs["can.std.s3@1::presigned_info"]), quote(builder.numberIDs["can.std.s3@1::method_get"]), quote(builder.numberIDs["can.std.s3@1::method_put"]), quote(builder.numberIDs["can.std.s3@1::method_delete"]), quote(builder.numberIDs["can.std.s3@1::method_head"]), quote(builder.optionIDs["can.std.option@1::some"]), quote(builder.optionIDs["can.std.option@1::none"]), quote(builder.numberIDs["can.std.stream@1::read_failed"]), quote(builder.numberIDs["can.std.stream@1::cancelled"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]))
+	fmt.Fprintf(&builder.out, "$canS3=$canCreateS3($canDomain,{invalid:%s,missing:%s,denied:%s,service:%s,closed:%s,overLimit:%s,metadata:%s,entry:%s,page:%s,info:%s,methodGet:%s,methodPut:%s,methodDelete:%s,methodHead:%s,someText:%s,someInt:%s,someContinuation:%s,none:%s,readFailed:%s,cancelled:%s,closeFailed:%s});\n", quote(builder.numberIDs["can.std.s3@1::invalid_config"]), quote(builder.numberIDs["can.std.s3@1::missing_key"]), quote(builder.numberIDs["can.std.s3@1::access_denied"]), quote(builder.numberIDs["can.std.s3@1::service_error"]), quote(builder.numberIDs["can.std.s3@1::upload_closed"]), quote(builder.numberIDs["can.std.s3@1::over_limit"]), quote(builder.numberIDs["can.std.s3@1::metadata"]), quote(builder.numberIDs["can.std.s3@1::entry"]), quote(builder.numberIDs["can.std.s3@1::page"]), quote(builder.numberIDs["can.std.s3@1::presigned_info"]), quote(builder.numberIDs["can.std.s3@1::method_get"]), quote(builder.numberIDs["can.std.s3@1::method_put"]), quote(builder.numberIDs["can.std.s3@1::method_delete"]), quote(builder.numberIDs["can.std.s3@1::method_head"]), quote(s3OptionSomeID(builder, "str")), quote(s3OptionSomeID(builder, "int")), quote(s3OptionSomeID(builder, "can.std.s3@1::continuation")), quote(s3OptionNoneID(builder)), quote(builder.numberIDs["can.std.stream@1::read_failed"]), quote(builder.numberIDs["can.std.stream@1::cancelled"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]))
 }
 
 // emitS3Kinds emits the opaque-handle kind table the domain predicate

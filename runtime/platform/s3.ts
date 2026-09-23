@@ -27,7 +27,7 @@ type NativeSink=ReturnType<NativeFile["writer"]>;
 type NativeList=Awaited<ReturnType<NativeClient["list"]>>;
 export const S3_CLIENT_KIND="client",S3_UPLOAD_KIND="upload",S3_PRESIGNED_KIND="presigned",S3_CONTINUATION_KIND="continuation";
 const UPLOAD_RESOURCE_KIND="s3-upload";
-type UploadBox={client:NativeClient;key:string;sink:NativeSink|undefined;state:"open"|"finished"|"cancelled"};
+type UploadBox={client:NativeClient;key:string;type:string|undefined;partSize:number|undefined;sink:NativeSink|undefined;state:"open"|"finished"|"cancelled"};
 type PresignedBox=Readonly<{url:string;method:"GET"|"PUT"|"DELETE"|"HEAD";expires:object}>;
 const clients=new WeakMap<object,NativeClient>(),uploads=new WeakMap<object,UploadBox>(),presigned=new WeakMap<object,PresignedBox>(),continuations=new WeakMap<object,string>();
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
@@ -40,7 +40,7 @@ export function isS3Value(kind:string|undefined,value:unknown):boolean{
   return false;
 }
 const READ_CAP=67108864n,SAFE_MAX=9007199254740991n,DEADLINE_CAP=2147483647n,PART_MIN=5242880n,PART_MAX=5368709120n,EXPIRES_MAX=604800n,STREAM_CHUNK=65536n;
-type Ids=Readonly<{invalid:string;missing:string;denied:string;service:string;closed:string;overLimit:string;metadata:string;entry:string;page:string;info:string;methodGet:string;methodPut:string;methodDelete:string;methodHead:string;some:string;none:string;readFailed:string;cancelled:string;closeFailed:string}>;
+type Ids=Readonly<{invalid:string;missing:string;denied:string;service:string;closed:string;overLimit:string;metadata:string;entry:string;page:string;info:string;methodGet:string;methodPut:string;methodDelete:string;methodHead:string;someText:string;someInt:string;someContinuation:string;none:string;readFailed:string;cancelled:string;closeFailed:string}>;
 export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
   const fail:Fail=(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause));
   const invalid=(reason:string)=>fail(ids.invalid,[["reason",reason]]);
@@ -63,9 +63,9 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
     if(code!==undefined)return service(code,operation);
     return caught(cause,origin);
   };
-  const option=(value:unknown):unknown=>{
+  const option=(some:string,value:unknown):unknown=>{
     const identity=recordIdentity(value);
-    if(identity===ids.some)return dataProperty(value,"value");
+    if(identity===some)return dataProperty(value,"value");
     if(identity===ids.none)return undefined;
     throw new TypeError("invalid compiler s3 option");
   };
@@ -99,7 +99,7 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
     return key;
   };
   const contentType=(value:unknown):string|undefined|Completion<never>=>{
-    const picked=option(value);
+    const picked=option(ids.someText,value);
     if(picked===undefined)return undefined;
     // Fail fast with a domain error: the native write would throw a
     // bare TypeError for control characters instead.
@@ -114,15 +114,29 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
     clients.set(handle,client);
     return handle;
   };
-  const retire=(box:UploadBox):void=>{
-    // Scope-drain and explicit cancel converge here: drop the sink
-    // without close or end so the key never materializes. Never call
-    // close() on this path: the native close async-completes the
-    // upload (single-part and multipart alike), which is finish, not
-    // cancel. Pure abandonment leaves no key behind. Never throws.
+  const sinkOf=(box:UploadBox):NativeSink=>
+    box.sink??=box.client.file(box.key).writer({...box.type===undefined?{}:{type:box.type},...box.partSize===undefined?{}:{partSize:box.partSize}});
+  const scrub=async(client:NativeClient,key:string,sink:NativeSink|undefined):Promise<void>=>{
+    // Cancel cleanup converges here. The native writer has no abort:
+    // an un-ended sink pins the Bun event loop forever (unref and GC
+    // do not release it) and close() completes asynchronously, which
+    // races a delete. So cleanup completes synchronously with end()
+    // and then deletes the key; cancel awaits both, so the transient
+    // key is never observable afterwards. Best effort and never
+    // throws: the cancel contract admits no service error. A
+    // pre-existing key under the same name is removed rather than
+    // preserved once the first byte was written; completion is the
+    // only sink release the pinned API offers.
+    if(sink===undefined)return;
+    try{await sink.end();}catch{/* the upload is dead either way */}
+    try{await client.file(key).delete();}catch{/* settled absence on a live service */}
+  };
+  const retire=async(box:UploadBox):Promise<void>=>{
     if(box.state!=="open")return;
     box.state="cancelled";
+    const sink=box.sink;
     box.sink=undefined;
+    await scrub(box.client,box.key,sink);
   };
   return Object.freeze({
     async clientOpen(endpoint:unknown,region:unknown,bucket:unknown,accessKey:unknown,secretKey:unknown,_context?:AssertionContext):Promise<Completion<object>>{
@@ -212,11 +226,14 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       if(typeof type!=="string"&&type!==undefined)return type;
       if(typeof maxBytes!=="bigint"||maxBytes<1n||maxBytes>SAFE_MAX)return invalid("max_bytes");
       if(typeof deadlineMs!=="bigint"||deadlineMs<1n||deadlineMs>DEADLINE_CAP)return invalid("deadline");
-      // Every abort below returns without touching the sink: the writer
-      // is abandoned (never close, never end) so the key cannot
-      // materialize. close() async-completes the upload, which is
-      // finish, not cancel.
-      const sink=client.file(checked).writer(type===undefined?undefined:{type});
+      // The sink is created lazily on the first chunk: a pump that
+      // fails before any byte never touches the service. Every abort
+      // after the first write scrubs through the shared cleanup: an
+      // un-ended sink pins the Bun event loop, so the pump completes
+      // synchronously with end() and deletes the key instead of
+      // abandoning the writer.
+      let sink:NativeSink|undefined;
+      const pump=()=>sink??=client.file(checked).writer(type===undefined?undefined:{type});
       const deadline=Number(deadlineMs);
       const started=Date.now();
       const expired=():boolean=>Date.now()-started>=deadline;
@@ -228,31 +245,40 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
         return "io_error";
       };
       return useReader(reader,async(cell:ReaderCell)=>{
-        if(cell.item!=="bytes"||cell.reader===undefined){return invalid("reader");}
-        const source=cell.reader;
-        let written=0n;
-        for(;;){
-          if(expired()){return service("timeout","write_stream");}
-          let next;
-          try{next=await source.read();}
-          catch(cause){cell.errored=true;cell.carry=undefined;return fail(ids.readFailed,[["reason",reasonFor(cause)]],cause);}
-          if(next.done){
-            if(cell.cancelled!==undefined){return fail(ids.cancelled,[["reason",cell.cancelled]]);}
-            break;
-          }
-          if(next.value.byteLength===0)continue;
-          const length=BigInt(next.value.byteLength);
-          if(written+length>maxBytes){return overLimit(maxBytes,written+length);}
-          try{
-            await sink.write(new Uint8Array(next.value));
-            await sink.flush();
-          }catch(cause){return wire("write_stream",checked,cause);}
-          written+=length;
-        }
+        let completed=false;
         try{
-          await sink.end();
-          return success(await statOf(client,checked));
-        }catch(cause){return wire("write_stream",checked,cause);}
+          if(cell.item!=="bytes"||cell.reader===undefined){return invalid("reader");}
+          const source=cell.reader;
+          let written=0n;
+          for(;;){
+            if(expired()){return service("timeout","write_stream");}
+            let next;
+            try{next=await source.read();}
+            catch(cause){cell.errored=true;cell.carry=undefined;return fail(ids.readFailed,[["reason",reasonFor(cause)]],cause);}
+            if(next.done){
+              if(cell.cancelled!==undefined){return fail(ids.cancelled,[["reason",cell.cancelled]]);}
+              break;
+            }
+            if(next.value.byteLength===0)continue;
+            const length=BigInt(next.value.byteLength);
+            if(written+length>maxBytes){return overLimit(maxBytes,written+length);}
+            try{
+              const active=pump();
+              await active.write(new Uint8Array(next.value));
+              await active.flush();
+            }catch(cause){return wire("write_stream",checked,cause);}
+            written+=length;
+          }
+          try{
+            await pump().end();
+            completed=true;
+            return success(await statOf(client,checked));
+          }catch(cause){return wire("write_stream",checked,cause);}
+        }finally{
+          const doomed=sink;
+          sink=undefined;
+          if(!completed)await scrub(client,checked,doomed);
+        }
       });
     },
     async stat(handle:unknown,key:unknown,context?:AssertionContext):Promise<Completion<unknown>>{
@@ -289,9 +315,9 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       const prefix=dataProperty(options,"prefix"),limit=dataProperty(options,"limit");
       if(typeof prefix!=="string")throw new TypeError("invalid compiler s3 list options");
       if(typeof limit!=="bigint"||limit<1n||limit>SAFE_MAX)return invalid("max_keys");
-      const delimiterPick=option(dataProperty(options,"delimiter"));
+      const delimiterPick=option(ids.someText,dataProperty(options,"delimiter"));
       if(delimiterPick!==undefined&&(typeof delimiterPick!=="string"||delimiterPick===""))return invalid("delimiter");
-      const continuationPick=option(dataProperty(options,"continuation"));
+      const continuationPick=option(ids.someContinuation,dataProperty(options,"continuation"));
       let continuation:string|undefined;
       if(continuationPick!==undefined){
         continuation=object(continuationPick)?continuations.get(continuationPick):undefined;
@@ -314,7 +340,7 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
         if(typeof token==="string"&&token!==""){
           const handle=Object.freeze(Object.create(null));
           continuations.set(handle,token);
-          next=record(ids.some,[["value",handle]]);
+          next=record(ids.someContinuation,[["value",handle]]);
         }
         return success(record(ids.page,[["entries",array(entries)],["prefixes",array(prefixes)],["truncated",response.isTruncated===true],["continuation",next]]));
       }catch(cause){return wire("list",prefix,cause);}
@@ -347,10 +373,10 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       if(typeof checked!=="string")return checked;
       const type=contentType(dataProperty(options,"content_type"));
       if(typeof type!=="string"&&type!==undefined)return type;
-      const partPick=option(dataProperty(options,"part_size"));
+      const partPick=option(ids.someInt,dataProperty(options,"part_size"));
       if(partPick!==undefined&&(typeof partPick!=="bigint"||partPick<PART_MIN||partPick>PART_MAX))return invalid("part_size");
-      const box:UploadBox={client,key:checked,sink:client.file(checked).writer({...(type===undefined?{}:{type}),...(partPick===undefined?{}:{partSize:Number(partPick)})}),state:"open"};
-      const token=registerResource(UPLOAD_RESOURCE_KIND,box,async()=>{retire(box);return success(undefined);},{scopeManaged:true});
+      const box:UploadBox={client,key:checked,type,partSize:partPick===undefined?undefined:Number(partPick),sink:undefined,state:"open"};
+      const token=registerResource(UPLOAD_RESOURCE_KIND,box,async()=>{await retire(box);return success(undefined);},{scopeManaged:true});
       uploads.set(token,box);
       return success(token);
     },
@@ -358,11 +384,10 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       denyLiveBoundary(context,origin);
       const box=projectUpload(token);
       if(box.state!=="open")return closed("upload_write",box.state);
-      const sink=box.sink;
-      if(sink===undefined)throw new TypeError("invalid compiler s3 upload");
       if(!isBytes(chunk))throw new TypeError("invalid compiler s3 chunk");
       try{
         const bytes=copyBytes(chunk,origin);
+        const sink=sinkOf(box);
         await sink.write(bytes);
         await sink.flush();
         // The adapter guards the native silent drop after end: no
@@ -375,10 +400,8 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       denyLiveBoundary(context,origin);
       const box=projectUpload(token);
       if(box.state!=="open")return closed("upload_finish",box.state);
-      const sink=box.sink;
-      if(sink===undefined)throw new TypeError("invalid compiler s3 upload");
       try{
-        await sink.end();
+        await sinkOf(box).end();
         box.state="finished";
         return success(await statOf(box.client,box.key));
       }catch(cause){
@@ -391,7 +414,7 @@ export function createS3(domain:ReturnType<typeof createDomainRuntime>,ids:Ids){
       denyLiveBoundary(context,origin);
       const box=projectUpload(token);
       if(box.state!=="open")return closed("cancel_upload",box.state);
-      retire(box);
+      await retire(box);
       return success(undefined);
     },
   });
