@@ -246,7 +246,7 @@ func uniqueJSONKeys(data []byte) error {
 }
 
 var identifier = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
-var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2})$`)
+var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2}|B1-[0-9]{2})$`)
 
 func (c *Catalogue) identity(name string) (string, error) {
 	if p, m, ok := strings.Cut(name, "::"); ok {
@@ -322,7 +322,7 @@ func (c *Catalogue) validate() error {
 		if err := claim(e.Name, e.Identity); err != nil {
 			return err
 		}
-		allocated := e.ID == 100 && e.Name == "all_failed" || e.ID >= 1000 && e.ID <= 1010 || e.ID >= 1100 && e.ID <= 1106 || e.ID == 1110 || e.ID >= 1120 && e.ID <= 1121 || e.ID >= 1130 && e.ID <= 1132 || e.ID >= 1210 && e.ID <= 1212 || e.ID >= 1220 && e.ID <= 1223 || e.ID >= 1230 && e.ID <= 1235 || e.ID >= 1240 && e.ID <= 1250 || e.ID >= 1260 && e.ID <= 1263
+		allocated := e.ID == 100 && e.Name == "all_failed" || e.ID >= 1000 && e.ID <= 1010 || e.ID >= 1100 && e.ID <= 1106 || e.ID == 1110 || e.ID >= 1120 && e.ID <= 1121 || e.ID >= 1130 && e.ID <= 1132 || e.ID >= 1210 && e.ID <= 1212 || e.ID >= 1220 && e.ID <= 1223 || e.ID >= 1230 && e.ID <= 1235 || e.ID >= 1240 && e.ID <= 1250 || e.ID >= 1260 && e.ID <= 1263 || e.ID >= 1300 && e.ID <= 1399
 		if !allocated || ids[e.ID] {
 			return fmt.Errorf("unallocated or duplicate error ID %d", e.ID)
 		}
