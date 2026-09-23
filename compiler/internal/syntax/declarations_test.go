@@ -99,13 +99,31 @@ func TestParserLocationsAndGroupingSurviveRendering(t *testing.T) {
 	}
 }
 
-func TestCoreSpecificationPackage(t *testing.T) {
-	data, err := os.ReadFile("../../../docs/syntax-taste/technical-spec.md")
+func specificationProgram(t *testing.T, path, heading string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	section := strings.SplitN(string(data), "## C10.", 2)[1]
-	program := strings.SplitN(strings.SplitN(section, "```text\n", 2)[1], "```", 2)[0]
+	_, section, found := strings.Cut("\n"+string(data), "\n"+heading+"\n")
+	if !found {
+		t.Fatalf("%s: missing heading %q", path, heading)
+	}
+	// Keep extraction within this section so drift cannot select a later example.
+	section, _, _ = strings.Cut(section, "\n#")
+	_, block, found := strings.Cut(section, "\n```text\n")
+	if !found {
+		t.Fatalf("%s: heading %q has no text code block", path, heading)
+	}
+	program, _, found := strings.Cut(block, "\n```")
+	if !found {
+		t.Fatalf("%s: heading %q has an unclosed text code block", path, heading)
+	}
+	return program + "\n"
+}
+
+func TestCoreSpecificationPackage(t *testing.T) {
+	program := specificationProgram(t, "../../../docs/syntax-taste/technical-spec.md", "## C10. Complete primitive and callback traces")
 	file := parseFile(t, program)
 	if len(file.Declarations) != 2 {
 		t.Fatal(len(file.Declarations))
@@ -122,12 +140,7 @@ func TestCoreSpecificationPackage(t *testing.T) {
 }
 
 func TestCoreConsumerSpecification(t *testing.T) {
-	data, err := os.ReadFile("../../../docs/syntax-taste/technical-spec.md")
-	if err != nil {
-		t.Fatal(err)
-	}
-	section := strings.SplitN(string(data), "### Complete consumer", 2)[1]
-	program := strings.SplitN(strings.SplitN(section, "```text\n", 2)[1], "```", 2)[0]
+	program := specificationProgram(t, "../../../docs/syntax-taste/technical-spec.md", "### Consumer of generation and judgment")
 	parseFile(t, program)
 }
 
