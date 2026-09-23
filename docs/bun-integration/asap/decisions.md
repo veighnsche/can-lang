@@ -60,6 +60,8 @@ Bun's documented callbacks receive accumulated child strings rather than a promi
 
 String rendering can be completed independently. Safe mode and any claimed structured AST remain incomplete until qualified. Do not introduce an external sanitizer or a handwritten Markdown parser to bypass the gate.
 
+Exit recorded 2026-09-23: gate passed. Corrected probes proved the callback feed structurally complete, and `markdown::render_safe` rebuilds trusted nodes through the `html.ts` factory (private synchronous callbacks, NUL-token trees, exactly-once escaping) with no external sanitizer and no handwritten parser. See the B1-12 exit record below.
+
 ## Three fresh Jev consultations completed for this preparation
 
 The [audit](evidence/consultations/pre-dispatch-audit.md), all three requests, responses and SHA metadata are saved in [consultation evidence](evidence/consultations/). The TypeSafe skill and live API/Choice documentation were used. Every explanatory context, instruction and option description was rewritten, with facts and alternatives preserved.
