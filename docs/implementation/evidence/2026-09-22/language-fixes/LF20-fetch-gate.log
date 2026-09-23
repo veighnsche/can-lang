@@ -1,0 +1,4 @@
+=== RUN   TestCurrentBundledFetch
+--- PASS: TestCurrentBundledFetch (13.21s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	13.724s

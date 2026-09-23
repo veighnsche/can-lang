@@ -1,0 +1,11 @@
+--- after/src/main.can	2026-09-22 22:43:29
++++ e2/src/main.can	2026-09-22 22:46:57
+@@ -17,7 +17,7 @@
+             using raw "fixtures/load_json_unauthenticated.json"
+     get (call [["/json"]].map(callable extract))[0]
+     query
+-        labels = call [["a b"], ["+"]].map(callable extract)
++        labels = call [["a b"], ["+"], ["c d"]].map(callable extract)
+         omitted = (([]))
+     headers
+         x_probe = call [["yes"]].map(callable extract)

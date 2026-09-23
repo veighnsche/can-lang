@@ -1,0 +1,14 @@
+{
+ "task": "LF20",
+ "acceptance": [
+  "AE49"
+ ],
+ "report_dir": "docs/syntax-taste/evidence/2026-09-22/lf20-after-metrics",
+ "comparison": "63->9 bound entries, 56->8 forwarding arms, 8/8 decls/calls, 9 bound decls, 7/7 details (after-metrics.json; measure_after.py re-verifies frozen hash)",
+ "gates": "TestCurrentBundledFetch PASS (LF20-fetch-gate.log); TestApplicationsStaged PASS (LF20-apps-gate.log); offline assert 20/20",
+ "cost_split": "before 165 prod + 26 assert/fixture lines; after 110 prod + 70 assert/fixture + 9 raw fixtures/3670B",
+ "apps": "account-search/dashboard/form-validation reproduce frozen counts exactly; native-ai evolved 352->345 lines with 5 normalized mentions; no TS comparison (no equivalent baseline)",
+ "scenarios": "E1 domain failure 21/21 (3 failed runs before green, traces saved); E2 request field 20/20 first run; E3 capture value 11/11 first run; E4 second site 20/20 first run",
+ "mutations": "M1-M4 all detected first run (missing arm, harness violation, outcome mismatch, row-region type error) and repaired to green (mutations.json)",
+ "workflow": "19 canlc assert runs + 2 staged gates; 3 diagnostic cycles (all E1); tokens unmeasured; one run, no generality claimed"
+}

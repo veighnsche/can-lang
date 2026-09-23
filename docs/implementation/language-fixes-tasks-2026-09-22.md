@@ -308,7 +308,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF19-summary.json), [corpus log](evidence/2026-09-22/language-fixes/LF19-corpus.log), [corpus results](evidence/2026-09-22/language-fixes/LF19-corpus-results.json). Admission guide (AE33) with worked pure text::from_int and resource sql::pool_open/query_one/pool_close, rejection boundary, incomplete-proposal verdict; finite-rules doc (AE47) with 20/20 verified examples, observed Bun-1.4.2 edge outputs, manifest/build-assert/renderer corrections; F7/F8/F9 quotes labelled; 8/8 links resolve; no behavior change. Review: build/assert claims corrected against LF15 verified-build behavior (§10, README); corpus manifest refreshed with tally.
 
-- [ ] **LF20 — Measure equivalent programs and authoring workflows**
+- [x] **LF20 — Measure equivalent programs and authoring workflows**
 
   **Depends on:** LF01, LF10, LF12, LF13, LF15, LF16, LF17, LF18, LF19. **Acceptance:** AE49.
 
@@ -322,7 +322,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Publish raw metrics and edit traces including failures; no arbitrary ratio or statistical generality from one run. Deferred abstractions require their separate demonstrated-need gate, not automatic promotion from counts.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF20-summary.json), [fetch gate](evidence/2026-09-22/language-fixes/LF20-fetch-gate.log), [apps gate](evidence/2026-09-22/language-fixes/LF20-apps-gate.log), [after metrics](../syntax-taste/evidence/2026-09-22/lf20-after-metrics/after-metrics.json), [report](../syntax-taste/evidence/2026-09-22/lf20-after-metrics/README.md). 63→9 entries, 56→8 arms, 8/8, 9 decls, 7/7 details with gates green; prod/fixture cost split; 3 apps reproduce frozen counts, native-ai evolved; E1–E4 green with traces; M1–M4 detected+repaired; no TS comparison, no ratios.
 
 - [ ] **LF21 — Qualify the integrated revision and close evidence records**
 

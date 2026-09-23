@@ -1,0 +1,6 @@
+1c1
+< {"active":[],"retired":[]}
+\ No newline at end of file
+---
+> {"active": [{"id": 1000000, "kind": "fetches::empty_echo"}], "retired": []}
+\ No newline at end of file

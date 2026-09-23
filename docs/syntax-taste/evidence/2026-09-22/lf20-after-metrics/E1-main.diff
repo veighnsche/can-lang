@@ -1,0 +1,118 @@
+--- after/src/main.can	2026-09-22 22:43:29
++++ e1/src/main.can	2026-09-22 22:46:33
+@@ -3,6 +3,7 @@
+     uses [http, codec, bytes, checks]
+ record receipt
+     int count
++error 1000000 empty_echo(str operation)
+ connection service
+     endpoint "http://127.0.0.1:1/"
+     auth bearer env "CAN_I26_TOKEN"
+@@ -76,64 +77,70 @@
+             using raw "fixtures/options_text.json"
+     options "/options"
+ fn void main
+-    emits [http::request_failed, checks::failed]
++    emits [http::request_failed, checks::failed, empty_echo]
+     given
+         str[] args
+     asserts
+         sample: [] => ok
++        empty: [] => empty_echo("send_text")
+     bytes::buffer payload = call bytes::empty()
+     match call load_json()
+         when
+             sample:  => ok receipt(9007199254740993)
++            empty:  => ok receipt(9007199254740993)
+         http::request_failed
+         ok receipt received => match call checks::require(received.count is 9007199254740993, "receipt count")
+             checks::failed
+             ok => match call load_envelope()
+                 when
+                     sample:  => ok http::response<bytes::buffer>(418, [], payload)
++                    empty:  => ok http::response<bytes::buffer>(418, [], payload)
+                 http::request_failed
+                 ok http::response<bytes::buffer> envelope => match call checks::require(envelope.status is 418, "envelope status")
+                     checks::failed
+                     ok => match call send_text("hello")
+                         when
+                             sample: "hello" => ok "hello"
++                            empty: "hello" => ok ""
+                         http::request_failed
+-                        ok str text => match call checks::require(text is "hello", "text echo")
+-                            checks::failed
+-                            ok => match call send_json(receipt(9007199254740993))
+-                                when
+-                                    sample: receipt(9007199254740993) => ok receipt(9007199254740993)
+-                                http::request_failed
+-                                ok receipt sent => match call checks::require(sent.count is 9007199254740993, "sent count")
+-                                    checks::failed
+-                                    ok => match call send_bytes(payload)
+-                                        when
+-                                            sample: payload => ok payload
+-                                        http::request_failed
+-                                        ok bytes::buffer binary => do
+-                                            int[] binary_values = call bytes::to_ints(binary)
+-                                            int[] no_values = []
+-                                            match call checks::require(binary_values is no_values, "binary roundtrip")
+-                                                checks::failed
+-                                                ok => match call head_text()
+-                                                    when
+-                                                        sample:  => ok ""
+-                                                    http::request_failed
+-                                                    ok str head => match call checks::require(head is "", "head text")
+-                                                        checks::failed
+-                                                        ok => match call delete_text()
+-                                                            when
+-                                                                sample:  => ok "delete"
+-                                                            http::request_failed
+-                                                            ok str deleted => match call checks::require(deleted is "delete", "deleted text")
+-                                                                checks::failed
+-                                                                ok => match call options_text()
+-                                                                    when
+-                                                                        sample:  => ok "options"
+-                                                                    http::request_failed
+-                                                                    ok str options => match call checks::require(options is "options", "options text")
+-                                                                        checks::failed
+-                                                                        ok => ok
++                        ok str text => match text
++                            "" => empty_echo("send_text")
++                            _ => match call checks::require(text is "hello", "text echo")
++                                checks::failed
++                                ok => match call send_json(receipt(9007199254740993))
++                                    when
++                                        sample: receipt(9007199254740993) => ok receipt(9007199254740993)
++                                    http::request_failed
++                                    ok receipt sent => match call checks::require(sent.count is 9007199254740993, "sent count")
++                                        checks::failed
++                                        ok => match call send_bytes(payload)
++                                            when
++                                                sample: payload => ok payload
++                                            http::request_failed
++                                            ok bytes::buffer binary => do
++                                                int[] binary_values = call bytes::to_ints(binary)
++                                                int[] no_values = []
++                                                match call checks::require(binary_values is no_values, "binary roundtrip")
++                                                    checks::failed
++                                                    ok => match call head_text()
++                                                        when
++                                                            sample:  => ok ""
++                                                        http::request_failed
++                                                        ok str head => match call checks::require(head is "", "head text")
++                                                            checks::failed
++                                                            ok => match call delete_text()
++                                                                when
++                                                                    sample:  => ok "delete"
++                                                                http::request_failed
++                                                                ok str deleted => match call checks::require(deleted is "delete", "deleted text")
++                                                                    checks::failed
++                                                                    ok => match call options_text()
++                                                                        when
++                                                                            sample:  => ok "options"
++                                                                        http::request_failed
++                                                                        ok str options => match call checks::require(options is "options", "options text")
++                                                                            checks::failed
++                                                                            ok => ok
+ fn str referenced
+     emits [http::request_failed]
+     asserts

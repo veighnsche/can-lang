@@ -1,0 +1,11 @@
+--- /private/tmp/lf20/e3-baseline.can	2026-09-22 22:47:25
++++ /private/tmp/lf20/e3/src/main.can	2026-09-22 22:47:32
+@@ -60,7 +60,7 @@
+     given
+         near int increment
+     asserts
+-        sample: box(7) => 3 => ok 10
++        sample: box(7) => 4 => ok 11
+     ok self.value + increment
+ fn int receiver_capture
+     emits []

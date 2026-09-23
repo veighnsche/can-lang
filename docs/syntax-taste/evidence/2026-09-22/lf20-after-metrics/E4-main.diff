@@ -1,0 +1,17 @@
+--- after/src/main.can	2026-09-22 22:43:29
++++ e4/src/main.can	2026-09-22 22:47:42
+@@ -133,7 +133,13 @@
+                                                                     http::request_failed
+                                                                     ok str options => match call checks::require(options is "options", "options text")
+                                                                         checks::failed
+-                                                                        ok => ok
++                                                                        ok => match call send_text("again")
++                                                                            when
++                                                                                sample: "again" => ok "again-echo"
++                                                                            http::request_failed
++                                                                            ok str echo => match call checks::require(echo is "again-echo", "second site echo")
++                                                                                checks::failed
++                                                                                ok => ok
+ fn str referenced
+     emits [http::request_failed]
+     asserts

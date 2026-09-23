@@ -1,0 +1,7 @@
+{
+ "file": "src/fixtures/load_json.json",
+ "before_bytes": 472,
+ "after_bytes": 483,
+ "url_before": "http://127.0.0.1:1/json?labels=a+b&labels=%2B",
+ "url_after": "http://127.0.0.1:1/json?labels=a+b&labels=%2B&labels=c+d"
+}

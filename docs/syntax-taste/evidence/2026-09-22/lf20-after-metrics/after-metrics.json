@@ -1,0 +1,94 @@
+{
+  "method": "Frozen before hash + counts re-verified; after region uses the same end marker with normalized http::request_failed counts; app method identical to full-language-review/measure.py plus a production/assert-fixture line split (asserts/when headers, name: ... => ... rows, using-raw lines). Raw fixture JSON bytes counted separately. Not model tokens; no TypeScript comparison.",
+  "before_metrics": {
+    "fetch_declarations": 8,
+    "infrastructure_bound_declarations": 9,
+    "infrastructure_bound_entries": 63,
+    "infrastructure_forwarding_arms": 56
+  },
+  "after_metrics": {
+    "scope": "compiler/testdata/current/fetch/main.can lines 1-136; ends before 'fn str referenced'",
+    "source_lines_in_region": 136,
+    "fetch_declarations": 8,
+    "main_fetch_calls": 8,
+    "infrastructure_bound_declarations": 9,
+    "infrastructure_bound_entries": 9,
+    "infrastructure_forwarding_arms": 8,
+    "checks_failed_arms_in_region": 8
+  },
+  "detail_distinctions_recoverable": {
+    "count": 7,
+    "details": [
+      "codec::invalid_data",
+      "http::body_limit",
+      "http::credentials_missing",
+      "http::invalid_request",
+      "http::status_error",
+      "http::timeout",
+      "http::transport_failed"
+    ]
+  },
+  "before_cost": {
+    "production_lines": 165,
+    "assert_fixture_lines": 26,
+    "raw_fixture_files": 0,
+    "raw_fixture_bytes": 0
+  },
+  "after_cost": {
+    "production_lines": 110,
+    "assert_fixture_lines": 70,
+    "raw_fixture_files": 9,
+    "raw_fixture_bytes": 3670,
+    "after_source": "compiler/testdata/current/fetch/main.can"
+  },
+  "applications": [
+    {
+      "application": "account-search",
+      "can_files": 4,
+      "source_lines": 373,
+      "maximum_line_characters": 257,
+      "emits_declarations": 14,
+      "emits_characters_excluding_indent": 997,
+      "seven_infrastructure_error_mentions": 13,
+      "normalized_request_failed_mentions": 0,
+      "production_lines": 261,
+      "assert_fixture_lines": 94
+    },
+    {
+      "application": "dashboard",
+      "can_files": 4,
+      "source_lines": 291,
+      "maximum_line_characters": 257,
+      "emits_declarations": 11,
+      "emits_characters_excluding_indent": 823,
+      "seven_infrastructure_error_mentions": 8,
+      "normalized_request_failed_mentions": 0,
+      "production_lines": 206,
+      "assert_fixture_lines": 68
+    },
+    {
+      "application": "form-validation",
+      "can_files": 4,
+      "source_lines": 229,
+      "maximum_line_characters": 187,
+      "emits_declarations": 9,
+      "emits_characters_excluding_indent": 535,
+      "seven_infrastructure_error_mentions": 7,
+      "normalized_request_failed_mentions": 0,
+      "production_lines": 173,
+      "assert_fixture_lines": 45
+    },
+    {
+      "application": "native-ai",
+      "can_files": 4,
+      "source_lines": 345,
+      "maximum_line_characters": 336,
+      "emits_declarations": 15,
+      "emits_characters_excluding_indent": 1086,
+      "seven_infrastructure_error_mentions": 39,
+      "normalized_request_failed_mentions": 5,
+      "production_lines": 230,
+      "assert_fixture_lines": 89
+    }
+  ]
+}

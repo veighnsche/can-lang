@@ -1,0 +1,22 @@
+{
+ "M1 Omit error arm (delete load_json http::request_failed arm)": {
+  "detection": "concrete function can.project.root/fetches::main: /private/tmp/lf20/m1/src/main.can region can.project.root/fetches::main: missing completion arm for http::request_failed; can.project.root/fetches::load_json requires an arm for each bound member",
+  "repair": "restored the arm; assert green",
+  "verdict": "detected at check time, repaired"
+ },
+ "M2 Change request field without fixture (path /json -> /json2)": {
+  "detection": "exit 1, report passed=false, FAIL can.project.root/fetches::load_json decoded harness violation",
+  "repair": "reverted path; assert green",
+  "verdict": "detected by raw-request comparison, repaired"
+ },
+ "M3 Break fixture (send_text response body hello -> wrong)": {
+  "detection": "exit 1, report passed=false, FAIL can.project.root/fetches::send_text echo outcome mismatch",
+  "repair": "restored fixture file; assert green",
+  "verdict": "detected by outcome comparison, repaired"
+ },
+ "M4 Misuse capture (near int increment supplied \"x\")": {
+  "detection": "assertion sample arguments: /private/tmp/lf20/m4/src/main.can region can.project.root/closures::read/assert/sample/actual: expression type does not fit expected type at byte 1256",
+  "repair": "restored capture value; assert green",
+  "verdict": "detected at check time with assert-row region, repaired"
+ }
+}
