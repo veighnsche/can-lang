@@ -796,7 +796,7 @@
         "B1-01-DONE",
         "B1-05-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Qualify target-native methods and options for read/write/delete/stat/list/presign/multipart against official docs and the exact binary. Constructor presence alone proves none of these operations."
     },
     {
@@ -805,7 +805,7 @@
       "depends": [
         "B1-10.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Separate object key semantics from local paths: slash is data, not local traversal. Require explicit endpoint/region/bucket and credential sourcing; never expose credentials in error payloads."
     },
     {
@@ -814,7 +814,7 @@
       "depends": [
         "B1-10.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Implement immutable metadata and typed page continuation. Avoid collecting an entire bucket; enforce per-page/result limits and preserve opaque continuation values."
     },
     {
@@ -823,7 +823,7 @@
       "depends": [
         "B1-10.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use B1-05 streams for large transfers; enforce byte and deadline budgets during transfer, cancel on handler failure and observe native rejections."
     },
     {
@@ -832,7 +832,7 @@
       "depends": [
         "B1-10.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Qualify native multipart behavior, abort cleanup and retry semantics. Do not write an S3 signing algorithm or multipart protocol implementation. If the native API lacks an operation, record that exact target gap before changing scope."
     },
     {
@@ -841,7 +841,7 @@
       "depends": [
         "B1-10.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Represent presigned result as URL plus required method/headers and expiration metadata. Treat signed URLs as sensitive, redacting them in reports."
     },
     {
@@ -850,7 +850,7 @@
       "depends": [
         "B1-10.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Run native integration against a provisioned local S3-compatible endpoint: create isolated bucket/prefix, verify bytes and metadata, delete only those test objects."
     },
     {
@@ -859,7 +859,7 @@
       "depends": [
         "B1-10.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
