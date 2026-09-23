@@ -266,7 +266,6 @@ func (p *parser) llm() Declaration {
 	p.expect(Dedent)
 	return &LLMDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, State: state, Asks: asks}
 }
-
 func (p *parser) fixture() Declaration {
 	start := p.expectWord("fixture").Span.Start
 	name := p.expect(Name)
@@ -374,7 +373,6 @@ func (p *parser) wrap() Declaration {
 	p.expect(Dedent)
 	return &WrapDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Base: base, Calculated: calculated, Assertions: assertions, Native: native, Emitted: emitted, HasNative: hasNative, HasEmitted: hasEmitted}
 }
-
 func (p *parser) wrapArm() WrapArm {
 	start := p.peek().Span.Start
 	pattern := p.outcomePattern()
@@ -451,7 +449,7 @@ func (p *parser) judge() Declaration {
 	p.expect("=>")
 	continuation := p.armBody(true)
 	p.expect(Dedent)
-	return &JudgeDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, State: state, Assertions: assertions, Registrations: registrations, Continuation: continuation}
+	return &JudgeDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, State: state, Registrations: registrations, Continuation: continuation}
 }
 func (p *parser) choiceArm() Declaration {
 	start := p.expectWord("choice_arm").Span.Start

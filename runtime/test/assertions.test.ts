@@ -98,3 +98,67 @@ test("basic fixture FIFO never searches later rows and reports leftovers", async
   expect(() => denyLiveBoundary(context, origin)).toThrow();
   expect(contextReport(context).violations).toContain("unexpected live boundary");
 });
+
+test("mismatch reports identify root, site and invocations without dumping values", async () => {
+  const secret = "capture-secret-Zed", other = "leftover-Hank", actual = "actual-Quinn";
+  const sited = {source: "can:test", start: 0, end: 1, invocation: ["can.project.root/app::subject"]};
+  const context = assertionContext(root);
+  const rows = [
+    {selector: "sample", arguments: async () => success([secret]), expected: async () => success(1n)},
+    {selector: "sample", arguments: async () => success([other]), expected: async () => success(2n)},
+  ];
+  await expect(withFixture(context, "table", rows, [actual], async () => success(0n), sited)).rejects.toBeDefined();
+  closeContext(context);
+  const report = contextReport(context);
+  expect(report.root).toEqual(root);
+  expect(report.violations).toEqual(["argument mismatch", "unused fixture"]);
+  const [mismatch, leftover] = report.fixturePaths;
+  expect(mismatch.reason).toBe("argument mismatch");
+  expect(mismatch.expected).toMatchObject({table: "table", row: 0});
+  expect(mismatch.actual.root).toEqual({package: root.package, declaration: root.declaration, name: root.name});
+  expect(leftover.reason).toBe("unused fixture");
+  expect(leftover.expected).toMatchObject({table: "table", row: 1});
+  expect(mismatch.origin).toEqual(sited);
+  const text = JSON.stringify(report);
+  expect(text).toContain("can:test");
+  expect(text).not.toContain(secret);
+  expect(text).not.toContain(other);
+  expect(text).not.toContain(actual);
+});
+
+test("placeholder platform origins stay out of mismatch reports", async () => {
+  const { violation } = await import("../assert/context.ts");
+  const context = assertionContext(root);
+  const placeholder = {source: "can:cli", start: 0, end: 0, invocation: []};
+  violation(context, "missing fixture", placeholder);
+  const report = contextReport(context);
+  expect(report.fixturePaths).toEqual([{reason: "missing fixture", expected: null, actual: report.fixturePaths[0].actual, origin: null}]);
+  expect(JSON.stringify(report)).not.toContain("can:cli");
+});
+
+test("pending invocation progress reports structure without values", async () => {
+  const { coordinationContexts, scheduledFixture, contextProgress } = await import("../assert/context.ts");
+  const context = assertionContext(root);
+  const coord = coordinationContexts(context, "p::main#0", [[0], [1]], "all");
+  coord.start(0);
+  let delivered = false;
+  const pending = scheduledFixture(coord.contexts[0], "table", 1, origin, async () => { delivered = true; return success(1n); });
+  for (let i = 0; i < 30; i++) await Promise.resolve();
+  expect(delivered).toBe(false);
+  const progress = contextProgress(context);
+  expect(progress.pending).toBe(1);
+  expect(progress.frames.some(frame => frame.phase === "fixture")).toBe(true);
+  const text = JSON.stringify(progress);
+  expect(text).toContain("p::main#0");
+  expect(text).not.toContain("captures");
+  expect(text).not.toContain("arguments");
+  coord.start(1);
+  const pending2 = scheduledFixture(coord.contexts[1], "other", 1, origin, async () => success(2n));
+  expect((await pending).kind).toBe("ok");
+  coord.observed(0, success(1n));
+  expect((await pending2).kind).toBe("ok");
+  coord.observed(1, success(2n));
+  coord.selected();
+  closeContext(context);
+  expect(contextReport(context).violations).toEqual([]);
+});

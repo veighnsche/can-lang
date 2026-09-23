@@ -100,3 +100,157 @@ func TestCompletionArmOrder(t *testing.T) {
 		}
 	})
 }
+
+// Missing arms name the bound obligation with the match span, the
+// invocation link and one inserted forward arm when forwarding preserves
+// the region contract. Anything else is omitted rather than guessed.
+func TestMissingArmObligation(t *testing.T) {
+	forwarding := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn int handle
+    emits [codec::invalid_data]
+    asserts
+        sample: => ok 1
+    match call number()
+        ok int value => ok value
+` + programMain + "    ok\n"
+	_, err := programFixture(t, map[string]string{"src/main.can": forwarding})
+	if err == nil {
+		t.Fatal("missing error arm admitted")
+	}
+	for _, want := range []string{"missing completion arm for codec::invalid_data", "requires an arm for each bound member", "can.project.root/app::number"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Fatalf("obligation diagnostic omits %q: %v", want, err)
+		}
+	}
+	located, ok := source.AsLocated(err)
+	if !ok {
+		t.Fatalf("missing-arm diagnostic lost its span: %v", err)
+	}
+	if located.Code != "CAN-CHECK-MISSING-ARM" {
+		t.Fatalf("missing-arm diagnostic code is %q", located.Code)
+	}
+	if located.Span.Start == 0 || located.Span.End <= located.Span.Start {
+		t.Fatalf("missing-arm diagnostic lost its match span: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "invocation requires an arm") {
+		t.Fatalf("missing-arm diagnostic lost its invocation link: %+v", located.Related)
+	}
+	if len(located.Fixes) != 1 {
+		t.Fatalf("forwardable arm produced %d fixes", len(located.Fixes))
+	}
+	fix := located.Fixes[0]
+	if fix.Start != fix.End || !strings.HasSuffix(fix.Text, "codec::invalid_data\n") || !strings.Contains(fix.Title, "codec::invalid_data") {
+		t.Fatalf("forward fix is not an arm insertion: %+v", fix)
+	}
+
+	strict := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn int strict
+    emits []
+    asserts
+        sample: => ok 1
+    match call number()
+        ok int value => ok value
+` + programMain + "    ok\n"
+	_, err = programFixture(t, map[string]string{"src/main.can": strict})
+	if err == nil {
+		t.Fatal("missing error arm admitted under empty emits")
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-MISSING-ARM" {
+		t.Fatalf("strict missing-arm diagnostic lost code or span: %v", err)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("unforwardable arm produced fixes: %+v", located.Fixes)
+	}
+
+	voidSuccess := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn void sink
+    emits [codec::invalid_data]
+    asserts
+        sample: => ok
+    match call number()
+        codec::invalid_data => ok
+` + programMain + "    ok\n"
+	_, err = programFixture(t, map[string]string{"src/main.can": voidSuccess})
+	if err == nil || !strings.Contains(err.Error(), "requires exactly one success arm") {
+		t.Fatalf("missing success admitted: %v", err)
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-MISSING-ARM" || len(located.Fixes) != 1 || !strings.HasSuffix(located.Fixes[0].Text, "ok => ok\n") {
+		t.Fatalf("void success fix missing: %+v", located)
+	}
+
+	valuedSuccess := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn int valued
+    emits [codec::invalid_data]
+    asserts
+        sample: => ok 1
+    match call number()
+        codec::invalid_data => ok 0
+` + programMain + "    ok\n"
+	_, err = programFixture(t, map[string]string{"src/main.can": valuedSuccess})
+	if err == nil {
+		t.Fatal("missing valued success admitted")
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || len(located.Fixes) != 0 {
+		t.Fatalf("valued success produced fixes: %+v", located)
+	}
+}
+
+// Outward errors name the escaping member at the escaping expression and
+// link the region bound both must agree on. No fix is proposed: widening
+// emits or dropping the escape would change the region contract.
+func TestOutwardErrorObligation(t *testing.T) {
+	relay := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn int pass
+    emits []
+    asserts
+        sample: => ok 1
+    relay call number()
+` + programMain + "    ok\n"
+	_, err := programFixture(t, map[string]string{"src/main.can": relay})
+	if err == nil {
+		t.Fatal("relay escape admitted")
+	}
+	for _, want := range []string{"undeclared escaping domain error", "region declares emits []"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Fatalf("outward diagnostic omits %q: %v", want, err)
+		}
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-OUTWARD-ERROR" {
+		t.Fatalf("relay escape lost code or span: %v", err)
+	}
+	if located.Span.Start == 0 || located.Span.End <= located.Span.Start {
+		t.Fatalf("relay escape lost its expression span: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "extend the region bound") {
+		t.Fatalf("relay escape lost its region link: %+v", located.Related)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("outward error proposed fixes: %+v", located.Fixes)
+	}
+
+	construct := strings.Replace(programHeader, "uses []", "uses [codec]", 1) +
+		coordinationDeclarations +
+		`fn int raise
+    emits []
+    asserts
+        sample: => ok 1
+    codec::invalid_data("b", "type")
+` + programMain + "    ok\n"
+	_, err = programFixture(t, map[string]string{"src/main.can": construct})
+	if err == nil {
+		t.Fatal("constructed escape admitted")
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-OUTWARD-ERROR" || len(located.Related) != 0 || len(located.Fixes) != 0 {
+		t.Fatalf("constructed escape misdiagnosed: %+v", located)
+	}
+}

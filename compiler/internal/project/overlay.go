@@ -55,6 +55,31 @@ func (o *Overlay) Clear(path string) error {
 	return nil
 }
 
+// Versions reports the document version behind every unsaved buffer, keyed
+// by canonical path. Publishers stamp diagnoses so fix validation can
+// reject edits that no longer belong to the buffer the editor holds.
+func (o *Overlay) Versions() map[string]int64 {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	out := make(map[string]int64, len(o.entries))
+	for path, entry := range o.entries {
+		out[path] = entry.Version
+	}
+	return out
+}
+
+// Snapshot copies every unsaved buffer. Validators apply candidate edits
+// to the copy, never to the live editor state.
+func (o *Overlay) Snapshot() map[string]OverlayEntry {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	out := make(map[string]OverlayEntry, len(o.entries))
+	for path, entry := range o.entries {
+		out[path] = entry
+	}
+	return out
+}
+
 // Get returns the unsaved buffer for a canonical path, if any.
 func (o *Overlay) Get(path string) (OverlayEntry, bool) {
 	canonical, err := canonicalPath(path)

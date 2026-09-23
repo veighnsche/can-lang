@@ -13,7 +13,7 @@ export type AssertionRoot = Readonly<{package: string; declaration: string; name
 declare const contextBrand: unique symbol;
 export type AssertionContext = Readonly<{readonly [contextBrand]: true}>;
 type Violation = "missing fixture" | "argument mismatch" | "ambiguous fixture" | "malformed fixture" | "unexpected live boundary" | "unused fixture" | "outcome mismatch";
-type FixturePathDiagnostic=Readonly<{reason:Violation;expected:Allocation|null;actual:InvocationPath}>;
+type FixturePathDiagnostic=Readonly<{reason:Violation;expected:Allocation|null;actual:InvocationPath;origin:FailureOrigin|null}>;
 type State = {owner:object; barrier:Barrier; queues:FixtureQueues; paths:FixturePathDiagnostic[]; origins:Map<string,FailureOrigin>; root: AssertionRoot; violations: Violation[]; failures: StandardFailure[]; evidence: Evidence; closed: boolean; tables: Map<string, {used: number; total: number; origin: FailureOrigin}>; scope: unknown};
 type View={shared:State; identity:InvocationIdentity; frame:Frame};
 const contexts = new WeakMap<object, View>();
@@ -36,7 +36,9 @@ export function assertionContext(root: AssertionRoot): AssertionContext {
 function state(context: AssertionContext): State {return view(context).shared;}
 export function violation(context: AssertionContext, reason: Violation, origin: FailureOrigin, expected:Allocation|null=null, actual:InvocationPath=invocationPath(view(context).identity)): StandardFailure {
   const current=state(context), failure=assertionFailure(reason, origin);
-  current.paths.push(Object.freeze({reason,expected,actual}));
+  // Placeholder platform origins carry no reserving invocation and address
+  // no lexical site; reports omit them instead of leaking synthetic markers.
+  current.paths.push(Object.freeze({reason,expected,actual,origin:origin.invocation.length?origin:null}));
   current.violations.push(reason);
   current.failures.push(failure);
   return failure;

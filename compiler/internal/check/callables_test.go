@@ -145,3 +145,53 @@ fn int fallible
 		t.Fatalf("wider error bound admitted: %v", err)
 	}
 }
+
+// Capture requirements name the capture, the declaring callable and the
+// exact expected type at the reference site. No fix guesses a value or a
+// different capture.
+func TestCaptureObligation(t *testing.T) {
+	original := callableFixture(t)
+	mistyped := original
+	for _, edit := range [][2]string{
+		{"int prefix\n        int suffix\n        int value", "str prefix\n        int suffix\n        int value"},
+		{`first: 3, 5, 4 => ok 12`, `first: "p", 5, 4 => ok 12`},
+		{`second: 7, 11, 4 => ok 22`, `second: "q", 11, 4 => ok 22`},
+		{`call compute(3, 5, 4)`, `call compute("p", 5, 4)`},
+		{`call compute(7, 11, 4)`, `call compute("q", 11, 4)`},
+	} {
+		next := strings.Replace(mistyped, edit[0], edit[1], 1)
+		if next == mistyped {
+			t.Fatalf("mutation missed: %q", edit[0])
+		}
+		mistyped = next
+	}
+	_, err := programFixture(t, map[string]string{"src/main.can": mistyped})
+	if err == nil {
+		t.Fatal("mistyped capture admitted")
+	}
+	for _, want := range []string{"requires exact declared type", "prefix"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Fatalf("capture diagnostic omits %q: %v", want, err)
+		}
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-CAPTURE" {
+		t.Fatalf("capture failure lost code or span: %v", err)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("capture failure proposed fixes: %+v", located.Fixes)
+	}
+
+	missing := strings.Replace(original, "int prefix\n        int suffix\n        int value", "int absent\n        int suffix\n        int value", 1)
+	if missing == original {
+		t.Fatal("invalid refusal fixture")
+	}
+	_, err = programFixture(t, map[string]string{"src/main.can": missing})
+	if err == nil {
+		t.Fatal("missing capture admitted")
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-CAPTURE" || !strings.Contains(err.Error(), "near capture") {
+		t.Fatalf("missing capture misdiagnosed: %v", err)
+	}
+}

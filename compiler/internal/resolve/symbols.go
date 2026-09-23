@@ -524,13 +524,13 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	switch d := declaration.(type) {
 	case *syntax.ConnectionDecl:
 		return nil
-	case *syntax.FixtureDecl:
-		return fields(d.Given)
 	case *syntax.ChoiceArmDecl:
 		if err := check(d.Result); err != nil {
 			return err
 		}
 		return file.checkBound(scope, d.Errors, symbol.Public)
+	case *syntax.FixtureDecl:
+		return fields(d.Given)
 	case *syntax.RecordDecl:
 		return fields(d.Fields)
 	case *syntax.ErrorDecl:

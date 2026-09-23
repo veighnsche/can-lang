@@ -22,6 +22,10 @@ test("credentials and header ownership fail without disclosing values",()=>{
   try{prepareRequest(connection,"/",[],[{name,value:"x"}],()=>"secret");throw new Error("accepted");}
   catch(cause){expect(transportProblem(cause)).toEqual({kind:"invalid",reason:"header_name"});}
  }
+ for(const value of ["badĀ","\ud800","x\ny"]){
+  let reads=0;try{prepareRequest(connection,"/",[],[{name:"x_probe",value}],()=>{reads++;return "secret";});throw new Error("accepted");}
+  catch(cause){expect(transportProblem(cause)).toEqual({kind:"invalid",reason:"header_value"});}expect(reads).toBe(0);
+ }
 });
 test("header snapshots retain separate cookies and normalized combined fields",()=>{
  const headers=new Headers();headers.append("Set-Cookie","a=1");headers.append("Set-Cookie","b=2");headers.append("X-Test","one");headers.append("X-Test","two");

@@ -1,0 +1,480 @@
+bun test v1.4.2 (744846f84)
+
+runtime/data.test.ts:
+(pass) native strict deep equality observes nominal identity [0.27ms]
+(pass) native copy preserves original aliases, tags and field spelling [0.07ms]
+
+runtime/domain.test.ts:
+(pass) domain occurrences preserve exact payload, allocation and private origin [0.84ms]
+(pass) malformed payloads and hostile identity metadata fail without getters or traps [0.35ms]
+(pass) compiler plan rejects wrong allocations, catalogue fields, and variant cycles [1.84ms]
+(pass) recursive payloads admit shared immutable data and reject circular native values [0.13ms]
+
+runtime/completion.test.ts:
+(pass) async calls, continuations, elements and native Promise bridges never assimilate then data [0.79ms]
+(pass) void and distinct failure categories round trip with original occurrences [0.19ms]
+(pass) selected handler failure is never redispatched and nested handlers complete locally [0.14ms]
+(pass) forged carriers and immediate unboxed thenables are refused without executing data [0.11ms]
+(pass) returned and rejected synthetic failures acquire one checked boundary without new occurrences [0.10ms]
+
+runtime/primitive.test.ts:
+(pass) native bigint contract and exact fault identities [0.69ms]
+(pass) index validates bigint range before narrowing [0.23ms]
+(pass) bigint-normalized native slicing and UTF-16 boundaries [0.06ms]
+(pass) finite slice bounds agree with native array/string slice [0.48ms]
+
+runtime/failure.test.ts:
+(pass) native descriptions never invoke application behavior [0.08ms]
+(pass) native scalar and Error descriptions follow fixed rules [0.41ms]
+(pass) origins are distinct and propagation preserves an occurrence [0.07ms]
+(pass) primitive and maintained categories use fixed messages [0.13ms]
+(pass) description adapter defects retain the original cause with a fixed fallback [0.04ms]
+(pass) synthetic failures retain identity and original metadata when the first checked boundary is attached [0.03ms]
+
+runtime/test/callable.test.ts:
+(pass) native callable receipts retain immutable aliases and protected results [0.28ms]
+(pass) creation receipts distinguish frozen captures and preserve initialization identity across roots [0.60ms]
+
+runtime/test/owner-roots.test.ts:
+(pass) CLI waits for late losers yet their diagnostics alone keep status zero [1.12ms]
+(pass) CLI reports omitted close as nonzero even after successful automatic close [0.34ms]
+(pass) assertion result waits for every owned participant before closing context [0.40ms]
+
+runtime/test/transport-owned.test.ts:
+(pass) deadline returns before native settlement but root retains the actual work [15.14ms]
+(pass) cleanup rejection is observed without replacing an already chosen outcome [0.21ms]
+(pass) native continuations finish under the existing owner while its scope drains [1.20ms]
+
+runtime/test/assert-identity.test.ts:
+(pass) invocation occurrences belong to each parent and compare numeric preorder ordinals [0.10ms]
+(pass) direct, spread and nested positions are reserved independently of arrival order [0.18ms]
+(pass) callable receipts freeze captures and distinguish repeated creation sites without exposing values [0.08ms]
+(pass) identity tokens fail closed across forged values and isolated roots [0.08ms]
+
+runtime/test/collections.test.ts:
+(pass) map copies preserve key order, aliases and nominal entries [0.38ms]
+(pass) collection storage rejects forged, copied and wrong-specialization tokens and keys [0.23ms]
+(pass) native set operations preserve left order through both intersection size branches [1.17ms]
+(pass) scalar key families retain native equality and matching factories share provenance [0.30ms]
+
+runtime/test/assert-provider-context.test.ts:
+(pass) raw provider fixtures remain root-local across generated child context views [1.89ms]
+
+runtime/test/assertions.test.ts:
+(pass) an assertion awaits and executes its real body exactly once [0.25ms]
+(pass) caught live-boundary refusal is sticky and independent roots do not share it [0.25ms]
+(pass) expected evaluation failure does not execute the subject [0.25ms]
+(pass) native assertion equality preserves nominal, float and opaque identities [0.08ms]
+(pass) argument lists compare callables by receipt, not construction site [0.08ms]
+(pass) supplied completion replaces only the exact call and labels its evidence [0.34ms]
+(pass) basic fixture FIFO never searches later rows and reports leftovers [0.15ms]
+(pass) mismatch reports identify root, site and invocations without dumping values [0.11ms]
+(pass) pending invocation progress reports structure without values [0.29ms]
+
+runtime/test/io-env.test.ts:
+(pass) bounded stdin keeps exact bytes, huge limits and split UTF-8 [3.89ms]
+(pass) negative limits never open input; overflow cancels without partial success [0.17ms]
+(pass) expected native read failures map, defects remain standard [0.20ms]
+(pass) environment validates before lookup and preserves presence and exact value [0.35ms]
+(pass) unsupplied assertions cannot read stdin or environment [0.28ms]
+
+runtime/test/codec-json.test.ts:
+(pass) native holder tokens follow schema types rather than repeated field spellings [2.91ms]
+(pass) duplicates decode escaped keys and native syntax takes precedence [0.49ms]
+(pass) variants retain nominal leaf identity and use canonical tags [0.16ms]
+(pass) encoding counts delimiters, escaping, signs, and cumulative integer expansion [0.26ms]
+(pass) recursive data admits shared subtrees and rejects cycles and depth overflow [0.77ms]
+(pass) exact public byte/depth/node bounds reject limit plus one [2816.92ms]
+(pass) hostile properties never execute during defensive schema validation [0.31ms]
+(pass) nested duplicate diagnostics retain RFC6901 paths before syntax precedence [0.18ms]
+(pass) revoked array proxies become codec type failures [0.06ms]
+(pass) one schema and codec preserve precision across raw fetch, AI state and LLM text boundaries [1.70ms]
+
+runtime/test/policy.test.ts:
+(pass) native injection skips the operation and selects by leaf identity [0.32ms]
+(pass) emitted injection is not normalized and keeps its own identity [0.16ms]
+(pass) same-name codec keys stay distinct across origins [0.15ms]
+(pass) injection rejects unknown origins and double provision [0.07ms]
+(pass) policyBase invokes the operation without context or injection [0.07ms]
+
+runtime/test/assert-queue.test.ts:
+(pass) recursive and concurrent visits share one root lexical FIFO without argument searching [0.62ms]
+(pass) allocation errors preserve both full expected and actual invocation paths [0.10ms]
+(pass) leftovers are checked on explicit close and closed roots cannot consume more fixtures [0.05ms]
+(pass) queues reject forged tokens and cannot share allocations between identical-looking roots [0.03ms]
+
+runtime/test/owner.test.ts:
+(pass) published groups inspect each losing outcome once while preserving occurrence dedup [0.95ms]
+(pass) late standard failures stay observed without replacing the selected success [0.18ms]
+(pass) closing preserves existing-owner subleases and deadlines never force close [1.59ms]
+(pass) reverse automatic cleanup reports omissions even when native closes succeed [0.09ms]
+(pass) scoped handles reject escapes and host callbacks block user code [0.26ms]
+(pass) resource preparation fails before every participant and rolls back leases [0.09ms]
+(pass) interleaved roots preserve native async context and reject cross-root handles [0.14ms]
+(pass) scoped shutdown drains losers before releasing the scoped native resource [0.10ms]
+(pass) wrong-kind and forged resources reject without touching native state [0.13ms]
+(pass) automatic close faults propagate cleanup from a managed scope [0.06ms]
+(pass) resources opened by a loser retain its lease across registered shutdown expiry [1.24ms]
+(pass) a participant-created managed child scope releases its initial lease at callback exit [0.09ms]
+(pass) a participant can explicitly close its own newly opened resource [0.07ms]
+(pass) idempotent reentrant close shares the installed native close attempt [0.06ms]
+(pass) host callback wrappers preserve nested capture evidence for participants [0.13ms]
+(pass) ordinary callable receipts do not add self-deadlocking close leases [0.04ms]
+(pass) selected standard outcomes are not late and repeated losing occurrences report once [0.09ms]
+(pass) native callbacks bind their operation scope and drain without ambient context [0.13ms]
+
+runtime/test/transaction.test.ts:
+(pass) sql transactions > commit runs scoped queries and returns the committed value [1.00ms]
+(pass) sql transactions > rollback returns the rollback value without committing [0.14ms]
+(pass) sql transactions > in-transaction queries share pool validation and classification [0.53ms]
+(pass) sql transactions > the handle dies with its scope [0.14ms]
+(pass) sql transactions > refused begin reports the connection failure with the begin phase [0.10ms]
+(pass) sql transactions > native callback failures classify by phase [0.10ms]
+(pass) sql transactions > non-postgres begin failures are transactional [0.08ms]
+(pass) sql transactions > foreign throws propagate instead of classifying [0.09ms]
+(pass) sql transactions > nested entry surfaces the scope failure verbatim [0.12ms]
+(pass) sql transactions > primary domain failures return verbatim [0.14ms]
+(pass) sql transactions > rejection after a commit decision is commit-unknown with a safe id [0.20ms]
+(pass) sql transactions > foreign throws after a commit decision are still commit-unknown [0.10ms]
+(pass) sql transactions > commit waits for scope drain [26.27ms]
+(pass) sql transactions > compiler-shape violations throw type errors [0.34ms]
+(pass) sql transactions > fixture boundaries never launch transactions [0.15ms]
+
+runtime/test/questions.test.ts:
+(pass) mixed request uses native exact JSON with local policies omitted and hostile keys intact [0.33ms]
+(pass) Choice and Score enforce finite counts, exact scalar keys, descriptions and thresholds [0.52ms]
+(pass) mixed answers preserve provider tie choice, confidence, score and distribution [0.60ms]
+(pass) full answer admission checks IDs before any payload and every answer before exposure [0.85ms]
+
+runtime/test/utilities.test.ts:
+(pass) native clock units, monotonic observations and awaited sleep [11.43ms]
+(pass) secure random bounds, immutable bytes and UUID version [1.53ms]
+(pass) SHA-256 known vectors and independent binary oracle [1.80ms]
+(pass) logs contain only native JSON string fields and await write [0.40ms]
+(pass) log serialization and expected I/O failures disclose only level [0.37ms]
+(pass) host utilities require fixtures while hashing runs in ordinary assertions [0.43ms]
+
+runtime/test/typesafe.test.ts:
+(pass) Noul wire request uses the real exact codec and local policy stays local [0.25ms]
+(pass) every Noul descriptor is checked, including unused registrations [0.15ms]
+(pass) Noul accepts resolved model names, auxiliary metadata and both probability extremes [0.12ms]
+(pass) Noul validates the envelope, then IDs, then all answers in registration order [0.18ms]
+(pass) provider envelopes share bounded UTF8, syntax and duplicate-member admission [0.14ms]
+
+runtime/test/transport-named.test.ts:
+(pass) named fetch validates strict media types and charset without ambiguous parameters [0.54ms]
+(pass) named fetch loopback decodes exact JSON, text BOM, bytes and immutable envelopes [11.23ms]
+(pass) named fetch encodes explicit bodies and captures credentials once before launch [4.27ms]
+(pass) named fetch maps invalid bodies, media and malformed replies to exact errors [1.66ms]
+(pass) named fetch raw fixtures handle bodyless requests and unprovided assertions deny authentication [0.63ms]
+(pass) named fetch body Content-Type defaults and overrides preserve explicit encodings [0.57ms]
+(pass) raw HEAD fixtures reject impossible bodies even after authored recovery [0.32ms]
+(pass) named fetch normalizes invalid, credential, transport and timeout leaves [22.43ms]
+
+runtime/test/entry.test.ts:
+(pass) root awaits main and passes only a frozen copy of the supplied application arguments [0.10ms]
+(pass) initialization failure prevents main and awaits its diagnostic [0.14ms]
+(pass) root report preserves failure identity without native message, stack or origin disclosure [0.11ms]
+(pass) forged and non-void main results fail without invoking a then getter [0.11ms]
+(pass) diagnostic write rejection retains nonzero status [0.05ms]
+
+runtime/test/form.test.ts:
+(pass) form records preserve repeated values, empty presence, Unicode and plus semantics [0.23ms]
+(pass) missing/repeated scalar and optional fields have finite form reasons [0.12ms]
+(pass) malformed percent syntax and invalid encoded UTF-8 are distinct [0.12ms]
+(pass) unknown fields, hostile names, and body limits cannot alter shape [0.09ms]
+
+runtime/test/assert-barrier.test.ts:
+(pass) barrier waits for every reserved participant and orders shared requests by full path [0.14ms]
+(pass) arbitrarily delayed pure descendants keep fixture allocation behind a proven barrier [0.11ms]
+(pass) native selection continuation stays active before a late fixture can release [0.07ms]
+(pass) conformance can exercise reverse ordering without changing authored default [0.06ms]
+(pass) barriers reject forged and duplicate identities and invalid transitions [0.07ms]
+(pass) invalid conformance ordering rejects every pending request without stranding frames [0.11ms]
+(pass) fixture arbitration stays within a logarithmic comparison budget while draining and reinserting [50.03ms]
+(pass) comparison failures during heap removal reject every retained request and allow recovery [0.35ms]
+(pass) equal conformance priorities retain arrival order [0.10ms]
+
+runtime/test/text.test.ts:
+(pass) search, case and trim delegate native code-unit and Unicode behavior [0.46ms]
+(pass) literal replacement preserves dollar sequences and split retains every empty piece [0.16ms]
+(pass) scalar and grapheme APIs deliberately differ from UTF-16 indexing [1.16ms]
+(pass) named Unicode operations reject unpaired surrogates and invalid scalar values [0.18ms]
+(pass) bulk fromCodePoint uses bounded native argument chunks [49.85ms]
+
+runtime/test/assert-execution.test.ts:
+(pass) generated-style calls share lexical FIFO across repeated and transitive invocations [0.31ms]
+(pass) all: reversed real arrival keeps canonical fixture allocation and drains losers [0.51ms]
+(pass) settled: reversed real arrival keeps canonical fixture allocation and drains losers [0.08ms]
+(pass) any: reversed real arrival keeps canonical fixture allocation and drains losers [0.07ms]
+(pass) race: reversed real arrival keeps canonical fixture allocation and drains losers [0.06ms]
+(pass) first-row mismatch consumes that row and reports full paths without searching [0.16ms]
+(pass) nested coordination and spread positions retain one shared root queue [0.21ms]
+
+runtime/test/assert-progress.test.ts:
+(pass) progress sink observes running barrier snapshots [601.63ms]
+(pass) throwing progress sink never fails the root [301.81ms]
+(pass) omitted sink keeps legacy report shape [0.15ms]
+
+runtime/test/transport-request.test.ts:
+(pass) request preparation uses native URL query encoding and complete header replacement [0.08ms]
+(pass) invalid request URLs fail before observing credentials [0.08ms]
+(pass) credentials and header ownership fail without disclosing values [0.84ms]
+(pass) header snapshots retain separate cookies and normalized combined fields [0.03ms]
+
+runtime/test/sql.test.ts:
+(pass) sql pools > open reads the named credential once and constructs a postgres client [0.23ms]
+(pass) sql pools > open rejects bad names, missing credentials, and bad config [0.20ms]
+(pass) sql pools > open surfaces refused connections and cleans up the client [0.10ms]
+(pass) sql pools > fixture boundaries never launch real SQL [0.17ms]
+(pass) sql parameters > int range and unicode scalars validate before launch [0.23ms]
+(pass) sql parameters > options encode to null or the inner scalar [0.15ms]
+(pass) sql parameters > hostile text travels only as a bound parameter [0.07ms]
+(pass) sql parameters > bytes parameters are copied before launch [0.09ms]
+(pass) sql rows > query_one binds LIMIT 2 and decodes an immutable record [0.09ms]
+(pass) sql rows > missing and extra columns classify by path [0.14ms]
+(pass) sql rows > null, unsafe numbers, and binary decode by rule [0.18ms]
+(pass) sql rows > decoded binary is an owned copy [0.08ms]
+(pass) sql rows > optional decodes none, some, and observed duplicates [0.17ms]
+(pass) sql rows > cardinality counts only observed bounded rows [0.09ms]
+(pass) sql rows > query_rows binds max_rows+1 and enforces the exact bound [0.12ms]
+(pass) sql rows > execute validates affected counts and binds no limit [0.12ms]
+(pass) sql failures > native failures classify finitely with sanitized payloads [0.23ms]
+(pass) sql close > close validates the deadline and closes natively [0.08ms]
+(pass) sql close > close denies new work, drains the lease, and keeps closing on timeout [32.45ms]
+(pass) sql close > close on a non-pool token throws a resource failure [0.13ms]
+
+runtime/test/sql-descriptor.test.ts:
+(pass) sql descriptors > declare and template a checked descriptor [0.14ms]
+(pass) sql descriptors > repeated parameters share one prepared value [0.06ms]
+(pass) sql descriptors > zero-parameter descriptors template to bare strings [0.05ms]
+(pass) sql descriptors > unknown names, forged values, and arity breaks throw [0.15ms]
+(pass) sql descriptors > corrupt tables refuse at construction [0.51ms]
+
+runtime/test/transport-late.test.ts:
+(pass) late decoder defect is reported while timeout remains selected [29.79ms]
+(pass) native continuation retains captured resource after parent timeout [11.10ms]
+(pass) late classified transport failure does not produce a standard diagnostic [5.83ms]
+(pass) synchronous late standard failure preserves timeout and reports its occurrence [5.24ms]
+(pass) late boxed standard decoder completion remains visible to ownership [5.83ms]
+
+runtime/test/html.test.ts:
+(pass) native escaping keeps hostile text and attribute data inert [0.82ms]
+(pass) closed tags, attributes, enums and tag applicability [2.42ms]
+(pass) child categories, table order, pairs and descendant nesting [1.31ms]
+(pass) URL parsing rejects origin and script ambiguity [0.40ms]
+(pass) head-only nodes, native title escaping and pinned HTMX policy [0.26ms]
+(pass) typed HTMX selectors and finite intervals cannot inject trigger code [0.30ms]
+(pass) forged opaque handles fail without inspecting proxies [0.20ms]
+(pass) the complete author tag inventory and each tag-checked attribute are admitted [0.72ms]
+
+runtime/test/normalize.test.ts:
+(pass) all seven native leaves map to request_failed with exact Detail and private cause [0.17ms]
+(pass) emitted, foreign-operation, non-leaf, standard and success outcomes pass through [0.07ms]
+
+runtime/test/exact-amount.test.ts:
+(pass) signed divmod preserves the native truncating identity and Euclidean range [2.03ms]
+(pass) half-even vectors cover both signs, tie parity and normalized denominators [0.17ms]
+(pass) rounded results conserve the exact rational and minimize distance with even ties [2.58ms]
+(pass) large minor units and unreduced remainders stay exact beyond binary64 [0.40ms]
+(pass) each zero denominator produces the allocated domain error [0.11ms]
+
+runtime/test/collections-owner.test.ts:
+(pass) map-held resources lease before launch and remain usable by a losing participant [0.38ms]
+(pass) closed map-held resource rejects all participant preparation and rolls back prior leases [0.17ms]
+(pass) replace and remove carry only new contents while older map aliases retain theirs [0.13ms]
+(pass) opaque containment traversal does not invoke proxies or getters [0.08ms]
+
+runtime/test/checks.test.ts:
+(pass) true completes void while false produces checks::failed with the exact authored reason [0.07ms]
+(pass) call-site span and invocation path stay in private occurrence metadata [0.04ms]
+(pass) invalid hostile reasons throw during validation without invoking user code [0.06ms]
+(pass) hostile reason text round-trips exactly through JSON without invoking user code [0.26ms]
+(pass) a recovered application check cannot clear a separate harness violation [0.22ms]
+
+runtime/test/http-path-corpus.test.ts:
+(pass) route path corpus matches checked static validation [1.75ms]
+
+runtime/test/raw-provider.test.ts:
+(pass) raw response compares the exact request and runs the real decoder [0.99ms]
+(pass) raw request mismatches fail before any outcome is released [0.37ms]
+(pass) raw json bodies compare exact number tokens ignoring member order [0.56ms]
+(pass) raw failure outcomes execute the real normalization path [0.26ms]
+(pass) raw environment supplies fake credentials and absence never leaks ambient [0.22ms]
+(pass) null exchange forbids transport but admits pretransport failures [0.16ms]
+(pass) raw fixtures are owned per operation and consumed exactly once [0.15ms]
+(pass) completion comparison matches genuine bytes by content without forging [0.10ms]
+(pass) malformed raw registrations fail fast without consuming the boundary [0.32ms]
+
+runtime/test/http-request.test.ts:
+(pass) request URL normalization retains decoded path and query distinctions [0.40ms]
+(pass) invalid query encodings fail without native replacement fallback [0.20ms]
+(pass) body snapshot is detached, cached and independently bounded on each call [0.14ms]
+(pass) native read failure and oversize reject before producing a callback request [0.07ms]
+(pass) JSON preserves exact integers and uses the caller's bounded expansion budget [0.28ms]
+(pass) form decoding reads the same immutable body and enforces its media contract [0.34ms]
+(pass) duplicate headers pin native coalescing and exact media precedence [0.14ms]
+(pass) forged request handles fail without invoking user traps [0.05ms]
+(pass) response status boundaries keep bodyless statuses separate [0.34ms]
+(pass) native header validation rejects fixed sink overrides and hop-by-hop fields [0.25ms]
+(pass) immutable response reuse makes independent native bodies with fixed encodings [0.15ms]
+(pass) response sinks reject forged and wrong-kind opaque handles without traps [0.07ms]
+(pass) router rejects duplicates, normalized aliases and unsupported path patterns [0.27ms]
+(pass) exact dispatch distinguishes 404 and 405 and never aliases HEAD to GET [0.25ms]
+(pass) real loopback dispatch awaits completion and snapshots bodies before callback [2.17ms]
+
+runtime/test/coordination.test.ts:
+(pass) native all selects first rejection without running success handlers or redispatching late failures [0.30ms]
+(pass) allSettled waits for all then handles input order and stops at handler failure [0.17ms]
+(pass) any retains original all-failed outcomes in input order [0.11ms]
+(pass) any consumes pre-success failures while retaining late standard diagnostics [0.09ms]
+(pass) race selects the first completion and no losing handler runs [0.06ms]
+(pass) empty native all and allSettled succeed and any selects one empty aggregate [0.11ms]
+(pass) typed aggregate keeps nominal generic payloads and opaque standard occurrence identity [0.48ms]
+(pass) all and race select the first domain or standard failure with optional standard handling [0.42ms]
+(pass) allSettled propagates an unhandled standard slot in input order [0.07ms]
+(pass) any succeeds last after domain and standard failures without aggregate dispatch [0.16ms]
+(pass) handler failures escape without participant redispatch or a partial collection [0.25ms]
+(pass) explicit map conversion preserves snapshot identity and mints one outer aggregate occurrence [1.41ms]
+(pass) empty native race remains pending past the harness deadline [11.25ms]
+(pass) coordination retains a losing participant's captured resource until late work finishes [0.40ms]
+(pass) each mode delegates selection to its corresponding native Promise operation [0.25ms]
+
+runtime/test/catalogue.test.ts:
+(pass) closed generated runtime catalogue [1.02ms]
+
+runtime/test/number.test.ts:
+(pass) native formatting preserves bigint digits and IEEE spellings without locale formatting [0.13ms]
+(pass) exact conversion uses native represented values rather than the safe-integer cutoff [0.18ms]
+(pass) Math and Number predicates agree with qualified native operations on boundaries [0.17ms]
+(pass) integer parsing requires the entire exact decimal grammar [0.16ms]
+(pass) float parsing admits only decimal source numbers and finite native results [0.18ms]
+(pass) boolean conversions accept exact spellings and only the integer range zero through one [0.14ms]
+
+runtime/test/owner-hung.test.ts:
+(pass) external supervisor kills a nonsettling owner (leased=false) [122.42ms]
+(pass) external supervisor kills a nonsettling owner (leased=true) [117.16ms]
+
+runtime/test/transport-body.test.ts:
+(pass) transport stream byte accounting rejects the first excessive chunk [0.27ms]
+(pass) transport deadline bounds a stalled body and cancels its stream [20.26ms]
+(pass) transport monotonic deadline rejects synchronous late validation [5.08ms]
+(pass) transport bodies materialize exact bounded delivered bytes [0.12ms]
+(pass) deadline expiry takes precedence over an earlier owner cancellation [5.85ms]
+
+runtime/test/transport-fetch.test.ts:
+(pass) native fetch makes one attempt, preserves request policy, and has no cookie jar [3.82ms]
+(pass) manual redirect returns status without entering decoder or redirect target [1.33ms]
+(pass) stalled native response times out, aborts body, and never enters decode [31.88ms]
+(pass) response decode past the total deadline cannot enter the handler [41.29ms]
+(pass) owner cancellation has its exact transport phase [0.27ms]
+(pass) delivered decompressed bytes are bounded and outgoing overflow prevents auth and launch [1.78ms]
+(pass) decoded then-named data stays boxed across transport promises [0.77ms]
+
+runtime/test/codec-numbers.test.ts:
+(pass) native numeric tokens normalize exactly without binary64 loss [0.32ms]
+(pass) canonical integer bytes are cumulative and signs consume their own byte [0.04ms]
+(pass) encoding bounds are proven before decimal formatting [0.80ms]
+
+runtime/test/assert-empty-selection.test.ts:
+(pass) empty all selection preserves lexical fixture order [0.30ms]
+(pass) empty settled selection preserves lexical fixture order [0.07ms]
+(pass) empty any selection preserves lexical fixture order [0.05ms]
+
+runtime/test/assert-report.test.ts:
+(pass) supplied completion evidence cannot promote itself to provider or target coverage [0.06ms]
+(pass) release evidence retains distinct categories and immutable snapshots [0.03ms]
+(pass) evidence tokens and categories fail closed [0.04ms]
+
+runtime/test/assets.test.ts:
+(pass) pinned htmx and project assets are immutable exact-path responses [1.94ms]
+(pass) path escapes, unknown routes, wrong bytes and foreign methods are refused [0.24ms]
+(pass) declared asset urls mint html provenance and foreign names stay reasons [0.16ms]
+(pass) reserved routes and htmx navigation headers are not application-controlled [0.08ms]
+
+runtime/test/transport-http.test.ts:
+(pass) transport failures construct exact nominal catalogue occurrences [0.33ms]
+(pass) status and timeout use typed payloads while unexpected decoder faults stay standard [11.62ms]
+
+runtime/test/server.test.ts:
+(pass) config validation rejects out-of-range numbers with field reasons [0.20ms]
+(pass) config leaves address authority to Bun [0.05ms]
+(pass) ephemeral ports bind distinct servers [1.53ms]
+(pass) bind failures echo the attempted address [1.43ms]
+(pass) start rejects foreign routers without binding [0.90ms]
+(pass) serves routed requests with keep-alive reuse [1.20ms]
+(pass) rejects over-limit bodies with 413 [0.84ms]
+(pass) dispatch failures become sanitized 500s and release leases [0.73ms]
+(pass) stop drains delayed handlers before settling [151.04ms]
+(pass) timed-out caller keeps work owned while wait observes settlement [153.32ms]
+(pass) simultaneous stop callers split ok and resource_state [1.04ms]
+(pass) repeated and stale stops report resource_state while wait observes [0.74ms]
+(pass) early-winning coordination keeps a late server waiter [32.24ms]
+(pass) wait installs no lasting signal listeners [0.85ms]
+(pass) assertions deny live boundaries but run config validation [1.08ms]
+(pass) unclosed idle servers auto-close at drain without failure [0.65ms]
+(pass) signals settle wait gracefully in a child (SIGINT) [24.96ms]
+(pass) signals settle wait gracefully in a child (SIGTERM) [23.68ms]
+(pass) external supervisor bounds nonsettling work [394.85ms]
+
+runtime/test/typesafe-transport.test.ts:
+(pass) Noul sends one exact POST and reads credentials only after all input admission [2.17ms]
+(pass) Noul malformed responses stay distinct from status failures without retry [3.41ms]
+(pass) assertion context refuses a live Noul boundary before authentication [0.22ms]
+(pass) raw provider assertions cross request encoding, native response parsing and error mapping [0.74ms]
+(pass) invalid raw HTTP configuration stays a harness failure after handling [0.19ms]
+
+runtime/test/cli.test.ts:
+(pass) native UTF-8 conversion preserves scalar text, BOM and immutable byte ownership [0.12ms]
+(pass) unpaired surrogates yield the exact codec domain error [0.08ms]
+(pass) forged byte handles fail before native output and without running traps [0.10ms]
+
+runtime/test/bytes.test.ts:
+(pass) all octets round-trip through new frozen arrays without mutable aliases [0.79ms]
+(pass) integer bounds are checked before native numeric narrowing [0.09ms]
+(pass) fatal UTF-8 preserves BOM and scalar extremes and rejects malformed bytes [0.37ms]
+(pass) forged opaque values fail with resource_state without executing traps [0.20ms]
+(pass) raw transport fixture consumes copies and cannot mutate owned source bytes [0.07ms]
+
+runtime/test/diagnostics.test.ts:
+(pass) direct Bun TS frames compose through upstream maps (callback=true) without private details [13.73ms]
+(pass) direct Bun TS frames compose through upstream maps (callback=false) without private details [16.05ms]
+(pass) stack inspection rejects proxies and accessors without calling authored behavior [0.12ms]
+
+runtime/test/provenance.test.ts:
+(pass) native transport failures carry their producing operation [0.34ms]
+(pass) native and authored codec failures with identical payloads stay distinguishable [0.15ms]
+(pass) judge validation keeps emitted provenance while judge decoding stays native [0.15ms]
+(pass) unknown native exceptions keep the standard channel and are never relabelled [0.12ms]
+(pass) cause and occurrence identity survive forwarding while equal reconstructions differ [0.03ms]
+(pass) provenance validation rejects unattributed native and malformed tags [0.04ms]
+
+runtime/test/array.test.ts:
+(pass) map awaits each native index observation without assimilating input or output data [0.18ms]
+(pass) filter, search and empty cases use awaited boolean decisions and preserve aliases [0.34ms]
+(pass) native reduce chains serialize for_each and protect fold accumulators [0.16ms]
+(pass) standard callback failure prevents later visits in every adapter [0.27ms]
+(pass) domain callback failure prevents later visits in every adapter [0.04ms]
+(pass) sort keys are computed once in order before native stable sorting [0.22ms]
+(pass) native mapping gaps keep later participant fixtures behind the current traversal [0.27ms]
+(pass) native copying operations preserve order, element aliases and immutable sources [0.07ms]
+(pass) collection adapters delegate mapping, filtering, reduction and sorting to native APIs [0.15ms]
+
+runtime/test/responses.test.ts:
+(pass) stateless request uses exact state codec and closed format [0.38ms]
+(pass) text is concatenated exactly, including empty parts and reasoning [0.17ms]
+(pass) generation envelope errors and status precedence [0.32ms]
+(pass) refusal validates all siblings and discards private prose [0.10ms]
+(pass) structured output retains exact tokens and rejects repairs [0.28ms]
+
+tools/runtime/output-graph.test.ts:
+(pass) closed graph rejects computed edges anywhere in generated syntax [3.24ms]
+(pass) upstream grammar distinguishes data/comments and exact static edges [1.36ms]
+
+tools/runtime/source-map-validation.test.ts:
+(pass) upstream source-map validation refuses missing, corrupt and unknown-source maps [2.22ms]
+
+ 352 pass
+ 0 fail
+ 22658 expect() calls
+Ran 352 tests across 61 files. [5.44s]

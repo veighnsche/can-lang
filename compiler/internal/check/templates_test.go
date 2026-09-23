@@ -483,3 +483,97 @@ func TestFixtureCatalogueTarget(t *testing.T) {
 		t.Fatalf("catalogue use expanded %d rows", len(step.Fixtures.Rows))
 	}
 }
+
+// Fixture obligations point at the offending use row and link the template
+// definition; definition failures point into the fixture declaration. No
+// fix guesses argument values or rewrites the definition.
+func TestFixtureObligation(t *testing.T) {
+	base := programHeader + templateTarget + `fixture doubled for double
+    given
+        int base
+    cases
+        base => ok base + base
+        3 => ok 6
+`
+	consumer := func(row string) string {
+		return `fn int consumer
+    emits []
+    asserts
+        sample: => ok 4
+    match call double(2)
+        when
+            ` + row + `
+        ok int got => ok got
+` + programMain + "    ok\n"
+	}
+	use, err := programFixture(t, map[string]string{"src/main.can": base + consumer(`sample: use doubled("x")`)})
+	if err == nil || use != nil {
+		t.Fatalf("mistyped use admitted: %v", err)
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-FIXTURE-USE" {
+		t.Fatalf("use failure lost code or span: %v", err)
+	}
+	if !strings.Contains(err.Error(), "template argument base expects") {
+		t.Fatalf("use failure omits the expected type: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "template defined here") {
+		t.Fatalf("use failure lost its definition link: %+v", located.Related)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("use failure proposed fixes: %+v", located.Fixes)
+	}
+
+	definition := programHeader + templateTarget + `fixture doubled for double
+    given
+        int base
+    cases
+        base => ok base + "x"
+` + consumer("sample: 2 => ok 4")
+	_, err = programFixture(t, map[string]string{"src/main.can": definition})
+	if err == nil {
+		t.Fatal("mistyped definition admitted")
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-FIXTURE-DEFINITION" {
+		t.Fatalf("definition failure lost code or span: %v", err)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("definition failure proposed fixes: %+v", located.Fixes)
+	}
+}
+
+// The definition link crosses files: the use fails in main.can while the
+// related span addresses the defining file.
+func TestFixtureObligationCrossFile(t *testing.T) {
+	lib := programHeader + templateTarget + `fixture doubled for double
+    given
+        int base
+    cases
+        base => ok base + base
+        3 => ok 6
+`
+	main := programHeader + `fn int consumer
+    emits []
+    asserts
+        sample: => ok 4
+    match call double(2)
+        when
+            sample: use doubled("x")
+        ok int got => ok got
+` + programMain + "    ok\n"
+	_, err := programFixture(t, map[string]string{"src/main.can": main, "src/helpers.can": lib})
+	if err == nil {
+		t.Fatal("mistyped cross-file use admitted")
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-FIXTURE-USE" {
+		t.Fatalf("cross-file use lost code or span: %v", err)
+	}
+	if !strings.Contains(located.File, "main.can") {
+		t.Fatalf("cross-file use misattributed: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].File, "helpers.can") {
+		t.Fatalf("cross-file use lost its definition file: %+v", located.Related)
+	}
+}

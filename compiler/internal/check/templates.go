@@ -50,6 +50,8 @@ func (c *programChecker) checkTemplates(program *Program, callables map[string]C
 				continue
 			}
 			if err := c.checkTemplate(program, file, d, callables); err != nil {
+				err = stampCode(err, "CAN-CHECK-FIXTURE-DEFINITION")
+				err = source.LocateCode(file.Source.Syntax.Source.Name(), d.DeclSpan(), "CAN-CHECK-FIXTURE-DEFINITION", err)
 				return fmt.Errorf("fixture %s: %w", d.Name.Text, err)
 			}
 		}
@@ -195,16 +197,19 @@ func (c *programChecker) expandTemplateUse(file *resolve.File, scope *resolve.Sc
 	useFile := file.Source.Syntax.Source.Name()
 	symbol, err := file.Lookup(scope, row.Use.Template, resolve.FixtureUse)
 	if err != nil {
-		return nil, nil, source.Locate(useFile, row.Use.Template.Span, err)
+		return nil, nil, source.LocateCode(useFile, row.Use.Template.Span, "CAN-CHECK-FIXTURE-USE", err)
 	}
 	template := c.templates[symbol.ID]
 	if template == nil {
 		return nil, nil, fmt.Errorf("fixture %s has no checked template", symbol.ID)
 	}
-	// Use failures point at the offending use span; no fix inserts or
-	// reorders arguments, which would guess values the author must supply.
+	// Use failures point at the offending use span and link the template
+	// definition; no fix inserts or reorders arguments, which would guess
+	// values the author must supply.
 	fail := func(primary source.Span, err error) ([]ir.FixtureRow, *Template, error) {
-		return nil, nil, source.Locate(useFile, primary, err)
+		err = stampCode(err, "CAN-CHECK-FIXTURE-USE")
+		err = source.LocateCode(useFile, primary, "CAN-CHECK-FIXTURE-USE", err)
+		return nil, nil, relateTemplate(template, err)
 	}
 	if len(row.Use.Arguments) != len(template.Params) {
 		names := make([]string, 0, len(template.Params))
@@ -238,6 +243,16 @@ func (c *programChecker) expandTemplateUse(file *resolve.File, scope *resolve.Sc
 		rows = append(rows, substituted)
 	}
 	return rows, template, nil
+}
+
+// relateTemplate links a use-site failure to its template definition,
+// across files when the template is imported. Without a resolved
+// definition it returns the failure unchanged.
+func relateTemplate(template *Template, err error) error {
+	if template == nil || template.Symbol == nil || template.Symbol.Declaration == nil || template.File == nil || template.File.Source == nil || template.File.Source.Syntax == nil || template.File.Source.Syntax.Source == nil {
+		return err
+	}
+	return source.Relate(template.File.Source.Syntax.Source.Name(), template.Symbol.Declaration.DeclSpan(), "template defined here", err)
 }
 
 // substituteRow replaces parameter bindings in one definition row with

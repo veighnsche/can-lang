@@ -4,6 +4,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 )
 
 const wrapHeader = "package app\n    provides []\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\n"
@@ -338,5 +340,45 @@ func TestWrapperRejects(t *testing.T) {
 				t.Fatalf("expected %q, got %v", tc.want, err)
 			}
 		})
+	}
+}
+
+// A calculated-bound cycle points at the first pending wrapper declaration
+// and links every other declaration still waiting on the chain. No fix
+// breaks the cycle: that redesigns the policies.
+func TestBoundCycleObligation(t *testing.T) {
+	text := wrapHeader + wrapLoad + "wrap first from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => relay call second()\nwrap second from load\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => relay call first()\n" + programMain + "    ok\n"
+	_, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "load", "draft"))
+	if err == nil {
+		t.Fatal("bound cycle admitted")
+	}
+	if !strings.Contains(err.Error(), "calculated-bound dependency cycle") {
+		t.Fatalf("cycle misdiagnosed: %v", err)
+	}
+	located, ok := source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-BOUND-CYCLE" {
+		t.Fatalf("cycle lost code or span: %v", err)
+	}
+	if located.Span.Start == 0 || located.Span.End <= located.Span.Start {
+		t.Fatalf("cycle lost its declaration span: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "still pending") {
+		t.Fatalf("cycle lost its chain link: %+v", located.Related)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("cycle proposed fixes: %+v", located.Fixes)
+	}
+
+	override := wrapHeader + wrapLoad + "wrap cached from cached\n    emits calculated\n    asserts\n        sample: => ok receipt(0)\n            using failure native http::status_error(404, [])\n    handles native\n        http::status_error => ok receipt(0)\n" + programMain + "    ok\n"
+	_, err = programFixture(t, withNativeRaw(map[string]string{"src/main.can": override}, "load", "draft"))
+	if err == nil || !strings.Contains(err.Error(), "wrapper base cycle") {
+		t.Fatalf("override cycle misdiagnosed: %v", err)
+	}
+	located, ok = source.AsLocated(err)
+	if !ok || located.Code != "CAN-CHECK-BOUND-CYCLE" {
+		t.Fatalf("override cycle lost code or span: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "override chain") {
+		t.Fatalf("override cycle lost its chain link: %+v", located.Related)
 	}
 }

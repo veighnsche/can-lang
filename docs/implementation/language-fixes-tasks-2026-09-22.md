@@ -260,7 +260,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF16-summary.json, LF16-check.log (coordination/exact-head/new rejections/array suites pass), LF16-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF16-runtime.log (347 pass across 59 files; run scoped to runtime/, see LF15 note), LF16-integration.log (staged integration+driver+emit all ok), LF16-diff-main.can + LF16-diff-report.json (15-row recursive-vs-map differential incl. real snapshot occurrence compare, full pass + verified build + run). widen_one/widen_b_one converters + map call sites + explicit reconstruction replace 28 recursive lines (2 call sites changed; fixture rows 25→37 with per-variant empty/singleton/repeated/mixed/12-large matrices); covariance/omitted-leaf/callback-contract negatives reject; runtime snapshot-identity test; coordination.md idiom documented. Reproduction commands in the summary.
 
-- [ ] **LF17 — Complete obligation diagnostics and checker-validated fixes**
+- [x] **LF17 — Complete obligation diagnostics and checker-validated fixes**
 
   **Depends on:** LF02, LF05, LF06, LF07, LF12, LF13, LF15. **Acceptance:** AE44.
 
@@ -274,7 +274,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run AE44 end to end across the final new source forms; read-only tooling never builds, publishes or calls providers. Keep existing runtime source mappings unchanged except corrected metadata.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF17-summary.json), [check](evidence/2026-09-22/language-fixes/LF17-check.log), [driver](evidence/2026-09-22/language-fixes/LF17-driver.log), [runtime-focused](evidence/2026-09-22/language-fixes/LF17-runtime-focused.log), [gotest](evidence/2026-09-22/language-fixes/LF17-gotest.log), [runtime](evidence/2026-09-22/language-fixes/LF17-runtime.log), [G4](evidence/2026-09-22/language-fixes/LF17-g4.json), [staged trio](evidence/2026-09-22/language-fixes/LF17-integration.log). Seven obligation classes coded with primary/secondary spans (missing-arm, outward-error, fixture use/definition, exact-specialization, capture, bound/override cycles); insert-only missing-arm fixes validated by checker + isolated overlay snapshot (astral/overlay/stale/doctored covered); G4 line-8 highlights hold with lexical control; mismatch reports carry root/site/invocation without value leaks (placeholder origins null; staged disclosure guard fixed); pending progress reports structure only. 15 check + 6 driver focused pass; go 15 ok (only pre-existing syntax docs-drift panic); runtime 353 pass from root (352 log predates the placeholder follow-up); trio ok x3. Review: ValidateFix enforces the documented insert-only invariant with a test.
 
 - [ ] **LF18 — Preserve source trivia and provide safe formatting**
 

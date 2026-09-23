@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -190,12 +192,23 @@ func (b ErrorBound) CheckEscaping(actual ErrorBound) error {
 	}
 	return nil
 }
+
+// errExactSpecialization marks ambiguity failures that list the exact
+// specializations the author must choose between. Callers classify with
+// errors.Is; the rendered message is unchanged.
+var errExactSpecialization = errors.New("write one of the exact specializations")
+
+// isExactSpecialization reports whether err asks the author to choose one
+// exact specialization. It keeps errors.Is out of callers whose error-set
+// parameters shadow the errors package.
+func isExactSpecialization(err error) bool { return errors.Is(err, errExactSpecialization) }
+
 func (b ErrorBound) ResolveBareArm(declarationIdentity string) (ConcreteError, error) {
 	var found *ConcreteError
 	for _, entry := range b.entries {
 		if entry.Declaration.Identity == declarationIdentity {
 			if found != nil {
-				return ConcreteError{}, fmt.Errorf("ambiguous error head %q; write one of the exact specializations: %s", found.Declaration.Name, strings.Join(b.specializations(declarationIdentity), ", "))
+				return ConcreteError{}, fmt.Errorf("ambiguous error head %q; %w: %s", found.Declaration.Name, errExactSpecialization, strings.Join(b.specializations(declarationIdentity), ", "))
 			}
 			copy := entry
 			found = &copy
@@ -221,16 +234,28 @@ func (b ErrorBound) ResolveExactArm(identity string) (ConcreteError, error) {
 	return ConcreteError{}, fmt.Errorf("error arm %s is outside matched bound", identity)
 }
 
-// specializationChoices renders one exact specialization per type: the
-// short source-like spelling plus its exact identity, so an ambiguity
-// error names every alternative the author can write. When short forms
-// collide, the colliding entries keep their full declarations so every
-// alternative stays distinct.
-func specializationChoices(alternatives []*types.Type) []string {
+// stampCode attaches a stable diagnostic code to an error whose located span
+// lacks one. Errors that already carry a code keep it, so choke points can
+// classify failures without disturbing deeper, more precise obligations.
+func stampCode(err error, code string) error {
+	if err == nil {
+		return nil
+	}
+	if located, ok := source.AsLocated(err); ok && located.Code == "" {
+		located.Code = code
+	}
+	return err
+}
+
+// displayAlternatives renders one exact specialization per type: the short
+// source-like spelling plus its exact identity. When short forms collide,
+// the colliding entries keep their full declarations so every alternative
+// stays distinct.
+func displayAlternatives(alternatives []*types.Type) []string {
 	out := make([]string, 0, len(alternatives))
 	names := make([]string, 0, len(alternatives))
 	for _, typ := range alternatives {
-		names = append(names, specializationName(typ, false))
+		names = append(names, displayType(typ, false))
 	}
 	seen := map[string]int{}
 	for _, name := range names {
@@ -239,14 +264,14 @@ func specializationChoices(alternatives []*types.Type) []string {
 	for i, typ := range alternatives {
 		name := names[i]
 		if seen[name] > 1 {
-			name = specializationName(typ, true)
+			name = displayType(typ, true)
 		}
 		out = append(out, name+" ("+typ.Identity()+")")
 	}
 	return out
 }
 
-func specializationName(typ *types.Type, full bool) string {
+func displayType(typ *types.Type, full bool) string {
 	name := typ.Declaration()
 	if name == "" {
 		name = typ.Identity()
@@ -261,7 +286,7 @@ func specializationName(typ *types.Type, full bool) string {
 	}
 	parts := make([]string, 0, len(args))
 	for _, arg := range args {
-		parts = append(parts, specializationName(arg, full))
+		parts = append(parts, displayType(arg, full))
 	}
 	return name + "<" + strings.Join(parts, ", ") + ">"
 }
@@ -273,7 +298,7 @@ func (b ErrorBound) specializations(declarationIdentity string) []string {
 			matches = append(matches, entry.Type)
 		}
 	}
-	out := specializationChoices(matches)
+	out := displayAlternatives(matches)
 	sort.Strings(out)
 	return out
 }

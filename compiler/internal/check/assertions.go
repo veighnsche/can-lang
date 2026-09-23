@@ -5,6 +5,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -141,7 +142,9 @@ func (c *regionChecker) expandUse(table *ir.FixtureTable, step *ir.InvocationSte
 		return fmt.Errorf("fixture %s: %w", row.Name.Text, err)
 	}
 	if template.Target.Identity != step.Identity {
-		return fmt.Errorf("fixture %s: use of %s targets %s, not the invoked %s (template defined at %s)", row.Name.Text, template.Symbol.ID, template.Target.Identity, step.Identity, template.File.Source.ID)
+		err := fmt.Errorf("fixture %s: use of %s targets %s, not the invoked %s (template defined at %s)", row.Name.Text, template.Symbol.ID, template.Target.Identity, step.Identity, template.File.Source.ID)
+		err = source.LocateCode(c.context.File.Name(), row.Use.Span, "CAN-CHECK-FIXTURE-USE", err)
+		return relateTemplate(template, err)
 	}
 	// Expanded completions re-home to the use region exactly as literal
 	// rows would; their value expressions are region-independent.

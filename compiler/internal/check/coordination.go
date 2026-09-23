@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
@@ -179,7 +180,11 @@ func (c *regionChecker) coordination(n syntax.Coordination, scope bodyScope, exp
 		} else if aggregate.Forward {
 			concrete, err := c.context.Errors.ResolveBareArm("can.prelude@1::all_failed")
 			if err != nil {
-				return nil, c.locate(aggregate.Outcome.Span, fmt.Errorf("forwarded all_failed needs one enclosing named variant specialization: %w", err))
+				wrapped := fmt.Errorf("forwarded all_failed needs one enclosing named variant specialization: %w", err)
+				if isExactSpecialization(err) {
+					return nil, c.locateCode(aggregate.Outcome.Span, "CAN-CHECK-EXACT-SPECIALIZATION", wrapped)
+				}
+				return nil, c.locate(aggregate.Outcome.Span, wrapped)
 			}
 			if err = c.aggregateCoverage(concrete.Type, errors); err != nil {
 				return nil, c.locate(aggregate.Outcome.Span, err)
@@ -241,7 +246,7 @@ func (c *regionChecker) coordinationHandler(arms []syntax.MatchArm, success *typ
 	for id, typ := range c.locals {
 		child.locals[id] = typ
 	}
-	checked, err := child.completionArms(arms, nil, success, errors, scope, scope, requireSuccess)
+	checked, err := child.completionArms(arms, success, errors, scope, scope, requireSuccess)
 	if err != nil {
 		return nil, err
 	}

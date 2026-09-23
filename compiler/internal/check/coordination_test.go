@@ -447,6 +447,15 @@ func TestAmbiguousBareHeadCarriesSpan(t *testing.T) {
 	if !strings.Contains(located.File, "main.can") {
 		t.Fatalf("ambiguity misattributed: %v", err)
 	}
+	if located.Code != "CAN-CHECK-EXACT-SPECIALIZATION" {
+		t.Fatalf("ambiguity lost its code: %v", err)
+	}
+	if len(located.Related) != 1 || !strings.Contains(located.Related[0].Note, "matched bound") {
+		t.Fatalf("ambiguity lost its bound link: %+v", located.Related)
+	}
+	if len(located.Fixes) != 0 {
+		t.Fatalf("ambiguity proposed fixes: %+v", located.Fixes)
+	}
 	for _, alternative := range []string{"all_failed<a_failure>", "all_failed<b_failure>"} {
 		if !strings.Contains(err.Error(), alternative) {
 			t.Fatalf("ambiguity hides %s: %v", alternative, err)

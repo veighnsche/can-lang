@@ -1,0 +1,173 @@
+[
+  {
+    "project": "passing",
+    "exit_code": 0,
+    "diagnostics": [],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int answer",
+      "    emits []",
+      "    asserts",
+      "        exact: => ok 1",
+      "    ok 1",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "project": "diagnostic-semantic",
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "message": "concrete function can.project.root/app::wrong_type: /private/tmp/can-lf17-g4/diagnostic-semantic/src/main.can region can.project.root/app::wrong_type: expression type does not fit expected type at byte 114",
+        "range": {
+          "end": {
+            "character": 14,
+            "line": 7
+          },
+          "start": {
+            "character": 7,
+            "line": 7
+          }
+        },
+        "severity": 1,
+        "source": "canlc"
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int wrong_type",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok \"wrong\"",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "project": "diagnostic-resolve",
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "message": "concrete function can.project.root/app::missing_name: /private/tmp/can-lf17-g4/diagnostic-resolve/src/main.can region can.project.root/app::missing_name: expression at byte 116: no eligible declaration for \"absent\"",
+        "range": {
+          "end": {
+            "character": 13,
+            "line": 7
+          },
+          "start": {
+            "character": 7,
+            "line": 7
+          }
+        },
+        "severity": 1,
+        "source": "canlc"
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_name",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok absent",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "project": "diagnostic-parse",
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "code": "CAN-LEX-PUNCTUATION",
+        "message": "character is not part of Can syntax",
+        "range": {
+          "end": {
+            "character": 8,
+            "line": 7
+          },
+          "start": {
+            "character": 7,
+            "line": 7
+          }
+        },
+        "severity": 1,
+        "source": "canlc"
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides []",
+      "    uses []",
+      "fn int missing_value",
+      "    emits []",
+      "    asserts",
+      "        sample: => ok 1",
+      "    ok @",
+      "fn void main",
+      "    emits []",
+      "    given",
+      "        str[] args",
+      "    asserts",
+      "        empty: [] => ok",
+      "    ok"
+    ]
+  },
+  {
+    "project": "diagnostic-astral",
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "message": "concrete function can.project.root/app::describe: /private/tmp/can-lf17-g4/diagnostic-astral/src/main.can region can.project.root/app::describe: expression at byte 153: expression at byte 162: no eligible declaration for \"missing\"",
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 10
+          },
+          "start": {
+            "character": 14,
+            "line": 10
+          }
+        },
+        "severity": 1,
+        "source": "canlc"
+      }
+    ],
+    "source_lines": [
+      "package app",
+      "    provides [describe]",
+      "    uses []",
+      "",
+      "fn str describe",
+      "    emits []",
+      "    given",
+      "        str row",
+      "    asserts",
+      "        sample: \"x\" => ok \"x\"",
+      "    ok \"\ud834\udd1e\" + missing"
+    ]
+  }
+]

@@ -3,6 +3,7 @@ package check
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
@@ -38,12 +39,9 @@ type CompletionContext struct {
 	InferReference func(*resolve.Scope, syntax.QualifiedName, *types.Type, *Expressions) (ValueBinding, bool, error)
 	InferCall      func(*resolve.Scope, syntax.QualifiedName, []syntax.Argument, *types.Type, *Expressions) (ValueBinding, bool, error)
 	Callables      map[string]CallableDeclaration
-	// Raw carries assertion-time native evidence for using-raw rows. It is
-	// set on file-owned root contexts and inherited by derived regions.
-	Raw           *RawScope
-	Variadic      map[string]bool
-	Method        func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
-	ResolveMethod func(MethodApplication) (ValueBinding, error)
+	Variadic       map[string]bool
+	Method         func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	ResolveMethod  func(MethodApplication) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
 	// BareOpaque permits bare ok in assertion expectations for C-excluded
@@ -54,6 +52,9 @@ type CompletionContext struct {
 	// SQLSite records one static descriptor name in the calling project
 	// and returns the splice the emitter renders for the call site.
 	SQLSite func(key, name string) ir.SQLCallSite
+	// Raw carries assertion-time native evidence for using-raw rows. It is
+	// set on file-owned root contexts and inherited by derived regions.
+	Raw *RawScope
 	// Inherit carries the immediately preceding policy rule for the wrapper
 	// key under checking. It is set only on wrapper arm regions; inherit
 	// anywhere else is rejected.
@@ -144,6 +145,16 @@ func (c *regionChecker) locate(span source.Span, err error) error {
 		return err
 	}
 	return source.Locate(c.context.File.Name(), span, err)
+}
+
+// locateCode attaches a span plus a stable diagnostic code. Like locate,
+// the innermost location wins; stampCode classifies errors that already
+// carry a deeper span.
+func (c *regionChecker) locateCode(span source.Span, code string, err error) error {
+	if c.context.File == nil {
+		return err
+	}
+	return source.LocateCode(c.context.File.Name(), span, code, err)
 }
 
 // The prelude error name cannot be authored as a declaration, but its selected
@@ -328,7 +339,9 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 			var bound ErrorBound
 			bound, err = c.context.Registry.Bound([]*types.Type{out.Value.Type})
 			if err == nil {
-				err = c.escaping(bound)
+				if escapeErr := c.escaping(bound); escapeErr != nil {
+					err = c.outward(n.Error.ExprSpan(), body.BodySpan(), escapeErr)
+				}
 			}
 		}
 	case *syntax.RelayBody:
@@ -342,7 +355,8 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 			bound, err = c.context.Registry.Bound(out.Call.Errors)
 			if err == nil {
 				if escapeErr := c.escaping(bound); escapeErr != nil {
-					err = c.relayWrapperNote(out.Call, bound, escapeErr)
+					escapeErr = c.relayWrapperNote(out.Call, bound, escapeErr)
+					err = c.outward(n.Call.ExprSpan(), body.BodySpan(), escapeErr)
 				}
 			}
 		}
@@ -355,7 +369,9 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 		var bound ErrorBound
 		bound, err = c.context.Registry.Bound(c.context.Inherit.Escapes)
 		if err == nil {
-			err = c.escaping(bound)
+			if escapeErr := c.escaping(bound); escapeErr != nil {
+				err = c.outward(body.BodySpan(), body.BodySpan(), escapeErr)
+			}
 		}
 	case *syntax.DoBody:
 		if len(n.Block.Steps) == 0 {
@@ -694,6 +710,28 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 		}
 	}
 	return out, nil
+}
+
+// outward reports an escaping failure against the region's declared bound:
+// the escaping expression is primary and the region completion is related,
+// naming the declared emits both obligations must agree on. No fix is
+// proposed: extending emits would silently widen the region's API, and
+// dropping the escape would suppress the error.
+func (c *regionChecker) outward(use, region source.Span, err error) error {
+	declared := make([]string, 0, len(c.context.Errors.Entries()))
+	for _, entry := range c.context.Errors.Entries() {
+		declared = append(declared, entry.TypeIdentity)
+	}
+	sort.Strings(declared)
+	explained := fmt.Errorf("%s; region declares emits [%s]", err.Error(), strings.Join(declared, ", "))
+	if c.context.File == nil {
+		return explained
+	}
+	out := source.LocateCode(c.context.File.Name(), use, "CAN-CHECK-OUTWARD-ERROR", explained)
+	if region == use {
+		return out
+	}
+	return source.Relate(c.context.File.Name(), region, "handle the member or extend the region bound", out)
 }
 
 func (c *regionChecker) escaping(bound ErrorBound) error {

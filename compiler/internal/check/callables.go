@@ -2,8 +2,10 @@ package check
 
 import (
 	"fmt"
+
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -94,23 +96,23 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 			binding, err = c.resolveMethod(application)
 		}
 	default:
-		return nil, fmt.Errorf("callable reference requires a named declaration or receiver method")
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("callable reference requires a named declaration or receiver method"))
 	}
 	if err != nil {
 		return nil, err
 	}
 	if routeOperation(binding.Identity) {
-		return nil, fmt.Errorf("route construction requires a direct call with a static path")
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("route construction requires a direct call with a static path"))
 	}
 	declaration, ok := c.context.Callables[binding.Identity]
 	if !ok {
-		return nil, fmt.Errorf("missing named callable declaration evidence")
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("missing named callable declaration evidence"))
 	}
 	if err = declaration.validate(); err != nil {
-		return nil, err
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", err)
 	}
 	if !types.Equal(binding.Type, declaration.Contract) || (receiver != nil) != declaration.Receiver {
-		return nil, fmt.Errorf("callable target/receiver contract mismatch")
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("callable target/receiver contract mismatch"))
 	}
 	site, err := c.lexicalSite("callable", n.Span)
 	if err != nil {
@@ -126,13 +128,23 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 		} else if declaration.Near[i] {
 			captured, err = e.Check(&syntax.NameExpr{ExpressionLocation: syntax.ExpressionLocation{Span: n.Span}, Name: syntax.QualifiedName{Name: declaration.Names[i]}}, nil)
 			if err != nil {
-				return nil, fmt.Errorf("near %s: %w", declaration.Names[i], err)
+				err = stampCode(err, "CAN-CHECK-CAPTURE")
+				return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("near capture %s of %s: %w", declaration.Names[i], binding.Identity, err))
 			}
 			captures = append(captures, captured.Text)
 		}
 		if captured != nil {
 			if !types.Equal(captured.Type, typ) {
-				return nil, fmt.Errorf("near or receiver capture %s requires exact declared type", declaration.Names[i])
+				err := fmt.Errorf("near or receiver capture %s of %s requires exact declared type %s", declaration.Names[i], binding.Identity, displayType(typ, false))
+				primary := n.Span
+				if declaration.Receiver && i == 0 && receiver != nil {
+					primary = receiver.Span
+				}
+				err = c.locateCode(primary, "CAN-CHECK-CAPTURE", err)
+				if primary != n.Span {
+					err = source.Relate(c.context.File.Name(), n.Span, "callable reference declares this capture", err)
+				}
+				return nil, err
 			}
 			out.Callable.Positions = append(out.Callable.Positions, i)
 			out.Inputs = append(out.Inputs, captured)

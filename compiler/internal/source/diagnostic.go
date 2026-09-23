@@ -23,7 +23,23 @@ type LocatedError struct {
 	File    string
 	Span    Span
 	Related []RelatedSpan
+	Fixes   []Fix
 	Err     error
+}
+
+// Fix is one compiler-proposed source repair: a title plus a single
+// replaced byte range of the diagnosed file. Compiler-generated fixes are
+// insert-only (Start == End) so validation can prove nothing was deleted,
+// suppressed or flattened; drivers must recheck every fix against an
+// isolated overlay snapshot and present only fixes that typecheck with
+// preserved contracts.
+type Fix struct {
+	Title   string
+	File    string
+	Start   int
+	End     int
+	Text    string
+	Version int64
 }
 
 func (e *LocatedError) Error() string { return e.Err.Error() }
@@ -47,6 +63,20 @@ func LocateCode(file string, span Span, code string, err error) error {
 		return err
 	}
 	return &LocatedError{File: file, Span: span, Code: code, Err: err}
+}
+
+// Suggest attaches one compiler-proposed repair to the located failure in
+// err's chain. Without a located failure it returns err unchanged.
+func Suggest(fix Fix, err error) error {
+	if err == nil || fix.File == "" {
+		return err
+	}
+	located, ok := AsLocated(err)
+	if !ok {
+		return err
+	}
+	located.Fixes = append(located.Fixes, fix)
+	return err
 }
 
 // Relate appends a secondary span to the located failure in err's chain.

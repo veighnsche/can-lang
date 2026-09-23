@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -243,7 +245,8 @@ func wrapperCallDeps(file *resolve.File, declaration *syntax.WrapDecl) []string 
 }
 
 // boundCycleError is a calculated-bound dependency cycle. It carries the
-// still-pending wrapper identities in the chain.
+// still-pending wrapper identities so the diagnostic can link every
+// declaration in the chain instead of naming them in prose alone.
 type boundCycleError struct{ involved []string }
 
 func (e *boundCycleError) Error() string {
@@ -345,6 +348,10 @@ func (c *programChecker) checkWrapperPolicies(program *Program, callables map[st
 	}
 	ordered, err := orderWrappers(wrappers, deps)
 	if err != nil {
+		var cycle *boundCycleError
+		if errors.As(err, &cycle) {
+			return locateBoundCycle(byID, cycle)
+		}
 		return err
 	}
 	for _, native := range ordered {
@@ -353,6 +360,37 @@ func (c *programChecker) checkWrapperPolicies(program *Program, callables map[st
 		}
 	}
 	return nil
+}
+
+// relateSymbol links a failure to a declared symbol's declaration span.
+// Symbols without a recorded declaration file are skipped.
+func relateSymbol(symbol *resolve.Symbol, note string, err error) error {
+	if symbol == nil || symbol.Declaration == nil || symbol.Source == nil || symbol.Source.Syntax == nil || symbol.Source.Syntax.Source == nil {
+		return err
+	}
+	return source.Relate(symbol.Source.Syntax.Source.Name(), symbol.Declaration.DeclSpan(), note, err)
+}
+
+// locateBoundCycle reports a calculated-bound cycle at the first pending
+// wrapper declaration and links every other pending declaration in the
+// chain. No fix is proposed: breaking the cycle redesigns the policies,
+// which the compiler cannot guess.
+func locateBoundCycle(byID map[string]*NativeDeclaration, cycle *boundCycleError) error {
+	var err error = cycle
+	placed := false
+	for _, id := range cycle.involved {
+		native := byID[id]
+		if native == nil {
+			continue
+		}
+		if !placed && native.Symbol != nil && native.Symbol.Declaration != nil && native.Symbol.Source != nil && native.Symbol.Source.Syntax != nil && native.Symbol.Source.Syntax.Source != nil {
+			err = source.LocateCode(native.Symbol.Source.Syntax.Source.Name(), native.Symbol.Declaration.DeclSpan(), "CAN-CHECK-BOUND-CYCLE", err)
+			placed = true
+			continue
+		}
+		err = relateSymbol(native.Symbol, fmt.Sprintf("still pending: %s waits on the cycle", id), err)
+	}
+	return err
 }
 
 // wrapperSets returns the original boundary sets for one wrapper: the raw
@@ -453,9 +491,9 @@ func (c *programChecker) resolveArmKey(file *resolve.File, pattern *syntax.Outco
 		case 1:
 			return candidates[0], nil
 		default:
-			alternatives := specializationChoices(candidates)
+			alternatives := displayAlternatives(candidates)
 			sort.Strings(alternatives)
-			return nil, fmt.Errorf("ambiguous emitted key %s; write one of the exact specializations: %s", symbol.ID, strings.Join(alternatives, ", "))
+			return nil, fmt.Errorf("ambiguous emitted key %s; %w: %s", symbol.ID, errExactSpecialization, strings.Join(alternatives, ", "))
 		}
 	}
 	typ, err := c.annotation(file, named, false)
@@ -607,6 +645,10 @@ func (c *programChecker) checkWrapper(program *Program, native *NativeDeclaratio
 		for index, arm := range table.arms {
 			keyType, err := c.resolveArmKey(file, arm.Pattern, table.origin, raw, emitted)
 			if err != nil {
+				if errors.Is(err, errExactSpecialization) {
+					err = source.LocateCode(file.Source.Syntax.Source.Name(), arm.Pattern.Span, "CAN-CHECK-EXACT-SPECIALIZATION", err)
+					return source.Relate(file.Source.Syntax.Source.Name(), declaration.DeclSpan(), "policy selects among the wrapped bound", err)
+				}
 				return err
 			}
 			key := WrapperKey{Origin: table.origin, Identity: keyType.Identity(), Decl: keyType.Declaration()}

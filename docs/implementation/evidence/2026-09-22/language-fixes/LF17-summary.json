@@ -1,0 +1,62 @@
+{
+ "acceptance": "AE44 (semantic locations, obligation explanations and safe fixes)",
+ "behavior_contracts": {
+  "AE44/codes": "Each obligation class carries a stable code: CAN-CHECK-MISSING-ARM, CAN-CHECK-OUTWARD-ERROR, CAN-CHECK-FIXTURE-USE, CAN-CHECK-FIXTURE-DEFINITION, CAN-CHECK-EXACT-SPECIALIZATION, CAN-CHECK-CAPTURE, CAN-CHECK-BOUND-CYCLE. stampCode classifies deeper spans without disturbing inner obligations; the lexical CAN-LEX-PUNCTUATION control is unchanged.",
+  "AE44/explanations": "Outward errors name the declared emits bound; fixture uses name expected params/types; capture failures name the capture, declaring callable and exact expected type; ambiguity lists every exact specialization as readable name plus exact identity.",
+  "AE44/secondary": "Missing arms link the invocation; outward errors link the region; fixture uses link the definition across files; ambiguity links the matched bound/policy; cycles link every pending declaration in the chain.",
+  "AE44/fixes": "Only missing forward/void-success arms propose insert-only fixes, each re-checked by the checker before surfacing and by ValidateFix against an isolated overlay snapshot before presentation. Emits widening, error suppression, ownership changes and guessed values are omitted, never proposed."
+ },
+ "bundle": "/tmp/canlc-lf17 built from the working tree (go build ./compiler); pinned Bun 1.4.2 archive .local-deps/bun-darwin-aarch64.zip and vendored tsc for the staged trio",
+ "changes": [
+  "compiler/internal/check/completion_matches.go: CAN-CHECK-MISSING-ARM with invocation link plus one insert-only forward/void-success arm re-checked by the checker; forward-arm escapes route through outward().",
+  "compiler/internal/check/completions.go: outward() reports CAN-CHECK-OUTWARD-ERROR at the escaping expression with the region bound linked and the declared emits named; locateCode() helper.",
+  "compiler/internal/check/errors.go: stampCode(), errExactSpecialization sentinel (messages byte-identical), displayAlternatives() readable name plus exact identity.",
+  "compiler/internal/check/patterns.go, wrap.go(resolveArmKey), coordination.go: ambiguity sites classified CAN-CHECK-EXACT-SPECIALIZATION with bound/policy links.",
+  "compiler/internal/check/templates.go, assertions.go: CAN-CHECK-FIXTURE-USE (use span plus cross-file definition link, expected params/types named) and CAN-CHECK-FIXTURE-DEFINITION (precise definition spans).",
+  "compiler/internal/check/callables.go: CAN-CHECK-CAPTURE at reference/capture spans naming capture, declaring callable and exact expected type.",
+  "compiler/internal/check/wrap.go: boundCycleError carries pending wrappers; locateBoundCycle() links every pending declaration (CAN-CHECK-BOUND-CYCLE).",
+  "compiler/internal/resolve/native.go: WrapperOrigin override-chain cycles located at the closing base reference with per-link chain spans (CAN-CHECK-BOUND-CYCLE).",
+  "compiler/internal/driver/fixes.go: ValidateFix/SuggestedFixes isolated-snapshot validation; rejections name the fix.",
+  "runtime/assert/context.ts: fixture-path diagnostics now carry the lexical FailureOrigin (source/start/end/invocation).",
+  "tests: TestMissingArmObligation, TestOutwardErrorObligation, TestFixtureObligation(+CrossFile), TestCaptureObligation, TestBoundCycleObligation, TestValidateFixMissingArm (astral file, overlay versions, doctored/stale rejects), ambiguity code/link assertions, runtime mismatch-report and pending-progress tests.",
+  "runtime/assert/context.ts follow-up: placeholder platform origins (empty invocation, e.g. can:cli) serialize as null in fixture-path reports; runtime/test/assertions.test.ts gains the placeholder test (353 pass)."
+ ],
+ "exit_mapping": {
+  "AE44-after": "G4 semantic/resolve cases highlight line 8 (0-based 7) and the astral case its line; lexical control unchanged. New classes: missing-arm, outward-error, fixture mismatch, exact-specialization inference, capture-dependency, bound/override cycles.",
+  "AE44-successful": "Clean programs diagnose nothing; repaired programs pass the actual checker (ValidateFix re-check); astral/overlay/imported-file locations covered by focused tests.",
+  "AE44-rejected": "Every new negative carries a stable code, precise primary span and relevant secondary provenance; no semantic error anchors to the first line.",
+  "AE44-runtime": "Diagnosis and fix validation run CheckSnapshot only: no build, publish, run, environment read or provider call. Runtime source maps untouched. Fixes apply to an isolated snapshot and must typecheck with preserved contracts.",
+  "AE44-fixture": "Mismatch reports identify root, lexical site (new origin field), reserved invocation paths and template definition/use (compile-time link); wrong-argument plus unused-row runtime case asserted; JSON scan proves no argument/capture values leak. Pending progress reports pending count plus structural frame paths/phases.",
+  "AE44-native": "Spans/provenance carried through IR/source-map adapters unchanged; no lowering or Promise-semantics change; location-only changes keep emitted behavior."
+ },
+ "focused_tests": [
+  "go check obligation suites (15 top-level incl. all new tests) -> pass (LF17-check.log)",
+  "go driver snapshot + fix-validator suite -> pass (LF17-driver.log)",
+  "bun runtime assertion/barrier/execution focused files (25 tests) -> pass (LF17-runtime-focused.log)",
+  "go test ./... -> 15 ok; only known pre-existing TestCoreConsumerSpecification docs-drift panic in untouched syntax package (LF17-gotest.log)",
+  "bun test runtime -> 352 pass, 0 fail (LF17-runtime.log)",
+  "G4 LSP probe rerun on current build: line-8 semantic/resolve highlights, lexical control, astral case (LF17-g4.json)",
+  "staged trio -> ok x3 incl. disclosure-guard fix (LF17-integration.log)"
+ ],
+ "integration": "Staged trio (CAN_BUN_ARCHIVE+CAN_BUN+CAN_TSC go test ./tests/integration/ ./compiler/internal/driver/ ./compiler/internal/emit/ -count=1) -> ok x3 (LF17-integration.log). A first staged run caught TestAssertionFailureLocations disclosing the synthetic can:cli origin via the new fixture-path origin field; placeholder origins (empty invocation) are now omitted (null) with a dedicated runtime test.",
+ "kind": "language-fixes-LF17-summary",
+ "negative": [
+  "Strict-emits and valued-success missing arms propose no fix; unforwardable obligations stay bare.",
+  "Outward errors, fixture failures, ambiguity, captures and cycles propose no fix: widening, suppression, ownership change and guessing are omitted.",
+  "Doctored fix text and stale overlay versions reject with named reasons (driver test).",
+  "Reports never dump argument values, captures or causes (JSON scan assertions); progress exposes paths/phases only."
+ ],
+ "positive": [
+  "Missing forward/void-success arms validate through the checker and the isolated overlay snapshot, including astral content and overlay versions.",
+  "All seven obligation classes carry stable codes with exact primary and secondary locations, including cross-file definition links.",
+  "G4 before cases highlight the correct spans; lexical control unchanged.",
+  "Runtime mismatch reports identify root, lexical site and reserved invocations for wrong-argument and unused-row cases without value leaks."
+ ],
+ "reproduction": {
+  "focused": "go test ./compiler/internal/check/ -run 'TestMissingArmObligation|TestOutwardErrorObligation|TestFixtureObligation|TestBoundCycleObligation|TestCaptureObligation|TestValidateFixMissingArm' -count=1 && bun test runtime/test/assertions.test.ts",
+  "g4": "go build -o /tmp/canlc ./compiler && python3 docs/implementation/evidence/2026-09-22/language-fixes/LF02-lsp.py /tmp/canlc <work> <out.json>",
+  "snapshot": "bun test runtime && go test ./...",
+  "staged": "CAN_BUN_ARCHIVE=<archive> CAN_BUN=<bun> CAN_TSC=<tsc.js> go test ./tests/integration/ ./compiler/internal/driver/ ./compiler/internal/emit/ -count=1"
+ },
+ "scope_note": "Expression-level and resolve-namespace failures outside the seven obligation classes keep their existing spans without new codes; classifying every semantic error is not part of LF17. The syntax-package TestCoreConsumerSpecification docs-drift panic predates this task and is untouched."
+}

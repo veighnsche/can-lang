@@ -29,6 +29,10 @@ type Diagnostic struct {
 	Message  string
 	Severity string
 	Related  []RelatedDiagnostic
+	// Fixes carries compiler-proposed repairs for this diagnostic. Entries
+	// are candidates only; drivers must validate each through ValidateFix
+	// and present only fixes that validate.
+	Fixes []Fix
 }
 
 // RelatedDiagnostic is one secondary location for a diagnostic: the
@@ -53,12 +57,15 @@ type Location struct {
 
 // Snapshot is one inert diagnosis over disk plus overlays: the loaded
 // graph, the resolved world when resolution succeeded, and the CLI-first
-// diagnostics. It never builds, runs, asserts, dials out, queries,
-// reads the environment, emits files, or mutates registries.
+// diagnostics. Versions records the overlay document version behind each
+// diagnosed file so fix validation can reject stale edits. It never
+// builds, runs, asserts, dials out, queries, reads the environment,
+// emits files, or mutates registries.
 type Snapshot struct {
 	Graph       *project.Graph
 	World       *compileresolve.World
 	Diagnostics []Diagnostic
+	Versions    map[string]int64
 }
 
 // CheckSnapshot loads the named project with overlay substitution and runs
@@ -69,7 +76,10 @@ func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snaps
 	if directory == "" {
 		return nil, fmt.Errorf("diagnose project: empty directory")
 	}
-	snapshot := &Snapshot{}
+	snapshot := &Snapshot{Versions: map[string]int64{}}
+	if overlay != nil {
+		snapshot.Versions = overlay.Versions()
+	}
 	graph, err := project.LoadWithOverlay(directory, overlay)
 	if err != nil {
 		snapshot.Diagnostics = loadDiagnostics(graph, openFile, err)
@@ -119,6 +129,9 @@ func semanticDiagnostic(graph *project.Graph, openFile string, err error) Diagno
 	diagnostic.EndLine, diagnostic.End = end.Line, end.Character
 	for _, related := range located.Related {
 		diagnostic.Related = append(diagnostic.Related, convertRelated(graph, related))
+	}
+	for _, fix := range located.Fixes {
+		diagnostic.Fixes = append(diagnostic.Fixes, Fix{Title: fix.Title, File: fix.File, Start: fix.Start, End: fix.End, NewText: fix.Text})
 	}
 	return diagnostic
 }

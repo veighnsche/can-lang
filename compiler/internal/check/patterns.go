@@ -71,8 +71,8 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 						}
 					}
 					if len(matches) > 1 {
-						alternatives := specializationChoices(matches)
-						return nil, c.locate(n.PatternSpan(), fmt.Errorf("ambiguous concrete pattern leaf %q; write one of the exact specializations: %s", n.Name.Name, strings.Join(alternatives, ", ")))
+						alternatives := displayAlternatives(matches)
+						return nil, c.locateCode(n.PatternSpan(), "CAN-CHECK-EXACT-SPECIALIZATION", fmt.Errorf("ambiguous concrete pattern leaf %q; %w: %s", n.Name.Name, errExactSpecialization, strings.Join(alternatives, ", ")))
 					}
 					if len(matches) == 1 {
 						leaf = matches[0]

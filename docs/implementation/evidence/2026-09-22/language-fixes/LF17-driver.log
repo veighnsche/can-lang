@@ -1,0 +1,7 @@
+--- PASS: TestCheckSnapshotHealthy (0.07s)
+--- PASS: TestCheckSnapshotParseError (0.00s)
+--- PASS: TestCheckSnapshotCheckErrorSpan (0.20s)
+--- PASS: TestCheckSnapshotResolveErrorSpan (0.00s)
+--- PASS: TestCheckSnapshotAstralSpan (0.06s)
+--- PASS: TestValidateFixMissingArm (0.25s)
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	0.871s

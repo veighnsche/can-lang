@@ -3,6 +3,7 @@ package resolve
 import (
 	"fmt"
 
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 )
 
@@ -86,12 +87,20 @@ func (w *World) WrapperOrigin(file *File, symbol *Symbol) (base, root *Symbol, h
 		return nil, nil, nil, fmt.Errorf("wrap requires a fetch, judge or wrapper base: %w", err)
 	}
 	seen := map[string]bool{symbol.ID: true}
+	chain := []*Symbol{symbol}
 	current, hop := base, file
+	closer, closerFile := declaration, file
 	for {
 		if seen[current.ID] {
-			return nil, nil, nil, fmt.Errorf("wrapper base cycle at %s", current.ID)
+			err := fmt.Errorf("wrapper base cycle at %s", current.ID)
+			err = source.LocateCode(closerFile.Source.Syntax.Source.Name(), closer.Base.Span, "CAN-CHECK-BOUND-CYCLE", err)
+			for _, link := range chain {
+				err = relateDeclaration(link, fmt.Sprintf("override chain passes through %s", link.ID), err)
+			}
+			return nil, nil, nil, err
 		}
 		seen[current.ID] = true
+		chain = append(chain, current)
 		next, ok := current.Declaration.(*syntax.WrapDecl)
 		if !ok {
 			header = syntax.NativeSignature(current.Declaration)
@@ -103,11 +112,21 @@ func (w *World) WrapperOrigin(file *File, symbol *Symbol) (base, root *Symbol, h
 		if hop = w.Files[current.Source]; hop == nil {
 			return nil, nil, nil, fmt.Errorf("wrapper base %s has no declaring file", current.ID)
 		}
+		closer, closerFile = next, hop
 		current, err = hop.Lookup(nil, next.Base, WrapBaseUse)
 		if err != nil {
 			return nil, nil, nil, err
 		}
 	}
+}
+
+// relateDeclaration links a failure to a declared symbol's declaration
+// span. Symbols without a recorded declaration file are skipped.
+func relateDeclaration(symbol *Symbol, note string, err error) error {
+	if symbol == nil || symbol.Declaration == nil || symbol.Source == nil || symbol.Source.Syntax == nil || symbol.Source.Syntax.Source == nil {
+		return err
+	}
+	return source.Relate(symbol.Source.Syntax.Source.Name(), symbol.Declaration.DeclSpan(), note, err)
 }
 
 func (w *World) wrapperSignature(file *File, scope *Scope, symbol *Symbol, declaration *syntax.WrapDecl) error {
