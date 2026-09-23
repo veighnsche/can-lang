@@ -132,7 +132,12 @@ fn http::router mounted
         call http::route_get("/g", callable tagged) as http::route generic
         call http::route_post("/w", callable wrapped) as http::route wrap
         call http::route_post("/s", callable search) as http::route form
-        call http::make_router([first, second, generic, wrap, form]) as http::router router
+        call http::route_put("/p", callable handle) as http::route put
+        call http::route_patch("/p", callable handle) as http::route patch
+        call http::route_delete("/d", callable handle) as http::route delete
+        call http::route_options("/o", callable handle) as http::route options
+        call http::route_head("/h", callable handle) as http::route head
+        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head]) as http::router router
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route

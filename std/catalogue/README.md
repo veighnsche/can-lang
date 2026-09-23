@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: b3c4c80b7d1785f386d60b1e42f26acc60d7fa13eff5236fc6a23aeab5c84b44.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 89a988f633273d8dc53be0ee3893b7fe298d3f7945bd92ad0a9ae9bb895f5df6.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -345,6 +345,11 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::response_json | T:wire; http::body_status status, http::server_headers headers, T body → http::server_response | [codec::invalid_data] |  | Response, Headers, JSON.stringify | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::route_get | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
 | http::route_post | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
+| http::route_put | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
+| http::route_patch | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
+| http::route_delete | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
+| http::route_options | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
+| http::route_head | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
 | http::make_router | http::route[] routes → http::router | [http::duplicate_route, http::ambiguous_route] |  | Map | Closed exact dispatch with 404/405/Allow, no implicit HEAD. | real | I32 / P10 |
 | http::make_server_config | str host, int port, int body_limit, int shutdown_ms → http::server_config | [http::invalid_server_config] |  | Number | Validate bounded config before server start. | real | I33 / P10 |
 | http::server_start | http::server_config config, http::router router → http::server | [http::bind_failed] |  | Bun.serve | Register ownership; await each Can callback and sanitize standard failures. | supplied | I33 / P6,P10 |

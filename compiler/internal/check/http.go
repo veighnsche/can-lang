@@ -18,6 +18,11 @@ const (
 	httpResponseJSON = "can.std.http@1::response_json"
 	httpRouteGet     = "can.std.http@1::route_get"
 	httpRoutePost    = "can.std.http@1::route_post"
+	httpRoutePut     = "can.std.http@1::route_put"
+	httpRoutePatch   = "can.std.http@1::route_patch"
+	httpRouteDelete  = "can.std.http@1::route_delete"
+	httpRouteOptions = "can.std.http@1::route_options"
+	httpRouteHead    = "can.std.http@1::route_head"
 )
 
 // HTTPSpecialization admits only the three generic I32 catalogue operations.
@@ -45,7 +50,7 @@ func httpGenericOperation(identity string) bool {
 }
 
 func routeOperation(identity string) bool {
-	return identity == httpRouteGet || identity == httpRoutePost
+	return identity == httpRouteGet || identity == httpRoutePost || identity == httpRoutePut || identity == httpRoutePatch || identity == httpRouteDelete || identity == httpRouteOptions || identity == httpRouteHead
 }
 
 // isScopeRequest reports whether the type is an ingress-only harness scope

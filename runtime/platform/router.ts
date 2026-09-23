@@ -5,7 +5,8 @@ import {resourceStateFailure} from "../failure.ts";
 import {normalizedPath,requestSnapshot,nativeResponse} from "./http.ts";
 const origin=Object.freeze({source:"can:router",start:0,end:0,invocation:Object.freeze([])});
 export type MountedCallback=(request:unknown,context?:AssertionContext)=>Promise<Completion<unknown>>;
-type Route=Readonly<{method:"GET"|"POST";source:string;path:string;callback:MountedCallback}>;
+type Method="GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD";
+type Route=Readonly<{method:Method;source:string;path:string;callback:MountedCallback}>;
 type Router=ReadonlyMap<string,ReadonlyMap<string,Route>>;
 const routes=new WeakMap<object,Route>(),routers=new WeakMap<object,Router>();
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
@@ -25,7 +26,7 @@ export async function dispatch(router:unknown,request:unknown,context?:Assertion
 }
 export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types:Readonly<{invalid:string;duplicate:string;ambiguous:string}>){
  const error=(type:string,fields:readonly(readonly[string,unknown])[])=>failure(domain.create(type,record(type,fields),origin));
- function route(method:"GET"|"POST",source:string,callback:MountedCallback):Completion<unknown>{
+ function route(method:Method,source:string,callback:MountedCallback):Completion<unknown>{
   // Source checking additionally requires a static path and named exact callback.
   if(!source.isWellFormed()||!source.startsWith("/")||source.startsWith("//")||/[\x00-\x20\x7f\\?#*]/.test(source)||source.split("/").some(segment=>segment.startsWith(":")))return error(types.invalid,[["reason","path"]]);
   let path:string;try{path=normalizedPath(new URL(source,"http://can.invalid"));}catch(cause){if(!(cause instanceof URIError)&&!(cause instanceof TypeError))throw cause;return error(types.invalid,[["reason","path"]]);}
@@ -36,6 +37,11 @@ export function createRouter(domain:ReturnType<typeof createDomainRuntime>,types
  return Object.freeze({
   async get(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("GET",path,callback);},
   async post(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("POST",path,callback);},
+  async put(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("PUT",path,callback);},
+  async patch(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("PATCH",path,callback);},
+  async delete(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("DELETE",path,callback);},
+  async options(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("OPTIONS",path,callback);},
+  async head(path:string,callback:MountedCallback,_context?:AssertionContext):Promise<Completion<unknown>>{return route("HEAD",path,callback);},
   async make(input:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
    const table=new Map<string,Map<string,Route>>();
    for(const token of dataArray(input)){

@@ -188,6 +188,15 @@ const text=(response)=>response.text();
  const reversed=await fetch(base+"/b");assert.equal(reversed.status,405);assert.equal(reversed.headers.get("allow"),"POST");
  const head=await fetch(base+"/a",{method:"HEAD"});assert.equal(head.status,405);assert.equal(head.headers.get("allow"),"GET");
 }
+{
+ const put=await fetch(base+"/p?q=v",{method:"PUT"});assert.equal(put.status,200);assert.equal(await text(put),"PUT");
+ const patch=await fetch(base+"/p?q=v",{method:"PATCH"});assert.equal(patch.status,200);assert.equal(await text(patch),"PATCH");
+ const del=await fetch(base+"/d?q=v",{method:"DELETE"});assert.equal(del.status,200);assert.equal(await text(del),"DELETE");
+ const opt=await fetch(base+"/o?q=v",{method:"OPTIONS"});assert.equal(opt.status,200);assert.equal(await text(opt),"OPTIONS");
+ const headed=await fetch(base+"/h?q=v",{method:"HEAD"});assert.equal(headed.status,200);
+ const allow=await fetch(base+"/p",{method:"POST"});assert.equal(allow.status,405);assert.equal(allow.headers.get("allow"),"PATCH, PUT");
+ const purge=await fetch(base+"/d",{method:"PURGE"});assert.equal(purge.status,405);assert.equal(purge.headers.get("allow"),"DELETE");
+}
 server.stop();
 console.log("compiled HTTP dispatch passed");
 `, mountedName, quote(module), quote(filepath.Join(build.Directory, "program/state.ts")), quote(filepath.Join(runtimes[0], "platform/http.ts")), quote(filepath.Join(runtimes[0], "platform/router.ts")))

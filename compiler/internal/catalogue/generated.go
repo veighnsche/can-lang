@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "b3c4c80b7d1785f386d60b1e42f26acc60d7fa13eff5236fc6a23aeab5c84b44"
+const GeneratedSourceSHA256 = "89a988f633273d8dc53be0ee3893b7fe298d3f7945bd92ad0a9ae9bb895f5df6"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -456,6 +456,11 @@ const OpHttpResponseHtml = "http::response_html"
 const OpHttpResponseJson = "http::response_json"
 const OpHttpRouteGet = "http::route_get"
 const OpHttpRoutePost = "http::route_post"
+const OpHttpRoutePut = "http::route_put"
+const OpHttpRoutePatch = "http::route_patch"
+const OpHttpRouteDelete = "http::route_delete"
+const OpHttpRouteOptions = "http::route_options"
+const OpHttpRouteHead = "http::route_head"
 const OpHttpMakeRouter = "http::make_router"
 const OpHttpMakeServerConfig = "http::make_server_config"
 const OpHttpServerStart = "http::server_start"

@@ -6956,6 +6956,241 @@
       ]
     },
     {
+      "name": "http::route_put",
+      "identity": "can.std.http@1::route_put",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [
+        "path"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "http::request"
+          ],
+          "result": "http::server_response",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::route_patch",
+      "identity": "can.std.http@1::route_patch",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [
+        "path"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "http::request"
+          ],
+          "result": "http::server_response",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::route_delete",
+      "identity": "can.std.http@1::route_delete",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [
+        "path"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "http::request"
+          ],
+          "result": "http::server_response",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::route_options",
+      "identity": "can.std.http@1::route_options",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [
+        "path"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "http::request"
+          ],
+          "result": "http::server_response",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::route_head",
+      "identity": "can.std.http@1::route_head",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [
+        "path"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "http::request"
+          ],
+          "result": "http::server_response",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::make_router",
       "identity": "can.std.http@1::make_router",
       "kind": "function",

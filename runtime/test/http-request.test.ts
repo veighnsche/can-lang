@@ -125,6 +125,15 @@ test("exact dispatch distinguishes 404 and 405 and never aliases HEAD to GET",as
  expect(calls).toBe(0);
  for(const method of ["GET","POST"]){const response=value(await dispatch(router,await snapshot("http://localhost/%78?q=ignored",{method})));expect(response.status).toBe(200);expect(await response.text()).toBe("ok");}expect(calls).toBe(2);
 });
+test("method table routes all seven methods with sorted Allow fallback",async()=>{
+ const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
+ const callback=async(request:unknown)=>responses.text(status,headers,value(await api.method(request)));
+ const router=value(await routing.make(array([value(await routing.get("/m",callback)),value(await routing.post("/m",callback)),value(await routing.put("/m",callback)),value(await routing.patch("/m",callback)),value(await routing.delete("/m",callback)),value(await routing.options("/m",callback)),value(await routing.head("/m",callback))])));
+ for(const method of ["GET","POST","PUT","PATCH","DELETE","OPTIONS","HEAD"] as const){const response=value(await dispatch(router,await snapshot("http://localhost/m",{method})));expect(response.status).toBe(200);expect(await response.text()).toBe(method);}
+ const trace=value(await dispatch(router,await snapshot("http://localhost/m",{method:"TRACE"})));
+ expect(trace.status).toBe(405);expect(trace.headers.get("allow")).toBe("DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT");
+ check(await routing.make(array([value(await routing.put("/m",callback)),value(await routing.put("/m",callback))])),1231,{method:"PUT",path:"/m"});
+});
 test("real loopback dispatch awaits completion and snapshots bodies before callback",async()=>{
  const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());let calls=0,entered!:()=>void,release!:()=>void;
  const started=new Promise<void>(resolve=>{entered=resolve;}),gate=new Promise<void>(resolve=>{release=resolve;});
