@@ -55,6 +55,19 @@ func (f *formatter) nativeState(fields []Field) {
 		}
 	}
 }
+func (f *formatter) wrapArms(section string, arms []WrapArm) {
+	if len(arms) == 0 {
+		return
+	}
+	f.line(1, "handles "+section)
+	for _, arm := range arms {
+		text := FormatType(arm.Pattern.Error)
+		if arm.Pattern.Alias != nil {
+			text += " as " + arm.Pattern.Alias.Text
+		}
+		f.body(2, text+" => ", arm.Body)
+	}
+}
 func (f *formatter) nativeEntries(section string, entries []NativeEntry) {
 	if len(entries) > 0 {
 		f.line(1, section)

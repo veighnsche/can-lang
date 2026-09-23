@@ -58,6 +58,7 @@ export function scopeRequest(context: AssertionContext | undefined): unknown {
   return current.scope;
 }
 export function rawProviderEvidence(context: AssertionContext): void { recordEvidence(state(context).evidence,"raw-provider-fixture"); }
+export function policyFixtureEvidence(context: AssertionContext): void { recordEvidence(state(context).evidence,"policy-fixture"); }
 export function contextReport(context: AssertionContext) {
   const current = state(context);
   const frames=Object.freeze(current.failures.flatMap(failure=>{

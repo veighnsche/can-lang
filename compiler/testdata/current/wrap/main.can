@@ -1,0 +1,141 @@
+package wraps
+    provides []
+    uses [http, codec, checks, ai, bytes, io]
+record receipt
+    int count
+connection service
+    endpoint "http://127.0.0.1:1/"
+    timeout_ms 5000
+    max_body_bytes 8192
+fetch receipt load from service
+    emits [http::request_failed]
+    asserts
+        decoded: => ok receipt(7)
+            using raw "fixtures/load.json"
+    get "/load"
+wrap cached from load
+    emits calculated
+    asserts
+        absent: => ok receipt(0)
+            using failure native http::status_error(404, [])
+        busy: => http::request_failed(http::status_error(429, []))
+            using failure native http::status_error(429, [])
+    handles native
+        http::status_error as failed => match failed.status
+            404 => ok receipt(0)
+            _ => inherit
+wrap settled from cached
+    emits calculated
+    asserts
+        gone: => ok receipt(0)
+            using failure native http::status_error(404, [])
+        slow: => http::request_failed(http::status_error(503, []))
+            using failure native http::status_error(503, [])
+        stalled: => http::request_failed(http::timeout(5000))
+            using raw "fixtures/load_timeout.json"
+    handles native
+        http::status_error as failed => match failed.status
+            404 => ok receipt(0)
+            429 => inherit
+            _ => http::request_failed(failed)
+connection classifier
+    endpoint "http://127.0.0.1:1/systemone"
+    auth bearer env "CAN_I17_TOKEN"
+    timeout_ms 1000
+    metadata
+        protocol "typesafe_systemone_v1"
+        model "jev-latest"
+fn float report
+    emits [codec::invalid_data, io::write_failed]
+    given
+        float probability
+        str marker
+    asserts
+        direct: 0.5, "T" => ok 0.5
+    match call bytes::from_utf8(marker)
+        codec::invalid_data
+        ok bytes::buffer encoded => match call io::stdout_write(encoded)
+            when
+                sample: encoded => ok 1
+                sample: encoded => ok 1
+                sample: encoded => ok 1
+                direct: encoded => ok 1
+            io::write_failed
+            ok int written => ok probability
+noul float likelihood from classifier
+    emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    given
+        str description
+    asks description
+    minimum 0.5
+        true "Yes" => relay call report(%, "T")
+        false "No" => relay call report(%, "F")
+judge float assess from classifier
+    emits [http::request_failed, ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
+    state
+        int amount
+        float signed_zero
+    asserts
+        sample: (9007199254740993, -0.0) => ok 0.75
+            using raw "fixtures/assess.json"
+    call likelihood("First") as float first
+    call likelihood("Second") as float second
+    call likelihood("Unused") as float unused
+    ok => ok first + second
+wrap guarded from assess
+    emits calculated
+    asserts
+        absorbed: (9007199254740993, -0.0) => ok 0.0
+            using failure emitted ai::invalid_answer("q2", "out of range")
+        missing: (9007199254740993, -0.0) => ok 0.0
+            using failure native http::status_error(404, [])
+    handles native
+        http::status_error as failed => match failed.status
+            404 => ok 0.0
+            _ => inherit
+    handles emitted
+        ai::invalid_answer as invalid => ok 0.0
+fn float probe
+    emits [http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed]
+    asserts
+        sample: => ok 0.5
+    match call guarded((9007199254740993, -0.0))
+        when
+            sample: (9007199254740993, -0.0) => ok 0.5
+        http::request_failed
+        ai::invalid_question
+        codec::invalid_data
+        io::write_failed
+        ok float value => ok value
+fn receipt via_reference
+    emits [http::request_failed]
+    asserts
+        sample: => ok receipt(0)
+    callable receipt () emits [http::request_failed] action = callable settled
+    match call action()
+        when
+            sample: => ok receipt(0)
+        http::request_failed
+        ok receipt output => ok output
+fn void main
+    emits [http::request_failed, ai::invalid_question, codec::invalid_data, io::write_failed, checks::failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call settled()
+        when
+            sample: => ok receipt(0)
+        http::request_failed
+        ok receipt received => match call checks::require(received.count is 0, "settled count")
+            checks::failed
+            ok => match call guarded((9007199254740993, -0.0))
+                when
+                    sample: (9007199254740993, -0.0) => ok 0.75
+                http::request_failed
+                ai::invalid_question
+                codec::invalid_data
+                io::write_failed
+                ok float measured => match call checks::require(measured is 0.75, "guarded measure")
+                    checks::failed
+                    ok => ok

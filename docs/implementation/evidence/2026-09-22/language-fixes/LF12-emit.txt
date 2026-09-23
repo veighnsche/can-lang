@@ -1,0 +1,50 @@
+=== wrapper dispatcher (settled: grandchild over cached) ===
+export async function $canNative2($canContext?: $canAssertionContext): Promise<$canCompletion<$canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4>> {
+let $canOrigin = {source:"can.project.root/wraps/main.can",start:787,end:1363,invocation:["can.project.root/wraps::settled"]};
+try {
+const $canOutcome = await $canPolicyBase($canContext, "can.project.root/wraps::settled", $canOrigin, () => $canNative1($canContext));
+if ($canOutcome.kind !== 'domain') return $canOutcome;
+const $canKey = $canPolicyKey($canOutcome, "ed369f54fc1b483e4356ec7ec4b97986259ab7b485d2331c02767924e8586d62");
+if ($canKey.origin === "native" && $canKey.identity === "ce35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc") { return await $canNative2Handler0(($canPolicyLeaf($canOutcome) as $canTypece35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc), $canOutcome, $canContext); }
+return $canOutcome;
+} catch ($canCause) { return $canCaught($canCause, $canOrigin); }
+
+=== inherited rule region with terminal inherit (cached status rule) ===
+} catch ($canCause) { return $canCaught($canCause, $canOrigin); }
+}
+export async function $canNative1Handler0($canArg0: $canTypece35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc, $canOriginal: $canCompletion<$canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4>, $canContext?: $canAssertionContext): Promise<$canCompletion<$canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4>> {
+let $canOrigin = {source:"can.project.root/wraps/main.can",start:709,end:787,invocation:["can.project.root/wraps::cached/handles/native/0"]};
+try {
+$canOrigin = {source:"can.project.root/wraps/main.can",start:715,end:721,invocation:["can.project.root/wraps::cached/handles/native/0"]};
+const $canExpr1 = ($canArg0) as unknown as $canTypece35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc;
+$canOrigin = {source:"can.project.root/wraps/main.can",start:715,end:728,invocation:["can.project.root/wraps::cached/handles/native/0"]};
+const $canExpr2 = $canExpr1["status"];
+if (($canExpr2 === 404n)) {
+$canOrigin = {source:"can.project.root/wraps/main.can",start:759,end:760,invocation:["can.project.root/wraps::cached/handles/native/0"]};
+const $canExpr3 = 0n;
+$canOrigin = {source:"can.project.root/wraps/main.can",start:751,end:761,invocation:["can.project.root/wraps::cached/handles/native/0"]};
+const $canExpr4 = ($canRecord("79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4", [["count", $canExpr3]] )) as unknown as $canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4;
+return $canSuccess($canExpr4);
+}
+else if ((true)) {
+return $canOriginal;
+}
+else { throw new Error('checked match was not exhaustive'); }
+} catch ($canCause) { return $canCaught($canCause, $canOrigin); }
+}
+export async function $canNative1($canContext?: $canAssertionContext): Promise<$canCompletion<$canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4>> {
+let $canOrigin = {source:"can.project.root/wraps/main.can",start:373,end:787,invocation:["can.project.root/wraps::cached"]};
+try {
+
+=== attached injection actual (cached/absent) ===
+async function $canInjectActual($canContext: $canAssertionContext): Promise<$canCompletion<$canType79bd702639799a2c11fb412faa0896397eb0b42aea0eeb31be7eda5abd4b6da4>> {
+let $canOrigin = {source:"can.project.root/wraps/main.can",start:436,end:530,invocation:["can.project.root/wraps::cached/assert/absent/actual/injected"]};
+$canOrigin = {source:"can.project.root/wraps/main.can",start:513,end:516,invocation:["can.project.root/wraps::cached/assert/absent/actual/injected"]};
+const $canExpr1 = 404n;
+$canOrigin = {source:"can.project.root/wraps/main.can",start:518,end:520,invocation:["can.project.root/wraps::cached/assert/absent/actual/injected"]};
+const $canExpr2 = Object.freeze([]);
+$canOrigin = {source:"can.project.root/wraps/main.can",start:494,end:521,invocation:["can.project.root/wraps::cached/assert/absent/actual/injected"]};
+const $canExpr3 = ($canRecord("ce35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc", [["status", $canExpr1], ["headers", $canExpr2]] )) as unknown as $canTypece35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc;
+$canPolicyProvide($canContext, "can.project.root/wraps::cached", "native", "ce35bb8bd5cc3430de031efb095b4cb5acfe50b4c85bb795e4994941b61884bc", $canExpr3, "ed369f54fc1b483e4356ec7ec4b97986259ab7b485d2331c02767924e8586d62", $canDomain, $canOrigin);
+return $canActual($canContext);
+}

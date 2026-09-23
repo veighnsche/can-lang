@@ -172,6 +172,7 @@ func (c *regionChecker) observedAggregateHandler(arm *syntax.MatchArm, failures 
 		context.Parent = region.Parent
 		context.Kind = ir.HandlerRegion
 		context.Result = result
+		context.Inherit = nil
 		child := &regionChecker{aggregate: state, context: context, region: region, locals: map[string]*types.Type{}, uses: c.uses}
 		for id, typ := range c.locals {
 			child.locals[id] = typ

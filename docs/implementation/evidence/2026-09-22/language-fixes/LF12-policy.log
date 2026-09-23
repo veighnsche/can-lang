@@ -1,0 +1,46 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/assertions.test.ts:
+(pass) an assertion awaits and executes its real body exactly once [1.03ms]
+(pass) caught live-boundary refusal is sticky and independent roots do not share it [0.26ms]
+(pass) expected evaluation failure does not execute the subject [0.22ms]
+(pass) native assertion equality preserves nominal, float and opaque identities [0.09ms]
+(pass) argument lists compare callables by receipt, not construction site [0.21ms]
+(pass) supplied completion replaces only the exact call and labels its evidence [0.30ms]
+(pass) basic fixture FIFO never searches later rows and reports leftovers [0.16ms]
+
+runtime/test/policy.test.ts:
+(pass) native injection skips the operation and selects by leaf identity [0.29ms]
+(pass) emitted injection is not normalized and keeps its own identity [0.07ms]
+(pass) same-name codec keys stay distinct across origins [0.11ms]
+(pass) injection rejects unknown origins and double provision [0.07ms]
+(pass) policyBase invokes the operation without context or injection [0.09ms]
+
+runtime/test/raw-provider.test.ts:
+(pass) raw response compares the exact request and runs the real decoder [1.98ms]
+(pass) raw request mismatches fail before any outcome is released [0.49ms]
+(pass) raw json bodies compare exact number tokens ignoring member order [0.82ms]
+(pass) raw failure outcomes execute the real normalization path [0.30ms]
+(pass) raw environment supplies fake credentials and absence never leaks ambient [0.29ms]
+(pass) null exchange forbids transport but admits pretransport failures [0.18ms]
+(pass) raw fixtures are owned per operation and consumed exactly once [0.19ms]
+(pass) completion comparison matches genuine bytes by content without forging [0.11ms]
+(pass) malformed raw registrations fail fast without consuming the boundary [0.14ms]
+
+runtime/test/assert-report.test.ts:
+(pass) supplied completion evidence cannot promote itself to provider or target coverage [0.04ms]
+(pass) release evidence retains distinct categories and immutable snapshots [0.03ms]
+(pass) evidence tokens and categories fail closed [0.04ms]
+
+runtime/test/provenance.test.ts:
+(pass) native transport failures carry their producing operation [0.32ms]
+(pass) native and authored codec failures with identical payloads stay distinguishable [0.18ms]
+(pass) judge validation keeps emitted provenance while judge decoding stays native [0.51ms]
+(pass) unknown native exceptions keep the standard channel and are never relabelled [0.14ms]
+(pass) cause and occurrence identity survive forwarding while equal reconstructions differ [0.04ms]
+(pass) provenance validation rejects unattributed native and malformed tags [0.05ms]
+
+ 30 pass
+ 0 fail
+ 195 expect() calls
+Ran 30 tests across 5 files. [27.00ms]

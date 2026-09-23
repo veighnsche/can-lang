@@ -22,7 +22,10 @@ type CallableDeclaration struct {
 }
 
 func (d CallableDeclaration) validate() error {
-	if d.Kind != resolve.Function && d.Kind != resolve.Fetch {
+	if d.Kind == resolve.Wrapper && d.Grouped {
+		return fmt.Errorf("judge wrapper cannot be an ordinary callable reference; grouped state has no ordinary contract")
+	}
+	if d.Kind != resolve.Function && d.Kind != resolve.Fetch && d.Kind != resolve.Wrapper {
 		return fmt.Errorf("%s declaration cannot be an ordinary callable reference; use a named function wrapper", d.Kind)
 	}
 	if !types.Equal(d.Contract, d.Contract) || d.Contract.Kind() != types.Callable || len(d.Names) != len(d.Contract.Inputs()) || len(d.Near) != len(d.Names) {

@@ -180,7 +180,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF11-summary.json, LF11-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic proven on clean HEAD), LF11-integration.log (integration+driver+emit all ok), LF11-runtime.log (344 pass), LF11-raw.log (20+6+3 focused pass). Reproduction commands in the summary.
 
-- [ ] **LF12 — Implement derived wrappers, calculated bounds and handler tests**
+- [x] **LF12 — Implement derived wrappers, calculated bounds and handler tests**
 
   **Depends on:** LF05, LF07, LF09, LF10, LF11. **Acceptance:** AE09, AE25.
 
@@ -194,7 +194,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run eight-call selective recovery, 404 override/429 inherit and same-type native/emitted failures. Original operation runs once; handler failures never redispatch; fully replaced bounds disappear only when no other path emits them.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF12-summary.json, LF12-check.log (6 tests + 13 reject subtests pass), LF12-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF12-integration.log (integration+driver+emit all ok), LF12-runtime.log (349 pass), LF12-policy.log (30 pass), LF12-emit.txt (dispatcher + inherit rule + injection lowering). 3-generation fetch chain + judge wrapper + callable consumer in compiler/testdata/current/wrap; staged 13-row suite with 404/429/503/200 run gates and tsc. Reproduction commands in the summary.
 
 - [ ] **LF13 — Expand typed fixture templates at lexical owners**
 

@@ -135,7 +135,17 @@ func (r *ErrorRegistry) Concrete(typ *types.Type) (ConcreteError, error) {
 	return out, nil
 }
 
-type ErrorBound struct{ entries []ConcreteError }
+type ErrorBound struct {
+	entries []ConcreteError
+	// open permits any escaping domain error. Wrapper policy arms are
+	// checked against it while their calculated bound is still unknown;
+	// the region still accumulates every observed escape for the bound.
+	open bool
+}
+
+// OpenBound is the checking bound for wrapper policy arms. It must never
+// escape into a published signature or an arm-resolution set.
+func OpenBound() ErrorBound { return ErrorBound{open: true} }
 
 func (r *ErrorRegistry) Bound(errors []*types.Type) (ErrorBound, error) {
 	out := ErrorBound{}
@@ -166,6 +176,9 @@ func (b ErrorBound) Entries() []ConcreteError {
 // infer an error set. Region checking supplies only the errors that escape its
 // explicit handlers, leaving standard failures in their separate channel.
 func (b ErrorBound) CheckEscaping(actual ErrorBound) error {
+	if b.open {
+		return nil
+	}
 	allowed := map[string]ErrorDeclaration{}
 	for _, entry := range b.entries {
 		allowed[entry.TypeIdentity] = entry.Declaration

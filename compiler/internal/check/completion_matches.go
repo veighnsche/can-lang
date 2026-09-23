@@ -74,11 +74,11 @@ func (c *regionChecker) match(n syntax.Match, scope bodyScope, valueType *types.
 		}
 		out.Call.Steps[0].Fixtures = table
 	}
-	out.Arms, err = c.completionArms(n.Arms, out.Call.Result, out.Call.Errors, scope, successScope, true)
+	out.Arms, err = c.completionArms(n.Arms, out.Call, out.Call.Result, out.Call.Errors, scope, successScope, true)
 	return out, err
 }
 
-func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Type, errors []*types.Type, scope, successScope bodyScope, requireSuccess bool) ([]ir.Arm, error) {
+func (c *regionChecker) completionArms(arms []syntax.MatchArm, call *ir.Invocation, result *types.Type, errors []*types.Type, scope, successScope bodyScope, requireSuccess bool) ([]ir.Arm, error) {
 	bound, err := c.context.Registry.Bound(errors)
 	if err != nil {
 		return nil, err
@@ -240,7 +240,11 @@ func (c *regionChecker) completionArms(arms []syntax.MatchArm, result *types.Typ
 			if len(entry.Arguments) != 0 {
 				missing = entry.TypeIdentity
 			}
-			return nil, c.locate(matchSpan, fmt.Errorf("missing completion arm for %s", missing))
+			message := fmt.Sprintf("missing completion arm for %s", missing)
+			if note := c.wrapperNote(call, entry.TypeIdentity, missing); note != "" {
+				message += note
+			}
+			return nil, c.locate(matchSpan, fmt.Errorf("%s", message))
 		}
 	}
 	return checked, nil

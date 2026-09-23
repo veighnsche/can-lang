@@ -248,11 +248,22 @@ type Assertion struct {
 	Mode *AssertionMode
 }
 
-// AssertionMode selects how one assert row executes. Raw carries the
-// source-relative fixture path token for can.native-fixture.v1 exchanges.
+// AssertionMode is the optional indented execution-mode line under an
+// assertion row. Raw carries the source-relative fixture path token;
+// Failure carries an attached wrapper policy injection.
 type AssertionMode struct {
-	Span source.Span
-	Raw  Token
+	Span    source.Span
+	Raw     Token
+	Failure *AssertionFailure
+}
+
+// AssertionFailure is `using failure native|emitted error_value`: a
+// policy-only test that skips the wrapped operation and injects a fresh
+// origin-tagged failure before the policy lookup.
+type AssertionFailure struct {
+	Span   source.Span
+	Origin Token
+	Value  Expr
 }
 type Binding struct {
 	Span  source.Span
@@ -306,6 +317,13 @@ type FailureBody struct {
 type RelayBody struct {
 	BodyLocation
 	Call *CallExpr
+}
+
+// InheritBody invokes the immediately preceding policy rule for the same
+// wrapper key and original failure. It is terminal-only and valid only
+// lexically inside a wrapper handler; checking enforces the scope.
+type InheritBody struct {
+	BodyLocation
 }
 type DoBody struct {
 	BodyLocation

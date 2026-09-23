@@ -21,6 +21,7 @@ func programImports(runtime string) []ModuleImport {
 		{Target: runtime + "/bytes.ts", Names: []ImportName{{"byteLength", "$canByteLength"}}},
 		{Target: runtime + "/callable.ts", Names: []ImportName{{"ownCallable", "$canOwnCallable"}, {"callableInstance", "$canCallableInstance"}}},
 		{Target: runtime + "/assert/fixtures.ts", Names: []ImportName{{"withFixture", "$canWithFixture"}}},
+		{Target: runtime + "/assert/policy.ts", Names: []ImportName{{"policyBase", "$canPolicyBase"}, {"policyKey", "$canPolicyKey"}, {"policyLeaf", "$canPolicyLeaf"}, {"provideInjection", "$canPolicyProvide"}}},
 		{Target: runtime + "/completion.ts", Names: []ImportName{{"success", "$canSuccess"}, {"failure", "$canFailure"}, {"value", "$canValue"}, {"invoke", "$canInvoke"}, {"caught", "$canCaught"}, {"errorType", "$canErrorType"}, {"errorPayload", "$canErrorPayload"}}},
 		{Target: runtime + "/completion.ts", TypeOnly: true, Names: []ImportName{{"Completion", "$canCompletion"}, {"AssertionContext", "$canAssertionContext"}}},
 		{Target: runtime + "/data.ts", Names: []ImportName{{"record", "$canRecord"}, {"update", "$canUpdate"}, {"array", "$canArray"}, {"recordIdentity", "$canRecordIdentity"}}},
@@ -228,7 +229,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	fetches := false
 	llms := false
 	for i, native := range program.Natives {
-		if native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil {
+		if native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil && native.Wrapper == nil {
 			continue
 		}
 		name := fmt.Sprintf("$canNative%d", i)
@@ -251,6 +252,9 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			functions[native.Symbol.ID] = name
 			judges = true
 		}
+		if native.Wrapper != nil {
+			functions[native.Symbol.ID] = name
+		}
 		for j, region := range native.Regions {
 			nativeNames[region.ID] = fmt.Sprintf("%sHandler%d", name, j)
 			nativePaths[region.ID] = native.Symbol.Source.OutputPath
@@ -258,7 +262,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 	}
 	connectionNames := map[string]string{}
 	for _, native := range program.Natives {
-		if native.Judge != nil || native.Fetch != nil || native.LLM != nil {
+		if native.Judge != nil || native.Fetch != nil || native.LLM != nil || native.Wrapper != nil {
 			connectionNames[native.Connection] = ""
 		}
 	}
@@ -632,7 +636,7 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			regions = append(regions, fn.Region)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.LLM != nil || native.ArmDescription != nil) {
+			if native.Symbol.Source.OutputPath == path && (native.Question != nil || native.Judge != nil || native.Fetch != nil || native.LLM != nil || native.ArmDescription != nil || native.Wrapper != nil) {
 				regions = append(regions, native.Regions...)
 				if f := native.Fetch; f != nil {
 					descriptors = append(descriptors, f.Path, f.Body)
@@ -679,24 +683,30 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			body.WriteString(code)
 		}
 		for _, native := range program.Natives {
-			if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil {
+			if native.Symbol.Source.OutputPath != path || native.Question == nil && native.Judge == nil && native.Fetch == nil && native.LLM == nil && native.ArmDescription == nil && native.Wrapper == nil {
 				continue
 			}
 			for _, region := range native.Regions {
-				emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
-				code, e := emitter.Function(nativeNames[region.ID], region)
+				emitter := RegionEmitter{Bindings: bindings, Functions: functions, RuleNames: nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
+				render := emitter.Function
+				if native.Wrapper != nil {
+					render = emitter.WrapperRule
+				}
+				code, e := render(nativeNames[region.ID], region)
 				if e != nil {
 					return nil, e
 				}
 				body.WriteString("export " + code)
 			}
-			emitter := RegionEmitter{Bindings: bindings, Functions: functions, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
+			emitter := RegionEmitter{Bindings: bindings, Functions: functions, RuleNames: nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID}
 			var code string
 			var e error
 			if native.Question != nil {
 				code, e = emitter.QuestionPreparation(nativeNames[native.Symbol.ID], native.Question, nativeNames)
 			} else if native.ArmDescription != nil {
 				continue
+			} else if native.Wrapper != nil {
+				code, e = emitter.Wrapper(nativeNames[native.Symbol.ID], native, functions, nativeNames)
 			} else if native.LLM != nil {
 				policy := program.Connections[native.Connection]
 				code, e = emitter.LLM(nativeNames[native.Symbol.ID], native.LLM, connectionNames[native.Connection], policy.Model, policy.MaxOutputTokens)
@@ -832,6 +842,17 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 				imports = append(imports, ModuleImport{Target: runtime + "/assert/provider.ts", Names: []ImportName{{"provideRawHTTP", "$canProvideRaw"}}})
 				body += fmt.Sprintf("async function $canRawActual($canContext: $canAssertionContext): Promise<$canCompletion<%s>> {\n$canProvideRaw($canContext, %s, %s);\nreturn $canActual($canContext);\n}\n", TypeName(test.Actual.Result), quote(test.Raw.Operation), spec)
 				actualName = "$canRawActual"
+			}
+			if test.Injected != nil {
+				if _, err := emitter.configure(&ir.Region{ID: test.Actual.ID + "/injected", Result: test.Injected.Value.Type, Span: test.Actual.Span}); err != nil {
+					return nil, err
+				}
+				lowered, err := emitter.expression.Lower(test.Injected.Value)
+				if err != nil {
+					return nil, err
+				}
+				body += fmt.Sprintf("async function $canInjectActual($canContext: $canAssertionContext): Promise<$canCompletion<%s>> {\nlet $canOrigin = %s;\n%s$canPolicyProvide($canContext, %s, %s, %s, %s, %s, $canDomain, $canOrigin);\nreturn $canActual($canContext);\n}\n", TypeName(test.Actual.Result), emitter.origin(test.Actual.Span), lowered.Statements, quote(test.Injected.Operation), quote(test.Injected.Origin), quote(test.Injected.Identity), lowered.Value, quote(test.Injected.Failed))
+				actualName = "$canInjectActual"
 			}
 			body += actual + expected + fmt.Sprintf("export const $canCase = Object.freeze({root: Object.freeze(%s), actual: %s, expected: $canExpected});\n", rootJSON, actualName)
 			modules = append(modules, Module{Path: path, Imports: imports, Body: body})

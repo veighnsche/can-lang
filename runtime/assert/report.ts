@@ -2,7 +2,7 @@
 // result. In particular, supplying a completion never implies provider or Bun
 // conformance coverage.
 export const evidenceLabels = Object.freeze([
-  "real-can", "supplied-completion", "raw-provider-fixture", "bun-conformance", "live-quality",
+  "real-can", "supplied-completion", "raw-provider-fixture", "policy-fixture", "bun-conformance", "live-quality",
 ] as const);
 export type EvidenceLabel = typeof evidenceLabels[number];
 export type EvidenceScope = "assertion" | "bun-conformance" | "live-quality";
@@ -32,12 +32,12 @@ export function recordEvidence(value: Evidence, label: EvidenceLabel): void {
 export function evidenceReport(value: Evidence): readonly EvidenceLabel[] {
   return Object.freeze([...state(value).labels].sort());
 }
-// Release tooling may combine jobs, but must retain all five distinct buckets.
+// Release tooling may combine jobs, but must retain all six distinct buckets.
 // Empty categories remain visible and cannot inherit another category's result.
 export function evidenceSummary(values: readonly Evidence[]) {
   const counts: Record<EvidenceLabel, number> = {
     "real-can": 0, "supplied-completion": 0, "raw-provider-fixture": 0,
-    "bun-conformance": 0, "live-quality": 0,
+    "policy-fixture": 0, "bun-conformance": 0, "live-quality": 0,
   };
   for (const value of values) for (const label of evidenceReport(value)) counts[label]++;
   return Object.freeze(counts);

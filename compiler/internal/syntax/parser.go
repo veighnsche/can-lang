@@ -106,6 +106,9 @@ func (p *parser) typeList(end Kind) []TypeNode {
 
 func (p *parser) errorBound() ErrorBound {
 	start := p.expectWord("emits").Span.Start
+	if p.word("calculated") {
+		p.fail("emits calculated is only admitted on wrap declarations")
+	}
 	p.expect("[")
 	types := p.typeList("]")
 	p.expect("]")

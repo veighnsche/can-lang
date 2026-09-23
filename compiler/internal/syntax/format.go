@@ -193,6 +193,12 @@ func Format(file *File) string {
 			f.nativeState(n.State)
 			f.nativeAssertions(n.Assertions)
 			f.line(1, "asks "+FormatExpression(n.Asks))
+		case *WrapDecl:
+			f.line(0, "wrap "+n.Name.Text+" from "+formatName(n.Base))
+			f.line(1, "emits calculated")
+			f.nativeAssertions(n.Assertions)
+			f.wrapArms("native", n.Native)
+			f.wrapArms("emitted", n.Emitted)
 		case *RecordDecl:
 			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters))
 			for _, field := range n.Fields {
@@ -252,7 +258,11 @@ func (f *formatter) assertion(level int, a Assertion) {
 	text += formatArguments(a.Arguments) + " => "
 	f.body(level, text, a.Expected)
 	if a.Mode != nil {
-		f.line(level+1, "using raw "+a.Mode.Raw.Text)
+		if a.Mode.Failure != nil {
+			f.line(level+1, "using failure "+a.Mode.Failure.Origin.Text+" "+FormatExpression(a.Mode.Failure.Value))
+		} else {
+			f.line(level+1, "using raw "+a.Mode.Raw.Text)
+		}
 	}
 }
 func (f *formatter) binding(level int, b Binding) {
@@ -342,6 +352,8 @@ func (f *formatter) body(level int, prefix string, body Body) {
 		f.line(level, prefix+FormatExpression(n.Error))
 	case *RelayBody:
 		f.line(level, prefix+"relay "+FormatExpression(n.Call))
+	case *InheritBody:
+		f.line(level, prefix+"inherit")
 	case *DoBody:
 		f.line(level, prefix+"do")
 		f.block(level+1, n.Block)

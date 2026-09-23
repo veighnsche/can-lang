@@ -40,6 +40,7 @@ const (
 	Question      Kind = "question"
 	Judge         Kind = "judge"
 	LLM           Kind = "llm"
+	Wrapper       Kind = "wrapper"
 	Value         Kind = "value"
 )
 
@@ -54,6 +55,7 @@ const (
 	CallUse        Usage = "call"
 	ValueUse       Usage = "value"
 	ErrorUse       Usage = "error"
+	WrapBaseUse    Usage = "wrapper base"
 )
 
 type Symbol struct {
@@ -76,17 +78,21 @@ func (s *Symbol) Eligible(usage Usage) bool {
 	case QuestionUse:
 		return s.Kind == Question
 	case ReferenceUse:
-		return (s.Kind == Function || s.Kind == Fetch) && s.Receiver == nil
+		// Wrappers are admitted here; checking rejects judge-rooted ones
+		// whose grouped state has no ordinary callable contract.
+		return (s.Kind == Function || s.Kind == Fetch || s.Kind == Wrapper) && s.Receiver == nil
 	case TypeUse:
 		return s.Kind == Record || s.Kind == Error || s.Kind == Variant || s.Kind == Opaque || s.Kind == Primitive || s.Kind == TypeParameter
 	case ConstructorUse:
 		return s.Constructible
 	case CallUse:
-		return (s.Kind == Function && s.Receiver == nil) || s.Kind == Fetch || s.Kind == Judge || s.Kind == LLM || s.Kind == Value && s.Callable
+		return (s.Kind == Function && s.Receiver == nil) || s.Kind == Fetch || s.Kind == Judge || s.Kind == LLM || s.Kind == Wrapper || s.Kind == Value && s.Callable
 	case ValueUse:
 		return s.Kind == Value || s.Kind == ChoiceArm
 	case ErrorUse:
 		return s.Kind == Error
+	case WrapBaseUse:
+		return s.Kind == Fetch || s.Kind == Judge || s.Kind == Wrapper
 	default:
 		return false
 	}
@@ -266,6 +272,9 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 	case *syntax.JudgeDecl:
 		s.Name = d.Name.Text
 		s.Kind = Judge
+	case *syntax.WrapDecl:
+		s.Name = d.Name.Text
+		s.Kind = Wrapper
 	case *syntax.QuestionDecl:
 		s.Name = d.Name.Text
 		s.Kind = Question
@@ -315,6 +324,8 @@ func declarationNameSpan(declaration syntax.Declaration) source.Span {
 	case *syntax.LLMDecl:
 		return d.Name.Span
 	case *syntax.JudgeDecl:
+		return d.Name.Span
+	case *syntax.WrapDecl:
 		return d.Name.Span
 	case *syntax.QuestionDecl:
 		return d.Name.Span
@@ -497,6 +508,9 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	}
 	if syntax.NativeSignature(declaration) != nil {
 		return w.nativeSignature(file, scope, symbol, declaration)
+	}
+	if d, ok := declaration.(*syntax.WrapDecl); ok {
+		return w.wrapperSignature(file, scope, symbol, d)
 	}
 	switch d := declaration.(type) {
 	case *syntax.ConnectionDecl:

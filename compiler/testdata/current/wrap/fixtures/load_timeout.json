@@ -1,0 +1,1 @@
+{"environment": {},"exchange": {"outcome": {"failure": {"kind": "timeout"}},"request": {"body": {"bytes_base64": ""},"headers": [],"method": "GET","url": "http://127.0.0.1:1/load"}},"schema": "can.native-fixture.v1","target": "can.project.root/wraps::settled"}

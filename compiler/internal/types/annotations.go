@@ -67,6 +67,38 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 				for _, input := range d.Inputs {
 					fields = append(fields, input.Field)
 				}
+			case *syntax.WrapDecl:
+				// Inherited annotations resolve in the root's declaring
+				// file. The bound is calculated from checked handlers in
+				// a later pass, so nothing is templated for it here.
+				symbol := file.Package.Scope.Symbols[d.Name.Text]
+				if symbol == nil {
+					return nil, fmt.Errorf("wrapper %q has no declared symbol", d.Name.Text)
+				}
+				_, root, header, err := world.WrapperOrigin(file, symbol)
+				if err != nil {
+					return nil, err
+				}
+				origin := world.Files[root.Source]
+				if origin == nil {
+					return nil, fmt.Errorf("wrapper root %s has no declaring file", root.ID)
+				}
+				if _, err := b.template(origin, header.Result, params, true); err != nil {
+					return nil, err
+				}
+				wrapFields := []syntax.Field{}
+				for _, input := range header.Inputs {
+					wrapFields = append(wrapFields, input.Field)
+				}
+				if judge, ok := root.Declaration.(*syntax.JudgeDecl); ok {
+					wrapFields = append(wrapFields, judge.State...)
+				}
+				for _, f := range wrapFields {
+					if _, err := b.template(origin, f.Type, params, false); err != nil {
+						return nil, fmt.Errorf("%s annotation %s: %w", file.Source.ID, f.Name.Text, err)
+					}
+				}
+				continue
 			default:
 				header := syntax.NativeSignature(declaration)
 				if header == nil {

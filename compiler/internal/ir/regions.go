@@ -81,6 +81,7 @@ const (
 	RelayCompletion   CompletionKind = "relay"
 	DoCompletion      CompletionKind = "do"
 	MatchCompletion   CompletionKind = "match"
+	InheritCompletion CompletionKind = "inherit"
 )
 
 type Completion struct {
@@ -91,6 +92,10 @@ type Completion struct {
 	Call     *Invocation
 	Block    *Block
 	Match    *Match
+	// Inherit names the predecessor rule region invoked by an inherit
+	// completion. Empty selects the origin default: forward the already
+	// normalized failure for native keys, forward unchanged for emitted.
+	Inherit string
 }
 type Match struct {
 	Span   source.Span

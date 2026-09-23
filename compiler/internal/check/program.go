@@ -313,7 +313,11 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	}
 	sort.Slice(files, func(i, j int) bool { return files[i].Source.ID < files[j].Source.ID })
 	for _, file := range files {
-		c.annotations[file] = map[string]*types.Type{}
+		// Wrapper gathering may populate an origin file's cache early;
+		// never drop entries another file already computed.
+		if c.annotations[file] == nil {
+			c.annotations[file] = map[string]*types.Type{}
+		}
 		for _, name := range []string{"int", "float", "str", "bool", "void"} {
 			if _, err = c.gather(file, named(name)); err != nil {
 				return nil, err
@@ -323,6 +327,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			switch d := declaration.(type) {
 			case *syntax.FetchDecl, *syntax.LLMDecl, *syntax.JudgeDecl, *syntax.QuestionDecl, *syntax.ChoiceArmDecl:
 				native, e := c.gatherNative(file, declaration)
+				if e != nil {
+					return nil, e
+				}
+				p.Natives = append(p.Natives, native)
+			case *syntax.WrapDecl:
+				native, e := c.gatherWrapper(file, d)
 				if e != nil {
 					return nil, e
 				}
@@ -440,6 +450,10 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables
 	for _, native := range p.Natives {
+		// Wrapper descriptors publish with their calculated contracts.
+		if native.Symbol.Kind == resolve.Wrapper {
+			continue
+		}
 		callables[native.Symbol.ID] = native.Descriptor
 	}
 	for id, typ := range p.Intrinsics {
@@ -468,6 +482,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			descriptor.Near = append(descriptor.Near, input.Near)
 		}
 		callables[fn.Symbol.ID] = descriptor
+	}
+	if err = c.checkWrapperPolicies(p, callables); err != nil {
+		return nil, err
 	}
 	if err = c.checkNativeBodies(p, callables); err != nil {
 		return nil, err
@@ -563,7 +580,7 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return CompletionContext{}, e
 	}
 	owner := file.Source.Package.Owner
-	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Asset: func(name string) ir.AssetResolution {
+	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Wrappers: wrapperPlans(c.program), Asset: func(name string) ir.AssetResolution {
 		return resolveAssetName(c.world.Graph, owner, name)
 	}, SQLSite: func(key, name string) ir.SQLCallSite {
 		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})

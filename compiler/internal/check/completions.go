@@ -54,6 +54,22 @@ type CompletionContext struct {
 	// SQLSite records one static descriptor name in the calling project
 	// and returns the splice the emitter renders for the call site.
 	SQLSite func(key, name string) ir.SQLCallSite
+	// Inherit carries the immediately preceding policy rule for the wrapper
+	// key under checking. It is set only on wrapper arm regions; inherit
+	// anywhere else is rejected.
+	Inherit *InheritContext
+	// Wrappers carries resolved policy plans by operation identity so
+	// escaping-obligation diagnostics can name the key, original target,
+	// selected handler and inherit chain behind a calculated member.
+	Wrappers map[string]*WrapperPlan
+}
+
+// InheritContext resolves one wrapper key's predecessor rule. Region names
+// the predecessor rule region; empty selects the origin default. Escapes is
+// the predecessor's escape set for the same key, contributing to the bound.
+type InheritContext struct {
+	Region  string
+	Escapes []*types.Type
 }
 type regionChecker struct {
 	aggregate *aggregateInference
@@ -321,8 +337,21 @@ func (c *regionChecker) completion(body syntax.Body, scope bodyScope) (*ir.Compl
 			var bound ErrorBound
 			bound, err = c.context.Registry.Bound(out.Call.Errors)
 			if err == nil {
-				err = c.escaping(bound)
+				if escapeErr := c.escaping(bound); escapeErr != nil {
+					err = c.relayWrapperNote(out.Call, bound, escapeErr)
+				}
 			}
+		}
+	case *syntax.InheritBody:
+		if c.context.Inherit == nil {
+			return nil, fmt.Errorf("inherit is only admitted in a wrapper policy handler")
+		}
+		out.Kind = ir.InheritCompletion
+		out.Inherit = c.context.Inherit.Region
+		var bound ErrorBound
+		bound, err = c.context.Registry.Bound(c.context.Inherit.Escapes)
+		if err == nil {
+			err = c.escaping(bound)
 		}
 	case *syntax.DoBody:
 		if len(n.Block.Steps) == 0 {

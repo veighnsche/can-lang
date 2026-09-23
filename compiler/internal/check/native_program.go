@@ -30,6 +30,8 @@ type NativeDeclaration struct {
 	// tracked per set: one identity may belong to both.
 	Native  []string
 	Emitted []string
+	// Wrapper holds the resolved policy plan for wrapper declarations.
+	Wrapper *WrapperPlan
 }
 
 func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Declaration) (*NativeDeclaration, error) {
@@ -117,6 +119,9 @@ func (c *programChecker) gatherNative(file *resolve.File, declaration syntax.Dec
 
 func (c *programChecker) checkNativeContracts(program *Program) error {
 	for _, native := range program.Natives {
+		if native.Symbol.Kind == resolve.Wrapper {
+			continue
+		}
 		for _, field := range native.State {
 			if _, err := types.Schema(c.bindings[native.Symbol.ID+"/input/"+field.Name.Text]); err != nil {
 				return fmt.Errorf("native state %s: %w", field.Name.Text, err)
@@ -221,6 +226,28 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		}
 		sort.Strings(emitted)
 		native.Emitted = emitted
+	}
+	// Wrappers share the original boundary sets of their root operation;
+	// policy lookup is against the original boundary, not the parent bound.
+	bySymbol := map[*resolve.Symbol]*NativeDeclaration{}
+	for _, native := range program.Natives {
+		bySymbol[native.Symbol] = native
+	}
+	for _, native := range program.Natives {
+		if native.Symbol.Kind != resolve.Wrapper {
+			continue
+		}
+		file := c.world.Files[native.Symbol.Source]
+		_, root, _, err := c.world.WrapperOrigin(file, native.Symbol)
+		if err != nil {
+			return err
+		}
+		original := bySymbol[root]
+		if original == nil {
+			return fmt.Errorf("wrapper %s root %s is not a checked operation", native.Symbol.Name, root.ID)
+		}
+		native.Native = append([]string(nil), original.Native...)
+		native.Emitted = append([]string(nil), original.Emitted...)
 	}
 	return nil
 }

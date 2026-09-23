@@ -1,0 +1,40 @@
+=== RUN   TestWrapperCalculatedBound
+--- PASS: TestWrapperCalculatedBound (0.09s)
+=== RUN   TestWrapperThreeGenerationOverride
+--- PASS: TestWrapperThreeGenerationOverride (0.06s)
+=== RUN   TestWrapperObligationDiagnostic
+--- PASS: TestWrapperObligationDiagnostic (0.11s)
+=== RUN   TestWrapTestdataContracts
+--- PASS: TestWrapTestdataContracts (0.07s)
+=== RUN   TestWrapperJudgeStateGroup
+--- PASS: TestWrapperJudgeStateGroup (0.11s)
+=== RUN   TestWrapperRejects
+=== RUN   TestWrapperRejects/cross-origin_injection
+=== RUN   TestWrapperRejects/question_base
+=== RUN   TestWrapperRejects/duplicate_key
+=== RUN   TestWrapperRejects/consumer_injection
+=== RUN   TestWrapperRejects/missing_key_coverage
+=== RUN   TestWrapperRejects/self_call_cycle
+=== RUN   TestWrapperRejects/llm_base
+=== RUN   TestWrapperRejects/impossible_native_key
+=== RUN   TestWrapperRejects/function_base
+=== RUN   TestWrapperRejects/self_base
+=== RUN   TestWrapperRejects/mutual_base
+=== RUN   TestWrapperRejects/inherit_outside_handler
+=== RUN   TestWrapperRejects/bad_transport_phase
+--- PASS: TestWrapperRejects (0.48s)
+    --- PASS: TestWrapperRejects/cross-origin_injection (0.06s)
+    --- PASS: TestWrapperRejects/question_base (0.00s)
+    --- PASS: TestWrapperRejects/duplicate_key (0.06s)
+    --- PASS: TestWrapperRejects/consumer_injection (0.06s)
+    --- PASS: TestWrapperRejects/missing_key_coverage (0.06s)
+    --- PASS: TestWrapperRejects/self_call_cycle (0.06s)
+    --- PASS: TestWrapperRejects/llm_base (0.00s)
+    --- PASS: TestWrapperRejects/impossible_native_key (0.06s)
+    --- PASS: TestWrapperRejects/function_base (0.00s)
+    --- PASS: TestWrapperRejects/self_base (0.00s)
+    --- PASS: TestWrapperRejects/mutual_base (0.00s)
+    --- PASS: TestWrapperRejects/inherit_outside_handler (0.06s)
+    --- PASS: TestWrapperRejects/bad_transport_phase (0.06s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	1.155s

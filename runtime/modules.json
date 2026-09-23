@@ -17,6 +17,13 @@
       "./context.ts",
       "./provider.ts"
     ],
+    "assert/policy.ts": [
+      "./context.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../completion.ts"
+    ],
     "assert/runner.ts": [
       "node:util",
       "../completion.ts",

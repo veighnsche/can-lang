@@ -12,6 +12,19 @@ type Assertion struct {
 	Actual   *Region
 	Expected *Region
 	Raw      *RawFixture
+	Injected *PolicyInjection
+}
+
+// PolicyInjection is an attached wrapper `using failure` row: the actual
+// invocation skips the wrapped operation and starts policy lookup from a
+// fresh origin-tagged failure built from the checked value. Reported as
+// policy-fixture evidence, never request/decoder evidence.
+type PolicyInjection struct {
+	Operation string
+	Origin    string
+	Identity  string
+	Failed    string
+	Value     *Expression
 }
 
 type FixtureTable struct {

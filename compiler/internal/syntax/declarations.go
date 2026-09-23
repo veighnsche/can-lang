@@ -119,6 +119,8 @@ func (p *parser) declaration() Declaration {
 		return p.fetch()
 	case p.word("llm"):
 		return p.llm()
+	case p.word("wrap"):
+		return p.wrap()
 	case p.word("fn"):
 		return p.function()
 	case p.word("record"):
@@ -302,6 +304,16 @@ func (p *parser) assertionMode() *AssertionMode {
 		p.singleLine(start, path.Span.End)
 		p.expect(Newline)
 		mode.Raw = path
+	case p.word("failure"):
+		p.take()
+		if !p.word("native") && !p.word("emitted") {
+			p.fail("using failure selects a native or emitted origin")
+		}
+		origin := p.take()
+		value := p.expression(1)
+		p.singleLine(start, value.ExprSpan().End)
+		p.expect(Newline)
+		mode.Failure = &AssertionFailure{Span: p.span(origin.Span.Start), Origin: origin, Value: value}
 	default:
 		p.fail("unknown assertion execution mode")
 	}
@@ -367,7 +379,7 @@ func (p *parser) block() Block {
 			steps = append(steps, &CallStep{Span: call.Span, Call: call})
 			continue
 		}
-		if p.word("ok") || p.word("relay") || p.word("match") {
+		if p.word("ok") || p.word("relay") || p.word("match") || p.word("inherit") {
 			break
 		}
 		// An explicit constructor at statement position completes the region;
@@ -431,6 +443,14 @@ func (p *parser) armBody(terminal bool) Body {
 		call := p.callExpression().(*CallExpr)
 		p.expect(Newline)
 		return &RelayBody{BodyLocation: BodyLocation{p.span(start)}, Call: call}
+	}
+	if p.word("inherit") {
+		if !terminal {
+			p.fail("inherit is only admitted as a terminal completion")
+		}
+		p.take()
+		p.expect(Newline)
+		return &InheritBody{BodyLocation: BodyLocation{p.span(start)}}
 	}
 	if terminal {
 		body := p.completion()

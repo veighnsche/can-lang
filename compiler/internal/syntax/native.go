@@ -46,6 +46,29 @@ type LLMDecl struct {
 	Asks       Expr
 }
 
+// WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
+// judge or wrapper base; the complete signature, grouped state, result and
+// connection are inherited. Handles tables hold origin-specific policy arms.
+type WrapDecl struct {
+	DeclarationLocation
+	Name       Token
+	Base       QualifiedName
+	Calculated Token
+	Assertions []Assertion
+	Native     []WrapArm
+	Emitted    []WrapArm
+	HasNative  bool
+	HasEmitted bool
+}
+
+// WrapArm is one policy rule: an exact error pattern with optional alias
+// plus a terminal body over the inherited result type.
+type WrapArm struct {
+	Span    source.Span
+	Pattern *OutcomePattern
+	Body    Body
+}
+
 func (p *parser) connection() Declaration {
 	start := p.expectWord("connection").Span.Start
 	name := p.expect(Name)
@@ -220,6 +243,75 @@ func (p *parser) llm() Declaration {
 	p.expect(Newline)
 	p.expect(Dedent)
 	return &LLMDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, State: state, Asks: asks}
+}
+
+func (p *parser) wrap() Declaration {
+	start := p.expectWord("wrap").Span.Start
+	name := p.expect(Name)
+	p.expectWord("from")
+	base := p.qualified()
+	p.expect(Newline)
+	p.expect(Indent)
+	p.expectWord("emits")
+	if !p.word("calculated") {
+		p.fail("wrap declarations require emits calculated")
+	}
+	calculated := p.take()
+	p.expect(Newline)
+	assertions := p.nativeAssertions()
+	var native, emitted []WrapArm
+	hasNative, hasEmitted := false, false
+	for p.word("handles") {
+		p.take()
+		section := ""
+		switch {
+		case p.word("native"):
+			section = "native"
+		case p.word("emitted"):
+			section = "emitted"
+		default:
+			p.fail("handles selects a native or emitted table")
+		}
+		p.take()
+		p.expect(Newline)
+		p.expect(Indent)
+		arms := []WrapArm{p.wrapArm()}
+		for !p.at(Dedent) && !p.at(EOF) {
+			arms = append(arms, p.wrapArm())
+		}
+		p.expect(Dedent)
+		switch section {
+		case "native":
+			if hasNative {
+				p.fail("duplicate handles native section")
+			}
+			if hasEmitted {
+				p.fail("handles native precedes handles emitted")
+			}
+			hasNative, native = true, arms
+		default:
+			if hasEmitted {
+				p.fail("duplicate handles emitted section")
+			}
+			hasEmitted, emitted = true, arms
+		}
+	}
+	if !hasNative && !hasEmitted {
+		p.fail("wrap requires at least one handles section")
+	}
+	p.expect(Dedent)
+	return &WrapDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Base: base, Calculated: calculated, Assertions: assertions, Native: native, Emitted: emitted, HasNative: hasNative, HasEmitted: hasEmitted}
+}
+
+func (p *parser) wrapArm() WrapArm {
+	start := p.peek().Span.Start
+	pattern := p.outcomePattern()
+	if pattern.Success || pattern.StandardFailure {
+		p.fail("a policy arm matches one exact error, never ok or [_]")
+	}
+	p.expect("=>")
+	body := p.armBody(true)
+	return WrapArm{Span: p.span(start), Pattern: &pattern, Body: body}
 }
 
 type JudgeDecl struct {

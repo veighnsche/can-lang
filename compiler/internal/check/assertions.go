@@ -25,8 +25,11 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 	var result []*ir.Assertion
 	for _, row := range rows {
 		root := ir.AssertionRoot{Package: fn.Symbol.Package.ID, Declaration: fn.Symbol.ID, Name: row.Name.Text}
+		if row.Mode != nil && row.Mode.Failure != nil {
+			return nil, fmt.Errorf("assertion %s: using failure is confined to attached wrapper assertions", row.Name.Text)
+		}
 		if row.Mode != nil {
-			return nil, fmt.Errorf("assertion %s: using raw is allowed on fetch/judge/LLM targets only", row.Name.Text)
+			return nil, fmt.Errorf("assertion %s: using raw is allowed on fetch/judge/LLM/wrapper targets only", row.Name.Text)
 		}
 		contract := c.bindings[fn.Identity()]
 		if contract != nil && contract.Kind() == types.Callable {
@@ -140,6 +143,9 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 		}
 		var raw *ir.RawFixture
 		if row.Mode != nil {
+			if row.Mode.Failure != nil {
+				return nil, fmt.Errorf("fixture %s: using failure is confined to attached wrapper assertions", row.Name.Text)
+			}
 			if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value == nil {
 				if kind := step.Result.Kind(); kind == types.Opaque || kind == types.Callable {
 					return nil, fmt.Errorf("fixture %s: using raw cannot drive a supplied opaque mock", row.Name.Text)
@@ -149,8 +155,8 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 				return nil, fmt.Errorf("fixture %s: using raw cannot resolve its target", row.Name.Text)
 			}
 			native, ok := c.context.Raw.Natives[step.Identity]
-			if !ok || native.Symbol.Kind != resolve.Fetch && native.Symbol.Kind != resolve.Judge && native.Symbol.Kind != resolve.LLM {
-				return nil, fmt.Errorf("fixture %s: using raw is allowed on fetch/judge/LLM targets only", row.Name.Text)
+			if !ok || native.Symbol.Kind != resolve.Fetch && native.Symbol.Kind != resolve.Judge && native.Symbol.Kind != resolve.LLM && native.Symbol.Kind != resolve.Wrapper {
+				return nil, fmt.Errorf("fixture %s: using raw is allowed on fetch/judge/LLM/wrapper targets only", row.Name.Text)
 			}
 			fixture, err := c.context.Raw.Load(row.Mode.Raw.Value)
 			if err != nil {
@@ -159,7 +165,13 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 			if err := c.context.Raw.CheckRawFixture(step.Identity, fixture); err != nil {
 				return nil, fmt.Errorf("fixture %s: %w", row.Name.Text, err)
 			}
-			raw = convertRawFixture(step.Identity, fixture)
+			// The wrapper target names the fixture, but the exchange
+			// substitutes at the root operation transport boundary.
+			operation := step.Identity
+			if native.Symbol.Kind == resolve.Wrapper && native.Wrapper != nil {
+				operation = native.Wrapper.Root
+			}
+			raw = convertRawFixture(operation, fixture)
 		}
 		table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
 	}
@@ -180,6 +192,8 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 			rows = d.Assertions
 		case *syntax.JudgeDecl:
 			rows = d.Assertions
+		case *syntax.WrapDecl:
+			rows = d.Assertions
 		default:
 			continue
 		}
@@ -199,6 +213,8 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 			return err
 		}
 		covered := false
+		selected := map[WrapperKey]bool{}
+		wrapped := native.Symbol.Kind == resolve.Wrapper
 		for _, row := range rows {
 			root := ir.AssertionRoot{Package: native.Symbol.Package.ID, Declaration: native.Symbol.ID, Name: row.Name.Text}
 			if row.Receiver != nil {
@@ -247,29 +263,89 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 				return fmt.Errorf("assertion %s expected completion: %w", row.Name.Text, err)
 			}
 			var raw *ir.RawFixture
+			var injected *ir.PolicyInjection
 			if row.Mode != nil {
-				if context.Raw == nil {
-					return fmt.Errorf("assertion %s: using raw cannot resolve its target", row.Name.Text)
-				}
-				fixture, err := context.Raw.Load(row.Mode.Raw.Value)
-				if err != nil {
-					return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
-				}
-				if err := context.Raw.CheckRawFixture(native.Symbol.ID, fixture); err != nil {
-					return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
-				}
-				raw = convertRawFixture(native.Symbol.ID, fixture)
-				if raw.Exchange != nil && raw.Exchange.Response != nil {
-					covered = true
+				if row.Mode.Failure != nil {
+					if !wrapped {
+						return fmt.Errorf("assertion %s: using failure is confined to attached wrapper assertions", row.Name.Text)
+					}
+					key, value, err := c.policyInjection(file, native, row)
+					if err != nil {
+						return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
+					}
+					if native.Wrapper == nil {
+						return fmt.Errorf("assertion %s: wrapper %s has no resolved policy", row.Name.Text, native.Symbol.Name)
+					}
+					value.Failed = native.Wrapper.Failed
+					injected = value
+					selected[key] = true
+				} else {
+					if context.Raw == nil {
+						return fmt.Errorf("assertion %s: using raw cannot resolve its target", row.Name.Text)
+					}
+					fixture, err := context.Raw.Load(row.Mode.Raw.Value)
+					if err != nil {
+						return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
+					}
+					if err := context.Raw.CheckRawFixture(native.Symbol.ID, fixture); err != nil {
+						return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
+					}
+					operation := native.Symbol.ID
+					if wrapped && native.Wrapper != nil {
+						operation = native.Wrapper.Root
+					}
+					raw = convertRawFixture(operation, fixture)
+					if raw.Exchange != nil && raw.Exchange.Response != nil {
+						covered = true
+					}
+					// A raw failure outcome runs the underlying operation
+					// through normalization into exactly one native key.
+					if wrapped && raw.Exchange != nil && raw.Exchange.Failure != nil {
+						if leaf, ok := rawFailureLeaf(raw.Exchange.Failure.Kind); ok && native.Wrapper != nil {
+							for _, local := range native.Wrapper.Local {
+								if local.Origin == WrapperNative && local.Decl == leaf {
+									selected[local] = true
+								}
+							}
+						}
+					}
 				}
 			}
-			program.Assertions = append(program.Assertions, &ir.Assertion{Root: root, Actual: actual, Expected: expected, Raw: raw})
+			program.Assertions = append(program.Assertions, &ir.Assertion{Root: root, Actual: actual, Expected: expected, Raw: raw, Injected: injected})
+		}
+		if wrapped {
+			// Wrapper transport evidence lives on the wrapped operation;
+			// wrappers prove each locally declared key instead.
+			if native.Wrapper == nil {
+				return fmt.Errorf("wrapper %s has no resolved policy", native.Symbol.Name)
+			}
+			for _, key := range native.Wrapper.Local {
+				if !selected[key] {
+					return fmt.Errorf("wrapper %s lacks an attached assertion selecting local %s key %s", native.Symbol.Name, key.Origin, key.Identity)
+				}
+			}
+			continue
 		}
 		if !covered {
 			return fmt.Errorf("native declaration %s lacks request/decoder coverage: attach a raw case comparing its prepared request against a response", native.Symbol.Name)
 		}
 	}
 	return nil
+}
+
+// rawFailureLeaf maps a fixture failure outcome to the exact native leaf it
+// normalizes into at the producing boundary.
+func rawFailureLeaf(kind string) (string, bool) {
+	switch kind {
+	case "transport":
+		return "can.std.http@1::transport_failed", true
+	case "timeout":
+		return "can.std.http@1::timeout", true
+	case "body_limit":
+		return "can.std.http@1::body_limit", true
+	default:
+		return "", false
+	}
 }
 
 func validateAssertionNames(declaration *syntax.FunctionDecl) error {

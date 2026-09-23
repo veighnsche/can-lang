@@ -234,11 +234,14 @@ func (c *regionChecker) coordinationHandler(arms []syntax.MatchArm, success *typ
 	context.Parent = region.Parent
 	context.Kind = ir.HandlerRegion
 	context.Result = result
+	// Coordination participants are separate regions: policy delegation
+	// cannot escape the arm's own do/match branches.
+	context.Inherit = nil
 	child := &regionChecker{aggregate: c.aggregate, context: context, region: region, locals: map[string]*types.Type{}, uses: c.uses}
 	for id, typ := range c.locals {
 		child.locals[id] = typ
 	}
-	checked, err := child.completionArms(arms, success, errors, scope, scope, requireSuccess)
+	checked, err := child.completionArms(arms, nil, success, errors, scope, scope, requireSuccess)
 	if err != nil {
 		return nil, err
 	}

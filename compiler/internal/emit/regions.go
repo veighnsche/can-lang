@@ -109,6 +109,9 @@ func NativeTypeDeclarations(graph []*types.Type) (string, error) {
 type RegionEmitter struct {
 	Bindings  map[string]string
 	Functions map[string]string
+	// RuleNames maps wrapper rule region IDs to their emitted function
+	// names so inherit delegates to the predecessor rule.
+	RuleNames map[string]string
 	// DomainRuntime is the private instance created from the checked error plan.
 	DomainRuntime string
 	SourceID      string
@@ -439,6 +442,24 @@ func (e *RegionEmitter) completion(node *ir.Completion) (string, error) {
 		return e.block(node.Block)
 	case ir.MatchCompletion:
 		return e.match(node.Match, "")
+	case ir.InheritCompletion:
+		if node.Inherit == "" {
+			return "return $canOriginal;\n", nil
+		}
+		target := e.RuleNames[node.Inherit]
+		if target == "" {
+			return "", fmt.Errorf("missing inherit target %s", node.Inherit)
+		}
+		var args []string
+		for _, input := range e.region.Inputs {
+			name := e.expression.Bindings[input.Identity]
+			if name == "" {
+				return "", fmt.Errorf("missing inherit argument %s", input.Identity)
+			}
+			args = append(args, name)
+		}
+		args = append(args, "$canOriginal", "$canContext")
+		return "return await " + target + "(" + strings.Join(args, ", ") + ");\n", nil
 	default:
 		return "", fmt.Errorf("unknown completion kind")
 	}

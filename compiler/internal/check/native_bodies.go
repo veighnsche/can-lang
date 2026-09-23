@@ -19,7 +19,7 @@ func (c *programChecker) nativeContext(program *Program, native *NativeDeclarati
 	if err != nil {
 		return CompletionContext{}, err
 	}
-	ctx := CompletionContext{Sites: indexLexicalSites(native.Symbol.ID, native.Symbol.Declaration), Identity: native.Symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: native.Signature.Result(), Errors: bound, Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file)}
+	ctx := CompletionContext{Sites: indexLexicalSites(native.Symbol.ID, native.Symbol.Declaration), Identity: native.Symbol.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: native.Signature.Result(), Errors: bound, Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file), Wrappers: wrapperPlans(program)}
 	if question, ok := native.Symbol.Declaration.(*syntax.QuestionDecl); ok {
 		for _, binder := range question.Binders {
 			id := native.Symbol.ID + "/metadata/" + binder.Name.Text
@@ -77,6 +77,11 @@ func expressionRegion(ctx CompletionContext) *regionChecker {
 }
 func (c *programChecker) checkNativeBodies(program *Program, callables map[string]CallableDeclaration) error {
 	for _, native := range program.Natives {
+		// Wrapper policies are checked in dependency order by the
+		// wrapper pass with their calculated contracts.
+		if native.Symbol.Kind == resolve.Wrapper {
+			continue
+		}
 		ctx, err := c.nativeContext(program, native, callables)
 		if err != nil {
 			return err
