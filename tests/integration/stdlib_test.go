@@ -31,6 +31,7 @@ var expectedMaintained = []string{
 	"examples/mysql",
 	"examples/crypto",
 	"examples/utilities",
+	"examples/websocket",
 	"examples/native-ai",
 	"std/map/current",
 	"std/ratio/current",

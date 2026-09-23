@@ -1,0 +1,236 @@
+package websocket_example
+    provides [pump, main]
+    uses [bytes, codec, files, http, stream, ws]
+/// Release a session and its reader after a terminal event or failure.
+/// Every pump exit funnels through here so a stop-prompted read fails
+/// clean instead of abandoning the session.
+fn int halt
+    emits []
+    given
+        ws::session session
+        stream::reader<ws::event> events
+    asserts
+        hello: => ok 0
+    match call stream::close_reader(events)
+        when
+            hello: events => ok
+        stream::close_failed => match call ws::close(session, 1000, "done")
+            when
+                hello: session, 1000, "done" => ok
+            ws::invalid_close => ok 0
+            ok => ok 0
+        ok => match call ws::close(session, 1000, "done")
+            when
+                hello: session, 1000, "done" => ok
+            ws::invalid_close => ok 0
+            ok => ok 0
+/// Echo every inbound message until the peer closes. Text and binary echo
+/// through their own send; drain retries the read and close ends the pump.
+fn int pump
+    emits []
+    given
+        ws::session session
+        stream::reader<ws::event> events
+    asserts
+        hello: => ok 1
+    match call stream::read_many(events, 1)
+        when
+            hello: events, 1 => ok [ws::text("hi")]
+            hello: events, 1 => ok [ws::closed(1000, "done")]
+        stream::read_failed => match call halt(session, events)
+            ok int zero => ok zero
+        stream::cancelled => match call halt(session, events)
+            ok int zero => ok zero
+        files::limit_exceeded => match call halt(session, events)
+            ok int zero => ok zero
+        ok ws::event[] batch => match batch.length is 0
+            true => match call halt(session, events)
+                ok int zero => ok zero
+            false => do
+                ws::event head = batch[0]
+                match head
+                    ws::text => match call ws::send_text(session, head.text)
+                        when
+                            hello: session, "hi" => ok 2
+                        ws::send_failed => match call halt(session, events)
+                            ok int zero => ok zero
+                        ok int sent => match call pump(session, events)
+                            ok int rest => ok rest + 1
+                    ws::binary => match call ws::send_bytes(session, head.data)
+                        when
+                            hello: session, head.data => ok 3
+                        ws::send_failed => match call halt(session, events)
+                            ok int zero => ok zero
+                        ok int sent => match call pump(session, events)
+                            ok int rest => ok rest + 1
+                    ws::drain => match call pump(session, events)
+                        ok int rest => ok rest
+                    ws::closed => match call halt(session, events)
+                        ok int zero => ok zero
+/// Upgrade a routed request, then pump until the peer closes. The dispatch
+/// drops the HTTP reply for upgraded requests, so the response below only
+/// shapes the refusal paths; the upgrade itself is live-tested because no
+/// Can expression can construct the connection the fixture would need.
+fn http::server_response socket
+    emits []
+    given
+        http::request req
+    asserts
+        refused: => ok
+    match call ws::accept(req, "", 65536, 16, 65536)
+        when
+            refused: req, "", 65536, 16, 65536 => ws::upgrade_failed("refused")
+        ws::upgrade_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ws::unsupported_protocol => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ws::invalid_protocol => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ws::limit_exceeded => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok ws::connection conn => match call pump(conn.session, conn.events)
+            ok int echoed => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "upgraded")
+fn http::router table
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/socket", callable socket) as http::route probe
+        call http::make_router([probe]) as http::router built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok built
+fn http::server boot
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
+        ok http::server_config config => match call table()
+            http::invalid_route
+            http::duplicate_route
+            http::ambiguous_route
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => ok sturdy
+fn void serve
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
+        ok http::server_config config => match call table()
+            http::invalid_route
+            http::duplicate_route
+            http::ambiguous_route
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => match call http::server_stop(sturdy)
+                    when
+                        sample: sturdy => ok
+                    http::shutdown_failed
+                    ok => match call http::server_wait(sturdy)
+                        when
+                            sample: sturdy => ok
+                        http::shutdown_failed
+                        ok => ok
+/// Dial a socket and vend the session with its event reader. The assertion
+/// drives the unreachable path; the handshake is live-tested because no
+/// Can expression can construct the connection the fixture would need.
+fn ws::connection link
+    emits [ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded]
+    given
+        str url
+    asserts
+        dark: "ws://127.0.0.1:9/none" => ws::connect_failed("unreachable")
+    match call ws::connect(url, [], 65536, 16, 65536, 5000, false)
+        when
+            dark: "ws://127.0.0.1:9/none", [], 65536, 16, 65536, 5000, false => ws::connect_failed("unreachable")
+        ws::connect_failed
+        ws::invalid_url
+        ws::invalid_protocol
+        ws::limit_exceeded
+        ok ws::connection conn => ok conn
+/// Queue one text message on a session.
+fn int push
+    emits [ws::send_failed]
+    given
+        ws::session session
+        str text
+    asserts
+        sample: "hi" => ok 2
+    match call ws::send_text(session, text)
+        when
+            sample: session, "hi" => ok 2
+        ws::send_failed
+        ok int sent => ok sent
+/// Queue one binary message on a session.
+fn int push_raw
+    emits [codec::invalid_data, ws::send_failed]
+    given
+        ws::session session
+        int[] data
+    asserts
+        sample: [1, 2, 3] => ok 3
+    match call bytes::from_ints(data)
+        codec::invalid_data
+        ok bytes::buffer raw => match call ws::send_bytes(session, raw)
+            when
+                sample: session, raw => ok 3
+            ws::send_failed
+            ok int sent => ok sent
+/// Pull up to count queued events.
+fn ws::event[] drain
+    emits [stream::read_failed, stream::cancelled, files::limit_exceeded]
+    given
+        stream::reader<ws::event> events
+        int count
+    asserts
+        sample: 1 => ok [ws::text("hi")]
+    match call stream::read_many(events, count)
+        when
+            sample: events, count => ok [ws::text("hi")]
+        stream::read_failed
+        stream::cancelled
+        files::limit_exceeded
+        ok ws::event[] batch => ok batch
+/// Close a session with a normal code.
+fn void bye
+    emits [ws::invalid_close]
+    given
+        ws::session session
+    asserts
+        sample: => ok
+    match call ws::close(session, 1000, "done")
+        when
+            sample: session, 1000, "done" => ok
+        ws::invalid_close
+        ok => ok
+/// Release an event reader.
+fn void release
+    emits [stream::close_failed]
+    given
+        stream::reader<ws::event> events
+    asserts
+        sample: => ok
+    match call stream::close_reader(events)
+        when
+            sample: events => ok
+        stream::close_failed
+        ok => ok
+fn void main
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call table()
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok http::router built => ok
