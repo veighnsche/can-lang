@@ -4,7 +4,7 @@ import {catalogue} from "../catalogue.ts";
 import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
 import {createClock} from "../platform/clock.ts";
 import {createRandom} from "../platform/random.ts";
-import {sha256} from "../platform/crypto.ts";
+import {sha256} from "../platform/crypto/primitives.ts";
 import {createLog} from "../platform/log.ts";
 import {copyBytes,ownBytes,byteLength} from "../bytes.ts";
 import {success,value,invoke,type Completion,type AssertionContext} from "../completion.ts";
