@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: b1bee8a3fcaa57b4e68a242c45bf4d6891e2c4d84c758c7245ca49a11890f87a.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 357fe6e8a1f3ecc40963be2dd43c209f430000f641454c4ba379e6d80b531194.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -37,6 +37,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - process → can.std.process@1
 - random → can.std.random@1
 - sql → can.std.sql@1
+- stream → can.std.stream@1
 - text → can.std.text@1
 
 ## Types
@@ -82,6 +83,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | files::entry | record |  | str path, str kind | true |
 | process::options | record |  | str cwd, bool inherit_env, str[] env, bytes::buffer stdin, int stdout_limit, int stderr_limit, int deadline_ms, int grace_ms | true |
 | process::result | record |  | bytes::buffer stdout, bytes::buffer stderr, int code, str signal | true |
+| stream::reader | opaque | T:data |  | false |
+| stream::writer | opaque |  |  | false |
 
 ## Domain errors
 
@@ -155,6 +158,10 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1313 | process::nonzero |  | int code, str signal |
 | 1314 | process::invalid_config |  | str field, str reason |
 | 1315 | process::io_error |  | str operation |
+| 1316 | stream::read_failed |  | str reason |
+| 1317 | stream::write_failed |  | str reason |
+| 1318 | stream::cancelled |  | str reason |
+| 1319 | stream::close_failed |  | str reason |
 
 ## Operations
 
@@ -330,6 +337,15 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | process::run | str executable, str[] args, process::options options → process::result | [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error] |  | Bun.spawn | Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary. | supplied | B1-04 / B1-04 |
 | process::require_success | process::result value → process::result | [process::nonzero] |  | domain.create | Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation. | real | B1-04 / B1-04 |
 | process::which | str name → str | [files::not_found, process::invalid_config] |  | Bun.which | Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary. | supplied | B1-04 / B1-04 |
+| stream::read_many | T:data; stream::reader&lt;T&gt; reader, int max_items → T[] | [stream::read_failed, stream::cancelled, files::limit_exceeded] |  | ReadableStreamDefaultReader.read | One native pull per batch step with no prefetch queue; empty batch is the normal end; bytes items split at max_chunk with copied views, text items \n-framed with fatal UTF-8; interrupted reads report cancelled and deliver nothing; failures are terminal; use-after-close/foreign-owner throw standard resource-state. | supplied | B1-05 / B1-05 |
+| stream::write_some | stream::writer writer, bytes::buffer chunk → int | [stream::write_failed] |  | FileSink.write | Copy payload bytes out of immutable values, report accepted count, leave short-write retries to the caller; no coalescing queue. | supplied | B1-05 / B1-05 |
+| stream::close_reader | T:data; stream::reader&lt;T&gt; reader → void | [stream::close_failed] |  | ReadableStreamDefaultReader.cancel | Terminal owner close with bounded shutdown; cancels the native reader and releases the lock exactly once; close twice throws standard resource-state. | supplied | B1-05 / B1-05 |
+| stream::close_writer | stream::writer writer → void | [stream::close_failed] |  | FileSink.end | Terminal owner close with bounded shutdown; flushes and ends the sink exactly once; close twice throws standard resource-state. | supplied | B1-05 / B1-05 |
+| stream::cancel_reader | T:data; stream::reader&lt;T&gt; reader, str reason → void | [stream::close_failed] |  | ReadableStreamDefaultReader.cancel | Record the reason, then terminal owner close; an in-flight read reports cancelled instead of partial items. | supplied | B1-05 / B1-05 |
+| stream::cancel_writer | stream::writer writer, str reason → void | [stream::close_failed] |  | FileSink.end | Record the reason, then terminal owner close; racing writes complete under their lease. | supplied | B1-05 / B1-05 |
+| files::read_stream | str path, int max_chunk → stream::reader&lt;bytes::buffer&gt; | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | Bun.file | Stat at open for acquisition errors, then lazy streaming pulls; later filesystem changes fail reads, not the open. | supplied | B1-05 / B1-05 |
+| files::read_lines_stream | str path, int max_line → stream::reader&lt;str&gt; | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | Bun.file, TextDecoder | Stat at open for acquisition errors, then fatal streaming UTF-8 decode with \n framing, CR tolerance, trailing segment delivery and line caps. | supplied | B1-05 / B1-05 |
+| files::write_stream | str path → stream::writer | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::io_error] |  | FileSink | Create or truncate at open with acquisition errors, then lazy accepted-count writes; write-after-end is unreachable through owner close. | supplied | B1-05 / B1-05 |
 
 ## Native declaration profiles
 

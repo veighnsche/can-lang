@@ -5,7 +5,7 @@ export function checkCatalogue(): string[] {
   const passed: string[] = [];
   function check(name: string, body: () => void) { body(); passed.push(name); }
   check("complete operation lookup", () => {
-    assert.equal(catalogue.operations.length, 145);
+    assert.equal(catalogue.operations.length, 173);
     for (const item of catalogue.operations) assert.equal(operation(item.name).identity, item.identity);
   });
   check("exact allocated error identity", () => {

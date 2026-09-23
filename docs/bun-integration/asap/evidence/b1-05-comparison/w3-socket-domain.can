@@ -1,0 +1,81 @@
+package w3_socket_domain
+    provides [on_event, serve, main]
+    uses [bytes, codec, io, socket, text]
+
+/// Grouped session state: text messages, binary bytes, drain signals.
+record session
+    int messages
+    int binary_bytes
+    int drains
+
+/// One session event. Kinds: 1 text, 2 binary, 3 drain, 4 close.
+record session_event
+    int kind
+    str text
+    bytes::buffer data
+
+/// Per-event handler. The session contract is socket-owned end to end:
+/// socket::serve drives, socket::session_decision carries retain/finish,
+/// and every terminal error is a socket:: error.
+fn socket::session_decision<session> on_event
+    emits [socket::protocol_error]
+    given
+        session state
+        session_event event
+    asserts
+        text: session(1, 0, 0), session_event(1, "hi", call bytes::empty()) => ok socket::retain<session>(session(2, 0, 0))
+        binary: session(1, 0, 0), session_event(2, "", call bytes::from_ints([1, 2])) => ok socket::retain<session>(session(1, 2, 0))
+        drain: session(1, 2, 0), session_event(3, "", call bytes::empty()) => ok socket::retain<session>(session(1, 2, 1))
+        close: session(1, 2, 0), session_event(4, "", call bytes::empty()) => ok socket::finish<session>(session(1, 2, 0))
+        empty: session(0, 0, 0), session_event(1, "", call bytes::empty()) => socket::protocol_error("empty")
+    match event.kind
+        1 => match call socket::check_text(event.text)
+            socket::protocol_error
+            ok str kept => ok socket::retain<session>(session(state.messages + 1, state.binary_bytes, state.drains))
+        2 => ok socket::retain<session>(session(state.messages, state.binary_bytes + event.data.length, state.drains))
+        3 => ok socket::retain<session>(session(state.messages, state.binary_bytes, state.drains + 1))
+        4 => ok socket::finish<session>(state)
+        _ => ok socket::retain<session>(state)
+
+/// Accept one session and serve it to close. No shared stream module is
+/// named anywhere; each domain repeats the drive/decide/terminate shape.
+fn session serve
+    emits [socket::bind_failed, socket::accept_failed, socket::session_failed, socket::cancelled, socket::protocol_error]
+    given
+        int port
+    asserts
+        sample: 8080 => ok session(2, 2, 1)
+    match call socket::listen(port)
+        when
+            sample: 8080 => ok
+        socket::bind_failed
+        ok socket::listener incoming => match call socket::serve<session>(incoming, socket::session_options(65536, 30000), session(0, 0, 0), callable on_event)
+            when
+                sample: incoming, socket::session_options(65536, 30000), session(0, 0, 0), callable on_event => ok session(2, 2, 1)
+            socket::accept_failed
+            socket::session_failed
+            socket::cancelled
+            socket::protocol_error
+            ok session done => ok done
+
+/// Print the served message count.
+fn void main
+    emits [socket::bind_failed, socket::accept_failed, socket::session_failed, socket::cancelled, socket::protocol_error, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["8080"] => ok
+    match call serve(8080)
+        socket::bind_failed
+        socket::accept_failed
+        socket::session_failed
+        socket::cancelled
+        socket::protocol_error
+        ok session done => match chain
+            call bytes::from_utf8(call text::from_int(done.messages)) as bytes::buffer message
+            codec::invalid_data
+            ok => match call io::stdout_write(message)
+                when
+                    sample: message => ok 1
+                io::write_failed
+                ok int written => ok

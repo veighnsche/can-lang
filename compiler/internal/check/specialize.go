@@ -43,6 +43,9 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 	if codecOperation(symbol.ID) {
 		return c.specializeCodec(file, scope, name, args)
 	}
+	if streamOperation(symbol.ID) != nil {
+		return c.specializeStream(file, scope, name, args)
+	}
 	if httpGenericOperation(symbol.ID) {
 		return c.specializeHTTP(file, scope, name, args)
 	}

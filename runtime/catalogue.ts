@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "b1bee8a3fcaa57b4e68a242c45bf4d6891e2c4d84c758c7245ca49a11890f87a";
+export const catalogueSHA256 = "357fe6e8a1f3ecc40963be2dd43c209f430000f641454c4ba379e6d80b531194";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -108,6 +108,10 @@ export const catalogue = freeze({
     {
       "name": "sql",
       "identity": "can.std.sql@1"
+    },
+    {
+      "name": "stream",
+      "identity": "can.std.stream@1"
     },
     {
       "name": "text",
@@ -743,6 +747,31 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "stream::reader",
+      "identity": "can.std.stream@1::reader",
+      "kind": "opaque",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "stream::writer",
+      "identity": "can.std.stream@1::writer",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
     }
   ],
   "errors": [
@@ -1601,6 +1630,54 @@ export const catalogue = freeze({
       "fields": [
         {
           "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1316,
+      "name": "stream::read_failed",
+      "identity": "can.std.stream@1::read_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1317,
+      "name": "stream::write_failed",
+      "identity": "can.std.stream@1::write_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1318,
+      "name": "stream::cancelled",
+      "identity": "can.std.stream@1::cancelled",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1319,
+      "name": "stream::close_failed",
+      "identity": "can.std.stream@1::close_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
           "type": "str"
         }
       ]
@@ -7407,6 +7484,341 @@ export const catalogue = freeze({
       "refs": [
         "B1-04"
       ]
+    },
+    {
+      "name": "stream::read_many",
+      "identity": "can.std.stream@1::read_many",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "reader",
+          "type": "stream::reader<T>"
+        },
+        {
+          "name": "max_items",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "T[]",
+      "callbacks": [],
+      "emits": [
+        "stream::read_failed",
+        "stream::cancelled",
+        "files::limit_exceeded"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStreamDefaultReader.read"
+        ],
+        "adapter": "One native pull per batch step with no prefetch queue; empty batch is the normal end; bytes items split at max_chunk with copied views, text items \\n-framed with fatal UTF-8; interrupted reads report cancelled and deliver nothing; failures are terminal; use-after-close/foreign-owner throw standard resource-state.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "stream::write_some",
+      "identity": "can.std.stream@1::write_some",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "writer",
+          "type": "stream::writer"
+        },
+        {
+          "name": "chunk",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "stream::write_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "FileSink.write"
+        ],
+        "adapter": "Copy payload bytes out of immutable values, report accepted count, leave short-write retries to the caller; no coalescing queue.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "stream::close_reader",
+      "identity": "can.std.stream@1::close_reader",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "reader",
+          "type": "stream::reader<T>"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "stream::close_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStreamDefaultReader.cancel"
+        ],
+        "adapter": "Terminal owner close with bounded shutdown; cancels the native reader and releases the lock exactly once; close twice throws standard resource-state.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "stream::close_writer",
+      "identity": "can.std.stream@1::close_writer",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "writer",
+          "type": "stream::writer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "stream::close_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "FileSink.end"
+        ],
+        "adapter": "Terminal owner close with bounded shutdown; flushes and ends the sink exactly once; close twice throws standard resource-state.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "stream::cancel_reader",
+      "identity": "can.std.stream@1::cancel_reader",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "reader",
+          "type": "stream::reader<T>"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "stream::close_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStreamDefaultReader.cancel"
+        ],
+        "adapter": "Record the reason, then terminal owner close; an in-flight read reports cancelled instead of partial items.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "stream::cancel_writer",
+      "identity": "can.std.stream@1::cancel_writer",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "writer",
+          "type": "stream::writer"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "stream::close_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "FileSink.end"
+        ],
+        "adapter": "Record the reason, then terminal owner close; racing writes complete under their lease.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "files::read_stream",
+      "identity": "can.std.files@1::read_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "max_chunk",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::reader<bytes::buffer>",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::limit_exceeded",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.file"
+        ],
+        "adapter": "Stat at open for acquisition errors, then lazy streaming pulls; later filesystem changes fail reads, not the open.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "files::read_lines_stream",
+      "identity": "can.std.files@1::read_lines_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "max_line",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::reader<str>",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::limit_exceeded",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.file",
+          "TextDecoder"
+        ],
+        "adapter": "Stat at open for acquisition errors, then fatal streaming UTF-8 decode with \\n framing, CR tolerance, trailing segment delivery and line caps.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
+    },
+    {
+      "name": "files::write_stream",
+      "identity": "can.std.files@1::write_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::writer",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "FileSink"
+        ],
+        "adapter": "Create or truncate at open with acquisition errors, then lazy accepted-count writes; write-after-end is unreachable through owner close.",
+        "task": "B1-05"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-05"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -8265,6 +8677,27 @@ export const catalogueTypeShapes = freeze([
         }
       }
     ],
+    "leaves": []
+  },
+  {
+    "name": "stream::reader",
+    "identity": "can.std.stream@1::reader",
+    "kind": "opaque",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "stream::writer",
+    "identity": "can.std.stream@1::writer",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
     "leaves": []
   },
   {
@@ -9433,6 +9866,70 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "stream::read_failed",
+    "identity": "can.std.stream@1::read_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "stream::write_failed",
+    "identity": "can.std.stream@1::write_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "stream::cancelled",
+    "identity": "can.std.stream@1::cancelled",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "stream::close_failed",
+    "identity": "can.std.stream@1::close_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
         "type": {
           "name": "str",
           "arguments": null

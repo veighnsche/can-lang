@@ -92,7 +92,7 @@
       "depends": [
         "B1-01.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add owned streaming readers/writers once B1-05 settles the lifecycle; bounded operations can ship earlier. Test short writes, failure cleanup and release of locks/handles."
     },
     {
@@ -184,7 +184,7 @@
         "B1-01-DONE",
         "B1-04-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Write the three programs in library/callback, per-domain primitive and shared-event styles. Include grouped state, normal completion, handler failure, external failure, cancellation, early stop, backpressure and locally attached fixtures in each. Record diagnostic spans and generated-native sketches."
     },
     {
@@ -193,7 +193,7 @@
       "depends": [
         "B1-05.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Choose the smallest surface justified by complete programs. Freeze its grammar and behavior in the authoritative specs at implementation time; do not wait to start independent library work. New parser/checker/IR files may be introduced only for an actually selected primitive."
     },
     {
@@ -202,7 +202,7 @@
       "depends": [
         "B1-05.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify state transitions open -> closing -> closed, exactly one terminal publication, no new callbacks after closure, and observing late native rejections. Error events and handler-thrown failures remain distinguishable."
     },
     {
@@ -211,7 +211,7 @@
       "depends": [
         "B1-05.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Prefer native pull/backpressure where available. Serialize handlers for one owned stream/session unless concurrency is explicitly requested. Await each handler before delivering its next item; bound any native event queue that cannot pause."
     },
     {
@@ -220,7 +220,7 @@
       "depends": [
         "B1-05.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Register opaque resource contents with existing ownership/capture evidence. Reject use-after-close/foreign-owner consistently. Copy bytes at the boundary; no reusable native chunk alias crosses into immutable state."
     },
     {
@@ -229,7 +229,7 @@
       "depends": [
         "B1-05.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Implement cancellation propagation to readers/writers/AbortController, release locks, bounded shutdown, and cleanup failure reporting without overwriting the primary completion."
     },
     {
@@ -238,7 +238,7 @@
       "depends": [
         "B1-05.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Make fixtures drive the same dispatch/owner path as native events. Attach deadlines to assertions; a transcript that never ends cannot hang the build."
     },
     {
@@ -247,7 +247,7 @@
       "depends": [
         "B1-05.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Wire file streams and process stdout/stderr first, then HTTP/S3/WebSocket. Do not invent a universal scheduler or resource system in parallel with owner.ts."
     },
     {
@@ -256,7 +256,7 @@
       "depends": [
         "B1-05.08"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {

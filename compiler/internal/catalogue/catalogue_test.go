@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 25 || len(inv.Types) != 39 || len(inv.Errors) != 68 || len(inv.Operations) != 164 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 26 || len(inv.Types) != 41 || len(inv.Errors) != 72 || len(inv.Operations) != 173 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {
@@ -24,7 +24,7 @@ func TestCompleteInventoryAndMirrors(t *testing.T) {
 	if err := Generate("../../..", true); err != nil {
 		t.Fatal(err)
 	}
-	for _, p := range strings.Fields("ai asset bytes checks cli clock codec collections crypto env files html htmx http io json llm log number option path process random sql text") {
+	for _, p := range strings.Fields("ai asset bytes checks cli clock codec collections crypto env files html htmx http io json llm log number option path process random sql stream text") {
 		if err := c.CheckProjectPackage(p); err == nil {
 			t.Errorf("allowed project catalogue owner %s", p)
 		}

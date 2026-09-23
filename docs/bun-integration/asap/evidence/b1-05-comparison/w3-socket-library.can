@@ -1,0 +1,88 @@
+package w3_socket_library
+    provides [on_event, serve, main]
+    uses [bytes, codec, io, socket, stream, text]
+
+/// Grouped session state: text messages, binary bytes, drain signals.
+record session
+    int messages
+    int binary_bytes
+    int drains
+
+/// One session event. Kinds: 1 text, 2 binary, 3 drain, 4 close. Drain is
+/// a control signal delivered as an item, which conflates data and flow
+/// control in the handler contract.
+record session_event
+    int kind
+    str text
+    bytes::buffer data
+
+/// Per-event handler. Empty text is a protocol failure and stops the
+/// session through the derived error path; close stops it normally.
+fn stream::decision<session> on_event
+    emits [socket::protocol_error]
+    given
+        session state
+        session_event event
+    asserts
+        text: session(1, 0, 0), session_event(1, "hi", call bytes::empty()) => ok stream::continue<session>(session(2, 0, 0))
+        binary: session(1, 0, 0), session_event(2, "", call bytes::from_ints([1, 2])) => ok stream::continue<session>(session(1, 2, 0))
+        drain: session(1, 2, 0), session_event(3, "", call bytes::empty()) => ok stream::continue<session>(session(1, 2, 1))
+        close: session(1, 2, 0), session_event(4, "", call bytes::empty()) => ok stream::stop<session>(session(1, 2, 0))
+        empty: session(0, 0, 0), session_event(1, "", call bytes::empty()) => socket::protocol_error("empty")
+    match event.kind
+        1 => match call socket::check_text(event.text)
+            socket::protocol_error
+            ok str kept => ok stream::continue<session>(session(state.messages + 1, state.binary_bytes, state.drains))
+        2 => ok stream::continue<session>(session(state.messages, state.binary_bytes + event.data.length, state.drains))
+        3 => ok stream::continue<session>(session(state.messages, state.binary_bytes, state.drains + 1))
+        4 => ok stream::stop<session>(state)
+        _ => ok stream::continue<session>(state)
+
+/// Accept one session and consume it to close. Handler failure closes the
+/// session through the adapter; the derived protocol error reaches the
+/// caller alongside external accept and read failures.
+fn session serve
+    emits [socket::bind_failed, socket::accept_failed, stream::read_failed, stream::cancelled, stream::limit_exceeded, socket::protocol_error]
+    given
+        int port
+    asserts
+        sample: 8080 => ok session(2, 2, 1)
+    match call socket::listen(port)
+        when
+            sample: 8080 => ok
+        socket::bind_failed
+        ok socket::listener incoming => match call socket::accept_stream(incoming, socket::stream_options(65536, 30000))
+            when
+                sample: incoming, socket::stream_options(65536, 30000) => ok
+            socket::accept_failed
+            ok stream::source<session_event> events => match call stream::consume<session_event, session>(events, session(0, 0, 0), stream::limits(1048576, 100000, 30000), callable on_event)
+                when
+                    sample: events, session(0, 0, 0), stream::limits(1048576, 100000, 30000), callable on_event => ok session(2, 2, 1)
+                stream::read_failed
+                stream::cancelled
+                stream::limit_exceeded
+                socket::protocol_error
+                ok session done => ok done
+
+/// Print the served message count.
+fn void main
+    emits [socket::bind_failed, socket::accept_failed, stream::read_failed, stream::cancelled, stream::limit_exceeded, socket::protocol_error, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["8080"] => ok
+    match call serve(8080)
+        socket::bind_failed
+        socket::accept_failed
+        stream::read_failed
+        stream::cancelled
+        stream::limit_exceeded
+        socket::protocol_error
+        ok session done => match chain
+            call bytes::from_utf8(call text::from_int(done.messages)) as bytes::buffer message
+            codec::invalid_data
+            ok => match call io::stdout_write(message)
+                when
+                    sample: message => ok 1
+                io::write_failed
+                ok int written => ok

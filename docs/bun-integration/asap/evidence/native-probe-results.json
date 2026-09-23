@@ -65,6 +65,76 @@
       "locked": false
     }
   },
+  "stream_pull": {
+    "status": "observed",
+    "value": {
+      "pullsBeforeReader": 0,
+      "pullsAfterTwoReads": 2,
+      "first": [
+        1
+      ],
+      "second": [
+        2
+      ],
+      "firstDone": false,
+      "lockedAfterRelease": false
+    }
+  },
+  "stream_filesink": {
+    "status": "observed",
+    "value": {
+      "accepted": 4,
+      "bytes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "afterEnd": "none"
+    }
+  },
+  "stream_alias": {
+    "status": "observed",
+    "value": {
+      "distinct": true,
+      "second": [
+        67
+      ],
+      "endDone": true,
+      "copyStable": [
+        65,
+        66
+      ],
+      "mutated": [
+        90,
+        66
+      ],
+      "splitUtf8": "€"
+    }
+  },
+  "stream_abort": {
+    "status": "observed",
+    "value": {
+      "settledDone": true,
+      "settledValue": "undefined",
+      "lateDone": true,
+      "locked": false
+    }
+  },
+  "stream_process_reader": {
+    "status": "observed",
+    "value": {
+      "chunks": [
+        [
+          97,
+          98,
+          99,
+          100
+        ]
+      ],
+      "exit": 0
+    }
+  },
   "password": {
     "status": "observed",
     "value": {

@@ -371,7 +371,10 @@
     "platform/process/errors.ts": [
       "node:util"
     ],
-    "platform/process/io.ts": [],
+    "platform/process/io.ts": [
+      "../../transport/stream/readable.ts",
+      "../../transport/stream/lifecycle.ts"
+    ],
     "platform/process/spawn.ts": [
       "node:fs/promises",
       "../../assert/context.ts",
@@ -446,6 +449,44 @@
       "../owner.ts",
       "./sql.ts",
       "./sql-descriptor.ts"
+    ],
+    "transport/stream/budget.ts": [],
+    "transport/stream/lifecycle.ts": [
+      "../../completion.ts",
+      "../../failure.ts",
+      "../../owner.ts"
+    ],
+    "transport/stream/readable.ts": [
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./budget.ts",
+      "./lifecycle.ts"
+    ],
+    "transport/stream/writable.ts": [
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./lifecycle.ts"
+    ],
+    "platform/files/stream.ts": [
+      "node:fs/promises",
+      "node:path",
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "../../transport/stream/readable.ts",
+      "../../transport/stream/writable.ts",
+      "../../transport/stream/lifecycle.ts",
+      "./errors.ts"
     ]
   }
 }

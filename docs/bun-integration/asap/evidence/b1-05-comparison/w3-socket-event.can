@@ -1,0 +1,152 @@
+package w3_socket_event
+    provides [pump_write, pump, serve, main]
+    uses [bytes, codec, io, socket, stream, text]
+
+/// Grouped session state: text messages and binary bytes echoed.
+record session
+    int messages
+    int binary_bytes
+
+/// One session event. Kinds: 1 text, 2 binary, 4 close. Pull demand
+/// replaces drain signals, so this protocol has no drain case to handle.
+record session_event
+    int kind
+    str text
+    bytes::buffer data
+
+/// An accepted session: an event reader plus a reply writer.
+record session_handles
+    stream::reader<session_event> events
+    stream::writer replies
+
+/// Short-write retry loop. The writer reports accepted bytes; the caller
+/// resends the remainder explicitly, so send-side backpressure is visible
+/// rather than adapter-held.
+fn int pump_write
+    emits [stream::write_failed, stream::cancelled, stream::use_after_close, codec::invalid_data]
+    given
+        int[] pending
+        stream::writer output
+    asserts
+        full: [97, 99, 107] => ok 3
+        short: [97, 99, 107] => ok 3
+        fail: [97] => stream::write_failed("reset")
+    bytes::buffer chunk = call bytes::from_ints(pending)
+    match call stream::write_some(output, chunk)
+        when
+            full: output, chunk => ok 3
+            short: output, chunk => ok 1
+            short: output, chunk => ok 2
+            fail: output, chunk => stream::write_failed("reset")
+        stream::write_failed as cause => stream::write_failed(cause.detail)
+        stream::cancelled as cause => stream::cancelled(cause.detail)
+        stream::use_after_close
+        ok int accepted => match accepted is pending.length
+            true => ok accepted
+            false => match call pump_write(call pending.slice(accepted, pending.length), output)
+                stream::write_failed
+                stream::cancelled
+                stream::use_after_close
+                codec::invalid_data
+                ok int rest => do
+                    int total = rest + accepted
+                    ok total
+
+/// Pull loop over one session. Text messages are acknowledged; binary
+/// payloads are counted. Close ends the session; the reader and writer
+/// close on every terminal path.
+fn session pump
+    emits [stream::read_failed, stream::cancelled, stream::use_after_close, stream::write_failed, codec::invalid_data, socket::protocol_error]
+    given
+        session state
+        session_handles peer
+    asserts
+        text: session(0, 0) => ok session(1, 0)
+        binary: session(0, 0) => ok session(0, 2)
+        close: session(1, 2) => ok session(1, 2)
+        fail: session(0, 0) => stream::read_failed("reset")
+        empty: session(0, 0) => socket::protocol_error("empty")
+    match call stream::read_many<session_event>(peer.events, 1)
+        when
+            text: peer.events, 1 => ok [session_event(1, "hi", call bytes::empty())]
+            text: peer.events, 1 => ok []
+            binary: peer.events, 1 => ok [session_event(2, "", call bytes::from_ints([1, 2]))]
+            binary: peer.events, 1 => ok []
+            close: peer.events, 1 => ok [session_event(4, "", call bytes::empty())]
+            fail: peer.events, 1 => stream::read_failed("reset")
+            empty: peer.events, 1 => ok [session_event(1, "", call bytes::empty())]
+        stream::read_failed as cause => match call stream::close(peer.events)
+            when
+                fail: peer.events => ok
+            stream::use_after_close
+            ok => stream::read_failed(cause.detail)
+        stream::cancelled as cause => match call stream::close(peer.events)
+            stream::use_after_close
+            ok => stream::cancelled(cause.detail)
+        stream::use_after_close
+        ok session_event[] batch => match batch.length is 0
+            true => match call stream::close(peer.events)
+                when
+                    text: peer.events => ok
+                    binary: peer.events => ok
+                stream::use_after_close
+                ok => ok state
+            false => match batch[0].kind
+                1 => match call socket::check_text(batch[0].text)
+                    socket::protocol_error
+                    ok str kept => match call pump_write([97, 99, 107], peer.replies)
+                        stream::write_failed
+                        stream::cancelled
+                        stream::use_after_close
+                        codec::invalid_data
+                        ok int sent => ok call pump(session(state.messages + 1, state.binary_bytes), peer)
+                2 => ok call pump(session(state.messages, state.binary_bytes + batch[0].data.length), peer)
+                4 => match call stream::close(peer.events)
+                    when
+                        close: peer.events => ok
+                    stream::use_after_close
+                    ok => ok state
+                _ => ok call pump(state, peer)
+
+/// Accept one session and serve it to close. No drain handling exists:
+/// bounded reads pace the sender instead of reacting to buffer signals.
+fn session serve
+    emits [socket::bind_failed, socket::accept_failed, stream::read_failed, stream::cancelled, stream::use_after_close, stream::write_failed, codec::invalid_data, socket::protocol_error]
+    given
+        int port
+    asserts
+        sample: 8080 => ok session(1, 0)
+    match call socket::listen(port)
+        when
+            sample: 8080 => ok
+        socket::bind_failed
+        ok socket::listener incoming => match call socket::accept_session(incoming, socket::session_options(65536, 30000))
+            when
+                sample: incoming, socket::session_options(65536, 30000) => ok
+            socket::accept_failed
+            ok session_handles peer => ok call pump(session(0, 0), peer)
+
+/// Print the served message count.
+fn void main
+    emits [socket::bind_failed, socket::accept_failed, stream::read_failed, stream::cancelled, stream::use_after_close, stream::write_failed, codec::invalid_data, socket::protocol_error, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["8080"] => ok
+    match call serve(8080)
+        socket::bind_failed
+        socket::accept_failed
+        stream::read_failed
+        stream::cancelled
+        stream::use_after_close
+        stream::write_failed
+        codec::invalid_data
+        socket::protocol_error
+        ok session done => match chain
+            call bytes::from_utf8(call text::from_int(done.messages)) as bytes::buffer message
+            codec::invalid_data
+            ok => match call io::stdout_write(message)
+                when
+                    sample: message => ok 1
+                io::write_failed
+                ok int written => ok

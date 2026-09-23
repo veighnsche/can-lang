@@ -85,8 +85,8 @@ export function createProcesses(domain:ReturnType<typeof createDomainRuntime>,ty
     try{await proc.exited;}catch{}
     return fail(types.ioError,[["operation","stdin"]],cause);
    }
-   const stdoutDrain=drainBounded(proc.stdout,config.stdoutLimit);
-   const stderrDrain=drainBounded(proc.stderr,config.stderrLimit);
+   const stdoutDrain=drainBounded(proc.stdout,config.stdoutLimit,fail,types.ioError);
+   const stderrDrain=drainBounded(proc.stderr,config.stderrLimit,fail,types.ioError);
    let decide!:(settle:Settle)=>void;
    const decided=new Promise<Settle>(resolve=>{decide=resolve;});
    let done=false;

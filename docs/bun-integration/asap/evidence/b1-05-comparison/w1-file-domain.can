@@ -1,0 +1,80 @@
+package w1_file_domain
+    provides [on_line, scan_file, main]
+    uses [bytes, codec, files, io, text]
+
+/// Grouped scan state: lines decoded, bytes observed, first matching id.
+record scan_state
+    int lines_seen
+    int bytes_seen
+    int found_id
+
+/// One typed JSONL record. Full codec policy arrives with document formats.
+record json_id
+    int id
+
+/// Per-line handler. This surface repeats the shared consume contract
+/// under files-owned names: files::lines drives, files::line_decision
+/// carries continue/stop, and terminal errors stay under files::.
+fn files::line_decision<scan_state> on_line
+    emits [codec::invalid_data]
+    given
+        scan_state state
+        str line
+    asserts
+        keep: scan_state(2, 40, -1), "{\"id\":7}" => ok files::keep<scan_state>(scan_state(3, 48, -1))
+        hit: scan_state(2, 40, -1), "{\"id\":42}" => ok files::halt<scan_state>(scan_state(3, 49, 42))
+        bad: scan_state(0, 0, -1), "oops" => codec::invalid_data("", "syntax")
+    match chain
+        call bytes::from_utf8(line) as bytes::buffer raw
+        call codec::decode_json<json_id>(raw) as json_id found
+        codec::invalid_data
+        ok => match found.id is 42
+            true => ok files::halt<scan_state>(scan_state(state.lines_seen + 1, state.bytes_seen + raw.length, found.id))
+            false => ok files::keep<scan_state>(scan_state(state.lines_seen + 1, state.bytes_seen + raw.length, state.found_id))
+
+/// Scan a JSONL file and stop after the predicate match. Acquisition and
+/// mid-stream failure share the files:: error family; the deadline and
+/// budget are per-domain options rather than shared limits.
+fn scan_state scan_file
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::read_failed, files::cancelled, files::limit_exceeded, codec::invalid_data]
+    given
+        str path
+    asserts
+        sample: "records.jsonl" => ok scan_state(3, 25, 42)
+    match call files::lines<scan_state>(path, files::scan_options(65536, 1000000, 30000), scan_state(0, 0, -1), callable on_line)
+        when
+            sample: "records.jsonl", files::scan_options(65536, 1000000, 30000), scan_state(0, 0, -1), callable on_line => ok scan_state(3, 25, 42)
+        files::not_found
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::read_failed
+        files::cancelled
+        files::limit_exceeded
+        codec::invalid_data
+        ok scan_state done => ok done
+
+/// Print the first matching record id.
+fn void main
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::read_failed, files::cancelled, files::limit_exceeded, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["records.jsonl"] => ok
+    match call scan_file(args[0])
+        files::not_found
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::read_failed
+        files::cancelled
+        files::limit_exceeded
+        codec::invalid_data
+        ok scan_state done => match chain
+            call bytes::from_utf8(call text::from_int(done.found_id)) as bytes::buffer message
+            codec::invalid_data
+            ok => match call io::stdout_write(message)
+                when
+                    sample: message => ok 2
+                io::write_failed
+                ok int written => ok

@@ -23,6 +23,9 @@ func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, nam
 	if op := collectionOperation(symbol.ID); op != nil {
 		return c.inferCollection(op, args, expected, e)
 	}
+	if op := streamOperation(symbol.ID); op != nil {
+		return c.inferStream(op, args, expected, e)
+	}
 	if sqlGenericOperation(symbol.ID) {
 		return ValueBinding{}, true, fmt.Errorf("sql query %s requires explicit type arguments", symbol.ID)
 	}
@@ -175,6 +178,9 @@ func (c *programChecker) inferReference(file *resolve.File, scope *resolve.Scope
 	}
 	if op := collectionOperation(symbol.ID); op != nil {
 		return c.referenceCollection(op, expected, nil, nil)
+	}
+	if op := streamOperation(symbol.ID); op != nil {
+		return c.referenceStream(op, expected, nil, nil)
 	}
 	d, ok := symbol.Declaration.(*syntax.FunctionDecl)
 	if !ok || len(symbol.Parameters) == 0 {

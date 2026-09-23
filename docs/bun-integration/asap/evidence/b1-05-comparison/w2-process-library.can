@@ -1,0 +1,92 @@
+package w2_process_library
+    provides [on_chunk, run_shout, main]
+    uses [bytes, codec, io, process, stream, text]
+
+/// Grouped progress state: bytes per pipe and chunks observed.
+record progress
+    int out_bytes
+    int err_bytes
+    int chunks
+
+/// One interleaved child-output chunk. Sequential per-pipe consumption
+/// could deadlock a full pipe, so the producer multiplexes both pipes
+/// into one source and tags each chunk with its file descriptor.
+record text_chunk
+    int fd
+    str text
+
+/// Per-chunk handler. Stdout carries a percent integer; the run stops at
+/// 100. Stderr carries diagnostics and is only counted. A malformed
+/// percent is a handler failure, distinct from child or pipe failure.
+fn stream::decision<progress> on_chunk
+    emits [text::invalid_number]
+    given
+        progress state
+        text_chunk chunk
+    asserts
+        keep: progress(2, 0, 1), text_chunk(1, "50") => ok stream::continue<progress>(progress(4, 0, 2))
+        done: progress(2, 0, 1), text_chunk(1, "100") => ok stream::stop<progress>(progress(5, 0, 2))
+        err: progress(2, 0, 1), text_chunk(2, "note") => ok stream::continue<progress>(progress(2, 4, 2))
+        bad: progress(0, 0, 0), text_chunk(1, "xx") => text::invalid_number("xx")
+    match chunk.fd
+        1 => match call text::to_int(chunk.text)
+            text::invalid_number
+            ok int percent => match percent is 100
+                true => ok stream::stop<progress>(progress(state.out_bytes + chunk.text.length, state.err_bytes, state.chunks + 1))
+                false => ok stream::continue<progress>(progress(state.out_bytes + chunk.text.length, state.err_bytes, state.chunks + 1))
+        2 => ok stream::continue<progress>(progress(state.out_bytes, state.err_bytes + chunk.text.length, state.chunks + 1))
+        _ => ok stream::continue<progress>(progress(state.out_bytes, state.err_bytes, state.chunks + 1))
+
+/// Stream one child to completion. The deadline limit cancels the run and
+/// reaps the child; there is no mid-run cancel handle in this surface.
+/// Exit status is read after consumption through a producer terminal query
+/// that reports nonzero exit as a failure.
+fn progress run_shout
+    emits [process::spawn_failed, process::invalid_config, stream::read_failed, stream::cancelled, stream::limit_exceeded, text::invalid_number, process::nonzero, process::io_error]
+    given
+        str word
+    asserts
+        sample: "ada" => ok progress(5, 4, 3)
+    match call process::spawn_text_streaming(["/bin/echo", "shout", word], process::stream_options(5000, 65536, 4096))
+        when
+            sample: ["/bin/echo", "shout", word], process::stream_options(5000, 65536, 4096) => ok
+        process::spawn_failed
+        process::invalid_config
+        ok stream::source<text_chunk> piped => match call stream::consume<text_chunk, progress>(piped, progress(0, 0, 0), stream::limits(65536, 10000, 5000), callable on_chunk)
+            when
+                sample: piped, progress(0, 0, 0), stream::limits(65536, 10000, 5000), callable on_chunk => ok progress(5, 4, 3)
+            stream::read_failed
+            stream::cancelled
+            stream::limit_exceeded
+            text::invalid_number
+            ok progress done => match call process::exit_of(piped)
+                when
+                    sample: piped => ok process::exit(0, "")
+                process::nonzero
+                process::io_error
+                ok process::exit status => ok done
+
+/// Print the drained chunk count.
+fn void main
+    emits [process::spawn_failed, process::invalid_config, stream::read_failed, stream::cancelled, stream::limit_exceeded, text::invalid_number, process::nonzero, process::io_error, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["ada"] => ok
+    match call run_shout(args[0])
+        process::spawn_failed
+        process::invalid_config
+        stream::read_failed
+        stream::cancelled
+        stream::limit_exceeded
+        text::invalid_number
+        process::nonzero
+        process::io_error
+        ok progress done => match chain
+            call bytes::from_utf8(call text::from_int(done.chunks)) as bytes::buffer message
+            codec::invalid_data
+            ok => match call io::stdout_write(message)
+                when
+                    sample: message => ok 1
+                io::write_failed
+                ok int written => ok

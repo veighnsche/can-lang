@@ -1,13 +1,13 @@
 {
-  "observedUTC": "2026-09-22T14:03:04.191189+00:00",
+  "observedUTC": "2026-09-23T07:29:56.010302+00:00",
   "bunSHA256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
   "target": "bun-1.4.2-darwin-arm64-v1",
   "runs": {
     "native-probe.ts": {
       "exitCode": 0,
       "timeoutSeconds": 30,
-      "scriptSHA256": "bac3ca2ae785ffdd98393b0fa80e8166c10419dfcc98c42f07646d52e6e50ad4",
-      "resultSHA256": "4965bfd34ee75476feed767bbcb007307ef0cb7646d012e09b2a799a72332fce"
+      "scriptSHA256": "94a2e1a12c7a97c3dac222e1f4e2a66f01e42981f08bdebd2722f6280fdf4f93",
+      "resultSHA256": "ba6f8fdd0f4e3d273a1d2d17e7736db9805ae4f7387ae31bf4c381bee298bc5c"
     },
     "sqlite-lifecycle-probe.ts": {
       "exitCode": 0,

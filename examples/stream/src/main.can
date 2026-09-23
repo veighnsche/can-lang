@@ -1,0 +1,70 @@
+package stream_example
+    provides [pump, main]
+    uses [bytes, codec, files, io, stream, text]
+
+/// Count lines through a pull loop. An empty batch is the normal end;
+/// every terminal arm closes the reader, and failure arms re-raise the
+/// primary error after cleanup. Fixture transcripts replay per-read
+/// rows in order across the recursion.
+fn int pump
+    emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
+    given
+        int count
+        stream::reader<str> input
+    asserts
+        end: 5 => ok 5
+        more: 0 => ok 2
+    match call stream::read_many(input, 2)
+        when
+            end: input, 2 => ok []
+            more: input, 2 => ok ["a", "b"]
+            more: input, 2 => ok []
+            sample: input, 2 => ok ["a", "b"]
+            sample: input, 2 => ok []
+        stream::read_failed
+        stream::cancelled
+        files::limit_exceeded
+        ok str[] batch => match batch.length is 0
+            true => match call stream::close_reader(input)
+                when
+                    end: input => ok
+                    more: input => ok
+                    sample: input => ok
+                stream::close_failed
+                ok => ok count
+            false => match call pump(count + batch.length, input)
+                stream::read_failed
+                stream::cancelled
+                files::limit_exceeded
+                stream::close_failed
+                ok int total => ok total
+
+/// Count the lines of the file named by the first argument.
+fn void main
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        sample: ["lines.txt"] => ok
+    match call files::read_lines_stream(args[0], 64)
+        when
+            sample: "lines.txt", 64 => ok
+        files::not_found
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::limit_exceeded
+        files::io_error
+        ok stream::reader<str> input => match call pump(0, input)
+            stream::read_failed
+            stream::cancelled
+            files::limit_exceeded
+            stream::close_failed
+            ok int total => match chain
+                call bytes::from_utf8(call text::from_int(total)) as bytes::buffer message
+                codec::invalid_data
+                ok => match call io::stdout_write(message)
+                    when
+                        sample: message => ok 1
+                    io::write_failed
+                    ok int written => ok

@@ -28,6 +28,7 @@ type Program struct {
 	Entry        *ProgramFunction
 	Intrinsics   map[string]*types.Type
 	Collections  map[string]*CollectionSpecialization
+	Streams      map[string]*StreamSpecialization
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
 	SQLs         map[string]*SQLSpecialization
@@ -255,12 +256,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 			continue
 		}
-		if httpGenericOperation(op.Identity) {
+		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) {
 			continue
-		} // I32 generics specialize per concrete type argument on use.
-		if sqlGenericOperation(op.Identity) {
-			continue
-		} // I35 query generics specialize per P/R on use; transaction variants wait for I38.
+		} // I32, I35 and B1-05 generics specialize per concrete type argument on use.
 		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
 			continue
 		}

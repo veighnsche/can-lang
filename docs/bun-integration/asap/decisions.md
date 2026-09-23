@@ -40,6 +40,8 @@ Each surface must show acquisition, repeated dispatch, grouped state, explicit h
 
 Use the existing stream/process/socket native probe as a starting harness. A match-shaped native declaration may win; ordinary value-match semantics must remain one-shot. Pick a grammar only after these examples, then implement format/check/IR/emission/assertions together. Continue SQL and pure library capabilities while this is being resolved. Fresh Jev consultation is required for the eventual concrete syntax decision, because the preparation consultation only judged sequencing.
 
+Exit recorded 2026-09-23: nine programs, behavior table and sketches in [b1-05-comparison](evidence/b1-05-comparison/README.md); probe extensions `stream_pull`, `stream_filesink`, `stream_alias`, `stream_abort`, `stream_process_reader` in [probe results](evidence/native-probe-results.json); three fresh Jev rounds with rewrite discipline and disagreement audit in [consultations-b1-05](evidence/consultations-b1-05/decision-audit.md). Selected: shared-event pull (opaque `stream::reader<T>`/`stream::writer` with `read_many`/`write_some`/`close`/`cancel`), no new grammar, drain-by-demand, repeated-selector FIFO transcripts, library consume deferred. Jev preferred library 3/3; overridden on B1-06.02 incremental reuse, B1-05.07 same-path fixtures, caller-visible acceptance rows, and the internal incoherence of library+fifo. No parser/checker/IR files are introduced: pull needs catalogue entries only.
+
 ## G-HTML: verify that native callback output can satisfy Can safe HTML
 
 Owner: B1-12 safe-render slice. Output: callback trace for plain text, entities, nested emphasis/code, raw HTML and hostile links; a safe construction prototype; browser-level hostile corpus.
