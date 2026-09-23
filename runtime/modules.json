@@ -14,7 +14,8 @@
       "../completion.ts",
       "../failure.ts",
       "./runner.ts",
-      "./context.ts"
+      "./context.ts",
+      "./provider.ts"
     ],
     "assert/runner.ts": [
       "node:util",
@@ -25,7 +26,8 @@
       "../failure.ts",
       "./context.ts",
       "../diagnostics.ts",
-      "../owner.ts"
+      "../owner.ts",
+      "../bytes.ts"
     ],
     "bytes.ts": [
       "./failure.ts",
@@ -168,7 +170,12 @@
     ],
     "assert/provider.ts": [
       "./context.ts",
-      "../failure.ts"
+      "../failure.ts",
+      "../transport/deadline.ts",
+      "../codec/document.ts",
+      "../codec/budget.ts",
+      "node:buffer",
+      "../bytes.ts"
     ],
     "coordination.ts": [
       "./completion.ts",

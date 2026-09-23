@@ -21,6 +21,14 @@ func (f *formatter) connection(n *ConnectionDecl) {
 		}
 	}
 }
+func (f *formatter) nativeAssertions(assertions []Assertion) {
+	if len(assertions) > 0 {
+		f.line(1, "asserts")
+		for _, assertion := range assertions {
+			f.assertion(2, assertion)
+		}
+	}
+}
 func (f *formatter) nativeHeader(kind string, n NativeHeader) {
 	f.line(0, kind+" "+FormatType(n.Result)+" "+n.Name.Text+" from "+formatName(n.Connection))
 	f.line(1, formatBound(n.Errors))

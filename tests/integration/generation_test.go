@@ -95,6 +95,7 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		t.Fatal(err)
 	}
 	source := strings.ReplaceAll(string(data), "http://127.0.0.1:1", server.URL)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", source)
 	credential := "test-only"
 	run := func(command string) (int, string, string) {
@@ -198,6 +199,8 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		t.Fatal("invalid asks launched request")
 	}
 	write("src/main.can", strings.ReplaceAll(source, "    auth bearer env \"CAN_I28_TOKEN\"\n", ""))
+	clearStagedFixtureEnvironments(t, root)
+	stripStagedAuthorization(t, root)
 	code, out, diag := run("build")
 	if code != 0 {
 		t.Fatalf("build: %d %s %s", code, out, diag)

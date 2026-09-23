@@ -823,7 +823,17 @@ func programModules(program *check.Program, runtime string, dependencies []ir.Ar
 			if err != nil {
 				return nil, err
 			}
-			body += actual + expected + fmt.Sprintf("export const $canCase = Object.freeze({root: Object.freeze(%s), actual: $canActual, expected: $canExpected});\n", rootJSON)
+			actualName := "$canActual"
+			if test.Raw != nil {
+				spec, err := RawSpec(test.Raw)
+				if err != nil {
+					return nil, err
+				}
+				imports = append(imports, ModuleImport{Target: runtime + "/assert/provider.ts", Names: []ImportName{{"provideRawHTTP", "$canProvideRaw"}}})
+				body += fmt.Sprintf("async function $canRawActual($canContext: $canAssertionContext): Promise<$canCompletion<%s>> {\n$canProvideRaw($canContext, %s, %s);\nreturn $canActual($canContext);\n}\n", TypeName(test.Actual.Result), quote(test.Raw.Operation), spec)
+				actualName = "$canRawActual"
+			}
+			body += actual + expected + fmt.Sprintf("export const $canCase = Object.freeze({root: Object.freeze(%s), actual: %s, expected: $canExpected});\n", rootJSON, actualName)
 			modules = append(modules, Module{Path: path, Imports: imports, Body: body})
 			name := fmt.Sprintf("$canCase%d", i)
 			cases = append(cases, name)

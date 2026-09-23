@@ -31,6 +31,9 @@ judge bool assess from classifier
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         str message
+    asserts
+        defaults: ("evidence") => ok true
+            using raw "fixtures/declarations_assess.json"
     call question("First") as bool first
     call question("Second") as bool second
     ok => ok first and second
@@ -65,10 +68,16 @@ llm str generate from generator
     emits [http::invalid_request, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
     state
         str message
+    asserts
+        drafted: ("hello") => ok "hello described"
+            using raw "fixtures/declarations_generate.json"
     asks "Describe the message"
 
 fetch str retrieve from classifier
     emits [http::request_failed]
+    asserts
+        fetched: => ok "resource"
+            using raw "fixtures/declarations_retrieve.json"
     get "/resource"
     query
         q = ["one", "two"]

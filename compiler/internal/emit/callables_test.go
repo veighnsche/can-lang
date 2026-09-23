@@ -35,6 +35,24 @@ func sourceProgram(t *testing.T, fixture string) *check.Program {
 			t.Fatal(err)
 		}
 	}
+	if entries, err := os.ReadDir(filepath.Join(filepath.Dir(fixture), "fixtures")); err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			data, err := os.ReadFile(filepath.Join(filepath.Dir(fixture), "fixtures", entry.Name()))
+			if err != nil {
+				t.Fatal(err)
+			}
+			p := filepath.Join(root, "src/fixtures", entry.Name())
+			if err = os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+				t.Fatal(err)
+			}
+			if err = os.WriteFile(p, data, 0600); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
 	graph, err := project.Load(root)
 	if err != nil {
 		t.Fatal(err)

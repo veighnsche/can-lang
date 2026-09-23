@@ -506,6 +506,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		}
 	}
 	c.current = nil
+	if err = c.nativeAssertions(p, callables); err != nil {
+		return nil, err
+	}
 	var initial []InitialValue
 	for _, file := range files {
 		for _, declaration := range file.Source.Syntax.Declarations {
@@ -565,7 +568,7 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	}, SQLSite: func(key, name string) ir.SQLCallSite {
 		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})
 		return ir.SQLCallSite{Owner: owner.Key, Name: name}
-	}}
+	}, Raw: c.rawScope(file)}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
 		symbol, err := file.Lookup(scope, name, resolve.CallUse)

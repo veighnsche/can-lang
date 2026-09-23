@@ -3,6 +3,7 @@ package integration
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -79,6 +80,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := strings.Replace(string(data), "http://127.0.0.1:1/systemone", server.URL+"/systemone", 1)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", text)
 	run := func(command string) (int, string, string) {
 		t.Helper()
@@ -163,6 +165,9 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         float previous
+    asserts
+        sample: (0.5) => ok
+            using raw "fixtures/complete.json"
     call dynamic([choice_option("ten", call text::from_float(previous))], [choice_option("other", "Other")]) as str selected
     ok => match selected is "ten"
         true => ok
@@ -174,6 +179,28 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	twoStage := strings.Replace(text, "uses [ai, http, codec, bytes, io]", "uses [ai, http, codec, bytes, io, text]", 1)
 	twoStage = strings.Replace(twoStage, "fn void main", followup+"fn void main", 1)
 	twoStage = strings.Replace(twoStage, "            true => ok\n", "            true => relay call complete((measured))\n", 1)
+	// The followup exchange is fully request-compared: the staged request
+	// carries the 0.5 assert argument and the staged credential, and the
+	// staged answer selects ten.
+	completeRequest := `{"model":"jev-latest","state":{"previous":0.5},"questions":{"q0":{"type":"choice","instructions":"Dynamic","criteria":{"ten":"0.5","other":"Other"}}}}`
+	completeAnswer := `{"model":"resolved","answers":{"q0":{"type":"choice","choice":"ten","confidence":1,"probabilities":{"ten":1,"other":0}}}}`
+	completeFixture := map[string]any{
+		"schema": "can.native-fixture.v1", "target": "can.project.root/app::complete",
+		"environment": map[string]any{"CAN_I27_TOKEN": "fixture-secret"},
+		"exchange": map[string]any{
+			"request": map[string]any{"method": "POST", "url": server.URL + "/systemone",
+				"headers": []any{[]any{"authorization", "Bearer [REDACTED]"}, []any{"content-type", "application/json"}, []any{"accept", "application/json"}},
+				"body":    map[string]any{"json_utf8": completeRequest}},
+			"outcome": map[string]any{"response": map[string]any{"status": 200,
+				"headers":     []any{[]any{"content-type", "application/json"}},
+				"body_base64": base64.StdEncoding.EncodeToString([]byte(completeAnswer))}},
+		},
+	}
+	completeBytes, err := json.Marshal(completeFixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("src/fixtures/complete.json", string(completeBytes))
 	write("src/main.can", twoStage)
 	if code, out, diag := run("run"); code != 0 || out != "NBSCDEFLGRLH" || diag != "" {
 		t.Fatalf("two-stage dependency: %d %q %s", code, out, diag)
@@ -190,6 +217,8 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	pure := strings.Replace(text, "    auth bearer env \"CAN_I27_TOKEN\"\n", "", 1)
 	pure = regexp.MustCompile(`relay call report\(([^\n]+), "[A-Za-z]"\)`).ReplaceAllString(pure, "ok $1")
 	write("src/main.can", pure)
+	clearStagedFixtureEnvironments(t, root)
+	stripStagedAuthorization(t, root)
 	code, out, diag := run("build")
 	if code != 0 {
 		t.Fatalf("raw-provider build: %d %s %s", code, out, diag)

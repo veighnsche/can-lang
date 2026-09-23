@@ -11,6 +11,7 @@ type Assertion struct {
 	Root     AssertionRoot
 	Actual   *Region
 	Expected *Region
+	Raw      *RawFixture
 }
 
 type FixtureTable struct {
@@ -22,4 +23,32 @@ type FixtureRow struct {
 	Prepare   []Preparation
 	Arguments []*Expression
 	Expected  *Completion
+	Raw       *RawFixture
+}
+
+// RawFixture is a validated P4.1 native exchange fixture. The operation is
+// the producing declaration identity; a nil exchange forbids transport.
+type RawFixture struct {
+	Operation   string
+	Environment map[string]string
+	Exchange    *RawExchange
+}
+type RawExchange struct {
+	Method      string
+	URL         string
+	Headers     [][2]string
+	BodyBase64  string
+	BodyJSON    string
+	HasBodyJSON bool
+	Response    *RawResponse
+	Failure     *RawFailure
+}
+type RawResponse struct {
+	Status  int
+	Headers [][2]string
+	Body    string
+}
+type RawFailure struct {
+	Kind  string
+	Phase string
 }

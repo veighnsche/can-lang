@@ -161,6 +161,7 @@ func Format(file *File) string {
 		case *JudgeDecl:
 			f.nativeHeader("judge", n.NativeHeader)
 			f.nativeState(n.State)
+			f.nativeAssertions(n.Assertions)
 			for _, entry := range n.Registrations {
 				text := FormatExpression(entry.Call)
 				if entry.Binding != nil {
@@ -180,6 +181,7 @@ func Format(file *File) string {
 			f.connection(n)
 		case *FetchDecl:
 			f.nativeHeader("fetch", n.NativeHeader)
+			f.nativeAssertions(n.Assertions)
 			f.line(1, n.Method.Text+" "+FormatExpression(n.Path))
 			f.nativeEntries("query", n.Query)
 			f.nativeEntries("headers", n.Headers)
@@ -189,6 +191,7 @@ func Format(file *File) string {
 		case *LLMDecl:
 			f.nativeHeader("llm", n.NativeHeader)
 			f.nativeState(n.State)
+			f.nativeAssertions(n.Assertions)
 			f.line(1, "asks "+FormatExpression(n.Asks))
 		case *RecordDecl:
 			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters))
@@ -248,6 +251,9 @@ func (f *formatter) assertion(level int, a Assertion) {
 	}
 	text += formatArguments(a.Arguments) + " => "
 	f.body(level, text, a.Expected)
+	if a.Mode != nil {
+		f.line(level+1, "using raw "+a.Mode.Raw.Text)
+	}
 }
 func (f *formatter) binding(level int, b Binding) {
 	prefix := FormatType(b.Type) + " " + b.Name.Text + " = "

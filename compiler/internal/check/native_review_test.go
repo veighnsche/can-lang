@@ -118,7 +118,13 @@ func TestNativeStateCodecAdmission(t *testing.T) {
 				}
 				header := strings.Replace(nativeHeader, "uses [", "uses [bytes, ", 1)
 				text := header + "record opaque_record\n    bytes::buffer content\n" + nativeGenerator + nativeClassifier + nativeQuestion + declaration + programMain + "    ok\n"
-				if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil || !strings.Contains(err.Error(), "not codec-admissible") {
+				// The judge declaration references its raw case, so the
+				// fixture must exist for capture before admission runs.
+				files := map[string]string{"src/main.can": text}
+				if kind == "judge" {
+					files = withNativeRaw(files, "assess")
+				}
+				if _, err := programFixture(t, files); err == nil || !strings.Contains(err.Error(), "not codec-admissible") {
 					t.Fatalf("expected codec admission error, got %v", err)
 				}
 			})
@@ -128,18 +134,18 @@ func TestNativeStateCodecAdmission(t *testing.T) {
 
 func TestNativeExportedConnection(t *testing.T) {
 	for _, declaration := range []string{
-		"fetch str exposed from generator\n    emits [http::request_failed]\n    get \"/\"\n",
-		"llm str exposed from generator\n    emits [" + nativeLLM + "]\n    asks \"Generate\"\n",
+		"fetch str exposed from generator\n    emits [http::request_failed]\n    asserts\n        sample: => ok \"\"\n            using raw \"fixtures/exposed.json\"\n    get \"/\"\n",
+		"llm str exposed from generator\n    emits [" + nativeLLM + "]\n    asserts\n        sample: () => ok \"x\"\n            using raw \"fixtures/exposed.json\"\n    asks \"Generate\"\n",
 		strings.Replace(nativeQuestion, "bool question", "bool exposed", 1),
-		strings.Replace(nativeJudge, "bool assess", "bool exposed", 1) + nativeQuestion,
+		strings.Replace(strings.Replace(nativeJudge, "bool assess", "bool exposed", 1), "fixtures/assess.json", "fixtures/exposed.json", 1) + nativeQuestion,
 	} {
 		header := strings.Replace(nativeHeader, "provides []", "provides [exposed]", 1)
 		text := header + nativeGenerator + nativeClassifier + declaration + programMain + "    ok\n"
-		if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil || !strings.Contains(err.Error(), "private connection") {
+		if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "exposed")); err == nil || !strings.Contains(err.Error(), "private connection") {
 			t.Fatalf("expected private connection error, got %v", err)
 		}
 		text = strings.Replace(text, "provides [exposed]", "provides [exposed, generator, classifier]", 1)
-		if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+		if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "exposed")); err != nil {
 			t.Fatal(err)
 		}
 	}

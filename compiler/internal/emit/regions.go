@@ -320,7 +320,15 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 				if err != nil {
 					return LoweredExpression{}, err
 				}
-				rows = append(rows, "{selector:"+quote(row.Selector)+", arguments: async () => {"+prepare.String()+"return $canSuccess(["+strings.Join(expectedArgs, ",")+"]);}, expected: async () => {"+expected+"}}")
+				literal := "{selector:" + quote(row.Selector) + ", arguments: async () => {" + prepare.String() + "return $canSuccess([" + strings.Join(expectedArgs, ",") + "]);}, expected: async () => {" + expected + "}}"
+				if row.Raw != nil {
+					spec, err := RawSpec(row.Raw)
+					if err != nil {
+						return LoweredExpression{}, err
+					}
+					literal = "{selector:" + quote(row.Selector) + ", arguments: async () => {" + prepare.String() + "return $canSuccess([" + strings.Join(expectedArgs, ",") + "]);}, expected: async () => {" + expected + "}, raw:{operation:" + quote(row.Raw.Operation) + ",spec:" + spec + "}}"
+				}
+				rows = append(rows, literal)
 			}
 			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
 		}

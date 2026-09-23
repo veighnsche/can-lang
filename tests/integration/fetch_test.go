@@ -149,17 +149,22 @@ func TestCurrentBundledFetch(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 11}} {
+	}{{"main", 20}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/fetch", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)
 		}
-		source := strings.Replace(string(data), "http://127.0.0.1:1/", server.URL+"/", 1)
+		pristine := strings.Replace(string(data), "http://127.0.0.1:1/", server.URL+"/", 1)
+		source := pristine
 		source = strings.Replace(source, "    max_body_bytes 8192", "    max_body_bytes 8192\n    headers\n        content_type = \"text/plain\"\n        x_default = \"inherited\"\n        x_omitted = \"remove-me\"", 1)
 		// Empty overrides remove defaults before body-specific native defaults apply.
 		source = strings.Replace(source, "    post \"/text\"", "    post \"/text\"\n    headers\n        content_type = []", 1)
 		source = strings.Replace(source, "    patch \"/bytes\"", "    patch \"/bytes\"\n    headers\n        content_type = []", 1)
-		write("src/main.can", source)
+		stageRawFixtures(t, write, sourceRoot, "fetch", [2]string{"http://127.0.0.1:1", server.URL})
+		// Assertions run against the pristine source: exact request comparison
+		// must see the same headers the committed fixtures record. Header
+		// default/override behavior is a run-path concern below.
+		write("src/main.can", pristine)
 		status, out, diag := run("assert")
 		if status != 0 || diag != "" {
 			t.Fatalf("fetch assertions: %d %s %s", status, out, diag)
@@ -168,6 +173,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != fixture.rows {
 			t.Fatalf("invalid fetch report %v %s", err, out)
 		}
+		write("src/main.can", source)
 		status, out, diag = run("run")
 		if status != 0 || out != "" || diag != "" {
 			t.Fatalf("fetch execution: %d %s %s", status, out, diag)

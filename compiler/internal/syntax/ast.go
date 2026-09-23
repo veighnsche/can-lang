@@ -243,6 +243,16 @@ type Assertion struct {
 	Receiver  Expr
 	Arguments []Argument
 	Expected  Body
+	// Mode is the optional execution mode line (using raw) on attached rows
+	// and native when rows. A nil mode is a supplied completion.
+	Mode *AssertionMode
+}
+
+// AssertionMode selects how one assert row executes. Raw carries the
+// source-relative fixture path token for can.native-fixture.v1 exchanges.
+type AssertionMode struct {
+	Span source.Span
+	Raw  Token
 }
 type Binding struct {
 	Span  source.Span

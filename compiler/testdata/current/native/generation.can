@@ -30,11 +30,17 @@ llm str describe from generator
         str private_setting
     state
         int count
+    asserts
+        drafted: "private-not-disclosed", (9007199254740993) => ok "description"
+            using raw "fixtures/generation_describe.json"
     asks "Describe"
 llm plan generate from generator
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
     state
         str description
+    asserts
+        planned: ("description") => ok plan([item<int>("First", 9007199254740993)], true, 0.5)
+            using raw "fixtures/generation_generate.json"
     asks "Plan"
 choice str select from classifier
     emits [ai::invalid_question, ai::invalid_answer]
@@ -47,6 +53,9 @@ judge str decide from classifier
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         plan generated
+    asserts
+        chosen: (plan([item<int>("First", 9007199254740993)], true, 0.5)) => ok "chosen"
+            using raw "fixtures/generation_decide.json"
     call select(generated.choices[0].label + " transformed") as str selected
     ok => ok selected
 fn void main

@@ -1,0 +1,15 @@
+ 20 pass
+ 0 fail
+ 140 expect() calls
+Ran 20 tests across 3 files. [24.00ms]
+--- PASS: TestNativeSliceFixturesUseCheckedInvocationContract (0.30s)
+--- PASS: TestUsingRawOnOrdinaryFunctionsRejected (0.11s)
+--- PASS: TestParseRawFixtureValid (0.00s)
+--- PASS: TestParseRawFixtureRejects (0.00s)
+--- PASS: TestRawFixtureBindingRejects (0.18s)
+--- PASS: TestParseRawFixtureFailures (0.00s)
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	0.794s
+--- PASS: TestNativeAttachedAssertions (0.00s)
+--- PASS: TestAssertionModeLinesRejectMalformed (0.00s)
+--- PASS: TestWhenRowAcceptsRawMode (0.00s)
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.083s

@@ -34,6 +34,9 @@ llm records::triage_plan draft from generator
     emits [http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data, llm::refused, llm::truncated, llm::invalid_response]
     state
         str account
+    asserts
+        sample: ("Ann") => ok records::triage_plan(["vip", "new"], true)
+            using raw "fixtures/draft.json"
     asks "Draft"
 
 /// Pick one keyword from the plan's dynamic options.
@@ -69,6 +72,9 @@ judge records::triage_scored review from classifier
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         records::triage_bundle bundle
+    asserts
+        sample: (records::triage_bundle([choice_option("vip", "VIP"), choice_option("new", "New")], ["Ann"])) => ok records::triage_scored("vip", 0.95)
+            using raw "fixtures/review.json"
     call pick(bundle.options) as str keyword
     call likely() as float n
     call rate() as float s

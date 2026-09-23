@@ -13,8 +13,12 @@ func TestLLMOutputSchemaAdmission(t *testing.T) {
 		{"array root", "", "str[]", "/"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			source := strings.Replace(nativeHeader, "ai, llm", "ai, llm, bytes", 1) + nativeGenerator + tc.records + "llm " + tc.result + " generate from generator\n    emits [" + nativeLLM + "]\n    asks \"Generate\"\n" + programMain + "    ok\n"
-			p, err := programFixture(t, map[string]string{"src/main.can": source})
+			asserts := ""
+			if tc.path == "" {
+				asserts = "    asserts\n        sample: () => ok box<int>(1)\n            using raw \"fixtures/generate.json\"\n"
+			}
+			source := strings.Replace(nativeHeader, "ai, llm", "ai, llm, bytes", 1) + nativeGenerator + tc.records + "llm " + tc.result + " generate from generator\n    emits [" + nativeLLM + "]\n" + asserts + "    asks \"Generate\"\n" + programMain + "    ok\n"
+			p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": source}, "generate"))
 			if tc.path != "" {
 				if err == nil || !strings.Contains(err.Error(), tc.path) {
 					t.Fatalf("expected rejection at %s: %v", tc.path, err)

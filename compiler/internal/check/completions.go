@@ -38,9 +38,12 @@ type CompletionContext struct {
 	InferReference func(*resolve.Scope, syntax.QualifiedName, *types.Type, *Expressions) (ValueBinding, bool, error)
 	InferCall      func(*resolve.Scope, syntax.QualifiedName, []syntax.Argument, *types.Type, *Expressions) (ValueBinding, bool, error)
 	Callables      map[string]CallableDeclaration
-	Variadic       map[string]bool
-	Method         func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
-	ResolveMethod  func(MethodApplication) (ValueBinding, error)
+	// Raw carries assertion-time native evidence for using-raw rows. It is
+	// set on file-owned root contexts and inherited by derived regions.
+	Raw           *RawScope
+	Variadic      map[string]bool
+	Method        func(*types.Type, syntax.Token, []syntax.TypeNode) (ValueBinding, error)
+	ResolveMethod func(MethodApplication) (ValueBinding, error)
 	// Parameters already have resolved identities and are exposed by Expressions.
 	Parameters []ir.Local
 	// BareOpaque permits bare ok in assertion expectations for C-excluded

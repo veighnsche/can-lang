@@ -164,7 +164,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF10-summary.json, LF10-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic proven on clean HEAD), LF10-integration.log (integration+driver+emit all ok), LF10-runtime.log (335 pass), LF10-normalize.log (17 pass). Reproduction commands in the summary.
 
-- [ ] **LF11 — Attach native assertion roots and raw exchange fixtures**
+- [x] **LF11 — Attach native assertion roots and raw exchange fixtures**
 
   **Depends on:** LF04, LF08, LF10. **Acceptance:** AE25.
 
@@ -178,7 +178,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run real native roots under LF04 supervision; keep supplied-completion, raw-provider-fixture and real-can evidence distinct. Exercise dependency and grouped-state roots; no real credentials or live quality calls.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF11-summary.json, LF11-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic proven on clean HEAD), LF11-integration.log (integration+driver+emit all ok), LF11-runtime.log (344 pass), LF11-raw.log (20+6+3 focused pass). Reproduction commands in the summary.
 
 - [ ] **LF12 — Implement derived wrappers, calculated bounds and handler tests**
 

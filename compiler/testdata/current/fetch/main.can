@@ -10,6 +10,11 @@ connection service
     max_body_bytes 8192
 fetch receipt load_json from service
     emits [http::request_failed]
+    asserts
+        decoded: => ok receipt(7)
+            using raw "fixtures/load_json.json"
+        unauthenticated: => http::request_failed(http::credentials_missing("CAN_I26_TOKEN"))
+            using raw "fixtures/load_json_unauthenticated.json"
     get (call [["/json"]].map(callable extract))[0]
     query
         labels = call [["a b"], ["+"]].map(callable extract)
@@ -19,17 +24,26 @@ fetch receipt load_json from service
         x_omitted = ([...([])])
 fetch http::response<bytes::buffer> load_envelope from service
     emits [http::request_failed]
+    asserts
+        delivered: => ok http::response<bytes::buffer>(418, [], call bytes::empty())
+            using raw "fixtures/load_envelope.json"
     get "/envelope"
 fetch str send_text from service
     emits [http::request_failed]
     given
         str payload
+    asserts
+        echo: "hello" => ok "hello"
+            using raw "fixtures/send_text.json"
     post "/text"
     body text (call [[payload]].map(callable extract))[0]
 fetch receipt send_json from service
     emits [http::request_failed]
     given
         receipt payload
+    asserts
+        stored: receipt(7) => ok receipt(7)
+            using raw "fixtures/send_json.json"
     put "/json"
     headers
         content_type = ([...([("application/json")])])
@@ -38,16 +52,28 @@ fetch bytes::buffer send_bytes from service
     emits [http::request_failed]
     given
         bytes::buffer payload
+    asserts
+        roundtrip: call bytes::empty() => ok
+            using raw "fixtures/send_bytes.json"
     patch "/bytes"
     body bytes payload
 fetch str head_text from service
     emits [http::request_failed]
+    asserts
+        probed: => ok ""
+            using raw "fixtures/head_text.json"
     head "/head"
 fetch str delete_text from service
     emits [http::request_failed]
+    asserts
+        removed: => ok "delete"
+            using raw "fixtures/delete_text.json"
     delete "/delete"
 fetch str options_text from service
     emits [http::request_failed]
+    asserts
+        allowed: => ok "options"
+            using raw "fixtures/options_text.json"
     options "/options"
 fn void main
     emits [http::request_failed, checks::failed]

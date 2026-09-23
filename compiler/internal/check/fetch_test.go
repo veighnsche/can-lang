@@ -11,7 +11,7 @@ func TestNamedFetchModes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	program, err := programFixture(t, map[string]string{"src/main.can": string(source)})
+	program, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": string(source)}, "fetch"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,7 +39,7 @@ func TestNamedFetchModes(t *testing.T) {
 			if text == string(source) {
 				t.Fatal("missed mutation")
 			}
-			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil {
+			if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": text}, "fetch")); err == nil {
 				t.Fatal("invalid fetch admitted")
 			}
 		})
@@ -54,7 +54,7 @@ func TestFetchRejectsLiteralHeaderValuesInsideArrays(t *testing.T) {
 	for _, bad := range []string{`"a\r\nb"`, `["a\r\nb"]`, `(["a\nb"])`, `["ok", ...(["a\0b"])]`, `[...([("Ā")])]`} {
 		t.Run(bad, func(t *testing.T) {
 			text := strings.Replace(string(source), `x_probe = call [["yes"]].map(callable extract)`, `x_probe = `+bad, 1)
-			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil || !strings.Contains(err.Error(), "invalid literal request header value") {
+			if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": text}, "fetch")); err == nil || !strings.Contains(err.Error(), "invalid literal request header value") {
 				t.Fatalf("literal header admitted or wrong failure: %v", err)
 			}
 		})
@@ -71,7 +71,7 @@ func TestFetchGroupedEmptyEntriesAndLiteralContentTypes(t *testing.T) {
 		for _, value := range []string{"[]", "([])", "(([]))", "([...([])])"} {
 			t.Run(entry+value, func(t *testing.T) {
 				name := strings.Split(entry, " = ")[0]
-				if _, err := programFixture(t, map[string]string{"src/main.can": strings.Replace(source, entry, name+" = "+value, 1)}); err != nil {
+				if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": strings.Replace(source, entry, name+" = "+value, 1)}, "fetch")); err != nil {
 					t.Fatal(err)
 				}
 			})
@@ -80,7 +80,7 @@ func TestFetchGroupedEmptyEntriesAndLiteralContentTypes(t *testing.T) {
 	for _, value := range []string{`("text/plain")`, `(("text/plain"))`, `[...["text/plain"]]`, `([...([("text/plain")])])`, `["application/json", ...(["text/plain"])]`} {
 		t.Run(value, func(t *testing.T) {
 			text := strings.Replace(source, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
-			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
+			if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": text}, "fetch")); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
 				t.Fatalf("known conflict: %v", err)
 			}
 		})
@@ -88,7 +88,7 @@ func TestFetchGroupedEmptyEntriesAndLiteralContentTypes(t *testing.T) {
 	for _, value := range []string{`("application/json")`, `([...(["application/json; charset=utf-8"])])`, `([])`, `([...([])])`} {
 		t.Run("valid "+value, func(t *testing.T) {
 			text := strings.Replace(source, `content_type = ([...([("application/json")])])`, "content_type = "+value, 1)
-			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+			if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": text}, "fetch")); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -112,7 +112,7 @@ func TestFetchContentTypeEmptyOverrideAndDynamicAdmission(t *testing.T) {
         sample: "text/plain" => ok "text/plain"
     ok value
 `
-			if _, err := programFixture(t, map[string]string{"src/main.can": text}); err != nil {
+			if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": text}, "fetch")); err != nil {
 				t.Fatal(err)
 			}
 		})
@@ -120,7 +120,7 @@ func TestFetchContentTypeEmptyOverrideAndDynamicAdmission(t *testing.T) {
 	base = strings.Replace(base, `    headers
         content_type = ([...([("application/json")])])
 `, "", 1)
-	if _, err := programFixture(t, map[string]string{"src/main.can": base}); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
+	if _, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": base}, "fetch")); err == nil || !strings.Contains(err.Error(), "JSON fetch body requires") {
 		t.Fatalf("unreplaced default conflict: %v", err)
 	}
 }

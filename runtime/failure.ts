@@ -97,7 +97,7 @@ export function cleanupFailure(cause: unknown, origin: FailureOrigin): StandardF
 export function nonfiniteSortKeyFailure(cause: unknown, origin: FailureOrigin): StandardFailure {
   return createStandard("arithmetic", "arithmetic: nonfinite sort key", cause, origin);
 }
-export const assertionFailureClasses = Object.freeze(["missing fixture", "argument mismatch", "ambiguous fixture", "malformed fixture", "unexpected live boundary", "unused fixture"] as const);
+export const assertionFailureClasses = Object.freeze(["missing fixture", "argument mismatch", "ambiguous fixture", "malformed fixture", "unexpected live boundary", "unused fixture", "outcome mismatch"] as const);
 export function assertionFailure(failureClass: typeof assertionFailureClasses[number], origin: FailureOrigin): StandardFailure {
   if (!(assertionFailureClasses as readonly string[]).includes(failureClass)) throw new TypeError("unknown assertion failure class");
   return createStandard("assertion", "assertion: " + failureClass, undefined, origin);

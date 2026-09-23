@@ -70,6 +70,7 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := strings.Replace(string(data), "http://127.0.0.1:1/systemone", server.URL+"/systemone", 1)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", text)
 	run := func(command string) (int, string, string) {
 		t.Helper()
@@ -135,6 +136,8 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 	pure = strings.ReplaceAll(pure, "relay call report(%, \"T\")", "ok %")
 	pure = strings.ReplaceAll(pure, "relay call report(%, \"F\")", "ok %")
 	write("src/main.can", pure)
+	clearStagedFixtureEnvironments(t, root)
+	stripStagedAuthorization(t, root)
 	code, out, diag := run("build")
 	if code != 0 {
 		t.Fatalf("raw-provider build: %d %s %s", code, out, diag)

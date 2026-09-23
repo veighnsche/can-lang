@@ -7,7 +7,7 @@ import (
 
 func TestJudgeRetainsCheckedPhases(t *testing.T) {
 	text := nativeHeader + nativeClassifier + nativeQuestion + nativeJudge + programMain + "    ok\n"
-	p, err := programFixture(t, map[string]string{"src/main.can": text})
+	p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "assess"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestJudgeRetainsCheckedPhases(t *testing.T) {
 	// Both source option orders are legal; local selection uses labels, while
 	// descriptor computation retains declaration order.
 	reversed := strings.Replace(text, "true \"Yes\" => ok % >= 0.5\n        false \"No\" => ok false", "false \"No\" => ok false\n        true \"Yes\" => ok % >= 0.5", 1)
-	p, err = programFixture(t, map[string]string{"src/main.can": reversed})
+	p, err = programFixture(t, withNativeRaw(map[string]string{"src/main.can": reversed}, "assess"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,9 +45,9 @@ func TestJudgeRetainsCheckedPhases(t *testing.T) {
 }
 
 func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
-	for _, state := range []string{"", "    state\n        str message\n        int count\n"} {
-		judge := "judge bool assess from classifier\n    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state + "    call question(private_description) as bool unused\n    ok => ok true\n"
-		p, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeClassifier + nativeQuestion + judge + programMain + "    ok\n"})
+	for _, state := range []struct{ block, sample string }{{"", "\"x\", ()"}, {"    state\n        str message\n        int count\n", "\"x\", (\"message\", 1)"}} {
+		judge := "judge bool assess from classifier\n    emits [http::request_failed, ai::invalid_question, ai::invalid_answer]\n    given\n        str private_description\n" + state.block + "    asserts\n        sample: " + state.sample + " => ok true\n            using raw \"fixtures/assess.json\"\n    call question(private_description) as bool unused\n    ok => ok true\n"
+		p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": nativeHeader + nativeClassifier + nativeQuestion + judge + programMain + "    ok\n"}, "assess"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -56,7 +56,7 @@ func TestJudgeStateSchemaDisclosesOnlyState(t *testing.T) {
 			t.Fatal("unused question registration eliminated")
 		}
 		want := 0
-		if state != "" {
+		if state.block != "" {
 			want = 2
 		}
 		if len(plan.StateInputs) != want || len(plan.Inputs) != want+1 {

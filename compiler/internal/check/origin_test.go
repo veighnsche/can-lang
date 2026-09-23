@@ -14,7 +14,7 @@ func TestNativeOriginSets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fetch, err := programFixture(t, map[string]string{"src/main.can": string(fetchSource)})
+	fetch, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": string(fetchSource)}, "fetch"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +70,7 @@ func TestNativeOriginSets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	judged, err := programFixture(t, map[string]string{"src/main.can": string(judgeSource)})
+	judged, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": string(judgeSource)}, "native"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +108,7 @@ func TestNativeOriginSets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	generated, err := programFixture(t, map[string]string{"src/main.can": string(generationSource)})
+	generated, err := programFixture(t, testdataFixtures(t, map[string]string{"src/main.can": string(generationSource)}, "native"))
 	if err != nil {
 		t.Fatal(err)
 	}

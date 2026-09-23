@@ -44,9 +44,9 @@ func TestGroupedNativeInvocation(t *testing.T) {
 		{"variadic", "    given\n        str ...labels\n", "    state\n        str input\n", "\"a\", \"b\", (\"input\")"},
 	} {
 		t.Run(f.name, func(t *testing.T) {
-			native := "llm str generate from generator\n    emits [" + nativeLLM + "]\n" + f.inputs + f.state + "    asks \"Generate\"\n"
+			native := "llm str generate from generator\n    emits [" + nativeLLM + "]\n" + f.inputs + f.state + "    asserts\n        sample: " + f.args + " => ok \"x\"\n            using raw \"fixtures/generate.json\"\n    asks \"Generate\"\n"
 			wrapper := "fn str wrap\n    emits [" + nativeLLM + "]\n    asserts\n        sample: => ok \"x\"\n    relay call generate(" + f.args + ")\n"
-			p, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeGenerator + native + wrapper + programMain + "    ok\n"})
+			p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": nativeHeader + nativeGenerator + native + wrapper + programMain + "    ok\n"}, "generate"))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -54,7 +54,7 @@ func TestGroupedNativeInvocation(t *testing.T) {
 				t.Fatal("missing grouping evidence")
 			}
 			bad := strings.Replace(wrapper, "generate("+f.args+")", "generate(\"not grouped\")", 1)
-			if _, err := programFixture(t, map[string]string{"src/main.can": nativeHeader + nativeGenerator + native + bad + programMain + "    ok\n"}); err == nil {
+			if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": nativeHeader + nativeGenerator + native + bad + programMain + "    ok\n"}, "generate")); err == nil {
 				t.Fatal("accepted missing state group")
 			}
 		})
@@ -87,6 +87,9 @@ const nativeJudge = `judge bool assess from classifier
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
     state
         str message
+    asserts
+        sample: ("x") => ok true
+            using raw "fixtures/assess.json"
     call question("First") as bool first
     call question("Second") as bool second
     ok => ok first and second
@@ -94,7 +97,7 @@ const nativeJudge = `judge bool assess from classifier
 
 func TestJudgePreparationAndHandlerRegions(t *testing.T) {
 	text := nativeHeader + nativeClassifier + nativeQuestion + nativeJudge + programMain + "    ok\n"
-	p, err := programFixture(t, map[string]string{"src/main.can": text})
+	p, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": text}, "assess"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +114,7 @@ func TestJudgePreparationAndHandlerRegions(t *testing.T) {
 		"direct question call":   strings.Replace(text, "    ok\n", "    call question(\"direct\")\n    ok\n", 1),
 	} {
 		t.Run(name, func(t *testing.T) {
-			if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil {
+			if _, err := programFixture(t, withNativeRaw(map[string]string{"src/main.can": bad}, "assess")); err == nil {
 				t.Fatal("accepted invalid native semantics")
 			}
 		})

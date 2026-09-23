@@ -8,9 +8,9 @@ import type {Connection} from "./request.ts";
 
 export type HTTPTypes=Readonly<{invalid:string;credential:string;transport:string;timeout:string;limit:string;status:string;header:string}>;
 export function createTransport(domain:ReturnType<typeof createDomainRuntime>,types:HTTPTypes,readEnvironment:(name:string)=>string|undefined){
- return Object.freeze({async request<T>(connection:Connection,request:NativeRequest,decode:(bytes:Uint8Array,metadata:ResponseMetadata)=>Completion<T>|Promise<Completion<T>>,origin:FailureOrigin,operation:string):Promise<Completion<T>>{
+ return Object.freeze({async request<T>(connection:Connection,request:NativeRequest,decode:(bytes:Uint8Array,metadata:ResponseMetadata)=>Completion<T>|Promise<Completion<T>>,origin:FailureOrigin,operation:string,readEnv:(name:string)=>string|undefined=readEnvironment):Promise<Completion<T>>{
   return invoke(async()=>{
-   try{return await performRequest(connection,request,readEnvironment,decode);}
+   try{return await performRequest(connection,request,readEnv,decode);}
    catch(cause){
     const problem=transportProblem(cause);if(!problem)throw cause;
     let identity:string,fields:[string,unknown][];

@@ -30,6 +30,43 @@ func programFixture(t *testing.T, files map[string]string) (*Program, error) {
 	return CheckProgram(graph)
 }
 
+// nativeRawFixture is a minimal schema-valid response fixture for check-only
+// inline tests. Request comparison never runs there; the response outcome
+// satisfies the request/decoder coverage gate structurally.
+func nativeRawFixture(target string) string {
+	return `{"schema":"can.native-fixture.v1","target":"` + target + `","environment":{},"exchange":{"request":{"method":"POST","url":"http://localhost:1/","headers":[],"body":{"bytes_base64":""}},"outcome":{"response":{"status":200,"headers":[["content-type","application/json"]],"body_base64":"e30="}}}}`
+}
+
+// withNativeRaw stages one minimal fixture per named declaration for inline
+// package-app sources.
+func withNativeRaw(files map[string]string, names ...string) map[string]string {
+	for _, name := range names {
+		files["src/fixtures/"+name+".json"] = nativeRawFixture("can.project.root/app::" + name)
+	}
+	return files
+}
+
+// testdataFixtures stages the committed raw exchange fixtures for one current
+// area next to the compiled main source.
+func testdataFixtures(t *testing.T, files map[string]string, area string) map[string]string {
+	t.Helper()
+	entries, err := os.ReadDir("../../testdata/current/" + area + "/fixtures")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		data, err := os.ReadFile("../../testdata/current/" + area + "/fixtures/" + entry.Name())
+		if err != nil {
+			t.Fatal(err)
+		}
+		files["src/fixtures/"+entry.Name()] = string(data)
+	}
+	return files
+}
+
 const programHeader = "package app\n    provides []\n    uses []\n"
 const programMain = "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n"
 

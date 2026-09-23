@@ -1,4 +1,5 @@
 import {runOwnedRoot,type OwnerDiagnostic} from "../owner.ts";
+import {isBytes,copyBytes} from "../bytes.ts";
 import { types as nativeTypes } from "node:util";
 import { callableEqual } from "../callable.ts";
 import { invoke, success, type Completion } from "../completion.ts";
@@ -19,8 +20,17 @@ const origin: FailureOrigin = Object.freeze({source: "can:assertion", start: 0, 
 // Native strict deepEquals owns ordinary equality. Its one harness adapter
 // protects opaque/function token identity: two empty opaque tokens must never
 // compare as equal merely because they have no enumerable fields.
-function opaqueIdentitiesAgree(left: unknown, right: unknown, seen = new WeakMap<object, WeakSet<object>>()): boolean {
+function opaqueIdentitiesAgree(left: unknown, right: unknown, seen = new WeakMap<object, WeakSet<object>>(), content = false): boolean {
   if (Object.is(left, right)) return true;
+  // Completion-level comparison may match two genuine byte tokens by content
+  // so decoder output can meet constructed expectations. Anything else
+  // facing a byte token still fails: content comparison never forges an
+  // opaque value from visible data. Argument matching stays identity-strict.
+  if (content && (isBytes(left) || isBytes(right))) {
+    if (!isBytes(left) || !isBytes(right)) return false;
+    const a = copyBytes(left, origin), b = copyBytes(right, origin);
+    return a.length === b.length && a.every((byte, index) => byte === b[index]);
+  }
   if (left === null || right === null) return false;
   const object = (v: unknown) => typeof v === "object" || typeof v === "function";
   if (!object(left) || !object(right)) return object(left) === object(right);
@@ -33,12 +43,12 @@ function opaqueIdentitiesAgree(left: unknown, right: unknown, seen = new WeakMap
   if (Array.isArray(left) || Array.isArray(right)) {
     if (!Array.isArray(left) || !Array.isArray(right)) return false;
     const a = dataArray(left), b = dataArray(right);
-    return a.length === b.length && a.every((value, i) => opaqueIdentitiesAgree(value, b[i], seen));
+    return a.length === b.length && a.every((value, i) => opaqueIdentitiesAgree(value, b[i], seen, content));
   }
   const identity = recordIdentity(left);
   if (!identity || identity !== recordIdentity(right)) return false;
   const a = dataKeys(left).filter(k => typeof k === "string"), b = dataKeys(right).filter(k => typeof k === "string");
-  return a.length === b.length && a.every(key => b.includes(key) && opaqueIdentitiesAgree(dataProperty(left, key), dataProperty(right, key), seen));
+  return a.length === b.length && a.every(key => b.includes(key) && opaqueIdentitiesAgree(dataProperty(left, key), dataProperty(right, key), seen, content));
 }
 export function assertionEqual(left: unknown, right: unknown): boolean {
   if (Object.is(left, right)) return true;
@@ -59,16 +69,25 @@ function isOpaqueToken(value: unknown): boolean {
   if (Array.isArray(value) || nativeTypes.isProxy(value)) return false;
   return recordIdentity(value) === undefined;
 }
-function sameCompletion(actual: Completion, expected: Completion): boolean {
+export function completionValueEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (typeof left === "function" || typeof right === "function") return callableEqual(left, right, completionValueEqual);
+  if (Array.isArray(left) || Array.isArray(right)) {
+    if (!Array.isArray(left) || !Array.isArray(right) || left.length !== right.length) return false;
+    return left.every((value, index) => completionValueEqual(value, right[index]));
+  }
+  return opaqueIdentitiesAgree(left, right, new WeakMap(), true) && Bun.deepEquals(left, right, true);
+}
+export function completionEqual(actual: Completion, expected: Completion): boolean {
   if (actual.kind !== expected.kind || actual.kind === "standard" || expected.kind === "standard") return false;
   // Bare ok expectations (checker-confined to C-excluded opaque results) pass
   // against any opaque token: fixture structure and completion kinds are the
   // verified content, never the unobservable interior.
   if (actual.kind === "ok" && expected.kind === "ok" && expected.value === undefined && isOpaqueToken(actual.value)) return true;
-  if (actual.kind === "ok" && expected.kind === "ok") return assertionEqual(actual.value, expected.value);
+  if (actual.kind === "ok" && expected.kind === "ok") return completionValueEqual(actual.value, expected.value);
   if (actual.kind === "domain" && expected.kind === "domain") {
     const a = domainFailureDiagnostics(actual.value), b = domainFailureDiagnostics(expected.value);
-    return a.typeIdentity === b.typeIdentity && assertionEqual(a.payload, b.payload);
+    return a.typeIdentity === b.typeIdentity && completionValueEqual(a.payload, b.payload);
   }
   return false;
 }
@@ -91,7 +110,7 @@ export async function runAssertion(test: AssertionCase, sink?: ProgressSink) {
     if (expected.kind === "standard") {reason = "expected evaluation failed";const details=standardFailureDiagnostics(expected.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
     else {
       const actual = await invoke(() => test.actual(context), origin);
-      if (!sameCompletion(actual, expected)) {
+      if (!completionEqual(actual, expected)) {
         reason = "outcome mismatch";
         if (actual.kind === "standard") {const details=standardFailureDiagnostics(actual.value);frames=diagnosticFrames(details.cause,details.boundaryOrigin ?? details.origin);}
         else if (actual.kind === "domain") {const details=domainFailureDiagnostics(actual.value);frames=diagnosticFrames(undefined,details.origin);}

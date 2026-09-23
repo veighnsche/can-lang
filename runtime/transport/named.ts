@@ -1,4 +1,4 @@
-import {providerHTTP} from "../assert/provider.ts";
+import {providerHTTP,rawEnvironment} from "../assert/provider.ts";
 import {denyLiveBoundary} from "../assert/context.ts";
 import {invoke,success,failure,type Completion,type AssertionContext} from "../completion.ts";
 import {array,record} from "../data.ts";
@@ -33,7 +33,7 @@ export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,t
     }catch(cause){if(cause instanceof CodecIssue)return cause.reason==="byte_limit"?limit():invalid(cause);throw cause;}
     if(encoded.byteLength>connection.maxBodyBytes)return limit();
    }
-   const exchange=request.exchange??providerHTTP(context,origin);if(exchange===undefined)denyLiveBoundary(context,origin);
+   const exchange=request.exchange??providerHTTP(context,origin,operation,connection.maxBodyBytes);if(exchange===undefined)denyLiveBoundary(context,origin);
    return transport.request(connection,{...request,exchange,body:encoded,bodyEncoding:body?.mode,envelope:result.envelope!==undefined},(bytes,metadata)=>{
     let value:unknown;
     try{
@@ -46,7 +46,7 @@ export function createNamedFetch(domain:ReturnType<typeof createDomainRuntime>,t
     }catch(cause){if(cause instanceof CodecIssue)return invalid(cause);throw cause;}
     if(result.envelope!==undefined)value=record(result.envelope,[["status",BigInt(metadata.status)],["headers",array(metadata.headers.map(header=>record(types.header,[["name",header.name],["value",header.value]])))],["body",value]]);
     return success(value as T);
-   },origin,operation);
+   },origin,operation,rawEnvironment(context,operation)??readEnvironment);
   },origin),operation);
  }});
 }

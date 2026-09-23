@@ -31,6 +31,7 @@ type NativeEntry struct {
 type FetchDecl struct {
 	DeclarationLocation
 	NativeHeader
+	Assertions     []Assertion
 	Method         Token
 	Path           Expr
 	Query, Headers []NativeEntry
@@ -40,8 +41,9 @@ type FetchDecl struct {
 type LLMDecl struct {
 	DeclarationLocation
 	NativeHeader
-	State []Field
-	Asks  Expr
+	Assertions []Assertion
+	State      []Field
+	Asks       Expr
 }
 
 func (p *parser) connection() Declaration {
@@ -160,9 +162,24 @@ func (p *parser) nativeEntries(section string) []NativeEntry {
 	p.expect(Dedent)
 	return entries
 }
+func (p *parser) nativeAssertions() []Assertion {
+	if !p.word("asserts") {
+		return nil
+	}
+	p.take()
+	p.expect(Newline)
+	p.expect(Indent)
+	assertions := []Assertion{p.assertion(false)}
+	for !p.at(Dedent) && !p.at(EOF) {
+		assertions = append(assertions, p.assertion(false))
+	}
+	p.expect(Dedent)
+	return assertions
+}
 func (p *parser) fetch() Declaration {
 	start := p.peek().Span.Start
 	header := p.nativeHeader("fetch")
+	assertions := p.nativeAssertions()
 	method := p.expect(Name)
 	switch method.Text {
 	case "get", "head", "post", "put", "patch", "delete", "options":
@@ -191,22 +208,24 @@ func (p *parser) fetch() Declaration {
 		}
 	}
 	p.expect(Dedent)
-	return &FetchDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Method: method, Path: path, Query: query, Headers: headers, BodyEncoding: encoding, Body: body}
+	return &FetchDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, Method: method, Path: path, Query: query, Headers: headers, BodyEncoding: encoding, Body: body}
 }
 func (p *parser) llm() Declaration {
 	start := p.peek().Span.Start
 	header := p.nativeHeader("llm")
 	state := p.nativeState()
+	assertions := p.nativeAssertions()
 	p.expectWord("asks")
 	asks := p.expression(1)
 	p.expect(Newline)
 	p.expect(Dedent)
-	return &LLMDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, State: state, Asks: asks}
+	return &LLMDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, State: state, Asks: asks}
 }
 
 type JudgeDecl struct {
 	DeclarationLocation
 	NativeHeader
+	Assertions    []Assertion
 	State         []Field
 	Registrations []ChainEntry
 	Continuation  Body
@@ -248,6 +267,7 @@ func (p *parser) judge() Declaration {
 	start := p.peek().Span.Start
 	header := p.nativeHeader("judge")
 	state := p.nativeState()
+	assertions := p.nativeAssertions()
 	var registrations []ChainEntry
 	for p.word("call") {
 		call := p.callExpression().(*CallExpr)
@@ -267,7 +287,7 @@ func (p *parser) judge() Declaration {
 	p.expect("=>")
 	continuation := p.armBody(true)
 	p.expect(Dedent)
-	return &JudgeDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, State: state, Registrations: registrations, Continuation: continuation}
+	return &JudgeDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, State: state, Assertions: assertions, Registrations: registrations, Continuation: continuation}
 }
 func (p *parser) choiceArm() Declaration {
 	start := p.expectWord("choice_arm").Span.Start

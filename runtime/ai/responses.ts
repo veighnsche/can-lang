@@ -7,7 +7,7 @@ import {invoke,success,failure,type Completion,type AssertionContext} from "../c
 import {createDomainRuntime} from "../domain.ts";
 import type {FailureOrigin} from "../failure.ts";
 import {denyLiveBoundary} from "../assert/context.ts";
-import {providerHTTP} from "../assert/provider.ts";
+import {providerHTTP,rawEnvironment} from "../assert/provider.ts";
 import {createTransport,type HTTPTypes} from "../transport/http.ts";
 import type {Connection} from "../transport/request.ts";
 
@@ -109,10 +109,10 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
   return invoke(async()=>{
    let body:Uint8Array;
    try{body=copyBytes(encodeResponseRequest(model,instructions,stateSchema,state,maxOutputTokens,format,connection.maxBodyBytes),where);}catch(cause){return issue(cause,where,operation,connection.maxBodyBytes);}
-   const exchange=providerHTTP(context,where);if(exchange===undefined)denyLiveBoundary(context,where);
+   const exchange=providerHTTP(context,where,operation,connection.maxBodyBytes);if(exchange===undefined)denyLiveBoundary(context,where);
    return transport.request(connection,{path:"",method:"POST",query:[],headers:[{name:"content_type",value:"application/json"},{name:"accept",value:"application/json"}],body,exchange},bytes=>{
     try{return success(decodeResponse(ownBytes(bytes),format,connection.maxBodyBytes) as T);}catch(cause){return issue(cause,where,operation);}
-   },where,operation);
+   },where,operation,rawEnvironment(context,operation)??readEnvironment);
   },where);
  }});
 }

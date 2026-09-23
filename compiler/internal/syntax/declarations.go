@@ -278,7 +278,39 @@ func (p *parser) assertion(method bool) Assertion {
 	expected := p.completion()
 	p.singleLine(name.Span.Start, expected.BodySpan().End)
 	p.expect(Newline)
-	return Assertion{Span: p.span(name.Span.Start), Name: name, Receiver: receiver, Arguments: arguments, Expected: expected}
+	mode := p.assertionMode()
+	return Assertion{Span: p.span(name.Span.Start), Name: name, Receiver: receiver, Arguments: arguments, Expected: expected, Mode: mode}
+}
+
+// assertionMode parses the optional indented execution-mode line under an
+// assertion row.
+func (p *parser) assertionMode() *AssertionMode {
+	if !p.at(Indent) {
+		return nil
+	}
+	p.take()
+	start := p.peek().Span.Start
+	if !p.word("using") {
+		p.fail("assertion execution mode must start with using")
+	}
+	p.take()
+	mode := &AssertionMode{Span: p.span(start)}
+	switch {
+	case p.word("raw"):
+		p.take()
+		path := p.expect(String)
+		p.singleLine(start, path.Span.End)
+		p.expect(Newline)
+		mode.Raw = path
+	default:
+		p.fail("unknown assertion execution mode")
+	}
+	p.expect(Dedent)
+	if p.at(Indent) {
+		p.fail("assertion accepts a single execution mode")
+	}
+	mode.Span = p.span(start)
+	return mode
 }
 
 func (p *parser) singleLine(start, end int) {

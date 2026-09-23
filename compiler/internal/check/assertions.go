@@ -25,6 +25,9 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 	var result []*ir.Assertion
 	for _, row := range rows {
 		root := ir.AssertionRoot{Package: fn.Symbol.Package.ID, Declaration: fn.Symbol.ID, Name: row.Name.Text}
+		if row.Mode != nil {
+			return nil, fmt.Errorf("assertion %s: using raw is allowed on fetch/judge/LLM targets only", row.Name.Text)
+		}
 		contract := c.bindings[fn.Identity()]
 		if contract != nil && contract.Kind() == types.Callable {
 			if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value != nil {
@@ -135,9 +138,138 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 		if err != nil {
 			return nil, fmt.Errorf("fixture %s completion: %w", row.Name.Text, err)
 		}
-		table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected})
+		var raw *ir.RawFixture
+		if row.Mode != nil {
+			if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value == nil {
+				if kind := step.Result.Kind(); kind == types.Opaque || kind == types.Callable {
+					return nil, fmt.Errorf("fixture %s: using raw cannot drive a supplied opaque mock", row.Name.Text)
+				}
+			}
+			if c.context.Raw == nil {
+				return nil, fmt.Errorf("fixture %s: using raw cannot resolve its target", row.Name.Text)
+			}
+			native, ok := c.context.Raw.Natives[step.Identity]
+			if !ok || native.Symbol.Kind != resolve.Fetch && native.Symbol.Kind != resolve.Judge && native.Symbol.Kind != resolve.LLM {
+				return nil, fmt.Errorf("fixture %s: using raw is allowed on fetch/judge/LLM targets only", row.Name.Text)
+			}
+			fixture, err := c.context.Raw.Load(row.Mode.Raw.Value)
+			if err != nil {
+				return nil, fmt.Errorf("fixture %s: %w", row.Name.Text, err)
+			}
+			if err := c.context.Raw.CheckRawFixture(step.Identity, fixture); err != nil {
+				return nil, fmt.Errorf("fixture %s: %w", row.Name.Text, err)
+			}
+			raw = convertRawFixture(step.Identity, fixture)
+		}
+		table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
 	}
 	return table, nil
+}
+
+// Native assertions attach real roots to fetch/judge/LLM declarations. Rows
+// invoke the declaration through the ordinary call checker, so inputs and
+// grouped state bind exactly as consumer calls do; questions and arms keep
+// their judge-owned coverage and declare no attached rows.
+func (c *programChecker) nativeAssertions(program *Program, callables map[string]CallableDeclaration) error {
+	for _, native := range program.Natives {
+		var rows []syntax.Assertion
+		switch d := native.Symbol.Declaration.(type) {
+		case *syntax.FetchDecl:
+			rows = d.Assertions
+		case *syntax.LLMDecl:
+			rows = d.Assertions
+		case *syntax.JudgeDecl:
+			rows = d.Assertions
+		default:
+			continue
+		}
+		if len(rows) == 0 {
+			return fmt.Errorf("%s requires mandatory assertions", native.Symbol.Name)
+		}
+		seen := map[string]bool{}
+		for _, row := range rows {
+			if row.Name.Text == "" || seen[row.Name.Text] {
+				return fmt.Errorf("duplicate or missing assertion name in %s", native.Symbol.Name)
+			}
+			seen[row.Name.Text] = true
+		}
+		file := c.world.Files[native.Symbol.Source]
+		context, err := c.nativeContext(program, native, callables)
+		if err != nil {
+			return err
+		}
+		covered := false
+		for _, row := range rows {
+			root := ir.AssertionRoot{Package: native.Symbol.Package.ID, Declaration: native.Symbol.ID, Name: row.Name.Text}
+			if row.Receiver != nil {
+				return fmt.Errorf("assertion %s: native assertions cannot supply a receiver", row.Name.Text)
+			}
+			contract := native.Signature
+			if contract != nil && contract.Kind() == types.Callable {
+				if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value != nil {
+					if kind := contract.Result().Kind(); kind == types.Opaque || kind == types.Callable {
+						return fmt.Errorf("assertion %s: excluded opaque results use bare ok", row.Name.Text)
+					}
+				}
+			}
+			expanded := row.Arguments
+			if contract != nil && contract.Kind() == types.Callable {
+				inputs := contract.Inputs()
+				expanded, err = expandScopeArguments(len(inputs), func(i int) bool {
+					return isScopeRequest(inputs[i])
+				}, c.variadic[native.Symbol.ID], row.Arguments, row.Span)
+				if err != nil {
+					return fmt.Errorf("assertion %s arguments: %w", row.Name.Text, err)
+				}
+			}
+			var callee syntax.Expr = &syntax.NameExpr{Name: syntax.QualifiedName{Name: native.Symbol.Name}, ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}}
+			call := &syntax.CallExpr{ExpressionLocation: syntax.ExpressionLocation{Span: row.Span}, Invocation: syntax.Invocation{Span: row.Span, Callee: callee, Arguments: expanded}}
+			actualContext := context
+			actualContext.Identity = native.Symbol.ID + "/assert/" + row.Name.Text + "/actual"
+			actualContext.Sites = nil
+			actualContext.Scope = file.Scope
+			actualContext.Parameters = nil
+			actualContext.Expressions = c.expressions(file, file.Scope)
+			actual, err := CheckRegion(actualContext, syntax.Block{Span: row.Span, Terminal: &syntax.RelayBody{BodyLocation: syntax.BodyLocation{Span: row.Span}, Call: call}})
+			if err != nil {
+				return fmt.Errorf("assertion %s arguments: %w", row.Name.Text, err)
+			}
+			switch row.Expected.(type) {
+			case *syntax.SuccessBody, *syntax.FailureBody:
+			default:
+				return fmt.Errorf("assertion requires an explicit expected completion")
+			}
+			expectedContext := actualContext
+			expectedContext.Identity = native.Symbol.ID + "/assert/" + row.Name.Text + "/expected"
+			expectedContext.BareOpaque = true
+			expected, err := CheckRegion(expectedContext, syntax.Block{Span: row.Span, Terminal: row.Expected})
+			if err != nil {
+				return fmt.Errorf("assertion %s expected completion: %w", row.Name.Text, err)
+			}
+			var raw *ir.RawFixture
+			if row.Mode != nil {
+				if context.Raw == nil {
+					return fmt.Errorf("assertion %s: using raw cannot resolve its target", row.Name.Text)
+				}
+				fixture, err := context.Raw.Load(row.Mode.Raw.Value)
+				if err != nil {
+					return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
+				}
+				if err := context.Raw.CheckRawFixture(native.Symbol.ID, fixture); err != nil {
+					return fmt.Errorf("assertion %s: %w", row.Name.Text, err)
+				}
+				raw = convertRawFixture(native.Symbol.ID, fixture)
+				if raw.Exchange != nil && raw.Exchange.Response != nil {
+					covered = true
+				}
+			}
+			program.Assertions = append(program.Assertions, &ir.Assertion{Root: root, Actual: actual, Expected: expected, Raw: raw})
+		}
+		if !covered {
+			return fmt.Errorf("native declaration %s lacks request/decoder coverage: attach a raw case comparing its prepared request against a response", native.Symbol.Name)
+		}
+	}
+	return nil
 }
 
 func validateAssertionNames(declaration *syntax.FunctionDecl) error {

@@ -12,7 +12,7 @@ import {createEvidence,recordEvidence,evidenceReport,type Evidence} from "./repo
 export type AssertionRoot = Readonly<{package: string; declaration: string; name: string}>;
 declare const contextBrand: unique symbol;
 export type AssertionContext = Readonly<{readonly [contextBrand]: true}>;
-type Violation = "missing fixture" | "argument mismatch" | "ambiguous fixture" | "malformed fixture" | "unexpected live boundary" | "unused fixture";
+type Violation = "missing fixture" | "argument mismatch" | "ambiguous fixture" | "malformed fixture" | "unexpected live boundary" | "unused fixture" | "outcome mismatch";
 type FixturePathDiagnostic=Readonly<{reason:Violation;expected:Allocation|null;actual:InvocationPath}>;
 type State = {owner:object; barrier:Barrier; queues:FixtureQueues; paths:FixturePathDiagnostic[]; origins:Map<string,FailureOrigin>; root: AssertionRoot; violations: Violation[]; failures: StandardFailure[]; evidence: Evidence; closed: boolean; tables: Map<string, {used: number; total: number; origin: FailureOrigin}>; scope: unknown};
 type View={shared:State; identity:InvocationIdentity; frame:Frame};
@@ -110,7 +110,7 @@ export function scheduledFixture(context:AssertionContext,table:string,total:num
   }
  });
 }
-export function fixtureMismatch(context:AssertionContext,allocation:Allocation,reason:"argument mismatch"|"malformed fixture",origin:FailureOrigin):StandardFailure{
+export function fixtureMismatch(context:AssertionContext,allocation:Allocation,reason:"argument mismatch"|"malformed fixture"|"outcome mismatch",origin:FailureOrigin):StandardFailure{
  return violation(context,reason,origin,allocation);
 }
 export type CoordinationContexts=Readonly<{
