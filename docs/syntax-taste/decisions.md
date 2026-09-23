@@ -1529,14 +1529,23 @@ SURFACE-070, SURFACE-072.
 Can has no `if` expression. Boolean branching uses `match` with `true` and
 `false` patterns.
 
+**Ordinary Boolean match arm order — user decision, 2026-09-23:** In an ordinary
+`match` on a Boolean value, place the `false` branch before the `true` branch.
+This is the desired source order, pending implementation where applicable;
+this documentation-only decision does not claim compiler enforcement today.
+It does not change branch selection or extend to completion/coordination
+matches, multi-scrutinee pattern ordering, or native AI true/false criteria.
+Compiler enforcement and migration of remaining examples and fixtures are
+follow-up work; no code or test changes are authorized by this entry.
+
 Simple arms use `pattern => expression`, including completion expressions.
 An ordinary-data `match` may produce an ordinary value, including as the
 initializer of a typed local binding:
 
 ```text
 int amount = match member
-    true => 80
     false => 100
+    true => 80
 ```
 
 This permits value-producing matches without making intermediate bindings the

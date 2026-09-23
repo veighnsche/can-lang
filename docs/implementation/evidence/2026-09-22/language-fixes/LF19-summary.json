@@ -1,0 +1,17 @@
+{
+ "task": "LF19",
+ "acceptance": [
+  "AE33",
+  "AE47"
+ ],
+ "guides": [
+  "docs/implementation/capability-admission-guide-2026-09-22.md",
+  "docs/implementation/finite-language-rules-2026-09-22.md"
+ ],
+ "corpus": "docs/implementation/examples/2026-09-22/lf19 (20 cases + runner + README)",
+ "corpus_result": "20/20 behave as expected (LF19-corpus.log, LF19-corpus-results.json)",
+ "AE33": "Admission checklist + worked pure text::from_int (real-can) and resource sql trio (real-can + supplied-completion, kept separate); unknown-op and authored-binding rejections with observed diagnostics; incomplete-proposal fixture classified incomplete; no compat promise, no new binding mechanism.",
+ "AE47": "Finite rules for expected typing, generic equality, leaf/variant inclusion, callable subsets, invariance, explicit conversion + observed Bun-1.4.2 edge table; manifest/build-assert/renderer corrections; F7/F8/F9 review quotes labelled resolved/superseded in place; companions cross-checked with no contradictions.",
+ "links": "8/8 doc links resolve incl. anchors",
+ "behavior_change": "none (documentation only); compiler behavior unchanged per AE33 gate"
+}

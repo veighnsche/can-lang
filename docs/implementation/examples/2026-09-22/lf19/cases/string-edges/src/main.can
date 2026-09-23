@@ -1,0 +1,33 @@
+package guide
+    provides []
+    uses [text]
+fn str half_open
+    emits []
+    given
+        str value
+    asserts
+        sample: "A😀B" => ok "😀"
+    ok call value.slice(1, 3)
+fn str utf16_index
+    emits []
+    asserts
+        sample: => ok "😀"
+    ok "A😀B"[1] + "A😀B"[2]
+fn int[] scalars
+    emits [text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "A😀" => ok [65, 128512]
+    match call text::scalars(value)
+        text::invalid_unicode
+        ok int[] output => ok output
+fn str[] graphemes
+    emits [text::invalid_unicode]
+    given
+        str value
+    asserts
+        sample: "A😀" => ok ["A", "😀"]
+    match call text::graphemes(value)
+        text::invalid_unicode
+        ok str[] output => ok output

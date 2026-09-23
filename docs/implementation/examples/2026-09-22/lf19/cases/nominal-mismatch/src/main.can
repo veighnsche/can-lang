@@ -1,0 +1,16 @@
+package guide
+    provides []
+    uses []
+record point_a
+    int x
+    int y
+record point_b
+    int x
+    int y
+fn point_b convert
+    emits []
+    given
+        point_a value
+    asserts
+        sample: point_a(1, 2) => ok point_b(1, 2)
+    ok value

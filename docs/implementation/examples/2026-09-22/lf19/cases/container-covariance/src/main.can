@@ -1,0 +1,16 @@
+package guide
+    provides []
+    uses [option]
+fn int count_wide
+    emits []
+    given
+        option::value<int>[] items
+    asserts
+        sample: [option::some(1)] => ok 1
+    ok items.length
+fn int narrow_call
+    emits []
+    asserts
+        sample: => ok 1
+    option::some<int>[] narrow = [option::some(1)]
+    ok call count_wide(narrow)

@@ -1,0 +1,20 @@
+package guide
+    provides []
+    uses [codec, bytes]
+fn int total
+    emits []
+    given
+        int value
+    asserts
+        sample: 2 => ok 2
+    ok value
+fn int via_wide
+    emits [codec::invalid_data]
+    given
+        int value
+    asserts
+        sample: 2 => ok 2
+    callable int (int) emits [codec::invalid_data] action = callable total
+    match call action(value)
+        codec::invalid_data
+        ok int out => ok out

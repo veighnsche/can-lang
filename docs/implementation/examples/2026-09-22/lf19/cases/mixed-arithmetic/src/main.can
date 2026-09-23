@@ -1,0 +1,11 @@
+package guide
+    provides []
+    uses []
+fn float mixed
+    emits []
+    given
+        int whole
+        float part
+    asserts
+        sample: 1, 0.5 => ok 1.5
+    ok whole + part

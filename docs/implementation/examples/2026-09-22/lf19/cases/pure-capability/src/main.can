@@ -1,0 +1,12 @@
+package guide
+    provides []
+    uses [number, text]
+fn str format_int
+    emits []
+    given
+        int value
+    asserts
+        big: 9007199254740993 => ok "9007199254740993"
+        negative: -42 => ok "-42"
+        zero: 0 => ok "0"
+    ok call text::from_int(value)

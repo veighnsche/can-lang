@@ -1,0 +1,27 @@
+package guide
+    provides []
+    uses [sql, http]
+record id_parameters
+    int id
+record account_row
+    int id
+    str display_name
+record fake_pool
+    int marker
+fn account_row broken
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch]
+    given
+        int id
+    asserts
+        sample: 4 => ok account_row(4, "Bob")
+    match call sql::query_one<id_parameters, account_row>(fake_pool(1), "account_by_id", id_parameters(id))
+        when
+            sample: fake_pool(1), "account_by_id", id_parameters(4) => ok account_row(4, "Bob")
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        sql::row_missing
+        sql::row_count
+        sql::schema_mismatch
+        ok account_row row => ok row

@@ -1,0 +1,10 @@
+package guide
+    provides []
+    uses []
+fn int broken
+    emits []
+    asserts
+        sample: => ok 0
+    match []
+        [] => ok 0
+        _ => ok 1

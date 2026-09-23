@@ -1,0 +1,28 @@
+package guide
+    provides []
+    uses []
+fn bool neg_zero_differs
+    emits []
+    asserts
+        sample: => ok true
+    ok -0.0 is not 0.0
+fn bool nan_equals
+    emits []
+    asserts
+        sample: => ok true
+    ok (0.0 / 0.0) is (0.0 / 0.0)
+fn int trunc_negative
+    emits []
+    asserts
+        sample: => ok -3
+    ok -7 / 2
+fn int rem_negative
+    emits []
+    asserts
+        sample: => ok -1
+    ok -7 % 2
+fn int trunc_negative_divisor
+    emits []
+    asserts
+        sample: => ok -3
+    ok 7 / -2

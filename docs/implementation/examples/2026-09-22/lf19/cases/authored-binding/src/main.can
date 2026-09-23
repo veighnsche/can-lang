@@ -1,0 +1,16 @@
+package guide
+    provides []
+    uses []
+connection mine
+    endpoint "http://127.0.0.1:1/custom"
+    timeout_ms 1000
+    metadata
+        protocol "acme_custom_v1"
+        model "custom-model"
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

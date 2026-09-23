@@ -4,10 +4,11 @@ Can is a small contract-first language (`.can`) that compiles to
 TypeScript. You write records, functions with mandatory assertions,
 and native declarations for AI, HTTP, SQL, and HTML; the compiler
 checks them and emits typed TS plus machine-readable reports. Every
-function carries its assertion rows. Currently, `assert` executes those rows
-in emitted code; `build` checks and publishes without executing them.
-The [verified-build design](docs/implementation/language-behavior-contracts-2026-09-22.md#b5-verified-build-and-publication)
-requires assertion success before production publication; that change is not yet implemented.
+function carries its assertion rows. `assert` executes those rows in
+emitted code and never publishes; `build` executes the same rows as
+gate verification and publishes one complete verified generation only
+when every root passes (the [verified-build design](docs/implementation/language-behavior-contracts-2026-09-22.md#b5-verified-build-and-publication),
+P15.1).
 
 ## Layout
 

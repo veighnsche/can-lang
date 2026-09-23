@@ -1,0 +1,16 @@
+package guide
+    provides []
+    uses []
+fn item pick<item>
+    emits []
+    given
+        item first
+        item second
+    asserts
+        sample: 1, 2 => ok 1
+    ok first
+fn int broken
+    emits []
+    asserts
+        sample: => ok 1
+    ok call pick(1, "x")

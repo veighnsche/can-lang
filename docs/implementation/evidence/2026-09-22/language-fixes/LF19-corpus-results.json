@@ -1,0 +1,167 @@
+{
+ "bundle": "/tmp/lf19-dist/can-lf19-guide-bun-1.4.2-darwin-arm64-v1",
+ "passed": 20,
+ "total": 20,
+ "results": [
+  {
+   "name": "authored-binding",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='connection: unknown protocol\\n'",
+   "exit": 1,
+   "stderr": "connection: unknown protocol\n"
+  },
+  {
+   "name": "callable-subset",
+   "ok": true,
+   "mode": "pass",
+   "detail": "2 assertions: [('can.project.root/guide::total', 'sample', True), ('can.project.root/guide::via_wide', 'sample', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "container-covariance",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::narrow_call: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/container-covariance/src/main.can region can.project.root/guide::narrow_call: expression at byte 324: expression type does not fit expected type at byte 340\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::narrow_call: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/container-covariance/src/main.can region can.project.root/guide::narrow_call: expression at byte 324: expression type does not fit expected type at byte 340\n"
+  },
+  {
+   "name": "empty-literal-expected",
+   "ok": true,
+   "mode": "pass",
+   "detail": "5 assertions: [('can.project.root/guide::empty_bound', 'sample', True), ('can.project.root/guide::empty_find', 'empty', True), ('can.project.root/guide::empty_find', 'sample', True), ('can.project.root/guide::empty_result', 'sample', True), ('can.project.root/guide::selected', 'unit', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "forged-pool",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/forged-pool/src/main.can region can.project.root/guide::broken: expression type does not fit expected type at byte 514\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/forged-pool/src/main.can region can.project.root/guide::broken: expression type does not fit expected type at byte 514\n"
+  },
+  {
+   "name": "generic-inference",
+   "ok": true,
+   "mode": "pass",
+   "detail": "4 assertions: [('can.project.root/guide::identity', 'integer', True), ('can.project.root/guide::identity', 'text', True), ('can.project.root/guide::use_explicit', 'sample', True), ('can.project.root/guide::use_inferred', 'sample', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "leaf-inclusion",
+   "ok": true,
+   "mode": "pass",
+   "detail": "4 assertions: [('can.project.root/guide::describe', 'none', True), ('can.project.root/guide::describe', 'some', True), ('can.project.root/guide::widen_leaf', 'sample', True), ('can.project.root/guide::widen_variant', 'sample', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "manifest-badkey",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-badkey: unknown field \"bogus\"\\n'",
+   "exit": 1,
+   "stderr": "/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-badkey: unknown field \"bogus\"\n"
+  },
+  {
+   "name": "manifest-duplicate",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-duplicate: duplicate JSON key \"source_root\"\\n'",
+   "exit": 1,
+   "stderr": "/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-duplicate: duplicate JSON key \"source_root\"\n"
+  },
+  {
+   "name": "manifest-escape",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-escape: parent traversal is forbidden in path \"../escape\"\\n'",
+   "exit": 1,
+   "stderr": "/private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/manifest-escape: parent traversal is forbidden in path \"../escape\"\n"
+  },
+  {
+   "name": "mixed-arithmetic",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::mixed: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/mixed-arithmetic/src/main.can region can.project.root/guide::mixed: expression at byte 169: operator + requires identical operand types\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::mixed: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/mixed-arithmetic/src/main.can region can.project.root/guide::mixed: expression at byte 169: operator + requires identical operand types\n"
+  },
+  {
+   "name": "nominal-mismatch",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::convert: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/nominal-mismatch/src/main.can region can.project.root/guide::convert: expression type does not fit expected type at byte 245\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::convert: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/nominal-mismatch/src/main.can region can.project.root/guide::convert: expression type does not fit expected type at byte 245\n"
+  },
+  {
+   "name": "numeric-conversion",
+   "ok": true,
+   "mode": "pass",
+   "detail": "7 assertions: [('can.project.root/guide::bool_int', 'no', True), ('can.project.root/guide::bool_int', 'yes', True), ('can.project.root/guide::float_int', 'exact', True), ('can.project.root/guide::float_int', 'fraction', True), ('can.project.root/guide::float_int', 'negative_zero', True), ('can.project.root/guide::int_float', 'exact', True), ('can.project.root/guide::int_float', 'inexact', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "numeric-edges",
+   "ok": true,
+   "mode": "pass",
+   "detail": "5 assertions: [('can.project.root/guide::nan_equals', 'sample', True), ('can.project.root/guide::neg_zero_differs', 'sample', True), ('can.project.root/guide::rem_negative', 'sample', True), ('can.project.root/guide::trunc_negative', 'sample', True), ('can.project.root/guide::trunc_negative_divisor', 'sample', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "pure-capability",
+   "ok": true,
+   "mode": "pass",
+   "detail": "3 assertions: [('can.project.root/guide::format_int', 'big', True), ('can.project.root/guide::format_int', 'negative', True), ('can.project.root/guide::format_int', 'zero', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "resource-capability",
+   "ok": true,
+   "mode": "pass",
+   "detail": "2 assertions: [('can.project.root/guide::account_by_id', 'sample', True), ('can.project.root/guide::open_pool', 'sample', True)] evidence=['real-can', 'supplied-completion']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "string-edges",
+   "ok": true,
+   "mode": "pass",
+   "detail": "4 assertions: [('can.project.root/guide::graphemes', 'sample', True), ('can.project.root/guide::half_open', 'sample', True), ('can.project.root/guide::scalars', 'sample', True), ('can.project.root/guide::utf16_index', 'sample', True)] evidence=['real-can']",
+   "exit": 0,
+   "stderr": ""
+  },
+  {
+   "name": "unconstrained-empty",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unconstrained-empty/src/main.can region can.project.root/guide::broken: expression at byte 115: empty array requires expected element type\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unconstrained-empty/src/main.can region can.project.root/guide::broken: expression at byte 115: empty array requires expected element type\n"
+  },
+  {
+   "name": "unknown-operation",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unknown-operation/src/main.can region can.project.root/guide::broken: expression at byte 150: no eligible call text::bogus\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unknown-operation/src/main.can region can.project.root/guide::broken: expression at byte 150: no eligible call text::bogus\n"
+  },
+  {
+   "name": "unresolved-generic",
+   "ok": true,
+   "mode": "fail",
+   "detail": "exit=1 stderr='concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unresolved-generic/src/main.can region can.project.root/guide::broken: expression at byte 247: generic call can.project.root/guide::pick at byte 252: expression type does not fit expected type at byte 260\\n'",
+   "exit": 1,
+   "stderr": "concrete function can.project.root/guide::broken: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/lf19-guide-bxk9gkvv/unresolved-generic/src/main.can region can.project.root/guide::broken: expression at byte 247: generic call can.project.root/guide::pick at byte 252: expression type does not fit expected type at byte 260\n"
+  }
+ ]
+}

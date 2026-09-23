@@ -1,0 +1,10 @@
+package guide
+    provides []
+    uses [text]
+fn str broken
+    emits []
+    given
+        str value
+    asserts
+        sample: "x" => ok "x"
+    ok call text::bogus(value)

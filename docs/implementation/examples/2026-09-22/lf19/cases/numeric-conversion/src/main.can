@@ -1,0 +1,32 @@
+package guide
+    provides []
+    uses [number]
+fn float int_float
+    emits [number::inexact]
+    given
+        int value
+    asserts
+        exact: 9007199254740992 => ok 9007199254740992.0
+        inexact: 9007199254740993 => number::inexact("not exactly representable as float")
+    match call number::int_to_float(value)
+        number::inexact
+        ok float output => ok output
+fn int float_int
+    emits [number::inexact]
+    given
+        float value
+    asserts
+        exact: 9007199254740992.0 => ok 9007199254740992
+        negative_zero: -0.0 => ok 0
+        fraction: 1.5 => number::inexact("not a finite integer")
+    match call number::float_to_int(value)
+        number::inexact
+        ok int output => ok output
+fn int bool_int
+    emits []
+    given
+        bool value
+    asserts
+        yes: true => ok 1
+        no: false => ok 0
+    ok call number::bool_to_int(value)

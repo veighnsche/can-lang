@@ -150,11 +150,21 @@ boundaries; they never silently change an existing value's type.** The `[]`
 needs-expected-type vs `1`-is-never-float line is principled; it is just not
 "no inference," and the spec should say what it is.
 
+> [Resolved 2026-09-22] The finite rules are now stated with executable
+> examples in [finite language rules](../implementation/finite-language-rules-2026-09-22.md).
+
 ## F8 — Contracts partly live in JSON, not Can
 
 Error registries, SQL descriptors, the project manifest, and lock digests
 (P2/P12) are JSON Schema validated by the compiler — a second, untested-by-
-`asserts` surface alongside the language. Reasonable engineering, but a
+`asserts` surface alongside the language.
+
+> [Superseded 2026-09-22] The "JSON Schema validated" wording is replaced by
+> the actual compiler-side validation mechanism; see
+> [finite language rules](../implementation/finite-language-rules-2026-09-22.md#9-configuration-validation-compiler-side-not-json-schema).
+> The review sentence above stays verbatim as history.
+
+Reasonable engineering, but a
 "contract-first language" whose key contracts are not all in the language
 deserves a sentence of acknowledgment, plus a decision on whether descriptors
 ever become Can declarations (e.g. SQL descriptors as `fetch`-like checked
@@ -164,7 +174,14 @@ declarations, registries generated rather than hand-maintained).
 
 Strict layout rules (four-space indent, one-line calls/constructors/arrays/
 assertions) with no formatter in the current specs — the R10 formatter
-requirement was predecessor-only. Either the layout rules need a canonical
+requirement was predecessor-only.
+
+> [Superseded 2026-09-22] `canlc format` now provides validated
+> comment-preserving formatting (LF18); see
+> [finite language rules](../implementation/finite-language-rules-2026-09-22.md#11-renderer-and-formatter-current-behavior).
+> The review sentence above stays verbatim as history.
+
+Either the layout rules need a canonical
 formatter (without one, authors fight layout by hand and agents burn tokens
 on whitespace repair), or the rules should be relaxed to what the checker can
 verify without a formatter.

@@ -1,0 +1,21 @@
+package guide
+    provides []
+    uses []
+fn item identity<item>
+    emits []
+    given
+        item input
+    asserts
+        integer: 1 => ok 1
+        text: "x" => ok "x"
+    ok input
+fn int use_inferred
+    emits []
+    asserts
+        sample: => ok 4
+    ok call identity(2) + call identity(2)
+fn str use_explicit
+    emits []
+    asserts
+        sample: => ok "x"
+    ok call identity<str>("x")

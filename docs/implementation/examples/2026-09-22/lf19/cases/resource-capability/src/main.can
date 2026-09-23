@@ -1,0 +1,44 @@
+package guide
+    provides []
+    uses [sql, http]
+record id_parameters
+    int id
+record account_row
+    int id
+    str display_name
+fn sql::pool open_pool
+    emits [http::credentials_missing, sql::connection_failed]
+    asserts
+        sample: => ok
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => ok pool
+fn account_row account_by_id
+    emits [http::credentials_missing, sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch, sql::close_failed]
+    given
+        int id
+    asserts
+        sample: 4 => ok account_row(4, "Bob")
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::query_one<id_parameters, account_row>(pool, "account_by_id", id_parameters(id))
+            when
+                sample: pool, "account_by_id", id_parameters(4) => ok account_row(4, "Bob")
+            sql::unsupported_value
+            sql::connection_failed
+            sql::query_failed
+            sql::constraint_failed
+            sql::row_missing
+            sql::row_count
+            sql::schema_mismatch
+            ok account_row row => match call sql::pool_close(pool, 1000)
+                when
+                    sample: pool, 1000 => ok
+                sql::close_failed
+                ok => ok row

@@ -1,0 +1,29 @@
+package guide
+    provides []
+    uses [option]
+fn int[] empty_result
+    emits []
+    asserts
+        sample: => ok []
+    ok []
+fn int[] empty_bound
+    emits []
+    asserts
+        sample: => ok []
+    int[] out = []
+    ok out
+fn bool selected
+    emits []
+    given
+        int item
+    asserts
+        unit: 2 => ok true
+    ok item >= 2
+fn option::value<int> empty_find
+    emits []
+    given
+        int[] items
+    asserts
+        sample: [1] => ok option::none()
+        empty: [] => ok option::none()
+    ok call items.find(callable selected)

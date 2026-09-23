@@ -1,0 +1,1 @@
+{"source_root":"src","error_registry":"can.errors.json","sql":{"account_by_id":{"dialect":"postgresql","statement":"SELECT id, display_name FROM accounts WHERE id = $1 LIMIT $2","parameters":["id"],"parameter_type":"guide::id_parameters","row_type":"guide::account_row","cardinality":"one","row_limit_parameter":2}}}

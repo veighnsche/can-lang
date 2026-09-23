@@ -1,0 +1,36 @@
+package guide
+    provides []
+    uses [option]
+record circle
+    int radius
+record square
+    int side
+variant shape
+    circle
+    square
+variant round
+    circle
+fn option::value<int> widen_leaf
+    emits []
+    given
+        int value
+    asserts
+        sample: 3 => ok option::some(3)
+    ok option::some(value)
+fn shape widen_variant
+    emits []
+    given
+        round value
+    asserts
+        sample: circle(2) => ok circle(2)
+    ok value
+fn str describe
+    emits []
+    given
+        option::value<int> maybe
+    asserts
+        some: option::some(3) => ok "some"
+        none: option::none() => ok "none"
+    match maybe
+        option::some<int>(inner) => ok "some"
+        option::none => ok "none"

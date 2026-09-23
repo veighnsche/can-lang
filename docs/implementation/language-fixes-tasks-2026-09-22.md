@@ -292,7 +292,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF18-summary.json), [cli](evidence/2026-09-22/language-fixes/LF18-cli.log), [gotest](evidence/2026-09-22/language-fixes/LF18-gotest.log), [runtime](evidence/2026-09-22/language-fixes/LF18-runtime.log), [staged trio](evidence/2026-09-22/language-fixes/LF18-integration.log). Owned-trivia renderer preserved in single parser/renderer; `canlc format` (stdout/--write, validated overlay + atomic replacement) green; idempotent over CRLF/UTF-8; invalid/stale inputs leave source untouched; checked IR + runtime completions agree pre/post format; lexical preorder + fixture FIFO equivalent.
 
-- [ ] **LF19 — Publish accurate capability and language guides**
+- [x] **LF19 — Publish accurate capability and language guides**
 
   **Depends on:** LF08, LF10, LF12, LF13, LF15, LF16, LF17, LF18. **Acceptance:** AE33, AE47.
 
@@ -306,7 +306,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Cross-check current guides/specs/catalogue and reported outputs. Pure documentation changes need link/worked-example checks rather than unrelated runtime rewrites; no third-party native binding mechanism.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF19-summary.json), [corpus log](evidence/2026-09-22/language-fixes/LF19-corpus.log), [corpus results](evidence/2026-09-22/language-fixes/LF19-corpus-results.json). Admission guide (AE33) with worked pure text::from_int and resource sql::pool_open/query_one/pool_close, rejection boundary, incomplete-proposal verdict; finite-rules doc (AE47) with 20/20 verified examples, observed Bun-1.4.2 edge outputs, manifest/build-assert/renderer corrections; F7/F8/F9 quotes labelled; 8/8 links resolve; no behavior change. Review: build/assert claims corrected against LF15 verified-build behavior (§10, README); corpus manifest refreshed with tally.
 
 - [ ] **LF20 — Measure equivalent programs and authoring workflows**
 
