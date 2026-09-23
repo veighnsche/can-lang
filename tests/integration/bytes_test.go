@@ -70,7 +70,7 @@ func TestCurrentBundledBytes(t *testing.T) {
 		t.Fatalf("native captures: %d %s %s", status, out, diag)
 	}
 	var report map[string]any
-	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 9 {
+	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 17 {
 		t.Fatalf("invalid capture report %v %s", err, out)
 	}
 	status, out, diag = run("run")

@@ -26,6 +26,54 @@ fn int[] integers
         call bytes::to_ints(original) as int[] decoded
         codec::invalid_data
         ok => ok decoded
+fn str base64_of_text
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "héllo 😀" => ok "aMOpbGxvIPCfmIA="
+        empty: "" => ok ""
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer original
+        call bytes::encode_base64(original) as str encoded
+        codec::invalid_data
+        ok => ok encoded
+fn str text_of_base64
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "aMOpbGxvIPCfmIA=" => ok "héllo 😀"
+        bad_padding: "QQ" => codec::invalid_data("", "base64")
+    match chain
+        call bytes::decode_base64(text) as bytes::buffer raw
+        call bytes::to_utf8(raw) as str decoded
+        codec::invalid_data
+        ok => ok decoded
+fn str hex_of_text
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "héllo 😀" => ok "68c3a96c6c6f20f09f9880"
+        empty: "" => ok ""
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer original
+        call bytes::encode_hex(original) as str encoded
+        codec::invalid_data
+        ok => ok encoded
+fn str text_of_hex
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "68C3A96C6C6F20F09F9880" => ok "héllo 😀"
+        bad_digit: "0g" => codec::invalid_data("", "hex")
+    match chain
+        call bytes::decode_hex(text) as bytes::buffer raw
+        call bytes::to_utf8(raw) as str decoded
+        codec::invalid_data
+        ok => ok decoded
 fn int empty_size
     emits []
     asserts

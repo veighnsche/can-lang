@@ -197,3 +197,57 @@ fn str[][] nested_construction
     asserts
         sample: => ok [[]]
     ok [...([...[[]]])]
+fn str first_match
+    emits [text::invalid_regex, text::invalid_limit]
+    given
+        str pattern
+        str value
+    asserts
+        sample: "(\\w+)@(\\w+)", "a@b" => ok "a@b"
+        none: "z+", "abc" => ok ""
+    match call text::compile_regex(pattern, "")
+        text::invalid_regex
+        ok text::regex compiled => match call text::matches(compiled, value, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => match hits.length is 0
+                true => ok ""
+                false => ok hits[0].text
+fn str[] first_groups
+    emits [text::invalid_regex, text::invalid_limit]
+    given
+        str pattern
+        str value
+    asserts
+        sample: "(\\w+)@(\\w+)", "a@b" => ok ["a", "b"]
+        absent: "(a)|(b)", "b" => ok ["", "b"]
+    match call text::compile_regex(pattern, "")
+        text::invalid_regex
+        ok text::regex compiled => match call text::matches(compiled, value, 1)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits[0].groups
+fn bool compiles
+    emits [text::invalid_regex]
+    given
+        str pattern
+        str flags
+    asserts
+        valid: "a+", "i" => ok true
+        bad_syntax: "(a", "" => text::invalid_regex("syntax")
+        bad_flags: "a", "g" => text::invalid_regex("flags")
+    match call text::compile_regex(pattern, flags)
+        text::invalid_regex
+        ok text::regex compiled => ok true
+fn int capped_count
+    emits [text::invalid_regex, text::invalid_limit]
+    given
+        str pattern
+        str value
+        int limit
+    asserts
+        capped: "x*", "ab", 2 => ok 2
+        over: "x*", "ab", 10001 => text::invalid_limit(10001)
+    match call text::compile_regex(pattern, "")
+        text::invalid_regex
+        ok text::regex compiled => match call text::matches(compiled, value, limit)
+            text::invalid_limit
+            ok text::regex_match[] hits => ok hits.length

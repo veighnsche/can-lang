@@ -25,6 +25,17 @@ func TestCurrentBundledUtilities(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	for _, trace := range []struct {
+		file string
+		pass string
+	}{{"runtime/test/url.test.ts", "5 pass"}, {"runtime/test/datetime.test.ts", "7 pass"}} {
+		qualified := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "runtime/bun"), "--no-env-file", "--no-macros", "--no-install", "--config="+filepath.Join(bundle, "tools/runtime/bunfig.toml"), "test", filepath.Join(bundle, trace.file))
+		qualified.Dir = t.TempDir()
+		qualified.Env = []string{"PATH=/nonexistent", "HOME=" + qualified.Dir, "XDG_CONFIG_HOME=" + qualified.Dir}
+		if output, err := qualified.CombinedOutput(); err != nil || !strings.Contains(string(output), trace.pass) || !strings.Contains(string(output), "0 fail") {
+			t.Fatalf("offline %s traces: %v\n%s", trace.file, err, output)
+		}
+	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
