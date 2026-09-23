@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 26 || len(inv.Types) != 42 || len(inv.Errors) != 72 || len(inv.Operations) != 176 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 27 || len(inv.Types) != 45 || len(inv.Errors) != 78 || len(inv.Operations) != 188 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {

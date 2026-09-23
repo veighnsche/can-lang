@@ -56,7 +56,7 @@ func isScopeRequest(typ *types.Type) bool {
 	if typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == "can.std.http@1::request" {
 		return true
 	}
-	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ)
+	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ) || isCryptoKeyScopeRequest(typ)
 }
 
 // expandScopeArguments binds provided assertion-row arguments to non-scope

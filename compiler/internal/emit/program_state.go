@@ -61,6 +61,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if err := builder.initializeSQLState(); err != nil {
 		return Module{}, nil, err
 	}
+	builder.initializeCryptoState()
 	builder.initializeCoreState()
 	builder.initializeFileState()
 	builder.initializeProcessState()
@@ -131,6 +132,7 @@ func (builder *stateBuilder) prerequisites() error {
 func (builder *stateBuilder) declareCoreState() {
 	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
 	builder.declareSQLState()
+	builder.declareCryptoState()
 	fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
 	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
@@ -187,10 +189,13 @@ func (builder *stateBuilder) initializeDomain() error {
 	if err := builder.emitSQLKinds(); err != nil {
 		return err
 	}
+	if err := builder.emitCryptoKinds(); err != nil {
+		return err
+	}
 	if err := builder.emitStreamKinds(); err != nil {
 		return err
 	}
-	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsStream($canStreamKinds[identity],value));\n", builder.plan, quote(bytesID))
+	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsStream($canStreamKinds[identity],value));\n", builder.plan, quote(bytesID))
 	fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	builder.numberIDs = map[string]string{}
 	return nil
@@ -310,6 +315,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
 	imports = append(imports, builder.assembly.sqlStateImports(runtime)...)
+	imports = append(imports, builder.assembly.cryptoStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
@@ -327,6 +333,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 func stateValueImportNames() []ImportName {
 	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}
 	names = append(names, sqlStateValueImportNames()...)
+	names = append(names, cryptoStateValueImportNames()...)
 	names = append(names, fileStateValueImportNames()...)
 	names = append(names, processStateValueImportNames()...)
 	return append(names, streamStateValueImportNames()...)

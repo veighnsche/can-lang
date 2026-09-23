@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 63740148493dd099a2a036add11dc78f9e970e51b74934c5a98d28123fb81002.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5f880352608c4d0fac07ee62cf812c8e1b000b2b7229ed5adcc9811749254976.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -33,6 +33,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - log → can.std.log@1
 - number → can.std.number@1
 - option → can.std.option@1
+- password → can.std.password@1
 - path → can.std.path@1
 - process → can.std.process@1
 - random → can.std.random@1
@@ -86,6 +87,9 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | process::result | record |  | bytes::buffer stdout, bytes::buffer stderr, int code, str signal | true |
 | stream::reader | opaque | T:data |  | false |
 | stream::writer | opaque |  |  | false |
+| crypto::key | opaque |  |  | false |
+| crypto::keypair | record |  | crypto::key private_key, crypto::key public_key | true |
+| crypto::sealed | record |  | bytes::buffer nonce, bytes::buffer ciphertext | true |
 
 ## Domain errors
 
@@ -163,6 +167,12 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1317 | stream::write_failed |  | str reason |
 | 1318 | stream::cancelled |  | str reason |
 | 1319 | stream::close_failed |  | str reason |
+| 1320 | password::cost_rejected |  | int profile |
+| 1321 | password::invalid_hash |  | str reason |
+| 1322 | crypto::invalid_key |  | str reason |
+| 1323 | crypto::invalid_nonce |  | int length |
+| 1324 | crypto::key_misuse |  | str operation, str algorithm |
+| 1325 | crypto::decrypt_failed |  |  |
 
 ## Operations
 
@@ -250,7 +260,19 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | clock::sleep_millis | int milliseconds → void | [clock::invalid_duration] |  | Bun.sleep | Validate bigint milliseconds in 0--2147483647 before Number conversion and await Bun.sleep; supplied assertion boundary. | supplied | I30 / P8 |
 | random::secure_bytes | int length → bytes::buffer | [random::invalid_length] |  | crypto.getRandomValues, Uint8Array | Validate bigint length in 0--65536 before allocation; fill a fresh native array and preserve immutable byte ownership; supplied assertion boundary. | supplied | I30 / P8 |
 | random::uuid_v4 |  → str | [] |  | crypto.randomUUID | Return native crypto.randomUUID; supplied assertion boundary. | supplied | I30 / P8 |
+| password::hash | str password, int profile → str | [password::cost_rejected] |  | Bun.password | Hash with async Bun.password (argon2id) under fixed preset 0..2 (fast 8MiB/1 pass, balanced 64MiB/2 passes, secure 256MiB/3 passes); other profiles reject; supplied assertion boundary. | supplied | B1-08 / B1-08 |
+| password::verify | str password, str encoded → bool | [password::invalid_hash] |  | Bun.password | Gate the qualified argon2id envelope (version 19, memory 8 KiB..1 GiB, time 1..32, parallelism 1..4, 32-byte salt and hash) before native verify; malformed hashes reject while wrong passwords read false; execute in ordinary assertions. | real | B1-08 / B1-08 |
 | crypto::sha256 | bytes::buffer buffer → bytes::buffer | [] |  | Bun.CryptoHasher | Hash copied immutable bytes with a fresh Bun.CryptoHasher and return owned digest bytes; execute in ordinary assertions. | real | I30 / P8 |
+| crypto::hmac_sha256 | bytes::buffer key, bytes::buffer message → bytes::buffer | [crypto::invalid_key] |  | crypto.subtle | Import the raw HMAC/SHA-256 key per call and sign; empty keys reject; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::generate_aes_key |  → crypto::key | [] |  | crypto.subtle | Generate a native-nonextractable AES-256-GCM encrypt/decrypt handle; supplied assertion boundary. | supplied | B1-08 / B1-08 |
+| crypto::generate_ed25519_keypair |  → crypto::keypair | [] |  | crypto.subtle | Generate sign-only private plus verify-only public handles; supplied assertion boundary. | supplied | B1-08 / B1-08 |
+| crypto::import_ed25519_public | bytes::buffer public → crypto::key | [crypto::invalid_key] |  | crypto.subtle | Admit 32-byte verify-only Ed25519 public keys; other lengths reject; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::export_ed25519_public | crypto::key key → bytes::buffer | [crypto::key_misuse] |  | crypto.subtle | Export raw bytes only from verify-only Ed25519 handles; sign-capable and AES handles misuse; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::encrypt_aes_gcm | crypto::key key, bytes::buffer nonce, bytes::buffer plaintext, bytes::buffer associated_data → bytes::buffer | [crypto::invalid_nonce, crypto::key_misuse] |  | crypto.subtle | Encrypt with a fixed 12-byte nonce and 128-bit tag through usage-checked handles; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::encrypt_aes_gcm_sealed | crypto::key key, bytes::buffer plaintext, bytes::buffer associated_data → crypto::sealed | [crypto::key_misuse] |  | crypto.subtle | Mint a native-random 12-byte nonce and return it with the ciphertext; generation is randomness, not a guarantee of caller nonce discipline; supplied assertion boundary. | supplied | B1-08 / B1-08 |
+| crypto::decrypt_aes_gcm | crypto::key key, bytes::buffer nonce, bytes::buffer ciphertext, bytes::buffer associated_data → bytes::buffer | [crypto::invalid_nonce, crypto::key_misuse, crypto::decrypt_failed] |  | crypto.subtle | Decrypt with a fixed 12-byte nonce and 128-bit tag; tampering, wrong keys, and associated-data mismatch collapse to decrypt_failed; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::sign_ed25519 | crypto::key key, bytes::buffer message → bytes::buffer | [crypto::key_misuse] |  | crypto.subtle | Sign through sign-capable handles; deterministic 64-byte signatures; execute in ordinary assertions. | real | B1-08 / B1-08 |
+| crypto::verify_ed25519 | crypto::key key, bytes::buffer message, bytes::buffer signature → bool | [crypto::key_misuse] |  | crypto.subtle | Verify through verify-capable handles; mismatch reads false; execute in ordinary assertions. | real | B1-08 / B1-08 |
 | env::required | str name → str | [env::invalid_name, http::credentials_missing] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
 | env::optional | str name → option::value&lt;str&gt; | [env::invalid_name] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
 | log::write_info | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary. | supplied | I30 / P8 |

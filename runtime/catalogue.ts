@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "63740148493dd099a2a036add11dc78f9e970e51b74934c5a98d28123fb81002";
+export const catalogueSHA256 = "5f880352608c4d0fac07ee62cf812c8e1b000b2b7229ed5adcc9811749254976";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -92,6 +92,10 @@ export const catalogue = freeze({
     {
       "name": "option",
       "identity": "can.std.option@1"
+    },
+    {
+      "name": "password",
+      "identity": "can.std.password@1"
     },
     {
       "name": "path",
@@ -791,6 +795,54 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": false
+    },
+    {
+      "name": "crypto::key",
+      "identity": "can.std.crypto@1::key",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "crypto::keypair",
+      "identity": "can.std.crypto@1::keypair",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "private_key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "public_key",
+          "type": "crypto::key"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "crypto::sealed",
+      "identity": "can.std.crypto@1::sealed",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "nonce",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "ciphertext",
+          "type": "bytes::buffer"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     }
   ],
   "errors": [
@@ -1700,6 +1752,77 @@ export const catalogue = freeze({
           "type": "str"
         }
       ]
+    },
+    {
+      "id": 1320,
+      "name": "password::cost_rejected",
+      "identity": "can.std.password@1::cost_rejected",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "profile",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1321,
+      "name": "password::invalid_hash",
+      "identity": "can.std.password@1::invalid_hash",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1322,
+      "name": "crypto::invalid_key",
+      "identity": "can.std.crypto@1::invalid_key",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1323,
+      "name": "crypto::invalid_nonce",
+      "identity": "can.std.crypto@1::invalid_nonce",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "length",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1324,
+      "name": "crypto::key_misuse",
+      "identity": "can.std.crypto@1::key_misuse",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "operation",
+          "type": "str"
+        },
+        {
+          "name": "algorithm",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1325,
+      "name": "crypto::decrypt_failed",
+      "identity": "can.std.crypto@1::decrypt_failed",
+      "parameters": [],
+      "fields": []
     }
   ],
   "operations": [
@@ -4312,6 +4435,76 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "password::hash",
+      "identity": "can.std.password@1::hash",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "password",
+          "type": "str"
+        },
+        {
+          "name": "profile",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "password::cost_rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.password"
+        ],
+        "adapter": "Hash with async Bun.password (argon2id) under fixed preset 0..2 (fast 8MiB/1 pass, balanced 64MiB/2 passes, secure 256MiB/3 passes); other profiles reject; supplied assertion boundary.",
+        "task": "B1-08"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "password::verify",
+      "identity": "can.std.password@1::verify",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "password",
+          "type": "str"
+        },
+        {
+          "name": "encoded",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "password::invalid_hash"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.password"
+        ],
+        "adapter": "Gate the qualified argon2id envelope (version 19, memory 8 KiB..1 GiB, time 1..32, parallelism 1..4, 32-byte salt and hash) before native verify; malformed hashes reject while wrong passwords read false; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
       "name": "crypto::sha256",
       "identity": "can.std.crypto@1::sha256",
       "kind": "function",
@@ -4338,6 +4531,353 @@ export const catalogue = freeze({
       "assertion": "real",
       "refs": [
         "P8"
+      ]
+    },
+    {
+      "name": "crypto::hmac_sha256",
+      "identity": "can.std.crypto@1::hmac_sha256",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "message",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "crypto::invalid_key"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Import the raw HMAC/SHA-256 key per call and sign; empty keys reject; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::generate_aes_key",
+      "identity": "can.std.crypto@1::generate_aes_key",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [],
+      "staticInputs": [],
+      "result": "crypto::key",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Generate a native-nonextractable AES-256-GCM encrypt/decrypt handle; supplied assertion boundary.",
+        "task": "B1-08"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::generate_ed25519_keypair",
+      "identity": "can.std.crypto@1::generate_ed25519_keypair",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [],
+      "staticInputs": [],
+      "result": "crypto::keypair",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Generate sign-only private plus verify-only public handles; supplied assertion boundary.",
+        "task": "B1-08"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::import_ed25519_public",
+      "identity": "can.std.crypto@1::import_ed25519_public",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "public",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "crypto::key",
+      "callbacks": [],
+      "emits": [
+        "crypto::invalid_key"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Admit 32-byte verify-only Ed25519 public keys; other lengths reject; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::export_ed25519_public",
+      "identity": "can.std.crypto@1::export_ed25519_public",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "crypto::key_misuse"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Export raw bytes only from verify-only Ed25519 handles; sign-capable and AES handles misuse; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::encrypt_aes_gcm",
+      "identity": "can.std.crypto@1::encrypt_aes_gcm",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "nonce",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "plaintext",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "associated_data",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "crypto::invalid_nonce",
+        "crypto::key_misuse"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Encrypt with a fixed 12-byte nonce and 128-bit tag through usage-checked handles; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::encrypt_aes_gcm_sealed",
+      "identity": "can.std.crypto@1::encrypt_aes_gcm_sealed",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "plaintext",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "associated_data",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "crypto::sealed",
+      "callbacks": [],
+      "emits": [
+        "crypto::key_misuse"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Mint a native-random 12-byte nonce and return it with the ciphertext; generation is randomness, not a guarantee of caller nonce discipline; supplied assertion boundary.",
+        "task": "B1-08"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::decrypt_aes_gcm",
+      "identity": "can.std.crypto@1::decrypt_aes_gcm",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "nonce",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "ciphertext",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "associated_data",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "crypto::invalid_nonce",
+        "crypto::key_misuse",
+        "crypto::decrypt_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Decrypt with a fixed 12-byte nonce and 128-bit tag; tampering, wrong keys, and associated-data mismatch collapse to decrypt_failed; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::sign_ed25519",
+      "identity": "can.std.crypto@1::sign_ed25519",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "message",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "crypto::key_misuse"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Sign through sign-capable handles; deterministic 64-byte signatures; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
+      ]
+    },
+    {
+      "name": "crypto::verify_ed25519",
+      "identity": "can.std.crypto@1::verify_ed25519",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "crypto::key"
+        },
+        {
+          "name": "message",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "signature",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "crypto::key_misuse"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "crypto.subtle"
+        ],
+        "adapter": "Verify through verify-capable handles; mismatch reads false; execute in ordinary assertions.",
+        "task": "B1-08"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-08"
       ]
     },
     {
@@ -8840,6 +9380,60 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "crypto::key",
+    "identity": "can.std.crypto@1::key",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "crypto::keypair",
+    "identity": "can.std.crypto@1::keypair",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "private_key",
+        "type": {
+          "name": "crypto::key",
+          "arguments": null
+        }
+      },
+      {
+        "name": "public_key",
+        "type": {
+          "name": "crypto::key",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "crypto::sealed",
+    "identity": "can.std.crypto@1::sealed",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "nonce",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ciphertext",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -10075,6 +10669,101 @@ export const catalogueTypeShapes = freeze([
         }
       }
     ],
+    "leaves": []
+  },
+  {
+    "name": "password::cost_rejected",
+    "identity": "can.std.password@1::cost_rejected",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "profile",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "password::invalid_hash",
+    "identity": "can.std.password@1::invalid_hash",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "crypto::invalid_key",
+    "identity": "can.std.crypto@1::invalid_key",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "crypto::invalid_nonce",
+    "identity": "can.std.crypto@1::invalid_nonce",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "length",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "crypto::key_misuse",
+    "identity": "can.std.crypto@1::key_misuse",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "algorithm",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "crypto::decrypt_failed",
+    "identity": "can.std.crypto@1::decrypt_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
     "leaves": []
   }
 ] as const);

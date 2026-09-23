@@ -49,7 +49,7 @@ func emitAssertionCase(assembly *programAssembly, runtime string, test *ir.Asser
 	digest := sha256.Sum256(append([]byte("can-assertion-root-v1\x00"), rootJSON...))
 	path := fmt.Sprintf("assertions/%x.ts", digest)
 	imports := append(programImports(runtime), ModuleImport{Target: programStatePath, Names: stateValueImportNames()})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 	for _, id := range assembly.collectionIDs {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.collectionNames[id], assembly.collectionNames[id]}}})
 	}

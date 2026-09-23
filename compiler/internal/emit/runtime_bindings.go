@@ -78,6 +78,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	contributions := []bindingContribution{
 		coreOperationBindings(),
 		sqlOperationBindings(),
+		cryptoOperationBindings(),
 		assembly.specializationBindings(),
 		assembly.sqlSpecializationBindings(),
 		assembly.collectionBindings(),

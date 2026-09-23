@@ -287,6 +287,30 @@
     {
       "id": 1319,
       "kind": "stream::close_failed"
+    },
+    {
+      "id": 1320,
+      "kind": "password::cost_rejected"
+    },
+    {
+      "id": 1321,
+      "kind": "password::invalid_hash"
+    },
+    {
+      "id": 1322,
+      "kind": "crypto::invalid_key"
+    },
+    {
+      "id": 1323,
+      "kind": "crypto::invalid_nonce"
+    },
+    {
+      "id": 1324,
+      "kind": "crypto::key_misuse"
+    },
+    {
+      "id": 1325,
+      "kind": "crypto::decrypt_failed"
     }
   ],
   "retired": []
