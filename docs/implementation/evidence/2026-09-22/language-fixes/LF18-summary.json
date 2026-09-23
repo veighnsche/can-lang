@@ -1,0 +1,53 @@
+{
+ "acceptance": "AE45 (trivia preservation, idempotence, safe formatting)",
+ "behavior_contracts": {
+  "AE45/trivia": "Own-line comments keep content and attachment at canonical indent; trailing comments stay on their code lines; block comments (incl. nested and multiline) stay verbatim; blank runs between rendered lines survive verbatim; strings render byte-for-byte from tokens (comment-like bytes untouched); CRLF normalizes to LF; output ends with exactly one newline.",
+  "AE45/canonical": "One renderer (Format/FormatTrivia share render()); every emitted line carries its source offset; synthetic layout lines resolve their true keyword line. Empty-argument fixture cases render `=> ...` (verified reparseable; the `=> ...` form predates this task).",
+  "AE45/cli": "canlc format FILE prints to stdout (pure syntax); --write requires an enclosing project, both snapshots clean, fixpoint stability, same-file identity plus unchanged bytes, then atomic temp+rename with mode preserved.",
+  "AE45/negative": "Invalid syntax/semantics, missing project, stale/replaced source, failed validation or unstable output leave the file untouched (exit 1); usage errors exit 2. Misordered arms are preserved textually and still fail check identically; strings never change."
+ },
+ "bundle": "Working-tree canlc plus pinned Bun 1.4.2 archive .local-deps/bun-darwin-aarch64.zip and vendored tsc for the staged trio",
+ "changes": [
+  "compiler/internal/syntax/format.go: source-offset anchors on all 70 emission sites; lineSame() for synthetic layout lines; staged rendering; shared render(); empty-argument fixture cases verified to render reparseable `=> ...`.",
+  "compiler/internal/syntax/format_trivia.go (new): FormatTrivia() with synthetic keyword-line resolution, own-line/trailing attachment, verbatim blank runs, CRLF normalization, EOF normalization; unplaceable trivia errors instead of dropping.",
+  "compiler/current_format.go (new) + compiler/main.go: canlc format [--write] FILE with reparse+fixpoint gate, project resolution, original/proposed overlay snapshot checks, identity/staleness recheck, atomic mode-preserving replacement.",
+  "compiler/retirement_test.go: I44 launcher file list gains current_format.go (decision: LF18 mandates the new interface in compiler/; imports still stdlib+internal, no retired symbols).",
+  "tests: 7 syntax trivia tests incl. 46-file round-trip; 2 check equivalence tests (structural IR compare incl. lexical preorder, FIFO rows, assertion roots; arm-order negative); 5 CLI tests; 1 staged integration test."
+ ],
+ "exit_mapping": {
+  "AE45-after": "Comments/docstrings/blank groups/raw and triple-quoted strings survive across functions, natives, state, assertions, fixtures, wrappers, judges, questions, generics and exact error heads (pinned unit tests plus 46-file round-trip). Output idempotent everywhere including CRLF/UTF-8 inputs.",
+  "AE45-successful": "Repairs typecheck: --write requires clean original and clean proposed snapshots plus fixpoint; representative before/after programs execute identically (integration).",
+  "AE45-rejected": "Invalid syntax/semantics, stale source, failed validation/write leave files untouched with precise diagnostics; usage errors exit 2; no truncation (temp+rename) and no temp litter.",
+  "AE45-fixture": "Checked IR agrees structurally ignoring positions (site preorder, FIFO selectors/arguments/completions, assertion roots); lexical preorder and FIFO allocation equivalent by construction of the comparison; misordered arms never repaired.",
+  "AE45-native": "Runtime completions agree before/after (same roots pass); no lowering or Promise-semantics change; no multiline language extension and no runtime formatter."
+ },
+ "focused_tests": [
+  "syntax trivia suites incl. 46-file round-trip (45 pass + 1 intentional negative skip) -> pass (LF18-syntax.log)",
+  "check structural equivalence + arm-order negative -> pass (LF18-check.log)",
+  "CLI stdout/write/refusal/project/usage + retirement gate -> pass (LF18-cli.log)",
+  "go test ./... -> 15 ok; only known pre-existing TestCoreConsumerSpecification docs-drift panic (LF18-gotest.log)",
+  "bun test runtime -> 353 pass, 0 fail (LF18-runtime.log)",
+  "staged format integration (assert, write, assert, idempotence, invalid no-touch) -> pass (LF18-integration-focused.log)",
+  "staged trio -> ok x3 (LF18-integration.log)"
+ ],
+ "integration": "Staged trio (CAN_BUN_ARCHIVE+CAN_BUN+CAN_TSC go test ./tests/integration/ ./compiler/internal/driver/ ./compiler/internal/emit/ -count=1) -> ok x3 (LF18-integration.log)",
+ "kind": "language-fixes-LF18-summary",
+ "negative": [
+  "Invalid syntax, semantic errors, missing project, stale/replaced source, failed validation, unstable output: exit 1, file untouched (CLI tests).",
+  "Misordered arms preserved textually and still rejected identically (check test).",
+  "Strings with comment-like bytes byte-identical; no silent content changes (syntax tests)."
+ ],
+ "positive": [
+  "Comments (line/doc/block/nested/multiline), blank groups, raw/triple strings survive with exact attachment (pinned + round-trip tests).",
+  "Output idempotent across all forms and CRLF/UTF-8 inputs.",
+  "canlc format --write validates through overlay snapshots and replaces atomically with mode preserved.",
+  "Before/after checked IR agrees structurally; before/after execution passes the same roots."
+ ],
+ "reproduction": {
+  "cli": "go run ./compiler format [--write] FILE.can",
+  "focused": "go test ./compiler/internal/syntax/ -run TestFormatTrivia -count=1 && go test ./compiler/internal/check/ -run 'TestFormatPreservesCheckedSemantics|TestFormatNeverRepairsArms' -count=1 && go test ./compiler/ -run TestFormat -count=1",
+  "snapshot": "bun test runtime && go test ./...",
+  "staged": "CAN_BUN_ARCHIVE=<archive> CAN_BUN=<bun> CAN_TSC=<tsc.js> go test ./tests/integration/ -run TestFormatPreservesExecution -count=1"
+ },
+ "scope_note": "The syntax-package TestCoreConsumerSpecification docs-drift panic predates this task and is untouched. Empty-argument assertion rows keep the historical double space (`sample:  => ok`); only the reparse-breaking fixture-case leading space was fixed, since AE45 requires reparseable output."
+}

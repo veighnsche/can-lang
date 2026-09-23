@@ -116,11 +116,59 @@ func FormatExpression(expression Expr) string {
 	}
 }
 
-type formatter struct{ strings.Builder }
+type formatter struct {
+	strings.Builder
+	// anchors records the source byte offset each emitted line renders,
+	// in emission order. Format ignores them; trivia attachment maps
+	// every comment and blank run through them.
+	anchors []int
+	last    int
+	// trivia stages lines instead of writing them so comments and blank
+	// runs can splice between canonical lines; it also suppresses the
+	// canonical blank separators, which the trivia renderer reproduces
+	// verbatim from source.
+	trivia bool
+	staged []stagedLine
+}
 
-func (f *formatter) line(level int, text string) {
-	f.WriteString(strings.Repeat("    ", level))
-	f.WriteString(text)
+// stagedLine is one canonical line plus its indent level and source offset.
+// Synthetic layout lines (given, asserts, when, cases) resolve their true
+// keyword line during trivia attachment.
+type stagedLine struct {
+	level     int
+	text      string
+	offset    int
+	synthetic bool
+}
+
+func (f *formatter) line(level int, text string, offset int) {
+	if f.trivia {
+		f.staged = append(f.staged, stagedLine{level: level, text: text, offset: offset})
+	} else {
+		f.WriteString(strings.Repeat("    ", level))
+		f.WriteString(text)
+		f.WriteByte('\n')
+	}
+	f.anchors = append(f.anchors, offset)
+	f.last = offset
+}
+
+// lineSame emits a synthetic layout line (given, asserts, when, cases).
+// These keywords own no span of their own; trivia attachment resolves
+// their true source line from the surrounding anchors.
+func (f *formatter) lineSame(level int, text string) {
+	f.line(level, text, f.last)
+	if f.trivia {
+		f.staged[len(f.staged)-1].synthetic = true
+	}
+}
+
+// blank separates top-level declarations in trivia-free rendering. The
+// trivia renderer reproduces source blank runs verbatim instead.
+func (f *formatter) blank() {
+	if f.trivia {
+		return
+	}
 	f.WriteByte('\n')
 }
 func formatField(field Field) string      { return FormatType(field.Type) + " " + field.Name.Text }
@@ -141,12 +189,23 @@ func formatParameters(parameters []Token) string {
 // canonical rendering intentionally excludes trivia.
 func Format(file *File) string {
 	f := &formatter{}
-	f.line(0, "package "+file.Header.Name.Text)
+	f.render(file)
+	return f.String()
+}
+
+// render emits every declaration through line calls so both Format and the
+// trivia renderer share one canonical layout.
+func (f *formatter) render(file *File) {
+	f.line(0, "package "+file.Header.Name.Text, file.Header.Name.Span.Start)
 	provides := make([]string, len(file.Header.Provides))
 	for i, p := range file.Header.Provides {
 		provides[i] = p.Text
 	}
-	f.line(1, "provides ["+strings.Join(provides, ", ")+"]")
+	if len(file.Header.Provides) != 0 {
+		f.line(1, "provides ["+strings.Join(provides, ", ")+"]", file.Header.Provides[0].Span.Start)
+	} else {
+		f.lineSame(1, "provides []")
+	}
 	uses := make([]string, len(file.Header.Uses))
 	for i, u := range file.Header.Uses {
 		uses[i] = u.Package.Text
@@ -154,9 +213,13 @@ func Format(file *File) string {
 			uses[i] += " as " + u.Alias.Text
 		}
 	}
-	f.line(1, "uses ["+strings.Join(uses, ", ")+"]")
+	if len(file.Header.Uses) != 0 {
+		f.line(1, "uses ["+strings.Join(uses, ", ")+"]", file.Header.Uses[0].Span.Start)
+	} else {
+		f.lineSame(1, "uses []")
+	}
 	for _, declaration := range file.Declarations {
-		f.WriteByte('\n')
+		f.blank()
 		switch n := declaration.(type) {
 		case *JudgeDecl:
 			f.nativeHeader("judge", n.NativeHeader)
@@ -167,13 +230,13 @@ func Format(file *File) string {
 				if entry.Binding != nil {
 					text += " as " + formatField(*entry.Binding)
 				}
-				f.line(1, text)
+				f.line(1, text, entry.Span.Start)
 			}
 			f.body(1, "ok => ", n.Continuation)
 		case *ChoiceArmDecl:
-			f.line(0, "choice_arm "+FormatType(n.Result)+" "+n.Name.Text)
-			f.line(1, formatBound(n.Errors))
-			f.line(1, "describes "+FormatExpression(n.Description))
+			f.line(0, "choice_arm "+FormatType(n.Result)+" "+n.Name.Text, n.DeclSpan().Start)
+			f.line(1, formatBound(n.Errors), n.Errors.Span.Start)
+			f.line(1, "describes "+FormatExpression(n.Description), n.Description.ExprSpan().Start)
 			f.block(1, n.Body)
 		case *QuestionDecl:
 			f.question(n)
@@ -182,39 +245,39 @@ func Format(file *File) string {
 		case *FetchDecl:
 			f.nativeHeader("fetch", n.NativeHeader)
 			f.nativeAssertions(n.Assertions)
-			f.line(1, n.Method.Text+" "+FormatExpression(n.Path))
+			f.line(1, n.Method.Text+" "+FormatExpression(n.Path), n.Method.Span.Start)
 			f.nativeEntries("query", n.Query)
 			f.nativeEntries("headers", n.Headers)
 			if n.BodyEncoding != nil {
-				f.line(1, "body "+n.BodyEncoding.Text+" "+FormatExpression(n.Body))
+				f.line(1, "body "+n.BodyEncoding.Text+" "+FormatExpression(n.Body), n.BodyEncoding.Span.Start)
 			}
 		case *LLMDecl:
 			f.nativeHeader("llm", n.NativeHeader)
 			f.nativeState(n.State)
 			f.nativeAssertions(n.Assertions)
-			f.line(1, "asks "+FormatExpression(n.Asks))
+			f.line(1, "asks "+FormatExpression(n.Asks), n.Asks.ExprSpan().Start)
 		case *WrapDecl:
-			f.line(0, "wrap "+n.Name.Text+" from "+formatName(n.Base))
-			f.line(1, "emits calculated")
+			f.line(0, "wrap "+n.Name.Text+" from "+formatName(n.Base), n.DeclSpan().Start)
+			f.lineSame(1, "emits calculated")
 			f.nativeAssertions(n.Assertions)
 			f.wrapArms("native", n.Native)
 			f.wrapArms("emitted", n.Emitted)
 		case *RecordDecl:
-			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters))
+			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
 			for _, field := range n.Fields {
-				f.line(1, formatField(field))
+				f.line(1, formatField(field), field.Span.Start)
 			}
 		case *VariantDecl:
-			f.line(0, "variant "+n.Name.Text+formatParameters(n.Parameters))
+			f.line(0, "variant "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
 			for _, t := range n.Alternatives {
-				f.line(1, FormatType(t))
+				f.line(1, FormatType(t), t.TypeSpan().Start)
 			}
 		case *ErrorDecl:
 			fields := make([]string, len(n.Fields))
 			for i, field := range n.Fields {
 				fields[i] = formatField(field)
 			}
-			f.line(0, "error "+n.ID.Text+" "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")")
+			f.line(0, "error "+n.ID.Text+" "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")", n.DeclSpan().Start)
 		case *ValueDecl:
 			f.binding(0, n.Binding)
 		case *FixtureDecl:
@@ -226,14 +289,14 @@ func Format(file *File) string {
 				}
 				header += "<" + strings.Join(types, ", ") + ">"
 			}
-			f.line(0, header)
+			f.line(0, header, n.DeclSpan().Start)
 			if len(n.Given) != 0 {
-				f.line(1, "given")
+				f.lineSame(1, "given")
 				for _, field := range n.Given {
-					f.line(2, formatField(field))
+					f.line(2, formatField(field), field.Span.Start)
 				}
 			}
-			f.line(1, "cases")
+			f.lineSame(1, "cases")
 			for _, kase := range n.Cases {
 				prefix := formatArguments(kase.Arguments)
 				if prefix != "" {
@@ -242,20 +305,20 @@ func Format(file *File) string {
 				f.body(2, prefix+"=> ", kase.Expected)
 				if kase.Mode != nil {
 					if kase.Mode.Failure != nil {
-						f.line(3, "using failure "+kase.Mode.Failure.Origin.Text+" "+FormatExpression(kase.Mode.Failure.Value))
+						f.line(3, "using failure "+kase.Mode.Failure.Origin.Text+" "+FormatExpression(kase.Mode.Failure.Value), kase.Mode.Span.Start)
 					} else {
-						f.line(3, "using raw "+kase.Mode.Raw.Text)
+						f.line(3, "using raw "+kase.Mode.Raw.Text, kase.Mode.Span.Start)
 					}
 				}
 			}
 		case *FunctionDecl:
-			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters))
+			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
 			if n.Receiver != nil {
-				f.line(1, "on "+formatField(*n.Receiver))
+				f.line(1, "on "+formatField(*n.Receiver), n.Receiver.Span.Start)
 			}
-			f.line(1, formatBound(n.Errors))
+			f.line(1, formatBound(n.Errors), n.Errors.Span.Start)
 			if len(n.Inputs) > 0 {
-				f.line(1, "given")
+				f.lineSame(1, "given")
 				for _, input := range n.Inputs {
 					text := ""
 					if input.Near {
@@ -266,10 +329,10 @@ func Format(file *File) string {
 						text += "..."
 					}
 					text += input.Name.Text
-					f.line(2, text)
+					f.line(2, text, input.Span.Start)
 				}
 			}
-			f.line(1, "asserts")
+			f.lineSame(1, "asserts")
 			for _, assertion := range n.Assertions {
 				f.assertion(2, assertion)
 			}
@@ -278,12 +341,11 @@ func Format(file *File) string {
 			panic("unknown declaration")
 		}
 	}
-	return f.String()
 }
 
 func (f *formatter) assertion(level int, a Assertion) {
 	if a.Use != nil {
-		f.line(level, a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")")
+		f.line(level, a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")", a.Span.Start)
 		return
 	}
 	text := a.Name.Text + ": "
@@ -294,9 +356,9 @@ func (f *formatter) assertion(level int, a Assertion) {
 	f.body(level, text, a.Expected)
 	if a.Mode != nil {
 		if a.Mode.Failure != nil {
-			f.line(level+1, "using failure "+a.Mode.Failure.Origin.Text+" "+FormatExpression(a.Mode.Failure.Value))
+			f.line(level+1, "using failure "+a.Mode.Failure.Origin.Text+" "+FormatExpression(a.Mode.Failure.Value), a.Mode.Span.Start)
 		} else {
-			f.line(level+1, "using raw "+a.Mode.Raw.Text)
+			f.line(level+1, "using raw "+a.Mode.Raw.Text, a.Mode.Span.Start)
 		}
 	}
 }
@@ -308,7 +370,7 @@ func (f *formatter) binding(level int, b Binding) {
 	case *CoordinationExpr:
 		f.coordination(level, prefix, n.Coordination)
 	default:
-		f.line(level, prefix+FormatExpression(b.Value))
+		f.line(level, prefix+FormatExpression(b.Value), b.Span.Start)
 	}
 }
 func (f *formatter) block(level int, b Block) {
@@ -317,7 +379,7 @@ func (f *formatter) block(level int, b Block) {
 		case *BindingStep:
 			f.binding(level, n.Binding)
 		case *CallStep:
-			f.line(level, FormatExpression(n.Call))
+			f.line(level, FormatExpression(n.Call), n.Call.ExprSpan().Start)
 		case *CoordinationStep:
 			f.coordination(level, "", n.Coordination)
 		default:
@@ -332,12 +394,12 @@ func (f *formatter) coordination(level int, prefix string, c Coordination) {
 	if c.WithError {
 		header += " with error"
 	}
-	f.line(level, prefix+header)
+	f.line(level, prefix+header, c.Span.Start)
 	for _, p := range c.Participants {
 		if p.Spread != nil {
-			f.line(level+1, "..."+FormatExpression(p.Spread))
+			f.line(level+1, "..."+FormatExpression(p.Spread), p.Span.Start)
 		} else {
-			f.line(level+1, strings.TrimPrefix(FormatExpression(p.Call), "call "))
+			f.line(level+1, strings.TrimPrefix(FormatExpression(p.Call), "call "), p.Span.Start)
 		}
 		for _, arm := range p.Arms {
 			f.coordinationArm(level+2, arm)
@@ -368,7 +430,7 @@ func (f *formatter) coordinationArm(level int, arm MatchArm) {
 		text += " as " + o.Alias.Text
 	}
 	if arm.Forward {
-		f.line(level, text)
+		f.line(level, text, arm.Span.Start)
 	} else {
 		f.body(level, text+" => ", arm.Body)
 	}
@@ -376,21 +438,21 @@ func (f *formatter) coordinationArm(level int, arm MatchArm) {
 func (f *formatter) body(level int, prefix string, body Body) {
 	switch n := body.(type) {
 	case *ValueBody:
-		f.line(level, prefix+FormatExpression(n.Value))
+		f.line(level, prefix+FormatExpression(n.Value), n.Value.ExprSpan().Start)
 	case *SuccessBody:
 		text := "ok"
 		if n.Value != nil {
 			text += " " + FormatExpression(n.Value)
 		}
-		f.line(level, prefix+text)
+		f.line(level, prefix+text, n.BodySpan().Start)
 	case *FailureBody:
-		f.line(level, prefix+FormatExpression(n.Error))
+		f.line(level, prefix+FormatExpression(n.Error), n.Error.ExprSpan().Start)
 	case *RelayBody:
-		f.line(level, prefix+"relay "+FormatExpression(n.Call))
+		f.line(level, prefix+"relay "+FormatExpression(n.Call), n.Call.ExprSpan().Start)
 	case *InheritBody:
-		f.line(level, prefix+"inherit")
+		f.line(level, prefix+"inherit", n.BodySpan().Start)
 	case *DoBody:
-		f.line(level, prefix+"do")
+		f.line(level, prefix+"do", n.BodySpan().Start)
 		f.block(level+1, n.Block)
 	case *MatchBody:
 		f.match(level, prefix, n.Match)
@@ -412,16 +474,16 @@ func (f *formatter) match(level int, prefix string, m Match) {
 	case ChainMatch:
 		header += "chain"
 	}
-	f.line(level, prefix+header)
+	f.line(level, prefix+header, m.Span.Start)
 	for _, entry := range m.Chain {
 		text := FormatExpression(entry.Call)
 		if entry.Binding != nil {
 			text += " as " + formatField(*entry.Binding)
 		}
-		f.line(level+1, text)
+		f.line(level+1, text, entry.Span.Start)
 	}
 	if len(m.When) > 0 {
-		f.line(level+1, "when")
+		f.lineSame(level+1, "when")
 		for _, a := range m.When {
 			f.assertion(level+2, a)
 		}
@@ -455,7 +517,7 @@ func (f *formatter) match(level int, prefix string, m Match) {
 			text = strings.Join(patterns, ", ")
 		}
 		if arm.Forward {
-			f.line(level+1, text)
+			f.line(level+1, text, arm.Span.Start)
 		} else {
 			f.body(level+1, text+" => ", arm.Body)
 		}

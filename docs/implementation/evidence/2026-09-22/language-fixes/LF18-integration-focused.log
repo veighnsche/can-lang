@@ -1,0 +1,4 @@
+=== RUN   TestFormatPreservesExecution
+--- PASS: TestFormatPreservesExecution (4.27s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	4.387s

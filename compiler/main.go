@@ -130,6 +130,9 @@ func run(argv []string) int {
 	if len(argv) > 0 && argv[0] == "parse" {
 		return runCurrentParse(os.Stdout, os.Stderr, argv[1:])
 	}
+	if len(argv) > 0 && argv[0] == "format" {
+		return runCurrentFormat(os.Stdout, os.Stderr, argv[1:])
+	}
 	if len(argv) > 0 && (argv[0] == "runtime-check" || argv[0] == "catalogue-check") {
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
@@ -173,6 +176,6 @@ func run(argv []string) int {
 		}
 		return 0
 	}
-	fmt.Fprintln(os.Stderr, "usage: canlc parse FILE | inspect-project PROJECT | inspect-types PROJECT | clean PROJECT")
+	fmt.Fprintln(os.Stderr, "usage: canlc parse FILE | format [--write] FILE | inspect-project PROJECT | inspect-types PROJECT | clean PROJECT")
 	return 2
 }

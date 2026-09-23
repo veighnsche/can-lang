@@ -276,7 +276,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF17-summary.json), [check](evidence/2026-09-22/language-fixes/LF17-check.log), [driver](evidence/2026-09-22/language-fixes/LF17-driver.log), [runtime-focused](evidence/2026-09-22/language-fixes/LF17-runtime-focused.log), [gotest](evidence/2026-09-22/language-fixes/LF17-gotest.log), [runtime](evidence/2026-09-22/language-fixes/LF17-runtime.log), [G4](evidence/2026-09-22/language-fixes/LF17-g4.json), [staged trio](evidence/2026-09-22/language-fixes/LF17-integration.log). Seven obligation classes coded with primary/secondary spans (missing-arm, outward-error, fixture use/definition, exact-specialization, capture, bound/override cycles); insert-only missing-arm fixes validated by checker + isolated overlay snapshot (astral/overlay/stale/doctored covered); G4 line-8 highlights hold with lexical control; mismatch reports carry root/site/invocation without value leaks (placeholder origins null; staged disclosure guard fixed); pending progress reports structure only. 15 check + 6 driver focused pass; go 15 ok (only pre-existing syntax docs-drift panic); runtime 353 pass from root (352 log predates the placeholder follow-up); trio ok x3. Review: ValidateFix enforces the documented insert-only invariant with a test.
 
-- [ ] **LF18 — Preserve source trivia and provide safe formatting**
+- [x] **LF18 — Preserve source trivia and provide safe formatting**
 
   **Depends on:** LF05, LF06, LF11, LF12, LF13, LF17. **Acceptance:** AE45.
 
@@ -290,7 +290,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Before/after checked IR and runtime completions agree, ignoring source-position shifts; lexical preorder and fixture FIFO allocation stay equivalent. No multiline language extension or runtime formatter.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** [summary](evidence/2026-09-22/language-fixes/LF18-summary.json), [cli](evidence/2026-09-22/language-fixes/LF18-cli.log), [gotest](evidence/2026-09-22/language-fixes/LF18-gotest.log), [runtime](evidence/2026-09-22/language-fixes/LF18-runtime.log), [staged trio](evidence/2026-09-22/language-fixes/LF18-integration.log). Owned-trivia renderer preserved in single parser/renderer; `canlc format` (stdout/--write, validated overlay + atomic replacement) green; idempotent over CRLF/UTF-8; invalid/stale inputs leave source untouched; checked IR + runtime completions agree pre/post format; lexical preorder + fixture FIFO equivalent.
 
 - [ ] **LF19 — Publish accurate capability and language guides**
 

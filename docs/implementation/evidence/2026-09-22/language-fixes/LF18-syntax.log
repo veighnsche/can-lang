@@ -1,0 +1,8 @@
+--- PASS: TestFormatTriviaPreservesComments (0.00s)
+--- PASS: TestFormatTriviaPreservesBlankGroups (0.00s)
+--- PASS: TestFormatTriviaCRLFAndUTF8 (0.00s)
+--- PASS: TestFormatTriviaSyntheticLines (0.00s)
+--- PASS: TestFormatTriviaTestdataRoundTrip (0.02s)
+--- PASS: TestFormatTriviaStringsAndNesting (0.00s)
+--- PASS: TestFormatTriviaNativeForms (0.00s)
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.109s

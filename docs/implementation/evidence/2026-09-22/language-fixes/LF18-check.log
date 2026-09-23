@@ -1,0 +1,3 @@
+--- PASS: TestFormatPreservesCheckedSemantics (0.13s)
+--- PASS: TestFormatNeverRepairsArms (0.12s)
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	0.370s

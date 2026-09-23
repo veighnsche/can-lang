@@ -23,6 +23,7 @@ func TestNoPredecessorPaths(t *testing.T) {
 		t.Fatal(err)
 	}
 	production := map[string]bool{
+		"current_format.go":  true,
 		"current_parse.go":   true,
 		"current_project.go": true,
 		"current_types.go":   true,

@@ -1,0 +1,7 @@
+--- PASS: TestFormatStdoutKeepsFileUntouched (0.00s)
+--- PASS: TestFormatWriteReplacesAtomically (0.12s)
+--- PASS: TestFormatWriteRefusesInvalidSource (0.06s)
+--- PASS: TestFormatWriteRequiresProject (0.00s)
+--- PASS: TestFormatUsage (0.00s)
+--- PASS: TestNoPredecessorPaths (0.00s)
+ok  	github.com/veighnsche/can-lang/compiler	0.307s
