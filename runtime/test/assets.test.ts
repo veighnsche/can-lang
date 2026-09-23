@@ -85,7 +85,7 @@ test("reserved routes and htmx navigation headers are not application-controlled
  const routing=createRouter(domain,{invalid:errors[2]!.identity,duplicate:"unused",ambiguous:"unused"});
  const route=await routing.get("/__can/assets/htmx-4.0.0.min.js",async()=>({kind:"ok",value:undefined} as Completion<unknown>));
  expect(route.kind).toBe("domain");
- const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:"unused",close:"unused"});
+ const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:"unused",close:"unused",writeFailed:"unused",limit:"unused"});
  const header=array([record("header",[["name","HX-Redirect"],["value","https://evil.test"]])]);
  const rejected=await responses.makeHeaders(header);
  expect(rejected.kind).toBe("domain");

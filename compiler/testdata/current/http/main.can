@@ -157,6 +157,36 @@ fn http::server_response stream_echo
                                     sample: out => ok
                                 stream::close_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                                 ok => ok pending
+fn http::server_response events
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    http::sse_event tick = http::sse_event("tick", "beat", "7", "")
+    match call http::response_sse(call http::status_ok(), call http::empty_server_headers())
+        http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok http::server_response pending => match call http::response_writer(pending)
+            when
+                sample: pending => ok
+            http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+            ok stream::writer out => match call http::sse_send(out, tick)
+                when
+                    sample: out, tick => ok 30
+                http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                stream::write_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                ok int sent => match call http::sse_comment(out, "still here")
+                    when
+                        sample: out, "still here" => ok 14
+                    http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                    http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                    stream::write_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                    ok int noted => match call stream::close_writer(out)
+                        when
+                            sample: out => ok
+                        stream::close_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                        ok => ok pending
 fn http::server_response wrapped
     emits []
     given
@@ -207,7 +237,8 @@ fn http::router mounted
         call http::route_stream(raw_upload) as http::route streamed
         call http::route_post("/echo", callable stream_echo) as http::route raw_echo
         call http::route_stream(raw_echo) as http::route echo
-        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head, streamed, echo]) as http::router router
+        call http::route_get("/events", callable events) as http::route feed
+        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head, streamed, echo, feed]) as http::router router
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route

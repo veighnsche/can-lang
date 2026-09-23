@@ -21,7 +21,7 @@ import {copyBytes} from "../bytes.ts";
 const origin={source:"can:test",start:0,end:0,invocation:[]};
 const identity=(kind:string,declaration:string)=>createHash("sha256").update("can-concrete-type-v1\0"+JSON.stringify([kind,declaration])).digest("hex");
 const textShape:FailureShape={identity:identity("primitive","str"),kind:"primitive",declaration:"str",arguments:[],fields:[],leaves:[],inputs:[],errors:[]};
-const fieldNames:Record<string,string[]>={"http::invalid_server_config":["reason"],"http::bind_failed":["address"],"http::shutdown_failed":["phase"],"http::invalid_route":["reason"],"http::duplicate_route":["method","path"],"http::ambiguous_route":["first","second"],"http::invalid_request":["reason"],"http::body_limit":["limit"],"codec::invalid_data":["path","reason"],"stream::read_failed":["reason"],"stream::cancelled":["reason"],"stream::close_failed":["reason"],"files::limit_exceeded":["limit"]};
+const fieldNames:Record<string,string[]>={"http::invalid_server_config":["reason"],"http::bind_failed":["address"],"http::shutdown_failed":["phase"],"http::invalid_route":["reason"],"http::duplicate_route":["method","path"],"http::ambiguous_route":["first","second"],"http::invalid_request":["reason"],"http::body_limit":["limit"],"codec::invalid_data":["path","reason"],"stream::read_failed":["reason"],"stream::write_failed":["reason"],"stream::cancelled":["reason"],"stream::close_failed":["reason"],"files::limit_exceeded":["limit"]};
 const declarations=catalogue.errors.filter(e=>fieldNames[e.name]!==undefined).map(e=>({identity:e.identity,name:e.name,id:e.id,parameters:0}));
 const intShape:FailureShape={identity:identity("primitive","int"),kind:"primitive",declaration:"int",arguments:[],fields:[],leaves:[],inputs:[],errors:[]};
 const fieldKinds=new Map(catalogue.errors.flatMap(e=>e.fields.map(f=>[e.name+":"+f.name,f.type])));
@@ -30,8 +30,8 @@ const domain=createDomainRuntime({declarations,shapes:[textShape,intShape,...err
 const id=(declaration:string)=>identity("error",declaration);
 const server=createServer(domain,{invalidConfig:id("can.std.http@1::invalid_server_config"),bindFailed:id("can.std.http@1::bind_failed"),shutdownFailed:id("can.std.http@1::shutdown_failed")});
 const router=createRouter(domain,{invalid:id("can.std.http@1::invalid_route"),duplicate:id("can.std.http@1::duplicate_route"),ambiguous:id("can.std.http@1::ambiguous_route")});
-const responses=createResponses(domain,{invalid:id("can.std.http@1::invalid_request"),invalidData:id("can.std.codec@1::invalid_data"),close:id("can.std.stream@1::close_failed")});
-const requests=createRequests(domain,{invalid:id("can.std.http@1::invalid_request"),limit:id("can.std.http@1::body_limit"),invalidData:id("can.std.codec@1::invalid_data"),header:"header",close:id("can.std.stream@1::close_failed")});
+const responses=createResponses(domain,{invalid:id("can.std.http@1::invalid_request"),invalidData:id("can.std.codec@1::invalid_data"),close:id("can.std.stream@1::close_failed"),writeFailed:id("can.std.stream@1::write_failed"),limit:id("can.std.http@1::body_limit")});
+const requests=createRequests(domain,{invalid:id("can.std.http@1::invalid_request"),limit:id("can.std.http@1::body_limit"),invalidData:id("can.std.codec@1::invalid_data"),header:"header",close:id("can.std.stream@1::close_failed"),writeFailed:id("can.std.stream@1::write_failed")});
 const reads=createStreamReads(domain,{readFailed:id("can.std.stream@1::read_failed"),cancelled:id("can.std.stream@1::cancelled"),closeFailed:id("can.std.stream@1::close_failed"),limitExceeded:id("can.std.files@1::limit_exceeded")});
 const textOf=(item:unknown)=>new TextDecoder().decode(copyBytes(item,origin));
 

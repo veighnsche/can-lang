@@ -4,11 +4,11 @@ import {catalogue} from "../catalogue.ts";
 import {createDomainRuntime,domainFailureDiagnostics,type FailureShape} from "../domain.ts";
 import {createRequests,createResponses,snapshotRequest,snapshotRequestLazy,abandonRequest,normalizedPath,isRequest,isHTTPValue,nativeResponse} from "../platform/http.ts";
 import {copyBytes,ownBytes} from "../bytes.ts";
-import {value,invoke,success,type Completion} from "../completion.ts";
+import {value,invoke,success,failure,type Completion} from "../completion.ts";
 import {record,array,dataProperty} from "../data.ts";
 import {createRouter,dispatch,routeKind,isRouterValue} from "../platform/router.ts";
 import {createStreamReads} from "../transport/stream/readable.ts";
-import {createStreamWrites} from "../transport/stream/writable.ts";
+import {createStreamWrites,registerSink} from "../transport/stream/writable.ts";
 import {runOwnedRoot} from "../owner.ts";
 const hash=(kind:string,name:string)=>createHash("sha256").update("can-concrete-type-v1\0"+JSON.stringify([kind,name])).digest("hex");
 const shape=(kind:string,declaration:string,fields:{name:string;type:string}[]=[]):FailureShape=>({identity:hash(kind,declaration),kind,declaration,fields,arguments:[],leaves:[],inputs:[],errors:[]});
@@ -16,10 +16,10 @@ const str=shape("primitive","str"),int=shape("primitive","int");
 const declarations=catalogue.errors.filter(e=>[1100,1104,1110,1230,1231,1232,1305,1316,1317,1318,1319].includes(e.id));
 const errors=declarations.map(e=>shape("error",e.identity,e.fields.map(f=>({name:f.name,type:f.type==="int"?int.identity:str.identity}))));
 const domain=createDomainRuntime({declarations:declarations.map(e=>({...e,parameters:0})),shapes:[str,int,...errors]});
-const api=createRequests(domain,{invalid:errors[0]!.identity,limit:errors[1]!.identity,invalidData:errors[2]!.identity,header:"header",close:errors[10]!.identity});
+const api=createRequests(domain,{invalid:errors[0]!.identity,limit:errors[1]!.identity,invalidData:errors[2]!.identity,header:"header",close:errors[10]!.identity,writeFailed:errors[8]!.identity});
 const reads=createStreamReads(domain,{readFailed:errors[7]!.identity,cancelled:errors[9]!.identity,closeFailed:errors[10]!.identity,limitExceeded:errors[6]!.identity});
 const writes=createStreamWrites(domain,{writeFailed:errors[8]!.identity,closeFailed:errors[10]!.identity});
-const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[2]!.identity,close:errors[10]!.identity});
+const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[2]!.identity,close:errors[10]!.identity,writeFailed:errors[8]!.identity,limit:errors[1]!.identity});
 const routing=createRouter(domain,{invalid:errors[3]!.identity,duplicate:errors[4]!.identity,ambiguous:errors[5]!.identity});
 const origin={source:"test",start:0,end:0,invocation:[]};
 async function snapshot(url:string,init?:RequestInit,limit=1024){const result=await snapshotRequest(new Request(url,init),limit);if(result.kind!=="request")throw Error("rejected request");return result.value;}
@@ -308,6 +308,42 @@ test("HEAD suppresses stream bodies without entity length",async()=>{
   return success({body:await head.text(),length:head.headers.get("content-length")});
  });
  expect(value(owned.completion)).toEqual({body:"",length:null});
+});
+test("SSE frames events with validated fields",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const pending=value(await responses.sse(value(await responses.ok()),value(await responses.emptyHeaders())));
+  const out=value(await responses.writer(pending));
+  const event=(data:string,event:string,id:string,retry:string)=>record("sse_event",[["data",data],["event",event],["id",id],["retry",retry]]);
+  expect(value(await responses.sseSend(out,event("tick","beat","7","")))).toBe(30n);
+  expect(value(await responses.sseSend(out,event("a\nb\r\nc\rd","","","")))).toBe(33n);
+  expect(value(await responses.sseSend(out,event("","","","100")))).toBe(12n);
+  expect(value(await responses.sseSend(out,event("","","","")))).toBe(1n);
+  expect(value(await responses.sseComment(out,"still here"))).toBe(14n);
+  check(await responses.sseSend(out,event("x","bad\nevent","","")),1100,{reason:"sse_event"});
+  check(await responses.sseSend(out,event("x","","bad\rid","")),1100,{reason:"sse_id"});
+  check(await responses.sseSend(out,event("x","","","now")),1100,{reason:"sse_retry"});
+  check(await responses.sseComment(out,"bad\ncomment"),1100,{reason:"sse_comment"});
+  return success(pending);
+ });
+ const served=nativeResponse(value(owned.completion));
+ expect(owned.cleanupFailed).toBe(false);
+ expect(served.headers.get("content-type")).toBe("text/event-stream; charset=utf-8");
+ expect(await served.text()).toBe("event: beat\nid: 7\ndata: tick\n\n"+"data: a\ndata: b\ndata: c\ndata: d\n\n"+"retry: 100\n\n"+"\n"+": still here\n\n");
+});
+test("SSE frames are atomic against the queue bound",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const pending=value(await responses.sse(value(await responses.ok()),value(await responses.emptyHeaders())));
+  const out=value(await responses.writer(pending));
+  const huge="x".repeat(1048576);
+  check(await responses.sseSend(out,record("sse_event",[["data",huge],["event",""],["id",""],["retry",""]])),1104,{limit:1048576n});
+  expect(value(await responses.sseSend(out,record("sse_event",[["data","ok"],["event",""],["id",""],["retry",""]])))).toBe(10n);
+  const file=registerSink({write:()=>0,flush:()=>undefined,end:()=>undefined},(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause)),errors[10]!.identity);
+  check(await responses.sseSend(file,record("sse_event",[["data","x"],["event",""],["id",""],["retry",""]])),1100,{reason:"not_streaming"});
+  expect((await writes.closeWriter(file)).kind).toBe("ok");
+  return success(pending);
+ });
+ expect(owned.cleanupFailed).toBe(false);
+ expect(await nativeResponse(value(owned.completion)).text()).toBe("data: ok\n\n");
 });
 test("stream responses serve produced queues over loopback",async()=>{
  const seen={status:0,body:""};

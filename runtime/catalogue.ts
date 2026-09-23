@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "49830c42022321bccb338bc0b0885c230deaee141f932774c6c5be4c03768f0e";
+export const catalogueSHA256 = "7ff46ae67f447018ddf81ac1f2bb76131e6934d568c0010809668f272e8f4035";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -351,6 +351,33 @@ export const catalogue = freeze({
         },
         {
           "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::sse_event",
+      "identity": "can.std.http@1::sse_event",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "data",
+          "type": "str"
+        },
+        {
+          "name": "event",
+          "type": "str"
+        },
+        {
+          "name": "id",
+          "type": "str"
+        },
+        {
+          "name": "retry",
           "type": "str"
         }
       ],
@@ -6948,6 +6975,117 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "http::response_sse",
+      "identity": "can.std.http@1::response_sse",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream"
+        ],
+        "adapter": "Build a pending event-stream response for validated SSE production.",
+        "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::sse_send",
+      "identity": "can.std.http@1::sse_send",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "writer",
+          "type": "stream::writer"
+        },
+        {
+          "name": "event",
+          "type": "http::sse_event"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request",
+        "http::body_limit",
+        "stream::write_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream",
+          "TextEncoder"
+        ],
+        "adapter": "Validate one event frame and append it atomically to the queue.",
+        "task": "B1-06"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::sse_comment",
+      "identity": "can.std.http@1::sse_comment",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "writer",
+          "type": "stream::writer"
+        },
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request",
+        "http::body_limit",
+        "stream::write_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream",
+          "TextEncoder"
+        ],
+        "adapter": "Validate one comment line and append it atomically to the queue.",
+        "task": "B1-06"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::route_get",
       "identity": "can.std.http@1::route_get",
       "kind": "function",
@@ -10088,6 +10226,43 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::sse_event",
+    "identity": "can.std.http@1::sse_event",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "data",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "event",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "id",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "retry",
         "type": {
           "name": "str",
           "arguments": null

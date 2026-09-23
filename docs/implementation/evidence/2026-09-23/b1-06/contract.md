@@ -54,8 +54,15 @@ file grows until the capability closes.
 | Flow control | short writes only (`write_some` returns accepted bytes, 0 when full); writes never block, so production cannot deadlock against an unreturned response |
 | Lifecycle | untaken writers serve empty; taken-but-unclosed writers end at request-scope drain (scope-managed by design); stream responses convert once (reuse is a usage violation); HEAD serves stream responses empty with no content-length |
 
-## SSE, multipart
+## SSE
 
-Pending: validated SSE records and bounded generic multipart records
-(Jev `record_send`, see
-`docs/bun-integration/asap/evidence/consultations-b1-06/decision-audit.md`).
+| Aspect | Contract |
+|---|---|
+| Shape | fixed `http::sse_event{data, event, id, retry}` record, empty means absent; `http::response_sse` builds the pending event-stream response; `http::sse_send`/`http::sse_comment` append through the vended writer (Jev `record_send`) |
+| Framing | field order event, id, retry, then data lines; data splits on CR/LF/CRLF into `data:` lines; empty data emits no data line so retry/id-only blocks never dispatch; comment lines use `: text` (heartbeat support, no automatic heartbeats) |
+| Violations | CR/LF in event/id/comment and non-digit retry fail `invalid_request` (`sse_event`, `sse_id`, `sse_retry`, `sse_comment`); frames are atomic (a frame that cannot fit the remaining queue writes nothing and fails `body_limit{1048576}`) |
+| Writers | `sse_send`/`sse_comment` require an HTTP response writer (`not_streaming` otherwise) and return accepted bytes; sink failures map to `stream::write_failed` like `write_some` |
+
+## Multipart
+
+Pending: bounded generic multipart records.

@@ -8,7 +8,7 @@ import {CodecIssue} from "../codec/budget.ts";
 import {decodeJSON,encodeJSON,type Schema} from "../codec/json.ts";
 import {mediaType} from "../transport/media.ts";
 import {openByteCell} from "../transport/stream/readable.ts";
-import {registerReader,registerWriter,type Fail,type ReaderCell} from "../transport/stream/lifecycle.ts";
+import {registerReader,registerWriter,useWriter,type Fail,type ReaderCell,type SinkLike} from "../transport/stream/lifecycle.ts";
 import {strictParameters,decodeForm,FormIssue,type FormSchema} from "./form.ts";
 import {renderSafe} from "./html.ts";
 const origin=Object.freeze({source:"can:http-server",start:0,end:0,invocation:Object.freeze([])});
@@ -119,7 +119,25 @@ export function nativeResponse(value:unknown,head=false):Response{
  return new Response(bytes===null?null:new Uint8Array(copyBytes(bytes,origin)),{status:response.status,headers});
 }
 const forbiddenResponseHeaders=new Set(["content-type","content-length","x-content-type-options","content-security-policy","content-security-policy-report-only","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade"]);
-export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData"|"close">){
+export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData"|"close"|"writeFailed"|"limit">){
+ function sseLine(field:string,value:string):string|undefined{
+  if(value===""||value.includes("\n")||value.includes("\r"))return undefined;
+  return field+": "+value+"\n";
+ }
+ function sseFrame(event:unknown):Uint8Array|Completion<never>{
+  // Record shape is catalogue-typed; anything else is a forged value.
+  if(!object(event))throw resourceStateFailure(undefined,origin);
+  const data=dataProperty(event,"data"),name=dataProperty(event,"event"),id=dataProperty(event,"id"),retry=dataProperty(event,"retry");
+  if(typeof data!=="string"||typeof name!=="string"||typeof id!=="string"||typeof retry!=="string")throw resourceStateFailure(undefined,origin);
+  let frame="";
+  if(name!==""){const line=sseLine("event",name);if(line===undefined)return invalid("sse_event");frame+=line;}
+  if(id!==""){const line=sseLine("id",id);if(line===undefined)return invalid("sse_id");frame+=line;}
+  if(retry!==""){if(!/^[0-9]+$/.test(retry))return invalid("sse_retry");frame+="retry: "+retry+"\n";}
+  // Data splits across lines; CR, LF and CRLF all break lines. Empty
+  // data emits no data line so retry/id-only blocks never dispatch.
+  if(data!=="")for(const line of data.split(/\r\n|\n|\r/))frame+="data: "+line+"\n";
+  return new TextEncoder().encode(frame+"\n");
+ }
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
  const fail:Fail=(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause));
  function status(value:bigint,body:boolean):Completion<unknown>{if(value<200n||value>599n||body&&(value===204n||value===205n||value===304n))return invalid("invalid_status");return success(opaque(body?bodyStatuses:statuses,Number(value)));}
@@ -171,7 +189,7 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
    const pending=snapshot.body;
    // Short writes are the only flow control: accept up to the queue's
    // remaining byte budget and let the caller retry the rest. Never block.
-   const sink={write(chunk:Uint8Array):unknown{
+   const sink:FrameSink={write(chunk:Uint8Array):unknown{
     if(pending.cancelled||pending.controller===undefined)throw new DOMException("response stream cancelled","AbortError");
     const room=pending.controller.desiredSize;
     if(room===null)throw new DOMException("response stream closed","AbortError");
@@ -179,15 +197,56 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
     if(take===0)return 0;
     pending.controller.enqueue(chunk.slice(0,take));
     return take;
+   },
+   // Frames are atomic: a short frame would tear the event stream, so a
+   // frame that cannot fit whole writes nothing and reports zero.
+   writeFrame(frame:Uint8Array):number{
+    if(pending.cancelled||pending.controller===undefined)throw new DOMException("response stream cancelled","AbortError");
+    const room=pending.controller.desiredSize;
+    if(room===null)throw new DOMException("response stream closed","AbortError");
+    if(frame.byteLength>Math.floor(room))return 0;
+    pending.controller.enqueue(frame.slice());
+    return frame.byteLength;
    },flush():unknown{return undefined;},end():unknown{
     if(!pending.ended&&pending.controller!==undefined){pending.ended=true;try{pending.controller.close();}catch{}}
     return undefined;
    }};
    return success(registerWriter({sink},fail,types.close,{scopeManaged:true}));
+  },
+  async sse(status:unknown,headers:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
+   return success(response(status,headers,streamBody(),"text/event-stream; charset=utf-8"));
+  },
+  async sseSend(writer:unknown,event:unknown,context?:AssertionContext):Promise<Completion<bigint>>{
+   denyLiveBoundary(context,origin);
+   const frame=sseFrame(event);if(!(frame instanceof Uint8Array))return frame;
+   return sendFrame(writer,frame);
+  },
+  async sseComment(writer:unknown,text:unknown,context?:AssertionContext):Promise<Completion<bigint>>{
+   denyLiveBoundary(context,origin);
+   if(typeof text!=="string"||text.includes("\n")||text.includes("\r"))return invalid("sse_comment");
+   return sendFrame(writer,new TextEncoder().encode(": "+text+"\n\n"));
   }
  });
+ function sendFrame(writer:unknown,frame:Uint8Array):Promise<Completion<bigint>>{
+  return useWriter(writer,async cell=>{
+   const sink=cell.sink as Partial<FrameSink>;
+   if(typeof sink.writeFrame!=="function")return invalid("not_streaming");
+   let accepted:number;
+   try{accepted=sink.writeFrame(frame);}
+   catch(cause){
+    const aborted=typeof cause==="object"&&cause!==null&&(cause as {name?:unknown}).name==="AbortError";
+    const reason=aborted?"aborted":typeof cause==="object"&&cause!==null&&typeof (cause as {code?:unknown}).code==="string"?(cause as {code:string}).code:"io_error";
+    return fail(types.writeFailed,[["reason",reason]],cause);
+   }
+   // Zero means the frame cannot fit the remaining queue; nothing was
+   // written, and pre-dispatch nothing will drain, so the bound bit.
+   if(accepted===0&&frame.byteLength>0)return failure(domain.create(types.limit,record(types.limit,[["limit",BigInt(RESPONSE_QUEUE_BYTES)]]),origin));
+   return success(BigInt(accepted));
+  });
+ }
 }
-type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string;close:string}>;
+type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string;close:string;writeFailed:string}>;
+type FrameSink=SinkLike&{writeFrame(frame:Uint8Array):number};
 export function createRequests<Header>(domain:ReturnType<typeof createDomainRuntime>,types:Types){
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
  const overLimit=(value:bigint)=>failure(domain.create(types.limit,record(types.limit,[["limit",value]]),origin));
