@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 8fca39df1c718d68ac1d8a3d3fc2a97885e3dbab9c08f997019a049138af3579.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 49830c42022321bccb338bc0b0885c230deaee141f932774c6c5be4c03768f0e.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -344,6 +344,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::response_text | http::body_status status, http::server_headers headers, str body → http::server_response | [] |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_html | http::body_status status, http::server_headers headers, html::safe body → http::server_response | [] |  | Response, Headers, TextEncoder | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
 | http::response_json | T:wire; http::body_status status, http::server_headers headers, T body → http::server_response | [codec::invalid_data] |  | Response, Headers, JSON.stringify | Fixed media type and nosniff; no body for empty; JSON uses the shared exact codec. | real | I32 / P10 |
+| http::response_stream | http::body_status status, http::server_headers headers → http::server_response | [http::invalid_request] |  | ReadableStream | Build a pending response whose bounded queue the vended writer fills. | real | B1-06 / P10 |
+| http::response_writer | http::server_response response → stream::writer | [http::invalid_request] |  | ReadableStream | Vend the pending response writer exactly once for short-write production. | supplied | B1-06 / P10 |
 | http::route_get | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
 | http::route_post | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | I32 / P10 |
 | http::route_put | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | B1-06 / P10 |

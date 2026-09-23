@@ -73,7 +73,7 @@ func TestCurrentBundledHTTP(t *testing.T) {
 		t.Fatalf("HTTP assertions: %d %s %s", status, out, diag)
 	}
 	var report map[string]any
-	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 15 {
+	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 16 {
 		t.Fatalf("invalid HTTP report %v %s", err, out)
 	}
 	if !strings.Contains(out, "supplied-completion") || !strings.Contains(out, "real-can") {
@@ -206,6 +206,7 @@ const text=(response)=>response.text();
 {
  const up=await fetch(base+"/u",{method:"POST",body:"hello-world"});assert.equal(up.status,200);assert.equal(await text(up),"hell");
  const drained=await fetch(base+"/u",{method:"POST",body:""});assert.equal(drained.status,200);assert.equal(await text(drained),"empty");
+ const echo=await fetch(base+"/echo",{method:"POST",body:"stream-me"});assert.equal(echo.status,200);assert.equal(await text(echo),"stream-me");
 }
 server.stop();
 console.log("compiled HTTP dispatch passed");

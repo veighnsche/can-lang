@@ -11,7 +11,7 @@ const str=shape("primitive","str"),int=shape("primitive","int");
 const declarations=catalogue.errors.filter(e=>[1100,1230,1231,1232].includes(e.id));
 const errors=declarations.map(e=>shape("error",e.identity,e.fields.map(f=>({name:f.name,type:f.type==="int"?int.identity:str.identity}))));
 const domain=createDomainRuntime({declarations:declarations.map(e=>({...e,parameters:0})),shapes:[str,int,...errors]});
-const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[0]!.identity});
+const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[0]!.identity,close:"unused"});
 const routing=createRouter(domain,{invalid:errors[1]!.identity,duplicate:errors[2]!.identity,ambiguous:errors[3]!.identity});
 test("route path corpus matches checked static validation",async()=>{
  const corpus=await Bun.file(new URL("./http-paths.json",import.meta.url)).json() as {accept:string[];reject:string[]};

@@ -1,14 +1,14 @@
 import {success,failure,type Completion,type AssertionContext} from "../completion.ts";
 import {denyLiveBoundary} from "../assert/context.ts";
 import {record,array,dataArray,dataProperty} from "../data.ts";
-import {ownBytes,copyBytes,byteLength,type Bytes} from "../bytes.ts";
+import {ownBytes,copyBytes,byteLength,isBytes,type Bytes} from "../bytes.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
 import {CodecIssue} from "../codec/budget.ts";
 import {decodeJSON,encodeJSON,type Schema} from "../codec/json.ts";
 import {mediaType} from "../transport/media.ts";
 import {openByteCell} from "../transport/stream/readable.ts";
-import {registerReader,type Fail,type ReaderCell} from "../transport/stream/lifecycle.ts";
+import {registerReader,registerWriter,type Fail,type ReaderCell} from "../transport/stream/lifecycle.ts";
 import {strictParameters,decodeForm,FormIssue,type FormSchema} from "./form.ts";
 import {renderSafe} from "./html.ts";
 const origin=Object.freeze({source:"can:http-server",start:0,end:0,invocation:Object.freeze([])});
@@ -82,7 +82,13 @@ function memoryStream(bytes:Bytes):ReadableStream<Uint8Array>{
  return new ReadableStream<Uint8Array>({start(controller){if(copy.byteLength!==0)controller.enqueue(copy);controller.close();}});
 }
 
-type ResponseSnapshot=Readonly<{status:number;headers:readonly(readonly[string,string])[];body:Bytes|null}>;
+type ResponseSnapshot=Readonly<{status:number;headers:readonly(readonly[string,string])[];body:Bytes|PendingBody|null}>;
+type PendingBody={stream:ReadableStream<Uint8Array>;controller:ReadableStreamDefaultController<Uint8Array>|undefined;cancelled:boolean;ended:boolean;taken:boolean;sent:boolean};
+// Produce-then-serve: the handler fills a bounded byte queue, returns the
+// pending response, and Bun streams the queue after dispatch. Handlers never
+// outlive dispatch, so no write can observe a disconnect; short writes are
+// the only flow control and the queue cap is the only bound.
+const RESPONSE_QUEUE_BYTES=1048576;
 const statuses=new WeakMap<object,number>(),bodyStatuses=new WeakMap<object,number>();
 const serverHeaders=new WeakMap<object,readonly(readonly[string,string])[]>(),responses=new WeakMap<object,ResponseSnapshot>();
 function opaque<T>(map:WeakMap<object,T>,data:T):unknown{const token=Object.freeze(Object.create(null));map.set(token,data);return token;}
@@ -96,16 +102,33 @@ export function isHTTPValue(kind:string|undefined,value:unknown):boolean{
 // can reuse the Can value without reusing an already-consumed native body.
 export function nativeResponse(value:unknown,head=false):Response{
  const response=read(responses,value),headers:[string,string][]=response.headers.map(([name,value])=>[name,value]);
+ const body=response.body;
+ // Stream responses convert once: the native stream is single-use, so reuse
+ // is a usage violation rather than a silently empty second body.
+ if(body!==null&&!isBytes(body)){
+  if(body.sent)throw resourceStateFailure(undefined,origin);
+  body.sent=true;
+  if(!body.taken&&body.controller!==undefined&&!body.ended){body.ended=true;try{body.controller.close();}catch{}}
+  if(head)return new Response(null,{status:response.status,headers});
+  return new Response(body.stream,{status:response.status,headers});
+ }
  // HEAD suppresses every body while keeping the entity length the complete
  // value produced, so HEAD and GET agree on length by construction.
- if(head&&response.body!==null)return new Response(null,{status:response.status,headers:[...headers,["content-length",byteLength(response.body).toString()]]});
- return new Response(response.body===null?null:new Uint8Array(copyBytes(response.body,origin)),{status:response.status,headers});
+ const bytes=body as Bytes|null;
+ if(head&&bytes!==null)return new Response(null,{status:response.status,headers:[...headers,["content-length",byteLength(bytes).toString()]]});
+ return new Response(bytes===null?null:new Uint8Array(copyBytes(bytes,origin)),{status:response.status,headers});
 }
 const forbiddenResponseHeaders=new Set(["content-type","content-length","x-content-type-options","content-security-policy","content-security-policy-report-only","connection","keep-alive","proxy-authenticate","proxy-authorization","te","trailer","transfer-encoding","upgrade"]);
-export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData">){
+export function createResponses(domain:ReturnType<typeof createDomainRuntime>,types:Pick<Types,"invalid"|"invalidData"|"close">){
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
+ const fail:Fail=(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause));
  function status(value:bigint,body:boolean):Completion<unknown>{if(value<200n||value>599n||body&&(value===204n||value===205n||value===304n))return invalid("invalid_status");return success(opaque(body?bodyStatuses:statuses,Number(value)));}
- function response(status:unknown,headers:unknown,body:Bytes|null,mime?:string):unknown{
+ function streamBody():PendingBody{
+  const pending:PendingBody={stream:undefined as unknown as ReadableStream<Uint8Array>,controller:undefined,cancelled:false,ended:false,taken:false,sent:false};
+  pending.stream=new ReadableStream<Uint8Array>({start(controller){pending.controller=controller as ReadableStreamDefaultController<Uint8Array>;},cancel(){pending.cancelled=true;}},{highWaterMark:RESPONSE_QUEUE_BYTES,size(chunk?:Uint8Array){return chunk===undefined?0:chunk.byteLength;}});
+  return pending;
+ }
+ function response(status:unknown,headers:unknown,body:Bytes|PendingBody|null,mime?:string):unknown{
   const code=read(body===null?statuses:bodyStatuses,status),entries=read(serverHeaders,headers);
   const native=new Headers(entries.map(([name,value])=>[name,value]));native.set("x-content-type-options","nosniff");if(mime)native.set("content-type",mime);
   return opaque(responses,Object.freeze({status:code,headers:Object.freeze(Array.from(native.entries(),entry=>Object.freeze(entry))),body}));
@@ -136,6 +159,31 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
   async json<T>(schema:Schema,status:unknown,headers:unknown,body:T,_context?:AssertionContext):Promise<Completion<unknown>>{
    try{return success(response(status,headers,encodeJSON(schema,body),"application/json; charset=utf-8"));}
    catch(cause){if(cause instanceof CodecIssue)return failure(domain.create(types.invalidData,record(types.invalidData,[["path",cause.path],["reason",cause.reason]]),origin));throw cause;}
+  },
+  async stream(status:unknown,headers:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
+   return success(response(status,headers,streamBody(),"application/octet-stream"));
+  },
+  async writer(input:unknown,_context?:AssertionContext):Promise<Completion<object>>{
+   const snapshot=read(responses,input);
+   if(snapshot.body===null||isBytes(snapshot.body))return invalid("not_streaming");
+   if(snapshot.body.taken)return invalid("writer_taken");
+   snapshot.body.taken=true;
+   const pending=snapshot.body;
+   // Short writes are the only flow control: accept up to the queue's
+   // remaining byte budget and let the caller retry the rest. Never block.
+   const sink={write(chunk:Uint8Array):unknown{
+    if(pending.cancelled||pending.controller===undefined)throw new DOMException("response stream cancelled","AbortError");
+    const room=pending.controller.desiredSize;
+    if(room===null)throw new DOMException("response stream closed","AbortError");
+    const take=Math.max(0,Math.min(chunk.byteLength,Math.floor(room)));
+    if(take===0)return 0;
+    pending.controller.enqueue(chunk.slice(0,take));
+    return take;
+   },flush():unknown{return undefined;},end():unknown{
+    if(!pending.ended&&pending.controller!==undefined){pending.ended=true;try{pending.controller.close();}catch{}}
+    return undefined;
+   }};
+   return success(registerWriter({sink},fail,types.close,{scopeManaged:true}));
   }
  });
 }
@@ -188,7 +236,9 @@ export function createRequests<Header>(domain:ReturnType<typeof createDomainRunt
    // access to a live body observes the wire.
    const source=cell.kind==="live"?(cell.buffered!==undefined?memoryStream(cell.buffered):cell.native.body??memoryStream(snapshot.body)):memoryStream(snapshot.body);
    const opened=openByteCell(source,maxChunk);
-   const token=registerReader(opened,fail,types.close);
+   // Request handles live in framework-drained scopes: explicit close
+   // controls timing, and drain cleanup is by design, never a leak.
+   const token=registerReader(opened,fail,types.close,{scopeManaged:true});
    if(cell.kind==="live")cell.cell=opened;
    return success(token);
   }

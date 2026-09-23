@@ -8,16 +8,18 @@ import {value,invoke,success,type Completion} from "../completion.ts";
 import {record,array,dataProperty} from "../data.ts";
 import {createRouter,dispatch,routeKind,isRouterValue} from "../platform/router.ts";
 import {createStreamReads} from "../transport/stream/readable.ts";
+import {createStreamWrites} from "../transport/stream/writable.ts";
 import {runOwnedRoot} from "../owner.ts";
 const hash=(kind:string,name:string)=>createHash("sha256").update("can-concrete-type-v1\0"+JSON.stringify([kind,name])).digest("hex");
 const shape=(kind:string,declaration:string,fields:{name:string;type:string}[]=[]):FailureShape=>({identity:hash(kind,declaration),kind,declaration,fields,arguments:[],leaves:[],inputs:[],errors:[]});
 const str=shape("primitive","str"),int=shape("primitive","int");
-const declarations=catalogue.errors.filter(e=>[1100,1104,1110,1230,1231,1232,1305,1316,1318,1319].includes(e.id));
+const declarations=catalogue.errors.filter(e=>[1100,1104,1110,1230,1231,1232,1305,1316,1317,1318,1319].includes(e.id));
 const errors=declarations.map(e=>shape("error",e.identity,e.fields.map(f=>({name:f.name,type:f.type==="int"?int.identity:str.identity}))));
 const domain=createDomainRuntime({declarations:declarations.map(e=>({...e,parameters:0})),shapes:[str,int,...errors]});
-const api=createRequests(domain,{invalid:errors[0]!.identity,limit:errors[1]!.identity,invalidData:errors[2]!.identity,header:"header",close:errors[9]!.identity});
-const reads=createStreamReads(domain,{readFailed:errors[7]!.identity,cancelled:errors[8]!.identity,closeFailed:errors[9]!.identity,limitExceeded:errors[6]!.identity});
-const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[2]!.identity});
+const api=createRequests(domain,{invalid:errors[0]!.identity,limit:errors[1]!.identity,invalidData:errors[2]!.identity,header:"header",close:errors[10]!.identity});
+const reads=createStreamReads(domain,{readFailed:errors[7]!.identity,cancelled:errors[9]!.identity,closeFailed:errors[10]!.identity,limitExceeded:errors[6]!.identity});
+const writes=createStreamWrites(domain,{writeFailed:errors[8]!.identity,closeFailed:errors[10]!.identity});
+const responses=createResponses(domain,{invalid:errors[0]!.identity,invalidData:errors[2]!.identity,close:errors[10]!.identity});
 const routing=createRouter(domain,{invalid:errors[3]!.identity,duplicate:errors[4]!.identity,ambiguous:errors[5]!.identity});
 const origin={source:"test",start:0,end:0,invocation:[]};
 async function snapshot(url:string,init?:RequestInit,limit=1024){const result=await snapshotRequest(new Request(url,init),limit);if(result.kind!=="request")throw Error("rejected request");return result.value;}
@@ -226,8 +228,111 @@ test("dispatch abandons unread live bodies",async()=>{
  const response=value(await dispatch(router,lazy.value));
  expect(response.status).toBe(200);expect(cancelled).toBe(1);
 });
+test("unclosed request handles drain cleanly by design",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const lazy=await snapshotRequestLazy(new Request("http://localhost/",{method:"POST",body:"hello"}),64);
+  if(lazy.kind!=="request")throw Error("rejected request");
+  value(await api.bodyStream(lazy.value,4n));
+  const pending=value(await responses.stream(value(await responses.ok()),value(await responses.emptyHeaders())));
+  value(await responses.writer(pending));
+  return success(undefined);
+ });
+ expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+});
 test("body readers outside ownership fail resource_state",async()=>{
  const lazy=await snapshotRequestLazy(new Request("http://localhost/",{method:"POST",body:"hello"}),64);
  if(lazy.kind!=="request")throw Error("rejected request");
  expect((await invoke(()=>api.bodyStream(lazy.value,4n),origin)).kind).toBe("standard");
+});
+test("stream responses produce through short writes into a bounded queue",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
+  const pending=value(await responses.stream(status,headers));
+  const out=value(await responses.writer(pending));
+  check(await responses.writer(pending),1100,{reason:"writer_taken"});
+  const first=value(await writes.writeSome(out,ownBytes(new TextEncoder().encode("ab"))));
+  const second=value(await writes.writeSome(out,ownBytes(new TextEncoder().encode("c"))));
+  expect((await writes.closeWriter(out)).kind).toBe("ok");
+  const served=nativeResponse(pending);
+  return success({first,second,type:served.headers.get("content-type"),body:await served.text()});
+ });
+ expect(owned.cleanupFailed).toBe(false);
+ expect(value(owned.completion)).toEqual({first:2n,second:1n,type:"application/octet-stream",body:"abc"});
+});
+test("the produced queue caps at one megabyte with short writes",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const pending=value(await responses.stream(value(await responses.ok()),value(await responses.emptyHeaders())));
+  const out=value(await responses.writer(pending));
+  const accepted=value(await writes.writeSome(out,ownBytes(new Uint8Array(2*1048576))));
+  const short=value(await writes.writeSome(out,ownBytes(new Uint8Array([1]))));
+  const reader=nativeResponse(pending).body!.getReader();
+  const drained=await reader.read();
+  reader.releaseLock();
+  const reopened=value(await writes.writeSome(out,ownBytes(new Uint8Array([1,2,3]))));
+  expect((await writes.closeWriter(out)).kind).toBe("ok");
+  return success({accepted,short,drainedBytes:drained.done?0:drained.value.byteLength,reopened});
+ });
+ expect(owned.cleanupFailed).toBe(false);
+ expect(value(owned.completion)).toEqual({accepted:1048576n,short:0n,drainedBytes:1048576,reopened:3n});
+});
+test("pending responses without writers serve empty and convert once",async()=>{
+ const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
+ const plain=value(await responses.text(status,headers,"x"));
+ check(await responses.writer(plain),1100,{reason:"not_streaming"});
+ const untaken=value(await responses.stream(status,headers));
+ const owned=await runOwnedRoot(async ()=>{
+  const once=value(await responses.stream(status,headers));
+  const out=value(await responses.writer(once));
+  expect((await writes.closeWriter(out)).kind).toBe("ok");
+  const first=nativeResponse(once);
+  let reused="no-throw";
+  try{nativeResponse(once);}catch{reused="thrown";}
+  const leaked=value(await responses.stream(status,headers));
+  const writer=value(await responses.writer(leaked));
+  const accepted=value(await writes.writeSome(writer,ownBytes(new TextEncoder().encode("late"))));
+  const converted=nativeResponse(leaked);
+  return success({first:await first.text(),reused,accepted,converted});
+ });
+ expect(owned.cleanupFailed).toBe(false);
+ const done=value(owned.completion);
+ expect(done.first).toBe("");expect(done.reused).toBe("thrown");expect(done.accepted).toBe(4n);
+ expect(await done.converted.text()).toBe("late");
+ expect(await nativeResponse(untaken).text()).toBe("");
+});
+test("HEAD suppresses stream bodies without entity length",async()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const pending=value(await responses.stream(value(await responses.ok()),value(await responses.emptyHeaders())));
+  const out=value(await responses.writer(pending));
+  await writes.closeWriter(out);
+  const head=nativeResponse(pending,true);
+  return success({body:await head.text(),length:head.headers.get("content-length")});
+ });
+ expect(value(owned.completion)).toEqual({body:"",length:null});
+});
+test("stream responses serve produced queues over loopback",async()=>{
+ const seen={status:0,body:""};
+ const owned=await runOwnedRoot(async ()=>{
+  const status=value(await responses.ok()),headers=value(await responses.emptyHeaders());
+  const callback=async()=>{
+   const pending=value(await responses.stream(status,headers));
+   const out=value(await responses.writer(pending));
+   value(await writes.writeSome(out,ownBytes(new TextEncoder().encode("one;"))));
+   value(await writes.writeSome(out,ownBytes(new TextEncoder().encode("two"))));
+   value(await writes.closeWriter(out));
+   return success(pending);
+  };
+  const router=value(await routing.make(array([value(await routing.get("/s",callback))])));
+  const server=Bun.serve({hostname:"127.0.0.1",port:0,async fetch(native){
+   const snap=await snapshotRequest(native,65536);
+   if(snap.kind!=="request")return new Response(null,{status:snap.status});
+   return value(await dispatch(router,snap.value));
+  }});
+  try{
+   const res=await fetch(new URL("/s",server.url));
+   seen.status=res.status;seen.body=await res.text();
+  }finally{await server.stop(true);}
+  return success(undefined);
+ });
+ expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+ expect(seen).toEqual({status:200,body:"one;two"});
 });

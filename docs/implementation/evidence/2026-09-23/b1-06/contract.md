@@ -45,9 +45,17 @@ file grows until the capability closes.
 | Abandon | dispatch cancels an unread live body (or settles an open reader's native pull) before the per-request scope drains; handlers are not preempted, their stream IO fails fast |
 | Scope | each request dispatches in a child scope of the server scope, so readers die at request end with no server-lifetime leak |
 
+## Response streams
+
+| Aspect | Contract |
+|---|---|
+| Shape | `http::response_stream(status, headers)` builds a pending response; `http::response_writer` vends its `stream::writer` exactly once (second vend: `invalid_request{reason:"writer_taken"}`; non-stream response: `invalid_request{reason:"not_streaming"}`) (Jev `writer_pair`) |
+| Model | produce-then-serve: the handler fills a 1 MiB bounded byte queue, closes the writer, and returns the pending response; Bun streams the queue after dispatch. Handlers never outlive dispatch, so no write observes a disconnect |
+| Flow control | short writes only (`write_some` returns accepted bytes, 0 when full); writes never block, so production cannot deadlock against an unreturned response |
+| Lifecycle | untaken writers serve empty; taken-but-unclosed writers end at request-scope drain (scope-managed by design); stream responses convert once (reuse is a usage violation); HEAD serves stream responses empty with no content-length |
+
 ## SSE, multipart
 
-Pending: pending-response writer pairs, validated SSE records, and
-bounded generic multipart records (Jev `writer_pair` / `record_send`,
-see
+Pending: validated SSE records and bounded generic multipart records
+(Jev `record_send`, see
 `docs/bun-integration/asap/evidence/consultations-b1-06/decision-audit.md`).

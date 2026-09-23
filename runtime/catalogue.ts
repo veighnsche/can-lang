@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "8fca39df1c718d68ac1d8a3d3fc2a97885e3dbab9c08f997019a049138af3579";
+export const catalogueSHA256 = "49830c42022321bccb338bc0b0885c230deaee141f932774c6c5be4c03768f0e";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -6877,6 +6877,72 @@ export const catalogue = freeze({
         "task": "I32"
       },
       "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::response_stream",
+      "identity": "can.std.http@1::response_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "status",
+          "type": "http::body_status"
+        },
+        {
+          "name": "headers",
+          "type": "http::server_headers"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server_response",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream"
+        ],
+        "adapter": "Build a pending response whose bounded queue the vended writer fills.",
+        "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::response_writer",
+      "identity": "can.std.http@1::response_writer",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "response",
+          "type": "http::server_response"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::writer",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_request"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStream"
+        ],
+        "adapter": "Vend the pending response writer exactly once for short-write production.",
+        "task": "B1-06"
+      },
+      "assertion": "supplied",
       "refs": [
         "P10"
       ]
