@@ -325,8 +325,8 @@
   "ws_backpressure": {
     "status": "observed",
     "value": {
-      "saturated": 42,
-      "drains": 2,
+      "saturated": 39,
+      "drains": 7,
       "bytes": 3276800
     }
   },
@@ -750,6 +750,29 @@
       },
       "expiresInNegative": {
         "throws": "RangeError:The value of \"expiresIn\" is out of range. It must be >= 0 and <= 9007199254740991. Received -5"
+      }
+    }
+  },
+  "cookie_validate": {
+    "status": "observed",
+    "value": {
+      "empty-path": {
+        "ok": "a=b; SameSite=Lax"
+      },
+      "crlf-path": {
+        "throws": "TypeError:Invalid cookie path: contains invalid characters"
+      },
+      "space-domain": {
+        "throws": "TypeError:Invalid cookie domain: contains invalid characters"
+      },
+      "empty-domain": {
+        "ok": "a=b; Path=/; SameSite=Lax"
+      },
+      "invalid-date": {
+        "throws": "RangeError:expires must be a valid Date (or Number)"
+      },
+      "tombstone": {
+        "ok": "a=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
       }
     }
   }
