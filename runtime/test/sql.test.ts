@@ -49,17 +49,17 @@ const id = (declaration: string) => identity("error", declaration);
 const table: Record<string, Record<string, SQLDescriptorEntry>> = {
   "": {
     account_by_id: {
-      cardinality: "one", kind: "SelectStmt",
+      dialect: "postgresql", cardinality: "one", kind: "SelectStmt",
       segments: [{ text: "SELECT id, display_name FROM t WHERE id = " }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
       params: ["id"], paramType: "p", rowType: "r", limit: 2, total: 2, version: 170007,
     },
     accounts_by_term: {
-      cardinality: "many", kind: "SelectStmt",
+      dialect: "postgresql", cardinality: "many", kind: "SelectStmt",
       segments: [{ text: "SELECT id, display_name FROM t WHERE display_name ILIKE " }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
       params: ["term"], paramType: "p", rowType: "r", limit: 2, total: 2, version: 170007,
     },
     add_account: {
-      cardinality: "execute", kind: "InsertStmt",
+      dialect: "postgresql", cardinality: "execute", kind: "InsertStmt",
       segments: [{ text: "INSERT INTO t (display_name) VALUES (" }, { param: 1 }, { text: ")" }],
       params: ["term"], paramType: "p", rowType: "r", limit: 0, total: 1, version: 170007,
     },

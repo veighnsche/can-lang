@@ -15,10 +15,11 @@ import { record, dataProperty, recordIdentity } from "../../data.ts";
 import { createDomainRuntime } from "../../domain.ts";
 import { resourceStateFailure } from "../../failure.ts";
 import { registerResource, useResource, withScope, guardCallback, resourceStatus } from "../../owner.ts";
-import { createSQLOperations, type SQLNative } from "./pool.ts";
+import { createSQLOperations, poolDialect, type SQLNative, type SQLDialect } from "./pool.ts";
 import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLTxContracts } from "./errors.ts";
 import { isPostgresFailure } from "./postgres.ts";
+import { isSQLiteFailure } from "./sqlite.ts";
 import type { SQLPlan } from "./values.ts";
 
 const origin = Object.freeze({ source: "can:sql-transaction", start: 0, end: 0, invocation: Object.freeze([]) });
@@ -48,19 +49,34 @@ class TxPrimary {
 }
 type TxCallable = (handle: unknown, context?: AssertionContext) => Promise<Completion<unknown>>;
 
+// Static cleanup template: one frozen literal, never interpolated.
+const rollbackText = "ROLLBACK";
+const rollbackStrings = Object.freeze(Object.assign([rollbackText], { raw: Object.freeze([rollbackText]) })) as unknown as TemplateStringsArray;
+
 export function createSQLTransactions(
   domain: ReturnType<typeof createDomainRuntime>,
   contracts: Contracts,
   descriptors: Descriptors,
 ) {
-  const core = createSQLOperations(domain, contracts, descriptors);
+  const core = createSQLOperations(domain, contracts, descriptors, (token, kind) => {
+    if (kind !== "sql-tx" || !object(token)) return poolDialect(token);
+    const state = handles.get(token);
+    return state === undefined ? undefined : poolDialect(state.pool);
+  });
   const failures = createSQLFailures(domain, contracts, origin);
   const fail = failures.fail;
   const transactionFailed = (phase: string) => fail(contracts.transactionFailed, [["phase", phase]]);
   // A natively refused begin on an open pool reports the connection error,
   // exactly like the same native event on the query path; the begin phase
   // names the site. Any other native begin failure is transactional.
-  function classifyBegin(phase: "begin" | "callback", cause: unknown): Completion<never> {
+  function classifyBegin(phase: "begin" | "callback", cause: unknown, dialect: SQLDialect): Completion<never> {
+    if (dialect === "sqlite") {
+      if (!isSQLiteFailure(cause)) throw cause;
+      if (cause.code === "ERR_SQLITE_CONNECTION_CLOSED") {
+        return failures.connectionFailed(phase);
+      }
+      return transactionFailed(phase);
+    }
     if (!isPostgresFailure(cause)) throw cause;
     if (cause.code === "ERR_POSTGRES_CONNECTION_REFUSED" || cause.code === "ERR_POSTGRES_CONNECTION_CLOSED") {
       return failures.connectionFailed(phase);
@@ -132,8 +148,19 @@ export function createSQLTransactions(
             // A native rejection after a commit decision is genuinely
             // unknown: the commit may have landed. Report it once, with the
             // safe attempt ID, and never retry.
-            if (enteredCommit) return fail(contracts.commitUnknown, [["transaction_id", id]]);
-            return classifyBegin(began ? "callback" : "begin", cause);
+            if (enteredCommit) {
+              // SQLite leaves a failed COMMIT's transaction open: the
+              // violating row stays readable until ROLLBACK, which would
+              // poison the pool for every later operation. PostgreSQL
+              // aborts on its own, so only SQLite pays for this cleanup.
+              // It runs under the held pool lease; a dead connection
+              // rejects here too, and the outcome stays commit-unknown.
+              if (isSQLiteFailure(cause)) {
+                try { await client(rollbackStrings); } catch { /* already reported below */ }
+              }
+              return fail(contracts.commitUnknown, [["transaction_id", id]]);
+            }
+            return classifyBegin(began ? "callback" : "begin", cause, poolDialect(pool) ?? "postgresql");
           }
         });
       });

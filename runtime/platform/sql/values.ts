@@ -5,8 +5,8 @@
 // rejects out-of-cover values and decoding fails closed on any shape it
 // does not understand, never silently casting. The dialect profile only
 // selects representation variants the compiler schema already admits.
-import { success, type Completion } from "../../completion.ts";
-import { record, array, dataProperty, recordIdentity } from "../../data.ts";
+import type { Completion } from "../../completion.ts";
+import { record, dataProperty, recordIdentity } from "../../data.ts";
 import { ownBytes, copyBytes, isBytes } from "../../bytes.ts";
 import type { FailureOrigin } from "../../failure.ts";
 import type { SQLFailures } from "./errors.ts";
@@ -30,10 +30,12 @@ export interface SQLPlan {
 }
 export interface SQLValueProfile {
   // "native" decodes booleans from native booleans; "int01" from the
-  // integers 0 and 1. Encoding accepts booleans under both profiles.
+  // exact integers 0 and 1, arriving as bigints under safeIntegers.
+  // Encoding accepts booleans under both profiles.
   readonly booleans: "native" | "int01";
 }
 export const postgresValueProfile: SQLValueProfile = { booleans: "native" };
+export const sqliteValueProfile: SQLValueProfile = { booleans: "int01" };
 
 export const MIN_INT64 = -(1n << 63n);
 export const MAX_INT64 = (1n << 63n) - 1n;
@@ -94,8 +96,11 @@ export function createValueCodec(origin: FailureOrigin, failures: SQLFailures, p
     switch (kind) {
       case "bool":
         if (typeof value === "boolean") return { ok: true, value };
-        if (profile.booleans === "int01" && value === 0) return { ok: true, value: false };
-        if (profile.booleans === "int01" && value === 1) return { ok: true, value: true };
+        // SQLite stores booleans as INTEGER 0/1, which arrives as bigint
+        // under safeIntegers; a REAL cell holding exactly 0 or 1 decodes
+        // identically. Anything else is a mismatch, never a coercion.
+        if (profile.booleans === "int01" && (value === 0n || value === 0)) return { ok: true, value: false };
+        if (profile.booleans === "int01" && (value === 1n || value === 1)) return { ok: true, value: true };
         return { ok: false, failure: mismatch(path, "type") };
       case "int":
         if (typeof value === "bigint") {

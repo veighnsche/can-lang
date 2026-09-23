@@ -1,11 +1,12 @@
 // Typed SQL pools and shared query orchestration. The compiler binds every
 // query to a checked descriptor value plus shared scalar schemas; this
-// module owns connection establishment, pool lifetimes, pre-launch
-// parameter validation, and immutable row decoding dispatch. Values only
-// ever travel as bound template parameters through native clients; the
-// string-call form, unsafe helpers, and second lexers are never used.
-// Dialect specifics (client options, failure shapes, metadata) live in
-// the per-dialect modules; this file only orchestrates them.
+// module owns connection establishment, pool lifetimes, descriptor/pool
+// dialect agreement, pre-launch parameter validation, and immutable row
+// decoding dispatch. Values only ever travel as bound template parameters
+// through native clients; the string-call form, unsafe helpers, and second
+// lexers are never used. Dialect specifics (client options, failure
+// shapes, metadata) live in the per-dialect modules; this file only
+// orchestrates them.
 import { success, type Completion, type AssertionContext } from "../../completion.ts";
 import { denyLiveBoundary } from "../../assert/context.ts";
 import { record, array } from "../../data.ts";
@@ -14,16 +15,19 @@ import { resourceStateFailure } from "../../failure.ts";
 import { registerResource, useResource, closeResource } from "../../owner.ts";
 import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLCoreContracts, type SQLPoolContracts } from "./errors.ts";
-import { createValueCodec, postgresValueProfile, MAX_INT64, type SQLPlan } from "./values.ts";
+import { createValueCodec, postgresValueProfile, sqliteValueProfile, MAX_INT64, type SQLPlan } from "./values.ts";
 import { classifyPostgres, postgresAffectedRows, openPostgresClient } from "./postgres.ts";
-import { postgresMaxConnections } from "./config.ts";
+import { classifySQLite, sqliteAffectedRows, openSqliteMemory, openSqliteFile } from "./sqlite.ts";
+import { postgresMaxConnections, sqliteFileConfig } from "./config.ts";
 
 const origin = Object.freeze({ source: "can:sql", start: 0, end: 0, invocation: Object.freeze([]) });
 type Descriptors = ReturnType<typeof createSQLDescriptors>;
 export type SQLNative = InstanceType<typeof Bun.SQL>;
+export type SQLDialect = "postgresql" | "sqlite";
 type Native = SQLNative;
 type PoolState = {
   client: Native;
+  dialect: SQLDialect;
   closeDeadlineMs?: number;
   closeStartedAt?: number;
 };
@@ -32,28 +36,48 @@ const object = (value: unknown): value is object => value !== null && (typeof va
 export function isSQLPoolValue(kind: string | undefined, value: unknown): boolean {
   return kind === "pool" && object(value) && pools.has(value);
 }
+export function poolDialect(token: unknown): SQLDialect | undefined {
+  if (!object(token)) return undefined;
+  return pools.get(token)?.dialect;
+}
 const variableName = /^[A-Z_][A-Z0-9_]*$/;
 
 // createSQLOperations owns the query behavior shared by pools and scoped
-// transactions: pre-launch validation, native classification, and immutable
-// decoding. The token kind selects which registered resource holds the
-// native client lease; pool-only open/close/credential logic stays out.
+// transactions: dialect agreement, pre-launch validation, native
+// classification, and immutable decoding. The token kind selects which
+// registered resource holds the native client lease; pool-only
+// open/close/credential logic stays out. The dialect callback resolves
+// the pool behind a token or handle; unknown tokens stay the lease
+// layer's failure, exactly as before.
 export function createSQLOperations(
   domain: ReturnType<typeof createDomainRuntime>,
   contracts: SQLCoreContracts,
   descriptors: Descriptors,
+  dialectOf: (token: unknown, kind: "sql-pool" | "sql-tx") => SQLDialect | undefined,
 ) {
   const failures = createSQLFailures(domain, contracts, origin);
-  const codec = createValueCodec(origin, failures, postgresValueProfile);
+  const pgCodec = createValueCodec(origin, failures, postgresValueProfile);
+  const liteCodec = createValueCodec(origin, failures, sqliteValueProfile);
   const fail = failures.fail;
+  type Profile = ReturnType<typeof profileFor>;
   type Launched =
     | { readonly kind: "failed"; readonly completion: Completion<never> }
-    | { readonly kind: "rows"; readonly rows: readonly unknown[] };
+    | { readonly kind: "rows"; readonly rows: readonly unknown[]; readonly profile: Profile };
+  function profileFor(dialect: SQLDialect) {
+    return dialect === "sqlite"
+      ? { codec: liteCodec, classify: classifySQLite, affectedRows: sqliteAffectedRows }
+      : { codec: pgCodec, classify: classifyPostgres, affectedRows: postgresAffectedRows };
+  }
   async function launch(
     operation: string, descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, limit: unknown, context?: AssertionContext,
   ): Promise<Launched> {
     denyLiveBoundary(context, origin);
-    const encoded = codec.encodeParams(plan, params);
+    const pool = dialectOf(token, kind);
+    if (pool !== undefined && pool !== descriptor.dialect) {
+      return { kind: "failed", completion: failures.queryFailed(operation, "dialect_mismatch") };
+    }
+    const profile = profileFor(pool ?? descriptor.dialect);
+    const encoded = profile.codec.encodeParams(plan, params);
     if (!encoded.ok) return { kind: "failed", completion: encoded.failure };
     const template = descriptors.template(descriptor, [...encoded.values, limit]);
     const outcome = await useResource(token, kind, async (native: unknown): Promise<Completion<readonly unknown[]>> => {
@@ -62,13 +86,13 @@ export function createSQLOperations(
       try {
         result = await client(template.strings, ...template.values);
       } catch (cause) {
-        return classifyPostgres(operation, cause, failures, contracts);
+        return profile.classify(operation, cause, failures, contracts);
       }
       if (!Array.isArray(result)) return failures.queryFailed(operation, "bad_result");
       return success(result);
     });
     if (outcome.kind !== "ok") return { kind: "failed", completion: outcome };
-    return { kind: "rows", rows: outcome.value };
+    return { kind: "rows", rows: outcome.value, profile };
   }
   return Object.freeze({
     async queryOne(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
@@ -78,7 +102,7 @@ export function createSQLOperations(
       const rows = outcome.rows;
       if (rows.length === 0) return fail(contracts.rowMissing, [["query", descriptor.name]]);
       if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
-      const decoded = codec.decodeRow(plan.rows, rows[0]);
+      const decoded = outcome.profile.codec.decodeRow(plan.rows, rows[0]);
       return decoded.ok ? success(decoded.value) : decoded.failure;
     },
     async queryOptional(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
@@ -88,7 +112,7 @@ export function createSQLOperations(
       const rows = outcome.rows;
       if (rows.length === 0) return success(record(plan.none, []));
       if (rows.length > 1) return fail(contracts.rowCount, [["query", descriptor.name], ["actual", 2n]]);
-      const decoded = codec.decodeRow(plan.rows, rows[0]);
+      const decoded = outcome.profile.codec.decodeRow(plan.rows, rows[0]);
       if (!decoded.ok) return decoded.failure;
       return success(record(plan.some, [["value", decoded.value]]));
     },
@@ -105,7 +129,7 @@ export function createSQLOperations(
       if (BigInt(rows.length) > maxRows) return fail(contracts.rowLimit, [["limit", maxRows]]);
       const decoded: unknown[] = [];
       for (const row of rows) {
-        const one = codec.decodeRow(plan.rows, row);
+        const one = outcome.profile.codec.decodeRow(plan.rows, row);
         if (!one.ok) return one.failure;
         decoded.push(one.value);
       }
@@ -113,7 +137,12 @@ export function createSQLOperations(
     },
     async execute(descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
-      const encoded = codec.encodeParams(plan, params);
+      const pool = dialectOf(token, kind);
+      if (pool !== undefined && pool !== descriptor.dialect) {
+        return failures.queryFailed("execute", "dialect_mismatch");
+      }
+      const profile = profileFor(pool ?? descriptor.dialect);
+      const encoded = profile.codec.encodeParams(plan, params);
       if (!encoded.ok) return encoded.failure;
       const template = descriptors.template(descriptor, encoded.values);
       const outcome = await useResource(token, kind, async (native: unknown): Promise<Completion<unknown>> => {
@@ -122,9 +151,9 @@ export function createSQLOperations(
         try {
           result = await client(template.strings, ...template.values);
         } catch (cause) {
-          return classifyPostgres("execute", cause, failures, contracts);
+          return profile.classify("execute", cause, failures, contracts);
         }
-        return postgresAffectedRows("execute", result, failures);
+        return profile.affectedRows("execute", result, failures);
       });
       return outcome;
     },
@@ -145,7 +174,28 @@ export function createSQLPools(
     if (!object(value) || !pools.has(value)) throw resourceStateFailure(undefined, origin);
     return pools.get(value)!;
   }
-  const core = createSQLOperations(domain, contracts, descriptors);
+  function registerPool(client: Native, dialect: SQLDialect): unknown {
+    const state: PoolState = { client, dialect };
+    const token = registerResource("sql-pool", client, async (): Promise<Completion<void>> => {
+      // Leases are drained before this runs; bound the native close by the
+      // remaining pool_close deadline, or wait unbounded on scope drain.
+      // Native close options other dialects ignore stay harmless.
+      try {
+        if (state.closeDeadlineMs !== undefined && state.closeStartedAt !== undefined) {
+          const remaining = Math.max(0, state.closeDeadlineMs - (Date.now() - state.closeStartedAt));
+          await client.close({ timeout: remaining / 1000 });
+        } else {
+          await client.close();
+        }
+      } catch {
+        return fail(contracts.closeFailed, [["reason", "close"]]);
+      }
+      return success(undefined);
+    });
+    pools.set(token, state);
+    return token;
+  }
+  const core = createSQLOperations(domain, contracts, descriptors, (token) => poolDialect(token));
   return Object.freeze({
     async open(variable: unknown, maxConnections: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
@@ -159,25 +209,21 @@ export function createSQLPools(
       if (!checked.ok) return checked.failure;
       const opened = await openPostgresClient(url, checked.max, failures);
       if (!opened.ok) return opened.failure;
-      const client = opened.client;
-      const state: PoolState = { client };
-      const token = registerResource("sql-pool", client, async (): Promise<Completion<void>> => {
-        // Leases are drained before this runs; bound the native close by the
-        // remaining pool_close deadline, or wait unbounded on scope drain.
-        try {
-          if (state.closeDeadlineMs !== undefined && state.closeStartedAt !== undefined) {
-            const remaining = Math.max(0, state.closeDeadlineMs - (Date.now() - state.closeStartedAt));
-            await client.close({ timeout: remaining / 1000 });
-          } else {
-            await client.close();
-          }
-        } catch {
-          return fail(contracts.closeFailed, [["reason", "close"]]);
-        }
-        return success(undefined);
-      });
-      pools.set(token, state);
-      return success(token);
+      return success(registerPool(opened.client, "postgresql"));
+    },
+    async sqliteOpenMemory(context?: AssertionContext): Promise<Completion<unknown>> {
+      denyLiveBoundary(context, origin);
+      const opened = await openSqliteMemory(failures);
+      if (!opened.ok) return opened.failure;
+      return success(registerPool(opened.client, "sqlite"));
+    },
+    async sqliteOpenFile(path: unknown, options: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      denyLiveBoundary(context, origin);
+      const checked = sqliteFileConfig(path, options, failures);
+      if (!checked.ok) return checked.failure;
+      const opened = await openSqliteFile(checked.config, failures);
+      if (!opened.ok) return opened.failure;
+      return success(registerPool(opened.client, "sqlite"));
     },
     async close(pool: unknown, timeoutMs: unknown, context?: AssertionContext): Promise<Completion<undefined>> {
       denyLiveBoundary(context, origin);

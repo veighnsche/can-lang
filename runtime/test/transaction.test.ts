@@ -48,12 +48,12 @@ const id = (declaration: string) => identity("error", declaration);
 const table: Record<string, Record<string, SQLDescriptorEntry>> = {
   "": {
     tx_add: {
-      cardinality: "execute", kind: "InsertStmt",
+      dialect: "postgresql", cardinality: "execute", kind: "InsertStmt",
       segments: [{ text: "INSERT INTO t (display_name) VALUES (" }, { param: 1 }, { text: ")" }],
       params: ["term"], paramType: "p", rowType: "r", limit: 0, total: 1, version: 170007,
     },
     tx_get: {
-      cardinality: "one", kind: "SelectStmt",
+      dialect: "postgresql", cardinality: "one", kind: "SelectStmt",
       segments: [{ text: "SELECT id, display_name FROM t WHERE id = " }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
       params: ["id"], paramType: "p", rowType: "r", limit: 2, total: 2, version: 170007,
     },

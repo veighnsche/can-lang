@@ -430,6 +430,7 @@
     ],
     "platform/sql/config.ts": [
       "../../completion.ts",
+      "../../data.ts",
       "./errors.ts"
     ],
     "platform/sql/descriptor.ts": [],
@@ -450,6 +451,7 @@
       "./errors.ts",
       "./values.ts",
       "./postgres.ts",
+      "./sqlite.ts",
       "./config.ts"
     ],
     "platform/sql/postgres.ts": [
@@ -468,6 +470,7 @@
       "./descriptor.ts",
       "./errors.ts",
       "./postgres.ts",
+      "./sqlite.ts",
       "./values.ts"
     ],
     "platform/sql/values.ts": [
@@ -514,6 +517,11 @@
       "../../transport/stream/writable.ts",
       "../../transport/stream/lifecycle.ts",
       "./errors.ts"
+    ],
+    "platform/sql/sqlite.ts": [
+      "../../completion.ts",
+      "./errors.ts",
+      "./config.ts"
     ]
   }
 }
