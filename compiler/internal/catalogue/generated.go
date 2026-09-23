@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "26793fe8c9c78d6a862041fe2eabefa836ab4a0256474528ae8bdebd5b20d08f"
+const GeneratedSourceSHA256 = "e8668d307fe5181fb143eeae1e59f1424eb90d4d1a7d7c5d4b9e158ecd54e9d3"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -394,6 +394,9 @@ const ErrorS3UploadClosedIdentity = "can.std.s3@1::upload_closed"
 const ErrorS3OverLimitID = 1348
 const ErrorS3OverLimitName = "s3::over_limit"
 const ErrorS3OverLimitIdentity = "can.std.s3@1::over_limit"
+const ErrorMarkdownOverLimitID = 1349
+const ErrorMarkdownOverLimitName = "markdown::over_limit"
+const ErrorMarkdownOverLimitIdentity = "can.std.markdown@1::over_limit"
 const OpTextFromInt = "text::from_int"
 const OpTextFromFloat = "text::from_float"
 const OpTextFromBool = "text::from_bool"
@@ -646,3 +649,5 @@ const OpCodecDecodeYaml = "codec::decode_yaml"
 const OpCodecDecodeJson5 = "codec::decode_json5"
 const OpCodecDecodeJsonl = "codec::decode_jsonl"
 const OpCodecConsumeJsonl = "codec::consume_jsonl"
+const OpMarkdownRenderTextHtml = "markdown::render_text_html"
+const OpMarkdownRenderSafe = "markdown::render_safe"

@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "26793fe8c9c78d6a862041fe2eabefa836ab4a0256474528ae8bdebd5b20d08f";
+export const catalogueSHA256 = "e8668d307fe5181fb143eeae1e59f1424eb90d4d1a7d7c5d4b9e158ecd54e9d3";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -144,6 +144,10 @@ export const catalogue = freeze({
     {
       "name": "ws",
       "identity": "can.std.ws@1"
+    },
+    {
+      "name": "markdown",
+      "identity": "can.std.markdown@1"
     }
   ],
   "prelude": [
@@ -2855,6 +2859,22 @@ export const catalogue = freeze({
       "id": 1348,
       "name": "s3::over_limit",
       "identity": "can.std.s3@1::over_limit",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "limit",
+          "type": "int"
+        },
+        {
+          "name": "size",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1349,
+      "name": "markdown::over_limit",
+      "identity": "can.std.markdown@1::over_limit",
       "parameters": [],
       "fields": [
         {
@@ -11979,6 +11999,69 @@ export const catalogue = freeze({
       "refs": [
         "B1-11"
       ]
+    },
+    {
+      "name": "markdown::render_text_html",
+      "identity": "can.std.markdown@1::render_text_html",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "source",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "markdown::over_limit"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.markdown.html"
+        ],
+        "adapter": "Fixed standaloneBytes input/output ceilings; default native options preserve raw HTML, so the result stays an ordinary str and never converts into html::safe.",
+        "task": "B1-12"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-12"
+      ]
+    },
+    {
+      "name": "markdown::render_safe",
+      "identity": "can.std.markdown@1::render_safe",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "source",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "html::safe",
+      "callbacks": [],
+      "emits": [
+        "markdown::over_limit",
+        "html::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.markdown.render"
+        ],
+        "adapter": "Two-phase trusted construction: synchronous private callbacks capture tag trees over a NUL-token alphabet the parser keeps unforgeable (text arrives unescaped with newlines intact; NUL fails closed), then async assembly reuses the html factory (text, makeTag, textAttribute, element, parseURL, urlAttribute, fragment). Parser options fix tables/strikethrough/tasklists on, heading ids on, raw HTML demoted to text via noHtmlBlocks/noHtmlSpans, and wikiLinks/underline/latexMath/autolinks off. Lists (with task checkboxes and ordered start), tables (with cell align), headings, quotes, spans, code, links and images render fully; hard breaks normalize to soft newlines; info strings outside [A-Za-z0-9_-] lose their language class; href/src rejections propagate html::invalid_url; node count is capped at maxNodes and bytes at standaloneBytes.",
+        "task": "B1-12"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-12"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -15606,6 +15689,29 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "s3::over_limit",
     "identity": "can.std.s3@1::over_limit",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "size",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "markdown::over_limit",
+    "identity": "can.std.markdown@1::over_limit",
     "kind": "error",
     "parameters": [],
     "fields": [

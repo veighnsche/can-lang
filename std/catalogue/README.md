@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 26793fe8c9c78d6a862041fe2eabefa836ab4a0256474528ae8bdebd5b20d08f.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e8668d307fe5181fb143eeae1e59f1424eb90d4d1a7d7c5d4b9e158ecd54e9d3.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -46,6 +46,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - time → can.std.time@1
 - url → can.std.url@1
 - ws → can.std.ws@1
+- markdown → can.std.markdown@1
 
 ## Types
 
@@ -244,6 +245,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1346 | s3::service_error |  | str code, str operation |
 | 1347 | s3::upload_closed |  | str operation, str state |
 | 1348 | s3::over_limit |  | int limit, int size |
+| 1349 | markdown::over_limit |  | int limit, int size |
 
 ## Operations
 
@@ -507,6 +509,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | codec::decode_json5 | T:wire; bytes::buffer buffer → T | [codec::invalid_data] |  | Bun.JSON5.parse, TextDecoder | Native JSON5 parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); project onto the nominal schema with A6 budgets. | real | B1-11 / B1-11 |
 | codec::decode_jsonl | T:wire; bytes::buffer buffer → T[] | [codec::invalid_data] |  | JSON.parse, JSON.rawJSON, TextDecoder | Strict bounded line framing (blank lines skipped, CRLF and unterminated final line accepted, multi-line records rejected) with the exact per-record JSON decode path; unsafe integers preserved; truncated tails fail. | real | B1-11 / B1-11 |
 | codec::consume_jsonl | T:wire; stream::reader&lt;bytes::buffer&gt; reader, $callback callback → int | [codec::invalid_data, stream::read_failed, stream::cancelled] | callback(T) → void emits [] | ReadableStreamDefaultReader.read, JSON.parse, JSON.rawJSON, TextDecoder | Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count. | real | B1-11 / B1-11 |
+| markdown::render_text_html | str source → str | [markdown::over_limit] |  | Bun.markdown.html | Fixed standaloneBytes input/output ceilings; default native options preserve raw HTML, so the result stays an ordinary str and never converts into html::safe. | real | B1-12 / B1-12 |
+| markdown::render_safe | str source → html::safe | [markdown::over_limit, html::invalid_url] |  | Bun.markdown.render | Two-phase trusted construction: synchronous private callbacks capture tag trees over a NUL-token alphabet the parser keeps unforgeable (text arrives unescaped with newlines intact; NUL fails closed), then async assembly reuses the html factory (text, makeTag, textAttribute, element, parseURL, urlAttribute, fragment). Parser options fix tables/strikethrough/tasklists on, heading ids on, raw HTML demoted to text via noHtmlBlocks/noHtmlSpans, and wikiLinks/underline/latexMath/autolinks off. Lists (with task checkboxes and ordered start), tables (with cell align), headings, quotes, spans, code, links and images render fully; hard breaks normalize to soft newlines; info strings outside [A-Za-z0-9_-] lose their language class; href/src rejections propagate html::invalid_url; node count is capped at maxNodes and bytes at standaloneBytes. | real | B1-12 / B1-12 |
 
 ## Native declaration profiles
 

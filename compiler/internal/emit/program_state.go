@@ -52,6 +52,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.declareWebSocketState()
 	builder.declareCookiesState()
 	builder.declareS3State()
+	builder.declareMarkdownState()
 	builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	if err := builder.initializeDomain(); err != nil {
 		return Module{}, nil, err
@@ -73,6 +74,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.initializeWebSocketState()
 	builder.initializeCookiesState()
 	builder.initializeS3State()
+	builder.initializeMarkdownState()
 	builder.initializeCollectionState()
 	if err := builder.initializeAIState(); err != nil {
 		return Module{}, nil, err
@@ -348,6 +350,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
 	imports = append(imports, builder.assembly.cookiesStateImports(runtime)...)
 	imports = append(imports, builder.assembly.s3StateImports(runtime)...)
+	imports = append(imports, builder.assembly.markdownStateImports(runtime)...)
 	imports = append(imports, builder.assembly.aiStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
 	imports = append(imports, builder.assembly.armDescriptionImports()...)
@@ -366,5 +369,6 @@ func stateValueImportNames() []ImportName {
 	names = append(names, streamStateValueImportNames()...)
 	names = append(names, websocketStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)
-	return append(names, s3StateValueImportNames()...)
+	names = append(names, s3StateValueImportNames()...)
+	return append(names, markdownStateValueImportNames()...)
 }
