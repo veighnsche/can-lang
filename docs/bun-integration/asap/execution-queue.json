@@ -565,7 +565,7 @@
         "ASAP-ARCH",
         "B1-05-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Inventory existing request/response operations and extend them, preserving native fetch/judge normalization semantics. Define redirect policy, HEAD body suppression, method fallback and duplicate-header behavior."
     },
     {
@@ -574,7 +574,7 @@
       "depends": [
         "B1-06.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Keep body single-consumption explicit. Retain bounded whole-body convenience functions while using B1-05 for incremental reads/writes. Apply limits while consuming, including multipart boundaries and per-file/total caps."
     },
     {
@@ -583,7 +583,7 @@
       "depends": [
         "B1-06.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use Bun.serve, fetch, Request, Response and Headers; adapt immutable Can values at the boundary. Preserve Set-Cookie as separate fields instead of comma-joining it."
     },
     {
@@ -592,7 +592,7 @@
       "depends": [
         "B1-06.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Implement HTTP method routing and typed body choices. Client disconnect cancels handlers/stream production under the correct owner; avoid continuing expensive work with no recipient."
     },
     {
@@ -601,7 +601,7 @@
       "depends": [
         "B1-06.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add SSE framing for id/event/data/retry with validation against line injection, multiline data, heartbeat policy and bounded queues. Native HTTP transport remains the engine."
     },
     {
@@ -610,7 +610,7 @@
       "depends": [
         "B1-06.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add TLS configuration from explicit certificate/key sources and test a local certificate chain; reject unsupported flags rather than ignoring them. Do not bake production credentials into examples."
     },
     {
@@ -619,7 +619,7 @@
       "depends": [
         "B1-06.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Define failures before response publication versus after headers are sent. After publication, terminate/report the stream; never pretend a different status can still be sent."
     },
     {
@@ -628,7 +628,7 @@
       "depends": [
         "B1-06.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Extend native-request fixtures to chunked input, repeated headers, disconnects and outgoing streaming bodies. Keep existing normalized failure identity and private provenance."
     },
     {
@@ -637,7 +637,7 @@
       "depends": [
         "B1-06.08"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
