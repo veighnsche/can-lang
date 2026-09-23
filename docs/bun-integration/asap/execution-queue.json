@@ -1,5 +1,5 @@
 {
-  "status": "in progress; ASAP-00/01/ARCH, B1-01 bounded operations, B1-04, B1-05, B1-02, B1-03 and B1-08 complete (B1-01.06 streaming remapped to B1-05.08)",
+  "status": "in progress; ASAP-00/01/ARCH, B1-01 bounded operations, B1-04, B1-05, B1-02, B1-03, B1-08 and B1-13 complete (B1-01.06 streaming remapped to B1-05.08)",
   "recommendedCapabilityOrder": [
     "B1-01",
     "B1-04",
@@ -492,7 +492,7 @@
       "depends": [
         "ASAP-ARCH"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Diff desired operations against the current catalogue and list omissions before adding names. Reuse existing normalize/scalars/graphemes/join and clock APIs."
     },
     {
@@ -501,7 +501,7 @@
       "depends": [
         "B1-13.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use URL/URLSearchParams with typed immutable projections. Preserve repeated query keys and distinguish URL decoding from form decoding. Define relative URL resolution and admitted schemes."
     },
     {
@@ -510,7 +510,7 @@
       "depends": [
         "B1-13.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use native RegExp; reset or hide lastIndex and mutable state. Specify flags, capture absence, Unicode index units, zero-length match advancement and max result count."
     },
     {
@@ -519,7 +519,7 @@
       "depends": [
         "B1-13.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use native TextEncoder/TextDecoder and qualified Buffer/Web byte encoders. Reject malformed hex/base64 under the documented strict policy instead of silently truncating. Copy mutable views at both edges."
     },
     {
@@ -528,7 +528,7 @@
       "depends": [
         "B1-13.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Represent an instant separately from local date/time and duration. Range-check exact Can int before Number conversion for Date. Use Intl for explicit locale/zone formatting; deterministic tests specify both."
     },
     {
@@ -537,7 +537,7 @@
       "depends": [
         "B1-13.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Define DST ambiguity/nonexistence if local-time-to-instant conversion is exposed. Do not quietly pick native normalization as the Can contract. Restrict initial conversion to well-defined instant/offset inputs until this is specified."
     },
     {
@@ -546,7 +546,7 @@
       "depends": [
         "B1-13.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add known vectors and negative compiler examples. Keep wall time/randomness in their existing assertion boundary; pure parsing/formatting remains real."
     },
     {
@@ -555,7 +555,7 @@
       "depends": [
         "B1-13.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
