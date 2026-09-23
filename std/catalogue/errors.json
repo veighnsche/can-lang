@@ -247,6 +247,30 @@
     {
       "id": 1308,
       "kind": "files::unexpected_kind"
+    },
+    {
+      "id": 1310,
+      "kind": "process::spawn_failed"
+    },
+    {
+      "id": 1311,
+      "kind": "process::timeout"
+    },
+    {
+      "id": 1312,
+      "kind": "process::output_limit"
+    },
+    {
+      "id": 1313,
+      "kind": "process::nonzero"
+    },
+    {
+      "id": 1314,
+      "kind": "process::invalid_config"
+    },
+    {
+      "id": 1315,
+      "kind": "process::io_error"
     }
   ],
   "retired": []

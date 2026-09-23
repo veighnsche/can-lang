@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: dac8bb052954b8706489b8736f7834af238b488d21738720f69a6cd5ee0f2c49.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: b1bee8a3fcaa57b4e68a242c45bf4d6891e2c4d84c758c7245ca49a11890f87a.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -34,6 +34,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - number → can.std.number@1
 - option → can.std.option@1
 - path → can.std.path@1
+- process → can.std.process@1
 - random → can.std.random@1
 - sql → can.std.sql@1
 - text → can.std.text@1
@@ -79,6 +80,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | sql::decision | variant | T:data | sql::commit&lt;T&gt;, sql::rollback&lt;T&gt; | false |
 | files::file_info | record |  | str kind, int size | true |
 | files::entry | record |  | str path, str kind | true |
+| process::options | record |  | str cwd, bool inherit_env, str[] env, bytes::buffer stdin, int stdout_limit, int stderr_limit, int deadline_ms, int grace_ms | true |
+| process::result | record |  | bytes::buffer stdout, bytes::buffer stderr, int code, str signal | true |
 
 ## Domain errors
 
@@ -146,6 +149,12 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1306 | files::not_empty |  | str path |
 | 1307 | files::cross_device |  | str source, str destination |
 | 1308 | files::unexpected_kind |  | str path, str operation |
+| 1310 | process::spawn_failed |  | str executable |
+| 1311 | process::timeout |  | int deadline_ms |
+| 1312 | process::output_limit |  | str stream, int limit |
+| 1313 | process::nonzero |  | int code, str signal |
+| 1314 | process::invalid_config |  | str field, str reason |
+| 1315 | process::io_error |  | str operation |
 
 ## Operations
 
@@ -318,6 +327,9 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | path::join | str[] parts → str | [] |  | node:path.join | Join segments with native normalization; pure computation. | real | B1-01 / B1-01 |
 | path::basename | str path → str | [] |  | node:path.basename | Return the final segment natively; pure computation. | real | B1-01 / B1-01 |
 | path::extension | str path → str | [] |  | node:path.extname | Return the native extension including the leading dot, or empty; pure computation. | real | B1-01 / B1-01 |
+| process::run | str executable, str[] args, process::options options → process::result | [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error] |  | Bun.spawn | Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary. | supplied | B1-04 / B1-04 |
+| process::require_success | process::result value → process::result | [process::nonzero] |  | domain.create | Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation. | real | B1-04 / B1-04 |
+| process::which | str name → str | [files::not_found, process::invalid_config] |  | Bun.which | Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary. | supplied | B1-04 / B1-04 |
 
 ## Native declaration profiles
 

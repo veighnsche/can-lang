@@ -44,7 +44,7 @@ This is a separate integration queue. Read [scope, primitive policy and completi
 
   **Bun references:** [documentation 1](https://bun.sh/docs/runtime/sql).
 
-- [ ] **B1-04 — Bounded child-process execution**
+- [x] **B1-04 — Bounded child-process execution** (complete 2026-09-23 — see the execution queue and `docs/implementation/evidence/2026-09-23/b1-04/`)
 
   **Can surface:** Library; event primitive candidate for incremental output. **Depends:** none within this roadmap.
 

@@ -1,5 +1,5 @@
 {
-  "status": "in progress; ASAP-00/01/ARCH and B1-01 bounded operations complete (B1-01.06 streaming remapped to B1-05.08)",
+  "status": "in progress; ASAP-00/01/ARCH, B1-01 bounded operations and B1-04 complete (B1-01.06 streaming remapped to B1-05.08)",
   "recommendedCapabilityOrder": [
     "B1-01",
     "B1-04",
@@ -110,7 +110,7 @@
       "depends": [
         "ASAP-ARCH"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Define binary output, explicit UTF-8 conversion, exit-vs-signal representation, environment inheritance opt-in and path resolution. Validate durations and byte caps before spawning."
     },
     {
@@ -119,7 +119,7 @@
       "depends": [
         "B1-04.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Start native Bun.spawn with arrays, explicit cwd/env and piped I/O. Register ownership immediately after spawn, before waiting for any output."
     },
     {
@@ -128,7 +128,7 @@
       "depends": [
         "B1-04.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Drain stdout and stderr concurrently while writing stdin with backpressure. Independent per-pipe limits prevent one blocked pipe deadlocking the other. Increment counts before retaining bytes."
     },
     {
@@ -137,7 +137,7 @@
       "depends": [
         "B1-04.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "On timeout, overflow, input error or owner cancellation: stop producing stdin, signal child, wait grace, escalate if supported, await exited and finish/cancel pipe drains under a bounded shutdown deadline."
     },
     {
@@ -146,7 +146,7 @@
       "depends": [
         "B1-04.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify direct-child versus process-tree guarantees. Add an owned-grandchild reproducer; do not promise no descendant survives merely because child.kill() completed. Qualify a platform-native group strategy or make descendants an explicit unsupported contract."
     },
     {
@@ -155,7 +155,7 @@
       "depends": [
         "B1-04.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Map spawn/permission/I/O errors separately from a successful nonzero status. Preserve original timeout/overflow failure when cleanup also fails."
     },
     {
@@ -164,7 +164,7 @@
       "depends": [
         "B1-04.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add catalogue and fixture provider binding. Pass incremental reader ownership to B1-05 instead of exposing mutable native subprocess objects."
     },
     {
@@ -173,7 +173,7 @@
       "depends": [
         "B1-04.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {

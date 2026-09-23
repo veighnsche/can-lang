@@ -368,6 +368,26 @@
       "../../failure.ts",
       "./errors.ts"
     ],
+    "platform/process/errors.ts": [
+      "node:util"
+    ],
+    "platform/process/io.ts": [],
+    "platform/process/spawn.ts": [
+      "node:fs/promises",
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../domain.ts",
+      "../../owner.ts",
+      "../../failure.ts",
+      "./errors.ts",
+      "./io.ts",
+      "./wait.ts"
+    ],
+    "platform/process/wait.ts": [
+      "./errors.ts"
+    ],
     "platform/form.ts": [
       "../data.ts",
       "../bytes.ts",

@@ -4,9 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 )
+
+// declareConnections freezes one checked connection policy per native AI
+// connection used by the program.
+func (builder *stateBuilder) declareConnections() error {
+	for _, id := range builder.assembly.connectionIDs {
+		policy := builder.assembly.program.Connections[id]
+		headers := make([]map[string]string, 0, len(policy.Headers))
+		for _, header := range policy.Headers {
+			// Checked policy uses wire names; transport entries use authored identifiers.
+			headers = append(headers, map[string]string{"name": strings.ReplaceAll(header.Name, "-", "_"), "value": header.Value})
+		}
+		connection := map[string]any{"endpoint": policy.Endpoint, "timeoutMilliseconds": policy.TimeoutMilliseconds, "maxBodyBytes": policy.MaxBodyBytes, "headers": headers}
+		if policy.BearerEnvironment != "" {
+			connection["bearerEnvironment"] = policy.BearerEnvironment
+		}
+		encoded, err := json.Marshal(connection)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(&builder.out, "export const %s = Object.freeze(%s);\n", builder.assembly.connectionNames[id], encoded)
+	}
+	return nil
+}
 
 // aiBindings wires native question/judge/fetch/LLM/wrapper declarations:
 // per-symbol runtime names, checked dispatch targets, connection names and

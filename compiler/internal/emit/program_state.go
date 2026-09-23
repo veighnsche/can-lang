@@ -47,6 +47,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.declareCodecState()
 	builder.declareCollectionState()
 	builder.declareFileState()
+	builder.declareProcessState()
 	builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	if err := builder.initializeDomain(); err != nil {
 		return Module{}, nil, err
@@ -61,6 +62,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	}
 	builder.initializeCoreState()
 	builder.initializeFileState()
+	builder.initializeProcessState()
 	builder.initializeCollectionState()
 	if err := builder.initializeAIState(); err != nil {
 		return Module{}, nil, err
@@ -129,29 +131,6 @@ func (builder *stateBuilder) declareCoreState() {
 	fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
 	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
-}
-
-// declareConnections freezes one checked connection policy per native AI
-// connection used by the program.
-func (builder *stateBuilder) declareConnections() error {
-	for _, id := range builder.assembly.connectionIDs {
-		policy := builder.assembly.program.Connections[id]
-		headers := make([]map[string]string, 0, len(policy.Headers))
-		for _, header := range policy.Headers {
-			// Checked policy uses wire names; transport entries use authored identifiers.
-			headers = append(headers, map[string]string{"name": strings.ReplaceAll(header.Name, "-", "_"), "value": header.Value})
-		}
-		connection := map[string]any{"endpoint": policy.Endpoint, "timeoutMilliseconds": policy.TimeoutMilliseconds, "maxBodyBytes": policy.MaxBodyBytes, "headers": headers}
-		if policy.BearerEnvironment != "" {
-			connection["bearerEnvironment"] = policy.BearerEnvironment
-		}
-		encoded, err := json.Marshal(connection)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintf(&builder.out, "export const %s = Object.freeze(%s);\n", builder.assembly.connectionNames[id], encoded)
-	}
-	return nil
 }
 
 // declareCodecState emits one codec binding per JSON specialization used by
@@ -384,6 +363,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
 	imports = append(imports, builder.assembly.fileStateImports(runtime)...)
+	imports = append(imports, builder.assembly.processStateImports(runtime)...)
 	imports = append(imports, builder.assembly.aiStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
 	imports = append(imports, builder.assembly.armDescriptionImports()...)
@@ -394,5 +374,6 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 // assertion module imports from the state module.
 func stateValueImportNames() []ImportName {
 	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}
-	return append(names, fileStateValueImportNames()...)
+	names = append(names, fileStateValueImportNames()...)
+	return append(names, processStateValueImportNames()...)
 }

@@ -38,7 +38,8 @@
     "Bun.Glob",
     "node:fs/promises.mkdir", "node:fs/promises.readdir", "node:fs/promises.lstat", "node:fs/promises.stat", "node:fs/promises.rename",
     "node:fs/promises.copyFile", "node:fs/promises.rm", "node:fs/promises.rmdir", "node:fs/promises.unlink", "node:fs/promises.writeFile",
-    "node:path.resolve", "node:path.join", "node:path.basename", "node:path.extname", "node:path.dirname"
+    "node:path.resolve", "node:path.join", "node:path.basename", "node:path.extname", "node:path.dirname",
+    "Bun.spawn", "Bun.which", "process.kill"
   ],
   "requiredBehaviorProbes": [
     "isolated-async-context", "json-source-and-raw-integers", "ordered-fromAsync", "nonthenable-box",

@@ -88,6 +88,10 @@
       "identity": "can.std.path@1"
     },
     {
+      "name": "process",
+      "identity": "can.std.process@1"
+    },
+    {
       "name": "random",
       "identity": "can.std.random@1"
     },
@@ -653,6 +657,76 @@
         },
         {
           "name": "kind",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "process::options",
+      "identity": "can.std.process@1::options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "cwd",
+          "type": "str"
+        },
+        {
+          "name": "inherit_env",
+          "type": "bool"
+        },
+        {
+          "name": "env",
+          "type": "str[]"
+        },
+        {
+          "name": "stdin",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "stdout_limit",
+          "type": "int"
+        },
+        {
+          "name": "stderr_limit",
+          "type": "int"
+        },
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        },
+        {
+          "name": "grace_ms",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "process::result",
+      "identity": "can.std.process@1::result",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "stdout",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "stderr",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "signal",
           "type": "str"
         }
       ],
@@ -1431,6 +1505,90 @@
           "name": "path",
           "type": "str"
         },
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1310,
+      "name": "process::spawn_failed",
+      "identity": "can.std.process@1::spawn_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "executable",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1311,
+      "name": "process::timeout",
+      "identity": "can.std.process@1::timeout",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1312,
+      "name": "process::output_limit",
+      "identity": "can.std.process@1::output_limit",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "stream",
+          "type": "str"
+        },
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1313,
+      "name": "process::nonzero",
+      "identity": "can.std.process@1::nonzero",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "signal",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1314,
+      "name": "process::invalid_config",
+      "identity": "can.std.process@1::invalid_config",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "field",
+          "type": "str"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1315,
+      "name": "process::io_error",
+      "identity": "can.std.process@1::io_error",
+      "parameters": [],
+      "fields": [
         {
           "name": "operation",
           "type": "str"
@@ -7130,6 +7288,114 @@
       "assertion": "real",
       "refs": [
         "B1-01"
+      ]
+    },
+    {
+      "name": "process::run",
+      "identity": "can.std.process@1::run",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "executable",
+          "type": "str"
+        },
+        {
+          "name": "args",
+          "type": "str[]"
+        },
+        {
+          "name": "options",
+          "type": "process::options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "process::result",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "process::spawn_failed",
+        "process::timeout",
+        "process::output_limit",
+        "process::invalid_config",
+        "process::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.spawn"
+        ],
+        "adapter": "Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary.",
+        "task": "B1-04"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-04"
+      ]
+    },
+    {
+      "name": "process::require_success",
+      "identity": "can.std.process@1::require_success",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "value",
+          "type": "process::result"
+        }
+      ],
+      "staticInputs": [],
+      "result": "process::result",
+      "callbacks": [],
+      "emits": [
+        "process::nonzero"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "domain.create"
+        ],
+        "adapter": "Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation.",
+        "task": "B1-04"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-04"
+      ]
+    },
+    {
+      "name": "process::which",
+      "identity": "can.std.process@1::which",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "process::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.which"
+        ],
+        "adapter": "Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary.",
+        "task": "B1-04"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-04"
       ]
     }
   ],

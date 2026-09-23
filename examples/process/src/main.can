@@ -1,0 +1,72 @@
+package process_example
+    provides [exit_label, run_shout, main]
+    uses [bytes, codec, files, io, process, text]
+
+/// Label an exit as "ok", "code <n>" or "signal <s>".
+fn str exit_label
+    emits []
+    given
+        int code
+        str signal
+    asserts
+        clean: 0, "" => ok "ok"
+        failed: 7, "" => ok "code 7"
+        killed: -1, "SIGTERM" => ok "signal SIGTERM"
+    match signal is ""
+        true => match code is 0
+            true => ok "ok"
+            false => ok call text::join(["code", call text::from_int(code)], " ")
+        false => ok call text::join(["signal", signal], " ")
+
+/// Echo a word through a bounded child process and label its exit.
+fn str run_shout
+    emits [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error]
+    given
+        str word
+    asserts
+        sample: "ada" => ok "ok"
+    bytes::buffer empty = call bytes::empty()
+    process::result done = process::result(empty, empty, 0, "")
+    match call process::run("/bin/echo", ["shout", word], process::options("", true, [], empty, 100, 100, 5000, 100))
+        when
+            sample: "/bin/echo", ["shout", word], process::options("", true, [], empty, 100, 100, 5000, 100) => ok done
+        files::not_found
+        files::denied
+        process::spawn_failed
+        process::timeout
+        process::output_limit
+        process::invalid_config
+        process::io_error
+        ok process::result got => ok call exit_label(got.code, got.signal)
+
+/// Shout the first argument through a child process.
+fn void main
+    emits [files::not_found, files::denied, process::spawn_failed, process::timeout, process::output_limit, process::invalid_config, process::io_error, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        sample: ["ada"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: shout <word>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match call run_shout(args[0])
+            files::not_found
+            files::denied
+            process::spawn_failed
+            process::timeout
+            process::output_limit
+            process::invalid_config
+            process::io_error
+            ok str label => match call bytes::from_utf8(label)
+                codec::invalid_data
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        sample: message => ok 2
+                    io::write_failed
+                    ok int written => ok

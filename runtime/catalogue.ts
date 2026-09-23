@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "dac8bb052954b8706489b8736f7834af238b488d21738720f69a6cd5ee0f2c49";
+export const catalogueSHA256 = "b1bee8a3fcaa57b4e68a242c45bf4d6891e2c4d84c758c7245ca49a11890f87a";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -96,6 +96,10 @@ export const catalogue = freeze({
     {
       "name": "path",
       "identity": "can.std.path@1"
+    },
+    {
+      "name": "process",
+      "identity": "can.std.process@1"
     },
     {
       "name": "random",
@@ -663,6 +667,76 @@ export const catalogue = freeze({
         },
         {
           "name": "kind",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "process::options",
+      "identity": "can.std.process@1::options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "cwd",
+          "type": "str"
+        },
+        {
+          "name": "inherit_env",
+          "type": "bool"
+        },
+        {
+          "name": "env",
+          "type": "str[]"
+        },
+        {
+          "name": "stdin",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "stdout_limit",
+          "type": "int"
+        },
+        {
+          "name": "stderr_limit",
+          "type": "int"
+        },
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        },
+        {
+          "name": "grace_ms",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "process::result",
+      "identity": "can.std.process@1::result",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "stdout",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "stderr",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "signal",
           "type": "str"
         }
       ],
@@ -1441,6 +1515,90 @@ export const catalogue = freeze({
           "name": "path",
           "type": "str"
         },
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1310,
+      "name": "process::spawn_failed",
+      "identity": "can.std.process@1::spawn_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "executable",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1311,
+      "name": "process::timeout",
+      "identity": "can.std.process@1::timeout",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1312,
+      "name": "process::output_limit",
+      "identity": "can.std.process@1::output_limit",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "stream",
+          "type": "str"
+        },
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1313,
+      "name": "process::nonzero",
+      "identity": "can.std.process@1::nonzero",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "signal",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1314,
+      "name": "process::invalid_config",
+      "identity": "can.std.process@1::invalid_config",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "field",
+          "type": "str"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1315,
+      "name": "process::io_error",
+      "identity": "can.std.process@1::io_error",
+      "parameters": [],
+      "fields": [
         {
           "name": "operation",
           "type": "str"
@@ -7141,6 +7299,114 @@ export const catalogue = freeze({
       "refs": [
         "B1-01"
       ]
+    },
+    {
+      "name": "process::run",
+      "identity": "can.std.process@1::run",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "executable",
+          "type": "str"
+        },
+        {
+          "name": "args",
+          "type": "str[]"
+        },
+        {
+          "name": "options",
+          "type": "process::options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "process::result",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "process::spawn_failed",
+        "process::timeout",
+        "process::output_limit",
+        "process::invalid_config",
+        "process::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.spawn"
+        ],
+        "adapter": "Spawn detached in its own process group with piped stdio, no shell; drain both streams concurrently under caps, enforce the deadline, and terminate the group SIGTERM-then-SIGKILL with a grace before escalation; reap every child and register the run as an owned resource so scope drain kills survivors; supplied assertion boundary.",
+        "task": "B1-04"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-04"
+      ]
+    },
+    {
+      "name": "process::require_success",
+      "identity": "can.std.process@1::require_success",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "value",
+          "type": "process::result"
+        }
+      ],
+      "staticInputs": [],
+      "result": "process::result",
+      "callbacks": [],
+      "emits": [
+        "process::nonzero"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "domain.create"
+        ],
+        "adapter": "Return the result unchanged when it exited zero, else nonzero with the observed code and signal; pure computation.",
+        "task": "B1-04"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-04"
+      ]
+    },
+    {
+      "name": "process::which",
+      "identity": "can.std.process@1::which",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "process::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.which"
+        ],
+        "adapter": "Resolve the executable natively; an unresolvable name is files::not_found and an empty name is invalid_config; supplied assertion boundary.",
+        "task": "B1-04"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-04"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -7886,6 +8152,113 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::options",
+    "identity": "can.std.process@1::options",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "cwd",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "inherit_env",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "env",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "stdin",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stdout_limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stderr_limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "deadline_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "grace_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::result",
+    "identity": "can.std.process@1::result",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "stdout",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "stderr",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      },
+      {
+        "name": "code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "signal",
         "type": {
           "name": "str",
           "arguments": null
@@ -8941,6 +9314,123 @@ export const catalogueTypeShapes = freeze([
           "arguments": null
         }
       },
+      {
+        "name": "operation",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::spawn_failed",
+    "identity": "can.std.process@1::spawn_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "executable",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::timeout",
+    "identity": "can.std.process@1::timeout",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "deadline_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::output_limit",
+    "identity": "can.std.process@1::output_limit",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "stream",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::nonzero",
+    "identity": "can.std.process@1::nonzero",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "signal",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::invalid_config",
+    "identity": "can.std.process@1::invalid_config",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "field",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "process::io_error",
+    "identity": "can.std.process@1::io_error",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
       {
         "name": "operation",
         "type": {
