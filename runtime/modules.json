@@ -588,6 +588,17 @@
       "../assert/context.ts",
       "../data.ts",
       "../domain.ts"
+    ],
+    "platform/s3.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../owner.ts",
+      "../transport/stream/lifecycle.ts",
+      "../transport/stream/readable.ts",
+      "./datetime.ts"
     ]
   }
 }

@@ -18,6 +18,13 @@ export function isTimeInstantValue(kind:string|undefined,value:unknown):boolean{
  return kind==="instant"&&object(value)&&instants.has(value);
 }
 const mint=(millis:bigint):object=>{const handle=Object.freeze(Object.create(null));instants.set(handle,millis);return handle;};
+// Cross-module mint for adapters that project native timestamps (S3
+// stat/list) into time::instant values. Native Dates always land
+// inside the instant span, so out-of-range input is an adapter bug.
+export function mintTimeInstant(millis:bigint):object{
+ if(typeof millis!=="bigint"||millis<-MAX_MILLIS||millis>MAX_MILLIS)throw new TypeError("time instant out of range");
+ return mint(millis);
+}
 const millisOf=(handle:unknown):bigint=>{
  const millis=object(handle)?instants.get(handle):undefined;
  if(millis===undefined)throw new TypeError("invalid compiler time instant");

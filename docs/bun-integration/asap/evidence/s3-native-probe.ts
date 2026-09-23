@@ -36,6 +36,12 @@ const fail = async (label: string, fn: () => unknown) => {
 
 const client = new S3Client({ endpoint, region: "us-east-1", bucket, accessKeyId, secretAccessKey });
 try {
+  const settle = async () => {
+    // Abandonment verdicts must settle: close() completes uploads
+    // asynchronously, so an immediate check reports a false absent.
+    try { (Bun as unknown as { gc?: (force?: boolean) => void }).gc?.(true); } catch { /* best effort */ }
+    await new Promise((r) => setTimeout(r, 1500));
+  };
   await attempt("methods", () => {
     const names = (o: object) => Object.getOwnPropertyNames(Object.getPrototypeOf(o)).filter((m) => m !== "constructor").sort();
     const w = client.file(`${prefix}methods.bin`).writer();
@@ -44,7 +50,7 @@ try {
       file: { ctor: client.file(`${prefix}methods.bin`).constructor.name, methods: names(client.file(`${prefix}methods.bin`)) },
       client: { ctor: client.constructor.name, methods: names(client) },
     };
-    (w as unknown as { close: () => void }).close();
+    void w;
     return out;
   });
   await attempt("roundtrip", async () => {
@@ -174,15 +180,38 @@ try {
     w.write(data.subarray(5 * 1024 * 1024)); await w.flush();
     const endBytes = await w.end();
     const st = await client.file(`${prefix}multi.bin`).stat() as unknown as { size?: number; etag?: string };
-    const w2 = client.file(`${prefix}abandon.bin`).writer({ partSize: 5 * 1024 * 1024 });
-    w2.write(data); await w2.flush();
-    (w2 as unknown as { close: () => void }).close();
-    const w3 = client.file(`${prefix}empty.bin`).writer();
-    const emptyEnd = await w3.end();
+    {
+      // Multipart abandonment: parts flushed, writer dropped without
+      // close or end. Never call close() here: it async-completes.
+      const w2 = client.file(`${prefix}abandon.bin`).writer({ partSize: 5 * 1024 * 1024 });
+      w2.write(data); await w2.flush();
+    }
+    {
+      // Single-part abandonment: bytes flushed, writer dropped.
+      const w3 = client.file(`${prefix}abandon-small.bin`).writer();
+      w3.write(new Uint8Array([7])); await w3.flush();
+    }
+    {
+      // Empty abandonment: writer dropped without any write.
+      client.file(`${prefix}abandon-empty.bin`).writer();
+    }
+    {
+      // Guard row: close() without end() still materializes the key
+      // asynchronously, so cancellation must never close.
+      const w4 = client.file(`${prefix}close-completes.bin`).writer();
+      w4.write(new Uint8Array([7])); await w4.flush();
+      w4.close();
+    }
+    await settle();
+    const w5 = client.file(`${prefix}empty.bin`).writer();
+    const emptyEnd = await w5.end();
     return {
       endBytes, endBytesType: typeof endBytes, size: st.size, sizeMatches: st.size === data.length,
       storedEtag: st.etag, storedEtagMultipart: typeof st.etag === "string" && /-[0-9]+\"$/.test(st.etag),
       abandonedExists: await client.file(`${prefix}abandon.bin`).exists(),
+      abandonedSmallExists: await client.file(`${prefix}abandon-small.bin`).exists(),
+      abandonedEmptyExists: await client.file(`${prefix}abandon-empty.bin`).exists(),
+      closeCompletesSettled: await client.file(`${prefix}close-completes.bin`).exists(),
       emptyEnd, emptySize: (await client.file(`${prefix}empty.bin`).stat() as { size?: number }).size,
     };
   });

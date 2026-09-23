@@ -11660,7 +11660,7 @@
         "adapter": "Open a multipart upload handle with optional content type and part size. No I/O until the first write.",
         "task": "B1-10"
       },
-      "assertion": "real",
+      "assertion": "supplied",
       "refs": [
         "B1-10"
       ]
@@ -11761,7 +11761,7 @@
         "adapter": "Retire the handle and release the sink without completing, so the key never materializes; never deletes the key.",
         "task": "B1-10"
       },
-      "assertion": "real",
+      "assertion": "supplied",
       "refs": [
         "B1-10"
       ]

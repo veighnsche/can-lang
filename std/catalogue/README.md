@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 23c8ae8b4023ffb883775c5b35b045fba1add03d9ffd0e3959cf79b91d696073.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 11d95110fbcf8a147582f85be21a50e8b3bc0c22b1584aa8b1e26b8e2cbfd8e2.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -498,10 +498,10 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | s3::list | s3::client client, s3::list_options options → s3::page | [s3::invalid_config, s3::access_denied, s3::service_error] |  | S3Client, S3File | List one page with immutable entries, grouped prefixes and an opaque continuation; never collects a whole bucket. | supplied | B1-10 / B1-10 |
 | s3::presign | s3::client client, s3::method method, str key, int expires_in, option::value&lt;str&gt; content_type → s3::presigned | [s3::invalid_config] |  | S3Client, S3File | Mint a signed URL locally with method and expiry metadata. The URL stays inside the opaque handle until described. | supplied | B1-10 / B1-10 |
 | s3::describe | receiver s3::presigned;  → s3::presigned_info | [] |  | S3Client, S3File | Reveal the signed URL with its required method and expiry. | real | B1-10 / B1-10 |
-| s3::begin_upload | s3::client client, str key, s3::upload_options options → s3::upload | [s3::invalid_config] |  | S3Client, S3File, NetworkSink | Open a multipart upload handle with optional content type and part size. No I/O until the first write. | real | B1-10 / B1-10 |
+| s3::begin_upload | s3::client client, str key, s3::upload_options options → s3::upload | [s3::invalid_config] |  | S3Client, S3File, NetworkSink | Open a multipart upload handle with optional content type and part size. No I/O until the first write. | supplied | B1-10 / B1-10 |
 | s3::upload_write | s3::upload upload, bytes::buffer chunk → int | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Append one chunk to an open upload and report accepted bytes; use after finish or cancel fails upload_closed. | supplied | B1-10 / B1-10 |
 | s3::upload_finish | s3::upload upload → s3::metadata | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Complete the upload and return immutable metadata of the stored object. | supplied | B1-10 / B1-10 |
-| s3::cancel_upload | s3::upload upload → void | [s3::upload_closed] |  | NetworkSink | Retire the handle and release the sink without completing, so the key never materializes; never deletes the key. | real | B1-10 / B1-10 |
+| s3::cancel_upload | s3::upload upload → void | [s3::upload_closed] |  | NetworkSink | Retire the handle and release the sink without completing, so the key never materializes; never deletes the key. | supplied | B1-10 / B1-10 |
 
 ## Native declaration profiles
 

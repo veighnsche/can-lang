@@ -62,7 +62,7 @@ grammar. Surface selection audited in
 | Handle | `s3::begin_upload` opens a local handle with optional content type and part size (5MiB..5GiB when given, else the native default; outside fails `{part_size}`) |
 | Writes | `s3::upload_write` appends one chunk and reports accepted bytes; the adapter guards the native silent drop after end |
 | Finish | `s3::upload_finish` completes (native `end` resolves the byte count, not an etag) and returns fresh `s3::metadata` |
-| Cancel | `s3::cancel_upload` retires the handle and releases the sink without completing, so the key never materializes; cancellation never deletes the key |
+| Cancel | `s3::cancel_upload` retires the handle and abandons the sink without close or end, so the key never materializes; cancellation never deletes the key and never closes (native `close` async-completes single-part and multipart uploads alike) |
 | Terminal | finished and cancelled handles reject every further operation with `s3::upload_closed{operation,state}`; scope release cancels silently |
 | Orphans | unreferenced server-side parts age out under bucket lifecycle rules, documented, not adapter-enforced (no native abort exists) |
 
