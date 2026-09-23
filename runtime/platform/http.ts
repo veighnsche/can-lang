@@ -286,8 +286,9 @@ export function createRequests<Header>(domain:ReturnType<typeof createDomainRunt
   async body(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<Bytes>>{denyLiveBoundary(context,origin);return bufferedBody(request,requestSnapshot(request),limit);},
   async json<T>(schema:Schema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,false))return invalid("unsupported_media_type");try{return success(decodeJSON(schema,body.value,Math.max(1,Number(limit>67108864n?67108864n:limit))) as T);}catch(cause){return codecFailure(cause);}},
   async form<T>(schema:FormSchema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,true))return invalid("unsupported_media_type");try{return success(decodeForm(schema,body.value,Number(byteLength(body.value))) as T);}catch(cause){return codecFailure(cause);}},
-  async multipart(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<unknown>>{
+  async multipart(request:unknown,limit:bigint,fileLimit:bigint,context?:AssertionContext):Promise<Completion<unknown>>{
    denyLiveBoundary(context,origin);
+   if(typeof fileLimit!=="bigint"||fileLimit<0n)return overLimit(typeof fileLimit==="bigint"?fileLimit:-1n);
    const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;
    const value=snapshot.headers.find(([name])=>name==="content-type")?.[1];
    let boundary:string|undefined;
@@ -300,6 +301,9 @@ export function createRequests<Header>(domain:ReturnType<typeof createDomainRunt
    if(boundary===undefined)return invalid("multipart_boundary");
    try{
     const document=decodeMultipart(body.value,boundary);
+    // Per-file cap applies on top of the total body cap; fields stay under
+    // the total cap only.
+    for(const file of document.files)if(byteLength(file.content)>fileLimit)return overLimit(fileLimit);
     return success(record(types.multipartForm,[
      ["fields",array(document.fields.map(field=>record(types.multipartField,[["name",field.name],["value",field.value]])))],
      ["files",array(document.files.map(file=>record(types.multipartFile,[["name",file.name],["filename",file.filename],["content_type",file.contentType],["content",file.content]])))]

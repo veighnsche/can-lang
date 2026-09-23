@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "d07609468cf918ee7ee05d88ba9aa22437827693b955b770973aaf5044544af1";
+export const catalogueSHA256 = "5bd5647f91462bebde4a978f3ae02b04c08ff83a515013cec1e54ba3ddc98082";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -6575,6 +6575,10 @@ export const catalogue = freeze({
         },
         {
           "name": "max_bytes",
+          "type": "int"
+        },
+        {
+          "name": "max_file_bytes",
           "type": "int"
         }
       ],

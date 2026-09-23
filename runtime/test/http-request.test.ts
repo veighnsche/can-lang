@@ -369,17 +369,17 @@ test("multipart preserves repeated fields and binary files",async()=>{
   {headers:['content-disposition: form-data; name="e"; filename=""'],content:""}
  ]);
  const request=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"multipart/form-data; boundary=abc"},body});
- const form=value(await api.multipart(request,65536n));
+ const form=value(await api.multipart(request,65536n,65536n));
  expect(fieldOf(form)).toEqual([["n","v"],["n","v2"],["uni","✓ ok"],["empty",""]]);
  expect(fileOf(form)).toEqual([["f","a.txt","text/plain","hello"],["q",'a"b.txt',"application/octet-stream","quoted"],["bin","b.bin","application/octet-stream","\x00ÿ\r\nA"],["e","","application/octet-stream",""]]);
  const raw=dataProperty((dataProperty(form,"files") as unknown[])[2],"content");
  expect(Array.from(new Uint8Array(copyBytes(raw,origin)))).toEqual([0,255,13,10,65]);
  // repeatable like every buffered read
- expect(fieldOf(value(await api.multipart(request,65536n)))).toEqual(fieldOf(form));
+ expect(fieldOf(value(await api.multipart(request,65536n,65536n)))).toEqual(fieldOf(form));
 });
 test("multipart rejects malformed framing and media",async()=>{
  const boundary="abc",headers={"content-type":"multipart/form-data; boundary=abc"};
- const bad=async(body:Uint8Array,h=headers)=>check(await api.multipart(await snapshot("http://localhost/",{method:"POST",headers:h,body}),65536n),1100,{reason:"multipart_frame"});
+ const bad=async(body:Uint8Array,h=headers)=>check(await api.multipart(await snapshot("http://localhost/",{method:"POST",headers:h,body}),65536n,65536n),1100,{reason:"multipart_frame"});
  await bad(multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"'],content:"v"}]).slice(0,-30));
  await bad(new TextEncoder().encode("--abc\ncontent-disposition: form-data; name=\"n\"\n\nv\n--abc--\n"));
  await bad(multipartBody(boundary,[{headers:['content-type: text/plain'],content:"v"}]));
@@ -389,21 +389,25 @@ test("multipart rejects malformed framing and media",async()=>{
  await bad(multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"','content-type: not a type!!'],content:"v"}]));
  await bad(multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"','content-type: text/plain','content-type: text/html'],content:"v"}]));
  const nested=await snapshot("http://localhost/",{method:"POST",headers,body:multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"','content-type: multipart/mixed; boundary=inner'],content:"x"}])});
- check(await api.multipart(nested,65536n),1100,{reason:"multipart_nested"});
+ check(await api.multipart(nested,65536n,65536n),1100,{reason:"multipart_nested"});
  const missing=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"multipart/form-data"},body:multipartBody(boundary,[])});
- check(await api.multipart(missing,65536n),1100,{reason:"multipart_boundary"});
+ check(await api.multipart(missing,65536n,65536n),1100,{reason:"multipart_boundary"});
  const tilde=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"multipart/form-data; boundary=a~b"},body:multipartBody("a~b",[])});
- check(await api.multipart(tilde,65536n),1100,{reason:"multipart_boundary"});
+ check(await api.multipart(tilde,65536n,65536n),1100,{reason:"multipart_boundary"});
  const quoted=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":'multipart/form-data; boundary="a b"'},body:multipartBody("a b",[])});
- check(await api.multipart(quoted,65536n),1100,{reason:"multipart_boundary"});
+ check(await api.multipart(quoted,65536n,65536n),1100,{reason:"multipart_boundary"});
  const plain=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"text/plain"},body:new TextEncoder().encode("x")});
- check(await api.multipart(plain,65536n),1100,{reason:"unsupported_media_type"});
+ check(await api.multipart(plain,65536n,65536n),1100,{reason:"unsupported_media_type"});
  const spaced=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"multipart/form-data; boundary=a b"},body:multipartBody("a b",[])});
- check(await api.multipart(spaced,65536n),1100,{reason:"unsupported_media_type"});
+ check(await api.multipart(spaced,65536n,65536n),1100,{reason:"unsupported_media_type"});
  const mojibake=await snapshot("http://localhost/",{method:"POST",headers,body:multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"'],content:new Uint8Array([255,254])}])});
- check(await api.multipart(mojibake,65536n),1110,{path:"multipart",reason:"utf8"});
+ check(await api.multipart(mojibake,65536n,65536n),1110,{path:"multipart",reason:"utf8"});
  const big=await snapshot("http://localhost/",{method:"POST",headers,body:multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"'],content:"v"}])});
- check(await api.multipart(big,10n),1104,{limit:10n});
+ check(await api.multipart(big,10n,65536n),1104,{limit:10n});
+ const capped=await snapshot("http://localhost/",{method:"POST",headers,body:multipartBody(boundary,[{headers:['content-disposition: form-data; name="f"; filename="a.bin"'],content:"12345"}])});
+ check(await api.multipart(capped,65536n,4n),1104,{limit:4n});
+ expect(fieldOf(value(await api.multipart(capped,65536n,5n)))).toEqual([]);
+ check(await api.multipart(capped,65536n,-1n),1104,{limit:-1n});
 });
 test("multipart buffers live bodies once and honors consumption",async()=>{
  const owned=await runOwnedRoot(async ()=>{
@@ -411,15 +415,109 @@ test("multipart buffers live bodies once and honors consumption",async()=>{
   const body=multipartBody(boundary,[{headers:['content-disposition: form-data; name="n"'],content:"v"}]);
   const lazy=await snapshotRequestLazy(new Request("http://localhost/",{method:"POST",headers,body}),65536);
   if(lazy.kind!=="request")throw Error("rejected request");
-  expect(fieldOf(value(await api.multipart(lazy.value,65536n)))).toEqual([["n","v"]]);
+  expect(fieldOf(value(await api.multipart(lazy.value,65536n,65536n)))).toEqual([["n","v"]]);
   expect(new Uint8Array(copyBytes(value(await api.body(lazy.value,65536n)),origin)).byteLength).toBe(body.byteLength);
   const live=await snapshotRequestLazy(new Request("http://localhost/",{method:"POST",headers,body}),65536);
   if(live.kind!=="request")throw Error("rejected request");
   value(await api.bodyStream(live.value,8n));
-  check(await api.multipart(live.value,65536n),1100,{reason:"body_consumed"});
+  check(await api.multipart(live.value,65536n,65536n),1100,{reason:"body_consumed"});
   return success(undefined);
  });
  expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+});
+test("multipart fuzzing only raises declared issues",async()=>{
+ // Deterministic adversarial sweep: random mutations must either parse or
+ // fail with MultipartIssue/CodecIssue, never with an unexpected throw.
+ let seed=0x10606d3;
+ const next=(n:number)=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed%n;};
+ const alphabet="ab --x\r\n:=;\"\\";
+ const encode=new TextEncoder();
+ for(let round=0;round<500;round++){
+  const boundary="b"+("0".repeat(next(4)))+"x";
+  let body="--"+boundary+"\r\n";
+  const parts=1+next(3);
+  for(let p=0;p<parts;p++){
+   const kind=next(4);
+   body+="content-disposition: form-data; name=\"f"+p+"\""+(kind===0?"; filename=\"g"+p+".bin\"":"")+"\r\n";
+   if(kind===1)body+="content-type: application/octet-stream\r\n";
+   if(kind===2)body+="x-junk: "+next(7)+"\r\n";
+   body+="\r\n";
+   const size=next(24);
+   for(let i=0;i<size;i++)body+=alphabet[next(alphabet.length)];
+   body+="\r\n--"+boundary+(p+1===parts?"--":"")+"\r\n";
+  }
+  // Mutate: flip, drop or duplicate a random byte span.
+  const bytes=encode.encode(body),at=next(bytes.byteLength),span=1+next(6),op=next(3);
+  const mutated=op===0?new Uint8Array([...bytes.slice(0,at),bytes[at]!^0xff,...bytes.slice(at+1)])
+   :op===1?new Uint8Array([...bytes.slice(0,at),...bytes.slice(Math.min(bytes.byteLength,at+span))])
+   :new Uint8Array([...bytes.slice(0,at),...bytes.slice(at,Math.min(bytes.byteLength,at+span)),...bytes.slice(at)]);
+  const request=await snapshot("http://localhost/",{method:"POST",headers:{"content-type":"multipart/form-data; boundary="+boundary},body:mutated});
+  try{
+   const parsed=await api.multipart(request,65536n,65536n);
+   if(parsed.kind==="ok"){
+    // Invariants on success: bounded counts, ordered names, byte-exact files.
+    const fields=dataProperty(parsed.value,"fields") as unknown[],files=dataProperty(parsed.value,"files") as unknown[];
+    expect(fields.length+files.length).toBeLessThanOrEqual(parts+1);
+    for(const f of fields)expect(typeof dataProperty(f,"name")).toBe("string");
+    for(const f of files){
+     expect(typeof dataProperty(f,"filename")).toBe("string");
+     const content=new Uint8Array(copyBytes(dataProperty(f,"content"),origin));
+     expect(content.byteLength).toBeLessThanOrEqual(mutated.byteLength);
+    }
+   }else{
+    const d=domainFailureDiagnostics(parsed.value);
+    expect([1100,1104,1110].includes(d.declaration.id)).toBe(true);
+   }
+  }catch(thrown){throw new Error("round "+round+" op "+op+" threw "+(thrown as Error).constructor.name+": "+(thrown as Error).message);}
+ }
+});
+test("SSE frames round-trip arbitrary fields",async()=>{
+ // Property: encode then parse recovers every field for adversarial inputs.
+ const parse=(text:string)=>{
+  const events:{data:string[];event:string;id:string;retry:string}[]=[];
+  for(const block of text.split("\n\n")){
+   if(block==="")continue;
+   const current={data:[] as string[],event:"",id:"",retry:""};
+   for(const line of block.split("\n")){
+    if(line.startsWith(":"))continue;
+    const cut=line.indexOf(":"),key=line.slice(0,cut),value=line.slice(cut+1).startsWith(" ")?line.slice(cut+2):line.slice(cut+1);
+    if(key==="data")current.data.push(value);
+    else if(key==="event")current.event=value;
+    else if(key==="id")current.id=value;
+    else if(key==="retry")current.retry=value;
+   }
+   events.push(current);
+  }
+  return events;
+ };
+ let seed=0x607;
+ const next=(n:number)=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed%n;};
+ const pool=["","x","✓","a\nb","c\rd","e\r\nf"," ",",",":","0","007","1234567890","-","~"];
+ for(let round=0;round<200;round++){
+  const data=pool[next(pool.length)]!+pool[next(pool.length)]!,name=pool[next(pool.length)]!,id=pool[next(pool.length)]!;
+  const retry=pool[next(pool.length)]!;
+  const owned=await runOwnedRoot(async ()=>{
+   const pending=value(await responses.sse(value(await responses.ok()),value(await responses.emptyHeaders())));
+   const out=value(await responses.writer(pending));
+   const sent=await responses.sseSend(out,record("sse_event",[["data",data],["event",name],["id",id],["retry",retry]]));
+   await writes.closeWriter(out);
+   // CR/LF in event/id and non-digit retry reject; everything else sends.
+   const clean=!name.includes("\n")&&!name.includes("\r")&&!id.includes("\n")&&!id.includes("\r")&&/^[0-9]*$/.test(retry);
+   if(!clean){expect(sent.kind).toBe("domain");return success("");}
+   if(sent.kind!=="ok")throw new Error("round "+round+" rejected clean frame");
+   const served=nativeResponse(pending);
+   return success(await served.text());
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  const wire=value(owned.completion);
+  if(wire==="")continue;
+  const [decoded]=parse(wire);
+  expect(decoded!.event).toBe(name);
+  expect(decoded!.id).toBe(id);
+  expect(decoded!.retry).toBe(retry);
+  // CR and CRLF normalize to LF across the wire by SSE design.
+  expect(decoded!.data.join("\n")).toBe(data.replace(/\r\n/g,"\n").replace(/\r/g,"\n"));
+ }
 });
 test("stream responses serve produced queues over loopback",async()=>{
  const seen={status:0,body:""};

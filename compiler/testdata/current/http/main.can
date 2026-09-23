@@ -193,9 +193,9 @@ fn http::server_response attach
         http::request req
     asserts
         sample: => ok
-    match call http::request_multipart(req, 1024)
+    match call http::request_multipart(req, 1024, 512)
         when
-            sample: req, 1024 => ok http::multipart_form([http::multipart_field("n", "v")], [http::multipart_file("f", "a.txt", "text/plain", call bytes::empty())])
+            sample: req, 1024, 512 => ok http::multipart_form([http::multipart_field("n", "v")], [http::multipart_file("f", "a.txt", "text/plain", call bytes::empty())])
         http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
         codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
