@@ -26,9 +26,9 @@ test("native escaping keeps hostile text and attribute data inert",async()=>{
  for(const input of ["", "a\0b", "\ud800", "&amp;"])expect(await render([await text(input)])).toBe(Bun.escapeHTML(input));
 });
 test("closed tags, attributes, enums and tag applicability",async()=>{
- for(const name of ["script","style","iframe","object","embed","img","meta","body","title","svg","x-tag"])check(await html.makeTag(name),1220);
+ for(const name of ["script","style","iframe","object","embed","meta","body","title","svg","x-tag"])check(await html.makeTag(name),1220);
  for(const name of ["onclick","ONLOAD","style","srcdoc","href","src","action","formaction","hx-get","data-hx-get","hx-on:click","data-test"])check(await html.textAttribute(name,"value"),1220);
- for(const [name,val] of [["dir","sideways"],["hidden","false"],["checked","true"],["method","put"],["scope","all"],["autocomplete","unknown"],["rel","javascript"],["rows","0"],["colspan","1001"],["rowspan","65535"]])check(await html.textAttribute(name!,val!),1220);
+ for(const [name,val] of [["dir","sideways"],["hidden","false"],["checked","true"],["method","put"],["scope","all"],["align","justify"],["start","NaN"],["autocomplete","unknown"],["rel","javascript"],["rows","0"],["colspan","1001"],["rowspan","65535"]])check(await html.textAttribute(name!,val!),1220);
  for(const [name,val] of [["dir","rtl"],["hidden","until-found"],["required",""],["autocomplete","section-login username webauthn"],["rel","nofollow noopener"],["rowspan","0"],["aria-label","anything"]])expect((await html.textAttribute(name!,val!)).kind).toBe("ok");
  const checked=value(await html.textAttribute("checked","checked"));check(await html.element(await tag("div"),[checked],[]),1220);
  check(await html.element(await tag("button"),[value(await html.textAttribute("type","password"))],[]),1220);
@@ -36,7 +36,7 @@ test("closed tags, attributes, enums and tag applicability",async()=>{
  check(await html.element(await tag("div"),[value(await html.textAttribute("id","a")),value(await html.textAttribute("ID","b"))],[]),1220);
 });
 test("child categories, table order, pairs and descendant nesting",async()=>{
- for(const name of ["input","br","hr"])check(await html.element(await tag(name),[],[await text("x")]),1220);
+ for(const name of ["input","br","hr","img"])check(await html.element(await tag(name),[],[await text("x")]),1220);
  for(const [parent,child] of [["ul","li"],["ol","li"],["select","option"],["thead","tr"],["tbody","tr"],["tr","td"]]){
   const node=await element(child!);expect((await html.element(await tag(parent!),[],[node])).kind).toBe("ok");check(await html.element(await tag(parent!),[],[await text(" ")]),1220);
  }
@@ -48,6 +48,7 @@ test("child categories, table order, pairs and descendant nesting",async()=>{
 test("URL parsing rejects origin and script ambiguity",async()=>{
  for(const input of ["/\ud800","https://example.com/\udfff","//evil.test","/\\evil.test","javascript:alert(1)","data:text/html,x","http://a.test"," https://a.test","https://a:b@a.test","/x\ny","/.//evil.test","/%2e//evil.test","https://"] )check(await html.parseURL(input),1221);
  for(const input of ["/","/a b?q=x&y=z#f","/a/../b","https://example.com/path?x=1&y=2"]){const url=value(await html.parseURL(input));const attr=value(await html.urlAttribute("href",url));expect((await html.element(await tag("a"),[attr],[])).kind).toBe("ok");check(await html.element(await tag("div"),[attr],[]),1220);}
+ {const url=value(await html.parseURL("https://example.com/i.png"));const attr=value(await html.urlAttribute("src",url));expect((await html.element(await tag("img"),[attr],[])).kind).toBe("ok");check(await html.element(await tag("a"),[attr],[]),1220);check(await html.urlAttribute("srcset",url),1220);}
  const outside=value(await html.parseURL("https://example.com/"));check(await html.get(outside),1221);check(await html.post(outside),1221);
  const local=value(await html.parseURL("/search?q=a&x=b"));expect(await render([await element("div",[],[value(await html.get(local))])])).toBe('<div hx-get="/search?q=a&amp;x=b"></div>');
 });
@@ -73,8 +74,8 @@ test("forged opaque handles fail without inspecting proxies",async()=>{
  for(const call of calls)expect((await invoke(call,origin)).kind).toBe("standard");expect(()=>renderSafe(forged)).toThrow();expect(isHTMLValue("safe",forged)).toBe(false);expect(traps).toBe(0);
 });
 test("the complete author tag inventory and each tag-checked attribute are admitted",async()=>{
- for(const name of "main header footer nav section article aside h1 h2 h3 h4 h5 h6 p div span ul ol li a form label input textarea select option button table thead tbody tr th td dl dt dd strong em small br hr".split(" "))expect((await html.makeTag(name)).kind).toBe("ok");
- for(const [name,val,tagName] of [["name","field","input"],["value","abc","input"],["type","submit","button"],["placeholder","hint","textarea"],["autocomplete","email","input"],["for","field","label"],["method","post","form"],["rel","noopener","a"],["checked","","input"],["selected","selected","option"],["disabled","","button"],["required","required","select"],["multiple","","select"],["rows","2","textarea"],["cols","20","textarea"],["scope","row","th"],["colspan","2","td"],["rowspan","0","td"]]){
+ for(const name of "main header footer nav section article aside h1 h2 h3 h4 h5 h6 p div span ul ol li a form label input textarea select option button table thead tbody tr th td dl dt dd strong em small br hr code pre blockquote img del".split(" "))expect((await html.makeTag(name)).kind).toBe("ok");
+ for(const [name,val,tagName] of [["name","field","input"],["value","abc","input"],["type","submit","button"],["placeholder","hint","textarea"],["autocomplete","email","input"],["for","field","label"],["method","post","form"],["rel","noopener","a"],["checked","","input"],["selected","selected","option"],["disabled","","button"],["required","required","select"],["multiple","","select"],["rows","2","textarea"],["cols","20","textarea"],["scope","row","th"],["colspan","2","td"],["rowspan","0","td"],["alt","text","img"],["align","left","th"],["align","center","td"],["align","right","td"],["start","5","ol"],["start","-1","ol"]]){
   const a=value(await html.textAttribute(name!,val!));expect((await html.element(await tag(tagName!),[a],[])).kind).toBe("ok");check(await html.element(await tag("aside"),[a],[]),1220);
  }
 });
