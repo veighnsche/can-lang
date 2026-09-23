@@ -1,0 +1,169 @@
+package app
+    provides []
+    uses [bytes, codec, crypto, io, password]
+/// HMAC-SHA-256 tag bytes of the message under the key.
+fn int[] hmac_tag
+    emits [codec::invalid_data, crypto::invalid_key]
+    given
+        int[] key
+        int[] message
+    asserts
+        rfc4231: [11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11], [72, 105, 32, 84, 104, 101, 114, 101] => ok [176, 52, 76, 97, 216, 219, 56, 83, 92, 168, 175, 206, 175, 11, 241, 43, 136, 29, 194, 0, 201, 131, 61, 167, 38, 233, 55, 108, 46, 50, 207, 247]
+    match chain
+        call bytes::from_ints(key) as bytes::buffer raw_key
+        call bytes::from_ints(message) as bytes::buffer raw_message
+        call crypto::hmac_sha256(raw_key, raw_message) as bytes::buffer mac
+        call bytes::to_ints(mac) as int[] out
+        codec::invalid_data
+        crypto::invalid_key
+        ok => ok out
+/// Verify a password against the fixed preset-0 argon2id hash of "correct horse".
+fn bool check_password
+    emits [password::invalid_hash]
+    given
+        str password
+    asserts
+        hit: "correct horse" => ok true
+        miss: "wrong" => ok false
+    match call password::verify(password, "$argon2id$v=19$m=8192,t=1,p=1$UJXqbQNbzCfqK4jpiZS6u9yFKQYcwM/6Q2XS3xyyvmw$HTvJKv9J1C/m4pN6lFKOX1tFBGd/rJ8CZ5pBQMVkFpQ")
+        password::invalid_hash
+        ok bool matched => ok matched
+/// Verify an Ed25519 signature against the fixed 32-byte public key.
+fn bool check_signature
+    emits [codec::invalid_data, crypto::invalid_key, crypto::key_misuse]
+    given
+        int[] message
+        int[] signature
+    asserts
+        valid: [1, 2, 3, 4], [202, 78, 208, 244, 232, 203, 141, 201, 46, 71, 122, 85, 158, 84, 4, 250, 116, 83, 51, 136, 45, 225, 63, 91, 102, 54, 88, 234, 106, 203, 112, 1, 95, 185, 22, 209, 118, 246, 217, 117, 91, 63, 89, 233, 4, 16, 142, 25, 199, 210, 185, 29, 155, 155, 95, 181, 183, 183, 206, 168, 209, 147, 203, 11] => ok true
+    match chain
+        call bytes::from_ints([110, 159, 32, 246, 136, 166, 31, 235, 71, 40, 208, 154, 160, 127, 46, 214, 129, 227, 111, 144, 43, 143, 24, 181, 24, 79, 86, 65, 165, 70, 121, 189]) as bytes::buffer raw_public
+        call bytes::from_ints(message) as bytes::buffer raw_message
+        call bytes::from_ints(signature) as bytes::buffer raw_signature
+        call crypto::import_ed25519_public(raw_public) as crypto::key public
+        call crypto::verify_ed25519(public, raw_message, raw_signature) as bool matched
+        codec::invalid_data
+        crypto::invalid_key
+        crypto::key_misuse
+        ok => ok matched
+/// Sealed ciphertext length for the plaintext on the caller's key. The
+/// key elides from the assert inputs; the fixture binds the harness
+/// token and answers the sealed record.
+fn int seal_size
+    emits [codec::invalid_data, crypto::key_misuse]
+    given
+        crypto::key key
+        int[] plaintext
+    asserts
+        sample: [1, 2, 3] => ok 19
+    match call bytes::from_ints(plaintext)
+        codec::invalid_data
+        ok bytes::buffer plain => match call bytes::from_ints([])
+            codec::invalid_data
+            ok bytes::buffer aad => match call bytes::from_ints([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                codec::invalid_data
+                ok bytes::buffer nonce => match call bytes::from_ints([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                    codec::invalid_data
+                    ok bytes::buffer cipher => match call crypto::encrypt_aes_gcm_sealed(key, plain, aad)
+                        when
+                            sample: key, plain, aad => ok crypto::sealed(nonce, cipher)
+                        crypto::key_misuse
+                        ok crypto::sealed sealed => ok sealed.ciphertext.length
+fn void main
+    emits [codec::invalid_data, io::write_failed, password::invalid_hash, crypto::invalid_key, crypto::key_misuse, crypto::invalid_nonce, crypto::decrypt_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: roundtrip | hmac | misuse | tamper | ask <password>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match args[0]
+            "roundtrip" => match chain
+                call crypto::generate_aes_key() as crypto::key key
+                call bytes::from_ints([1, 2, 3, 4]) as bytes::buffer plain
+                call bytes::from_ints([]) as bytes::buffer aad
+                call crypto::encrypt_aes_gcm_sealed(key, plain, aad) as crypto::sealed sealed
+                call crypto::decrypt_aes_gcm(key, sealed.nonce, sealed.ciphertext, aad) as bytes::buffer back
+                call bytes::to_ints(back) as int[] out
+                call codec::encode_json<int[]>(out) as bytes::buffer encoded
+                call io::stdout_write(encoded) as int written
+                codec::invalid_data
+                io::write_failed
+                crypto::key_misuse
+                crypto::invalid_nonce
+                crypto::decrypt_failed
+                ok => ok
+            "hmac" => match chain
+                call bytes::from_ints([11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11]) as bytes::buffer raw_key
+                call bytes::from_ints([72, 105, 32, 84, 104, 101, 114, 101]) as bytes::buffer raw_message
+                call crypto::hmac_sha256(raw_key, raw_message) as bytes::buffer mac
+                call bytes::to_ints(mac) as int[] out
+                call codec::encode_json<int[]>(out) as bytes::buffer encoded
+                call io::stdout_write(encoded) as int written
+                codec::invalid_data
+                io::write_failed
+                crypto::invalid_key
+                ok => ok
+            "misuse" => match chain
+                call crypto::generate_aes_key() as crypto::key key
+                call bytes::from_ints([1]) as bytes::buffer message
+                call crypto::sign_ed25519(key, message) as bytes::buffer signature
+                call bytes::to_ints(signature) as int[] out
+                call codec::encode_json<int[]>(out) as bytes::buffer encoded
+                call io::stdout_write(encoded) as int written
+                codec::invalid_data
+                io::write_failed
+                crypto::key_misuse
+                ok => ok
+            "tamper" => match chain
+                call crypto::generate_aes_key() as crypto::key key
+                call crypto::generate_aes_key() as crypto::key other
+                call bytes::from_ints([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]) as bytes::buffer nonce
+                call bytes::from_ints([9, 9]) as bytes::buffer plain
+                call bytes::from_ints([]) as bytes::buffer aad
+                call crypto::encrypt_aes_gcm(key, nonce, plain, aad) as bytes::buffer cipher
+                call crypto::decrypt_aes_gcm(other, nonce, cipher, aad) as bytes::buffer back
+                call bytes::to_ints(back) as int[] out
+                call codec::encode_json<int[]>(out) as bytes::buffer encoded
+                call io::stdout_write(encoded) as int written
+                codec::invalid_data
+                io::write_failed
+                crypto::key_misuse
+                crypto::invalid_nonce
+                crypto::decrypt_failed
+                ok => ok
+            "ask" => match args.length is 2
+                true => match call check_password(args[1])
+                    password::invalid_hash
+                    ok bool matched => match matched
+                        true => match chain
+                            call bytes::from_utf8("match") as bytes::buffer body
+                            call io::stdout_write(body) as int written
+                            codec::invalid_data
+                            io::write_failed
+                            ok => ok
+                        false => match chain
+                            call bytes::from_utf8("mismatch") as bytes::buffer body
+                            call io::stdout_write(body) as int written
+                            codec::invalid_data
+                            io::write_failed
+                            ok => ok
+                false => match call bytes::from_utf8("usage: ask <password>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
+            _ => match call bytes::from_utf8("usage: roundtrip | hmac | misuse | tamper | ask <password>")
+                codec::invalid_data
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        badop: message => ok 0
+                    io::write_failed
+                    ok int written => ok

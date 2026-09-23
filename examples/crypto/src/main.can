@@ -1,0 +1,101 @@
+package crypto_example
+    provides [fingerprint, tag, check_password, check_signature, main]
+    uses [bytes, codec, crypto, io, password]
+
+/// SHA-256 digest bytes of the input.
+fn int[] fingerprint
+    emits [codec::invalid_data]
+    given
+        int[] values
+    asserts
+        abc: [97, 98, 99] => ok [186, 120, 22, 191, 143, 1, 207, 234, 65, 65, 64, 222, 93, 174, 34, 35, 176, 3, 97, 163, 150, 23, 122, 156, 180, 16, 255, 97, 242, 0, 21, 173]
+    match chain
+        call bytes::from_ints(values) as bytes::buffer input
+        call crypto::sha256(input) as bytes::buffer digest
+        call bytes::to_ints(digest) as int[] out
+        codec::invalid_data
+        ok => ok out
+
+/// HMAC-SHA-256 tag bytes of the message under the key.
+fn int[] tag
+    emits [codec::invalid_data, crypto::invalid_key]
+    given
+        int[] key
+        int[] message
+    asserts
+        rfc4231: [11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11], [72, 105, 32, 84, 104, 101, 114, 101] => ok [176, 52, 76, 97, 216, 219, 56, 83, 92, 168, 175, 206, 175, 11, 241, 43, 136, 29, 194, 0, 201, 131, 61, 167, 38, 233, 55, 108, 46, 50, 207, 247]
+        empty_key: [], [1] => crypto::invalid_key("empty_hmac_key")
+    match chain
+        call bytes::from_ints(key) as bytes::buffer raw_key
+        call bytes::from_ints(message) as bytes::buffer raw_message
+        call crypto::hmac_sha256(raw_key, raw_message) as bytes::buffer mac
+        call bytes::to_ints(mac) as int[] out
+        codec::invalid_data
+        crypto::invalid_key
+        ok => ok out
+
+/// Verify a password against the fixed preset-0 argon2id hash of "correct horse".
+fn bool check_password
+    emits [password::invalid_hash]
+    given
+        str password
+    asserts
+        hit: "correct horse" => ok true
+        miss: "wrong" => ok false
+    match call password::verify(password, "$argon2id$v=19$m=8192,t=1,p=1$UJXqbQNbzCfqK4jpiZS6u9yFKQYcwM/6Q2XS3xyyvmw$HTvJKv9J1C/m4pN6lFKOX1tFBGd/rJ8CZ5pBQMVkFpQ")
+        password::invalid_hash
+        ok bool matched => ok matched
+
+/// Verify an Ed25519 signature against the fixed 32-byte public key.
+fn bool check_signature
+    emits [codec::invalid_data, crypto::invalid_key, crypto::key_misuse]
+    given
+        int[] message
+        int[] signature
+    asserts
+        valid: [1, 2, 3, 4], [202, 78, 208, 244, 232, 203, 141, 201, 46, 71, 122, 85, 158, 84, 4, 250, 116, 83, 51, 136, 45, 225, 63, 91, 102, 54, 88, 234, 106, 203, 112, 1, 95, 185, 22, 209, 118, 246, 217, 117, 91, 63, 89, 233, 4, 16, 142, 25, 199, 210, 185, 29, 155, 155, 95, 181, 183, 183, 206, 168, 209, 147, 203, 11] => ok true
+        tampered: [1, 2, 3, 5], [202, 78, 208, 244, 232, 203, 141, 201, 46, 71, 122, 85, 158, 84, 4, 250, 116, 83, 51, 136, 45, 225, 63, 91, 102, 54, 88, 234, 106, 203, 112, 1, 95, 185, 22, 209, 118, 246, 217, 117, 91, 63, 89, 233, 4, 16, 142, 25, 199, 210, 185, 29, 155, 155, 95, 181, 183, 183, 206, 168, 209, 147, 203, 11] => ok false
+    match chain
+        call bytes::from_ints([110, 159, 32, 246, 136, 166, 31, 235, 71, 40, 208, 154, 160, 127, 46, 214, 129, 227, 111, 144, 43, 143, 24, 181, 24, 79, 86, 65, 165, 70, 121, 189]) as bytes::buffer raw_public
+        call bytes::from_ints(message) as bytes::buffer raw_message
+        call bytes::from_ints(signature) as bytes::buffer raw_signature
+        call crypto::import_ed25519_public(raw_public) as crypto::key public
+        call crypto::verify_ed25519(public, raw_message, raw_signature) as bool matched
+        codec::invalid_data
+        crypto::invalid_key
+        crypto::key_misuse
+        ok => ok matched
+
+/// Check the first argument against the fixed hash, then print match or mismatch.
+fn void main
+    emits [password::invalid_hash, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        sample: ["correct horse"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: password <candidate>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match call check_password(args[0])
+            password::invalid_hash
+            ok bool matched => match matched
+                true => match call bytes::from_utf8("match")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        when
+                            sample: message => ok 5
+                        io::write_failed
+                        ok int written => ok
+                false => match call bytes::from_utf8("mismatch")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        when
+                            sample: message => ok 8
+                        io::write_failed
+                        ok int written => ok
