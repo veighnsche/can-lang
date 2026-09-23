@@ -1,0 +1,63 @@
+=== RUN   TestFixtureDigestExactFramingAndOrder
+--- PASS: TestFixtureDigestExactFramingAndOrder (0.00s)
+=== RUN   TestCaptureFixturesDedupesSharedReferences
+--- PASS: TestCaptureFixturesDedupesSharedReferences (0.02s)
+=== RUN   TestCaptureFixturesRejects
+=== RUN   TestCaptureFixturesRejects/missing
+=== RUN   TestCaptureFixturesRejects/escape
+=== RUN   TestCaptureFixturesRejects/absolute
+=== RUN   TestCaptureFixturesRejects/symlink
+=== RUN   TestCaptureFixturesRejects/size
+--- PASS: TestCaptureFixturesRejects (0.02s)
+=== RUN   TestFixtureBytesServesCapturedSnapshot
+--- PASS: TestFixtureBytesServesCapturedSnapshot (0.00s)
+=== RUN   TestVendorFixtureChangeStalesLock
+--- PASS: TestVendorFixtureChangeStalesLock (0.01s)
+=== RUN   TestGraphIdentityAndOutputStability
+--- PASS: TestGraphIdentityAndOutputStability (0.01s)
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/source
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/manifest
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/registry
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/missing
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/unused
+=== RUN   TestGraphRejectsStaleOrIncompleteLocks/path
+--- PASS: TestGraphRejectsStaleOrIncompleteLocks (0.02s)
+=== RUN   TestGraphRejectsPackageAndSourceAliases
+=== RUN   TestGraphRejectsPackageAndSourceAliases/package-collision
+=== RUN   TestGraphRejectsPackageAndSourceAliases/folder-mismatch
+=== RUN   TestGraphRejectsPackageAndSourceAliases/reserved
+=== RUN   TestGraphRejectsPackageAndSourceAliases/source-escape
+=== RUN   TestGraphRejectsPackageAndSourceAliases/source-alias
+=== RUN   TestGraphRejectsPackageAndSourceAliases/directory-cycle
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-escape
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-cycle
+=== RUN   TestGraphRejectsPackageAndSourceAliases/dependency-key-alias
+--- PASS: TestGraphRejectsPackageAndSourceAliases (0.02s)
+=== RUN   TestGraphRegistrySourceAndGlobalAgreement
+--- PASS: TestGraphRegistrySourceAndGlobalAgreement (0.00s)
+=== RUN   TestGraphRepeatedDependencyKeyMustKeepItsDirectory
+--- PASS: TestGraphRepeatedDependencyKeyMustKeepItsDirectory (0.00s)
+=== RUN   TestRegistryAndLockExactContracts
+--- PASS: TestRegistryAndLockExactContracts (0.00s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	0.293s
+=== driver ===
+=== RUN   TestOwnerRevalidationAndInputAssets
+=== RUN   TestOwnerRevalidationAndInputAssets/owner_changed_after_opening
+=== RUN   TestOwnerRevalidationAndInputAssets/asset_mutation_invalidates_snapshot
+--- PASS: TestOwnerRevalidationAndInputAssets (0.09s)
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/staged/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/generation/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=false
+=== RUN   TestPublicationRechecksSnapshotBeforeCurrent/before-current/reuse=true
+--- PASS: TestPublicationRechecksSnapshotBeforeCurrent (0.37s)
+=== RUN   TestPublicationRechecksFixtureEdits
+--- PASS: TestPublicationRechecksFixtureEdits (0.07s)
+=== RUN   TestBuildInputsChangeOnFixtureOnlyDependencyEdit
+--- PASS: TestBuildInputsChangeOnFixtureOnlyDependencyEdit (0.03s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/driver	0.820s
+=== check ===
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	1.772s

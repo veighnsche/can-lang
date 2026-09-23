@@ -274,7 +274,11 @@ func TestTransitiveDependencyDoesNotGrantDirectImport(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		entries[key] = map[string]any{"path": dir, "manifest_sha256": project.Digest([]byte(manifest)), "source_sha256": digest, "error_registry": map[string]any{"active": []any{}, "retired": []any{}}}
+		fixtures, err := project.FixtureDigest(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		entries[key] = map[string]any{"path": dir, "manifest_sha256": project.Digest([]byte(manifest)), "source_sha256": digest, "fixtures_sha256": fixtures, "error_registry": map[string]any{"active": []any{}, "retired": []any{}}}
 	}
 	lock, err := json.Marshal(map[string]any{"dependencies": entries})
 	if err != nil {

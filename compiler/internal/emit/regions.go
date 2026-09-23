@@ -136,6 +136,23 @@ func (e *RegionEmitter) mark(span source.Span, operation string) string {
 	}
 	return mappingMark(e.SourceID, span, operation) + "$canOrigin = " + e.origin(span) + ";\n" + mappingMark(e.SourceID, span, operation)
 }
+
+// markNode attributes one lowered expression to its own defining source.
+// Template substitution moves definition nodes into use regions, so their
+// spans address the definition file; every other node belongs to the
+// region's module. The runtime origin travels with the same source, so a
+// position never pairs one file's offsets with another file.
+func (e *RegionEmitter) markNode(node *ir.Expression, operation string) string {
+	if e.SourceID == "" {
+		return ""
+	}
+	source := e.SourceID
+	if node.Source != "" {
+		source = node.Source
+	}
+	origin := fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(source), node.Span.Start, node.Span.End, quote(e.region.ID))
+	return mappingMark(source, node.Span, operation) + "$canOrigin = " + origin + ";\n" + mappingMark(source, node.Span, operation)
+}
 func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error) {
 	if region == nil || region.ID == "" || region.Body == nil || !types.Equal(region.Result, region.Result) || !jsBinding.MatchString(name) {
 		return "", fmt.Errorf("invalid checked region")
@@ -164,7 +181,7 @@ func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 	}
 	e.expression = ExpressionEmitter{Bindings: bindings, TypeName: TypeName}
 	if e.SourceID != "" {
-		e.expression.Mark = func(node *ir.Expression) string { return e.mark(node.Span, string(node.Kind)) }
+		e.expression.Mark = func(node *ir.Expression) string { return e.markNode(node, string(node.Kind)) }
 	}
 	e.expression.Callable = e.callable
 	e.expression.Invocation = e.invocationValue

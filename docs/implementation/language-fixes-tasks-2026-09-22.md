@@ -212,7 +212,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF13-summary.json, LF13-check.log (10 tests + 15 reject subtests pass), LF13-syntax.log (4 pass), LF13-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF13-integration.log (integration+driver+emit all ok), LF13-runtime.log (349 pass). compiler/testdata/current/templates staged 13-row suite (fn/generic/fetch templates, same-directory import, raw-in-template, FIFO helpers, production erasure, tsc). Reproduction commands in the summary.
 
-- [ ] **LF14 — Capture complete verification inputs and lock raw fixtures**
+- [x] **LF14 — Capture complete verification inputs and lock raw fixtures**
 
   **Depends on:** LF03, LF11, LF12, LF13. **Acceptance:** AE22, AE27.
 
@@ -226,7 +226,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Change only a dependency raw fixture and prove verification identity/lock mismatch changes. Keep active generation leases and owned dist invariants intact.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF14-summary.json, LF14-check.log (project 11 + driver 4 + check 11 top-level with reject/source-tag subtests pass), LF14-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF14-integration.log (integration+driver+emit all ok), LF14-runtime.log (349 pass). Capture (attached/when/nested/template, dedup, relocation-stable), exact P15.1 framing oracle, 5 capture rejects, captured-bytes-after-edit, stale-lock + identity proofs, revalidation rejects mid-publication fixture edit with current unchanged, staged 4-root vendor suite (timeout-bound options, embedded captured bodies, one-byte fixture edit stales lock, lock untouched). Cross-file template span attribution repaired (ir.Expression.Source + markNode). Reproduction commands in the summary.
 
 - [ ] **LF15 — Gate atomic production publication on all-root verification**
 

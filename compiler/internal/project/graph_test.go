@@ -38,6 +38,11 @@ func projectFixture(t *testing.T, root string) {
 
 func writeFixtureLock(t *testing.T, root string, dependencies map[string]string) {
 	t.Helper()
+	writeFixtureLockWith(t, root, dependencies, nil)
+}
+
+func writeFixtureLockWith(t *testing.T, root string, dependencies map[string]string, fixtures map[string][]Fixture) {
+	t.Helper()
 	entries := map[string]any{}
 	for key, dir := range dependencies {
 		manifestData, err := os.ReadFile(filepath.Join(root, dir, "can.project.json"))
@@ -83,7 +88,11 @@ func writeFixtureLock(t *testing.T, root string, dependencies map[string]string)
 		if err != nil {
 			t.Fatal(err)
 		}
-		entries[key] = map[string]any{"path": filepath.ToSlash(dir), "manifest_sha256": Digest(manifestData), "source_sha256": digest, "error_registry": registry}
+		fixtureDigest, err := FixtureDigest(fixtures[key])
+		if err != nil {
+			t.Fatal(err)
+		}
+		entries[key] = map[string]any{"path": filepath.ToSlash(dir), "manifest_sha256": Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry}
 	}
 	data, err := json.Marshal(map[string]any{"dependencies": entries})
 	if err != nil {

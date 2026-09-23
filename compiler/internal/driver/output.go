@@ -126,6 +126,15 @@ func BeginOutput(directory string) (store *OutputStore, err error) {
 				return nil, fmt.Errorf("dist contains source input")
 			}
 		}
+		for _, fixture := range p.CheckedFixtures {
+			input, e := project.ConfinedPath(p.Root, fixture.Relative, false)
+			if e != nil {
+				return nil, e
+			}
+			if withinOutput(distPath, input) {
+				return nil, fmt.Errorf("dist contains fixture input")
+			}
+		}
 	}
 	s.assetHashes, err = outputAssetHashes(s.Graph)
 	if err != nil {
@@ -210,13 +219,13 @@ func noSymlinkAncestors(absolute string) error {
 }
 func graphSnapshot(g *project.Graph) string {
 	type identity struct {
-		Key, Manifest, Source string
-		Registry              project.Registry
+		Key, Manifest, Source, Fixtures string
+		Registry                        project.Registry
 	}
 	var values []identity
 	for _, key := range sortedOutputKeys(g.Projects) {
 		p := g.Projects[key]
-		values = append(values, identity{key, p.ManifestSHA256, p.SourceSHA256, p.Registry})
+		values = append(values, identity{key, p.ManifestSHA256, p.SourceSHA256, p.FixturesSHA256, p.Registry})
 	}
 	raw, _ := json.Marshal(values)
 	return hashBytes(raw)
@@ -228,18 +237,18 @@ func (s *OutputStore) BuildInputs(compiler, catalogue, runtime, options string) 
 func (s *OutputStore) captureBuildInputs(compiler, catalogue, runtime, options string) BuildInputs {
 	root := s.Graph.Root
 	rootBytes, _ := json.Marshal(struct {
-		Manifest, Source string
-		Registry         project.Registry
-		Assets           map[string]string
-	}{root.ManifestSHA256, root.SourceSHA256, root.Registry, s.assetHashes[""]})
+		Manifest, Source, Fixtures, Lock string
+		Registry                         project.Registry
+		Assets                           map[string]string
+	}{root.ManifestSHA256, root.SourceSHA256, root.FixturesSHA256, s.Graph.LockSHA256, root.Registry, s.assetHashes[""]})
 	dependencies := map[string]any{}
 	for key, p := range s.Graph.Projects {
 		if key != "" {
 			dependencies[key] = struct {
-				Manifest, Source string
-				Registry         project.Registry
-				Assets           map[string]string
-			}{p.ManifestSHA256, p.SourceSHA256, p.Registry, s.assetHashes[key]}
+				Manifest, Source, Fixtures string
+				Registry                   project.Registry
+				Assets                     map[string]string
+			}{p.ManifestSHA256, p.SourceSHA256, p.FixturesSHA256, p.Registry, s.assetHashes[key]}
 		}
 	}
 	dependencyBytes, _ := json.Marshal(dependencies)

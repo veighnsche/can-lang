@@ -10,6 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/project"
 )
 
 func outputProject(t *testing.T) string {
@@ -605,5 +607,122 @@ func TestInterruptedStageNeverSelects(t *testing.T) {
 	}
 	if _, err = reopened.SelectCurrent(id); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func outputRawProject(t *testing.T) string {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{
+		"can.project.json":      `{"source_root":"src","error_registry":"can.errors.json"}`,
+		"can.errors.json":       `{"active":[],"retired":[]}`,
+		"src/main.can":          "package app\n    provides [one]\n    uses []\nfn int one\n    emits []\n    given\n        int value\n    asserts\n        sample: 1 => ok 2\n            using raw \"fixtures/one.json\"\n    ok value + 1\n",
+		"src/fixtures/one.json": `{"case":"one"}`,
+	}
+	for name, data := range files {
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(data), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return root
+}
+
+func TestPublicationRechecksFixtureEdits(t *testing.T) {
+	root := outputRawProject(t)
+	s := outputBegin(t, root)
+	first := outputPrepared(t, s, "export const value=1n;")
+	if _, err := s.Publish(first); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	candidate := outputPrepared(t, s, "export const value=2n;")
+	if err := os.WriteFile(filepath.Join(root, "src/fixtures/one.json"), []byte(`{"case":"edited"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Publish(candidate); err == nil || !strings.Contains(err.Error(), "inputs changed") {
+		t.Fatalf("edited fixture published: %v", err)
+	}
+	after, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+	if err != nil || !bytes.Equal(before, after) {
+		t.Fatal("previous current changed", err)
+	}
+}
+
+func outputVendorRawProject(t *testing.T, fixtureBytes string) string {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	vendorSource := "package gamma\n    provides [load]\n    uses []\nfn int load\n    emits []\n    given\n        int value\n    asserts\n        decoded: 1 => ok 2\n            using raw \"fixtures/load.json\"\n    ok value + 1\n"
+	write("can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	write("src/main.can", "package app\n    provides []\n    uses []\nint value = 1\n")
+	write("vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
+	write("vendor/can.errors.json", `{"active":[],"retired":[]}`)
+	write("vendor/src/lib.can", vendorSource)
+	write("vendor/src/fixtures/load.json", fixtureBytes)
+	manifestData, err := os.ReadFile(filepath.Join(root, "vendor/can.project.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	registry, err := project.ParseRegistry([]byte(`{"active":[],"retired":[]}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	sourceDigest, err := project.SourceDigest([]project.SourceBytes{{Path: "lib.can", Bytes: []byte(vendorSource)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixtureDigest, err := project.FixtureDigest([]project.Fixture{{Relative: "src/fixtures/load.json", Bytes: []byte(fixtureBytes)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{
+		"path": "vendor", "manifest_sha256": project.Digest(manifestData),
+		"source_sha256": sourceDigest, "fixtures_sha256": fixtureDigest, "error_registry": registry}}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	write("can.lock.json", string(lock))
+	return root
+}
+
+func TestBuildInputsChangeOnFixtureOnlyDependencyEdit(t *testing.T) {
+	first := outputBegin(t, outputVendorRawProject(t, `{"version":1}`))
+	second := outputBegin(t, outputVendorRawProject(t, `{"version":2}`))
+	one := first.BuildInputs("compiler", "catalogue", "runtime", "options")
+	two := second.BuildInputs("compiler", "catalogue", "runtime", "options")
+	// The dependency component binds the fixture tree; the root component
+	// binds the lock bytes, so a fixture-only change moves both.
+	if one.Dependencies == two.Dependencies {
+		t.Fatal("fixture-only change kept the dependency identity")
+	}
+	if one.Source == two.Source {
+		t.Fatal("fixture-only change kept the root identity")
+	}
+	vendor, other := first.Graph.Projects["vendor"], second.Graph.Projects["vendor"]
+	if vendor.ManifestSHA256 != other.ManifestSHA256 || vendor.SourceSHA256 != other.SourceSHA256 {
+		t.Fatal("manifest/source identity moved on a fixture-only change")
 	}
 }

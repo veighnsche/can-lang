@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
@@ -16,9 +15,6 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 )
-
-// maxRawFixtureBytes bounds one staged raw exchange document.
-const maxRawFixtureBytes = 8388608
 
 // RawFixture is a validated can.native-fixture.v1 document. Bodies stay in
 // their authored base64/UTF-8 form; emit embeds them verbatim.
@@ -393,25 +389,11 @@ func (c *programChecker) rawScope(file *resolve.File) *RawScope {
 		scope.Natives[native.Symbol.ID] = native
 	}
 	scope.Load = func(path string) (*RawFixture, error) {
-		if path == "" || filepath.IsAbs(path) || !utf8.ValidString(path) {
-			return nil, fmt.Errorf("raw fixture %q must be a source-relative path", path)
-		}
-		real, err := filepath.EvalSymlinks(filepath.Join(directory, filepath.FromSlash(path)))
+		data, err := owner.FixtureBytes(directory, path)
 		if err != nil {
-			return nil, fmt.Errorf("raw fixture %q is not readable", path)
+			return nil, err
 		}
-		confined, err := filepath.EvalSymlinks(owner.Root)
-		if err != nil {
-			return nil, fmt.Errorf("raw fixture %q escapes its project", path)
-		}
-		if !project.Contains(confined, real) {
-			return nil, fmt.Errorf("raw fixture %q escapes its project", path)
-		}
-		data, err := os.ReadFile(real)
-		if err != nil {
-			return nil, fmt.Errorf("raw fixture %q is not readable", path)
-		}
-		if len(data) > maxRawFixtureBytes {
+		if len(data) > project.MaxFixtureBytes {
 			return nil, fmt.Errorf("raw fixture %q exceeds its size bound", path)
 		}
 		fixture, err := ParseRawFixture(data)

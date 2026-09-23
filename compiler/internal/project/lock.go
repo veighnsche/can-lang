@@ -19,8 +19,8 @@ type Registry struct {
 	Retired []uint64          `json:"retired"`
 }
 type LockEntry struct {
-	Path, ManifestSHA256, SourceSHA256 string
-	ErrorRegistry                      Registry
+	Path, ManifestSHA256, SourceSHA256, FixturesSHA256 string
+	ErrorRegistry                                      Registry
 }
 type Lock struct{ Dependencies map[string]LockEntry }
 
@@ -109,12 +109,12 @@ func ParseLock(data []byte) (Lock, error) {
 		if !Identifier(name) {
 			return lock, fmt.Errorf("invalid dependency lock identity %q", name)
 		}
-		fields, err := object(entries[name], []string{"path", "manifest_sha256", "source_sha256", "error_registry"}, nil)
+		fields, err := object(entries[name], []string{"path", "manifest_sha256", "source_sha256", "fixtures_sha256", "error_registry"}, nil)
 		if err != nil {
 			return lock, err
 		}
 		entry := LockEntry{}
-		destinations := map[string]*string{"path": &entry.Path, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256}
+		destinations := map[string]*string{"path": &entry.Path, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256, "fixtures_sha256": &entry.FixturesSHA256}
 		for _, key := range sortedKeys(destinations) {
 			dest := destinations[key]
 			value, err := text(fields[key])
@@ -126,7 +126,7 @@ func ParseLock(data []byte) (Lock, error) {
 		if err := NormalizePath(entry.Path); err != nil {
 			return lock, err
 		}
-		for _, digest := range []string{entry.ManifestSHA256, entry.SourceSHA256} {
+		for _, digest := range []string{entry.ManifestSHA256, entry.SourceSHA256, entry.FixturesSHA256} {
 			if len(digest) != 64 || strings.ToLower(digest) != digest {
 				return lock, fmt.Errorf("lock digest must be 64 lowercase hexadecimal characters")
 			}

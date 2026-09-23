@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"unicode/utf8"
 
 	"github.com/veighnsche/can-lang/compiler/internal/project"
@@ -15,23 +14,23 @@ func outputAssetHashes(graph *project.Graph) (map[string]map[string]string, erro
 	result := map[string]map[string]string{}
 	for key, p := range graph.Projects {
 		result[key] = map[string]string{}
-		for name, relative := range p.Manifest.Assets {
-			filename, err := project.ConfinedPath(p.Root, relative, false)
-			if err != nil {
-				return nil, err
+		captured := map[string]string{}
+		for _, asset := range p.CheckedAssets {
+			captured[asset.Name] = asset.Digest
+		}
+		for name := range p.Manifest.Assets {
+			digest, ok := captured[name]
+			if !ok {
+				return nil, fmt.Errorf("asset %q was not captured with its project inputs", name)
 			}
-			data, err := os.ReadFile(filename)
-			if err != nil {
-				return nil, err
-			}
-			result[key][name] = hashBytes(data)
+			result[key][name] = digest
 		}
 	}
 	return result, nil
 }
 func outputSnapshot(graph *project.Graph, assets map[string]map[string]string) string {
 	raw, _ := json.Marshal(assets)
-	return hashBytes(append([]byte(graphSnapshot(graph)), raw...))
+	return hashBytes(append([]byte(graphSnapshot(graph)+"\x00"+graph.LockSHA256), raw...))
 }
 
 // Native JSON tokenization owns grammar and key decoding; this finite walk only

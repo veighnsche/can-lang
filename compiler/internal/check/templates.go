@@ -230,7 +230,7 @@ func (c *programChecker) expandTemplateUse(file *resolve.File, scope *resolve.Sc
 	}
 	rows := make([]ir.FixtureRow, 0, len(template.Rows))
 	for i, def := range template.Rows {
-		substituted, err := substituteRow(def, args)
+		substituted, err := substituteRow(def, args, template.File.Source.ID)
 		if err != nil {
 			return fail(row.Use.Span, fmt.Errorf("case %d: %w", i+1, err))
 		}
@@ -240,15 +240,16 @@ func (c *programChecker) expandTemplateUse(file *resolve.File, scope *resolve.Sc
 	return rows, template, nil
 }
 
-
 // substituteRow replaces parameter bindings in one definition row with
-// copies of the checked use-argument IR. Raw exchanges carry no
-// parameters and are reused by value.
-func substituteRow(row ir.FixtureRow, args map[string]*ir.Expression) (ir.FixtureRow, error) {
+// copies of the checked use-argument IR. Definition nodes are tagged with
+// the definition source ID so their spans keep addressing the definition
+// file after expansion; use-argument copies keep the use file. Raw
+// exchanges carry no parameters and are reused by value.
+func substituteRow(row ir.FixtureRow, args map[string]*ir.Expression, source string) (ir.FixtureRow, error) {
 	out := row
 	out.Prepare = make([]ir.Preparation, 0, len(row.Prepare))
 	for _, prep := range row.Prepare {
-		value, err := substituteIR(prep.Value, args)
+		value, err := substituteIR(prep.Value, args, source)
 		if err != nil {
 			return ir.FixtureRow{}, err
 		}
@@ -256,14 +257,14 @@ func substituteRow(row ir.FixtureRow, args map[string]*ir.Expression) (ir.Fixtur
 	}
 	out.Arguments = make([]*ir.Expression, 0, len(row.Arguments))
 	for _, arg := range row.Arguments {
-		substituted, err := substituteIR(arg, args)
+		substituted, err := substituteIR(arg, args, source)
 		if err != nil {
 			return ir.FixtureRow{}, err
 		}
 		out.Arguments = append(out.Arguments, substituted)
 	}
 	if row.Expected != nil {
-		expected, err := substituteCompletion(row.Expected, args)
+		expected, err := substituteCompletion(row.Expected, args, source)
 		if err != nil {
 			return ir.FixtureRow{}, err
 		}
@@ -276,13 +277,13 @@ func substituteRow(row ir.FixtureRow, args map[string]*ir.Expression) (ir.Fixtur
 	return out, nil
 }
 
-func substituteCompletion(completion *ir.Completion, args map[string]*ir.Expression) (*ir.Completion, error) {
+func substituteCompletion(completion *ir.Completion, args map[string]*ir.Expression, source string) (*ir.Completion, error) {
 	if completion.Call != nil || completion.Block != nil || completion.Match != nil || completion.Inherit != "" {
 		return nil, fmt.Errorf("template completion is outside the inert subset")
 	}
 	out := *completion
 	if completion.Value != nil {
-		value, err := substituteIR(completion.Value, args)
+		value, err := substituteIR(completion.Value, args, source)
 		if err != nil {
 			return nil, err
 		}
@@ -294,7 +295,7 @@ func substituteCompletion(completion *ir.Completion, args map[string]*ir.Express
 // substituteIR replaces parameter bindings with copies of the checked
 // use arguments. Executable IR (invocations, matches, coordination,
 // callables) fails closed: inert cases cannot produce it.
-func substituteIR(expr *ir.Expression, args map[string]*ir.Expression) (*ir.Expression, error) {
+func substituteIR(expr *ir.Expression, args map[string]*ir.Expression, source string) (*ir.Expression, error) {
 	if expr == nil {
 		return nil, nil
 	}
@@ -307,9 +308,12 @@ func substituteIR(expr *ir.Expression, args map[string]*ir.Expression) (*ir.Expr
 		return nil, fmt.Errorf("template expression is outside the inert subset")
 	}
 	out := *expr
+	if source != "" {
+		out.Source = source
+	}
 	out.Inputs = make([]*ir.Expression, 0, len(expr.Inputs))
 	for _, input := range expr.Inputs {
-		substituted, err := substituteIR(input, args)
+		substituted, err := substituteIR(input, args, source)
 		if err != nil {
 			return nil, err
 		}
@@ -325,5 +329,5 @@ func substituteIR(expr *ir.Expression, args map[string]*ir.Expression) (*ir.Expr
 // copyIR deep-copies a checked use argument so each expanded row owns its
 // expressions.
 func copyIR(expr *ir.Expression) (*ir.Expression, error) {
-	return substituteIR(expr, nil)
+	return substituteIR(expr, nil, "")
 }

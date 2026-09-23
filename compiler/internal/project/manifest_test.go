@@ -126,11 +126,11 @@ func TestRegistryAndLockExactContracts(t *testing.T) {
 		}
 	}
 	digest := strings.Repeat("a", 64)
-	lock := `{"dependencies":{"vendor":{"path":"vendor","manifest_sha256":"` + digest + `","source_sha256":"` + digest + `","error_registry":` + registry + `}}}`
+	lock := `{"dependencies":{"vendor":{"path":"vendor","manifest_sha256":"` + digest + `","source_sha256":"` + digest + `","fixtures_sha256":"` + digest + `","error_registry":` + registry + `}}}`
 	if _, err := ParseLock([]byte(lock)); err != nil {
 		t.Fatal(err)
 	}
-	for _, pair := range [][2]string{{`"path":"vendor"`, `"path":"../vendor"`}, {digest, strings.Repeat("A", 64)}, {digest, "00"}, {`"path":`, `"hook":"run","path":`}, {`"dependencies":`, `"dependencies":{},"dependencies":`}} {
+	for _, pair := range [][2]string{{`"path":"vendor"`, `"path":"../vendor"`}, {digest, strings.Repeat("A", 64)}, {digest, "00"}, {`"path":`, `"hook":"run","path":`}, {`"dependencies":`, `"dependencies":{},"dependencies":`}, {`,"fixtures_sha256":"` + digest + `"`, ``}, {`"fixtures_sha256":"` + digest + `"`, `"fixtures_sha256":"00"`}} {
 		if _, err := ParseLock([]byte(strings.Replace(lock, pair[0], pair[1], 1))); err == nil {
 			t.Fatal(pair)
 		}

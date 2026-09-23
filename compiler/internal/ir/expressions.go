@@ -47,7 +47,11 @@ type Expression struct {
 	Match        *Match
 	Kind         ExpressionKind
 	Span         source.Span
-	Type         *types.Type
+	// Source is the defining source ID for template-substituted nodes,
+	// whose spans address the definition file rather than the emitting
+	// region's module. Empty means the region's own module.
+	Source string
+	Type   *types.Type
 	// Text is decoded string data, exact numeric spelling, an operator, a field
 	// name, or a resolved binding identity according to Kind; never emitted code.
 	Text      string

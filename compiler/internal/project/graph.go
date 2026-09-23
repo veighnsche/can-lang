@@ -21,16 +21,21 @@ type Graph struct {
 	Projects map[string]*Project // empty key is the root; dependency keys are global
 	Packages map[string]*Package // flat source names are globally unique
 	Lock     Lock
+	// LockSHA256 binds the exact can.lock.json bytes into verification
+	// identity. It is empty when the root project carries no lock file.
+	LockSHA256 string
 }
 type Project struct {
 	Key, ID, Root                string
 	Manifest                     Manifest
 	ManifestSHA256, SourceSHA256 string
+	FixturesSHA256               string
 	Registry                     Registry
 	Dependencies                 map[string]*Project
 	Packages                     []*Package
 	Sources                      []*Source
 	CheckedAssets                []Asset
+	CheckedFixtures              []Fixture
 }
 type Package struct {
 	Name, ID, Directory, OutputDirectory string
@@ -86,6 +91,7 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 		if err != nil {
 			return nil, fmt.Errorf("can.lock.json: %w", err)
 		}
+		g.LockSHA256 = Digest(data)
 	} else if !os.IsNotExist(err) {
 		return nil, err
 	}
@@ -156,6 +162,9 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 			return nil, err
 		}
 		if err := verifySourceRegistry(project); err != nil {
+			return nil, err
+		}
+		if err := project.captureFixtures(); err != nil {
 			return nil, err
 		}
 		return project, nil
@@ -353,7 +362,7 @@ func (g *Graph) verifyLock() error {
 		if real != project.Root {
 			return fmt.Errorf("dependency lock path mismatch for %q", key)
 		}
-		if entry.ManifestSHA256 != project.ManifestSHA256 || entry.SourceSHA256 != project.SourceSHA256 {
+		if entry.ManifestSHA256 != project.ManifestSHA256 || entry.SourceSHA256 != project.SourceSHA256 || entry.FixturesSHA256 != project.FixturesSHA256 {
 			return fmt.Errorf("stale dependency digest for %q", key)
 		}
 		if !reflect.DeepEqual(entry.ErrorRegistry, project.Registry) {

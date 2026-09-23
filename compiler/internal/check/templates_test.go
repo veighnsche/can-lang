@@ -9,6 +9,7 @@ import (
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 )
 
 const templateTarget = `fn int double
@@ -252,6 +253,70 @@ func TestFixtureImportedTemplateResolvesRawAtDefinition(t *testing.T) {
 	}
 }
 
+func TestFixtureExpansionTagsDefinitionSources(t *testing.T) {
+	// Expanded rows mix definition and use nodes; every span must validate
+	// against its attributed file or source-map encoding fails the stage.
+	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
+	main := "package app\n    provides []\n    uses [http, codec, helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
+	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{
+		"src/lib.can":               vendor,
+		"src/fixtures/load.json":    nativeRawFixture("can.project.dependency/vendor/helpers::load"),
+		"src/fixtures/fetched.json": nativeRawFixture("can.project.dependency/vendor/helpers::load"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]*source.File{}
+	for src := range program.World.Files {
+		files[src.ID] = src.Syntax.Source
+	}
+	definition := "can.project.dependency/vendor/helpers/lib.can"
+	use := "can.project.root/app/main.can"
+	if files[definition] == nil || files[use] == nil {
+		t.Fatal("world omits definition or use file")
+	}
+	seenDefinition, seenUse := false, false
+	var walk func(*ir.Expression)
+	walk = func(expr *ir.Expression) {
+		if expr == nil {
+			return
+		}
+		attributed := use
+		if expr.Source != "" {
+			attributed = expr.Source
+		}
+		if err := files[attributed].Validate(expr.Span); err != nil {
+			t.Fatalf("expanded span %+v invalid for %s: %v", expr.Span, attributed, err)
+		}
+		switch attributed {
+		case definition:
+			seenDefinition = true
+		case use:
+			seenUse = true
+		default:
+			t.Fatalf("expanded node attributed to %s", attributed)
+		}
+		for _, input := range expr.Inputs {
+			walk(input)
+		}
+	}
+	step := templateFixtureSteps(t, program, "consumer")
+	for _, row := range step.Fixtures.Rows {
+		for _, arg := range row.Arguments {
+			walk(arg)
+		}
+		if row.Expected != nil && row.Expected.Value != nil {
+			walk(row.Expected.Value)
+		}
+		for _, prep := range row.Prepare {
+			walk(prep.Value)
+		}
+	}
+	if !seenDefinition || !seenUse {
+		t.Fatalf("expansion missing definition (%t) or use (%t) nodes", seenDefinition, seenUse)
+	}
+}
+
 // programFixtureWithVendor stages a main project with one locked vendor
 // dependency. Vendor sources live in their own directory, so raw paths
 // prove definition-relative resolution.
@@ -276,10 +341,15 @@ func programFixtureWithVendor(t *testing.T, main, vendor map[string]string) (*Pr
 		write(name, text)
 	}
 	var sources []project.SourceBytes
+	var fixtures []project.Fixture
 	for name, text := range vendor {
 		write("vendor/"+name, text)
 		if strings.HasSuffix(name, ".can") {
 			sources = append(sources, project.SourceBytes{Path: strings.TrimPrefix(name, "src/"), Bytes: []byte(text)})
+		} else {
+			// The helper stages only raw files the vendor sources
+			// reference, so every extra file joins the lock digest.
+			fixtures = append(fixtures, project.Fixture{Relative: name, Bytes: []byte(text)})
 		}
 	}
 	manifestData, err := os.ReadFile(filepath.Join(root, "vendor/can.project.json"))
@@ -298,7 +368,11 @@ func programFixtureWithVendor(t *testing.T, main, vendor map[string]string) (*Pr
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{"path": "vendor", "manifest_sha256": project.Digest(manifestData), "source_sha256": digest, "error_registry": registry}}})
+	fixtureDigest, err := project.FixtureDigest(fixtures)
+	if err != nil {
+		t.Fatal(err)
+	}
+	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{"path": "vendor", "manifest_sha256": project.Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry}}})
 	if err != nil {
 		t.Fatal(err)
 	}

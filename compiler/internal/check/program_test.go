@@ -46,8 +46,8 @@ func withNativeRaw(files map[string]string, names ...string) map[string]string {
 	return files
 }
 
-// testdataFixtures stages the committed raw exchange fixtures for one current
-// area next to the compiled main source.
+// testdataFixtures stages the committed raw fixtures for an area next to the
+// staged sources so using-raw rows resolve exactly as in real projects.
 func testdataFixtures(t *testing.T, files map[string]string, area string) map[string]string {
 	t.Helper()
 	entries, err := os.ReadDir("../../testdata/current/" + area + "/fixtures")
