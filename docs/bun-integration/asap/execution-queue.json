@@ -950,7 +950,7 @@
       "depends": [
         "ASAP-ARCH"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Qualify Bun.markdown.html and render callback inputs/order. Do not invent a token/AST API because callbacks exist; record whether callbacks receive source text, escaped text or already-rendered children."
     },
     {
@@ -959,7 +959,7 @@
       "depends": [
         "B1-12.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Return native HTML as str with an explicit raw-HTML policy. Prevent implicit conversion of that string into html::safe or a trusted HTTP HTML response."
     },
     {
@@ -968,7 +968,7 @@
       "depends": [
         "B1-12.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Prototype safe rendering through native callbacks using private trusted construction. Disable raw HTML blocks/spans; enforce URL scheme and attribute rules; preserve escaping exactly once."
     },
     {
@@ -977,7 +977,7 @@
       "depends": [
         "B1-12.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Audit native callback completeness before claiming safe mode. If callbacks cannot expose enough structured information for the existing builder, ship string rendering and keep safe mode blocked with a reproducer; never regex-sanitize HTML or brand it safe."
     },
     {
@@ -986,7 +986,7 @@
       "depends": [
         "B1-12.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Extend the safe HTML element allowlist only for required Markdown structures such as code/pre, with precise attribute policy. Reuse existing node/URL validation rather than duplicate a sanitizer."
     },
     {
@@ -995,7 +995,7 @@
       "depends": [
         "B1-12.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify options, input/output budgets and callback failure bounds. Native synchronous parsing cannot be interrupted by a JavaScript timeout; do not promise a hard per-render deadline without an execution strategy."
     },
     {
@@ -1004,7 +1004,7 @@
       "depends": [
         "B1-12.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add ordinary display, safe HTTP response and structured-renderer examples, with attached assertions that execute native parsing."
     },
     {
@@ -1013,7 +1013,7 @@
       "depends": [
         "B1-12.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {

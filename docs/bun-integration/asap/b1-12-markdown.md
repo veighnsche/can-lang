@@ -79,3 +79,17 @@ Do not check off this capability until its acceptance cases, local fixture behav
 ## Callback execution constraint
 
 Native Markdown render callbacks are synchronous string transformations. Can handlers lowered as async Completion-returning functions cannot be passed directly into them. The initial safe renderer uses compiler-private synchronous native callbacks with validated fragment construction. Any public render_with API needs a proven staged callback/structure design compatible with Can handler errors and ownership; it must not stringify a Promise or bypass checked invocation. Keep that subpart visible if the gate fails. Do not redesign Can callables merely to fit this native API.
+
+## Outcome (2026-09-23)
+
+The gate passed: corrected probes show the native callback feed is
+structurally complete for the CommonMark plus GFM core (lists with task
+state, tables with alignment, headings with ids), so safe mode shipped
+instead of staying blocked. `markdown::render_text_html` returns native
+output as an ordinary string; `markdown::render_safe` rebuilds trusted
+nodes through the `html.ts` factory with strict https-plus-local links,
+soft-normalized breaks and parser-demoted raw markup. The `render_with`
+subpart stays deferred per the callback execution constraint above: no
+staged design compatible with Can handler errors and ownership was
+proven. See the [B1-12b decision audit](evidence/consultations-b1-12b/decision-audit.md)
+and the [exit record](decisions.md).
