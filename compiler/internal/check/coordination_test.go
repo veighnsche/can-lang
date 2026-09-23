@@ -2,14 +2,13 @@ package check
 
 import (
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/veighnsche/can-lang/compiler/internal/project"
-	"github.com/veighnsche/can-lang/compiler/internal/source"
 )
 
 const coordinationDeclarations = `fn int number
@@ -48,7 +47,7 @@ func TestCoordinationAggregateComposition(t *testing.T) {
 	if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil || !strings.Contains(err.Error(), "ambiguous") {
 		t.Fatalf("distinct aggregate specializations admitted under one bare arm: %v", err)
 	}
-	bad = strings.Replace(source, "            combined_failure[] values = call widen_a(all_failed.failures)", "            combined_failure[] values = all_failed.failures", 1)
+	bad = strings.Replace(source, "            combined_failure[] values = call all_failed.failures.map(callable widen_one)", "            combined_failure[] values = all_failed.failures", 1)
 	if _, err := programFixture(t, map[string]string{"src/main.can": bad}); err == nil {
 		t.Fatal("aggregate normalization admitted array covariance")
 	}
@@ -70,6 +69,38 @@ func TestCoordinationAggregateComposition(t *testing.T) {
 	}
 }
 
+func TestMapAggregateConversionRejections(t *testing.T) {
+	source := exactComposition(t)
+	narrow := source + `variant narrow_failure
+    codec::invalid_data
+fn narrow_failure bad_one
+    emits []
+    given
+        a_failure item
+    asserts
+        data: codec::invalid_data("a", "type") => ok codec::invalid_data("a", "type")
+    ok item
+`
+	if _, err := programFixture(t, map[string]string{"src/main.can": narrow}); err == nil || !strings.Contains(err.Error(), "expression type does not fit expected type") {
+		t.Fatalf("converter omitting a leaf admitted: %v", err)
+	}
+	badInput := strings.Replace(source, "call all_failed.failures.map(callable widen_one)", "call all_failed.failures.map(callable describe)", 1)
+	if _, err := programFixture(t, map[string]string{"src/main.can": badInput}); err == nil || !strings.Contains(err.Error(), "array.map: callback inputs must equal element and accumulator types") {
+		t.Fatalf("map callback with foreign input admitted: %v", err)
+	}
+	counting := source + `fn int count_leaves
+    emits []
+    given
+        a_failure item
+    asserts
+        data: codec::invalid_data("a", "type") => ok 1
+    ok 1
+`
+	badResult := strings.Replace(counting, "call all_failed.failures.map(callable widen_one)", "call all_failed.failures.map(callable count_leaves)", 1)
+	if _, err := programFixture(t, map[string]string{"src/main.can": badResult}); err == nil || !strings.Contains(err.Error(), "expression type does not fit expected type") {
+		t.Fatalf("map callback with foreign result admitted: %v", err)
+	}
+}
 func TestCheckedConcurrentHandlers(t *testing.T) {
 	for _, tc := range []struct{ header, body string }{
 		{"concurrent", `        number()

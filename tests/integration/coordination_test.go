@@ -29,7 +29,7 @@ func TestCurrentBundledCoordination(t *testing.T) {
 	qualified := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "runtime/bun"), "--no-env-file", "--no-macros", "--no-install", "--config="+filepath.Join(bundle, "tools/runtime/bunfig.toml"), "test", filepath.Join(bundle, "runtime/test/coordination.test.ts"))
 	qualified.Dir = t.TempDir()
 	qualified.Env = []string{"PATH=/nonexistent", "HOME=" + qualified.Dir, "XDG_CONFIG_HOME=" + qualified.Dir}
-	if output, err := qualified.CombinedOutput(); err != nil || !strings.Contains(string(output), "14 pass") || !strings.Contains(string(output), "0 fail") {
+	if output, err := qualified.CombinedOutput(); err != nil || !strings.Contains(string(output), "15 pass") || !strings.Contains(string(output), "0 fail") {
 		t.Fatalf("offline coordination traces: %v\n%s", err, output)
 	}
 	root, err := filepath.EvalSymlinks(t.TempDir())
@@ -71,7 +71,7 @@ func TestCurrentBundledCoordination(t *testing.T) {
 	for _, fixture := range []struct {
 		name string
 		rows int
-	}{{"main", 8}, {"aggregate-composition", 25}, {"heterogeneous", 7}} {
+	}{{"main", 8}, {"aggregate-composition", 37}, {"heterogeneous", 7}} {
 		data, err := os.ReadFile(filepath.Join(sourceRoot, "compiler/testdata/current/coordination", fixture.name+".can"))
 		if err != nil {
 			t.Fatal(err)

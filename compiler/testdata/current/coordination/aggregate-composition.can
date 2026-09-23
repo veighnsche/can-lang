@@ -15,57 +15,69 @@ fn int original_a
     asserts
         sample: => all_failed<a_failure>([codec::invalid_data("a", "type")])
     all_failed<a_failure>([codec::invalid_data("a", "type")])
-fn combined_failure[] widen_a
+fn combined_failure widen_one
     emits []
     given
-        a_failure[] failures
+        a_failure item
     asserts
-        empty: [] => ok []
-    match failures
-        [] => ok []
-        [head, ...tail] => do
-            combined_failure first = match head
-                codec::invalid_data => head
-                standard_failure => head
-            combined_failure[] rest = call widen_a(tail)
-            ok [first, ...rest]
+        data: codec::invalid_data("a", "type") => ok codec::invalid_data("a", "type")
+        other: codec::invalid_data("b", "reason") => ok codec::invalid_data("b", "reason")
+    ok item
 fn int normalized_a
     emits [all_failed<combined_failure>]
     asserts
         sample: => all_failed<combined_failure>([codec::invalid_data("a", "type")])
     match call original_a()
         all_failed => do
-            combined_failure[] values = call widen_a(all_failed.failures)
+            combined_failure[] values = call all_failed.failures.map(callable widen_one)
             all_failed<combined_failure>(values)
         ok
+fn int normalize_many_a
+    emits [all_failed<combined_failure>]
+    given
+        a_failure[] failures
+    asserts
+        empty: [] => all_failed<combined_failure>([])
+        singleton: [codec::invalid_data("solo", "type")] => all_failed<combined_failure>([codec::invalid_data("solo", "type")])
+        repeated: [codec::invalid_data("a", "type"), codec::invalid_data("a", "type")] => all_failed<combined_failure>([codec::invalid_data("a", "type"), codec::invalid_data("a", "type")])
+        mixed: [codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type")] => all_failed<combined_failure>([codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type")])
+        large: [codec::invalid_data("a0", "type"), codec::invalid_data("b0", "reason"), codec::invalid_data("c0", "type"), codec::invalid_data("d0", "witness"), codec::invalid_data("a1", "type"), codec::invalid_data("b1", "reason"), codec::invalid_data("c1", "type"), codec::invalid_data("d1", "witness"), codec::invalid_data("a2", "type"), codec::invalid_data("b2", "reason"), codec::invalid_data("c2", "type"), codec::invalid_data("d2", "witness")] => all_failed<combined_failure>([codec::invalid_data("a0", "type"), codec::invalid_data("b0", "reason"), codec::invalid_data("c0", "type"), codec::invalid_data("d0", "witness"), codec::invalid_data("a1", "type"), codec::invalid_data("b1", "reason"), codec::invalid_data("c1", "type"), codec::invalid_data("d1", "witness"), codec::invalid_data("a2", "type"), codec::invalid_data("b2", "reason"), codec::invalid_data("c2", "type"), codec::invalid_data("d2", "witness")])
+    combined_failure[] values = call failures.map(callable widen_one)
+    all_failed<combined_failure>(values)
 fn int original_b
     emits [all_failed<b_failure>]
     asserts
         sample: => all_failed<b_failure>([codec::invalid_data("b", "type")])
     all_failed<b_failure>([codec::invalid_data("b", "type")])
-fn combined_failure[] widen_b
+fn combined_failure widen_b_one
     emits []
     given
-        b_failure[] failures
+        b_failure item
     asserts
-        empty: [] => ok []
-    match failures
-        [] => ok []
-        [head, ...tail] => do
-            combined_failure first = match head
-                codec::invalid_data => head
-                standard_failure => head
-            combined_failure[] rest = call widen_b(tail)
-            ok [first, ...rest]
+        data: codec::invalid_data("b", "type") => ok codec::invalid_data("b", "type")
+        other: codec::invalid_data("a", "reason") => ok codec::invalid_data("a", "reason")
+    ok item
 fn int normalized_b
     emits [all_failed<combined_failure>]
     asserts
         sample: => all_failed<combined_failure>([codec::invalid_data("b", "type")])
     match call original_b()
         all_failed => do
-            combined_failure[] values = call widen_b(all_failed.failures)
+            combined_failure[] values = call all_failed.failures.map(callable widen_b_one)
             all_failed<combined_failure>(values)
         ok
+fn int normalize_many_b
+    emits [all_failed<combined_failure>]
+    given
+        b_failure[] failures
+    asserts
+        empty: [] => all_failed<combined_failure>([])
+        singleton: [codec::invalid_data("solo", "type")] => all_failed<combined_failure>([codec::invalid_data("solo", "type")])
+        repeated: [codec::invalid_data("b", "type"), codec::invalid_data("b", "type")] => all_failed<combined_failure>([codec::invalid_data("b", "type"), codec::invalid_data("b", "type")])
+        mixed: [codec::invalid_data("a", "reason"), codec::invalid_data("b", "type"), codec::invalid_data("c", "witness")] => all_failed<combined_failure>([codec::invalid_data("a", "reason"), codec::invalid_data("b", "type"), codec::invalid_data("c", "witness")])
+        large: [codec::invalid_data("a0", "reason"), codec::invalid_data("b0", "type"), codec::invalid_data("c0", "witness"), codec::invalid_data("d0", "type"), codec::invalid_data("a1", "reason"), codec::invalid_data("b1", "type"), codec::invalid_data("c1", "witness"), codec::invalid_data("d1", "type"), codec::invalid_data("a2", "reason"), codec::invalid_data("b2", "type"), codec::invalid_data("c2", "witness"), codec::invalid_data("d2", "type")] => all_failed<combined_failure>([codec::invalid_data("a0", "reason"), codec::invalid_data("b0", "type"), codec::invalid_data("c0", "witness"), codec::invalid_data("d0", "type"), codec::invalid_data("a1", "reason"), codec::invalid_data("b1", "type"), codec::invalid_data("c1", "witness"), codec::invalid_data("d1", "type"), codec::invalid_data("a2", "reason"), codec::invalid_data("b2", "type"), codec::invalid_data("c2", "witness"), codec::invalid_data("d2", "type")])
+    combined_failure[] values = call failures.map(callable widen_b_one)
+    all_failed<combined_failure>(values)
 fn str describe
     emits []
     given

@@ -244,7 +244,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF15-summary.json, LF15-check.log (driver + check raw-fixture suites pass), LF15-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF15-integration.log (integration+driver+emit all ok), LF15-runtime.log (346 pass across 59 files; run scoped to runtime/, see commit note). Verified-build gate: passing/failing/timeout/uncovered/sticky/dependency/liveness projects, frozen passing/failing/pending fixtures, staged 8 suites with CLI flag matrix. Reproduction commands in the summary.
 
-- [ ] **LF16 — Replace recursive aggregate widening with explicit native mapping**
+- [x] **LF16 — Replace recursive aggregate widening with explicit native mapping**
 
   **Depends on:** LF05, LF07. **Acceptance:** AE18.
 
@@ -258,7 +258,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Run recursive and map baselines on identical data, including data-valued then fields; measure actual reduced scaffolding. If the idiom fails, save the reproducer and resolve the defect without inventing an abstraction.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF16-summary.json, LF16-check.log (coordination/exact-head/new rejections/array suites pass), LF16-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF16-runtime.log (347 pass across 59 files; run scoped to runtime/, see LF15 note), LF16-integration.log (staged integration+driver+emit all ok), LF16-diff-main.can + LF16-diff-report.json (15-row recursive-vs-map differential incl. real snapshot occurrence compare, full pass + verified build + run). widen_one/widen_b_one converters + map call sites + explicit reconstruction replace 28 recursive lines (2 call sites changed; fixture rows 25→37 with per-variant empty/singleton/repeated/mixed/12-large matrices); covariance/omitted-leaf/callback-contract negatives reject; runtime snapshot-identity test; coordination.md idiom documented. Reproduction commands in the summary.
 
 - [ ] **LF17 — Complete obligation diagnostics and checker-validated fixes**
 

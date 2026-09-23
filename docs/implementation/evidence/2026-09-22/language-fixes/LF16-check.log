@@ -1,0 +1,12 @@
+--- PASS: TestCoordinationAggregateComposition (0.47s)
+--- PASS: TestMapAggregateConversionRejections (0.22s)
+--- PASS: TestExactHeadRejections (0.61s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	1.474s
+===ARRAY===
+--- PASS: TestArrayCatalogueCalls (0.26s)
+--- PASS: TestArrayCatalogueRejectsWrongCallbacks (0.57s)
+--- PASS: TestArrayCatalogueRejectsLostErrorBound (0.15s)
+--- PASS: TestArrayInferenceAndSpreadRejections (0.72s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	1.831s

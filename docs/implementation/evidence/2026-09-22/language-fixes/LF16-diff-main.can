@@ -1,0 +1,124 @@
+package app
+    provides []
+    uses [codec]
+variant a_failure
+    codec::invalid_data
+    standard_failure
+variant combined_failure
+    codec::invalid_data
+    standard_failure
+fn int boom
+    emits []
+    given
+        int zero
+    asserts
+        sample: 1 => ok 1
+    ok 1 / zero
+fn combined_failure widen_one
+    emits []
+    given
+        a_failure item
+    asserts
+        data: codec::invalid_data("a", "type") => ok codec::invalid_data("a", "type")
+        other: codec::invalid_data("b", "reason") => ok codec::invalid_data("b", "reason")
+    ok item
+fn combined_failure[] widen_a
+    emits []
+    given
+        a_failure[] failures
+    asserts
+        empty: [] => ok []
+    match failures
+        [] => ok []
+        [head, ...tail] => do
+            combined_failure first = match head
+                codec::invalid_data => head
+                standard_failure => head
+            combined_failure[] rest = call widen_a(tail)
+            ok [first, ...rest]
+fn str append_key
+    emits []
+    given
+        str acc
+        combined_failure item
+    asserts
+        data: "", codec::invalid_data("a", "type") => ok ";a:type"
+    match item
+        codec::invalid_data => ok acc + ";" + item.path + ":" + item.reason
+        standard_failure => ok acc + ";!"
+fn str joined
+    emits []
+    given
+        combined_failure[] values
+    asserts
+        sample: [codec::invalid_data("a", "type")] => ok ";a:type"
+        empty: [] => ok ""
+    ok call values.fold("", callable append_key)
+fn bool compare_empty
+    emits []
+    asserts
+        same: => ok true
+    a_failure[] input = []
+    combined_failure[] r = call widen_a(input)
+    combined_failure[] m = call input.map(callable widen_one)
+    ok r.length is m.length and call joined(r) is call joined(m)
+fn bool compare_singleton
+    emits []
+    asserts
+        same: => ok true
+    a_failure[] input = [codec::invalid_data("solo", "type")]
+    combined_failure[] r = call widen_a(input)
+    combined_failure[] m = call input.map(callable widen_one)
+    ok r.length is m.length and call joined(r) is call joined(m)
+fn bool compare_repeated
+    emits []
+    asserts
+        same: => ok true
+    a_failure[] input = [codec::invalid_data("a", "type"), codec::invalid_data("a", "type"), codec::invalid_data("a", "type")]
+    combined_failure[] r = call widen_a(input)
+    combined_failure[] m = call input.map(callable widen_one)
+    ok r.length is m.length and call joined(r) is call joined(m)
+fn bool compare_mixed
+    emits []
+    asserts
+        same: => ok true
+    a_failure[] input = [codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type"), codec::invalid_data("a", "type")]
+    combined_failure[] r = call widen_a(input)
+    combined_failure[] m = call input.map(callable widen_one)
+    ok r.length is m.length and call joined(r) is call joined(m)
+fn bool compare_large
+    emits []
+    asserts
+        same: => ok true
+    a_failure[] block = [codec::invalid_data("a", "type"), codec::invalid_data("b", "reason"), codec::invalid_data("c", "type"), codec::invalid_data("d", "witness")]
+    a_failure[] input = [...block, ...block, ...block]
+    combined_failure[] r = call widen_a(input)
+    combined_failure[] m = call input.map(callable widen_one)
+    ok r.length is 12 and m.length is 12 and call joined(r) is call joined(m)
+fn bool compare_snapshots
+    emits []
+    asserts
+        same: => ok true
+    match call boom(0)
+        [_] as standard_failure caught => do
+            a_failure[] input = [caught, codec::invalid_data("a", "type"), caught]
+            combined_failure[] r = call widen_a(input)
+            combined_failure[] m = call input.map(callable widen_one)
+            ok r.length is 3 and m.length is 3 and call snap_id(r[0]) is call snap_id(m[0]) and call snap_id(r[2]) is call snap_id(m[2]) and call joined(r) is call joined(m)
+        ok int value => ok false
+fn int snap_id
+    emits []
+    given
+        combined_failure item
+    asserts
+        data: codec::invalid_data("a", "type") => ok -1
+    match item
+        codec::invalid_data => ok -1
+        standard_failure => ok item.occurrence_id
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

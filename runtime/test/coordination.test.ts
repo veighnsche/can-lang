@@ -211,6 +211,29 @@ test("handler failures escape without participant redispatch or a partial collec
  }
 });
 
+test("explicit map conversion preserves snapshot identity and mints one outer aggregate occurrence",async()=>{
+ const {domain,combined,fault,a,snapshot,cause,domainFailureDiagnostics,standardFailureDiagnostics,aggregate}=await domainFixture();
+ const {map}=await import("../collections/array.ts");
+ const {failure,success,value}=await import("../completion.ts");
+ const {standardFailureOccurrenceID}=await import("../failure.ts");
+ const leaves:unknown[]=[snapshot,a,snapshot];
+ const converted=value(await map(leaves,async item=>success(item),{origin,site:"p::convert#0"}));
+ expect(converted.length).toBe(3);
+ expect(converted[0]).toBe(snapshot);expect(converted[1]).toBe(a);expect(converted[2]).toBe(snapshot);
+ expect(converted).not.toBe(leaves);expect(Object.isFrozen(converted)).toBe(true);
+ const before=standardFailureOccurrenceID(snapshot);
+ const inner=domain.create(fault.identity,a,origin);
+ const rebuilt=aggregate([failure(snapshot),failure(inner),failure(snapshot)],domain,combined.identity,origin);
+ if(rebuilt.kind!=="domain")throw Error("missing rebuilt aggregate");
+ const details=domainFailureDiagnostics(rebuilt.value);
+ const values=(details.payload as {failures:unknown[]}).failures;
+ expect(values.length).toBe(3);
+ expect(values[0]).toBe(snapshot);expect(values[1]).toBe(a);expect(values[2]).toBe(snapshot);
+ expect(standardFailureDiagnostics(snapshot).cause).toBe(cause);
+ expect(standardFailureOccurrenceID(snapshot)).toBe(before);
+ expect(details.occurrenceID).not.toBe(domainFailureDiagnostics(inner).occurrenceID);
+});
+
 test("empty native race remains pending past the harness deadline",async()=>{
  let completed=false;
  const pending=runOwnedRoot(async()=>{const result=await settle("race",[]);completed=true;return success(result)});
