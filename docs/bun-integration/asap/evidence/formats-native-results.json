@@ -1,0 +1,263 @@
+{
+ "bun": "1.4.2",
+ "rows": {
+  "surface": {
+   "status": "ok",
+   "value": {
+    "toml": [
+     "parse",
+     "stringify"
+    ],
+    "yaml": [
+     "parse",
+     "stringify"
+    ],
+    "json5": [
+     "parse",
+     "stringify"
+    ],
+    "jsonl": [
+     "parse",
+     "parseChunk"
+    ]
+   }
+  },
+  "toml-big": {
+   "status": "error",
+   "name": "SyntaxError",
+   "message": "TOML Parse error: Integer cannot be losslessly represented as a JavaScript number; it must be within +/-(2^53 - 1)"
+  },
+  "yaml-big": {
+   "status": "ok",
+   "value": {
+    "n": 9007199254740992
+   }
+  },
+  "json5-big": {
+   "status": "ok",
+   "value": {
+    "n": 9007199254740992
+   }
+  },
+  "toml-dup": {
+   "status": "error",
+   "name": "SyntaxError",
+   "message": "TOML Parse error: Cannot redefine key 'a'"
+  },
+  "yaml-dup": {
+   "status": "ok",
+   "value": {
+    "a": 2
+   }
+  },
+  "json5-dup": {
+   "status": "ok",
+   "value": {
+    "a": 2
+   }
+  },
+  "nonfinite": {
+   "status": "ok",
+   "value": {
+    "toml": [
+     "NaN",
+     "Infinity",
+     "-Infinity"
+    ],
+    "yaml": [
+     "NaN",
+     "Infinity"
+    ],
+    "json5": [
+     "NaN",
+     "Infinity",
+     "-Infinity"
+    ]
+   }
+  },
+  "toml-dates": {
+   "status": "ok",
+   "value": {
+    "date": {
+     "ctor": "PlainDate",
+     "str": "2024-01-02"
+    },
+    "datetime": {
+     "ctor": "Instant",
+     "str": "2024-01-02T03:04:05Z"
+    },
+    "local": {
+     "ctor": "PlainDateTime",
+     "str": "2024-01-02T03:04:05"
+    },
+    "time": {
+     "ctor": "PlainTime",
+     "str": "03:04:05"
+    }
+   }
+  },
+  "yaml-scalars": {
+   "status": "ok",
+   "value": {
+    "iso": "2024-01-02T03:04:05Z",
+    "bools": [
+     true,
+     "yes",
+     "on",
+     true
+    ],
+    "nulls": [
+     null,
+     null,
+     null,
+     null
+    ],
+    "ints": [
+     16,
+     15,
+     "1_000"
+    ]
+   }
+  },
+  "yaml-structure": {
+   "status": "ok",
+   "value": {
+    "multidoc": [
+     {
+      "a": 1
+     },
+     {
+      "a": 2
+     }
+    ],
+    "merge": {
+     "a": {
+      "k": 1
+     },
+     "b": {
+      "k": 1,
+      "j": 2
+     }
+    },
+    "aliasShared": true
+   }
+  },
+  "yaml-selfref": {
+   "status": "ok",
+   "value": "cyclic"
+  },
+  "roots": {
+   "status": "ok",
+   "value": {
+    "yamlScalar": "just a string",
+    "json5Array": [
+     1
+    ],
+    "json5Comment": {
+     "a": 1
+    },
+    "json5Single": {
+     "a": "x"
+    },
+    "tomlInts": [
+     16,
+     15,
+     1000
+    ],
+    "tomlMixed": {
+     "a": [
+      1,
+      "x"
+     ]
+    }
+   }
+  },
+  "toml-rootarr": {
+   "status": "error",
+   "name": "SyntaxError",
+   "message": "TOML Parse error: Expected ']' to close a table header but found ','"
+  },
+  "jsonl-framing": {
+   "status": "ok",
+   "value": {
+    "crlf": [
+     {
+      "a": 1
+     },
+     {
+      "b": 2
+     }
+    ],
+    "blank": [
+     {
+      "a": 1
+     },
+     {
+      "b": 2
+     }
+    ],
+    "nonl": [
+     {
+      "a": 1
+     }
+    ],
+    "multiline": [
+     {
+      "a": 1
+     },
+     {
+      "b": 2
+     }
+    ],
+    "bignum": [
+     {
+      "n": 9007199254740992
+     }
+    ]
+   }
+  },
+  "jsonl-trailing-garbage": {
+   "status": "ok",
+   "value": [
+    {
+     "ok": 1
+    }
+   ]
+  },
+  "chunk": {
+   "status": "ok",
+   "value": {
+    "keys": [
+     "done",
+     "error",
+     "read",
+     "values"
+    ],
+    "values": [
+     {
+      "a": 1
+     }
+    ],
+    "read": 7,
+    "done": false,
+    "error": null,
+    "empty": {
+     "values": [],
+     "read": 0,
+     "done": true,
+     "error": null
+    },
+    "trailing": {
+     "values": [
+      {
+       "a": 1
+      }
+     ],
+     "read": 7,
+     "done": true,
+     "error": null
+    }
+   }
+  }
+ }
+}
