@@ -73,7 +73,7 @@ func TestCurrentBundledHTTP(t *testing.T) {
 		t.Fatalf("HTTP assertions: %d %s %s", status, out, diag)
 	}
 	var report map[string]any
-	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 17 {
+	if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != 18 {
 		t.Fatalf("invalid HTTP report %v %s", err, out)
 	}
 	if !strings.Contains(out, "supplied-completion") || !strings.Contains(out, "real-can") {
@@ -208,6 +208,8 @@ const text=(response)=>response.text();
  const drained=await fetch(base+"/u",{method:"POST",body:""});assert.equal(drained.status,200);assert.equal(await text(drained),"empty");
  const echo=await fetch(base+"/echo",{method:"POST",body:"stream-me"});assert.equal(echo.status,200);assert.equal(await text(echo),"stream-me");
  const feed=await fetch(base+"/events");assert.equal(feed.status,200);assert.equal(feed.headers.get("content-type"),"text/event-stream; charset=utf-8");assert.equal(await text(feed),"event: beat\nid: 7\ndata: tick\n\n: still here\n\n");
+ const data=new FormData();data.append("n","v");data.append("n","v2");data.append("f",new File(["hello"],"a.txt",{type:"text/plain"}));
+ const att=await fetch(base+"/attach",{method:"POST",body:data});assert.equal(att.status,200);assert.equal(await text(att),"v|a.txt");
 }
 server.stop();
 console.log("compiled HTTP dispatch passed");

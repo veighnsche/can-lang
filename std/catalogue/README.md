@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7ff46ae67f447018ddf81ac1f2bb76131e6934d568c0010809668f272e8f4035.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: d07609468cf918ee7ee05d88ba9aa22437827693b955b770973aaf5044544af1.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -59,6 +59,9 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | collections::set | opaque | K:map_key |  | false |
 | http::header | record |  | str name, str value | true |
 | http::sse_event | record |  | str data, str event, str id, str retry | true |
+| http::multipart_form | record |  | http::multipart_field[] fields, http::multipart_file[] files | true |
+| http::multipart_field | record |  | str name, str value | true |
+| http::multipart_file | record |  | str name, str filename, str content_type, bytes::buffer content | true |
 | http::response | record | T:data | int status, http::header[] headers, T body | true |
 | http::failure_detail | variant |  | http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data | false |
 | bytes::buffer | opaque |  |  | false |
@@ -332,6 +335,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::request_body | http::request request, int max_bytes → bytes::buffer | [http::body_limit] |  | Request, URLSearchParams, JSON.parse, TextDecoder | Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy. | scoped | I32 / P10 |
 | http::request_json | T:wire; http::request request, int max_bytes → T | [http::body_limit, http::invalid_request, codec::invalid_data] |  | Request, URLSearchParams, JSON.parse, TextDecoder | Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy. | scoped | I32 / P10 |
 | http::request_form | T:form; http::request request, int max_bytes → T | [http::body_limit, http::invalid_request, codec::invalid_data] |  | Request, URLSearchParams, JSON.parse, TextDecoder | Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy. | scoped | I32 / P10 |
+| http::request_multipart | http::request request, int max_bytes → http::multipart_form | [http::body_limit, http::invalid_request, codec::invalid_data] |  | TextDecoder | Parse bounded flat multipart into generic field/file records. | scoped | B1-06 / P10 |
 | http::make_status | int status → http::status | [http::invalid_request] |  | Number | Admit 200–599; body status additionally excludes 204, 205 and 304. | real | I32 / P10 |
 | http::make_body_status | int status → http::body_status | [http::invalid_request] |  | Number | Admit 200–599; body status additionally excludes 204, 205 and 304. | real | I32 / P10 |
 | http::status_ok |  → http::body_status | [] |  | Number | Construct the corresponding fixed validated status. | real | I32 / P10 |

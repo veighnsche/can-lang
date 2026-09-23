@@ -10,6 +10,7 @@ import {mediaType} from "../transport/media.ts";
 import {openByteCell} from "../transport/stream/readable.ts";
 import {registerReader,registerWriter,useWriter,type Fail,type ReaderCell,type SinkLike} from "../transport/stream/lifecycle.ts";
 import {strictParameters,decodeForm,FormIssue,type FormSchema} from "./form.ts";
+import {decodeMultipart,MultipartIssue} from "./multipart.ts";
 import {renderSafe} from "./html.ts";
 const origin=Object.freeze({source:"can:http-server",start:0,end:0,invocation:Object.freeze([])});
 type Snapshot=Readonly<{method:string;path:string;query:readonly(readonly[string,string])[];queryInvalid:boolean;headers:readonly(readonly[string,string])[];body:Bytes}>;
@@ -245,7 +246,7 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
   });
  }
 }
-type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string;close:string;writeFailed:string}>;
+type Types=Readonly<{invalid:string;limit:string;invalidData:string;header:string;close:string;writeFailed:string;multipartForm:string;multipartField:string;multipartFile:string}>;
 type FrameSink=SinkLike&{writeFrame(frame:Uint8Array):number};
 export function createRequests<Header>(domain:ReturnType<typeof createDomainRuntime>,types:Types){
  const invalid=(reason:string)=>failure(domain.create(types.invalid,record(types.invalid,[["reason",reason]]),origin));
@@ -285,6 +286,26 @@ export function createRequests<Header>(domain:ReturnType<typeof createDomainRunt
   async body(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<Bytes>>{denyLiveBoundary(context,origin);return bufferedBody(request,requestSnapshot(request),limit);},
   async json<T>(schema:Schema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,false))return invalid("unsupported_media_type");try{return success(decodeJSON(schema,body.value,Math.max(1,Number(limit>67108864n?67108864n:limit))) as T);}catch(cause){return codecFailure(cause);}},
   async form<T>(schema:FormSchema,request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<T>>{denyLiveBoundary(context,origin);const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;if(!media(snapshot,true))return invalid("unsupported_media_type");try{return success(decodeForm(schema,body.value,Number(byteLength(body.value))) as T);}catch(cause){return codecFailure(cause);}},
+  async multipart(request:unknown,limit:bigint,context?:AssertionContext):Promise<Completion<unknown>>{
+   denyLiveBoundary(context,origin);
+   const snapshot=requestSnapshot(request),body=await bufferedBody(request,snapshot,limit);if(body.kind!=="ok")return body;
+   const value=snapshot.headers.find(([name])=>name==="content-type")?.[1];
+   let boundary:string|undefined;
+   try{
+    if(value===undefined)return invalid("unsupported_media_type");
+    const parsed=mediaType(value);
+    if(parsed.type!=="multipart/form-data")return invalid("unsupported_media_type");
+    boundary=parsed.parameters.get("boundary");
+   }catch(cause){if(cause instanceof CodecIssue)return invalid("unsupported_media_type");throw cause;}
+   if(boundary===undefined)return invalid("multipart_boundary");
+   try{
+    const document=decodeMultipart(body.value,boundary);
+    return success(record(types.multipartForm,[
+     ["fields",array(document.fields.map(field=>record(types.multipartField,[["name",field.name],["value",field.value]])))],
+     ["files",array(document.files.map(file=>record(types.multipartFile,[["name",file.name],["filename",file.filename],["content_type",file.contentType],["content",file.content]])))]
+    ]));
+   }catch(cause){if(cause instanceof MultipartIssue)return invalid(cause.reason);return codecFailure(cause);}
+  },
   async bodyStream(request:unknown,maxChunk:bigint,context?:AssertionContext):Promise<Completion<object>>{
    denyLiveBoundary(context,origin);
    const snapshot=requestSnapshot(request),cell=bodyCell(request);

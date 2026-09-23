@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "7ff46ae67f447018ddf81ac1f2bb76131e6934d568c0010809668f272e8f4035";
+export const catalogueSHA256 = "d07609468cf918ee7ee05d88ba9aa22437827693b955b770973aaf5044544af1";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -379,6 +379,71 @@ export const catalogue = freeze({
         {
           "name": "retry",
           "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::multipart_form",
+      "identity": "can.std.http@1::multipart_form",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "fields",
+          "type": "http::multipart_field[]"
+        },
+        {
+          "name": "files",
+          "type": "http::multipart_file[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::multipart_field",
+      "identity": "can.std.http@1::multipart_field",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::multipart_file",
+      "identity": "can.std.http@1::multipart_file",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "filename",
+          "type": "str"
+        },
+        {
+          "name": "content_type",
+          "type": "str"
+        },
+        {
+          "name": "content",
+          "type": "bytes::buffer"
         }
       ],
       "leaves": [],
@@ -6498,6 +6563,43 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "http::request_multipart",
+      "identity": "can.std.http@1::request_multipart",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::multipart_form",
+      "callbacks": [],
+      "emits": [
+        "http::body_limit",
+        "http::invalid_request",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "TextDecoder"
+        ],
+        "adapter": "Parse bounded flat multipart into generic field/file records.",
+        "task": "B1-06"
+      },
+      "assertion": "scoped",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::make_status",
       "identity": "can.std.http@1::make_status",
       "kind": "function",
@@ -10265,6 +10367,99 @@ export const catalogueTypeShapes = freeze([
         "name": "retry",
         "type": {
           "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::multipart_form",
+    "identity": "can.std.http@1::multipart_form",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "fields",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::multipart_field",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "files",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "http::multipart_file",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::multipart_field",
+    "identity": "can.std.http@1::multipart_field",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "http::multipart_file",
+    "identity": "can.std.http@1::multipart_file",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "filename",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "content_type",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "content",
+        "type": {
+          "name": "bytes::buffer",
           "arguments": null
         }
       }

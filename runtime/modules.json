@@ -431,7 +431,13 @@
       "../transport/stream/lifecycle.ts",
       "../transport/stream/readable.ts",
       "./form.ts",
+      "./multipart.ts",
       "./html.ts"
+    ],
+    "platform/multipart.ts": [
+      "../bytes.ts",
+      "../codec/budget.ts",
+      "../transport/media.ts"
     ],
     "platform/url.ts": [
       "../completion.ts",

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "7ff46ae67f447018ddf81ac1f2bb76131e6934d568c0010809668f272e8f4035"
+const GeneratedSourceSHA256 = "d07609468cf918ee7ee05d88ba9aa22437827693b955b770973aaf5044544af1"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -16,6 +16,9 @@ const TypeCollectionsMap = "collections::map"
 const TypeCollectionsSet = "collections::set"
 const TypeHttpHeader = "http::header"
 const TypeHttpSseEvent = "http::sse_event"
+const TypeHttpMultipartForm = "http::multipart_form"
+const TypeHttpMultipartField = "http::multipart_field"
+const TypeHttpMultipartFile = "http::multipart_file"
 const TypeHttpResponse = "http::response"
 const TypeHttpFailureDetail = "http::failure_detail"
 const TypeBytesBuffer = "bytes::buffer"
@@ -443,6 +446,7 @@ const OpHttpQueryAll = "http::query_all"
 const OpHttpRequestBody = "http::request_body"
 const OpHttpRequestJson = "http::request_json"
 const OpHttpRequestForm = "http::request_form"
+const OpHttpRequestMultipart = "http::request_multipart"
 const OpHttpMakeStatus = "http::make_status"
 const OpHttpMakeBodyStatus = "http::make_body_status"
 const OpHttpStatusOk = "http::status_ok"

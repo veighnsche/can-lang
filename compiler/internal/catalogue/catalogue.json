@@ -376,6 +376,71 @@
       "constructible": true
     },
     {
+      "name": "http::multipart_form",
+      "identity": "can.std.http@1::multipart_form",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "fields",
+          "type": "http::multipart_field[]"
+        },
+        {
+          "name": "files",
+          "type": "http::multipart_file[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::multipart_field",
+      "identity": "can.std.http@1::multipart_field",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "http::multipart_file",
+      "identity": "can.std.http@1::multipart_file",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "filename",
+          "type": "str"
+        },
+        {
+          "name": "content_type",
+          "type": "str"
+        },
+        {
+          "name": "content",
+          "type": "bytes::buffer"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
       "name": "http::response",
       "identity": "can.std.http@1::response",
       "kind": "record",
@@ -6481,6 +6546,43 @@
         ],
         "adapter": "Read cached bounded bytes; apply the declared media/percent/UTF-8/typed codec policy.",
         "task": "I32"
+      },
+      "assertion": "scoped",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::request_multipart",
+      "identity": "can.std.http@1::request_multipart",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::multipart_form",
+      "callbacks": [],
+      "emits": [
+        "http::body_limit",
+        "http::invalid_request",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "TextDecoder"
+        ],
+        "adapter": "Parse bounded flat multipart into generic field/file records.",
+        "task": "B1-06"
       },
       "assertion": "scoped",
       "refs": [

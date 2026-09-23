@@ -187,6 +187,23 @@ fn http::server_response events
                             sample: out => ok
                         stream::close_failed => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                         ok => ok pending
+fn http::server_response attach
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call http::request_multipart(req, 1024)
+        when
+            sample: req, 1024 => ok http::multipart_form([http::multipart_field("n", "v")], [http::multipart_file("f", "a.txt", "text/plain", call bytes::empty())])
+        http::body_limit => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        codec::invalid_data => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok http::multipart_form form => match form.fields.length is 0
+            true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "empty")
+            false => match form.files.length is 0
+                true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value)
+                false => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), form.fields[0].value + "|" + form.files[0].filename)
 fn http::server_response wrapped
     emits []
     given
@@ -238,7 +255,8 @@ fn http::router mounted
         call http::route_post("/echo", callable stream_echo) as http::route raw_echo
         call http::route_stream(raw_echo) as http::route echo
         call http::route_get("/events", callable events) as http::route feed
-        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head, streamed, echo, feed]) as http::router router
+        call http::route_post("/attach", callable attach) as http::route upload_form
+        call http::make_router([first, second, generic, wrap, form, put, patch, delete, options, head, streamed, echo, feed, upload_form]) as http::router router
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route

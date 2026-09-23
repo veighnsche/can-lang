@@ -31,7 +31,7 @@ const id=(declaration:string)=>identity("error",declaration);
 const server=createServer(domain,{invalidConfig:id("can.std.http@1::invalid_server_config"),bindFailed:id("can.std.http@1::bind_failed"),shutdownFailed:id("can.std.http@1::shutdown_failed")});
 const router=createRouter(domain,{invalid:id("can.std.http@1::invalid_route"),duplicate:id("can.std.http@1::duplicate_route"),ambiguous:id("can.std.http@1::ambiguous_route")});
 const responses=createResponses(domain,{invalid:id("can.std.http@1::invalid_request"),invalidData:id("can.std.codec@1::invalid_data"),close:id("can.std.stream@1::close_failed"),writeFailed:id("can.std.stream@1::write_failed"),limit:id("can.std.http@1::body_limit")});
-const requests=createRequests(domain,{invalid:id("can.std.http@1::invalid_request"),limit:id("can.std.http@1::body_limit"),invalidData:id("can.std.codec@1::invalid_data"),header:"header",close:id("can.std.stream@1::close_failed"),writeFailed:id("can.std.stream@1::write_failed")});
+const requests=createRequests(domain,{invalid:id("can.std.http@1::invalid_request"),limit:id("can.std.http@1::body_limit"),invalidData:id("can.std.codec@1::invalid_data"),header:"header",close:id("can.std.stream@1::close_failed"),writeFailed:id("can.std.stream@1::write_failed"),multipartForm:"unused",multipartField:"unused",multipartFile:"unused"});
 const reads=createStreamReads(domain,{readFailed:id("can.std.stream@1::read_failed"),cancelled:id("can.std.stream@1::cancelled"),closeFailed:id("can.std.stream@1::close_failed"),limitExceeded:id("can.std.files@1::limit_exceeded")});
 const textOf=(item:unknown)=>new TextDecoder().decode(copyBytes(item,origin));
 
