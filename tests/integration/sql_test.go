@@ -123,7 +123,7 @@ func TestCurrentSQLQueries(t *testing.T) {
 	}
 	for _, needle := range []string{
 		"$canSQLPools=$canCreateSQLPools(",
-		`"account_by_term":{"cardinality":"optional"`,
+		`"account_by_term":{"dialect":"postgresql","cardinality":"optional"`,
 		"$canSQLPools.queryOne", "$canSQLPools.queryOptional",
 		"$canSQLPools.queryRows", "$canSQLPools.execute",
 		`{"name":"id","kind":"int"}`, `{"name":"note","kind":"option"`,
@@ -455,7 +455,7 @@ func TestCurrentSQLTransactions(t *testing.T) {
 		"$canTransactions=$canCreateSQLTransactions(",
 		`$canSQLTransaction0 = Object.freeze({run:(pool:unknown,callback:unknown`,
 		`$canTransactions.withTransaction(pool,callback,{commit:`,
-		`"tx_get":{"cardinality":"one"`,
+		`"tx_get":{"dialect":"postgresql","cardinality":"one"`,
 		"$canTransactions.queryOne", "$canTransactions.execute",
 		`{"name":"id","kind":"int"}`,
 	} {

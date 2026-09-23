@@ -124,7 +124,7 @@ func TestCurrentSQLDescriptors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, needle := range []string{"$canSQL=$canCreateSQLDescriptors(", `"search_accounts":{"cardinality":"many"`, `{"param":1}`, `"limit":2`, `"version":170007`} {
+	for _, needle := range []string{"$canSQL=$canCreateSQLDescriptors(", `"search_accounts":{"dialect":"postgresql","cardinality":"many"`, `{"param":1}`, `"limit":2`, `"version":170007`} {
 		if !strings.Contains(string(state), needle) {
 			t.Fatalf("missing emitted descriptor %s", needle)
 		}
