@@ -245,5 +245,133 @@
       "body": "onetwo",
       "echo": "echo"
     }
+  },
+  "ws_client": {
+    "status": "observed",
+    "value": {
+      "garbage": "SyntaxError",
+      "http-scheme": "constructed",
+      "bad-proto": "SyntaxError",
+      "empty-proto": "SyntaxError",
+      "openData": "c",
+      "textEcho": {
+        "type": "string",
+        "value": "t:hi"
+      },
+      "binaryEcho": {
+        "ctor": "Buffer",
+        "bytes": [
+          9,
+          8
+        ]
+      },
+      "clientHook": {
+        "code": 1000,
+        "reason": "bye",
+        "wasClean": true
+      },
+      "serverHook": {
+        "code": 1000,
+        "reason": "bye"
+      }
+    }
+  },
+  "ws_upgrade": {
+    "status": "observed",
+    "value": {
+      "plain": "upgraded=false",
+      "deferred": {
+        "data": "D",
+        "protocol": ""
+      },
+      "offered": "proto-a, proto-b",
+      "selected": {
+        "data": "D",
+        "protocol": "proto-b"
+      },
+      "unselected": {
+        "data": "D",
+        "protocol": "proto-a"
+      }
+    }
+  },
+  "ws_send_close": {
+    "status": "observed",
+    "value": {
+      "clientSendBeforeOpen": {
+        "throws": "InvalidStateError"
+      },
+      "clientCloseBeforeOpen": {},
+      "sendText": {
+        "ok": 5
+      },
+      "sendBytes": {
+        "ok": 1
+      },
+      "close1000": {},
+      "sendAfterClose": {
+        "ok": 0
+      },
+      "closeBadCode": {},
+      "closeLongReason": {},
+      "clientCloseBadCode": {
+        "throws": "InvalidAccessError"
+      },
+      "clientCloseLongReason": {
+        "throws": "SyntaxError"
+      }
+    }
+  },
+  "ws_backpressure": {
+    "status": "observed",
+    "value": {
+      "saturated": 40,
+      "drains": 2,
+      "bytes": 3276800
+    }
+  },
+  "ws_close_provenance": {
+    "status": "observed",
+    "value": {
+      "cclose-clientHook": {
+        "code": 1000,
+        "reason": "client-bye",
+        "wasClean": true
+      },
+      "cclose-serverHook": {
+        "code": 1000,
+        "reason": "client-bye"
+      },
+      "sclose-serverHook": {
+        "code": 1001,
+        "reason": "server-bye"
+      },
+      "sclose-clientHook": {
+        "code": 1001,
+        "reason": "server-bye",
+        "wasClean": true
+      },
+      "abrupt-upgraded": true,
+      "abrupt-serverHook": {
+        "code": 1006,
+        "reason": ""
+      }
+    }
+  },
+  "ws_tls_client": {
+    "status": "observed",
+    "value": {
+      "verify-default": {
+        "error": true
+      },
+      "offered": "proto-a",
+      "insecure-bypass": {
+        "open": true
+      },
+      "offeredAfterBypass": null,
+      "bypass-with-protocols": {
+        "open": true
+      }
+    }
   }
 }
