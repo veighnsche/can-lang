@@ -1,0 +1,394 @@
+package emit
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/types"
+)
+
+// programStatePath is the generation-relative path of the shared
+// initialization/state module every other module imports.
+const programStatePath = "program/state.ts"
+
+// stateBuilder assembles the shared state module: type declarations,
+// factory bindings, the ordered initializer and per-program
+// specialization constants. Domain fragments (collections, AI) live in
+// their own files and are invoked here in the fixed dependency order;
+// existing HTTP/SQL/codec fragments move to their feature files when
+// B1-02, B1-06 and B1-11 begin.
+type stateBuilder struct {
+	assembly     *programAssembly
+	out          strings.Builder
+	numberIDs    map[string]string
+	headerType   string
+	optionType   string
+	optionIDs    map[string]string
+	plan         []byte
+	initial      InitializedValues
+	declarations string
+}
+
+// emitStateModule builds the shared state module and returns it with the
+// asset file artifacts produced alongside it.
+func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Artifact, error) {
+	builder := &stateBuilder{assembly: assembly}
+	if err := builder.prerequisites(); err != nil {
+		return Module{}, nil, err
+	}
+	builder.out.WriteString(builder.declarations)
+	builder.declareCoreState()
+	if err := builder.declareConnections(); err != nil {
+		return Module{}, nil, err
+	}
+	builder.declareAIState()
+	builder.declareCodecState()
+	builder.declareCollectionState()
+	builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	if err := builder.initializeDomain(); err != nil {
+		return Module{}, nil, err
+	}
+	builder.collectNumberIDs()
+	assetFiles, err := builder.initializeAssets()
+	if err != nil {
+		return Module{}, nil, err
+	}
+	if err := builder.initializeSQL(); err != nil {
+		return Module{}, nil, err
+	}
+	builder.initializeCoreState()
+	builder.initializeCollectionState()
+	if err := builder.initializeAIState(); err != nil {
+		return Module{}, nil, err
+	}
+	if err := builder.initializeCodecs(); err != nil {
+		return Module{}, nil, err
+	}
+	builder.initializeValues()
+	if err := builder.emitSpecializationConstants(); err != nil {
+		return Module{}, nil, err
+	}
+	return Module{Path: programStatePath, Imports: builder.stateImports(runtime), Body: builder.out.String()}, assetFiles, nil
+}
+
+// prerequisites computes the error plan, top-level initializers, shared
+// type declarations and the option/header types every later fragment needs.
+func (builder *stateBuilder) prerequisites() error {
+	program := builder.assembly.program
+	var errorTypes []*types.Type
+	for _, typ := range program.Model.Types() {
+		if typ.Kind() == types.Error {
+			errorTypes = append(errorTypes, typ)
+		}
+	}
+	bound, err := program.Registry.Bound(errorTypes)
+	if err != nil {
+		return err
+	}
+	plan, err := json.Marshal(program.Registry.Plan(bound))
+	if err != nil {
+		return err
+	}
+	builder.plan = plan
+	initial, err := initialization(program.Initializers, nil, builder.assembly.armHandlers, true)
+	if err != nil {
+		return err
+	}
+	builder.initial = initial
+	declarations, err := NativeTypeDeclarations(program.Model.Types())
+	if err != nil {
+		return err
+	}
+	builder.declarations = declarations
+	optionResult := program.Intrinsics["can.std.env@1::optional"].Result()
+	builder.optionType = TypeName(optionResult)
+	builder.optionIDs = map[string]string{}
+	for _, leaf := range optionResult.Leaves() {
+		builder.optionIDs[leaf.Declaration()] = leaf.Identity()
+	}
+	builder.headerType = ""
+	for _, typ := range program.Model.Types() {
+		if typ.Declaration() == "can.std.http@1::header" {
+			builder.headerType = TypeName(typ)
+		}
+	}
+	if builder.headerType == "" {
+		return fmt.Errorf("HTTP header type is not in the checked model")
+	}
+	return nil
+}
+
+// declareCoreState emits the pre-B1 factory bindings. SQL/HTTP entries move
+// to their feature files with B1-02 and B1-06.
+func (builder *stateBuilder) declareCoreState() {
+	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\nexport let $canSQLPools:ReturnType<typeof $canCreateSQLPools>;\nexport let $canTransactions:ReturnType<typeof $canCreateSQLTransactions>;\n")
+	fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
+	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
+	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
+}
+
+// declareConnections freezes one checked connection policy per native AI
+// connection used by the program.
+func (builder *stateBuilder) declareConnections() error {
+	for _, id := range builder.assembly.connectionIDs {
+		policy := builder.assembly.program.Connections[id]
+		headers := make([]map[string]string, 0, len(policy.Headers))
+		for _, header := range policy.Headers {
+			// Checked policy uses wire names; transport entries use authored identifiers.
+			headers = append(headers, map[string]string{"name": strings.ReplaceAll(header.Name, "-", "_"), "value": header.Value})
+		}
+		connection := map[string]any{"endpoint": policy.Endpoint, "timeoutMilliseconds": policy.TimeoutMilliseconds, "maxBodyBytes": policy.MaxBodyBytes, "headers": headers}
+		if policy.BearerEnvironment != "" {
+			connection["bearerEnvironment"] = policy.BearerEnvironment
+		}
+		encoded, err := json.Marshal(connection)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(&builder.out, "export const %s = Object.freeze(%s);\n", builder.assembly.connectionNames[id], encoded)
+	}
+	return nil
+}
+
+// declareCodecState emits one codec binding per JSON specialization used by
+// the program.
+func (builder *stateBuilder) declareCodecState() {
+	for _, id := range builder.assembly.codecIDs {
+		fmt.Fprintf(&builder.out, "export let %s: ReturnType<typeof $canCreateCodec<%s>>;\n", builder.assembly.codecNames[id], TypeName(builder.assembly.program.Codecs[id].Data))
+	}
+}
+
+// initializeDomain creates the shared domain runtime, bytes and CLI
+// factories that later fragments build on.
+func (builder *stateBuilder) initializeDomain() error {
+	var invalidData, writeFailed, bytesID string
+	for _, typ := range builder.assembly.program.Model.Types() {
+		switch typ.Declaration() {
+		case "can.std.codec@1::invalid_data":
+			invalidData = typ.Identity()
+		case "can.std.io@1::write_failed":
+			writeFailed = typ.Identity()
+		case "can.std.bytes@1::buffer":
+			bytesID = typ.Identity()
+		}
+	}
+	htmlKinds := map[string]string{}
+	for _, typ := range builder.assembly.program.Model.Types() {
+		if typ.Kind() == types.Opaque && (strings.HasPrefix(typ.Declaration(), "can.std.html@1::") || strings.HasPrefix(typ.Declaration(), "can.std.htmx@1::")) {
+			htmlKinds[typ.Identity()] = strings.Split(typ.Declaration(), "::")[1]
+		}
+	}
+	htmlKindsJSON, err := json.Marshal(htmlKinds)
+	if err != nil {
+		return err
+	}
+	httpKinds := map[string]string{}
+	for _, typ := range builder.assembly.program.Model.Types() {
+		if typ.Kind() != types.Opaque || !strings.HasPrefix(typ.Declaration(), "can.std.http@1::") {
+			continue
+		}
+		switch kind := strings.Split(typ.Declaration(), "::")[1]; kind {
+		case "request", "status", "body_status", "server_headers", "server_response", "route", "router", "server_config", "server":
+			httpKinds[typ.Identity()] = kind
+		}
+	}
+	httpKindsJSON, err := json.Marshal(httpKinds)
+	if err != nil {
+		return err
+	}
+	sqlKinds := map[string]string{}
+	for _, typ := range builder.assembly.program.Model.Types() {
+		if typ.Kind() != types.Opaque {
+			continue
+		}
+		switch typ.Declaration() {
+		case "can.std.sql@1::pool":
+			sqlKinds[typ.Identity()] = "pool"
+		case "can.std.sql@1::transaction":
+			sqlKinds[typ.Identity()] = "transaction"
+		}
+	}
+	sqlKindsJSON, err := json.Marshal(sqlKinds)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(&builder.out, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
+	fmt.Fprintf(&builder.out, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
+	fmt.Fprintf(&builder.out, "const $canSQLKinds:Readonly<Record<string,string>>=%s;\n", sqlKindsJSON)
+	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value));\n", builder.plan, quote(bytesID))
+	fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	builder.numberIDs = map[string]string{}
+	return nil
+}
+
+// collectNumberIDs indexes checked type identities by declaration for the
+// factory-argument fragments below.
+func (builder *stateBuilder) collectNumberIDs() {
+	for _, typ := range builder.assembly.program.Model.Types() {
+		builder.numberIDs[typ.Declaration()] = typ.Identity()
+	}
+}
+
+// initializeAssets creates the HTML factory and the asset bundle. It
+// returns the asset file artifacts emitted alongside the program.
+func (builder *stateBuilder) initializeAssets() ([]ir.Artifact, error) {
+	assetTable, assetURLs, assetFiles, err := assetBundle(builder.assembly.program)
+	if err != nil {
+		return nil, err
+	}
+	encodedTable, err := json.Marshal(assetTable)
+	if err != nil {
+		return nil, err
+	}
+	encodedURLs, err := json.Marshal(assetURLs)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Fprintf(&builder.out, "const $canAssetTable:Parameters<typeof $canCreateAssets>[0]=%s;\n", encodedTable)
+	fmt.Fprintf(&builder.out, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s},%s);\n", quote(builder.numberIDs["can.std.html@1::invalid_structure"]), quote(builder.numberIDs["can.std.html@1::invalid_url"]), quote(builder.numberIDs["can.std.htmx@1::invalid_target"]), quote(builder.numberIDs["can.std.htmx@1::invalid_interval"]), encodedURLs)
+	fmt.Fprintf(&builder.out, "const $canAssets=$canCreateAssets($canAssetTable, new URL(\"../\", import.meta.url));\n")
+	return assetFiles, nil
+}
+
+// initializeSQL creates the SQL descriptor, pool and transaction factories.
+func (builder *stateBuilder) initializeSQL() error {
+	sqlDescriptors, err := sqlTable(builder.assembly.program)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(&builder.out, "$canSQL=$canCreateSQLDescriptors(%s);\n", sqlDescriptors)
+	fmt.Fprintf(&builder.out, "$canSQLPools=$canCreateSQLPools($canDomain,{credentialsMissing:%s,connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,closeFailed:%s,rowLimit:%s,unsupportedValue:%s},$canOriginalEnvironment,$canSQL);\n", quote(builder.numberIDs["can.std.http@1::credentials_missing"]), quote(builder.numberIDs["can.std.sql@1::connection_failed"]), quote(builder.numberIDs["can.std.sql@1::query_failed"]), quote(builder.numberIDs["can.std.sql@1::row_missing"]), quote(builder.numberIDs["can.std.sql@1::row_count"]), quote(builder.numberIDs["can.std.sql@1::schema_mismatch"]), quote(builder.numberIDs["can.std.sql@1::constraint_failed"]), quote(builder.numberIDs["can.std.sql@1::close_failed"]), quote(builder.numberIDs["can.std.sql@1::row_limit"]), quote(builder.numberIDs["can.std.sql@1::unsupported_value"]))
+	fmt.Fprintf(&builder.out, "$canTransactions=$canCreateSQLTransactions($canDomain,{connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,rowLimit:%s,unsupportedValue:%s,transactionFailed:%s,commitUnknown:%s},$canSQL);\n", quote(builder.numberIDs["can.std.sql@1::connection_failed"]), quote(builder.numberIDs["can.std.sql@1::query_failed"]), quote(builder.numberIDs["can.std.sql@1::row_missing"]), quote(builder.numberIDs["can.std.sql@1::row_count"]), quote(builder.numberIDs["can.std.sql@1::schema_mismatch"]), quote(builder.numberIDs["can.std.sql@1::constraint_failed"]), quote(builder.numberIDs["can.std.sql@1::row_limit"]), quote(builder.numberIDs["can.std.sql@1::unsupported_value"]), quote(builder.numberIDs["can.std.sql@1::transaction_failed"]), quote(builder.numberIDs["can.std.sql@1::commit_unknown"]))
+	return nil
+}
+
+// initializeCoreState creates the remaining pre-B1 factories: HTTP, clock,
+// random, log, IO, environment, numbers, checks, amounts and text.
+func (builder *stateBuilder) initializeCoreState() {
+	fmt.Fprintf(&builder.out, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s});\n", builder.headerType, quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.http@1::header"]))
+	fmt.Fprintf(&builder.out, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]))
+	fmt.Fprintf(&builder.out, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_route"]), quote(builder.numberIDs["can.std.http@1::duplicate_route"]), quote(builder.numberIDs["can.std.http@1::ambiguous_route"]))
+	fmt.Fprintf(&builder.out, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s},$canAssets);\n", quote(builder.numberIDs["can.std.http@1::invalid_server_config"]), quote(builder.numberIDs["can.std.http@1::bind_failed"]), quote(builder.numberIDs["can.std.http@1::shutdown_failed"]))
+	fmt.Fprintf(&builder.out, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(builder.numberIDs["can.std.clock@1::invalid_duration"]), quote(builder.numberIDs["can.std.random@1::invalid_length"]), quote(builder.numberIDs["can.std.log@1::write_failed"]))
+	fmt.Fprintf(&builder.out, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(builder.numberIDs["can.std.io@1::read_failed"]), quote(builder.numberIDs["can.std.io@1::limit_exceeded"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), builder.optionType, quote(builder.numberIDs["can.std.env@1::invalid_name"]), quote(builder.numberIDs["can.std.http@1::credentials_missing"]), quote(builder.optionIDs["can.std.option@1::some"]), quote(builder.optionIDs["can.std.option@1::none"]))
+	fmt.Fprintf(&builder.out, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(builder.numberIDs["can.std.number@1::inexact"]), quote(builder.numberIDs["can.std.text@1::invalid_number"]), quote(builder.numberIDs["can.std.text@1::invalid_bool"]), quote(builder.numberIDs["can.std.number@1::invalid_bool"]))
+	fmt.Fprintf(&builder.out, "$canChecks = $canCreateChecks($canDomain, {failed:%s});\n", quote(builder.numberIDs["can.std.checks@1::failed"]))
+	fmt.Fprintf(&builder.out, "$canAmounts = $canCreateExactAmounts($canDomain, {zeroDivisor:%s,division:%s,rounded:%s});\n", quote(builder.numberIDs["can.std.number@1::zero_divisor"]), quote(builder.numberIDs["can.std.number@1::division"]), quote(builder.numberIDs["can.std.number@1::rounded"]))
+	fmt.Fprintf(&builder.out, "$canText = $canCreateText($canDomain, {emptySeparator:%s,emptyPattern:%s,invalidUnicode:%s});\n", quote(builder.numberIDs["can.std.text@1::empty_separator"]), quote(builder.numberIDs["can.std.text@1::empty_pattern"]), quote(builder.numberIDs["can.std.text@1::invalid_unicode"]))
+}
+
+// initializeCodecs constructs the JSON codec specializations of this program.
+func (builder *stateBuilder) initializeCodecs() error {
+	for _, id := range builder.assembly.codecIDs {
+		encoded, err := json.Marshal(builder.assembly.program.Codecs[id].Schema)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(&builder.out, "%s = $canCreateCodec<%s>(%s, $canDomain, %s);\n", builder.assembly.codecNames[id], TypeName(builder.assembly.program.Codecs[id].Data), encoded, quote(builder.numberIDs["can.std.codec@1::invalid_data"]))
+	}
+	return nil
+}
+
+// initializeValues evaluates the ordered top-level initializers into the
+// frozen shared value table and closes the initializer.
+func (builder *stateBuilder) initializeValues() {
+	builder.out.WriteString(builder.initial.Code)
+	for _, value := range builder.assembly.program.Initializers {
+		fmt.Fprintf(&builder.out, "$canValues[%s] = %s;\n", quote(value.Identity), builder.initial.Bindings[value.Identity])
+	}
+	builder.out.WriteString("Object.freeze($canValues);\n}\n")
+}
+
+// emitSpecializationConstants freezes the per-program HTTP/SQL/transaction
+// dispatch records after the initializer.
+func (builder *stateBuilder) emitSpecializationConstants() error {
+	for _, id := range builder.assembly.httpIDs {
+		special := builder.assembly.program.HTTPs[id]
+		var encoded []byte
+		var err error
+		shape := ""
+		switch special.Operation {
+		case "can.std.http@1::request_json", "can.std.http@1::response_json":
+			encoded, err = json.Marshal(special.Schema)
+		case "can.std.http@1::request_form":
+			encoded, err = json.Marshal(special.Form)
+		default:
+			err = fmt.Errorf("unknown HTTP specialization %s", special.Operation)
+		}
+		if err != nil {
+			return err
+		}
+		if special.Operation == "can.std.http@1::response_json" {
+			shape = "encode:(status:unknown,headers:unknown,body:unknown,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canHTTPResponses.json(" + string(encoded) + ",status,headers,body,$canContext)"
+		} else {
+			method := "json"
+			if special.Operation == "can.std.http@1::request_form" {
+				method = "form"
+			}
+			shape = "decode:(request:unknown,limit:bigint,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canHTTPRequests." + method + "(" + string(encoded) + ",request,limit,$canContext)"
+		}
+		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.httpNames[id], shape)
+	}
+	for _, id := range builder.assembly.sqlIDs {
+		special := builder.assembly.program.SQLs[id]
+		method, err := sqlMethod(special.Operation)
+		if err != nil {
+			return err
+		}
+		plan, err := sqlPlan(special)
+		if err != nil {
+			return err
+		}
+		// The static descriptor literal stays in the lowered arguments for
+		// fixture matching; the bound descriptor value arrives spliced per
+		// call site and is the only value the runtime method consumes.
+		descriptor := "Parameters<typeof $canSQL.template>[0]"
+		receiver := sqlReceiver(special.Operation)
+		shape := "run:(pool:unknown,_name:unknown,params:unknown,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,$canContext)"
+		if special.Operation == "can.std.sql@1::query_rows" || special.Operation == "can.std.sql@1::transaction_query_rows" {
+			shape = "run:(pool:unknown,_name:unknown,params:unknown,maxRows:bigint,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,maxRows,$canContext)"
+		}
+		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.sqlNames[id], shape)
+	}
+	for _, id := range builder.assembly.txIDs {
+		special := builder.assembly.program.Transactions[id]
+		// The commit/rollback leaves are nominal identities, so the runtime
+		// classifies the callback decision without consulting bindings.
+		shape := "run:(pool:unknown,callback:unknown,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canTransactions.withTransaction(pool,callback,{commit:" + quote(special.Commit) + ",rollback:" + quote(special.Rollback) + "},$canContext)"
+		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.txNames[id], shape)
+	}
+	return nil
+}
+
+// stateImports lists the factory modules the shared state module needs, in
+// the fixed order the initializer depends on.
+func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
+	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	imports = append(imports, builder.assembly.collectionStateImports(runtime)...)
+	imports = append(imports, ModuleImport{Target: runtime + "/text.ts", Names: []ImportName{{"createText", "$canCreateText"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/checks.ts", Names: []ImportName{{"createChecks", "$canCreateChecks"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql-descriptor.ts", Names: []ImportName{{"createSQLDescriptors", "$canCreateSQLDescriptors"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql.ts", Names: []ImportName{{"createSQLPools", "$canCreateSQLPools"}, {"isSQLPoolValue", "$canIsSQLPool"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/transaction.ts", Names: []ImportName{{"createSQLTransactions", "$canCreateSQLTransactions"}, {"isSQLTransactionValue", "$canIsSQLTransaction"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
+	imports = append(imports, builder.assembly.aiStateImports(runtime)...)
+	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
+	imports = append(imports, builder.assembly.armDescriptionImports()...)
+	return imports
+}
+
+// stateValueImportNames lists the shared factory values every authored and
+// assertion module imports from the state module.
+func stateValueImportNames() []ImportName {
+	return []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}
+}
