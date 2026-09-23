@@ -1,0 +1,187 @@
+package app
+    provides []
+    uses [cookie, csrf, http, option]
+/// Scan response headers for the Cookie field. Request header order is
+/// caller-controlled, so the scan walks the array instead of indexing.
+fn option::value<str> find_cookie
+    emits []
+    given
+        http::header[] headers
+    asserts
+        hit: [http::header("x-t", "1"), http::header("cookie", "session=A")] => ok option::some("session=A")
+        miss: [http::header("x-t", "1")] => ok option::none()
+        empty: [] => ok option::none()
+    match headers.length is 0
+        true => ok option::none()
+        false => match headers[0].name is "cookie"
+            true => ok option::some(headers[0].value)
+            false => match call find_cookie(call headers.slice(...[1, 99]))
+                ok option::value<str> rest => ok rest
+/// Project the session out of a Cookie header. Parsing runs for real:
+/// duplicates keep every pair while lookup takes the first.
+fn option::value<str> session_id
+    emits []
+    given
+        str header
+    asserts
+        present: "theme=dark; session=A" => ok option::some("A")
+        absent: "theme=dark" => ok option::none()
+    match call cookie::parse(header)
+        ok cookie::collection found => match call cookie::get(found, "session")
+            ok option::value<str> id => ok id
+/// Bake a strict session cookie and render its field. Construction runs
+/// for real, so the field string and the name rejection pin the native
+/// shape directly.
+fn str bake
+    emits [cookie::invalid_cookie]
+    given
+        str name
+        str value
+    asserts
+        sample: "session", "A" => ok "session=A; Path=/; Secure; HttpOnly; SameSite=Lax"
+        evil: "a;b", "1" => cookie::invalid_cookie("name")
+    match call cookie::make(name, value, cookie::attributes("/", option::none(), true, true, cookie::lax(), option::none(), option::none()))
+        cookie::invalid_cookie
+        ok cookie::cookie jar => match call cookie::serialize(jar)
+            ok str field => ok field
+/// Render the tombstone that clears a cookie. The epoch expiry and
+/// empty value match native deletion exactly.
+fn str forget
+    emits [cookie::invalid_cookie]
+    given
+        str name
+    asserts
+        sample: "session" => ok "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
+        evil: "a;b" => cookie::invalid_cookie("name")
+    match call cookie::expire(name, "/", option::none())
+        cookie::invalid_cookie
+        ok cookie::cookie tomb => match call cookie::serialize(tomb)
+            ok str field => ok field
+/// Mint a session-bound token. Generation is supplied: the fixture
+/// stands in for the random mint, and no assertion compares a whole
+/// real token string.
+fn str mint
+    emits [csrf::invalid_config]
+    given
+        str secret
+        str session
+    asserts
+        sample: "s3cret", "A" => ok "fixture-token-0"
+    match call csrf::generate(secret, session, 60000)
+        when
+            sample: "s3cret", "A", 60000 => ok "fixture-token-0"
+        csrf::invalid_config
+        ok str token => ok token
+/// Mint then verify through the native check. The fixture token fails
+/// the real verification, which proves the plumbing without pinning
+/// random output; true round-trips are loopback-tested.
+fn bool roundtrip
+    emits [csrf::invalid_config]
+    given
+        str secret
+        str session
+    asserts
+        sample: "s3cret", "A" => ok false
+    match call mint(secret, session)
+        csrf::invalid_config
+        ok str token => match call csrf::verify(secret, session, token, 60000)
+            csrf::invalid_config
+            ok bool valid => ok valid
+/// Verify one token against its session. Verification runs for real,
+/// so bogus tokens answer false natively.
+fn bool guarded
+    emits [csrf::invalid_config]
+    given
+        str secret
+        str session
+        str token
+    asserts
+        bogus: "s3cret", "A", "bogus" => ok false
+    match call csrf::verify(secret, session, token, 60000)
+        csrf::invalid_config
+        ok bool valid => ok valid
+/// Guard a login with the typed session flow: scan the Cookie header,
+/// project the session, then verify the query token against it. Both
+/// assertion cases refuse (missing session, bogus token); welcome is
+/// loopback-tested with a minted token.
+fn http::server_response login
+    emits []
+    given
+        http::request req
+    asserts
+        no_session: => ok
+        bogus: => ok
+    match call http::request_headers(req)
+        when
+            no_session: req => ok []
+            bogus: req => ok [http::header("cookie", "session=A")]
+        ok http::header[] headers => match call find_cookie(headers)
+            ok option::value<str> found => match found
+                option::some => match call cookie::parse(found.value)
+                    ok cookie::collection jar => match call cookie::get(jar, "session")
+                        ok option::value<str> sid => match sid
+                            option::some => match call http::query_one(req, "token")
+                                when
+                                    bogus: req, "token" => ok "bogus"
+                                http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                                ok str token => match call csrf::verify("s3cret", sid.value, token, 60000)
+                                    csrf::invalid_config => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                                    ok bool valid => match valid
+                                        true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "welcome")
+                                        false => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                            option::none => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                option::none => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+/// Establish a session cookie on the response. The Set-Cookie field
+/// stays a separate entry through headers into the native response.
+fn http::server_response establish
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call cookie::make("session", "A", cookie::attributes("/", option::none(), true, true, cookie::lax(), option::none(), option::none()))
+        cookie::invalid_cookie => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+        ok cookie::cookie jar => match call cookie::serialize(jar)
+            ok str field => match call http::make_server_headers([http::header("set-cookie", field)])
+                http::invalid_request => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                ok http::server_headers headers => ok call http::response_text(call http::status_ok(), headers, "established")
+fn http::router table
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/login", callable login) as http::route probe
+        call http::route_get("/establish", callable establish) as http::route grant
+        call http::make_router([probe, grant]) as http::router built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok built
+fn http::server boot
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+        http::invalid_server_config
+        ok http::server_config config => match call table()
+            http::invalid_route
+            http::duplicate_route
+            http::ambiguous_route
+            ok http::router built => match call http::server_start(config, built)
+                when
+                    sample: config, built => ok
+                http::bind_failed
+                ok http::server sturdy => ok sturdy
+fn void main
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call table()
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok http::router built => ok
