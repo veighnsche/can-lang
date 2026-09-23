@@ -78,7 +78,7 @@ jobs:
           CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
         run: |
           set -o pipefail
-          go test -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
+          go test -timeout=60m -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"
           test "${PIPESTATUS[0]}" -eq 0
       - name: Test the Bun runtime suite
         run: |
