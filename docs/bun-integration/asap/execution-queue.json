@@ -648,7 +648,7 @@
         "B1-05-DONE",
         "B1-06-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify client/server event differences, frame types, connection handshake failure versus established-session failure, close code/reason validity and maximum message sizes."
     },
     {
@@ -657,7 +657,7 @@
       "depends": [
         "B1-07.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Integrate Bun.serve upgrade and native WebSocket client. Authentication/authorization happens before server.upgrade; a rejected handshake remains ordinary HTTP."
     },
     {
@@ -666,7 +666,7 @@
       "depends": [
         "B1-07.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use per-session grouped state under serialized checked handlers. Native server hooks are installed once, with typed session data selecting the owner. Do not share mutable application state between sessions by accident."
     },
     {
@@ -675,7 +675,7 @@
       "depends": [
         "B1-07.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Translate native send/backpressure results deliberately. Server drain can resume queued sends; the client API may need a different bounded strategy. Never claim the client exposes the same drain semantics as ServerWebSocket."
     },
     {
@@ -684,7 +684,7 @@
       "depends": [
         "B1-07.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Handle cancellation, server stop, failed opening, terminal close and late callbacks through B1-05 ownership. Avoid automatic reconnect/replay; it changes delivery semantics."
     },
     {
@@ -693,7 +693,7 @@
       "depends": [
         "B1-07.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Expose explicit protocol/subprotocol/TLS options supported by the target. Preserve close provenance; arbitrary event objects must not leak into Can."
     },
     {
@@ -702,7 +702,7 @@
       "depends": [
         "B1-07.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "If the primitive wins, add parser/format/check/IR/emitter support and attached event assertions together. Keep library connection operations available for straightforward operations."
     },
     {
@@ -711,7 +711,7 @@
       "depends": [
         "B1-07.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Qualify server publication/subscription operations separately if included: distinguish socket publish excluding sender from server publish including all; do not conflate with a general message broker."
     },
     {
@@ -720,7 +720,7 @@
       "depends": [
         "B1-07.08"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
