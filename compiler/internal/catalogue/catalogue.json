@@ -108,6 +108,10 @@
       "identity": "can.std.random@1"
     },
     {
+      "name": "s3",
+      "identity": "can.std.s3@1"
+    },
+    {
       "name": "sql",
       "identity": "can.std.sql@1"
     },
@@ -1329,6 +1333,266 @@
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "s3::client",
+      "identity": "can.std.s3@1::client",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "s3::metadata",
+      "identity": "can.std.s3@1::metadata",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "size",
+          "type": "int"
+        },
+        {
+          "name": "etag",
+          "type": "str"
+        },
+        {
+          "name": "content_type",
+          "type": "str"
+        },
+        {
+          "name": "last_modified",
+          "type": "time::instant"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::entry",
+      "identity": "can.std.s3@1::entry",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "size",
+          "type": "int"
+        },
+        {
+          "name": "etag",
+          "type": "str"
+        },
+        {
+          "name": "last_modified",
+          "type": "time::instant"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::page",
+      "identity": "can.std.s3@1::page",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "entries",
+          "type": "s3::entry[]"
+        },
+        {
+          "name": "prefixes",
+          "type": "str[]"
+        },
+        {
+          "name": "truncated",
+          "type": "bool"
+        },
+        {
+          "name": "continuation",
+          "type": "option::value<s3::continuation>"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::continuation",
+      "identity": "can.std.s3@1::continuation",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "s3::upload",
+      "identity": "can.std.s3@1::upload",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "s3::presigned",
+      "identity": "can.std.s3@1::presigned",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "s3::presigned_info",
+      "identity": "can.std.s3@1::presigned_info",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "url",
+          "type": "str"
+        },
+        {
+          "name": "method",
+          "type": "s3::method"
+        },
+        {
+          "name": "expires_at",
+          "type": "time::instant"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::method",
+      "identity": "can.std.s3@1::method",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "s3::method_get",
+        "s3::method_put",
+        "s3::method_delete",
+        "s3::method_head"
+      ],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "s3::method_get",
+      "identity": "can.std.s3@1::method_get",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::method_put",
+      "identity": "can.std.s3@1::method_put",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::method_delete",
+      "identity": "can.std.s3@1::method_delete",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::method_head",
+      "identity": "can.std.s3@1::method_head",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::write_options",
+      "identity": "can.std.s3@1::write_options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "content_type",
+          "type": "option::value<str>"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::upload_options",
+      "identity": "can.std.s3@1::upload_options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "content_type",
+          "type": "option::value<str>"
+        },
+        {
+          "name": "part_size",
+          "type": "option::value<int>"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "s3::list_options",
+      "identity": "can.std.s3@1::list_options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "prefix",
+          "type": "str"
+        },
+        {
+          "name": "limit",
+          "type": "int"
+        },
+        {
+          "name": "delimiter",
+          "type": "option::value<str>"
+        },
+        {
+          "name": "continuation",
+          "type": "option::value<s3::continuation>"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     }
   ],
   "errors": [
@@ -2506,6 +2770,90 @@
         {
           "name": "reason",
           "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1343,
+      "name": "s3::invalid_config",
+      "identity": "can.std.s3@1::invalid_config",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1344,
+      "name": "s3::missing_key",
+      "identity": "can.std.s3@1::missing_key",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1345,
+      "name": "s3::access_denied",
+      "identity": "can.std.s3@1::access_denied",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1346,
+      "name": "s3::service_error",
+      "identity": "can.std.s3@1::service_error",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "code",
+          "type": "str"
+        },
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1347,
+      "name": "s3::upload_closed",
+      "identity": "can.std.s3@1::upload_closed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "operation",
+          "type": "str"
+        },
+        {
+          "name": "state",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1348,
+      "name": "s3::over_limit",
+      "identity": "can.std.s3@1::over_limit",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "limit",
+          "type": "int"
+        },
+        {
+          "name": "size",
+          "type": "int"
         }
       ]
     }
@@ -10763,6 +11111,659 @@
       "assertion": "real",
       "refs": [
         "B1-09"
+      ]
+    },
+    {
+      "name": "s3::client_open",
+      "identity": "can.std.s3@1::client_open",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "endpoint",
+          "type": "str"
+        },
+        {
+          "name": "region",
+          "type": "str"
+        },
+        {
+          "name": "bucket",
+          "type": "str"
+        },
+        {
+          "name": "access_key",
+          "type": "str"
+        },
+        {
+          "name": "secret_key",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::client",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client"
+        ],
+        "adapter": "Validate endpoint, region, bucket and credentials, then bind a native client. No I/O; credentials never enter diagnostics.",
+        "task": "B1-10"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::read_bytes",
+      "identity": "can.std.s3@1::read_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::missing_key",
+        "s3::access_denied",
+        "s3::service_error",
+        "s3::over_limit"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Stat first; fail over_limit without downloading when the object exceeds max_bytes, else return a copy of the bytes.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::read_range",
+      "identity": "can.std.s3@1::read_range",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "offset",
+          "type": "int"
+        },
+        {
+          "name": "length",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::missing_key",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Download one byte range. Zero length answers empty without a wire call; negative offset or length fails invalid_config.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::read_stream",
+      "identity": "can.std.s3@1::read_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "stream::reader<bytes::buffer>",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::missing_key",
+        "s3::access_denied",
+        "s3::service_error",
+        "s3::over_limit"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Stat eagerly, then open a bounded byte reader over the download stream; cancelling the reader cancels the download.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::write_bytes",
+      "identity": "can.std.s3@1::write_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "body",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "options",
+          "type": "s3::write_options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::metadata",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Store one object with an optional content type, then stat it for immutable metadata.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::write_stream",
+      "identity": "can.std.s3@1::write_stream",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "reader",
+          "type": "stream::reader<bytes::buffer>"
+        },
+        {
+          "name": "options",
+          "type": "s3::write_options"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        },
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::metadata",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::access_denied",
+        "s3::service_error",
+        "s3::over_limit",
+        "stream::read_failed",
+        "stream::cancelled"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; reader failure cancels the upload and propagates.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::stat",
+      "identity": "can.std.s3@1::stat",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::metadata",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::missing_key",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Read immutable object metadata with an opaque last-modified instant.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::exists",
+      "identity": "can.std.s3@1::exists",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Answer false for absent keys only; denied credentials and service faults still fail.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::delete",
+      "identity": "can.std.s3@1::delete",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Delete idempotently; deleting a missing key succeeds.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::list",
+      "identity": "can.std.s3@1::list",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "options",
+          "type": "s3::list_options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::page",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "List one page with immutable entries, grouped prefixes and an opaque continuation; never collects a whole bucket.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::presign",
+      "identity": "can.std.s3@1::presign",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "method",
+          "type": "s3::method"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "expires_in",
+          "type": "int"
+        },
+        {
+          "name": "content_type",
+          "type": "option::value<str>"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::presigned",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Mint a signed URL locally with method and expiry metadata. The URL stays inside the opaque handle until described.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::describe",
+      "identity": "can.std.s3@1::describe",
+      "kind": "method",
+      "receiver": "s3::presigned",
+      "parameters": [],
+      "inputs": [],
+      "staticInputs": [],
+      "result": "s3::presigned_info",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File"
+        ],
+        "adapter": "Reveal the signed URL with its required method and expiry.",
+        "task": "B1-10"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::begin_upload",
+      "identity": "can.std.s3@1::begin_upload",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "client",
+          "type": "s3::client"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "options",
+          "type": "s3::upload_options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::upload",
+      "callbacks": [],
+      "emits": [
+        "s3::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "S3Client",
+          "S3File",
+          "NetworkSink"
+        ],
+        "adapter": "Open a multipart upload handle with optional content type and part size. No I/O until the first write.",
+        "task": "B1-10"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::upload_write",
+      "identity": "can.std.s3@1::upload_write",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "upload",
+          "type": "s3::upload"
+        },
+        {
+          "name": "chunk",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "s3::upload_closed",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "NetworkSink"
+        ],
+        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or cancel fails upload_closed.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::upload_finish",
+      "identity": "can.std.s3@1::upload_finish",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "upload",
+          "type": "s3::upload"
+        }
+      ],
+      "staticInputs": [],
+      "result": "s3::metadata",
+      "callbacks": [],
+      "emits": [
+        "s3::upload_closed",
+        "s3::access_denied",
+        "s3::service_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "NetworkSink"
+        ],
+        "adapter": "Complete the upload and return immutable metadata of the stored object.",
+        "task": "B1-10"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-10"
+      ]
+    },
+    {
+      "name": "s3::cancel_upload",
+      "identity": "can.std.s3@1::cancel_upload",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "upload",
+          "type": "s3::upload"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "s3::upload_closed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "NetworkSink"
+        ],
+        "adapter": "Retire the handle and release the sink without completing, so the key never materializes; never deletes the key.",
+        "task": "B1-10"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-10"
       ]
     }
   ],

@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"strings"
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
@@ -43,6 +44,42 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 				return ValueBinding{Identity: op.Identity, Type: typ}, nil
 			}
 		}
+	}
+	// Catalogue methods on catalogue types (B1-10): kind=method
+	// operations whose receiver type identity equals the receiver
+	// declaration resolve by local name. Intrinsic receivers (str,
+	// T[]) never match a catalogue type, so existing paths are
+	// unaffected; project records still fall through below.
+	inventory := catalogue.Builtin().Inventory()
+	receiverIdentities := map[string]string{}
+	for _, typ := range inventory.Types {
+		receiverIdentities[typ.Name] = typ.Identity
+	}
+	for _, op := range inventory.Operations {
+		if op.Kind != "method" || op.Receiver == "" {
+			continue
+		}
+		receiverID, ok := receiverIdentities[op.Receiver]
+		if !ok || receiverID != a.Receiver.Declaration() {
+			continue
+		}
+		local := op.Name
+		if i := strings.LastIndex(local, "::"); i >= 0 {
+			local = local[i+2:]
+		} else if i := strings.LastIndex(local, "."); i >= 0 {
+			local = local[i+1:]
+		}
+		if local != a.Name.Text {
+			continue
+		}
+		if len(a.Types) != 0 {
+			return ValueBinding{}, fmt.Errorf("catalogue method does not take type arguments")
+		}
+		typ := c.bindings[op.Identity]
+		if typ == nil {
+			return ValueBinding{}, fmt.Errorf("missing catalogue method contract")
+		}
+		return ValueBinding{Identity: op.Identity, Type: typ}, nil
 	}
 	var receiver *resolve.Symbol
 	for _, pkg := range c.world.Packages {

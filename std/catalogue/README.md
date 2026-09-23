@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e4b64d70c19a181494f2d60456bc70d026a903e0593337caccd7b85045e127a3.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 23c8ae8b4023ffb883775c5b35b045fba1add03d9ffd0e3959cf79b91d696073.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -39,6 +39,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - path → can.std.path@1
 - process → can.std.process@1
 - random → can.std.random@1
+- s3 → can.std.s3@1
 - sql → can.std.sql@1
 - stream → can.std.stream@1
 - text → can.std.text@1
@@ -121,6 +122,22 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | cookie::cookie | opaque |  |  | false |
 | cookie::collection | record |  | cookie::pair[] pairs | true |
 | cookie::pair | record |  | str name, str value | true |
+| s3::client | opaque |  |  | false |
+| s3::metadata | record |  | int size, str etag, str content_type, time::instant last_modified | true |
+| s3::entry | record |  | str key, int size, str etag, time::instant last_modified | true |
+| s3::page | record |  | s3::entry[] entries, str[] prefixes, bool truncated, option::value&lt;s3::continuation&gt; continuation | true |
+| s3::continuation | opaque |  |  | false |
+| s3::upload | opaque |  |  | false |
+| s3::presigned | opaque |  |  | false |
+| s3::presigned_info | record |  | str url, s3::method method, time::instant expires_at | true |
+| s3::method | variant |  | s3::method_get, s3::method_put, s3::method_delete, s3::method_head | false |
+| s3::method_get | record |  |  | true |
+| s3::method_put | record |  |  | true |
+| s3::method_delete | record |  |  | true |
+| s3::method_head | record |  |  | true |
+| s3::write_options | record |  | option::value&lt;str&gt; content_type | true |
+| s3::upload_options | record |  | option::value&lt;str&gt; content_type, option::value&lt;int&gt; part_size | true |
+| s3::list_options | record |  | str prefix, int limit, option::value&lt;str&gt; delimiter, option::value&lt;s3::continuation&gt; continuation | true |
 
 ## Domain errors
 
@@ -221,6 +238,12 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1340 | ws::invalid_protocol |  | str protocol |
 | 1341 | cookie::invalid_cookie |  | str reason |
 | 1342 | csrf::invalid_config |  | str reason |
+| 1343 | s3::invalid_config |  | str reason |
+| 1344 | s3::missing_key |  | str key |
+| 1345 | s3::access_denied |  | str operation |
+| 1346 | s3::service_error |  | str code, str operation |
+| 1347 | s3::upload_closed |  | str operation, str state |
+| 1348 | s3::over_limit |  | int limit, int size |
 
 ## Operations
 
@@ -463,6 +486,22 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | cookie::expire | str name, str path, option::value&lt;str&gt; domain → cookie::cookie | [cookie::invalid_cookie] |  | CookieMap | Build an epoch-expiry tombstone scoped to the matching path and domain. | real | B1-09 / B1-09 |
 | csrf::generate | str secret, str session_id, int expires_in_ms → str | [csrf::invalid_config] |  | CSRF | Mint a session-bound token with explicit secret and fixed base64url/sha256. | supplied | B1-09 / B1-09 |
 | csrf::verify | str secret, str session_id, str token, int max_age_ms → bool | [csrf::invalid_config] |  | CSRF | Verify a token against explicit secret, session and age; token faults answer false. | real | B1-09 / B1-09 |
+| s3::client_open | str endpoint, str region, str bucket, str access_key, str secret_key → s3::client | [s3::invalid_config] |  | S3Client | Validate endpoint, region, bucket and credentials, then bind a native client. No I/O; credentials never enter diagnostics. | real | B1-10 / B1-10 |
+| s3::read_bytes | s3::client client, str key, int max_bytes → bytes::buffer | [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit] |  | S3Client, S3File | Stat first; fail over_limit without downloading when the object exceeds max_bytes, else return a copy of the bytes. | supplied | B1-10 / B1-10 |
+| s3::read_range | s3::client client, str key, int offset, int length → bytes::buffer | [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error] |  | S3Client, S3File | Download one byte range. Zero length answers empty without a wire call; negative offset or length fails invalid_config. | supplied | B1-10 / B1-10 |
+| s3::read_stream | s3::client client, str key, int max_bytes → stream::reader&lt;bytes::buffer&gt; | [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit] |  | S3Client, S3File | Stat eagerly, then open a bounded byte reader over the download stream; cancelling the reader cancels the download. | supplied | B1-10 / B1-10 |
+| s3::write_bytes | s3::client client, str key, bytes::buffer body, s3::write_options options → s3::metadata | [s3::invalid_config, s3::access_denied, s3::service_error] |  | S3Client, S3File | Store one object with an optional content type, then stat it for immutable metadata. | supplied | B1-10 / B1-10 |
+| s3::write_stream | s3::client client, str key, stream::reader&lt;bytes::buffer&gt; reader, s3::write_options options, int max_bytes, int deadline_ms → s3::metadata | [s3::invalid_config, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled] |  | S3Client, S3File | Pump a byte reader into a multipart upload under byte and deadline budgets; reader failure cancels the upload and propagates. | supplied | B1-10 / B1-10 |
+| s3::stat | s3::client client, str key → s3::metadata | [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error] |  | S3Client, S3File | Read immutable object metadata with an opaque last-modified instant. | supplied | B1-10 / B1-10 |
+| s3::exists | s3::client client, str key → bool | [s3::invalid_config, s3::access_denied, s3::service_error] |  | S3Client, S3File | Answer false for absent keys only; denied credentials and service faults still fail. | supplied | B1-10 / B1-10 |
+| s3::delete | s3::client client, str key → void | [s3::invalid_config, s3::access_denied, s3::service_error] |  | S3Client, S3File | Delete idempotently; deleting a missing key succeeds. | supplied | B1-10 / B1-10 |
+| s3::list | s3::client client, s3::list_options options → s3::page | [s3::invalid_config, s3::access_denied, s3::service_error] |  | S3Client, S3File | List one page with immutable entries, grouped prefixes and an opaque continuation; never collects a whole bucket. | supplied | B1-10 / B1-10 |
+| s3::presign | s3::client client, s3::method method, str key, int expires_in, option::value&lt;str&gt; content_type → s3::presigned | [s3::invalid_config] |  | S3Client, S3File | Mint a signed URL locally with method and expiry metadata. The URL stays inside the opaque handle until described. | supplied | B1-10 / B1-10 |
+| s3::describe | receiver s3::presigned;  → s3::presigned_info | [] |  | S3Client, S3File | Reveal the signed URL with its required method and expiry. | real | B1-10 / B1-10 |
+| s3::begin_upload | s3::client client, str key, s3::upload_options options → s3::upload | [s3::invalid_config] |  | S3Client, S3File, NetworkSink | Open a multipart upload handle with optional content type and part size. No I/O until the first write. | real | B1-10 / B1-10 |
+| s3::upload_write | s3::upload upload, bytes::buffer chunk → int | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Append one chunk to an open upload and report accepted bytes; use after finish or cancel fails upload_closed. | supplied | B1-10 / B1-10 |
+| s3::upload_finish | s3::upload upload → s3::metadata | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Complete the upload and return immutable metadata of the stored object. | supplied | B1-10 / B1-10 |
+| s3::cancel_upload | s3::upload upload → void | [s3::upload_closed] |  | NetworkSink | Retire the handle and release the sink without completing, so the key never materializes; never deletes the key. | real | B1-10 / B1-10 |
 
 ## Native declaration profiles
 

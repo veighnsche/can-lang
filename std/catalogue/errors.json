@@ -379,6 +379,30 @@
     {
       "id": 1342,
       "kind": "csrf::invalid_config"
+    },
+    {
+      "id": 1343,
+      "kind": "s3::invalid_config"
+    },
+    {
+      "id": 1344,
+      "kind": "s3::missing_key"
+    },
+    {
+      "id": 1345,
+      "kind": "s3::access_denied"
+    },
+    {
+      "id": 1346,
+      "kind": "s3::service_error"
+    },
+    {
+      "id": 1347,
+      "kind": "s3::upload_closed"
+    },
+    {
+      "id": 1348,
+      "kind": "s3::over_limit"
     }
   ],
   "retired": []
