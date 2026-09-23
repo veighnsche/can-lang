@@ -12,6 +12,8 @@ Begin SQL grammar qualification, the three-workflow event comparison, and Markdo
 
 All implementation files are assigned in the linked capability plans. Shared catalogue/emitter/runtime wiring must be done in each slice. Avoid an enormous initial catalogue-only commit advertising APIs with no implementation; prefer small working vertical slices with native and Can tests.
 
+Commit each coherent working slice after its relevant checks pass, including its tests, documentation and progress updates. Stage and inspect only your own changes; use an isolated worktree when concurrent changes overlap. Follow the [commit policy](integration-contract.md#commit-policy). Continue committing completed work while other capabilities are blocked. Include commit identifiers in completion evidence; do not leave all B1 work uncommitted until the final milestone.
+
 ## Capability order
 
 | Order | Capability | Prerequisites | Completion evidence |

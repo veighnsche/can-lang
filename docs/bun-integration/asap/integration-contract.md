@@ -2,6 +2,12 @@
 
 This handoff prepares the thirteen ASAP capabilities. It does not amend the active LF01–LF21 implementation contract. Observe the finished language work before integration, preserve its native AI forms, grouped state, explicit contracts, attached assertions, normalized errors and native-request testing. There are no external users requiring legacy syntax or ABI aliases.
 
+## Commit policy
+
+Commit your own B1 work in small, coherent increments after relevant checks pass. Each working slice should include its implementation, tests, documentation and progress updates. Stage explicit files or hunks, inspect the staged diff, and include only your changes. Use an isolated worktree when needed to separate concurrent work. Preserve other agents' changes without committing them. Use Conventional Commit messages; no repeated confirmation is required. Push only when requested.
+
+Commit completed slices while unrelated branches remain blocked. Do not wait for all thirteen capabilities or leave the whole milestone uncommitted. The final delivery report includes commit identifiers and explicitly identifies any incomplete changes. This policy replaces any earlier B1 prompt's blanket prohibition on staging or committing; protecting another implementer's work does not prohibit committing your own.
+
 ## Repository ownership
 
 The [required filetree](filetree.md) refines this table and takes precedence for new code placement. Extract feature bindings from `emit/program.go`; keep it as orchestration, with per-feature bindings in `emit/runtime_<feature>.go`. Apply the layout size guard and responsibility review before every capability DONE step.

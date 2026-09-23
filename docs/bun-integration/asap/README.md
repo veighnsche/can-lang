@@ -4,6 +4,8 @@ Prepared 2026-09-22. This directory turns all **13 ASAP capabilities** into an i
 
 Start with [agent instructions](agent-prompt.md), follow the [ordered execution queue](execution-queue.md), and apply the [shared integration contract](integration-contract.md). The [decision ledger](decisions.md) distinguishes settled recommendations from bounded gates. [Evidence](evidence/README.md) includes actual pinned-Bun probes and three fresh Jev consultations.
 
+**Commit your own work regularly:** deliver small, verified commits containing only your B1 changes. Preserve other agents' changes and isolate overlapping work when needed. See the [commit policy](integration-contract.md#commit-policy); earlier B1 prompts prohibiting commits are superseded.
+
 ## Readiness
 
 **Not all thirteen designs are closed or free of blockers.** The [readiness audit](readiness.md) lists every capability, what can start, known blockers, unresolved scope and required proof. SQL grammar, event syntax, streaming multipart, process-tree cleanup, safe Markdown and real-service qualification need particular attention.
