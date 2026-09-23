@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 6aaf037b2e5e33dd9dd08face6daf414b87bf6f0fcba8b90c1377a8132eba773.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 26793fe8c9c78d6a862041fe2eabefa836ab4a0256474528ae8bdebd5b20d08f.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -502,6 +502,11 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | s3::upload_write | s3::upload upload, bytes::buffer chunk → int | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Append one chunk to an open upload and report accepted bytes; use after finish or cancel fails upload_closed. | supplied | B1-10 / B1-10 |
 | s3::upload_finish | s3::upload upload → s3::metadata | [s3::upload_closed, s3::access_denied, s3::service_error] |  | NetworkSink | Complete the upload and return immutable metadata of the stored object. | supplied | B1-10 / B1-10 |
 | s3::cancel_upload | s3::upload upload → void | [s3::upload_closed] |  | NetworkSink | Retire the handle and release the sink without completing, so the key never materializes; never deletes the key. | supplied | B1-10 / B1-10 |
+| codec::decode_toml | T:wire; bytes::buffer buffer → T | [codec::invalid_data] |  | Bun.TOML.parse, TextDecoder | Native TOML table parse; duplicate keys and unsafe integers fail natively; Temporal dates reject; project onto the nominal schema with A6 budgets. | real | B1-11 / B1-11 |
+| codec::decode_yaml | T:wire; bytes::buffer buffer → T | [codec::invalid_data] |  | Bun.YAML.parse, TextDecoder | Native YAML 1.2 core parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); cycles and non-plain objects reject; project onto the nominal schema with A6 budgets. | real | B1-11 / B1-11 |
+| codec::decode_json5 | T:wire; bytes::buffer buffer → T | [codec::invalid_data] |  | Bun.JSON5.parse, TextDecoder | Native JSON5 parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); project onto the nominal schema with A6 budgets. | real | B1-11 / B1-11 |
+| codec::decode_jsonl | T:wire; bytes::buffer buffer → T[] | [codec::invalid_data] |  | JSON.parse, JSON.rawJSON, TextDecoder | Strict bounded line framing (blank lines skipped, CRLF and unterminated final line accepted, multi-line records rejected) with the exact per-record JSON decode path; unsafe integers preserved; truncated tails fail. | real | B1-11 / B1-11 |
+| codec::consume_jsonl | T:wire; stream::reader&lt;bytes::buffer&gt; reader, $callback callback → int | [codec::invalid_data, stream::read_failed, stream::cancelled] | callback(T) → void emits [] | ReadableStreamDefaultReader.read, JSON.parse, JSON.rawJSON, TextDecoder | Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count. | real | B1-11 / B1-11 |
 
 ## Native declaration profiles
 

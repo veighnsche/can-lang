@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "6aaf037b2e5e33dd9dd08face6daf414b87bf6f0fcba8b90c1377a8132eba773";
+export const catalogueSHA256 = "26793fe8c9c78d6a862041fe2eabefa836ab4a0256474528ae8bdebd5b20d08f";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -11774,6 +11774,210 @@ export const catalogue = freeze({
       "assertion": "supplied",
       "refs": [
         "B1-10"
+      ]
+    },
+    {
+      "name": "codec::decode_toml",
+      "identity": "can.std.codec@1::decode_toml",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "wire"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "T",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.TOML.parse",
+          "TextDecoder"
+        ],
+        "adapter": "Native TOML table parse; duplicate keys and unsafe integers fail natively; Temporal dates reject; project onto the nominal schema with A6 budgets.",
+        "task": "B1-11"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-11"
+      ]
+    },
+    {
+      "name": "codec::decode_yaml",
+      "identity": "can.std.codec@1::decode_yaml",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "wire"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "T",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.YAML.parse",
+          "TextDecoder"
+        ],
+        "adapter": "Native YAML 1.2 core parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); cycles and non-plain objects reject; project onto the nominal schema with A6 budgets.",
+        "task": "B1-11"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-11"
+      ]
+    },
+    {
+      "name": "codec::decode_json5",
+      "identity": "can.std.codec@1::decode_json5",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "wire"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "T",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.JSON5.parse",
+          "TextDecoder"
+        ],
+        "adapter": "Native JSON5 parse; duplicate keys resolve last-wins and rounded integers project as parsed values (documented); project onto the nominal schema with A6 budgets.",
+        "task": "B1-11"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-11"
+      ]
+    },
+    {
+      "name": "codec::decode_jsonl",
+      "identity": "can.std.codec@1::decode_jsonl",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "wire"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "T[]",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "JSON.parse",
+          "JSON.rawJSON",
+          "TextDecoder"
+        ],
+        "adapter": "Strict bounded line framing (blank lines skipped, CRLF and unterminated final line accepted, multi-line records rejected) with the exact per-record JSON decode path; unsafe integers preserved; truncated tails fail.",
+        "task": "B1-11"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-11"
+      ]
+    },
+    {
+      "name": "codec::consume_jsonl",
+      "identity": "can.std.codec@1::consume_jsonl",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "wire"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "reader",
+          "type": "stream::reader<bytes::buffer>"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "T"
+          ],
+          "result": "void",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "codec::invalid_data",
+        "stream::read_failed",
+        "stream::cancelled"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ReadableStreamDefaultReader.read",
+          "JSON.parse",
+          "JSON.rawJSON",
+          "TextDecoder"
+        ],
+        "adapter": "Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count.",
+        "task": "B1-11"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-11"
       ]
     }
   ],

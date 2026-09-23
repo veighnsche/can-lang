@@ -34,7 +34,7 @@
     "AbortController", "ReadableStream", "Date.now", "Date", "performance.now",
     "crypto.getRandomValues", "crypto.randomUUID", "crypto.subtle", "Bun.deepEquals",
     "Bun.sleep", "Bun.CryptoHasher", "Bun.password", "Bun.escapeHTML", "Bun.file", "Bun.write",
-    "Bun.serve", "Bun.SQL", "Bun.S3Client", "Bun.Transpiler.prototype.scanImports", "Bun.Transpiler.prototype.transformSync", "node:util.types.isProxy", "node:util.types.isNativeError",
+    "Bun.serve", "Bun.SQL", "Bun.S3Client", "Bun.TOML.parse", "Bun.YAML.parse", "Bun.JSON5.parse", "Bun.Transpiler.prototype.scanImports", "Bun.Transpiler.prototype.transformSync", "node:util.types.isProxy", "node:util.types.isNativeError",
     "Bun.Glob",
     "node:fs/promises.mkdir", "node:fs/promises.readdir", "node:fs/promises.lstat", "node:fs/promises.stat", "node:fs/promises.rename",
     "node:fs/promises.copyFile", "node:fs/promises.rm", "node:fs/promises.rmdir", "node:fs/promises.unlink", "node:fs/promises.writeFile",
