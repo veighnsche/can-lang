@@ -13,8 +13,10 @@ import (
 // in sqlSpecializationBindings; only concrete operations bind here.
 func sqlOperationBindings() bindingContribution {
 	functions := map[string]string{
-		"can.std.sql@1::pool_open":  "$canSQLPools.open",
-		"can.std.sql@1::pool_close": "$canSQLPools.close",
+		"can.std.sql@1::pool_open":          "$canSQLPools.open",
+		"can.std.sql@1::pool_close":         "$canSQLPools.close",
+		"can.std.sql@1::sqlite_open_memory": "$canSQLPools.sqliteOpenMemory",
+		"can.std.sql@1::sqlite_open_file":   "$canSQLPools.sqliteOpenFile",
 	}
 	return bindingContribution{domain: "sql", functions: functions}
 }

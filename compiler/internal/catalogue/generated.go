@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "357fe6e8a1f3ecc40963be2dd43c209f430000f641454c4ba379e6d80b531194"
+const GeneratedSourceSHA256 = "37bfec14da3a6f850f5e631e865a593a020f48abfd830967150472c82411bcd2"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -36,6 +36,7 @@ const TypeHttpServer = "http::server"
 const TypeHttpServerConfig = "http::server_config"
 const TypeSqlPool = "sql::pool"
 const TypeSqlTransaction = "sql::transaction"
+const TypeSqlSqliteFileOptions = "sql::sqlite_file_options"
 const TypeSqlCommit = "sql::commit"
 const TypeSqlRollback = "sql::rollback"
 const TypeSqlDecision = "sql::decision"
@@ -396,6 +397,8 @@ const OpHttpServerWait = "http::server_wait"
 const OpHttpServerStop = "http::server_stop"
 const OpSqlPoolOpen = "sql::pool_open"
 const OpSqlPoolClose = "sql::pool_close"
+const OpSqlSqliteOpenMemory = "sql::sqlite_open_memory"
+const OpSqlSqliteOpenFile = "sql::sqlite_open_file"
 const OpSqlQueryOne = "sql::query_one"
 const OpSqlQueryOptional = "sql::query_optional"
 const OpSqlQueryRows = "sql::query_rows"

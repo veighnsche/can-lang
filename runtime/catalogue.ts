@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "357fe6e8a1f3ecc40963be2dd43c209f430000f641454c4ba379e6d80b531194";
+export const catalogueSHA256 = "37bfec14da3a6f850f5e631e865a593a020f48abfd830967150472c82411bcd2";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -581,6 +581,25 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": false
+    },
+    {
+      "name": "sql::sqlite_file_options",
+      "identity": "can.std.sql@1::sqlite_file_options",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "mode",
+          "type": "str"
+        },
+        {
+          "name": "busy_timeout_ms",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     },
     {
       "name": "sql::commit",
@@ -6235,6 +6254,67 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "sql::sqlite_open_memory",
+      "identity": "can.std.sql@1::sqlite_open_memory",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [],
+      "staticInputs": [],
+      "result": "sql::pool",
+      "callbacks": [],
+      "emits": [
+        "sql::connection_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.SQL"
+        ],
+        "adapter": "Open in-memory SQLite with safeIntegers:true; the database lives while the pool is open.",
+        "task": "B1-02"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-02"
+      ]
+    },
+    {
+      "name": "sql::sqlite_open_file",
+      "identity": "can.std.sql@1::sqlite_open_file",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "options",
+          "type": "sql::sqlite_file_options"
+        }
+      ],
+      "staticInputs": [],
+      "result": "sql::pool",
+      "callbacks": [],
+      "emits": [
+        "sql::connection_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.SQL"
+        ],
+        "adapter": "Open file SQLite with safeIntegers:true; mode is ro, rw or rwc and busy_timeout_ms bounds lock waits.",
+        "task": "B1-02"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-02"
+      ]
+    },
+    {
       "name": "sql::query_one",
       "identity": "can.std.sql@1::query_one",
       "kind": "function",
@@ -8450,6 +8530,29 @@ export const catalogueTypeShapes = freeze([
     "kind": "opaque",
     "parameters": [],
     "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "sql::sqlite_file_options",
+    "identity": "can.std.sql@1::sqlite_file_options",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "mode",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "busy_timeout_ms",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
     "leaves": []
   },
   {
