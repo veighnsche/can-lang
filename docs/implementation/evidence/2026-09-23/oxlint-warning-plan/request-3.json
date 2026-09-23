@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "There are no external users of Can, and immutable runtime contracts matter more than source compatibility. Bun 1.4.2 executes the authored TypeScript. Oxlint 1.85.0 has 73 diagnostics when checking runtime/ and tools/runtime/ while omitting vendor files: 48 unused-variable, 11 no-new-array, 6 no-control-regex, 5 no-thenable, 2 no-useless-spread and 1 no-this-alias. The user wants a reliable cleanup plan only. Existing tests make malicious then getters on purpose. Array(n) may mean a sparse array or a sized result, control regexes may reject invalid input, and spreads may isolate mutable collections. Candidate policies: evaluate and fix per occurrence, switch rules off broadly, or convert every flagged expression mechanically. After the warnings are gone, the repository can apply Oxlint --deny-warnings. Native JS/Bun lowering and contract preservation remain mandatory.",
+  "questions": {
+    "resolution": {
+      "type": "choice",
+      "instructions": "What approach should the plan prescribe for warnings attached to intentional TypeScript behavior?",
+      "criteria": {
+        "targeted": "Review usage and observable behavior at each warning; delete truly unused names, express intended operations clearly, and allow only small explained line-level suppressions for irreducible test or validation constructs.",
+        "global_disable": "Use global or directory-level rule deactivation to avoid individual review of repeated warnings.",
+        "mechanical": "Make every line match the rule suggestion directly, without separate checks for holes, error-triggering properties, or copied collections."
+      }
+    },
+    "gate": {
+      "type": "choice",
+      "instructions": "How should the team establish a lasting lint baseline after the requested cleanup?",
+      "criteria": {
+        "finish_then_gate": "First reach zero warnings and confirm focused plus broad Bun tests, then enforce --deny-warnings over the same authored paths.",
+        "gate_first": "Install --deny-warnings before cleanup so checks remain failing throughout the remediation.",
+        "no_gate": "Do not require clean lint output in future runs after this batch is addressed."
+      }
+    }
+  }
+}

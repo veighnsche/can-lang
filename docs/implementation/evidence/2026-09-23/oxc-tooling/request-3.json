@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "The user wants Oxc formatting and strong lint guidance for AI-generated edits. Can's authored TS is executed with Bun 1.4.2; root packages already include Oxlint 1.85.0, TypeScript 7.0.2, and runtime-matched @types/bun/@types/node. Baseline lint and tsc are green. Current Oxfmt 0.70.0 marks 175/178 TS paths as needing layout changes. Do not format runtime/catalogue.ts because it is generated, nor tools/runtime/vendor and runtime/vendor because they are pinned. Oxlint type-aware mode via tsgolint 7.0.2002 adds 53 warnings: await-thenable 31, no-floating-promises 15, unbound-method 5, no-base-to-string 1, no-redundant-type-constituents 1. Unusual tests may be deliberate and resource cleanup depends on exact behavior. Formatting choices: whole maintained tree now with CI, opt-in formatter only, or only changed files. Lint choices: focused type-aware checks, all categories, or defaults. No external users require old file layouts.",
+  "questions": {
+    "format": {
+      "type": "choice",
+      "instructions": "Pick a durable formatting policy for the repo's coding agents.",
+      "criteria": {
+        "full": "Make one controlled format-only migration of maintained TypeScript and enforce an Oxfmt check after it passes tests.",
+        "command_only": "Offer Oxfmt as a manual convenience without normalizing or checking the current tree.",
+        "changed_only": "Require formatted touched files but permit remaining maintained files to use the old layout indefinitely."
+      }
+    },
+    "lint": {
+      "type": "choice",
+      "instructions": "What lint policy should accompany the formatter for reliable agent output?",
+      "criteria": {
+        "focused_type_aware": "Enable a bounded set of type-aware bug checks, review each existing warning, and preserve intentional behavior with local explanations.",
+        "all_rules": "Switch on all Oxlint categories and every type-aware rule regardless of warning volume.",
+        "defaults_only": "Avoid any new type-aware linting; keep default Oxlint plus the existing tsc run."
+      }
+    }
+  }
+}

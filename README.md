@@ -35,6 +35,7 @@ P15.1).
   plus an LSP client over `canlc lsp`
 - [`tools/`](tools/) — distbuild, gramcheck, modcheck
 - [`tscheck/`](tscheck/README.md) — strict TypeScript over fresh emit
+- [`package.json`](package.json) — pinned lint and typecheck tools for authored runtime TypeScript
 
 ## Install (end users)
 
@@ -82,6 +83,10 @@ From the repo root, `go test ./...` runs the compiler, mirror,
 integration, and retirement gates; `bun test runtime/test/` runs
 the 850-test runtime suite; `tscheck/` typechecks fresh emit.
 CI runs all of it with zero skips on `macos-15`.
+Run `npm ci`, then `npm run check:runtime` to lint, check formatting,
+and typecheck authored runtime and runtime tooling TypeScript.
+`npm run lint:fix:runtime` applies safe Oxlint fixes, and
+`npm run format:runtime` formats that maintained TypeScript scope.
 
 ## Status
 

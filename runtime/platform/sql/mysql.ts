@@ -7,7 +7,11 @@ import { success, type Completion } from "../../completion.ts";
 import type { SQLCoreContracts, SQLFailures } from "./errors.ts";
 
 export function isMySQLFailure(value: unknown): value is Error & { code: string; errno?: unknown } {
-  return value instanceof Error && value.name === "MySQLError" && typeof (value as { code?: unknown }).code === "string";
+  return (
+    value instanceof Error &&
+    value.name === "MySQLError" &&
+    typeof (value as { code?: unknown }).code === "string"
+  );
 }
 
 // Verified server errno symbols, each observed against the provisioned
@@ -23,9 +27,17 @@ const mysqlErrNames: Record<number, string> = {
   1213: "ER_LOCK_DEADLOCK",
 };
 
-export function classifyMySQL(operation: string, cause: unknown, failures: SQLFailures, contracts: SQLCoreContracts): Completion<never> {
+export function classifyMySQL(
+  operation: string,
+  cause: unknown,
+  failures: SQLFailures,
+  contracts: SQLCoreContracts,
+): Completion<never> {
   if (!isMySQLFailure(cause)) throw cause;
-  if (cause.code === "ERR_MYSQL_CONNECTION_REFUSED" || cause.code === "ERR_MYSQL_CONNECTION_CLOSED") {
+  if (
+    cause.code === "ERR_MYSQL_CONNECTION_REFUSED" ||
+    cause.code === "ERR_MYSQL_CONNECTION_CLOSED"
+  ) {
     return failures.connectionFailed("query");
   }
   const errno = typeof cause.errno === "number" ? cause.errno : 0;
@@ -43,7 +55,11 @@ export function classifyMySQL(operation: string, cause: unknown, failures: SQLFa
   return failures.queryFailed(operation, cause.code !== "" ? cause.code : "unknown");
 }
 
-export function mysqlAffectedRows(operation: string, result: unknown, failures: SQLFailures): Completion<bigint> {
+export function mysqlAffectedRows(
+  operation: string,
+  result: unknown,
+  failures: SQLFailures,
+): Completion<bigint> {
   const affected = (result as { affectedRows?: unknown } | null)?.affectedRows;
   if (typeof affected !== "number" || !Number.isSafeInteger(affected) || affected < 0) {
     return failures.queryFailed(operation, "bad_count");
@@ -53,9 +69,17 @@ export function mysqlAffectedRows(operation: string, result: unknown, failures: 
 
 // Static pin template: one frozen literal, never interpolated.
 const pinText = "SELECT @@session.time_zone AS tz";
-const pinStrings = Object.freeze(Object.assign([pinText], { raw: Object.freeze([pinText]) })) as unknown as TemplateStringsArray;
+const pinStrings = Object.freeze(
+  Object.assign([pinText], { raw: Object.freeze([pinText]) }),
+) as unknown as TemplateStringsArray;
 
-export async function openMySQLClient(url: string, max: number, failures: SQLFailures): Promise<{ ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }> {
+export async function openMySQLClient(
+  url: string,
+  max: number,
+  failures: SQLFailures,
+): Promise<
+  { ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }
+> {
   // TLS is always on: plaintext falls back to public-key retrieval,
   // which fails closed, so unencrypted auth never negotiates. Bun
   // does not verify the server chain (a self-signed server connects),
@@ -67,7 +91,11 @@ export async function openMySQLClient(url: string, max: number, failures: SQLFai
     // failures without ever exposing the URL.
     await client.connect();
   } catch {
-    try { await client.close(); } catch { /* already failed; report the connection */ }
+    try {
+      await client.close();
+    } catch {
+      /* already failed; report the connection */
+    }
     return { ok: false, failure: failures.connectionFailed("connect") };
   }
   // The driver pins every session to UTC (+00:00 observed under all
@@ -77,13 +105,17 @@ export async function openMySQLClient(url: string, max: number, failures: SQLFai
   // than misrender values.
   let pinned = false;
   try {
-    const rows = await client(pinStrings) as Array<{ tz?: unknown }>;
+    const rows = (await client(pinStrings)) as Array<{ tz?: unknown }>;
     pinned = Array.isArray(rows) && rows[0]?.tz === "+00:00";
   } catch {
     pinned = false;
   }
   if (!pinned) {
-    try { await client.close(); } catch { /* already failed; report the connection */ }
+    try {
+      await client.close();
+    } catch {
+      /* already failed; report the connection */
+    }
     return { ok: false, failure: failures.connectionFailed("config") };
   }
   return { ok: true, client };

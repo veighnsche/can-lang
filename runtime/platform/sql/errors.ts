@@ -8,19 +8,31 @@ import { createDomainRuntime } from "../../domain.ts";
 import type { FailureOrigin } from "../../failure.ts";
 
 export type SQLCoreContracts = Readonly<{
-  connectionFailed: string; queryFailed: string;
-  rowMissing: string; rowCount: string; schemaMismatch: string; constraintFailed: string;
-  rowLimit: string; unsupportedValue: string;
+  connectionFailed: string;
+  queryFailed: string;
+  rowMissing: string;
+  rowCount: string;
+  schemaMismatch: string;
+  constraintFailed: string;
+  rowLimit: string;
+  unsupportedValue: string;
 }>;
-export type SQLPoolContracts = SQLCoreContracts & Readonly<{
-  credentialsMissing: string; closeFailed: string;
-}>;
-export type SQLTxContracts = SQLCoreContracts & Readonly<{
-  transactionFailed: string; commitUnknown: string;
-}>;
+export type SQLPoolContracts = SQLCoreContracts &
+  Readonly<{
+    credentialsMissing: string;
+    closeFailed: string;
+  }>;
+export type SQLTxContracts = SQLCoreContracts &
+  Readonly<{
+    transactionFailed: string;
+    commitUnknown: string;
+  }>;
 
 export type SQLFailures = {
-  readonly fail: (identity: string, fields: readonly (readonly [string, unknown])[]) => Completion<never>;
+  readonly fail: (
+    identity: string,
+    fields: readonly (readonly [string, unknown])[],
+  ) => Completion<never>;
   readonly connectionFailed: (phase: string) => Completion<never>;
   readonly queryFailed: (operation: string, code: string) => Completion<never>;
   readonly mismatch: (path: string, reason: string) => Completion<never>;
@@ -32,13 +44,27 @@ export function createSQLFailures(
   contracts: SQLCoreContracts,
   origin: FailureOrigin,
 ): SQLFailures {
-  const fail = (identity: string, fields: readonly (readonly [string, unknown])[]): Completion<never> =>
-    failure(domain.create(identity, record(identity, fields), origin));
+  const fail = (
+    identity: string,
+    fields: readonly (readonly [string, unknown])[],
+  ): Completion<never> => failure(domain.create(identity, record(identity, fields), origin));
   return {
     fail,
     connectionFailed: (phase: string) => fail(contracts.connectionFailed, [["phase", phase]]),
-    queryFailed: (operation: string, code: string) => fail(contracts.queryFailed, [["operation", operation], ["code", code]]),
-    mismatch: (path: string, reason: string) => fail(contracts.schemaMismatch, [["path", path], ["reason", reason]]),
-    badValue: (path: string, reason: string) => fail(contracts.unsupportedValue, [["path", path], ["reason", reason]]),
+    queryFailed: (operation: string, code: string) =>
+      fail(contracts.queryFailed, [
+        ["operation", operation],
+        ["code", code],
+      ]),
+    mismatch: (path: string, reason: string) =>
+      fail(contracts.schemaMismatch, [
+        ["path", path],
+        ["reason", reason],
+      ]),
+    badValue: (path: string, reason: string) =>
+      fail(contracts.unsupportedValue, [
+        ["path", path],
+        ["reason", reason],
+      ]),
   };
 }

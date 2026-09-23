@@ -13,10 +13,17 @@ assert.deepEqual(Object.keys(fixture.payload).sort(), ["path", "reason"]);
 assert.equal(typeof fixture.payload.path, "string");
 assert.equal(typeof fixture.payload.reason, "string");
 const identity = validateErrorIdentity(fixture.error);
-console.log(JSON.stringify({
-  schemaVersion: 1,
-  kind: "can.catalogue-conformance",
-  catalogueSHA256,
-  checks: checkCatalogue(),
-  occurrence: { kind: fixture.kind, occurrenceId: fixture.occurrenceId, error: identity, payload: fixture.payload },
-}));
+console.log(
+  JSON.stringify({
+    schemaVersion: 1,
+    kind: "can.catalogue-conformance",
+    catalogueSHA256,
+    checks: checkCatalogue(),
+    occurrence: {
+      kind: fixture.kind,
+      occurrenceId: fixture.occurrenceId,
+      error: identity,
+      payload: fixture.payload,
+    },
+  }),
+);

@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Can's authored TypeScript runs on Bun 1.4.2. Oxlint 1.85.0 currently reports 73 warnings across runtime/ and tools/runtime/ after excluding vendored code: 48 no-unused-vars, 11 no-new-array, 6 no-control-regex, 5 no-thenable, 2 no-useless-spread, and 1 no-this-alias. The user requests a sound plan to eliminate all warnings. Tests intentionally create thenable-shaped hostile objects; some new Array(n) calls create sparse arrays or length-driven output; regexes match forbidden control bytes; spread copies can be ownership boundaries. The repository requires preserving Can contracts and immutability, using native JS/Bun operations, and has no external compatibility obligation. Potential strategies are local semantic repairs with narrow justified rule suppressions, blanket rule disabling, or mechanical changes for every warning. Oxlint's --deny-warnings can make a clean baseline a gate. The plan itself should avoid editing runtime behavior before review.",
+  "questions": {
+    "resolution": {
+      "type": "choice",
+      "instructions": "Which remediation policy should the warning plan use when a warning identifies deliberate behavior?",
+      "criteria": {
+        "targeted": "Inspect each site; repair genuine dead code and ambiguity; retain deliberate semantics through precise expressions or narrow documented suppressions after evidence.",
+        "global_disable": "Disable whole rules or directories when several findings are intentional, and repair only remaining findings.",
+        "mechanical": "Rewrite all flagged code into Oxlint-preferred forms even when the original idiom may encode sparse arrays, hostile getters, or ownership copies."
+      }
+    },
+    "gate": {
+      "type": "choice",
+      "instructions": "What enforcement sequence best fits a plan for all 73 warnings?",
+      "criteria": {
+        "finish_then_gate": "Resolve every warning, verify focused behavior and full runtime tests, then enable --deny-warnings for scoped authored TypeScript.",
+        "gate_first": "Enable --deny-warnings immediately and work under a failing lint gate until all fixes land.",
+        "no_gate": "Clear the current list once and leave future warnings nonblocking."
+      }
+    }
+  }
+}

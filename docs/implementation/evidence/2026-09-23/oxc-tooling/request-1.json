@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Can uses pinned Bun 1.4.2 for authored runtime TypeScript. The root tooling already pins oxlint 1.85.0, TypeScript 7.0.2 and matching Bun/Node types; strict tsc and default Oxlint pass. The user asks to add Oxc's formatter and the best lint and formatting rules for AI coding agents, informed by current online Oxc docs. Oxfmt 0.70.0 and oxlint-tsgolint 7.0.2002 have been installed for evaluation. Oxfmt defaults would change 175 of 178 files in runtime/ and tools/runtime/; runtime/catalogue.ts is generated and vendor files are immutable, so both should be excluded. Type-aware Oxlint currently finds 53 diagnostics: 31 await-thenable, 15 no-floating-promises, 5 unbound-method, 1 no-base-to-string, 1 no-redundant-type-constituents. The code has adversarial tests and ownership semantics that may justify narrow exceptions. Options are a complete one-time format with a check gate, a formatter command without a gate, or changed-files-only checks. For linting, options are targeted high-signal type-aware rules with reviewed fixes, all rules/categories, or retaining only defaults.",
+  "questions": {
+    "format": {
+      "type": "choice",
+      "instructions": "Which formatting adoption gives AI agents a deterministic standard without leaving an unenforced baseline?",
+      "criteria": {
+        "full": "Format all authored TypeScript once, excluding generated and vendor files; then enforce oxfmt --check in CI.",
+        "command_only": "Install Oxfmt with a write command, but leave existing authored files unformatted and do not add a formatting check.",
+        "changed_only": "Check only changed TypeScript files against Oxfmt while most of the existing tree remains unformatted."
+      }
+    },
+    "lint": {
+      "type": "choice",
+      "instructions": "Which Oxlint expansion best prioritizes coding mistakes while respecting existing intentional tests?",
+      "criteria": {
+        "focused_type_aware": "Add type-aware support and select high-signal correctness rules, fix real diagnostics, and use narrow explained exceptions for deliberate constructs.",
+        "all_rules": "Enable every available lint category and type-aware rule and rewrite or suppress all findings at once.",
+        "defaults_only": "Keep current default lint rules and rely on standalone tsc for all type-related bugs."
+      }
+    }
+  }
+}

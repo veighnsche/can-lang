@@ -65,6 +65,11 @@ jobs:
           set -euo pipefail
           npm ci --no-audit --no-fund
           echo "CAN_TSC=$GITHUB_WORKSPACE/tscheck/node_modules/typescript/bin/tsc" >> "$GITHUB_ENV"
+      - name: Lint, format, and typecheck authored runtime TypeScript
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm run check:runtime
       - name: Check formatting, vet, and generated mirrors
         run: |
           set -euo pipefail

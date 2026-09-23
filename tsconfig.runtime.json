@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "types": ["bun", "node"]
+  },
+  "include": ["runtime/**/*.ts", "tools/runtime/**/*.ts"],
+  "exclude": ["runtime/vendor/**", "tools/runtime/vendor/**"]
+}

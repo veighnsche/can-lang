@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "This repository runs private TypeScript on a locked Bun 1.4.2 build and already has a clean strict TypeScript 7.0.2 check plus clean Oxlint 1.85.0 defaults. The new request is an online-informed Oxc formatter and agent-friendly lint policy. Trial installations are Oxfmt 0.70.0 and tsgolint 7.0.2002. Oxfmt flags 175 of 178 runtime/tooling files, while a generated 15,774-line catalogue and pinned vendor sources must stay untouched. Type-aware lint reports 53 items (31 await-thenable, 15 floating promises, 5 unbound methods, one base-to-string, one redundant union). Some tests intentionally exercise unusual values and the runtime manages promise ownership. A full formatting pass plus CI check, an unguarded write command, or a changed-file gate are available. Lint choices are a small type-aware correctness set, every category, or the current defaults. No external source compatibility is required, but semantic runtime contracts remain mandatory.",
+  "questions": {
+    "format": {
+      "type": "choice",
+      "instructions": "Select the rollout for Oxfmt across maintained TypeScript.",
+      "criteria": {
+        "full": "Apply Oxfmt to the full authored scope now and require its check command thereafter, with generated/vendored exclusions.",
+        "command_only": "Provide formatting tooling for optional use and postpone any baseline or CI enforcement.",
+        "changed_only": "Leave the old style in place and enforce Oxfmt just on files a change touches."
+      }
+    },
+    "lint": {
+      "type": "choice",
+      "instructions": "Choose the useful next level of Oxlint rules for agent edits.",
+      "criteria": {
+        "focused_type_aware": "Use selected type-informed correctness checks and resolve true problems, documenting only site-specific intentional exceptions.",
+        "all_rules": "Activate all categories and type-based rules simultaneously, accepting extensive style noise and broad cleanup.",
+        "defaults_only": "Do not add type-aware diagnostics beyond the existing compiler check and default lint."
+      }
+    }
+  }
+}

@@ -18,7 +18,10 @@ export function opaqueContents(token: object): readonly unknown[] | undefined {
 
 export type RecordValue = Readonly<Record<string | symbol, unknown>>;
 
-export function record(identity: string, fields: readonly (readonly [string, unknown])[]): RecordValue {
+export function record(
+  identity: string,
+  fields: readonly (readonly [string, unknown])[],
+): RecordValue {
   const value = Object.create(null);
   Object.defineProperty(value, nominal, { value: identity, enumerable: true });
   for (const [name, field] of fields) {
@@ -28,14 +31,22 @@ export function record(identity: string, fields: readonly (readonly [string, unk
   return Object.freeze(value);
 }
 
-export function update(original: RecordValue, replacements: readonly (readonly [string, unknown])[]): RecordValue {
+export function update(
+  original: RecordValue,
+  replacements: readonly (readonly [string, unknown])[],
+): RecordValue {
   // Generated arguments evaluate receiver once, then replacements in source
   // order. Own data properties and immutable field references need no deep copy.
   const identity = recordIdentity(original);
   if (!identity) throw new TypeError("invalid ordinary record");
   const value = Object.assign(Object.create(null), original);
   for (const [name, replacement] of replacements) {
-    Object.defineProperty(value, name, { value: replacement, enumerable: true, configurable: true, writable: true });
+    Object.defineProperty(value, name, {
+      value: replacement,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
   }
   nominalRecords.set(value, identity);
   return Object.freeze(value);
@@ -48,14 +59,18 @@ export function array<T>(elements: T[]): readonly T[] {
 }
 
 export function recordIdentity(value: unknown): string | undefined {
-  return value !== null && (typeof value === "object" || typeof value === "function") ? nominalRecords.get(value) : undefined;
+  return value !== null && (typeof value === "object" || typeof value === "function")
+    ? nominalRecords.get(value)
+    : undefined;
 }
 export function dataKeys(value: unknown): (string | symbol)[] {
-  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value)) throw new TypeError("expected non-proxy data object");
+  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value))
+    throw new TypeError("expected non-proxy data object");
   return Reflect.ownKeys(value);
 }
 export function dataProperty(value: unknown, key: string | symbol): unknown {
-  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value)) throw new TypeError("expected non-proxy data object");
+  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value))
+    throw new TypeError("expected non-proxy data object");
   const descriptor = Object.getOwnPropertyDescriptor(value, key);
   if (!descriptor || !("value" in descriptor)) throw new TypeError("expected own data property");
   return descriptor.value;

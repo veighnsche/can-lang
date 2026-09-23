@@ -3,31 +3,48 @@ export type { AssertionContext } from "./assert/context.ts";
 // brand sets admit only constructors below; property inspection never touches a
 // forged value or application-controlled proxy/getter.
 import { isDomainFailure, domainFailureDiagnostics, type DomainFailure } from "./domain.ts";
-import { captureStandard, isStandardFailure, type StandardFailure, type FailureOrigin } from "./failure.ts";
+import {
+  captureStandard,
+  isStandardFailure,
+  type StandardFailure,
+  type FailureOrigin,
+} from "./failure.ts";
 
 declare const completionBrand: unique symbol;
 declare const elementBrand: unique symbol;
-export type Completion<T = unknown> = Readonly<(
-  { kind: "ok"; value: T } |
-  { kind: "domain"; value: DomainFailure } |
-  { kind: "standard"; value: StandardFailure }
-) & { readonly [completionBrand]: true }>;
+export type Completion<T = unknown> = Readonly<
+  (
+    | { kind: "ok"; value: T }
+    | { kind: "domain"; value: DomainFailure }
+    | { kind: "standard"; value: StandardFailure }
+  ) & { readonly [completionBrand]: true }
+>;
 export type Element<T> = Readonly<{ value: T; readonly [elementBrand]: true }>;
 const completions = new WeakSet<object>();
 const elements = new WeakSet<object>();
-const objectLike = (v: unknown): v is object => v !== null && (typeof v === "object" || typeof v === "function");
+const objectLike = (v: unknown): v is object =>
+  v !== null && (typeof v === "object" || typeof v === "function");
 function box(kind: "ok" | "domain" | "standard", value: unknown): Completion {
   const result = Object.create(null);
-  Object.defineProperties(result, {kind: {value: kind, enumerable: true}, value: {value, enumerable: true}});
-  Object.freeze(result); completions.add(result); return result;
+  Object.defineProperties(result, {
+    kind: { value: kind, enumerable: true },
+    value: { value, enumerable: true },
+  });
+  Object.freeze(result);
+  completions.add(result);
+  return result;
 }
-export function success<T>(value: T): Completion<T> { return box("ok", value) as Completion<T>; }
+export function success<T>(value: T): Completion<T> {
+  return box("ok", value) as Completion<T>;
+}
 export function failure(value: DomainFailure | StandardFailure): Completion<never> {
   if (isDomainFailure(value)) return box("domain", value) as Completion<never>;
   if (isStandardFailure(value)) return box("standard", value) as Completion<never>;
   throw new TypeError("invalid completion failure");
 }
-export function isCompletion(value: unknown): value is Completion { return objectLike(value) && completions.has(value); }
+export function isCompletion(value: unknown): value is Completion {
+  return objectLike(value) && completions.has(value);
+}
 export function checkedCompletion<T>(value: Completion<T>): Completion<T> {
   if (!isCompletion(value)) throw new TypeError("invalid completion carrier");
   return value;
@@ -54,8 +71,10 @@ export function caught(cause: unknown, origin: FailureOrigin): Completion<never>
 }
 export function element<T>(value: T): Element<T> {
   const result = Object.create(null);
-  Object.defineProperty(result, "value", {value, enumerable: true});
-  Object.freeze(result); elements.add(result); return result;
+  Object.defineProperty(result, "value", { value, enumerable: true });
+  Object.freeze(result);
+  elements.add(result);
+  return result;
 }
 export function elementValue<T>(box: Element<T>): T {
   if (!objectLike(box) || !elements.has(box)) throw new TypeError("invalid element carrier");
@@ -64,30 +83,39 @@ export function elementValue<T>(box: Element<T>): T {
 // Generated thunks return a carrier synchronously or a native promise of one.
 // Reject an unboxed immediate result before await could assimilate its `then`.
 function locatedCompletion<T>(value: Completion<T>, origin: FailureOrigin): Completion<T> {
-  const result=checkedCompletion(value);
-  if (result.kind==="standard") captureStandard(result.value,origin);
+  const result = checkedCompletion(value);
+  if (result.kind === "standard") captureStandard(result.value, origin);
   return result;
 }
-export async function invoke<T>(call: () => Completion<T> | Promise<Completion<T>>, origin: FailureOrigin): Promise<Completion<T>> {
+export async function invoke<T>(
+  call: () => Completion<T> | Promise<Completion<T>>,
+  origin: FailureOrigin,
+): Promise<Completion<T>> {
   try {
     const pending = call();
-    if (isCompletion(pending)) return locatedCompletion(pending as Completion<T>,origin);
+    if (isCompletion(pending)) return locatedCompletion(pending as Completion<T>, origin);
     if (!(pending instanceof Promise)) throw new TypeError("call returned an unboxed result");
-    return locatedCompletion(await pending,origin);
-  } catch (cause) { return caught(cause, origin); }
+    return locatedCompletion(await pending, origin);
+  } catch (cause) {
+    return caught(cause, origin);
+  }
 }
 // Native all/allSettled/any/race consume these adapter promises in I19. Only a
 // success fulfills; failure rejects with its original private completion box.
 export function toPromise<T>(pending: Promise<Completion<T>>): Promise<Completion<T>> {
-  return pending.then(completion => {
+  return pending.then((completion) => {
     checkedCompletion(completion);
     if (completion.kind !== "ok") throw completion;
     return completion;
   });
 }
-export async function fromPromise<T>(pending: Promise<Completion<T>>, origin: FailureOrigin): Promise<Completion<T>> {
-  try { return locatedCompletion(await pending,origin); }
-  catch (cause) {
+export async function fromPromise<T>(
+  pending: Promise<Completion<T>>,
+  origin: FailureOrigin,
+): Promise<Completion<T>> {
+  try {
+    return locatedCompletion(await pending, origin);
+  } catch (cause) {
     if (isCompletion(cause) && cause.kind !== "ok") return cause;
     return caught(cause, origin);
   }
@@ -99,11 +127,17 @@ export type Handlers<T, R> = Readonly<{
 }>;
 // Dispatch is one-shot. invoke contains the selected handler, never the dispatch
 // itself; a handler-produced failure is returned directly without selecting again.
-export function dispatch<T, R>(completion: Completion<T>, handlers: Handlers<T, R>, origin: FailureOrigin): Promise<Completion<R>> {
+export function dispatch<T, R>(
+  completion: Completion<T>,
+  handlers: Handlers<T, R>,
+  origin: FailureOrigin,
+): Promise<Completion<R>> {
   checkedCompletion(completion);
   if (completion.kind === "ok") return invoke(() => handlers.ok(completion.value), origin);
   if (completion.kind === "standard") {
-    return handlers.standard ? invoke(() => handlers.standard!(completion.value), origin) : Promise.resolve(completion);
+    return handlers.standard
+      ? invoke(() => handlers.standard!(completion.value), origin)
+      : Promise.resolve(completion);
   }
   const handler = handlers.domain.get(errorType(completion));
   if (!handler) throw new TypeError("missing checked domain arm");

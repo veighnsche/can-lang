@@ -19,14 +19,37 @@ import { createSQLTransactions } from "../platform/sql/transaction.ts";
 import type { SQLPlan } from "../platform/sql/values.ts";
 
 async function owned(body: () => Promise<void>): Promise<void> {
-  const result = await runOwnedRoot(async () => { await body(); return success(undefined); });
+  const result = await runOwnedRoot(async () => {
+    await body();
+    return success(undefined);
+  });
   expect(result.cleanupFailed).toBe(false);
   expect(result.completion.kind).toBe("ok");
 }
 const identity = (kind: string, declaration: string) =>
-  createHash("sha256").update("can-concrete-type-v1\0" + JSON.stringify([kind, declaration])).digest("hex");
-const textShape: FailureShape = { identity: identity("primitive", "str"), kind: "primitive", declaration: "str", arguments: [], fields: [], leaves: [], inputs: [], errors: [] };
-const intShape: FailureShape = { identity: identity("primitive", "int"), kind: "primitive", declaration: "int", arguments: [], fields: [], leaves: [], inputs: [], errors: [] };
+  createHash("sha256")
+    .update("can-concrete-type-v1\0" + JSON.stringify([kind, declaration]))
+    .digest("hex");
+const textShape: FailureShape = {
+  identity: identity("primitive", "str"),
+  kind: "primitive",
+  declaration: "str",
+  arguments: [],
+  fields: [],
+  leaves: [],
+  inputs: [],
+  errors: [],
+};
+const intShape: FailureShape = {
+  identity: identity("primitive", "int"),
+  kind: "primitive",
+  declaration: "int",
+  arguments: [],
+  fields: [],
+  leaves: [],
+  inputs: [],
+  errors: [],
+};
 const fieldTypes: Record<string, Record<string, string>> = {
   "http::credentials_missing": { variable: textShape.identity },
   "sql::connection_failed": { phase: textShape.identity },
@@ -42,17 +65,26 @@ const fieldTypes: Record<string, Record<string, string>> = {
   "sql::commit_unknown": { transaction_id: textShape.identity },
 };
 const declarations = catalogue.errors
-  .filter(e => fieldTypes[e.name] !== undefined)
-  .map(e => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
-const errorShapes: FailureShape[] = declarations.map(e => ({
-  identity: identity("error", e.identity), kind: "error", declaration: e.identity, arguments: [],
+  .filter((e) => fieldTypes[e.name] !== undefined)
+  .map((e) => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
+const errorShapes: FailureShape[] = declarations.map((e) => ({
+  identity: identity("error", e.identity),
+  kind: "error",
+  declaration: e.identity,
+  arguments: [],
   fields: Object.entries(fieldTypes[e.name]!).map(([name, type]) => ({ name, type })),
-  leaves: [], inputs: [], errors: [],
+  leaves: [],
+  inputs: [],
+  errors: [],
 }));
 const domain = createDomainRuntime({ declarations, shapes: [textShape, intShape, ...errorShapes] });
 const id = (declaration: string) => identity("error", declaration);
 const optionsName = "can.std.sql@1::sqlite_file_options";
-const fileOptions = (mode: string, ms: bigint) => record(optionsName, [["mode", mode], ["busy_timeout_ms", ms]]);
+const fileOptions = (mode: string, ms: bigint) =>
+  record(optionsName, [
+    ["mode", mode],
+    ["busy_timeout_ms", ms],
+  ]);
 
 // Hand-built sqlite descriptors (dialect sqlite, grammar version 15).
 // DDL runs through execute descriptors: the factory shapes segments,
@@ -62,87 +94,269 @@ const coverColumns = "id, flag, ratio, name, payload, note";
 const table: Record<string, Record<string, SQLDescriptorEntry>> = {
   "": {
     setup_cover: {
-      dialect: D, cardinality: "execute", kind: "create_table_statement",
-      segments: [{ text: "CREATE TABLE cover (id INTEGER PRIMARY KEY, flag INTEGER, ratio REAL, name TEXT, payload BLOB, note TEXT)" }],
-      params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [
+        {
+          text: "CREATE TABLE cover (id INTEGER PRIMARY KEY, flag INTEGER, ratio REAL, name TEXT, payload BLOB, note TEXT)",
+        },
+      ],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     insert_cover: {
-      dialect: D, cardinality: "execute", kind: "insert_statement",
-      segments: [{ text: "INSERT INTO cover VALUES (" }, { param: 1 }, { text: ", " }, { param: 2 }, { text: ", " }, { param: 3 }, { text: ", " }, { param: 4 }, { text: ", " }, { param: 5 }, { text: ", " }, { param: 6 }, { text: ")" }],
-      params: ["id", "flag", "ratio", "name", "payload", "note"], paramType: "p", rowType: "r", limit: 0, total: 6, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO cover VALUES (" },
+        { param: 1 },
+        { text: ", " },
+        { param: 2 },
+        { text: ", " },
+        { param: 3 },
+        { text: ", " },
+        { param: 4 },
+        { text: ", " },
+        { param: 5 },
+        { text: ", " },
+        { param: 6 },
+        { text: ")" },
+      ],
+      params: ["id", "flag", "ratio", "name", "payload", "note"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 6,
+      version: 15,
     },
     cover_by_id: {
-      dialect: D, cardinality: "one", kind: "select_statement",
-      segments: [{ text: `SELECT ${coverColumns} FROM cover WHERE id = ` }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
-      params: ["id"], paramType: "p", rowType: "r", limit: 2, total: 2, version: 15,
+      dialect: D,
+      cardinality: "one",
+      kind: "select_statement",
+      segments: [
+        { text: `SELECT ${coverColumns} FROM cover WHERE id = ` },
+        { param: 1 },
+        { text: " LIMIT " },
+        { param: 2 },
+      ],
+      params: ["id"],
+      paramType: "p",
+      rowType: "r",
+      limit: 2,
+      total: 2,
+      version: 15,
     },
     cover_all: {
-      dialect: D, cardinality: "many", kind: "select_statement",
+      dialect: D,
+      cardinality: "many",
+      kind: "select_statement",
       segments: [{ text: `SELECT ${coverColumns} FROM cover LIMIT ` }, { param: 1 }],
-      params: [], paramType: "p", rowType: "r", limit: 1, total: 1, version: 15,
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 1,
+      total: 1,
+      version: 15,
     },
     update_flag: {
-      dialect: D, cardinality: "execute", kind: "update_statement",
-      segments: [{ text: "UPDATE cover SET flag = " }, { param: 1 }, { text: " WHERE id = " }, { param: 2 }],
-      params: ["flag", "id"], paramType: "p", rowType: "r", limit: 0, total: 2, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "update_statement",
+      segments: [
+        { text: "UPDATE cover SET flag = " },
+        { param: 1 },
+        { text: " WHERE id = " },
+        { param: 2 },
+      ],
+      params: ["flag", "id"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 2,
+      version: 15,
     },
     delete_cover: {
-      dialect: D, cardinality: "execute", kind: "delete_statement",
+      dialect: D,
+      cardinality: "execute",
+      kind: "delete_statement",
       segments: [{ text: "DELETE FROM cover WHERE id = " }, { param: 1 }],
-      params: ["id"], paramType: "p", rowType: "r", limit: 0, total: 1, version: 15,
+      params: ["id"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 1,
+      version: 15,
     },
     setup_unique: {
-      dialect: D, cardinality: "execute", kind: "create_table_statement",
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
       segments: [{ text: "CREATE TABLE uq (id INTEGER PRIMARY KEY, v TEXT UNIQUE)" }],
-      params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     insert_unique: {
-      dialect: D, cardinality: "execute", kind: "insert_statement",
-      segments: [{ text: "INSERT INTO uq VALUES (" }, { param: 1 }, { text: ", " }, { param: 2 }, { text: ")" }],
-      params: ["id", "v"], paramType: "p", rowType: "r", limit: 0, total: 2, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO uq VALUES (" },
+        { param: 1 },
+        { text: ", " },
+        { param: 2 },
+        { text: ")" },
+      ],
+      params: ["id", "v"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 2,
+      version: 15,
     },
     broken_syntax: {
-      dialect: D, cardinality: "execute", kind: "insert_statement",
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
       segments: [{ text: "INSERT INTO cover VALUES (" }],
-      params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     drop_absent: {
-      dialect: D, cardinality: "execute", kind: "delete_statement",
-      segments: [{ text: "DELETE FROM absent" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "delete_statement",
+      segments: [{ text: "DELETE FROM absent" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     journal_delete: {
-      dialect: D, cardinality: "execute", kind: "pragma_statement",
-      segments: [{ text: "PRAGMA journal_mode = DELETE" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "pragma_statement",
+      segments: [{ text: "PRAGMA journal_mode = DELETE" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     begin_immediate: {
-      dialect: D, cardinality: "execute", kind: "begin_statement",
-      segments: [{ text: "BEGIN IMMEDIATE" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "begin_statement",
+      segments: [{ text: "BEGIN IMMEDIATE" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     rollback_txn: {
-      dialect: D, cardinality: "execute", kind: "rollback_statement",
-      segments: [{ text: "ROLLBACK" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "rollback_statement",
+      segments: [{ text: "ROLLBACK" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     setup_parent: {
-      dialect: D, cardinality: "execute", kind: "create_table_statement",
-      segments: [{ text: "CREATE TABLE parent (id INTEGER PRIMARY KEY)" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [{ text: "CREATE TABLE parent (id INTEGER PRIMARY KEY)" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     setup_child: {
-      dialect: D, cardinality: "execute", kind: "create_table_statement",
-      segments: [{ text: "CREATE TABLE child (id INTEGER PRIMARY KEY, pid INTEGER REFERENCES parent(id) DEFERRABLE INITIALLY DEFERRED)" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "create_table_statement",
+      segments: [
+        {
+          text: "CREATE TABLE child (id INTEGER PRIMARY KEY, pid INTEGER REFERENCES parent(id) DEFERRABLE INITIALLY DEFERRED)",
+        },
+      ],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     pragma_fk: {
-      dialect: D, cardinality: "execute", kind: "pragma_statement",
-      segments: [{ text: "PRAGMA foreign_keys = ON" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "pragma_statement",
+      segments: [{ text: "PRAGMA foreign_keys = ON" }],
+      params: [],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 0,
+      version: 15,
     },
     insert_child: {
-      dialect: D, cardinality: "execute", kind: "insert_statement",
-      segments: [{ text: "INSERT INTO child (id, pid) VALUES (" }, { param: 1 }, { text: ", " }, { param: 2 }, { text: ")" }],
-      params: ["id", "pid"], paramType: "p", rowType: "r", limit: 0, total: 2, version: 15,
+      dialect: D,
+      cardinality: "execute",
+      kind: "insert_statement",
+      segments: [
+        { text: "INSERT INTO child (id, pid) VALUES (" },
+        { param: 1 },
+        { text: ", " },
+        { param: 2 },
+        { text: ")" },
+      ],
+      params: ["id", "pid"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 2,
+      version: 15,
     },
     child_by_id: {
-      dialect: D, cardinality: "one", kind: "select_statement",
-      segments: [{ text: "SELECT id, pid FROM child WHERE id = " }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
-      params: ["id"], paramType: "p", rowType: "r", limit: 2, total: 2, version: 15,
+      dialect: D,
+      cardinality: "one",
+      kind: "select_statement",
+      segments: [
+        { text: "SELECT id, pid FROM child WHERE id = " },
+        { param: 1 },
+        { text: " LIMIT " },
+        { param: 2 },
+      ],
+      params: ["id"],
+      paramType: "p",
+      rowType: "r",
+      limit: 2,
+      total: 2,
+      version: 15,
     },
   },
 };
@@ -157,28 +371,53 @@ const coverParams: SQLPlan = {
       { name: "ratio", kind: "float" },
       { name: "name", kind: "str" },
       { name: "payload", kind: "bytes" },
-      { name: "note", kind: "option", inner: "str", some: "app::option_some", none: "app::option_none" },
+      {
+        name: "note",
+        kind: "option",
+        inner: "str",
+        some: "app::option_some",
+        none: "app::option_none",
+      },
     ],
   },
 };
 const insertParams: SQLPlan = {
   params: {
-    root: "app::cover_insert", fields: [
+    root: "app::cover_insert",
+    fields: [
       { name: "id", kind: "int" },
       { name: "flag", kind: "bool" },
       { name: "ratio", kind: "float" },
       { name: "name", kind: "str" },
       { name: "payload", kind: "bytes" },
-      { name: "note", kind: "option", inner: "str", some: "app::option_some", none: "app::option_none" },
+      {
+        name: "note",
+        kind: "option",
+        inner: "str",
+        some: "app::option_some",
+        none: "app::option_none",
+      },
     ],
   },
 };
 const childInsertParams: SQLPlan = {
-  params: { root: "app::child_insert", fields: [{ name: "id", kind: "int" }, { name: "pid", kind: "int" }] },
+  params: {
+    root: "app::child_insert",
+    fields: [
+      { name: "id", kind: "int" },
+      { name: "pid", kind: "int" },
+    ],
+  },
 };
 const childParams: SQLPlan = {
   params: { root: "app::child_parameters", fields: [{ name: "id", kind: "int" }] },
-  rows: { root: "app::child_row", fields: [{ name: "id", kind: "int" }, { name: "pid", kind: "int" }] },
+  rows: {
+    root: "app::child_row",
+    fields: [
+      { name: "id", kind: "int" },
+      { name: "pid", kind: "int" },
+    ],
+  },
 };
 const descriptors = createSQLDescriptors(table);
 const poolContracts = {
@@ -194,18 +433,22 @@ const poolContracts = {
   unsupportedValue: id("can.std.sql@1::unsupported_value"),
 };
 const pools = createSQLPools(domain, poolContracts, () => undefined, descriptors);
-const transactions = createSQLTransactions(domain, {
-  connectionFailed: id("can.std.sql@1::connection_failed"),
-  queryFailed: id("can.std.sql@1::query_failed"),
-  rowMissing: id("can.std.sql@1::row_missing"),
-  rowCount: id("can.std.sql@1::row_count"),
-  schemaMismatch: id("can.std.sql@1::schema_mismatch"),
-  constraintFailed: id("can.std.sql@1::constraint_failed"),
-  rowLimit: id("can.std.sql@1::row_limit"),
-  unsupportedValue: id("can.std.sql@1::unsupported_value"),
-  transactionFailed: id("can.std.sql@1::transaction_failed"),
-  commitUnknown: id("can.std.sql@1::commit_unknown"),
-}, descriptors);
+const transactions = createSQLTransactions(
+  domain,
+  {
+    connectionFailed: id("can.std.sql@1::connection_failed"),
+    queryFailed: id("can.std.sql@1::query_failed"),
+    rowMissing: id("can.std.sql@1::row_missing"),
+    rowCount: id("can.std.sql@1::row_count"),
+    schemaMismatch: id("can.std.sql@1::schema_mismatch"),
+    constraintFailed: id("can.std.sql@1::constraint_failed"),
+    rowLimit: id("can.std.sql@1::row_limit"),
+    unsupportedValue: id("can.std.sql@1::unsupported_value"),
+    transactionFailed: id("can.std.sql@1::transaction_failed"),
+    commitUnknown: id("can.std.sql@1::commit_unknown"),
+  },
+  descriptors,
+);
 const COMMIT = "app::commit";
 const ROLLBACK = "app::rollback";
 const leaves = { commit: COMMIT, rollback: ROLLBACK };
@@ -237,17 +480,44 @@ describe("sqlite pools", () => {
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
       const payload = ownBytes(new Uint8Array([1, 2, 250]));
       const rows: [bigint, boolean, number, string, unknown, unknown][] = [
-        [9007199254740993n, true, 1.5, "héllo", payload, record("app::option_some", [["value", "first"]])],
+        [
+          9007199254740993n,
+          true,
+          1.5,
+          "héllo",
+          payload,
+          record("app::option_some", [["value", "first"]]),
+        ],
         [MIN_INT64, false, -0.0, "", ownBytes(new Uint8Array(0)), record("app::option_none", [])],
         [MAX_INT64, true, 3, "x", payload, record("app::option_none", [])],
       ];
       for (const [idn, flag, ratio, name, bytes, note] of rows) {
-        const affected = value(await pools.execute(insert, insertParams, token,
-          record("app::cover_insert", [["id", idn], ["flag", flag], ["ratio", ratio], ["name", name], ["payload", bytes], ["note", note]])));
+        const affected = value(
+          await pools.execute(
+            insert,
+            insertParams,
+            token,
+            record("app::cover_insert", [
+              ["id", idn],
+              ["flag", flag],
+              ["ratio", ratio],
+              ["name", name],
+              ["payload", bytes],
+              ["note", note],
+            ]),
+          ),
+        );
         expect(affected).toBe(1n);
       }
       for (const [idn, flag, ratio, name, bytes, note] of rows) {
-        const row = value(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", idn]])));
+        const row = value(
+          await pools.queryOne(
+            byId,
+            coverParams,
+            token,
+            record("app::cover_parameters", [["id", idn]]),
+          ),
+        );
         expect(dataProperty(row, "id")).toBe(idn);
         expect(dataProperty(row, "flag")).toBe(flag);
         // SQLite REAL normalizes -0.0 to 0 (observed through Bun.SQL);
@@ -258,16 +528,38 @@ describe("sqlite pools", () => {
         expect(isBytes(back)).toBe(true);
         expect(recordIdentity(dataProperty(row, "note"))).toBe(recordIdentity(note));
         if (recordIdentity(note) === "app::option_some") {
-          expect(dataProperty(dataProperty(row, "note"), "value")).toBe(dataProperty(note, "value"));
+          expect(dataProperty(dataProperty(row, "note"), "value")).toBe(
+            dataProperty(note, "value"),
+          );
         }
         void bytes;
       }
       // Encoded bytes are copied: mutating the source afterwards cannot move the row.
       const probe = new Uint8Array([9, 9, 9]);
-      value(await pools.execute(insert, insertParams, token,
-        record("app::cover_insert", [["id", 7n], ["flag", true], ["ratio", 1], ["name", "m"], ["payload", ownBytes(probe)], ["note", record("app::option_none", [])]])));
+      value(
+        await pools.execute(
+          insert,
+          insertParams,
+          token,
+          record("app::cover_insert", [
+            ["id", 7n],
+            ["flag", true],
+            ["ratio", 1],
+            ["name", "m"],
+            ["payload", ownBytes(probe)],
+            ["note", record("app::option_none", [])],
+          ]),
+        ),
+      );
       probe.fill(0);
-      const row = value(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", 7n]])));
+      const row = value(
+        await pools.queryOne(
+          byId,
+          coverParams,
+          token,
+          record("app::cover_parameters", [["id", 7n]]),
+        ),
+      );
       expect([...copyBytes(dataProperty(row, "payload"), bytesOrigin)]).toEqual([9, 9, 9]);
       value(await pools.close(token, 1000n));
     });
@@ -280,19 +572,64 @@ describe("sqlite pools", () => {
       const update = descriptors.declareDescriptor("", "update_flag");
       const remove = descriptors.declareDescriptor("", "delete_cover");
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-      const params = (idn: bigint) => record("app::cover_insert", [["id", idn], ["flag", false], ["ratio", 0], ["name", "n"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]]);
+      const params = (idn: bigint) =>
+        record("app::cover_insert", [
+          ["id", idn],
+          ["flag", false],
+          ["ratio", 0],
+          ["name", "n"],
+          ["payload", ownBytes(new Uint8Array(0))],
+          ["note", record("app::option_none", [])],
+        ]);
       expect(value(await pools.execute(insert, insertParams, token, params(1n)))).toBe(1n);
       expect(value(await pools.execute(insert, insertParams, token, params(2n)))).toBe(1n);
-      const flagPlan: SQLPlan = { params: { root: "app::flag_parameters", fields: [{ name: "flag", kind: "bool" }, { name: "id", kind: "int" }] } };
-      expect(value(await pools.execute(update, flagPlan, token, record("app::flag_parameters", [["flag", true], ["id", 1n]])))).toBe(1n);
-      const idPlan: SQLPlan = { params: { root: "app::id_only", fields: [{ name: "id", kind: "int" }] } };
-      expect(value(await pools.execute(remove, idPlan, token, record("app::id_only", [["id", 999n]])))).toBe(0n);
-      expect(value(await pools.execute(remove, idPlan, token, record("app::id_only", [["id", 1n]])))).toBe(1n);
+      const flagPlan: SQLPlan = {
+        params: {
+          root: "app::flag_parameters",
+          fields: [
+            { name: "flag", kind: "bool" },
+            { name: "id", kind: "int" },
+          ],
+        },
+      };
+      expect(
+        value(
+          await pools.execute(
+            update,
+            flagPlan,
+            token,
+            record("app::flag_parameters", [
+              ["flag", true],
+              ["id", 1n],
+            ]),
+          ),
+        ),
+      ).toBe(1n);
+      const idPlan: SQLPlan = {
+        params: { root: "app::id_only", fields: [{ name: "id", kind: "int" }] },
+      };
+      expect(
+        value(await pools.execute(remove, idPlan, token, record("app::id_only", [["id", 999n]]))),
+      ).toBe(0n);
+      expect(
+        value(await pools.execute(remove, idPlan, token, record("app::id_only", [["id", 1n]]))),
+      ).toBe(1n);
       // query_rows binds max_rows+1 against the real engine and enforces the bound.
       const all = descriptors.declareDescriptor("", "cover_all");
       const rowsPlan: SQLPlan = { ...coverParams, params: { root: "app::empty", fields: [] } };
-      expect((value(await pools.queryRows(all, rowsPlan, token, record("app::empty", []), 5n)) as unknown[]).length).toBe(1);
-      expect(domainOutcome(await pools.queryRows(all, rowsPlan, token, record("app::empty", []), 0n), "sql::row_limit")).toEqual({ limit: 0n });
+      expect(
+        (
+          value(
+            await pools.queryRows(all, rowsPlan, token, record("app::empty", []), 5n),
+          ) as unknown[]
+        ).length,
+      ).toBe(1);
+      expect(
+        domainOutcome(
+          await pools.queryRows(all, rowsPlan, token, record("app::empty", []), 0n),
+          "sql::row_limit",
+        ),
+      ).toEqual({ limit: 0n });
       value(await pools.close(token, 1000n));
     });
   });
@@ -305,28 +642,95 @@ describe("sqlite pools", () => {
         const setup = descriptors.declareDescriptor("", "setup_cover");
         const insert = descriptors.declareDescriptor("", "insert_cover");
         value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-        value(await pools.execute(insert, insertParams, token,
-          record("app::cover_insert", [["id", 11n], ["flag", true], ["ratio", 2], ["name", "kept"], ["payload", ownBytes(new Uint8Array([5]))], ["note", record("app::option_none", [])]])));
+        value(
+          await pools.execute(
+            insert,
+            insertParams,
+            token,
+            record("app::cover_insert", [
+              ["id", 11n],
+              ["flag", true],
+              ["ratio", 2],
+              ["name", "kept"],
+              ["payload", ownBytes(new Uint8Array([5]))],
+              ["note", record("app::option_none", [])],
+            ]),
+          ),
+        );
         value(await pools.close(token, 1000n));
         const reopened = value(await pools.sqliteOpenFile(filename, fileOptions("ro", 0n)));
         const byId = descriptors.declareDescriptor("", "cover_by_id");
-        const row = value(await pools.queryOne(byId, coverParams, reopened, record("app::cover_parameters", [["id", 11n]])));
+        const row = value(
+          await pools.queryOne(
+            byId,
+            coverParams,
+            reopened,
+            record("app::cover_parameters", [["id", 11n]]),
+          ),
+        );
         expect(dataProperty(row, "name")).toBe("kept");
         // A read-only handle refuses writes with the structured readonly code.
-        expect(domainOutcome(await pools.execute(insert, insertParams, reopened,
-          record("app::cover_insert", [["id", 12n], ["flag", false], ["ratio", 0], ["name", "n"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])),
-          "sql::query_failed")).toEqual({ operation: "execute", code: "SQLITE_READONLY" });
+        expect(
+          domainOutcome(
+            await pools.execute(
+              insert,
+              insertParams,
+              reopened,
+              record("app::cover_insert", [
+                ["id", 12n],
+                ["flag", false],
+                ["ratio", 0],
+                ["name", "n"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+            "sql::query_failed",
+          ),
+        ).toEqual({ operation: "execute", code: "SQLITE_READONLY" });
         value(await pools.close(reopened, 1000n));
         // Missing files refuse at connect for ro/rw, and create for rwc.
-        expect(domainOutcome(await pools.sqliteOpenFile(join(directory, "absent.sqlite"), fileOptions("ro", 0n)), "sql::connection_failed")).toEqual({ phase: "connect" });
-        expect(domainOutcome(await pools.sqliteOpenFile(join(directory, "absent.sqlite"), fileOptions("rw", 0n)), "sql::connection_failed")).toEqual({ phase: "connect" });
-        const created = value(await pools.sqliteOpenFile(join(directory, "fresh.sqlite"), fileOptions("rwc", 0n)));
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile(join(directory, "absent.sqlite"), fileOptions("ro", 0n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "connect" });
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile(join(directory, "absent.sqlite"), fileOptions("rw", 0n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "connect" });
+        const created = value(
+          await pools.sqliteOpenFile(join(directory, "fresh.sqlite"), fileOptions("rwc", 0n)),
+        );
         value(await pools.close(created, 1000n));
         // Bad configuration never reaches the filesystem.
-        expect(domainOutcome(await pools.sqliteOpenFile("", fileOptions("rwc", 0n)), "sql::connection_failed")).toEqual({ phase: "config" });
-        expect(domainOutcome(await pools.sqliteOpenFile(filename, fileOptions("wide", 0n)), "sql::connection_failed")).toEqual({ phase: "config" });
-        expect(domainOutcome(await pools.sqliteOpenFile(filename, fileOptions("rwc", -1n)), "sql::connection_failed")).toEqual({ phase: "config" });
-        expect(domainOutcome(await pools.sqliteOpenFile(filename, fileOptions("rwc", 2147483648n)), "sql::connection_failed")).toEqual({ phase: "config" });
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile("", fileOptions("rwc", 0n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "config" });
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile(filename, fileOptions("wide", 0n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "config" });
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile(filename, fileOptions("rwc", -1n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "config" });
+        expect(
+          domainOutcome(
+            await pools.sqliteOpenFile(filename, fileOptions("rwc", 2147483648n)),
+            "sql::connection_failed",
+          ),
+        ).toEqual({ phase: "config" });
         await expect(pools.sqliteOpenFile(7, fileOptions("rwc", 0n))).rejects.toThrow(TypeError);
       });
     } finally {
@@ -337,14 +741,31 @@ describe("sqlite pools", () => {
     await owned(async () => {
       const token = value(await pools.sqliteOpenMemory());
       const pg: SQLDescriptorEntry = {
-        dialect: "postgresql", cardinality: "execute", kind: "InsertStmt",
-        segments: [{ text: "INSERT INTO t VALUES (1)" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 170007,
+        dialect: "postgresql",
+        cardinality: "execute",
+        kind: "InsertStmt",
+        segments: [{ text: "INSERT INTO t VALUES (1)" }],
+        params: [],
+        paramType: "p",
+        rowType: "r",
+        limit: 0,
+        total: 0,
+        version: 170007,
       };
       const mixed = createSQLDescriptors({ "": { pg_insert: pg } });
       // A postgres descriptor on a sqlite pool: the agreement check fires,
       // so no native call observes postgres text.
-      expect(domainOutcome(await pools.execute(mixed.declareDescriptor("", "pg_insert"), emptyParams, token, record("app::empty", [])),
-        "sql::query_failed")).toEqual({ operation: "execute", code: "dialect_mismatch" });
+      expect(
+        domainOutcome(
+          await pools.execute(
+            mixed.declareDescriptor("", "pg_insert"),
+            emptyParams,
+            token,
+            record("app::empty", []),
+          ),
+          "sql::query_failed",
+        ),
+      ).toEqual({ operation: "execute", code: "dialect_mismatch" });
       value(await pools.close(token, 1000n));
     });
     // The mirror direction with a recording fake: zero native calls.
@@ -352,17 +773,31 @@ describe("sqlite pools", () => {
     const calls: unknown[][] = [];
     try {
       (Bun as unknown as { SQL: unknown }).SQL = function () {
-        const callable = async function (...args: unknown[]) { calls.push(args); return []; };
+        const callable = async function (...args: unknown[]) {
+          calls.push(args);
+          return [];
+        };
         Object.assign(callable, { connect: async () => {}, close: async () => {} });
         return callable;
       };
-      const fakePools = createSQLPools(domain, poolContracts, () => "postgres://fake/x", descriptors);
+      const fakePools = createSQLPools(
+        domain,
+        poolContracts,
+        () => "postgres://fake/x",
+        descriptors,
+      );
       await owned(async () => {
         const pgToken = value(await fakePools.open("CAN_X", 1n));
         const lite = descriptors.declareDescriptor("", "delete_cover");
-        const idPlan: SQLPlan = { params: { root: "app::id_only", fields: [{ name: "id", kind: "int" }] } };
-        expect(domainOutcome(await fakePools.execute(lite, idPlan, pgToken, record("app::id_only", [["id", 1n]])),
-          "sql::query_failed")).toEqual({ operation: "execute", code: "dialect_mismatch" });
+        const idPlan: SQLPlan = {
+          params: { root: "app::id_only", fields: [{ name: "id", kind: "int" }] },
+        };
+        expect(
+          domainOutcome(
+            await fakePools.execute(lite, idPlan, pgToken, record("app::id_only", [["id", 1n]])),
+            "sql::query_failed",
+          ),
+        ).toEqual({ operation: "execute", code: "dialect_mismatch" });
         value(await fakePools.close(pgToken, 1000n));
       });
     } finally {
@@ -376,18 +811,56 @@ describe("sqlite pools", () => {
       const setup = descriptors.declareDescriptor("", "setup_unique");
       const insert = descriptors.declareDescriptor("", "insert_unique");
       const broken = descriptors.declareDescriptor("", "broken_syntax");
-      const uqPlan: SQLPlan = { params: { root: "app::uq_parameters", fields: [{ name: "id", kind: "int" }, { name: "v", kind: "str" }] } };
+      const uqPlan: SQLPlan = {
+        params: {
+          root: "app::uq_parameters",
+          fields: [
+            { name: "id", kind: "int" },
+            { name: "v", kind: "str" },
+          ],
+        },
+      };
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-      value(await pools.execute(insert, uqPlan, token, record("app::uq_parameters", [["id", 1n], ["v", "a"]])));
+      value(
+        await pools.execute(
+          insert,
+          uqPlan,
+          token,
+          record("app::uq_parameters", [
+            ["id", 1n],
+            ["v", "a"],
+          ]),
+        ),
+      );
       // UNIQUE violation: the structured constraint code, never the message.
-      expect(domainOutcome(await pools.execute(insert, uqPlan, token, record("app::uq_parameters", [["id", 2n], ["v", "a"]])),
-        "sql::constraint_failed")).toEqual({ constraint: "SQLITE_CONSTRAINT_UNIQUE" });
+      expect(
+        domainOutcome(
+          await pools.execute(
+            insert,
+            uqPlan,
+            token,
+            record("app::uq_parameters", [
+              ["id", 2n],
+              ["v", "a"],
+            ]),
+          ),
+          "sql::constraint_failed",
+        ),
+      ).toEqual({ constraint: "SQLITE_CONSTRAINT_UNIQUE" });
       // Malformed text and missing tables are query failures with codes.
-      expect(domainOutcome(await pools.execute(broken, emptyParams, token, record("app::empty", [])),
-        "sql::query_failed")).toEqual({ operation: "execute", code: "SQLITE_ERROR" });
+      expect(
+        domainOutcome(
+          await pools.execute(broken, emptyParams, token, record("app::empty", [])),
+          "sql::query_failed",
+        ),
+      ).toEqual({ operation: "execute", code: "SQLITE_ERROR" });
       const dropAbsent = descriptors.declareDescriptor("", "drop_absent");
-      expect(domainOutcome(await pools.execute(dropAbsent, emptyParams, token, record("app::empty", [])),
-        "sql::query_failed")).toEqual({ operation: "execute", code: "SQLITE_ERROR" });
+      expect(
+        domainOutcome(
+          await pools.execute(dropAbsent, emptyParams, token, record("app::empty", [])),
+          "sql::query_failed",
+        ),
+      ).toEqual({ operation: "execute", code: "SQLITE_ERROR" });
       value(await pools.close(token, 1000n));
     });
   });
@@ -408,16 +881,59 @@ describe("sqlite pools", () => {
         value(await pools.execute(journal, emptyParams, first, record("app::empty", [])));
         value(await pools.execute(begin, emptyParams, first, record("app::empty", [])));
         const insert = descriptors.declareDescriptor("", "insert_cover");
-        value(await pools.execute(insert, insertParams, first,
-          record("app::cover_insert", [["id", 1n], ["flag", false], ["ratio", 0], ["name", "n"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
+        value(
+          await pools.execute(
+            insert,
+            insertParams,
+            first,
+            record("app::cover_insert", [
+              ["id", 1n],
+              ["flag", false],
+              ["ratio", 0],
+              ["name", "n"],
+              ["payload", ownBytes(new Uint8Array(0))],
+              ["note", record("app::option_none", [])],
+            ]),
+          ),
+        );
         const second = value(await pools.sqliteOpenFile(filename, fileOptions("rw", 0n)));
-        expect(domainOutcome(await pools.execute(insert, insertParams, second,
-          record("app::cover_insert", [["id", 2n], ["flag", false], ["ratio", 0], ["name", "n"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])),
-          "sql::query_failed")).toEqual({ operation: "execute", code: "SQLITE_BUSY" });
+        expect(
+          domainOutcome(
+            await pools.execute(
+              insert,
+              insertParams,
+              second,
+              record("app::cover_insert", [
+                ["id", 2n],
+                ["flag", false],
+                ["ratio", 0],
+                ["name", "n"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+            "sql::query_failed",
+          ),
+        ).toEqual({ operation: "execute", code: "SQLITE_BUSY" });
         // The event loop stayed live: rollback releases and the write lands.
         value(await pools.execute(rollback, emptyParams, first, record("app::empty", [])));
-        expect(value(await pools.execute(insert, insertParams, second,
-          record("app::cover_insert", [["id", 2n], ["flag", false], ["ratio", 0], ["name", "n"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])))).toBe(1n);
+        expect(
+          value(
+            await pools.execute(
+              insert,
+              insertParams,
+              second,
+              record("app::cover_insert", [
+                ["id", 2n],
+                ["flag", false],
+                ["ratio", 0],
+                ["name", "n"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+          ),
+        ).toBe(1n);
         value(await pools.close(first, 1000n));
         value(await pools.close(second, 1000n));
       });
@@ -432,32 +948,126 @@ describe("sqlite pools", () => {
       const insert = descriptors.declareDescriptor("", "insert_cover");
       const byId = descriptors.declareDescriptor("", "cover_by_id");
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-      const committed = value(await transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, insertParams, handle,
-          record("app::cover_insert", [["id", 5n], ["flag", true], ["ratio", 1], ["name", "tx"], ["payload", ownBytes(new Uint8Array([8]))], ["note", record("app::option_none", [])]])));
-        await Bun.sleep(5);
-        const row = value(await transactions.queryOne(byId, coverParams, handle, record("app::cover_parameters", [["id", 5n]])));
-        expect(dataProperty(row, "name")).toBe("tx");
-        return success(record(COMMIT, [["value", dataProperty(row, "id")]]));
-      }, leaves));
+      const committed = value(
+        await transactions.withTransaction(
+          token,
+          async (handle: unknown) => {
+            value(
+              await transactions.execute(
+                insert,
+                insertParams,
+                handle,
+                record("app::cover_insert", [
+                  ["id", 5n],
+                  ["flag", true],
+                  ["ratio", 1],
+                  ["name", "tx"],
+                  ["payload", ownBytes(new Uint8Array([8]))],
+                  ["note", record("app::option_none", [])],
+                ]),
+              ),
+            );
+            await Bun.sleep(5);
+            const row = value(
+              await transactions.queryOne(
+                byId,
+                coverParams,
+                handle,
+                record("app::cover_parameters", [["id", 5n]]),
+              ),
+            );
+            expect(dataProperty(row, "name")).toBe("tx");
+            return success(record(COMMIT, [["value", dataProperty(row, "id")]]));
+          },
+          leaves,
+        ),
+      );
       expect(committed).toBe(5n);
-      const seen = value(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", 5n]])));
+      const seen = value(
+        await pools.queryOne(
+          byId,
+          coverParams,
+          token,
+          record("app::cover_parameters", [["id", 5n]]),
+        ),
+      );
       expect(dataProperty(seen, "name")).toBe("tx");
-      const rolled = value(await transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, insertParams, handle,
-          record("app::cover_insert", [["id", 6n], ["flag", false], ["ratio", 0], ["name", "gone"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
-        return success(record(ROLLBACK, [["value", 6n]]));
-      }, leaves));
+      const rolled = value(
+        await transactions.withTransaction(
+          token,
+          async (handle: unknown) => {
+            value(
+              await transactions.execute(
+                insert,
+                insertParams,
+                handle,
+                record("app::cover_insert", [
+                  ["id", 6n],
+                  ["flag", false],
+                  ["ratio", 0],
+                  ["name", "gone"],
+                  ["payload", ownBytes(new Uint8Array(0))],
+                  ["note", record("app::option_none", [])],
+                ]),
+              ),
+            );
+            return success(record(ROLLBACK, [["value", 6n]]));
+          },
+          leaves,
+        ),
+      );
       expect(rolled).toBe(6n);
-      expect(domainOutcome(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", 6n]])), "sql::row_missing")).toEqual({ query: "cover_by_id" });
+      expect(
+        domainOutcome(
+          await pools.queryOne(
+            byId,
+            coverParams,
+            token,
+            record("app::cover_parameters", [["id", 6n]]),
+          ),
+          "sql::row_missing",
+        ),
+      ).toEqual({ query: "cover_by_id" });
       // A domain failure inside the callback propagates and rolls back.
-      const failed = await transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, insertParams, handle,
-          record("app::cover_insert", [["id", 8n], ["flag", false], ["ratio", 0], ["name", "gone"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
-        return transactions.queryOne(byId, coverParams, handle, record("app::cover_parameters", [["id", 999n]]));
-      }, leaves);
+      const failed = await transactions.withTransaction(
+        token,
+        async (handle: unknown) => {
+          value(
+            await transactions.execute(
+              insert,
+              insertParams,
+              handle,
+              record("app::cover_insert", [
+                ["id", 8n],
+                ["flag", false],
+                ["ratio", 0],
+                ["name", "gone"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+          );
+          return transactions.queryOne(
+            byId,
+            coverParams,
+            handle,
+            record("app::cover_parameters", [["id", 999n]]),
+          );
+        },
+        leaves,
+      );
       expect(domainOutcome(failed, "sql::row_missing")).toEqual({ query: "cover_by_id" });
-      expect(domainOutcome(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", 8n]])), "sql::row_missing")).toEqual({ query: "cover_by_id" });
+      expect(
+        domainOutcome(
+          await pools.queryOne(
+            byId,
+            coverParams,
+            token,
+            record("app::cover_parameters", [["id", 8n]]),
+          ),
+          "sql::row_missing",
+        ),
+      ).toEqual({ query: "cover_by_id" });
       value(await pools.close(token, 1000n));
     });
   });
@@ -468,15 +1078,42 @@ describe("sqlite pools", () => {
       const insert = descriptors.declareDescriptor("", "insert_cover");
       const byId = descriptors.declareDescriptor("", "cover_by_id");
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-      const outcome = await transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, insertParams, handle,
-          record("app::cover_insert", [["id", 20n], ["flag", false], ["ratio", 0], ["name", "boom"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
-        throw new Error("boom");
-      }, leaves);
+      const outcome = await transactions.withTransaction(
+        token,
+        async (handle: unknown) => {
+          value(
+            await transactions.execute(
+              insert,
+              insertParams,
+              handle,
+              record("app::cover_insert", [
+                ["id", 20n],
+                ["flag", false],
+                ["ratio", 0],
+                ["name", "boom"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+          );
+          throw new Error("boom");
+        },
+        leaves,
+      );
       expect(outcome.kind).toBe("standard");
       if (outcome.kind !== "standard") throw new Error("wrong outcome");
       expect(standardFailureDiagnostics(outcome.value).kind).toBe("native_exception");
-      expect(domainOutcome(await pools.queryOne(byId, coverParams, token, record("app::cover_parameters", [["id", 20n]])), "sql::row_missing")).toEqual({ query: "cover_by_id" });
+      expect(
+        domainOutcome(
+          await pools.queryOne(
+            byId,
+            coverParams,
+            token,
+            record("app::cover_parameters", [["id", 20n]]),
+          ),
+          "sql::row_missing",
+        ),
+      ).toEqual({ query: "cover_by_id" });
       value(await pools.close(token, 1000n));
     });
   });
@@ -494,15 +1131,38 @@ describe("sqlite pools", () => {
       // The deferred foreign key holds through the write and fails at
       // COMMIT: the native layer rejects after the commit decision, so
       // the outcome is commit-unknown with the safe attempt identity.
-      const outcome = await transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, childInsertParams, handle,
-          record("app::child_insert", [["id", 1n], ["pid", 999n]])));
-        return success(record(COMMIT, [["value", 1n]]));
-      }, leaves);
+      const outcome = await transactions.withTransaction(
+        token,
+        async (handle: unknown) => {
+          value(
+            await transactions.execute(
+              insert,
+              childInsertParams,
+              handle,
+              record("app::child_insert", [
+                ["id", 1n],
+                ["pid", 999n],
+              ]),
+            ),
+          );
+          return success(record(COMMIT, [["value", 1n]]));
+        },
+        leaves,
+      );
       const payload = domainOutcome(outcome, "sql::commit_unknown");
       expect(typeof payload["transaction_id"]).toBe("string");
       expect(payload["transaction_id"] as string).toMatch(/^\d+-\d+$/);
-      expect(domainOutcome(await pools.queryOne(byId, childParams, token, record("app::child_parameters", [["id", 1n]])), "sql::row_missing")).toEqual({ query: "child_by_id" });
+      expect(
+        domainOutcome(
+          await pools.queryOne(
+            byId,
+            childParams,
+            token,
+            record("app::child_parameters", [["id", 1n]]),
+          ),
+          "sql::row_missing",
+        ),
+      ).toEqual({ query: "child_by_id" });
       value(await pools.close(token, 1000n));
     });
   });
@@ -513,14 +1173,38 @@ describe("sqlite pools", () => {
       const insert = descriptors.declareDescriptor("", "insert_cover");
       const byId = descriptors.declareDescriptor("", "cover_by_id");
       value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-      const tx = transactions.withTransaction(token, async (handle: unknown) => {
-        value(await transactions.execute(insert, insertParams, handle,
-          record("app::cover_insert", [["id", 30n], ["flag", true], ["ratio", 1], ["name", "slow"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
-        await Bun.sleep(50);
-        const row = value(await transactions.queryOne(byId, coverParams, handle, record("app::cover_parameters", [["id", 30n]])));
-        expect(dataProperty(row, "name")).toBe("slow");
-        return success(record(COMMIT, [["value", 30n]]));
-      }, leaves);
+      const tx = transactions.withTransaction(
+        token,
+        async (handle: unknown) => {
+          value(
+            await transactions.execute(
+              insert,
+              insertParams,
+              handle,
+              record("app::cover_insert", [
+                ["id", 30n],
+                ["flag", true],
+                ["ratio", 1],
+                ["name", "slow"],
+                ["payload", ownBytes(new Uint8Array(0))],
+                ["note", record("app::option_none", [])],
+              ]),
+            ),
+          );
+          await Bun.sleep(50);
+          const row = value(
+            await transactions.queryOne(
+              byId,
+              coverParams,
+              handle,
+              record("app::cover_parameters", [["id", 30n]]),
+            ),
+          );
+          expect(dataProperty(row, "name")).toBe("slow");
+          return success(record(COMMIT, [["value", 30n]]));
+        },
+        leaves,
+      );
       await Bun.sleep(10);
       expect(value(await pools.close(token, 5000n))).toBe(undefined);
       expect(value(await tx)).toBe(30n);
@@ -532,30 +1216,61 @@ describe("sqlite pools", () => {
     try {
       const filename = join(directory, "tx.sqlite");
       const diags: unknown[] = [];
-      const result = await runOwnedRoot(async () => {
-        const token = value(await pools.sqliteOpenFile(filename, fileOptions("rwc", 5000n)));
-        const setup = descriptors.declareDescriptor("", "setup_cover");
-        const insert = descriptors.declareDescriptor("", "insert_cover");
-        const byId = descriptors.declareDescriptor("", "cover_by_id");
-        value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
-        const tx = transactions.withTransaction(token, async (handle: unknown) => {
-          value(await transactions.execute(insert, insertParams, handle,
-            record("app::cover_insert", [["id", 31n], ["flag", true], ["ratio", 1], ["name", "slow"], ["payload", ownBytes(new Uint8Array(0))], ["note", record("app::option_none", [])]])));
-          await Bun.sleep(100);
-          return success(record(COMMIT, [["value", 31n]]));
-        }, leaves);
-        await Bun.sleep(10);
-        expect(domainOutcome(await pools.close(token, 5n), "sql::close_failed")).toEqual({ reason: "timeout" });
-        // The timed-out close keeps closing in the background: the
-        // primary commits, and a fresh connection reads it back.
-        expect(value(await tx)).toBe(31n);
-        const reopened = value(await pools.sqliteOpenFile(filename, fileOptions("ro", 0n)));
-        const row = value(await pools.queryOne(byId, coverParams, reopened, record("app::cover_parameters", [["id", 31n]])));
-        expect(dataProperty(row, "name")).toBe("slow");
-        value(await pools.close(reopened, 1000n));
-        expect(resourceStatus(token).state).toBe("closed");
-        return success(undefined);
-      }, (d: unknown) => { diags.push(d); });
+      const result = await runOwnedRoot(
+        async () => {
+          const token = value(await pools.sqliteOpenFile(filename, fileOptions("rwc", 5000n)));
+          const setup = descriptors.declareDescriptor("", "setup_cover");
+          const insert = descriptors.declareDescriptor("", "insert_cover");
+          const byId = descriptors.declareDescriptor("", "cover_by_id");
+          value(await pools.execute(setup, emptyParams, token, record("app::empty", [])));
+          const tx = transactions.withTransaction(
+            token,
+            async (handle: unknown) => {
+              value(
+                await transactions.execute(
+                  insert,
+                  insertParams,
+                  handle,
+                  record("app::cover_insert", [
+                    ["id", 31n],
+                    ["flag", true],
+                    ["ratio", 1],
+                    ["name", "slow"],
+                    ["payload", ownBytes(new Uint8Array(0))],
+                    ["note", record("app::option_none", [])],
+                  ]),
+                ),
+              );
+              await Bun.sleep(100);
+              return success(record(COMMIT, [["value", 31n]]));
+            },
+            leaves,
+          );
+          await Bun.sleep(10);
+          expect(domainOutcome(await pools.close(token, 5n), "sql::close_failed")).toEqual({
+            reason: "timeout",
+          });
+          // The timed-out close keeps closing in the background: the
+          // primary commits, and a fresh connection reads it back.
+          expect(value(await tx)).toBe(31n);
+          const reopened = value(await pools.sqliteOpenFile(filename, fileOptions("ro", 0n)));
+          const row = value(
+            await pools.queryOne(
+              byId,
+              coverParams,
+              reopened,
+              record("app::cover_parameters", [["id", 31n]]),
+            ),
+          );
+          expect(dataProperty(row, "name")).toBe("slow");
+          value(await pools.close(reopened, 1000n));
+          expect(resourceStatus(token).state).toBe("closed");
+          return success(undefined);
+        },
+        (d: unknown) => {
+          diags.push(d);
+        },
+      );
       expect(result.completion.kind).toBe("ok");
       expect(result.cleanupFailed).toBe(true);
       expect(diags.some((d) => (d as { phase?: unknown }).phase === "cleanup")).toBe(true);
@@ -566,10 +1281,17 @@ describe("sqlite pools", () => {
   test("sqlite close validates, closes, and denies later work", async () => {
     await owned(async () => {
       const token = value(await pools.sqliteOpenMemory());
-      expect(domainOutcome(await pools.close(token, -1n), "sql::close_failed")).toEqual({ reason: "invalid_timeout" });
+      expect(domainOutcome(await pools.close(token, -1n), "sql::close_failed")).toEqual({
+        reason: "invalid_timeout",
+      });
       expect(value(await pools.close(token, 1000n))).toBe(undefined);
       try {
-        await pools.queryOne(descriptors.declareDescriptor("", "cover_by_id"), coverParams, token, record("app::cover_parameters", [["id", 1n]]));
+        await pools.queryOne(
+          descriptors.declareDescriptor("", "cover_by_id"),
+          coverParams,
+          token,
+          record("app::cover_parameters", [["id", 1n]]),
+        );
         throw new Error("query admitted on a closed pool");
       } catch (cause) {
         expect(standardFailureDiagnostics(cause as StandardFailure).kind).toBe("resource_state");
@@ -580,7 +1302,9 @@ describe("sqlite pools", () => {
     const context = fixtureContext();
     await owned(async () => {
       await expect(pools.sqliteOpenMemory(context)).rejects.toThrow();
-      await expect(pools.sqliteOpenFile("x.sqlite", fileOptions("rwc", 0n), context)).rejects.toThrow();
+      await expect(
+        pools.sqliteOpenFile("x.sqlite", fileOptions("rwc", 0n), context),
+      ).rejects.toThrow();
     });
   });
 });

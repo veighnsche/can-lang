@@ -2,7 +2,11 @@ import { expect, test } from "bun:test";
 import { index, slice, intDivide, intRemainder, intPower, primitiveFailureKind } from "./primitive";
 
 function failure(action: () => unknown): string | undefined {
-  try { action(); } catch (error) { return primitiveFailureKind(error); }
+  try {
+    action();
+  } catch (error) {
+    return primitiveFailureKind(error);
+  }
   throw new Error("expected a primitive fault");
 }
 
@@ -16,7 +20,14 @@ test("native bigint contract and exact fault identities", () => {
   expect(failure(() => intRemainder(1n, 0n))).toBe("arithmetic");
   expect(failure(() => intPower(2n, -1n))).toBe("arithmetic");
   expect(primitiveFailureKind(new Error("Can arithmetic failure"))).toBeUndefined();
-  const proxy = new Proxy({}, { get() { throw new Error("must not inspect"); } });
+  const proxy = new Proxy(
+    {},
+    {
+      get() {
+        throw new Error("must not inspect");
+      },
+    },
+  );
   expect(primitiveFailureKind(proxy)).toBeUndefined();
 });
 

@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "The project executes private TypeScript with pinned Bun 1.4.2 and protects immutable Can behavior. A fresh Oxlint 1.85.0 run over authored runtime/ plus tools/runtime/ (vendor ignored) yielded exactly 73 warnings: unused bindings 48, single-argument Array construction 11, control-character regular expressions 6, thenable objects 5, redundant spreads 2, and aliasing this 1. The requested deliverable is a plan for zero warnings, not an immediate code rewrite. Several test inputs deliberately have a then property that can throw; Array(length) sometimes relies on holes or a chosen size; regular expressions reject dangerous bytes; array cloning may be part of resource ownership. No older public ABI needs preservation. Choices include site-specific fixes with documented exceptions, broad linter exclusions, and automatic stylistic replacement. A warning-free run could be enforced with --deny-warnings after behavior checks.",
+  "questions": {
+    "resolution": {
+      "type": "choice",
+      "instructions": "Select the safest general treatment of intentional constructs among these lint findings.",
+      "criteria": {
+        "targeted": "For each location, distinguish an actual defect from purposeful semantics; remove unused code and clarify safe constructs, using narrowly located explained lint exceptions only where the original behavior must remain.",
+        "global_disable": "Turn off noisy rules or skip affected code broadly, leaving only the easy diagnostics to fix.",
+        "mechanical": "Apply the suggested syntax substitutions everywhere to satisfy the linter, regardless of sparse-array behavior, adversarial getter tests, or copy semantics."
+      }
+    },
+    "gate": {
+      "type": "choice",
+      "instructions": "Choose when to turn a warning-free lint run into a required check.",
+      "criteria": {
+        "finish_then_gate": "Complete repairs and suppressions, run relevant tests and the full runtime suite, then activate --deny-warnings for maintained TypeScript.",
+        "gate_first": "Require --deny-warnings before warning cleanup, accepting a temporarily red check during the work.",
+        "no_gate": "Do not enforce warning freedom; rely on a one-time cleanup without ongoing prevention."
+      }
+    }
+  }
+}

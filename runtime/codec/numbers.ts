@@ -11,7 +11,16 @@ function compareExponent(source: string, bound: number): number {
   const boundNegative = bound < 0;
   if (negative !== boundNegative) return negative ? -1 : 1;
   const limit = String(Math.abs(bound));
-  const magnitude = digits.length !== limit.length ? (digits.length < limit.length ? -1 : 1) : digits === limit ? 0 : digits < limit ? -1 : 1;
+  const magnitude =
+    digits.length !== limit.length
+      ? digits.length < limit.length
+        ? -1
+        : 1
+      : digits === limit
+        ? 0
+        : digits < limit
+          ? -1
+          : 1;
   return negative ? -magnitude : magnitude;
 }
 
@@ -23,18 +32,26 @@ export function decodeInteger(token: string, budget: Budget, path: string): bigi
   if (!parts) throw new TypeError("missing native numeric token evidence");
   const fraction = parts[3] ?? "";
   const coefficient = (parts[2] + fraction).replace(/^0+/, "");
-  if (coefficient.length === 0) { budget.charge(1, path); return 0n; }
+  if (coefficient.length === 0) {
+    budget.charge(1, path);
+    return 0n;
+  }
   let trailing = 0;
   while (coefficient[coefficient.length - 1 - trailing] === "0") trailing++;
   const exponent = parts[4] ?? "0";
   if (compareExponent(exponent, fraction.length - trailing) < 0) reject(path, "integer_token");
   const sign = parts[1] ? 1 : 0;
-  if (compareExponent(exponent, budget.remaining - sign - coefficient.length + fraction.length) > 0) reject(path, "byte_limit");
+  if (compareExponent(exponent, budget.remaining - sign - coefficient.length + fraction.length) > 0)
+    reject(path, "byte_limit");
   // Both comparisons now prove an exactly representable bounded native count.
   const shift = Number(exponent) - fraction.length;
   const size = coefficient.length + shift + sign;
   budget.charge(size, path);
-  const canonical = parts[1] + (shift >= 0 ? coefficient + "0".repeat(shift) : coefficient.slice(0, coefficient.length + shift));
+  const canonical =
+    parts[1] +
+    (shift >= 0
+      ? coefficient + "0".repeat(shift)
+      : coefficient.slice(0, coefficient.length + shift));
   return BigInt(canonical);
 }
 
@@ -44,7 +61,13 @@ export function encodeInteger(value: bigint, budget: Budget, path: string): stri
   if (digits < 1) reject(path, "byte_limit");
   // Small values avoid a potentially budget-sized exponentiation. Every path
   // still proves the output bound before native decimal formatting.
-  if (!(budget.remaining >= 20 && value > -10_000_000_000_000_000_000n && value < 10_000_000_000_000_000_000n)) {
+  if (
+    !(
+      budget.remaining >= 20 &&
+      value > -10_000_000_000_000_000_000n &&
+      value < 10_000_000_000_000_000_000n
+    )
+  ) {
     const threshold = 10n ** BigInt(digits);
     if (value >= threshold || value <= -threshold) reject(path, "byte_limit");
   }

@@ -48,54 +48,127 @@ const parserVersions = { postgresql: 170007, sqlite: 15, mysql: 80011 } as const
 
 export function createSQLDescriptors(table: Record<string, Record<string, SQLDescriptorEntry>>) {
   const descriptors = new Map<string, SQLDescriptor>();
-  if (table === null || typeof table !== "object" || Array.isArray(table)) throw new TypeError("invalid sql descriptor table");
+  if (table === null || typeof table !== "object" || Array.isArray(table))
+    throw new TypeError("invalid sql descriptor table");
   const key = (owner: string, name: string) => `${owner.length}:${owner}${name}`;
   for (const [owner, names] of Object.entries(table)) {
-    if (names === null || typeof names !== "object" || Array.isArray(names)) throw new TypeError("invalid sql descriptor table");
+    if (names === null || typeof names !== "object" || Array.isArray(names))
+      throw new TypeError("invalid sql descriptor table");
     for (const [name, entry] of Object.entries(names)) {
-      if (typeof name !== "string" || name === "") throw new TypeError("invalid sql descriptor name");
-    if (entry === null || typeof entry !== "object") throw new TypeError("invalid sql descriptor entry");
-    const { dialect, cardinality, kind, segments, params, paramType, rowType, limit, total, version } = entry;
-    if (dialect !== "postgresql" && dialect !== "sqlite" && dialect !== "mysql") throw new TypeError("invalid sql dialect");
-    if (cardinality !== "one" && cardinality !== "optional" && cardinality !== "many" && cardinality !== "execute") throw new TypeError("invalid sql cardinality");
-    if (typeof kind !== "string" || kind === "") throw new TypeError("invalid sql statement kind");
-    if (!Array.isArray(segments) || segments.length === 0) throw new TypeError("invalid sql segments");
-    if (!Array.isArray(params) || !params.every((p) => typeof p === "string" && p !== "")) throw new TypeError("invalid sql params");
-    if (typeof paramType !== "string" || paramType === "" || typeof rowType !== "string" || rowType === "") throw new TypeError("invalid sql identities");
-    if (!Number.isInteger(limit) || !Number.isInteger(total) || total < 0 || limit < 0 || limit > total) throw new TypeError("invalid sql parameter count");
-    if ((cardinality === "execute") !== (limit === 0)) throw new TypeError("invalid sql limit");
-    if (params.length !== total - (limit === 0 ? 0 : 1)) throw new TypeError("invalid sql parameter names");
-    if (version !== parserVersions[dialect]) throw new TypeError("sql parser version mismatch");
-    const literals: string[] = [];
-    const numbers: number[] = [];
-    let literal = "";
-    for (const segment of segments) {
-      if (segment === null || typeof segment !== "object") throw new TypeError("invalid sql segment");
-      if (typeof segment.text === "string" && segment.param === undefined) {
-        literal += segment.text;
-      } else if (typeof segment.param === "number" && segment.text === undefined && Number.isInteger(segment.param) && segment.param >= 1 && segment.param <= total) {
-        literals.push(literal);
-        literal = "";
-        numbers.push(segment.param);
-      } else {
-        throw new TypeError("invalid sql segment");
+      if (typeof name !== "string" || name === "")
+        throw new TypeError("invalid sql descriptor name");
+      if (entry === null || typeof entry !== "object")
+        throw new TypeError("invalid sql descriptor entry");
+      const {
+        dialect,
+        cardinality,
+        kind,
+        segments,
+        params,
+        paramType,
+        rowType,
+        limit,
+        total,
+        version,
+      } = entry;
+      if (dialect !== "postgresql" && dialect !== "sqlite" && dialect !== "mysql")
+        throw new TypeError("invalid sql dialect");
+      if (
+        cardinality !== "one" &&
+        cardinality !== "optional" &&
+        cardinality !== "many" &&
+        cardinality !== "execute"
+      )
+        throw new TypeError("invalid sql cardinality");
+      if (typeof kind !== "string" || kind === "")
+        throw new TypeError("invalid sql statement kind");
+      if (!Array.isArray(segments) || segments.length === 0)
+        throw new TypeError("invalid sql segments");
+      if (!Array.isArray(params) || !params.every((p) => typeof p === "string" && p !== ""))
+        throw new TypeError("invalid sql params");
+      if (
+        typeof paramType !== "string" ||
+        paramType === "" ||
+        typeof rowType !== "string" ||
+        rowType === ""
+      )
+        throw new TypeError("invalid sql identities");
+      if (
+        !Number.isInteger(limit) ||
+        !Number.isInteger(total) ||
+        total < 0 ||
+        limit < 0 ||
+        limit > total
+      )
+        throw new TypeError("invalid sql parameter count");
+      if ((cardinality === "execute") !== (limit === 0)) throw new TypeError("invalid sql limit");
+      if (params.length !== total - (limit === 0 ? 0 : 1))
+        throw new TypeError("invalid sql parameter names");
+      if (version !== parserVersions[dialect]) throw new TypeError("sql parser version mismatch");
+      const literals: string[] = [];
+      const numbers: number[] = [];
+      let literal = "";
+      for (const segment of segments) {
+        if (segment === null || typeof segment !== "object")
+          throw new TypeError("invalid sql segment");
+        if (typeof segment.text === "string" && segment.param === undefined) {
+          literal += segment.text;
+        } else if (
+          typeof segment.param === "number" &&
+          segment.text === undefined &&
+          Number.isInteger(segment.param) &&
+          segment.param >= 1 &&
+          segment.param <= total
+        ) {
+          literals.push(literal);
+          literal = "";
+          numbers.push(segment.param);
+        } else {
+          throw new TypeError("invalid sql segment");
+        }
       }
-    }
-    literals.push(literal);
-    if (literals.length !== numbers.length + 1) throw new TypeError("invalid sql segments");
-    const strings = Object.freeze(Object.assign(literals.slice(), { raw: Object.freeze(literals.slice()) })) as unknown as TemplateStringsArray;
-      descriptors.set(key(owner, name), Object.freeze({ owner, name, dialect, cardinality, kind, params: Object.freeze(params.slice()), paramType, rowType, limit, total, version, strings, numbers: Object.freeze(numbers.slice()) }));
+      literals.push(literal);
+      if (literals.length !== numbers.length + 1) throw new TypeError("invalid sql segments");
+      const strings = Object.freeze(
+        Object.assign(literals.slice(), { raw: Object.freeze(literals.slice()) }),
+      ) as unknown as TemplateStringsArray;
+      descriptors.set(
+        key(owner, name),
+        Object.freeze({
+          owner,
+          name,
+          dialect,
+          cardinality,
+          kind,
+          params: Object.freeze(params.slice()),
+          paramType,
+          rowType,
+          limit,
+          total,
+          version,
+          strings,
+          numbers: Object.freeze(numbers.slice()),
+        }),
+      );
     }
   }
   return Object.freeze({
     declareDescriptor(owner: string, name: string): SQLDescriptor {
-      if (typeof owner !== "string" || typeof name !== "string") throw new TypeError("invalid sql descriptor name");
+      if (typeof owner !== "string" || typeof name !== "string")
+        throw new TypeError("invalid sql descriptor name");
       const found = descriptors.get(key(owner, name));
       if (found === undefined) throw new TypeError("undeclared sql descriptor");
       return found;
     },
     template(descriptor: SQLDescriptor, values: readonly unknown[]): SQLTemplate {
-      if (descriptor === null || typeof descriptor !== "object" || typeof descriptor.owner !== "string" || typeof descriptor.name !== "string" || descriptors.get(key(descriptor.owner, descriptor.name)) !== descriptor) throw new TypeError("forged sql descriptor");
+      if (
+        descriptor === null ||
+        typeof descriptor !== "object" ||
+        typeof descriptor.owner !== "string" ||
+        typeof descriptor.name !== "string" ||
+        descriptors.get(key(descriptor.owner, descriptor.name)) !== descriptor
+      )
+        throw new TypeError("forged sql descriptor");
       if (!Array.isArray(values)) throw new TypeError("invalid sql values");
       // One prepared value per parameter number; repeated sites expand to
       // the same value structurally, so callers cannot bind $1 twice over.

@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"format":{"type":"choice","choice":"full","confidence":0.94,"probabilities":{"full":0.97,"changed_only":0.03,"command_only":0.0}},"lint":{"type":"choice","choice":"focused_type_aware","confidence":0.99,"probabilities":{"all_rules":0.0,"focused_type_aware":1.0,"defaults_only":0.0}}},"usage":{"input_tokens":761,"output_tokens":83}}

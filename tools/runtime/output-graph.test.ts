@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { validateStaticGraph } from "./output-graph.ts";
-const transpiler = new Bun.Transpiler({loader:"ts"});
+const transpiler = new Bun.Transpiler({ loader: "ts" });
 test("closed graph rejects computed edges anywhere in generated syntax", () => {
   for (const source of [
     `const target="node:fs"; await import(target);`,
@@ -10,7 +10,8 @@ test("closed graph rejects computed edges anywhere in generated syntax", () => {
     `import "./missing.ts";`,
     `export * from "./missing.ts";`,
     `export {x} from "./missing.ts";`,
-  ]) expect(() => validateStaticGraph(transpiler.transformSync(source), [])).toThrow();
+  ])
+    expect(() => validateStaticGraph(transpiler.transformSync(source), [])).toThrow();
 });
 test("upstream grammar distinguishes data/comments and exact static edges", () => {
   for (const source of [
@@ -21,5 +22,8 @@ test("upstream grammar distinguishes data/comments and exact static edges", () =
     `import {x} from "./known.ts"; export {x};`,
     `export * from "./known.ts";`,
     `import type {T} from "./known.ts"; export const n:T=1;`,
-  ]) expect(() => validateStaticGraph(transpiler.transformSync(source), ["./known.ts"])).not.toThrow();
+  ])
+    expect(() =>
+      validateStaticGraph(transpiler.transformSync(source), ["./known.ts"]),
+    ).not.toThrow();
 });

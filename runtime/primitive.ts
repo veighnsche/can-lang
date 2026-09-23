@@ -9,7 +9,9 @@ function fail(kind: PrimitiveFailureKind, message: string): never {
   throw error;
 }
 export function primitiveFailureKind(value: unknown): PrimitiveFailureKind | undefined {
-  return value !== null && (typeof value === "object" || typeof value === "function") ? faults.get(value)?.kind : undefined;
+  return value !== null && (typeof value === "object" || typeof value === "function")
+    ? faults.get(value)?.kind
+    : undefined;
 }
 export function intDivide(left: bigint, right: bigint): bigint {
   if (right === 0n) fail("arithmetic", "arithmetic: integer division by zero");
@@ -26,7 +28,8 @@ export function intPower(left: bigint, right: bigint): bigint {
 export function index<T>(value: readonly T[], position: bigint): T;
 export function index(value: string, position: bigint): string;
 export function index<T>(value: readonly T[] | string, position: bigint): T | string {
-  if (position < 0n || position >= BigInt(value.length)) fail("bounds", "bounds: index out of range");
+  if (position < 0n || position >= BigInt(value.length))
+    fail("bounds", "bounds: index out of range");
   // Native finite array/string lengths are exactly representable; conversion
   // occurs only after proving the index belongs to that finite range.
   return value[Number(position)];
@@ -37,7 +40,11 @@ function sliceBound(value: bigint, length: bigint): number {
 }
 export function slice<T>(value: readonly T[], start?: bigint, end?: bigint): readonly T[];
 export function slice(value: string, start?: bigint, end?: bigint): string;
-export function slice<T>(value: readonly T[] | string, start?: bigint, end?: bigint): readonly T[] | string {
+export function slice<T>(
+  value: readonly T[] | string,
+  start?: bigint,
+  end?: bigint,
+): readonly T[] | string {
   const length = BigInt(value.length);
   const from = start === undefined ? 0 : sliceBound(start, length);
   const to = end === undefined ? value.length : sliceBound(end, length);
@@ -46,5 +53,7 @@ export function slice<T>(value: readonly T[] | string, start?: bigint, end?: big
 }
 
 export function primitiveFailureMessage(value: unknown): string | undefined {
-  return value !== null && (typeof value === "object" || typeof value === "function") ? faults.get(value)?.message : undefined;
+  return value !== null && (typeof value === "object" || typeof value === "function")
+    ? faults.get(value)?.message
+    : undefined;
 }

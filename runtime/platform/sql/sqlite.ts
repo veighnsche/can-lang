@@ -8,10 +8,19 @@ import type { SQLCoreContracts, SQLFailures } from "./errors.ts";
 import type { SQLiteFileConfig } from "./config.ts";
 
 export function isSQLiteFailure(value: unknown): value is Error & { code: string } {
-  return value instanceof Error && value.name === "SQLiteError" && typeof (value as { code?: unknown }).code === "string";
+  return (
+    value instanceof Error &&
+    value.name === "SQLiteError" &&
+    typeof (value as { code?: unknown }).code === "string"
+  );
 }
 
-export function classifySQLite(operation: string, cause: unknown, failures: SQLFailures, contracts: SQLCoreContracts): Completion<never> {
+export function classifySQLite(
+  operation: string,
+  cause: unknown,
+  failures: SQLFailures,
+  contracts: SQLCoreContracts,
+): Completion<never> {
   if (!isSQLiteFailure(cause)) throw cause;
   if (cause.code === "ERR_SQLITE_CONNECTION_CLOSED") {
     return failures.connectionFailed("query");
@@ -26,7 +35,11 @@ export function classifySQLite(operation: string, cause: unknown, failures: SQLF
   return failures.queryFailed(operation, cause.code !== "" ? cause.code : "unknown");
 }
 
-export function sqliteAffectedRows(operation: string, result: unknown, failures: SQLFailures): Completion<bigint> {
+export function sqliteAffectedRows(
+  operation: string,
+  result: unknown,
+  failures: SQLFailures,
+): Completion<bigint> {
   const count = (result as { count?: unknown } | null)?.count;
   if (typeof count !== "number" || !Number.isSafeInteger(count) || count < 0) {
     return failures.queryFailed(operation, "bad_count");
@@ -34,26 +47,42 @@ export function sqliteAffectedRows(operation: string, result: unknown, failures:
   return success(BigInt(count));
 }
 
-async function established(client: InstanceType<typeof Bun.SQL>, failures: SQLFailures): Promise<Completion<never> | undefined> {
+async function established(
+  client: InstanceType<typeof Bun.SQL>,
+  failures: SQLFailures,
+): Promise<Completion<never> | undefined> {
   try {
     // Construction is lazy; awaiting connect proves establishment. A
     // refused file surfaces here as SQLITE_CANTOPEN.
     await client.connect();
   } catch {
-    try { await client.close(); } catch { /* already failed; report the connection */ }
+    try {
+      await client.close();
+    } catch {
+      /* already failed; report the connection */
+    }
     return failures.connectionFailed("connect");
   }
   return undefined;
 }
 
-export async function openSqliteMemory(failures: SQLFailures): Promise<{ ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }> {
+export async function openSqliteMemory(
+  failures: SQLFailures,
+): Promise<
+  { ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }
+> {
   const client = new Bun.SQL({ adapter: "sqlite", filename: ":memory:", safeIntegers: true });
   const failed = await established(client, failures);
   if (failed !== undefined) return { ok: false, failure: failed };
   return { ok: true, client };
 }
 
-export async function openSqliteFile(config: SQLiteFileConfig, failures: SQLFailures): Promise<{ ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }> {
+export async function openSqliteFile(
+  config: SQLiteFileConfig,
+  failures: SQLFailures,
+): Promise<
+  { ok: true; client: InstanceType<typeof Bun.SQL> } | { ok: false; failure: Completion<never> }
+> {
   const client = new Bun.SQL({
     adapter: "sqlite",
     filename: config.filename,
@@ -68,11 +97,17 @@ export async function openSqliteFile(config: SQLiteFileConfig, failures: SQLFail
   // static template through the tag call: never string-call, never unsafe.
   // A read-only handle accepts the pragma; failure still closes the pool.
   const pragma = `PRAGMA busy_timeout = ${config.busyTimeoutMs}`;
-  const strings = Object.freeze(Object.assign([pragma], { raw: Object.freeze([pragma]) })) as unknown as TemplateStringsArray;
+  const strings = Object.freeze(
+    Object.assign([pragma], { raw: Object.freeze([pragma]) }),
+  ) as unknown as TemplateStringsArray;
   try {
     await client(strings);
   } catch {
-    try { await client.close(); } catch { /* already failed; report the connection */ }
+    try {
+      await client.close();
+    } catch {
+      /* already failed; report the connection */
+    }
     return { ok: false, failure: failures.connectionFailed("connect") };
   }
   return { ok: true, client };

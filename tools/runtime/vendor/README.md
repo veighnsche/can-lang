@@ -4,6 +4,8 @@
 archive in `acorn.lock.json`. Acquisition verified npm's SHA-512 integrity before
 extracting either file; the lock also records archive/module/license SHA-256 and
 upstream revision. `distribution/notices/acorn-LICENSE.txt` retains its MIT notice.
+`acorn-8.18.0.d.mts` is the local TypeScript declaration for the one parser
+entry point used by output validation; it does not alter the pinned parser.
 
 Upstream: https://github.com/acornjs/acorn/tree/d788421b242ddccb28040f1431438ee5cf474208
 

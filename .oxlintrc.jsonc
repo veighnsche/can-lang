@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "options": {
+    "typeAware": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/switch-exhaustiveness-check": [
+      "error",
+      { "considerDefaultExhaustiveForUnions": true }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts"],
+      "rules": {
+        // Bun documents awaiting .rejects matchers, although Bun 1.4.2 types them as void.
+        "typescript/await-thenable": "off",
+        // Tests intentionally capture native methods before instrumenting their receiver.
+        "typescript/unbound-method": "off"
+      }
+    }
+  ]
+}

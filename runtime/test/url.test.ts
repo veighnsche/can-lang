@@ -7,13 +7,51 @@ import { dataProperty, record, recordIdentity } from "../data.ts";
 import { createURLs } from "../platform/url.ts";
 
 const identity = (kind: string, declaration: string) =>
-  createHash("sha256").update("can-concrete-type-v1\0" + JSON.stringify([kind, declaration])).digest("hex");
-const textShape: FailureShape = { identity: identity("primitive", "str"), kind: "primitive", declaration: "str", arguments: [], fields: [], leaves: [], inputs: [], errors: [] };
-const intShape: FailureShape = { identity: identity("primitive", "int"), kind: "primitive", declaration: "int", arguments: [], fields: [], leaves: [], inputs: [], errors: [] };
-const declaration = catalogue.errors.find(e => e.name === "url::invalid_url")!;
-const errorShape: FailureShape = { identity: identity("error", declaration.identity), kind: "error", declaration: declaration.identity, arguments: [], fields: [{ name: "reason", type: textShape.identity }], leaves: [], inputs: [], errors: [] };
-const domain = createDomainRuntime({ declarations: [{ identity: declaration.identity, name: declaration.name, id: declaration.id, parameters: 0 }], shapes: [textShape, intShape, errorShape] });
-const api = createURLs(domain, { invalidURL: errorShape.identity, parts: "url::parts", pair: "url::query_pair" });
+  createHash("sha256")
+    .update("can-concrete-type-v1\0" + JSON.stringify([kind, declaration]))
+    .digest("hex");
+const textShape: FailureShape = {
+  identity: identity("primitive", "str"),
+  kind: "primitive",
+  declaration: "str",
+  arguments: [],
+  fields: [],
+  leaves: [],
+  inputs: [],
+  errors: [],
+};
+const intShape: FailureShape = {
+  identity: identity("primitive", "int"),
+  kind: "primitive",
+  declaration: "int",
+  arguments: [],
+  fields: [],
+  leaves: [],
+  inputs: [],
+  errors: [],
+};
+const declaration = catalogue.errors.find((e) => e.name === "url::invalid_url")!;
+const errorShape: FailureShape = {
+  identity: identity("error", declaration.identity),
+  kind: "error",
+  declaration: declaration.identity,
+  arguments: [],
+  fields: [{ name: "reason", type: textShape.identity }],
+  leaves: [],
+  inputs: [],
+  errors: [],
+};
+const domain = createDomainRuntime({
+  declarations: [
+    { identity: declaration.identity, name: declaration.name, id: declaration.id, parameters: 0 },
+  ],
+  shapes: [textShape, intShape, errorShape],
+});
+const api = createURLs(domain, {
+  invalidURL: errorShape.identity,
+  parts: "url::parts",
+  pair: "url::query_pair",
+});
 
 function reason(completion: Completion<unknown>): string {
   expect(completion.kind).toBe("domain");
@@ -23,17 +61,35 @@ function reason(completion: Completion<unknown>): string {
   return (details.payload as Record<string, string>).reason;
 }
 const fields = (parts: unknown) => ({
-  scheme: dataProperty(parts, "scheme"), host: dataProperty(parts, "host"), port: dataProperty(parts, "port"),
-  path: dataProperty(parts, "path"), query: dataProperty(parts, "query"), fragment: dataProperty(parts, "fragment"),
+  scheme: dataProperty(parts, "scheme"),
+  host: dataProperty(parts, "host"),
+  port: dataProperty(parts, "port"),
+  path: dataProperty(parts, "path"),
+  query: dataProperty(parts, "query"),
+  fragment: dataProperty(parts, "fragment"),
 });
 
 describe("url parsing", () => {
   test("absolute urls project normalized immutable parts", async () => {
     const parts = value(await api.parseURL("HTTPS://Example.COM:8080/a/../b?q=1#f"));
     expect(recordIdentity(parts)).toBe("url::parts");
-    expect(fields(parts)).toEqual({ scheme: "https", host: "example.com", port: 8080n, path: "/b", query: "q=1", fragment: "f" });
+    expect(fields(parts)).toEqual({
+      scheme: "https",
+      host: "example.com",
+      port: 8080n,
+      path: "/b",
+      query: "q=1",
+      fragment: "f",
+    });
     const bare = value(await api.parseURL("http://h"));
-    expect(fields(bare)).toEqual({ scheme: "http", host: "h", port: 0n, path: "/", query: "", fragment: "" });
+    expect(fields(bare)).toEqual({
+      scheme: "http",
+      host: "h",
+      port: 0n,
+      path: "/",
+      query: "",
+      fragment: "",
+    });
     const deflated = value(await api.parseURL("https://h:443/x"));
     expect(dataProperty(deflated, "port")).toBe(0n);
   });
@@ -65,12 +121,25 @@ describe("url queries", () => {
     expect(value(await api.queryAll(parts, "e"))).toEqual([""]);
     expect(value(await api.queryAll(parts, "missing"))).toEqual([]);
     const pairs = value(await api.queryPairs(parts)) as unknown[];
-    expect(pairs.map(p => [dataProperty(p, "name"), dataProperty(p, "value")])).toEqual([["a", "1"], ["a", "2"], ["b", " x"], ["u", "€"], ["e", ""], ["f", ""]]);
+    expect(pairs.map((p) => [dataProperty(p, "name"), dataProperty(p, "value")])).toEqual([
+      ["a", "1"],
+      ["a", "2"],
+      ["b", " x"],
+      ["u", "€"],
+      ["e", ""],
+      ["f", ""],
+    ]);
   });
   test("rebuilt queries preserve order and duplicates with form encoding", async () => {
     const parts = value(await api.parseURL("https://h/p?old=0#keep"));
-    const pair = (name: string, val: string) => record("url::query_pair", [["name", name], ["value", val]]);
-    const rebuilt = value(await api.withQuery(parts, [pair("a", "1"), pair("a", "2"), pair("s", "x y")]));
+    const pair = (name: string, val: string) =>
+      record("url::query_pair", [
+        ["name", name],
+        ["value", val],
+      ]);
+    const rebuilt = value(
+      await api.withQuery(parts, [pair("a", "1"), pair("a", "2"), pair("s", "x y")]),
+    );
     expect(recordIdentity(rebuilt)).toBe("url::parts");
     expect(value(await api.urlToString(rebuilt))).toBe("https://h/p?a=1&a=2&s=x+y#keep");
   });

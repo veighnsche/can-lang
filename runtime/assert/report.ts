@@ -2,13 +2,18 @@
 // result. In particular, supplying a completion never implies provider or Bun
 // conformance coverage.
 export const evidenceLabels = Object.freeze([
-  "real-can", "supplied-completion", "raw-provider-fixture", "policy-fixture", "bun-conformance", "live-quality",
+  "real-can",
+  "supplied-completion",
+  "raw-provider-fixture",
+  "policy-fixture",
+  "bun-conformance",
+  "live-quality",
 ] as const);
-export type EvidenceLabel = typeof evidenceLabels[number];
+export type EvidenceLabel = (typeof evidenceLabels)[number];
 export type EvidenceScope = "assertion" | "bun-conformance" | "live-quality";
 declare const evidenceBrand: unique symbol;
-export type Evidence = Readonly<{[evidenceBrand]: true}>;
-type State = {scope: EvidenceScope; labels: Set<EvidenceLabel>};
+export type Evidence = Readonly<{ [evidenceBrand]: true }>;
+type State = { scope: EvidenceScope; labels: Set<EvidenceLabel> };
 const records = new WeakMap<object, State>();
 function state(value: Evidence): State {
   const found = value !== null && typeof value === "object" ? records.get(value) : undefined;
@@ -16,9 +21,10 @@ function state(value: Evidence): State {
   return found;
 }
 export function createEvidence(scope: EvidenceScope): Evidence {
-  if (!["assertion", "bun-conformance", "live-quality"].includes(scope)) throw new TypeError("invalid evidence scope");
+  if (!["assertion", "bun-conformance", "live-quality"].includes(scope))
+    throw new TypeError("invalid evidence scope");
   const value = Object.freeze(Object.create(null)) as Evidence;
-  records.set(value, {scope, labels: new Set()});
+  records.set(value, { scope, labels: new Set() });
   return value;
 }
 export function recordEvidence(value: Evidence, label: EvidenceLabel): void {
@@ -36,8 +42,12 @@ export function evidenceReport(value: Evidence): readonly EvidenceLabel[] {
 // Empty categories remain visible and cannot inherit another category's result.
 export function evidenceSummary(values: readonly Evidence[]) {
   const counts: Record<EvidenceLabel, number> = {
-    "real-can": 0, "supplied-completion": 0, "raw-provider-fixture": 0,
-    "policy-fixture": 0, "bun-conformance": 0, "live-quality": 0,
+    "real-can": 0,
+    "supplied-completion": 0,
+    "raw-provider-fixture": 0,
+    "policy-fixture": 0,
+    "bun-conformance": 0,
+    "live-quality": 0,
   };
   for (const value of values) for (const label of evidenceReport(value)) counts[label]++;
   return Object.freeze(counts);
