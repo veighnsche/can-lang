@@ -118,15 +118,6 @@ func TestCorpus(t *testing.T) {
 			if c.RowLimit != nil {
 				limit = uint64(*c.RowLimit)
 			}
-			if c.Dialect == "mysql" {
-				// The MySQL backend lands with B1-03; until then the
-				// honest boundary is an explicit unsupported error.
-				_, err := CheckDescriptorDialect(Dialect(c.Dialect), c.ID, c.Statement, c.Params, c.Cardinality, limit)
-				if err == nil || !strings.Contains(err.Error(), `unsupported SQL dialect "mysql"`) {
-					t.Fatalf("mysql case: want unsupported-dialect error, got %v", err)
-				}
-				return
-			}
 			dialect, err := ParseDialect(c.Dialect)
 			if err != nil {
 				t.Fatalf("dialect: %v", err)
@@ -157,6 +148,9 @@ func TestCorpus(t *testing.T) {
 			wantVersion := 170007
 			if c.Dialect == "sqlite" {
 				wantVersion = 15
+			}
+			if c.Dialect == "mysql" {
+				wantVersion = MySQLVersion
 			}
 			if got.Version != wantVersion {
 				t.Fatalf("version=%d, want %d", got.Version, wantVersion)

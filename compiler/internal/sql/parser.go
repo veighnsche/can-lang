@@ -65,6 +65,8 @@ func Analyze(dialect Dialect, name, statement string) (Analysis, error) {
 		return analyzePostgres(name, statement)
 	case DialectSQLite:
 		return analyzeSQLite(name, statement)
+	case DialectMySQL:
+		return analyzeMySQL(name, statement)
 	default:
 		return Analysis{}, fmt.Errorf("sql descriptor %q: unsupported SQL dialect %q", name, dialect)
 	}

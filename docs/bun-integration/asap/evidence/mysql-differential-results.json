@@ -1,0 +1,24 @@
+{
+ "bun": "1.4.2",
+ "mysql": {
+  "version": "8.4.11",
+  "sql_mode": "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION",
+  "Ssl_version": "TLSv1.3",
+  "Ssl_cipher": "TLS_AES_128_GCM_SHA256"
+ },
+ "verdicts": {
+  "my-01": "ok",
+  "my-02": "ok",
+  "my-03": "ok",
+  "my-04": "ok",
+  "my-05": "err:ERR_MYSQL_SYNTAX_ERROR/1064",
+  "my-06": "err:ERR_MYSQL_SYNTAX_ERROR/1064",
+  "my-07": "ok",
+  "my-08": "ok",
+  "my-09": "ok",
+  "my-10": "ok",
+  "my-11": "ok",
+  "my-12": "ok",
+  "my-13": "err:ERR_MYSQL_SYNTAX_ERROR/1064"
+ }
+}
