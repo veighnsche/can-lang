@@ -1,0 +1,351 @@
+{
+ "bun": "1.4.2",
+ "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+ "service": {
+  "endpointHost": "127.0.0.1:9000",
+  "bucket": "can-b1-10",
+  "prefixNote": "unique scratch prefix per run, deleted after"
+ },
+ "rows": {
+  "methods": {
+   "status": "observed",
+   "value": {
+    "writer": {
+     "ctor": "NetworkSink",
+     "methods": [
+      "_getFd",
+      "close",
+      "end",
+      "flush",
+      "ref",
+      "sinkId",
+      "start",
+      "unref",
+      "write"
+     ]
+    },
+    "file": {
+     "ctor": "Blob",
+     "methods": [
+      "arrayBuffer",
+      "bucket",
+      "bytes",
+      "delete",
+      "exists",
+      "formData",
+      "image",
+      "json",
+      "lastModified",
+      "name",
+      "presign",
+      "size",
+      "slice",
+      "stat",
+      "stream",
+      "text",
+      "type",
+      "unlink",
+      "write",
+      "writer"
+     ]
+    },
+    "client": {
+     "ctor": "S3Client",
+     "methods": [
+      "delete",
+      "exists",
+      "file",
+      "list",
+      "presign",
+      "size",
+      "stat",
+      "unlink",
+      "write"
+     ]
+    }
+   }
+  },
+  "roundtrip": {
+   "status": "observed",
+   "value": {
+    "bytes": 8,
+    "text": "hello s3",
+    "jsonText": {
+     "a": 1
+    },
+    "size": 8,
+    "type": "text/plain;charset=utf-8",
+    "etag": "\"b60d991fa6dbd33863c7cec70d15dbac\"",
+    "lastModifiedIsDate": true,
+    "lastModifiedMsPositive": true,
+    "statKeysEnumerable": [],
+    "existsBefore": true,
+    "existsAfter": false
+   }
+  },
+  "write_inputs": {
+   "status": "observed",
+   "value": {
+    "n1": 3,
+    "n2": 4,
+    "n3": 9,
+    "n4": 9,
+    "n5": 2,
+    "blobStoredType": "application/octet-stream",
+    "bytesRoundtrip": [
+     1,
+     2,
+     3,
+     4
+    ]
+   }
+  },
+  "range": {
+   "status": "observed",
+   "value": {
+    "first": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "mid": [
+     141,
+     142,
+     143,
+     144
+    ],
+    "tail": [
+     27,
+     28,
+     29,
+     30
+    ],
+    "emptyLen": 1,
+    "clampLen": 2,
+    "headBytes": 36282,
+    "headDone": false,
+    "afterCancelDone": true,
+    "lockedAfterRelease": false
+   }
+  },
+  "list": {
+   "status": "observed",
+   "value": {
+    "page": {
+     "keys": [
+      "contents",
+      "isTruncated",
+      "keyCount",
+      "maxKeys",
+      "name",
+      "nextContinuationToken",
+      "prefix"
+     ],
+     "isTruncated": true,
+     "keyCount": 2,
+     "contents": [
+      "big.bin",
+      "dir/a.txt"
+     ],
+     "nextTokenType": "string",
+     "nextTokenEmpty": false
+    },
+    "fullCount": 15,
+    "fullTruncated": false,
+    "groupedKeys": [
+     "commonPrefixes",
+     "contents",
+     "delimiter",
+     "isTruncated",
+     "keyCount",
+     "maxKeys",
+     "name",
+     "prefix"
+    ],
+    "commonPrefixes": [
+     "dir/"
+    ],
+    "entryShape": [
+     "eTag",
+     "key",
+     "lastModified",
+     "size",
+     "storageClass"
+    ]
+   }
+  },
+  "list_continuation": {
+   "status": "observed",
+   "value": {
+    "page1": [
+     "big.bin",
+     "dir/a.txt"
+    ],
+    "truncated1": true,
+    "tokenType": "string",
+    "tokenEmpty": false,
+    "page2": [
+     "dir/b.txt",
+     "methods.bin"
+    ],
+    "truncated2": true,
+    "overlap": false,
+    "emptyCount": 0,
+    "emptyTruncated": false,
+    "emptyKeyCount": 0
+   }
+  },
+  "slice_edges": {
+   "status": "observed",
+   "value": {
+    "emptyAt100": [
+     100
+    ],
+    "emptyAt0": [
+     0
+    ],
+    "oneAt100": [
+     100
+    ],
+    "expected100": 100,
+    "slicedSize": 4,
+    "slicedType": ""
+   }
+  },
+  "presign": {
+   "status": "observed",
+   "value": {
+    "params": [
+     "X-Amz-Algorithm",
+     "X-Amz-Credential",
+     "X-Amz-Date",
+     "X-Amz-Expires",
+     "X-Amz-Signature",
+     "X-Amz-SignedHeaders"
+    ],
+    "leaksSecret": false,
+    "getStatus": 200,
+    "getBody": "presigned",
+    "tamperedStatus": 403,
+    "tamperedPutStatus": 403,
+    "tamperedPutCreated": false,
+    "putMatchStatus": 200,
+    "putMismatchStatus": 200,
+    "putUrlWithGet": 403,
+    "getUrlWithPut": 403,
+    "deleteStatus": 204,
+    "deletedGone": true,
+    "headStatus": 200,
+    "headLength": "9"
+   }
+  },
+  "multipart": {
+   "status": "observed",
+   "value": {
+    "endBytes": 6291456,
+    "endBytesType": "number",
+    "size": 6291456,
+    "sizeMatches": true,
+    "storedEtag": "\"39196c287c83de246893d27411b64dba-2\"",
+    "storedEtagMultipart": true,
+    "abandonedExists": false,
+    "emptyEnd": 0,
+    "emptySize": 0
+   }
+  },
+  "multipart_partsize_floor": {
+   "status": "throws",
+   "name": "RangeError",
+   "code": "ERR_OUT_OF_RANGE",
+   "message": "The value of \"partSize\" is out of range. It must be >= 5242880 and <= 5368709120. Received 1024"
+  },
+  "writer_after_end": {
+   "status": "observed",
+   "value": {
+    "writeAfter": "no-throw",
+    "endAfter": "no-throw",
+    "text": "x"
+   }
+  },
+  "missing": {
+   "status": "observed",
+   "value": {
+    "exists": {
+     "ok": false
+    },
+    "stat": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "text": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "bytes": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "size": {
+     "ok": null
+    },
+    "json": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "stream": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "unlink": {
+     "ok": true
+    },
+    "delete": {
+     "ok": true
+    }
+   }
+  },
+  "auth_config": {
+   "status": "observed",
+   "value": {
+    "badCredsStat": {
+     "throws": "S3Error:UnknownError:an unexpected error has occurred"
+    },
+    "badCredsExists": {
+     "throws": "S3Error:UnknownError:an unexpected error has occurred"
+    },
+    "badBucketStat": {
+     "throws": "S3Error:NoSuchKey:The specified key does not exist."
+    },
+    "badEndpointStat": {
+     "throws": "S3Error:ConnectionRefused:an unexpected error has occurred"
+    }
+   }
+  },
+  "presign_bounds": {
+   "status": "observed",
+   "value": {
+    "expiresZero": {
+     "throws": "TypeError:ERR_INVALID_ARG_TYPE:expiresIn must be greather than 0"
+    },
+    "expiresNegative": {
+     "throws": "TypeError:ERR_INVALID_ARG_TYPE:expiresIn must be greather than 0"
+    },
+    "expiresHuge": {
+     "ok": true
+    },
+    "unknownMethod": {
+     "throws": "TypeError:ERR_INVALID_ARG_TYPE:method must be GET, PUT, DELETE or HEAD when using s3 protocol"
+    },
+    "fileLevel": {
+     "ok": true
+    },
+    "missingKeyGetStatus": 404
+   }
+  },
+  "keys": {
+   "status": "observed",
+   "value": {
+    "space": "s",
+    "unicode": "u",
+    "listedHasSpace": true,
+    "listedHasUnicode": true
+   }
+  }
+ }
+}
