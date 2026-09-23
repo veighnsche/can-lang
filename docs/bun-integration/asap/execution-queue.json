@@ -869,7 +869,7 @@
         "ASAP-ARCH",
         "B1-05-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Define a format matrix: accepted scalar kinds, null/optional mapping, dates/times, duplicate keys, aliases/merges, multiple documents, nonfinite floats, integers and root shapes. Use native options only when verified; default behavior is not uniform across parsers."
     },
     {
@@ -878,7 +878,7 @@
       "depends": [
         "B1-11.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Create typed projection sharing Can schema rules and immutable data constructors, with per-format scalar conversion policy. Native numbers used as ints must be finite safe integers; document that this is parsed-value semantics, not proof of every original fractional token."
     },
     {
@@ -887,7 +887,7 @@
       "depends": [
         "B1-11.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Keep the existing JSON exact-integer decoder intact. For strict JSONL, prefer bounded line framing plus the existing native-backed exact JSON decode path per record when that satisfies the selected JSONL contract. Framing lines is not implementing JSON grammar."
     },
     {
@@ -896,7 +896,7 @@
       "depends": [
         "B1-11.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "If using Bun.JSONL.parseChunk, inspect error, read and done and reject malformed/truncated final input. Never use Bun.JSONL.parse prefix success as complete validation. Specify blank lines, CRLF, final line without newline and multiline JSON acceptance explicitly."
     },
     {
@@ -905,7 +905,7 @@
       "depends": [
         "B1-11.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Incrementally decode UTF-8 across chunk boundaries; cap bytes per record, record count and total retained output. Await each typed handler. Retain only the incomplete suffix, not every prior chunk."
     },
     {
@@ -914,7 +914,7 @@
       "depends": [
         "B1-11.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "For YAML/TOML native special objects (dates, aliases, maps), project only admitted forms and reject cycles/unsupported values. Node/depth checks after parsing do not protect native parse CPU/memory; a preparse byte cap is still necessary."
     },
     {
@@ -923,7 +923,7 @@
       "depends": [
         "B1-11.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Test duplicate behavior empirically. If exact duplicate rejection is promised but native metadata cannot support it, keep that mode explicitly blocked rather than writing an ad hoc YAML/JSON5 grammar."
     },
     {
@@ -932,7 +932,7 @@
       "depends": [
         "B1-11.07"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add declared syntax/type/limit errors with safe paths and native source locations when trustworthy. Preserve source offsets through framing."
     },
     {
@@ -941,7 +941,7 @@
       "depends": [
         "B1-11.08"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
