@@ -392,10 +392,10 @@ fn void main
         empty_args: [] => ok
     int[] values = call pair(9007199254740993)
     match values is [9007199254740993, 9007199254740993]
-        true => ok
         false => match call pair(values[2])
             ok int[] unexpected => ok
             [_] as standard_failure failure => ok
+        true => ok
 ```
 
 The exact assertion compares data, not allocation identity. `arguments` contains application arguments only (P). The false branch deliberately traces an indexing fault while evaluating the matched invocation's arguments: it is within that call's standard-failure catch boundary. No element at index2 is synthesized. The branch is not reached for the shown values; P's target fixtures separately exercise it. No extra declaration is allowed to reuse the same name as `pair` in this package.

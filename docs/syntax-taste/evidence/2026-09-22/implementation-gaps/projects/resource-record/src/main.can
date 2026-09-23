@@ -11,8 +11,8 @@ fn sql::decision<held> capture
     asserts
         harmless: false => ok sql::commit<held>(held([]))
     match take
-        true => ok sql::commit<held>(held([tx]))
         false => ok sql::commit<held>(held([]))
+        true => ok sql::commit<held>(held([tx]))
 fn void main
     emits []
     given

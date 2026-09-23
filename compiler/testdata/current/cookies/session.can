@@ -12,11 +12,11 @@ fn option::value<str> find_cookie
         miss: [http::header("x-t", "1")] => ok option::none()
         empty: [] => ok option::none()
     match headers.length is 0
-        true => ok option::none()
         false => match headers[0].name is "cookie"
-            true => ok option::some(headers[0].value)
             false => match call find_cookie(call headers.slice(...[1, 99]))
                 ok option::value<str> rest => ok rest
+            true => ok option::some(headers[0].value)
+        true => ok option::none()
 /// Project the session out of a Cookie header. Parsing runs for real:
 /// duplicates keep every pair while lookup takes the first.
 fn option::value<str> session_id
@@ -127,8 +127,8 @@ fn http::server_response login
                                 ok str token => match call csrf::verify("s3cret", sid.value, token, 60000)
                                     csrf::invalid_config => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                                     ok bool valid => match valid
-                                        true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "welcome")
                                         false => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
+                                        true => ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "welcome")
                             option::none => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
                 option::none => ok call http::response_text(call http::status_unprocessable(), call http::empty_server_headers(), "bad")
 /// Establish a session cookie on the response. The Set-Cookie field

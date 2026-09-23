@@ -568,10 +568,10 @@ Current [fixture helper](../../compiler/testdata/current/fetch/main.can), body e
 
 ```text
 match condition
-    true => ok
     false => do
         int invalid = 1 / 0
         ok
+    true => ok
 ```
 
 The failure says integer division by zero, even when the intended check concerns a response value.

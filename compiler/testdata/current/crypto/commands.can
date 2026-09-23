@@ -77,13 +77,6 @@ fn void main
         empty: [] => ok
         badop: ["bogus"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: roundtrip | hmac | misuse | tamper | ask <password>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match args[0]
             "roundtrip" => match chain
                 call crypto::generate_aes_key() as crypto::key key
@@ -140,26 +133,26 @@ fn void main
                 crypto::decrypt_failed
                 ok => ok
             "ask" => match args.length is 2
+                false => match call bytes::from_utf8("usage: ask <password>")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        io::write_failed
+                        ok int written => ok
                 true => match call check_password(args[1])
                     password::invalid_hash
                     ok bool matched => match matched
-                        true => match chain
-                            call bytes::from_utf8("match") as bytes::buffer body
-                            call io::stdout_write(body) as int written
-                            codec::invalid_data
-                            io::write_failed
-                            ok => ok
                         false => match chain
                             call bytes::from_utf8("mismatch") as bytes::buffer body
                             call io::stdout_write(body) as int written
                             codec::invalid_data
                             io::write_failed
                             ok => ok
-                false => match call bytes::from_utf8("usage: ask <password>")
-                    codec::invalid_data
-                    ok bytes::buffer message => match call io::stdout_write(message)
-                        io::write_failed
-                        ok int written => ok
+                        true => match chain
+                            call bytes::from_utf8("match") as bytes::buffer body
+                            call io::stdout_write(body) as int written
+                            codec::invalid_data
+                            io::write_failed
+                            ok => ok
             _ => match call bytes::from_utf8("usage: roundtrip | hmac | misuse | tamper | ask <password>")
                 codec::invalid_data
                 ok bytes::buffer message => match call io::stdout_write(message)
@@ -167,3 +160,10 @@ fn void main
                         badop: message => ok 0
                     io::write_failed
                     ok int written => ok
+        true => match call bytes::from_utf8("usage: roundtrip | hmac | misuse | tamper | ask <password>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

@@ -95,8 +95,8 @@ fn int pick
         first: 1 => all_failed<a_failure>([codec::invalid_data("a", "type")])
         second: 2 => all_failed<b_failure>([codec::invalid_data("b", "type")])
     match which is 1
-        true => all_failed<a_failure>([codec::invalid_data("a", "type")])
         false => all_failed<b_failure>([codec::invalid_data("b", "type")])
+        true => all_failed<a_failure>([codec::invalid_data("a", "type")])
 fn str dispatch_exact
     emits []
     given
@@ -227,7 +227,7 @@ fn void main
             all_failed => ok call describe(all_failed.failures[0])
             ok int value => ok "unexpected"
     match (selected is "a" or selected is "b") and ordered is ["a", "b"]
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok

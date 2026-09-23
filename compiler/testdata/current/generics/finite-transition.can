@@ -9,8 +9,8 @@ fn int fixed<item>
     asserts
         sample: 1, 0 => ok 0
     match count is 0
-        true => ok 0
         false => relay call fixed<int[]>([1], count - 1)
+        true => ok 0
 fn void main
     emits []
     given

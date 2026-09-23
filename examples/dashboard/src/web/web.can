@@ -31,6 +31,9 @@ fn http::server_response dashboard_data
         model::account_total(pool)
             ok records::count_value count => ok count
     match numbers[0].known and numbers[1].known
+        false => match call render::feedback("Temporarily unavailable.")
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe fragment => ok call http::response_html(call http::status_unavailable(), call http::empty_server_headers(), fragment)
         true => match call clock::wall_millis()
             when
                 ready: => ok 1000
@@ -38,9 +41,6 @@ fn http::server_response dashboard_data
                 ok str stamp => match call render::summary(records::dashboard_view(200, numbers[1].value, numbers[0].value, stamp, ""))
                     html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                     ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
-        false => match call render::feedback("Temporarily unavailable.")
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-            ok html::safe fragment => ok call http::response_html(call http::status_unavailable(), call http::empty_server_headers(), fragment)
 
 /// Mount the dashboard callbacks, capturing the open pool.
 fn http::router dashboard_routes
@@ -91,13 +91,6 @@ fn void main
         empty: [] => ok
         serve: ["18486"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: dashboard <port>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match call bytes::from_utf8(args[0])
             codec::invalid_data
             ok bytes::buffer raw => match call codec::decode_json<int>(raw)
@@ -126,3 +119,10 @@ fn void main
                                             serve: pool, 1000 => ok
                                         sql::close_failed
                                         ok => ok
+        true => match call bytes::from_utf8("usage: dashboard <port>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

@@ -187,7 +187,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 		{"    relay call lookup(1)\n", "int", []string{"missing"}},
 		{"    match call lookup(1)\n        missing => ok missing.code\n        ok\n", "int", nil},
 		{"    match chain\n        call lookup(1) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok missing.code\n        ok => ok next\n", "int", nil},
-		{"    match flag\n        true => do\n            call log()\n            relay call first()\n        false => ok 0\n", "int", nil},
+		{"    match flag\n        false => ok 0\n        true => do\n            call log()\n            relay call first()\n", "int", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", nil},
 		{"    match items\n        [] => ok 0\n        [head, ...tail] => ok head + tail.length\n", "int", nil},
 		{"    match choice\n        left => ok choice.value\n        right(value) => ok value.length\n", "int", nil},
@@ -242,7 +242,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match flag\n        _ => ok 1\n        true => ok 2\n",
 		"    match number\n        0..10 => ok 1\n        1..5 => ok 2\n        _ => ok 3\n",
 		"    match items\n        [head] => ok head\n",
-		"    int result = match flag\n        true => ok 1\n        false => 2\n    ok result\n",
+		"    int result = match flag\n        false => 2\n        true => ok 1\n    ok result\n",
 		"    int result = 1 + 2\n    ok result\n",
 	}
 	for i, body := range bad {
@@ -258,6 +258,27 @@ func TestCompletionRegionContracts(t *testing.T) {
 	}
 	if _, err := f.region(t, "    ok 1\n", "void", nil, ir.FunctionRegion); err == nil {
 		t.Fatal("void accepted a value")
+	}
+}
+
+func TestOrdinaryBooleanMatchArmOrder(t *testing.T) {
+	f := newRegionFixture(t)
+	for _, body := range []string{
+		"    match flag\n        false => ok 0\n        true => ok 1\n",
+		"    int selected = match flag\n        false => 0\n        true => 1\n    ok selected\n",
+		"    match flag, flag\n        true, true => ok 1\n        true, false => ok 2\n        false, _ => ok 0\n",
+	} {
+		if _, err := f.region(t, body, "int", nil, ir.FunctionRegion); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, body := range []string{
+		"    match flag\n        true => ok 1\n        false => ok 0\n",
+		"    int selected = match flag\n        true => 1\n        false => 0\n    ok selected\n",
+	} {
+		if _, err := f.region(t, body, "int", nil, ir.FunctionRegion); err == nil || !strings.Contains(err.Error(), "false before true") {
+			t.Fatalf("expected Boolean arm-order diagnostic, got %v", err)
+		}
 	}
 }
 func TestEmittedCompletionRegions(t *testing.T) {
@@ -345,7 +366,7 @@ const assert=(ok:boolean,label:string)=>{if(!ok)throw new Error(label)};
 		{"    match call lookup(-4)\n        missing => ok missing.code\n        ok\n", "int", "-4n", nil},
 		{"    match call lookup(1 / 0)\n        missing => ok 0\n        [_] as standard_failure failure => ok failure.message.length\n        ok\n", "int", "BigInt('arithmetic: integer division by zero'.length)", nil},
 		{"    match chain\n        call lookup(8) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok 0\n        ok => ok next\n", "int", "9n", nil},
-		{"    match flag\n        true => do\n            call log()\n            match call first()\n                ok int found => ok found + 1\n        false => ok 0\n", "int", "4n", nil},
+		{"    match flag\n        false => ok 0\n        true => do\n            call log()\n            match call first()\n                ok int found => ok found + 1\n", "int", "4n", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", "3n", nil},
 		{"    match items\n        [] => ok 0\n        [head, ...tail] => ok head + tail.length\n", "int", "5n", nil},
 		{"    match choice\n        left => ok choice.value\n        right(value) => ok value.length\n", "int", "7n", nil},

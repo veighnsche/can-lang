@@ -18,7 +18,7 @@ fn void main
         empty: [] => ok
     str value = call sample()
     match value is "bc"
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok

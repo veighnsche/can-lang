@@ -111,7 +111,7 @@ fn void main
         one()
             ok int value => ok
     match concurrent is [1, 3] and settled is [2, 1] and raced is 9 and spread is [1, 1] and sliced is ["bc", "w"] and first_success is 1 and all_failed_result is 5 and empty_result is 7 and failure_count is 1 and observed is 2 and empty_all.length is 0 and empty_settled.length is 0
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok

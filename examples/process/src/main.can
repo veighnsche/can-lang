@@ -13,10 +13,10 @@ fn str exit_label
         failed: 7, "" => ok "code 7"
         killed: -1, "SIGTERM" => ok "signal SIGTERM"
     match signal is ""
-        true => match code is 0
-            true => ok "ok"
-            false => ok call text::join(["code", call text::from_int(code)], " ")
         false => ok call text::join(["signal", signal], " ")
+        true => match code is 0
+            false => ok call text::join(["code", call text::from_int(code)], " ")
+            true => ok "ok"
 
 /// Echo a word through a bounded child process and label its exit.
 fn str run_shout
@@ -48,13 +48,6 @@ fn void main
         empty: [] => ok
         sample: ["ada"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: shout <word>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match call run_shout(args[0])
             files::not_found
             files::denied
@@ -70,3 +63,10 @@ fn void main
                         sample: message => ok 2
                     io::write_failed
                     ok int written => ok
+        true => match call bytes::from_utf8("usage: shout <word>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

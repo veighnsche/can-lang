@@ -39,6 +39,9 @@ fn void main
                         ok str uuid => do
                             int[] digest = call hash_empty()
                             match wall >= 0 and monotonic >= 0.0 and entropy.length is 0 and uuid.length is 36 and digest[0] is 227
+                                false => do
+                                    int invalid = 1 / 0
+                                    ok
                                 true => match call write_info("secret info")
                                     when
                                         sample: "secret info" => ok
@@ -48,6 +51,3 @@ fn void main
                                             sample: "secret error" => ok
                                         log::write_failed
                                         ok => ok
-                                false => do
-                                    int invalid = 1 / 0
-                                    ok

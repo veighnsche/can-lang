@@ -87,13 +87,6 @@ fn void main
         empty: [] => ok
         serve: ["18485"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: form-validation <port>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match call bytes::from_utf8(args[0])
             codec::invalid_data
             ok bytes::buffer raw => match call codec::decode_json<int>(raw)
@@ -113,3 +106,10 @@ fn void main
                                     serve: sturdy => ok
                                 http::shutdown_failed
                                 ok => ok
+        true => match call bytes::from_utf8("usage: form-validation <port>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

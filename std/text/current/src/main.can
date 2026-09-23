@@ -210,8 +210,8 @@ fn str first_match
         ok text::regex compiled => match call text::matches(compiled, value, 1)
             text::invalid_limit
             ok text::regex_match[] hits => match hits.length is 0
-                true => ok ""
                 false => ok hits[0].text
+                true => ok ""
 fn str[] first_groups
     emits [text::invalid_regex, text::invalid_limit]
     given

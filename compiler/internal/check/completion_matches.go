@@ -426,6 +426,7 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 		columns = append(columns, x.Type)
 	}
 	var previous [][]*ir.Pattern
+	seenTrue := false
 	for _, arm := range n.Arms {
 		if arm.Outcome != nil || arm.Forward || len(arm.Patterns) != len(n.Values) {
 			return nil, fmt.Errorf("ordinary match requires one data pattern per scrutinee")
@@ -439,6 +440,16 @@ func (c *regionChecker) valueMatch(n syntax.Match, scope bodyScope, valueType *t
 				return nil, err
 			}
 			a.Patterns = append(a.Patterns, pattern)
+		}
+		if len(columns) == 1 && scalar(columns[0], "bool") && a.Patterns[0].Kind == "literal" {
+			switch a.Patterns[0].Text {
+			case "true":
+				seenTrue = true
+			case "false":
+				if seenTrue {
+					return nil, c.locate(arm.Span, fmt.Errorf("ordinary Boolean match requires false before true"))
+				}
+			}
 		}
 		useful, err := patternsUseful(previous, a.Patterns, columns)
 		if err != nil {

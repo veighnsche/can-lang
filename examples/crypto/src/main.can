@@ -75,23 +75,9 @@ fn void main
         empty: [] => ok
         sample: ["correct horse"] => ok
     match args.length is 0
-        true => match call bytes::from_utf8("usage: password <candidate>")
-            codec::invalid_data
-            ok bytes::buffer message => match call io::stdout_write(message)
-                when
-                    empty: message => ok 0
-                io::write_failed
-                ok int written => ok
         false => match call check_password(args[0])
             password::invalid_hash
             ok bool matched => match matched
-                true => match call bytes::from_utf8("match")
-                    codec::invalid_data
-                    ok bytes::buffer message => match call io::stdout_write(message)
-                        when
-                            sample: message => ok 5
-                        io::write_failed
-                        ok int written => ok
                 false => match call bytes::from_utf8("mismatch")
                     codec::invalid_data
                     ok bytes::buffer message => match call io::stdout_write(message)
@@ -99,3 +85,17 @@ fn void main
                             sample: message => ok 8
                         io::write_failed
                         ok int written => ok
+                true => match call bytes::from_utf8("match")
+                    codec::invalid_data
+                    ok bytes::buffer message => match call io::stdout_write(message)
+                        when
+                            sample: message => ok 5
+                        io::write_failed
+                        ok int written => ok
+        true => match call bytes::from_utf8("usage: password <candidate>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok

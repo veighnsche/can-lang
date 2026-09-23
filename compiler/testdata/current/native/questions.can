@@ -60,8 +60,8 @@ choice str dynamic from classifier
         ...first
         ...second
         ok str selected => match % >= 0.9
-            true => ok selected
             false => ok "incorrect selected probability"
+            true => ok selected
 
 score float rate from classifier
     emits [ai::invalid_question, ai::invalid_answer, codec::invalid_data, io::write_failed]
@@ -140,8 +140,8 @@ judge float assess from classifier
     call spread(stored) as float a
     call spread_weights(arms(right_arm, left_arm)) as arm_weights r
     ok => match d is "__proto__"
-        true => ok n + c + s + w.first + w.second + w.certainty + l.low + l.high + l.measured + l.certainty + a + r.before + r.left + r.right + r.after + r.certainty
         false => ok -1.0
+        true => ok n + c + s + w.first + w.second + w.certainty + l.low + l.high + l.measured + l.certainty + a + r.before + r.left + r.right + r.after + r.certainty
 
 fn choice_weights roundtrip
     emits [codec::invalid_data]
@@ -170,10 +170,10 @@ fn void main
         codec::invalid_data
         io::write_failed
         ok float measured => match measured is 10.0
-            true => ok
             false => do
                 int invalid = 1 / 0
                 ok
+            true => ok
 
 fn item identity<item>
     emits []

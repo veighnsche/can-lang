@@ -37,18 +37,18 @@ fn int pump
         stream::cancelled
         files::limit_exceeded
         ok str[] batch => match batch.length is 0
-            true => match call stream::close_reader(input)
-                when
-                    end: input => ok
-                    more: input => ok
-                stream::close_failed
-                ok => ok count
             false => match call pump(count + batch.length, input)
                 stream::read_failed
                 stream::cancelled
                 files::limit_exceeded
                 stream::close_failed
                 ok int total => ok total
+            true => match call stream::close_reader(input)
+                when
+                    end: input => ok
+                    more: input => ok
+                stream::close_failed
+                ok => ok count
 fn void main
     emits []
     given
@@ -177,15 +177,15 @@ fn int pump
         stream::cancelled
         files::limit_exceeded
         ok str[] batch => match batch.length is 0
-            true => match call stream::close_reader(input)
-                stream::close_failed
-                ok => ok count
             false => match call pump(count + batch.length, input)
                 stream::read_failed
                 stream::cancelled
                 files::limit_exceeded
                 stream::close_failed
                 ok int total => ok total
+            true => match call stream::close_reader(input)
+                stream::close_failed
+                ok => ok count
 fn void main
     emits []
     given

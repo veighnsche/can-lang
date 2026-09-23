@@ -25,6 +25,12 @@ fn int pump
         stream::cancelled
         files::limit_exceeded
         ok str[] batch => match batch.length is 0
+            false => match call pump(count + batch.length, input)
+                stream::read_failed
+                stream::cancelled
+                files::limit_exceeded
+                stream::close_failed
+                ok int total => ok total
             true => match call stream::close_reader(input)
                 when
                     end: input => ok
@@ -32,12 +38,6 @@ fn int pump
                     sample: input => ok
                 stream::close_failed
                 ok => ok count
-            false => match call pump(count + batch.length, input)
-                stream::read_failed
-                stream::cancelled
-                files::limit_exceeded
-                stream::close_failed
-                ok int total => ok total
 
 /// Count the lines of the file named by the first argument.
 fn void main

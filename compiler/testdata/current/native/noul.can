@@ -65,7 +65,7 @@ fn void main
         codec::invalid_data
         io::write_failed
         ok float measured => match measured is 0.75
-            true => ok
             false => do
                 int invalid = 1 / 0
                 ok
+            true => ok
