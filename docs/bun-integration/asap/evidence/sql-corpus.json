@@ -1,0 +1,587 @@
+{
+ "$comment": "G-SQL executable corpus, step 2. Each case runs against its own dialect backend only; cross-dialect feeding is prevented structurally by separate entry points plus a dedicated selection test (D03). params/row_limit follow the descriptor contract: total = len(params)+1 for row-returning shapes with the LIMIT site binding the trailing number, total = len(params) for execute. expect=valid means the full descriptor check accepts; expect.invalid names the required rejection category: syntax | multi_statement | bad_kind | bad_limit | returning | param_gap | param_unknown | param_unused. Placeholders: postgresql $N; sqlite ? ?NNN :name @name $name; mysql ? positional. Assumed sql_mode for mysql cases is the server default (no ANSI_QUOTES); the qualified backend must document its mode.",
+ "cases": [
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-01",
+   "notes": "baseline row-returning shape",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT id, name FROM users WHERE id = $1 LIMIT $2"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-02",
+   "notes": "baseline mutation shape",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = $1 WHERE id = $2"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-03",
+   "notes": "quoted semicolon and quoted $N-like text are literal, never statement or parameter sites",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE nick = ';$9;', id = $1 LIMIT $2"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-04",
+   "notes": "line and block comments swallow $N-like text",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users -- $1 is not a param\nWHERE id = $1 /* $2 neither */ LIMIT $2"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "multi_statement"
+   },
+   "id": "pg-05",
+   "notes": "exactly one statement",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = $1 LIMIT $2; SELECT 1"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "returning"
+   },
+   "id": "pg-06",
+   "notes": "RETURNING is never admitted even where the engine supports it",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = $1 WHERE id = $2 RETURNING id"
+  },
+  {
+   "cardinality": "many",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "pg-07",
+   "notes": "unbounded SELECT is rejected",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = $1"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "pg-08",
+   "notes": "literal LIMIT binds no parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = $1 LIMIT 10"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-09",
+   "notes": "CTE with top-level LIMIT parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "WITH u AS (SELECT id FROM users WHERE id = $1) SELECT id FROM u LIMIT $2"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "param_unknown"
+   },
+   "id": "pg-10",
+   "notes": "$3 has no declared parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = $3 LIMIT $2"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "postgresql",
+   "expect": {
+    "invalid": "bad_kind"
+   },
+   "id": "pg-11",
+   "notes": "execute requires INSERT/UPDATE/DELETE",
+   "params": [],
+   "row_limit": null,
+   "statement": "SELECT 1"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "postgresql",
+   "expect": "valid",
+   "id": "pg-12",
+   "notes": "DELETE shape",
+   "params": [
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "DELETE FROM users WHERE id = $1"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-01",
+   "notes": "baseline positional ? shape; sites map 1..M in order",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT id, name FROM users WHERE id = ? LIMIT ?"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-02",
+   "notes": "baseline mutation shape",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = ? WHERE id = ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-03",
+   "notes": "?NNN out of order; LIMIT binds the trailing number",
+   "params": [
+    "b",
+    "a"
+   ],
+   "row_limit": 3,
+   "statement": "SELECT name FROM users WHERE a = ?2 AND b = ?1 LIMIT ?3"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-04",
+   "notes": "quoted semicolons, doubled-quote escape, double-quoted identifier, and $N-like text inside a literal are never sites",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT \"na;me\" FROM users WHERE nick = 'it''s; $1' AND id = ? LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": {
+    "invalid": "multi_statement"
+   },
+   "id": "lite-05",
+   "notes": "exactly one statement",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ?; SELECT 1"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "sqlite",
+   "expect": {
+    "invalid": "returning"
+   },
+   "id": "lite-06",
+   "notes": "SQLite supports RETURNING; Can still forbids it",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = ? WHERE id = ? RETURNING id"
+  },
+  {
+   "cardinality": "many",
+   "dialect": "sqlite",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "lite-07",
+   "notes": "unbounded SELECT is rejected",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "lite-08",
+   "notes": "literal LIMIT binds no parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT 10"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-09",
+   "notes": "CTE with top-level LIMIT parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "WITH u AS (SELECT id FROM users WHERE id = ?) SELECT id FROM u LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": {
+    "invalid": "param_unknown"
+   },
+   "id": "lite-10",
+   "notes": "?4 exceeds the declared total",
+   "params": [
+    "a",
+    "b"
+   ],
+   "row_limit": 3,
+   "statement": "SELECT name FROM users WHERE a = ?1 AND b = ?2 LIMIT ?4"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-11",
+   "notes": "line and block comments swallow ? text",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users -- ? not a param\nWHERE id = ? /* ? neither */ LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-12",
+   "notes": "double-quoted keyword identifiers",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT \"select\" FROM \"users\" WHERE \"id\" = ? LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "sqlite",
+   "expect": "valid",
+   "id": "lite-13",
+   "notes": "named spellings map onto declared parameters by name; LIMIT binds the trailing declared name. Exact name/total correspondence is fixed in B1-02.04; the corpus pins acceptance, not the mapping arithmetic.",
+   "params": [
+    "id",
+    "lim"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = :id LIMIT :lim"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-01",
+   "notes": "baseline positional ? shape",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT id, name FROM users WHERE id = ? LIMIT ?"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-02",
+   "notes": "baseline mutation shape",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = ? WHERE id = ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-03",
+   "notes": "backtick-quoted keyword identifiers",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT `select`, `id` FROM `users` WHERE `id` = ? LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-04",
+   "notes": "backslash escape inside a string under default sql_mode; the escaped quote does not end the literal",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE nick = 'a\\'b' AND id = ? LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "multi_statement"
+   },
+   "id": "my-05",
+   "notes": "exactly one statement",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ?; SELECT 1"
+  },
+  {
+   "cardinality": "execute",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "returning"
+   },
+   "id": "my-06",
+   "notes": "TiDB grammar admits the RETURNING shape (TiDB itself rejects it in planning, real MySQL in prepare); the backend exposes it structurally and Can rejects it as RETURNING, never admitted",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": null,
+   "statement": "UPDATE users SET name = ? WHERE id = ? RETURNING id"
+  },
+  {
+   "cardinality": "many",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "my-07",
+   "notes": "unbounded SELECT is rejected",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "id": "my-08",
+   "notes": "two LIMIT sites cannot both bind the single trailing number",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ?, ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-09",
+   "notes": "CTE (MySQL 8) with top-level LIMIT parameter",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "WITH u AS (SELECT id FROM users WHERE id = ?) SELECT id FROM u LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "param_unknown"
+   },
+   "id": "my-10",
+   "notes": "three ? sites exceed the declared total of two",
+   "params": [
+    "a"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users WHERE a = ? AND b = ? LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": "valid",
+   "id": "my-11",
+   "notes": "hash, double-dash (with required space), and block comments swallow ? text",
+   "params": [
+    "id"
+   ],
+   "row_limit": 2,
+   "statement": "SELECT name FROM users # ? not a param\nWHERE id = ? -- ? neither\n/* ? nor this */ LIMIT ?"
+  },
+  {
+   "cardinality": "one",
+   "dialect": "mysql",
+   "expect": {
+    "invalid": "bad_kind"
+   },
+   "id": "my-12",
+   "notes": "cardinality one requires SELECT",
+   "params": [
+    "name",
+    "id"
+   ],
+   "row_limit": 3,
+   "statement": "UPDATE users SET name = ? WHERE id = ?"
+  },
+  {
+   "id": "pg-13",
+   "dialect": "postgresql",
+   "statement": "SELECT * FORM users WHERE id = $1 LIMIT $2",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "syntax"
+   },
+   "notes": "grammar failure surfaces verbatim with cursor"
+  },
+  {
+   "id": "my-13",
+   "dialect": "mysql",
+   "statement": "SELECT * FORM users WHERE id = ? LIMIT ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "syntax"
+   },
+   "notes": "grammar failure, TiDB and MySQL agree"
+  },
+  {
+   "id": "lite-14",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ?, ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "notes": "two LIMIT sites cannot bind the single trailing number"
+  },
+  {
+   "id": "lite-15",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ? OFFSET ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "bad_limit"
+   },
+   "notes": "OFFSET form binds two sites; Can admits exactly one"
+  },
+  {
+   "id": "lite-16",
+   "dialect": "sqlite",
+   "statement": "SELECT * FORM users WHERE id = ? LIMIT ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "syntax"
+   },
+   "notes": "ERROR nodes with spans; LIMIT present so only syntax is wrong"
+  },
+  {
+   "id": "lite-17",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE nick = 'unterminated AND id = ? LIMIT ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "syntax"
+   },
+   "notes": "unterminated literal is ERROR to end of input"
+  },
+  {
+   "id": "lite-18",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = ? LIMIT ?;",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": "valid",
+   "notes": "one trailing semicolon admitted and tiled as text"
+  }
+ ]
+}

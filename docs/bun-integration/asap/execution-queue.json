@@ -266,7 +266,7 @@
         "ASAP-ARCH",
         "B1-01-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Create a three-dialect contract table covering placeholders, null, integers, decimals, booleans, text, blobs, dates, affected rows and insert IDs. Reject unsupported mappings; never silently cast an exact Can integer through Number."
     },
     {

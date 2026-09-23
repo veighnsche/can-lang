@@ -1,0 +1,28 @@
+{
+ "bun": "1.4.2",
+ "sqlite": {
+  "v": "3.54.0"
+ },
+ "verdicts": {
+  "lite-01": "ok",
+  "lite-02": "ok",
+  "lite-03": "ok",
+  "lite-04": "ok",
+  "lite-06": "ok",
+  "lite-07": "ok",
+  "lite-08": "ok",
+  "lite-09": "ok",
+  "lite-10": "ok",
+  "lite-11": "ok",
+  "lite-12": "ok",
+  "lite-13": "ok",
+  "lite-14": "ok",
+  "lite-15": "ok",
+  "lite-16": "err:SQLITE_ERROR",
+  "lite-17": "err:SQLITE_ERROR",
+  "lite-18": "ok",
+  "x-pragma": "ok",
+  "x-explain": "ok",
+  "x-create": "ok"
+ }
+}

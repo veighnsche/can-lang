@@ -1,0 +1,24 @@
+{
+ "model": "jev-latest",
+ "questions": {
+  "mysql_backend": {
+   "type": "choice",
+   "instructions": "How should MySQL descriptor text be validated at build time?",
+   "criteria": {
+    "vitess_parser": "Use Vitess's production serving grammar from the big module once a spike shows its spans.",
+    "live_server_prepare": "Depend on a live server prepare pass during each compilation.",
+    "tidb_parser": "Use TiDB's production grammar via its small standalone module with offsets and SQL modes built in."
+   }
+  },
+  "sqlite_backend": {
+   "type": "choice",
+   "instructions": "How should SQLite descriptor text be validated at build time?",
+   "criteria": {
+    "treesitter_mirror": "Track the rule-by-rule parse.y transcription through cgo after differential proof.",
+    "engine_api_prepare": "Lean on genuine engine execution even though spans and LIMIT siting stay hidden.",
+    "antlr_grammar": "Lean on the reimplemented ANTLR grammar with committed generated Go after differential proof."
+   }
+  }
+ },
+ "state": "Two backend selections close the G-SQL gate: one grammar for MySQL descriptors and one for SQLite descriptors, both running inside the offline Go compiler. The PostgreSQL incumbent defines the bar. Version 6.2.2 of pg_query_go/v6 carries generated C through cgo at grammar major 17 (version 170007) and produces statement ranges, token offsets, kinds, LIMIT structure, RETURNING indicators, and raw failures for structural classification under compiler/internal/sql/parser.go. Successors must hand over equivalent evidence. Contract terms hold across dialects: a lone statement; SELECT under row-returning shapes and INSERT/UPDATE/DELETE under execute; unbroken parameter numbering closed by exactly one top-level LIMIT occurrence; RETURNING banned; segments covering all bytes; version recorded. The measuring stick is 37 curated statements at docs/bun-integration/asap/evidence/sql-corpus.json, split 12 postgresql, 13 sqlite, 12 mysql, each dialect contributing passes and failures across literal semicolons, comments, $N lookalikes, backticks, escaped quotes, SQLite's placeholder family, CTEs, RETURNING, multi-statement input, and LIMIT permutations. Safety hinges on span fidelity. An omitted site detonates arity checks and stays safe; a hallucinated site reassigns later bindings without a trace, beyond the reach of runtime preparation, which merely re-labels surplus acceptance as query_failed. False refusal costs only a rewrite. MySQL's tidb_parser packages TiDB's live grammar as github.com/pingcap/tidb/pkg/parser, standalone, Apache-2.0, nearly dependency-free, at v0.0.0-20260923074046 (2026-09-23); Parse(sql, charset, collation) yields statement nodes with OriginTextPosition everywhere, offset-bearing markers, and lexer-level SQL mode. MySQL's vitess_parser packages Vitess's serving grammar at v0.24.3 (2026-09-03), Apache-2.0, but drags a giant module and leaves placeholder offsets unproven pending a spike. MySQL's live_server_prepare ties compilation to a reachable server, ends hermetic builds, fires arbitrary SQL at user databases during builds contrary to gate step 4, and reads tea leaves in messages. SQLite's treesitter_mirror, defin/tree-sitter-sqlite3, transcribes parse.y and tokenize.c rule by rule toward SQLite 3.47.0, blessing-licensed, with parser.c (5.8MB), grammar.json, scanner.c, and corpus tests committed; it follows the committed-C cgo precedent in a cgo-enabled build and regenerates through a JVM-free CLI, but youth and sole authorship (May to July 2026) demand the engine differential. SQLite's antlr_grammar, grammars-v4 sql/sqlite with spring 2026 fixes and runtime antlr4-go v4.13.1, would commit pinned generated Go, yet regeneration insists on a JVM while /usr/bin/java here is hollow, and reimplementation status demands the same differential. SQLite's engine_api_prepare extracts validity from authorizer calls, boundaries from prepare tails, and flags plus counts plus names from handles, but yields no spans, no LIMIT siting, and no RETURNING signal; write PRAGMAs impersonate mutations, EXPLAIN impersonates SELECT, and SQLITE_ERROR's double duty pushes classification back onto message text. No maintained standalone Go SQLite grammar turned up. Out of bounds: splitters, libpg_query cross-use, pre-translation into PostgreSQL, hand-built subsets, and compile-time Bun calls. Selection requires a clean corpus run, then the SQLite syntax differential against bun:sqlite fixture prepares now and the MySQL live differential in B1-03."
+}
