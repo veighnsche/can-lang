@@ -121,6 +121,8 @@ func (p *parser) declaration() Declaration {
 		return p.llm()
 	case p.word("wrap"):
 		return p.wrap()
+	case p.word("fixture"):
+		return p.fixture()
 	case p.word("fn"):
 		return p.function()
 	case p.word("record"):
@@ -265,6 +267,19 @@ func (p *parser) expressionList(end Kind) []Expr {
 func (p *parser) assertion(method bool) Assertion {
 	name := p.expect(Name)
 	p.expect(":")
+	if p.word("use") {
+		start := p.take().Span.Start
+		template := p.qualified()
+		p.expect("(")
+		arguments := p.invocationArguments(")")
+		p.expect(")")
+		p.singleLine(start, p.span(start).End)
+		p.expect(Newline)
+		if p.at(Indent) {
+			p.fail("use expansion carries no execution mode")
+		}
+		return Assertion{Span: p.span(name.Span.Start), Name: name, Use: &AssertionUse{Span: p.span(start), Template: template, Arguments: arguments}}
+	}
 	var receiver Expr
 	if method {
 		receiver = p.expression(1)
@@ -285,7 +300,7 @@ func (p *parser) assertion(method bool) Assertion {
 }
 
 // assertionMode parses the optional indented execution-mode line under an
-// assertion row.
+// assertion row or fixture case.
 func (p *parser) assertionMode() *AssertionMode {
 	if !p.at(Indent) {
 		return nil

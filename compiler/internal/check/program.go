@@ -68,6 +68,7 @@ type programChecker struct {
 	annotations map[*resolve.File]map[string]*types.Type
 	bindings    map[string]*types.Type
 	variadic    map[string]bool
+	templates   map[string]*Template
 }
 
 func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*types.Type, error) {
@@ -238,7 +239,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err != nil {
 		return nil, err
 	}
-	c := &programChecker{world: world, builder: types.NewBuilder(world), annotations: map[*resolve.File]map[string]*types.Type{}, bindings: map[string]*types.Type{}, variadic: map[string]bool{}}
+	c := &programChecker{world: world, builder: types.NewBuilder(world), annotations: map[*resolve.File]map[string]*types.Type{}, bindings: map[string]*types.Type{}, variadic: map[string]bool{}, templates: map[string]*Template{}}
 	if err = c.builder.SeedDeclarations(); err != nil {
 		return nil, err
 	}
@@ -486,6 +487,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.checkWrapperPolicies(p, callables); err != nil {
 		return nil, err
 	}
+	if err = c.checkTemplates(p, callables); err != nil {
+		return nil, err
+	}
 	if err = c.checkNativeBodies(p, callables); err != nil {
 		return nil, err
 	}
@@ -593,6 +597,9 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 			return ""
 		}
 		return symbol.ID
+	}
+	context.Expand = func(scope *resolve.Scope, row syntax.Assertion) ([]ir.FixtureRow, *Template, error) {
+		return c.expandTemplateUse(file, scope, row)
 	}
 	context.CatalogueType = c.catalogueType
 	context.InferCallback = func(scope *resolve.Scope, name syntax.QualifiedName, inputs []*types.Type, result *types.Type, e *Expressions) (ValueBinding, bool, error) {

@@ -1,0 +1,144 @@
+package app
+    provides []
+    uses [http, codec, checks]
+record receipt
+    int count
+fn int double
+    emits []
+    given
+        int value
+    asserts
+        sample: 2 => ok 4
+    ok value + value
+fn int triple
+    emits []
+    given
+        int value
+    asserts
+        sample: 2 => ok 6
+    ok value + value + value
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        integer: 3 => ok 3
+    ok value
+fixture doubled for double
+    given
+        int base
+    cases
+        base => ok base + base
+        3 => ok 6
+fixture ints for identity<int>
+    cases
+        3 => ok 3
+        4 => ok 4
+connection service
+    endpoint "http://127.0.0.1:1/"
+    timeout_ms 5000
+    max_body_bytes 8192
+fetch receipt load from service
+    emits [http::request_failed]
+    asserts
+        decoded: => ok receipt(7)
+            using raw "fixtures/load.json"
+    get "/load"
+fixture fetched for load
+    given
+        int count
+    cases
+        => ok receipt(count)
+        => ok receipt(7)
+            using raw "fixtures/fetched.json"
+fn int double_helper
+    emits []
+    given
+        int value
+    asserts
+        direct: 9 => ok 18
+    match call double(value)
+        when
+            sample: use doubled(2)
+            direct: 9 => ok 18
+        ok int got => ok got
+fn int double_consumer
+    emits []
+    asserts
+        sample: => ok 10
+    match call double_helper(2)
+        ok int first => match call double_helper(3)
+            ok int second => ok first + second
+fn int triple_helper
+    emits []
+    given
+        int value
+    asserts
+        direct: 9 => ok 27
+    match call triple(value)
+        when
+            sample: use tripled(2)
+            direct: 9 => ok 27
+        ok int got => ok got
+fn int triple_consumer
+    emits []
+    asserts
+        sample: => ok 15
+    match call triple_helper(2)
+        ok int first => match call triple_helper(3)
+            ok int second => ok first + second
+fn int identity_helper
+    emits []
+    given
+        int value
+    asserts
+        direct: 9 => ok 9
+    match call identity<int>(value)
+        when
+            sample: use ints()
+            direct: 9 => ok 9
+        ok int got => ok got
+fn int identity_consumer
+    emits []
+    asserts
+        sample: => ok 7
+    match call identity_helper(3)
+        ok int first => match call identity_helper(4)
+            ok int second => ok first + second
+fn receipt load_helper
+    emits [http::request_failed]
+    asserts
+        direct: => ok receipt(1)
+    match call load()
+        when
+            sample: use fetched(1)
+            direct: => ok receipt(1)
+        http::request_failed
+        ok receipt got => ok got
+fn receipt load_consumer
+    emits [http::request_failed]
+    asserts
+        sample: => ok receipt(7)
+    match call load_helper()
+        http::request_failed
+        ok receipt first => match call load_helper()
+            http::request_failed
+            ok receipt second => ok second
+fn void main
+    emits [http::request_failed, checks::failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call load()
+        when
+            sample: => ok receipt(7)
+        http::request_failed
+        ok receipt got => match call checks::require(got.count is 7, "live count")
+            checks::failed
+            ok => match call double(20)
+                when
+                    sample: 20 => ok 40
+                ok int doubled => match call checks::require(doubled is 40, "live double")
+                    checks::failed
+                    ok => ok

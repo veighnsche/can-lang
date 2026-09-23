@@ -1,0 +1,52 @@
+=== RUN   TestFixtureSiteIgnoresCheckerLocalAllocation
+--- PASS: TestFixtureSiteIgnoresCheckerLocalAllocation (0.13s)
+=== RUN   TestFixtureTemplateExpansion
+--- PASS: TestFixtureTemplateExpansion (0.06s)
+=== RUN   TestFixtureTemplateRejects
+=== RUN   TestFixtureTemplateRejects/captured_fn_input
+=== RUN   TestFixtureTemplateRejects/wrong_exact_target
+=== RUN   TestFixtureTemplateRejects/reference_call_site
+=== RUN   TestFixtureTemplateRejects/use_in_attached_row
+=== RUN   TestFixtureTemplateRejects/executable_outcome
+=== RUN   TestFixtureTemplateRejects/unknown_template
+=== RUN   TestFixtureTemplateRejects/captured_local
+=== RUN   TestFixtureTemplateRejects/question_target
+=== RUN   TestFixtureTemplateRejects/argument_type
+=== RUN   TestFixtureTemplateRejects/callable_value_target
+=== RUN   TestFixtureTemplateRejects/arity
+=== RUN   TestFixtureTemplateRejects/executable_argument
+=== RUN   TestFixtureTemplateRejects/duplicate_parameter
+=== RUN   TestFixtureTemplateRejects/executable_case
+=== RUN   TestFixtureTemplateRejects/using_failure_in_case
+--- PASS: TestFixtureTemplateRejects (0.78s)
+    --- PASS: TestFixtureTemplateRejects/captured_fn_input (0.06s)
+    --- PASS: TestFixtureTemplateRejects/wrong_exact_target (0.06s)
+    --- PASS: TestFixtureTemplateRejects/reference_call_site (0.06s)
+    --- PASS: TestFixtureTemplateRejects/use_in_attached_row (0.06s)
+    --- PASS: TestFixtureTemplateRejects/executable_outcome (0.05s)
+    --- PASS: TestFixtureTemplateRejects/unknown_template (0.06s)
+    --- PASS: TestFixtureTemplateRejects/captured_local (0.06s)
+    --- PASS: TestFixtureTemplateRejects/question_target (0.05s)
+    --- PASS: TestFixtureTemplateRejects/argument_type (0.06s)
+    --- PASS: TestFixtureTemplateRejects/callable_value_target (0.05s)
+    --- PASS: TestFixtureTemplateRejects/arity (0.06s)
+    --- PASS: TestFixtureTemplateRejects/executable_argument (0.06s)
+    --- PASS: TestFixtureTemplateRejects/duplicate_parameter (0.00s)
+    --- PASS: TestFixtureTemplateRejects/executable_case (0.05s)
+    --- PASS: TestFixtureTemplateRejects/using_failure_in_case (0.05s)
+=== RUN   TestFixtureShadowedStaticKeepsStaticMeaning
+--- PASS: TestFixtureShadowedStaticKeepsStaticMeaning (0.06s)
+=== RUN   TestFixtureNativeTargetWithRaw
+--- PASS: TestFixtureNativeTargetWithRaw (0.11s)
+=== RUN   TestFixtureImportedTemplateResolvesRawAtDefinition
+--- PASS: TestFixtureImportedTemplateResolvesRawAtDefinition (0.06s)
+=== RUN   TestFixtureJudgeGroupedTarget
+--- PASS: TestFixtureJudgeGroupedTarget (0.06s)
+=== RUN   TestFixtureGenericTarget
+--- PASS: TestFixtureGenericTarget (0.22s)
+=== RUN   TestFixtureWrapperTarget
+--- PASS: TestFixtureWrapperTarget (0.11s)
+=== RUN   TestFixtureCatalogueTarget
+--- PASS: TestFixtureCatalogueTarget (0.06s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	1.793s

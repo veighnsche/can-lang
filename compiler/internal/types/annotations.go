@@ -67,6 +67,10 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 				for _, input := range d.Inputs {
 					fields = append(fields, input.Field)
 				}
+			case *syntax.FixtureDecl:
+				// The target contract resolves at fixture checking; only
+				// the parameter annotations are templated here.
+				fields = d.Given
 			case *syntax.WrapDecl:
 				// Inherited annotations resolve in the root's declaring
 				// file. The bound is calculated from checked handlers in

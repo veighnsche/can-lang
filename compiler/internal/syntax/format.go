@@ -217,6 +217,37 @@ func Format(file *File) string {
 			f.line(0, "error "+n.ID.Text+" "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")")
 		case *ValueDecl:
 			f.binding(0, n.Binding)
+		case *FixtureDecl:
+			header := "fixture " + n.Name.Text + " for " + formatName(n.Target)
+			if len(n.Types) != 0 {
+				types := make([]string, len(n.Types))
+				for i, t := range n.Types {
+					types[i] = FormatType(t)
+				}
+				header += "<" + strings.Join(types, ", ") + ">"
+			}
+			f.line(0, header)
+			if len(n.Given) != 0 {
+				f.line(1, "given")
+				for _, field := range n.Given {
+					f.line(2, formatField(field))
+				}
+			}
+			f.line(1, "cases")
+			for _, kase := range n.Cases {
+				prefix := formatArguments(kase.Arguments)
+				if prefix != "" {
+					prefix += " "
+				}
+				f.body(2, prefix+"=> ", kase.Expected)
+				if kase.Mode != nil {
+					if kase.Mode.Failure != nil {
+						f.line(3, "using failure "+kase.Mode.Failure.Origin.Text+" "+FormatExpression(kase.Mode.Failure.Value))
+					} else {
+						f.line(3, "using raw "+kase.Mode.Raw.Text)
+					}
+				}
+			}
 		case *FunctionDecl:
 			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters))
 			if n.Receiver != nil {
@@ -251,6 +282,10 @@ func Format(file *File) string {
 }
 
 func (f *formatter) assertion(level int, a Assertion) {
+	if a.Use != nil {
+		f.line(level, a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")")
+		return
+	}
 	text := a.Name.Text + ": "
 	if a.Receiver != nil {
 		text += FormatExpression(a.Receiver) + " => "

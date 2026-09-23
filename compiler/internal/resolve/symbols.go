@@ -41,6 +41,7 @@ const (
 	Judge         Kind = "judge"
 	LLM           Kind = "llm"
 	Wrapper       Kind = "wrapper"
+	Fixture       Kind = "fixture"
 	Value         Kind = "value"
 )
 
@@ -56,6 +57,7 @@ const (
 	ValueUse       Usage = "value"
 	ErrorUse       Usage = "error"
 	WrapBaseUse    Usage = "wrapper base"
+	FixtureUse     Usage = "fixture"
 )
 
 type Symbol struct {
@@ -93,6 +95,8 @@ func (s *Symbol) Eligible(usage Usage) bool {
 		return s.Kind == Error
 	case WrapBaseUse:
 		return s.Kind == Fetch || s.Kind == Judge || s.Kind == Wrapper
+	case FixtureUse:
+		return s.Kind == Fixture
 	default:
 		return false
 	}
@@ -275,6 +279,9 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 	case *syntax.WrapDecl:
 		s.Name = d.Name.Text
 		s.Kind = Wrapper
+	case *syntax.FixtureDecl:
+		s.Name = d.Name.Text
+		s.Kind = Fixture
 	case *syntax.QuestionDecl:
 		s.Name = d.Name.Text
 		s.Kind = Question
@@ -326,6 +333,8 @@ func declarationNameSpan(declaration syntax.Declaration) source.Span {
 	case *syntax.JudgeDecl:
 		return d.Name.Span
 	case *syntax.WrapDecl:
+		return d.Name.Span
+	case *syntax.FixtureDecl:
 		return d.Name.Span
 	case *syntax.QuestionDecl:
 		return d.Name.Span
@@ -515,6 +524,8 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	switch d := declaration.(type) {
 	case *syntax.ConnectionDecl:
 		return nil
+	case *syntax.FixtureDecl:
+		return fields(d.Given)
 	case *syntax.ChoiceArmDecl:
 		if err := check(d.Result); err != nil {
 			return err

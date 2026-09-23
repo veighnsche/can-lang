@@ -196,7 +196,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF12-summary.json, LF12-check.log (6 tests + 13 reject subtests pass), LF12-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF12-integration.log (integration+driver+emit all ok), LF12-runtime.log (349 pass), LF12-policy.log (30 pass), LF12-emit.txt (dispatcher + inherit rule + injection lowering). 3-generation fetch chain + judge wrapper + callable consumer in compiler/testdata/current/wrap; staged 13-row suite with 404/429/503/200 run gates and tsc. Reproduction commands in the summary.
 
-- [ ] **LF13 — Expand typed fixture templates at lexical owners**
+- [x] **LF13 — Expand typed fixture templates at lexical owners**
 
   **Depends on:** LF11, LF12. **Acceptance:** AE27.
 
@@ -210,7 +210,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** Compare inline versus expanded argument/capture checks, repeated concurrent visits and source-relative raw files in dependencies. No root/ordinal override mechanism or extra runtime dispatch is introduced.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF13-summary.json, LF13-check.log (10 tests + 15 reject subtests pass), LF13-syntax.log (4 pass), LF13-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF13-integration.log (integration+driver+emit all ok), LF13-runtime.log (349 pass). compiler/testdata/current/templates staged 13-row suite (fn/generic/fetch templates, same-directory import, raw-in-template, FIFO helpers, production erasure, tsc). Reproduction commands in the summary.
 
 - [ ] **LF14 — Capture complete verification inputs and lock raw fixtures**
 

@@ -523,6 +523,9 @@ func (c *programChecker) wrapperContext(program *Program, native *NativeDeclarat
 		}
 		return symbol.ID
 	}
+	ctx.Expand = func(scope *resolve.Scope, row syntax.Assertion) ([]ir.FixtureRow, *Template, error) {
+		return c.expandTemplateUse(file, scope, row)
+	}
 	ctx.CatalogueType = c.catalogueType
 	ctx.InferCallback = func(scope *resolve.Scope, name syntax.QualifiedName, inputs []*types.Type, result *types.Type, e *Expressions) (ValueBinding, bool, error) {
 		return c.inferCallback(file, scope, name, inputs, result, e)

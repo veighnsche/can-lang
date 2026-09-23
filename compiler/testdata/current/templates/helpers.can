@@ -1,0 +1,9 @@
+package app
+    provides []
+    uses []
+fixture tripled for triple
+    given
+        int base
+    cases
+        base => ok base + base + base
+        3 => ok 9

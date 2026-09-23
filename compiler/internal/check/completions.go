@@ -62,6 +62,10 @@ type CompletionContext struct {
 	// escaping-obligation diagnostics can name the key, original target,
 	// selected handler and inherit chain behind a calculated member.
 	Wrappers map[string]*WrapperPlan
+	// Expand substitutes `use template(arguments)` at a lexical when row
+	// into checked rows under the row selector. It closes over the use
+	// file and program templates; nil where expansion cannot appear.
+	Expand func(scope *resolve.Scope, row syntax.Assertion) ([]ir.FixtureRow, *Template, error)
 }
 
 // InheritContext resolves one wrapper key's predecessor rule. Region names

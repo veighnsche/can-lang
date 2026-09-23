@@ -243,9 +243,18 @@ type Assertion struct {
 	Receiver  Expr
 	Arguments []Argument
 	Expected  Body
-	// Mode is the optional execution mode line (using raw) on attached rows
-	// and native when rows. A nil mode is a supplied completion.
-	Mode *AssertionMode
+	Mode      *AssertionMode
+	// Use expands a fixture template in place; it carries no arguments,
+	// expected completion or execution mode of its own.
+	Use *AssertionUse
+}
+
+// AssertionUse is `use template(arguments)` at a lexical when row: the
+// template cases expand in place under the row selector.
+type AssertionUse struct {
+	Span      source.Span
+	Template  QualifiedName
+	Arguments []Argument
 }
 
 // AssertionMode is the optional indented execution-mode line under an

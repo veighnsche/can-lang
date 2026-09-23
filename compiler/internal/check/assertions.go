@@ -25,6 +25,9 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 	var result []*ir.Assertion
 	for _, row := range rows {
 		root := ir.AssertionRoot{Package: fn.Symbol.Package.ID, Declaration: fn.Symbol.ID, Name: row.Name.Text}
+		if row.Use != nil {
+			return nil, fmt.Errorf("assertion %s: fixture templates expand at lexical when tables only", row.Name.Text)
+		}
 		if row.Mode != nil && row.Mode.Failure != nil {
 			return nil, fmt.Errorf("assertion %s: using failure is confined to attached wrapper assertions", row.Name.Text)
 		}
@@ -112,70 +115,109 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 		receiver = step.Arguments[0]
 	}
 	for _, row := range rows {
-		if row.Receiver != nil || row.Name.Text == "" {
-			return nil, fmt.Errorf("fixture receiver is implicit and selector must be named")
+		if row.Use != nil {
+			if err := c.expandUse(table, step, scope, row); err != nil {
+				return nil, err
+			}
+			continue
 		}
-		prepared, args, err := c.arguments(c.expressions(scope), ValueBinding{Identity: step.Identity, Type: step.Contract}, row.Arguments, receiver)
-		if err != nil {
-			return nil, fmt.Errorf("fixture %s arguments: %w", row.Name.Text, err)
-		}
-		switch row.Expected.(type) {
-		case *syntax.SuccessBody, *syntax.FailureBody:
-		default:
-			return nil, fmt.Errorf("fixture requires an explicit completion")
-		}
-		savedContext, savedResult, savedEscapes := c.context, c.region.Result, c.region.Escapes
-		bound, err := c.context.Registry.Bound(step.Errors)
-		if err != nil {
+		if err := c.fixtureRow(table, step, scope, row, receiver); err != nil {
 			return nil, err
 		}
-		c.context.Result = step.Result
-		c.context.Errors = bound
-		// Fixture expectations admit bare ok under the same opaque/callable
-		// confinement as assertion expectations: supplied boundaries can
-		// return tokens no Can expression can construct.
-		c.context.BareOpaque = true
-		c.region.Result = step.Result
-		expected, err := c.completion(row.Expected, scope)
-		c.context, c.region.Result, c.region.Escapes = savedContext, savedResult, savedEscapes
-		if err != nil {
-			return nil, fmt.Errorf("fixture %s completion: %w", row.Name.Text, err)
-		}
-		var raw *ir.RawFixture
-		if row.Mode != nil {
-			if row.Mode.Failure != nil {
-				return nil, fmt.Errorf("fixture %s: using failure is confined to attached wrapper assertions", row.Name.Text)
-			}
-			if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value == nil {
-				if kind := step.Result.Kind(); kind == types.Opaque || kind == types.Callable {
-					return nil, fmt.Errorf("fixture %s: using raw cannot drive a supplied opaque mock", row.Name.Text)
-				}
-			}
-			if c.context.Raw == nil {
-				return nil, fmt.Errorf("fixture %s: using raw cannot resolve its target", row.Name.Text)
-			}
-			native, ok := c.context.Raw.Natives[step.Identity]
-			if !ok || native.Symbol.Kind != resolve.Fetch && native.Symbol.Kind != resolve.Judge && native.Symbol.Kind != resolve.LLM && native.Symbol.Kind != resolve.Wrapper {
-				return nil, fmt.Errorf("fixture %s: using raw is allowed on fetch/judge/LLM/wrapper targets only", row.Name.Text)
-			}
-			fixture, err := c.context.Raw.Load(row.Mode.Raw.Value)
-			if err != nil {
-				return nil, fmt.Errorf("fixture %s: %w", row.Name.Text, err)
-			}
-			if err := c.context.Raw.CheckRawFixture(step.Identity, fixture); err != nil {
-				return nil, fmt.Errorf("fixture %s: %w", row.Name.Text, err)
-			}
-			// The wrapper target names the fixture, but the exchange
-			// substitutes at the root operation transport boundary.
-			operation := step.Identity
-			if native.Symbol.Kind == resolve.Wrapper && native.Wrapper != nil {
-				operation = native.Wrapper.Root
-			}
-			raw = convertRawFixture(operation, fixture)
-		}
-		table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
 	}
 	return table, nil
+}
+
+// expandUse expands `use template(arguments)` in place under the row
+// selector after enforcing exact target identity. Rows arrive fully
+// checked from the definition; expansion owns no queue, and rows keep
+// the site's identity, fingerprints and FIFO order.
+func (c *regionChecker) expandUse(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion) error {
+	if c.context.Expand == nil {
+		return fmt.Errorf("fixture %s: template expansion is unavailable here", row.Name.Text)
+	}
+	expanded, template, err := c.context.Expand(c.context.Scope, row)
+	if err != nil {
+		return fmt.Errorf("fixture %s: %w", row.Name.Text, err)
+	}
+	if template.Target.Identity != step.Identity {
+		return fmt.Errorf("fixture %s: use of %s targets %s, not the invoked %s (template defined at %s)", row.Name.Text, template.Symbol.ID, template.Target.Identity, step.Identity, template.File.Source.ID)
+	}
+	// Expanded completions re-home to the use region exactly as literal
+	// rows would; their value expressions are region-independent.
+	for i := range expanded {
+		if expanded[i].Expected != nil {
+			expanded[i].Expected.RegionID = c.region.ID
+		}
+	}
+	table.Rows = append(table.Rows, expanded...)
+	return nil
+}
+
+func (c *regionChecker) fixtureRow(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion, receiver *ir.Expression) error {
+	if row.Receiver != nil || row.Name.Text == "" {
+		return fmt.Errorf("fixture receiver is implicit and selector must be named")
+	}
+	prepared, args, err := c.arguments(c.expressions(scope), ValueBinding{Identity: step.Identity, Type: step.Contract}, row.Arguments, receiver)
+	if err != nil {
+		return fmt.Errorf("fixture %s arguments: %w", row.Name.Text, err)
+	}
+	switch row.Expected.(type) {
+	case *syntax.SuccessBody, *syntax.FailureBody:
+	default:
+		return fmt.Errorf("fixture requires an explicit completion")
+	}
+	savedContext, savedResult, savedEscapes := c.context, c.region.Result, c.region.Escapes
+	bound, err := c.context.Registry.Bound(step.Errors)
+	if err != nil {
+		return err
+	}
+	c.context.Result = step.Result
+	c.context.Errors = bound
+	// Fixture expectations admit bare ok under the same opaque/callable
+	// confinement as assertion expectations: supplied boundaries can
+	// return tokens no Can expression can construct.
+	c.context.BareOpaque = true
+	c.region.Result = step.Result
+	expected, err := c.completion(row.Expected, scope)
+	c.context, c.region.Result, c.region.Escapes = savedContext, savedResult, savedEscapes
+	if err != nil {
+		return fmt.Errorf("fixture %s completion: %w", row.Name.Text, err)
+	}
+	var raw *ir.RawFixture
+	if row.Mode != nil {
+		if row.Mode.Failure != nil {
+			return fmt.Errorf("fixture %s: using failure is confined to attached wrapper assertions", row.Name.Text)
+		}
+		if success, ok := row.Expected.(*syntax.SuccessBody); ok && success.Value == nil {
+			if kind := step.Result.Kind(); kind == types.Opaque || kind == types.Callable {
+				return fmt.Errorf("fixture %s: using raw cannot drive a supplied opaque mock", row.Name.Text)
+			}
+		}
+		if c.context.Raw == nil {
+			return fmt.Errorf("fixture %s: using raw cannot resolve its target", row.Name.Text)
+		}
+		native, ok := c.context.Raw.Natives[step.Identity]
+		if !ok || native.Symbol.Kind != resolve.Fetch && native.Symbol.Kind != resolve.Judge && native.Symbol.Kind != resolve.LLM && native.Symbol.Kind != resolve.Wrapper {
+			return fmt.Errorf("fixture %s: using raw is allowed on fetch/judge/LLM/wrapper targets only", row.Name.Text)
+		}
+		fixture, err := c.context.Raw.Load(row.Mode.Raw.Value)
+		if err != nil {
+			return fmt.Errorf("fixture %s: %w", row.Name.Text, err)
+		}
+		if err := c.context.Raw.CheckRawFixture(step.Identity, fixture); err != nil {
+			return fmt.Errorf("fixture %s: %w", row.Name.Text, err)
+		}
+		// The wrapper target names the fixture, but the exchange
+		// substitutes at the root operation transport boundary.
+		operation := step.Identity
+		if native.Symbol.Kind == resolve.Wrapper && native.Wrapper != nil {
+			operation = native.Wrapper.Root
+		}
+		raw = convertRawFixture(operation, fixture)
+	}
+	table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
+	return nil
 }
 
 // Native assertions attach real roots to fetch/judge/LLM declarations. Rows
@@ -217,6 +259,9 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 		wrapped := native.Symbol.Kind == resolve.Wrapper
 		for _, row := range rows {
 			root := ir.AssertionRoot{Package: native.Symbol.Package.ID, Declaration: native.Symbol.ID, Name: row.Name.Text}
+			if row.Use != nil {
+				return fmt.Errorf("assertion %s: fixture templates expand at lexical when tables only", row.Name.Text)
+			}
 			if row.Receiver != nil {
 				return fmt.Errorf("assertion %s: native assertions cannot supply a receiver", row.Name.Text)
 			}

@@ -46,6 +46,28 @@ type LLMDecl struct {
 	Asks       Expr
 }
 
+// FixtureDecl is a P3.1 fixture template: inert reusable rows for one exact
+// executable target with optional typed parameters. It is test data, not a
+// callable or an assertion root, and is erased from production output.
+type FixtureDecl struct {
+	DeclarationLocation
+	Name   Token
+	Target QualifiedName
+	// Types holds the concrete type arguments for a generic target.
+	Types []TypeNode
+	Given []Field
+	Cases []FixtureCase
+}
+
+// FixtureCase is one template row: target inputs in exact call grammar plus
+// an expected completion, with an optional raw execution mode.
+type FixtureCase struct {
+	Span      source.Span
+	Arguments []Argument
+	Expected  Body
+	Mode      *AssertionMode
+}
+
 // WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
 // judge or wrapper base; the complete signature, grouped state, result and
 // connection are inherited. Handles tables hold origin-specific policy arms.
@@ -243,6 +265,56 @@ func (p *parser) llm() Declaration {
 	p.expect(Newline)
 	p.expect(Dedent)
 	return &LLMDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, NativeHeader: header, Assertions: assertions, State: state, Asks: asks}
+}
+
+func (p *parser) fixture() Declaration {
+	start := p.expectWord("fixture").Span.Start
+	name := p.expect(Name)
+	p.expectWord("for")
+	target := p.qualified()
+	types := p.typeArguments()
+	p.expect(Newline)
+	p.expect(Indent)
+	var given []Field
+	if p.word("given") {
+		p.take()
+		p.expect(Newline)
+		p.expect(Indent)
+		for !p.at(Dedent) && !p.at(EOF) {
+			given = append(given, p.field())
+			p.expect(Newline)
+		}
+		p.expect(Dedent)
+	}
+	p.expectWord("cases")
+	p.expect(Newline)
+	p.expect(Indent)
+	if p.at(Dedent) || p.at(EOF) {
+		p.fail("fixture cases must be nonempty")
+	}
+	cases := []FixtureCase{p.fixtureCase()}
+	for !p.at(Dedent) && !p.at(EOF) {
+		cases = append(cases, p.fixtureCase())
+	}
+	p.expect(Dedent)
+	p.expect(Dedent)
+	return &FixtureDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Target: target, Types: types, Given: given, Cases: cases}
+}
+
+func (p *parser) fixtureCase() FixtureCase {
+	start := p.peek().Span.Start
+	arguments := p.invocationArguments("=>")
+	for _, argument := range arguments {
+		if argument.Spread {
+			p.fail("fixture case inputs must be explicit positional values")
+		}
+	}
+	p.expect("=>")
+	expected := p.completion()
+	p.singleLine(start, expected.BodySpan().End)
+	p.expect(Newline)
+	mode := p.assertionMode()
+	return FixtureCase{Span: p.span(start), Arguments: arguments, Expected: expected, Mode: mode}
 }
 
 func (p *parser) wrap() Declaration {
