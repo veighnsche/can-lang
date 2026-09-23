@@ -57,9 +57,10 @@ grammar. G-EVENT pull applies: inbound flow is a
 
 | Aspect | Contract |
 |---|---|
-| Ownership | sessions are `ws-session` owner resources in the caller's scope (server sessions: the request scope, which spans the driving handler); readers are scope-managed `stream-reader` resources; forgetting the session close emits the standard abandonment diagnostic |
+| Ownership | sessions are `ws-session` owner resources in the caller's scope (server sessions: the request scope, which spans the driving handler); readers are scope-managed `stream-reader` resources; forgetting the session close emits the standard abandonment diagnostic, so every pump exit (close, empty batch, read failure, stop prompt) funnels through one halt that closes reader and session |
 | Cancel | `cancel_reader` interrupts a pending event read, which reports `cancelled` with the caller reason and delivers nothing |
 | Stop | `server_stop` (and the wait signal path) prompts every live session with a 1001 `shutdown` frame and fails its pump `read_failed{server_stopped}` before closing the server; prompting inside the closer would deadlock against parked handlers, so entries suspend first |
+| Prompt race | peer-close delivery lags the client's own close event, so a stop racing a closing session prompts a still-live pump; the prompt is benign because every pump exit halts (closes reader and session) instead of abandoning |
 | Late events | hooks never throw into Bun and never enter Can; events for unknown or terminal sessions drop silently |
 
 ## Error table
