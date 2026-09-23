@@ -23,9 +23,16 @@ const origin:FailureOrigin=Object.freeze({source:"can:stream-lifecycle",start:0,
 export type Fail=(identity:string,fields:readonly (readonly [string,unknown])[],cause?:unknown)=>Completion<never>;
 export type ByteSource=ReadableStream<Uint8Array>;
 export type LineFraming={decoder:TextDecoder;carry:string;pendingBytes:bigint};
+// Event cells serve pre-framed producer values (WebSocket session events)
+// instead of pulling a byte stream. The pump is producer-owned: take
+// resolves queued values in order, end marks the terminal, failed carries
+// a read_failed reason, and interrupted answers cancel only. Dispose runs
+// after every lease drains, so no take is ever pending inside dispose.
+export type EventTake=Readonly<{kind:"event";value:unknown}|{kind:"end"}|{kind:"failed";reason:string}|{kind:"interrupted"}>;
+export type EventPump=Readonly<{take:()=>Promise<EventTake>;interrupt:()=>void;dispose:()=>void}>;
 export type ReaderCell={
-  reader:ReadableStreamDefaultReader<Uint8Array>;
-  item:"bytes"|"text";
+  reader?:ReadableStreamDefaultReader<Uint8Array>;
+  item:"bytes"|"text"|"events";
   maxChunk:bigint;
   maxLine:bigint;
   cancelled?:string;
@@ -33,6 +40,7 @@ export type ReaderCell={
   ended?:boolean;
   carry?:Uint8Array;
   framing?:LineFraming;
+  events?:EventPump;
 };
 export type SinkLike={write(chunk:Uint8Array):unknown;flush():unknown;end():unknown};
 export type WriterCell={sink:SinkLike;cancelled?:string};
@@ -43,8 +51,8 @@ function cellFor(token:unknown):ReaderCell|WriterCell{
 }
 export function readerCell(token:unknown):ReaderCell{
   const cell=cellFor(token);
-  if(!("reader" in cell))throw resourceStateFailure(undefined,origin);
-  return cell;
+  if(!("reader" in cell)&&!("events" in cell))throw resourceStateFailure(undefined,origin);
+  return cell as ReaderCell;
 }
 export function writerCell(token:unknown):WriterCell{
   const cell=cellFor(token);
@@ -56,6 +64,8 @@ export function isStreamHandleValue(kind:string|undefined,value:unknown):boolean
   try{return resourceStatus(value).kind===kind;}catch{return false;}
 }
 async function releaseReader(cell:ReaderCell,errored:boolean):Promise<void>{
+  if(cell.events!==undefined){cell.events.dispose();return;}
+  if(cell.reader===undefined)throw resourceStateFailure(undefined,origin);
   // Observe cancellation rejection without replacing the original outcome.
   if(!errored)try{await cell.reader.cancel();}catch{}
   cell.reader.releaseLock();

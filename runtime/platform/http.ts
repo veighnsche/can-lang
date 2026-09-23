@@ -14,8 +14,31 @@ import {decodeMultipart,MultipartIssue} from "./multipart.ts";
 import {renderSafe} from "./html.ts";
 const origin=Object.freeze({source:"can:http-server",start:0,end:0,invocation:Object.freeze([])});
 type Snapshot=Readonly<{method:string;path:string;query:readonly(readonly[string,string])[];queryInvalid:boolean;headers:readonly(readonly[string,string])[];body:Bytes}>;
-type BodyCell={kind:"buffered";reader:boolean}|{kind:"live";native:Request;limit:number;reader:boolean;buffered?:Bytes;cell?:ReaderCell};
+type BodyCell={kind:"buffered";reader:boolean;native:Request}|{kind:"live";native:Request;limit:number;reader:boolean;buffered?:Bytes;cell?:ReaderCell};
 const requests=new WeakMap<object,Snapshot>(),bodies=new WeakMap<object,BodyCell>();
+// WebSocket upgrade plumbing. Every snapshot retains its native request;
+// the server binds its handle after snapshotting, and accept claims the
+// pair exactly once. Claimed requests skip the HTTP reply in dispatch.
+export type UpgradeServer=Readonly<{upgrade:(request:Request,options:Readonly<{headers?:Record<string,string>;data:unknown}>)=>boolean}>;
+const upgradeServers=new WeakMap<object,UpgradeServer>(),upgraded=new WeakSet<object>();
+export function bindRequestServer(request:unknown,server:UpgradeServer):void{if(object(request)&&requests.has(request))upgradeServers.set(request,server);}
+export function claimUpgrade(request:unknown):Readonly<{native:Request;server:UpgradeServer}|"upgraded"|undefined>{
+  if(!object(request)||!requests.has(request))throw resourceStateFailure(undefined,origin);
+  if(upgraded.has(request))return "upgraded";
+  const server=upgradeServers.get(request);
+  if(server===undefined)return undefined;
+  upgraded.add(request);
+  return {native:bodies.get(request)!.native,server};
+}
+export function releaseUpgrade(request:unknown):void{if(object(request))upgraded.delete(request);}
+export function isUpgraded(request:unknown):boolean{return object(request)&&upgraded.has(request);}
+export function offeredProtocols(request:unknown):readonly string[]{
+  const snapshot=requestSnapshot(request),offered:string[]=[];
+  for(const [name,value] of snapshot.headers)if(name==="sec-websocket-protocol")for(const part of value.split(",")){const protocol=part.trim();if(protocol!=="")offered.push(protocol);}
+  return Object.freeze(offered);
+}
+export const UPGRADED_RESPONSE:Response=Object.freeze(Object.create(null)) as unknown as Response;
+export function isUpgradedResponse(value:unknown):boolean{return value===UPGRADED_RESPONSE;}
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
 export function requestSnapshot(value:unknown):Snapshot{if(!object(value)||!requests.has(value))throw resourceStateFailure(undefined,origin);return requests.get(value)!;}
 export function isRequest(value:unknown):boolean{return object(value)&&requests.has(value);}
@@ -56,7 +79,7 @@ export async function snapshotRequest(request:Request,limit:number):Promise<Snap
  const head=snapshotHead(request);if(head.kind==="rejected")return head;
  const drained=await drainBody(request.body,limit);if(drained.kind==="rejected")return drained;
  const token=Object.freeze(Object.create(null));
- requests.set(token,Object.freeze({...head.value,body:drained.value}));bodies.set(token,{kind:"buffered",reader:false});
+ requests.set(token,Object.freeze({...head.value,body:drained.value}));bodies.set(token,{kind:"buffered",reader:false,native:request});
  return {kind:"request",value:token};
 }
 // Lazy ingress for stream-marked routes: head only, no body read. The first
@@ -72,7 +95,7 @@ export async function snapshotRequestLazy(request:Request,limit:number):Promise<
 export async function abandonRequest(request:unknown):Promise<void>{
  const cell=object(request)&&bodies.has(request)?bodies.get(request)!:undefined;
  if(cell===undefined||cell.kind!=="live")return;
- if(cell.cell!==undefined){try{await cell.cell.reader.cancel();}catch{}return;}
+ if(cell.cell!==undefined){try{await cell.cell.reader?.cancel();}catch{}return;}
  if(!cell.reader&&cell.buffered===undefined&&cell.native.body!==null){
   const reader=cell.native.body.getReader();
   try{await reader.cancel();}catch{}finally{reader.releaseLock();}

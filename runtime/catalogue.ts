@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "5bd5647f91462bebde4a978f3ae02b04c08ff83a515013cec1e54ba3ddc98082";
+export const catalogueSHA256 = "7f89d81cc37649adeabd71cccb5be10c066207368396426579a94106d57780c6";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -128,6 +128,10 @@ export const catalogue = freeze({
     {
       "name": "url",
       "identity": "can.std.url@1"
+    },
+    {
+      "name": "ws",
+      "identity": "can.std.ws@1"
     }
   ],
   "prelude": [
@@ -1088,6 +1092,113 @@ export const catalogue = freeze({
         {
           "name": "millisecond",
           "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "ws::session",
+      "identity": "can.std.ws@1::session",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "ws::connection",
+      "identity": "can.std.ws@1::connection",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "session",
+          "type": "ws::session"
+        },
+        {
+          "name": "events",
+          "type": "stream::reader<ws::event>"
+        },
+        {
+          "name": "protocol",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "ws::event",
+      "identity": "can.std.ws@1::event",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "ws::text",
+        "ws::binary",
+        "ws::drain",
+        "ws::closed"
+      ],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "ws::text",
+      "identity": "can.std.ws@1::text",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "ws::binary",
+      "identity": "can.std.ws@1::binary",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "data",
+          "type": "bytes::buffer"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "ws::drain",
+      "identity": "can.std.ws@1::drain",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "ws::closed",
+      "identity": "can.std.ws@1::closed",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "reason",
+          "type": "str"
         }
       ],
       "leaves": [],
@@ -2149,6 +2260,102 @@ export const catalogue = freeze({
       "fields": [
         {
           "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1333,
+      "name": "ws::connect_failed",
+      "identity": "can.std.ws@1::connect_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1334,
+      "name": "ws::upgrade_failed",
+      "identity": "can.std.ws@1::upgrade_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1335,
+      "name": "ws::unsupported_protocol",
+      "identity": "can.std.ws@1::unsupported_protocol",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "protocol",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1336,
+      "name": "ws::send_failed",
+      "identity": "can.std.ws@1::send_failed",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1337,
+      "name": "ws::invalid_close",
+      "identity": "can.std.ws@1::invalid_close",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1338,
+      "name": "ws::limit_exceeded",
+      "identity": "can.std.ws@1::limit_exceeded",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1339,
+      "name": "ws::invalid_url",
+      "identity": "can.std.ws@1::invalid_url",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1340,
+      "name": "ws::invalid_protocol",
+      "identity": "can.std.ws@1::invalid_protocol",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "protocol",
           "type": "str"
         }
       ]
@@ -9936,6 +10143,227 @@ export const catalogue = freeze({
       "refs": [
         "B1-13"
       ]
+    },
+    {
+      "name": "ws::connect",
+      "identity": "can.std.ws@1::connect",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "url",
+          "type": "str"
+        },
+        {
+          "name": "protocols",
+          "type": "str[]"
+        },
+        {
+          "name": "max_message_bytes",
+          "type": "int"
+        },
+        {
+          "name": "max_queued_events",
+          "type": "int"
+        },
+        {
+          "name": "max_send_bytes",
+          "type": "int"
+        },
+        {
+          "name": "deadline_ms",
+          "type": "int"
+        },
+        {
+          "name": "insecure_tls",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "ws::connection",
+      "callbacks": [],
+      "emits": [
+        "ws::connect_failed",
+        "ws::invalid_url",
+        "ws::invalid_protocol",
+        "ws::limit_exceeded"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "WebSocket"
+        ],
+        "adapter": "Open a client session, wait for the handshake under the caller deadline, and vend the session with its event reader.",
+        "task": "B1-07"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-07"
+      ]
+    },
+    {
+      "name": "ws::accept",
+      "identity": "can.std.ws@1::accept",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "request",
+          "type": "http::request"
+        },
+        {
+          "name": "protocol",
+          "type": "str"
+        },
+        {
+          "name": "max_message_bytes",
+          "type": "int"
+        },
+        {
+          "name": "max_queued_events",
+          "type": "int"
+        },
+        {
+          "name": "max_send_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "ws::connection",
+      "callbacks": [],
+      "emits": [
+        "ws::upgrade_failed",
+        "ws::unsupported_protocol",
+        "ws::invalid_protocol",
+        "ws::limit_exceeded"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.serve",
+          "Request"
+        ],
+        "adapter": "Upgrade a routed request after handler authentication and vend the session with its event reader.",
+        "task": "B1-07"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-07"
+      ]
+    },
+    {
+      "name": "ws::send_text",
+      "identity": "can.std.ws@1::send_text",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "session",
+          "type": "ws::session"
+        },
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "ws::send_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "WebSocket",
+          "Bun.serve"
+        ],
+        "adapter": "Queue one text message; server saturation fails so the caller retries after drain.",
+        "task": "B1-07"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-07"
+      ]
+    },
+    {
+      "name": "ws::send_bytes",
+      "identity": "can.std.ws@1::send_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "session",
+          "type": "ws::session"
+        },
+        {
+          "name": "data",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "ws::send_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "WebSocket",
+          "Bun.serve"
+        ],
+        "adapter": "Queue one binary message; server saturation fails so the caller retries after drain.",
+        "task": "B1-07"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-07"
+      ]
+    },
+    {
+      "name": "ws::close",
+      "identity": "can.std.ws@1::close",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "session",
+          "type": "ws::session"
+        },
+        {
+          "name": "code",
+          "type": "int"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "ws::invalid_close"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "WebSocket",
+          "Bun.serve"
+        ],
+        "adapter": "Validate the close code and reason on both sides, send the frame, and terminally close the session.",
+        "task": "B1-07"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-07"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -11216,6 +11644,137 @@ export const catalogueTypeShapes = freeze([
         "name": "millisecond",
         "type": {
           "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::session",
+    "identity": "can.std.ws@1::session",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "ws::connection",
+    "identity": "can.std.ws@1::connection",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "session",
+        "type": {
+          "name": "ws::session",
+          "arguments": null
+        }
+      },
+      {
+        "name": "events",
+        "type": {
+          "name": "stream::reader",
+          "arguments": [
+            {
+              "name": "ws::event",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "protocol",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::event",
+    "identity": "can.std.ws@1::event",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "ws::text",
+        "arguments": null
+      },
+      {
+        "name": "ws::binary",
+        "arguments": null
+      },
+      {
+        "name": "ws::drain",
+        "arguments": null
+      },
+      {
+        "name": "ws::closed",
+        "arguments": null
+      }
+    ]
+  },
+  {
+    "name": "ws::text",
+    "identity": "can.std.ws@1::text",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "text",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::binary",
+    "identity": "can.std.ws@1::binary",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "data",
+        "type": {
+          "name": "bytes::buffer",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::drain",
+    "identity": "can.std.ws@1::drain",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "ws::closed",
+    "identity": "can.std.ws@1::closed",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "code",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
           "arguments": null
         }
       }
@@ -12651,6 +13210,134 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::connect_failed",
+    "identity": "can.std.ws@1::connect_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::upgrade_failed",
+    "identity": "can.std.ws@1::upgrade_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::unsupported_protocol",
+    "identity": "can.std.ws@1::unsupported_protocol",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "protocol",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::send_failed",
+    "identity": "can.std.ws@1::send_failed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::invalid_close",
+    "identity": "can.std.ws@1::invalid_close",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::limit_exceeded",
+    "identity": "can.std.ws@1::limit_exceeded",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::invalid_url",
+    "identity": "can.std.ws@1::invalid_url",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "ws::invalid_protocol",
+    "identity": "can.std.ws@1::invalid_protocol",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "protocol",
         "type": {
           "name": "str",
           "arguments": null

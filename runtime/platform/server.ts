@@ -5,13 +5,14 @@ import {copyBytes} from "../bytes.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
 import {registerResource,useResource,closeResource,guardCallback,withScope,type Resource,type Scope} from "../owner.ts";
-import {snapshotRequest,snapshotRequestLazy,normalizedPath} from "./http.ts";
+import {snapshotRequest,snapshotRequestLazy,normalizedPath,bindRequestServer,isUpgradedResponse,type UpgradeServer} from "./http.ts";
 import {dispatch,isRouterValue,routeKind} from "./router.ts";
+import {serverSocketOpen,serverSocketMessage,serverSocketClose,serverSocketDrain,closeServerSessions} from "./websocket.ts";
 import {browserPolicy,type AssetServer} from "./assets.ts";
 const origin=Object.freeze({source:"can:server",start:0,end:0,invocation:Object.freeze([])});
 type Config=Readonly<{host:string;port:bigint;bodyLimit:number;shutdownMs:number}>;
 type TlsMaterial=Readonly<{cert:Uint8Array;key:Uint8Array}>;
-type Native=Readonly<{server:Readonly<{stop:(closeActiveConnections?:boolean)=>void}>;scope:Scope;router:unknown;bodyLimit:number;shutdownMs:number;settled:Promise<Completion<void>>;settle:(completion:Completion<void>)=>void}>;
+type Native=Readonly<{server:Readonly<{stop:(closeActiveConnections?:boolean)=>void}&UpgradeServer>;scope:Scope;router:unknown;bodyLimit:number;shutdownMs:number;settled:Promise<Completion<void>>;settle:(completion:Completion<void>)=>void}>;
 const configs=new WeakMap<object,Config>(),material=new WeakMap<object,TlsMaterial>(),servers=new WeakMap<object,Native>();
 const object=(value:unknown):value is object=>value!==null&&(typeof value==="object"||typeof value==="function");
 export function isServerValue(kind:string|undefined,value:unknown):boolean{
@@ -79,17 +80,27 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
      try{lazy=routeKind(router,native.method,normalizedPath(new URL(native.url)))==="stream";}catch{lazy=false;}
      const snapshot=lazy?await snapshotRequestLazy(native,bodyLimit):await snapshotRequest(native,bodyLimit);
      if(snapshot.kind==="rejected")return success(fixed(snapshot.status));
+     bindRequestServer(snapshot.value,server);
      // Body readers live and die in this per-request scope; dispatch
      // abandons an unread live body before the scope drains.
      return withScope(async ()=>dispatch(router,snapshot.value,context));
     });
    });
    try{
-    const server=Bun.serve({hostname:host,port:Number(port),...(tls===undefined?{}:{tls:{cert:tls.cert,key:tls.key}}),fetch:async (native:Request):Promise<Response>=>{
+    // Unknown socket data keeps upgrade honest: the adapter passes its own
+    // session tag, which the default Server<undefined> type would forbid.
+    const server=Bun.serve<unknown>({hostname:host,port:Number(port),...(tls===undefined?{}:{tls:{cert:tls.cert,key:tls.key}}),websocket:{
+     open:(socket:unknown)=>serverSocketOpen(socket),
+     message:(socket:unknown,message:unknown)=>serverSocketMessage(socket,message),
+     close:(socket:unknown,code:number,reason:string)=>serverSocketClose(socket,code,reason),
+     drain:(socket:unknown)=>serverSocketDrain(socket),
+    },fetch:async (native:Request):Promise<Response>=>{
      try{
       const reserved=await assets.serve(native);
       if(reserved)return withPolicy(reserved);
-      const completed=await guarded(native);return withPolicy(completed.kind==="ok"?completed.value:fixed(500));
+      const completed=await guarded(native);
+      if(completed.kind==="ok"&&isUpgradedResponse(completed.value))return undefined as unknown as Response;
+      return withPolicy(completed.kind==="ok"?completed.value:fixed(500));
      }
      catch{return withPolicy(fixed(500));}
     },error:()=>withPolicy(fixed(500))});
@@ -110,6 +121,9 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
   const native:Native=Object.freeze({server,scope:outcome.scope,router,bodyLimit,shutdownMs,settled,settle});
   token=registerResource("server",native,async ():Promise<Completion<void>>=>{
    let completion:Completion<void>;
+   // Session prompts precede closeResource at every entry (stop, signal):
+   // the closer waits for handler leases, so failing pumps inside it
+   // would deadlock against handlers parked in read.
    try{server.stop(false);completion=success(undefined);}
    catch{completion=shutdown("stop");}
    settle(completion);release();return completion;
@@ -149,6 +163,7 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
   async stop(server:unknown,context?:AssertionContext):Promise<Completion<undefined>>{
    denyLiveBoundary(context,origin);
    const native=readServer(server);
+   closeServerSessions(native.server);
    const completion=await closeResource(server,"server",{milliseconds:native.shutdownMs,failure:()=>shutdown("deadline")});
    return completion.kind==="ok"?success(undefined):completion;
   },
@@ -158,7 +173,7 @@ export function createServer(domain:ReturnType<typeof createDomainRuntime>,types
    // Signal delivery is context-free, so each firing re-enters ownership
    // through the server scope; a closed scope means the close already ran.
    const onSignal=()=>{
-    try{const initiate=guardCallback(native.scope,async ()=>closeResource(server,"server"));void initiate().then(()=>{},()=>{});}
+    try{closeServerSessions(native.server);const initiate=guardCallback(native.scope,async ()=>closeResource(server,"server"));void initiate().then(()=>{},()=>{});}
     catch{}
    };
    process.on("SIGINT",onSignal);process.on("SIGTERM",onSignal);

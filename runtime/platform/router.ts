@@ -2,7 +2,7 @@ import {success,failure,invoke,type Completion,type AssertionContext} from "../c
 import {record,dataArray} from "../data.ts";
 import {createDomainRuntime} from "../domain.ts";
 import {resourceStateFailure} from "../failure.ts";
-import {normalizedPath,requestSnapshot,abandonRequest,nativeResponse} from "./http.ts";
+import {normalizedPath,requestSnapshot,abandonRequest,nativeResponse,isUpgraded,UPGRADED_RESPONSE} from "./http.ts";
 const origin=Object.freeze({source:"can:router",start:0,end:0,invocation:Object.freeze([])});
 export type MountedCallback=(request:unknown,context?:AssertionContext)=>Promise<Completion<unknown>>;
 type Method="GET"|"POST"|"PUT"|"PATCH"|"DELETE"|"OPTIONS"|"HEAD";
@@ -23,6 +23,8 @@ export async function dispatch(router:unknown,request:unknown,context?:Assertion
   if(!methods)return success(fixed(404));
   const route=methods.get(snapshot.method);if(!route)return success(fixed(405,[...methods.keys()].sort().join(", ")));
   const completed=await invoke(()=>route.callback(request,context),origin);if(completed.kind!=="ok")return completed;
+  // Upgraded requests hold a live socket; the server answers no HTTP reply.
+  if(isUpgraded(request))return success(UPGRADED_RESPONSE);
   return success(nativeResponse(completed.value,snapshot.method==="HEAD"));
  }finally{await abandonRequest(request);}
 }

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5bd5647f91462bebde4a978f3ae02b04c08ff83a515013cec1e54ba3ddc98082.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7f89d81cc37649adeabd71cccb5be10c066207368396426579a94106d57780c6.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -42,6 +42,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - text → can.std.text@1
 - time → can.std.time@1
 - url → can.std.url@1
+- ws → can.std.ws@1
 
 ## Types
 
@@ -103,6 +104,13 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | text::regex_match | record |  | str text, int start, int end, str[] groups | true |
 | time::instant | opaque |  |  | false |
 | time::civil | record |  | int year, int month, int day, int hour, int minute, int second, int millisecond | true |
+| ws::session | opaque |  |  | false |
+| ws::connection | record |  | ws::session session, stream::reader&lt;ws::event&gt; events, str protocol | true |
+| ws::event | variant |  | ws::text, ws::binary, ws::drain, ws::closed | false |
+| ws::text | record |  | str text | true |
+| ws::binary | record |  | bytes::buffer data | true |
+| ws::drain | record |  |  | true |
+| ws::closed | record |  | int code, str reason | true |
 
 ## Domain errors
 
@@ -193,6 +201,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1330 | time::invalid_zone |  | str zone |
 | 1331 | time::nonexistent_time |  |  |
 | 1332 | time::invalid_option |  | str reason |
+| 1333 | ws::connect_failed |  | str reason |
+| 1334 | ws::upgrade_failed |  | str reason |
+| 1335 | ws::unsupported_protocol |  | str protocol |
+| 1336 | ws::send_failed |  | str reason |
+| 1337 | ws::invalid_close |  | str reason |
+| 1338 | ws::limit_exceeded |  | int limit |
+| 1339 | ws::invalid_url |  | str reason |
+| 1340 | ws::invalid_protocol |  | str protocol |
 
 ## Operations
 
@@ -423,6 +439,11 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | time::instant_epoch_millis | time::instant instant → int | [] |  | BigInt | Project the exact epoch milliseconds from an instant; execute in ordinary assertions. | real | B1-13 / B1-13 |
 | time::format_in_zone | time::instant instant, str locale, str zone, str date_style, str time_style → str | [time::invalid_zone, time::invalid_option] |  | Intl.DateTimeFormat | Format with explicit locale, IANA zone, and full/long/medium/short/none styles; execute in ordinary assertions. | real | B1-13 / B1-13 |
 | time::resolve_zoned_time | time::civil civil, str zone, int policy → time::instant | [time::invalid_zone, time::nonexistent_time, time::invalid_option] |  | Date, Intl.DateTimeFormat | Resolve civil time in a zone with explicit earlier(0)/later(1) DST policy; gaps reject after round-trip verification; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| ws::connect | str url, str[] protocols, int max_message_bytes, int max_queued_events, int max_send_bytes, int deadline_ms, bool insecure_tls → ws::connection | [ws::connect_failed, ws::invalid_url, ws::invalid_protocol, ws::limit_exceeded] |  | WebSocket | Open a client session, wait for the handshake under the caller deadline, and vend the session with its event reader. | supplied | B1-07 / B1-07 |
+| ws::accept | http::request request, str protocol, int max_message_bytes, int max_queued_events, int max_send_bytes → ws::connection | [ws::upgrade_failed, ws::unsupported_protocol, ws::invalid_protocol, ws::limit_exceeded] |  | Bun.serve, Request | Upgrade a routed request after handler authentication and vend the session with its event reader. | supplied | B1-07 / B1-07 |
+| ws::send_text | ws::session session, str text → int | [ws::send_failed] |  | WebSocket, Bun.serve | Queue one text message; server saturation fails so the caller retries after drain. | supplied | B1-07 / B1-07 |
+| ws::send_bytes | ws::session session, bytes::buffer data → int | [ws::send_failed] |  | WebSocket, Bun.serve | Queue one binary message; server saturation fails so the caller retries after drain. | supplied | B1-07 / B1-07 |
+| ws::close | ws::session session, int code, str reason → void | [ws::invalid_close] |  | WebSocket, Bun.serve | Validate the close code and reason on both sides, send the frame, and terminally close the session. | supplied | B1-07 / B1-07 |
 
 ## Native declaration profiles
 

@@ -462,7 +462,20 @@
       "../owner.ts",
       "./assets.ts",
       "./http.ts",
-      "./router.ts"
+      "./router.ts",
+      "./websocket.ts"
+    ],
+    "platform/websocket.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../owner.ts",
+      "../transport/stream/lifecycle.ts",
+      "../transport/stream/readable.ts",
+      "./http.ts"
     ],
     "platform/sql/config.ts": [
       "../../completion.ts",

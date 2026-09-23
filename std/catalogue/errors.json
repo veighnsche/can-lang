@@ -339,6 +339,38 @@
     {
       "id": 1332,
       "kind": "time::invalid_option"
+    },
+    {
+      "id": 1333,
+      "kind": "ws::connect_failed"
+    },
+    {
+      "id": 1334,
+      "kind": "ws::upgrade_failed"
+    },
+    {
+      "id": 1335,
+      "kind": "ws::unsupported_protocol"
+    },
+    {
+      "id": 1336,
+      "kind": "ws::send_failed"
+    },
+    {
+      "id": 1337,
+      "kind": "ws::invalid_close"
+    },
+    {
+      "id": 1338,
+      "kind": "ws::limit_exceeded"
+    },
+    {
+      "id": 1339,
+      "kind": "ws::invalid_url"
+    },
+    {
+      "id": 1340,
+      "kind": "ws::invalid_protocol"
     }
   ],
   "retired": []

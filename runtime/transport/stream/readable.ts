@@ -16,7 +16,7 @@ import {ownBytes} from "../../bytes.ts";
 import {createDomainRuntime} from "../../domain.ts";
 import type {FailureOrigin} from "../../failure.ts";
 import {validMaxItems,overCap} from "./budget.ts";
-import {READER_KIND,registerReader,useReader,closeHandle,cancelHandle,type Fail,type ReaderCell,type ByteSource} from "./lifecycle.ts";
+import {READER_KIND,registerReader,useReader,closeHandle,cancelHandle,type Fail,type ReaderCell,type ByteSource,type EventPump} from "./lifecycle.ts";
 const origin:FailureOrigin=Object.freeze({source:"can:stream-read",start:0,end:0,invocation:Object.freeze([])});
 const CHUNK_CLAMP=2n**31n;
 type Contracts=Readonly<{readFailed:string;cancelled:string;closeFailed:string;limitExceeded:string}>;
@@ -33,6 +33,7 @@ function utf8Length(value:string):bigint{
   return BigInt(new TextEncoder().encode(value).byteLength);
 }
 async function pullBytes(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Contracts):Promise<Completion<readonly unknown[]>>{
+  const source=cell.reader;if(source===undefined)throw new TypeError("invalid byte reader cell");
   const items:unknown[]=[];
   const cap=cell.maxChunk>CHUNK_CLAMP?Number(CHUNK_CLAMP):Number(cell.maxChunk);
   for(;;){
@@ -44,7 +45,7 @@ async function pullBytes(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Con
     }
     if(BigInt(items.length)>=maxItems||cell.ended===true)return success(array(items));
     let next;
-    try{next=await cell.reader.read();}
+    try{next=await source.read();}
     catch(cause){cell.errored=true;cell.carry=undefined;return fail(contracts.readFailed,[["reason",reasonFor(cause)]],cause);}
     if(next.done){
       cell.ended=true;
@@ -62,6 +63,7 @@ function concat(head:Uint8Array,tail:Uint8Array):Uint8Array{
   return merged;
 }
 async function pullLines(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Contracts):Promise<Completion<readonly unknown[]>>{
+  const source=cell.reader;if(source===undefined)throw new TypeError("invalid text reader cell");
   const framing=cell.framing!;
   const items:unknown[]=[];
   for(;;){
@@ -91,7 +93,7 @@ async function pullLines(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Con
     }
     if(framing.pendingBytes>cell.maxLine){cell.errored=true;return fail(contracts.limitExceeded,[["limit",cell.maxLine]]);}
     let next;
-    try{next=await cell.reader.read();}
+    try{next=await source.read();}
     catch(cause){cell.errored=true;return fail(contracts.readFailed,[["reason",reasonFor(cause)]],cause);}
     if(next.done){
       cell.ended=true;
@@ -106,6 +108,21 @@ async function pullLines(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Con
     framing.pendingBytes+=BigInt(next.value.byteLength);
   }
 }
+async function pullEvents(cell:ReaderCell,maxItems:bigint,fail:Fail,contracts:Contracts):Promise<Completion<readonly unknown[]>>{
+  const pump=cell.events!;
+  const items:unknown[]=[];
+  for(;;){
+    if(BigInt(items.length)>=maxItems||cell.ended===true)return success(array(items));
+    const take=await pump.take();
+    if(take.kind==="interrupted"){
+      if(cell.cancelled!==undefined)return fail(contracts.cancelled,[["reason",cell.cancelled]]);
+      continue;
+    }
+    if(take.kind==="failed"){cell.errored=true;return fail(contracts.readFailed,[["reason",take.reason]]);}
+    if(take.kind==="end"){cell.ended=true;continue;}
+    items.push(take.value);
+  }
+}
 export function createStreamReads(domain:ReturnType<typeof createDomainRuntime>,types:Contracts){
   const fail:Fail=(identity,fields,cause)=>failure(domain.create(identity,record(identity,fields),origin,cause));
   return Object.freeze({
@@ -113,6 +130,10 @@ export function createStreamReads(domain:ReturnType<typeof createDomainRuntime>,
       denyLiveBoundary(context,origin);
       if(!validMaxItems(maxItems))return fail(types.limitExceeded,[["limit",typeof maxItems==="bigint"?maxItems:-1n]]);
       return useReader(token,async cell=>{
+        if(cell.item==="events"){
+          if(cell.events===undefined)throw new TypeError("invalid event reader cell");
+          return pullEvents(cell,maxItems,fail,types);
+        }
         if(cell.item==="text"){
           if(cell.framing===undefined)throw new TypeError("invalid text reader cell");
           return pullLines(cell,maxItems,fail,types);
@@ -127,7 +148,8 @@ export function createStreamReads(domain:ReturnType<typeof createDomainRuntime>,
     async cancelReader(token:unknown,reason:string,context?:AssertionContext):Promise<Completion<void>>{
       denyLiveBoundary(context,origin);
       return cancelHandle(token,READER_KIND,reason,fail,types.closeFailed,async cell=>{
-        if("reader" in cell)await cell.reader.cancel();
+        if("events" in cell&&cell.events!==undefined){cell.events.interrupt();return;}
+        if("reader" in cell)await cell.reader?.cancel();
       });
     },
   });
@@ -138,13 +160,14 @@ export function createStreamReads(domain:ReturnType<typeof createDomainRuntime>,
 // native read failures reject so the caller keeps its failure contract.
 export async function drainStream(stream:ByteSource,byteCap:bigint,fail:Fail,terminalFailed:string):Promise<Readonly<{overflow:boolean;data:Uint8Array}>>{
   const cell:ReaderCell={reader:stream.getReader(),item:"bytes",maxChunk:CHUNK_CLAMP,maxLine:CHUNK_CLAMP};
+  const source=cell.reader!;
   // Internal handle: scope drain may win the terminal race against the
   // explicit close below, and that auto-cleanup is by design, not a leak.
   const token=registerReader(cell,fail,terminalFailed,{idempotent:true,scopeManaged:true});
   const chunks:Uint8Array[]=[];let size=0n;let complete=false;
   try{
     for(;;){
-      const next=await cell.reader.read();
+      const next=await source.read();
       if(next.done){complete=true;break;}
       const length=BigInt(next.value.byteLength);
       if(overCap(size,length,byteCap))return {overflow:true,data:new Uint8Array(0)};
@@ -164,4 +187,7 @@ export function openByteCell(stream:ByteSource,maxChunk:bigint):ReaderCell{
 }
 export function openLineCell(stream:ByteSource,maxLine:bigint):ReaderCell{
   return {reader:stream.getReader(),item:"text",maxChunk:CHUNK_CLAMP,maxLine,framing:{decoder:new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}),carry:"",pendingBytes:0n}};
+}
+export function openEventCell(pump:EventPump):ReaderCell{
+  return {item:"events",maxChunk:CHUNK_CLAMP,maxLine:CHUNK_CLAMP,events:pump};
 }
