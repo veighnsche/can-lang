@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "5f880352608c4d0fac07ee62cf812c8e1b000b2b7229ed5adcc9811749254976";
+export const catalogueSHA256 = "b3c4c80b7d1785f386d60b1e42f26acc60d7fa13eff5236fc6a23aeab5c84b44";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -120,6 +120,14 @@ export const catalogue = freeze({
     {
       "name": "text",
       "identity": "can.std.text@1"
+    },
+    {
+      "name": "time",
+      "identity": "can.std.time@1"
+    },
+    {
+      "name": "url",
+      "identity": "can.std.url@1"
     }
   ],
   "prelude": [
@@ -838,6 +846,146 @@ export const catalogue = freeze({
         {
           "name": "ciphertext",
           "type": "bytes::buffer"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "url::parts",
+      "identity": "can.std.url@1::parts",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "scheme",
+          "type": "str"
+        },
+        {
+          "name": "host",
+          "type": "str"
+        },
+        {
+          "name": "port",
+          "type": "int"
+        },
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "query",
+          "type": "str"
+        },
+        {
+          "name": "fragment",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "url::query_pair",
+      "identity": "can.std.url@1::query_pair",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "text::regex",
+      "identity": "can.std.text@1::regex",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "text::regex_match",
+      "identity": "can.std.text@1::regex_match",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "text",
+          "type": "str"
+        },
+        {
+          "name": "start",
+          "type": "int"
+        },
+        {
+          "name": "end",
+          "type": "int"
+        },
+        {
+          "name": "groups",
+          "type": "str[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "time::instant",
+      "identity": "can.std.time@1::instant",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "time::civil",
+      "identity": "can.std.time@1::civil",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "year",
+          "type": "int"
+        },
+        {
+          "name": "month",
+          "type": "int"
+        },
+        {
+          "name": "day",
+          "type": "int"
+        },
+        {
+          "name": "hour",
+          "type": "int"
+        },
+        {
+          "name": "minute",
+          "type": "int"
+        },
+        {
+          "name": "second",
+          "type": "int"
+        },
+        {
+          "name": "millisecond",
+          "type": "int"
         }
       ],
       "leaves": [],
@@ -1823,6 +1971,85 @@ export const catalogue = freeze({
       "identity": "can.std.crypto@1::decrypt_failed",
       "parameters": [],
       "fields": []
+    },
+    {
+      "id": 1326,
+      "name": "url::invalid_url",
+      "identity": "can.std.url@1::invalid_url",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1327,
+      "name": "text::invalid_regex",
+      "identity": "can.std.text@1::invalid_regex",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1328,
+      "name": "text::invalid_limit",
+      "identity": "can.std.text@1::invalid_limit",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1329,
+      "name": "time::out_of_range",
+      "identity": "can.std.time@1::out_of_range",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "millis",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1330,
+      "name": "time::invalid_zone",
+      "identity": "can.std.time@1::invalid_zone",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "zone",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1331,
+      "name": "time::nonexistent_time",
+      "identity": "can.std.time@1::nonexistent_time",
+      "parameters": [],
+      "fields": []
+    },
+    {
+      "id": 1332,
+      "name": "time::invalid_option",
+      "identity": "can.std.time@1::invalid_option",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
     }
   ],
   "operations": [
@@ -3263,6 +3490,80 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "text::compile_regex",
+      "identity": "can.std.text@1::compile_regex",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "pattern",
+          "type": "str"
+        },
+        {
+          "name": "flags",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "text::regex",
+      "callbacks": [],
+      "emits": [
+        "text::invalid_regex"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "RegExp"
+        ],
+        "adapter": "Compile validated patterns with i/m/s/u/v flags into opaque handles; other flags and bad patterns reject; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "text::matches",
+      "identity": "can.std.text@1::matches",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "regex",
+          "type": "text::regex"
+        },
+        {
+          "name": "text",
+          "type": "str"
+        },
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "text::regex_match[]",
+      "callbacks": [],
+      "emits": [
+        "text::invalid_limit"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "RegExp"
+        ],
+        "adapter": "Scan with a fresh global pass per call (no shared lastIndex), UTF-16 offsets, empty-match advancement, absent captures as empty; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
       "name": "collections::empty_map",
       "identity": "can.std.collections@1::empty_map",
       "kind": "function",
@@ -4001,6 +4302,126 @@ export const catalogue = freeze({
       "assertion": "real",
       "refs": [
         "A2"
+      ]
+    },
+    {
+      "name": "bytes::encode_base64",
+      "identity": "can.std.bytes@1::encode_base64",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Buffer"
+        ],
+        "adapter": "Encode standard base64 with padding; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "bytes::decode_base64",
+      "identity": "can.std.bytes@1::decode_base64",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Buffer"
+        ],
+        "adapter": "Decode standard base64 only after strict alphabet/padding gates; malformed text rejects, never truncates; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "bytes::encode_hex",
+      "identity": "can.std.bytes@1::encode_hex",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "buffer",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Buffer"
+        ],
+        "adapter": "Encode lowercase hex; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "bytes::decode_hex",
+      "identity": "can.std.bytes@1::decode_hex",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Buffer"
+        ],
+        "adapter": "Decode hex only after strict even-length alphabet gates; malformed text rejects, never truncates; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
       ]
     },
     {
@@ -8475,6 +8896,351 @@ export const catalogue = freeze({
       "refs": [
         "B1-05"
       ]
+    },
+    {
+      "name": "url::parse",
+      "identity": "can.std.url@1::parse",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "text",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "url::parts",
+      "callbacks": [],
+      "emits": [
+        "url::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Parse absolute http/https URLs into immutable part records; other schemes and malformed text reject, userinfo never projects; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "url::resolve",
+      "identity": "can.std.url@1::resolve",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "base",
+          "type": "str"
+        },
+        {
+          "name": "input",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "url::parts",
+      "callbacks": [],
+      "emits": [
+        "url::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Resolve relative references against absolute http/https bases per WHATWG URL; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "url::to_string",
+      "identity": "can.std.url@1::to_string",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "url",
+          "type": "url::parts"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "url::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL"
+        ],
+        "adapter": "Serialize part records back to href form; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "url::query_all",
+      "identity": "can.std.url@1::query_all",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "url",
+          "type": "url::parts"
+        },
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str[]",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URLSearchParams"
+        ],
+        "adapter": "Read every form-decoded value for one query key in document order; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "url::query_pairs",
+      "identity": "can.std.url@1::query_pairs",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "url",
+          "type": "url::parts"
+        }
+      ],
+      "staticInputs": [],
+      "result": "url::query_pair[]",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URLSearchParams"
+        ],
+        "adapter": "Project every form-decoded query pair in document order, duplicates kept; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "url::with_query",
+      "identity": "can.std.url@1::with_query",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "url",
+          "type": "url::parts"
+        },
+        {
+          "name": "pairs",
+          "type": "url::query_pair[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "url::parts",
+      "callbacks": [],
+      "emits": [
+        "url::invalid_url"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL",
+          "URLSearchParams"
+        ],
+        "adapter": "Rebuild the query string from ordered pairs with form encoding, keeping fragment and parts; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "time::instant_from_epoch_millis",
+      "identity": "can.std.time@1::instant_from_epoch_millis",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "millis",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "time::instant",
+      "callbacks": [],
+      "emits": [
+        "time::out_of_range"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Date"
+        ],
+        "adapter": "Admit epoch milliseconds inside the native Date span as opaque instants; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "time::instant_epoch_millis",
+      "identity": "can.std.time@1::instant_epoch_millis",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "instant",
+          "type": "time::instant"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "BigInt"
+        ],
+        "adapter": "Project the exact epoch milliseconds from an instant; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "time::format_in_zone",
+      "identity": "can.std.time@1::format_in_zone",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "instant",
+          "type": "time::instant"
+        },
+        {
+          "name": "locale",
+          "type": "str"
+        },
+        {
+          "name": "zone",
+          "type": "str"
+        },
+        {
+          "name": "date_style",
+          "type": "str"
+        },
+        {
+          "name": "time_style",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "time::invalid_zone",
+        "time::invalid_option"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Intl.DateTimeFormat"
+        ],
+        "adapter": "Format with explicit locale, IANA zone, and full/long/medium/short/none styles; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
+    },
+    {
+      "name": "time::resolve_zoned_time",
+      "identity": "can.std.time@1::resolve_zoned_time",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "civil",
+          "type": "time::civil"
+        },
+        {
+          "name": "zone",
+          "type": "str"
+        },
+        {
+          "name": "policy",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "time::instant",
+      "callbacks": [],
+      "emits": [
+        "time::invalid_zone",
+        "time::nonexistent_time",
+        "time::invalid_option"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Date",
+          "Intl.DateTimeFormat"
+        ],
+        "adapter": "Resolve civil time in a zone with explicit earlier(0)/later(1) DST policy; gaps reject after round-trip verification; execute in ordinary assertions.",
+        "task": "B1-13"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-13"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -9427,6 +10193,196 @@ export const catalogueTypeShapes = freeze([
         "name": "ciphertext",
         "type": {
           "name": "bytes::buffer",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "url::parts",
+    "identity": "can.std.url@1::parts",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "scheme",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "host",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "port",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "query",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "fragment",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "url::query_pair",
+    "identity": "can.std.url@1::query_pair",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::regex",
+    "identity": "can.std.text@1::regex",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "text::regex_match",
+    "identity": "can.std.text@1::regex_match",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "text",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "start",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "end",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "groups",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "time::instant",
+    "identity": "can.std.time@1::instant",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "time::civil",
+    "identity": "can.std.time@1::civil",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "year",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "month",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "day",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "hour",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "minute",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "second",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "millisecond",
+        "type": {
+          "name": "int",
           "arguments": null
         }
       }
@@ -10764,6 +11720,110 @@ export const catalogueTypeShapes = freeze([
     "kind": "error",
     "parameters": [],
     "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "url::invalid_url",
+    "identity": "can.std.url@1::invalid_url",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::invalid_regex",
+    "identity": "can.std.text@1::invalid_regex",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "text::invalid_limit",
+    "identity": "can.std.text@1::invalid_limit",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "limit",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "time::out_of_range",
+    "identity": "can.std.time@1::out_of_range",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "millis",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "time::invalid_zone",
+    "identity": "can.std.time@1::invalid_zone",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "zone",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "time::nonexistent_time",
+    "identity": "can.std.time@1::nonexistent_time",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "time::invalid_option",
+    "identity": "can.std.time@1::invalid_option",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
     "leaves": []
   }
 ] as const);

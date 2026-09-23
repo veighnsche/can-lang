@@ -79,6 +79,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		coreOperationBindings(),
 		sqlOperationBindings(),
 		cryptoOperationBindings(),
+		utilitiesOperationBindings(),
 		assembly.specializationBindings(),
 		assembly.sqlSpecializationBindings(),
 		assembly.collectionBindings(),

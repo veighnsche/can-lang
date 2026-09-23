@@ -311,6 +311,34 @@
     {
       "id": 1325,
       "kind": "crypto::decrypt_failed"
+    },
+    {
+      "id": 1326,
+      "kind": "url::invalid_url"
+    },
+    {
+      "id": 1327,
+      "kind": "text::invalid_regex"
+    },
+    {
+      "id": 1328,
+      "kind": "text::invalid_limit"
+    },
+    {
+      "id": 1329,
+      "kind": "time::out_of_range"
+    },
+    {
+      "id": 1330,
+      "kind": "time::invalid_zone"
+    },
+    {
+      "id": 1331,
+      "kind": "time::nonexistent_time"
+    },
+    {
+      "id": 1332,
+      "kind": "time::invalid_option"
     }
   ],
   "retired": []

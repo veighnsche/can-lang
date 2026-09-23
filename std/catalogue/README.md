@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 5f880352608c4d0fac07ee62cf812c8e1b000b2b7229ed5adcc9811749254976.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: b3c4c80b7d1785f386d60b1e42f26acc60d7fa13eff5236fc6a23aeab5c84b44.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -40,6 +40,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - sql → can.std.sql@1
 - stream → can.std.stream@1
 - text → can.std.text@1
+- time → can.std.time@1
+- url → can.std.url@1
 
 ## Types
 
@@ -90,6 +92,12 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | crypto::key | opaque |  |  | false |
 | crypto::keypair | record |  | crypto::key private_key, crypto::key public_key | true |
 | crypto::sealed | record |  | bytes::buffer nonce, bytes::buffer ciphertext | true |
+| url::parts | record |  | str scheme, str host, int port, str path, str query, str fragment | true |
+| url::query_pair | record |  | str name, str value | true |
+| text::regex | opaque |  |  | false |
+| text::regex_match | record |  | str text, int start, int end, str[] groups | true |
+| time::instant | opaque |  |  | false |
+| time::civil | record |  | int year, int month, int day, int hour, int minute, int second, int millisecond | true |
 
 ## Domain errors
 
@@ -173,6 +181,13 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1323 | crypto::invalid_nonce |  | int length |
 | 1324 | crypto::key_misuse |  | str operation, str algorithm |
 | 1325 | crypto::decrypt_failed |  |  |
+| 1326 | url::invalid_url |  | str reason |
+| 1327 | text::invalid_regex |  | str reason |
+| 1328 | text::invalid_limit |  | int limit |
+| 1329 | time::out_of_range |  | int millis |
+| 1330 | time::invalid_zone |  | str zone |
+| 1331 | time::nonexistent_time |  |  |
+| 1332 | time::invalid_option |  | str reason |
 
 ## Operations
 
@@ -226,6 +241,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | text::from_scalars | int[] value → str | [text::invalid_unicode] |  | String.fromCodePoint | Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization. | real | I24 / C7 |
 | text::graphemes | str value → str[] | [text::invalid_unicode] |  | Intl.Segmenter | Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization. | real | I24 / C7 |
 | text::normalize_nfc | str value → str | [text::invalid_unicode] |  | String.prototype.normalize | Validate scalar values; chunk bulk code points; use locale und for graphemes and NFC for normalization. | real | I24 / C7 |
+| text::compile_regex | str pattern, str flags → text::regex | [text::invalid_regex] |  | RegExp | Compile validated patterns with i/m/s/u/v flags into opaque handles; other flags and bad patterns reject; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| text::matches | text::regex regex, str text, int limit → text::regex_match[] | [text::invalid_limit] |  | RegExp | Scan with a fresh global pass per call (no shared lastIndex), UTF-16 offsets, empty-match advancement, absent captures as empty; execute in ordinary assertions. | real | B1-13 / B1-13 |
 | collections::empty_map | K:map_key, V:data;  → collections::map&lt;K,V&gt; | [] |  | Map | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
 | collections::empty_set | K:map_key;  → collections::set&lt;K&gt; | [] |  | Set | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
 | collections::get | K:map_key, V:data; collections::map&lt;K,V&gt; map, K key → V | [collections::key_absent] |  | Map.prototype.has, Map.prototype.get | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
@@ -246,6 +263,10 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | bytes::to_ints | bytes::buffer buffer → int[] | [] |  | Array.from | Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally. | real | I13 / A2 |
 | bytes::from_utf8 | str value → bytes::buffer | [codec::invalid_data] |  | TextEncoder | Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally. | real | I13 / A2 |
 | bytes::to_utf8 | bytes::buffer buffer → str | [codec::invalid_data] |  | TextDecoder | Validate provenance, byte range and scalar text; copy buffers; decode UTF-8 fatally. | real | I13 / A2 |
+| bytes::encode_base64 | bytes::buffer buffer → str | [] |  | Buffer | Encode standard base64 with padding; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| bytes::decode_base64 | str text → bytes::buffer | [codec::invalid_data] |  | Buffer | Decode standard base64 only after strict alphabet/padding gates; malformed text rejects, never truncates; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| bytes::encode_hex | bytes::buffer buffer → str | [] |  | Buffer | Encode lowercase hex; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| bytes::decode_hex | str text → bytes::buffer | [codec::invalid_data] |  | Buffer | Decode hex only after strict even-length alphabet gates; malformed text rejects, never truncates; execute in ordinary assertions. | real | B1-13 / B1-13 |
 | codec::encode_json | T:wire; T value → bytes::buffer | [codec::invalid_data] |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets. | real | I14 / A2,A6 |
 | codec::decode_json | T:wire; bytes::buffer buffer → T | [codec::invalid_data] |  | JSON.parse, JSON.rawJSON, JSON.stringify, TextEncoder, TextDecoder | Derive nominal schema; preserve numeric tokens; guard duplicates, scalar text, cycles and A6 budgets. | real | I14 / A2,A6 |
 | array.length | T:data; receiver T[];  → int | [] |  | Array.prototype.length, BigInt | Exact native length widened to bigint; validate opaque bytes before access. | real | I07 / C6,A2 |
@@ -372,6 +393,16 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | files::read_stream | str path, int max_chunk → stream::reader&lt;bytes::buffer&gt; | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | Bun.file | Stat at open for acquisition errors, then lazy streaming pulls; later filesystem changes fail reads, not the open. | supplied | B1-05 / B1-05 |
 | files::read_lines_stream | str path, int max_line → stream::reader&lt;str&gt; | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | Bun.file, TextDecoder | Stat at open for acquisition errors, then fatal streaming UTF-8 decode with \n framing, CR tolerance, trailing segment delivery and line caps. | supplied | B1-05 / B1-05 |
 | files::write_stream | str path → stream::writer | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::io_error] |  | FileSink | Create or truncate at open with acquisition errors, then lazy accepted-count writes; write-after-end is unreachable through owner close. | supplied | B1-05 / B1-05 |
+| url::parse | str text → url::parts | [url::invalid_url] |  | URL | Parse absolute http/https URLs into immutable part records; other schemes and malformed text reject, userinfo never projects; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| url::resolve | str base, str input → url::parts | [url::invalid_url] |  | URL | Resolve relative references against absolute http/https bases per WHATWG URL; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| url::to_string | url::parts url → str | [url::invalid_url] |  | URL | Serialize part records back to href form; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| url::query_all | url::parts url, str name → str[] | [] |  | URLSearchParams | Read every form-decoded value for one query key in document order; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| url::query_pairs | url::parts url → url::query_pair[] | [] |  | URLSearchParams | Project every form-decoded query pair in document order, duplicates kept; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| url::with_query | url::parts url, url::query_pair[] pairs → url::parts | [url::invalid_url] |  | URL, URLSearchParams | Rebuild the query string from ordered pairs with form encoding, keeping fragment and parts; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| time::instant_from_epoch_millis | int millis → time::instant | [time::out_of_range] |  | Date | Admit epoch milliseconds inside the native Date span as opaque instants; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| time::instant_epoch_millis | time::instant instant → int | [] |  | BigInt | Project the exact epoch milliseconds from an instant; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| time::format_in_zone | time::instant instant, str locale, str zone, str date_style, str time_style → str | [time::invalid_zone, time::invalid_option] |  | Intl.DateTimeFormat | Format with explicit locale, IANA zone, and full/long/medium/short/none styles; execute in ordinary assertions. | real | B1-13 / B1-13 |
+| time::resolve_zoned_time | time::civil civil, str zone, int policy → time::instant | [time::invalid_zone, time::nonexistent_time, time::invalid_option] |  | Date, Intl.DateTimeFormat | Resolve civil time in a zone with explicit earlier(0)/later(1) DST policy; gaps reject after round-trip verification; execute in ordinary assertions. | real | B1-13 / B1-13 |
 
 ## Native declaration profiles
 
