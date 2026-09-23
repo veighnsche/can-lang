@@ -731,7 +731,7 @@
         "B1-06-DONE",
         "B1-08-DONE"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify duplicate request-cookie lookup behavior, malformed input, name/value encoding and cookie attributes. Enforce admitted SameSite combinations and cookie prefix rules if the API claims them."
     },
     {
@@ -740,7 +740,7 @@
       "depends": [
         "B1-09.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Lower parsing/serialization to Bun.CookieMap/Bun.Cookie and immutable projections. Keep multiple Set-Cookie fields separate. Do not manually concatenate unvalidated header strings."
     },
     {
@@ -749,7 +749,7 @@
       "depends": [
         "B1-09.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Require caller-supplied CSRF secret and nonempty session identifier. Verify using matching algorithm/encoding and explicit age policy; do not rely on a per-thread secret that changes at restart."
     },
     {
@@ -758,7 +758,7 @@
       "depends": [
         "B1-09.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Distinguish invalid/expired/mismatched tokens returning false from invalid configuration. No secret or raw token in assertion failure diagnostics."
     },
     {
@@ -767,7 +767,7 @@
       "depends": [
         "B1-09.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Integrate safe response construction and deletion using matching path/domain. Verify serialization against actual response headers."
     },
     {
@@ -776,7 +776,7 @@
       "depends": [
         "B1-09.05"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Document application responsibility for deriving the session from authenticated state and checking relevant unsafe HTTP requests. Token cryptography alone is not session authentication."
     },
     {
@@ -785,7 +785,7 @@
       "depends": [
         "B1-09.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {
