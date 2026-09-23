@@ -10,7 +10,7 @@ export interface SQLSegment {
   param?: number;
 }
 export interface SQLDescriptorEntry {
-  dialect: "postgresql" | "sqlite";
+  dialect: "postgresql" | "sqlite" | "mysql";
   cardinality: "one" | "optional" | "many" | "execute";
   kind: string;
   segments: SQLSegment[];
@@ -41,9 +41,10 @@ export interface SQLTemplate {
   values: readonly unknown[];
 }
 
-// Pinned alongside compiler/internal/sql: libpg_query 17.7 per I36 and the
-// tree-sitter SQLite grammar language version per the G-SQL exit.
-const parserVersions = { postgresql: 170007, sqlite: 15 } as const;
+// Pinned alongside compiler/internal/sql: libpg_query 17.7 per I36, the
+// tree-sitter SQLite grammar language version per the G-SQL exit, and
+// the tidb MySQL grammar compatibility version per B1-03.
+const parserVersions = { postgresql: 170007, sqlite: 15, mysql: 80011 } as const;
 
 export function createSQLDescriptors(table: Record<string, Record<string, SQLDescriptorEntry>>) {
   const descriptors = new Map<string, SQLDescriptor>();
@@ -55,7 +56,7 @@ export function createSQLDescriptors(table: Record<string, Record<string, SQLDes
       if (typeof name !== "string" || name === "") throw new TypeError("invalid sql descriptor name");
     if (entry === null || typeof entry !== "object") throw new TypeError("invalid sql descriptor entry");
     const { dialect, cardinality, kind, segments, params, paramType, rowType, limit, total, version } = entry;
-    if (dialect !== "postgresql" && dialect !== "sqlite") throw new TypeError("invalid sql dialect");
+    if (dialect !== "postgresql" && dialect !== "sqlite" && dialect !== "mysql") throw new TypeError("invalid sql dialect");
     if (cardinality !== "one" && cardinality !== "optional" && cardinality !== "many" && cardinality !== "execute") throw new TypeError("invalid sql cardinality");
     if (typeof kind !== "string" || kind === "") throw new TypeError("invalid sql statement kind");
     if (!Array.isArray(segments) || segments.length === 0) throw new TypeError("invalid sql segments");

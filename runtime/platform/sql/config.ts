@@ -6,7 +6,7 @@ import type { Completion } from "../../completion.ts";
 import { dataProperty } from "../../data.ts";
 import type { SQLFailures } from "./errors.ts";
 
-export function postgresMaxConnections(value: unknown, failures: SQLFailures): { ok: true; max: number } | { ok: false; failure: Completion<never> } {
+export function poolMaxConnections(value: unknown, failures: SQLFailures): { ok: true; max: number } | { ok: false; failure: Completion<never> } {
   if (typeof value !== "bigint") throw new TypeError("invalid compiler sql config");
   if (value < 1n || value > 2147483647n) return { ok: false, failure: failures.connectionFailed("config") };
   return { ok: true, max: Number(value) };

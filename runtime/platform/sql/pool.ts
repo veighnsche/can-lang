@@ -15,15 +15,16 @@ import { resourceStateFailure } from "../../failure.ts";
 import { registerResource, useResource, closeResource } from "../../owner.ts";
 import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLCoreContracts, type SQLPoolContracts } from "./errors.ts";
-import { createValueCodec, postgresValueProfile, sqliteValueProfile, MAX_INT64, type SQLPlan } from "./values.ts";
+import { createValueCodec, postgresValueProfile, sqliteValueProfile, mysqlValueProfile, MAX_INT64, type SQLPlan } from "./values.ts";
 import { classifyPostgres, postgresAffectedRows, openPostgresClient } from "./postgres.ts";
 import { classifySQLite, sqliteAffectedRows, openSqliteMemory, openSqliteFile } from "./sqlite.ts";
-import { postgresMaxConnections, sqliteFileConfig } from "./config.ts";
+import { classifyMySQL, mysqlAffectedRows, openMySQLClient } from "./mysql.ts";
+import { poolMaxConnections, sqliteFileConfig } from "./config.ts";
 
 const origin = Object.freeze({ source: "can:sql", start: 0, end: 0, invocation: Object.freeze([]) });
 type Descriptors = ReturnType<typeof createSQLDescriptors>;
 export type SQLNative = InstanceType<typeof Bun.SQL>;
-export type SQLDialect = "postgresql" | "sqlite";
+export type SQLDialect = "postgresql" | "sqlite" | "mysql";
 type Native = SQLNative;
 type PoolState = {
   client: Native;
@@ -58,15 +59,16 @@ export function createSQLOperations(
   const failures = createSQLFailures(domain, contracts, origin);
   const pgCodec = createValueCodec(origin, failures, postgresValueProfile);
   const liteCodec = createValueCodec(origin, failures, sqliteValueProfile);
+  const myCodec = createValueCodec(origin, failures, mysqlValueProfile);
   const fail = failures.fail;
   type Profile = ReturnType<typeof profileFor>;
   type Launched =
     | { readonly kind: "failed"; readonly completion: Completion<never> }
     | { readonly kind: "rows"; readonly rows: readonly unknown[]; readonly profile: Profile };
   function profileFor(dialect: SQLDialect) {
-    return dialect === "sqlite"
-      ? { codec: liteCodec, classify: classifySQLite, affectedRows: sqliteAffectedRows }
-      : { codec: pgCodec, classify: classifyPostgres, affectedRows: postgresAffectedRows };
+    if (dialect === "sqlite") return { codec: liteCodec, classify: classifySQLite, affectedRows: sqliteAffectedRows };
+    if (dialect === "mysql") return { codec: myCodec, classify: classifyMySQL, affectedRows: mysqlAffectedRows };
+    return { codec: pgCodec, classify: classifyPostgres, affectedRows: postgresAffectedRows };
   }
   async function launch(
     operation: string, descriptor: SQLDescriptor, plan: SQLPlan, token: unknown, kind: "sql-pool" | "sql-tx", params: unknown, limit: unknown, context?: AssertionContext,
@@ -205,11 +207,23 @@ export function createSQLPools(
       // no logging, and no reread for later operations on this pool.
       const url = lookup(variable);
       if (url === undefined) return missingCredential(variable);
-      const checked = postgresMaxConnections(maxConnections, failures);
+      const checked = poolMaxConnections(maxConnections, failures);
       if (!checked.ok) return checked.failure;
       const opened = await openPostgresClient(url, checked.max, failures);
       if (!opened.ok) return opened.failure;
       return success(registerPool(opened.client, "postgresql"));
+    },
+    async mysqlOpen(variable: unknown, maxConnections: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+      denyLiveBoundary(context, origin);
+      if (typeof variable !== "string") throw new TypeError("invalid compiler sql variable");
+      if (!variableName.test(variable)) return missingCredential(variable);
+      const url = lookup(variable);
+      if (url === undefined) return missingCredential(variable);
+      const checked = poolMaxConnections(maxConnections, failures);
+      if (!checked.ok) return checked.failure;
+      const opened = await openMySQLClient(url, checked.max, failures);
+      if (!opened.ok) return opened.failure;
+      return success(registerPool(opened.client, "mysql"));
     },
     async sqliteOpenMemory(context?: AssertionContext): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);

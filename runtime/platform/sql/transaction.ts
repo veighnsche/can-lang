@@ -20,6 +20,7 @@ import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLTxContracts } from "./errors.ts";
 import { isPostgresFailure } from "./postgres.ts";
 import { isSQLiteFailure } from "./sqlite.ts";
+import { isMySQLFailure } from "./mysql.ts";
 import type { SQLPlan } from "./values.ts";
 
 const origin = Object.freeze({ source: "can:sql-transaction", start: 0, end: 0, invocation: Object.freeze([]) });
@@ -73,6 +74,13 @@ export function createSQLTransactions(
     if (dialect === "sqlite") {
       if (!isSQLiteFailure(cause)) throw cause;
       if (cause.code === "ERR_SQLITE_CONNECTION_CLOSED") {
+        return failures.connectionFailed(phase);
+      }
+      return transactionFailed(phase);
+    }
+    if (dialect === "mysql") {
+      if (!isMySQLFailure(cause)) throw cause;
+      if (cause.code === "ERR_MYSQL_CONNECTION_REFUSED" || cause.code === "ERR_MYSQL_CONNECTION_CLOSED") {
         return failures.connectionFailed(phase);
       }
       return transactionFailed(phase);
@@ -152,7 +160,8 @@ export function createSQLTransactions(
               // SQLite leaves a failed COMMIT's transaction open: the
               // violating row stays readable until ROLLBACK, which would
               // poison the pool for every later operation. PostgreSQL
-              // aborts on its own, so only SQLite pays for this cleanup.
+              // and MySQL abort a failed COMMIT on their own, so only
+              // SQLite pays for this cleanup.
               // It runs under the held pool lease; a dead connection
               // rejects here too, and the outcome stays commit-unknown.
               if (isSQLiteFailure(cause)) {

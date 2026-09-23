@@ -33,13 +33,31 @@ export interface SQLValueProfile {
   // exact integers 0 and 1, arriving as bigints under safeIntegers.
   // Encoding accepts booleans under both profiles.
   readonly booleans: "native" | "int01";
+  // "naive_utc_string" decodes driver Date objects (DATETIME and
+  // TIMESTAMP under the driver's pinned UTC session) as naive
+  // "YYYY-MM-DD HH:MM:SS[.mmm]" wall-clock text; "reject" fails them.
+  readonly datetimes: "reject" | "naive_utc_string";
+  // "canonical" additionally decodes canonical digit strings as exact
+  // integers with int64 range enforcement; "reject" fails them.
+  readonly integerStrings: "reject" | "canonical";
 }
-export const postgresValueProfile: SQLValueProfile = { booleans: "native" };
-export const sqliteValueProfile: SQLValueProfile = { booleans: "int01" };
+export const postgresValueProfile: SQLValueProfile = { booleans: "native", datetimes: "reject", integerStrings: "reject" };
+export const sqliteValueProfile: SQLValueProfile = { booleans: "int01", datetimes: "reject", integerStrings: "reject" };
+export const mysqlValueProfile: SQLValueProfile = { booleans: "int01", datetimes: "naive_utc_string", integerStrings: "canonical" };
 
 export const MIN_INT64 = -(1n << 63n);
 export const MAX_INT64 = (1n << 63n) - 1n;
 const object = (value: unknown): value is object => value !== null && (typeof value === "object" || typeof value === "function");
+
+// Canonical naive rendering of a driver Date: UTC fields, fractional
+// seconds only when nonzero. The driver pin makes UTC the wall clock.
+function naiveUTCString(value: Date): string {
+  const pad = (n: number, width: number) => String(n).padStart(width, "0");
+  const base = `${pad(value.getUTCFullYear(), 4)}-${pad(value.getUTCMonth() + 1, 2)}-${pad(value.getUTCDate(), 2)} ` +
+    `${pad(value.getUTCHours(), 2)}:${pad(value.getUTCMinutes(), 2)}:${pad(value.getUTCSeconds(), 2)}`;
+  const ms = value.getUTCMilliseconds();
+  return ms === 0 ? base : `${base}.${pad(ms, 3)}`;
+}
 
 export type SQLValueCodec = {
   readonly encodeParams: (plan: SQLPlan, params: unknown) => { ok: true; values: unknown[] } | { ok: false; failure: Completion<never> };
@@ -109,13 +127,31 @@ export function createValueCodec(origin: FailureOrigin, failures: SQLFailures, p
             : { ok: true, value };
         }
         if (typeof value === "number" && Number.isSafeInteger(value)) return { ok: true, value: BigInt(value) };
+        // MySQL may render integers as canonical digit strings; they
+        // decode exactly with the same int64 enforcement, so unsigned
+        // values outside the Can range reject as int_range.
+        if (profile.integerStrings === "canonical" && typeof value === "string" && /^-?\d+$/.test(value)) {
+          const parsed = BigInt(value);
+          return parsed < MIN_INT64 || parsed > MAX_INT64
+            ? { ok: false, failure: mismatch(path, "int_range") }
+            : { ok: true, value: parsed };
+        }
         return { ok: false, failure: mismatch(path, typeof value === "number" ? "unsafe_integer" : "type") };
       case "float":
         if (typeof value !== "number") return { ok: false, failure: mismatch(path, "type") };
         return Number.isFinite(value) ? { ok: true, value } : { ok: false, failure: mismatch(path, "nonfinite_float") };
       case "str":
-        if (typeof value !== "string") return { ok: false, failure: mismatch(path, "type") };
-        return value.isWellFormed() ? { ok: true, value } : { ok: false, failure: mismatch(path, "unicode_scalar") };
+        if (typeof value === "string") {
+          return value.isWellFormed() ? { ok: true, value } : { ok: false, failure: mismatch(path, "unicode_scalar") };
+        }
+        // DATETIME and TIMESTAMP arrive as Date objects; under the
+        // driver's pinned UTC session their UTC fields are the naive
+        // wall clock, rendered canonically. An Invalid Date mismatches.
+        if (profile.datetimes === "naive_utc_string" && value instanceof Date) {
+          if (!Number.isFinite(value.getTime())) return { ok: false, failure: mismatch(path, "type") };
+          return { ok: true, value: naiveUTCString(value) };
+        }
+        return { ok: false, failure: mismatch(path, "type") };
       case "bytes":
         return value instanceof Uint8Array ? { ok: true, value: ownBytes(value) } : { ok: false, failure: mismatch(path, "type") };
       default:
