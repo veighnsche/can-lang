@@ -1,0 +1,75 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Assess the design work needed before recommending Can for a broad range of SaaS products, with both backend and frontend authored in Can. This is a review, not permission to implement a redesign.",
+    "baseline": "There are zero external users or compatibility requirements. Preserve nominal immutable values, named functions, explicit public error bounds, attached assertions, grouped AI state, and native JavaScript/Bun lowering with contract adapters.",
+    "frontend": "Current frontend uses server-rendered safe HTML and pinned HTMX. Named render functions compose nodes; HTMX supplies requests, swaps and limited triggers. There is no Can browser execution target for local state or event handlers. The closed tag set also excludes dialog, canvas and SVG. This was a deliberate earlier scope limit. The broader target includes an editable grid with keyboard navigation, draft state, optimistic saves and rollback.",
+    "web_contracts": "HTTP JSON and form decoding are typed. Routing accepts static paths and named request callbacks; :id and * patterns reject. Rendered URLs and input names are independent strings, not references to routes or record fields. Forms accept shallow str, str[] and option::value<str> fields. Literal HTML construction uses fallible runtime builders. Route renames, richer validated forms and compact safe components are the relevant tasks.",
+    "domain_values": "Records distinguish nominal identities but exported ordinary records are constructible and copy-updatable. JSON decoding constructs wire-admissible ordinary records. Unforgeable html::safe and resource handles are catalogue-owned; applications cannot declare an equivalent opaque record. An email or tenant-scoped identifier factory therefore needs a demonstrated way to prevent callers and decoding from bypassing validation. Adding opacity would require explicit serialization and assertion rules.",
+    "composition": "match chain already sequences fallible operations with shared recovery. Ordinary match call and match chain are terminal, while coordination can bind a result. The native-ai example nests many recovery stages and repeats close logic. Built-in collection callbacks preserve finite error sets; authored higher-order functions use fixed bounds. Earlier decisions defer new sequencing and error-set parameters until a real program shows material cost after the best current refactoring.",
+    "platform": "The platform already includes SQL transactions, three SQL dialects, WebSockets, pull streams, cookies, crypto, zoned time, integer exact amounts/rounding, fetch and process execution. Project code cannot import arbitrary npm/native SDK bindings; new primitives enter a distribution-controlled catalogue with codecs, immutable outputs, lifetime and fixture contracts. Direct HTTP integrations and external processes cover some SDK use cases. No specific blocked SDK has yet been reproduced.",
+    "behavior_evidence": "Every function needs attached assertion rows; build runs them before publication and has supervised deadlines. Fixture templates and native raw-response fixtures exist, as do integration/browser tests. Opaque HTTP response assertions commonly expect only ok, not status/body. Current HTMX policy excludes 503 swaps although examples return 503 error fragments. stream/pump forwards read errors without the explicit close promised by its comment; its assertions cover successful reads. These show coverage gaps, not absence of safety machinery."
+  },
+  "questions": {
+    "browser_direction": {
+      "type": "choice",
+      "instructions": "Which direction best matches the expanded frontend ambition while preserving the retained contracts?",
+      "criteria": {
+        "can_browser_model": "Prototype a Can browser target with typed state, events and lifecycle; retain server rendering and HTMX where suitable.",
+        "htmx_only": "Keep server-driven HTMX as the sole UI model and accept a narrower SaaS product range.",
+        "raw_javascript": "Use unrestricted authored JavaScript for all richer client behavior instead of designing Can client contracts.",
+        "defer": "Gather more product evidence before selecting any browser direction."
+      }
+    },
+    "web_linkage": {
+      "type": "choice",
+      "instructions": "What should be the next design experiment for the observed route, form and markup costs?",
+      "criteria": {
+        "linked_typed_surface": "Prototype route identities, typed form field references and statically checked markup over existing safe native adapters.",
+        "builders_and_tests": "Keep separate strings and runtime builders, improve reusable helper functions and integration tests.",
+        "untyped_templates": "Permit raw HTML and loosely typed form/route dictionaries for shorter authoring.",
+        "defer": "Do not choose a web surface experiment until further evidence is available."
+      }
+    },
+    "domain_sealing": {
+      "type": "choice",
+      "instructions": "How should the application-invariant question be resolved for the stated email and tenant-ID cases?",
+      "criteria": {
+        "sealing_prototype": "Demonstrate the failure with an ordinary factory, then prototype package-owned restricted construction with checked decoding and testing rules.",
+        "validate_each_boundary": "Keep all application records constructible and explicitly revalidate them wherever an invariant matters.",
+        "builtin_business_types": "Add email and tenant identifiers as dedicated built-in types instead of an application abstraction mechanism.",
+        "defer": "Seek further evidence before investigating any invariant change."
+      }
+    },
+    "composition_scope": {
+      "type": "choice",
+      "instructions": "What is justified now for sequential and higher-order workflow composition?",
+      "criteria": {
+        "measure_current_first": "Refactor a real workflow using match chain and named adapters, measure residual cost, and only then prototype a minimal extension if needed.",
+        "add_error_and_bind_syntax": "Immediately select both error-set parameters and general fallible result-binding syntax.",
+        "erase_errors": "Replace explicit public error bounds with unchecked failures to simplify composition.",
+        "keep_forever": "Retain the present forms permanently regardless of measured application costs."
+      }
+    },
+    "sdk_boundary": {
+      "type": "choice",
+      "instructions": "How should platform extensibility be evaluated under the broadened SaaS objective?",
+      "criteria": {
+        "evidence_gated_adapters": "Test a real required SDK against HTTP/process/catalogue options; if those materially fail, design contracted third-party adapters with immutable outputs, ownership and fixtures.",
+        "catalogue_only": "Keep all native integrations distribution-owned indefinitely, using HTTP or processes for everything else.",
+        "arbitrary_imports": "Allow arbitrary npm/native imports now and leave their contract behavior to applications.",
+        "defer": "Delay all extensibility investigation until the language has external adopters."
+      }
+    },
+    "assertion_direction": {
+      "type": "choice",
+      "instructions": "What most directly strengthens the recommendation value of assertion-verified builds?",
+      "criteria": {
+        "behavior_observations": "Keep attached rows and add reusable typed observations/scenarios for HTTP results and resource failures; test the 503 and read-error paths.",
+        "external_tests_only": "Keep attached rows unchanged and handle every deeper behavior solely in external integration/browser tests.",
+        "universal_proofs": "Replace example-based verification with a general proof system for whole applications.",
+        "defer": "Do not prioritize assertion improvements despite these coverage examples."
+      }
+    }
+  }
+}

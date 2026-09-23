@@ -1,0 +1,75 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "The target is a defensible recommendation of Can across varied SaaS applications covering server and client authoring. We are evaluating possible changes, without commissioning their implementation.",
+    "baseline": "No outside consumers need migration and backward compatibility has no value requirement. Keep nominality, immutable data, named callable declarations, explicit public errors, declaration-owned assertions and grouped AI inputs; emit native JavaScript/Bun operations plus necessary contract glue.",
+    "frontend": "Safe server HTML, reusable named rendering helpers and bundled HTMX provide the present UI. Requests, replacement and a bounded event set work, but Can has no client compilation target for local models or handlers; dialog, canvas and SVG are outside admitted markup. That boundary was intentional. A representative expanded requirement is a keyboard-driven editable grid retaining drafts and undoing failed optimistic updates.",
+    "web_contracts": "The compiler already checks JSON/form conversion and named HTTP callbacks. Paths are exact literals, with :id and * refused. Links and field-name strings have no type-level connection to route registrations or data declarations. The form projection is limited to a flat record of str, str[] or option::value<str>. Even constant markup goes through runtime builders that can fail. Evaluate route edits, complex form validation and concise safe component construction.",
+    "domain_values": "Nominal records prevent unrelated type substitution, yet public ordinary shapes allow construction and with updates, and eligible shapes can be created by JSON decoding. Only catalogue types such as html::safe and handles have protected provenance. There is no corresponding app-defined opaque record form. Test an email or tenant identity abstraction whose validation must survive client construction and decoding. Any sealing mechanism must settle testing and wire conversion.",
+    "composition": "Shared error handling and ordered fallible steps are supported by match chain. Regular call/chain matches end their region; coordination additionally permits local results. native-ai has deeply nested stages and duplicated closure paths. Catalogue collection operators carry actual callback failures, unlike general authored higher-order helpers, which specify a fixed set. Previous scope requires an actual use case and a measured best-current baseline before adding sequencing or error-set polymorphism.",
+    "platform": "Current capabilities cover transactional SQL over three dialects, sockets, streams, cookies, cryptography, time zones, exact integer amounts and rounding, HTTP fetch and child processes. Native or npm adapters cannot be supplied by an application: admission belongs to the distribution and specifies encoding, immutability, ownership and deterministic substitution. HTTP calls or separate processes can replace certain SDKs. We have not established a concrete SDK integration that cannot work.",
+    "behavior_evidence": "Attached tests are mandatory and publication waits for passing execution under an external timeout. Shared lexical fixtures, raw provider testing and integration/browser suites are implemented. Many opaque response rows merely require success, leaving status/content unobserved there. The HTMX configuration refuses 503 replacement even where handlers produce 503 fragments. stream/pump error forwarding omits the close described in its prose and its rows exercise successful paths. Existing checks are substantial but those behaviors are under-specified by the rows."
+  },
+  "questions": {
+    "browser_direction": {
+      "type": "choice",
+      "instructions": "How should browser capability evolve for the stated richer UI requirement without losing Can guarantees?",
+      "criteria": {
+        "can_browser_model": "Explore typed client models and event/lifecycle handling through a Can compilation target, keeping the current server UI path available.",
+        "htmx_only": "Retain only roundtrip-driven interfaces, explicitly limiting the kinds of SaaS that Can covers.",
+        "raw_javascript": "Supply complex browser interactions through arbitrary JavaScript outside a Can state/event contract.",
+        "defer": "Postpone client architecture selection until additional application requirements are observed."
+      }
+    },
+    "web_linkage": {
+      "type": "choice",
+      "instructions": "Choose the most useful experiment to improve the current web contract relationships and authoring burden.",
+      "criteria": {
+        "linked_typed_surface": "Try a linked typed route/form/component surface whose static portions compile through current safety-preserving adapters.",
+        "builders_and_tests": "Use better named rendering helpers and scenario tests while retaining independent text identifiers and runtime checks.",
+        "untyped_templates": "Adopt unvalidated templates and weakly typed routing/form maps to reduce source size.",
+        "defer": "Collect additional web authoring cases before selecting a prototype."
+      }
+    },
+    "domain_sealing": {
+      "type": "choice",
+      "instructions": "Pick the next step for ensuring that application validation cannot be bypassed in the described abstractions.",
+      "criteria": {
+        "sealing_prototype": "Compare a real factory-based baseline against an experiment in package-controlled constructors, including wire admission and assertions.",
+        "validate_each_boundary": "Continue using public records and repeat validation at every boundary that depends on the condition.",
+        "builtin_business_types": "Provide catalogue-specific email/tenant value kinds without giving packages a general sealing facility.",
+        "defer": "Wait for additional demonstrated validation failures before picking a direction."
+      }
+    },
+    "composition_scope": {
+      "type": "choice",
+      "instructions": "Select the appropriate next scope for fallible sequencing and reusable callback contracts.",
+      "criteria": {
+        "measure_current_first": "Build the best current chain/helper solution for an actual workflow before measuring whether a small language addition is warranted.",
+        "add_error_and_bind_syntax": "Commit now to effect-set generic parameters together with a new binding form for fallible calls.",
+        "erase_errors": "Remove checked outward failure sets and allow unrestricted error propagation for easy reuse.",
+        "keep_forever": "Rule out any composition extension even if real programs later demonstrate substantial overhead."
+      }
+    },
+    "sdk_boundary": {
+      "type": "choice",
+      "instructions": "Choose an integration strategy consistent with both broad SaaS needs and the current controlled native contract.",
+      "criteria": {
+        "evidence_gated_adapters": "Benchmark an actual SDK dependency using present alternatives, then consider checked external adapters only for an evidenced gap with full value/lifetime/test contracts.",
+        "catalogue_only": "Limit bindings permanently to the shipped catalogue and rely on network/process boundaries beyond it.",
+        "arbitrary_imports": "Immediately open foreign imports without enforcing Can adapter ownership, immutability or fixture rules.",
+        "defer": "Wait for outside users before examining any wider integration path."
+      }
+    },
+    "assertion_direction": {
+      "type": "choice",
+      "instructions": "Which change would best improve behavioral confidence from Can verification in these examples?",
+      "criteria": {
+        "behavior_observations": "Preserve declaration tests while enabling reusable status/body/header and lifecycle checks, including the observed failure cases.",
+        "external_tests_only": "Leave source assertions at their current granularity and delegate stronger observations entirely to separate test suites.",
+        "universal_proofs": "Move from attached examples to universal formal verification as the primary next project.",
+        "defer": "Postpone work on behavioral observation after noting the current evidence gaps."
+      }
+    }
+  }
+}

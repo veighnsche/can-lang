@@ -1,0 +1,12 @@
+package helper
+    provides [read]
+    uses [text]
+fn str read
+    emits []
+    asserts
+        unit: => ok "fixture"
+    match call text::from_int(7)
+        when
+            unit: 7 => ok "fixture"
+            customer: 7 => ok "fixture"
+        ok str result => ok result

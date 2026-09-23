@@ -1,0 +1,64 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Two independent 24 September reviews are being consolidated into one recommendation plan. The goal is a Can language credible for broad SaaS backend and frontend work. This consultation advises design experiments; it does not adopt syntax or authorize implementation.",
+    "baseline": "Can currently has nominal immutable values, named functions, explicit public domain-error bounds, attached assertions, native AI forms with grouped state, and native JavaScript/Bun lowering with contract adapters. There are zero external users, so compatibility is not a product requirement. Large abstractions must beat the best present idiom in a real program.",
+    "pattern_evidence": "Current executable probes show that a final bare pattern decliend intended as declined is treated as a binding/catch-all; adding refunded then remains accepted. The correctly spelled old match rejects the new case, and decliend() rejects immediately. A September 22 disposition had retained bare-name binding before this counterexample was established.",
+    "library_evidence": "Exported authored records can be constructed and copy-updated by consumers, so a validating email factory cannot guarantee every email is valid. Ordinary generic retry/audit/map_option wrappers cannot quantify over a caller's finite error set, unlike catalogue map/fold. Generic body operations may also be absent from a public signature. Independently written dependencies collide on short package names and numeric error IDs.",
+    "fixture_evidence": "An emitted two-package probe changes a helper fixture's selection solely by renaming the caller's assertion label. The renamed call executes the real text::from_int(7), changing expected fixture from 'fixture' to '7'. Lexical queues and root identities remain isolated; the surprising dependency is the shared short label. Earlier policy deferred root-owned symbolic seams.",
+    "frontend_evidence": "Can presently runs Bun services with safe server-rendered HTML and pinned HTMX; it deliberately has no browser Can execution. Routes, form fields and HTMX targets are separate string contracts. A broad Can-authored frontend would need local state, named events, async commands and component disposal. A controlled existing browser stack can instead consume typed wire contracts but would not make the client authored in Can.",
+    "delivery_evidence": "Only Darwin ARM64 Bun is currently qualified. The combined recommendation should test tenant invoice editing, duplicate signed webhook processing with an outbox, failure/cleanup, actual browser behavior and bounded shutdown on a named Linux target. SQL parameters and runtime row decoding exist, but a declared result is not checked against an actual versioned schema. No design consultation substitutes for those execution gates."
+  },
+  "questions": {
+    "pattern_policy": {
+      "type": "choice",
+      "instructions": "Which language rule best addresses the demonstrated misspelled-case hazard?",
+      "criteria": {
+        "explicit_binding": "Require visible binding intent, leave bare nominal case tests, and reject unknown test names.",
+        "constructors_only": "Require explicit constructor syntax for every nominal pattern; retain bare names as binders.",
+        "warn_only": "Keep current acceptance and add a typo/unused-binder diagnostic that can be ignored.",
+        "retain": "Leave the binder/case interpretation and teach authors to qualify or call constructors."
+      }
+    },
+    "value_boundary": {
+      "type": "choice",
+      "instructions": "Which experiment best establishes credible application-owned validated values?",
+      "criteria": {
+        "owner_control": "Prototype public nominal types with owner-controlled construction and explicit decoding, equality and test access.",
+        "transparent_validation": "Keep records fully transparent and require validity checks at each operation that depends on the invariant.",
+        "catalogue_only": "Reserve unforgeable types for distribution-owned catalogue entries and add each business value there.",
+        "defer": "Collect more product cases before trying any authored value-ownership mechanism."
+      }
+    },
+    "fixture_scenarios": {
+      "type": "choice",
+      "instructions": "What should be tested next to remove accidental fixture selection across package calls?",
+      "criteria": {
+        "explicit_seams": "Prototype named caller-to-helper scenario links while retaining typed arguments, lexical queues and concurrency identities.",
+        "lexical_labels": "Keep short root labels as the selector and document that packages must coordinate them.",
+        "stub_boundary": "Stub the entire helper call in consumers and test its real body only in the helper package.",
+        "global_ordinals": "Replace lexical identity with globally numbered invocations or function-name mocks."
+      }
+    },
+    "generic_errors": {
+      "type": "choice",
+      "instructions": "How should the catalogue-versus-author error-set asymmetry enter the recommendation plan?",
+      "criteria": {
+        "measure_then_trial": "Build equivalent real wrappers with fixed bounds and result data first; trial explicit finite error-row parameters if those materially fail.",
+        "result_permanent": "Standardize nominal success/error values as the permanent generic helper boundary, adapting to emitted failures at callers.",
+        "add_intrinsics": "Keep source functions fixed-bound and add each generic fallible operation to the compiler catalogue.",
+        "implicit_inference": "Infer outward public errors from implementation bodies without explicit bounds."
+      }
+    },
+    "frontend_path": {
+      "type": "choice",
+      "instructions": "Which product path most honestly reaches a recommendation for Can-authored backend and frontend SaaS?",
+      "criteria": {
+        "server_then_browser": "Qualify server-driven SaaS first, then design and qualify Can browser state/events using the demanding editable-grid case before making a Can-only full-stack claim.",
+        "browser_first": "Prioritize a full Can browser target before repairing core/library composition or qualifying server workflows.",
+        "typed_external_client": "Recommend Can servers plus a typed contract bridge to an existing browser language, explicitly limiting the Can-frontend claim.",
+        "server_only_universal": "Keep SSR/HTMX as the sole client mechanism and still advertise Can for every frontend style."
+      }
+    }
+  }
+}

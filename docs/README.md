@@ -5,8 +5,11 @@ Current authority lives in the [task ledger](implementation/tasks.md),
 and package READMEs — implementation is complete and all fifty tasks
 are checked. The design inputs below are dated records, not policy.
 
-## Design records (2026-09-20)
+## Current recommendation program (2026-09-24)
 
+- [Consolidated Can recommendation program](syntax-taste/can-recommendation-program-2026-09-24.md) — non-normative roadmap and acceptance gates for server-driven and Can-authored browser SaaS; reconciles the two September 24 reviews.
+
+## Design records (2026-09-20)
 - [Approved syntax decisions](syntax-taste/decisions.md)
 - [Technical specification](syntax-taste/technical-spec.md)
 - [AI and external data](syntax-taste/ai-io-spec.md)

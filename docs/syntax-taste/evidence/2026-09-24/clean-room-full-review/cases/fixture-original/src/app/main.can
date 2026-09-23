@@ -1,0 +1,15 @@
+package app
+    provides []
+    uses [helper]
+fn str read_customer
+    emits []
+    asserts
+        customer: => ok "fixture"
+    ok call helper::read()
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

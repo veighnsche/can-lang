@@ -1,0 +1,192 @@
+{
+  "projects": [
+    {
+      "name": "account-search",
+      "files": [
+        "examples/account-search/src/model/model.can",
+        "examples/account-search/src/records/records.can",
+        "examples/account-search/src/render/render.can",
+        "examples/account-search/src/web/web.can"
+      ],
+      "sourceLines": 373,
+      "linesOver120": 38,
+      "maximumLineLength": 257
+    },
+    {
+      "name": "cookies",
+      "files": [
+        "examples/cookies/src/main.can"
+      ],
+      "sourceLines": 187,
+      "linesOver120": 12,
+      "maximumLineLength": 164
+    },
+    {
+      "name": "crypto",
+      "files": [
+        "examples/crypto/src/main.can"
+      ],
+      "sourceLines": 101,
+      "linesOver120": 6,
+      "maximumLineLength": 336
+    },
+    {
+      "name": "dashboard",
+      "files": [
+        "examples/dashboard/src/model/model.can",
+        "examples/dashboard/src/records/records.can",
+        "examples/dashboard/src/render/render.can",
+        "examples/dashboard/src/web/web.can"
+      ],
+      "sourceLines": 291,
+      "linesOver120": 23,
+      "maximumLineLength": 257
+    },
+    {
+      "name": "files",
+      "files": [
+        "examples/files/src/main.can"
+      ],
+      "sourceLines": 79,
+      "linesOver120": 2,
+      "maximumLineLength": 167
+    },
+    {
+      "name": "form-validation",
+      "files": [
+        "examples/form-validation/src/model/model.can",
+        "examples/form-validation/src/records/records.can",
+        "examples/form-validation/src/render/render.can",
+        "examples/form-validation/src/web/web.can"
+      ],
+      "sourceLines": 229,
+      "linesOver120": 17,
+      "maximumLineLength": 187
+    },
+    {
+      "name": "gallery",
+      "files": [
+        "examples/gallery/src/01-hello-world.can",
+        "examples/gallery/src/02-cli-argument.can",
+        "examples/gallery/src/03-arithmetic.can",
+        "examples/gallery/src/04-temperature.can",
+        "examples/gallery/src/05-leap-year.can",
+        "examples/gallery/src/06-fizzbuzz.can",
+        "examples/gallery/src/07-fibonacci.can",
+        "examples/gallery/src/08-factorial.can",
+        "examples/gallery/src/09-gcd.can",
+        "examples/gallery/src/10-prime-check.can",
+        "examples/gallery/src/11-palindrome.can",
+        "examples/gallery/src/12-word-character-count.can",
+        "examples/gallery/src/13-boolean-match.can",
+        "examples/gallery/src/14-record-variant-match.can",
+        "examples/gallery/src/15-exhaustive-match.can",
+        "examples/gallery/src/16-optional-values.can",
+        "examples/gallery/src/17-named-error-recovery.can",
+        "examples/gallery/src/18-relay.can",
+        "examples/gallery/src/19-immutable-record-update.can",
+        "examples/gallery/src/20-array-map.can",
+        "examples/gallery/src/21-array-filter.can",
+        "examples/gallery/src/22-array-fold.can",
+        "examples/gallery/src/23-array-sort.can",
+        "examples/gallery/src/24-map-word-frequencies.can",
+        "examples/gallery/src/25-generic-function.can",
+        "examples/gallery/src/26-callable-argument.can",
+        "examples/gallery/src/27-recursion-vs-collection.can",
+        "examples/gallery/src/28-attached-assertions.can",
+        "examples/gallery/src/main.can"
+      ],
+      "sourceLines": 539,
+      "linesOver120": 0,
+      "maximumLineLength": 114
+    },
+    {
+      "name": "language-site",
+      "files": [
+        "examples/language-site/src/site.can"
+      ],
+      "sourceLines": 222,
+      "linesOver120": 26,
+      "maximumLineLength": 217
+    },
+    {
+      "name": "markdown",
+      "files": [
+        "examples/markdown/src/main.can"
+      ],
+      "sourceLines": 82,
+      "linesOver120": 0,
+      "maximumLineLength": 93
+    },
+    {
+      "name": "mysql",
+      "files": [
+        "examples/mysql/src/main.can"
+      ],
+      "sourceLines": 110,
+      "linesOver120": 2,
+      "maximumLineLength": 242
+    },
+    {
+      "name": "native-ai",
+      "files": [
+        "examples/native-ai/src/app/main.can",
+        "examples/native-ai/src/model/model.can",
+        "examples/native-ai/src/oracles/oracles.can",
+        "examples/native-ai/src/records/records.can"
+      ],
+      "sourceLines": 345,
+      "linesOver120": 15,
+      "maximumLineLength": 336
+    },
+    {
+      "name": "process",
+      "files": [
+        "examples/process/src/main.can"
+      ],
+      "sourceLines": 72,
+      "linesOver120": 2,
+      "maximumLineLength": 190
+    },
+    {
+      "name": "sqlite",
+      "files": [
+        "examples/sqlite/src/main.can"
+      ],
+      "sourceLines": 109,
+      "linesOver120": 2,
+      "maximumLineLength": 215
+    },
+    {
+      "name": "stream",
+      "files": [
+        "examples/stream/src/main.can"
+      ],
+      "sourceLines": 70,
+      "linesOver120": 1,
+      "maximumLineLength": 229
+    },
+    {
+      "name": "utilities",
+      "files": [
+        "examples/utilities/src/main.can"
+      ],
+      "sourceLines": 101,
+      "linesOver120": 1,
+      "maximumLineLength": 129
+    },
+    {
+      "name": "websocket",
+      "files": [
+        "examples/websocket/src/main.can"
+      ],
+      "sourceLines": 236,
+      "linesOver120": 7,
+      "maximumLineLength": 148
+    }
+  ],
+  "totalProjects": 16,
+  "totalFiles": 56,
+  "totalSourceLines": 3146,
+  "linesOver120": 154
+}

@@ -1,0 +1,52 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/coordination.test.ts:
+(pass) native all selects first rejection without running success handlers or redispatching late failures [10.42ms]
+(pass) allSettled waits for all then handles input order and stops at handler failure [0.41ms]
+(pass) any retains original all-failed outcomes in input order [0.93ms]
+(pass) any consumes pre-success failures while retaining late standard diagnostics [1.13ms]
+(pass) race selects the first completion and no losing handler runs [1.12ms]
+(pass) empty native all and allSettled succeed and any selects one empty aggregate [0.28ms]
+(pass) typed aggregate keeps nominal generic payloads and opaque standard occurrence identity [10.77ms]
+(pass) all and race select the first domain or standard failure with optional standard handling [0.61ms]
+(pass) allSettled propagates an unhandled standard slot in input order [0.12ms]
+(pass) any succeeds last after domain and standard failures without aggregate dispatch [1.27ms]
+(pass) handler failures escape without participant redispatch or a partial collection [1.42ms]
+(pass) explicit map conversion preserves snapshot identity and mints one outer aggregate occurrence [8.14ms]
+(pass) empty native race remains pending past the harness deadline [19.11ms]
+(pass) coordination retains a losing participant's captured resource until late work finishes [3.26ms]
+(pass) each mode delegates selection to its corresponding native Promise operation [0.23ms]
+
+runtime/test/assertions.test.ts:
+(pass) an assertion awaits and executes its real body exactly once [2.21ms]
+(pass) caught live-boundary refusal is sticky and independent roots do not share it [0.23ms]
+(pass) expected evaluation failure does not execute the subject [9.28ms]
+(pass) native assertion equality preserves nominal, float and opaque identities [1.07ms]
+(pass) argument lists compare callables by receipt, not construction site [3.05ms]
+(pass) supplied completion replaces only the exact call and labels its evidence [0.45ms]
+(pass) basic fixture FIFO never searches later rows and reports leftovers [2.59ms]
+(pass) mismatch reports identify root, site and invocations without dumping values [0.24ms]
+(pass) placeholder platform origins stay out of mismatch reports [0.07ms]
+(pass) pending invocation progress reports structure without values [0.38ms]
+
+runtime/test/html.test.ts:
+(pass) native escaping keeps hostile text and attribute data inert [2.23ms]
+(pass) closed tags, attributes, enums and tag applicability [2.52ms]
+(pass) child categories, table order, pairs and descendant nesting [0.46ms]
+(pass) URL parsing rejects origin and script ambiguity [2.21ms]
+(pass) head-only nodes, native title escaping and pinned HTMX policy [0.25ms]
+(pass) typed HTMX selectors and finite intervals cannot inject trigger code [0.28ms]
+(pass) forged opaque handles fail without inspecting proxies [0.21ms]
+(pass) the complete author tag inventory and each tag-checked attribute are admitted [0.40ms]
+
+runtime/test/sql-descriptor.test.ts:
+(pass) sql descriptors > declare and template a checked descriptor [1.43ms]
+(pass) sql descriptors > repeated parameters share one prepared value [0.18ms]
+(pass) sql descriptors > zero-parameter descriptors template to bare strings [0.03ms]
+(pass) sql descriptors > unknown names, forged values, and arity breaks throw [0.10ms]
+(pass) sql descriptors > corrupt tables refuse at construction [0.23ms]
+
+ 38 pass
+ 0 fail
+ 582 expect() calls
+Ran 38 tests across 4 files. [197.00ms]

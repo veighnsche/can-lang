@@ -1,0 +1,75 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Consider what would make Can a credible default for diverse SaaS software on both sides of the network. Proposals are being examined here; no language changes have been authorized.",
+    "baseline": "Existing source and ABI spellings need no compatibility preservation because external users number zero. The retained identity comprises nominal immutable data, named functions, written public failure sets, attached test rows and grouped AI state. Native JavaScript/Bun should execute operations, with adapters for Can guarantees.",
+    "frontend": "The shipped UI path combines safe markup from server functions with a pinned HTMX asset, including network actions, fragment updates and restricted triggers. Browser-local state and event logic cannot currently be authored for a Can browser target, and the allowed elements omit dialog, canvas and SVG. Earlier scope chose this restriction. The new ambition must cover grid editing with keyboard controls, local drafts and optimistic changes that revert after failed saves.",
+    "web_contracts": "Typed request data exists for JSON and forms; mounts use literal exact routes with named handlers, disallowing :id or *. A URL in a renderer and a form control name remain separately spelled text rather than checked route/field identities. Supported form members are only shallow str, str[] and option::value<str>. Static HTML still passes through error-returning construction calls. The desired improvements concern safe component brevity, route refactoring and forms with richer validation.",
+    "domain_values": "Can separates record types by declaration, while allowing consumers to build and update exported ordinary values; JSON can also reconstruct admissible records. Catalogue-owned html::safe and resource identities have stronger construction restrictions unavailable to authored opaque records. The business case is an email or tenant-qualified ID that cannot be minted without its validator, including at decoding boundaries. A proposal needs defined assertion and serialization behavior.",
+    "composition": "Existing match chain offers sequential calls plus common failure arms. A normal match call or match chain completes the enclosing region, although coordination may initialize a local. The native-ai workflow shows substantial nesting and repeated resource closing. Finite callback failures specialize through catalogue collections, but user-written higher-order APIs declare concrete bounds. New sequential forms and error-set genericity remain deferred pending a realistic demonstration of residual cost with current idioms used well.",
+    "platform": "Transactions and three database dialects are present, together with WebSockets, streaming reads, cookies, crypto, zoned dates, exact minor-unit arithmetic/rounding, fetch and process APIs. An app cannot attach arbitrary npm/native bindings because the distribution catalogue controls codecs, value immutability, resource lifetime and fixtures. Some external libraries can be avoided through HTTP or subprocesses. A genuinely blocked SDK scenario has not been demonstrated yet.",
+    "behavior_evidence": "Build verification executes required declaration-owned assertions with external supervision; reusable fixtures, raw exchanges and integration/browser coverage already work. A bare ok expectation for an opaque HTTP result does not inspect its headers, status or body. Example handlers emit 503 fragments that default HTMX settings will not insert. In stream/pump, read failures propagate without the explicit closing step claimed in the comment, and tests describe success cases. The issue is completeness of behavioral evidence rather than missing verification infrastructure."
+  },
+  "questions": {
+    "browser_direction": {
+      "type": "choice",
+      "instructions": "Select the client-side strategy most appropriate to the broadened SaaS goal and current design identity.",
+      "criteria": {
+        "can_browser_model": "Trial browser compilation for Can state transitions, handlers and lifetimes alongside existing server-rendered HTMX applications.",
+        "htmx_only": "Constrain Can to the present server/HTMX interaction boundary and narrow its recommendation scope.",
+        "raw_javascript": "Let application JavaScript implement advanced frontend behavior without a checked Can browser model.",
+        "defer": "Leave browser strategy unresolved while obtaining further concrete UI cases."
+      }
+    },
+    "web_linkage": {
+      "type": "choice",
+      "instructions": "Which approach should be evaluated first for route consistency, richer forms and safe UI composition?",
+      "criteria": {
+        "linked_typed_surface": "Evaluate compiler-checked references between endpoints, form fields and component markup, retaining safe native execution.",
+        "builders_and_tests": "Preserve the existing string/builder surface and address friction through libraries and end-to-end coverage.",
+        "untyped_templates": "Favor direct HTML strings with dynamic route and field dictionaries as the concise surface.",
+        "defer": "Hold the web design choice open pending more representative data."
+      }
+    },
+    "domain_sealing": {
+      "type": "choice",
+      "instructions": "Which response to constructible business values best fits the available evidence and Can constraints?",
+      "criteria": {
+        "sealing_prototype": "Reproduce the invariant gap in a normal application and trial owner-restricted value creation with explicit codec/test semantics.",
+        "validate_each_boundary": "Leave construction open and make consumers perform the needed validity checks each time.",
+        "builtin_business_types": "Solve these examples with special language-owned email and tenant types only.",
+        "defer": "Reserve the decision until more concrete invariant requirements are known."
+      }
+    },
+    "composition_scope": {
+      "type": "choice",
+      "instructions": "Given the existing tools and earlier evidence gate, how far should workflow redesign proceed?",
+      "criteria": {
+        "measure_current_first": "First compare realistic programs expressed with current chaining and named wrappers; investigate a narrow extension only for remaining material limits.",
+        "add_error_and_bind_syntax": "Adopt generic failure sets and nonterminal fallible bindings without a current-idiom benchmark.",
+        "erase_errors": "Simplify workflows by abandoning written, checked public error contracts.",
+        "keep_forever": "Freeze the current workflow expressiveness without considering future cost evidence."
+      }
+    },
+    "sdk_boundary": {
+      "type": "choice",
+      "instructions": "What is the sound next step for SDK support, given existing HTTP/process alternatives and no reproduced blocker?",
+      "criteria": {
+        "evidence_gated_adapters": "Start from a concrete SDK need and the best existing integration; a proven shortfall can justify an adapter extension retaining immutability, resource and fixture guarantees.",
+        "catalogue_only": "Preserve exclusive distribution control of every adapter, regardless of future SDK requirements.",
+        "arbitrary_imports": "Expose unrestricted external modules and let each caller manage incompatible runtime behavior.",
+        "defer": "Do not investigate SDK extension possibilities until external adoption occurs."
+      }
+    },
+    "assertion_direction": {
+      "type": "choice",
+      "instructions": "Select the testing direction that best addresses the observed coverage gaps while retaining attached assertions.",
+      "criteria": {
+        "behavior_observations": "Extend attached testing with typed protocol observations and reusable lifecycle scenarios that exercise 503 handling and failed reads.",
+        "external_tests_only": "Require richer correctness checks only outside Can, without extending assertion observations or scenarios.",
+        "universal_proofs": "Prioritize a complete application proof framework over incremental behavioral testing.",
+        "defer": "Leave verification ergonomics unchanged for now without choosing an improvement path."
+      }
+    }
+  }
+}

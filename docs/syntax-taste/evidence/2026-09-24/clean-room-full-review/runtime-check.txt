@@ -1,0 +1,8 @@
+$ bun run lint:runtime && bun run format:check:runtime && bun run typecheck:runtime
+$ oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --deny-warnings
+$ oxfmt --check "runtime/**/*.ts" "tools/runtime/**/*.ts"
+Checking formatting...
+
+All matched files use the correct format.
+Finished in 44ms on 177 files using 10 threads.
+$ tsc -p tsconfig.runtime.json

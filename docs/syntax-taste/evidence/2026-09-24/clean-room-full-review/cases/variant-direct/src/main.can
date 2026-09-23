@@ -1,0 +1,22 @@
+package app
+    provides []
+    uses []
+record unit
+variant tagged<item>
+    unit
+variant bridge
+    unit
+fn tagged<str> convert
+    emits []
+    given
+        tagged<int> value
+    asserts
+        sample: unit() => ok unit()
+    ok value
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

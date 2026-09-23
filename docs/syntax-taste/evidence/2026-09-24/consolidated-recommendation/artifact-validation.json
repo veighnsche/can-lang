@@ -1,0 +1,20 @@
+{
+  "source_revision": "4c2db1e1162a45e88a58ef154e848790a1a44c60",
+  "docs_checked": [
+    "docs/README.md",
+    "docs/syntax-taste/can-recommendation-program-2026-09-24.md",
+    "docs/syntax-taste/saas-language-review-2026-09-24.md",
+    "docs/syntax-taste/clean-room-language-review-2026-09-24.md",
+    "docs/syntax-taste/evidence/2026-09-24/consolidated-recommendation/README.md",
+    "docs/syntax-taste/evidence/2026-09-24/consolidated-recommendation/verification.md"
+  ],
+  "local_file_links_checked": 93,
+  "consultation_requests": 3,
+  "consultation_questions_each": 5,
+  "consultation_usage": {
+    "input_tokens": 4658,
+    "output_tokens": 801
+  },
+  "issues": [],
+  "tracked_diff_check": 0
+}

@@ -1,0 +1,56 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/html.test.ts:
+(pass) native escaping keeps hostile text and attribute data inert [16.66ms]
+(pass) closed tags, attributes, enums and tag applicability [12.80ms]
+(pass) child categories, table order, pairs and descendant nesting [0.64ms]
+(pass) URL parsing rejects origin and script ambiguity [17.52ms]
+(pass) head-only nodes, native title escaping and pinned HTMX policy [1.71ms]
+(pass) typed HTMX selectors and finite intervals cannot inject trigger code [1.03ms]
+(pass) forged opaque handles fail without inspecting proxies [5.48ms]
+(pass) the complete author tag inventory and each tag-checked attribute are admitted [3.62ms]
+
+runtime/test/form.test.ts:
+(pass) form records preserve repeated values, empty presence, Unicode and plus semantics [6.22ms]
+(pass) missing/repeated scalar and optional fields have finite form reasons [1.21ms]
+(pass) malformed percent syntax and invalid encoded UTF-8 are distinct [4.78ms]
+(pass) unknown fields, hostile names, and body limits cannot alter shape [1.58ms]
+
+runtime/test/number.test.ts:
+(pass) native formatting preserves bigint digits and IEEE spellings without locale formatting [4.61ms]
+(pass) exact conversion uses native represented values rather than the safe-integer cutoff [1.39ms]
+(pass) Math and Number predicates agree with qualified native operations on boundaries [0.49ms]
+(pass) integer parsing requires the entire exact decimal grammar [1.35ms]
+(pass) float parsing admits only decimal source numbers and finite native results [0.95ms]
+(pass) boolean conversions accept exact spellings and only the integer range zero through one [0.38ms]
+
+runtime/test/datetime.test.ts:
+(pass) instants > epoch millis round-trip exactly inside the native span [0.24ms]
+(pass) zoned formatting > explicit locale and zone format deterministically on the pinned ICU [9.62ms]
+(pass) zoned formatting > unknown zones, styles, and locales reject distinctly [2.02ms]
+(pass) civil resolution > ordinary civil times resolve exactly [2.70ms]
+(pass) civil resolution > spring gaps reject; fall overlaps resolve by explicit policy [2.07ms]
+(pass) civil resolution > impossible dates reject as nonexistent; malformed parts and policies reject as options [0.90ms]
+(pass) civil resolution > low civil years stay literal instead of mapping to 19xx [0.78ms]
+
+runtime/test/transaction.test.ts:
+(pass) sql transactions > commit runs scoped queries and returns the committed value [9.18ms]
+(pass) sql transactions > rollback returns the rollback value without committing [0.28ms]
+(pass) sql transactions > in-transaction queries share pool validation and classification [1.49ms]
+(pass) sql transactions > the handle dies with its scope [0.48ms]
+(pass) sql transactions > refused begin reports the connection failure with the begin phase [0.62ms]
+(pass) sql transactions > native callback failures classify by phase [0.36ms]
+(pass) sql transactions > non-postgres begin failures are transactional [0.34ms]
+(pass) sql transactions > foreign throws propagate instead of classifying [0.23ms]
+(pass) sql transactions > nested entry surfaces the scope failure verbatim [0.43ms]
+(pass) sql transactions > primary domain failures return verbatim [0.20ms]
+(pass) sql transactions > rejection after a commit decision is commit-unknown with a safe id [1.00ms]
+(pass) sql transactions > foreign throws after a commit decision are still commit-unknown [0.17ms]
+(pass) sql transactions > commit waits for scope drain [29.02ms]
+(pass) sql transactions > compiler-shape violations throw type errors [0.90ms]
+(pass) sql transactions > fixture boundaries never launch transactions [1.15ms]
+
+ 40 pass
+ 0 fail
+ 896 expect() calls
+Ran 40 tests across 5 files. [344.00ms]

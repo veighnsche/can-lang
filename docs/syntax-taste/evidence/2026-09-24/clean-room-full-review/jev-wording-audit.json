@@ -1,0 +1,65 @@
+{
+  "facts": [
+    "scope",
+    "constraints",
+    "pattern_facts",
+    "variant_facts",
+    "library_facts",
+    "callback_facts",
+    "fixture_facts",
+    "race_facts",
+    "scope_facts",
+    "native_facts"
+  ],
+  "alternatives": {
+    "patterns": [
+      "explicit_binding",
+      "constructors_only",
+      "heuristic_warning",
+      "retain"
+    ],
+    "variant_identity": [
+      "extensional",
+      "nominal_wrappers",
+      "reject_phantoms",
+      "retain"
+    ],
+    "abstract_values": [
+      "owner_control",
+      "transparent_validation",
+      "catalogue_only",
+      "defer"
+    ],
+    "generic_contracts": [
+      "explicit_operations",
+      "template_model",
+      "full_traits",
+      "parametric_only"
+    ],
+    "error_abstraction": [
+      "finite_row_trial",
+      "results_only",
+      "more_intrinsics",
+      "implicit_errors"
+    ],
+    "fixture_scope": [
+      "explicit_seams",
+      "lexical_labels",
+      "stub_helper",
+      "ordinal_globals"
+    ],
+    "fault_observation": [
+      "all_losing_standard",
+      "current_timing",
+      "suppress_all",
+      "explicit_policy"
+    ],
+    "scoped_results": [
+      "narrow_diagnostics",
+      "runtime_only",
+      "ban_resource_types",
+      "full_affine"
+    ]
+  },
+  "audit": "Manually compared all triples for equivalent facts, caveats, constraints and alternatives. Every corresponding explanatory field has three distinct phrasings; stable technical identifiers retain their meaning. All three requests are prepared before dispatch and contain no prior answers. Wording diversity cannot establish freedom from framing bias."
+}

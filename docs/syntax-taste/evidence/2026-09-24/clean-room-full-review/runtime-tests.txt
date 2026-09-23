@@ -1,0 +1,101 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/coordination.test.ts:
+(pass) native all selects first rejection without running success handlers or redispatching late failures [10.28ms]
+(pass) allSettled waits for all then handles input order and stops at handler failure [1.30ms]
+(pass) any retains original all-failed outcomes in input order [2.46ms]
+(pass) any consumes pre-success failures while retaining late standard diagnostics [3.79ms]
+(pass) race selects the first completion and no losing handler runs [2.25ms]
+(pass) empty native all and allSettled succeed and any selects one empty aggregate [1.82ms]
+(pass) typed aggregate keeps nominal generic payloads and opaque standard occurrence identity [19.15ms]
+(pass) all and race select the first domain or standard failure with optional standard handling [2.32ms]
+(pass) allSettled propagates an unhandled standard slot in input order [0.33ms]
+(pass) any succeeds last after domain and standard failures without aggregate dispatch [4.09ms]
+(pass) handler failures escape without participant redispatch or a partial collection [0.50ms]
+(pass) explicit map conversion preserves snapshot identity and mints one outer aggregate occurrence [6.32ms]
+(pass) empty native race remains pending past the harness deadline [12.63ms]
+(pass) coordination retains a losing participant's captured resource until late work finishes [1.69ms]
+(pass) each mode delegates selection to its corresponding native Promise operation [0.73ms]
+
+runtime/test/owner.test.ts:
+(pass) published groups inspect each losing outcome once while preserving occurrence dedup [2.06ms]
+(pass) late standard failures stay observed without replacing the selected success [0.77ms]
+(pass) closing preserves existing-owner subleases and deadlines never force close [2.64ms]
+(pass) reverse automatic cleanup reports omissions even when native closes succeed [0.12ms]
+(pass) scoped handles reject escapes and host callbacks block user code [0.32ms]
+(pass) resource preparation fails before every participant and rolls back leases [0.12ms]
+(pass) interleaved roots preserve native async context and reject cross-root handles [0.37ms]
+(pass) scoped shutdown drains losers before releasing the scoped native resource [0.12ms]
+(pass) wrong-kind and forged resources reject without touching native state [1.78ms]
+(pass) automatic close faults propagate cleanup from a managed scope [0.14ms]
+(pass) resources opened by a loser retain its lease across registered shutdown expiry [1.29ms]
+(pass) a participant-created managed child scope releases its initial lease at callback exit [0.11ms]
+(pass) a participant can explicitly close its own newly opened resource [0.07ms]
+(pass) idempotent reentrant close shares the installed native close attempt [0.06ms]
+(pass) host callback wrappers preserve nested capture evidence for participants [0.16ms]
+(pass) ordinary callable receipts do not add self-deadlocking close leases [0.05ms]
+(pass) selected standard outcomes are not late and repeated losing occurrences report once [0.09ms]
+(pass) native callbacks bind their operation scope and drain without ambient context [0.40ms]
+
+runtime/test/owner-roots.test.ts:
+(pass) CLI waits for late losers yet their diagnostics alone keep status zero [1.35ms]
+(pass) CLI reports omitted close as nonzero even after successful automatic close [0.09ms]
+(pass) assertion result waits for every owned participant before closing context [1.64ms]
+
+runtime/test/collections.test.ts:
+(pass) map copies preserve key order, aliases and nominal entries [0.39ms]
+(pass) collection storage rejects forged, copied and wrong-specialization tokens and keys [0.41ms]
+(pass) native set operations preserve left order through both intersection size branches [2.58ms]
+(pass) scalar key families retain native equality and matching factories share provenance [0.35ms]
+
+runtime/test/assertions.test.ts:
+(pass) an assertion awaits and executes its real body exactly once [1.11ms]
+(pass) caught live-boundary refusal is sticky and independent roots do not share it [0.65ms]
+(pass) expected evaluation failure does not execute the subject [4.63ms]
+(pass) native assertion equality preserves nominal, float and opaque identities [0.79ms]
+(pass) argument lists compare callables by receipt, not construction site [2.12ms]
+(pass) supplied completion replaces only the exact call and labels its evidence [0.88ms]
+(pass) basic fixture FIFO never searches later rows and reports leftovers [0.80ms]
+(pass) mismatch reports identify root, site and invocations without dumping values [0.37ms]
+(pass) placeholder platform origins stay out of mismatch reports [0.19ms]
+(pass) pending invocation progress reports structure without values [1.33ms]
+
+runtime/test/assert-identity.test.ts:
+(pass) invocation occurrences belong to each parent and compare numeric preorder ordinals [0.34ms]
+(pass) direct, spread and nested positions are reserved independently of arrival order [0.58ms]
+(pass) callable receipts freeze captures and distinguish repeated creation sites without exposing values [0.29ms]
+(pass) identity tokens fail closed across forged values and isolated roots [0.21ms]
+
+runtime/test/codec-json.test.ts:
+(pass) native holder tokens follow schema types rather than repeated field spellings [4.83ms]
+(pass) duplicates decode escaped keys and native syntax takes precedence [2.35ms]
+(pass) variants retain nominal leaf identity and use canonical tags [0.25ms]
+(pass) encoding counts delimiters, escaping, signs, and cumulative integer expansion [0.63ms]
+(pass) recursive data admits shared subtrees and rejects cycles and depth overflow [0.76ms]
+(pass) exact public byte/depth/node bounds reject limit plus one [3877.80ms]
+(pass) hostile properties never execute during defensive schema validation [0.36ms]
+(pass) nested duplicate diagnostics retain RFC6901 paths before syntax precedence [0.15ms]
+(pass) revoked array proxies become codec type failures [0.27ms]
+(pass) one schema and codec preserve precision across raw fetch, AI state and LLM text boundaries [1.82ms]
+
+runtime/test/html.test.ts:
+(pass) native escaping keeps hostile text and attribute data inert [0.65ms]
+(pass) closed tags, attributes, enums and tag applicability [0.55ms]
+(pass) child categories, table order, pairs and descendant nesting [0.43ms]
+(pass) URL parsing rejects origin and script ambiguity [1.39ms]
+(pass) head-only nodes, native title escaping and pinned HTMX policy [0.28ms]
+(pass) typed HTMX selectors and finite intervals cannot inject trigger code [0.29ms]
+(pass) forged opaque handles fail without inspecting proxies [0.22ms]
+(pass) the complete author tag inventory and each tag-checked attribute are admitted [0.59ms]
+
+runtime/test/sql-descriptor.test.ts:
+(pass) sql descriptors > declare and template a checked descriptor [0.21ms]
+(pass) sql descriptors > repeated parameters share one prepared value [0.03ms]
+(pass) sql descriptors > zero-parameter descriptors template to bare strings [0.02ms]
+(pass) sql descriptors > unknown names, forged values, and arity breaks throw [0.06ms]
+(pass) sql descriptors > corrupt tables refuse at construction [0.37ms]
+
+ 77 pass
+ 0 fail
+ 870 expect() calls
+Ran 77 tests across 9 files. [4.09s]

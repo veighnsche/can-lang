@@ -1,0 +1,97 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Evaluate the design of Can under an ambition to serve varied SaaS clients and servers. Separate reviewers started from source and normative semantics, with old review outcomes withheld. Recommendations here do not authorize code changes.",
+    "constraints": "There are zero external adopters and no migration constraint. Preserve nominality, immutability, named functions, explicit exported failure sets, attached test rows and native AI with grouped inputs. Native JavaScript/Bun plus contract adapters remains the implementation basis. Justify major extensions with a real use case and a strong current-language comparison.",
+    "pattern_facts": "Executed minimal cases show bare decliend being lowered to a catch-all binding rather than the intended declined leaf test. Existing tests pass and extending the union with refunded does not require another arm. The correct leaf spelling does expose the extension; a misspelled constructor decliend() is rejected. Present compiler behavior matches its documented pattern semantics.",
+    "variant_facts": "Checked unions flatten to leaf identities without adding representation. For unit-only tagged<T> and bridge declarations, the compiler refuses the direct conversion between tagged<int> and tagged<str>, but accepts and executes a conversion through bridge or a narrowed unit. This exposes non-transitive variant assignability. It does not show a defect in nominal generic record identity.",
+    "library_facts": "An application cannot export a record type while keeping its creation, projection and with updates private, and exported shapes cannot expose inaccessible field types. The platform catalogue alone supplies unforgeable values. Unconstrained generic declarations are instantiated templates: full concrete bodies are checked, but supported operations/types are absent from the public signature. Current Can can receive explicit callable dictionaries.",
+    "callback_facts": "The compiler can propagate callback failure sets through map and fold; authored reusable APIs lack equivalent error-set genericity and use fixed bounds. A library-wide timed/retry helper therefore needs normalization, duplication or an ordinary result-data representation plus adapters. Any improvement must keep outward errors visible in public contracts.",
+    "fixture_facts": "Root identities isolate harness queues, but local fixture activation still compares the short assertion label. An emitted two-package test originally named customer passes; renaming only that root to renamed bypasses the helper substitution and causes an outcome mismatch. Template expansion does not alter this coupling. Stubbing the entire helper in its caller works at reduced integration coverage.",
+    "race_facts": "The race operator uses Promise.any correctly. Its selected-set policy suppresses pre-winner standard failures and reports post-winner ones, with that behavior asserted in runtime tests. Thus equivalent faults have timing-sensitive visibility. Expected domain errors and standard programming/native faults are distinct channels, and ownership keeps all participants observed until they finish.",
+    "scope_facts": "Records, collections and callables can retain resources. The transaction callback may return a value containing its local token as T, but exiting the scope closes it and later access is refused as resource_state. Runtime lifetime enforcement remains effective. Broad type-based resource exclusion would lose valid cases involving resources with an enclosing owner.",
+    "native_facts": "Provenance-aware wrap applies to fetch/judge and can separate identical errors by origin, but it does not accept LLM roots. A named ordinary LLM adapter sees the outward type rather than private provenance. Judges validate the complete response before running source-ordered handlers; their effects survive subsequent handler failure because no transactional or purity discipline exists."
+  },
+  "questions": {
+    "patterns": {
+      "type": "choice",
+      "instructions": "Choose the most appropriate response to accidental catch-all interpretation in the probe.",
+      "criteria": {
+        "explicit_binding": "Separate capture patterns syntactically from leaf tests, diagnosing unrecognized leaf names.",
+        "constructors_only": "Distinguish tests by mandatory constructor forms, leaving bare identifiers as binders.",
+        "heuristic_warning": "Rely on nonblocking typo and unused-binding diagnostics over the existing rules.",
+        "retain": "Address the hazard through examples and guidance without a checker change."
+      }
+    },
+    "variant_identity": {
+      "type": "choice",
+      "instructions": "How should Can reconcile leaf inclusion with phantom generic variant distinctions?",
+      "criteria": {
+        "extensional": "Make union assignability uniformly extensional and preserve brands through concrete nominal records.",
+        "nominal_wrappers": "Enforce distinct variant identities through explicit wrapping rather than erased leaves.",
+        "reject_phantoms": "Disallow phantom parameters in variant declarations while keeping current inclusion elsewhere.",
+        "retain": "Keep the existing relation, including its direct-versus-intermediate distinction."
+      }
+    },
+    "abstract_values": {
+      "type": "choice",
+      "instructions": "Select a direction for public domain values whose validity depends on controlled construction.",
+      "criteria": {
+        "owner_control": "Investigate authored abstract values whose factories, observations, serialization and fixture access have defined owners.",
+        "transparent_validation": "Use unrestricted ordinary records with repeated explicit validity checks.",
+        "catalogue_only": "Keep invariant-bearing representations exclusive to compiler-owned catalogue types.",
+        "defer": "Collect further domain cases before selecting any construction-boundary experiment."
+      }
+    },
+    "generic_contracts": {
+      "type": "choice",
+      "instructions": "How should the gap between a generic signature and its supported operations be addressed first?",
+      "criteria": {
+        "explicit_operations": "First express requirements through named callable dictionaries and measure where limited constraints help.",
+        "template_model": "Adopt the current body-dependent generic domain as the stated public contract model.",
+        "full_traits": "Commit now to general constraint interfaces and their resolution machinery.",
+        "parametric_only": "Make generic bodies uniformly parametric, with external operation arguments for specialized behavior."
+      }
+    },
+    "error_abstraction": {
+      "type": "choice",
+      "instructions": "How should authored higher-order error contracts evolve from the supplied evidence?",
+      "criteria": {
+        "finite_row_trial": "Measure a realistic library abstraction with current workarounds before trialing finite public failure-set genericity.",
+        "results_only": "Keep generic failure composition in ordinary data and adapt it to concrete emitted errors.",
+        "more_intrinsics": "Expand built-ins instead of giving authored functions failure-set abstraction.",
+        "implicit_errors": "Remove the requirement to state public errors and derive them from code."
+      }
+    },
+    "fixture_scope": {
+      "type": "choice",
+      "instructions": "How should consumer scenarios reach helper behavior without short-label coupling?",
+      "criteria": {
+        "explicit_seams": "Investigate explicit scenario-to-seam assignment that retains checked arguments and independently identified concurrent fixture queues.",
+        "lexical_labels": "Preserve local tables selected by root spelling, documenting the coordination burden.",
+        "stub_helper": "Use complete helper substitution in callers as the standard boundary, with implementation tests owned by the library.",
+        "ordinal_globals": "Resolve fixtures through global call counts/function labels rather than typed lexical sites."
+      }
+    },
+    "fault_observation": {
+      "type": "choice",
+      "instructions": "Select an observability contract for standard failures around a successful race outcome.",
+      "criteria": {
+        "all_losing_standard": "Preserve Promise.any results while making losing standard-fault reporting independent of settlement order.",
+        "current_timing": "Continue absorbing earlier standard rejections and observing later ones diagnostically.",
+        "suppress_all": "Silence losing standard outcomes uniformly while retaining promise observation.",
+        "explicit_policy": "Add a visible reporting-policy choice to decide which losing standard faults are recorded."
+      }
+    },
+    "scoped_results": {
+      "type": "choice",
+      "instructions": "How should result contracts address locally owned handles while retaining valid outer-scope returns?",
+      "criteria": {
+        "narrow_diagnostics": "Prototype selective detection of definitely expired returned handles without broadly banning resource-containing values.",
+        "runtime_only": "Allow such data statically and rely on the existing runtime refusal with clearer documentation.",
+        "ban_resource_types": "Disallow resource-containing outputs generally, including those with enclosing lifetimes.",
+        "full_affine": "Commit to complete compile-time ownership checking across the language now."
+      }
+    }
+  }
+}

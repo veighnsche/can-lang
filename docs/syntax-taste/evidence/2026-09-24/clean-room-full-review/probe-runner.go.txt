@@ -1,0 +1,29 @@
+package main
+import (
+ "encoding/json"
+ "os"
+ "path/filepath"
+ "strings"
+ "github.com/veighnsche/can-lang/compiler/internal/check"
+ "github.com/veighnsche/can-lang/compiler/internal/project"
+ "github.com/veighnsche/can-lang/compiler/internal/emit"
+ "github.com/veighnsche/can-lang/compiler/internal/ir"
+)
+func main() {
+ result:=map[string]any{"accepted":false}
+ graph,err:=project.Load(os.Args[1]); if err!=nil {result["error"]=err.Error();json.NewEncoder(os.Stdout).Encode(result);return}
+ p,err:=check.CheckProgram(graph);if err!=nil {result["error"]=err.Error();json.NewEncoder(os.Stdout).Encode(result);return}
+ result["accepted"]=true
+ patterns:=map[string][]string{}
+ for _,f:=range p.Functions { if f.Region.Body.Terminal.Match!=nil {for _,a:=range f.Region.Body.Terminal.Match.Arms {for _,pat:=range a.Patterns {patterns[f.Symbol.Name]=append(patterns[f.Symbol.Name],pat.Kind)}}}}
+ result["patterns"]=patterns
+ var deps []ir.Artifact
+ err=filepath.WalkDir(os.Args[2],func(path string,d os.DirEntry,err error)error{if err!=nil||d.IsDir()||!strings.HasSuffix(path,".ts"){return err};rel,err:=filepath.Rel(os.Args[2],path);if err!=nil{return err};deps=append(deps,ir.Artifact{Path:filepath.ToSlash(filepath.Join("runtime",rel))});return nil})
+ if err!=nil {panic(err)}
+ artifacts,err:=emit.AssertionModules(p,"runtime",deps);if err!=nil{result["emitError"]=err.Error();json.NewEncoder(os.Stdout).Encode(result);return}
+ dir:=filepath.Join(os.Args[1],"generated");os.MkdirAll(dir,0700)
+ for _,a:=range artifacts {if len(a.Bytes)==0{continue};path:=filepath.Join(dir,a.Path);os.MkdirAll(filepath.Dir(path),0700);if err:=os.WriteFile(path,a.Bytes,0600);err!=nil{panic(err)}}
+ if err:=os.Symlink(os.Args[2],filepath.Join(dir,"runtime"));err!=nil&&!os.IsExist(err){panic(err)}
+ result["entry"]=filepath.Join(dir,"entry.ts")
+ json.NewEncoder(os.Stdout).Encode(result)
+}

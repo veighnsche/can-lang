@@ -1,0 +1,12 @@
+{
+  "report_words": 3556,
+  "absolute_file_links_checked": 35,
+  "problems": [],
+  "consultation_usage": {
+    "input_tokens": 6503,
+    "output_tokens": 1288
+  },
+  "temporary_probe_driver_removed": true,
+  "tracked_diff": "",
+  "staged_diff": ""
+}

@@ -1,0 +1,53 @@
+{
+  "facts": [
+    "objective",
+    "baseline",
+    "frontend",
+    "web_contracts",
+    "domain_values",
+    "composition",
+    "platform",
+    "behavior_evidence"
+  ],
+  "questions": {
+    "browser_direction": [
+      "can_browser_model",
+      "htmx_only",
+      "raw_javascript",
+      "defer"
+    ],
+    "web_linkage": [
+      "linked_typed_surface",
+      "builders_and_tests",
+      "untyped_templates",
+      "defer"
+    ],
+    "domain_sealing": [
+      "sealing_prototype",
+      "validate_each_boundary",
+      "builtin_business_types",
+      "defer"
+    ],
+    "composition_scope": [
+      "measure_current_first",
+      "add_error_and_bind_syntax",
+      "erase_errors",
+      "keep_forever"
+    ],
+    "sdk_boundary": [
+      "evidence_gated_adapters",
+      "catalogue_only",
+      "arbitrary_imports",
+      "defer"
+    ],
+    "assertion_direction": [
+      "behavior_observations",
+      "external_tests_only",
+      "universal_proofs",
+      "defer"
+    ]
+  },
+  "wording": "Every explanatory state, instruction and option value differs across the three fresh requests. Stable technical names and facts remain equivalent.",
+  "semantic_review": "Manually compared each triple before dispatch: same product objective, retained constraints, current implementation evidence, caveats, alternatives and demonstrated-need gates. No previous response is included in a later request.",
+  "not_proof": "Independent wording is a sensitivity check, not proof of unbiased or correct advice."
+}

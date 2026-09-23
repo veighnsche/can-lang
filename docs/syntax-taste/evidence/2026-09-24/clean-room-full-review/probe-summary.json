@@ -1,0 +1,291 @@
+[
+  {
+    "case": "pattern-correct",
+    "accepted": true,
+    "error": null,
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "nominal"
+      ]
+    },
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "sample"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "rejected"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "pattern-typo",
+    "accepted": true,
+    "error": null,
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "any"
+      ]
+    },
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "sample"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "rejected"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "pattern-typo-new-leaf",
+    "accepted": true,
+    "error": null,
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "any"
+      ]
+    },
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "sample"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::accepted",
+          "name": "rejected"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "pattern-correct-new-leaf",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::accepted: /private/tmp/can-clean-review-probes/pattern-correct-new-leaf/src/main.can region can.project.root/app::accepted: ordinary match is not exhaustive",
+    "patterns": null,
+    "assertions": []
+  },
+  {
+    "case": "pattern-constructor-typo",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::accepted: /private/tmp/can-clean-review-probes/pattern-constructor-typo/src/main.can region can.project.root/app::accepted: no eligible declaration for \"decliend\"",
+    "patterns": null,
+    "assertions": []
+  },
+  {
+    "case": "variant-direct",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::convert: /private/tmp/can-clean-review-probes/variant-direct/src/main.can region can.project.root/app::convert: expression type does not fit expected type at byte 233",
+    "patterns": null,
+    "assertions": []
+  },
+  {
+    "case": "variant-via-bridge",
+    "accepted": true,
+    "error": null,
+    "patterns": {},
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::convert",
+          "name": "sample"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "variant-via-leaf",
+    "accepted": true,
+    "error": null,
+    "patterns": {
+      "convert": [
+        "nominal"
+      ]
+    },
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::convert",
+          "name": "sample"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "fixture-original",
+    "accepted": true,
+    "error": null,
+    "patterns": {},
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "customer"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/helper",
+          "declaration": "can.project.root/helper::read",
+          "name": "unit"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  },
+  {
+    "case": "fixture-renamed-root",
+    "accepted": true,
+    "error": null,
+    "patterns": {},
+    "assertions": [
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "passed": false,
+        "exit": 1,
+        "reason": "outcome mismatch"
+      },
+      {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::main",
+          "name": "empty"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      },
+      {
+        "root": {
+          "package": "can.project.root/helper",
+          "declaration": "can.project.root/helper::read",
+          "name": "unit"
+        },
+        "passed": true,
+        "exit": 0,
+        "reason": null
+      }
+    ]
+  }
+]

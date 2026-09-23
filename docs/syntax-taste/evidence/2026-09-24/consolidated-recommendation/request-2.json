@@ -1,0 +1,64 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "A SaaS-focused review and a fresh source-focused review need one ordered outcome. Can should eventually serve a wide range of server and client SaaS applications. The answers here guide a review, not a change to approved grammar or compiler behavior.",
+    "baseline": "The existing language uses frozen nominal data, named callables, written outward failures, declaration-owned tests, distinct AI declarations and grouped AI inputs. Its target compiles to JS/Bun operations with safety glue. No outside adopter needs old spellings preserved; justify major additions by comparing representative Can code.",
+    "pattern_evidence": "The checker and emitted assertions accept a typo in the last union arm because unknown unqualified names bind the whole value. Extending the variant does not expose the error; the properly named three-arm version becomes non-exhaustive. Constructor spelling of the typo fails. Earlier policy kept the bare rule, but this new direct probe challenges that policy.",
+    "library_evidence": "Source libraries cannot hide ordinary record construction and with-updates while exporting the type. Catalogue combinators specialize callback errors, but an authored helper names concrete errors; operational templates are checked at each use without an expressed requirement. Two dependency projects using the same package label or application error number cannot be linked unchanged.",
+    "fixture_evidence": "Changing only the root row name in a consuming package leaves static checking green but stops a helper package's local when-row from activating. The helper then returns actual conversion text rather than injected data. This is not a concurrent queue collision. A previous disposition postponed explicit cross-call scenario links before the repro existed.",
+    "frontend_evidence": "The qualified model serves HTML/HTMX from Bun, with no Can runtime inside a browser. String links between endpoints, form controls and swap targets survive independent renames. An invoice grid with drafts, keyboard behavior, optimistic saving and rollback needs client-side state. Keeping that code in another browser language can still make Can a strong server language, with an honest scope label.",
+    "delivery_evidence": "The release target pins macOS arm64; Linux service behavior is not yet release-qualified. A realistic proof would exercise authorized invoice edits, idempotent provider events, transaction/outbox outcomes, failed dependencies, displayed status and shutdown. Current SQL descriptors enforce shape/cardinality and codecs but do not validate a live schema projection at build time. These are operational gates, not mere syntax preferences."
+  },
+  "questions": {
+    "pattern_policy": {
+      "type": "choice",
+      "instructions": "Choose the pattern-intent experiment that most directly restores future-case checking.",
+      "criteria": {
+        "explicit_binding": "Introduce a distinct binder form so an unresolved bare case cannot silently bind the subject.",
+        "constructors_only": "Make paid() style the nominal test form and use unadorned identifiers only for captures.",
+        "warn_only": "Retain ambiguous names but warn when a binding resembles a declared leaf.",
+        "retain": "Preserve the earlier retained pattern rule, relying on style guidance for case intent."
+      }
+    },
+    "value_boundary": {
+      "type": "choice",
+      "instructions": "How should a reusable library express an email type whose construction it controls?",
+      "criteria": {
+        "owner_control": "Compare package-private representation behind an exported immutable type, specifying factories and codecs together.",
+        "transparent_validation": "Treat public data as DTOs; validate again wherever an exported value is consumed.",
+        "catalogue_only": "Use compiler-maintained types for invariants; ordinary source records remain publicly constructible.",
+        "defer": "Postpone representation control pending evidence beyond email, quantity and tenant identifier."
+      }
+    },
+    "fixture_scenarios": {
+      "type": "choice",
+      "instructions": "Choose a response to the root-label rename changing helper behavior.",
+      "criteria": {
+        "explicit_seams": "Evaluate explicit mapping from a root scenario to named dependency fixture seams with the current exact checks.",
+        "lexical_labels": "Retain current lexical tables and treat assertion-row naming as an intentional cross-package convention.",
+        "stub_boundary": "Use complete dependency substitution at the package edge instead of selecting interior fixtures.",
+        "global_ordinals": "Use broad function/ordinal fixture replacement rather than explicit local-site ownership."
+      }
+    },
+    "generic_errors": {
+      "type": "choice",
+      "instructions": "Select the next evidence gate for a general fallible helper such as retry.",
+      "criteria": {
+        "measure_then_trial": "Measure current Can's best reusable retry/audit helper, then prototype a written finite set variable only if needed.",
+        "result_permanent": "Retain fixed completion signatures and express all reusable variable errors through ordinary result data.",
+        "add_intrinsics": "Prefer more language-owned specialized helpers instead of authored error-set abstraction.",
+        "implicit_inference": "Let each function's body define its exported failure contract automatically."
+      }
+    },
+    "frontend_path": {
+      "type": "choice",
+      "instructions": "How should Can sequence the current SSR scope and the richer all-frontend ambition?",
+      "criteria": {
+        "server_then_browser": "Establish a production server/HTMX recommendation, then add a bounded Can client target proved by local drafts, optimistic updates and disposal.",
+        "browser_first": "Lead with client runtime and component architecture while deferring the existing service-language contract gates.",
+        "typed_external_client": "Use a supported TypeScript/browser client with generated wire types and position Can as the backend in the full application.",
+        "server_only_universal": "Make the universal SaaS frontend claim without adding local browser execution or a separate client stack."
+      }
+    }
+  }
+}

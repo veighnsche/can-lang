@@ -1,0 +1,64 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Reconcile two current assessments of Can against the ambition of recommending it across SaaS services and user interfaces. Treat choices as advice about next evidence and contracts; no selected language rule changes merely because a response prefers it.",
+    "baseline": "Preserve the valuable core while reviewing its limits: immutable nominal records, named functions, visible error sets, attached executable examples, and native AI with grouped state. Emit equivalent JS/Bun operations. Migration does not constrain design because external users number zero. New general mechanisms need concrete cost and behavior evidence.",
+    "pattern_evidence": "A tested payment match with final decliend instead of declined compiles, executes and covers future refunded implicitly. Using declined would make refunded a missing arm; writing decliend() is diagnosed. The present parser/checker intentionally gives bare unknown names binder meaning. The earlier retain decision did not consider this demonstrated failure mode.",
+    "library_evidence": "Package composition exposes three gaps: ordinary exported validated records remain forgeable; user-authored higher-order code lacks the catalogue's failure-set genericity and template constraints are not visible in its signature; unrelated dependencies must coordinate package short names and diagnostic numbers. These are observed language/library boundaries rather than requests for unrestricted foreign JS.",
+    "fixture_evidence": "The current fixture table filters by the root assertion's short name. In the current emitted probe, customer activates helper when-row and renamed does not, though the call inputs and helper source are unchanged. Checked arguments, lexical invocation paths and FIFO ownership work as designed. This new evidence reopens whether caller-owned scenario mapping is warranted.",
+    "frontend_evidence": "Server-driven forms, search and dashboards are supported; local interactive browser computation is excluded by the selected spec. URL membership, form names and DOM target identity are not linked by Can types. The stated all-frontend ambition requires a decision tested by an offline/optimistic editable-grid example: a Can client target or a typed bridge to an existing client stack, with different resulting product claims.",
+    "delivery_evidence": "Can has not yet passed a supported Linux distribution gate. Before a broad SaaS recommendation, demonstrate a multi-tenant edit, a replayed webhook and uncertain commit, browser-visible errors, real database integration, and bounded service closure. SQL's runtime row checks contain mismatches while compile-time schema agreement is unproven. Feature selection should remain distinct from qualification evidence."
+  },
+  "questions": {
+    "pattern_policy": {
+      "type": "choice",
+      "instructions": "How should nominal tests and bindings be distinguished after the current typo probe?",
+      "criteria": {
+        "explicit_binding": "Give value captures their own syntax while familiar leaf names remain checked alternatives.",
+        "constructors_only": "Force leaf matching to spell a constructor and reserve simple names for whole-value binding.",
+        "warn_only": "Use heuristic warnings instead of changing the present grammar or validity rule.",
+        "retain": "Keep today's bare spelling and document the catch-all interpretation as expected."
+      }
+    },
+    "value_boundary": {
+      "type": "choice",
+      "instructions": "Select the next representation-boundary direction for ordinary business values.",
+      "criteria": {
+        "owner_control": "Try authored abstract values whose creating package governs construction, updates and projection without resource privileges.",
+        "transparent_validation": "Retain unrestricted construction, with application operations explicitly checking the predicate repeatedly.",
+        "catalogue_only": "Make all protected representations platform-owned instead of allowing package authors to define them.",
+        "defer": "Keep this question outside the next language milestone and seek additional applications first."
+      }
+    },
+    "fixture_scenarios": {
+      "type": "choice",
+      "instructions": "How should a consumer deliberately arrange a dependency's test scenario?",
+      "criteria": {
+        "explicit_seams": "Give cross-call fixture activation a visible named relationship rather than shared short-label coincidence.",
+        "lexical_labels": "Preserve inherited root-name activation, with guidance for consumers and helper authors.",
+        "stub_boundary": "Make consumer tests replace helper results wholesale and leave internal behavior to owned unit tests.",
+        "global_ordinals": "Identify injected calls through global order or callee labels across packages."
+      }
+    },
+    "generic_errors": {
+      "type": "choice",
+      "instructions": "What is the justified response to user code lacking finite callback-error polymorphism?",
+      "criteria": {
+        "measure_then_trial": "Compare concrete errors and data-result adapters to a small explicit error-set generic using an application workload.",
+        "result_permanent": "Use result records/variants for higher-order libraries indefinitely, with explicit conversions to completion paths.",
+        "add_intrinsics": "Expand built-in combinators whenever a wrapper needs caller-specific failures.",
+        "implicit_inference": "Remove written public error lists in favor of unannounced inferred sets."
+      }
+    },
+    "frontend_path": {
+      "type": "choice",
+      "instructions": "Choose a scope strategy for recommending Can across services and interactive user interfaces.",
+      "criteria": {
+        "server_then_browser": "Complete core/service gates followed by native Can browser execution and wire-capability separation before claiming broad Can-authored frontend coverage.",
+        "browser_first": "Build browser Can immediately as the first milestone, leaving package, fixture and service evidence for later.",
+        "typed_external_client": "Keep browser implementation in another stack, with checked HTTP contracts, and label Can a server-language recommendation.",
+        "server_only_universal": "Treat existing server-rendered interaction as sufficient for offline, canvas and optimistic clients alike."
+      }
+    }
+  }
+}

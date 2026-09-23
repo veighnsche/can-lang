@@ -1,0 +1,28 @@
+package app
+    provides []
+    uses []
+record paid
+record pending
+record declined
+variant payment
+    paid
+    pending
+    declined
+fn bool accepted
+    emits []
+    given
+        payment value
+    asserts
+        sample: paid() => ok true
+        rejected: declined() => ok false
+    match value
+        paid => ok true
+        pending => ok false
+        decliend() => ok false
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

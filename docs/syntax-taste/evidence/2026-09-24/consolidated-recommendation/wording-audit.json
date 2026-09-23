@@ -1,0 +1,46 @@
+{
+  "fact_fields": [
+    "objective",
+    "baseline",
+    "pattern_evidence",
+    "library_evidence",
+    "fixture_evidence",
+    "frontend_evidence",
+    "delivery_evidence"
+  ],
+  "question_alternatives": {
+    "pattern_policy": [
+      "explicit_binding",
+      "constructors_only",
+      "warn_only",
+      "retain"
+    ],
+    "value_boundary": [
+      "owner_control",
+      "transparent_validation",
+      "catalogue_only",
+      "defer"
+    ],
+    "fixture_scenarios": [
+      "explicit_seams",
+      "lexical_labels",
+      "stub_boundary",
+      "global_ordinals"
+    ],
+    "generic_errors": [
+      "measure_then_trial",
+      "result_permanent",
+      "add_intrinsics",
+      "implicit_inference"
+    ],
+    "frontend_path": [
+      "server_then_browser",
+      "browser_first",
+      "typed_external_client",
+      "server_only_universal"
+    ]
+  },
+  "mechanical_check": "Every explanatory fact, instruction and option has three distinct phrasings. Stable technical identifiers and all alternative sets are unchanged.",
+  "semantic_check": "Coordinator compared corresponding triples for equivalent observations, scope caveats and choices before dispatch. Rewording does not prove absence of framing bias.",
+  "prior_answers_excluded": true
+}

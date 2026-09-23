@@ -1,0 +1,209 @@
+[
+  {
+    "case": "pattern-correct",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/pattern-correct/generated/entry.ts",
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "nominal"
+      ]
+    },
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 2,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "pattern-typo",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/pattern-typo/generated/entry.ts",
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "any"
+      ]
+    },
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 2,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "pattern-typo-new-leaf",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/pattern-typo-new-leaf/generated/entry.ts",
+    "patterns": {
+      "accepted": [
+        "nominal",
+        "nominal",
+        "any"
+      ]
+    },
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"sample\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::accepted\",\"name\":\"rejected\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 2,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "pattern-correct-new-leaf",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::accepted: /private/tmp/can-clean-review-probes/pattern-correct-new-leaf/src/main.can region can.project.root/app::accepted: ordinary match is not exhaustive"
+  },
+  {
+    "case": "pattern-constructor-typo",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::accepted: /private/tmp/can-clean-review-probes/pattern-constructor-typo/src/main.can region can.project.root/app::accepted: no eligible declaration for \"decliend\""
+  },
+  {
+    "case": "variant-direct",
+    "accepted": false,
+    "error": "concrete function can.project.root/app::convert: /private/tmp/can-clean-review-probes/variant-direct/src/main.can region can.project.root/app::convert: expression type does not fit expected type at byte 233"
+  },
+  {
+    "case": "variant-via-bridge",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/variant-via-bridge/generated/entry.ts",
+    "patterns": {},
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "variant-via-leaf",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/variant-via-leaf/generated/entry.ts",
+    "patterns": {
+      "convert": [
+        "nominal"
+      ]
+    },
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::convert\",\"name\":\"sample\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "fixture-original",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/fixture-original/generated/entry.ts",
+    "patterns": {},
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"customer\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"customer\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\",\"supplied-completion\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"customer\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"customer\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 2,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\",\"supplied-completion\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"passed\":true}\n"
+      }
+    ]
+  },
+  {
+    "case": "fixture-renamed-root",
+    "accepted": true,
+    "entry": "/private/tmp/can-clean-review-probes/fixture-renamed-root/generated/entry.ts",
+    "patterns": {},
+    "runtimeRuns": [
+      {
+        "rootIndex": 0,
+        "exit": 1,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":false,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":false,\"reason\":\"outcome mismatch\"}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":false}\n"
+      },
+      {
+        "rootIndex": 1,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+      },
+      {
+        "rootIndex": 2,
+        "exit": 0,
+        "stdout": "{\"schemaVersion\":1,\"kind\":\"can.assertion-root-report\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"passed\":true,\"assertion\":{\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"frames\":[],\"violations\":[],\"evidence\":[\"real-can\",\"supplied-completion\"],\"fixturePaths\":[],\"passed\":true}}\n",
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::read\",\"name\":\"unit\"},\"passed\":true}\n"
+      }
+    ]
+  }
+]

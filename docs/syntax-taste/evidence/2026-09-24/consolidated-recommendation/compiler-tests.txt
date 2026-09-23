@@ -1,0 +1,2 @@
+ok  	github.com/veighnsche/can-lang/compiler/internal/check	(cached)
+ok  	github.com/veighnsche/can-lang/compiler/internal/project	0.499s
