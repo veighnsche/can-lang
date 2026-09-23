@@ -448,6 +448,7 @@
       "../completion.ts",
       "../assert/context.ts",
       "../data.ts",
+      "../bytes.ts",
       "../domain.ts",
       "../failure.ts",
       "../owner.ts",

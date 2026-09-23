@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "89a988f633273d8dc53be0ee3893b7fe298d3f7945bd92ad0a9ae9bb895f5df6";
+export const catalogueSHA256 = "28da28148176ff51045ce38f63983fc65fde00c9a87c31bd7f9bb1818f626dee";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -567,6 +567,16 @@ export const catalogue = freeze({
     {
       "name": "http::server_config",
       "identity": "can.std.http@1::server_config",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "http::tls_config",
+      "identity": "can.std.http@1::tls_config",
       "kind": "opaque",
       "parameters": [],
       "fields": [],
@@ -7005,7 +7015,7 @@ export const catalogue = freeze({
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7052,7 +7062,7 @@ export const catalogue = freeze({
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7099,7 +7109,7 @@ export const catalogue = freeze({
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7146,7 +7156,7 @@ export const catalogue = freeze({
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7193,7 +7203,7 @@ export const catalogue = freeze({
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7304,6 +7314,81 @@ export const catalogue = freeze({
         ],
         "adapter": "Register ownership; await each Can callback and sanitize standard failures.",
         "task": "I33"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "P6",
+        "P10"
+      ]
+    },
+    {
+      "name": "http::make_tls_config",
+      "identity": "can.std.http@1::make_tls_config",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "cert",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "key",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::tls_config",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_server_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "TextDecoder"
+        ],
+        "adapter": "Validate PEM certificate chain and private key structure before server start.",
+        "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::server_start_tls",
+      "identity": "can.std.http@1::server_start_tls",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "config",
+          "type": "http::server_config"
+        },
+        {
+          "name": "router",
+          "type": "http::router"
+        },
+        {
+          "name": "tls",
+          "type": "http::tls_config"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server",
+      "callbacks": [],
+      "emits": [
+        "http::bind_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.serve"
+        ],
+        "adapter": "Register ownership; serve TLS with the validated material and sanitize standard failures.",
+        "task": "B1-06"
       },
       "assertion": "supplied",
       "refs": [
@@ -10088,6 +10173,14 @@ export const catalogueTypeShapes = freeze([
   {
     "name": "http::server_config",
     "identity": "can.std.http@1::server_config",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "http::tls_config",
+    "identity": "can.std.http@1::tls_config",
     "kind": "opaque",
     "parameters": [],
     "fields": [],

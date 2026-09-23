@@ -565,6 +565,16 @@
       "constructible": false
     },
     {
+      "name": "http::tls_config",
+      "identity": "can.std.http@1::tls_config",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
       "name": "sql::pool",
       "identity": "can.std.sql@1::pool",
       "kind": "opaque",
@@ -6995,7 +7005,7 @@
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7042,7 +7052,7 @@
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7089,7 +7099,7 @@
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7136,7 +7146,7 @@
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7183,7 +7193,7 @@
           "URL"
         ],
         "adapter": "Validate exact normalized path and mount a named boxed Can callback.",
-        "task": "I32"
+        "task": "B1-06"
       },
       "assertion": "real",
       "refs": [
@@ -7294,6 +7304,81 @@
         ],
         "adapter": "Register ownership; await each Can callback and sanitize standard failures.",
         "task": "I33"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "P6",
+        "P10"
+      ]
+    },
+    {
+      "name": "http::make_tls_config",
+      "identity": "can.std.http@1::make_tls_config",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "cert",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "key",
+          "type": "bytes::buffer"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::tls_config",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_server_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "TextDecoder"
+        ],
+        "adapter": "Validate PEM certificate chain and private key structure before server start.",
+        "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::server_start_tls",
+      "identity": "can.std.http@1::server_start_tls",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "config",
+          "type": "http::server_config"
+        },
+        {
+          "name": "router",
+          "type": "http::router"
+        },
+        {
+          "name": "tls",
+          "type": "http::tls_config"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::server",
+      "callbacks": [],
+      "emits": [
+        "http::bind_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.serve"
+        ],
+        "adapter": "Register ownership; serve TLS with the validated material and sanitize standard failures.",
+        "task": "B1-06"
       },
       "assertion": "supplied",
       "refs": [

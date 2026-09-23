@@ -1,6 +1,6 @@
 import {test,expect} from "bun:test";
 import {spawn} from "node:child_process";
-import {mkdtempSync,writeFileSync,rmSync} from "node:fs";
+import {mkdtempSync,writeFileSync,readFileSync,rmSync} from "node:fs";
 import {tmpdir} from "node:os";
 import {join} from "node:path";
 import {fileURLToPath} from "node:url";
@@ -11,6 +11,7 @@ import {standardFailureDiagnostics} from "../failure.ts";
 import {success,value,invoke,type Completion} from "../completion.ts";
 import {runOwnedRoot,launchOwned,resourceStatus} from "../owner.ts";
 import {assertionContext} from "../assert/context.ts";
+import {ownBytes} from "../bytes.ts";
 import {createServer,isServerValue} from "../platform/server.ts";
 import {createRouter} from "../platform/router.ts";
 import {createResponses} from "../platform/http.ts";
@@ -427,3 +428,66 @@ await runOwnedRoot(async ()=>{
  expect(result.output).toContain("wait-pending");expect(result.output).not.toContain("settled-late");
  expect(result.errors).toBe("");expect(result.signal).toBe("SIGKILL");
 },15000);
+
+const tlsCert="-----BEGIN CERTIFICATE-----\nAA==\n-----END CERTIFICATE-----\n";
+const tlsKey="-----BEGIN PRIVATE KEY-----\nAA==\n-----END PRIVATE KEY-----\n";
+const tlsBytes=(text:string)=>ownBytes(new TextEncoder().encode(text));
+
+test("TLS config validates PEM structure before serving",async ()=>{
+ const made=value(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes(tlsKey)));
+ expect(isServerValue("tls_config",made)).toBe(true);
+ expect(isServerValue("server_config",made)).toBe(false);
+ expect((await server.makeTlsConfig(tlsBytes(tlsCert+tlsCert),tlsBytes(tlsKey))).kind).toBe("ok");
+ for(const key of ["-----BEGIN RSA PRIVATE KEY-----\nAA==\n-----END RSA PRIVATE KEY-----\n","-----BEGIN EC PRIVATE KEY-----\nAA==\n-----END EC PRIVATE KEY-----\n"])expect((await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes(key))).kind).toBe("ok");
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes("garbage"),tlsBytes(tlsKey)),"http::invalid_server_config")).toMatchObject({reason:"tls_cert"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes("garbage")),"http::invalid_server_config")).toMatchObject({reason:"tls_key"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsKey),tlsBytes(tlsKey)),"http::invalid_server_config")).toMatchObject({reason:"tls_cert"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes(tlsCert)),"http::invalid_server_config")).toMatchObject({reason:"tls_key"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(""),tlsBytes(tlsKey)),"http::invalid_server_config")).toMatchObject({reason:"tls_cert"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes(tlsKey+tlsKey)),"http::invalid_server_config")).toMatchObject({reason:"tls_key"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes("-----BEGIN CERTIFICATE-----\nAA==\n-----END X-----\n"),tlsBytes(tlsKey)),"http::invalid_server_config")).toMatchObject({reason:"tls_cert"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsCert),ownBytes(new Uint8Array([255,254]))),"http::invalid_server_config")).toMatchObject({reason:"tls_key"});
+ expect(domainOutcome(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes("x".repeat(1048577))),"http::invalid_server_config")).toMatchObject({reason:"tls_key"});
+});
+
+function localChain(dir:string):{cert:Uint8Array;key:Uint8Array}{
+ const cnf=join(dir,"san.cnf");
+ writeFileSync(cnf,"[req]\ndistinguished_name=dn\nreq_extensions=v3\n[dn]\n[v3]\nsubjectAltName=IP:127.0.0.1\n");
+ const keyPath=join(dir,"key.pem"),certPath=join(dir,"cert.pem");
+ const generated=Bun.spawnSync(["openssl","req","-x509","-newkey","rsa:2048","-keyout",keyPath,"-out",certPath,"-days","2","-nodes","-subj","/CN=127.0.0.1","-config",cnf,"-extensions","v3"],{stdout:"ignore",stderr:"pipe"});
+ if(generated.exitCode!==0)throw new Error("openssl chain failed: "+generated.stderr.toString());
+ return {cert:new Uint8Array(readFileSync(certPath)),key:new Uint8Array(readFileSync(keyPath))};
+}
+
+test("TLS serves a generated chain and rejects untrusted clients",async ()=>{
+ const dir=mkdtempSync(join(tmpdir(),"can-tls-"));
+ try{
+  const {cert,key}=localChain(dir);
+  const owned=await runOwnedRoot(async ()=>{
+   const config=value(await server.makeConfig("127.0.0.1",18358n,1048576n,5000n));
+   const tls=value(await server.makeTlsConfig(ownBytes(cert),ownBytes(key)));
+   const route=value(await router.get("/x",async ()=>textResult("secure")));
+   const table=value(await router.make([route]));
+   const token=value(await server.startTls(config,table,tls));
+   const trusted=await fetch("https://127.0.0.1:18358/x",{tls:{ca:cert}} as RequestInit);
+   expect(trusted.status).toBe(200);expect(await trusted.text()).toBe("secure");
+   await expect(fetch("https://127.0.0.1:18358/x")).rejects.toThrow();
+   expect((await server.stop(token)).kind).toBe("ok");
+   expect((await server.wait(token)).kind).toBe("ok");
+   return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
+
+test("TLS start maps unparseable DER to bind failures",async ()=>{
+ const owned=await runOwnedRoot(async ()=>{
+  const config=value(await server.makeConfig("127.0.0.1",18359n,1048576n,5000n));
+  const tls=value(await server.makeTlsConfig(tlsBytes(tlsCert),tlsBytes(tlsKey)));
+  const route=value(await router.get("/x",async ()=>textResult("never")));
+  const table=value(await router.make([route]));
+  expect(domainOutcome(await server.startTls(config,table,tls),"http::bind_failed")).toMatchObject({address:"127.0.0.1:18359"});
+  return success(undefined);
+ });
+ expect(owned.cleanupFailed).toBe(false);expect(owned.completion.kind).toBe("ok");
+});

@@ -178,7 +178,7 @@ func (builder *stateBuilder) initializeDomain() error {
 			continue
 		}
 		switch kind := strings.Split(typ.Declaration(), "::")[1]; kind {
-		case "request", "status", "body_status", "server_headers", "server_response", "route", "router", "server_config", "server":
+		case "request", "status", "body_status", "server_headers", "server_response", "route", "router", "server_config", "tls_config", "server":
 			httpKinds[typ.Identity()] = kind
 		}
 	}

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "89a988f633273d8dc53be0ee3893b7fe298d3f7945bd92ad0a9ae9bb895f5df6"
+const GeneratedSourceSHA256 = "28da28148176ff51045ce38f63983fc65fde00c9a87c31bd7f9bb1818f626dee"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -34,6 +34,7 @@ const TypeHttpRoute = "http::route"
 const TypeHttpRouter = "http::router"
 const TypeHttpServer = "http::server"
 const TypeHttpServerConfig = "http::server_config"
+const TypeHttpTlsConfig = "http::tls_config"
 const TypeSqlPool = "sql::pool"
 const TypeSqlTransaction = "sql::transaction"
 const TypeSqlSqliteFileOptions = "sql::sqlite_file_options"
@@ -464,6 +465,8 @@ const OpHttpRouteHead = "http::route_head"
 const OpHttpMakeRouter = "http::make_router"
 const OpHttpMakeServerConfig = "http::make_server_config"
 const OpHttpServerStart = "http::server_start"
+const OpHttpMakeTlsConfig = "http::make_tls_config"
+const OpHttpServerStartTls = "http::server_start_tls"
 const OpHttpServerWait = "http::server_wait"
 const OpHttpServerStop = "http::server_stop"
 const OpSqlPoolOpen = "sql::pool_open"

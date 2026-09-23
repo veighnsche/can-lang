@@ -90,6 +90,8 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.http@1::make_router"] = "$canRouter.make"
 	functions["can.std.http@1::make_server_config"] = "$canServer.makeConfig"
 	functions["can.std.http@1::server_start"] = "$canServer.start"
+	functions["can.std.http@1::make_tls_config"] = "$canServer.makeTlsConfig"
+	functions["can.std.http@1::server_start_tls"] = "$canServer.startTls"
 	functions["can.std.http@1::server_stop"] = "$canServer.stop"
 	functions["can.std.http@1::server_wait"] = "$canServer.wait"
 	functions["can.std.clock@1::wall_millis"] = "$canClock.wallMillis"

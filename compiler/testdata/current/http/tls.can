@@ -1,0 +1,67 @@
+package app
+    provides []
+    uses [http, bytes, codec]
+fn http::server_response health
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "healthy")
+fn http::router table
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/health", callable health) as http::route probe
+        call http::make_router([probe]) as http::router built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok built
+fn bool tls_material
+    emits [http::invalid_server_config, codec::invalid_data]
+    asserts
+        sample: => ok true
+    match chain
+        call bytes::from_utf8("garbage") as bytes::buffer bad
+        call http::make_tls_config(bad, bad) as http::tls_config rejected
+        http::invalid_server_config => ok true
+        codec::invalid_data => ok false
+        ok => ok false
+fn http::server boot_tls
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, codec::invalid_data]
+    given
+        int port
+        str cert
+        str key
+    asserts
+        sample: 0, "-----BEGIN CERTIFICATE-----AA==-----END CERTIFICATE-----", "-----BEGIN PRIVATE KEY-----AA==-----END PRIVATE KEY-----" => ok
+    match call bytes::from_utf8(cert)
+        codec::invalid_data
+        ok bytes::buffer cert_bytes => match call bytes::from_utf8(key)
+            codec::invalid_data
+            ok bytes::buffer key_bytes => match call http::make_tls_config(cert_bytes, key_bytes)
+                http::invalid_server_config
+                ok http::tls_config tls => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                    http::invalid_server_config
+                    ok http::server_config config => match call table()
+                        http::invalid_route
+                        http::duplicate_route
+                        http::ambiguous_route
+                        ok http::router built => match call http::server_start_tls(config, built, tls)
+                            when
+                                sample: config, built, tls => ok
+                            http::bind_failed
+                            ok http::server sturdy => ok sturdy
+fn void main
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call table()
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok http::router built => ok
