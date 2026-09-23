@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "37bfec14da3a6f850f5e631e865a593a020f48abfd830967150472c82411bcd2"
+const GeneratedSourceSHA256 = "63740148493dd099a2a036add11dc78f9e970e51b74934c5a98d28123fb81002"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -399,6 +399,7 @@ const OpSqlPoolOpen = "sql::pool_open"
 const OpSqlPoolClose = "sql::pool_close"
 const OpSqlSqliteOpenMemory = "sql::sqlite_open_memory"
 const OpSqlSqliteOpenFile = "sql::sqlite_open_file"
+const OpSqlMysqlOpen = "sql::mysql_open"
 const OpSqlQueryOne = "sql::query_one"
 const OpSqlQueryOptional = "sql::query_optional"
 const OpSqlQueryRows = "sql::query_rows"

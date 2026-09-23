@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "37bfec14da3a6f850f5e631e865a593a020f48abfd830967150472c82411bcd2";
+export const catalogueSHA256 = "63740148493dd099a2a036add11dc78f9e970e51b74934c5a98d28123fb81002";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -6312,6 +6312,42 @@ export const catalogue = freeze({
       "assertion": "supplied",
       "refs": [
         "B1-02"
+      ]
+    },
+    {
+      "name": "sql::mysql_open",
+      "identity": "can.std.sql@1::mysql_open",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "connection_variable",
+          "type": "str"
+        },
+        {
+          "name": "max_connections",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "sql::pool",
+      "callbacks": [],
+      "emits": [
+        "http::credentials_missing",
+        "sql::connection_failed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.SQL"
+        ],
+        "adapter": "Read selected credential; open MySQL with bigint:true, forced TLS, validated max, and a pinned UTC session.",
+        "task": "B1-03"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-03"
       ]
     },
     {

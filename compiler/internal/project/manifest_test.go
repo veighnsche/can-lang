@@ -64,7 +64,7 @@ func TestManifestRejectsUnknownDuplicateAndWrongTypedFields(t *testing.T) {
 func TestSQLDescriptorShapeRefusals(t *testing.T) {
 	base := `{"source_root":"src","error_registry":"e","sql":{"q":{"dialect":"postgresql","statement":"SELECT $1 LIMIT $2","parameters":["name"],"parameter_type":"app::parameters","row_type":"app::row","cardinality":"many","row_limit_parameter":2}}}`
 	for _, pair := range [][2]string{
-		{`"postgresql"`, `"mysql"`}, {`"many"`, `"execute"`}, {`"many"`, `"unknown"`},
+		{`"postgresql"`, `"oracle"`}, {`"many"`, `"execute"`}, {`"many"`, `"unknown"`},
 		{`"row_limit_parameter":2`, `"row_limit_parameter":2.0`}, {`"row_limit_parameter":2`, `"row_limit_parameter":1`},
 		{`,"row_limit_parameter":2`, ``}, {`"parameters":["name"]`, `"parameters":["name","name"]`},
 		{`"app::row"`, `"row"`}, {`"app::row"`, `"app::row[]"`}, {`"statement":`, `"hook":"command","statement":`},

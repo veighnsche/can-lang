@@ -55,7 +55,7 @@ func parseSQL(raw json.RawMessage) (SQLDescriptor, error) {
 		}
 		*dest = value
 	}
-	if d.Dialect != "postgresql" && d.Dialect != "sqlite" {
+	if d.Dialect != "postgresql" && d.Dialect != "sqlite" && d.Dialect != "mysql" {
 		return d, fmt.Errorf("unsupported SQL dialect")
 	}
 	if d.Cardinality != "one" && d.Cardinality != "optional" && d.Cardinality != "many" && d.Cardinality != "execute" {

@@ -452,7 +452,12 @@
       "./values.ts",
       "./postgres.ts",
       "./sqlite.ts",
-      "./config.ts"
+      "./config.ts",
+      "./mysql.ts"
+    ],
+    "platform/sql/mysql.ts": [
+      "../../completion.ts",
+      "./errors.ts"
     ],
     "platform/sql/postgres.ts": [
       "../../completion.ts",
@@ -471,7 +476,8 @@
       "./errors.ts",
       "./postgres.ts",
       "./sqlite.ts",
-      "./values.ts"
+      "./values.ts",
+      "./mysql.ts"
     ],
     "platform/sql/values.ts": [
       "../../completion.ts",

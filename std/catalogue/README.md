@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 37bfec14da3a6f850f5e631e865a593a020f48abfd830967150472c82411bcd2.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 63740148493dd099a2a036add11dc78f9e970e51b74934c5a98d28123fb81002.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -311,6 +311,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | sql::pool_close | sql::pool pool, int timeout_ms → void | [sql::close_failed] |  | Bun.SQL.close | Drain leases then close with remaining deadline; leave timed-out close owned. | supplied | I35 / P6,P12 |
 | sql::sqlite_open_memory |  → sql::pool | [sql::connection_failed] |  | Bun.SQL | Open in-memory SQLite with safeIntegers:true; the database lives while the pool is open. | supplied | B1-02 / B1-02 |
 | sql::sqlite_open_file | str path, sql::sqlite_file_options options → sql::pool | [sql::connection_failed] |  | Bun.SQL | Open file SQLite with safeIntegers:true; mode is ro, rw or rwc and busy_timeout_ms bounds lock waits. | supplied | B1-02 / B1-02 |
+| sql::mysql_open | str connection_variable, int max_connections → sql::pool | [http::credentials_missing, sql::connection_failed] |  | Bun.SQL | Read selected credential; open MySQL with bigint:true, forced TLS, validated max, and a pinned UTC session. | supplied | B1-03 / B1-03 |
 | sql::query_one | P:sql_parameters, R:sql_row; sql::pool handle, str descriptor, P parameters → R; static descriptor | [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_missing, sql::row_count, sql::schema_mismatch] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |
 | sql::query_optional | P:sql_parameters, R:sql_row; sql::pool handle, str descriptor, P parameters → option::value&lt;R&gt;; static descriptor | [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_count, sql::schema_mismatch] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |
 | sql::query_rows | P:sql_parameters, R:sql_row; sql::pool handle, str descriptor, P parameters, int max_rows → R[]; static descriptor | [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed, sql::row_limit, sql::schema_mismatch] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |

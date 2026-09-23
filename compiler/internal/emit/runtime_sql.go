@@ -17,6 +17,7 @@ func sqlOperationBindings() bindingContribution {
 		"can.std.sql@1::pool_close":         "$canSQLPools.close",
 		"can.std.sql@1::sqlite_open_memory": "$canSQLPools.sqliteOpenMemory",
 		"can.std.sql@1::sqlite_open_file":   "$canSQLPools.sqliteOpenFile",
+		"can.std.sql@1::mysql_open":         "$canSQLPools.mysqlOpen",
 	}
 	return bindingContribution{domain: "sql", functions: functions}
 }
