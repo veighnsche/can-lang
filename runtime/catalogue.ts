@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "11d95110fbcf8a147582f85be21a50e8b3bc0c22b1584aa8b1e26b8e2cbfd8e2";
+export const catalogueSHA256 = "6aaf037b2e5e33dd9dd08face6daf414b87bf6f0fcba8b90c1377a8132eba773";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -11629,7 +11629,7 @@ export const catalogue = freeze({
         "adapter": "Reveal the signed URL with its required method and expiry.",
         "task": "B1-10"
       },
-      "assertion": "real",
+      "assertion": "supplied",
       "refs": [
         "B1-10"
       ]

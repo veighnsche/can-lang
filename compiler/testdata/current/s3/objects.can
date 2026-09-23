@@ -1,0 +1,714 @@
+package app
+    provides []
+    uses [s3, env, option, bytes, codec, text, io, stream, files, time, http]
+/// Store one object and report its stored size. Credentials arrive as
+/// plain values read once by main; construction runs for real while the
+/// write is supplied. Assertion rows pin the fault mapping; the stored
+/// size is live-tested.
+fn str put_object
+    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range, codec::invalid_data]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+        str body
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", "hello" => ok "5"
+        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", "hello" => s3::access_denied("write_bytes")
+        badkey: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "", "hello" => s3::invalid_config("key")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call bytes::from_utf8(body)
+                codec::invalid_data
+                ok bytes::buffer payload => match call s3::write_bytes(handle, key, payload, s3::write_options(option::none()))
+                    when
+                        sample: handle, "doc.txt", payload, s3::write_options(option::none()) => ok s3::metadata(5, "\"e\"", "text/plain", now)
+                        denied: handle, "doc.txt", payload, s3::write_options(option::none()) => s3::access_denied("write_bytes")
+                        badkey: handle, "", payload, s3::write_options(option::none()) => s3::invalid_config("key")
+                    s3::invalid_config
+                    s3::access_denied
+                    s3::service_error
+                    ok s3::metadata meta => ok call text::from_int(meta.size)
+/// Fetch one object as text. The missing-key fault is assertion-pinned;
+/// live runs prove the bytes.
+fn str get_object
+    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, codec::invalid_data]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "hi"
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key("missing.txt")
+    match call bytes::from_utf8("hi")
+        codec::invalid_data
+        ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::read_bytes(handle, key, 64)
+                when
+                    sample: handle, "doc.txt", 64 => ok chunk
+                    absent: handle, "missing.txt", 64 => s3::missing_key("missing.txt")
+                s3::invalid_config
+                s3::missing_key
+                s3::access_denied
+                s3::service_error
+                s3::over_limit
+                ok bytes::buffer body => match call bytes::to_utf8(body)
+                    codec::invalid_data
+                    ok str text => ok text
+/// Report size and last-modified milliseconds for one object. The
+/// instant crosses inside the metadata record and converts back at
+/// the boundary.
+fn str stat_object
+    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, time::out_of_range]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "8@1727000000000"
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => s3::missing_key("missing.txt")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::stat(handle, key)
+                when
+                    sample: handle, "doc.txt" => ok s3::metadata(8, "\"e\"", "text/plain", now)
+                    absent: handle, "missing.txt" => s3::missing_key("missing.txt")
+                s3::invalid_config
+                s3::missing_key
+                s3::access_denied
+                s3::service_error
+                ok s3::metadata meta => ok call text::join([call text::from_int(meta.size), call text::from_int(call time::instant_epoch_millis(meta.last_modified))], "@")
+/// Answer whether one key exists. Booleans cross directly, so both
+/// outcomes pin in assertions.
+fn bool exists_object
+    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        hit: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok true
+        miss: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt" => ok false
+    match call s3::client_open(endpoint, region, bucket, access, secret)
+        s3::invalid_config
+        ok s3::client handle => match call s3::exists(handle, key)
+            when
+                hit: handle, "doc.txt" => ok true
+                miss: handle, "missing.txt" => ok false
+            s3::invalid_config
+            s3::access_denied
+            s3::service_error
+            ok bool found => ok found
+/// Delete one key idempotently and confirm with a label.
+fn str delete_object
+    emits [s3::invalid_config, s3::access_denied, s3::service_error]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "deleted"
+    match call s3::client_open(endpoint, region, bucket, access, secret)
+        s3::invalid_config
+        ok s3::client handle => match call s3::delete(handle, key)
+            when
+                sample: handle, "doc.txt" => ok
+            s3::invalid_config
+            s3::access_denied
+            s3::service_error
+            ok => ok "deleted"
+/// Count the entries of one page. Assertion rows cover a populated
+/// page and an empty one; continuation threading is live-tested.
+fn int list_first
+    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str dir
+        int limit
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => ok 2
+        empty: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => ok 0
+        denied: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => s3::access_denied("list")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::list(handle, s3::list_options(dir, limit, option::none(), option::none()))
+                when
+                    sample: handle, s3::list_options("d/", 10, option::none(), option::none()) => ok s3::page([s3::entry("d/a", 1, "\"e\"", now), s3::entry("d/b", 2, "\"f\"", now)], [], false, option::none())
+                    empty: handle, s3::list_options("d/", 10, option::none(), option::none()) => ok s3::page([], [], false, option::none())
+                    denied: handle, s3::list_options("d/", 10, option::none(), option::none()) => s3::access_denied("list")
+                s3::invalid_config
+                s3::access_denied
+                s3::service_error
+                ok s3::page page => ok page.entries.length
+/// Count across a continuation: when the first page truncates, the
+/// opaque token threads into the second list. Continuation tokens
+/// have no fixture literal, so only the single-page shape asserts;
+/// the threaded branch is live-tested.
+fn int list_all
+    emits [s3::invalid_config, s3::access_denied, s3::service_error, time::out_of_range]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str dir
+        int limit
+    asserts
+        single: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "d/", 10 => ok 2
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::list(handle, s3::list_options(dir, limit, option::none(), option::none()))
+                when
+                    single: handle, s3::list_options("d/", 10, option::none(), option::none()) => ok s3::page([s3::entry("d/a", 1, "\"e\"", now), s3::entry("d/b", 2, "\"f\"", now)], [], false, option::none())
+                s3::invalid_config
+                s3::access_denied
+                s3::service_error
+                ok s3::page first => match first.truncated
+                    false => ok first.entries.length
+                    true => do
+                        option::value<s3::continuation> cont = first.continuation
+                        match cont
+                            option::some => match call s3::list(handle, s3::list_options(dir, limit, option::none(), option::some(cont.value)))
+                                s3::invalid_config
+                                s3::access_denied
+                                s3::service_error
+                                ok s3::page second => ok first.entries.length + second.entries.length
+                            option::none => ok first.entries.length
+/// Mint a signed URL and reveal it through the bound describe method.
+/// The URL stays inside the opaque handle until described; assertion
+/// rows pin the plumbing while live runs mint real signatures.
+fn str sign_object
+    emits [s3::invalid_config, time::out_of_range]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        s3::method method
+        str key
+        int expires
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", s3::method_get(), "doc.txt", 300 => ok "https://signed.invalid/doc.txt"
+        badexp: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", s3::method_get(), "doc.txt", 0 => s3::invalid_config("expires")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::presign(handle, method, key, expires, option::none())
+                when
+                    sample: handle, s3::method_get(), "doc.txt", 300, option::none() => ok
+                    badexp: handle, s3::method_get(), "doc.txt", 0, option::none() => s3::invalid_config("expires")
+                s3::invalid_config
+                ok s3::presigned token => match call token.describe()
+                    when
+                        sample: => ok s3::presigned_info("https://signed.invalid/doc.txt", s3::method_get(), now)
+                    ok s3::presigned_info info => ok info.url
+/// Upload one object through a multipart handle and report its stored
+/// size. The part size arrives as an option so the floor stays
+/// assertion-pinned.
+fn str upload_object
+    emits [s3::invalid_config, s3::access_denied, s3::service_error, s3::upload_closed, time::out_of_range, codec::invalid_data]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+        str body
+        option::value<int> part
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin", "hello", option::none() => ok "5"
+        badpart: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin", "hello", option::some(1024) => s3::invalid_config("part_size")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::begin_upload(handle, key, s3::upload_options(option::none(), part))
+                when
+                    sample: handle, "big.bin", s3::upload_options(option::none(), option::none()) => ok
+                    badpart: handle, "big.bin", s3::upload_options(option::none(), option::some(1024)) => s3::invalid_config("part_size")
+                s3::invalid_config
+                ok s3::upload upload => match call bytes::from_utf8(body)
+                    codec::invalid_data
+                    ok bytes::buffer payload => match call s3::upload_write(upload, payload)
+                        when
+                            sample: upload, payload => ok 5
+                        s3::upload_closed
+                        s3::access_denied
+                        s3::service_error
+                        ok int accepted => match call s3::upload_finish(upload)
+                            when
+                                sample: upload => ok s3::metadata(5, "\"e\"", "application/octet-stream", now)
+                            s3::upload_closed
+                            s3::access_denied
+                            s3::service_error
+                            ok s3::metadata meta => ok call text::from_int(meta.size)
+/// Fetch one byte window as text.
+fn str read_range_text
+    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, codec::invalid_data]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+        int offset
+        int length
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt", 0, 2 => ok "hi"
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", 0, 2 => s3::missing_key("missing.txt")
+    match call bytes::from_utf8("hi")
+        codec::invalid_data
+        ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::read_range(handle, key, offset, length)
+                when
+                    sample: handle, "doc.txt", 0, 2 => ok chunk
+                    absent: handle, "missing.txt", 0, 2 => s3::missing_key("missing.txt")
+                s3::invalid_config
+                s3::missing_key
+                s3::access_denied
+                s3::service_error
+                ok bytes::buffer body => match call bytes::to_utf8(body)
+                    codec::invalid_data
+                    ok str text => ok text
+/// Stream one object as text through two read batches. Fixture rows
+/// cannot sequence repeated calls at one site, so the two batches
+/// live at two sites and the reader closes explicitly on every path.
+/// Small objects arrive in one batch; larger transfers reassemble in
+/// the runtime pump instead.
+fn str stream_text
+    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, codec::invalid_data]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        empty: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "blank.txt" => ok ""
+        one: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "doc.txt" => ok "hi"
+    match call bytes::from_utf8("hi")
+        codec::invalid_data
+        ok bytes::buffer chunk => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::read_stream(handle, key, 64)
+                when
+                    empty: handle, "blank.txt", 64 => ok
+                    one: handle, "doc.txt", 64 => ok
+                s3::invalid_config
+                s3::missing_key
+                s3::access_denied
+                s3::service_error
+                s3::over_limit
+                ok stream::reader<bytes::buffer> reader => match call stream::read_many(reader, 8)
+                    when
+                        empty: reader, 8 => ok []
+                        one: reader, 8 => ok [chunk]
+                    stream::read_failed
+                    stream::cancelled
+                    files::limit_exceeded
+                    ok bytes::buffer[] first => match first.length is 0
+                        true => match call stream::close_reader(reader)
+                            when
+                                empty: reader => ok
+                            stream::close_failed
+                            ok => ok ""
+                        false => match call bytes::to_utf8(first[0])
+                            codec::invalid_data
+                            ok str head => match call stream::read_many(reader, 8)
+                                when
+                                    one: reader, 8 => ok []
+                                stream::read_failed
+                                stream::cancelled
+                                files::limit_exceeded
+                                ok bytes::buffer[] rest => match call stream::close_reader(reader)
+                                    when
+                                        one: reader => ok
+                                    stream::close_failed
+                                    ok => ok head
+/// Copy one object through a reader pump: the download reader flows
+/// into the streaming write, so bytes never collect in one buffer.
+fn str copy_object
+    emits [s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, stream::read_failed, stream::cancelled, time::out_of_range]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str source
+        str target
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "a.txt", "b.txt" => ok "3"
+        absent: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "missing.txt", "b.txt" => s3::missing_key("missing.txt")
+    match call time::instant_from_epoch_millis(1727000000000)
+        time::out_of_range
+        ok time::instant now => match call s3::client_open(endpoint, region, bucket, access, secret)
+            s3::invalid_config
+            ok s3::client handle => match call s3::read_stream(handle, source, 64)
+                when
+                    sample: handle, "a.txt", 64 => ok
+                    absent: handle, "missing.txt", 64 => s3::missing_key("missing.txt")
+                s3::invalid_config
+                s3::missing_key
+                s3::access_denied
+                s3::service_error
+                s3::over_limit
+                ok stream::reader<bytes::buffer> reader => match call s3::write_stream(handle, target, reader, s3::write_options(option::none()), 64, 30000)
+                    when
+                        sample: handle, "b.txt", reader, s3::write_options(option::none()), 64, 30000 => ok s3::metadata(3, "\"e\"", "application/octet-stream", now)
+                    s3::invalid_config
+                    s3::access_denied
+                    s3::service_error
+                    s3::over_limit
+                    stream::read_failed
+                    stream::cancelled
+                    ok s3::metadata meta => ok call text::from_int(meta.size)
+/// Open an upload and cancel it before anything materializes.
+fn str abort_upload
+    emits [s3::invalid_config, s3::upload_closed]
+    given
+        str endpoint
+        str region
+        str bucket
+        str access
+        str secret
+        str key
+    asserts
+        sample: "http://127.0.0.1:9", "us-east-1", "b", "a", "s", "big.bin" => ok "cancelled"
+    match call s3::client_open(endpoint, region, bucket, access, secret)
+        s3::invalid_config
+        ok s3::client handle => match call s3::begin_upload(handle, key, s3::upload_options(option::none(), option::none()))
+            when
+                sample: handle, "big.bin", s3::upload_options(option::none(), option::none()) => ok
+            s3::invalid_config
+            ok s3::upload upload => match call s3::cancel_upload(upload)
+                when
+                    sample: upload => ok
+                s3::upload_closed
+                ok => ok "cancelled"
+/// Print one line of text. Command arms share this so usage and
+/// results funnel through one supplied boundary.
+fn int emit
+    emits [codec::invalid_data, io::write_failed]
+    given
+        str text
+    asserts
+        sample: "hi" => ok 2
+    match call bytes::from_utf8(text)
+        codec::invalid_data
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                sample: message => ok 2
+                empty: message => ok 0
+                badop: message => ok 0
+            io::write_failed
+            ok int written => ok written
+/// Object-store command line. Credentials come from the launcher
+/// snapshot, never from argv: each arm reads the five variables once
+/// and every command opens its own client.
+fn void main
+    emits [env::invalid_name, http::credentials_missing, codec::invalid_data, io::write_failed, text::invalid_number, s3::invalid_config, s3::missing_key, s3::access_denied, s3::service_error, s3::over_limit, s3::upload_closed, stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed, time::out_of_range]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+    match args.length is 0
+        true => match call emit("usage: put <key> <body> | get <key> | stat <key> | exists <key> | rm <key> | ls <dir> <limit> | lsall <dir> <limit> | sign <method> <key> <expires> | uput <key> <body> | range <key> <offset> <length> | stream <key> | copy <source> <target> | abort <key>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok
+        false => match call env::required("CAN_TEST_S3_ENDPOINT")
+            when
+                badop: "CAN_TEST_S3_ENDPOINT" => ok "http://127.0.0.1:9"
+            env::invalid_name
+            http::credentials_missing
+            ok str endpoint => match call env::required("CAN_TEST_S3_REGION")
+                when
+                    badop: "CAN_TEST_S3_REGION" => ok "us-east-1"
+                env::invalid_name
+                http::credentials_missing
+                ok str region => match call env::required("CAN_TEST_S3_BUCKET")
+                    when
+                        badop: "CAN_TEST_S3_BUCKET" => ok "b"
+                    env::invalid_name
+                    http::credentials_missing
+                    ok str bucket => match call env::required("CAN_TEST_S3_ACCESS_KEY")
+                        when
+                            badop: "CAN_TEST_S3_ACCESS_KEY" => ok "a"
+                        env::invalid_name
+                        http::credentials_missing
+                        ok str access => match call env::required("CAN_TEST_S3_SECRET_KEY")
+                            when
+                                badop: "CAN_TEST_S3_SECRET_KEY" => ok "s"
+                            env::invalid_name
+                            http::credentials_missing
+                            ok str secret => match args[0]
+                                "put" => match args.length is 3
+                                    false => match call emit("usage: put <key> <body>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call put_object(endpoint, region, bucket, access, secret, args[1], args[2])
+                                        s3::invalid_config
+                                        s3::access_denied
+                                        s3::service_error
+                                        time::out_of_range
+                                        codec::invalid_data
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "get" => match args.length is 2
+                                    false => match call emit("usage: get <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call get_object(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::missing_key
+                                        s3::access_denied
+                                        s3::service_error
+                                        s3::over_limit
+                                        codec::invalid_data
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "stat" => match args.length is 2
+                                    false => match call emit("usage: stat <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call stat_object(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::missing_key
+                                        s3::access_denied
+                                        s3::service_error
+                                        time::out_of_range
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "exists" => match args.length is 2
+                                    false => match call emit("usage: exists <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call exists_object(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::access_denied
+                                        s3::service_error
+                                        ok bool found => match call emit(call text::from_bool(found))
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "rm" => match args.length is 2
+                                    false => match call emit("usage: rm <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call delete_object(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::access_denied
+                                        s3::service_error
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "ls" => match args.length is 3
+                                    false => match call emit("usage: ls <dir> <limit>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call text::to_int(args[2])
+                                        text::invalid_number
+                                        ok int limit => match call list_first(endpoint, region, bucket, access, secret, args[1], limit)
+                                            s3::invalid_config
+                                            s3::access_denied
+                                            s3::service_error
+                                            time::out_of_range
+                                            ok int count => match call emit(call text::from_int(count))
+                                                codec::invalid_data
+                                                io::write_failed
+                                                ok int written => ok
+                                "lsall" => match args.length is 3
+                                    false => match call emit("usage: lsall <dir> <limit>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call text::to_int(args[2])
+                                        text::invalid_number
+                                        ok int limit => match call list_all(endpoint, region, bucket, access, secret, args[1], limit)
+                                            s3::invalid_config
+                                            s3::access_denied
+                                            s3::service_error
+                                            time::out_of_range
+                                            ok int count => match call emit(call text::from_int(count))
+                                                codec::invalid_data
+                                                io::write_failed
+                                                ok int written => ok
+                                "sign" => match args.length is 4
+                                    false => match call emit("usage: sign <method> <key> <expires>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call text::to_int(args[3])
+                                        text::invalid_number
+                                        ok int expires => match args[1]
+                                            "GET" => match call sign_object(endpoint, region, bucket, access, secret, s3::method_get(), args[2], expires)
+                                                s3::invalid_config
+                                                time::out_of_range
+                                                ok str text => match call emit(text)
+                                                    codec::invalid_data
+                                                    io::write_failed
+                                                    ok int written => ok
+                                            "PUT" => match call sign_object(endpoint, region, bucket, access, secret, s3::method_put(), args[2], expires)
+                                                s3::invalid_config
+                                                time::out_of_range
+                                                ok str text => match call emit(text)
+                                                    codec::invalid_data
+                                                    io::write_failed
+                                                    ok int written => ok
+                                            "DELETE" => match call sign_object(endpoint, region, bucket, access, secret, s3::method_delete(), args[2], expires)
+                                                s3::invalid_config
+                                                time::out_of_range
+                                                ok str text => match call emit(text)
+                                                    codec::invalid_data
+                                                    io::write_failed
+                                                    ok int written => ok
+                                            "HEAD" => match call sign_object(endpoint, region, bucket, access, secret, s3::method_head(), args[2], expires)
+                                                s3::invalid_config
+                                                time::out_of_range
+                                                ok str text => match call emit(text)
+                                                    codec::invalid_data
+                                                    io::write_failed
+                                                    ok int written => ok
+                                            _ => match call emit("usage: sign <method> <key> <expires>")
+                                                codec::invalid_data
+                                                io::write_failed
+                                                ok int written => ok
+                                "uput" => match args.length is 3
+                                    false => match call emit("usage: uput <key> <body>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call upload_object(endpoint, region, bucket, access, secret, args[1], args[2], option::none())
+                                        s3::invalid_config
+                                        s3::access_denied
+                                        s3::service_error
+                                        s3::upload_closed
+                                        time::out_of_range
+                                        codec::invalid_data
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "range" => match args.length is 4
+                                    false => match call emit("usage: range <key> <offset> <length>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call text::to_int(args[2])
+                                        text::invalid_number
+                                        ok int offset => match call text::to_int(args[3])
+                                            text::invalid_number
+                                            ok int length => match call read_range_text(endpoint, region, bucket, access, secret, args[1], offset, length)
+                                                s3::invalid_config
+                                                s3::missing_key
+                                                s3::access_denied
+                                                s3::service_error
+                                                codec::invalid_data
+                                                ok str text => match call emit(text)
+                                                    codec::invalid_data
+                                                    io::write_failed
+                                                    ok int written => ok
+                                "stream" => match args.length is 2
+                                    false => match call emit("usage: stream <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call stream_text(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::missing_key
+                                        s3::access_denied
+                                        s3::service_error
+                                        s3::over_limit
+                                        stream::read_failed
+                                        stream::cancelled
+                                        files::limit_exceeded
+                                        stream::close_failed
+                                        codec::invalid_data
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "copy" => match args.length is 3
+                                    false => match call emit("usage: copy <source> <target>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call copy_object(endpoint, region, bucket, access, secret, args[1], args[2])
+                                        s3::invalid_config
+                                        s3::missing_key
+                                        s3::access_denied
+                                        s3::service_error
+                                        s3::over_limit
+                                        stream::read_failed
+                                        stream::cancelled
+                                        time::out_of_range
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                "abort" => match args.length is 2
+                                    false => match call emit("usage: abort <key>")
+                                        codec::invalid_data
+                                        io::write_failed
+                                        ok int written => ok
+                                    true => match call abort_upload(endpoint, region, bucket, access, secret, args[1])
+                                        s3::invalid_config
+                                        s3::upload_closed
+                                        ok str text => match call emit(text)
+                                            codec::invalid_data
+                                            io::write_failed
+                                            ok int written => ok
+                                _ => match call emit("usage: put <key> <body> | get <key> | stat <key> | exists <key> | rm <key> | ls <dir> <limit> | lsall <dir> <limit> | sign <method> <key> <expires> | uput <key> <body> | range <key> <offset> <length> | stream <key> | copy <source> <target> | abort <key>")
+                                    codec::invalid_data
+                                    io::write_failed
+                                    ok int written => ok

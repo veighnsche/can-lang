@@ -11619,7 +11619,7 @@
         "adapter": "Reveal the signed URL with its required method and expiry.",
         "task": "B1-10"
       },
-      "assertion": "real",
+      "assertion": "supplied",
       "refs": [
         "B1-10"
       ]
