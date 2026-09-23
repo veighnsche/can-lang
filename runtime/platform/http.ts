@@ -172,8 +172,11 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
  }
  function response(status:unknown,headers:unknown,body:Bytes|PendingBody|null,mime?:string):unknown{
   const code=read(body===null?statuses:bodyStatuses,status),entries=read(serverHeaders,headers);
-  const native=new Headers(entries.map(([name,value])=>[name,value]));native.set("x-content-type-options","nosniff");if(mime)native.set("content-type",mime);
-  return opaque(responses,Object.freeze({status:code,headers:Object.freeze(Array.from(native.entries(),entry=>Object.freeze(entry))),body}));
+  // Set-Cookie never enters the coalescing Headers: repeats stay separate
+  // entries so expires dates (which contain commas) survive intact.
+  const rest=entries.filter(([name])=>name.toLowerCase()!=="set-cookie"),cookies=entries.filter(([name])=>name.toLowerCase()==="set-cookie");
+  const native=new Headers(rest.map(([name,value])=>[name,value]));native.set("x-content-type-options","nosniff");if(mime)native.set("content-type",mime);
+  return opaque(responses,Object.freeze({status:code,headers:Object.freeze([...Array.from(native.entries(),entry=>Object.freeze(entry)),...cookies.map(([,value])=>Object.freeze(["set-cookie",value] as const))]),body}));
  }
  const textBytes=(text:string)=>ownBytes(new TextEncoder().encode(text));
  return Object.freeze({
@@ -185,14 +188,21 @@ export function createResponses(domain:ReturnType<typeof createDomainRuntime>,ty
   async unavailable(_context?:AssertionContext):Promise<Completion<unknown>>{return status(503n,true);},
   async emptyHeaders(_context?:AssertionContext):Promise<Completion<unknown>>{return success(opaque(serverHeaders,Object.freeze([])));},
   async makeHeaders(input:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{
-   const headers=new Headers();
+   const headers=new Headers(),scratch=new Headers(),setCookies:string[]=[];
    for(const entry of dataArray(input)){
     const name=dataProperty(entry,"name"),value=dataProperty(entry,"value");
     if(typeof name!=="string"||typeof value!=="string")throw new TypeError("invalid compiler header");
     if(forbiddenResponseHeaders.has(name.toLowerCase())||name.toLowerCase().startsWith("hx-")||!name.isWellFormed()||!value.isWellFormed())return invalid("invalid_header");
+    // Set-Cookie validates through a scratch jar but snapshots apart:
+    // Headers.entries would comma-join repeats and corrupt expires dates.
+    if(name.toLowerCase()==="set-cookie"){
+     try{scratch.append(name,value);}catch(cause){if(cause instanceof TypeError)return invalid("invalid_header");throw cause;}
+     setCookies.push(value);
+     continue;
+    }
     try{headers.append(name,value);}catch(cause){if(cause instanceof TypeError)return invalid("invalid_header");throw cause;}
    }
-   return success(opaque(serverHeaders,Object.freeze(Array.from(headers.entries(),entry=>Object.freeze(entry)))));
+   return success(opaque(serverHeaders,Object.freeze([...Array.from(headers.entries(),entry=>Object.freeze(entry)),...setCookies.map(value=>Object.freeze(["set-cookie",value] as const))])));
   },
   async empty(status:unknown,headers:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{return success(response(status,headers,null));},
   async bytes(status:unknown,headers:unknown,body:unknown,_context?:AssertionContext):Promise<Completion<unknown>>{return success(response(status,headers,ownBytes(copyBytes(body,origin)),"application/octet-stream"));},

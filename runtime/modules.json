@@ -577,6 +577,17 @@
       "../../completion.ts",
       "./errors.ts",
       "./config.ts"
+    ],
+    "platform/cookies.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts"
+    ],
+    "platform/csrf.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../domain.ts"
     ]
   }
 }
