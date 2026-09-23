@@ -1,0 +1,20 @@
+package gallery
+    provides [main]
+    uses [bytes, codec, io]
+
+/// Run `canlc run examples/gallery -- Ada` to print a greeting.
+fn void main
+    emits [codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        named: ["Ada"] => ok
+    match call bytes::from_utf8(call greet_argument(args))
+        codec::invalid_data
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                empty: message => ok 16
+                named: message => ok 11
+            io::write_failed
+            ok int written => ok

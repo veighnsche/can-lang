@@ -1,0 +1,20 @@
+package gallery
+    provides []
+    uses []
+
+/// A function can receive another function as a callable value.
+fn int twice
+    emits []
+    given
+        int value
+    asserts
+        sample: 3 => ok 6
+    ok value * 2
+fn int apply
+    emits []
+    given
+        int value
+        callable int (int) emits [] operation
+    asserts
+        sample: 3, callable twice => ok 6
+    ok call operation(value)

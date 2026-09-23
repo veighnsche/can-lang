@@ -1,0 +1,14 @@
+package gallery
+    provides []
+    uses []
+
+/// Each assertion row supplies inputs and an expected result.
+fn int square
+    emits []
+    given
+        int number
+    asserts
+        zero: 0 => ok 0
+        positive: 4 => ok 16
+        negative: -3 => ok 9
+    ok number * number

@@ -16,7 +16,8 @@ P15.1).
   the current parse/resolve/check/emit pipeline
 - [`runtime/`](runtime/) — the private TypeScript runtime (partitioned
   by contract, never hand-edited per program)
-- [`examples/`](examples/) — four admitted end-to-end applications
+- [`examples/gallery/`](examples/gallery/README.md) — small, assertion-driven Can lessons
+- [`examples/`](examples/) — end-to-end applications
   (native-ai, account-search, form-validation, dashboard)
 - [`std/`](std/README.md) — package dispositions and the four
   maintained `current/` example projects

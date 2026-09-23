@@ -1,0 +1,21 @@
+package gallery
+    provides []
+    uses []
+
+/// fold combines elements with a starting total.
+fn int add
+    emits []
+    given
+        int total
+        int value
+    asserts
+        sample: 2, 3 => ok 5
+    ok total + value
+fn int sum
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2, 3] => ok 6
+        empty: [] => ok 0
+    ok call values.fold(0, callable add)

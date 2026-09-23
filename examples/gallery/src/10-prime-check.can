@@ -1,0 +1,30 @@
+package gallery
+    provides []
+    uses []
+
+/// A trial divisor tests whether a number has a smaller factor.
+fn bool has_divisor
+    emits []
+    given
+        int number
+        int divisor
+    asserts
+        prime: 7, 2 => ok false
+        composite: 9, 2 => ok true
+    match divisor * divisor > number
+        false => match number % divisor is 0
+            false => relay call has_divisor(number, divisor + 1)
+            true => ok true
+        true => ok false
+fn bool is_prime
+    emits []
+    given
+        int number
+    asserts
+        zero: 0 => ok false
+        two: 2 => ok true
+        nine: 9 => ok false
+        eleven: 11 => ok true
+    match number < 2
+        false => ok not call has_divisor(number, 2)
+        true => ok false

@@ -1,0 +1,13 @@
+package gallery
+    provides []
+    uses [checks]
+
+/// relay forwards a callee's result and named errors.
+fn void require_positive
+    emits [checks::failed]
+    given
+        int number
+    asserts
+        pass: 2 => ok
+        fail: 0 => checks::failed("positive required")
+    relay call checks::require(number > 0, "positive required")

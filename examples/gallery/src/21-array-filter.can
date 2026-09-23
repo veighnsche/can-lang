@@ -1,0 +1,20 @@
+package gallery
+    provides []
+    uses []
+
+/// filter keeps values for which the predicate is true.
+fn bool even
+    emits []
+    given
+        int value
+    asserts
+        yes: 2 => ok true
+        no: 3 => ok false
+    ok value % 2 is 0
+fn int[] evens
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2, 3, 4] => ok [2, 4]
+    ok call values.filter(callable even)

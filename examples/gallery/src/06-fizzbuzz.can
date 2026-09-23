@@ -1,0 +1,21 @@
+package gallery
+    provides []
+    uses [text]
+
+/// Ordered matches handle the most specific case first.
+fn str fizzbuzz
+    emits []
+    given
+        int number
+    asserts
+        both: 15 => ok "FizzBuzz"
+        three: 9 => ok "Fizz"
+        five: 10 => ok "Buzz"
+        other: 7 => ok "7"
+    match number % 15
+        0 => ok "FizzBuzz"
+        _ => match number % 3
+            0 => ok "Fizz"
+            _ => match number % 5
+                0 => ok "Buzz"
+                _ => ok call text::from_int(number)

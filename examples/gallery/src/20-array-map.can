@@ -1,0 +1,20 @@
+package gallery
+    provides []
+    uses []
+
+/// map applies a callable to each element.
+fn int double
+    emits []
+    given
+        int value
+    asserts
+        sample: 2 => ok 4
+    ok value * 2
+fn int[] doubled
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2, 3] => ok [2, 4, 6]
+        empty: [] => ok []
+    ok call values.map(callable double)

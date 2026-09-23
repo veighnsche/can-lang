@@ -1,0 +1,18 @@
+package gallery
+    provides []
+    uses []
+
+/// Compare the outer characters, then recurse into the middle.
+/// This introductory version uses ASCII input.
+fn bool palindrome
+    emits []
+    given
+        str value
+    asserts
+        yes: "level" => ok true
+        no: "Can" => ok false
+    match value.length <= 1
+        false => match value[0] is value[value.length - 1]
+            false => ok false
+            true => relay call palindrome(call value.slice(1, value.length - 1))
+        true => ok true

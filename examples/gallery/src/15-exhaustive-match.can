@@ -1,0 +1,22 @@
+package gallery
+    provides []
+    uses []
+
+/// Both variant cases are covered; no wildcard is needed.
+record red
+    str label
+record blue
+    str label
+variant color
+    red
+    blue
+fn str color_name
+    emits []
+    given
+        color value
+    asserts
+        first: red("rose") => ok "rose"
+        second: blue("sky") => ok "sky"
+    match value
+        red => ok value.label
+        blue => ok value.label

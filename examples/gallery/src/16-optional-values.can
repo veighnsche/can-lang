@@ -1,0 +1,15 @@
+package gallery
+    provides []
+    uses [option]
+
+/// Option values make absence explicit.
+fn option::value<str> first_word
+    emits []
+    given
+        str[] words
+    asserts
+        empty: [] => ok option::none()
+        present: ["Can", "works"] => ok option::some("Can")
+    match words.length is 0
+        false => ok option::some(words[0])
+        true => ok option::none()

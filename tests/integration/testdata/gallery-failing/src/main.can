@@ -1,0 +1,20 @@
+package failing_gallery
+    provides [main]
+    uses []
+
+/// The expected value is deliberately wrong to show an assertion failure.
+fn int square
+    emits []
+    given
+        int number
+    asserts
+        deliberately_wrong: 3 => ok 8
+    ok number * number
+
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

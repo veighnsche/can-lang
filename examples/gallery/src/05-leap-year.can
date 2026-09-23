@@ -1,0 +1,17 @@
+package gallery
+    provides []
+    uses []
+
+/// Match the Boolean test in false, then true order.
+fn bool leap_year
+    emits []
+    given
+        int year
+    asserts
+        ordinary: 2023 => ok false
+        divisible_four: 2024 => ok true
+        century: 1900 => ok false
+        four_centuries: 2000 => ok true
+    match year % 4 is 0 and (year % 100 is not 0 or year % 400 is 0)
+        false => ok false
+        true => ok true
