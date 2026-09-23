@@ -13,10 +13,10 @@ export function renderSafe(value:unknown):string{return read(safe,value);}
 export function isHTMLValue(kind:string|undefined,value:unknown):boolean{const map=kind==="node"?nodes:kind==="safe"?safe:kind==="url"?urls:kind==="tag"?tags:kind==="attribute"?attributes:kind==="target"?targets:undefined;return map!==undefined&&value!==null&&(typeof value==="object"||typeof value==="function")&&map.has(value);}
 function string(value:string):string{if(typeof value!=="string")throw new TypeError("invalid HTML string");return value;}
 const lower=(value:string)=>string(value).replace(/[A-Z]/g,c=>c.toLowerCase());
-const authorTags=new Set("main header footer nav section article aside h1 h2 h3 h4 h5 h6 p div span ul ol li a form label input textarea select option button table thead tbody tr th td dl dt dd strong em small br hr".split(" "));
-const voidTags=new Set(["input","br","hr"]);
+const authorTags=new Set("main header footer nav section article aside h1 h2 h3 h4 h5 h6 p div span ul ol li a form label input textarea select option button table thead tbody tr th td dl dt dd strong em small br hr code pre blockquote img del".split(" "));
+const voidTags=new Set(["input","br","hr","img"]);
 const globals=new Set("id class title lang dir hidden tabindex role".split(" "));
-const applicability:Readonly<Record<string,readonly string[]>>=Object.freeze({name:["form","input","textarea","select","button"],value:["input","option","button","li"],type:["input","button","a","ol"],placeholder:["input","textarea"],autocomplete:["form","input","textarea","select"],for:["label"],method:["form"],rel:["a","form"],checked:["input"],selected:["option"],disabled:["input","textarea","select","option","button"],required:["input","textarea","select"],multiple:["input","select"],rows:["textarea"],cols:["textarea"],scope:["th"],colspan:["td","th"],rowspan:["td","th"]});
+const applicability:Readonly<Record<string,readonly string[]>>=Object.freeze({name:["form","input","textarea","select","button"],value:["input","option","button","li"],type:["input","button","a","ol"],placeholder:["input","textarea"],autocomplete:["form","input","textarea","select"],for:["label"],method:["form"],rel:["a","form"],checked:["input"],selected:["option"],disabled:["input","textarea","select","option","button"],required:["input","textarea","select"],multiple:["input","select"],rows:["textarea"],cols:["textarea"],scope:["th"],colspan:["td","th"],rowspan:["td","th"],alt:["img"],align:["td","th"],start:["ol"]});
 const inputTypes=new Set("hidden text search tel url email password date month week time datetime-local number range color checkbox radio file submit image reset button".split(" "));
 const relations=new Set("alternate author bookmark external help license next nofollow noopener noreferrer opener prev privacy-policy search tag terms-of-service".split(" "));
 const autocompleteFields=new Set("name honorific-prefix given-name additional-name family-name honorific-suffix nickname username new-password current-password one-time-code organization-title organization street-address address-line1 address-line2 address-line3 address-level4 address-level3 address-level2 address-level1 country country-name postal-code cc-name cc-given-name cc-additional-name cc-family-name cc-number cc-exp cc-exp-month cc-exp-year cc-csc cc-type transaction-currency transaction-amount language bday bday-day bday-month bday-year sex url photo tel tel-country-code tel-national tel-area-code tel-local tel-local-prefix tel-local-suffix tel-extension email impp".split(" "));
@@ -35,11 +35,12 @@ function validValue(name:string,value:string,tag?:string):boolean{
  if(["checked","selected","disabled","required","multiple"].includes(name))return v===""||v===name;
  if(name==="method")return ["get","post","dialog"].includes(v);
  if(name==="scope")return ["row","col","rowgroup","colgroup"].includes(v);
+ if(name==="align")return ["left","center","right"].includes(v);
  if(name==="autocomplete")return tag==="form"?["on","off"].includes(v):autocomplete(value);
  if(name==="rel"){const parts=v.replace(/^[\t\n\f\r ]+|[\t\n\f\r ]+$/g,"").split(/[\t\n\f\r ]+/);return parts.length>0&&parts.every(p=>relations.has(p)&&!(tag==="form"&&["alternate","author","bookmark","privacy-policy","tag","terms-of-service"].includes(p)));}
  if(name==="type"&&tag!==undefined){if(tag==="input")return inputTypes.has(v);if(tag==="button")return ["submit","reset","button"].includes(v);if(tag==="ol")return ["1","a","A","i","I"].includes(value);}
  if(["rows","cols","colspan","rowspan"].includes(name)){if(!/^[0-9]+$/.test(value))return false;const n=BigInt(value);return name==="rowspan"?n<=65534n:n>=1n&&(name!=="colspan"||n<=1000n);}
- if(name==="tabindex"||(name==="value"&&tag==="li"))return /^-?[0-9]+$/.test(value);
+ if(name==="tabindex"||name==="start"||(name==="value"&&tag==="li"))return /^-?[0-9]+$/.test(value);
  return true;
 }
 const attr=(name:string,value:string,kind:Attribute["kind"]="htmx")=>token(attributes,Object.freeze({name,value,kind}));
@@ -72,14 +73,14 @@ export function createHTML(domain:ReturnType<typeof createDomainRuntime>,types:C
    if(!globals.has(name)&&!/^aria-[a-z][a-z0-9-]*$/.test(name)&&!Object.hasOwn(applicability,name))return structure("attribute");
    if(!validValue(name,value))return structure("attribute_value");return success(attr(name,value,"text"));
   },
-  async urlAttribute(name:string,url:unknown,_context?:AssertionContext){name=lower(name);const value=read(urls,url);return ["href","action","formaction"].includes(name)?success(attr(name,value.value,"url")):structure("attribute");},
+  async urlAttribute(name:string,url:unknown,_context?:AssertionContext){name=lower(name);const value=read(urls,url);return ["href","action","formaction","src"].includes(name)?success(attr(name,value.value,"url")):structure("attribute");},
   async element(tag:unknown,inputAttributes:readonly unknown[],inputChildren:readonly unknown[],_context?:AssertionContext){
    const name=read(tags,tag),attrs=dataArray(inputAttributes).map(v=>read(attributes,v)),kids=children(inputChildren),seen=new Set<string>();
    for(const a of attrs){
     if(seen.has(a.name))return structure("duplicate_attribute");seen.add(a.name);
     if(a.kind==="text"&&Object.hasOwn(applicability,a.name)&&!applicability[a.name]!.includes(name))return structure("attribute_tag");
     if(a.kind==="text"&&!validValue(a.name,a.value,name))return structure("attribute_value");
-    if(a.kind==="url"&&({href:"a",action:"form",formaction:"button"} as Record<string,string>)[a.name]!==name)return structure("attribute_tag");
+    if(a.kind==="url"&&({href:"a",action:"form",formaction:"button",src:"img"} as Record<string,string>)[a.name]!==name)return structure("attribute_tag");
    }
    if(kids.some(k=>k.head))return structure("head_context");
    if(voidTags.has(name)&&kids.length!==0)return structure("void_children");
