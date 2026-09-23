@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7f89d81cc37649adeabd71cccb5be10c066207368396426579a94106d57780c6.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e4b64d70c19a181494f2d60456bc70d026a903e0593337caccd7b85045e127a3.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -21,7 +21,9 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - clock → can.std.clock@1
 - codec → can.std.codec@1
 - collections → can.std.collections@1
+- cookie → can.std.cookie@1
 - crypto → can.std.crypto@1
+- csrf → can.std.csrf@1
 - env → can.std.env@1
 - files → can.std.files@1
 - html → can.std.html@1
@@ -111,6 +113,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | ws::binary | record |  | bytes::buffer data | true |
 | ws::drain | record |  |  | true |
 | ws::closed | record |  | int code, str reason | true |
+| cookie::attributes | record |  | str path, option::value&lt;str&gt; domain, bool secure, bool http_only, cookie::same_site same_site, option::value&lt;int&gt; max_age, option::value&lt;int&gt; expires_ms | true |
+| cookie::same_site | variant |  | cookie::strict, cookie::lax, cookie::none | false |
+| cookie::strict | record |  |  | true |
+| cookie::lax | record |  |  | true |
+| cookie::none | record |  |  | true |
+| cookie::cookie | opaque |  |  | false |
+| cookie::collection | record |  | cookie::pair[] pairs | true |
+| cookie::pair | record |  | str name, str value | true |
 
 ## Domain errors
 
@@ -209,6 +219,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1338 | ws::limit_exceeded |  | int limit |
 | 1339 | ws::invalid_url |  | str reason |
 | 1340 | ws::invalid_protocol |  | str protocol |
+| 1341 | cookie::invalid_cookie |  | str reason |
+| 1342 | csrf::invalid_config |  | str reason |
 
 ## Operations
 
@@ -444,6 +456,13 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | ws::send_text | ws::session session, str text → int | [ws::send_failed] |  | WebSocket, Bun.serve | Queue one text message; server saturation fails so the caller retries after drain. | supplied | B1-07 / B1-07 |
 | ws::send_bytes | ws::session session, bytes::buffer data → int | [ws::send_failed] |  | WebSocket, Bun.serve | Queue one binary message; server saturation fails so the caller retries after drain. | supplied | B1-07 / B1-07 |
 | ws::close | ws::session session, int code, str reason → void | [ws::invalid_close] |  | WebSocket, Bun.serve | Validate the close code and reason on both sides, send the frame, and terminally close the session. | supplied | B1-07 / B1-07 |
+| cookie::parse | str header → cookie::collection | [] |  | CookieMap | Parse a Cookie header into first-wins lookup over the retained ordered pair list. | real | B1-09 / B1-09 |
+| cookie::get | cookie::collection collection, str name → option::value&lt;str&gt; | [] |  | CookieMap | Return the first pair value for the name, or none when absent. | real | B1-09 / B1-09 |
+| cookie::make | str name, str value, cookie::attributes attributes → cookie::cookie | [cookie::invalid_cookie] |  | Cookie | Validate the name and expiry, then wrap a native cookie. | real | B1-09 / B1-09 |
+| cookie::serialize | cookie::cookie cookie → str | [] |  | Cookie | Render one Set-Cookie field value from a validated cookie. | real | B1-09 / B1-09 |
+| cookie::expire | str name, str path, option::value&lt;str&gt; domain → cookie::cookie | [cookie::invalid_cookie] |  | CookieMap | Build an epoch-expiry tombstone scoped to the matching path and domain. | real | B1-09 / B1-09 |
+| csrf::generate | str secret, str session_id, int expires_in_ms → str | [csrf::invalid_config] |  | CSRF | Mint a session-bound token with explicit secret and fixed base64url/sha256. | supplied | B1-09 / B1-09 |
+| csrf::verify | str secret, str session_id, str token, int max_age_ms → bool | [csrf::invalid_config] |  | CSRF | Verify a token against explicit secret, session and age; token faults answer false. | real | B1-09 / B1-09 |
 
 ## Native declaration profiles
 

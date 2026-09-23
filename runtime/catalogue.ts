@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "7f89d81cc37649adeabd71cccb5be10c066207368396426579a94106d57780c6";
+export const catalogueSHA256 = "e4b64d70c19a181494f2d60456bc70d026a903e0593337caccd7b85045e127a3";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -46,8 +46,16 @@ export const catalogue = freeze({
       "identity": "can.std.collections@1"
     },
     {
+      "name": "cookie",
+      "identity": "can.std.cookie@1"
+    },
+    {
       "name": "crypto",
       "identity": "can.std.crypto@1"
+    },
+    {
+      "name": "csrf",
+      "identity": "can.std.csrf@1"
     },
     {
       "name": "env",
@@ -1198,6 +1206,133 @@ export const catalogue = freeze({
         },
         {
           "name": "reason",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::attributes",
+      "identity": "can.std.cookie@1::attributes",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "domain",
+          "type": "option::value<str>"
+        },
+        {
+          "name": "secure",
+          "type": "bool"
+        },
+        {
+          "name": "http_only",
+          "type": "bool"
+        },
+        {
+          "name": "same_site",
+          "type": "cookie::same_site"
+        },
+        {
+          "name": "max_age",
+          "type": "option::value<int>"
+        },
+        {
+          "name": "expires_ms",
+          "type": "option::value<int>"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::same_site",
+      "identity": "can.std.cookie@1::same_site",
+      "kind": "variant",
+      "parameters": [],
+      "fields": [],
+      "leaves": [
+        "cookie::strict",
+        "cookie::lax",
+        "cookie::none"
+      ],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "cookie::strict",
+      "identity": "can.std.cookie@1::strict",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::lax",
+      "identity": "can.std.cookie@1::lax",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::none",
+      "identity": "can.std.cookie@1::none",
+      "kind": "record",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::cookie",
+      "identity": "can.std.cookie@1::cookie",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "cookie::collection",
+      "identity": "can.std.cookie@1::collection",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "pairs",
+          "type": "cookie::pair[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "cookie::pair",
+      "identity": "can.std.cookie@1::pair",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
           "type": "str"
         }
       ],
@@ -2356,6 +2491,30 @@ export const catalogue = freeze({
       "fields": [
         {
           "name": "protocol",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1341,
+      "name": "cookie::invalid_cookie",
+      "identity": "can.std.cookie@1::invalid_cookie",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1342,
+      "name": "csrf::invalid_config",
+      "identity": "can.std.csrf@1::invalid_config",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
           "type": "str"
         }
       ]
@@ -10364,6 +10523,257 @@ export const catalogue = freeze({
       "refs": [
         "B1-07"
       ]
+    },
+    {
+      "name": "cookie::parse",
+      "identity": "can.std.cookie@1::parse",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "header",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "cookie::collection",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "CookieMap"
+        ],
+        "adapter": "Parse a Cookie header into first-wins lookup over the retained ordered pair list.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "cookie::get",
+      "identity": "can.std.cookie@1::get",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "cookie::collection"
+        },
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "option::value<str>",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "CookieMap"
+        ],
+        "adapter": "Return the first pair value for the name, or none when absent.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "cookie::make",
+      "identity": "can.std.cookie@1::make",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        },
+        {
+          "name": "attributes",
+          "type": "cookie::attributes"
+        }
+      ],
+      "staticInputs": [],
+      "result": "cookie::cookie",
+      "callbacks": [],
+      "emits": [
+        "cookie::invalid_cookie"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Cookie"
+        ],
+        "adapter": "Validate the name and expiry, then wrap a native cookie.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "cookie::serialize",
+      "identity": "can.std.cookie@1::serialize",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "cookie",
+          "type": "cookie::cookie"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Cookie"
+        ],
+        "adapter": "Render one Set-Cookie field value from a validated cookie.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "cookie::expire",
+      "identity": "can.std.cookie@1::expire",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "domain",
+          "type": "option::value<str>"
+        }
+      ],
+      "staticInputs": [],
+      "result": "cookie::cookie",
+      "callbacks": [],
+      "emits": [
+        "cookie::invalid_cookie"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "CookieMap"
+        ],
+        "adapter": "Build an epoch-expiry tombstone scoped to the matching path and domain.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "csrf::generate",
+      "identity": "can.std.csrf@1::generate",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "secret",
+          "type": "str"
+        },
+        {
+          "name": "session_id",
+          "type": "str"
+        },
+        {
+          "name": "expires_in_ms",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "csrf::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "CSRF"
+        ],
+        "adapter": "Mint a session-bound token with explicit secret and fixed base64url/sha256.",
+        "task": "B1-09"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-09"
+      ]
+    },
+    {
+      "name": "csrf::verify",
+      "identity": "can.std.csrf@1::verify",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "secret",
+          "type": "str"
+        },
+        {
+          "name": "session_id",
+          "type": "str"
+        },
+        {
+          "name": "token",
+          "type": "str"
+        },
+        {
+          "name": "max_age_ms",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "csrf::invalid_config"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "CSRF"
+        ],
+        "adapter": "Verify a token against explicit secret, session and age; token faults answer false.",
+        "task": "B1-09"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-09"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -11773,6 +12183,176 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "cookie::attributes",
+    "identity": "can.std.cookie@1::attributes",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "path",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "domain",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "secure",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "http_only",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "same_site",
+        "type": {
+          "name": "cookie::same_site",
+          "arguments": null
+        }
+      },
+      {
+        "name": "max_age",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "expires_ms",
+        "type": {
+          "name": "option::value",
+          "arguments": [
+            {
+              "name": "int",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "cookie::same_site",
+    "identity": "can.std.cookie@1::same_site",
+    "kind": "variant",
+    "parameters": [],
+    "fields": [],
+    "leaves": [
+      {
+        "name": "cookie::strict",
+        "arguments": null
+      },
+      {
+        "name": "cookie::lax",
+        "arguments": null
+      },
+      {
+        "name": "cookie::none",
+        "arguments": null
+      }
+    ]
+  },
+  {
+    "name": "cookie::strict",
+    "identity": "can.std.cookie@1::strict",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "cookie::lax",
+    "identity": "can.std.cookie@1::lax",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "cookie::none",
+    "identity": "can.std.cookie@1::none",
+    "kind": "record",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "cookie::cookie",
+    "identity": "can.std.cookie@1::cookie",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "cookie::collection",
+    "identity": "can.std.cookie@1::collection",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "pairs",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "cookie::pair",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "cookie::pair",
+    "identity": "can.std.cookie@1::pair",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
         "type": {
           "name": "str",
           "arguments": null
@@ -13338,6 +13918,38 @@ export const catalogueTypeShapes = freeze([
     "fields": [
       {
         "name": "protocol",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "cookie::invalid_cookie",
+    "identity": "can.std.cookie@1::invalid_cookie",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "csrf::invalid_config",
+    "identity": "can.std.csrf@1::invalid_config",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
         "type": {
           "name": "str",
           "arguments": null

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "7f89d81cc37649adeabd71cccb5be10c066207368396426579a94106d57780c6"
+const GeneratedSourceSHA256 = "e4b64d70c19a181494f2d60456bc70d026a903e0593337caccd7b85045e127a3"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -67,6 +67,14 @@ const TypeWsText = "ws::text"
 const TypeWsBinary = "ws::binary"
 const TypeWsDrain = "ws::drain"
 const TypeWsClosed = "ws::closed"
+const TypeCookieAttributes = "cookie::attributes"
+const TypeCookieSameSite = "cookie::same_site"
+const TypeCookieStrict = "cookie::strict"
+const TypeCookieLax = "cookie::lax"
+const TypeCookieNone = "cookie::none"
+const TypeCookieCookie = "cookie::cookie"
+const TypeCookieCollection = "cookie::collection"
+const TypeCookiePair = "cookie::pair"
 const ErrorAllFailedID = 100
 const ErrorAllFailedName = "all_failed"
 const ErrorAllFailedIdentity = "can.prelude@1::all_failed"
@@ -346,6 +354,12 @@ const ErrorWsInvalidUrlIdentity = "can.std.ws@1::invalid_url"
 const ErrorWsInvalidProtocolID = 1340
 const ErrorWsInvalidProtocolName = "ws::invalid_protocol"
 const ErrorWsInvalidProtocolIdentity = "can.std.ws@1::invalid_protocol"
+const ErrorCookieInvalidCookieID = 1341
+const ErrorCookieInvalidCookieName = "cookie::invalid_cookie"
+const ErrorCookieInvalidCookieIdentity = "can.std.cookie@1::invalid_cookie"
+const ErrorCsrfInvalidConfigID = 1342
+const ErrorCsrfInvalidConfigName = "csrf::invalid_config"
+const ErrorCsrfInvalidConfigIdentity = "can.std.csrf@1::invalid_config"
 const OpTextFromInt = "text::from_int"
 const OpTextFromFloat = "text::from_float"
 const OpTextFromBool = "text::from_bool"
@@ -570,3 +584,10 @@ const OpWsAccept = "ws::accept"
 const OpWsSendText = "ws::send_text"
 const OpWsSendBytes = "ws::send_bytes"
 const OpWsClose = "ws::close"
+const OpCookieParse = "cookie::parse"
+const OpCookieGet = "cookie::get"
+const OpCookieMake = "cookie::make"
+const OpCookieSerialize = "cookie::serialize"
+const OpCookieExpire = "cookie::expire"
+const OpCsrfGenerate = "csrf::generate"
+const OpCsrfVerify = "csrf::verify"

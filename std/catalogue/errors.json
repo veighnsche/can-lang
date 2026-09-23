@@ -371,6 +371,14 @@
     {
       "id": 1340,
       "kind": "ws::invalid_protocol"
+    },
+    {
+      "id": 1341,
+      "kind": "cookie::invalid_cookie"
+    },
+    {
+      "id": 1342,
+      "kind": "csrf::invalid_config"
     }
   ],
   "retired": []
