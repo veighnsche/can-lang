@@ -59,6 +59,6 @@ and expected results.
 | [27-recursion-vs-collection.can](src/27-recursion-vs-collection.can) | Recursion beside `fold` | `recursive_sum`, `folded_sum` |
 | [28-attached-assertions.can](src/28-attached-assertions.can) | Several named test cases | `square` |
 
-[Deliberate failing assertion](failing/README.md) is a separate project. It is
-excluded from the gallery build and demonstrates the diagnostic from a wrong
-expected result.
+[Deliberate failing assertion](../../tests/integration/testdata/gallery-failing/README.md)
+is a separate project outside the maintained examples. It demonstrates the
+diagnostic from a wrong expected result.
