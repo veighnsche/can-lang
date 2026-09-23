@@ -39,8 +39,7 @@ func CheckDescriptor(name, statement string, parameters []string, cardinality st
 }
 
 // CheckDescriptorDialect validates one descriptor through the named
-// dialect backend. PostgreSQL is fully wired; SQLite arrives with its
-// grammar adapter; any other tag is rejected before parsing.
+// dialect backend. Any other tag is rejected before parsing.
 func CheckDescriptorDialect(dialect Dialect, name, statement string, parameters []string, cardinality string, rowLimit uint64) (Descriptor, error) {
 	out := Descriptor{Name: name, Dialect: dialect, Cardinality: cardinality}
 	fail := func(format string, args ...any) (Descriptor, error) {
@@ -78,11 +77,16 @@ func CheckDescriptorDialect(dialect Dialect, name, statement string, parameters 
 	if err != nil {
 		return Descriptor{}, err
 	}
-	if err := CheckCardinality(name, stmt, analysis.Sites, cardinality, out.Total, out.Limit); err != nil {
+	if err := CheckCardinality(name, dialect, stmt, analysis.Sites, cardinality, out.Total, out.Limit); err != nil {
 		return Descriptor{}, err
 	}
-	if err := CheckCoverage(name, parameters, present, out.Total, out.Limit, rowReturning(cardinality)); err != nil {
+	if err := CheckCoverage(name, dialect, parameters, present, out.Total, out.Limit, rowReturning(cardinality)); err != nil {
 		return Descriptor{}, err
+	}
+	if dialect == DialectSQLite {
+		if err := CheckSiteNames(name, parameters, analysis.Sites, out.Limit); err != nil {
+			return Descriptor{}, err
+		}
 	}
 	out.Segments = TileSegments(statement, analysis.Sites)
 	return out, nil

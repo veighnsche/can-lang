@@ -1,6 +1,9 @@
 package sql
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // Dialect is a manifest SQL dialect tag. PostgreSQL validates through the
 // pinned libpg_query adaptation in postgres.go; SQLite through the
@@ -26,4 +29,13 @@ func ParseDialect(tag string) (Dialect, error) {
 	default:
 		return "", fmt.Errorf("unsupported SQL dialect %q", tag)
 	}
+}
+
+// limitRef renders a parameter number for diagnostics in the dialect's own
+// spelling: $N for PostgreSQL, ?N for SQLite.
+func limitRef(dialect Dialect, number int) string {
+	if dialect == DialectSQLite {
+		return "?" + strconv.Itoa(number)
+	}
+	return "$" + strconv.Itoa(number)
 }

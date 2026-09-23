@@ -16,7 +16,7 @@ func CheckSites(name string, sites []ParamSite, total int) (map[int]bool, error)
 		}
 		last = site.Start
 		if site.Number < 1 || site.Number > total {
-			return nil, fmt.Errorf("sql descriptor %q: $%d has no declared parameter", name, site.Number)
+			return nil, fmt.Errorf("sql descriptor %q: %s has no declared parameter", name, site.Ref)
 		}
 		present[site.Number] = true
 	}
@@ -25,14 +25,38 @@ func CheckSites(name string, sites []ParamSite, total int) (map[int]bool, error)
 
 // CheckCoverage requires every declared number to appear at least once.
 // The row-limit number reports its own absence; application numbers name
-// their declared parameter.
-func CheckCoverage(name string, parameters []string, present map[int]bool, total, limit int, rowReturning bool) error {
+// their declared parameter. Numbers render in the dialect's spelling.
+func CheckCoverage(name string, dialect Dialect, parameters []string, present map[int]bool, total, limit int, rowReturning bool) error {
 	for n := 1; n <= total; n++ {
 		if !present[n] {
 			if rowReturning && n == total {
-				return fmt.Errorf("sql descriptor %q: row-limit parameter $%d is not used", name, n)
+				return fmt.Errorf("sql descriptor %q: row-limit parameter %s is not used", name, limitRef(dialect, n))
 			}
-			return fmt.Errorf("sql descriptor %q: parameter %q ($%d) is not used", name, parameters[n-1], n)
+			return fmt.Errorf("sql descriptor %q: parameter %q (%s) is not used", name, parameters[n-1], limitRef(dialect, n))
+		}
+	}
+	return nil
+}
+
+// CheckSiteNames requires named SQLite sites to spell their declared
+// parameter: a :name/@name/$name site binding an application number must
+// carry that number's declared name exactly. Bare and ?NNN sites have no
+// name to check, and the row-limit site's name is free since no declared
+// parameter corresponds to it. Sigils never distinguish names. Ranges and
+// coverage already passed, so out-of-range numbers cannot occur here.
+func CheckSiteNames(name string, parameters []string, sites []ParamSite, limit int) error {
+	for _, site := range sites {
+		if len(site.Ref) == 0 || (site.Ref[0] != ':' && site.Ref[0] != '@' && site.Ref[0] != '$') {
+			continue
+		}
+		if limit != 0 && site.Number == limit {
+			continue
+		}
+		if site.Number < 1 || site.Number > len(parameters) {
+			continue
+		}
+		if want := parameters[site.Number-1]; site.Ref[1:] != want {
+			return fmt.Errorf("sql descriptor %q: site %s does not match declared parameter %q", name, site.Ref, want)
 		}
 	}
 	return nil

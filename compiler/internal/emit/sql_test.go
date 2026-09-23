@@ -52,13 +52,13 @@ func TestSQLDescriptorsEmitManifestTable(t *testing.T) {
 	}
 	for _, needle := range []string{
 		"$canSQL=$canCreateSQLDescriptors(",
-		`"search_accounts":{"cardinality":"many"`,
+		`"search_accounts":{"dialect":"postgresql","cardinality":"many"`,
 		`"text":"SELECT id, display_name FROM accounts WHERE display_name ILIKE "`,
 		`{"param":1}`,
 		`{"param":2}`,
 		`"params":["term"]`,
 		`"limit":2,"total":2,"version":170007`,
-		`"wipe":{"cardinality":"execute"`,
+		`"wipe":{"dialect":"postgresql","cardinality":"execute"`,
 		`"params":[]`,
 		`"limit":0,"total":0`,
 	} {
@@ -128,7 +128,9 @@ func TestSQLQueriesEmitPlansAndSplices(t *testing.T) {
 		`"rows":{"root":`,
 		`"fields":[{"name":"term","kind":"str"}]`,
 		`"fields":[{"name":"id","kind":"int"},{"name":"display_name","kind":"str"}]`,
-		"/platform/sql.ts",
+		"/platform/sql/descriptor.ts",
+		"/platform/sql/pool.ts",
+		"/platform/sql/transaction.ts",
 	} {
 		if !strings.Contains(state, needle) {
 			t.Fatalf("missing %s", needle)

@@ -25,16 +25,17 @@ func mutationKinds(kind string) bool {
 // SELECT with a top-level LIMIT binding the trailing number exactly once
 // for row-returning shapes, or a RETURNING-free mutation for execute.
 // Backends report kinds in their own tags; both tag families admit here.
-func CheckCardinality(name string, stmt Statement, sites []ParamSite, cardinality string, total, limit int) error {
+// Limit numbers render in the dialect's spelling.
+func CheckCardinality(name string, dialect Dialect, stmt Statement, sites []ParamSite, cardinality string, total, limit int) error {
 	if cardinality != "execute" {
 		if !selectKinds(stmt.Kind) {
 			return fmt.Errorf("sql descriptor %q: cardinality %s requires SELECT, got %s", name, cardinality, stmt.Kind)
 		}
 		if !stmt.HasLimit {
-			return fmt.Errorf("sql descriptor %q: unbounded SELECT requires LIMIT $%d", name, limit)
+			return fmt.Errorf("sql descriptor %q: unbounded SELECT requires LIMIT %s", name, limitRef(dialect, limit))
 		}
 		if stmt.LimitParam != limit {
-			return fmt.Errorf("sql descriptor %q: top-level LIMIT must be $%d", name, limit)
+			return fmt.Errorf("sql descriptor %q: top-level LIMIT must be %s", name, limitRef(dialect, limit))
 		}
 		uses := 0
 		for _, site := range sites {
@@ -43,7 +44,7 @@ func CheckCardinality(name string, stmt Statement, sites []ParamSite, cardinalit
 			}
 		}
 		if uses != 1 {
-			return fmt.Errorf("sql descriptor %q: row-limit parameter $%d appears %d times, want once in LIMIT", name, limit, uses)
+			return fmt.Errorf("sql descriptor %q: row-limit parameter %s appears %d times, want once in LIMIT", name, limitRef(dialect, limit), uses)
 		}
 		return nil
 	}

@@ -1,0 +1,134 @@
+{
+ "bun": "1.4.2",
+ "sections": {
+  "values": [
+   {
+    "i": "bigint:0",
+    "r": "number:1.5",
+    "t": "string:héllo",
+    "b": "u8[3]:0102fa",
+    "n": "object:null"
+   },
+   {
+    "i": "bigint:1",
+    "r": "number:0",
+    "t": "string:",
+    "b": "u8[0]:",
+    "n": "bigint:9007199254740993"
+   },
+   {
+    "i": "bigint:-9223372036854775808",
+    "r": "number:3",
+    "t": "string:x",
+    "b": "u8[3]:0102fa",
+    "n": "bigint:42"
+   }
+  ],
+  "boolRoundTrip": {
+   "stored": "bigint:1",
+   "rawType": "bigint"
+  },
+  "insertResult": {
+   "isArray": true,
+   "length": 0,
+   "props": {
+    "length": "number:0",
+    "count": "number:1",
+    "command": "string:INSERT",
+    "lastInsertRowid": "bigint:1",
+    "affectedRows": "object:null"
+   }
+  },
+  "updateResult": {
+   "isArray": true,
+   "length": 0,
+   "props": {
+    "length": "number:0",
+    "count": "number:1",
+    "command": "string:UPDATE",
+    "lastInsertRowid": "bigint:1",
+    "affectedRows": "object:null"
+   }
+  },
+  "deleteNoMatch": {
+   "isArray": true,
+   "length": 0,
+   "props": {
+    "length": "number:0",
+    "count": "number:0",
+    "command": "string:DELETE",
+    "lastInsertRowid": "bigint:1",
+    "affectedRows": "object:null"
+   }
+  },
+  "errors": {
+   "syntax": {
+    "name": "SQLiteError",
+    "code": "SQLITE_ERROR",
+    "errno": 1,
+    "message": "near \"FORM\": syntax error"
+   },
+   "unique": {
+    "name": "SQLiteError",
+    "code": "SQLITE_CONSTRAINT_UNIQUE",
+    "errno": 2067,
+    "message": "UNIQUE constraint failed: t.v"
+   },
+   "pk": {
+    "name": "SQLiteError",
+    "code": "SQLITE_CONSTRAINT_PRIMARYKEY",
+    "errno": 1555,
+    "message": "UNIQUE constraint failed: t.id"
+   },
+   "noTable": {
+    "name": "SQLiteError",
+    "code": "SQLITE_ERROR",
+    "errno": 1,
+    "message": "no such table: missing"
+   }
+  },
+  "busyPragma": [
+   {
+    "timeout": "bigint:50"
+   }
+  ],
+  "busyWrite": {
+   "name": "SQLiteError",
+   "code": "SQLITE_BUSY",
+   "errno": 5,
+   "message": "database is locked"
+  },
+  "afterRollback": [
+   "bigint:3"
+  ],
+  "openModes": {
+   "ro-missing": {
+    "name": "SQLiteError",
+    "code": "SQLITE_CANTOPEN",
+    "message": "unable to open database file"
+   },
+   "rw-missing": {
+    "name": "SQLiteError",
+    "code": "SQLITE_CANTOPEN",
+    "message": "unable to open database file"
+   },
+   "rwc-missing": "OPENED"
+  },
+  "limitBigint": [
+   "bigint:1",
+   "bigint:2"
+  ],
+  "useAfterClose": {
+   "name": "SQLiteError",
+   "code": "ERR_SQLITE_CONNECTION_CLOSED",
+   "message": "Connection closed"
+  },
+  "noSafeIntegers": "number:9007199254740992",
+  "openPhases": {
+   "construct": "OK",
+   "connect": "THROW SQLiteError SQLITE_CANTOPEN",
+   "query": "THROW SQLiteError SQLITE_CANTOPEN"
+  },
+  "pragmaBound": "THROW SQLiteError SQLITE_ERROR near \"?\": syntax error"
+ }
+}

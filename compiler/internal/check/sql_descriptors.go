@@ -81,7 +81,11 @@ func checkSQLDescriptor(byDeclaration map[string]*types.Type, world *resolve.Wor
 			return fail("row field %q has non-SQL type %s", field.Name, field.Type.Declaration())
 		}
 	}
-	checked, err := sql.CheckDescriptor(name, manifest.Statement, manifest.Parameters, manifest.Cardinality, manifest.RowLimitParameter)
+	dialect, err := sql.ParseDialect(manifest.Dialect)
+	if err != nil {
+		return ir.SQLDescriptor{}, err
+	}
+	checked, err := sql.CheckDescriptorDialect(dialect, name, manifest.Statement, manifest.Parameters, manifest.Cardinality, manifest.RowLimitParameter)
 	if err != nil {
 		return ir.SQLDescriptor{}, err
 	}

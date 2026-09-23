@@ -183,7 +183,7 @@ func postgresSites(name, statement string, tokens []Token) ([]ParamSite, error) 
 		if err != nil || "$"+strconv.Itoa(number) != text {
 			return nil, fmt.Errorf("sql descriptor %q: parameter token %q", name, text)
 		}
-		out = append(out, ParamSite{Number: number, Start: token.Start, End: token.End})
+		out = append(out, ParamSite{Number: number, Start: token.Start, End: token.End, Ref: "$" + strconv.Itoa(number)})
 	}
 	return out, nil
 }

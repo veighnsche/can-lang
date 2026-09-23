@@ -26,11 +26,13 @@ type Statement struct {
 	Returning  bool
 }
 
-// ParamSite is one parameter occurrence: its 1-based parameter number
-// plus byte offsets into the statement. Sites arrive in source order.
+// ParamSite is one parameter occurrence: its 1-based parameter number,
+// byte offsets into the statement, and the backend's diagnostic rendering
+// ("$3", "?", "?4", ":lim"). Sites arrive in source order.
 type ParamSite struct {
 	Number     int
 	Start, End int
+	Ref        string
 }
 
 // Failure is an upstream grammar failure, verbatim: the backend message
@@ -61,6 +63,8 @@ func Analyze(dialect Dialect, name, statement string) (Analysis, error) {
 	switch dialect {
 	case DialectPostgreSQL:
 		return analyzePostgres(name, statement)
+	case DialectSQLite:
+		return analyzeSQLite(name, statement)
 	default:
 		return Analysis{}, fmt.Errorf("sql descriptor %q: unsupported SQL dialect %q", name, dialect)
 	}

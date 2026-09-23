@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql/descriptor.ts";
 
 const search: SQLDescriptorEntry = {
-  cardinality: "many",
+  dialect: "postgresql", cardinality: "many",
   kind: "SelectStmt",
   segments: [{ text: "SELECT id FROM accounts WHERE x = " }, { param: 1 }, { text: " LIMIT " }, { param: 2 }],
   params: ["term"],
@@ -31,7 +31,7 @@ describe("sql descriptors", () => {
   test("repeated parameters share one prepared value", () => {
     const sql = createSQLDescriptors({
       "": {
-      r: { ...search, segments: [{ text: "SELECT " }, { param: 1 }, { text: "," }, { param: 1 }, { text: " LIMIT " }, { param: 2 }], cardinality: "one" },
+      r: { ...search, segments: [{ text: "SELECT " }, { param: 1 }, { text: "," }, { param: 1 }, { text: " LIMIT " }, { param: 2 }], dialect: "postgresql", cardinality: "one" },
       },
     });
     const built = sql.template(sql.declareDescriptor("", "r"), ["a", 2]);
@@ -41,7 +41,7 @@ describe("sql descriptors", () => {
   test("zero-parameter descriptors template to bare strings", () => {
     const sql = createSQLDescriptors({
       "": {
-      wipe: { cardinality: "execute", kind: "DeleteStmt", segments: [{ text: "DELETE FROM t" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 170007 },
+      wipe: { dialect: "postgresql", cardinality: "execute", kind: "DeleteStmt", segments: [{ text: "DELETE FROM t" }], params: [], paramType: "p", rowType: "r", limit: 0, total: 0, version: 170007 },
       },
     });
     const built = sql.template(sql.declareDescriptor("", "wipe"), []);
@@ -51,7 +51,7 @@ describe("sql descriptors", () => {
   test("unknown names, forged values, and arity breaks throw", () => {
     const sql = createSQLDescriptors({ "": { search_accounts: search } });
     expect(() => sql.declareDescriptor("", "elsewhere")).toThrow("undeclared sql descriptor");
-    const both = createSQLDescriptors({ "": { q: search }, vendor: { q: { cardinality: "execute", kind: "DeleteStmt", segments: [{ text: "DELETE FROM t WHERE id = " }, { param: 1 }], params: ["term"], paramType: "p", rowType: "r", limit: 0, total: 1, version: 170007 } } });
+    const both = createSQLDescriptors({ "": { q: search }, vendor: { q: { dialect: "postgresql", cardinality: "execute", kind: "DeleteStmt", segments: [{ text: "DELETE FROM t WHERE id = " }, { param: 1 }], params: ["term"], paramType: "p", rowType: "r", limit: 0, total: 1, version: 170007 } } });
     expect(both.declareDescriptor("", "q").kind).toBe("SelectStmt");
     expect(both.declareDescriptor("vendor", "q").kind).toBe("DeleteStmt");
     expect(() => both.declareDescriptor("other", "q")).toThrow("undeclared sql descriptor");
@@ -63,7 +63,7 @@ describe("sql descriptors", () => {
   });
   test("corrupt tables refuse at construction", () => {
     const bad: [string, Partial<SQLDescriptorEntry>][] = [
-      ["cardinality", { cardinality: "bogus" as SQLDescriptorEntry["cardinality"] }],
+      ["cardinality", { dialect: "postgresql", cardinality: "bogus" as SQLDescriptorEntry["cardinality"] }],
       ["kind", { kind: "" }],
       ["segments", { segments: [] }],
       ["segment", { segments: [{ text: "x", param: 1 } as unknown as { text: string }] }],
@@ -73,6 +73,8 @@ describe("sql descriptors", () => {
       ["limit", { limit: 0 }],
       ["names", { params: [] }],
       ["version", { version: 160001 }],
+      ["dialect", { dialect: "mysql" as SQLDescriptorEntry["dialect"] }],
+      ["sqlite-version", { dialect: "sqlite", version: 170007 }],
     ];
     for (const [label, patch] of bad) {
       expect(() => createSQLDescriptors({ "": { search_accounts: { ...search, ...patch } } }), label).toThrow(TypeError);

@@ -16,6 +16,7 @@ import (
 // text is ever assembled with values.
 func sqlTable(program *check.Program) (string, error) {
 	type entry struct {
+		Dialect     string        `json:"dialect"`
 		Cardinality string        `json:"cardinality"`
 		Kind        string        `json:"kind"`
 		Segments    []sql.Segment `json:"segments"`
@@ -42,6 +43,7 @@ func sqlTable(program *check.Program) (string, error) {
 			table[descriptor.Owner] = owner
 		}
 		owner[checked.Name] = entry{
+			Dialect:     string(checked.Dialect),
 			Cardinality: checked.Cardinality,
 			Kind:        checked.Kind,
 			Segments:    checked.Segments,

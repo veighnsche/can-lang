@@ -1,5 +1,5 @@
 {
- "$comment": "G-SQL executable corpus, step 2. Each case runs against its own dialect backend only; cross-dialect feeding is prevented structurally by separate entry points plus a dedicated selection test (D03). params/row_limit follow the descriptor contract: total = len(params)+1 for row-returning shapes with the LIMIT site binding the trailing number, total = len(params) for execute. expect=valid means the full descriptor check accepts; expect.invalid names the required rejection category: syntax | multi_statement | bad_kind | bad_limit | returning | param_gap | param_unknown | param_unused. Placeholders: postgresql $N; sqlite ? ?NNN :name @name $name; mysql ? positional. Assumed sql_mode for mysql cases is the server default (no ANSI_QUOTES); the qualified backend must document its mode.",
+ "$comment": "G-SQL executable corpus, step 2. Each case runs against its own dialect backend only; cross-dialect feeding is prevented structurally by separate entry points plus a dedicated selection test (D03). params/row_limit follow the descriptor contract: total = len(params)+1 for row-returning shapes with the LIMIT site binding the trailing number, total = len(params) for execute. expect=valid means the full descriptor check accepts; expect.invalid names the required rejection category: syntax | multi_statement | bad_kind | bad_limit | returning | param_unknown | param_unused | param_name. Placeholders: postgresql $N; sqlite ? ?NNN :name @name $name; mysql ? positional. Assumed sql_mode for mysql cases is the server default (no ANSI_QUOTES); the qualified backend must document its mode.",
  "cases": [
   {
    "cardinality": "one",
@@ -36,7 +36,7 @@
     "id"
    ],
    "row_limit": 2,
-   "statement": "SELECT name FROM users WHERE nick = ';$9;', id = $1 LIMIT $2"
+   "statement": "SELECT name FROM users WHERE nick = ';$9;' AND id = $1 LIMIT $2"
   },
   {
    "cardinality": "one",
@@ -320,10 +320,9 @@
    "dialect": "sqlite",
    "expect": "valid",
    "id": "lite-13",
-   "notes": "named spellings map onto declared parameters by name; LIMIT binds the trailing declared name. Exact name/total correspondence is fixed in B1-02.04; the corpus pins acceptance, not the mapping arithmetic.",
+   "notes": "named spellings map onto numbers (:id is 1, :lim is the trailing 2); non-limit named sites must spell their declared parameter, the limit name is free",
    "params": [
-    "id",
-    "lim"
+    "id"
    ],
    "row_limit": 2,
    "statement": "SELECT name FROM users WHERE id = :id LIMIT :lim"
@@ -429,9 +428,10 @@
    "id": "my-08",
    "notes": "two LIMIT sites cannot both bind the single trailing number",
    "params": [
-    "id"
+    "id",
+    "extra"
    ],
-   "row_limit": 2,
+   "row_limit": 3,
    "statement": "SELECT name FROM users WHERE id = ? LIMIT ?, ?"
   },
   {
@@ -520,10 +520,11 @@
    "dialect": "sqlite",
    "statement": "SELECT name FROM users WHERE id = ? LIMIT ?, ?",
    "params": [
-    "id"
+    "id",
+    "extra"
    ],
    "cardinality": "one",
-   "row_limit": 2,
+   "row_limit": 3,
    "expect": {
     "invalid": "bad_limit"
    },
@@ -534,10 +535,11 @@
    "dialect": "sqlite",
    "statement": "SELECT name FROM users WHERE id = ? LIMIT ? OFFSET ?",
    "params": [
-    "id"
+    "id",
+    "extra"
    ],
    "cardinality": "one",
-   "row_limit": 2,
+   "row_limit": 3,
    "expect": {
     "invalid": "bad_limit"
    },
@@ -582,6 +584,64 @@
    "row_limit": 2,
    "expect": "valid",
    "notes": "one trailing semicolon admitted and tiled as text"
+  },
+  {
+   "id": "pg-14",
+   "dialect": "postgresql",
+   "statement": "SELECT name FROM users WHERE id = $1 LIMIT $3",
+   "params": [
+    "id",
+    "unused"
+   ],
+   "cardinality": "one",
+   "row_limit": 3,
+   "expect": {
+    "invalid": "param_unused"
+   },
+   "notes": "$2 (unused) never appears"
+  },
+  {
+   "id": "lite-19",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = ?1 LIMIT ?3",
+   "params": [
+    "id",
+    "unused"
+   ],
+   "cardinality": "one",
+   "row_limit": 3,
+   "expect": {
+    "invalid": "param_unused"
+   },
+   "notes": "?2 (unused) never appears; explicit numbers"
+  },
+  {
+   "id": "lite-20",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = $1 LIMIT ?",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "syntax"
+   },
+   "notes": "digit-led $ names are rejected by the grammar, like the engine"
+  },
+  {
+   "id": "lite-21",
+   "dialect": "sqlite",
+   "statement": "SELECT name FROM users WHERE id = :idd LIMIT :lim",
+   "params": [
+    "id"
+   ],
+   "cardinality": "one",
+   "row_limit": 2,
+   "expect": {
+    "invalid": "param_name"
+   },
+   "notes": "misspelled site name is caught even though numbering works"
   }
  ]
 }

@@ -10,6 +10,7 @@ export interface SQLSegment {
   param?: number;
 }
 export interface SQLDescriptorEntry {
+  dialect: "postgresql" | "sqlite";
   cardinality: "one" | "optional" | "many" | "execute";
   kind: string;
   segments: SQLSegment[];
@@ -23,6 +24,7 @@ export interface SQLDescriptorEntry {
 export interface SQLDescriptor {
   readonly owner: string;
   readonly name: string;
+  readonly dialect: SQLDescriptorEntry["dialect"];
   readonly cardinality: SQLDescriptorEntry["cardinality"];
   readonly kind: string;
   readonly params: readonly string[];
@@ -39,8 +41,9 @@ export interface SQLTemplate {
   values: readonly unknown[];
 }
 
-// Pinned by I36 alongside compiler/internal/sql: libpg_query 17.7.
-const parserVersion = 170007;
+// Pinned alongside compiler/internal/sql: libpg_query 17.7 per I36 and the
+// tree-sitter SQLite grammar language version per the G-SQL exit.
+const parserVersions = { postgresql: 170007, sqlite: 15 } as const;
 
 export function createSQLDescriptors(table: Record<string, Record<string, SQLDescriptorEntry>>) {
   const descriptors = new Map<string, SQLDescriptor>();
@@ -51,7 +54,8 @@ export function createSQLDescriptors(table: Record<string, Record<string, SQLDes
     for (const [name, entry] of Object.entries(names)) {
       if (typeof name !== "string" || name === "") throw new TypeError("invalid sql descriptor name");
     if (entry === null || typeof entry !== "object") throw new TypeError("invalid sql descriptor entry");
-    const { cardinality, kind, segments, params, paramType, rowType, limit, total, version } = entry;
+    const { dialect, cardinality, kind, segments, params, paramType, rowType, limit, total, version } = entry;
+    if (dialect !== "postgresql" && dialect !== "sqlite") throw new TypeError("invalid sql dialect");
     if (cardinality !== "one" && cardinality !== "optional" && cardinality !== "many" && cardinality !== "execute") throw new TypeError("invalid sql cardinality");
     if (typeof kind !== "string" || kind === "") throw new TypeError("invalid sql statement kind");
     if (!Array.isArray(segments) || segments.length === 0) throw new TypeError("invalid sql segments");
@@ -60,7 +64,7 @@ export function createSQLDescriptors(table: Record<string, Record<string, SQLDes
     if (!Number.isInteger(limit) || !Number.isInteger(total) || total < 0 || limit < 0 || limit > total) throw new TypeError("invalid sql parameter count");
     if ((cardinality === "execute") !== (limit === 0)) throw new TypeError("invalid sql limit");
     if (params.length !== total - (limit === 0 ? 0 : 1)) throw new TypeError("invalid sql parameter names");
-    if (version !== parserVersion) throw new TypeError("sql parser version mismatch");
+    if (version !== parserVersions[dialect]) throw new TypeError("sql parser version mismatch");
     const literals: string[] = [];
     const numbers: number[] = [];
     let literal = "";
@@ -79,7 +83,7 @@ export function createSQLDescriptors(table: Record<string, Record<string, SQLDes
     literals.push(literal);
     if (literals.length !== numbers.length + 1) throw new TypeError("invalid sql segments");
     const strings = Object.freeze(Object.assign(literals.slice(), { raw: Object.freeze(literals.slice()) })) as unknown as TemplateStringsArray;
-      descriptors.set(key(owner, name), Object.freeze({ owner, name, cardinality, kind, params: Object.freeze(params.slice()), paramType, rowType, limit, total, version, strings, numbers: Object.freeze(numbers.slice()) }));
+      descriptors.set(key(owner, name), Object.freeze({ owner, name, dialect, cardinality, kind, params: Object.freeze(params.slice()), paramType, rowType, limit, total, version, strings, numbers: Object.freeze(numbers.slice()) }));
     }
   }
   return Object.freeze({

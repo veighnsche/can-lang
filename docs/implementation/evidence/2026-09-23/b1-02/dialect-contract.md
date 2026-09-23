@@ -13,7 +13,7 @@ or **qualify** (acceptance probe still required, with owning step).
 
 | Aspect | postgres | sqlite | mysql |
 |---|---|---|---|
-| Source spelling in descriptors | `$N` contiguous, scanner `PARAM` (code) | `?`, `?NNN`, `:name`, `@name`, `$name` (qualify: G-SQL backend, B1-02.03) | `?` positional (qualify: G-SQL backend, B1-02.03; Bun auto-converts `$1` per docs, but that is a fallback, not the contract) |
+| Source spelling in descriptors | `$N` contiguous, scanner `PARAM` (code) | `?`, `?NNN`, `:name`, `@name`, `$name` (tree-sitter backend, B1-02.03 exit) | `?` positional (qualify: G-SQL backend, B1-03; Bun auto-converts `$1` per docs, but that is a fallback, not the contract) |
 | Native binding | positional template values; static text carries no markers (code) | same mechanism (code) | same mechanism (code) |
 | Row-limit parameter | top-level `LIMIT $M`, exactly once (code) | top-level `LIMIT ?` equivalent (qualify: B1-02.04, never pg syntax appended blindly) | same as sqlite (qualify: B1-02.04) |
 | Repeated / out-of-order sites | expand structurally to one value per number (code) | same (code) | same (code) |
@@ -46,3 +46,16 @@ sqlite probe fixes the native shape. No silent casts anywhere: every
 loss-prone conversion is a `schema_mismatch`/`unsupported_value`
 failure, and every rejected mapping above is a compile-time descriptor
 error, not a runtime surprise.
+
+## B1-02.04 SQLite number/name mapping rule
+
+Sites map to numbers by engine rules: `?NNN` binds NNN explicitly, a
+bare `?` takes one past the current maximum, and each distinct
+`:name`/`@name`/`$name` takes the next number with repeats sharing it
+(sigils never distinguish names). The contiguity, trailing-limit, and
+coverage rules then apply to numbers exactly as on PostgreSQL.
+Additionally, a named site binding an application number must spell
+that number's declared parameter exactly (typo detection); bare and
+`?NNN` sites have no name to check and the row-limit site's name is
+free. `$` names with a leading digit are grammar errors, matching the
+engine. Corpus cases lite-03/10/13/19/20/21 pin the rule.
