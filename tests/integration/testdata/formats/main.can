@@ -1,0 +1,211 @@
+package fmt_cli
+    provides []
+    uses [codec, bytes, files, stream, io, text]
+record endpoint
+    str host
+    int port
+record service
+    str title
+    endpoint primary
+    int[] ports
+record waypoint
+    str name
+    int n
+fn int emit
+    emits [codec::invalid_data, io::write_failed]
+    given
+        str text
+    asserts
+        sample: "hi" => ok 2
+    match call bytes::from_utf8(text)
+        codec::invalid_data
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                sample: message => ok 2
+                empty: message => ok 0
+                badop: message => ok 0
+                arity: message => ok 0
+            io::write_failed
+            ok int written => ok written
+fn int toml_port
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    given
+        str path
+    asserts
+        sample: "svc.toml" => ok 8080
+    match call bytes::from_utf8("title = \"edge\"\nports = []\n[primary]\nhost = \"h\"\nport = 8080\n")
+        codec::invalid_data
+        ok bytes::buffer doc => match call files::read_bytes(path, 65536)
+            when
+                sample: "svc.toml", 65536 => ok doc
+            files::not_found
+            files::denied
+            files::invalid_path
+            files::unexpected_kind
+            files::limit_exceeded
+            files::io_error
+            ok bytes::buffer body => match call codec::decode_toml<service>(body)
+                codec::invalid_data
+                ok service svc => ok svc.primary.port
+fn int yaml_n
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    given
+        str path
+    asserts
+        sample: "point.yaml" => ok 7
+    match call bytes::from_utf8("name: r\nn: 7\n")
+        codec::invalid_data
+        ok bytes::buffer doc => match call files::read_bytes(path, 65536)
+            when
+                sample: "point.yaml", 65536 => ok doc
+            files::not_found
+            files::denied
+            files::invalid_path
+            files::unexpected_kind
+            files::limit_exceeded
+            files::io_error
+            ok bytes::buffer body => match call codec::decode_yaml<waypoint>(body)
+                codec::invalid_data
+                ok waypoint point => ok point.n
+fn int json5_n
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data]
+    given
+        str path
+    asserts
+        sample: "point.json5" => ok 7
+    match call bytes::from_utf8("{name: 'r', n: 7}")
+        codec::invalid_data
+        ok bytes::buffer doc => match call files::read_bytes(path, 65536)
+            when
+                sample: "point.json5", 65536 => ok doc
+            files::not_found
+            files::denied
+            files::invalid_path
+            files::unexpected_kind
+            files::limit_exceeded
+            files::io_error
+            ok bytes::buffer body => match call codec::decode_json5<waypoint>(body)
+                codec::invalid_data
+                ok waypoint point => ok point.n
+fn void tally
+    emits []
+    given
+        waypoint point
+    asserts
+        sample: waypoint("a", 1) => ok
+    ok
+fn int jsonl_count
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data]
+    given
+        str path
+    asserts
+        sample: "points.jsonl" => ok 2
+    match call files::read_stream(path, 65536)
+        when
+            sample: "points.jsonl", 65536 => ok
+        files::not_found
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::limit_exceeded
+        files::io_error
+        ok stream::reader<bytes::buffer> reader => match call codec::consume_jsonl<waypoint>(reader, callable tally)
+            when
+                sample: reader, callable tally => ok 2
+            stream::read_failed
+            stream::cancelled
+            codec::invalid_data
+            ok int count => match call stream::close_reader(reader)
+                when
+                    sample: reader => ok
+                stream::close_failed
+                ok => ok count
+fn void main
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, stream::read_failed, stream::cancelled, stream::close_failed, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+        arity: ["toml"] => ok
+    match args.length is 0
+        true => match call emit("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok
+        false => match args[0]
+            "toml" => match args.length is 2
+                false => match call emit("usage: toml <path>")
+                    codec::invalid_data
+                    io::write_failed
+                    ok int written => ok
+                true => match call toml_port(args[1])
+                    files::not_found
+                    files::denied
+                    files::invalid_path
+                    files::unexpected_kind
+                    files::limit_exceeded
+                    files::io_error
+                    codec::invalid_data
+                    ok int port => match call emit(call text::from_int(port))
+                        codec::invalid_data
+                        io::write_failed
+                        ok int written => ok
+            "yaml" => match args.length is 2
+                false => match call emit("usage: yaml <path>")
+                    codec::invalid_data
+                    io::write_failed
+                    ok int written => ok
+                true => match call yaml_n(args[1])
+                    files::not_found
+                    files::denied
+                    files::invalid_path
+                    files::unexpected_kind
+                    files::limit_exceeded
+                    files::io_error
+                    codec::invalid_data
+                    ok int n => match call emit(call text::from_int(n))
+                        codec::invalid_data
+                        io::write_failed
+                        ok int written => ok
+            "json5" => match args.length is 2
+                false => match call emit("usage: json5 <path>")
+                    codec::invalid_data
+                    io::write_failed
+                    ok int written => ok
+                true => match call json5_n(args[1])
+                    files::not_found
+                    files::denied
+                    files::invalid_path
+                    files::unexpected_kind
+                    files::limit_exceeded
+                    files::io_error
+                    codec::invalid_data
+                    ok int n => match call emit(call text::from_int(n))
+                        codec::invalid_data
+                        io::write_failed
+                        ok int written => ok
+            "jsonl" => match args.length is 2
+                false => match call emit("usage: jsonl <path>")
+                    codec::invalid_data
+                    io::write_failed
+                    ok int written => ok
+                true => match call jsonl_count(args[1])
+                    files::not_found
+                    files::denied
+                    files::invalid_path
+                    files::unexpected_kind
+                    files::limit_exceeded
+                    files::io_error
+                    stream::read_failed
+                    stream::cancelled
+                    stream::close_failed
+                    codec::invalid_data
+                    ok int count => match call emit(call text::from_int(count))
+                        codec::invalid_data
+                        io::write_failed
+                        ok int written => ok
+            _ => match call emit("usage: toml <path> | yaml <path> | json5 <path> | jsonl <path>")
+                codec::invalid_data
+                io::write_failed
+                ok int written => ok
