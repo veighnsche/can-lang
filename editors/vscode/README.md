@@ -8,8 +8,8 @@ NOT register — the editor only loads manifest-registered extensions):
 
 ```
 go build -ldflags "-X main.version=$(git describe --tags --always --dirty)" -o editors/vscode/bin/canlc ./compiler
-(cd editors/vscode && npm install --no-audit --no-fund)
-(cd editors/vscode && npx -y @vscode/vsce package -o /tmp/can-lang.vsix)
+(cd editors/vscode && bun ci)
+(cd editors/vscode && bunx -y @vscode/vsce package -o /tmp/can-lang.vsix)
 cursor --install-extension /tmp/can-lang.vsix --force   # or: code --install-extension ...
 antigravity-ide --install-extension /tmp/can-lang.vsix --force
 codesign --force --sign - ~/.cursor/extensions/can-lang.can-lang-*/bin/canlc

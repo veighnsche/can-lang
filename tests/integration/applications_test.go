@@ -769,7 +769,7 @@ func TestApplicationsBrowser(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	browserDir := filepath.Join(sourceRoot, "tests/integration/browser")
 	if _, err := os.Stat(filepath.Join(browserDir, "node_modules/playwright/package.json")); err != nil {
-		t.Skip("run npm install in tests/integration/browser for the pinned harness")
+		t.Skip("run bun ci in tests/integration/browser for the pinned harness")
 	}
 	probeCtx, probeCancel := context.WithTimeout(context.Background(), time.Minute)
 	defer probeCancel()

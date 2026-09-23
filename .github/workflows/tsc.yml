@@ -30,12 +30,14 @@ jobs:
           target = json.loads(pathlib.Path('distribution/target.json').read_text())
           urllib.request.urlretrieve(target['upstream']['url'], pathlib.Path(os.environ['RUNNER_TEMP']) / 'bun.zip')
           PY
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: tscheck/package-lock.json
-      - run: npm ci --no-audit --no-fund
+      - name: Extract and pin-check the Bun binary
+        run: |
+          set -euo pipefail
+          unzip -q -o "$RUNNER_TEMP/bun.zip" -d "$RUNNER_TEMP/bun-dist"
+          test "$(shasum -a 256 "$RUNNER_TEMP/bun.zip" | cut -d' ' -f1)" = "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f"
+          test "$("$RUNNER_TEMP/bun-dist/bun-darwin-aarch64/bun" --revision)" = "1.4.2+744846f84"
+          echo "$RUNNER_TEMP/bun-dist/bun-darwin-aarch64" >> "$GITHUB_PATH"
+      - run: bun ci
         working-directory: tscheck
       - name: Emit every maintained example fresh
         env:
@@ -49,7 +51,7 @@ jobs:
         working-directory: tscheck
         run: |
           set -o pipefail
-          ./node_modules/.bin/tsc -p tsconfig.json 2>&1 | tee "${{ runner.temp }}/fresh-emit-tsc-v1.txt"
+          bun ./node_modules/typescript/bin/tsc -p tsconfig.json 2>&1 | tee "${{ runner.temp }}/fresh-emit-tsc-v1.txt"
           test "${PIPESTATUS[0]}" -eq 0
       - uses: actions/upload-artifact@v4
         if: always()

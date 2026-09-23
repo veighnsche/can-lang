@@ -17,6 +17,7 @@ P15.1).
 - [`runtime/`](runtime/) — the private TypeScript runtime (partitioned
   by contract, never hand-edited per program)
 - [`examples/gallery/`](examples/gallery/README.md) — small, assertion-driven Can lessons
+- [`examples/language-site/`](examples/language-site/README.md) — Can-authored language and docs site prototype
 - [`examples/`](examples/) — end-to-end applications
   (native-ai, account-search, form-validation, dashboard)
 - [`std/`](std/README.md) — package dispositions and the four
@@ -65,8 +66,9 @@ make build        # builds ./bin/canlc
 make bundle BUN_ARCHIVE=/absolute/path/bun-darwin-aarch64.zip VERSION=dev-1
 ```
 
-Source builds additionally need Node 24 + npm for the TypeScript
-and browser legs, and PostgreSQL 17 for the live SQL legs; see the
+Source builds additionally need Bun 1.4.2 for development tooling,
+Node 24 for the Playwright browser harness, and PostgreSQL 17 for the
+live SQL legs; see the
 [verifier workflow](.github/workflows/verifier.yml) for the exact
 operated services. CGo (`pg_query_go`) needs a C compiler at Go
 build time only.
@@ -83,10 +85,10 @@ From the repo root, `go test ./...` runs the compiler, mirror,
 integration, and retirement gates; `bun test runtime/test/` runs
 the 850-test runtime suite; `tscheck/` typechecks fresh emit.
 CI runs all of it with zero skips on `macos-15`.
-Run `npm ci`, then `npm run check:runtime` to lint, check formatting,
+Run `bun ci`, then `bun run check:runtime` to lint, check formatting,
 and typecheck authored runtime and runtime tooling TypeScript.
-`npm run lint:fix:runtime` applies safe Oxlint fixes, and
-`npm run format:runtime` formats that maintained TypeScript scope.
+`bun run lint:fix:runtime` applies safe Oxlint fixes, and
+`bun run format:runtime` formats that maintained TypeScript scope.
 
 ## Status
 

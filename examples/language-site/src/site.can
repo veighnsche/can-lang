@@ -1,0 +1,222 @@
+package site
+    provides [text_block, link, header, footer, home, docs, show_home, show_docs, routes, main]
+    uses [html, asset, http]
+
+/// All authored copy enters HTML through the safe text constructor.
+fn html::node text_block
+    emits [html::invalid_structure]
+    given
+        str tag_name
+        str class_name
+        str copy
+    asserts
+        sample: "p", "copy", "Hello" => ok
+        hostile: "p", "copy", "<script>bad()</script>" => ok
+    match chain
+        call html::make_tag(tag_name) as html::tag tag
+        call html::text_attribute("class", class_name) as html::attribute style
+        call html::text(copy) as html::node words
+        call html::element(tag, [style], [words]) as html::node block
+        html::invalid_structure
+        ok => ok block
+
+fn html::node link
+    emits [html::invalid_structure, html::invalid_url]
+    given
+        str destination
+        str class_name
+        str label
+    asserts
+        docs: "/docs", "nav-link", "Docs" => ok
+    match chain
+        call html::make_tag("a") as html::tag tag
+        call html::parse_url(destination) as html::url target
+        call html::url_attribute("href", target) as html::attribute href
+        call html::text_attribute("class", class_name) as html::attribute style
+        call html::text(label) as html::node words
+        call html::element(tag, [href, style], [words]) as html::node anchor
+        html::invalid_structure
+        html::invalid_url
+        ok => ok anchor
+
+fn html::node header
+    emits [html::invalid_structure, html::invalid_url]
+    asserts
+        sample: => ok
+    match chain
+        call link("/", "wordmark", "can / lang") as html::node brand
+        call link("/docs", "nav-link", "Documentation") as html::node docs_link
+        call link("https://github.com/veighnsche/can-lang", "nav-link external", "GitHub ↗") as html::node source_link
+        call html::make_tag("nav") as html::tag nav_tag
+        call html::text_attribute("class", "nav-links") as html::attribute nav_class
+        call html::element(nav_tag, [nav_class], [docs_link, source_link]) as html::node navigation
+        call html::make_tag("header") as html::tag header_tag
+        call html::text_attribute("class", "site-header") as html::attribute header_class
+        call html::element(header_tag, [header_class], [brand, navigation]) as html::node head
+        html::invalid_structure
+        html::invalid_url
+        ok => ok head
+
+fn html::node footer
+    emits [html::invalid_structure, html::invalid_url]
+    asserts
+        sample: => ok
+    match chain
+        call text_block("p", "footer-copy", "Can is an experimental, contract-first language.") as html::node copy
+        call link("/docs", "footer-link", "Read the docs →") as html::node docs_link
+        call html::make_tag("footer") as html::tag tag
+        call html::text_attribute("class", "site-footer") as html::attribute style
+        call html::element(tag, [style], [copy, docs_link]) as html::node foot
+        html::invalid_structure
+        html::invalid_url
+        ok => ok foot
+
+/// The landing page is assembled entirely from Can's typed HTML nodes.
+fn html::safe home
+    emits [html::invalid_structure, html::invalid_url]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call header() as html::node head
+        call text_block("p", "eyebrow", "A LANGUAGE FOR EXPLICIT BEHAVIOR") as html::node eyebrow
+        call text_block("h1", "hero-title", "Code with its claims attached.") as html::node headline
+        call text_block("p", "hero-copy", "Can compiles to TypeScript and runs on Bun. Functions carry executable assertions, while native platform operations stay visible in the source.") as html::node intro
+        call link("/docs", "button button-primary", "Start reading  ↗") as html::node start
+        call link("https://github.com/veighnsche/can-lang", "button button-secondary", "Explore the source") as html::node source
+        call html::make_tag("div") as html::tag div_tag
+        call html::text_attribute("class", "hero-actions") as html::attribute actions_class
+        call html::element(div_tag, [actions_class], [start, source]) as html::node actions
+        call html::make_tag("section") as html::tag section_tag
+        call html::text_attribute("class", "hero-content") as html::attribute hero_content_class
+        call html::element(section_tag, [hero_content_class], [eyebrow, headline, intro, actions]) as html::node hero_content
+        call text_block("p", "code-caption", "01 / A FUNCTION THAT MAKES A CLAIM") as html::node code_caption
+        call text_block("code", "code-text", "fn int square\n    emits []\n    given\n        int number\n    asserts\n        zero: 0 => ok 0\n        positive: 4 => ok 16\n    ok number * number") as html::node code
+        call html::make_tag("pre") as html::tag pre_tag
+        call html::text_attribute("class", "code-window") as html::attribute pre_class
+        call html::element(pre_tag, [pre_class], [code]) as html::node pre
+        call html::text_attribute("class", "code-panel") as html::attribute panel_class
+        call html::element(div_tag, [panel_class], [code_caption, pre]) as html::node panel
+        call html::text_attribute("class", "hero-grid") as html::attribute hero_grid_class
+        call html::element(section_tag, [hero_grid_class], [hero_content, panel]) as html::node hero
+        call text_block("p", "eyebrow", "WHY CAN") as html::node why_label
+        call text_block("h2", "section-title", "A small language with clear edges.") as html::node why_title
+        call text_block("h3", "feature-title", "Assertions belong to functions") as html::node feature_one_title
+        call text_block("p", "feature-copy", "Examples live beside behavior. A verified build runs them before it publishes output.") as html::node feature_one_copy
+        call text_block("h3", "feature-title", "Native where it counts") as html::node feature_two_title
+        call text_block("p", "feature-copy", "Generated TypeScript uses JavaScript and Bun operations, with adapters only for Can's contracts.") as html::node feature_two_copy
+        call text_block("h3", "feature-title", "Boundaries you can see") as html::node feature_three_title
+        call text_block("p", "feature-copy", "Declared errors and typed platform calls make external effects visible in code review.") as html::node feature_three_copy
+        call html::make_tag("article") as html::tag article_tag
+        call html::text_attribute("class", "feature-card") as html::attribute feature_class
+        call html::element(article_tag, [feature_class], [feature_one_title, feature_one_copy]) as html::node feature_one
+        call html::element(article_tag, [feature_class], [feature_two_title, feature_two_copy]) as html::node feature_two
+        call html::element(article_tag, [feature_class], [feature_three_title, feature_three_copy]) as html::node feature_three
+        call html::text_attribute("class", "features-grid") as html::attribute features_class
+        call html::element(div_tag, [features_class], [feature_one, feature_two, feature_three]) as html::node features
+        call html::text_attribute("class", "why-section") as html::attribute why_class
+        call html::element(section_tag, [why_class], [why_label, why_title, features]) as html::node why
+        call html::make_tag("main") as html::tag main_tag
+        call html::element(main_tag, [], [hero, why]) as html::node body
+        call footer() as html::node foot
+        call html::document("Can — code with its claims attached", [css], [head, body, foot]) as html::safe page
+        html::invalid_structure
+        html::invalid_url
+        ok => ok page
+
+/// A small public guide, distinct from the repository's design archive.
+fn html::safe docs
+    emits [html::invalid_structure, html::invalid_url]
+    asserts
+        sample: => ok
+    match chain
+        call asset::url("site_css") as html::url css_url
+        call html::stylesheet(css_url) as html::node css
+        call header() as html::node head
+        call text_block("p", "eyebrow", "DOCUMENTATION / FIRST STEPS") as html::node eyebrow
+        call text_block("h1", "docs-title", "Start with a function.") as html::node title
+        call text_block("p", "docs-lead", "This short guide uses the current Can syntax. The repository contains a runnable gallery with more examples.") as html::node lead
+        call text_block("h2", "docs-heading", "1. Read a Can function") as html::node first_heading
+        call text_block("p", "docs-copy", "A function declares its result, possible errors, inputs, and assertion rows before its body. The assertions are executable examples.") as html::node first_copy
+        call text_block("code", "code-text", "fn str hello\n    emits []\n    asserts\n        greeting: => ok \"Hello, world!\"\n    ok \"Hello, world!\"") as html::node first_code
+        call html::make_tag("pre") as html::tag pre_tag
+        call html::text_attribute("class", "docs-code") as html::attribute pre_class
+        call html::element(pre_tag, [pre_class], [first_code]) as html::node first_pre
+        call text_block("h2", "docs-heading", "2. Build and run the gallery") as html::node second_heading
+        call text_block("p", "docs-copy", "From the repository root, build the maintained examples. Build executes their assertions before publishing generated TypeScript.") as html::node second_copy
+        call text_block("code", "code-text", "canlc build examples/gallery\ncanlc run examples/gallery -- Ada") as html::node second_code
+        call html::element(pre_tag, [pre_class], [second_code]) as html::node second_pre
+        call text_block("h2", "docs-heading", "3. Follow the current sources") as html::node third_heading
+        call text_block("p", "docs-copy", "The gallery is the best place to learn syntax. The compiler and runtime documentation explain how the language is implemented.") as html::node third_copy
+        call link("https://github.com/veighnsche/can-lang/tree/main/examples/gallery", "docs-link", "Browse the example gallery ↗") as html::node gallery_link
+        call link("https://github.com/veighnsche/can-lang/blob/main/docs/README.md", "docs-link", "Read the design records ↗") as html::node design_link
+        call html::make_tag("div") as html::tag div_tag
+        call html::text_attribute("class", "docs-links") as html::attribute links_class
+        call html::element(div_tag, [links_class], [gallery_link, design_link]) as html::node links
+        call html::make_tag("main") as html::tag main_tag
+        call html::text_attribute("class", "docs-main") as html::attribute main_class
+        call html::element(main_tag, [main_class], [eyebrow, title, lead, first_heading, first_copy, first_pre, second_heading, second_copy, second_pre, third_heading, third_copy, links]) as html::node body
+        call footer() as html::node foot
+        call html::document("Can documentation — first steps", [css], [head, body, foot]) as html::safe page
+        html::invalid_structure
+        html::invalid_url
+        ok => ok page
+
+fn http::server_response show_home
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call home()
+        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "Page unavailable")
+        html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "Page unavailable")
+        ok html::safe page => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), page)
+
+fn http::server_response show_docs
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    match call docs()
+        html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "Page unavailable")
+        html::invalid_url => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "Page unavailable")
+        ok html::safe page => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), page)
+
+fn http::router routes
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::route_get("/", callable show_home) as http::route home_route
+        call http::route_get("/docs", callable show_docs) as http::route docs_route
+        call http::make_router([home_route, docs_route]) as http::router router
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok router
+
+/// Run the prototype at http://127.0.0.1:18487/.
+fn void main
+    emits [http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    match call http::make_server_config("127.0.0.1", 18487, 65536, 5000)
+        http::invalid_server_config
+        ok http::server_config config => match call routes()
+            http::invalid_route
+            http::duplicate_route
+            http::ambiguous_route
+            ok http::router router => match call http::server_start(config, router)
+                when
+                    sample: config, router => ok
+                http::bind_failed
+                ok http::server server => match call http::server_wait(server)
+                    when
+                        sample: server => ok
+                    http::shutdown_failed
+                    ok => ok

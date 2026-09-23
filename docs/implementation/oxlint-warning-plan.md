@@ -2,7 +2,7 @@
 
 ## Completion (2026-09-23)
 
-The cleanup is implemented. `npm run lint:runtime` now uses
+The cleanup is implemented. `bun run lint:runtime` now uses
 `--deny-warnings` and exits cleanly with zero diagnostics. The verifier
 workflow installs pinned Oxlint and runs that command. A full local
 `bun test runtime/ tools/runtime/` run passed (526 pass, 28 live-service
@@ -13,7 +13,7 @@ directory or whole rule was excluded.
 
 ## Scope and baseline
 
-The pinned Oxlint 1.85.0 command `npm run lint:runtime` checks authored
+The pinned Oxlint 1.85.0 command `bun run lint:runtime` checks authored
 `runtime/` and `tools/runtime/` TypeScript, excluding vendored code. A JSON run
 on 2026-09-23 found 73 warnings in 178 files: 48 `eslint(no-unused-vars)`,
 11 `unicorn(no-new-array)`, 6 `eslint(no-control-regex)`, 5
@@ -73,8 +73,8 @@ The user's unrelated untracked gap-fill plan is outside this cleanup.
    tests for edited code, then `bun test runtime/ tools/runtime/`, the
    relevant Go output-validation tests, and `go test ./...` for the final
    cross-language gate. Keep native Bun version at 1.4.2. Once the baseline is
-   clean, add `--deny-warnings` to the scoped npm command and run it in CI
-   after `npm ci`. Pinning and vendor exclusions stay as they are. Do not
+   clean, add `--deny-warnings` to the scoped Bun command and run it in CI
+   after `bun ci`. Pinning and vendor exclusions stay as they are. Do not
    disable whole rules or exclude authored directories merely to make the
    count zero.
 

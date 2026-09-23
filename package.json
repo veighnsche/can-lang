@@ -1,13 +1,14 @@
 {
   "name": "can-runtime-tooling",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "scripts": {
     "lint:runtime": "oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --deny-warnings",
     "lint:fix:runtime": "oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --fix",
     "format:runtime": "oxfmt \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"",
     "format:check:runtime": "oxfmt --check \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"",
     "typecheck:runtime": "tsc -p tsconfig.runtime.json",
-    "check:runtime": "npm run lint:runtime && npm run format:check:runtime && npm run typecheck:runtime"
+    "check:runtime": "bun run lint:runtime && bun run format:check:runtime && bun run typecheck:runtime"
   },
   "devDependencies": {
     "@types/bun": "1.4.2",

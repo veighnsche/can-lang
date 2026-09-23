@@ -56,7 +56,7 @@ record what they were.
 
 ## Maintained example inventory
 
-These eight projects are the complete maintained set. Each is a
+These twenty projects are the complete maintained set. Each is a
 current manifest-backed project (`can.project.json`,
 `can.errors.json`, `src/`, README, mandatory assertions, explicit
 imports) that builds fresh from a staged layout with output only in
@@ -66,8 +66,12 @@ fresh compilation; `modcheck` covers every maintained `.can` file.
 
 - `std/map/current`, `std/ratio/current`, `std/scalars/current`,
   `std/text/current`
-- `examples/native-ai`, `examples/account-search`,
-  `examples/form-validation`, `examples/dashboard`
+- `examples/account-search`, `examples/cookies`, `examples/crypto`,
+  `examples/dashboard`, `examples/files`, `examples/form-validation`,
+  `examples/gallery`, `examples/language-site`, `examples/markdown`,
+  `examples/mysql`, `examples/native-ai`, `examples/process`,
+  `examples/sqlite`, `examples/stream`, `examples/utilities`,
+  `examples/websocket`
 
 ## Coverage row mapping
 

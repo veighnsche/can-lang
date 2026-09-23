@@ -34,8 +34,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: tests/integration/browser/package-lock.json
       - name: Extract and pin-check the Bun binary
         run: |
           set -euo pipefail
@@ -57,19 +55,19 @@ jobs:
         working-directory: tests/integration/browser
         run: |
           set -euo pipefail
-          npm ci --no-audit --no-fund
-          npx playwright install chromium
+          bun ci
+          ./node_modules/.bin/playwright install chromium
       - name: Install the pinned TypeScript leg
         working-directory: tscheck
         run: |
           set -euo pipefail
-          npm ci --no-audit --no-fund
+          bun ci
           echo "CAN_TSC=$GITHUB_WORKSPACE/tscheck/node_modules/typescript/bin/tsc" >> "$GITHUB_ENV"
       - name: Lint, format, and typecheck authored runtime TypeScript
         run: |
           set -euo pipefail
-          npm ci --no-audit --no-fund
-          npm run check:runtime
+          bun ci
+          bun run check:runtime
       - name: Check formatting, vet, and generated mirrors
         run: |
           set -euo pipefail

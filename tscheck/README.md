@@ -6,12 +6,14 @@ I44-retired committed-golden gate: nothing here checks in emit.
 
 ## Local run
 
+From the repository root:
+
 ```sh
-npm ci --no-audit --no-fund
+(cd tscheck && bun ci)
 CAN_BUN_ARCHIVE=/path/to/bun.zip \
-CAN_FRESH_EMIT_DIR="$PWD/.fresh-emit" \
+CAN_FRESH_EMIT_DIR="$PWD/tscheck/.fresh-emit" \
   go test ./tests/integration/ -run TestStdlibMaintained -count=1
-./node_modules/.bin/tsc -p tsconfig.json
+(cd tscheck && bun ./node_modules/typescript/bin/tsc -p tsconfig.json)
 ```
 
 `CAN_FRESH_EMIT_DIR` makes the staged stdlib test copy each

@@ -1,6 +1,7 @@
 {
   "name": "can-tscheck",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "description": "Pinned TypeScript for the fresh-emit strict gate over maintained examples.",
   "devDependencies": {
     "@types/bun": "1.4.2",

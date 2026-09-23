@@ -2,17 +2,17 @@
 
 The root development toolchain pins Oxlint 1.85.0, Oxfmt 0.70.0,
 oxlint-tsgolint 7.0.2002, TypeScript 7.0.2, and the Bun 1.4.2 / Node 24
-types. `npm run check:runtime` runs strict lint, Oxfmt's check mode,
+types. `bun run check:runtime` runs strict lint, Oxfmt's check mode,
 and TypeScript's no-emit check on maintained `runtime/` and
-`tools/runtime/` source. CI runs that command after `npm ci`.
+`tools/runtime/` source. CI runs that command after `bun ci`.
 
 Oxfmt uses its documented 100-column default, two-space indentation,
 double quotes, semicolons, and trailing commas. Import sorting stays
 disabled so formatting does not reorder imports with side effects.
 The one-time baseline formatted 177 authored files. Generated
 `runtime/catalogue.ts` and pinned vendor files are excluded. Future
-agent edits use `npm run lint:fix:runtime` followed by
-`npm run format:runtime`; the check command must then pass.
+agent edits use `bun run lint:fix:runtime` followed by
+`bun run format:runtime`; the check command must then pass.
 
 Oxlint retains its default correctness rules and adds type-aware checks
 for floating or misused promises and incomplete switches. A switch with
