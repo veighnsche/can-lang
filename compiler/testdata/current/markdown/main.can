@@ -1,0 +1,76 @@
+package md_cli
+    provides []
+    uses [markdown, html, http, bytes, io, codec]
+fn int emit
+    emits [codec::invalid_data, io::write_failed]
+    given
+        str text
+    asserts
+        sample: "hi" => ok 2
+    match call bytes::from_utf8(text)
+        codec::invalid_data
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                sample: message => ok 2
+                empty: message => ok 0
+                badop: message => ok 0
+                arity: message => ok 0
+            io::write_failed
+            ok int written => ok written
+fn str raw
+    emits [markdown::over_limit]
+    given
+        str source
+    asserts
+        sample: "# Hi" => ok "<h1>Hi</h1>\n"
+        hostile: "<script>alert(1)</script>" => ok "<script>alert(1)</script>\n"
+    relay call markdown::render_text_html(source)
+fn html::safe page
+    emits [markdown::over_limit, html::invalid_url]
+    given
+        str source
+    asserts
+        sample: "# Hi" => ok
+        bad_link: "[t](javascript:alert(1))" => html::invalid_url("scheme")
+    relay call markdown::render_safe(source)
+fn bool served
+    emits [markdown::over_limit, html::invalid_url]
+    asserts
+        sample: => ok true
+    match chain
+        call markdown::render_safe("# Hello") as html::safe sheet
+        call http::status_ok() as http::body_status ok_status
+        call http::empty_server_headers() as http::server_headers headers
+        call http::response_html(ok_status, headers, sheet) as http::server_response response
+        markdown::over_limit
+        html::invalid_url
+        ok => ok true
+fn void main
+    emits [markdown::over_limit, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        badop: ["bogus"] => ok
+        arity: ["html"] => ok
+    match args.length is 0
+        true => match call emit("usage: md html <source>")
+            codec::invalid_data
+            io::write_failed
+            ok int written => ok
+        false => match args[0]
+            "html" => match args.length is 2
+                false => match call emit("usage: md html <source>")
+                    codec::invalid_data
+                    io::write_failed
+                    ok int written => ok
+                true => match call raw(args[1])
+                    markdown::over_limit
+                    ok str out => match call emit(out)
+                        codec::invalid_data
+                        io::write_failed
+                        ok int written => ok
+            _ => match call emit("usage: md html <source>")
+                codec::invalid_data
+                io::write_failed
+                ok int written => ok

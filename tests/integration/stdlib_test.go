@@ -34,6 +34,7 @@ var expectedMaintained = []string{
 	"examples/cookies",
 	"examples/websocket",
 	"examples/native-ai",
+	"examples/markdown",
 	"std/map/current",
 	"std/ratio/current",
 	"std/scalars/current",

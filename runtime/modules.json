@@ -620,6 +620,13 @@
       "../transport/stream/lifecycle.ts",
       "../transport/stream/readable.ts",
       "./datetime.ts"
+    ],
+    "platform/markdown.ts": [
+      "../completion.ts",
+      "../domain.ts",
+      "../data.ts",
+      "../codec/budget.ts",
+      "./html.ts"
     ]
   }
 }
