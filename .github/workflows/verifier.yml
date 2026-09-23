@@ -9,6 +9,7 @@ name: target qualification
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
