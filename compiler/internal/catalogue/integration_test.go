@@ -196,6 +196,24 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		}
 		held["I"+digits] = true
 	}
+	bunEvidence, err := filepath.Glob(filepath.Join(sourceRoot, "docs", "implementation", "evidence", "*", "b1-*"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range bunEvidence {
+		base := filepath.Base(path)
+		if len(base) < 5 || base[0:3] != "b1-" || base[3] < '0' || base[3] > '9' || base[4] < '0' || base[4] > '9' {
+			continue
+		}
+		rest := base[5:]
+		if rest != "" && !strings.HasPrefix(rest, "-") && !strings.HasPrefix(rest, ".") {
+			continue
+		}
+		if info, err := os.Stat(path); err != nil || (!info.IsDir() && filepath.Ext(path) != ".md" && filepath.Ext(path) != ".txt" && filepath.Ext(path) != ".json") {
+			continue
+		}
+		held["B1-"+base[3:5]] = true
+	}
 	languageFixes, err := filepath.Glob(filepath.Join(sourceRoot, "docs", "implementation", "evidence", "*", "language-fixes", "LF??-summary.json"))
 	if err != nil {
 		t.Fatal(err)

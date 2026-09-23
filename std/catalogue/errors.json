@@ -211,6 +211,42 @@
     {
       "id": 1263,
       "kind": "log::write_failed"
+    },
+    {
+      "id": 1300,
+      "kind": "files::not_found"
+    },
+    {
+      "id": 1301,
+      "kind": "files::denied"
+    },
+    {
+      "id": 1302,
+      "kind": "files::already_exists"
+    },
+    {
+      "id": 1303,
+      "kind": "files::invalid_path"
+    },
+    {
+      "id": 1304,
+      "kind": "files::io_error"
+    },
+    {
+      "id": 1305,
+      "kind": "files::limit_exceeded"
+    },
+    {
+      "id": 1306,
+      "kind": "files::not_empty"
+    },
+    {
+      "id": 1307,
+      "kind": "files::cross_device"
+    },
+    {
+      "id": 1308,
+      "kind": "files::unexpected_kind"
     }
   ],
   "retired": []

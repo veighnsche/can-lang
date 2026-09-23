@@ -1,5 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { types } from "node:util";
+import * as nodeFsPromises from "node:fs/promises";
+import * as nodePath from "node:path";
 import { readFileSync, realpathSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { resolve } from "node:path";
@@ -14,6 +16,10 @@ export function apiAvailable(name: string): boolean {
   if(name === "node:async_hooks.AsyncLocalStorage")return typeof AsyncLocalStorage === "function";
   if (name === "node:util.types.isProxy") return typeof types.isProxy === "function";
   if (name === "node:util.types.isNativeError") return typeof types.isNativeError === "function";
+  const nodeModules: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {"node:fs/promises": nodeFsPromises as unknown as Readonly<Record<string, unknown>>, "node:path": nodePath as unknown as Readonly<Record<string, unknown>>};
+  for (const prefix of Object.keys(nodeModules)) {
+    if (name.startsWith(prefix + ".")) return typeof nodeModules[prefix][name.slice(prefix.length + 1)] === "function";
+  }
   return typeof name.split(".").reduce((value, key) => value?.[key], globalThis as any) === "function";
 }
 const probes: Record<string, () => unknown> = {

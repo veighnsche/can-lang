@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: fe9f29fa37128c05a0f6f73c8162e8d7c7237f6b2032b7d4aa34e1d27ea49bd3.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: dac8bb052954b8706489b8736f7834af238b488d21738720f69a6cd5ee0f2c49.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -23,6 +23,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - collections → can.std.collections@1
 - crypto → can.std.crypto@1
 - env → can.std.env@1
+- files → can.std.files@1
 - html → can.std.html@1
 - htmx → can.std.htmx@1
 - http → can.std.http@1
@@ -32,6 +33,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - log → can.std.log@1
 - number → can.std.number@1
 - option → can.std.option@1
+- path → can.std.path@1
 - random → can.std.random@1
 - sql → can.std.sql@1
 - text → can.std.text@1
@@ -75,6 +77,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | sql::commit | record | T:data | T value | true |
 | sql::rollback | record | T:data | T value | true |
 | sql::decision | variant | T:data | sql::commit&lt;T&gt;, sql::rollback&lt;T&gt; | false |
+| files::file_info | record |  | str kind, int size | true |
+| files::entry | record |  | str path, str kind | true |
 
 ## Domain errors
 
@@ -133,6 +137,15 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | 1261 | random::invalid_length |  | int length |
 | 1262 | env::invalid_name |  | str name |
 | 1263 | log::write_failed |  | str level |
+| 1300 | files::not_found |  | str path |
+| 1301 | files::denied |  | str path, str operation |
+| 1302 | files::already_exists |  | str path |
+| 1303 | files::invalid_path |  | str path, str reason |
+| 1304 | files::io_error |  | str path, str operation |
+| 1305 | files::limit_exceeded |  | int limit |
+| 1306 | files::not_empty |  | str path |
+| 1307 | files::cross_device |  | str source, str destination |
+| 1308 | files::unexpected_kind |  | str path, str operation |
 
 ## Operations
 
@@ -289,6 +302,22 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | sql::transaction_execute | P:sql_parameters; sql::transaction handle, str descriptor, P parameters → int; static descriptor | [sql::unsupported_value, sql::query_failed, sql::constraint_failed] |  | Bun.SQL tagged template | Use parser-derived static template segments; validate typed rows and bind server-side LIMIT2/max+1. | supplied | I35 / P12 |
 | sql::with_transaction | T:data; sql::pool pool, $callback callback → T | [sql::connection_failed, sql::transaction_failed, sql::commit_unknown] | callback(sql::transaction) → sql::decision&lt;T&gt; emits [] | Bun.SQL.begin | Drain scoped leases; private rollback sentinel; retain commit uncertainty and original standard failures. | scoped | I38 / P6,P12 |
 | checks::require | bool condition, str reason → void | [checks::failed] |  | Boolean branch, domain.create | Evaluate condition then reason once each; false produces checks::failed with the exact authored reason. Record the call-site span and invocation path in private occurrence metadata. | real | LF08 / C9.2 |
+| files::read_bytes | str path, int max_bytes → bytes::buffer | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | Bun.file | Reject empty/NUL paths and negative limits before input; stream Bun.file chunks counting bigint bytes before retaining, copy each native view, cancel and release on overflow; map EISDIR to unexpected_kind; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::read_text | str path, int max_bytes → str | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, codec::invalid_data, files::io_error] |  | Bun.file, TextDecoder | Bounded read_bytes then fatal UTF-8 decode; undecodable input is codec::invalid_data with the read path; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::write_bytes | str path, bytes::buffer value, bool overwrite → void | [files::not_found, files::already_exists, files::denied, files::invalid_path, files::io_error] |  | node:fs/promises.writeFile | Copy Can bytes out; write with flag wx when overwrite is false so exclusive creation is atomic; never auto-create missing parents; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::write_text | str path, str value, bool overwrite → void | [files::not_found, files::already_exists, files::denied, files::invalid_path, files::io_error] |  | TextEncoder, node:fs/promises.writeFile | Encode UTF-8 then the write_bytes contract; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::stat | str path, bool follow_symlinks → files::file_info | [files::not_found, files::denied, files::invalid_path, files::io_error] |  | node:fs/promises.stat, node:fs/promises.lstat | Use stat when following and lstat otherwise; project kind file/directory/symlink/other with exact bigint size; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::exists | str path → bool | [files::denied, files::invalid_path, files::io_error] |  | node:fs/promises.lstat | Report true for any entry kind including dangling symlinks; only missing paths report false, never permission failures; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::list | str path, int max_entries → files::entry[] | [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error] |  | node:fs/promises.readdir, node:path.resolve, node:path.join | Read typed entries once, resolve each child to an absolute path, sort lexically, and reject over-limit directories instead of truncating; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::mkdir | str path, bool recursive → void | [files::not_found, files::already_exists, files::denied, files::invalid_path, files::io_error] |  | node:fs/promises.mkdir | Create one directory or a recursive chain; an existing path fails only when recursive is false; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::copy | str source, str destination, bool overwrite → void | [files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::io_error] |  | node:fs/promises.copyFile | Copy bytes with COPYFILE_EXCL unless overwrite; attribute missing-path failures to the absent side best-effort; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::move | str source, str destination, bool overwrite → void | [files::not_found, files::already_exists, files::denied, files::invalid_path, files::unexpected_kind, files::not_empty, files::cross_device, files::io_error] |  | node:fs/promises.rename | Rename without copy fallback; cross-device moves fail explicitly and never silently lose atomicity; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::remove | str path, bool recursive → void | [files::not_found, files::denied, files::invalid_path, files::not_empty, files::io_error] |  | node:fs/promises.rm, node:fs/promises.rmdir, node:fs/promises.unlink | Remove one file/symlink/empty directory, or a recursive tree only when requested; a non-empty directory without recursion is not_empty; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| files::glob | str base, str pattern, bool follow_symlinks, int max_entries → str[] | [files::not_found, files::denied, files::invalid_path, files::limit_exceeded, files::io_error] |  | Bun.Glob | Enumerate natively with the entry cap enforced during iteration, return absolute sorted paths including directories, and never silently truncate; supplied assertion boundary. | supplied | B1-01 / B1-01 |
+| path::resolve | str base, str[] parts → str | [] |  | node:path.resolve | Resolve parts against the base with native normalization; pure computation. | real | B1-01 / B1-01 |
+| path::join | str[] parts → str | [] |  | node:path.join | Join segments with native normalization; pure computation. | real | B1-01 / B1-01 |
+| path::basename | str path → str | [] |  | node:path.basename | Return the final segment natively; pure computation. | real | B1-01 / B1-01 |
+| path::extension | str path → str | [] |  | node:path.extname | Return the native extension including the leading dot, or empty; pure computation. | real | B1-01 / B1-01 |
 
 ## Native declaration profiles
 

@@ -16,7 +16,7 @@
         "https://bun.sh/docs/runtime/glob",
         "https://bun.sh/docs/runtime/nodejs-compat"
       ],
-      "status": "pending"
+      "status": "done"
     },
     {
       "id": "B1-02",

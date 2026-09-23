@@ -23,6 +23,7 @@ import (
 var expectedMaintained = []string{
 	"examples/account-search",
 	"examples/dashboard",
+	"examples/files",
 	"examples/form-validation",
 	"examples/native-ai",
 	"std/map/current",

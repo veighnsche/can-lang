@@ -323,6 +323,51 @@
       "../domain.ts",
       "../failure.ts"
     ],
+    "platform/files/directory.ts": [
+      "node:fs/promises",
+      "node:path",
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./errors.ts"
+    ],
+    "platform/files/errors.ts": [
+      "node:util"
+    ],
+    "platform/files/glob.ts": [
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./errors.ts"
+    ],
+    "platform/files/path.ts": [
+      "node:path",
+      "../../completion.ts"
+    ],
+    "platform/files/read.ts": [
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./errors.ts"
+    ],
+    "platform/files/write.ts": [
+      "node:fs/promises",
+      "node:path",
+      "../../assert/context.ts",
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "./errors.ts"
+    ],
     "platform/form.ts": [
       "../data.ts",
       "../bytes.ts",

@@ -1,5 +1,5 @@
 {
-  "status": "prepared; implementation not started by this task",
+  "status": "in progress; ASAP-00/01/ARCH and B1-01 bounded operations complete (B1-01.06 streaming remapped to B1-05.08)",
   "recommendedCapabilityOrder": [
     "B1-01",
     "B1-04",
@@ -20,7 +20,7 @@
       "id": "ASAP-00",
       "capability": null,
       "depends": [],
-      "status": "pending",
+      "status": "done",
       "action": "Obtain an integration checkout containing completed required LF contracts, or isolate work without contacting or disturbing the current implementer. Read AGENTS.md and authoritative specs; record baseline."
     },
     {
@@ -29,7 +29,7 @@
       "depends": [
         "ASAP-00"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Verify pinned runtime/archive and rerun supplied native probes; inspect current catalogue and register concrete SQL/event/HTML gate outputs. Record MySQL and S3 service readiness without using production credentials; unavailable services block only their own acceptance branches and do not block completion of this preflight."
     },
     {
@@ -38,7 +38,7 @@
       "depends": [
         "ASAP-01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Record the integration base and implement the emitter responsibility extraction in filetree.md with existing behavior tests. Adopt per-feature binding/runtime modules, protected-hub rules and the changed-file size guard. Perform the prescribed SQL split when starting B1-02; do not refactor unrelated LF code."
     },
     {
@@ -47,7 +47,7 @@
       "depends": [
         "ASAP-ARCH"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Specify missing-vs-denied-vs-invalid-path failures, supported file kinds, overwrite/exclusive-create behavior, symlink following, recursive removal and ordering. Return absence only for actual missing paths, not permission failures."
     },
     {
@@ -56,7 +56,7 @@
       "depends": [
         "B1-01.01"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Implement bounded chunk reads; check each chunk before accumulating. Decode text with fatal UTF-8. Copy native views before exposing immutable Can bytes. A stat size check is an optimization, not enforcement against a growing file."
     },
     {
@@ -65,7 +65,7 @@
       "depends": [
         "B1-01.02"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use Bun.file/Bun.write for applicable operations and node:fs/promises for directories, lstat, rename, copy and removal. Exclusive creation must use an atomic native flag, not exists-then-write. Do not call replacement writes atomic unless the implementation and tests support that promise."
     },
     {
@@ -74,7 +74,7 @@
       "depends": [
         "B1-01.03"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Use node:path and Bun.Glob; normalize returned paths consistently, impose result limits during enumeration, and sort only if deterministic ordering is in the contract. Keep URL conversion separate from filesystem normalization."
     },
     {
@@ -83,7 +83,7 @@
       "depends": [
         "B1-01.04"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Add catalogue signatures, errors, immutable metadata and emitter bindings. Fixture-capable effect calls must use the native-boundary provider before touching disk."
     },
     {
@@ -101,7 +101,7 @@
       "depends": [
         "B1-01.06"
       ],
-      "status": "pending",
+      "status": "done",
       "action": "Complete the capability acceptance/fixture/native-lowering evidence, authoritative docs and maintained example; verify real-native tests ran, then mark the parent complete."
     },
     {

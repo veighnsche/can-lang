@@ -229,7 +229,7 @@ func validateOutputManifest(m OutputManifest, checkID bool) error {
 		}
 		for _, target := range imports {
 			switch target {
-			case "node:async_hooks", "node:assert", "node:buffer", "node:crypto", "node:fs", "node:path", "node:util":
+			case "node:async_hooks", "node:assert", "node:buffer", "node:crypto", "node:fs", "node:fs/promises", "node:path", "node:util":
 			default:
 				return fmt.Errorf("unadmitted native runtime import %q", target)
 			}

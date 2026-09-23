@@ -10,7 +10,7 @@ seen=set()
 for t in queue:
  assert t['id'] not in seen
  assert set(t['depends'])<=seen,(t['id'],t['depends'])
- assert t['status']=='pending'
+ assert t['status'] in ('pending','done'),t['id']
  seen.add(t['id'])
 assert all(id+'-DONE' in seen for id in ids)
 for t in plans:

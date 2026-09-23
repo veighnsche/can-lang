@@ -44,6 +44,10 @@
       "identity": "can.std.env@1"
     },
     {
+      "name": "files",
+      "identity": "can.std.files@1"
+    },
+    {
       "name": "html",
       "identity": "can.std.html@1"
     },
@@ -78,6 +82,10 @@
     {
       "name": "option",
       "identity": "can.std.option@1"
+    },
+    {
+      "name": "path",
+      "identity": "can.std.path@1"
     },
     {
       "name": "random",
@@ -613,6 +621,44 @@
       ],
       "projections": [],
       "constructible": false
+    },
+    {
+      "name": "files::file_info",
+      "identity": "can.std.files@1::file_info",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "kind",
+          "type": "str"
+        },
+        {
+          "name": "size",
+          "type": "int"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "files::entry",
+      "identity": "can.std.files@1::entry",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     }
   ],
   "errors": [
@@ -1259,6 +1305,134 @@
       "fields": [
         {
           "name": "level",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1300,
+      "name": "files::not_found",
+      "identity": "can.std.files@1::not_found",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1301,
+      "name": "files::denied",
+      "identity": "can.std.files@1::denied",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1302,
+      "name": "files::already_exists",
+      "identity": "can.std.files@1::already_exists",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1303,
+      "name": "files::invalid_path",
+      "identity": "can.std.files@1::invalid_path",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1304,
+      "name": "files::io_error",
+      "identity": "can.std.files@1::io_error",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "operation",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1305,
+      "name": "files::limit_exceeded",
+      "identity": "can.std.files@1::limit_exceeded",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "limit",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "id": 1306,
+      "name": "files::not_empty",
+      "identity": "can.std.files@1::not_empty",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1307,
+      "name": "files::cross_device",
+      "identity": "can.std.files@1::cross_device",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "source",
+          "type": "str"
+        },
+        {
+          "name": "destination",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "id": 1308,
+      "name": "files::unexpected_kind",
+      "identity": "can.std.files@1::unexpected_kind",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "operation",
           "type": "str"
         }
       ]
@@ -6336,6 +6510,626 @@
       "assertion": "real",
       "refs": [
         "C9.2"
+      ]
+    },
+    {
+      "name": "files::read_bytes",
+      "identity": "can.std.files@1::read_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bytes::buffer",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::limit_exceeded",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.file"
+        ],
+        "adapter": "Reject empty/NUL paths and negative limits before input; stream Bun.file chunks counting bigint bytes before retaining, copy each native view, cancel and release on overflow; map EISDIR to unexpected_kind; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::read_text",
+      "identity": "can.std.files@1::read_text",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "max_bytes",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::limit_exceeded",
+        "codec::invalid_data",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.file",
+          "TextDecoder"
+        ],
+        "adapter": "Bounded read_bytes then fatal UTF-8 decode; undecodable input is codec::invalid_data with the read path; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::write_bytes",
+      "identity": "can.std.files@1::write_bytes",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "bytes::buffer"
+        },
+        {
+          "name": "overwrite",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::already_exists",
+        "files::denied",
+        "files::invalid_path",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.writeFile"
+        ],
+        "adapter": "Copy Can bytes out; write with flag wx when overwrite is false so exclusive creation is atomic; never auto-create missing parents; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::write_text",
+      "identity": "can.std.files@1::write_text",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        },
+        {
+          "name": "overwrite",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::already_exists",
+        "files::denied",
+        "files::invalid_path",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "TextEncoder",
+          "node:fs/promises.writeFile"
+        ],
+        "adapter": "Encode UTF-8 then the write_bytes contract; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::stat",
+      "identity": "can.std.files@1::stat",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "follow_symlinks",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "files::file_info",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.stat",
+          "node:fs/promises.lstat"
+        ],
+        "adapter": "Use stat when following and lstat otherwise; project kind file/directory/symlink/other with exact bigint size; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::exists",
+      "identity": "can.std.files@1::exists",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "files::denied",
+        "files::invalid_path",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.lstat"
+        ],
+        "adapter": "Report true for any entry kind including dangling symlinks; only missing paths report false, never permission failures; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::list",
+      "identity": "can.std.files@1::list",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "max_entries",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "files::entry[]",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::limit_exceeded",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.readdir",
+          "node:path.resolve",
+          "node:path.join"
+        ],
+        "adapter": "Read typed entries once, resolve each child to an absolute path, sort lexically, and reject over-limit directories instead of truncating; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::mkdir",
+      "identity": "can.std.files@1::mkdir",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "recursive",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::already_exists",
+        "files::denied",
+        "files::invalid_path",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.mkdir"
+        ],
+        "adapter": "Create one directory or a recursive chain; an existing path fails only when recursive is false; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::copy",
+      "identity": "can.std.files@1::copy",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "source",
+          "type": "str"
+        },
+        {
+          "name": "destination",
+          "type": "str"
+        },
+        {
+          "name": "overwrite",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::already_exists",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.copyFile"
+        ],
+        "adapter": "Copy bytes with COPYFILE_EXCL unless overwrite; attribute missing-path failures to the absent side best-effort; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::move",
+      "identity": "can.std.files@1::move",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "source",
+          "type": "str"
+        },
+        {
+          "name": "destination",
+          "type": "str"
+        },
+        {
+          "name": "overwrite",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::already_exists",
+        "files::denied",
+        "files::invalid_path",
+        "files::unexpected_kind",
+        "files::not_empty",
+        "files::cross_device",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.rename"
+        ],
+        "adapter": "Rename without copy fallback; cross-device moves fail explicitly and never silently lose atomicity; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::remove",
+      "identity": "can.std.files@1::remove",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        },
+        {
+          "name": "recursive",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::not_empty",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:fs/promises.rm",
+          "node:fs/promises.rmdir",
+          "node:fs/promises.unlink"
+        ],
+        "adapter": "Remove one file/symlink/empty directory, or a recursive tree only when requested; a non-empty directory without recursion is not_empty; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "files::glob",
+      "identity": "can.std.files@1::glob",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "base",
+          "type": "str"
+        },
+        {
+          "name": "pattern",
+          "type": "str"
+        },
+        {
+          "name": "follow_symlinks",
+          "type": "bool"
+        },
+        {
+          "name": "max_entries",
+          "type": "int"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str[]",
+      "callbacks": [],
+      "emits": [
+        "files::not_found",
+        "files::denied",
+        "files::invalid_path",
+        "files::limit_exceeded",
+        "files::io_error"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Bun.Glob"
+        ],
+        "adapter": "Enumerate natively with the entry cap enforced during iteration, return absolute sorted paths including directories, and never silently truncate; supplied assertion boundary.",
+        "task": "B1-01"
+      },
+      "assertion": "supplied",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "path::resolve",
+      "identity": "can.std.path@1::resolve",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "base",
+          "type": "str"
+        },
+        {
+          "name": "parts",
+          "type": "str[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:path.resolve"
+        ],
+        "adapter": "Resolve parts against the base with native normalization; pure computation.",
+        "task": "B1-01"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "path::join",
+      "identity": "can.std.path@1::join",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "parts",
+          "type": "str[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:path.join"
+        ],
+        "adapter": "Join segments with native normalization; pure computation.",
+        "task": "B1-01"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "path::basename",
+      "identity": "can.std.path@1::basename",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:path.basename"
+        ],
+        "adapter": "Return the final segment natively; pure computation.",
+        "task": "B1-01"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-01"
+      ]
+    },
+    {
+      "name": "path::extension",
+      "identity": "can.std.path@1::extension",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "path",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "node:path.extname"
+        ],
+        "adapter": "Return the native extension including the leading dot, or empty; pure computation.",
+        "task": "B1-01"
+      },
+      "assertion": "real",
+      "refs": [
+        "B1-01"
       ]
     }
   ],

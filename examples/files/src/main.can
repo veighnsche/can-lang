@@ -1,0 +1,79 @@
+package files_example
+    provides [entry_label, render_entries, catalog, main]
+    uses [bytes, codec, files, io, path, text]
+
+/// Label one directory entry as "<kind> <basename>".
+fn str entry_label
+    emits []
+    given
+        files::entry item
+    asserts
+        file: files::entry("/tmp/reports/a.txt", "file") => ok "file a.txt"
+        dir: files::entry("/tmp/reports/sub", "directory") => ok "directory sub"
+    ok call text::join([item.kind, call path::basename(item.path)], " ")
+
+/// Render entries from an index onward, one label per line.
+fn str render_entries
+    emits []
+    given
+        files::entry[] entries
+        int index
+    asserts
+        empty: [], 0 => ok ""
+        one: [files::entry("/tmp/reports/a.txt", "file")], 0 => ok "file a.txt\n"
+    match index is entries.length
+        true => ok ""
+        false => ok call text::join([call entry_label(entries[index]), call render_entries(entries, index + 1)], "\n")
+
+/// List a directory, propagating every filesystem failure to the caller.
+fn files::entry[] catalog
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error]
+    given
+        str dir
+    asserts
+        sample: "/tmp/reports" => ok [files::entry("/tmp/reports/a.txt", "file")]
+        missing: "/tmp/gone" => files::not_found("/tmp/gone")
+    match call files::list(dir, 100)
+        when
+            sample: dir, 100 => ok [files::entry("/tmp/reports/a.txt", "file")]
+            missing: dir, 100 => files::not_found("/tmp/gone")
+        files::not_found
+        files::denied
+        files::invalid_path
+        files::unexpected_kind
+        files::limit_exceeded
+        files::io_error
+        ok files::entry[] entries => ok entries
+
+/// Report a directory listing to standard output.
+fn void main
+    emits [files::not_found, files::denied, files::invalid_path, files::unexpected_kind, files::limit_exceeded, files::io_error, codec::invalid_data, io::write_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        sample: ["/tmp/reports"] => ok
+    match args.length is 0
+        true => match call bytes::from_utf8("usage: files <dir>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        false => match call files::list(args[0], 100)
+            when
+                sample: args[0], 100 => ok [files::entry("/tmp/reports/a.txt", "file")]
+            files::not_found
+            files::denied
+            files::invalid_path
+            files::unexpected_kind
+            files::limit_exceeded
+            files::io_error
+            ok files::entry[] entries => match call bytes::from_utf8(call render_entries(entries, 0))
+                codec::invalid_data
+                ok bytes::buffer message => match call io::stdout_write(message)
+                    when
+                        sample: message => ok 0
+                    io::write_failed
+                    ok int written => ok

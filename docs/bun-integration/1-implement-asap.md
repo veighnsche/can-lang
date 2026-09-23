@@ -2,7 +2,7 @@
 
 This is a separate integration queue. Read [scope, primitive policy and completion rules](README.md) before implementation. Every item is pending. Written order respects listed prerequisites; independent items need not wait for unrelated work. Dependencies may reference earlier tiers. The current LF01–LF21 implementer is unchanged.
 
-- [ ] **B1-01 — Files, directories, paths and globbing**
+- [x] **B1-01 — Files, directories, paths and globbing** (bounded operations complete 2026-09-23; streaming file handles follow via B1-05.08 — see the execution queue and `docs/implementation/evidence/2026-09-23/b1-01/`)
 
   **Can surface:** Library. **Depends:** none within this roadmap.
 

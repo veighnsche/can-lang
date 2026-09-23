@@ -80,6 +80,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		assembly.specializationBindings(),
 		assembly.collectionBindings(),
 		assembly.aiBindings(),
+		fileOperationBindings(),
 		assembly.functionBindings(),
 	}
 	functions, err := combineBindingContributions(contributions...)
