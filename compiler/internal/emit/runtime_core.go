@@ -23,8 +23,8 @@ func programImports(runtime string) []ModuleImport {
 // coreOperationBindings maps the stable pre-B1 library operations to their
 // state-module targets. New B1 capabilities add their own binding files;
 // this table keeps only behavior owned before the Bun milestone. Existing
-// SQL/HTTP/crypto entries move to their feature files when B1-02, B1-06
-// and B1-08 begin.
+// HTTP/crypto entries move to their feature files when B1-06 and B1-08
+// begin; SQL entries live in runtime_sql.go.
 func coreOperationBindings() bindingContribution {
 	functions := map[string]string{
 		"can.std.bytes@1::from_utf8": "$canBytes.fromUTF8",
@@ -87,8 +87,6 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.http@1::server_start"] = "$canServer.start"
 	functions["can.std.http@1::server_stop"] = "$canServer.stop"
 	functions["can.std.http@1::server_wait"] = "$canServer.wait"
-	functions["can.std.sql@1::pool_open"] = "$canSQLPools.open"
-	functions["can.std.sql@1::pool_close"] = "$canSQLPools.close"
 	functions["can.std.clock@1::wall_millis"] = "$canClock.wallMillis"
 	functions["can.std.clock@1::monotonic_millis"] = "$canClock.monotonicMillis"
 	functions["can.std.clock@1::sleep_millis"] = "$canClock.sleepMillis"

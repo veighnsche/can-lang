@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql-descriptor.ts";
+import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql/descriptor.ts";
 
 const search: SQLDescriptorEntry = {
   cardinality: "many",

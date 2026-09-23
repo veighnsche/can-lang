@@ -7,9 +7,10 @@ import { standardFailureDiagnostics, type StandardFailure } from "../failure.ts"
 import { assertionContext } from "../assert/context.ts";
 import { record, dataProperty } from "../data.ts";
 import { runOwnedRoot, registerResource, resourceStatus } from "../owner.ts";
-import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql-descriptor.ts";
-import { createSQLPools, type SQLPlan } from "../platform/sql.ts";
-import { createSQLTransactions, isSQLTransactionValue } from "../platform/transaction.ts";
+import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql/descriptor.ts";
+import { createSQLPools } from "../platform/sql/pool.ts";
+import type { SQLPlan } from "../platform/sql/values.ts";
+import { createSQLTransactions, isSQLTransactionValue } from "../platform/sql/transaction.ts";
 
 const origin = { source: "can:test", start: 0, end: 0, invocation: [] };
 async function owned(body: () => Promise<void>): Promise<void> {

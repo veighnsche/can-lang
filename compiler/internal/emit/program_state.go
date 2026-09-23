@@ -58,7 +58,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if err != nil {
 		return Module{}, nil, err
 	}
-	if err := builder.initializeSQL(); err != nil {
+	if err := builder.initializeSQLState(); err != nil {
 		return Module{}, nil, err
 	}
 	builder.initializeCoreState()
@@ -126,10 +126,11 @@ func (builder *stateBuilder) prerequisites() error {
 	return nil
 }
 
-// declareCoreState emits the pre-B1 factory bindings. SQL/HTTP entries move
-// to their feature files with B1-02 and B1-06.
+// declareCoreState emits the pre-B1 factory bindings. HTTP entries move to
+// their feature file with B1-06; SQL entries live in runtime_sql.go.
 func (builder *stateBuilder) declareCoreState() {
-	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canSQL:ReturnType<typeof $canCreateSQLDescriptors>;\nexport let $canSQLPools:ReturnType<typeof $canCreateSQLPools>;\nexport let $canTransactions:ReturnType<typeof $canCreateSQLTransactions>;\n")
+	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
+	builder.declareSQLState()
 	fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
 	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
 	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
@@ -181,25 +182,11 @@ func (builder *stateBuilder) initializeDomain() error {
 	if err != nil {
 		return err
 	}
-	sqlKinds := map[string]string{}
-	for _, typ := range builder.assembly.program.Model.Types() {
-		if typ.Kind() != types.Opaque {
-			continue
-		}
-		switch typ.Declaration() {
-		case "can.std.sql@1::pool":
-			sqlKinds[typ.Identity()] = "pool"
-		case "can.std.sql@1::transaction":
-			sqlKinds[typ.Identity()] = "transaction"
-		}
-	}
-	sqlKindsJSON, err := json.Marshal(sqlKinds)
-	if err != nil {
-		return err
-	}
 	fmt.Fprintf(&builder.out, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
 	fmt.Fprintf(&builder.out, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
-	fmt.Fprintf(&builder.out, "const $canSQLKinds:Readonly<Record<string,string>>=%s;\n", sqlKindsJSON)
+	if err := builder.emitSQLKinds(); err != nil {
+		return err
+	}
 	if err := builder.emitStreamKinds(); err != nil {
 		return err
 	}
@@ -236,18 +223,6 @@ func (builder *stateBuilder) initializeAssets() ([]ir.Artifact, error) {
 	fmt.Fprintf(&builder.out, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s},%s);\n", quote(builder.numberIDs["can.std.html@1::invalid_structure"]), quote(builder.numberIDs["can.std.html@1::invalid_url"]), quote(builder.numberIDs["can.std.htmx@1::invalid_target"]), quote(builder.numberIDs["can.std.htmx@1::invalid_interval"]), encodedURLs)
 	fmt.Fprintf(&builder.out, "const $canAssets=$canCreateAssets($canAssetTable, new URL(\"../\", import.meta.url));\n")
 	return assetFiles, nil
-}
-
-// initializeSQL creates the SQL descriptor, pool and transaction factories.
-func (builder *stateBuilder) initializeSQL() error {
-	sqlDescriptors, err := sqlTable(builder.assembly.program)
-	if err != nil {
-		return err
-	}
-	fmt.Fprintf(&builder.out, "$canSQL=$canCreateSQLDescriptors(%s);\n", sqlDescriptors)
-	fmt.Fprintf(&builder.out, "$canSQLPools=$canCreateSQLPools($canDomain,{credentialsMissing:%s,connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,closeFailed:%s,rowLimit:%s,unsupportedValue:%s},$canOriginalEnvironment,$canSQL);\n", quote(builder.numberIDs["can.std.http@1::credentials_missing"]), quote(builder.numberIDs["can.std.sql@1::connection_failed"]), quote(builder.numberIDs["can.std.sql@1::query_failed"]), quote(builder.numberIDs["can.std.sql@1::row_missing"]), quote(builder.numberIDs["can.std.sql@1::row_count"]), quote(builder.numberIDs["can.std.sql@1::schema_mismatch"]), quote(builder.numberIDs["can.std.sql@1::constraint_failed"]), quote(builder.numberIDs["can.std.sql@1::close_failed"]), quote(builder.numberIDs["can.std.sql@1::row_limit"]), quote(builder.numberIDs["can.std.sql@1::unsupported_value"]))
-	fmt.Fprintf(&builder.out, "$canTransactions=$canCreateSQLTransactions($canDomain,{connectionFailed:%s,queryFailed:%s,rowMissing:%s,rowCount:%s,schemaMismatch:%s,constraintFailed:%s,rowLimit:%s,unsupportedValue:%s,transactionFailed:%s,commitUnknown:%s},$canSQL);\n", quote(builder.numberIDs["can.std.sql@1::connection_failed"]), quote(builder.numberIDs["can.std.sql@1::query_failed"]), quote(builder.numberIDs["can.std.sql@1::row_missing"]), quote(builder.numberIDs["can.std.sql@1::row_count"]), quote(builder.numberIDs["can.std.sql@1::schema_mismatch"]), quote(builder.numberIDs["can.std.sql@1::constraint_failed"]), quote(builder.numberIDs["can.std.sql@1::row_limit"]), quote(builder.numberIDs["can.std.sql@1::unsupported_value"]), quote(builder.numberIDs["can.std.sql@1::transaction_failed"]), quote(builder.numberIDs["can.std.sql@1::commit_unknown"]))
-	return nil
 }
 
 // initializeCoreState creates the remaining pre-B1 factories: HTTP, clock,
@@ -287,8 +262,9 @@ func (builder *stateBuilder) initializeValues() {
 	builder.out.WriteString("Object.freeze($canValues);\n}\n")
 }
 
-// emitSpecializationConstants freezes the per-program HTTP/SQL/transaction
-// dispatch records after the initializer.
+// emitSpecializationConstants freezes the per-program HTTP dispatch records
+// after the initializer, then delegates SQL/transaction records to the SQL
+// feature file.
 func (builder *stateBuilder) emitSpecializationConstants() error {
 	for _, id := range builder.assembly.httpIDs {
 		special := builder.assembly.program.HTTPs[id]
@@ -317,35 +293,7 @@ func (builder *stateBuilder) emitSpecializationConstants() error {
 		}
 		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.httpNames[id], shape)
 	}
-	for _, id := range builder.assembly.sqlIDs {
-		special := builder.assembly.program.SQLs[id]
-		method, err := sqlMethod(special.Operation)
-		if err != nil {
-			return err
-		}
-		plan, err := sqlPlan(special)
-		if err != nil {
-			return err
-		}
-		// The static descriptor literal stays in the lowered arguments for
-		// fixture matching; the bound descriptor value arrives spliced per
-		// call site and is the only value the runtime method consumes.
-		descriptor := "Parameters<typeof $canSQL.template>[0]"
-		receiver := sqlReceiver(special.Operation)
-		shape := "run:(pool:unknown,_name:unknown,params:unknown,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,$canContext)"
-		if special.Operation == "can.std.sql@1::query_rows" || special.Operation == "can.std.sql@1::transaction_query_rows" {
-			shape = "run:(pool:unknown,_name:unknown,params:unknown,maxRows:bigint,descriptor:" + descriptor + ",$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>" + receiver + "." + method + "(descriptor," + plan + ",pool,params,maxRows,$canContext)"
-		}
-		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.sqlNames[id], shape)
-	}
-	for _, id := range builder.assembly.txIDs {
-		special := builder.assembly.program.Transactions[id]
-		// The commit/rollback leaves are nominal identities, so the runtime
-		// classifies the callback decision without consulting bindings.
-		shape := "run:(pool:unknown,callback:unknown,$canContext?:$canAssertionContext):Promise<$canCompletion<unknown>>=>$canTransactions.withTransaction(pool,callback,{commit:" + quote(special.Commit) + ",rollback:" + quote(special.Rollback) + "},$canContext)"
-		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.txNames[id], shape)
-	}
-	return nil
+	return builder.emitSQLSpecializationConstants()
 }
 
 // stateImports lists the factory modules the shared state module needs, in
@@ -361,9 +309,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql-descriptor.ts", Names: []ImportName{{"createSQLDescriptors", "$canCreateSQLDescriptors"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/sql.ts", Names: []ImportName{{"createSQLPools", "$canCreateSQLPools"}, {"isSQLPoolValue", "$canIsSQLPool"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/transaction.ts", Names: []ImportName{{"createSQLTransactions", "$canCreateSQLTransactions"}, {"isSQLTransactionValue", "$canIsSQLTransaction"}}})
+	imports = append(imports, builder.assembly.sqlStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
@@ -379,7 +325,8 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 // stateValueImportNames lists the shared factory values every authored and
 // assertion module imports from the state module.
 func stateValueImportNames() []ImportName {
-	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}, {"$canSQL", "$canSQL"}, {"$canSQLPools", "$canSQLPools"}}
+	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canIO", "$canIO"}, {"$canEnv", "$canEnv"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canCLI", "$canCLI"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}, {"$canServer", "$canServer"}}
+	names = append(names, sqlStateValueImportNames()...)
 	names = append(names, fileStateValueImportNames()...)
 	names = append(names, processStateValueImportNames()...)
 	return append(names, streamStateValueImportNames()...)

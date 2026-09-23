@@ -77,7 +77,9 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly := &programAssembly{program: program}
 	contributions := []bindingContribution{
 		coreOperationBindings(),
+		sqlOperationBindings(),
 		assembly.specializationBindings(),
+		assembly.sqlSpecializationBindings(),
 		assembly.collectionBindings(),
 		assembly.aiBindings(),
 		fileOperationBindings(),
@@ -96,7 +98,8 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 }
 
 // specializationBindings assigns deterministic runtime names to the checked
-// HTTP/codec/SQL/transaction specializations of this program.
+// HTTP/codec specializations of this program. SQL and transaction
+// specializations bind through sqlSpecializationBindings in runtime_sql.go.
 func (assembly *programAssembly) specializationBindings() bindingContribution {
 	program := assembly.program
 	functions := map[string]string{}
@@ -115,28 +118,6 @@ func (assembly *programAssembly) specializationBindings() bindingContribution {
 			method = "encode"
 		}
 		functions[id] = name + "." + method
-	}
-
-	assembly.sqlIDs = make([]string, 0, len(program.SQLs))
-	for id := range program.SQLs {
-		assembly.sqlIDs = append(assembly.sqlIDs, id)
-	}
-	sort.Strings(assembly.sqlIDs)
-	assembly.sqlNames = map[string]string{}
-	for i, id := range assembly.sqlIDs {
-		assembly.sqlNames[id] = fmt.Sprintf("$canSQLQuery%d", i)
-		functions[id] = assembly.sqlNames[id] + ".run"
-	}
-
-	assembly.txIDs = make([]string, 0, len(program.Transactions))
-	for id := range program.Transactions {
-		assembly.txIDs = append(assembly.txIDs, id)
-	}
-	sort.Strings(assembly.txIDs)
-	assembly.txNames = map[string]string{}
-	for i, id := range assembly.txIDs {
-		assembly.txNames[id] = fmt.Sprintf("$canSQLTransaction%d", i)
-		functions[id] = assembly.txNames[id] + ".run"
 	}
 
 	assembly.codecIDs = make([]string, 0, len(program.Codecs))

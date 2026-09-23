@@ -428,27 +428,54 @@
       "./http.ts",
       "./router.ts"
     ],
-    "platform/sql-descriptor.ts": [],
-    "platform/sql.ts": [
-      "../completion.ts",
-      "../assert/context.ts",
-      "../data.ts",
-      "../domain.ts",
-      "../failure.ts",
-      "../bytes.ts",
-      "../owner.ts",
-      "./sql-descriptor.ts"
+    "platform/sql/config.ts": [
+      "../../completion.ts",
+      "./errors.ts"
     ],
-    "platform/transaction.ts": [
+    "platform/sql/descriptor.ts": [],
+    "platform/sql/errors.ts": [
+      "../../completion.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts"
+    ],
+    "platform/sql/pool.ts": [
+      "../../completion.ts",
+      "../../assert/context.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "../../owner.ts",
+      "./descriptor.ts",
+      "./errors.ts",
+      "./values.ts",
+      "./postgres.ts",
+      "./config.ts"
+    ],
+    "platform/sql/postgres.ts": [
+      "../../completion.ts",
+      "./errors.ts"
+    ],
+    "platform/sql/transaction.ts": [
       "node:async_hooks",
-      "../completion.ts",
-      "../assert/context.ts",
-      "../data.ts",
-      "../domain.ts",
-      "../failure.ts",
-      "../owner.ts",
-      "./sql.ts",
-      "./sql-descriptor.ts"
+      "../../completion.ts",
+      "../../assert/context.ts",
+      "../../data.ts",
+      "../../domain.ts",
+      "../../failure.ts",
+      "../../owner.ts",
+      "./pool.ts",
+      "./descriptor.ts",
+      "./errors.ts",
+      "./postgres.ts",
+      "./values.ts"
+    ],
+    "platform/sql/values.ts": [
+      "../../completion.ts",
+      "../../data.ts",
+      "../../bytes.ts",
+      "../../failure.ts",
+      "./errors.ts"
     ],
     "transport/stream/budget.ts": [],
     "transport/stream/lifecycle.ts": [

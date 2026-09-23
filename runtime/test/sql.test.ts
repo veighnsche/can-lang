@@ -8,8 +8,9 @@ import { assertionContext } from "../assert/context.ts";
 import { record, dataProperty } from "../data.ts";
 import { ownBytes, isBytes, copyBytes } from "../bytes.ts";
 import { runOwnedRoot, resourceStatus } from "../owner.ts";
-import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql-descriptor.ts";
-import { createSQLPools, isSQLPoolValue, type SQLPlan } from "../platform/sql.ts";
+import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql/descriptor.ts";
+import { createSQLPools, isSQLPoolValue } from "../platform/sql/pool.ts";
+import type { SQLPlan } from "../platform/sql/values.ts";
 
 const origin = { source: "can:test", start: 0, end: 0, invocation: [] };
 async function owned(body: () => Promise<void>): Promise<void> {
