@@ -51,7 +51,7 @@ func TestPackagedSourceMaps(t *testing.T) {
 	root := outputProject(t)
 	text := `package app
     provides []
-    uses [bytes, codec, io]
+    uses []
 fn str first
     emits []
     given
@@ -60,22 +60,19 @@ fn str first
         sample: ["x"] => ok "😀x"
     ok "😀" + values[0]
 fn void main
-    emits [codec::invalid_data, io::write_failed]
+    emits []
     given
         str[] args
     asserts
         sample: ["x"] => ok
-    match chain
-        call bytes::from_utf8(call first(args)) as bytes::buffer message
-        call io::stdout_write(message) as int written
-        codec::invalid_data
-        io::write_failed
-        ok => ok
+    match call first(args)
+        ok str s => ok
 `
 	if err = os.WriteFile(filepath.Join(root, "src/main.can"), []byte(text), 0600); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = runtime.Build(ctx, root); err != nil {
+	var buildDiagnostics bytes.Buffer
+	if _, err = runtime.Build(ctx, root, os.Environ(), nil, &buildDiagnostics, DefaultAssertTimeoutMs); err != nil {
 		t.Fatal(err)
 	}
 	before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))

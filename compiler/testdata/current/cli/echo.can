@@ -7,9 +7,10 @@ fn void main
         str[] args
     asserts
         sample: ["hello"] => ok
-    match chain
-        call bytes::from_utf8(args[0]) as bytes::buffer message
-        call io::stdout_write(message) as int written
+    match call bytes::from_utf8(args[0])
         codec::invalid_data
-        io::write_failed
-        ok => ok
+        ok bytes::buffer message => match call io::stdout_write(message)
+            when
+                sample: message => ok 5
+            io::write_failed
+            ok => ok

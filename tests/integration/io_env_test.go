@@ -108,13 +108,15 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 						t.Fatalf("UTF-8: %d %q %s", code, out, diag)
 					}
 				}
-				write("src/main.can", strings.ReplaceAll(string(source), "(16)", "(-1)"))
+				// Run verifies first, so limit mutations must stay consistent
+				// with their fixture rows; the live path still enforces them.
+				write("src/main.can", strings.ReplaceAll(strings.ReplaceAll(string(source), "(16)", "(-1)"), "sample: 16 =>", "sample: -1 =>"))
 				if code, out, diag := run("run", nil); code != 1 || len(out) != 0 || !strings.Contains(diag, `"id":1212`) {
 					t.Fatalf("negative limit: %d %q %s", code, out, diag)
 				}
 				if name == "input" {
 					large := bytes.Repeat([]byte{'x'}, 1048576)
-					write("src/main.can", strings.ReplaceAll(string(source), "(16)", "(1048576)"))
+					write("src/main.can", strings.ReplaceAll(strings.ReplaceAll(string(source), "(16)", "(1048576)"), "sample: 16 =>", "sample: 1048576 =>"))
 					if code, out, diag := run("run", large); code != 0 || !bytes.Equal(out, large) || diag != string(large) {
 						t.Fatalf("awaited output drain: %d %d %d", code, len(out), len(diag))
 					}

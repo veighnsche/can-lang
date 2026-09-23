@@ -726,3 +726,36 @@ func TestBuildInputsChangeOnFixtureOnlyDependencyEdit(t *testing.T) {
 		t.Fatal("manifest/source identity moved on a fixture-only change")
 	}
 }
+
+func TestDiscardGenerationRemovesOnlyStaged(t *testing.T) {
+	root := outputProject(t)
+	s := outputBegin(t, root)
+	first := outputPrepared(t, s, "export const value=1n;")
+	id, _, err := s.Stage(first)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second := outputPrepared(t, s, "export const value=2n;")
+	other, _, err := s.Stage(second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.SelectCurrent(other); err != nil {
+		t.Fatal(err)
+	}
+	if err = s.DiscardGeneration(id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = os.Stat(filepath.Join(root, "dist/builds", id)); !os.IsNotExist(err) {
+		t.Fatal("discarded staging remains", err)
+	}
+	if err = s.DiscardGeneration(other); err == nil || !strings.Contains(err.Error(), "refuse to discard production current") {
+		t.Fatalf("current discarded: %v", err)
+	}
+	if err = s.DiscardGeneration(strings.Repeat("0", 64)); err == nil {
+		t.Fatal("unknown generation discarded")
+	}
+	if err = s.DiscardGeneration("../escape"); err == nil {
+		t.Fatal("non-digest generation name accepted")
+	}
+}

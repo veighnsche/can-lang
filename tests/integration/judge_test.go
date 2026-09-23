@@ -70,8 +70,8 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := strings.Replace(string(data), "http://127.0.0.1:1/systemone", server.URL+"/systemone", 1)
-	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", text)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	run := func(command string) (int, string, string) {
 		t.Helper()
 		profile := `(version 1)(allow default)(deny network*)(allow network-outbound (remote ip "localhost:*"))`
@@ -106,8 +106,10 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1121") {
 		t.Fatalf("invalid later answer ran handlers: %d %q %s", code, out, diag)
 	}
+	// A blank descriptor cannot verify, so the gate rejects before any
+	// launch; descriptor validation itself is covered in questions.test.ts.
 	write("src/main.can", strings.Replace(text, `likelihood("Unused")`, `likelihood("")`, 1))
-	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1120") {
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "build verification failed") || !strings.Contains(diag, "unused fixture") {
 		t.Fatalf("invalid descriptor launched: %d %q %s", code, out, diag)
 	}
 	mu.Lock()
@@ -116,16 +118,17 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 	}
 	response = `{"model":"resolved-model","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"noul","noul":0.25},"q2":{"type":"noul","noul":1}}}`
 	mu.Unlock()
-	// The first handler fails after its observable T. Later handlers and the
-	// continuation must not run, and the same request is never dispatched again.
+	// The first handler carries a fault, so the program cannot verify: the
+	// gate rejects before anything launches, and the same request is never
+	// dispatched again.
 	failing := strings.Replace(text, "ok int written => ok probability", "ok int written => do\n                int invalid = 1 / 0\n                ok probability", 1)
 	write("src/main.can", failing)
-	if code, out, diag := run("run"); code == 0 || out != "T" || diag == "" {
-		t.Fatalf("handler failure did not stop judge: %d %q %s", code, out, diag)
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "build verification failed") {
+		t.Fatalf("handler fault launched judge: %d %q %s", code, out, diag)
 	}
 	mu.Lock()
-	if requests != 3 {
-		t.Fatalf("handler failure redispatched request: %d", requests)
+	if requests != 2 {
+		t.Fatalf("handler fault dispatched request: %d", requests)
 	}
 	mu.Unlock()
 

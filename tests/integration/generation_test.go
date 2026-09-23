@@ -95,8 +95,8 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		t.Fatal(err)
 	}
 	source := strings.ReplaceAll(string(data), "http://127.0.0.1:1", server.URL)
-	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", source)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	credential := "test-only"
 	run := func(command string) (int, string, string) {
 		t.Helper()
@@ -185,11 +185,13 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		}
 	}
 	credential = ""
+	// Blank asks cannot verify, so the gate rejects before any launch;
+	// blank-instructions rejection itself is covered in responses.test.ts.
 	write("src/main.can", strings.Replace(source, `asks "Describe"`, `asks " "`, 1))
 	mu.Lock()
 	before := len(bodies)
 	mu.Unlock()
-	if code, _, diag := run("run"); code == 0 || !strings.Contains(diag, "1100") {
+	if code, _, diag := run("run"); code == 0 || !strings.Contains(diag, "build verification failed") || !strings.Contains(diag, "unused fixture") {
 		t.Fatalf("asks validation did not precede credential: %d %s", code, diag)
 	}
 	mu.Lock()

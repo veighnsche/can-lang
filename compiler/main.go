@@ -73,15 +73,31 @@ func run(argv []string) int {
 		return 0
 	}
 	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
-		if len(argv) < 2 || argv[1] == "" || (argv[0] == "build" && len(argv) != 2) || (argv[0] == "run" && len(argv) > 2 && argv[2] != "--") {
-			fmt.Fprintln(os.Stderr, "usage: canlc build PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
+		timeoutMs := driver.DefaultAssertTimeoutMs
+		rest := argv[1:]
+		if argv[0] == "build" && len(rest) >= 1 && rest[0] == "--assert-timeout-ms" {
+			if len(rest) != 3 {
+				fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
+				return 2
+			}
+			parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
+			if parseErr != nil {
+				fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
+				fmt.Fprintln(os.Stderr, parseErr)
+				return 2
+			}
+			timeoutMs = parsed
+			rest = rest[2:]
+		}
+		if len(rest) < 1 || rest[0] == "" || (argv[0] == "build" && len(rest) != 1) || (argv[0] == "run" && len(rest) > 1 && rest[1] != "--") {
+			fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
 			return 2
 		}
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
 			if argv[0] == "build" {
 				var report driver.BuildReport
-				report, err = sidecar.Build(context.Background(), argv[1])
+				report, err = sidecar.Build(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs)
 				if err == nil {
 					err = json.NewEncoder(os.Stdout).Encode(report)
 				}

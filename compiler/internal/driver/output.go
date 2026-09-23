@@ -514,6 +514,31 @@ func (s *OutputStore) SelectCurrent(id string) (string, error) {
 	return filepath.Join(s.Graph.Root.Root, "dist", "builds", filepath.FromSlash(id)), nil
 }
 
+// DiscardGeneration removes one staged generation after a failed
+// verification. It refuses the production current selection, so cleanup
+// can never delete the published generation.
+func (s *OutputStore) DiscardGeneration(id string) error {
+	manifest, _, err := s.generation(id, false)
+	if err != nil {
+		return err
+	}
+	if raw, err := readOutputRegular(s.dist, "current.json"); err == nil {
+		var current outputCurrent
+		if err = decodeOutput(raw, &current); err != nil {
+			return err
+		}
+		if current.BuildID == id {
+			return fmt.Errorf("refuse to discard production current")
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	if err := deleteOutputTree(s.dist, "builds/"+id, manifest, false); err != nil {
+		return err
+	}
+	return syncOutputDir(s.dist, "builds")
+}
+
 func (s *OutputStore) generation(id string, partial bool) (OutputManifest, []byte, error) {
 	var manifest OutputManifest
 	if !digestPattern.MatchString(id) {

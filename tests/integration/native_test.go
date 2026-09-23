@@ -64,8 +64,8 @@ func TestCurrentBundledNativeDeclarations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stageRawFixtures(t, write, sourceRoot, "native")
 	write("src/main.can", string(data))
+	stageRawFixtures(t, write, sourceRoot, "native")
 	status, out, diag := run("build")
 	if status != 0 || diag != "" {
 		t.Fatalf("native frontend: %d %s %s", status, out, diag)

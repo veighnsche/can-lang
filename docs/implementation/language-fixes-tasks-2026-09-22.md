@@ -228,7 +228,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF14-summary.json, LF14-check.log (project 11 + driver 4 + check 11 top-level with reject/source-tag subtests pass), LF14-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF14-integration.log (integration+driver+emit all ok), LF14-runtime.log (349 pass). Capture (attached/when/nested/template, dedup, relocation-stable), exact P15.1 framing oracle, 5 capture rejects, captured-bytes-after-edit, stale-lock + identity proofs, revalidation rejects mid-publication fixture edit with current unchanged, staged 4-root vendor suite (timeout-bound options, embedded captured bodies, one-byte fixture edit stales lock, lock untouched). Cross-file template span attribution repaired (ir.Expression.Source + markNode). Reproduction commands in the summary.
 
-- [ ] **LF15 — Gate atomic production publication on all-root verification**
+- [x] **LF15 — Gate atomic production publication on all-root verification**
 
   **Depends on:** LF04, LF08, LF11, LF12, LF13, LF14. **Acceptance:** AE22.
 
@@ -242,7 +242,7 @@ Execute LF01 through LF21 in the written order. Every declared prerequisite occu
 
   **Integration/exit:** G1/G2 regressions pass; fault-inject interrupted publication and preserve either the old complete generation or fully verified new one. Existing readers retain leases. No unexpected live work occurs.
 
-  **Completion evidence:** pending; attach exact inputs, commands, result manifests and relevant logs before checking this item.
+  **Completion evidence:** docs/implementation/evidence/2026-09-22/language-fixes/LF15-summary.json, LF15-check.log (driver + check raw-fixture suites pass), LF15-gotest.log (15 ok; only pre-existing TestCoreConsumerSpecification docs-drift panic), LF15-integration.log (integration+driver+emit all ok), LF15-runtime.log (346 pass across 59 files; run scoped to runtime/, see commit note). Verified-build gate: passing/failing/timeout/uncovered/sticky/dependency/liveness projects, frozen passing/failing/pending fixtures, staged 8 suites with CLI flag matrix. Reproduction commands in the summary.
 
 - [ ] **LF16 — Replace recursive aggregate widening with explicit native mapping**
 

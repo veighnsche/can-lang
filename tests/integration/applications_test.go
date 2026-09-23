@@ -433,6 +433,33 @@ func stubProviders(t *testing.T) (*httptest.Server, *struct {
 	return server, seen, &mode
 }
 
+// rewriteFixtureEndpoints rewrites recorded request URLs in staged raw
+// fixtures. Build verifies requests against fixtures, so endpoint
+// rewrites must cover fixtures as well as sources.
+func rewriteFixtureEndpoints(t *testing.T, root, dir, from, to string) {
+	t.Helper()
+	entries, err := os.ReadDir(filepath.Join(root, dir))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".json") {
+			continue
+		}
+		path := filepath.Join(root, dir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(data), from) {
+			continue
+		}
+		if err := os.WriteFile(path, []byte(strings.ReplaceAll(string(data), from, to)), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func rewriteEndpoints(t *testing.T, root, file, from, to string) {
 	t.Helper()
 	path := filepath.Join(root, file)
@@ -488,6 +515,7 @@ func TestApplicationsNativeAIStubbed(t *testing.T) {
 	defer server.Close()
 	root, home := stageApplication(t, ctx, bundle, sourceRoot, "native-ai")
 	rewriteEndpoints(t, root, "src/oracles/oracles.can", "http://127.0.0.1:1", server.URL)
+	rewriteFixtureEndpoints(t, root, "src/oracles/fixtures", "http://127.0.0.1:1", server.URL)
 	_, dir := applicationBuild(t, ctx, bundle, home, root)
 	entry := filepath.Join(dir, "entry.ts")
 	refused := snapshotMap(t, home, "triage-refused", map[string]string{"TRIAGE_DB": "postgres://127.0.0.1:1/nope", "CAN_I28_TOKEN": "test-only"})
@@ -670,6 +698,7 @@ func TestApplicationsLive(t *testing.T) {
 		defer server.Close()
 		root, home := stageApplication(t, ctx, bundle, sourceRoot, "native-ai")
 		rewriteEndpoints(t, root, "src/oracles/oracles.can", "http://127.0.0.1:1", server.URL)
+		rewriteFixtureEndpoints(t, root, "src/oracles/fixtures", "http://127.0.0.1:1", server.URL)
 		_, dir := applicationBuild(t, ctx, bundle, home, root)
 		live := snapshotMap(t, home, "triage-live", map[string]string{"TRIAGE_DB": dbURL, "CAN_I28_TOKEN": "test-only"})
 		status, out, diag := runEntry(t, ctx, bundle, home, filepath.Join(dir, "entry.ts"), live, nil, "Ann")

@@ -147,13 +147,15 @@ func TestCurrentBundledCLI(t *testing.T) {
 	if strings.Contains(diag, root) || strings.Contains(diag, "stack") {
 		t.Fatal("root diagnostic disclosed host metadata")
 	}
+	// A failing initializer cannot verify: workers fail before any
+	// execution, so the gate rejects with no output or publication.
 	write("src/main.can", strings.Replace(string(echo), "fn void main", "int startup = 1 / 0\nfn void main", 1))
 	code, out, diag = run("run", root, "--", "must not print")
-	if code != 1 || out != "" || !strings.Contains(diag, `"phase":"initialization"`) {
+	if code != 1 || out != "" || !strings.Contains(diag, "build verification failed") || !strings.Contains(diag, "initialization failed") {
 		t.Fatalf("startup failure: %d %q %q", code, out, diag)
 	}
 	write("can.errors.json", `{"active":[{"id":1000000,"kind":"app::failed"}],"retired":[]}`)
-	write("src/main.can", "package app\n    provides []\n    uses []\nerror 1000000 failed(str secret)\nfn void main\n    emits [failed]\n    given\n        str[] argv\n    asserts\n        sample: [] => failed(\"private\")\n    failed(\"must-not-disclose\")\n")
+	write("src/main.can", "package app\n    provides []\n    uses []\nerror 1000000 failed(str secret)\nfn void main\n    emits [failed]\n    given\n        str[] argv\n    asserts\n        sample: [] => failed(\"must-not-disclose\")\n    failed(\"must-not-disclose\")\n")
 	code, out, diag = run("run", root)
 	if code != 1 || out != "" || !strings.Contains(diag, `"id":1000000`) || strings.Contains(diag, "must-not-disclose") {
 		t.Fatalf("domain failure: %d %q %q", code, out, diag)

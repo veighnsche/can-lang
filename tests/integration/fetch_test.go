@@ -18,6 +18,69 @@ import (
 	"time"
 )
 
+// restageFetchHeaders rewrites staged request headers for the
+// header-default mutation: every request gains the inherited x-default,
+// connection content-type applies except where an op removes it (body
+// native defaults then apply), and only the load op drops x-omitted. The
+// staged authorization pair is preserved: staged runs read the credential
+// from each fixture environment, not the test process.
+func restageFetchHeaders(t *testing.T, root string) {
+	t.Helper()
+	sets := map[string][][]any{
+		"load_json.json":     {{"content-type", "text/plain"}, {"x-default", "inherited"}, {"x-probe", "yes"}},
+		"load_envelope.json": {{"content-type", "text/plain"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"send_text.json":     {{"content-type", "text/plain; charset=utf-8"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"send_json.json":     {{"content-type", "application/json"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"send_bytes.json":    {{"content-type", "application/octet-stream"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"head_text.json":     {{"content-type", "text/plain"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"delete_text.json":   {{"content-type", "text/plain"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+		"options_text.json":  {{"content-type", "text/plain"}, {"x-default", "inherited"}, {"x-omitted", "remove-me"}},
+	}
+	for name, headers := range sets {
+		path := filepath.Join(root, "src/fixtures", name)
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var fixture map[string]any
+		if err := json.Unmarshal(data, &fixture); err != nil {
+			t.Fatal(err)
+		}
+		exchange, ok := fixture["exchange"].(map[string]any)
+		if !ok {
+			t.Fatalf("fixture %s omits exchange", name)
+		}
+		request, ok := exchange["request"].(map[string]any)
+		if !ok {
+			t.Fatalf("fixture %s omits request", name)
+		}
+		var auth any
+		if staged, ok := request["headers"].([]any); ok {
+			for _, pair := range staged {
+				cells, ok := pair.([]any)
+				if ok && len(cells) == 2 && cells[0] == "authorization" {
+					auth = pair
+				}
+			}
+		}
+		if auth == nil {
+			t.Fatalf("fixture %s omits staged authorization", name)
+		}
+		pairs := []any{auth}
+		for _, pair := range headers {
+			pairs = append(pairs, pair)
+		}
+		request["headers"] = pairs
+		rewritten, err := json.Marshal(fixture)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, rewritten, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func TestCurrentBundledFetch(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -146,6 +209,9 @@ func TestCurrentBundledFetch(t *testing.T) {
 		return 0, out.String(), diag.String()
 	}
 
+	// 20 rows: 8 native fetch roots plus the null-exchange pretransport row,
+	// 8 selective-recovery consumer rows, and the extract, main and referenced
+	// ordinary roots.
 	for _, fixture := range []struct {
 		name string
 		rows int
@@ -173,6 +239,11 @@ func TestCurrentBundledFetch(t *testing.T) {
 		if err = json.Unmarshal([]byte(out), &report); err != nil || report["passed"] != true || len(report["assertions"].([]any)) != fixture.rows {
 			t.Fatalf("invalid fetch report %v %s", err, out)
 		}
+		// Run verifies first, so the header-default mutation must restage
+		// matching fixtures: connection defaults apply to every request,
+		// op-level removals apply before body native defaults, and the
+		// load op removes the inherited x-omitted header.
+		restageFetchHeaders(t, root)
 		write("src/main.can", source)
 		status, out, diag = run("run")
 		if status != 0 || out != "" || diag != "" {
@@ -198,11 +269,14 @@ func TestCurrentBundledFetch(t *testing.T) {
 		mu.Unlock()
 		credential = ""
 		invalid := source
-		// The computed value reaches runtime validation; no credential is available.
+		// The computed value reaches preparation validation; no credential
+		// is available. Verification runs the real preparation, which
+		// rejects the header (outcome mismatch, not a skipped comparison),
+		// so the gate fails before any launch or publication.
 		invalid = strings.Replace(invalid, `x_probe = call [["yes"]].map(callable extract)`, `x_probe = "bad" + "Ā"`, 1)
 		write("src/main.can", invalid)
 		status, _, diag = run("run")
-		if status == 0 || !strings.Contains(diag, "1106") {
+		if status == 0 || !strings.Contains(diag, "build verification failed") || !strings.Contains(diag, "outcome mismatch") {
 			t.Fatalf("header validation must precede credentials: %d %s", status, diag)
 		}
 		mu.Lock()

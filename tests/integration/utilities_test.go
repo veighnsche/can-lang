@@ -70,8 +70,17 @@ func TestCurrentBundledUtilities(t *testing.T) {
 	if code, out, diag := run("run"); code != 0 || out != "" || diag != expected {
 		t.Fatalf("native utilities: %d %q %q", code, out, diag)
 	}
-	for _, tc := range []struct{ from, to, id string }{{"sleep(0)", "sleep(-1)", "1260"}, {"sleep(0)", "sleep(2147483648)", "1260"}, {"secure_bytes(0)", "secure_bytes(-1)", "1261"}, {"secure_bytes(0)", "secure_bytes(65537)", "1261"}} {
-		write("src/main.can", strings.Replace(source, tc.from, tc.to, 1))
+	for _, tc := range []struct{ from, to, id, rowFrom, rowTo string }{
+		{"sleep(0)", "sleep(-1)", "1260", "sample: 0 => ok\n                clock::invalid_duration", "sample: -1 => ok\n                clock::invalid_duration"},
+		{"sleep(0)", "sleep(2147483648)", "1260", "sample: 0 => ok\n                clock::invalid_duration", "sample: 2147483648 => ok\n                clock::invalid_duration"},
+		{"secure_bytes(0)", "secure_bytes(-1)", "1261", "sample: 0 => ok empty", "sample: -1 => ok empty"},
+		{"secure_bytes(0)", "secure_bytes(65537)", "1261", "sample: 0 => ok empty", "sample: 65537 => ok empty"},
+	} {
+		// Run verifies first, so the bound mutation must stay consistent
+		// with its fixture row; the live path still enforces the bound.
+		mutated := strings.Replace(source, tc.from, tc.to, 1)
+		mutated = strings.Replace(mutated, tc.rowFrom, tc.rowTo, 1)
+		write("src/main.can", mutated)
 		if code, out, diag := run("run"); code != 1 || out != "" || !strings.Contains(diag, `"id":`+tc.id) || strings.Contains(diag, "secret") {
 			t.Fatalf("utility bound: %d %q %s", code, out, diag)
 		}

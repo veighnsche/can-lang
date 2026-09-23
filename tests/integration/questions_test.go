@@ -21,6 +21,40 @@ import (
 	"github.com/veighnsche/can-lang/distribution"
 )
 
+// restageQuestionsConfidence rewrites the staged assess response with the
+// same confidence edits the live server serves, so verification replays the
+// fallback answers the mutated source expects. It returns the previous
+// staged bytes for restoration.
+func restageQuestionsConfidence(t *testing.T, root, response string) []byte {
+	t.Helper()
+	path := filepath.Join(root, "src/fixtures/questions_assess.json")
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixture map[string]any
+	if err := json.Unmarshal(data, &fixture); err != nil {
+		t.Fatal(err)
+	}
+	outcome, ok := fixture["exchange"].(map[string]any)["outcome"].(map[string]any)
+	if !ok {
+		t.Fatal("assess fixture omits outcome")
+	}
+	answer, ok := outcome["response"].(map[string]any)
+	if !ok {
+		t.Fatal("assess fixture omits response")
+	}
+	answer["body_base64"] = base64.StdEncoding.EncodeToString([]byte(response))
+	rewritten, err := json.Marshal(fixture)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, rewritten, 0600); err != nil {
+		t.Fatal(err)
+	}
+	return data
+}
+
 func TestCurrentBundledMixedQuestions(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -80,8 +114,8 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := strings.Replace(string(data), "http://127.0.0.1:1/systemone", server.URL+"/systemone", 1)
-	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	write("src/main.can", text)
+	stageRawFixtures(t, write, sourceRoot, "native", [2]string{"http://127.0.0.1:1", server.URL})
 	run := func(command string) (int, string, string) {
 		t.Helper()
 		profile := `(version 1)(allow default)(deny network*)(allow network-outbound (remote ip "localhost:*"))`
@@ -116,8 +150,10 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1121") {
 		t.Fatalf("invalid later answer ran handlers: %d %q %s", code, out, diag)
 	}
+	// A duplicate criterion cannot verify, so the gate rejects before any
+	// launch; descriptor validation itself is covered in questions.test.ts.
 	write("src/main.can", strings.Replace(text, `choice_option("__proto__", "Other")`, `choice_option("one", "Other")`, 1))
-	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1120") {
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "build verification failed") || !strings.Contains(diag, "unused fixture") {
 		t.Fatalf("invalid descriptor launched: %d %q %s", code, out, diag)
 	}
 	mu.Lock()
@@ -126,33 +162,44 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	}
 	response = `{"model":"resolved-model","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"choice","choice":"second","confidence":0.5,"probabilities":{"first":0.5,"second":0.5}},"q2":{"type":"choice","choice":"__proto__","confidence":0.8,"probabilities":{"one":0.1,"__proto__":0.9}},"q3":{"type":"score","score":1,"confidence":0.5,"probabilities":{"0":0.25,"1":0.5,"2":0.25},"legend":{"0":"Low","1":"Medium","2":"High"}},"q4":{"type":"choice","choice":"second","confidence":0.5,"probabilities":{"first":0.5,"second":0.5}},"q5":{"type":"score","score":0.75,"confidence":0.5,"probabilities":{"0":0.25,"1":0.75},"legend":{"0":"Low","1":"High"}},"q6":{"type":"choice","choice":"left","confidence":0.5,"probabilities":{"left":0.5,"right":0.5}},"q7":{"type":"choice","choice":"left","confidence":0.5,"probabilities":{"before":0.25,"left":0.25,"right":0.25,"after":0.25}}}}`
 	mu.Unlock()
-	// The first handler fails after its observable N. Later handlers and the
-	// continuation must not run, and the same request is never dispatched again.
+	// The first handler carries a fault, so the program cannot verify: the
+	// gate rejects before anything launches, and the same request is never
+	// dispatched again.
 	failing := strings.Replace(text, "ok int written => ok probability", "ok int written => do\n                int invalid = 1 / 0\n                ok probability", 1)
 	write("src/main.can", failing)
-	if code, out, diag := run("run"); code == 0 || out != "N" || diag == "" {
-		t.Fatalf("handler failure did not stop judge: %d %q %s", code, out, diag)
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "build verification failed") {
+		t.Fatalf("handler fault launched judge: %d %q %s", code, out, diag)
 	}
 	mu.Lock()
-	if requests != 3 {
-		t.Fatalf("handler failure redispatched request: %d", requests)
+	if requests != 2 {
+		t.Fatalf("handler fault dispatched request: %d", requests)
 	}
 	mu.Unlock()
 
-	// Failure inside a generated record prevents remaining fields and registrations.
+	// A fault inside a generated record cannot verify: the gate rejects
+	// before anything launches, so no partial record escapes and no request
+	// is dispatched.
 	partial := strings.Replace(text, `second "Second" => relay call report(%, "D")`, `second "Second" => do
             int invalid = 1 / 0
             ok %`, 1)
 	write("src/main.can", partial)
-	if code, out, diag := run("run"); code == 0 || out != "NBSC" || diag == "" {
-		t.Fatalf("partial record escaped: %d %q %s", code, out, diag)
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "build verification failed") {
+		t.Fatalf("partial record launched: %d %q %s", code, out, diag)
 	}
+	mu.Lock()
+	if requests != 2 {
+		t.Fatalf("partial record dispatched request: %d", requests)
+	}
+	mu.Unlock()
 	// Equality used the normal handlers above; strictly lower confidence uses
-	// fallback with metadata, leaving generated records unaffected.
+	// fallback with metadata, leaving generated records unaffected. Run
+	// verifies first, so the staged fixture serves the same lowered answers
+	// the live server returns, and is restored before the pristine followups.
 	mu.Lock()
 	response = strings.Replace(validResponse, `"q1":{"type":"choice","choice":"second","confidence":0.5`, `"q1":{"type":"choice","choice":"second","confidence":0.25`, 1)
 	response = strings.Replace(response, `"q3":{"type":"score","score":1,"confidence":0.5`, `"q3":{"type":"score","score":1,"confidence":0.25`, 1)
 	mu.Unlock()
+	stagedAssess := restageQuestionsConfidence(t, root, response)
 	write("src/main.can", strings.ReplaceAll(text, "10.0", "8.0"))
 	if code, out, diag := run("run"); code != 0 || out != "NfgCDEFLGRLH" || diag != "" {
 		t.Fatalf("confidence fallback: %d %q %s", code, out, diag)
@@ -160,6 +207,9 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	mu.Lock()
 	response = validResponse
 	mu.Unlock()
+	if err := os.WriteFile(filepath.Join(root, "src/fixtures/questions_assess.json"), stagedAssess, 0600); err != nil {
+		t.Fatal(err)
+	}
 	// A later request may depend on the fully completed first judge.
 	followup := `judge void complete from classifier
     emits [http::request_failed, ai::invalid_question, ai::invalid_answer]
@@ -178,7 +228,9 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 `
 	twoStage := strings.Replace(text, "uses [ai, http, codec, bytes, io]", "uses [ai, http, codec, bytes, io, text]", 1)
 	twoStage = strings.Replace(twoStage, "fn void main", followup+"fn void main", 1)
-	twoStage = strings.Replace(twoStage, "            true => ok\n", "            true => relay call complete((measured))\n", 1)
+	// Staged main supplies the nested followup completion through a when
+	// row; the live run still dispatches the real second request.
+	twoStage = strings.Replace(twoStage, "            true => ok\n", "            true => match call complete((measured))\n                when\n                    sample: (10.0) => ok\n                http::request_failed\n                ai::invalid_question\n                ai::invalid_answer\n                ok => ok\n", 1)
 	// The followup exchange is fully request-compared: the staged request
 	// carries the 0.5 assert argument and the staged credential, and the
 	// staged answer selects ten.
@@ -189,7 +241,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 		"environment": map[string]any{"CAN_I27_TOKEN": "fixture-secret"},
 		"exchange": map[string]any{
 			"request": map[string]any{"method": "POST", "url": server.URL + "/systemone",
-				"headers": []any{[]any{"authorization", "Bearer [REDACTED]"}, []any{"content-type", "application/json"}, []any{"accept", "application/json"}},
+				"headers": []any{[]any{"authorization", "Bearer fixture-secret"}, []any{"content-type", "application/json"}, []any{"accept", "application/json"}},
 				"body":    map[string]any{"json_utf8": completeRequest}},
 			"outcome": map[string]any{"response": map[string]any{"status": 200,
 				"headers":     []any{[]any{"content-type", "application/json"}},
@@ -206,7 +258,9 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 		t.Fatalf("two-stage dependency: %d %q %s", code, out, diag)
 	}
 	mu.Lock()
-	if requests != 7 {
+	// Two verified launches plus one invalid-answer launch before the gate
+	// rejections, one confidence-fallback launch, and two two-stage launches.
+	if requests != 5 {
 		t.Errorf("mixed phase request count: %d", requests)
 	}
 	mu.Unlock()
