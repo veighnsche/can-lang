@@ -220,10 +220,10 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
             using raw "fixtures/complete.json"
     call dynamic([choice_option("ten", call text::from_float(previous))], [choice_option("other", "Other")]) as str selected
     ok => match selected is "ten"
-        true => ok
         false => do
             int invalid = 1 / 0
             ok
+        true => ok
 
 `
 	twoStage := strings.Replace(text, "uses [ai, http, codec, bytes, io]", "uses [ai, http, codec, bytes, io, text]", 1)
