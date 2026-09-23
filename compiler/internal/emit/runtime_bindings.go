@@ -90,6 +90,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		assembly.streamSpecializationBindings(),
 		websocketOperationBindings(),
 		cookiesOperationBindings(),
+		s3OperationBindings(),
 		assembly.functionBindings(),
 	}
 	functions, err := combineBindingContributions(contributions...)

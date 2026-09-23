@@ -51,6 +51,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.declareStreamState()
 	builder.declareWebSocketState()
 	builder.declareCookiesState()
+	builder.declareS3State()
 	builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
 	if err := builder.initializeDomain(); err != nil {
 		return Module{}, nil, err
@@ -71,6 +72,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.initializeStreamState()
 	builder.initializeWebSocketState()
 	builder.initializeCookiesState()
+	builder.initializeS3State()
 	builder.initializeCollectionState()
 	if err := builder.initializeAIState(); err != nil {
 		return Module{}, nil, err
@@ -210,7 +212,10 @@ func (builder *stateBuilder) initializeDomain() error {
 	if err := builder.emitCookiesKinds(); err != nil {
 		return err
 	}
-	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value));\n", builder.plan, quote(bytesID))
+	if err := builder.emitS3Kinds(); err != nil {
+		return err
+	}
+	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value));\n", builder.plan, quote(bytesID))
 	fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	builder.numberIDs = map[string]string{}
 	return nil
@@ -340,6 +345,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, builder.assembly.streamStateImports(runtime)...)
 	imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
 	imports = append(imports, builder.assembly.cookiesStateImports(runtime)...)
+	imports = append(imports, builder.assembly.s3StateImports(runtime)...)
 	imports = append(imports, builder.assembly.aiStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
 	imports = append(imports, builder.assembly.armDescriptionImports()...)
@@ -357,5 +363,6 @@ func stateValueImportNames() []ImportName {
 	names = append(names, processStateValueImportNames()...)
 	names = append(names, streamStateValueImportNames()...)
 	names = append(names, websocketStateValueImportNames()...)
-	return append(names, cookiesStateValueImportNames()...)
+	names = append(names, cookiesStateValueImportNames()...)
+	return append(names, s3StateValueImportNames()...)
 }
