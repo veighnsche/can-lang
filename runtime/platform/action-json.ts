@@ -1,5 +1,5 @@
-import { invoke, type Completion, type AssertionContext } from "../completion.ts";
-import { recordIdentity } from "../data.ts";
+import { invoke, success, failure, type Completion, type AssertionContext } from "../completion.ts";
+import { array, record, recordIdentity } from "../data.ts";
 import { ownBytes, copyBytes, byteLength } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { CodecIssue } from "../codec/budget.ts";
@@ -7,6 +7,7 @@ import { decodeJSON, encodeJSON, type Schema } from "../codec/json.ts";
 import { graph } from "../codec/project.ts";
 import { jsonRequestMedia, responseMedia } from "../transport/media.ts";
 import { requestSnapshot, createResponses } from "./http.ts";
+import { compileActionRoutes, buildActionURL, ActionRouteIssue } from "./action-routes.ts";
 import type { MountedCallback } from "./router.ts";
 
 const origin = Object.freeze({
@@ -227,7 +228,8 @@ export function createJsonActions(
 
 // ActionFetchResult is the fetch consumer's outcome vocabulary. Transport,
 // abort, codec and unexpected-status failures stay distinct from finite
-// domain cases; T23 lowers these names into browser-callable failures.
+// domain cases; createJsonActionFetch lowers these names into the checked
+// per-action failure bound.
 export type ActionFetchResult =
   | Readonly<{ kind: "ok"; status: number; leaf: string; value: unknown }>
   | Readonly<{ kind: "transport"; phase: "connect" | "body" | "protocol" }>
@@ -379,4 +381,203 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
   )
     return { kind: "codec", path: "", reason: "variant_tag" };
   return { kind: "ok", status: received.status, leaf, value };
+}
+
+// JsonFetchSite is the frozen per-action client contract the compiler
+// splices into one fetch_json_get/fetch_json_post invocation: the resolved
+// operation identity, the route template with its captures, the POST
+// request schema, the shared response schema, and the finite case table.
+// The checker owns the spelling-to-identity mapping; the adapter
+// revalidates every shape it consumes.
+export type JsonFetchSite = Readonly<{
+  action: string;
+  method: "GET" | "POST";
+  path: string;
+  captures: readonly Readonly<{ name: string; type: string }>[];
+  request?: unknown;
+  response: unknown;
+  cases: readonly ActionJsonCase[];
+}>;
+
+export type JsonFetchTypes = Readonly<{
+  transport: string;
+  invalidRequest: string;
+  bodyLimit: string;
+  statusError: string;
+  invalidData: string;
+  header: string;
+}>;
+
+type CheckedFetchSite = Readonly<{
+  action: string;
+  method: "GET" | "POST";
+  path: string;
+  captures: readonly Readonly<{ name: string; type: string }>[];
+  request: Schema | null;
+  response: Schema;
+  cases: readonly ActionJsonCase[];
+}>;
+
+function checkedFetchSite(site: unknown): CheckedFetchSite {
+  if (!isRecord(site) || typeof site.action !== "string" || site.action === "")
+    throw new TypeError("fetch site carries no action identity");
+  const action = site.action;
+  if (site.method !== "GET" && site.method !== "POST")
+    throw new TypeError(`fetch site ${action} names an unknown method`);
+  if (typeof site.path !== "string" || site.path === "")
+    throw new TypeError(`fetch site ${action} names no path`);
+  if (!Array.isArray(site.captures))
+    throw new TypeError(`fetch site ${action} carries malformed captures`);
+  for (const row of site.captures) {
+    if (
+      !isRecord(row) ||
+      typeof row.name !== "string" ||
+      row.name === "" ||
+      (row.type !== "str" && row.type !== "int")
+    )
+      throw new TypeError(`fetch site ${action} carries a malformed capture`);
+  }
+  const captures = site.captures as CheckedFetchSite["captures"];
+  const cases = checkedCases(action, site.cases);
+  const response = checkedSchema(action, "response", site.response);
+  if (site.method === "GET") {
+    if (site.request !== undefined && site.request !== null)
+      throw new TypeError(`fetch site ${action} is a bodyless GET site with a request contract`);
+    return {
+      action,
+      method: site.method,
+      path: site.path,
+      captures,
+      request: null,
+      response,
+      cases,
+    };
+  }
+  if (site.request === undefined || site.request === null)
+    throw new TypeError(`fetch site ${action} is a POST site with no request contract`);
+  const request = checkedSchema(action, "request", site.request);
+  return { action, method: site.method, path: site.path, captures, request, response, cases };
+}
+
+// createJsonActionFetch lowers checked JSON action calls to canonical URL
+// building plus native fetch. Emitted invocations pass the authored inputs
+// (action name, captures in path order, POST body), then the spliced site,
+// then the assertion context; the context travels positionally and is
+// otherwise unused. Method, operation identity, codecs, sizes and the
+// actual status all validate here: transport, abort, codec and
+// unexpected-status outcomes map into the declared failure bound and never
+// surface as domain cases.
+export function createJsonActionFetch(
+  domain: ReturnType<typeof createDomainRuntime>,
+  types: JsonFetchTypes,
+) {
+  const fail = (
+    identity: string,
+    fields: [string, unknown][],
+    operation: string,
+  ): Completion<never> =>
+    failure(
+      domain.create(identity, record(identity, fields), origin, undefined, {
+        boundary: "native",
+        operation,
+      }),
+    );
+  async function run(
+    method: "GET" | "POST",
+    name: unknown,
+    tail: readonly unknown[],
+  ): Promise<Completion<unknown>> {
+    if (typeof name !== "string" || name === "")
+      throw new TypeError("fetch action name is not a string");
+    const rest = [...tail];
+    rest.pop();
+    const site = checkedFetchSite(rest.pop());
+    if (site.method !== method)
+      throw new TypeError(`fetch site ${site.action} disagrees with its verb`);
+    const want = site.captures.length + (method === "POST" ? 1 : 0);
+    if (rest.length !== want) throw new TypeError(`fetch ${site.action} takes ${want} inputs`);
+    const captureValues = rest.slice(0, site.captures.length);
+    const body = method === "POST" ? rest[rest.length - 1] : undefined;
+    let url: string;
+    try {
+      const table = compileActionRoutes([
+        { identity: site.action, method: site.method, path: site.path, captures: site.captures },
+      ]);
+      url = buildActionURL(table, site.action, captureValues);
+    } catch (cause) {
+      // Capture arity and types are checked statically; only runtime
+      // capture data can still fail the builder. Template faults are
+      // compiler bugs and keep throwing.
+      if (
+        cause instanceof ActionRouteIssue &&
+        (cause.code === "unknown-action" ||
+          cause.code === "capture-arity" ||
+          cause.code === "capture-type" ||
+          cause.code === "capture-value")
+      )
+        return fail(types.invalidRequest, [["reason", cause.code]], site.action);
+      throw cause;
+    }
+    // Same-origin by construction: the canonical builder emits a relative
+    // path, which the served content-security-policy (connect-src 'self')
+    // admits. Anything else fails closed before any byte is sent.
+    if (!url.startsWith("/") || url.startsWith("//"))
+      return fail(types.invalidRequest, [["reason", "origin"]], site.action);
+    if (method === "POST") {
+      let encoded;
+      try {
+        encoded = encodeJSON(site.request!, body);
+      } catch (cause) {
+        if (!(cause instanceof CodecIssue)) throw cause;
+        return fail(types.invalidRequest, [["reason", "request"]], site.action);
+      }
+      if (byteLength(encoded) > BigInt(ACTION_JSON_BODY_LIMIT))
+        return fail(types.bodyLimit, [["limit", BigInt(ACTION_JSON_BODY_LIMIT)]], site.action);
+    }
+    const outcome = await fetchJsonAction({
+      url,
+      method,
+      request: site.request ?? undefined,
+      body,
+      response: site.response,
+      cases: site.cases,
+    });
+    switch (outcome.kind) {
+      case "ok":
+        return success(outcome.value);
+      case "transport":
+        return fail(types.transport, [["phase", outcome.phase]], site.action);
+      case "aborted":
+        // A cancelled fetch carries no commit knowledge: it is a
+        // transport failure, never a domain case, and must not be read
+        // as server rollback. Reconciliation rereads instead of assuming.
+        return fail(types.transport, [["phase", "cancelled"]], site.action);
+      case "codec":
+        return fail(
+          types.invalidData,
+          [
+            ["path", outcome.path],
+            ["reason", outcome.reason],
+          ],
+          site.action,
+        );
+      case "unexpected_status":
+        return fail(
+          types.statusError,
+          [
+            ["status", BigInt(outcome.status)],
+            ["headers", array([])],
+          ],
+          site.action,
+        );
+    }
+  }
+  return Object.freeze({
+    get(name: unknown, ...tail: unknown[]): Promise<Completion<unknown>> {
+      return run("GET", name, tail);
+    },
+    post(name: unknown, ...tail: unknown[]): Promise<Completion<unknown>> {
+      return run("POST", name, tail);
+    },
+  });
 }

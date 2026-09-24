@@ -58,6 +58,10 @@ type CompletionContext struct {
 	// FormSite validates one static form name against its specialization
 	// and returns the adapter contract the emitter splices, if any.
 	FormSite func(operation, key, name string) (ir.FormActionSite, error)
+	// FetchSite resolves one static JSON fetch name against the checked
+	// action table and returns the spliced client contract plus the
+	// per-action call contract that drives capture and body checking.
+	FetchSite func(operation, key, name string) (ir.JSONFetchSite, *types.Type, error)
 	// Raw carries assertion-time native evidence for using-raw rows. It is
 	// set on file-owned root contexts and inherited by derived regions.
 	Raw *RawScope
@@ -623,7 +627,17 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 		}
-		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
+		effective := binding
+		var fetchSite *ir.JSONFetchSite
+		if operation := fetchSiteOperation(binding.Identity); operation != "" {
+			site, contract, err := c.resolveFetchSite(operation, binding.Identity, args, span)
+			if err != nil {
+				return err
+			}
+			fetchSite = site
+			effective = ValueBinding{Identity: binding.Identity, Type: contract}
+		}
+		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: effective.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: effective.Type.Result(), Errors: effective.Type.Errors(), SuccessBinding: c.identity("call"), JSONFetch: fetchSite}
 		if binding.Identity == assetURL {
 			resolution, err := c.resolveAsset(args)
 			if err != nil {
@@ -646,7 +660,7 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			step.FormAction = site
 		}
 		var err error
-		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)
+		step.Prepare, step.Arguments, err = c.arguments(e, effective, args, receiver)
 		if err != nil {
 			return err
 		}

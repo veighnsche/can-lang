@@ -8787,6 +8787,103 @@
       ]
     },
     {
+      "name": "http::fetch_json_get",
+      "identity": "can.std.http@1::fetch_json_get",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [
+        "action"
+      ],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "T23"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::fetch_json_post",
+      "identity": "can.std.http@1::fetch_json_post",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        },
+        {
+          "name": "Wire",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "str"
+        },
+        {
+          "name": "body",
+          "type": "Wire"
+        }
+      ],
+      "staticInputs": [
+        "action"
+      ],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::body_limit",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, encode the wire body under the shared exact codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "T23"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "http::request_body_stream",
       "identity": "can.std.http@1::request_body_stream",
       "kind": "function",

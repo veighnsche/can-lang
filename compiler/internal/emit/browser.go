@@ -92,5 +92,6 @@ func browserStateValueImportNames() []ImportName {
 	names = append(names, utilitiesStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)
 	names = append(names, markdownStateValueImportNames()...)
+	names = append(names, fetchCatalogueValueImportNames()...)
 	return append(names, browserCatalogueValueImportNames()...)
 }

@@ -62,6 +62,9 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 	if formGenericOperation(symbol.ID) {
 		return c.specializeForm(file, scope, name, args)
 	}
+	if fetchGenericOperation(symbol.ID) {
+		return c.specializeFetch(file, scope, name, args)
+	}
 	if sqlGenericOperation(symbol.ID) {
 		return c.specializeSQL(file, scope, name, args)
 	}

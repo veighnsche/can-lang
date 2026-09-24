@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 44415d98559d5b8d4a057263e4ad3aa5383da991104008f2bc94d1174f8ec3cb.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: ebcdf98fa5f1d74320402ec79069d2372145fde04807d48fdbaabd4b5663f5fa.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -445,6 +445,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::make_router | http::route[] routes → http::router | [http::duplicate_route, http::ambiguous_route] |  | Map | Closed exact dispatch with 404/405/Allow, no implicit HEAD. | real | I32 / P10 |
 | http::route_stream | http::route route → http::route | [] |  | Map | Mark a route for lazy bodies consumed once through a stream reader. | real | B1-06 / P10 |
 | http::serve_form_action | Result:data, Wire:form; str action, $outcome outcome, $structural structural → http::route; static action | [http::invalid_route] | outcome(Result) → html::safe emits []; structural(form::rejected&lt;Wire&gt;) → html::safe emits [] | Request, URLSearchParams, FormData, TextDecoder | Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses. | real | I32 / P10 |
+| http::fetch_json_get | Result:data; str action → Result; static action | [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | T23 / P10 |
+| http::fetch_json_post | Result:data, Wire:data; str action, Wire body → Result; static action | [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, encode the wire body under the shared exact codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | T23 / P10 |
 | http::request_body_stream | http::request request, int max_chunk → stream::reader&lt;bytes::buffer&gt; | [http::body_limit, http::invalid_request] |  | ReadableStream | Open the one-shot body reader: live wire bytes or replayed buffered bytes. | supplied | B1-06 / P10 |
 | http::make_server_config | str host, int port, int body_limit, int shutdown_ms → http::server_config | [http::invalid_server_config] |  | Number | Validate bounded config before server start. | real | I33 / P10 |
 | http::server_start | http::server_config config, http::router router → http::server | [http::bind_failed] |  | Bun.serve | Register ownership; await each Can callback and sanitize standard failures. | supplied | I33 / P6,P10 |

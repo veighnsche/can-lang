@@ -1075,6 +1075,35 @@ decoding the body, while a finite status with a non-JSON media type or an
 undecodable representation is `codec`. Browser Fetch lowering consumes this
 same contract.
 
+Browser Can code invokes JSON actions through two checked catalogue
+operations: `http::fetch_json_get<Result>` for bodyless GET actions and
+`http::fetch_json_post<Result, Wire>` for JSON POST actions. The action
+name is a static string literal resolved against the checked action
+table, so a rename, a method or body-mode change, and a result or wire
+change diagnose the call site; path, case and schema edits regenerate the
+spliced contract. Direct calls derive a per-action contract: the name,
+the path captures in order, and the POST wire body last. GET carries no
+body slot. The emitter splices the frozen client contract (operation
+identity, method, path template, captures, request and response schemas,
+case table) into the invocation; fixtures still match the authored
+arguments. Both profiles emit the identical `$canActions` table and the
+identical spliced contracts from one checked program, so a contract edit
+rebuilds both sides together.
+
+The adapter builds the request URL with the canonical builder, so every
+request is a same-origin relative path admitted by the served
+content-security-policy (`connect-src 'self'`); anything else fails
+closed before any byte is sent. POST bodies encode under the shared
+exact codec within the 8192-byte wire limit. The actual status maps to a
+finite domain case; anything else stays in the declared failure bound:
+`http::transport_failed` for transport faults, `codec::invalid_data`
+for undecodable representations, `http::status_error` for statuses
+outside the case table, `http::invalid_request` for unbuildable
+captures and inadmissible requests, and `http::body_limit` for oversize
+POST bodies. A cancelled fetch reports `http::transport_failed` with
+phase `cancelled`: cancellation carries no commit knowledge, is never a
+domain case, and must not be read as server rollback.
+
 ### HTTP client status rule
 
 For approved native fetch declarations, any final status 200--599 completes an

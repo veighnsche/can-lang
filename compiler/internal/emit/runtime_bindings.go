@@ -99,6 +99,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		markdownOperationBindings(),
 		formOperationBindings(),
 		assembly.formSpecializationBindings(),
+		assembly.fetchSpecializationBindings(),
 		browserOperationBindings(),
 		assembly.browserSpecializationBindings(),
 		assembly.functionBindings(),

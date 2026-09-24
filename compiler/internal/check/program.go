@@ -33,6 +33,7 @@ type Program struct {
 	Codecs        map[string]*CodecSpecialization
 	HTTPs         map[string]*HTTPSpecialization
 	Forms         map[string]*FormSpecialization
+	Fetches       map[string]*FetchSpecialization
 	Actions       []*ActionDeclaration
 	SQLs          map[string]*SQLSpecialization
 	Transactions  map[string]*TransactionSpecialization
@@ -67,6 +68,7 @@ type programChecker struct {
 	https       map[string]*HTTPSpecialization
 	httpParts   map[string]*httpParts
 	forms       map[string]*FormSpecialization
+	fetches     map[string]*FetchSpecialization
 	sqlSites    []SQLSiteRecord
 	world       *resolve.World
 	builder     *types.Builder
@@ -134,6 +136,9 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 			if err := c.gatherForm(file, node, node.Invocation.Callee, node.Invocation.Types); err != nil {
 				return err
 			}
+			if err := c.gatherFetch(file, node, node.Invocation.Callee, node.Invocation.Types); err != nil {
+				return err
+			}
 		case *syntax.ReferenceExpr:
 			if err := c.gatherCodec(file, node, node.Callee, node.Types); err != nil {
 				return locateGather(file, node.ExprSpan(), err)
@@ -142,6 +147,9 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 				return err
 			}
 			if err := c.gatherForm(file, node, node.Callee, node.Types); err != nil {
+				return err
+			}
+			if err := c.gatherFetch(file, node, node.Callee, node.Types); err != nil {
 				return err
 			}
 		}
@@ -293,9 +301,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 			continue
 		}
-		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) || browserStateOperation(op.Identity) != nil {
+		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) || fetchGenericOperation(op.Identity) || browserStateOperation(op.Identity) != nil {
 			continue
-		} // I32, I35, B1-05, codec, form and T22 state generics specialize per concrete type argument on use.
+		} // I32, I35, B1-05, codec, form, T23 fetch and T22 state generics specialize per concrete type argument on use.
 		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && op.Lowering.Task != "T22" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
 			continue
 		}
@@ -504,6 +512,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			return nil, err
 		}
 	}
+	p.Fetches = c.fetches
+	for id := range c.fetches {
+		if err = c.finishFetch(id); err != nil {
+			return nil, err
+		}
+	}
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables
 	for _, native := range p.Natives {
@@ -655,6 +669,8 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return ir.SQLCallSite{Owner: owner.Key, Name: name}
 	}, FormSite: func(operation, key, name string) (ir.FormActionSite, error) {
 		return c.formSite(file, operation, key, name)
+	}, FetchSite: func(operation, key, name string) (ir.JSONFetchSite, *types.Type, error) {
+		return c.fetchSite(file, operation, key, name)
 	}}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {

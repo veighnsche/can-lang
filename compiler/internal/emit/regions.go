@@ -299,6 +299,16 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			callArgs = append(append([]string{}, args...), metadata, handler)
 		}
+		if step.JSONFetch != nil {
+			// The frozen fetch contract joins the invocation only:
+			// fixture matching still compares the authored action
+			// name, captures and POST body.
+			metadata, err := fetchActionMetadata(step.JSONFetch)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			callArgs = append(append([]string{}, args...), metadata)
+		}
 		if step.Identity == "can.std.checks@1::require" {
 			// C9.2: the call-site span and invocation path travel as a
 			// hidden argument into private occurrence metadata. Fixture

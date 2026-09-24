@@ -51,6 +51,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.declareCollectionState()
 	builder.declareBrowserState()
 	builder.declareBrowserStateSpecializations()
+	builder.declareFetchState()
 	if !browser {
 		builder.declareFileState()
 		builder.declareProcessState()
@@ -96,6 +97,7 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	builder.initializeMarkdownState()
 	builder.initializeBrowserState()
 	builder.initializeBrowserStateSpecializations()
+	builder.initializeFetchState()
 	builder.initializeCollectionState()
 	if !browser {
 		if err := builder.initializeAIState(); err != nil {
@@ -408,6 +410,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, builder.assembly.utilitiesStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"createFormActions", "$canCreateFormActions"}, {"isRouterValue", "$canIsRouter"}}})
+	imports = append(imports, builder.assembly.fetchStateImports(runtime)...)
 	if !browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
 		imports = append(imports, builder.assembly.fileStateImports(runtime)...)
@@ -443,5 +446,6 @@ func stateValueImportNames() []ImportName {
 	names = append(names, cookiesStateValueImportNames()...)
 	names = append(names, s3StateValueImportNames()...)
 	names = append(names, markdownStateValueImportNames()...)
+	names = append(names, fetchCatalogueValueImportNames()...)
 	return append(names, browserCatalogueValueImportNames()...)
 }

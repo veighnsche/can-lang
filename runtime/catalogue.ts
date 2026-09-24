@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "44415d98559d5b8d4a057263e4ad3aa5383da991104008f2bc94d1174f8ec3cb";
+export const catalogueSHA256 = "ebcdf98fa5f1d74320402ec79069d2372145fde04807d48fdbaabd4b5663f5fa";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -8790,6 +8790,103 @@ export const catalogue = freeze({
         ],
         "adapter": "Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses.",
         "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::fetch_json_get",
+      "identity": "can.std.http@1::fetch_json_get",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [
+        "action"
+      ],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "T23"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::fetch_json_post",
+      "identity": "can.std.http@1::fetch_json_post",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        },
+        {
+          "name": "Wire",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "str"
+        },
+        {
+          "name": "body",
+          "type": "Wire"
+        }
+      ],
+      "staticInputs": [
+        "action"
+      ],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::body_limit",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the static action name against the checked JSON table, build the canonical same-origin URL from the path captures, encode the wire body under the shared exact codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "T23"
       },
       "assertion": "real",
       "refs": [

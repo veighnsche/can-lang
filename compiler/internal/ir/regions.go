@@ -73,6 +73,7 @@ type InvocationStep struct {
 	Asset          *AssetResolution
 	SQL            *SQLCallSite
 	FormAction     *FormActionSite
+	JSONFetch      *JSONFetchSite
 }
 type CompletionKind string
 
