@@ -307,7 +307,10 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
           ? { "content-type": "application/json", accept: "application/json" }
           : { accept: "application/json" },
       body: encoded,
-      credentials: "omit",
+      // Same-origin credentials: the emitted browser asset runs on the
+      // serving origin, and protected actions authenticate through the
+      // session cookie. Cross-origin requests still omit credentials.
+      credentials: "same-origin",
       signal: input.signal,
     });
   } catch (cause) {

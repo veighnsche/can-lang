@@ -2,6 +2,7 @@ import { success, failure, invoke, type Completion, type AssertionContext } from
 import { record } from "../data.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { resourceStateFailure } from "../failure.ts";
+import { isAssertScope } from "../assert/context.ts";
 import { authorTags, globals, applicability } from "./html.ts";
 // Bounded explicit browser catalogue (T22). Native DOM, Event and
 // AbortController operations do the work; there is no virtual DOM,
@@ -12,6 +13,10 @@ import { authorTags, globals, applicability } from "./html.ts";
 // view scope: view disposal aborts listeners natively, clears pending
 // timers and detaches nodes. State cells are versioned compare-and-swap
 // slots; snapshots are immutable data copies.
+// Elided harness scope arguments (T24) fail closed as disposed instead
+// of throwing a resource-state fault, so asserted handlers exercise
+// their disposal arms; disposals no-op. Can code cannot name a
+// handle-typed value, so only elided arguments ever meet this path.
 const origin = Object.freeze({
   source: "can:browser",
   start: 0,
@@ -272,6 +277,7 @@ export function createBrowser(
       return success(token(apps, app));
     },
     async root(app: unknown, _context?: AssertionContext) {
+      if (isAssertScope(app)) return gone();
       const found = read(apps, app);
       if (found.disposed) return gone();
       return success(
@@ -285,6 +291,7 @@ export function createBrowser(
       );
     },
     async openView(app: unknown, _context?: AssertionContext) {
+      if (isAssertScope(app)) return gone();
       const found = read(apps, app);
       if (found.disposed) return gone();
       const view: View = {
@@ -299,10 +306,12 @@ export function createBrowser(
       return success(token(views, view));
     },
     async disposeView(view: unknown, _context?: AssertionContext) {
+      if (isAssertScope(view)) return success(undefined);
       destroyView(read(views, view));
       return success(undefined);
     },
     async disposeApp(app: unknown, _context?: AssertionContext) {
+      if (isAssertScope(app)) return success(undefined);
       const found = read(apps, app);
       // destroyView deletes only the view under iteration, which Set iteration tolerates.
       for (const view of found.views) destroyView(view);
@@ -310,6 +319,7 @@ export function createBrowser(
       return success(undefined);
     },
     async createElement(view: unknown, tag: unknown, _context?: AssertionContext) {
+      if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
       const name = string(tag);
@@ -320,6 +330,7 @@ export function createBrowser(
       return success(token(nodes, record));
     },
     async createText(view: unknown, value: unknown, _context?: AssertionContext) {
+      if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
       const dom = scope.app.document.createTextNode(string(value));
@@ -328,12 +339,14 @@ export function createBrowser(
       return success(token(nodes, record));
     },
     async setText(node: unknown, value: unknown, _context?: AssertionContext) {
+      if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       found.dom.textContent = string(value);
       return success(undefined);
     },
     async setAttribute(node: unknown, name: unknown, value: unknown, _context?: AssertionContext) {
+      if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
@@ -345,6 +358,7 @@ export function createBrowser(
       return success(undefined);
     },
     async removeAttribute(node: unknown, name: unknown, _context?: AssertionContext) {
+      if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
@@ -354,6 +368,7 @@ export function createBrowser(
       return success(undefined);
     },
     async appendChild(parent: unknown, child: unknown, _context?: AssertionContext) {
+      if (isAssertScope(parent) || isAssertScope(child)) return gone();
       const into = read(nodes, parent);
       const next = read(nodes, child);
       if (!liveNode(into) || !liveNode(next)) return gone();
@@ -366,6 +381,7 @@ export function createBrowser(
       return success(undefined);
     },
     async removeNode(node: unknown, _context?: AssertionContext) {
+      if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.root) return denied("root");
@@ -373,6 +389,7 @@ export function createBrowser(
       return success(undefined);
     },
     async focus(node: unknown, _context?: AssertionContext) {
+      if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (!found.text) (found.dom as BrowserElement).focus();
@@ -385,6 +402,7 @@ export function createBrowser(
       handler: unknown,
       context?: AssertionContext,
     ) {
+      if (isAssertScope(view) || isAssertScope(node)) return gone();
       const scope = read(views, view);
       const found = read(nodes, node);
       if (!live(scope) || !liveNode(found)) return gone();
@@ -401,6 +419,7 @@ export function createBrowser(
       return success(undefined);
     },
     async setTimeout(view: unknown, delay: unknown, handler: unknown, context?: AssertionContext) {
+      if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
       const wait = integer(delay);
@@ -440,6 +459,7 @@ export function createBrowserState(
     );
   return Object.freeze({
     async createState(view: unknown, value: unknown, _context?: AssertionContext) {
+      if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (scope.disposed || scope.app.disposed) return gone();
       const record: StateRecord = {
@@ -453,6 +473,7 @@ export function createBrowserState(
       return success(token(states, record));
     },
     async readState(state: unknown, _context?: AssertionContext) {
+      if (isAssertScope(state)) return gone();
       const found = read(states, state);
       if (found.disposed || found.view.disposed || found.view.app.disposed) return gone();
       return success(
@@ -468,6 +489,7 @@ export function createBrowserState(
       value: unknown,
       _context?: AssertionContext,
     ) {
+      if (isAssertScope(state)) return gone();
       const found = read(states, state);
       if (found.disposed || found.view.disposed || found.view.app.disposed) return gone();
       const want = integer(expected);

@@ -176,10 +176,26 @@ export function suppliedEvidence(context: AssertionContext): void {
 // One inert harness token per assertion root stands in for every elided
 // ingress scope argument. Readers deny live execution under assertion
 // context, so the token only ever meets when-row identity comparison.
+// The token carries a private brand so browser operations can fail it
+// closed as disposed instead of throwing a resource-state fault: Can
+// code cannot forge the brand or name a handle-typed value, so only
+// elided harness arguments ever match.
+const scopeBrand = Symbol("can.assert.scope");
+export function isAssertScope(value: unknown): boolean {
+  return (
+    value !== null &&
+    (typeof value === "object" || typeof value === "function") &&
+    (value as Record<symbol, unknown>)[scopeBrand] === true
+  );
+}
 export function scopeRequest(context: AssertionContext | undefined): unknown {
   if (context === undefined) throw new TypeError("harness scope requires an assertion context");
   const current = state(context);
-  if (current.scope === undefined) current.scope = Object.freeze(Object.create(null));
+  if (current.scope === undefined) {
+    const token: Record<symbol, unknown> = Object.create(null);
+    token[scopeBrand] = true;
+    current.scope = Object.freeze(token);
+  }
   return current.scope;
 }
 export function rawProviderEvidence(context: AssertionContext): void {

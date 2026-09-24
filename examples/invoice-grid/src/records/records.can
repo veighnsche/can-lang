@@ -1,0 +1,150 @@
+package records
+    provides [line_json_wire, invoice_json_wire, saved, rejected, stale, denied, busy, save_outcome, found_line, found, load_denied, load_busy, load_outcome, draft_line, draft, clean_state, unsaved_state, saving_state, failed_state, uncertain_state, denied_state, conflict_state, grid_status, grid_state]
+    uses []
+
+/// One JSON save line: keyed identity, sku text and a validated count.
+/// Mirrors the invoice server wire field for field so the canonical
+/// codec tags and shapes agree across the two projects.
+record line_json_wire
+    str key
+    str sku
+    int qty
+/// JSON save wire. The grid sends an empty session token: the browser
+/// carries authentication in the same-origin session cookie and the
+/// server route overwrites the field from that authoritative cookie.
+/// The operation id is app-owned: it stays stable while the draft is
+/// unchanged so an explicit replay reuses the identical id, and a new
+/// edit sequence mints a new id for the new intent.
+record invoice_json_wire
+    str session_token
+    str operation_id
+    str invoice_id
+    int revision
+    str customer
+    line_json_wire[] lines
+/// Stored save: the invoice id plus the committed new revision.
+record saved
+    str invoice_id
+    int revision
+/// Rejected save: one finite human-readable validation reason.
+record rejected
+    str reason
+/// Stale or conflicting save: the invoice id plus the current stored
+/// revision so the writer can reread and retry. Returned only to
+/// members, after membership is proven.
+record stale
+    str invoice_id
+    int revision
+/// Denied save: the requested id echoes back (the caller sent it, so
+/// it discloses nothing). Foreign, nonexistent and unauthenticated
+/// targets share this one nondisclosing shape.
+record denied
+    str invoice_id
+/// Unavailable store: the save may or may not have committed; the
+/// identical operation id replays safely.
+record busy
+    str invoice_id
+/// The five JSON save cases.
+variant save_outcome
+    saved
+    rejected
+    stale
+    denied
+    busy
+/// One loaded line in stored position order.
+record found_line
+    str key
+    str sku
+    int qty
+/// Loaded invoice: identity, current revision, customer and lines.
+record found
+    str invoice_id
+    int revision
+    str customer
+    found_line[] lines
+/// Denied load: same nondisclosing shape as a denied save.
+record load_denied
+    str invoice_id
+/// Unavailable store on a read: the GET retry is always safe.
+record load_busy
+    str invoice_id
+/// The three typed GET load cases.
+variant load_outcome
+    found
+    load_denied
+    load_busy
+/// One grid draft line. The raw quantity text stays beside the last
+/// parsed count so an unparsable edit keeps its text on screen while
+/// blocking the save with a bad-quantity notice; the JSON wire needs
+/// a typed int, so unparsable text can never be sent.
+record draft_line
+    str key
+    str sku
+    str qty_text
+    int qty
+    bool valid
+/// The editable draft. The base revision is the revision the draft
+/// was read from; the edit sequence counts local edits and lets the
+/// grid tell a same-content replay from a new intent.
+record draft
+    str invoice_id
+    int base_revision
+    str customer
+    draft_line[] lines
+    int edit_seq
+/// Draft matches the server base: the notice names the revision.
+record clean_state
+    str notice
+/// Local edits not yet saved.
+record unsaved_state
+    str notice
+/// A request is in flight; the draft stays editable underneath.
+record saving_state
+    str notice
+/// A finished failure that kept the draft: the notice carries the
+/// reason and the next step (edit, reread or retry).
+record failed_state
+    str notice
+/// The save may or may not have committed (busy store, lost
+/// response, undecodable answer). The draft is kept and the
+/// identical operation id stays available for explicit replay.
+record uncertain_state
+    str notice
+/// Access denied: foreign, nonexistent and unauthenticated targets
+/// share one notice that discloses nothing. The in-view draft stays.
+record denied_state
+    str notice
+/// The server moved under local edits. The held server copy waits
+/// for an explicit choice: adopt it or keep editing. Nothing is
+/// applied automatically, so newer edits are never clobbered.
+record conflict_state
+    str notice
+    found server
+/// The seven grid statuses. Every leaf carries its own status-line
+/// notice so rendering is a pure function of state.
+variant grid_status
+    clean_state
+    unsaved_state
+    saving_state
+    failed_state
+    uncertain_state
+    denied_state
+    conflict_state
+/// The whole grid cell value: pure data, no browser handles. The
+/// attempt counts every issued request; the flight names the
+/// outstanding one (0 none, 1 save, 2 load) so late or reordered
+/// outcomes are ignored instead of clobbering newer state. The
+/// focus intent names where the next render puts keyboard focus:
+/// "", "status", "save", "reread", "replay", "add", "adopt",
+/// "keep", "customer", "sku:<key>", "qty:<key>", "up:<key>",
+/// "down:<key>" or "del:<key>". The status notice feeds the one
+/// live region.
+record grid_state
+    draft current
+    int attempt
+    int flight
+    str operation_id
+    int save_base
+    int save_seq
+    grid_status status
+    str focus

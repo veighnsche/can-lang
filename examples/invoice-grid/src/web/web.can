@@ -1,0 +1,1034 @@
+package web
+    provides [save_invoice, load_invoice, boot, main]
+    uses [records, model, browser, http, codec, text, option]
+
+/// JSON save action: mirrors the invoice server contract exactly
+/// (method, path, wire, cases) so the grid fetch client freezes
+/// the same contract the server serves. The handler is a
+/// never-served anchor: the grid only consumes this action
+/// through its fetch client, and the server owns serving.
+action save_invoice
+    post "/invoices/save"
+    body json records::invoice_json_wire
+    handles save_stub
+    result records::save_outcome
+    cases
+        records::saved => 200
+        records::rejected => 422
+        records::stale => 409
+        records::denied => 403
+        records::busy => 503
+
+/// Bodyless GET load action over the canonical captured path.
+action load_invoice
+    get "/invoices/{invoice_id}"
+    captures
+        str invoice_id
+    handles load_stub
+    result records::load_outcome
+    cases
+        records::found => 200
+        records::load_denied => 403
+        records::load_busy => 503
+
+/// Never-served save anchor: without adapter authentication no
+/// actor reaches it, so it denies like the server contract stub.
+fn records::save_outcome save_stub
+    emits []
+    given
+        records::invoice_json_wire body
+    asserts
+        sample: records::invoice_json_wire("", "op-1", "inv-1", 1, "Acme", []) => ok records::denied("inv-1")
+    ok records::denied(body.invoice_id)
+
+/// Never-served load anchor.
+fn records::load_outcome load_stub
+    emits []
+    given
+        str invoice_id
+    asserts
+        sample: "inv-1" => ok records::load_denied("inv-1")
+    ok records::load_denied(invoice_id)
+
+/// Typed authorized GET load: the canonical captured path, the
+/// same-origin session cookie for authentication, and the three
+/// finite load cases. Transport, unexpected-status and codec
+/// failures propagate for the caller to map.
+fn records::load_outcome fetch_load
+    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    given
+        str invoice_id
+    asserts
+        found: "inv-1" => ok records::found("inv-1", 2, "Acme", [records::found_line("k1", "sku-1", 2)])
+        denied: "inv-9" => ok records::load_denied("inv-9")
+        busy: "inv-1" => ok records::load_busy("inv-1")
+        offline: "inv-9" => http::transport_failed("connect")
+    match call http::fetch_json_get<records::load_outcome>("load_invoice", invoice_id)
+        when
+            found: "load_invoice", "inv-1" => ok records::found("inv-1", 2, "Acme", [records::found_line("k1", "sku-1", 2)])
+            denied: "load_invoice", "inv-9" => ok records::load_denied("inv-9")
+            busy: "load_invoice", "inv-1" => ok records::load_busy("inv-1")
+        http::transport_failed
+        http::invalid_request
+        http::status_error
+        codec::invalid_data
+        ok records::load_outcome got => ok got
+
+/// Typed identified POST save: the app-owned operation id rides
+/// in the wire body, the same-origin session cookie carries
+/// authentication, and the five finite save cases come back.
+fn records::save_outcome fetch_save
+    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]
+    given
+        records::invoice_json_wire body
+    asserts
+        saved: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::saved("inv-1", 2)
+        rejected: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "", []) => ok records::rejected("empty customer")
+        stale: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::stale("inv-1", 4)
+        denied: records::invoice_json_wire("", "inv-9/r0/e0", "inv-9", 0, "Acme", []) => ok records::denied("inv-9")
+        busy: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::busy("inv-1")
+        offline: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => http::transport_failed("connect")
+    match call http::fetch_json_post<records::save_outcome, records::invoice_json_wire>("save_invoice", body)
+        when
+            saved: "save_invoice", records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::saved("inv-1", 2)
+            rejected: "save_invoice", records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "", []) => ok records::rejected("empty customer")
+            stale: "save_invoice", records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::stale("inv-1", 4)
+            denied: "save_invoice", records::invoice_json_wire("", "inv-9/r0/e0", "inv-9", 0, "Acme", []) => ok records::denied("inv-9")
+            busy: "save_invoice", records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::busy("inv-1")
+        http::transport_failed
+        http::invalid_request
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        ok records::save_outcome got => ok got
+
+/// Fold one save outcome into the cell: re-read fresh (edits
+/// may have landed while the request flew), apply the
+/// version-checked transition, and compare-and-swap it in.
+/// Returns none when the view is gone or the swap loses.
+fn option::value<records::grid_state> finish_save
+    emits []
+    given
+        browser::state<records::grid_state> cell
+        int attempt
+        records::save_outcome outcome
+    asserts
+        saved: 2, records::saved("inv-1", 2) => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), ""))
+        rejected: 2, records::rejected("empty customer") => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status"))
+        stale: 2, records::stale("inv-1", 4) => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("changed on server at revision 4; reread to compare"), "status"))
+        denied: 2, records::denied("inv-1") => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::denied_state("access denied; draft kept"), "status"))
+        busy: 2, records::busy("inv-1") => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status"))
+        replace_stale: 2, records::saved("inv-1", 2) => ok option::none()
+        gone: 9, records::saved("inv-1", 9) => ok option::none()
+    match call browser::read_state(cell)
+        when
+            saved: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            rejected: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            stale: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            denied: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            busy: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::save_outcome_applied(snap.value, attempt, outcome)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                when
+                    saved: cell, 3, records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "") => ok 4
+                    rejected: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status") => ok 4
+                    stale: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("changed on server at revision 4; reread to compare"), "status") => ok 4
+                    denied: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::denied_state("access denied; draft kept"), "status") => ok 4
+                    busy: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok 4
+                    replace_stale: cell, 3, records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "") => browser::stale_version(3, 4)
+                browser::disposed => ok option::none()
+                browser::stale_version => ok option::none()
+                ok int version => ok option::some<records::grid_state>(next)
+
+/// Fold one save transport failure into the cell: lost, surprising
+/// and undecodable answers turn uncertain with the replay id
+/// intact, while requests that never left fail plainly.
+fn option::value<records::grid_state> finish_save_fail
+    emits []
+    given
+        browser::state<records::grid_state> cell
+        int attempt
+        str kind
+    asserts
+        transport: 2, "transport" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("connection lost; save may have committed"), "status"))
+        status: 2, "status" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unexpected response; save may have committed"), "status"))
+        codec: 2, "codec" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unreadable response; save may have committed"), "status"))
+        limit: 2, "limit" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("save too large; remove lines and retry"), "status"))
+        request: 2, "request" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("request invalid; reread and retry"), "status"))
+        replace_stale: 2, "transport" => ok option::none()
+        gone: 9, "transport" => ok option::none()
+    match call browser::read_state(cell)
+        when
+            transport: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            status: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            codec: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            limit: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            request: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::save_failed(snap.value, attempt, kind)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                when
+                    transport: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("connection lost; save may have committed"), "status") => ok 4
+                    status: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unexpected response; save may have committed"), "status") => ok 4
+                    codec: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unreadable response; save may have committed"), "status") => ok 4
+                    limit: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("save too large; remove lines and retry"), "status") => ok 4
+                    request: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("request invalid; reread and retry"), "status") => ok 4
+                    replace_stale: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("connection lost; save may have committed"), "status") => browser::stale_version(3, 4)
+                browser::disposed => ok option::none()
+                browser::stale_version => ok option::none()
+                ok int version => ok option::some<records::grid_state>(next)
+
+/// Fold one load outcome into the cell: a clean draft adopts the
+/// server copy, anything else holds it for an explicit choice.
+fn option::value<records::grid_state> finish_load
+    emits []
+    given
+        browser::state<records::grid_state> cell
+        int attempt
+        records::load_outcome outcome
+    asserts
+        found: 1, records::found("inv-1", 2, "Acme", []) => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), ""))
+        denied: 1, records::load_denied("inv-1") => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::denied_state("access denied; draft kept"), "status"))
+        busy: 1, records::load_busy("inv-1") => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("server busy; retry reread"), "status"))
+        replace_stale: 1, records::found("inv-1", 2, "Acme", []) => ok option::none()
+        gone: 9, records::found("inv-1", 9, "Acme", []) => ok option::none()
+    match call browser::read_state(cell)
+        when
+            found: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            denied: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            busy: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::load_outcome_applied(snap.value, attempt, outcome)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                when
+                    found: cell, 1, records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), "") => ok 2
+                    denied: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::denied_state("access denied; draft kept"), "status") => ok 2
+                    busy: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("server busy; retry reread"), "status") => ok 2
+                    replace_stale: cell, 1, records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), "") => browser::stale_version(1, 2)
+                browser::disposed => ok option::none()
+                browser::stale_version => ok option::none()
+                ok int version => ok option::some<records::grid_state>(next)
+
+/// Fold one load transport failure into the cell: reads never
+/// commit, so every load failure stays a plain retryable failure.
+fn option::value<records::grid_state> finish_load_fail
+    emits []
+    given
+        browser::state<records::grid_state> cell
+        int attempt
+        str kind
+    asserts
+        transport: 1, "transport" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("connection lost; retry reread"), "status"))
+        status: 1, "status" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unexpected response; retry reread"), "status"))
+        codec: 1, "codec" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unreadable response; retry reread"), "status"))
+        replace_stale: 1, "transport" => ok option::none()
+        gone: 9, "transport" => ok option::none()
+    match call browser::read_state(cell)
+        when
+            transport: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            status: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            codec: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading invoice..."), ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::load_failed(snap.value, attempt, kind)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                when
+                    transport: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("connection lost; retry reread"), "status") => ok 2
+                    status: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unexpected response; retry reread"), "status") => ok 2
+                    codec: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unreadable response; retry reread"), "status") => ok 2
+                    replace_stale: cell, 1, records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("connection lost; retry reread"), "status") => browser::stale_version(1, 2)
+                browser::disposed => ok option::none()
+                browser::stale_version => ok option::none()
+                ok int version => ok option::some<records::grid_state>(next)
+
+/// Run one save press: guard, mark the flight, send the
+/// identified wire body, and fold the answer back into the cell.
+/// A blocked press shows its notice on the status line and leaves
+/// the state untouched. Returns none when the view is gone or a
+/// swap loses; callers render on some.
+fn option::value<records::grid_state> send_save
+    emits []
+    given
+        browser::state<records::grid_state> cell
+        browser::node status_line
+    asserts
+        blocked:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status"))
+        sent_saved:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 1), 2, 0, "inv-1/r1/e1", 1, 1, records::clean_state("saved revision 2"), ""))
+        sent_transport:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "inv-1/r1/e1", 1, 1, records::uncertain_state("connection lost; save may have committed"), "status"))
+        read_gone:  => ok option::none()
+        replace_stale:  => ok option::none()
+    match call browser::read_state(cell)
+        when
+            blocked: cell => ok browser::snapshot<records::grid_state>(5, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status"))
+            sent_saved: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 1, 0, "", 1, 0, records::unsaved_state("unsaved changes"), ""))
+            sent_transport: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 1, 0, "", 1, 0, records::unsaved_state("unsaved changes"), ""))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 1, 0, "", 1, 0, records::unsaved_state("unsaved changes"), ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::save_notice(snap.value)
+            ok str guard => match guard is ""
+                false => match call browser::set_text(status_line, guard)
+                    when
+                        blocked: status_line, "resolve the held server copy first" => ok
+                    browser::disposed => ok option::some<records::grid_state>(snap.value)
+                    ok => match call browser::focus(status_line)
+                        when
+                            blocked: status_line => ok
+                        browser::disposed => ok option::some<records::grid_state>(snap.value)
+                        ok => ok option::some<records::grid_state>(snap.value)
+                true => match call model::operation_id(snap.value.current.invoice_id, snap.value.current.base_revision, snap.value.current.edit_seq)
+                    ok str op => match call model::save_marked(snap.value, snap.value.attempt + 1, op)
+                        ok records::grid_state marked => match call browser::replace_state(cell, snap.version, marked)
+                            when
+                                sent_saved: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save") => ok 4
+                                sent_transport: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save") => ok 4
+                                replace_stale: cell, 3, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save") => browser::stale_version(3, 4)
+                            browser::disposed => ok option::none()
+                            browser::stale_version => ok option::none()
+                            ok int version => match call model::to_wire(marked.current, op)
+                                ok records::invoice_json_wire wire => match call fetch_save(wire)
+                                    when
+                                        sent_saved: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => ok records::saved("inv-1", 2)
+                                        sent_transport: records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", []) => http::transport_failed("connect")
+                                    http::transport_failed => match call finish_save_fail(cell, marked.attempt, "transport")
+                                        when
+                                            sent_transport: cell, 2, "transport" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "inv-1/r1/e1", 1, 1, records::uncertain_state("connection lost; save may have committed"), "status"))
+                                        ok option::value<records::grid_state> done => ok done
+                                    http::invalid_request => match call finish_save_fail(cell, marked.attempt, "request")
+                                        ok option::value<records::grid_state> done => ok done
+                                    http::body_limit => match call finish_save_fail(cell, marked.attempt, "limit")
+                                        ok option::value<records::grid_state> done => ok done
+                                    http::status_error => match call finish_save_fail(cell, marked.attempt, "status")
+                                        ok option::value<records::grid_state> done => ok done
+                                    codec::invalid_data => match call finish_save_fail(cell, marked.attempt, "codec")
+                                        ok option::value<records::grid_state> done => ok done
+                                    ok records::save_outcome outcome => match call finish_save(cell, marked.attempt, outcome)
+                                        when
+                                            sent_saved: cell, 2, records::saved("inv-1", 2) => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 1), 2, 0, "inv-1/r1/e1", 1, 1, records::clean_state("saved revision 2"), ""))
+                                        ok option::value<records::grid_state> done => ok done
+
+/// Run one reread press: mark the load flight, fetch the typed
+/// authorized GET, and fold the answer back into the cell. A
+/// press while anything flies is ignored.
+fn option::value<records::grid_state> load_pressed
+    emits []
+    given
+        browser::state<records::grid_state> cell
+    asserts
+        loaded:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), ""))
+        load_transport:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 0, "", 1, 0, records::failed_state("connection lost; retry reread"), "status"))
+        flying:  => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save"))
+        read_gone:  => ok option::none()
+        replace_stale:  => ok option::none()
+    match call browser::read_state(cell)
+        when
+            loaded: cell => ok browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), ""))
+            load_transport: cell => ok browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), ""))
+            flying: cell => ok browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save"))
+            replace_stale: cell => ok browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::grid_state> snap => match call model::load_marked(snap.value, snap.value.attempt + 1)
+            ok records::grid_state marked => match marked.flight is 2
+                false => ok option::some<records::grid_state>(snap.value)
+                true => match call browser::replace_state(cell, snap.version, marked)
+                    when
+                        loaded: cell, 4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 2, "", 1, 0, records::clean_state("loaded revision 1"), "") => ok 5
+                        load_transport: cell, 4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 2, "", 1, 0, records::clean_state("loaded revision 1"), "") => ok 5
+                        replace_stale: cell, 4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 2, "", 1, 0, records::clean_state("loaded revision 1"), "") => browser::stale_version(4, 5)
+                    browser::disposed => ok option::none()
+                    browser::stale_version => ok option::none()
+                    ok int version => match call fetch_load(marked.current.invoice_id)
+                        when
+                            loaded: "inv-1" => ok records::found("inv-1", 2, "Acme", [])
+                            load_transport: "inv-1" => http::transport_failed("connect")
+                        http::transport_failed => match call finish_load_fail(cell, marked.attempt, "transport")
+                            when
+                                load_transport: cell, 2, "transport" => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 0, "", 1, 0, records::failed_state("connection lost; retry reread"), "status"))
+                            ok option::value<records::grid_state> done => ok done
+                        http::invalid_request => match call finish_load_fail(cell, marked.attempt, "request")
+                            ok option::value<records::grid_state> done => ok done
+                        http::status_error => match call finish_load_fail(cell, marked.attempt, "status")
+                            ok option::value<records::grid_state> done => ok done
+                        codec::invalid_data => match call finish_load_fail(cell, marked.attempt, "codec")
+                            ok option::value<records::grid_state> done => ok done
+                        ok records::load_outcome outcome => match call finish_load(cell, marked.attempt, outcome)
+                            when
+                                loaded: cell, 2, records::found("inv-1", 2, "Acme", []) => ok option::some<records::grid_state>(records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), ""))
+                            ok option::value<records::grid_state> done => ok done
+
+/// Focus one node when the focus intent names it, else do
+/// nothing. Renders call this at every focusable site with the
+/// fresh handles, so keyboard focus survives view swaps.
+fn void maybe_focus
+    emits []
+    given
+        browser::node node
+        str focus
+        str want
+    asserts
+        hit: "save", "save" => ok
+        miss: "", "save" => ok
+    match focus is want
+        false => ok
+        true => match call browser::focus(node)
+            when
+                hit: node => ok
+            browser::disposed => ok
+            ok => ok
+
+/// Disable one button unless the grid is idle. The press guard
+/// stays authoritative; this is progressive enhancement.
+fn void set_disabled
+    emits []
+    given
+        browser::node node
+        bool idle
+    asserts
+        hit: false => ok
+        miss: true => ok
+    match idle
+        false => match call browser::set_attribute(node, "disabled", "disabled")
+            when
+                hit: node, "disabled", "disabled" => ok
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => ok
+        true => ok
+
+/// Disable the replay button unless an explicit identical-id
+/// replay is actually available.
+fn void set_replay_disabled
+    emits []
+    given
+        browser::node node
+        records::grid_state state
+    asserts
+        ready: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok
+        blocked: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "") => ok
+    match call model::replay_ready(state)
+        ok bool ready => match ready
+            false => match call browser::set_attribute(node, "disabled", "disabled")
+                when
+                    blocked: node, "disabled", "disabled" => ok
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => ok
+            true => ok
+
+/// Build the adopt-or-keep buttons for a held server copy. Any
+/// other status builds nothing: the choice only exists while a
+/// conflict holds a server copy aside.
+fn void build_conflict_buttons
+    emits []
+    given
+        browser::view view
+        browser::node parent
+        browser::state<records::grid_state> cell
+        browser::app app
+        records::grid_status status
+    asserts
+        conflict: records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])) => ok
+        clean: records::clean_state("saved revision 2") => ok
+    match status
+        records::conflict_state => match chain
+            call browser::create_element(view, "button") as browser::node adopt
+            call browser::create_text(view, "Use server copy") as browser::node adopt_label
+            call browser::append_child(adopt, adopt_label)
+            call browser::set_attribute(adopt, "id", "adopt")
+            call browser::set_attribute(adopt, "type", "button")
+            call browser::append_child(parent, adopt)
+            call browser::on_event(view, adopt, "click", callable on_adopt_click)
+            call browser::create_element(view, "button") as browser::node keep
+            call browser::create_text(view, "Keep mine") as browser::node keep_label
+            call browser::append_child(keep, keep_label)
+            call browser::set_attribute(keep, "id", "keep")
+            call browser::set_attribute(keep, "type", "button")
+            call browser::append_child(parent, keep)
+            call browser::on_event(view, keep, "click", callable on_dismiss_click)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => ok
+        records::clean_state => ok
+        records::unsaved_state => ok
+        records::saving_state => ok
+        records::failed_state => ok
+        records::uncertain_state => ok
+        records::denied_state => ok
+
+/// Build the keyed row list front to back into the table body.
+/// Each row carries its key in its control ids and in the near
+/// captures of its listeners, so edits, reorder and removal
+/// always land on the intended line.
+fn void build_rows
+    emits []
+    given
+        browser::view view
+        browser::node tbody
+        browser::state<records::grid_state> cell
+        browser::app app
+        browser::node status_line
+        browser::node totals_line
+        records::draft_line[] lines
+        int index
+        str focus
+    asserts
+        empty: [], 0, "" => ok
+        one: [records::draft_line("k1", "sku-1", "2", 2, true)], 0, "" => ok
+    match index >= lines.length
+        false => match call model::line_key(lines, index)
+            ok str row => match call model::line_at(lines, index)
+                ok records::draft_line line => match chain
+                    call browser::create_element(view, "tr") as browser::node tr
+                    call browser::create_element(view, "th") as browser::node key_cell
+                    call browser::set_attribute(key_cell, "scope", "row")
+                    call browser::create_text(view, row) as browser::node key_text
+                    call browser::append_child(key_cell, key_text)
+                    call browser::append_child(tr, key_cell)
+                    call browser::create_element(view, "td") as browser::node sku_wrap
+                    call browser::create_element(view, "input") as browser::node sku_in
+                    call browser::set_attribute(sku_in, "id", "sku:" + row)
+                    call browser::set_attribute(sku_in, "type", "text")
+                    call browser::set_attribute(sku_in, "value", line.sku)
+                    call browser::set_attribute(sku_in, "aria-label", "sku " + row)
+                    call browser::append_child(sku_wrap, sku_in)
+                    call browser::append_child(tr, sku_wrap)
+                    call browser::on_event(view, sku_in, "input", callable on_sku_input)
+                    call browser::on_event(view, sku_in, "keydown", callable on_field_key)
+                    call browser::create_element(view, "td") as browser::node qty_wrap
+                    call browser::create_element(view, "input") as browser::node qty_in
+                    call browser::set_attribute(qty_in, "id", "qty:" + row)
+                    call browser::set_attribute(qty_in, "type", "text")
+                    call browser::set_attribute(qty_in, "value", line.qty_text)
+                    call browser::set_attribute(qty_in, "aria-label", "quantity " + row)
+                    call browser::append_child(qty_wrap, qty_in)
+                    call browser::append_child(tr, qty_wrap)
+                    call browser::on_event(view, qty_in, "input", callable on_qty_input)
+                    call browser::on_event(view, qty_in, "keydown", callable on_field_key)
+                    call browser::create_element(view, "td") as browser::node units_wrap
+                    call browser::create_text(view, call text::from_int(line.qty)) as browser::node units_text
+                    call browser::append_child(units_wrap, units_text)
+                    call browser::append_child(tr, units_wrap)
+                    call browser::create_element(view, "td") as browser::node actions_wrap
+                    call browser::create_element(view, "button") as browser::node up_btn
+                    call browser::create_text(view, "Up") as browser::node up_label
+                    call browser::append_child(up_btn, up_label)
+                    call browser::set_attribute(up_btn, "id", "up:" + row)
+                    call browser::set_attribute(up_btn, "type", "button")
+                    call browser::set_attribute(up_btn, "aria-label", "move line " + row + " up")
+                    call browser::append_child(actions_wrap, up_btn)
+                    call browser::on_event(view, up_btn, "click", callable on_move_up)
+                    call browser::create_element(view, "button") as browser::node down_btn
+                    call browser::create_text(view, "Down") as browser::node down_label
+                    call browser::append_child(down_btn, down_label)
+                    call browser::set_attribute(down_btn, "id", "down:" + row)
+                    call browser::set_attribute(down_btn, "type", "button")
+                    call browser::set_attribute(down_btn, "aria-label", "move line " + row + " down")
+                    call browser::append_child(actions_wrap, down_btn)
+                    call browser::on_event(view, down_btn, "click", callable on_move_down)
+                    call browser::create_element(view, "button") as browser::node del_btn
+                    call browser::create_text(view, "Remove") as browser::node del_label
+                    call browser::append_child(del_btn, del_label)
+                    call browser::set_attribute(del_btn, "id", "del:" + row)
+                    call browser::set_attribute(del_btn, "type", "button")
+                    call browser::set_attribute(del_btn, "aria-label", "remove line " + row)
+                    call browser::append_child(actions_wrap, del_btn)
+                    call browser::on_event(view, del_btn, "click", callable on_remove_line)
+                    call browser::append_child(tr, actions_wrap)
+                    call browser::append_child(tbody, tr)
+                    call maybe_focus(sku_in, focus, "sku:" + row)
+                    call maybe_focus(qty_in, focus, "qty:" + row)
+                    call maybe_focus(up_btn, focus, "up:" + row)
+                    call maybe_focus(down_btn, focus, "down:" + row)
+                    call maybe_focus(del_btn, focus, "del:" + row)
+                    browser::disposed => ok
+                    browser::rejected => ok
+                    ok => match call build_rows(view, tbody, cell, app, status_line, totals_line, lines, index + 1, focus)
+                        ok => ok
+        true => ok
+
+/// Build one render view from a snapshot: title, live status
+/// line, customer field, keyed row table, exact totals and the
+/// press buttons. Every listener captures the handles it needs
+/// from this scope; nothing is queried back afterwards.
+fn void build_view
+    emits []
+    given
+        browser::app app
+        browser::state<records::grid_state> cell
+        browser::snapshot<records::grid_state> snap
+    asserts
+        sample: browser::snapshot<records::grid_state>(1, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), "")) => ok
+    match chain
+        call browser::root(app) as browser::node anchor
+        call browser::open_view(app) as browser::view view
+        call model::status_notice(snap.value.status) as str notice
+        call model::totals_text(snap.value.current) as str totals
+        call browser::create_element(view, "div") as browser::node grid
+        call browser::set_attribute(grid, "id", "grid")
+        call browser::create_element(view, "h1") as browser::node title
+        call browser::create_text(view, "Invoice " + snap.value.current.invoice_id + " revision " + call text::from_int(snap.value.current.base_revision)) as browser::node title_text
+        call browser::append_child(title, title_text)
+        call browser::append_child(grid, title)
+        call browser::create_element(view, "p") as browser::node status_line
+        call browser::set_attribute(status_line, "id", "status")
+        call browser::set_attribute(status_line, "role", "status")
+        call browser::set_attribute(status_line, "aria-live", "polite")
+        call browser::create_text(view, notice) as browser::node status_text
+        call browser::append_child(status_line, status_text)
+        call browser::append_child(grid, status_line)
+        call browser::create_element(view, "div") as browser::node customer_wrap
+        call browser::create_element(view, "label") as browser::node customer_label
+        call browser::set_attribute(customer_label, "for", "customer")
+        call browser::create_text(view, "Customer") as browser::node customer_label_text
+        call browser::append_child(customer_label, customer_label_text)
+        call browser::append_child(customer_wrap, customer_label)
+        call browser::create_element(view, "input") as browser::node customer_in
+        call browser::set_attribute(customer_in, "id", "customer")
+        call browser::set_attribute(customer_in, "type", "text")
+        call browser::set_attribute(customer_in, "value", snap.value.current.customer)
+        call browser::append_child(customer_wrap, customer_in)
+        call browser::append_child(grid, customer_wrap)
+        call browser::on_event(view, customer_in, "input", callable on_customer_input)
+        call browser::on_event(view, customer_in, "keydown", callable on_field_key)
+        call browser::create_element(view, "table") as browser::node table
+        call browser::create_element(view, "thead") as browser::node head
+        call browser::create_element(view, "tr") as browser::node head_row
+        call browser::create_element(view, "th") as browser::node head_line
+        call browser::set_attribute(head_line, "scope", "col")
+        call browser::create_text(view, "Line") as browser::node head_line_text
+        call browser::append_child(head_line, head_line_text)
+        call browser::append_child(head_row, head_line)
+        call browser::create_element(view, "th") as browser::node head_sku
+        call browser::set_attribute(head_sku, "scope", "col")
+        call browser::create_text(view, "SKU") as browser::node head_sku_text
+        call browser::append_child(head_sku, head_sku_text)
+        call browser::append_child(head_row, head_sku)
+        call browser::create_element(view, "th") as browser::node head_qty
+        call browser::set_attribute(head_qty, "scope", "col")
+        call browser::create_text(view, "Quantity") as browser::node head_qty_text
+        call browser::append_child(head_qty, head_qty_text)
+        call browser::append_child(head_row, head_qty)
+        call browser::create_element(view, "th") as browser::node head_units
+        call browser::set_attribute(head_units, "scope", "col")
+        call browser::create_text(view, "Units") as browser::node head_units_text
+        call browser::append_child(head_units, head_units_text)
+        call browser::append_child(head_row, head_units)
+        call browser::create_element(view, "th") as browser::node head_actions
+        call browser::set_attribute(head_actions, "scope", "col")
+        call browser::create_text(view, "Actions") as browser::node head_actions_text
+        call browser::append_child(head_actions, head_actions_text)
+        call browser::append_child(head_row, head_actions)
+        call browser::append_child(head, head_row)
+        call browser::append_child(table, head)
+        call browser::create_element(view, "tbody") as browser::node rows
+        call browser::append_child(table, rows)
+        call browser::append_child(grid, table)
+        call browser::create_element(view, "p") as browser::node totals_line
+        call browser::set_attribute(totals_line, "id", "totals")
+        call browser::create_text(view, totals) as browser::node totals_text
+        call browser::append_child(totals_line, totals_text)
+        call browser::append_child(grid, totals_line)
+        call browser::create_element(view, "div") as browser::node actions
+        call browser::create_element(view, "button") as browser::node save_btn
+        call browser::create_text(view, "Save") as browser::node save_label
+        call browser::append_child(save_btn, save_label)
+        call browser::set_attribute(save_btn, "id", "save")
+        call browser::set_attribute(save_btn, "type", "button")
+        call set_disabled(save_btn, snap.value.flight is 0)
+        call browser::append_child(actions, save_btn)
+        call browser::on_event(view, save_btn, "click", callable on_save_click)
+        call browser::create_element(view, "button") as browser::node reread_btn
+        call browser::create_text(view, "Reread") as browser::node reread_label
+        call browser::append_child(reread_btn, reread_label)
+        call browser::set_attribute(reread_btn, "id", "reread")
+        call browser::set_attribute(reread_btn, "type", "button")
+        call set_disabled(reread_btn, snap.value.flight is 0)
+        call browser::append_child(actions, reread_btn)
+        call browser::on_event(view, reread_btn, "click", callable on_reread_click)
+        call browser::create_element(view, "button") as browser::node replay_btn
+        call browser::create_text(view, "Replay save") as browser::node replay_label
+        call browser::append_child(replay_btn, replay_label)
+        call browser::set_attribute(replay_btn, "id", "replay")
+        call browser::set_attribute(replay_btn, "type", "button")
+        call set_replay_disabled(replay_btn, snap.value)
+        call browser::append_child(actions, replay_btn)
+        call browser::on_event(view, replay_btn, "click", callable on_replay_click)
+        call browser::create_element(view, "button") as browser::node add_btn
+        call browser::create_text(view, "Add line") as browser::node add_label
+        call browser::append_child(add_btn, add_label)
+        call browser::set_attribute(add_btn, "id", "add")
+        call browser::set_attribute(add_btn, "type", "button")
+        call browser::append_child(actions, add_btn)
+        call browser::on_event(view, add_btn, "click", callable on_add_line)
+        call build_conflict_buttons(view, actions, cell, app, snap.value.status)
+        call browser::append_child(grid, actions)
+        call build_rows(view, rows, cell, app, status_line, totals_line, snap.value.current.lines, 0, snap.value.focus)
+        call browser::append_child(anchor, grid)
+        call maybe_focus(status_line, snap.value.focus, "status")
+        call maybe_focus(save_btn, snap.value.focus, "save")
+        call maybe_focus(reread_btn, snap.value.focus, "reread")
+        call maybe_focus(replay_btn, snap.value.focus, "replay")
+        call maybe_focus(add_btn, snap.value.focus, "add")
+        call maybe_focus(customer_in, snap.value.focus, "customer")
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Re-render through a view swap: dispose the previous render
+/// view first (so duplicate ids never coexist and dead listeners
+/// abort), then build fresh from the latest snapshot. The state
+/// cell lives in its own long-lived view and survives.
+fn void render_replace
+    emits []
+    given
+        browser::app app
+        browser::state<records::grid_state> cell
+        browser::view view
+    asserts
+        rendered:  => ok
+        gone:  => ok
+    match call browser::dispose_view(view)
+        ok => match call browser::read_state(cell)
+            when
+                rendered: cell => ok browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), ""))
+            browser::disposed => ok
+            ok browser::snapshot<records::grid_state> snap => match call build_view(app, cell, snap)
+                when
+                    rendered: app, cell, browser::snapshot<records::grid_state>(4, records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 0, "", 1, 0, records::clean_state("loaded revision 1"), "")) => ok
+                ok => ok
+
+/// Render the first view from the latest snapshot.
+fn void render_fresh
+    emits []
+    given
+        browser::app app
+        browser::state<records::grid_state> cell
+    asserts
+        rendered:  => ok
+        gone:  => ok
+    match call browser::read_state(cell)
+        when
+            rendered: cell => ok browser::snapshot<records::grid_state>(2, records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 2, 0, records::clean_state("loaded revision 2"), ""))
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call build_view(app, cell, snap)
+            when
+                rendered: app, cell, browser::snapshot<records::grid_state>(2, records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 2, 0, records::clean_state("loaded revision 2"), "")) => ok
+            ok => ok
+
+/// Customer edit: fold the typed value into the draft and
+/// refresh the status line in place, without re-rendering, so
+/// the caret never jumps while typing.
+fn void on_customer_input
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::node status_line
+    asserts
+        sample: browser::event("input", "customer", "Globex", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::customer_edited(snap.value, e.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call model::status_notice(next.status)
+                    ok str notice => match call browser::set_text(status_line, notice)
+                        browser::disposed => ok
+                        ok => ok
+
+/// Sku edit on one keyed row: same in-place shape as the
+/// customer edit.
+fn void on_sku_input
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near str row
+        near browser::node status_line
+    asserts
+        sample: browser::event("input", "sku:k1", "b", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::sku_edited(snap.value, row, e.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call model::status_notice(next.status)
+                    ok str notice => match call browser::set_text(status_line, notice)
+                        browser::disposed => ok
+                        ok => ok
+
+/// Quantity-text edit on one keyed row: folds the text (valid
+/// or not) and refreshes the status line and the exact totals
+/// in place.
+fn void on_qty_input
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near str row
+        near browser::node status_line
+        near browser::node totals_line
+    asserts
+        sample: browser::event("input", "qty:k1", "4", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::qty_edited(snap.value, row, e.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call model::status_notice(next.status)
+                    ok str notice => match call browser::set_text(status_line, notice)
+                        browser::disposed => ok
+                        ok => match call model::totals_text(next.current)
+                            ok str totals => match call browser::set_text(totals_line, totals)
+                                browser::disposed => ok
+                                ok => ok
+
+/// Field key handling: Enter runs the same guarded save press
+/// as the save button, then re-renders. Other keys do nothing:
+/// tab order follows the document, and arrow navigation stays
+/// out because sibling handles cannot cross row scopes.
+fn void on_field_key
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+        near browser::node status_line
+    asserts
+        enter: browser::event("keydown", "qty:k1", "4", "Enter") => ok
+        other: browser::event("keydown", "qty:k1", "4", "Tab") => ok
+    match e.key is "Enter"
+        false => ok
+        true => match call send_save(cell, status_line)
+            ok option::value<records::grid_state> done => match done
+                option::some => match call render_replace(app, cell, view)
+                    ok => ok
+                option::none => ok
+
+/// Move one keyed row up, then re-render with focus kept on the
+/// moved button.
+fn void on_move_up
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near str row
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "up:k2", "", ""), "k2" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::line_moved(snap.value, row, 0)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Move one keyed row down, then re-render.
+fn void on_move_down
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near str row
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "down:k1", "", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::line_moved(snap.value, row, 1)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Remove one keyed row, then re-render with focus on the
+/// add-line button.
+fn void on_remove_line
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near str row
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "del:k1", "", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::line_removed(snap.value, row)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Append one blank line, then re-render with focus on its sku
+/// field.
+fn void on_add_line
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "add", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::line_added(snap.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Save press: run the guarded identified save, then re-render
+/// on every state the press returns.
+fn void on_save_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::node status_line
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "save", "", "") => ok
+    match call send_save(cell, status_line)
+        ok option::value<records::grid_state> done => match done
+            option::some => match call render_replace(app, cell, view)
+                ok => ok
+            option::none => ok
+
+/// Reread press: run the typed authorized GET, then re-render.
+/// Changed rows hold for an explicit choice instead of
+/// clobbering newer edits.
+fn void on_reread_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "reread", "", "") => ok
+    match call load_pressed(cell)
+        ok option::value<records::grid_state> done => match done
+            option::some => match call render_replace(app, cell, view)
+                ok => ok
+            option::none => ok
+
+/// Explicit identical-id replay: only available while the last
+/// save is uncertain with unchanged content, in which case the
+/// guard recomputes the identical operation id and the press
+/// replays it.
+fn void on_replay_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+        near browser::node status_line
+    asserts
+        sample: browser::event("click", "replay", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::replay_ready(snap.value)
+            ok bool ready => match ready
+                false => ok
+                true => match call send_save(cell, status_line)
+                    ok option::value<records::grid_state> done => match done
+                        option::some => match call render_replace(app, cell, view)
+                            ok => ok
+                        option::none => ok
+
+/// Adopt the held server copy as the clean draft (authorized
+/// reconciliation), then re-render.
+fn void on_adopt_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "adopt", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::adopted_server(snap.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Dismiss the held server copy and keep editing, then
+/// re-render.
+fn void on_dismiss_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::grid_state> cell
+        near browser::app app
+        near browser::view view
+    asserts
+        sample: browser::event("click", "keep", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::grid_state> snap => match call model::dismissed_held(snap.value)
+            ok records::grid_state next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, cell, view)
+                    ok => ok
+
+/// Boot one grid: mount the host root, open the state view, mint
+/// the boot cell, load the authorized invoice, then render. The
+/// load runs before the first render so boot never needs a
+/// render view handle it cannot hold. The draft lives in the
+/// view cell only: reloads restart from the server, and the grid
+/// promises no queue — one flight at a time, explicit presses.
+fn void boot
+    emits []
+    given
+        str invoice_id
+    asserts
+        sample: "inv-1" => ok
+    match call browser::mount("invoice-grid")
+        browser::missing_root => ok
+        ok browser::app app => match call browser::open_view(app)
+            browser::disposed => match call browser::dispose_app(app)
+                ok => ok
+            ok browser::view state_view => match call browser::create_state<records::grid_state>(state_view, call model::boot_state(invoice_id))
+                browser::disposed => match call browser::dispose_app(app)
+                    ok => ok
+                ok browser::state<records::grid_state> cell => match call load_pressed(cell)
+                    ok option::value<records::grid_state> done => match call render_fresh(app, cell)
+                        ok => ok
+
+/// Grid entry: the host page calls the browser main with the
+/// invoice id as its first argument.
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        invoice: ["inv-1"] => ok
+    match args.length is 0
+        false => match call boot(args[0])
+            ok => ok
+        true => ok

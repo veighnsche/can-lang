@@ -56,12 +56,29 @@ func routeOperation(identity string) bool {
 // isScopeRequest reports whether the type is an ingress-only harness scope
 // value. The set is intentionally explicit: I32 admits http::request and
 // I38 admits the transaction handle; later ingress types extend this
-// predicate with their own admission task.
+// predicate with their own admission task. T24 admits the four browser
+// opaque handles (app, view, node and state): no Can expression can name
+// such a value, so without elision no function taking one could satisfy
+// mandatory assertions and no event handler could reach its view or cell.
 func isScopeRequest(typ *types.Type) bool {
 	if typ != nil && typ.Kind() == types.Opaque && typ.Declaration() == "can.std.http@1::request" {
 		return true
 	}
-	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ) || isCryptoKeyScopeRequest(typ) || isWebSocketScopeRequest(typ)
+	return isTransactionScopeRequest(typ) || isPoolScopeRequest(typ) || isStreamScopeRequest(typ) || isCryptoKeyScopeRequest(typ) || isWebSocketScopeRequest(typ) || isBrowserScopeRequest(typ)
+}
+
+// isBrowserScopeRequest admits the T22 browser handles to assertion
+// elision. Declaration (not identity) comparison keeps generic
+// browser::state<T> covered for every concrete data type.
+func isBrowserScopeRequest(typ *types.Type) bool {
+	if typ == nil || typ.Kind() != types.Opaque {
+		return false
+	}
+	switch typ.Declaration() {
+	case "can.std.browser@1::app", "can.std.browser@1::view", "can.std.browser@1::node", "can.std.browser@1::state":
+		return true
+	}
+	return false
 }
 
 // expandScopeArguments binds provided assertion-row arguments to non-scope
