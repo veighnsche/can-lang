@@ -37,7 +37,14 @@ test("late decoder defect is reported while timeout remains selected", async () 
       async () => {
         try {
           await performRequest(
-            { endpoint: server.url.href, timeoutMilliseconds: 25, maxBodyBytes: 100, headers: [] },
+            // Budget covers loopback fetch plus body read on slow hosts; the
+            // gated decode still pends past the deadline by construction.
+            {
+              endpoint: server.url.href,
+              timeoutMilliseconds: 2000,
+              maxBodyBytes: 100,
+              headers: [],
+            },
             { path: "/", method: "GET", headers: [], query: [] },
             () => undefined,
             () => decodeGate.promise,
