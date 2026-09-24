@@ -23,22 +23,14 @@ const formWireDomain = "record line_wire\n" +
 	"    saved\n" +
 	"    rejected\n"
 
-const formSaveHandler = "fn save_outcome save_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        invoice_wire body\n" +
-	"    asserts\n" +
-	"        sample: invoice_wire(\"c\", form::rows<line_wire>([], [])) => ok saved(\"c\")\n" +
-	"    ok saved(body.customer)\n"
-
 const formSaveAction = "action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
-	"    body form invoice_wire\n" +
-	"    handles save_validated\n" +
-	"    result save_outcome\n" +
+	"    form invoice_wire limit 2048 rows_limit 64\n" +
+	"    returns save_outcome\n" +
+	"    body html\n" +
 	"    cases\n" +
-	"        saved => 200\n" +
-	"        rejected => 422\n"
+	"        saved status 200 swap inner\n" +
+	"        rejected status 422 swap inner\n"
 
 const formRenderers = "fn html::safe render_outcome\n" +
 	"    emits []\n" +
@@ -94,7 +86,7 @@ const formBuilderFns = "fn form::collection use_collection\n" +
 	"        ok => ok call form::input_name(coll, row, field)\n"
 
 func formWebFile(extra ...string) string {
-	decls := formWireDomain + formSaveHandler + formSaveAction + formRenderers + formMounted + formBuilderFns
+	decls := formWireDomain + formSaveAction + formRenderers + formMounted + formBuilderFns
 	for _, text := range extra {
 		decls += text
 	}
@@ -181,11 +173,11 @@ func TestFormRowItemIdentityFilled(t *testing.T) {
 			action = candidate
 		}
 	}
-	if action == nil || action.Body == nil {
-		t.Fatal("save action lost its form body")
+	if action == nil || action.Input.Mode != "form" {
+		t.Fatal("save action lost its form input")
 	}
 	var rows *types.FormRowSchema
-	for _, field := range action.Body.Form.Fields {
+	for _, field := range action.Input.Form.Fields {
 		if field.Name == "lines" {
 			rows = field.Rows
 		}
@@ -270,12 +262,15 @@ func TestFormServeActionRejects(t *testing.T) {
 }
 
 func TestFormServeRequiresFormBody(t *testing.T) {
-	json := strings.Replace(formWebFile(), "    body form invoice_wire\n", "    body json invoice_wire\n", 1)
+	json := formWebFile()
+	json = strings.Replace(json, "    form invoice_wire limit 2048 rows_limit 64\n", "    json line_wire limit 2048\n", 1)
+	json = strings.Replace(json, "    body html\n", "    body json\n", 1)
+	json = strings.Replace(json, " swap inner\n", "\n", 2)
 	_, err := programFixture(t, map[string]string{"src/web/web.can": json})
 	if err == nil || !strings.Contains(err.Error(), "carries no form body") {
 		t.Fatalf("json action served as form: %v", err)
 	}
-	renamed := strings.Replace(formWebFile(), "    body form invoice_wire\n", "    body form line_wire\n", 1)
+	renamed := strings.Replace(formWebFile(), "    form invoice_wire limit 2048 rows_limit 64\n", "    form line_wire limit 2048\n", 1)
 	_, err = programFixture(t, map[string]string{"src/web/web.can": renamed})
 	if err == nil {
 		t.Fatal("rewired form body admitted")

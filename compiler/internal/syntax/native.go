@@ -77,36 +77,43 @@ type ScenarioDecl struct {
 	Name Token
 }
 
-// ActionDecl is a checked HTTP endpoint contract. It binds one POST or GET
-// route to a wire body type, a total handler function, a finite result
-// variant and an exhaustive leaf-to-status case table. Checking validates
-// the path, capture, body-mode, handler and case contracts; emission
-// records the metadata the server and browser adapters consume.
+// ActionDecl is a checked handler-free HTTP endpoint contract. It binds one
+// POST or GET route to a captures record, one request input line, a finite
+// returns variant, a response body mode and an exhaustive leaf-to-status
+// case table. Handlers are bound later at action::mount; the declaration
+// carries no executable reference. Checking validates the path, capture,
+// input, limit, returns, body-mode and case contracts; emission records
+// the canonical metadata the server and browser adapters consume.
 type ActionDecl struct {
 	DeclarationLocation
 	Name     Token
 	Method   Token
 	Path     Token
-	Captures []Field
-	Body     *ActionBody
-	Handler  QualifiedName
-	Result   TypeNode
+	Captures TypeNode // captures record; nil when the path declares no captures
+	Input    *ActionInput
+	Returns  TypeNode
+	Response Token // response body mode: json or html
 	Cases    []ActionCase
 }
 
-// ActionBody is the POST wire contract: a json or form mode plus the
-// record type crossing the wire. GET actions carry no body.
-type ActionBody struct {
-	Span source.Span
-	Mode Token
-	Type TypeNode
+// ActionInput is the one request line of an action: `input none` for a
+// bodyless GET, `json <wire> limit <bytes>` for a JSON POST, or
+// `form <wire> limit <bytes> [rows_limit <n>]` for an HTML POST.
+type ActionInput struct {
+	Span      source.Span
+	Mode      Token
+	Type      TypeNode // nil for input none
+	Limit     *Token   // nil for input none
+	RowsLimit *Token   // form rows bound; nil unless spelled
 }
 
-// ActionCase maps one result-variant leaf to its wire status.
+// ActionCase maps one returns-variant leaf to its wire status plus the
+// HTML-only visible swap policy.
 type ActionCase struct {
 	Span   source.Span
 	Leaf   QualifiedName
 	Status Token
+	Swap   *Token // the swap keyword; nil for JSON cases
 }
 
 // WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
@@ -364,56 +371,33 @@ func (p *parser) action() Declaration {
 	}
 	path := p.expect(String)
 	p.expect(Newline)
-	var captures []Field
+	var captures TypeNode
 	if p.word("captures") {
 		p.take()
+		captures = p.parseType()
 		p.expect(Newline)
-		p.expect(Indent)
-		captures = []Field{p.field()}
-		p.expect(Newline)
-		for !p.at(Dedent) && !p.at(EOF) {
-			captures = append(captures, p.field())
-			p.expect(Newline)
-		}
-		p.expect(Dedent)
 	}
-	var body *ActionBody
-	if p.word("body") {
-		bodyStart := p.take().Span.Start
-		mode := p.expect(Name)
-		switch mode.Text {
-		case "json", "form":
-		default:
-			p.fail("unknown action body mode")
-		}
-		bodyType := p.parseType()
-		body = &ActionBody{Span: p.span(bodyStart), Mode: mode, Type: bodyType}
-		p.expect(Newline)
-		if method.Text == "get" {
-			p.fail("GET actions cannot have a body")
-		}
-	}
-	if method.Text == "post" && body == nil {
-		p.fail("POST actions require a body")
-	}
-	if p.word("captures") || p.word("body") {
-		p.fail("duplicate action clause")
-	}
-	if !p.word("handles") {
-		p.fail("action requires a handles clause")
+	input := p.actionInput(method)
+	p.rejectStaleActionClause("returns")
+	if !p.word("returns") {
+		p.fail("action requires a returns clause")
 	}
 	p.take()
-	handler := p.qualified()
+	returns := p.parseType()
 	p.expect(Newline)
-	if !p.word("result") {
-		p.fail("action requires a result clause")
+	p.rejectStaleActionClause("body")
+	if !p.word("body") {
+		p.fail("action requires a body clause")
 	}
 	p.take()
-	result := p.parseType()
-	p.expect(Newline)
-	if p.word("handles") || p.word("result") {
-		p.fail("duplicate action clause")
+	response := p.expect(Name)
+	switch response.Text {
+	case "json", "html":
+	default:
+		p.fail("unknown action body mode")
 	}
+	p.expect(Newline)
+	p.rejectStaleActionClause("cases")
 	p.expectWord("cases")
 	p.expect(Newline)
 	p.expect(Indent)
@@ -423,16 +407,94 @@ func (p *parser) action() Declaration {
 	}
 	p.expect(Dedent)
 	p.expect(Dedent)
-	return &ActionDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Method: method, Path: path, Captures: captures, Body: body, Handler: handler, Result: result, Cases: cases}
+	return &ActionDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Method: method, Path: path, Captures: captures, Input: input, Returns: returns, Response: response, Cases: cases}
+}
+
+// rejectStaleActionClause rejects removed action clauses with a migration
+// diagnostic and repeated clauses as duplicates. It runs wherever the next
+// fixed clause is expected, so stale spellings fail with a span no matter
+// where they appear; expect names the clause due next and is never stale.
+func (p *parser) rejectStaleActionClause(expect string) {
+	if p.word("handles") {
+		p.fail("action handles was removed; bind handlers with action::mount")
+	}
+	if p.word("result") {
+		p.fail("action result was removed; use returns")
+	}
+	clauses := []string{"captures", "input", "json", "form", "returns", "body"}
+	for i, word := range clauses {
+		if word == expect {
+			clauses = clauses[:i]
+			break
+		}
+	}
+	for _, word := range clauses {
+		if p.word(word) {
+			p.fail("duplicate action clause")
+		}
+	}
+}
+
+func (p *parser) actionInput(method Token) *ActionInput {
+	start := p.peek().Span.Start
+	if p.word("input") {
+		mode := p.take()
+		if !p.word("none") {
+			p.fail("a bodyless action input is spelled input none")
+		}
+		p.take()
+		p.expect(Newline)
+		if method.Text == "post" {
+			p.fail("POST actions require a json or form input")
+		}
+		return &ActionInput{Span: p.span(start), Mode: mode}
+	}
+	if p.word("json") || p.word("form") {
+		mode := p.take()
+		wire := p.parseType()
+		if !p.word("limit") {
+			p.fail("action wire input requires a byte limit")
+		}
+		p.take()
+		limit := p.expect(Integer)
+		var rows *Token
+		if p.word("rows_limit") {
+			if mode.Text != "form" {
+				p.fail("rows_limit applies to form input only")
+			}
+			p.take()
+			bound := p.expect(Integer)
+			rows = &bound
+		}
+		p.expect(Newline)
+		if method.Text == "get" {
+			p.fail("GET actions cannot take a wire input")
+		}
+		return &ActionInput{Span: p.span(start), Mode: mode, Type: wire, Limit: &limit, RowsLimit: rows}
+	}
+	if p.word("body") {
+		p.fail("action body wire input was removed; use a json or form input line")
+	}
+	p.fail("action requires an input line")
+	return nil
 }
 
 func (p *parser) actionCase() ActionCase {
 	start := p.peek().Span.Start
 	leaf := p.qualified()
-	p.expect("=>")
+	p.expectWord("status")
 	status := p.expect(Integer)
+	var swap *Token
+	if p.word("swap") {
+		policy := p.take()
+		if !p.word("inner") {
+			p.fail("unknown action swap policy")
+		}
+		p.take()
+		swap = &policy
+	}
 	p.expect(Newline)
-	return ActionCase{Span: p.span(start), Leaf: leaf, Status: status}
+	return ActionCase{Span: p.span(start), Leaf: leaf, Status: status, Swap: swap}
 }
 
 func (p *parser) fixtureCase() FixtureCase {

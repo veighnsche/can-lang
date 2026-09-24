@@ -171,7 +171,17 @@ func (f *formatter) blank() {
 	}
 	f.WriteByte('\n')
 }
-func formatField(field Field) string      { return FormatType(field.Type) + " " + field.Name.Text }
+func formatField(field Field) string { return FormatType(field.Type) + " " + field.Name.Text }
+func formatActionInput(input *ActionInput) string {
+	if input.Mode.Text == "input" {
+		return "input none"
+	}
+	row := input.Mode.Text + " " + FormatType(input.Type) + " limit " + input.Limit.Text
+	if input.RowsLimit != nil {
+		row += " rows_limit " + input.RowsLimit.Text
+	}
+	return row
+}
 func formatBound(bound ErrorBound) string { return "emits [" + formatTypes(bound.Types) + "]" }
 func formatParameters(parameters []Token) string {
 	if len(parameters) == 0 {
@@ -323,20 +333,19 @@ func (f *formatter) render(file *File) {
 		case *ActionDecl:
 			f.line(0, "action "+n.Name.Text, n.DeclSpan().Start)
 			f.line(1, n.Method.Text+" "+n.Path.Text, n.Method.Span.Start)
-			if len(n.Captures) != 0 {
-				f.lineSame(1, "captures")
-				for _, field := range n.Captures {
-					f.line(2, formatField(field), field.Span.Start)
-				}
+			if n.Captures != nil {
+				f.line(1, "captures "+FormatType(n.Captures), n.Captures.TypeSpan().Start)
 			}
-			if n.Body != nil {
-				f.line(1, "body "+n.Body.Mode.Text+" "+FormatType(n.Body.Type), n.Body.Span.Start)
-			}
-			f.line(1, "handles "+formatName(n.Handler), n.Handler.Span.Start)
-			f.line(1, "result "+FormatType(n.Result), n.Result.TypeSpan().Start)
+			f.line(1, formatActionInput(n.Input), n.Input.Span.Start)
+			f.line(1, "returns "+FormatType(n.Returns), n.Returns.TypeSpan().Start)
+			f.line(1, "body "+n.Response.Text, n.Response.Span.Start)
 			f.lineSame(1, "cases")
 			for _, kase := range n.Cases {
-				f.line(2, formatName(kase.Leaf)+" => "+kase.Status.Text, kase.Span.Start)
+				row := formatName(kase.Leaf) + " status " + kase.Status.Text
+				if kase.Swap != nil {
+					row += " swap inner"
+				}
+				f.line(2, row, kase.Span.Start)
 			}
 		case *FunctionDecl:
 			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)

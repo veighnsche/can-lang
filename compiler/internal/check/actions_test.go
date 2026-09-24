@@ -35,25 +35,21 @@ const actionSaveDomain = "record invoice_wire\n" +
 	"    denied\n" +
 	"    busy\n"
 
-const actionSaveHandler = "fn save_outcome save_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        invoice_wire body\n" +
-	"    asserts\n" +
-	"        sample: invoice_wire(\"inv-1\", 2) => ok saved(\"inv-1\")\n" +
-	"    ok saved(body.label)\n"
+const actionLineKey = "record line_key\n" +
+	"    str invoice_id\n" +
+	"    int line\n"
 
 const actionSaveAction = "action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
-	"    body json invoice_wire\n" +
-	"    handles save_validated\n" +
-	"    result save_outcome\n" +
+	"    json invoice_wire limit 8192\n" +
+	"    returns save_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        saved => 200\n" +
-	"        rejected => 422\n" +
-	"        stale => 409\n" +
-	"        denied => 403\n" +
-	"        busy => 503\n"
+	"        saved status 200\n" +
+	"        rejected status 422\n" +
+	"        stale status 409\n" +
+	"        denied status 403\n" +
+	"        busy status 503\n"
 
 const actionLoadDomain = "record found\n" +
 	"    str label\n" +
@@ -66,33 +62,23 @@ const actionLoadDomain = "record found\n" +
 	"    missing\n" +
 	"    unavailable\n"
 
-const actionLoadHandler = "fn load_outcome load_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        str invoice_id\n" +
-	"        int line\n" +
-	"    asserts\n" +
-	"        sample: \"inv-1\", 1 => ok found(\"inv-1\")\n" +
-	"    ok found(invoice_id)\n"
-
 const actionLoadAction = "action load_line\n" +
-	"    get \"/invoices/{invoice_id}/lines/{line}\"\n" +
-	"    captures\n" +
-	"        str invoice_id\n" +
-	"        int line\n" +
-	"    handles load_validated\n" +
-	"    result load_outcome\n" +
+	"    get \"/invoices/:invoice_id/lines/:line\"\n" +
+	"    captures line_key\n" +
+	"    input none\n" +
+	"    returns load_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        found => 200\n" +
-	"        missing => 403\n" +
-	"        unavailable => 503\n"
+	"        found status 200\n" +
+	"        missing status 403\n" +
+	"        unavailable status 503\n"
 
 func actionWebFile(extra ...string) string {
-	decls := actionSaveDomain + actionSaveHandler + actionSaveAction + actionLoadDomain + actionLoadHandler + actionLoadAction
+	decls := actionSaveDomain + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction
 	for _, text := range extra {
 		decls += text
 	}
-	return "package web\n    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses []\n" + decls + actionMain
+	return "package web\n    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses []\n" + decls + actionMain
 }
 
 func actionByName(t *testing.T, program *Program, name string) *ActionDeclaration {
@@ -118,26 +104,25 @@ func TestActionPostSaveChecks(t *testing.T) {
 	if action.Method != "POST" || action.Path != "/invoices/save" {
 		t.Fatalf("save route = %s %s", action.Method, action.Path)
 	}
-	if len(action.Captures) != 0 {
+	if len(action.Captures) != 0 || action.CapturesType != nil {
 		t.Fatalf("exact-path action gained captures: %+v", action.Captures)
 	}
-	if action.Body == nil || action.Body.Mode != "json" {
-		t.Fatalf("save action lost its json body: %+v", action.Body)
+	if action.Input.Mode != "json" || action.Input.Limit != 8192 {
+		t.Fatalf("save action lost its json input: %+v", action.Input)
 	}
 	fields := map[string]bool{}
-	for _, field := range action.Body.Type.Fields() {
+	for _, field := range action.Input.Type.Fields() {
 		fields[field.Name] = true
 	}
 	if !fields["label"] || !fields["seats"] {
-		t.Fatalf("body wire fields = %v", fields)
+		t.Fatalf("input wire fields = %v", fields)
 	}
-	wantHandler := action.Symbol.Package.ID + "::save_validated"
-	if action.Handler != wantHandler {
-		t.Fatalf("handler = %s, want %s", action.Handler, wantHandler)
+	if action.Body != "json" {
+		t.Fatalf("save response body = %s", action.Body)
 	}
 	wantResult := action.Symbol.Package.ID + "::save_outcome"
-	if action.Result.Declaration() != wantResult {
-		t.Fatalf("result = %s, want %s", action.Result.Declaration(), wantResult)
+	if action.Returns.Declaration() != wantResult {
+		t.Fatalf("returns = %s, want %s", action.Returns.Declaration(), wantResult)
 	}
 	wantCases := []ActionCase{
 		{Leaf: action.Symbol.Package.ID + "::saved", Status: 200},
@@ -162,11 +147,14 @@ func TestActionGetLoadChecks(t *testing.T) {
 		t.Fatal(err)
 	}
 	action := actionByName(t, program, "load_line")
-	if action.Method != "GET" || action.Path != "/invoices/{invoice_id}/lines/{line}" {
+	if action.Method != "GET" || action.Path != "/invoices/:invoice_id/lines/:line" {
 		t.Fatalf("load route = %s %s", action.Method, action.Path)
 	}
-	if action.Body != nil {
-		t.Fatalf("GET action gained a body: %+v", action.Body)
+	if action.Input.Mode != "none" || action.Input.Type != nil {
+		t.Fatalf("GET action gained a wire input: %+v", action.Input)
+	}
+	if action.CapturesType == nil || action.CapturesType.Declaration() != action.Symbol.Package.ID+"::line_key" {
+		t.Fatalf("load lost its captures record: %+v", action.CapturesType)
 	}
 	if len(action.Captures) != 2 || action.Captures[0].Name != "invoice_id" || action.Captures[1].Name != "line" {
 		t.Fatalf("captures = %+v", action.Captures)
@@ -189,58 +177,58 @@ func TestActionGetLoadChecks(t *testing.T) {
 	}
 }
 
-func TestActionFormBodyChecks(t *testing.T) {
-	form := "record line_wire\n" +
+func TestActionFormInputChecks(t *testing.T) {
+	form := "record invoice_key\n" +
+		"    str invoice_id\n" +
+		"record line_wire\n" +
 		"    str name\n" +
 		"    str amount\n" +
-		"fn save_outcome line_validated\n" +
-		"    emits []\n" +
-		"    given\n" +
-		"        str invoice_id\n" +
-		"        line_wire rows\n" +
-		"    asserts\n" +
-		"        sample: \"inv-1\", line_wire(\"seat\", \"2\") => ok saved(\"inv-1\")\n" +
-		"    ok saved(invoice_id)\n" +
 		"action append_line\n" +
-		"    post \"/invoices/{invoice_id}/lines\"\n" +
-		"    captures\n" +
-		"        str invoice_id\n" +
-		"    body form line_wire\n" +
-		"    handles line_validated\n" +
-		"    result save_outcome\n" +
+		"    post \"/invoices/:invoice_id/lines\"\n" +
+		"    captures invoice_key\n" +
+		"    form line_wire limit 2048\n" +
+		"    returns save_outcome\n" +
+		"    body html\n" +
 		"    cases\n" +
-		"        saved => 200\n" +
-		"        rejected => 422\n" +
-		"        stale => 409\n" +
-		"        denied => 403\n" +
-		"        busy => 503\n"
+		"        saved status 200 swap inner\n" +
+		"        rejected status 422 swap inner\n" +
+		"        stale status 409 swap inner\n" +
+		"        denied status 403 swap inner\n" +
+		"        busy status 503 swap inner\n"
 	program, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(form)})
 	if err != nil {
 		t.Fatal(err)
 	}
 	action := actionByName(t, program, "append_line")
-	if action.Body == nil || action.Body.Mode != "form" {
-		t.Fatalf("form action lost its body: %+v", action.Body)
+	if action.Input.Mode != "form" || action.Input.Limit != 2048 || action.Input.RowsLimit != 0 {
+		t.Fatalf("form action lost its input: %+v", action.Input)
+	}
+	if action.Body != "html" {
+		t.Fatalf("form action response body = %s", action.Body)
 	}
 	if len(action.Captures) != 1 || action.Captures[0].Name != "invoice_id" {
 		t.Fatalf("form action captures = %+v", action.Captures)
 	}
+	for _, kase := range action.Cases {
+		if kase.Swap != "inner" {
+			t.Fatalf("HTML case lost its swap policy: %+v", kase)
+		}
+	}
+	if action.ResponseSchema != nil {
+		t.Fatal("HTML action gained a JSON response schema")
+	}
 }
 
 func TestActionGetPostSharePath(t *testing.T) {
-	load := "fn load_outcome list_validated\n" +
-		"    emits []\n" +
-		"    asserts\n" +
-		"        sample: => ok found(\"all\")\n" +
-		"    ok found(\"all\")\n" +
-		"action list_invoices\n" +
+	load := "action list_invoices\n" +
 		"    get \"/invoices/save\"\n" +
-		"    handles list_validated\n" +
-		"    result load_outcome\n" +
+		"    input none\n" +
+		"    returns load_outcome\n" +
+		"    body json\n" +
 		"    cases\n" +
-		"        found => 200\n" +
-		"        missing => 403\n" +
-		"        unavailable => 503\n"
+		"        found status 200\n" +
+		"        missing status 403\n" +
+		"        unavailable status 503\n"
 	program, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(load)})
 	if err != nil {
 		t.Fatal(err)
@@ -258,57 +246,39 @@ func TestActionGetPostSharePath(t *testing.T) {
 func TestActionStaticCaptureOverlapAllowed(t *testing.T) {
 	// A static route and a capture route of one method overlap with static
 	// priority, and one capture shape may serve both methods.
-	extra := "fn load_outcome load_static\n" +
-		"    emits []\n" +
-		"    asserts\n" +
-		"        sample: => ok found(\"new\")\n" +
-		"    ok found(\"new\")\n" +
-		"action load_new\n" +
+	extra := "action load_new\n" +
 		"    get \"/invoices/new\"\n" +
-		"    handles load_static\n" +
-		"    result load_outcome\n" +
+		"    input none\n" +
+		"    returns load_outcome\n" +
+		"    body json\n" +
 		"    cases\n" +
-		"        found => 200\n" +
-		"        missing => 403\n" +
-		"        unavailable => 503\n" +
-		"fn load_outcome load_named\n" +
-		"    emits []\n" +
-		"    given\n" +
-		"        str name\n" +
-		"    asserts\n" +
-		"        sample: \"n\" => ok found(\"n\")\n" +
-		"    ok found(name)\n" +
+		"        found status 200\n" +
+		"        missing status 403\n" +
+		"        unavailable status 503\n" +
+		"record name_key\n" +
+		"    str name\n" +
 		"action load_name\n" +
-		"    get \"/invoices/{name}\"\n" +
-		"    captures\n" +
-		"        str name\n" +
-		"    handles load_named\n" +
-		"    result load_outcome\n" +
+		"    get \"/invoices/:name\"\n" +
+		"    captures name_key\n" +
+		"    input none\n" +
+		"    returns load_outcome\n" +
+		"    body json\n" +
 		"    cases\n" +
-		"        found => 200\n" +
-		"        missing => 403\n" +
-		"        unavailable => 503\n" +
-		"fn save_outcome post_named\n" +
-		"    emits []\n" +
-		"    given\n" +
-		"        str name\n" +
-		"        invoice_wire body\n" +
-		"    asserts\n" +
-		"        sample: \"n\", invoice_wire(\"l\", 1) => ok saved(\"l\")\n" +
-		"    ok saved(body.label)\n" +
+		"        found status 200\n" +
+		"        missing status 403\n" +
+		"        unavailable status 503\n" +
 		"action post_name\n" +
-		"    post \"/invoices/{name}\"\n" +
-		"    captures\n" +
-		"        str name\n" +
-		"    body json invoice_wire\n" +
-		"    handles post_named\n" +
-		"    result save_outcome\n" +
+		"    post \"/invoices/:name\"\n" +
+		"    captures name_key\n" +
+		"    json invoice_wire limit 512\n" +
+		"    returns save_outcome\n" +
+		"    body json\n" +
 		"    cases\n" +
-		"        saved => 200\n" +
-		"        rejected => 422\n" +
-		"        stale => 409\n" +
-		"        denied => 403\n" +
-		"        busy => 503\n"
+		"        saved status 200\n" +
+		"        rejected status 422\n" +
+		"        stale status 409\n" +
+		"        denied status 403\n" +
+		"        busy status 503\n"
 	program, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(extra)})
 	if err != nil {
 		t.Fatal(err)
@@ -323,59 +293,58 @@ func TestActionStaticCaptureOverlapAllowed(t *testing.T) {
 	}
 }
 
-func TestActionCrossPackageHandler(t *testing.T) {
+func TestActionCrossPackageContract(t *testing.T) {
+	// The shared contract package exports wire, result and leaf types;
+	// the application package declares a handler-free action over them
+	// without importing anything executable.
 	web := "package web\n" +
-		"    provides [save_validated, invoice_wire, saved, rejected, stale, denied, busy, save_outcome]\n" +
-		"    uses []\n" + actionSaveDomain + actionSaveHandler
+		"    provides [invoice_wire, saved, rejected, stale, denied, busy, save_outcome]\n" +
+		"    uses []\n" + actionSaveDomain
 	app := "package app\n" +
 		"    provides [save_invoice]\n" +
 		"    uses [web]\n" +
 		"action save_invoice\n" +
 		"    post \"/invoices/save\"\n" +
-		"    body json web::invoice_wire\n" +
-		"    handles web::save_validated\n" +
-		"    result web::save_outcome\n" +
+		"    json web::invoice_wire limit 1024\n" +
+		"    returns web::save_outcome\n" +
+		"    body json\n" +
 		"    cases\n" +
-		"        web::saved => 200\n" +
-		"        web::rejected => 422\n" +
-		"        web::stale => 409\n" +
-		"        web::denied => 403\n" +
-		"        web::busy => 503\n" + actionMain
+		"        web::saved status 200\n" +
+		"        web::rejected status 422\n" +
+		"        web::stale status 409\n" +
+		"        web::denied status 403\n" +
+		"        web::busy status 503\n" + actionMain
 	program, err := programFixture(t, map[string]string{"src/web/web.can": web, "src/app/main.can": app})
 	if err != nil {
 		t.Fatal(err)
 	}
 	action := actionByName(t, program, "save_invoice")
-	webID := ""
-	for _, fn := range program.Functions {
-		if fn.Symbol.Package.Name == "web" {
-			webID = fn.Symbol.Package.ID
-		}
-	}
-	if webID == "" {
-		t.Fatal("web package missing")
-	}
-	if action.Handler != webID+"::save_validated" || action.Result.Declaration() != webID+"::save_outcome" {
-		t.Fatalf("cross-package contract = %s %s", action.Handler, action.Result.Declaration())
+	webID := strings.TrimSuffix(action.Returns.Declaration(), "::save_outcome")
+	if action.Input.Type.Declaration() != webID+"::invoice_wire" {
+		t.Fatalf("cross-package input = %s", action.Input.Type.Declaration())
 	}
 	for _, kase := range action.Cases {
 		if !strings.HasPrefix(kase.Leaf, webID+"::") {
 			t.Fatalf("case leaf %s escaped its package", kase.Leaf)
 		}
 	}
+	for _, fn := range program.Functions {
+		if fn.Symbol.Package.Name != "app" {
+			t.Fatalf("contract package carries executable %s", fn.Symbol.ID)
+		}
+	}
 }
 
 func TestActionWireFieldRenameRebuilds(t *testing.T) {
 	renamed := strings.Replace(actionSaveDomain, "    str label\n    int seats\n", "    str title\n    int seats\n", 1)
-	renamedHandler := strings.Replace(actionSaveHandler, "body.label", "body.title", 1)
-	text := "package web\n    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses []\n" + renamed + renamedHandler + actionSaveAction + actionLoadDomain + actionLoadHandler + actionLoadAction + actionMain
+	text := "package web\n    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses []\n" + renamed + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction + actionMain
 	program, err := programFixture(t, map[string]string{"src/web/web.can": text})
 	if err != nil {
 		t.Fatal(err)
 	}
 	action := actionByName(t, program, "save_invoice")
 	fields := map[string]bool{}
-	for _, field := range action.Body.Type.Fields() {
+	for _, field := range action.Input.Type.Fields() {
 		fields[field.Name] = true
 	}
 	if !fields["title"] || fields["label"] {
@@ -400,103 +369,79 @@ func TestActionRejects(t *testing.T) {
 		"duplicate route": {
 			actionWebFile("action save_again\n" +
 				"    post \"/invoices/save\"\n" +
-				"    body json invoice_wire\n" +
-				"    handles save_validated\n" +
-				"    result save_outcome\n" +
+				"    json invoice_wire limit 100\n" +
+				"    returns save_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        saved => 200\n" +
-				"        rejected => 422\n" +
-				"        stale => 409\n" +
-				"        denied => 403\n" +
-				"        busy => 503\n"),
+				"        saved status 200\n" +
+				"        rejected status 422\n" +
+				"        stale status 409\n" +
+				"        denied status 403\n" +
+				"        busy status 503\n"),
 			"duplicates the POST /invoices/save route",
 		},
 		"duplicate capture shape": {
-			actionWebFile("fn load_outcome other_validated\n" +
-				"    emits []\n" +
-				"    given\n" +
-				"        str name\n" +
-				"        int row\n" +
-				"    asserts\n" +
-				"        sample: \"n\", 1 => ok found(\"n\")\n" +
-				"    ok found(name)\n" +
+			actionWebFile("record other_key\n" +
+				"    str name\n" +
+				"    int row\n" +
 				"action load_other\n" +
-				"    get \"/invoices/{name}/lines/{row}\"\n" +
-				"    captures\n" +
-				"        str name\n" +
-				"        int row\n" +
-				"    handles other_validated\n" +
-				"    result load_outcome\n" +
+				"    get \"/invoices/:name/lines/:row\"\n" +
+				"    captures other_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        found => 200\n" +
-				"        missing => 403\n" +
-				"        unavailable => 503\n"),
+				"        found status 200\n" +
+				"        missing status 403\n" +
+				"        unavailable status 503\n"),
 			"duplicates the GET /invoices/{}/lines/{} route",
 		},
 		"encoded static duplicate": {
-			actionWebFile("fn load_outcome plain_validated\n" +
-				"    emits []\n" +
-				"    asserts\n" +
-				"        sample: => ok found(\"new\")\n" +
-				"    ok found(\"new\")\n" +
-				"action load_plain\n" +
+			actionWebFile("action load_plain\n" +
 				"    get \"/invoices/new\"\n" +
-				"    handles plain_validated\n" +
-				"    result load_outcome\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        found => 200\n" +
-				"        missing => 403\n" +
-				"        unavailable => 503\n" +
-				"fn load_outcome encoded_validated\n" +
-				"    emits []\n" +
-				"    asserts\n" +
-				"        sample: => ok found(\"new\")\n" +
-				"    ok found(\"new\")\n" +
+				"        found status 200\n" +
+				"        missing status 403\n" +
+				"        unavailable status 503\n" +
 				"action load_encoded\n" +
 				"    get \"/invoices/n%65w\"\n" +
-				"    handles encoded_validated\n" +
-				"    result load_outcome\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        found => 200\n" +
-				"        missing => 403\n" +
-				"        unavailable => 503\n"),
+				"        found status 200\n" +
+				"        missing status 403\n" +
+				"        unavailable status 503\n"),
 			"duplicates the GET /invoices/new route",
 		},
 		"ambiguous capture overlap": {
-			actionWebFile("fn load_outcome left_validated\n" +
-				"    emits []\n" +
-				"    given\n" +
-				"        str name\n" +
-				"    asserts\n" +
-				"        sample: \"n\" => ok found(\"n\")\n" +
-				"    ok found(name)\n" +
+			actionWebFile("record left_key\n" +
+				"    str name\n" +
+				"record right_key\n" +
+				"    str row\n" +
 				"action load_left\n" +
-				"    get \"/invoices/{name}/lines\"\n" +
-				"    captures\n" +
-				"        str name\n" +
-				"    handles left_validated\n" +
-				"    result load_outcome\n" +
+				"    get \"/invoices/:name/lines\"\n" +
+				"    captures left_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        found => 200\n" +
-				"        missing => 403\n" +
-				"        unavailable => 503\n" +
-				"fn load_outcome right_validated\n" +
-				"    emits []\n" +
-				"    given\n" +
-				"        str row\n" +
-				"    asserts\n" +
-				"        sample: \"r\" => ok found(\"r\")\n" +
-				"    ok found(row)\n" +
+				"        found status 200\n" +
+				"        missing status 403\n" +
+				"        unavailable status 503\n" +
 				"action load_right\n" +
-				"    get \"/invoices/new/{row}\"\n" +
-				"    captures\n" +
-				"        str row\n" +
-				"    handles right_validated\n" +
-				"    result load_outcome\n" +
+				"    get \"/invoices/new/:row\"\n" +
+				"    captures right_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body json\n" +
 				"    cases\n" +
-				"        found => 200\n" +
-				"        missing => 403\n" +
-				"        unavailable => 503\n"),
+				"        found status 200\n" +
+				"        missing status 403\n" +
+				"        unavailable status 503\n"),
 			"ambiguously overlaps the GET /invoices/new/{} route",
 		},
 		"path without slash": {
@@ -511,117 +456,105 @@ func TestActionRejects(t *testing.T) {
 			strings.Replace(web, "post \"/invoices/save\"", "post \"/__can/save\"", 1),
 			"invalid action route path",
 		},
-		"legacy capture": {
-			strings.Replace(web, "post \"/invoices/save\"", "post \"/invoices/:id\"", 1),
-			"invalid action route path",
+		"legacy braces": {
+			strings.Replace(web, "post \"/invoices/save\"", "post \"/invoices/{id}\"", 1),
+			"captures occupy one whole :name segment",
 		},
 		"partial capture": {
-			strings.Replace(web, "\"/invoices/{invoice_id}/lines/{line}\"", "\"/invoices/{invoice_id}.json\"", 1),
-			"captures occupy one whole {name} segment",
+			strings.Replace(web, "\"/invoices/:invoice_id/lines/:line\"", "\"/invoices/v:1/lines/:line\"", 1),
+			"captures occupy one whole :name segment",
 		},
 		"empty capture": {
-			strings.Replace(web, "\"/invoices/{invoice_id}/lines/{line}\"", "\"/invoices/{}/lines\"", 1),
-			"captures occupy one whole {name} segment",
+			strings.Replace(web, "\"/invoices/:invoice_id/lines/:line\"", "\"/invoices/:/lines\"", 1),
+			"captures occupy one whole :name segment",
 		},
 		"duplicate path capture": {
-			strings.Replace(web, "\"/invoices/{invoice_id}/lines/{line}\"", "\"/invoices/{invoice_id}/{invoice_id}\"", 1),
-			"duplicate path capture {invoice_id}",
+			strings.Replace(web, "\"/invoices/:invoice_id/lines/:line\"", "\"/invoices/:invoice_id/:invoice_id\"", 1),
+			"duplicate path capture :invoice_id",
 		},
 		"invalid capture name": {
-			strings.Replace(web, "\"/invoices/{invoice_id}/lines/{line}\"", "\"/invoices/{Invoice_id}/lines/{line}\"", 1),
-			"invalid path capture {Invoice_id}",
+			strings.Replace(web, "\"/invoices/:invoice_id/lines/:line\"", "\"/invoices/:Invoice_id/lines/:line\"", 1),
+			"invalid path capture :Invoice_id",
 		},
-		"capture without row": {
-			strings.Replace(web, "    captures\n        str invoice_id\n        int line\n", "    captures\n        str invoice_id\n", 1),
-			"path capture {line} has no captures row",
+		"capture without record": {
+			strings.Replace(web, "    captures line_key\n    input none\n", "    input none\n", 1),
+			"action requires a captures record",
 		},
-		"row without capture": {
-			strings.Replace(web, "    captures\n        str invoice_id\n        int line\n", "    captures\n        str invoice_id\n        int line\n        str extra\n", 1),
+		"record without capture": {
+			strings.Replace(web, "    post \"/invoices/save\"\n    json invoice_wire limit 8192\n", "    post \"/invoices/save\"\n    captures line_key\n    json invoice_wire limit 8192\n", 1),
+			"action path declares no captures",
+		},
+		"captures not a record": {
+			strings.Replace(web, "    captures line_key\n", "    captures load_outcome\n", 1),
+			"action captures must be a record type",
+		},
+		"capture without field": {
+			strings.Replace(web, "record line_key\n    str invoice_id\n    int line\n", "record line_key\n    str invoice_id\n", 1),
+			"path capture :line has no captures field",
+		},
+		"field without capture": {
+			strings.Replace(web, "record line_key\n    str invoice_id\n    int line\n", "record line_key\n    str invoice_id\n    int line\n    str extra\n", 1),
 			"capture extra does not appear in the action path",
 		},
 		"non-scalar capture": {
-			strings.Replace(web, "    captures\n        str invoice_id\n        int line\n", "    captures\n        bool invoice_id\n        int line\n", 1),
+			strings.Replace(web, "record line_key\n    str invoice_id\n    int line\n", "record line_key\n    bool invoice_id\n    int line\n", 1),
 			"capture invoice_id must be str or int",
 		},
-		"duplicate capture rows": {
-			strings.Replace(web, "    captures\n        str invoice_id\n        int line\n", "    captures\n        str invoice_id\n        str invoice_id\n        int line\n", 1),
-			`duplicate field "invoice_id"`,
+		"input not a record": {
+			strings.Replace(web, "    json invoice_wire limit 8192\n", "    json save_outcome limit 8192\n", 1),
+			"action json input must be a record wire type",
 		},
-		"body not a record": {
-			strings.Replace(web, "    body json invoice_wire\n", "    body json save_outcome\n", 1),
-			"action body must be a record wire type",
-		},
-		"body unknown type": {
-			strings.Replace(web, "    body json invoice_wire\n", "    body json invoice_draft\n", 1),
+		"input unknown type": {
+			strings.Replace(web, "    json invoice_wire limit 8192\n", "    json invoice_draft limit 8192\n", 1),
 			`no eligible declaration for "invoice_draft"`,
 		},
-		"result not a variant": {
-			strings.Replace(web, "    result save_outcome\n", "    result saved\n", 1),
-			"action result must be a finite variant",
+		"limit zero": {
+			strings.Replace(web, "    json invoice_wire limit 8192\n", "    json invoice_wire limit 0\n", 1),
+			"action limit must be a positive byte count",
+		},
+		"json input html body": {
+			strings.Replace(web, "    json invoice_wire limit 8192\n    returns save_outcome\n    body json\n", "    json invoice_wire limit 8192\n    returns save_outcome\n    body html\n", 1),
+			"json input requires body json",
+		},
+		"get html body": {
+			strings.Replace(web, "    input none\n    returns load_outcome\n    body json\n", "    input none\n    returns load_outcome\n    body html\n", 1),
+			"GET actions use body json",
+		},
+		"swap on json": {
+			strings.Replace(web, "        saved status 200\n", "        saved status 200 swap inner\n", 1),
+			"swap applies to html actions only",
+		},
+		"returns not a variant": {
+			strings.Replace(web, "    returns save_outcome\n", "    returns saved\n", 1),
+			"action returns must be a finite variant",
 		},
 		"missing case": {
-			strings.Replace(web, "        busy => 503\n", "", 1),
-			"action cases omit result leaves",
+			strings.Replace(web, "        busy status 503\n", "", 1),
+			"action cases omit returns leaves",
 		},
 		"duplicate case": {
-			strings.Replace(web, "        busy => 503\n", "        busy => 503\n        saved => 200\n", 1),
+			strings.Replace(web, "        busy status 503\n", "        busy status 503\n        saved status 200\n", 1),
 			"duplicate case for leaf saved",
 		},
 		"foreign case leaf": {
-			strings.Replace(web, "        busy => 503\n", "        found => 503\n", 1),
-			"case found is not a leaf of result",
+			strings.Replace(web, "        busy status 503\n", "        found status 503\n", 1),
+			"case found is not a leaf of returns",
 		},
 		"unknown case leaf": {
-			strings.Replace(web, "        busy => 503\n", "        archived => 503\n", 1),
+			strings.Replace(web, "        busy status 503\n", "        archived status 503\n", 1),
 			`no eligible declaration for "archived"`,
 		},
 		"status too low": {
-			strings.Replace(web, "        saved => 200\n", "        saved => 199\n", 1),
+			strings.Replace(web, "        saved status 200\n", "        saved status 199\n", 1),
 			"action status must be 200-599",
 		},
 		"status too high": {
-			strings.Replace(web, "        saved => 200\n", "        saved => 600\n", 1),
+			strings.Replace(web, "        saved status 200\n", "        saved status 600\n", 1),
 			"action status must be 200-599",
 		},
 		"bodiless status": {
-			strings.Replace(web, "        saved => 200\n", "        saved => 204\n", 1),
+			strings.Replace(web, "        saved status 200\n", "        saved status 204\n", 1),
 			"carries no representation",
-		},
-		"unknown handler": {
-			strings.Replace(web, "    handles save_validated\n", "    handles save_missing\n", 1),
-			`no eligible declaration for "save_missing"`,
-		},
-		"handler wrong arity": {
-			strings.Replace(web, "        invoice_wire body\n", "        invoice_wire body\n        str note\n", 1),
-			"takes 2 inputs, want 1 capture and body inputs",
-		},
-		"handler capture renamed": {
-			strings.Replace(web, "        str invoice_id\n        int line\n    asserts\n        sample: \"inv-1\", 1 => ok found(\"inv-1\")\n    ok found(invoice_id)\n", "        str invoice_ref\n        int line\n    asserts\n        sample: \"inv-1\", 1 => ok found(\"inv-1\")\n    ok found(invoice_ref)\n", 1),
-			"must be capture invoice_id",
-		},
-		"handler capture mistyped": {
-			strings.Replace(web, "        str invoice_id\n        int line\n    asserts\n        sample: \"inv-1\", 1 => ok found(\"inv-1\")\n    ok found(invoice_id)\n", "        int invoice_id\n        int line\n    asserts\n        sample: 7, 1 => ok found(\"inv-1\")\n    ok found(\"inv-1\")\n", 1),
-			"capture invoice_id must be",
-		},
-		"handler body mistyped": {
-			strings.Replace(web, actionSaveHandler, strings.Replace(actionSaveHandler, "        invoice_wire body\n", "        saved body\n", 1), 1),
-			"body input must be",
-		},
-		"handler wrong result": {
-			strings.Replace(web, "fn save_outcome save_validated", "fn load_outcome save_validated", 1),
-			"must return",
-		},
-		"handler emits": {
-			actionEmitsFixture(web),
-			"must emit []",
-		},
-		"handler generic": {
-			strings.Replace(web, "fn save_outcome save_validated\n", "fn save_outcome save_validated<item>\n", 1),
-			"must be non-generic",
-		},
-		"handler variadic": {
-			strings.Replace(web, "        invoice_wire body\n", "        invoice_wire ...body\n", 1),
-			"must not be variadic",
 		},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -636,92 +569,6 @@ func TestActionRejects(t *testing.T) {
 	}
 }
 
-func actionEmitsFixture(web string) string {
-	text := strings.Replace(web, "    uses []\n", "    uses [codec]\n", 1)
-	emits := strings.Replace(actionSaveHandler, "    emits []\n", "    emits [codec::invalid_data]\n", 1)
-	return strings.Replace(text, actionSaveHandler, emits, 1)
-}
-
-func TestActionFetchHandlerRejected(t *testing.T) {
-	text := "package web\n" +
-		"    provides [save_invoice, invoice_wire, saved, rejected, stale, denied, busy, save_outcome]\n" +
-		"    uses [http]\n" + actionSaveDomain +
-		"connection service\n" +
-		"    endpoint \"http://127.0.0.1:1/\"\n" +
-		"    auth bearer env \"CAN_ACTION_TOKEN\"\n" +
-		"    timeout_ms 5000\n" +
-		"    max_body_bytes 8192\n" +
-		"fetch saved probe from service\n" +
-		"    emits [http::request_failed]\n" +
-		"    get \"/probe\"\n" +
-		"action save_invoice\n" +
-		"    post \"/invoices/save\"\n" +
-		"    body json invoice_wire\n" +
-		"    handles probe\n" +
-		"    result save_outcome\n" +
-		"    cases\n" +
-		"        saved => 200\n" +
-		"        rejected => 422\n" +
-		"        stale => 409\n" +
-		"        denied => 403\n" +
-		"        busy => 503\n" + actionMain
-	_, err := programFixture(t, map[string]string{"src/web/web.can": text})
-	if err == nil || !strings.Contains(err.Error(), "must be a function") {
-		t.Fatalf("fetch handler admitted or misdiagnosed: %v", err)
-	}
-}
-
-func TestActionOwnerBodyRejected(t *testing.T) {
-	owned := "owner record invoice_sealed\n" +
-		"    str label\n" +
-		"fn save_outcome sealed_validated\n" +
-		"    emits []\n" +
-		"    given\n" +
-		"        invoice_sealed body\n" +
-		"    asserts\n" +
-		"        sample: invoice_sealed(\"inv-1\") => ok saved(\"inv-1\")\n" +
-		"    ok saved(body.label)\n" +
-		"action seal_invoice\n" +
-		"    post \"/invoices/sealed\"\n" +
-		"    body json invoice_sealed\n" +
-		"    handles sealed_validated\n" +
-		"    result save_outcome\n" +
-		"    cases\n" +
-		"        saved => 200\n" +
-		"        rejected => 422\n" +
-		"        stale => 409\n" +
-		"        denied => 403\n" +
-		"        busy => 503\n"
-	_, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(owned)})
-	if err == nil || !strings.Contains(err.Error(), "is not codec-admissible") {
-		t.Fatalf("owner wire body admitted or misdiagnosed: %v", err)
-	}
-}
-
-func TestActionPrivateHandlerRejected(t *testing.T) {
-	web := "package web\n" +
-		"    provides [invoice_wire, saved, rejected, stale, denied, busy, save_outcome]\n" +
-		"    uses []\n" + actionSaveDomain + actionSaveHandler
-	app := "package app\n" +
-		"    provides [save_invoice]\n" +
-		"    uses [web]\n" +
-		"action save_invoice\n" +
-		"    post \"/invoices/save\"\n" +
-		"    body json web::invoice_wire\n" +
-		"    handles web::save_validated\n" +
-		"    result web::save_outcome\n" +
-		"    cases\n" +
-		"        web::saved => 200\n" +
-		"        web::rejected => 422\n" +
-		"        web::stale => 409\n" +
-		"        web::denied => 403\n" +
-		"        web::busy => 503\n" + actionMain
-	_, err := programFixture(t, map[string]string{"src/web/web.can": web, "src/app/main.can": app})
-	if err == nil || !strings.Contains(err.Error(), "is private") {
-		t.Fatalf("private handler admitted or misdiagnosed: %v", err)
-	}
-}
-
 func TestActionResultLeafRenameDiagnoses(t *testing.T) {
 	renamed := strings.Replace(actionWebFile(), "record busy\n", "record overloaded\n", 1)
 	renamed = strings.Replace(renamed, "    busy\n", "    overloaded\n", 1)
@@ -732,20 +579,20 @@ func TestActionResultLeafRenameDiagnoses(t *testing.T) {
 }
 
 func TestActionDiagnosticSpans(t *testing.T) {
-	handler := strings.Replace(actionWebFile(), "    handles save_validated\n", "    handles save_missing\n", 1)
-	_, err := programFixture(t, map[string]string{"src/web/web.can": handler})
+	limited := strings.Replace(actionWebFile(), "    json invoice_wire limit 8192\n", "    json invoice_wire limit 0\n", 1)
+	_, err := programFixture(t, map[string]string{"src/web/web.can": limited})
 	if err == nil {
-		t.Fatal("stale handler admitted")
+		t.Fatal("zero limit admitted")
 	}
 	located, ok := source.AsLocated(err)
 	if !ok {
-		t.Fatalf("handler failure lost its span: %v", err)
+		t.Fatalf("limit failure lost its span: %v", err)
 	}
 	if !strings.HasSuffix(located.File, "web.can") {
-		t.Fatalf("handler span file = %s", located.File)
+		t.Fatalf("limit span file = %s", located.File)
 	}
-	if got := handler[located.Span.Start:located.Span.End]; got != "save_missing" {
-		t.Fatalf("handler span covers %q", got)
+	if got := limited[located.Span.Start:located.Span.End]; got != "0" {
+		t.Fatalf("limit span covers %q", got)
 	}
 	path := strings.Replace(actionWebFile(), "post \"/invoices/save\"", "post \"invoices/save\"", 1)
 	_, err = programFixture(t, map[string]string{"src/web/web.can": path})
@@ -758,5 +605,101 @@ func TestActionDiagnosticSpans(t *testing.T) {
 	}
 	if got := path[located.Span.Start:located.Span.End]; got != `"invoices/save"` {
 		t.Fatalf("path span covers %q", got)
+	}
+}
+
+func TestActionFormRowsLimitChecks(t *testing.T) {
+	rows := "record line_wire\n" +
+		"    str sku\n" +
+		"record batch_wire\n" +
+		"    str customer\n" +
+		"    form::rows<line_wire> lines\n" +
+		"record stored\n" +
+		"    str label\n" +
+		"record store_failed\n" +
+		"    str reason\n" +
+		"variant store_outcome\n" +
+		"    stored\n" +
+		"    store_failed\n" +
+		"action append_batch\n" +
+		"    post \"/invoices/append\"\n" +
+		"    form batch_wire limit 2048 rows_limit 64\n" +
+		"    returns store_outcome\n" +
+		"    body html\n" +
+		"    cases\n" +
+		"        stored status 200 swap inner\n" +
+		"        store_failed status 422 swap inner\n"
+	provides := "append_batch, line_wire, batch_wire, stored, store_failed, store_outcome"
+	text := "package web\n    provides [" + provides + "]\n    uses [form]\n" + rows + actionMain
+	program, err := programFixture(t, map[string]string{"src/web/web.can": text})
+	if err != nil {
+		t.Fatal(err)
+	}
+	action := actionByName(t, program, "append_batch")
+	if action.Input.Mode != "form" || action.Input.Limit != 2048 || action.Input.RowsLimit != 64 {
+		t.Fatalf("rows input lost its limits: %+v", action.Input)
+	}
+	for _, tc := range []struct {
+		name string
+		text string
+		want string
+	}{
+		{
+			"missing rows limit",
+			strings.Replace(text, "    form batch_wire limit 2048 rows_limit 64\n", "    form batch_wire limit 2048\n", 1),
+			"form input with keyed rows requires rows_limit",
+		},
+		{
+			"rows limit range",
+			strings.Replace(text, "    form batch_wire limit 2048 rows_limit 64\n", "    form batch_wire limit 2048 rows_limit 65\n", 1),
+			"action rows_limit must be 1-64",
+		},
+		{
+			"rows limit zero",
+			strings.Replace(text, "    form batch_wire limit 2048 rows_limit 64\n", "    form batch_wire limit 2048 rows_limit 0\n", 1),
+			"action rows_limit must be 1-64",
+		},
+		{
+			"rows limit without rows",
+			strings.Replace(text, "    form batch_wire limit 2048 rows_limit 64\n", "    form line_wire limit 2048 rows_limit 64\n", 1),
+			"form input without keyed rows takes no rows_limit",
+		},
+		{
+			"form input json body",
+			strings.Replace(text, "    returns store_outcome\n    body html\n", "    returns store_outcome\n    body json\n", 1),
+			"form input requires body html",
+		},
+		{
+			"missing swap",
+			strings.Replace(text, "        stored status 200 swap inner\n", "        stored status 200\n", 1),
+			"html action cases require swap inner",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := programFixture(t, map[string]string{"src/web/web.can": tc.text})
+			if err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("rows diagnostic omits %q: %v", tc.want, err)
+			}
+		})
+	}
+}
+
+func TestActionOwnerInputRejected(t *testing.T) {
+	owned := "owner record invoice_sealed\n" +
+		"    str label\n" +
+		"action seal_invoice\n" +
+		"    post \"/invoices/sealed\"\n" +
+		"    json invoice_sealed limit 512\n" +
+		"    returns save_outcome\n" +
+		"    body json\n" +
+		"    cases\n" +
+		"        saved status 200\n" +
+		"        rejected status 422\n" +
+		"        stale status 409\n" +
+		"        denied status 403\n" +
+		"        busy status 503\n"
+	_, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(owned)})
+	if err == nil || !strings.Contains(err.Error(), "is not codec-admissible") {
+		t.Fatalf("owner wire input admitted or misdiagnosed: %v", err)
 	}
 }

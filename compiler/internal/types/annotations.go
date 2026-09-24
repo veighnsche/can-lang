@@ -72,14 +72,18 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 				// the parameter annotations are templated here.
 				fields = d.Given
 			case *syntax.ActionDecl:
-				// Capture, body and result annotations template here; the
-				// path, handler and case-table contracts resolve in the
-				// checker over the sealed graph.
-				fields = append(fields, d.Captures...)
-				if d.Body != nil {
-					fields = append(fields, syntax.Field{Span: d.Body.Span, Type: d.Body.Type, Name: d.Body.Mode})
+				// Captures-record, input-wire and returns annotations
+				// template here; the path, limit, response-mode and
+				// case-table contracts resolve in the checker over the
+				// sealed graph.
+				if d.Captures != nil {
+					name := syntax.Token{Kind: syntax.Name, Span: d.Captures.TypeSpan(), Text: "captures"}
+					fields = append(fields, syntax.Field{Span: d.Captures.TypeSpan(), Type: d.Captures, Name: name})
 				}
-				result = d.Result
+				if d.Input != nil && d.Input.Type != nil {
+					fields = append(fields, syntax.Field{Span: d.Input.Span, Type: d.Input.Type, Name: d.Input.Mode})
+				}
+				result = d.Returns
 				for _, kase := range d.Cases {
 					leaf := syntax.Token{Kind: syntax.Name, Span: kase.Leaf.Span, Text: kase.Leaf.Name}
 					fields = append(fields, syntax.Field{Span: kase.Span, Type: &syntax.NamedType{Span: kase.Leaf.Span, Name: kase.Leaf}, Name: leaf})

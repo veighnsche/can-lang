@@ -315,14 +315,14 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 	if action == nil {
 		return ir.FormActionSite{}, fmt.Errorf("unknown form action %q", name)
 	}
-	if action.Body == nil || action.Body.Mode != "form" {
+	if action.Input.Mode != "form" {
 		return ir.FormActionSite{}, fmt.Errorf("form action %q carries no form body", name)
 	}
-	if action.Result.Identity() != special.Result.Identity() {
-		return ir.FormActionSite{}, fmt.Errorf("form action %q result is %s, not %s", name, types.CanonicalName(action.Result), types.CanonicalName(special.Result))
+	if action.Returns.Identity() != special.Result.Identity() {
+		return ir.FormActionSite{}, fmt.Errorf("form action %q result is %s, not %s", name, types.CanonicalName(action.Returns), types.CanonicalName(special.Result))
 	}
-	if action.Body.Type.Identity() != special.Data.Identity() {
-		return ir.FormActionSite{}, fmt.Errorf("form action %q wire is %s, not %s", name, types.CanonicalName(action.Body.Type), types.CanonicalName(special.Data))
+	if action.Input.Type.Identity() != special.Data.Identity() {
+		return ir.FormActionSite{}, fmt.Errorf("form action %q wire is %s, not %s", name, types.CanonicalName(action.Input.Type), types.CanonicalName(special.Data))
 	}
 	rawEntry, err := c.catalogueType("form::raw_entry", map[string]*types.Type{})
 	if err != nil {
@@ -332,7 +332,8 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 	if err != nil {
 		return ir.FormActionSite{}, err
 	}
-	site := ir.FormActionSite{Action: identity, Method: action.Method, Path: action.Path, Form: action.Body.Form, Handler: action.Handler, Rejected: special.Rejected.Identity(), RawEntry: rawEntry.Identity(), Issue: issue.Identity()}
+	// Declarations are handler-free; the mount consumer binds callables.
+	site := ir.FormActionSite{Action: identity, Method: action.Method, Path: action.Path, Form: action.Input.Form, Rejected: special.Rejected.Identity(), RawEntry: rawEntry.Identity(), Issue: issue.Identity()}
 	for _, kase := range action.Cases {
 		leaf, err := c.actionCaseIdentity(action, kase.Leaf)
 		if err != nil {
@@ -344,9 +345,9 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 }
 
 // actionCaseIdentity resolves a case leaf declaration to its runtime
-// identity through the action result leaves.
+// identity through the action returns leaves.
 func (c *programChecker) actionCaseIdentity(action *ActionDeclaration, leaf string) (string, error) {
-	for _, candidate := range action.Result.Leaves() {
+	for _, candidate := range action.Returns.Leaves() {
 		if candidate.Declaration() == leaf {
 			return candidate.Identity(), nil
 		}

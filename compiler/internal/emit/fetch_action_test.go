@@ -10,7 +10,7 @@ import (
 )
 
 const fetchActionEmitWeb = "package web\n" +
-	"    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
+	"    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
 	"    uses [http, codec]\n" +
 	"record invoice_wire\n" +
 	"    str label\n" +
@@ -31,24 +31,20 @@ const fetchActionEmitWeb = "package web\n" +
 	"    stale\n" +
 	"    denied\n" +
 	"    busy\n" +
-	"fn save_outcome save_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        invoice_wire body\n" +
-	"    asserts\n" +
-	"        sample: invoice_wire(\"inv-1\", 2) => ok saved(\"inv-1\")\n" +
-	"    ok saved(body.label)\n" +
+	"record line_key\n" +
+	"    str invoice_id\n" +
+	"    int line\n" +
 	"action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
-	"    body json invoice_wire\n" +
-	"    handles save_validated\n" +
-	"    result save_outcome\n" +
+	"    json invoice_wire limit 8192\n" +
+	"    returns save_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        saved => 200\n" +
-	"        rejected => 422\n" +
-	"        stale => 409\n" +
-	"        denied => 403\n" +
-	"        busy => 503\n" +
+	"        saved status 200\n" +
+	"        rejected status 422\n" +
+	"        stale status 409\n" +
+	"        denied status 403\n" +
+	"        busy status 503\n" +
 	"record found\n" +
 	"    str label\n" +
 	"record missing\n" +
@@ -59,25 +55,16 @@ const fetchActionEmitWeb = "package web\n" +
 	"    found\n" +
 	"    missing\n" +
 	"    unavailable\n" +
-	"fn load_outcome load_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        str invoice_id\n" +
-	"        int line\n" +
-	"    asserts\n" +
-	"        sample: \"inv-1\", 1 => ok found(\"inv-1\")\n" +
-	"    ok found(invoice_id)\n" +
 	"action load_line\n" +
-	"    get \"/invoices/{invoice_id}/lines/{line}\"\n" +
-	"    captures\n" +
-	"        str invoice_id\n" +
-	"        int line\n" +
-	"    handles load_validated\n" +
-	"    result load_outcome\n" +
+	"    get \"/invoices/:invoice_id/lines/:line\"\n" +
+	"    captures line_key\n" +
+	"    input none\n" +
+	"    returns load_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        found => 200\n" +
-	"        missing => 403\n" +
-	"        unavailable => 503\n" +
+	"        found status 200\n" +
+	"        missing status 403\n" +
+	"        unavailable status 503\n" +
 	"fn load_outcome reload_line\n" +
 	"    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]\n" +
 	"    given\n" +
@@ -154,7 +141,7 @@ func TestFetchEmissionSplicesClientContracts(t *testing.T) {
 		`$canActionFetch.post($canExpr`,
 		`"action":"` + webID + `::load_line"`,
 		`"method":"GET"`,
-		`"path":"/invoices/{invoice_id}/lines/{line}"`,
+		`"path":"/invoices/:invoice_id/lines/:line"`,
 		`"captures":[{"name":"invoice_id","type":"str"},{"name":"line","type":"int"}]`,
 		`"action":"` + webID + `::save_invoice"`,
 		`"method":"POST"`,
@@ -201,7 +188,7 @@ func TestFetchEmissionCrossTargetContract(t *testing.T) {
 	for _, want := range []string{
 		`$canActionFetch.get(`,
 		`$canActionFetch.post(`,
-		`"/invoices/{invoice_id}/lines/{line}"`,
+		`"/invoices/:invoice_id/lines/:line"`,
 	} {
 		if !strings.Contains(bunWeb, want) || !strings.Contains(browserWeb, want) {
 			t.Fatalf("fetch lowering differs across profiles at %s", want)
