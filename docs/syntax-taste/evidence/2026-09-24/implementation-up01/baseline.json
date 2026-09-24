@@ -1,0 +1,48 @@
+{
+  "task": "UP01",
+  "recorded": "2026-09-24",
+  "integrationBranch": "integration/up01-inputs-boundaries",
+  "baselineCommit": "13b6cdb5afea513f06aa9a23ddede4dbe5f81eee",
+  "baselineSubject": "docs: record verified worktree cleanup",
+  "parentCommits": [
+    "655da3da2ac9f995f953eded3977159b58f4a587 docs: preserve worktree audits and invoice diagnostics",
+    "65becc835a88fc39c2e7a1329b1a20273615e1df docs: prepare post-upgrade implementation plan and task lanes"
+  ],
+  "planSourceCommit": "fbd2a5614dbba660b085b6fec8aef4f5d902c051",
+  "planSourceNote": "Implementation plan names fbd2a56 as its source baseline and states a bare checkout of it omits the preparation inputs; the recorded integration baseline is 13b6cdb, which contains the plan, task lanes, selected behavior, invoice gate, and all preparation/evidence inputs. Workers start from 13b6cdb.",
+  "dirtyChangesAtBranchPoint": [],
+  "dirtyChangesNote": "git status --short was empty on main at branch point; no pre-existing work needed preservation beyond the commit itself.",
+  "inputDigestsSha256": {
+    "docs/syntax-taste/post-upgrade-dispositions-2026-09-24.md": "9591229903a5a11bf73f765d4445f92d1a9b4ca8e7dfd4ba3531dca09ece853c",
+    "docs/syntax-taste/post-upgrade-implementation-plan-2026-09-24.md": "d7a16a8891c04597f71250bf53ae5b2a6506cf56554be38dac04aa8018ca3e71",
+    "docs/syntax-taste/post-upgrade-implementation-tasks-2026-09-24.md": "0e8aabee79e2b618fda80af6bec4c0deea4e53c9a91e873b8d18093424f6cdb5",
+    "docs/syntax-taste/post-upgrade-invoice-acceptance-2026-09-24.md": "e75c26c0b34215d6018143bed26df944a604a8e3f1d39f06a4e53c9a91e873b8d18093424f6cdb5",
+    "docs/syntax-taste/post-upgrade-language-review-961f921-2026-09-24.md": "6103a9ef7c126310acb61984ec3844b9f64aa6a35165261ad82d11ddefd7b747",
+    "docs/syntax-taste/post-upgrade-reconciliation-2026-09-24.md": "00e96850a59b3e590faf962acaa44a94105e01735cd19c55246cfd33fc5e0291",
+    "docs/syntax-taste/post-upgrade-selected-behavior-2026-09-24.md": "e16e3319dc1b965562beecfdf3202203237dd0fb4361b7ddcd484524e6730af0",
+    "docs/syntax-taste/preparation/integrated-action-contract.md": "a37ce7e8ad0f7d2682a3f267a5d7f7ba9e3d70b55b532e4217771428ca829d0d",
+    "docs/syntax-taste/preparation/browser-target-design.md": "cad3dd820eded8b0e9b1155b2f464962f436f8379ac2b4ddf4b6d9331750910c",
+    "docs/syntax-taste/preparation/route-capture-design.md": "ae1b073fbaeb07f0e2b4880faed65306023ce0740efa59632ccbe124dca72b8b",
+    "docs/syntax-taste/preparation/keyed-row-design.md": "c91e0c76211c639213889012d7f922ea32aed1e3b7b409ad662fff8ab91aa86b",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/browser-owner/findings.md": "0294ec6d82e28d2680fb4d76cb624e19c516cf604cae23f8fdd2005234aed8f9",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/event-cancel/findings.md": "57753af9f54c3d6125c2f5d015a79d307b9cb8245ae84659aef53aba7b8cbecf",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/findings.md": "b8e0e92f6e09b50cc38781d92191a2ad6d57ad693dc2ef13e52070146907b991",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/htmx-guard/findings.md": "316303b6e80135482d9e15782c814603dc9f2fbba2ff1e5b6b1e0889ee4b1ebf",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/request-lifetime/findings.md": "7a0e519c1d3e0bceff3f93cb8807ac650001d724580ccb18fa98f9cc41e9f1d7",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/query-native-probe.md": "cc68e4b52def3be8ea8ae69ebc20bdb7b224f834206373009c0b5430acbcb5a3",
+    "docs/syntax-taste/evidence/2026-09-24/selected-behavior/regex-native-probe.md": "21f78cc2a24853d84e2fe6a3dc2b8c1f9b3ef3386a77711d06576b56affec10d"
+  },
+  "toolchainObserved": {
+    "goInstalled": "go1.27.1 darwin/arm64",
+    "goDirective": "go 1.25.0 (go.mod)",
+    "bunInstalled": "1.4.2",
+    "bunPinnedRevision": "1.4.2+744846f84",
+    "bunArchiveSha256": "90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f",
+    "bunRuntimeSha256": "35d20dd0263e5c950194434b925454fdfa9ba6e4467da960410fa05b08a7a5b5",
+    "bunTargetId": "bun-1.4.2-darwin-arm64-v1",
+    "typescriptPinned": "7.0.2 (package.json, tscheck/package.json)",
+    "playwrightPinned": "1.55.1 (tests/integration/browser/package.json)",
+    "host": "Darwin 27.0.0 arm64 (macOS 27.0 26A428)"
+  },
+  "note": "Digests captured with shasum -a 256 at UP01 record time on a clean tree; the commit hash above is the full-tree digest. Toolchain operation status is in prerequisites.md."
+}
