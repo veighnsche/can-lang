@@ -1,0 +1,31 @@
+{
+  "fact_fields": [
+    "objective",
+    "baseline",
+    "proxy_evidence",
+    "hash_evidence",
+    "assert_evidence",
+    "contract"
+  ],
+  "question_alternatives": {
+    "profile_structure": [
+      "seam_plus_overlay",
+      "full_duplication",
+      "node_alias_shims",
+      "weaken_bun"
+    ],
+    "identity_sealing": [
+      "async_startup_verify",
+      "trust_manifest_only",
+      "sync_hand_hash"
+    ],
+    "assert_surface": [
+      "assert_free_variants",
+      "fail_closed_stubs",
+      "ship_full_assert"
+    ]
+  },
+  "mechanical_check": "Every explanatory fact, instruction and option has three distinct phrasings; full request bytes differ; alternative sets and stable identifiers (module names, host capabilities, contract terms) are unchanged.",
+  "semantic_check": "Worker compared corresponding triples for equivalent observations, scope caveats and choices before dispatch. Rewording does not prove absence of framing bias; executable test constraints remain decisive.",
+  "prior_answers_excluded": true
+}

@@ -57,13 +57,11 @@
       "./assert/context.ts"
     ],
     "data.ts": [
-      "node:util"
+      "./reflect.ts"
     ],
     "domain.ts": [
       "node:crypto",
-      "./catalogue.ts",
-      "./data.ts",
-      "./failure.ts"
+      "./domain-core.ts"
     ],
     "entry.ts": [
       "./completion.ts",
@@ -77,7 +75,7 @@
       "node:fs"
     ],
     "failure.ts": [
-      "node:util",
+      "./reflect.ts",
       "./primitive.ts"
     ],
     "platform/cli.ts": [
@@ -92,9 +90,7 @@
     "primitive.ts": [],
     "diagnostics.ts": [
       "node:fs",
-      "node:util",
-      "./vendor/trace-mapping.ts",
-      "./failure.ts"
+      "./diagnostics-core.ts"
     ],
     "vendor/trace-mapping.ts": [],
     "callable.ts": [
@@ -124,10 +120,7 @@
     ],
     "owner.ts": [
       "node:async_hooks",
-      "node:util",
-      "./completion.ts",
-      "./data.ts",
-      "./failure.ts"
+      "./owner-core.ts"
     ],
     "transport/deadline.ts": [],
     "transport/body.ts": [
@@ -659,6 +652,55 @@
       "../data.ts",
       "../codec/budget.ts",
       "./html.ts"
+    ],
+    "reflect.ts": [
+      "node:util"
+    ],
+    "domain-core.ts": [
+      "./catalogue.ts",
+      "./data.ts",
+      "./failure.ts"
+    ],
+    "diagnostics-core.ts": [
+      "./reflect.ts",
+      "./vendor/trace-mapping.ts",
+      "./failure.ts"
+    ],
+    "owner-core.ts": [
+      "./reflect.ts",
+      "./completion.ts",
+      "./data.ts",
+      "./failure.ts"
+    ],
+    "browser/reflect.ts": [],
+    "browser/domain.ts": [
+      "../domain-core.ts"
+    ],
+    "browser/diagnostics.ts": [
+      "../completion.ts",
+      "../diagnostics-core.ts",
+      "../domain-core.ts",
+      "../failure.ts"
+    ],
+    "browser/owner.ts": [
+      "../owner-core.ts",
+      "../completion.ts"
+    ],
+    "browser/callable.ts": [
+      "../owner-core.ts"
+    ],
+    "browser/coordination.ts": [
+      "../completion.ts",
+      "../owner-core.ts",
+      "../data.ts",
+      "../domain-core.ts",
+      "../failure.ts"
+    ],
+    "browser/entry.ts": [
+      "../owner-core.ts",
+      "../completion.ts",
+      "./diagnostics.ts",
+      "../failure.ts"
     ]
   }
 }

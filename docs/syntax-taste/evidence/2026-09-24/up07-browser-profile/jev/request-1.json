@@ -1,0 +1,41 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "UP07 must seal a portable browser runtime profile for the Can language: the browser production module graph must have no reachable Node crypto/util/fs/async-hooks edge, while preserving private value branding, equality, int64/codecs, immutable completions and sanitized standard failures. Concrete type/error identities and source locations are sealed at build time. Assertion-only context stays outside the shipped profile. This consultation advises the mechanism choice; it does not change the selected behavior contract.",
+    "baseline": "Eight core runtime modules matter: data, domain, failure, completion, diagnostics, entry, callable, coordination, plus owner (explicit OwnerContext threading from UP04). Current host couplings: node:util proxy/native-error predicates in data/failure/diagnostics/owner, node:crypto sync sha256 identity checks in domain, node:fs diagnostic loading in diagnostics, node:async_hooks ambient context in owner, assertion-context value coupling in callable/coordination, and Bun/process host calls in entry. Bun regression tests demand trap-free proxy rejection (zero trap invocations asserted). There are zero external users, so no legacy spelling is preserved.",
+    "proxy_evidence": "Executable probes prove portable JavaScript cannot detect proxies without invoking a trap: node:util.types.isProxy/isNativeError are trap-free engine internals with no standard equivalent, and Array.isArray looks through to array targets (returns true for an array-backed proxy). Bun tests assert invoked===0/traps===0 on throwing-proxy vectors through dataKeys, describeNativeFailure, accepts, codec encode and owner traversal. Any single shared implementation must therefore keep Node predicates for Bun or break those pinned tests; a browser variant must instead contain at most a bounded number of trap invocations inside try/catch and still fail closed without reading getters or leaking causes.",
+    "hash_evidence": "Domain plan verification hashes a canonical per-shape input with sync sha256 and compares against the sealed identity; forged-plan rejection tests pin this. Browsers offer SHA-256 only asynchronously (WebCrypto digest), and the selected behavior forbids a handwritten hash. The browser flow must therefore verify the emitted plan asynchronously at startup before any domain use, then gate synchronous creation on a verified-plan set. Plan bytes themselves are additionally covered by the build manifest digests in a later task.",
+    "assert_evidence": "Generated Bun code threads assertion contexts through coordination and callable construction, and the assertion identity module itself uses Node crypto. The shipped browser profile must exclude assertion-only context while generated browser calls use only explicit owner tokens. Callable receipts and coordination settlement therefore need browser variants that never import assertion modules: receipts carry deterministic counter-based occurrence identities instead of digests, and settlement drops assertion parameters rather than stubbing them.",
+    "contract": "The governing packet requires: share portable code where possible with only host-required adapters; no second ad hoc runtime and no aliases that fake unavailable Node semantics; never admit foreign objects or proxies by assuming they are absent; supervised assertions still gate build selection; the diagnostic record carries category, phase and Can file/line/column with no native cause, raw input, stacks or secrets. Inventory changes merge through the coordinator."
+  },
+  "questions": {
+    "profile_structure": {
+      "type": "choice",
+      "instructions": "Which profile structure best meets the fixed contract and evidence?",
+      "criteria": {
+        "seam_plus_overlay": "Keep single canonical implementations for modules whose only host need is proxy/error predicates, behind a tiny host-selected predicate seam (Node exact in Bun, bounded contained checks in browser); split only modules needing truly different machinery (sync hash versus async sealed verify, fs versus table diagnostics, ambient versus explicit-only ownership, assertion-free callable/coordination/entry); resolve the seven host-coupled specifiers through a bundle-time transitive mapping table consumed by emitter, auditor and bundler.",
+        "full_duplication": "Duplicate all nine core modules into a parallel browser tree with no shared imports, accepting roughly two thousand lines of parallel logic that must be kept behaviorally identical by tests alone.",
+        "node_alias_shims": "Keep one source tree and alias node:util, node:crypto, node:fs and node:async_hooks to browser shims at bundle time, including a proxy predicate shim that reports false.",
+        "weaken_bun": "Rewrite the canonical modules to portable constructs only, weakening Bun's trap-free proxy guarantees to bounded contained trap firing and updating the pinned tests to the weaker behavior."
+      }
+    },
+    "identity_sealing": {
+      "type": "choice",
+      "instructions": "Where should browser concrete-identity verification live?",
+      "criteria": {
+        "async_startup_verify": "Verify the emitted plan once at browser startup with async WebCrypto over the identical canonical digest input bytes, record verified plans in a private set, and refuse synchronous domain construction for any plan outside that set, with manifest digest coverage added by the later build task.",
+        "trust_manifest_only": "Skip runtime identity verification in the browser entirely and trust the later build task's manifest digests over emitted plan bytes as the sole forgery defense.",
+        "sync_hand_hash": "Write a synchronous SHA-256 implementation in portable TypeScript and verify identities synchronously in the browser exactly like Bun does today."
+      }
+    },
+    "assert_surface": {
+      "type": "choice",
+      "instructions": "How should the browser profile handle assertion-coupled surfaces?",
+      "criteria": {
+        "assert_free_variants": "Ship browser callable/coordination variants that never import assertion modules, drop assertion parameters from their signatures, and use deterministic counter-based receipt identities, with supervised assertions still executed at build selection time outside the shipped bytes.",
+        "fail_closed_stubs": "Ship assertion modules in the browser with stub implementations that throw on any assertion use while keeping the same signatures.",
+        "ship_full_assert": "Ship the complete assertion context, barrier, queue, report and identity machinery in production browser bundles so browser behavior matches Bun exactly."
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Seal Can's browser runtime so production browser bundles resolve zero Node builtin modules, keep all Can semantic guarantees intact, freeze type/error identities and source locations during the build, and leave assertion context out of the shipped bytes. The consultation compares implementation mechanisms for that fixed goal; no response alters the required observable behavior.",
+    "baseline": "Nine runtime files form the core: data, domain, failure, completion, diagnostics, entry, callable, coordination, owner. They currently touch Node type predicates, sync hashing, sync file reads, ambient async context, assertion values, and Bun/process entry points. Bun's suite pins exact hostile-proxy behavior including zero trap execution. Compatibility with old spellings is not a requirement.",
+    "proxy_evidence": "Probes establish that standard JavaScript offers no trap-free proxy test: the Node helpers are engine-internal, and Array.isArray sees through array targets. Bun regression tests pin zero-trap rejection on several hostile-proxy paths. A single shared file therefore cannot satisfy both the Bun pins and a Node-free browser graph; the browser implementation must accept bounded contained trap firing while still rejecting foreign values, never touching getters, and never serializing native causes.",
+    "hash_evidence": "Identity sealing today is a synchronous hash comparison with pinned forgery rejection. Since browsers hash asynchronously and custom hash code is prohibited, the browser path needs startup-time async verification ahead of all domain usage plus a creation gate on verified plans. Manifest coverage of plan bytes arrives in a follow-up build task.",
+    "assert_evidence": "Assertion values flow through coordination/callable paths whose identity layer depends on Node crypto, yet the browser product must ship none of it and must execute on explicit owner context. Browser-specific coordination and callable modules must therefore cut assertion imports, replacing digest identities with deterministic local counters and removing assertion parameters outright.",
+    "contract": "Non-negotiable constraints: one shared portable core plus minimal per-host adapters, no parallel runtime rewrite and no phony Node shims, active fail-closed rejection of foreign/proxy values, assertion-gated build selection preserved, and diagnostics limited to category, phase and Can source coordinates without native or secret data. Module inventory edits land via the coordinator."
+  },
+  "questions": {
+    "profile_structure": {
+      "type": "choice",
+      "instructions": "How should the browser profile relate to the Bun runtime sources?",
+      "criteria": {
+        "seam_plus_overlay": "Unify predicate-only modules on canonical files with a host-chosen predicate seam, author alternate browser modules only for divergent machinery such as hashing, loaders, ambient state, assertion plumbing and startup, and apply a documented specifier overlay at browser bundle time.",
+        "full_duplication": "Maintain two complete copies of the core runtime, one per host, synchronized only by parallel tests.",
+        "node_alias_shims": "Map Node builtin specifiers to browser polyfills during bundling and leave runtime sources untouched.",
+        "weaken_bun": "Converge both hosts on portable code by downgrading Bun's proxy rejection promises and editing current tests to match."
+      }
+    },
+    "identity_sealing": {
+      "type": "choice",
+      "instructions": "How must the browser profile establish sealed type and error identities?",
+      "criteria": {
+        "async_startup_verify": "Check every sealed identity asynchronously before first domain use, admit only verified plans afterwards, and layer build-manifest digests on top in the follow-up task.",
+        "trust_manifest_only": "Omit plan verification from the browser runtime, leaving forgery detection to build-time digests alone.",
+        "sync_hand_hash": "Reimplement hashing synchronously in maintained TypeScript for the browser profile."
+      }
+    },
+    "assert_surface": {
+      "type": "choice",
+      "instructions": "What belongs in the shipped profile where Bun uses assertion values?",
+      "criteria": {
+        "assert_free_variants": "Cut assertion imports and parameters from the browser variants, identify receipts with local counters, and verify assertions during the build instead of shipping the machinery.",
+        "fail_closed_stubs": "Bundle inert assertion stubs that fail any assertion operation at runtime.",
+        "ship_full_assert": "Carry the full assertion system into shipped browser code."
+      }
+    }
+  }
+}
