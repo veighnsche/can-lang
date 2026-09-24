@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "targetId": "bun-1.4.2-linux-amd64-v1",
+  "runtime": {
+    "name": "bun",
+    "version": "1.4.2",
+    "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+    "platform": "linux",
+    "architecture": "amd64",
+    "minimumOSVersion": "13",
+    "executable": "runtime/bun",
+    "sha256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c"
+  },
+  "upstream": {
+    "repository": "https://github.com/oven-sh/bun",
+    "release": "https://github.com/oven-sh/bun/releases/tag/bun-v1.4.2",
+    "tag": "bun-v1.4.2",
+    "publishedAt": "2026-09-05T05:55:48Z",
+    "archive": "bun-linux-x64.zip",
+    "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64.zip",
+    "size": 36646985,
+    "sha256": "36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913",
+    "member": "bun-linux-x64/bun",
+    "provenanceEvidence": "distribution/linux/provenance.json"
+  },
+  "requiredNativeAPIs": [
+    "node:async_hooks.AsyncLocalStorage", "JSON.parse", "JSON.stringify", "JSON.rawJSON", "Array.fromAsync",
+    "Array.prototype.toSorted", "Array.prototype.toReversed",
+    "Set.prototype.intersection", "Map", "Set", "Object.is",
+    "Promise.all", "Promise.allSettled", "Promise.any", "Promise.race",
+    "Intl.Segmenter", "Intl.DateTimeFormat", "String.prototype.normalize", "String.prototype.replaceAll", "String.prototype.isWellFormed",
+    "Uint8Array", "TextEncoder", "TextDecoder", "URL", "URLSearchParams", "Buffer", "RegExp",
+    "Headers", "Headers.prototype.getSetCookie", "Request", "Response", "fetch",
+    "AbortController", "ReadableStream", "Date.now", "Date", "performance.now",
+    "crypto.getRandomValues", "crypto.randomUUID", "crypto.subtle", "Bun.deepEquals",
+    "Bun.sleep", "Bun.CryptoHasher", "Bun.password", "Bun.escapeHTML", "Bun.file", "Bun.write",
+    "Bun.serve", "Bun.SQL", "Bun.S3Client", "Bun.TOML.parse", "Bun.YAML.parse", "Bun.JSON5.parse", "Bun.markdown.html", "Bun.markdown.render", "Bun.Transpiler.prototype.scanImports", "Bun.Transpiler.prototype.transformSync", "node:util.types.isProxy", "node:util.types.isNativeError",
+    "Bun.Glob",
+    "node:fs/promises.mkdir", "node:fs/promises.readdir", "node:fs/promises.lstat", "node:fs/promises.stat", "node:fs/promises.rename",
+    "node:fs/promises.copyFile", "node:fs/promises.rm", "node:fs/promises.rmdir", "node:fs/promises.unlink", "node:fs/promises.writeFile",
+    "node:path.resolve", "node:path.join", "node:path.basename", "node:path.extname", "node:path.dirname",
+    "Bun.spawn", "Bun.which", "process.kill"
+  ],
+  "requiredBehaviorProbes": [
+    "isolated-async-context", "json-source-and-raw-integers", "ordered-fromAsync", "nonthenable-box",
+    "strict-equality", "immutable-arrays", "unicode-and-literal-replacement",
+    "fatal-utf8", "native-intersection-order", "bun-io-handles"
+  ]
+}

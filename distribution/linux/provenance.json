@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.linux-target-provenance",
+  "targetId": "bun-1.4.2-linux-amd64-v1",
+  "recorded": "2026-09-24",
+  "upstream": {
+    "repository": "https://github.com/oven-sh/bun",
+    "release": "https://github.com/oven-sh/bun/releases/tag/bun-v1.4.2",
+    "tag": "bun-v1.4.2",
+    "publishedAt": "2026-09-05T05:55:48Z",
+    "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+    "archive": "bun-linux-x64.zip",
+    "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.4.2/bun-linux-x64.zip",
+    "size": 36646985,
+    "sha256": "36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913",
+    "member": "bun-linux-x64/bun",
+    "executableSize": 79500640,
+    "executableSHA256": "a83d263767d839e4d2649ca8e35d07159c7afc99afdc96d731ced29e056dda0c"
+  },
+  "baseImage": {
+    "ref": "docker.io/library/debian:13",
+    "indexDigest": "sha256:9cc080028c43b27d2074d63a5f9caf7166d731494965616c1a6d2827a004585c",
+    "amd64ManifestDigest": "sha256:d5ce19d4736f0ebbacd686d1040271a5aeb0cc920f5990c1bfae1717627f0674",
+    "observedOSRelease": "Debian GNU/Linux 13 (trixie), ID=debian, VERSION_ID=13, DEBIAN_VERSION_FULL=13.7",
+    "observedLibc": "glibc 2.41"
+  },
+  "buildToolchain": {
+    "go": {
+      "version": "go1.27.1",
+      "url": "https://go.dev/dl/go1.27.1.linux-amd64.tar.gz",
+      "size": 70553950,
+      "sha256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445"
+    },
+    "apt": ["ca-certificates", "curl", "gcc", "libc6-dev", "python3", "binutils"]
+  },
+  "postgresQualificationImage": {
+    "ref": "docker.io/library/postgres:17",
+    "indexDigest": "sha256:f4c66b820c6f974249089d3d16d86a3698eae11e8746eb6644b2271031e91232",
+    "amd64ManifestDigest": "sha256:e31e3d5327d1806f6177827c9710643e4f35f7ab3f14d26d05332753d3e95ee0",
+    "observedVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+  },
+  "smokeMatrix": {
+    "runtimeCheck": ["bun=1.4.2", "platform=linux", "architecture=x64"],
+    "nativeQualification": "distribution/qualify.py --target-file distribution/target-linux-amd64.json",
+    "canExamples": {
+      "process": "canlc run -- ada => stdout 'ok' via real /bin/echo",
+      "files": "canlc run -- <single-file dir> => stdout 'file a.txt\\n'",
+      "crypto": "canlc run -- 'correct horse' => stdout 'match'; wrong => 'mismatch'",
+      "sqlite": "seeded notes.sqlite => canlc run -- <db> => stdout '7: remember'"
+    },
+    "postgres": "smoke/pg-driver.ts roundtrip through installed runtime/bun when DATABASE_URL is set"
+  }
+}

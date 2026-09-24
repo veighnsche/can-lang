@@ -22,7 +22,10 @@ for (const name of ["JSON.rawJSON", "Array.fromAsync", "node:util.types.isProxy"
     } finally { Object.defineProperty(owner, key, descriptor); }
   });
 }
-for (const [key, value] of Object.entries({ name: "node", version: "0.0.0", revision: "wrong", platform: "linux", architecture: "x64", sha256: "tampered" })) {
+const wrongIdentity = { name: "node", version: "0.0.0", revision: "wrong", sha256: "tampered",
+  platform: manifest.runtime.platform === "linux" ? "darwin" : "linux",
+  architecture: manifest.runtime.architecture === "amd64" ? "arm64" : "amd64" };
+for (const [key, value] of Object.entries(wrongIdentity)) {
   test(`refuse different ${key}`, async () => {
     const report = await qualify(manifest, { ...actual, [key]: value });
     expect(report.passed).toBe(false);

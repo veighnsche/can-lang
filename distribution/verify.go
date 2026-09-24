@@ -2,6 +2,7 @@ package distribution
 
 import (
 	"bytes"
+	"debug/elf"
 	"debug/macho"
 	"encoding/json"
 	"fmt"
@@ -17,9 +18,9 @@ import (
 // own manifest without executing anything inside it. Release and install
 // both verify before trusting a single byte: strict manifest shape,
 // required assets, exact per-file hashes with no unknown files, no
-// symlinks anywhere, an arm64 Mach-O runtime matching the pin, a target
-// record identical to the compiled pin, and a launcher stamped with the
-// manifest digest.
+// symlinks anywhere, a host-format runtime (arm64 Mach-O or x86-64 ELF)
+// matching the pin, a target record identical to the compiled pin, and a
+// launcher stamped with the manifest digest.
 func VerifyBundle(dir string) (Manifest, error) {
 	var empty Manifest
 	abs, err := filepath.Abs(dir)
@@ -34,15 +35,15 @@ func VerifyBundle(dir string) (Manifest, error) {
 		return empty, fmt.Errorf("verify bundle: not a directory")
 	}
 	target := PinnedTarget()
-	if runtime.GOOS != target.Runtime.Platform || runtime.GOARCH != target.Runtime.Architecture {
-		return empty, fmt.Errorf("verify bundle: requires macOS arm64")
+	if !HostSupported() || runtime.GOOS != target.Runtime.Platform || runtime.GOARCH != target.Runtime.Architecture {
+		return empty, fmt.Errorf("verify bundle: requires one of %s", strings.Join(SupportedTargets(), ", "))
 	}
 	osVersion, err := hostOSVersion()
 	if err != nil {
 		return empty, err
 	}
 	if !atLeastVersion(osVersion, target.Runtime.MinimumOSVersion) {
-		return empty, fmt.Errorf("verify bundle: macOS %s or newer required (found %s)", target.Runtime.MinimumOSVersion, osVersion)
+		return empty, fmt.Errorf("verify bundle: %s %s or newer required (found %s)", target.Runtime.Platform, target.Runtime.MinimumOSVersion, osVersion)
 	}
 	raw, err := bundleFile(abs, "manifest.json")
 	if err != nil {
@@ -73,13 +74,8 @@ func VerifyBundle(dir string) (Manifest, error) {
 			return empty, err
 		}
 		if name == target.Runtime.Executable {
-			file, err := macho.NewFile(bytes.NewReader(data))
-			if err != nil {
-				return empty, fmt.Errorf("verify bundle: runtime is not a Mach-O executable")
-			}
-			file.Close()
-			if file.Cpu != macho.CpuArm64 {
-				return empty, fmt.Errorf("verify bundle: runtime must be arm64")
+			if err := checkRuntimeFormat(data, target); err != nil {
+				return empty, err
 			}
 			if Hash(data) != target.Runtime.SHA256 {
 				return empty, fmt.Errorf("verify bundle: pinned Bun hash mismatch")
@@ -90,7 +86,7 @@ func VerifyBundle(dir string) (Manifest, error) {
 				return empty, fmt.Errorf("verify bundle: runtime is not executable")
 			}
 		}
-		if name == "distribution/target.json" && !bytes.Equal(data, TargetJSON) {
+		if name == "distribution/target.json" && !bytes.Equal(data, PinnedTargetJSON()) {
 			return empty, fmt.Errorf("verify bundle: target differs from compiled pin")
 		}
 		if Hash(data) != manifest.Files[name] {
@@ -108,6 +104,31 @@ func VerifyBundle(dir string) (Manifest, error) {
 		return empty, err
 	}
 	return manifest, nil
+}
+
+// checkRuntimeFormat binds the sidecar to the host executable format:
+// arm64 Mach-O on macOS, 64-bit x86-64 ELF on Linux.
+func checkRuntimeFormat(data []byte, target Target) error {
+	if target.Runtime.Platform == "linux" {
+		file, err := elf.NewFile(bytes.NewReader(data))
+		if err != nil {
+			return fmt.Errorf("verify bundle: runtime is not an ELF executable")
+		}
+		file.Close()
+		if file.Class != elf.ELFCLASS64 || file.Machine != elf.EM_X86_64 {
+			return fmt.Errorf("verify bundle: runtime must be x86-64 ELF")
+		}
+		return nil
+	}
+	file, err := macho.NewFile(bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("verify bundle: runtime is not a Mach-O executable")
+	}
+	file.Close()
+	if file.Cpu != macho.CpuArm64 {
+		return fmt.Errorf("verify bundle: runtime must be arm64")
+	}
+	return nil
 }
 
 func bundleFile(root, name string) ([]byte, error) {

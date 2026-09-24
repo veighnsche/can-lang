@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -82,8 +83,11 @@ func TestReleaseRoundTrip(t *testing.T) {
 	if inspection.Kind != "can.release-inspection" || inspection.TargetID != PinnedTarget().TargetID || inspection.RuntimeSHA256 != PinnedTarget().Runtime.SHA256 {
 		t.Fatalf("wrong inspection identity: %+v", inspection)
 	}
-	if inspection.Display == "" {
-		t.Fatal("empty codesign display transcript")
+	if inspection.Display == "" || inspection.Entitlements == "" {
+		t.Fatal("empty platform display transcript")
+	}
+	if inspection.HostOS != runtime.GOOS || inspection.HostArch != runtime.GOARCH {
+		t.Fatalf("wrong host record: %+v", inspection)
 	}
 	// Identical bundles release identical bytes: entry order and timestamps
 	// are fixed, so the digest is a pure function of content.

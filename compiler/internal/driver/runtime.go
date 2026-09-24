@@ -4,6 +4,7 @@ package driver
 import (
 	"bytes"
 	"context"
+	"debug/elf"
 	"debug/macho"
 	"encoding/json"
 	"errors"
@@ -39,15 +40,15 @@ func resolve(launcher, expectedManifestSHA256 string) (*Runtime, error) {
 		return nil, fmt.Errorf("CAN-DIST-UNBUNDLED: build a development distribution first")
 	}
 	target := distribution.PinnedTarget()
-	if runtime.GOOS != target.Runtime.Platform || runtime.GOARCH != target.Runtime.Architecture {
-		return nil, fmt.Errorf("CAN-DIST-PLATFORM: requires macOS arm64")
+	if !distribution.HostSupported() || runtime.GOOS != target.Runtime.Platform || runtime.GOARCH != target.Runtime.Architecture {
+		return nil, fmt.Errorf("CAN-DIST-PLATFORM: requires one of %s", strings.Join(distribution.SupportedTargets(), ", "))
 	}
 	osVersion, err := hostOSVersion()
 	if err != nil {
 		return nil, err
 	}
 	if !atLeast(osVersion, target.Runtime.MinimumOSVersion) {
-		return nil, fmt.Errorf("CAN-DIST-OS: macOS %s or newer required (found %s)", target.Runtime.MinimumOSVersion, osVersion)
+		return nil, fmt.Errorf("CAN-DIST-OS: %s %s or newer required (found %s)", target.Runtime.Platform, target.Runtime.MinimumOSVersion, osVersion)
 	}
 	launcher, err = filepath.EvalSymlinks(launcher)
 	if err != nil {
@@ -94,18 +95,14 @@ func resolve(launcher, expectedManifestSHA256 string) (*Runtime, error) {
 			return nil, err
 		}
 		if isRuntime {
-			file, err := macho.NewFile(bytes.NewReader(data))
-			if err != nil {
-				return nil, fmt.Errorf("CAN-DIST-ARCH: runtime is not a Mach-O executable")
-			}
-			if file.Cpu != macho.CpuArm64 {
-				return nil, fmt.Errorf("CAN-DIST-ARCH: runtime must be arm64")
+			if err := checkRuntimeFormat(data, target); err != nil {
+				return nil, err
 			}
 			if distribution.Hash(data) != target.Runtime.SHA256 {
 				return nil, fmt.Errorf("CAN-DIST-INTEGRITY: pinned Bun hash mismatch")
 			}
 		}
-		if name == "distribution/target.json" && !bytes.Equal(data, distribution.TargetJSON) {
+		if name == "distribution/target.json" && !bytes.Equal(data, distribution.PinnedTargetJSON()) {
 			return nil, fmt.Errorf("CAN-DIST-TARGET: target differs from compiled pin")
 		}
 		if distribution.Hash(data) != manifest.Files[name] {
@@ -113,6 +110,31 @@ func resolve(launcher, expectedManifestSHA256 string) (*Runtime, error) {
 		}
 	}
 	return &Runtime{Root: root, Executable: filepath.Join(root, target.Runtime.Executable), manifest: manifest}, nil
+}
+
+// checkRuntimeFormat binds the sidecar to the host executable format:
+// arm64 Mach-O on macOS, 64-bit x86-64 ELF on Linux.
+func checkRuntimeFormat(data []byte, target distribution.Target) error {
+	if target.Runtime.Platform == "linux" {
+		file, err := elf.NewFile(bytes.NewReader(data))
+		if err != nil {
+			return fmt.Errorf("CAN-DIST-ARCH: runtime is not an ELF executable")
+		}
+		file.Close()
+		if file.Class != elf.ELFCLASS64 || file.Machine != elf.EM_X86_64 {
+			return fmt.Errorf("CAN-DIST-ARCH: runtime must be x86-64 ELF")
+		}
+		return nil
+	}
+	file, err := macho.NewFile(bytes.NewReader(data))
+	if err != nil {
+		return fmt.Errorf("CAN-DIST-ARCH: runtime is not a Mach-O executable")
+	}
+	file.Close()
+	if file.Cpu != macho.CpuArm64 {
+		return fmt.Errorf("CAN-DIST-ARCH: runtime must be arm64")
+	}
+	return nil
 }
 
 func regularFile(root, name string, executable bool) ([]byte, error) {

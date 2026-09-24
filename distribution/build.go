@@ -11,8 +11,22 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 )
+
+// launcherPlatform maps the admitted host to its Go build pair. It reports
+// "" on any other host so builds refuse instead of cross-compiling.
+func launcherPlatform() (string, string) {
+	switch {
+	case runtime.GOOS == "darwin" && runtime.GOARCH == "arm64":
+		return "darwin", "arm64"
+	case runtime.GOOS == "linux" && runtime.GOARCH == "amd64":
+		return "linux", "amd64"
+	default:
+		return "", ""
+	}
+}
 
 // Build consumes an already acquired archive. It never downloads or overwrites
 // an existing version; publication happens only after every asset and launcher
@@ -20,6 +34,9 @@ import (
 func Build(ctx context.Context, source, output, archive, version string) (string, error) {
 	if !regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9._-]*$`).MatchString(version) {
 		return "", fmt.Errorf("invalid distribution version")
+	}
+	if !HostSupported() {
+		return "", fmt.Errorf("unsupported host; requires one of darwin/arm64, linux/amd64")
 	}
 	source, err := filepath.Abs(source)
 	if err != nil {
@@ -107,7 +124,7 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 	if err := write(target.Runtime.Executable, runtimeBytes, 0755); err != nil {
 		return "", err
 	}
-	if err := write("distribution/target.json", TargetJSON, 0644); err != nil {
+	if err := write("distribution/target.json", PinnedTargetJSON(), 0644); err != nil {
 		return "", err
 	}
 	config, err := os.ReadFile(filepath.Join(source, "tools/runtime/tsconfig.json"))
@@ -174,7 +191,12 @@ func Build(ctx context.Context, source, output, archive, version string) (string
 	// toolchain at build time (a documented developer prerequisite). The
 	// shipped binary links only the platform libc and runs without any C
 	// tooling; staged tests execute it with PATH lacking compilers.
-	cmd.Env = append(cmd.Env, "GOOS=darwin", "GOARCH=arm64", "CGO_ENABLED=1", "GOPROXY=off", "GOSUMDB=off", "GOTOOLCHAIN=local")
+	// Builds never cross targets: the launcher matches the admitted host.
+	launcherGOOS, launcherGOARCH := launcherPlatform()
+	if launcherGOOS == "" {
+		return "", fmt.Errorf("build launcher: unsupported host; requires one of darwin/arm64, linux/amd64")
+	}
+	cmd.Env = append(cmd.Env, "GOOS="+launcherGOOS, "GOARCH="+launcherGOARCH, "CGO_ENABLED=1", "GOPROXY=off", "GOSUMDB=off", "GOTOOLCHAIN=local")
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("build launcher: %w\n%s", err, output)
 	}

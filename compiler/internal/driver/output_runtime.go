@@ -60,7 +60,7 @@ func (r *Runtime) PrivateArtifacts() (RuntimeArtifacts, error) {
 		Target         string
 		TargetManifest string
 		Modules        map[string]string
-	}{r.manifest.TargetID, hashBytes(distribution.TargetJSON), hashes})
+	}{r.manifest.TargetID, hashBytes(distribution.PinnedTargetJSON()), hashes})
 	id := hashBytes(encoded)
 	result := RuntimeArtifacts{Directory: "runtime/r-" + id, Identity: id}
 	for _, name := range sortedOutputKeys(inventory.Modules) {

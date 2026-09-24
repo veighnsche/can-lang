@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 //go:embed assets/htmx-4.0.0.min.js
@@ -19,6 +20,9 @@ var HTMXScript []byte
 
 //go:embed target.json
 var TargetJSON []byte
+
+//go:embed target-linux-amd64.json
+var TargetLinuxJSON []byte
 
 type Target struct {
 	SchemaVersion int    `json:"schemaVersion"`
@@ -147,10 +151,44 @@ func HTMXAsset() ([]byte, error) {
 	return script, nil
 }
 
-func PinnedTarget() Target {
+func mustTarget(raw []byte) Target {
 	var target Target
-	if err := json.Unmarshal(TargetJSON, &target); err != nil {
+	if err := json.Unmarshal(raw, &target); err != nil {
 		panic(err)
 	}
 	return target
+}
+
+// LinuxTarget returns the pinned Debian 13 amd64/glibc runtime record. It
+// is selected only on that host; builds never cross targets.
+func LinuxTarget() Target {
+	return mustTarget(TargetLinuxJSON)
+}
+
+// SupportedTargets lists every admitted host target ID for diagnostics.
+func SupportedTargets() []string {
+	return []string{mustTarget(TargetJSON).TargetID, LinuxTarget().TargetID}
+}
+
+// HostSupported reports whether the current host is an admitted target.
+func HostSupported() bool {
+	return (runtime.GOOS == "darwin" && runtime.GOARCH == "arm64") ||
+		(runtime.GOOS == "linux" && runtime.GOARCH == "amd64")
+}
+
+func PinnedTarget() Target {
+	if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
+		return LinuxTarget()
+	}
+	return mustTarget(TargetJSON)
+}
+
+// PinnedTargetJSON returns the pinned manifest bytes for this host. Bundles
+// embed and verify these exact bytes; only the admitted host target is
+// ever published.
+func PinnedTargetJSON() []byte {
+	if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
+		return TargetLinuxJSON
+	}
+	return TargetJSON
 }

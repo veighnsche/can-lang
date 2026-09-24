@@ -64,7 +64,7 @@ func syntheticBundle(t *testing.T, parent, version string, runtimeBytes []byte) 
 	root := filepath.Join(parent, name)
 	files := map[string][]byte{
 		target.Runtime.Executable:                runtimeBytes,
-		"distribution/target.json":               TargetJSON,
+		"distribution/target.json":               PinnedTargetJSON(),
 		"runtime/environment.ts":                 []byte("export const test = 1;\n"),
 		"tools/runtime/check.ts":                 []byte("check\n"),
 		"tools/runtime/bunfig.toml":              []byte("bunfig\n"),

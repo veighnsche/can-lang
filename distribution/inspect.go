@@ -27,8 +27,9 @@ type Inspection struct {
 }
 
 // InspectRuntime observes the pinned runtime executable with the platform's
-// read-only display tools. It runs no network fetch, trusts no publisher,
-// and refuses nothing about the content: callers file the transcript.
+// read-only display tools: codesign on macOS, readelf on Linux. It runs no
+// network fetch, trusts no publisher, and refuses nothing about the
+// content: callers file the transcript.
 func InspectRuntime(ctx context.Context, runtimePath string) (Inspection, error) {
 	target := PinnedTarget()
 	abs, err := filepath.Abs(runtimePath)
@@ -49,13 +50,23 @@ func InspectRuntime(ctx context.Context, runtimePath string) (Inspection, error)
 	if Hash(data) != target.Runtime.SHA256 {
 		return Inspection{}, fmt.Errorf("inspect runtime: not the pinned executable")
 	}
-	display, err := toolText(ctx, "codesign", "-dvvv", abs)
-	if err != nil {
-		return Inspection{}, err
-	}
-	entitlements, err := toolText(ctx, "codesign", "-d", "--entitlements", ":-", abs)
-	if err != nil {
-		return Inspection{}, err
+	display, entitlements := "", ""
+	if target.Runtime.Platform == "linux" {
+		// The file header binds class/machine; the program headers show
+		// the glibc loader INTERP the T19 target requires.
+		if display, err = toolText(ctx, "readelf", "-W", "-h", abs); err != nil {
+			return Inspection{}, err
+		}
+		if entitlements, err = toolText(ctx, "readelf", "-W", "-l", abs); err != nil {
+			return Inspection{}, err
+		}
+	} else {
+		if display, err = toolText(ctx, "codesign", "-dvvv", abs); err != nil {
+			return Inspection{}, err
+		}
+		if entitlements, err = toolText(ctx, "codesign", "-d", "--entitlements", ":-", abs); err != nil {
+			return Inspection{}, err
+		}
 	}
 	return Inspection{
 		SchemaVersion: 1,

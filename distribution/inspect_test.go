@@ -3,7 +3,9 @@ package distribution
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -14,19 +16,33 @@ func TestInspectRuntime(t *testing.T) {
 	if err := os.WriteFile(path, archiveRuntime(t), 0755); err != nil {
 		t.Fatal(err)
 	}
+	target := PinnedTarget()
+	if target.Runtime.Platform == "linux" {
+		if _, err := exec.LookPath("readelf"); err != nil {
+			t.Skip("readelf unavailable for Linux inspection transcripts")
+		}
+	}
 	inspection, err := InspectRuntime(ctx, path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	target := PinnedTarget()
 	if inspection.SchemaVersion != 1 || inspection.Kind != "can.release-inspection" || inspection.TargetID != target.TargetID {
 		t.Fatalf("wrong inspection identity: %+v", inspection)
 	}
 	if inspection.Runtime != target.Runtime.Executable || inspection.RuntimeSHA256 != target.Runtime.SHA256 {
 		t.Fatalf("inspection does not bind the pin: %+v", inspection)
 	}
-	if inspection.HostOS != "darwin" || inspection.HostArch != "arm64" {
+	if inspection.HostOS != runtime.GOOS || inspection.HostArch != runtime.GOARCH {
 		t.Fatalf("wrong host record: %+v", inspection)
+	}
+	if target.Runtime.Platform == "linux" {
+		if !strings.Contains(inspection.Display, "ELF64") || !strings.Contains(inspection.Display, "X86-64") {
+			t.Fatalf("display transcript missing ELF facts: %q", inspection.Display)
+		}
+		if !strings.Contains(inspection.Entitlements, "INTERP") {
+			t.Fatalf("program-header transcript missing loader facts: %q", inspection.Entitlements)
+		}
+		return
 	}
 	if !strings.Contains(inspection.Display, "Identifier=") || !strings.Contains(inspection.Display, "Mach-O") {
 		t.Fatalf("display transcript missing signature facts: %q", inspection.Display)

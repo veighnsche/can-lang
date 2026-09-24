@@ -9,8 +9,9 @@ import { strict as assert } from "node:assert";
 
 export const sha256 = (data: string | Uint8Array) => createHash("sha256").update(data).digest("hex");
 export function identityFailures(target: any, actual: any): string[] {
+  const normalized = { ...actual, architecture: actual.architecture === "x64" ? "amd64" : actual.architecture };
   return ["name", "version", "revision", "platform", "architecture", "sha256"]
-    .filter(key => target[key] !== actual[key]).map(key => `runtime.${key}: expected ${target[key]}, got ${actual[key]}`);
+    .filter(key => target[key] !== normalized[key]).map(key => `runtime.${key}: expected ${target[key]}, got ${normalized[key]}`);
 }
 export function apiAvailable(name: string): boolean {
   if(name === "node:async_hooks.AsyncLocalStorage")return typeof AsyncLocalStorage === "function";
