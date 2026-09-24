@@ -255,6 +255,74 @@ func TestActionGetPostSharePath(t *testing.T) {
 	}
 }
 
+func TestActionStaticCaptureOverlapAllowed(t *testing.T) {
+	// A static route and a capture route of one method overlap with static
+	// priority, and one capture shape may serve both methods.
+	extra := "fn load_outcome load_static\n" +
+		"    emits []\n" +
+		"    asserts\n" +
+		"        sample: => ok found(\"new\")\n" +
+		"    ok found(\"new\")\n" +
+		"action load_new\n" +
+		"    get \"/invoices/new\"\n" +
+		"    handles load_static\n" +
+		"    result load_outcome\n" +
+		"    cases\n" +
+		"        found => 200\n" +
+		"        missing => 403\n" +
+		"        unavailable => 503\n" +
+		"fn load_outcome load_named\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        str name\n" +
+		"    asserts\n" +
+		"        sample: \"n\" => ok found(\"n\")\n" +
+		"    ok found(name)\n" +
+		"action load_name\n" +
+		"    get \"/invoices/{name}\"\n" +
+		"    captures\n" +
+		"        str name\n" +
+		"    handles load_named\n" +
+		"    result load_outcome\n" +
+		"    cases\n" +
+		"        found => 200\n" +
+		"        missing => 403\n" +
+		"        unavailable => 503\n" +
+		"fn save_outcome post_named\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        str name\n" +
+		"        invoice_wire body\n" +
+		"    asserts\n" +
+		"        sample: \"n\", invoice_wire(\"l\", 1) => ok saved(\"l\")\n" +
+		"    ok saved(body.label)\n" +
+		"action post_name\n" +
+		"    post \"/invoices/{name}\"\n" +
+		"    captures\n" +
+		"        str name\n" +
+		"    body json invoice_wire\n" +
+		"    handles post_named\n" +
+		"    result save_outcome\n" +
+		"    cases\n" +
+		"        saved => 200\n" +
+		"        rejected => 422\n" +
+		"        stale => 409\n" +
+		"        denied => 403\n" +
+		"        busy => 503\n"
+	program, err := programFixture(t, map[string]string{"src/web/web.can": actionWebFile(extra)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(program.Actions) != 5 {
+		t.Fatalf("checked %d actions, want 5", len(program.Actions))
+	}
+	static := actionByName(t, program, "load_new")
+	captured := actionByName(t, program, "load_name")
+	if len(static.Captures) != 0 || len(captured.Captures) != 1 {
+		t.Fatal("static and capture routes lost their shapes")
+	}
+}
+
 func TestActionCrossPackageHandler(t *testing.T) {
 	web := "package web\n" +
 		"    provides [save_validated, invoice_wire, saved, rejected, stale, denied, busy, save_outcome]\n" +
@@ -364,6 +432,72 @@ func TestActionRejects(t *testing.T) {
 				"        missing => 403\n" +
 				"        unavailable => 503\n"),
 			"duplicates the GET /invoices/{}/lines/{} route",
+		},
+		"encoded static duplicate": {
+			actionWebFile("fn load_outcome plain_validated\n" +
+				"    emits []\n" +
+				"    asserts\n" +
+				"        sample: => ok found(\"new\")\n" +
+				"    ok found(\"new\")\n" +
+				"action load_plain\n" +
+				"    get \"/invoices/new\"\n" +
+				"    handles plain_validated\n" +
+				"    result load_outcome\n" +
+				"    cases\n" +
+				"        found => 200\n" +
+				"        missing => 403\n" +
+				"        unavailable => 503\n" +
+				"fn load_outcome encoded_validated\n" +
+				"    emits []\n" +
+				"    asserts\n" +
+				"        sample: => ok found(\"new\")\n" +
+				"    ok found(\"new\")\n" +
+				"action load_encoded\n" +
+				"    get \"/invoices/n%65w\"\n" +
+				"    handles encoded_validated\n" +
+				"    result load_outcome\n" +
+				"    cases\n" +
+				"        found => 200\n" +
+				"        missing => 403\n" +
+				"        unavailable => 503\n"),
+			"duplicates the GET /invoices/new route",
+		},
+		"ambiguous capture overlap": {
+			actionWebFile("fn load_outcome left_validated\n" +
+				"    emits []\n" +
+				"    given\n" +
+				"        str name\n" +
+				"    asserts\n" +
+				"        sample: \"n\" => ok found(\"n\")\n" +
+				"    ok found(name)\n" +
+				"action load_left\n" +
+				"    get \"/invoices/{name}/lines\"\n" +
+				"    captures\n" +
+				"        str name\n" +
+				"    handles left_validated\n" +
+				"    result load_outcome\n" +
+				"    cases\n" +
+				"        found => 200\n" +
+				"        missing => 403\n" +
+				"        unavailable => 503\n" +
+				"fn load_outcome right_validated\n" +
+				"    emits []\n" +
+				"    given\n" +
+				"        str row\n" +
+				"    asserts\n" +
+				"        sample: \"r\" => ok found(\"r\")\n" +
+				"    ok found(row)\n" +
+				"action load_right\n" +
+				"    get \"/invoices/new/{row}\"\n" +
+				"    captures\n" +
+				"        str row\n" +
+				"    handles right_validated\n" +
+				"    result load_outcome\n" +
+				"    cases\n" +
+				"        found => 200\n" +
+				"        missing => 403\n" +
+				"        unavailable => 503\n"),
+			"ambiguously overlaps the GET /invoices/new/{} route",
 		},
 		"path without slash": {
 			strings.Replace(web, "post \"/invoices/save\"", "post \"invoices/save\"", 1),

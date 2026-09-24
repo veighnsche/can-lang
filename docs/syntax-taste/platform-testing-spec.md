@@ -995,6 +995,24 @@ actions never mount a compatibility route. Changing a path, method, wire
 field or result leaf diagnoses or rebuilds every statically linked use
 through the same checking on the next build.
 
+Route dispatch is method-first: the request method selects a route group,
+and within the group a static segment beats a capture at the same position.
+Collision shapes compare decoded statics, so escaped and plain spellings of
+one path are the same route. Same-method shapes that can match one path
+without a static-priority winner are an ambiguous collision diagnosed at
+compile time and rejected when the native route table is built; different
+methods never collide. A `str` capture binds one decoded non-empty segment;
+an `int` capture binds the canonical int64 spelling with no leading zeros,
+no plus sign and no `-0`. Each raw segment strict-decodes before matching,
+so a malformed escape, an encoded separator, a control, a backslash or a
+dot segment is a 400 before any route is consulted. A decoded path that
+matches no shape is a 404; a shape matched under another method only is a
+405 with an `Allow` header. The canonical URL builder emits the one spelling
+dispatch accepts, so every built URL round-trips to the same action and
+values. Native route callbacks reenter the existing asset, ingress, scope
+and header lifecycle, and anything actions do not claim falls through to the
+legacy router.
+
 ### HTTP client status rule
 
 For approved native fetch declarations, any final status 200--599 completes an

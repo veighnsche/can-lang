@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -53,6 +54,12 @@ type ActionDeclaration struct {
 // so the checked table and duplicate-route diagnostics are deterministic.
 func (c *programChecker) checkActions(files []*resolve.File) error {
 	seen := map[string]string{}
+	type priorShape struct {
+		name     string
+		method   string
+		segments []string
+	}
+	var prior []priorShape
 	for _, file := range files {
 		for _, declaration := range file.Source.Syntax.Declarations {
 			d, ok := declaration.(*syntax.ActionDecl)
@@ -66,11 +73,62 @@ func (c *programChecker) checkActions(files []*resolve.File) error {
 			if prev, dup := seen[shape]; dup {
 				return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s duplicates the %s route of action %s", action.Symbol.ID, shape, prev))
 			}
+			segments := strings.Split(strings.SplitN(shape, " ", 2)[1], "/")
+			for _, prev := range prior {
+				if prev.method != action.Method {
+					continue
+				}
+				if actionShapesAmbiguous(prev.segments, segments) {
+					return source.Locate(file.Source.Path, d.Path.Span, fmt.Errorf("action %s ambiguously overlaps the %s route of action %s", action.Symbol.ID, shape, prev.name))
+				}
+			}
 			seen[shape] = action.Symbol.ID
+			prior = append(prior, priorShape{name: action.Symbol.ID, method: action.Method, segments: segments})
 			c.program.Actions = append(c.program.Actions, action)
 		}
 	}
 	return nil
+}
+
+// actionShapesAmbiguous reports whether two same-method route shapes can
+// match one path without a static-priority winner. Equal shapes are
+// duplicates, not ambiguous; the duplicate check runs first.
+func actionShapesAmbiguous(first, second []string) bool {
+	if len(first) != len(second) {
+		return false
+	}
+	same := true
+	for i := range first {
+		if first[i] != "{}" && second[i] != "{}" {
+			if first[i] != second[i] {
+				return false
+			}
+			continue
+		}
+		// Captures share one shape position: names normalize away.
+		if (first[i] == "{}") != (second[i] == "{}") {
+			same = false
+		}
+	}
+	if same {
+		return false
+	}
+	covers := func(outer, inner []string) bool {
+		outerStatics, innerStatics := 0, 0
+		for i := range outer {
+			if outer[i] != "{}" {
+				outerStatics++
+			}
+			if inner[i] != "{}" {
+				innerStatics++
+			}
+			if outer[i] == "{}" && inner[i] != "{}" {
+				return false
+			}
+		}
+		return outerStatics > innerStatics
+	}
+	return !covers(first, second) && !covers(second, first)
 }
 
 func (c *programChecker) checkAction(file *resolve.File, d *syntax.ActionDecl) (*ActionDeclaration, string, error) {
@@ -266,7 +324,9 @@ func (c *programChecker) checkActionHandler(file *resolve.File, d *syntax.Action
 // actionRouteShape validates an action path and returns its duplicate-key
 // shape plus capture names in segment order. Static segments follow the
 // exact-path contract; a capture occupies one whole {name} segment, and
-// same-shape routes collide even when capture names differ.
+// same-shape routes collide even when capture names differ. The shape key
+// carries decoded statics, so escaped and plain spellings of one path
+// collide too.
 func actionRouteShape(path string) (string, []string, error) {
 	segments := strings.Split(path, "/")
 	var captures []string
@@ -301,7 +361,22 @@ func actionRouteShape(path string) (string, []string, error) {
 	if err := checkRoutePath(strings.Join(substituted, "/")); err != nil {
 		return "", nil, fmt.Errorf("invalid action route path")
 	}
-	return strings.Join(shape, "/"), captures, nil
+	// Collision shapes compare decoded statics: escaped and plain spellings
+	// of one path are the same route. checkRoutePath already proved every
+	// escape decodes, so unescaping cannot fail here.
+	key := make([]string, len(shape))
+	for i, segment := range shape {
+		if segment == "{}" {
+			key[i] = "{}"
+			continue
+		}
+		decoded, err := url.PathUnescape(segment)
+		if err != nil {
+			return "", nil, fmt.Errorf("invalid action route path")
+		}
+		key[i] = decoded
+	}
+	return strings.Join(key, "/"), captures, nil
 }
 
 func actionCaptureName(name string) bool {

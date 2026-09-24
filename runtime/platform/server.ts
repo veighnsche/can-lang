@@ -1,4 +1,4 @@
-import { success, failure, type Completion, type AssertionContext } from "../completion.ts";
+import { success, failure, invoke, type Completion, type AssertionContext } from "../completion.ts";
 import { denyLiveBoundary } from "../assert/context.ts";
 import { record } from "../data.ts";
 import { copyBytes } from "../bytes.ts";
@@ -17,10 +17,19 @@ import {
   snapshotRequest,
   snapshotRequestLazy,
   normalizedPath,
+  abandonRequest,
+  nativeResponse,
   bindRequestServer,
   isUpgradedResponse,
   type UpgradeServer,
 } from "./http.ts";
+import {
+  matchActionRoute,
+  actionReject,
+  bunRouteKeys,
+  type ActionRouteTable,
+  type ActionRouteCapture,
+} from "./action-routes.ts";
 import { dispatch, isRouterValue, routeKind } from "./router.ts";
 import {
   serverSocketOpen,
@@ -118,10 +127,18 @@ function withPolicy(response: Response): Response {
   const body = status === 204 || status === 205 || status === 304 ? null : response.body;
   return new Response(body, { status, statusText: response.statusText, headers });
 }
+export type ActionInvoke = (
+  identity: string,
+  captures: readonly ActionRouteCapture[],
+  request: unknown,
+  context?: AssertionContext,
+) => Promise<Completion<unknown>>;
+export type ActionAdapter = Readonly<{ table: ActionRouteTable; invoke: ActionInvoke }>;
 export function createServer(
   domain: ReturnType<typeof createDomainRuntime>,
   types: Readonly<{ invalidConfig: string; bindFailed: string; shutdownFailed: string }>,
   assets: AssetServer = idle,
+  actions?: ActionAdapter,
 ) {
   const invalid = (reason: string) =>
     failure(
@@ -168,18 +185,53 @@ export function createServer(
       ready = resolve;
     });
     const scoped = withScope(async (scope): Promise<Completion<undefined>> => {
-      const guarded = guardCallback(
-        scope,
+      // Canonical action dispatch runs after ingress on the raw pathname, so
+      // method-first/static-within-method matching and 400/404/405
+      // classification see the escapes the decoded snapshot already resolved.
+      // Anything actions do not claim falls through to the legacy router.
+      async function serveSnapshot(
+        native: Request,
+        snapshot: unknown,
+      ): Promise<Completion<Response>> {
+        if (actions !== undefined) {
+          const match = matchActionRoute(
+            actions.table,
+            native.method,
+            new URL(native.url).pathname,
+          );
+          if (match.kind === "match") {
+            try {
+              const completed = await invoke(
+                () => actions.invoke(match.identity, match.captures, snapshot, context),
+                origin,
+              );
+              if (completed.kind !== "ok") return completed;
+              return success(nativeResponse(completed.value));
+            } finally {
+              await abandonRequest(snapshot);
+            }
+          }
+          if (match.kind === "bad-request") return success(actionReject(400));
+          if (match.kind === "method-not-allowed") return success(actionReject(405, match.allow));
+        }
+        return dispatch(router, snapshot, context);
+      }
+      const serveNative =
+        (peek: boolean) =>
         async (native: Request): Promise<Completion<Response>> => {
           return useResource(token, "server", async () => {
             // Stream-marked routes skip the eager pre-read; anything the peek
             // cannot prove keeps buffered ingress with its pre-dispatch 413.
+            // Native action callbacks always buffer: actions never stream.
             let lazy = false;
-            try {
-              lazy =
-                routeKind(router, native.method, normalizedPath(new URL(native.url))) === "stream";
-            } catch {
-              lazy = false;
+            if (peek) {
+              try {
+                lazy =
+                  routeKind(router, native.method, normalizedPath(new URL(native.url))) ===
+                  "stream";
+              } catch {
+                lazy = false;
+              }
             }
             const snapshot = lazy
               ? await snapshotRequestLazy(native, bodyLimit)
@@ -188,10 +240,28 @@ export function createServer(
             bindRequestServer(snapshot.value, server);
             // Body readers live and die in this per-request scope; dispatch
             // abandons an unread live body before the scope drains.
-            return withScope(async () => dispatch(router, snapshot.value, context));
+            return withScope(async () => serveSnapshot(native, snapshot.value));
           });
-        },
-      );
+        };
+      const guarded = guardCallback(scope, serveNative(true)),
+        guardedAction = guardCallback(scope, serveNative(false));
+      // Native route callbacks reenter the same asset, ingress, scope and
+      // header lifecycle as fetch; fetch stays the canonical fallback.
+      const serveOuter =
+        (guardedFetch: (native: Request) => Promise<Completion<Response>>) =>
+        async (native: Request): Promise<Response> => {
+          try {
+            const reserved = await assets.serve(native);
+            if (reserved) return withPolicy(reserved);
+            const completed = await guardedFetch(native);
+            if (completed.kind === "ok" && isUpgradedResponse(completed.value))
+              return undefined as unknown as Response;
+            return withPolicy(completed.kind === "ok" ? completed.value : fixed(500));
+          } catch {
+            return withPolicy(fixed(500));
+          }
+        };
+      const actionCallback = serveOuter(guardedAction);
       try {
         // Unknown socket data keeps upgrade honest: the adapter passes its own
         // session tag, which the default Server<undefined> type would forbid.
@@ -199,6 +269,13 @@ export function createServer(
           hostname: host,
           port: Number(port),
           ...(tls === undefined ? {} : { tls: { cert: tls.cert, key: tls.key } }),
+          ...(actions === undefined
+            ? {}
+            : {
+                routes: Object.fromEntries(
+                  bunRouteKeys(actions.table).map((key) => [key, actionCallback]),
+                ),
+              }),
           websocket: {
             open: (socket: unknown) => serverSocketOpen(socket),
             message: (socket: unknown, message: unknown) => serverSocketMessage(socket, message),
@@ -206,18 +283,7 @@ export function createServer(
               serverSocketClose(socket, code, reason),
             drain: (socket: unknown) => serverSocketDrain(socket),
           },
-          fetch: async (native: Request): Promise<Response> => {
-            try {
-              const reserved = await assets.serve(native);
-              if (reserved) return withPolicy(reserved);
-              const completed = await guarded(native);
-              if (completed.kind === "ok" && isUpgradedResponse(completed.value))
-                return undefined as unknown as Response;
-              return withPolicy(completed.kind === "ok" ? completed.value : fixed(500));
-            } catch {
-              return withPolicy(fixed(500));
-            }
-          },
+          fetch: serveOuter(guarded),
           error: () => withPolicy(fixed(500)),
         });
         ready({ server, scope });
