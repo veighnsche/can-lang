@@ -454,17 +454,17 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 					return nil, err
 				}
 			case *syntax.ActionDecl:
-				for _, capture := range d.Captures {
-					if _, e := c.gather(file, capture.Type); e != nil {
+				if d.Captures != nil {
+					if _, e := c.gather(file, d.Captures); e != nil {
 						return nil, e
 					}
 				}
-				if d.Body != nil {
-					if _, e := c.gather(file, d.Body.Type); e != nil {
+				if d.Input != nil && d.Input.Type != nil {
+					if _, e := c.gather(file, d.Input.Type); e != nil {
 						return nil, e
 					}
 				}
-				if _, e := c.gather(file, d.Result); e != nil {
+				if _, e := c.gather(file, d.Returns); e != nil {
 					return nil, e
 				}
 				for _, kase := range d.Cases {
@@ -554,8 +554,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		}
 		callables[fn.Symbol.ID] = descriptor
 	}
-	// Action contracts bind after every callable signature is known: the
-	// handler check reads the gathered bindings and input names.
+	// Action contracts bind after every callable signature is known and
+	// the type graph is sealed. Declarations are handler-free, so no
+	// executable import is needed to check or export them.
 	if err = c.checkActions(files); err != nil {
 		return nil, err
 	}

@@ -24,8 +24,8 @@ func TestActionJSONEmissionCarriesResponseSchemas(t *testing.T) {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("emitted actions omit %s response root %s", action.Symbol.ID, want)
 		}
-		if action.ResponseSchema.Root != action.Result.Identity() {
-			t.Fatalf("response root = %s, want result %s", action.ResponseSchema.Root, action.Result.Identity())
+		if action.ResponseSchema.Root != action.Returns.Identity() {
+			t.Fatalf("response root = %s, want result %s", action.ResponseSchema.Root, action.Returns.Identity())
 		}
 	}
 }
@@ -43,21 +43,14 @@ const actionEmitFormWeb = "package web\n" +
 	"variant store_outcome\n" +
 	"    stored\n" +
 	"    store_failed\n" +
-	"fn store_outcome store_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        line_wire rows\n" +
-	"    asserts\n" +
-	"        sample: line_wire(\"seat\", \"2\") => ok store_failed(\"no\")\n" +
-	"    ok store_failed(\"no\")\n" +
 	"action append_line\n" +
 	"    post \"/lines\"\n" +
-	"    body form line_wire\n" +
-	"    handles store_validated\n" +
-	"    result store_outcome\n" +
+	"    form line_wire limit 2048\n" +
+	"    returns store_outcome\n" +
+	"    body html\n" +
 	"    cases\n" +
-	"        stored => 200\n" +
-	"        store_failed => 422\n" +
+	"        stored status 200 swap inner\n" +
+	"        store_failed status 422 swap inner\n" +
 	"fn void main\n" +
 	"    emits []\n" +
 	"    given\n" +
@@ -78,7 +71,10 @@ func TestActionJSONEmissionOmitsFormResponseSchema(t *testing.T) {
 	if strings.Contains(joined, `"responseSchema":`) {
 		t.Fatal("form action emitted a JSON response schema")
 	}
-	if !strings.Contains(joined, `"body":{"mode":"form","type":"`) {
-		t.Fatal("form action lost its form body contract")
+	if !strings.Contains(joined, `"input":{"mode":"form","type":"`) {
+		t.Fatal("form action lost its form input contract")
+	}
+	if !strings.Contains(joined, `"body":"html"`) {
+		t.Fatal("form action lost its html response mode")
 	}
 }

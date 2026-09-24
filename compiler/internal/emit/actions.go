@@ -6,40 +6,47 @@ import (
 )
 
 // emittedActionCapture is one frozen path capture: a whole-segment name
-// with its str or int wire type.
+// with its str or int wire type from the captures record.
 type emittedActionCapture struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
 
-// emittedActionBody is the frozen POST wire contract: the json or form
-// mode, the wire record declaration and the derived codec schema the
-// adapters decode with.
-type emittedActionBody struct {
-	Mode   string      `json:"mode"`
-	Type   string      `json:"type"`
-	Schema interface{} `json:"schema"`
+// emittedActionInput is the frozen request line: the none, json or form
+// mode plus, for wire modes, the wire record declaration, the declared
+// byte and row limits and the derived codec schema the adapters decode
+// with.
+type emittedActionInput struct {
+	Mode      string      `json:"mode"`
+	Type      string      `json:"type,omitempty"`
+	Limit     int         `json:"limit,omitempty"`
+	RowsLimit int         `json:"rowsLimit,omitempty"`
+	Schema    interface{} `json:"schema,omitempty"`
 }
 
-// emittedActionCase maps one result leaf identity to its wire status.
+// emittedActionCase maps one returns leaf identity to its wire status plus
+// the HTML-only visible swap policy.
 type emittedActionCase struct {
 	Leaf   string `json:"leaf"`
 	Status int    `json:"status"`
+	Swap   string `json:"swap,omitempty"`
 }
 
-// emittedAction is the frozen contract one action declaration contributes.
-// Server and browser adapters consume the table; it carries no behavior.
-// ResponseSchema is the typed action::response metadata: the shared JSON
-// wire schema of the result variant. JSON-mode actions (POST with a json
-// body, and bodyless GET) always carry it; form actions omit it.
+// emittedAction is the frozen contract one handler-free action declaration
+// contributes. The locked package identity plus declaration name keys the
+// metadata; server and browser adapters consume the table, and handlers
+// bind later at action::mount. ResponseSchema is the typed
+// action::response metadata: the shared JSON wire schema of the returns
+// variant. JSON-mode actions always carry it; HTML actions omit it.
 type emittedAction struct {
 	Identity       string                 `json:"identity"`
 	Method         string                 `json:"method"`
 	Path           string                 `json:"path"`
+	CapturesType   string                 `json:"capturesType,omitempty"`
 	Captures       []emittedActionCapture `json:"captures"`
-	Body           *emittedActionBody     `json:"body,omitempty"`
-	Handler        string                 `json:"handler"`
-	Result         string                 `json:"result"`
+	Input          emittedActionInput     `json:"input"`
+	Returns        string                 `json:"returns"`
+	Body           string                 `json:"body"`
 	Cases          []emittedActionCase    `json:"cases"`
 	ResponseSchema interface{}            `json:"responseSchema,omitempty"`
 }
@@ -58,28 +65,34 @@ func (builder *stateBuilder) emitActionConstants() error {
 			Method:   action.Method,
 			Path:     action.Path,
 			Captures: []emittedActionCapture{},
-			Handler:  action.Handler,
-			Result:   action.Result.Declaration(),
+			Input:    emittedActionInput{Mode: action.Input.Mode},
+			Returns:  action.Returns.Declaration(),
+			Body:     action.Body,
+		}
+		if action.CapturesType != nil {
+			entry.CapturesType = action.CapturesType.Declaration()
 		}
 		for _, capture := range action.Captures {
 			entry.Captures = append(entry.Captures, emittedActionCapture{Name: capture.Name, Type: capture.Type.Declaration()})
 		}
-		if action.Body != nil {
-			body := &emittedActionBody{Mode: action.Body.Mode, Type: action.Body.Type.Declaration()}
-			switch action.Body.Mode {
-			case "json":
-				body.Schema = action.Body.Schema
-			case "form":
-				body.Schema = action.Body.Form
-			default:
-				return fmt.Errorf("unknown action body mode %s", action.Body.Mode)
-			}
-			entry.Body = body
+		switch action.Input.Mode {
+		case "none":
+		case "json":
+			entry.Input.Type = action.Input.Type.Declaration()
+			entry.Input.Limit = action.Input.Limit
+			entry.Input.Schema = action.Input.Schema
+		case "form":
+			entry.Input.Type = action.Input.Type.Declaration()
+			entry.Input.Limit = action.Input.Limit
+			entry.Input.RowsLimit = action.Input.RowsLimit
+			entry.Input.Schema = action.Input.Form
+		default:
+			return fmt.Errorf("unknown action input mode %s", action.Input.Mode)
 		}
 		for _, kase := range action.Cases {
-			entry.Cases = append(entry.Cases, emittedActionCase{Leaf: kase.Leaf, Status: kase.Status})
+			entry.Cases = append(entry.Cases, emittedActionCase{Leaf: kase.Leaf, Status: kase.Status, Swap: kase.Swap})
 		}
-		if action.Body == nil || action.Body.Mode == "json" {
+		if action.Body == "json" {
 			if action.ResponseSchema == nil {
 				return fmt.Errorf("JSON action %s has no checked response schema", action.Symbol.ID)
 			}

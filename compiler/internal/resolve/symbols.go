@@ -600,18 +600,20 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 	case *syntax.FixtureDecl:
 		return fields(d.Given)
 	case *syntax.ActionDecl:
-		// Handler, path, case-table and duplicate-route validation
-		// belong to the checker, which owns the sealed type graph.
-		// Signatures only bind the declared types and capture names.
-		if err := fields(d.Captures); err != nil {
-			return err
-		}
-		if d.Body != nil {
-			if err := check(d.Body.Type); err != nil {
+		// Path, capture-record, input, limit, returns and case-table
+		// validation belong to the checker, which owns the sealed type
+		// graph. Signatures only bind the declared types.
+		if d.Captures != nil {
+			if err := check(d.Captures); err != nil {
 				return err
 			}
 		}
-		if err := check(d.Result); err != nil {
+		if d.Input != nil && d.Input.Type != nil {
+			if err := check(d.Input.Type); err != nil {
+				return err
+			}
+		}
+		if err := check(d.Returns); err != nil {
 			return err
 		}
 		for _, kase := range d.Cases {

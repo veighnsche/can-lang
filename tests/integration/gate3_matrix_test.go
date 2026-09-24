@@ -111,9 +111,9 @@ func TestGate3ContractEdits(t *testing.T) {
 			name: "case-drop-diagnoses-omitted-leaf",
 			apply: func(t *testing.T, root string) {
 				t.Helper()
-				rewriteGate3File(t, root, "src/web/web.can", "    handles save_form_validated\n    result records::save_outcome\n    cases\n        records::saved => 200\n        records::rejected => 422\n        records::stale => 409\n        records::denied => 403\n        records::busy => 503\n", "    handles save_form_validated\n    result records::save_outcome\n    cases\n        records::saved => 200\n        records::rejected => 422\n        records::stale => 409\n        records::denied => 403\n")
+				rewriteGate3File(t, root, "src/web/web.can", "    form records::invoice_form_wire limit 8192 rows_limit 64\n    returns records::save_outcome\n    body html\n    cases\n        records::saved status 200 swap inner\n        records::rejected status 422 swap inner\n        records::stale status 409 swap inner\n        records::denied status 403 swap inner\n        records::busy status 503 swap inner\n", "    form records::invoice_form_wire limit 8192 rows_limit 64\n    returns records::save_outcome\n    body html\n    cases\n        records::saved status 200 swap inner\n        records::rejected status 422 swap inner\n        records::stale status 409 swap inner\n        records::denied status 403 swap inner\n")
 			},
-			want: []string{"action cases omit result leaves records::busy", "save_invoice_form"},
+			want: []string{"action cases omit returns leaves records::busy", "save_invoice_form"},
 		},
 		{
 			name: "bogus-registry-entry-fails",

@@ -11,7 +11,7 @@ import (
 )
 
 const actionEmitWeb = "package web\n" +
-	"    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
+	"    provides [save_invoice, load_line, invoice_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
 	"    uses []\n" +
 	"record invoice_wire\n" +
 	"    str label\n" +
@@ -32,24 +32,19 @@ const actionEmitWeb = "package web\n" +
 	"    stale\n" +
 	"    denied\n" +
 	"    busy\n" +
-	"fn save_outcome save_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        invoice_wire body\n" +
-	"    asserts\n" +
-	"        sample: invoice_wire(\"inv-1\", 2) => ok saved(\"inv-1\")\n" +
-	"    ok saved(body.label)\n" +
+	"record invoice_key\n" +
+	"    str invoice_id\n" +
 	"action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
-	"    body json invoice_wire\n" +
-	"    handles save_validated\n" +
-	"    result save_outcome\n" +
+	"    json invoice_wire limit 8192\n" +
+	"    returns save_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        saved => 200\n" +
-	"        rejected => 422\n" +
-	"        stale => 409\n" +
-	"        denied => 403\n" +
-	"        busy => 503\n" +
+	"        saved status 200\n" +
+	"        rejected status 422\n" +
+	"        stale status 409\n" +
+	"        denied status 403\n" +
+	"        busy status 503\n" +
 	"record found\n" +
 	"    str label\n" +
 	"record missing\n" +
@@ -60,23 +55,16 @@ const actionEmitWeb = "package web\n" +
 	"    found\n" +
 	"    missing\n" +
 	"    unavailable\n" +
-	"fn load_outcome load_validated\n" +
-	"    emits []\n" +
-	"    given\n" +
-	"        str invoice_id\n" +
-	"    asserts\n" +
-	"        sample: \"inv-1\" => ok found(\"inv-1\")\n" +
-	"    ok found(invoice_id)\n" +
 	"action load_line\n" +
-	"    get \"/invoices/{invoice_id}\"\n" +
-	"    captures\n" +
-	"        str invoice_id\n" +
-	"    handles load_validated\n" +
-	"    result load_outcome\n" +
+	"    get \"/invoices/:invoice_id\"\n" +
+	"    captures invoice_key\n" +
+	"    input none\n" +
+	"    returns load_outcome\n" +
+	"    body json\n" +
 	"    cases\n" +
-	"        found => 200\n" +
-	"        missing => 403\n" +
-	"        unavailable => 503\n" +
+	"        found status 200\n" +
+	"        missing status 403\n" +
+	"        unavailable status 503\n" +
 	"fn void main\n" +
 	"    emits []\n" +
 	"    given\n" +
@@ -136,24 +124,28 @@ func TestActionEmissionFreezesContractTable(t *testing.T) {
 		`"method":"POST"`,
 		`"path":"/invoices/save"`,
 		`"captures":[]`,
-		`"body":{"mode":"json","type":"` + webID + `::invoice_wire","schema":{`,
-		`"handler":"` + webID + `::save_validated"`,
-		`"result":"` + webID + `::save_outcome"`,
+		`"input":{"mode":"json","type":"` + webID + `::invoice_wire","limit":8192,"schema":{`,
+		`"returns":"` + webID + `::save_outcome"`,
+		`"body":"json"`,
 		`"cases":[{"leaf":"` + webID + `::saved","status":200},{"leaf":"` + webID + `::rejected","status":422},{"leaf":"` + webID + `::stale","status":409},{"leaf":"` + webID + `::denied","status":403},{"leaf":"` + webID + `::busy","status":503}]`,
 		`"identity":"` + webID + `::load_line"`,
 		`"method":"GET"`,
-		`"path":"/invoices/{invoice_id}"`,
+		`"path":"/invoices/:invoice_id"`,
+		`"capturesType":"` + webID + `::invoice_key"`,
 		`"captures":[{"name":"invoice_id","type":"str"}]`,
-		`"handler":"` + webID + `::load_validated"`,
-		`"result":"` + webID + `::load_outcome"`,
+		`"input":{"mode":"none"}`,
+		`"returns":"` + webID + `::load_outcome"`,
 		`"cases":[{"leaf":"` + webID + `::found","status":200},{"leaf":"` + webID + `::missing","status":403},{"leaf":"` + webID + `::unavailable","status":503}]`,
 	} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("emitted actions omit %s", want)
 		}
 	}
-	if count := strings.Count(joined, `"body":`); count != 1 {
-		t.Fatalf("GET action gained a body contract: %d body entries", count)
+	if strings.Contains(joined, `"handler"`) {
+		t.Fatal("emitted actions carry a handler binding")
+	}
+	if count := strings.Count(joined, `"input":{"mode":"none"}`); count != 1 {
+		t.Fatalf("expected one bodyless input, found %d", count)
 	}
 	if !strings.Contains(joined, `Object.freeze([{`) || !strings.Contains(joined, `]);`) {
 		t.Fatal("action table is not a frozen array")

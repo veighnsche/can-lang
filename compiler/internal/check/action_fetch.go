@@ -223,19 +223,19 @@ func (c *programChecker) fetchSite(file *resolve.File, operation, key, name stri
 		return ir.JSONFetchSite{}, nil, fmt.Errorf("unknown JSON action %q", name)
 	}
 	if operation == fetchJSONGet {
-		if action.Method != "GET" || action.Body != nil {
+		if action.Method != "GET" || action.Input.Mode != "none" {
 			return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q is not a bodyless GET action", name)
 		}
 	} else {
-		if action.Method != "POST" || action.Body == nil || action.Body.Mode != "json" {
+		if action.Method != "POST" || action.Input.Mode != "json" {
 			return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q is not a JSON POST action", name)
 		}
-		if action.Body.Type.Identity() != special.Data.Identity() {
-			return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q wire is %s, not %s", name, types.CanonicalName(action.Body.Type), types.CanonicalName(special.Data))
+		if action.Input.Type.Identity() != special.Data.Identity() {
+			return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q wire is %s, not %s", name, types.CanonicalName(action.Input.Type), types.CanonicalName(special.Data))
 		}
 	}
-	if action.Result.Identity() != special.Result.Identity() {
-		return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q result is %s, not %s", name, types.CanonicalName(action.Result), types.CanonicalName(special.Result))
+	if action.Returns.Identity() != special.Result.Identity() {
+		return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q result is %s, not %s", name, types.CanonicalName(action.Returns), types.CanonicalName(special.Result))
 	}
 	if action.ResponseSchema == nil {
 		return ir.JSONFetchSite{}, nil, fmt.Errorf("fetch action %q carries no JSON response schema", name)
@@ -251,7 +251,7 @@ func (c *programChecker) fetchSite(file *resolve.File, operation, key, name stri
 		inputs = append(inputs, capture.Type)
 	}
 	if operation == fetchJSONPost {
-		site.Request = &action.Body.Schema
+		site.Request = &action.Input.Schema
 		inputs = append(inputs, special.Data)
 	}
 	for _, kase := range action.Cases {

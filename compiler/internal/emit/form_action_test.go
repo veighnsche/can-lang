@@ -30,12 +30,12 @@ const formActionEmitWeb = "package web\n" +
 	"    ok saved(body.customer)\n" +
 	"action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
-	"    body form invoice_wire\n" +
-	"    handles save_validated\n" +
-	"    result save_outcome\n" +
+	"    form invoice_wire limit 2048 rows_limit 64\n" +
+	"    returns save_outcome\n" +
+	"    body html\n" +
 	"    cases\n" +
-	"        saved => 200\n" +
-	"        rejected => 422\n" +
+	"        saved status 200 swap inner\n" +
+	"        rejected status 422 swap inner\n" +
 	"fn html::safe render_outcome\n" +
 	"    emits []\n" +
 	"    given\n" +
@@ -81,7 +81,7 @@ func TestFormActionEmissionFreezesRowsSchema(t *testing.T) {
 	webID := program.Actions[0].Symbol.Package.ID
 	joined := emittedBody(t, program)
 	for _, want := range []string{
-		`"body":{"mode":"form","type":"` + webID + `::invoice_wire","schema":{"root":`,
+		`"input":{"mode":"form","type":"` + webID + `::invoice_wire","limit":2048,"rowsLimit":64,"schema":{"root":`,
 		`{"name":"lines","kind":"rows","rows":{"row":`,
 		`"order":"lines_order"`,
 		`"fields":[{"name":"sku","kind":"str"},{"name":"note","kind":"optional"`,
@@ -101,7 +101,7 @@ func TestFormServeEmissionSplicesAdapterContract(t *testing.T) {
 	program := actionEmitProgram(t, map[string]string{"src/web/web.can": formActionEmitWeb})
 	webID := program.Actions[0].Symbol.Package.ID
 	saved, missing := "", ""
-	for _, leaf := range program.Actions[0].Result.Leaves() {
+	for _, leaf := range program.Actions[0].Returns.Leaves() {
 		if strings.HasSuffix(leaf.Declaration(), "::saved") {
 			saved = leaf.Identity()
 		}

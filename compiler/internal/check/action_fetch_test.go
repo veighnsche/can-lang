@@ -38,11 +38,11 @@ func fetchWebFile(extra ...string) string {
 		"        http::status_error\n" +
 		"        codec::invalid_data\n" +
 		"        ok save_outcome done => ok done\n"
-	decls := actionSaveDomain + actionSaveHandler + actionSaveAction + actionLoadDomain + actionLoadHandler + actionLoadAction + clients
+	decls := actionSaveDomain + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction + clients
 	for _, text := range extra {
 		decls += text
 	}
-	return "package web\n    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses [http, codec]\n" + decls + actionMain
+	return "package web\n    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n    uses [http, codec]\n" + decls + actionMain
 }
 
 // fetchSites walks one checked region and returns every JSON fetch site.
@@ -148,7 +148,7 @@ func TestFetchJSONClientsResolve(t *testing.T) {
 		t.Fatalf("load client holds %d fetch sites", len(load))
 	}
 	site := load[0]
-	if site.Action != webID+"::load_line" || site.Method != "GET" || site.Path != "/invoices/{invoice_id}/lines/{line}" {
+	if site.Action != webID+"::load_line" || site.Method != "GET" || site.Path != "/invoices/:invoice_id/lines/:line" {
 		t.Fatalf("load site = %+v", site)
 	}
 	if len(site.Captures) != 2 || site.Captures[0].Name != "invoice_id" || site.Captures[0].Type != "str" || site.Captures[1].Name != "line" || site.Captures[1].Type != "int" {
@@ -221,8 +221,8 @@ func TestFetchJSONFailureBound(t *testing.T) {
 
 func TestFetchJSONCrossPackageName(t *testing.T) {
 	web := "package web\n" +
-		"    provides [save_invoice, load_line, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
-		"    uses []\n" + actionSaveDomain + actionSaveHandler + actionSaveAction + actionLoadDomain + actionLoadHandler + actionLoadAction
+		"    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]\n" +
+		"    uses []\n" + actionSaveDomain + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction
 	app := "package app\n" +
 		"    provides []\n" +
 		"    uses [web, http, codec]\n" +
@@ -349,21 +349,14 @@ func TestFetchJSONPostRejectsFormAction(t *testing.T) {
 		"    str label\n" +
 		"variant store_outcome\n" +
 		"    stored\n" +
-		"fn store_outcome store_validated\n" +
-		"    emits []\n" +
-		"    given\n" +
-		"        batch_wire body\n" +
-		"    asserts\n" +
-		"        sample: batch_wire(\"c\", form::rows<line_wire>([], [])) => ok stored(\"c\")\n" +
-		"    ok stored(body.customer)\n" +
 		"action append_line\n" +
 		"    post \"/invoices/append\"\n" +
-		"    body form batch_wire\n" +
-		"    handles store_validated\n" +
-		"    result store_outcome\n" +
+		"    form batch_wire limit 2048 rows_limit 64\n" +
+		"    returns store_outcome\n" +
+		"    body html\n" +
 		"    cases\n" +
-		"        stored => 200\n"
-	decls := actionSaveDomain + actionSaveHandler + actionSaveAction + actionLoadDomain + actionLoadHandler + actionLoadAction + form +
+		"        stored status 200 swap inner\n"
+	decls := actionSaveDomain + actionLineKey + actionSaveAction + actionLoadDomain + actionLoadAction + form +
 		"fn store_outcome push_batch\n" +
 		"    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]\n" +
 		"    given\n" +
@@ -377,7 +370,7 @@ func TestFetchJSONPostRejectsFormAction(t *testing.T) {
 		"        http::status_error\n" +
 		"        codec::invalid_data\n" +
 		"        ok store_outcome done => ok done\n"
-	file := "package web\n    provides [save_invoice, load_line, append_line, invoice_wire, line_wire, batch_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome, stored, store_outcome]\n    uses [http, codec, form, option]\n" + decls + actionMain
+	file := "package web\n    provides [save_invoice, load_line, append_line, line_key, invoice_wire, line_wire, batch_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome, stored, store_outcome]\n    uses [http, codec, form, option]\n" + decls + actionMain
 	_, err := programFixture(t, map[string]string{"src/web/web.can": file})
 	if err == nil {
 		t.Fatal("form action admitted as a JSON fetch")

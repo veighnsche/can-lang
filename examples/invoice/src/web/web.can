@@ -4,38 +4,38 @@ package web
 
 action save_invoice
     post "/invoices/save"
-    body json records::invoice_json_wire
-    handles save_json_validated
-    result records::save_outcome
+    json records::invoice_json_wire limit 8192
+    returns records::save_outcome
+    body json
     cases
-        records::saved => 200
-        records::rejected => 422
-        records::stale => 409
-        records::denied => 403
-        records::busy => 503
+        records::saved status 200
+        records::rejected status 422
+        records::stale status 409
+        records::denied status 403
+        records::busy status 503
 
 action save_invoice_form
     post "/invoices/save-form"
-    body form records::invoice_form_wire
-    handles save_form_validated
-    result records::save_outcome
+    form records::invoice_form_wire limit 8192 rows_limit 64
+    returns records::save_outcome
+    body html
     cases
-        records::saved => 200
-        records::rejected => 422
-        records::stale => 409
-        records::denied => 403
-        records::busy => 503
+        records::saved status 200 swap inner
+        records::rejected status 422 swap inner
+        records::stale status 409 swap inner
+        records::denied status 403 swap inner
+        records::busy status 503 swap inner
 
 action load_invoice
-    get "/invoices/{invoice_id}"
-    captures
-        str invoice_id
-    handles model::load_validated
-    result records::load_outcome
+    get "/invoices/:invoice_id"
+    captures records::invoice_path
+    input none
+    returns records::load_outcome
+    body json
     cases
-        records::found => 200
-        records::load_denied => 403
-        records::load_busy => 503
+        records::found status 200
+        records::load_denied status 403
+        records::load_busy status 503
 
 /// Handle one JSON save: validate before any store touch, then run
 /// the protected transaction on a per-request pool and close it on
