@@ -123,24 +123,27 @@ A cycle, a missing lock entry, or an unused lock entry is an error. A repeated
 dependency is checked once. This configuration identity does not rename any
 source package.
 
-The C9 error registry has exactly two fields, illustrated by this complete
-registry object:
+The C9 error registry has exactly the fields `active` and `retired`, plus an
+optional `predecessors` map, illustrated by this complete registry object:
 
 ```json
 {
-  "active": [{ "id": 1000000, "kind": "billing::declined" }],
-  "retired": [1000001]
+  "active": ["billing::declined"],
+  "retired": ["billing::legacy"],
+  "predecessors": { "billing::declined": ["billing::legacy"] }
 }
 ```
 
-Each active entry has exactly `id` and `kind`. `kind` is the fully qualified
-source package and error declaration name, without type arguments: a generic
-error contributes one entry. `retired` contains integer IDs only. Both arrays
-are strictly increasing by ID; active kinds are unique; active and retired IDs
-are disjoint. Project and dependency entries use C9's application range
-1000000--2147483647. The distribution owns a separate registry in its reserved
-range. IDs are JSON integer tokens, without fraction or exponent. Empty arrays
-are valid. Registry JSON rejects duplicate keys and unknown fields.
+Each active entry is the fully qualified source package and error declaration
+name, without type arguments: a generic error contributes one entry.
+`retired` contains qualified names only. Both arrays are strictly increasing
+and unique; active and retired names are disjoint. `predecessors` maps an
+active kind to its chain of former qualified names, immediate predecessor
+first; every chain entry is retired, and one retired name chains to at most
+one active kind so archived reports attribute unambiguously. The distribution
+owns its separate catalogue namespace. Empty arrays are valid, and an absent
+`predecessors` map means no renames. Registry JSON rejects duplicate keys and
+unknown fields.
 
 `can.lock.json` has exactly one field, `dependencies`, whose value is an object
 keyed by those graph identities. Each value has exactly `path`,
@@ -162,14 +165,14 @@ content bytes. Symlink resolution must obey the same confinement rule as other
 manifest paths. Referenced assets separately receive P11's build digests.
 
 Before linking, each project's active registry must exactly equal its
-source-declared ID-to-kind pairs, excluding dependency and catalogue
-declarations; every retired ID must be absent from its source. Each dependency's
+source-declared kinds, excluding dependency and catalogue declarations;
+every retired name must be absent from its source. Each dependency's
 manifest-referenced registry must also equal the lock's embedded snapshot. The
-compiler recomputes both digests and rejects any mismatch. It then checks the
-root registry, verified dependency snapshots, and distribution registry as one
-graph: no ID may be active or retired in more than one registry. These checks
-make a changed standalone registry detectable even though it is not part of
-the source digest. A build never allocates IDs or rewrites a registry or lock.
+compiler recomputes both digests and rejects any mismatch. Registries are
+per-owner: two owners may use the same short kind, distinguished by their
+qualified identities. These checks make a changed standalone registry
+detectable even though it is not part of the source digest. A build never
+allocates identities or rewrites a registry or lock.
 
 ## P3. Assertion execution model
 
@@ -607,44 +610,46 @@ At an HTTP callback boundary:
 
 ### Policy
 
-IDs 1100--1199 remain owned by the shared AI, HTTP client, and codec contract.
-This specification allocates platform additions from 1200--1299.
+The shared AI, HTTP client, and codec namespaces remain owned by their
+specification. This specification declares platform additions in the `io`,
+`html`, `htmx`, `http` route/server, `sql`, `clock`, `random`, `env` and `log`
+namespaces.
 
 ### Technical contract
 
 ```text
-error 1210 io::read_failed(str operation)
-error 1211 io::write_failed(str operation)
-error 1212 io::limit_exceeded(int limit)
+error io::read_failed(str operation)
+error io::write_failed(str operation)
+error io::limit_exceeded(int limit)
 
-error 1220 html::invalid_structure(str reason)
-error 1221 html::invalid_url(str reason)
-error 1222 htmx::invalid_target(str reason)
-error 1223 htmx::invalid_interval(int milliseconds)
+error html::invalid_structure(str reason)
+error html::invalid_url(str reason)
+error htmx::invalid_target(str reason)
+error htmx::invalid_interval(int milliseconds)
 
-error 1230 http::invalid_route(str reason)
-error 1231 http::duplicate_route(str method, str path)
-error 1232 http::ambiguous_route(str first, str second)
-error 1233 http::invalid_server_config(str reason)
-error 1234 http::bind_failed(str address)
-error 1235 http::shutdown_failed(str phase)
+error http::invalid_route(str reason)
+error http::duplicate_route(str method, str path)
+error http::ambiguous_route(str first, str second)
+error http::invalid_server_config(str reason)
+error http::bind_failed(str address)
+error http::shutdown_failed(str phase)
 
-error 1240 sql::connection_failed(str phase)
-error 1241 sql::query_failed(str operation, str code)
-error 1242 sql::row_missing(str query)
-error 1243 sql::row_count(str query, int actual)
-error 1244 sql::schema_mismatch(str path, str reason)
-error 1245 sql::constraint_failed(str constraint)
-error 1246 sql::transaction_failed(str phase)
-error 1247 sql::commit_unknown(str transaction_id)
-error 1248 sql::close_failed(str reason)
-error 1249 sql::row_limit(int limit)
-error 1250 sql::unsupported_value(str path, str reason)
+error sql::connection_failed(str phase)
+error sql::query_failed(str operation, str code)
+error sql::row_missing(str query)
+error sql::row_count(str query, int actual)
+error sql::schema_mismatch(str path, str reason)
+error sql::constraint_failed(str constraint)
+error sql::transaction_failed(str phase)
+error sql::commit_unknown(str transaction_id)
+error sql::close_failed(str reason)
+error sql::row_limit(int limit)
+error sql::unsupported_value(str path, str reason)
 
-error 1260 clock::invalid_duration(int milliseconds)
-error 1261 random::invalid_length(int length)
-error 1262 env::invalid_name(str name)
-error 1263 log::write_failed(str level)
+error clock::invalid_duration(int milliseconds)
+error random::invalid_length(int length)
+error env::invalid_name(str name)
+error log::write_failed(str level)
 ```
 
 This block is registry notation: declarations live in their named packages and

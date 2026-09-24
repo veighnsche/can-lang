@@ -1,6 +1,9 @@
 import { test, expect } from "bun:test";
+import { createHash } from "node:crypto";
 import { runEntry } from "../entry.ts";
 import { success, failure, type Completion } from "../completion.ts";
+import { createDomainRuntime } from "../domain.ts";
+import { record } from "../data.ts";
 import { captureStandard } from "../failure.ts";
 import { intDivide } from "../primitive.ts";
 
@@ -114,6 +117,54 @@ test("root report preserves failure identity without native message, stack or or
     channel: "standard",
     category: "native_exception",
   });
+});
+
+test("domain report carries qualified can.error.v2 identity with redacted payload", async () => {
+  const declaration = {
+    identity: "can.project.root/app::failed",
+    name: "app::failed",
+    parameters: 0,
+  };
+  const concrete = createHash("sha256")
+    .update("can-concrete-type-v1\0" + JSON.stringify(["error", declaration.identity]))
+    .digest("hex");
+  const domain = createDomainRuntime({
+    declarations: [declaration],
+    shapes: [
+      {
+        identity: concrete,
+        kind: "error",
+        declaration: declaration.identity,
+        arguments: [],
+        fields: [],
+        leaves: [],
+        inputs: [],
+        errors: [],
+      },
+    ],
+  });
+  const reports: string[] = [];
+  expect(
+    await runEntry(
+      () => {},
+      () => failure(domain.create(concrete, record(concrete, []), origin)),
+      [],
+      (line) => {
+        reports.push(line);
+      },
+    ),
+  ).toBe(1);
+  expect(JSON.parse(reports[0])).toMatchObject({
+    schemaVersion: 1,
+    kind: "can.runtime-failure",
+    phase: "main",
+    channel: "domain",
+    identity: "can.error.v2:can.project.root/app::failed",
+    error: "app::failed",
+    typeIdentity: concrete,
+    payload: "<redacted>",
+  });
+  expect(reports[0]).not.toContain('"id"');
 });
 
 test("forged and non-void main results fail without invoking a then getter", async () => {

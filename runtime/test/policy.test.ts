@@ -35,8 +35,18 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter(
-  (e) => (e.id >= 1100 && e.id <= 1106) || e.id === 1110 || e.id === 1121,
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+    "ai::invalid_answer",
+  ].includes(e.name),
 );
 const detailIdentity = hash(["variant", "can.std.http@1::failure_detail"]);
 const errors = declarations.map((d) =>
@@ -63,7 +73,9 @@ const detail: FailureShape = {
   fields: [],
   arguments: [],
   leaves: errors
-    .filter((_, i) => declarations[i].id !== 1106 && declarations[i].id < 1120)
+    .filter(
+      (_, i) => !["http::request_failed", "ai::invalid_answer"].includes(declarations[i].name),
+    )
     .map((e) => e.identity),
   inputs: [],
   errors: [],

@@ -17,10 +17,10 @@ func lineageFixture(t *testing.T, root string) {
 	for _, lib := range []string{"left", "right"} {
 		writeFixture(t, root, "libs/"+lib+"/can.project.json", `{"source_root":"src","project":"shop_`+lib+`","error_registry":"can.errors.json"}`)
 	}
-	writeFixture(t, root, "libs/left/can.errors.json", `{"active":[{"id":1000000,"kind":"model::failed"}],"retired":[]}`)
-	writeFixture(t, root, "libs/right/can.errors.json", `{"active":[{"id":1000001,"kind":"model::failed"}],"retired":[]}`)
-	writeFixture(t, root, "libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror 1000000 failed(str reason)\n")
-	writeFixture(t, root, "libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror 1000001 failed(str reason)\n")
+	writeFixture(t, root, "libs/left/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
+	writeFixture(t, root, "libs/right/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
+	writeFixture(t, root, "libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed(str reason)\n")
+	writeFixture(t, root, "libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed(str reason)\n")
 	writeFixtureLock(t, root, map[string]string{"left": "libs/left", "right": "libs/right"})
 }
 

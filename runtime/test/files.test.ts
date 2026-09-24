@@ -36,7 +36,18 @@ const shape = (
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
 const declarations = catalogue.errors.filter((e) =>
-  [1110, 1300, 1301, 1302, 1303, 1304, 1305, 1306, 1307, 1308].includes(e.id),
+  [
+    "codec::invalid_data",
+    "files::not_found",
+    "files::denied",
+    "files::already_exists",
+    "files::invalid_path",
+    "files::io_error",
+    "files::limit_exceeded",
+    "files::not_empty",
+    "files::cross_device",
+    "files::unexpected_kind",
+  ].includes(e.name),
 );
 const errors = declarations.map((e) =>
   shape(
@@ -92,11 +103,11 @@ const globs = createFileGlobs(domain, {
 });
 const paths = createPath();
 const origin = { source: "test", start: 0, end: 0, invocation: [] };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 async function withTemp(run: (root: string) => Promise<void>): Promise<void> {
@@ -117,7 +128,7 @@ test("binary round-trip preserves NUL and invalid UTF-8; text round-trips strict
     expect(back.kind).toBe("ok");
     if (back.kind !== "ok") throw Error();
     expect(Array.from(copyBytes(back.value, origin))).toEqual([0, 255, 1]);
-    check(await reads.readText(file, 100n), 1110, { path: file, reason: "utf8" });
+    check(await reads.readText(file, 100n), "codec::invalid_data", { path: file, reason: "utf8" });
     const text = join(root, "b.txt");
     expect(await writes.writeText(text, "﻿hé😀", true)).toEqual(success(undefined));
     expect(await reads.readText(text, 100n)).toEqual(success("﻿hé😀"));
@@ -126,23 +137,25 @@ test("binary round-trip preserves NUL and invalid UTF-8; text round-trips strict
 test("missing paths report not_found; denied paths never report absence", async () => {
   await withTemp(async (root) => {
     const missing = join(root, "nope.txt");
-    check(await reads.readBytes(missing, 10n), 1300, { path: missing });
-    check(await reads.readText(missing, 10n), 1300, { path: missing });
-    check(await dirs.stat(missing, true), 1300, { path: missing });
+    check(await reads.readBytes(missing, 10n), "files::not_found", { path: missing });
+    check(await reads.readText(missing, 10n), "files::not_found", { path: missing });
+    check(await dirs.stat(missing, true), "files::not_found", { path: missing });
     expect(await dirs.exists(missing)).toEqual(success(false));
-    check(await dirs.list(missing, 10n), 1300, { path: missing });
-    check(await globs.glob(missing, "*", false, 10n), 1300, { path: missing });
-    check(await dirs.remove(missing, false), 1300, { path: missing });
+    check(await dirs.list(missing, 10n), "files::not_found", { path: missing });
+    check(await globs.glob(missing, "*", false, 10n), "files::not_found", { path: missing });
+    check(await dirs.remove(missing, false), "files::not_found", { path: missing });
     const locked = join(root, "locked");
     await mkdir(locked);
     await writeFile(join(locked, "secret.txt"), "x");
     await chmod(locked, 0o000);
     try {
-      check(await reads.readBytes(join(locked, "secret.txt"), 10n), 1301, {
+      check(await reads.readBytes(join(locked, "secret.txt"), 10n), "files::denied", {
         operation: "read_bytes",
       });
-      check(await dirs.list(locked, 10n), 1301, { operation: "list" });
-      check(await dirs.exists(join(locked, "secret.txt")), 1301, { operation: "exists" });
+      check(await dirs.list(locked, 10n), "files::denied", { operation: "list" });
+      check(await dirs.exists(join(locked, "secret.txt")), "files::denied", {
+        operation: "exists",
+      });
     } finally {
       await chmod(locked, 0o700);
     }
@@ -151,21 +164,21 @@ test("missing paths report not_found; denied paths never report absence", async 
 test("negative limits and empty/NUL paths fail before touching disk", async () => {
   await withTemp(async (root) => {
     const ghost = join(root, "ghost.txt");
-    check(await reads.readBytes(ghost, -1n), 1305, { limit: -1n });
-    check(await dirs.list(root, -1n), 1305, { limit: -1n });
-    check(await globs.glob(root, "*", false, -1n), 1305, { limit: -1n });
+    check(await reads.readBytes(ghost, -1n), "files::limit_exceeded", { limit: -1n });
+    check(await dirs.list(root, -1n), "files::limit_exceeded", { limit: -1n });
+    check(await globs.glob(root, "*", false, -1n), "files::limit_exceeded", { limit: -1n });
     expect(await Bun.file(ghost).exists()).toBe(false);
     for (const bad of ["", root + "\0/x"]) {
       const reason = bad === "" ? "empty" : "nul_byte";
-      check(await reads.readBytes(bad, 1n), 1303, { path: bad, reason });
-      check(await writes.writeText(bad, "x", true), 1303, { path: bad, reason });
-      check(await dirs.stat(bad, true), 1303, { path: bad, reason });
-      check(await dirs.exists(bad), 1303, { path: bad, reason });
-      check(await dirs.list(bad, 1n), 1303, { path: bad, reason });
-      check(await dirs.mkdir(bad, false), 1303, { path: bad, reason });
-      check(await dirs.remove(bad, false), 1303, { path: bad, reason });
-      check(await globs.glob(bad, "*", false, 1n), 1303, { path: bad, reason });
-      check(await globs.glob(root, bad, false, 1n), 1303, { path: bad, reason });
+      check(await reads.readBytes(bad, 1n), "files::invalid_path", { path: bad, reason });
+      check(await writes.writeText(bad, "x", true), "files::invalid_path", { path: bad, reason });
+      check(await dirs.stat(bad, true), "files::invalid_path", { path: bad, reason });
+      check(await dirs.exists(bad), "files::invalid_path", { path: bad, reason });
+      check(await dirs.list(bad, 1n), "files::invalid_path", { path: bad, reason });
+      check(await dirs.mkdir(bad, false), "files::invalid_path", { path: bad, reason });
+      check(await dirs.remove(bad, false), "files::invalid_path", { path: bad, reason });
+      check(await globs.glob(bad, "*", false, 1n), "files::invalid_path", { path: bad, reason });
+      check(await globs.glob(root, bad, false, 1n), "files::invalid_path", { path: bad, reason });
     }
   });
 });
@@ -173,11 +186,11 @@ test("over-cap input fails; exact caps and huge limits succeed", async () => {
   await withTemp(async (root) => {
     const file = join(root, "big.bin");
     await writeFile(file, new Uint8Array(1000));
-    check(await reads.readBytes(file, 999n), 1305, { limit: 999n });
+    check(await reads.readBytes(file, 999n), "files::limit_exceeded", { limit: 999n });
     const exact = await reads.readBytes(file, 1000n);
     expect(exact.kind).toBe("ok");
     expect(await reads.readBytes(file, 10n ** 100n)).toEqual(exact);
-    check(await reads.readBytes(file, 0n), 1305, { limit: 0n });
+    check(await reads.readBytes(file, 0n), "files::limit_exceeded", { limit: 0n });
     const empty = join(root, "empty.txt");
     await writeFile(empty, "");
     expect(await reads.readText(empty, 0n)).toEqual(success(""));
@@ -187,7 +200,7 @@ test("exclusive creation is atomic; concurrent creators race to one winner", asy
   await withTemp(async (root) => {
     const file = join(root, "x.txt");
     expect(await writes.writeText(file, "first", false)).toEqual(success(undefined));
-    check(await writes.writeText(file, "second", false), 1302, { path: file });
+    check(await writes.writeText(file, "second", false), "files::already_exists", { path: file });
     expect(await writes.writeText(file, "second", true)).toEqual(success(undefined));
     expect(await reads.readText(file, 100n)).toEqual(success("second"));
     const racy = join(root, "race.txt");
@@ -195,34 +208,43 @@ test("exclusive creation is atomic; concurrent creators race to one winner", asy
       Array.from({ length: 10 }, (_, i) => writes.writeText(racy, "writer" + i, false)),
     );
     expect(outcomes.filter((o) => o.kind === "ok")).toHaveLength(1);
-    for (const o of outcomes.filter((o) => o.kind !== "ok")) check(o, 1302, { path: racy });
+    for (const o of outcomes.filter((o) => o.kind !== "ok"))
+      check(o, "files::already_exists", { path: racy });
     const dup = join(root, "dup.txt");
     expect(await writes.copy(file, dup, false)).toEqual(success(undefined));
-    check(await writes.copy(file, dup, false), 1302, { path: dup });
+    check(await writes.copy(file, dup, false), "files::already_exists", { path: dup });
   });
 });
 test("missing parents fail; writes never create directories", async () => {
   await withTemp(async (root) => {
-    check(await writes.writeText(join(root, "nodir", "f.txt"), "x", true), 1300, {
+    check(await writes.writeText(join(root, "nodir", "f.txt"), "x", true), "files::not_found", {
       path: join(root, "nodir", "f.txt"),
     });
     expect(await Bun.file(join(root, "nodir")).exists()).toBe(false);
-    check(await dirs.mkdir(join(root, "nodir", "sub"), false), 1300, {});
-    check(await dirs.mkdir(root, false), 1302, { path: root });
+    check(await dirs.mkdir(join(root, "nodir", "sub"), false), "files::not_found", {});
+    check(await dirs.mkdir(root, false), "files::already_exists", { path: root });
     expect(await dirs.mkdir(root, true)).toEqual(success(undefined));
     expect(await dirs.mkdir(join(root, "a", "b"), true)).toEqual(success(undefined));
     const src = join(root, "src.txt");
     await writeFile(src, "data");
-    check(await writes.copy(join(root, "missing.txt"), join(root, "dst.txt"), true), 1300, {
-      path: join(root, "missing.txt"),
-    });
-    check(await writes.copy(src, join(root, "nodir2", "dst.txt"), true), 1300, {
+    check(
+      await writes.copy(join(root, "missing.txt"), join(root, "dst.txt"), true),
+      "files::not_found",
+      {
+        path: join(root, "missing.txt"),
+      },
+    );
+    check(await writes.copy(src, join(root, "nodir2", "dst.txt"), true), "files::not_found", {
       path: join(root, "nodir2", "dst.txt"),
     });
-    check(await writes.move(join(root, "missing.txt"), join(root, "dst.txt"), true), 1300, {
-      path: join(root, "missing.txt"),
-    });
-    check(await writes.move(src, join(root, "nodir2", "dst.txt"), true), 1300, {
+    check(
+      await writes.move(join(root, "missing.txt"), join(root, "dst.txt"), true),
+      "files::not_found",
+      {
+        path: join(root, "missing.txt"),
+      },
+    );
+    check(await writes.move(src, join(root, "nodir2", "dst.txt"), true), "files::not_found", {
       path: join(root, "nodir2", "dst.txt"),
     });
   });
@@ -231,18 +253,24 @@ test("directory-as-file and file-as-directory are kind errors", async () => {
   await withTemp(async (root) => {
     await writeFile(join(root, "f.txt"), "x");
     await mkdir(join(root, "sub"));
-    check(await reads.readBytes(join(root, "sub"), 10n), 1308, {
+    check(await reads.readBytes(join(root, "sub"), 10n), "files::unexpected_kind", {
       path: join(root, "sub"),
       operation: "read_bytes",
     });
-    check(await reads.readText(join(root, "sub"), 10n), 1308, { operation: "read_text" });
-    check(await dirs.list(join(root, "f.txt"), 10n), 1308, {
+    check(await reads.readText(join(root, "sub"), 10n), "files::unexpected_kind", {
+      operation: "read_text",
+    });
+    check(await dirs.list(join(root, "f.txt"), 10n), "files::unexpected_kind", {
       path: join(root, "f.txt"),
       operation: "list",
     });
-    check(await writes.copy(join(root, "sub"), join(root, "c.txt"), true), 1308, {
-      operation: "copy",
-    });
+    check(
+      await writes.copy(join(root, "sub"), join(root, "c.txt"), true),
+      "files::unexpected_kind",
+      {
+        operation: "copy",
+      },
+    );
   });
 });
 test("stat follows or reports links; exists sees dangling links", async () => {
@@ -269,7 +297,9 @@ test("stat follows or reports links; exists sees dangling links", async () => {
     expect(dangling.kind).toBe("ok");
     if (dangling.kind !== "ok") throw Error();
     expect(dataProperty(dangling.value, "kind")).toBe("symlink");
-    check(await dirs.stat(join(root, "dangling"), true), 1300, { path: join(root, "dangling") });
+    check(await dirs.stat(join(root, "dangling"), true), "files::not_found", {
+      path: join(root, "dangling"),
+    });
     expect(await dirs.exists(join(root, "dangling"))).toEqual(success(true));
     expect(await dirs.exists(join(root, "sub"))).toEqual(success(true));
   });
@@ -297,7 +327,7 @@ test("list returns absolute sorted entries with kinds", async () => {
       "directory",
     ]);
     for (const v of rows) expect(recordIdentity(v)).toBe(entry);
-    check(await dirs.list(root, 2n), 1305, { limit: 2n });
+    check(await dirs.list(root, 2n), "files::limit_exceeded", { limit: 2n });
   });
 });
 test("copy and move round-trip; overwrite gates replacement", async () => {
@@ -308,12 +338,12 @@ test("copy and move round-trip; overwrite gates replacement", async () => {
     expect(await writes.copy(src, dst, false)).toEqual(success(undefined));
     expect(await reads.readText(dst, 100n)).toEqual(success("payload"));
     expect(await reads.readText(src, 100n)).toEqual(success("payload"));
-    check(await writes.copy(src, dst, false), 1302, { path: dst });
+    check(await writes.copy(src, dst, false), "files::already_exists", { path: dst });
     const moved = join(root, "moved.txt");
     expect(await writes.move(src, moved, true)).toEqual(success(undefined));
     expect(await dirs.exists(src)).toEqual(success(false));
     expect(await reads.readText(moved, 100n)).toEqual(success("payload"));
-    check(await writes.move(dst, moved, false), 1302, { path: moved });
+    check(await writes.move(dst, moved, false), "files::already_exists", { path: moved });
     expect(await writes.move(dst, moved, true)).toEqual(success(undefined));
     expect(await reads.readText(moved, 100n)).toEqual(success("payload"));
   });
@@ -325,7 +355,7 @@ test("remove deletes entries; trees need explicit recursion", async () => {
     await writeFile(join(tree, "sub", "f.txt"), "x");
     await writeFile(join(tree, "top.txt"), "t");
     await symlink("top.txt", join(tree, "link.txt"));
-    check(await dirs.remove(tree, false), 1306, { path: tree });
+    check(await dirs.remove(tree, false), "files::not_empty", { path: tree });
     expect(await dirs.exists(tree)).toEqual(success(true));
     expect(await dirs.remove(join(tree, "link.txt"), false)).toEqual(success(undefined));
     expect(await dirs.exists(join(tree, "top.txt"))).toEqual(success(true));
@@ -378,7 +408,7 @@ test("glob matches dotfiles and symlinks with pinned traversal", async () => {
       ]),
     );
     expect(await globs.glob(root, ".*", false, 100n)).toEqual(success([join(root, ".dot")]));
-    check(await globs.glob(root, "**/*", false, 2n), 1305, { limit: 2n });
+    check(await globs.glob(root, "**/*", false, 2n), "files::limit_exceeded", { limit: 2n });
   });
 });
 test("path operations compute natively", async () => {

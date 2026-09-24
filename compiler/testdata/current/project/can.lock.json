@@ -9,14 +9,11 @@
     "can.project.dependency/sample": {
       "lineage": "",
       "manifest_sha256": "308c9b8ebb362476e4118612b55e4f1e87d9ea96659f3af0c73b38058a8a96e0",
-      "source_sha256": "5792b3b3647efcab4e2dc69f44d3586af5b23d287fcc74d1a0718744fa131300",
+      "source_sha256": "95185db94200a3d66eff5a60346fe2f2e1452023f9673f396a1989163d2972ef",
       "fixtures_sha256": "91833b6e6a0c79195d19797bc5f4a358d75030d8d94948078b52935b2f840e5b",
       "error_registry": {
         "active": [
-          {
-            "id": 1000000,
-            "kind": "utils::unavailable"
-          }
+          "utils::unavailable"
         ],
         "retired": []
       },

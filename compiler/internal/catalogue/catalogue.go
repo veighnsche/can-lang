@@ -42,7 +42,6 @@ type TypeDecl struct {
 	Constructible bool        `json:"constructible"`
 }
 type ErrorDecl struct {
-	ID         int         `json:"id"`
 	Name       string      `json:"name"`
 	Identity   string      `json:"identity"`
 	Parameters []Parameter `json:"parameters"`
@@ -317,16 +316,10 @@ func (c *Catalogue) validate() error {
 		}
 		c.types[t.Name] = t
 	}
-	ids := map[int]bool{}
 	for _, e := range inv.Errors {
 		if err := claim(e.Name, e.Identity); err != nil {
 			return err
 		}
-		allocated := e.ID == 100 && e.Name == "all_failed" || e.ID >= 1000 && e.ID <= 1010 || e.ID >= 1100 && e.ID <= 1106 || e.ID == 1110 || e.ID >= 1120 && e.ID <= 1121 || e.ID >= 1130 && e.ID <= 1132 || e.ID >= 1210 && e.ID <= 1212 || e.ID >= 1220 && e.ID <= 1223 || e.ID >= 1230 && e.ID <= 1235 || e.ID >= 1240 && e.ID <= 1250 || e.ID >= 1260 && e.ID <= 1263 || e.ID >= 1300 && e.ID <= 1399
-		if !allocated || ids[e.ID] {
-			return fmt.Errorf("unallocated or duplicate error ID %d", e.ID)
-		}
-		ids[e.ID] = true
 		c.errors[e.Name] = e
 	}
 	for _, t := range inv.Types {

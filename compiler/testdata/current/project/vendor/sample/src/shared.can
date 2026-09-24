@@ -5,4 +5,4 @@ package utils
 record item
     int value
 
-error 1000000 unavailable(str reason)
+error unavailable(str reason)

@@ -41,9 +41,22 @@ const shape = (
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
 const decls = catalogue.errors.filter((e) =>
-  [1305, 1316, 1318, 1319, 1329, 1330, 1331, 1332, 1343, 1344, 1345, 1346, 1347, 1348].includes(
-    e.id,
-  ),
+  [
+    "files::limit_exceeded",
+    "stream::read_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+    "time::out_of_range",
+    "time::invalid_zone",
+    "time::nonexistent_time",
+    "time::invalid_option",
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error",
+    "s3::upload_closed",
+    "s3::over_limit",
+  ].includes(e.name),
 );
 const declarations = decls.map((e) => ({ ...e, parameters: 0 }));
 const errors = decls.map((e) =>
@@ -60,9 +73,9 @@ const failOf = (result: Completion) => {
   if (result.kind !== "domain") throw Error("expected domain");
   return domainFailureDiagnostics(result.value);
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   const d = failOf(result);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 function standardOf(thrown: unknown) {
@@ -239,20 +252,36 @@ const byteReader = (chunks: Uint8Array[]): object => {
 };
 test("client_open validates endpoint, region, bucket and credentials", async () => {
   await owned(async () => {
-    check(await s3.clientOpen("not a url", "us-east-1", "b", "a", "s"), 1343, {
+    check(await s3.clientOpen("not a url", "us-east-1", "b", "a", "s"), "s3::invalid_config", {
       reason: "endpoint",
     });
-    check(await s3.clientOpen("ftp://x", "us-east-1", "b", "a", "s"), 1343, { reason: "endpoint" });
-    check(await s3.clientOpen("http://127.0.0.1:9", "", "b", "a", "s"), 1343, { reason: "region" });
-    check(await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "", "a", "s"), 1343, {
-      reason: "bucket",
+    check(await s3.clientOpen("ftp://x", "us-east-1", "b", "a", "s"), "s3::invalid_config", {
+      reason: "endpoint",
     });
-    check(await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "", "s"), 1343, {
-      reason: "credentials",
+    check(await s3.clientOpen("http://127.0.0.1:9", "", "b", "a", "s"), "s3::invalid_config", {
+      reason: "region",
     });
-    check(await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "a", ""), 1343, {
-      reason: "credentials",
-    });
+    check(
+      await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "", "a", "s"),
+      "s3::invalid_config",
+      {
+        reason: "bucket",
+      },
+    );
+    check(
+      await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "", "s"),
+      "s3::invalid_config",
+      {
+        reason: "credentials",
+      },
+    );
+    check(
+      await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "a", ""),
+      "s3::invalid_config",
+      {
+        reason: "credentials",
+      },
+    );
     const client = value(
       await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "a", "s"),
     ) as object;
@@ -268,18 +297,18 @@ test("read validation fails before any wire call", async () => {
     const client = value(
       await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "a", "s"),
     ) as object;
-    check(await s3.readBytes(client, "", 8n), 1343, { reason: "key" });
-    check(await s3.readBytes(client, "k", 0n), 1343, { reason: "limit" });
-    check(await s3.readBytes(client, "k", -1n), 1343, { reason: "limit" });
-    check(await s3.readBytes(client, "k", 67108865n), 1343, { reason: "limit" });
-    check(await s3.readRange(client, "", 0n, 1n), 1343, { reason: "key" });
-    check(await s3.readRange(client, "k", -1n, 1n), 1343, { reason: "offset" });
-    check(await s3.readRange(client, "k", 0n, -1n), 1343, { reason: "length" });
-    check(await s3.readStream(client, "", 8n), 1343, { reason: "key" });
-    check(await s3.readStream(client, "k", 0n), 1343, { reason: "max_bytes" });
-    check(await s3.stat(client, ""), 1343, { reason: "key" });
-    check(await s3.exists(client, ""), 1343, { reason: "key" });
-    check(await s3.remove(client, ""), 1343, { reason: "key" });
+    check(await s3.readBytes(client, "", 8n), "s3::invalid_config", { reason: "key" });
+    check(await s3.readBytes(client, "k", 0n), "s3::invalid_config", { reason: "limit" });
+    check(await s3.readBytes(client, "k", -1n), "s3::invalid_config", { reason: "limit" });
+    check(await s3.readBytes(client, "k", 67108865n), "s3::invalid_config", { reason: "limit" });
+    check(await s3.readRange(client, "", 0n, 1n), "s3::invalid_config", { reason: "key" });
+    check(await s3.readRange(client, "k", -1n, 1n), "s3::invalid_config", { reason: "offset" });
+    check(await s3.readRange(client, "k", 0n, -1n), "s3::invalid_config", { reason: "length" });
+    check(await s3.readStream(client, "", 8n), "s3::invalid_config", { reason: "key" });
+    check(await s3.readStream(client, "k", 0n), "s3::invalid_config", { reason: "max_bytes" });
+    check(await s3.stat(client, ""), "s3::invalid_config", { reason: "key" });
+    check(await s3.exists(client, ""), "s3::invalid_config", { reason: "key" });
+    check(await s3.remove(client, ""), "s3::invalid_config", { reason: "key" });
     // Zero-length ranges short-circuit without touching the wire, even
     // against an endpoint that refuses every connection.
     expect(textOf(value(await s3.readRange(client, "k", 100n, 0n)))).toBe("");
@@ -290,38 +319,68 @@ test("write validation fails before any wire call", async () => {
     const client = value(
       await s3.clientOpen("http://127.0.0.1:9", "us-east-1", "b", "a", "s"),
     ) as object;
-    check(await s3.writeBytes(client, "", buf("x"), writeOpts(none())), 1343, { reason: "key" });
-    check(await s3.writeBytes(client, "k", buf("x"), writeOpts(someText(""))), 1343, {
-      reason: "content_type",
-    });
-    check(
-      await s3.writeBytes(client, "k", buf("x"), writeOpts(someText("text/plain\r\nX: y"))),
-      1343,
-      { reason: "content_type" },
-    );
-    check(await s3.list(client, listOpts("p", 0n, none(), none())), 1343, { reason: "max_keys" });
-    check(await s3.list(client, listOpts("p", 10n, someText(""), none())), 1343, {
-      reason: "delimiter",
-    });
-    check(await s3.presign(client, record(METHOD_GET, []), "", 300n, none()), 1343, {
+    check(await s3.writeBytes(client, "", buf("x"), writeOpts(none())), "s3::invalid_config", {
       reason: "key",
     });
-    check(await s3.presign(client, record(METHOD_GET, []), "k", 0n, none()), 1343, {
+    check(
+      await s3.writeBytes(client, "k", buf("x"), writeOpts(someText(""))),
+      "s3::invalid_config",
+      {
+        reason: "content_type",
+      },
+    );
+    check(
+      await s3.writeBytes(client, "k", buf("x"), writeOpts(someText("text/plain\r\nX: y"))),
+      "s3::invalid_config",
+      { reason: "content_type" },
+    );
+    check(await s3.list(client, listOpts("p", 0n, none(), none())), "s3::invalid_config", {
+      reason: "max_keys",
+    });
+    check(await s3.list(client, listOpts("p", 10n, someText(""), none())), "s3::invalid_config", {
+      reason: "delimiter",
+    });
+    check(
+      await s3.presign(client, record(METHOD_GET, []), "", 300n, none()),
+      "s3::invalid_config",
+      {
+        reason: "key",
+      },
+    );
+    check(await s3.presign(client, record(METHOD_GET, []), "k", 0n, none()), "s3::invalid_config", {
       reason: "expires",
     });
-    check(await s3.presign(client, record(METHOD_GET, []), "k", -5n, none()), 1343, {
-      reason: "expires",
+    check(
+      await s3.presign(client, record(METHOD_GET, []), "k", -5n, none()),
+      "s3::invalid_config",
+      {
+        reason: "expires",
+      },
+    );
+    check(
+      await s3.presign(client, record(METHOD_GET, []), "k", 604801n, none()),
+      "s3::invalid_config",
+      {
+        reason: "expires",
+      },
+    );
+    check(await s3.beginUpload(client, "", uploadOpts(none(), none())), "s3::invalid_config", {
+      reason: "key",
     });
-    check(await s3.presign(client, record(METHOD_GET, []), "k", 604801n, none()), 1343, {
-      reason: "expires",
-    });
-    check(await s3.beginUpload(client, "", uploadOpts(none(), none())), 1343, { reason: "key" });
-    check(await s3.beginUpload(client, "k", uploadOpts(none(), someInt(1024n))), 1343, {
-      reason: "part_size",
-    });
-    check(await s3.beginUpload(client, "k", uploadOpts(someText(""), none())), 1343, {
-      reason: "content_type",
-    });
+    check(
+      await s3.beginUpload(client, "k", uploadOpts(none(), someInt(1024n))),
+      "s3::invalid_config",
+      {
+        reason: "part_size",
+      },
+    );
+    check(
+      await s3.beginUpload(client, "k", uploadOpts(someText(""), none())),
+      "s3::invalid_config",
+      {
+        reason: "content_type",
+      },
+    );
   });
 });
 test("presign mints locally and describe reveals method and expiry", async () => {
@@ -362,12 +421,18 @@ test("upload terminal states reject reuse without wire calls", async () => {
     const upload = value(await s3.beginUpload(client, "k", uploadOpts(none(), none()))) as object;
     expect(isS3Value(S3_UPLOAD_KIND, upload)).toBe(true);
     value(await s3.cancelUpload(upload));
-    check(await s3.uploadWrite(upload, buf("x")), 1347, {
+    check(await s3.uploadWrite(upload, buf("x")), "s3::upload_closed", {
       operation: "upload_write",
       state: "cancelled",
     });
-    check(await s3.uploadFinish(upload), 1347, { operation: "upload_finish", state: "cancelled" });
-    check(await s3.cancelUpload(upload), 1347, { operation: "cancel_upload", state: "cancelled" });
+    check(await s3.uploadFinish(upload), "s3::upload_closed", {
+      operation: "upload_finish",
+      state: "cancelled",
+    });
+    check(await s3.cancelUpload(upload), "s3::upload_closed", {
+      operation: "cancel_upload",
+      state: "cancelled",
+    });
     let thrown: unknown;
     try {
       value(await s3.uploadWrite(Object.freeze({}), buf("x")));
@@ -394,18 +459,34 @@ test("write_stream rejects non-bytes readers before uploading", async () => {
       identity("can.std.stream@1::close_failed"),
       { scopeManaged: true },
     );
-    check(await s3.writeStream(client, "k", lines, writeOpts(none()), 1024n, 5000n), 1343, {
-      reason: "reader",
-    });
-    check(await s3.writeStream(client, "", byteReader([]), writeOpts(none()), 1024n, 5000n), 1343, {
-      reason: "key",
-    });
-    check(await s3.writeStream(client, "k", byteReader([]), writeOpts(none()), 0n, 5000n), 1343, {
-      reason: "max_bytes",
-    });
-    check(await s3.writeStream(client, "k", byteReader([]), writeOpts(none()), 1024n, 0n), 1343, {
-      reason: "deadline",
-    });
+    check(
+      await s3.writeStream(client, "k", lines, writeOpts(none()), 1024n, 5000n),
+      "s3::invalid_config",
+      {
+        reason: "reader",
+      },
+    );
+    check(
+      await s3.writeStream(client, "", byteReader([]), writeOpts(none()), 1024n, 5000n),
+      "s3::invalid_config",
+      {
+        reason: "key",
+      },
+    );
+    check(
+      await s3.writeStream(client, "k", byteReader([]), writeOpts(none()), 0n, 5000n),
+      "s3::invalid_config",
+      {
+        reason: "max_bytes",
+      },
+    );
+    check(
+      await s3.writeStream(client, "k", byteReader([]), writeOpts(none()), 1024n, 0n),
+      "s3::invalid_config",
+      {
+        reason: "deadline",
+      },
+    );
   });
 });
 test("supplied operations deny the live assertion boundary", async () => {
@@ -482,7 +563,7 @@ live("read_bytes fails over_limit without downloading", async () => {
     const key = PREFIX + "over.bin";
     keys.push(key);
     value(await s3.writeBytes(client, key, buf("12345678"), writeOpts(none())));
-    check(await s3.readBytes(client, key, 4n), 1348, { limit: 4n, size: 8n });
+    check(await s3.readBytes(client, key, 4n), "s3::over_limit", { limit: 4n, size: 8n });
     expect(textOf(value(await s3.readBytes(client, key, 8n)))).toBe("12345678");
   });
 });
@@ -494,11 +575,11 @@ live("read_range serves exact windows and pins range faults", async () => {
     value(await s3.writeBytes(client, key, buf("0123456789"), writeOpts(none())));
     expect(textOf(value(await s3.readRange(client, key, 0n, 4n)))).toBe("0123");
     expect(textOf(value(await s3.readRange(client, key, 8n, 10n)))).toBe("89");
-    check(await s3.readRange(client, key, 100n, 10n), 1346, {
+    check(await s3.readRange(client, key, 100n, 10n), "s3::service_error", {
       code: "InvalidRange",
       operation: "read_range",
     });
-    check(await s3.readRange(client, PREFIX + "absent.bin", 0n, 4n), 1344, {
+    check(await s3.readRange(client, PREFIX + "absent.bin", 0n, 4n), "s3::missing_key", {
       key: PREFIX + "absent.bin",
     });
   });
@@ -511,7 +592,7 @@ live("read_stream reassembles bytes and cancels terminally", async () => {
     const body = new Uint8Array(200000);
     for (let i = 0; i < body.length; i++) body[i] = i % 251;
     value(await s3.writeBytes(client, key, ownBytes(body), writeOpts(none())));
-    check(await s3.readStream(client, key, 100n), 1348, { limit: 100n, size: 200000n });
+    check(await s3.readStream(client, key, 100n), "s3::over_limit", { limit: 100n, size: 200000n });
     const token = value(await s3.readStream(client, key, 300000n)) as object;
     const chunks: Uint8Array[] = [];
     for (;;) {
@@ -570,7 +651,7 @@ live("write_stream pumps readers under byte budgets", async () => {
         4n,
         30000n,
       ),
-      1348,
+      "s3::over_limit",
       { limit: 4n, size: 6n },
     );
     await settled();
@@ -593,9 +674,13 @@ live("write_stream cancels the upload when the reader fails", async () => {
       identity("can.std.stream@1::close_failed"),
       { scopeManaged: true },
     );
-    check(await s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 30000n), 1316, {
-      reason: "reader_boom",
-    });
+    check(
+      await s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 30000n),
+      "stream::read_failed",
+      {
+        reason: "reader_boom",
+      },
+    );
     await settled();
     expect(value(await s3.exists(client, key))).toBe(false);
   });
@@ -619,10 +704,14 @@ live("write_stream fails timeout past the deadline", async () => {
       identity("can.std.stream@1::close_failed"),
       { scopeManaged: true },
     );
-    check(await s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 50n), 1346, {
-      code: "timeout",
-      operation: "write_stream",
-    });
+    check(
+      await s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 50n),
+      "s3::service_error",
+      {
+        code: "timeout",
+        operation: "write_stream",
+      },
+    );
     // One consumed chunk plus at most one high-water-mark prefetch: the
     // pump stops pulling once the deadline fires.
     expect(pulls <= 2).toBe(true);
@@ -649,12 +738,18 @@ live("multipart upload finishes, guards terminals and abandons cleanly", async (
     const meta = await metaOf(value(await s3.uploadFinish(upload)));
     expect(meta.size).toBe(6291456n);
     expect(meta.etag.endsWith('-2"')).toBe(true);
-    check(await s3.uploadWrite(upload, ownBytes(new Uint8Array([1]))), 1347, {
+    check(await s3.uploadWrite(upload, ownBytes(new Uint8Array([1]))), "s3::upload_closed", {
       operation: "upload_write",
       state: "finished",
     });
-    check(await s3.uploadFinish(upload), 1347, { operation: "upload_finish", state: "finished" });
-    check(await s3.cancelUpload(upload), 1347, { operation: "cancel_upload", state: "finished" });
+    check(await s3.uploadFinish(upload), "s3::upload_closed", {
+      operation: "upload_finish",
+      state: "finished",
+    });
+    check(await s3.cancelUpload(upload), "s3::upload_closed", {
+      operation: "cancel_upload",
+      state: "finished",
+    });
     const emptyKey = PREFIX + "multi-empty.bin";
     keys.push(emptyKey);
     const emptyMeta = await metaOf(
@@ -778,18 +873,25 @@ live("denied credentials, refused endpoints and missing keys map exactly", async
     const bad = value(
       await s3.clientOpen(ENDPOINT!, "us-east-1", BUCKET, "nope", "nope"),
     ) as object;
-    check(await s3.stat(bad, PREFIX + "round.bin"), 1345, { operation: "stat" });
-    check(await s3.readBytes(bad, PREFIX + "round.bin", 8n), 1345, { operation: "read_bytes" });
+    check(await s3.stat(bad, PREFIX + "round.bin"), "s3::access_denied", { operation: "stat" });
+    check(await s3.readBytes(bad, PREFIX + "round.bin", 8n), "s3::access_denied", {
+      operation: "read_bytes",
+    });
     const refused = value(
       await s3.clientOpen(refusedEndpoint(), "us-east-1", BUCKET, ACCESS!, SECRET!),
     ) as object;
-    check(await s3.stat(refused, "k"), 1346, { code: "ConnectionRefused", operation: "stat" });
-    check(await s3.readBytes(refused, "k", 8n), 1346, {
+    check(await s3.stat(refused, "k"), "s3::service_error", {
+      code: "ConnectionRefused",
+      operation: "stat",
+    });
+    check(await s3.readBytes(refused, "k", 8n), "s3::service_error", {
       code: "ConnectionRefused",
       operation: "read_bytes",
     });
-    check(await s3.stat(client, PREFIX + "absent.bin"), 1344, { key: PREFIX + "absent.bin" });
-    check(await s3.readBytes(client, PREFIX + "absent.bin", 8n), 1344, {
+    check(await s3.stat(client, PREFIX + "absent.bin"), "s3::missing_key", {
+      key: PREFIX + "absent.bin",
+    });
+    check(await s3.readBytes(client, PREFIX + "absent.bin", 8n), "s3::missing_key", {
       key: PREFIX + "absent.bin",
     });
     expect(value(await s3.exists(client, PREFIX + "absent.bin"))).toBe(false);
@@ -797,8 +899,8 @@ live("denied credentials, refused endpoints and missing keys map exactly", async
     const noBucket = value(
       await s3.clientOpen(ENDPOINT!, "us-east-1", "no-such-bucket-zzz", ACCESS!, SECRET!),
     ) as object;
-    check(await s3.stat(noBucket, "k"), 1344, { key: "k" });
-    check(await s3.list(noBucket, listOpts("", 5n, none(), none())), 1346, {
+    check(await s3.stat(noBucket, "k"), "s3::missing_key", { key: "k" });
+    check(await s3.list(noBucket, listOpts("", 5n, none(), none())), "s3::service_error", {
       code: "NoSuchBucket",
       operation: "list",
     });

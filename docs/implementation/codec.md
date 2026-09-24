@@ -38,7 +38,7 @@ The standalone byte budget is 8,388,608; depth is 64 and value nodes 1,000,000.
 Private transport consumers may replace only the byte limit (up to 67,108,864).
 `encodeJSON`/`decodeJSON` provide the shared schema-directed implementation for
 later fetch, AI state and LLM output adapters. `createCodec` supplies the protected
-completion ABI and exact codec error 1110 for authored calls. Later provider tasks
+completion ABI and exact `codec::invalid_data` error for authored calls. Later provider tasks
 must reuse this implementation and apply their specified transport classifications;
 this task does not claim those not-yet-implemented providers execute.
 

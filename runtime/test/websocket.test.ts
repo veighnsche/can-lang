@@ -39,9 +39,29 @@ const str = shape("primitive", "str"),
   int = shape("primitive", "int");
 const httpDecls = catalogue.errors.filter((e) =>
   [
-    1100, 1104, 1110, 1230, 1231, 1232, 1233, 1234, 1235, 1305, 1316, 1317, 1318, 1319, 1333, 1334,
-    1335, 1336, 1337, 1338, 1339, 1340,
-  ].includes(e.id),
+    "http::invalid_request",
+    "http::body_limit",
+    "codec::invalid_data",
+    "http::invalid_route",
+    "http::duplicate_route",
+    "http::ambiguous_route",
+    "http::invalid_server_config",
+    "http::bind_failed",
+    "http::shutdown_failed",
+    "files::limit_exceeded",
+    "stream::read_failed",
+    "stream::write_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+    "ws::connect_failed",
+    "ws::upgrade_failed",
+    "ws::unsupported_protocol",
+    "ws::send_failed",
+    "ws::invalid_close",
+    "ws::limit_exceeded",
+    "ws::invalid_url",
+    "ws::invalid_protocol",
+  ].includes(e.name),
 );
 const declarations = httpDecls.map((e) => ({ ...e, parameters: 0 }));
 const errors = httpDecls.map((e) =>
@@ -58,9 +78,9 @@ const failOf = (result: Completion) => {
   if (result.kind !== "domain") throw Error("expected domain");
   return domainFailureDiagnostics(result.value);
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   const d = failOf(result);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 function standardOf(thrown: unknown) {
@@ -295,18 +315,22 @@ test("client echo carries text, binary, protocol and graceful close both ways", 
 });
 test("connect validates URL, protocols and every bound before dialing", async () => {
   await owned(async () => {
-    check(await ws.connect("not a url", strArray([]), 65536n, 64n, 1048576n, 5000n, false), 1339, {
-      reason: "unparseable",
-    });
+    check(
+      await ws.connect("not a url", strArray([]), 65536n, 64n, 1048576n, 5000n, false),
+      "ws::invalid_url",
+      {
+        reason: "unparseable",
+      },
+    );
     check(
       await ws.connect("http://127.0.0.1:9/", strArray([]), 65536n, 64n, 1048576n, 5000n, false),
-      1339,
+      "ws::invalid_url",
       { reason: "scheme" },
     );
     for (const bad of ["a,b", "", "has space", 'quo"te'])
       check(
         await ws.connect("ws://127.0.0.1:9/", strArray([bad]), 65536n, 64n, 1048576n, 5000n, false),
-        1340,
+        "ws::invalid_protocol",
         { protocol: bad },
       );
     for (const [args, limit] of [
@@ -329,7 +353,7 @@ test("connect validates URL, protocols and every bound before dialing", async ()
           args[3],
           false,
         ),
-        1338,
+        "ws::limit_exceeded",
         { limit },
       );
   });
@@ -347,7 +371,7 @@ test("connect failures distinguish refused, rejected, tls and timeout", async ()
         5000n,
         false,
       ),
-      1333,
+      "ws::connect_failed",
       { reason: "unreachable" },
     );
   });
@@ -368,7 +392,7 @@ test("connect failures distinguish refused, rejected, tls and timeout", async ()
           5000n,
           false,
         ),
-        1333,
+        "ws::connect_failed",
         { reason: "rejected" },
       );
     });
@@ -420,7 +444,7 @@ test("connect failures distinguish refused, rejected, tls and timeout", async ()
           5000n,
           false,
         ),
-        1333,
+        "ws::connect_failed",
         { reason: "tls" },
       );
       const safe = connectionOf(
@@ -465,7 +489,7 @@ test("connect failures distinguish refused, rejected, tls and timeout", async ()
           200n,
           false,
         ),
-        1333,
+        "ws::connect_failed",
         { reason: "timeout" },
       );
     });
@@ -489,10 +513,16 @@ test("sends enforce size, buffer and peer-close bounds with accepted counts", as
         ),
       );
       expect(value(await ws.sendText(client.session, "ok"))).toBe(2n);
-      check(await ws.sendText(client.session, "x".repeat(8388609)), 1336, { reason: "too_large" });
-      check(await ws.sendBytes(client.session, ownBytes(new Uint8Array(8388609))), 1336, {
+      check(await ws.sendText(client.session, "x".repeat(8388609)), "ws::send_failed", {
         reason: "too_large",
       });
+      check(
+        await ws.sendBytes(client.session, ownBytes(new Uint8Array(8388609))),
+        "ws::send_failed",
+        {
+          reason: "too_large",
+        },
+      );
       // max_send_bytes 8 MiB: each 8 MiB send far exceeds a cold socket's
       // kernel take, so the buffer must still hold bytes when the next send
       // is attempted and one attempt in five is certain to observe block.
@@ -505,7 +535,7 @@ test("sends enforce size, buffer and peer-close bounds with accepted counts", as
           successes++;
           continue;
         }
-        check(attempt, 1336, { reason: "blocked" });
+        check(attempt, "ws::send_failed", { reason: "blocked" });
         blocked = true;
       }
       expect(blocked).toBe(true);
@@ -552,9 +582,13 @@ test("close validates codes and reasons on the client before any frame", async (
         ),
       );
       for (const code of [999n, 1004n, 1005n, 1006n, 1015n, 2000n, 2999n, 5000n])
-        check(await ws.close(client.session, code, ""), 1337, { reason: "code" });
-      check(await ws.close(client.session, 1000n, "r".repeat(124)), 1337, { reason: "reason" });
-      check(await ws.close(client.session, 1000n, "\ud800"), 1337, { reason: "reason" });
+        check(await ws.close(client.session, code, ""), "ws::invalid_close", { reason: "code" });
+      check(await ws.close(client.session, 1000n, "r".repeat(124)), "ws::invalid_close", {
+        reason: "reason",
+      });
+      check(await ws.close(client.session, 1000n, "\ud800"), "ws::invalid_close", {
+        reason: "reason",
+      });
       // Rejected closes leave the session usable; boundary values pass.
       expect(value(await ws.sendText(client.session, "alive"))).toBe(5n);
       expect(eventOf(dataArray(value(await reads.readMany(client.events, 1n)))[0])).toMatchObject({
@@ -590,7 +624,9 @@ test("oversized inbound messages fail the read terminally with cleanup intact", 
         ),
       );
       expect(value(await ws.sendText(client.session, "go"))).toBe(2n);
-      check(await reads.readMany(client.events, 4n), 1316, { reason: "message_too_large" });
+      check(await reads.readMany(client.events, 4n), "stream::read_failed", {
+        reason: "message_too_large",
+      });
       // Terminal read failure: close still succeeds, use observes state.
       expect(await reads.closeReader(client.events)).toMatchObject({ kind: "ok" });
       let thrown: unknown;
@@ -629,7 +665,9 @@ test("an unread queue overrun fails instead of growing without bound", async () 
       // Six replies race the two-slot queue with no read pending: the pump
       // fails instead of retaining them all.
       await new Promise((resolve) => setTimeout(resolve, 150));
-      check(await reads.readMany(client.events, 8n), 1316, { reason: "queue_overrun" });
+      check(await reads.readMany(client.events, 8n), "stream::read_failed", {
+        reason: "queue_overrun",
+      });
       expect(await reads.closeReader(client.events)).toMatchObject({ kind: "ok" });
       expect(value(await ws.close(client.session, 1000n, "bye"))).toBe(undefined);
     });
@@ -681,7 +719,7 @@ test("cancel interrupts a pending event read and two sessions stay apart", async
       );
       const pending = reads.readMany(first.events, 1n);
       expect(await reads.cancelReader(first.events, "slow-consumer")).toMatchObject({ kind: "ok" });
-      check(await pending, 1318, { reason: "slow-consumer" });
+      check(await pending, "stream::cancelled", { reason: "slow-consumer" });
       expect(value(await ws.sendText(second.session, "ping"))).toBe(4n);
       const got = dataArray(value(await reads.readMany(second.events, 1n)));
       expect(eventOf(got[0]).text).toMatch(/^2:1:ping$/);
@@ -787,7 +825,7 @@ test("a denied handshake stays ordinary HTTP with no socket opened", async () =>
           5000n,
           false,
         ),
-        1333,
+        "ws::connect_failed",
         { reason: "rejected" },
       );
     } finally {
@@ -853,8 +891,10 @@ test("server sends report accepted bytes and close validates where native does n
       const conn = connectionOf(await ws.accept(request, "", 65536n, 64n, 1048576n));
       observed.empty = value(await ws.sendText(conn.session, ""));
       observed.multi = value(await ws.sendText(conn.session, "héllo€"));
-      check(await ws.close(conn.session, 999n, "bad"), 1337, { reason: "code" });
-      check(await ws.close(conn.session, 1000n, "r".repeat(200)), 1337, { reason: "reason" });
+      check(await ws.close(conn.session, 999n, "bad"), "ws::invalid_close", { reason: "code" });
+      check(await ws.close(conn.session, 1000n, "r".repeat(200)), "ws::invalid_close", {
+        reason: "reason",
+      });
       const rest = dataArray(value(await reads.readMany(conn.events, 2n)));
       expect(eventOf(rest[0]).kind).toBe(CLOSE);
       value(await reads.closeReader(conn.events));
@@ -903,7 +943,7 @@ test("saturated server sends fail fast and drain resumes them", async () => {
           observed.sent!++;
           continue;
         }
-        check(attempt, 1336, { reason: "blocked" });
+        check(attempt, "ws::send_failed", { reason: "blocked" });
         observed.blocked = true;
       }
       expect(observed.blocked).toBe(true);

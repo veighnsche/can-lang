@@ -211,7 +211,6 @@ type VariantDecl struct {
 }
 type ErrorDecl struct {
 	DeclarationLocation
-	ID         Token
 	Name       Token
 	Parameters []Token
 	Fields     []Field

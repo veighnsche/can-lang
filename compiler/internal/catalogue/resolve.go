@@ -2,14 +2,12 @@ package catalogue
 
 import (
 	"fmt"
-	"sort"
 	"strings"
 )
 
 type ErrorIdentity struct {
 	Name          string   `json:"name"`
 	Identity      string   `json:"identity"`
-	ID            int      `json:"id"`
 	TypeArguments []string `json:"typeArguments"`
 }
 type CallbackContract struct {
@@ -38,16 +36,16 @@ func (c *Catalogue) ErrorIdentity(name string, arguments []string) (ErrorIdentit
 		}
 		canonical[i] = r.String()
 	}
-	return ErrorIdentity{Name: d.Name, Identity: d.Identity, ID: d.ID, TypeArguments: canonical}, nil
+	return ErrorIdentity{Name: d.Name, Identity: d.Identity, TypeArguments: canonical}, nil
 }
 func (c *Catalogue) validateError(e ErrorIdentity) error {
 	if d, ok := c.errors[e.Name]; ok {
-		if d.ID != e.ID || d.Identity != e.Identity || len(d.Parameters) != len(e.TypeArguments) {
+		if d.Identity != e.Identity || len(d.Parameters) != len(e.TypeArguments) {
 			return fmt.Errorf("mismatched catalogue error identity %s", e.Name)
 		}
 	} else {
-		if e.ID < 1000000 || int64(e.ID) > 2147483647 || !strings.Contains(e.Name, "::") || e.Identity == "" || strings.HasPrefix(e.Identity, "can.std.") || strings.HasPrefix(e.Identity, "can.prelude") {
-			return fmt.Errorf("unallocated reserved error ID or invalid project identity: %d", e.ID)
+		if !strings.Contains(e.Name, "::") || e.Identity == "" || strings.HasPrefix(e.Identity, "can.std.") || strings.HasPrefix(e.Identity, "can.prelude") {
+			return fmt.Errorf("invalid project error identity %s", e.Name)
 		}
 	}
 	for _, arg := range e.TypeArguments {
@@ -79,23 +77,18 @@ func (c *Catalogue) bound(names []string, args map[string]string) ([]ErrorIdenti
 }
 func (c *Catalogue) union(groups ...[]ErrorIdentity) ([]ErrorIdentity, error) {
 	seen := map[string]ErrorIdentity{}
-	ids := map[int]string{}
 	kinds := map[string]ErrorIdentity{}
 	for _, group := range groups {
 		for _, e := range group {
 			if err := c.validateError(e); err != nil {
 				return nil, err
 			}
-			if previous, ok := ids[e.ID]; ok && previous != e.Identity {
-				return nil, fmt.Errorf("duplicate domain error ID %d", e.ID)
-			}
-			if previous, ok := kinds[e.Identity]; ok && (previous.Name != e.Name || previous.ID != e.ID) {
+			if previous, ok := kinds[e.Identity]; ok && previous.Name != e.Name {
 				return nil, fmt.Errorf("conflicting domain error kind")
 			}
-			ids[e.ID] = e.Identity
 			kinds[e.Identity] = e
 			key := e.Identity + "<" + strings.Join(e.TypeArguments, ",") + ">"
-			if old, ok := seen[key]; ok && (old.ID != e.ID || old.Name != e.Name) {
+			if old, ok := seen[key]; ok && old.Name != e.Name {
 				return nil, fmt.Errorf("conflicting error identity")
 			}
 			seen[key] = e
@@ -106,7 +99,6 @@ func (c *Catalogue) union(groups ...[]ErrorIdentity) ([]ErrorIdentity, error) {
 	for _, key := range keys {
 		out = append(out, seen[key])
 	}
-	sort.SliceStable(out, func(i, j int) bool { return out[i].ID < out[j].ID })
 	return out, nil
 }
 
@@ -174,7 +166,7 @@ func (c *Catalogue) Resolve(name, target string, revision int, args map[string]s
 			for _, e := range actual.Emits {
 				found := false
 				for _, a := range allowed {
-					if e.Identity == a.Identity && e.ID == a.ID && strings.Join(e.TypeArguments, ",") == strings.Join(a.TypeArguments, ",") {
+					if e.Identity == a.Identity && strings.Join(e.TypeArguments, ",") == strings.Join(a.TypeArguments, ",") {
 						found = true
 					}
 				}

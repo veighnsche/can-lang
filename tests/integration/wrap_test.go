@@ -150,12 +150,12 @@ func TestCurrentBundledWrappers(t *testing.T) {
 
 	// 429 delegates grandchild -> child -> default; 503 renormalizes at the
 	// grandchild. Both escape as one normalized infrastructure failure.
-	for _, bad := range []struct{ mode, id string }{{"busy", "1106"}, {"broken", "1106"}} {
+	for _, bad := range []struct{ mode, identity string }{{"busy", "can.std.http@1::request_failed"}, {"broken", "can.std.http@1::request_failed"}} {
 		mu.Lock()
 		mode = bad.mode
 		mu.Unlock()
 		status, _, diag = run("run")
-		if status == 0 || !strings.Contains(diag, bad.id) {
+		if status == 0 || !strings.Contains(diag, "can.error.v2:"+bad.identity) {
 			t.Fatalf("wrapper error %s: %d %s", bad.mode, status, diag)
 		}
 	}
@@ -165,7 +165,7 @@ func TestCurrentBundledWrappers(t *testing.T) {
 	mode = "ok"
 	mu.Unlock()
 	status, _, diag = run("run")
-	if status == 0 || !strings.Contains(diag, "checks::failed") || !strings.Contains(diag, `"id":1010`) {
+	if status == 0 || !strings.Contains(diag, "checks::failed") || !strings.Contains(diag, `"identity":"can.error.v2:can.std.checks@1::failed"`) {
 		t.Fatalf("success bypass did not reach checks: %d %s", status, diag)
 	}
 

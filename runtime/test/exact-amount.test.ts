@@ -29,7 +29,7 @@ const records = catalogue.types
 const division = records.find((t) => t.declaration?.endsWith("::division"))!,
   rounded = records.find((t) => t.declaration?.endsWith("::rounded"))!;
 const domain = createDomainRuntime({
-  declarations: [{ identity: error.identity, name: error.name, id: error.id, parameters: 0 }],
+  declarations: [{ identity: error.identity, name: error.name, parameters: 0 }],
   shapes: [integer, zero, ...records],
 });
 const api = createExactAmounts(domain, {
@@ -119,7 +119,7 @@ test("each zero denominator produces the allocated domain error", async () => {
     expect(result.kind).toBe("domain");
     if (result.kind !== "domain") throw Error("missing zero divisor domain failure");
     const details = domainFailureDiagnostics(result.value);
-    expect(details.declaration.id).toBe(1009);
+    expect(details.declaration.name).toBe("number::zero_divisor");
     expect(recordIdentity(details.payload)).toBe(zero.identity);
   }
 });

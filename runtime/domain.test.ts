@@ -45,7 +45,6 @@ const codec = shape(
 const project = {
   identity: "can.project.root::app::failed",
   name: "app::failed",
-  id: 1000000,
   parameters: 1,
 };
 const intError = shape(
@@ -73,7 +72,8 @@ test("domain occurrences preserve exact payload, allocation and private origin",
   const first = runtime.create(intError.identity, payload, origin, cause);
   const second = runtime.create(intError.identity, payload, origin, cause);
   const details = domainFailureDiagnostics(first);
-  expect(details.declaration.id).toBe(1000000);
+  expect(details.declaration.identity).toBe(project.identity);
+  expect(details.declaration.name).toBe("app::failed");
   expect(details.typeArguments).toEqual([integer.identity]);
   expect(details.payload).toBe(payload);
   expect(details.cause).toBe(cause);
@@ -94,7 +94,7 @@ test("domain occurrences preserve exact payload, allocation and private origin",
     ...plan,
     declarations: [
       { ...builtin, parameters: 0 },
-      { ...project, id: 1000010 },
+      { ...project, name: "app::other" },
     ],
   });
   expect(() => other.checkBound(first, [intError.identity])).toThrow("undeclared escaping");
@@ -181,16 +181,19 @@ test("malformed payloads and hostile identity metadata fail without getters or t
   expect(invoked).toBe(0);
 });
 
-test("compiler plan rejects wrong allocations, catalogue fields, and variant cycles", () => {
+test("compiler plan rejects wrong declarations, catalogue fields, and variant cycles", () => {
   expect(() =>
     createDomainRuntime({
       ...plan,
-      declarations: [...plan.declarations, { ...project, identity: project.identity + "other" }],
+      declarations: [...plan.declarations, { ...project }],
     }),
   ).toThrow("duplicate");
   expect(() =>
-    createDomainRuntime({ ...plan, declarations: [{ ...builtin, id: 1000003, parameters: 0 }] }),
-  ).toThrow("catalogue allocation mismatch");
+    createDomainRuntime({
+      ...plan,
+      declarations: [{ ...builtin, name: "codec::tampered", parameters: 0 }],
+    }),
+  ).toThrow("catalogue declaration mismatch");
   expect(() =>
     createDomainRuntime({
       ...plan,
@@ -242,6 +245,32 @@ test("compiler plan rejects wrong allocations, catalogue fields, and variant cyc
       ],
     }),
   ).toThrow("catalogue variant leaves mismatch");
+});
+
+test("same error kind under two qualified identities composes without numeric allocation", () => {
+  const left = {
+    identity: "can.project.lineage/shop_left/model::failed",
+    name: "model::failed",
+    parameters: 0,
+  };
+  const right = {
+    identity: "can.project.lineage/shop_right/model::failed",
+    name: "model::failed",
+    parameters: 0,
+  };
+  const leftShape = shape("error", left.identity, [], [{ name: "reason", type: text.identity }]);
+  const rightShape = shape("error", right.identity, [], [{ name: "reason", type: text.identity }]);
+  const runtime = createDomainRuntime({
+    declarations: [left, right],
+    shapes: [text, leftShape, rightShape],
+  });
+  const payload = record(leftShape.identity, [["reason", "left"]]);
+  const occurrence = runtime.create(leftShape.identity, payload, origin);
+  expect(domainFailureDiagnostics(occurrence).declaration.identity).toBe(left.identity);
+  expect(runtime.checkBound(occurrence, [leftShape.identity])).toBe(occurrence);
+  expect(() => runtime.checkBound(occurrence, [rightShape.identity])).toThrow(
+    "undeclared escaping",
+  );
 });
 
 test("recursive payloads admit shared immutable data and reject circular native values", () => {

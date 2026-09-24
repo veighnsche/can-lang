@@ -216,8 +216,8 @@ func TestGenericParametersPrecedeReturnTypeResolution(t *testing.T) {
 }
 
 func TestSignatureBoundsRequireEligibleVisibleErrors(t *testing.T) {
-	base := header("app", "run", "") + "error 1000000 failed()\nfn void run\n    emits [failed]\n    asserts\n        sample: => ok\n    ok\n"
-	files := map[string]string{"src/main.can": base, "can.errors.json": `{"active":[{"id":1000000,"kind":"app::failed"}],"retired":[]}`}
+	base := header("app", "run", "") + "error failed()\nfn void run\n    emits [failed]\n    asserts\n        sample: => ok\n    ok\n"
+	files := map[string]string{"src/main.can": base, "can.errors.json": `{"active":["app::failed"],"retired":[]}`}
 	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), "private type") {
 		t.Fatalf("exported bound hid private error: %v", err)
 	}

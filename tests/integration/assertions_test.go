@@ -224,11 +224,11 @@ fn void boundary
 	if code != 0 || diag != "" || report(out)["passed"] != true || !strings.Contains(out, "supplied-completion") {
 		t.Fatalf("supplied I/O boundary: %d %s %s", code, out, diag)
 	}
-	write("can.errors.json", `{"active":[{"id":1000000,"kind":"errors::failed"}],"retired":[]}`)
+	write("can.errors.json", `{"active":["errors::failed"],"retired":[]}`)
 	write("src/main.can", `package errors
     provides []
     uses []
-error 1000000 failed(int code)
+error failed(int code)
 fn int failure
     emits [failed]
     given

@@ -28,7 +28,15 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const declarations = catalogue.errors.filter((e) => [1101, 1110, 1210, 1212, 1262].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::credentials_missing",
+    "codec::invalid_data",
+    "io::read_failed",
+    "io::limit_exceeded",
+    "env::invalid_name",
+  ].includes(e.name),
+);
 const errors = declarations.map((e) =>
   shape(
     "error",
@@ -47,11 +55,11 @@ const types = {
   invalidData: identity("can.std.codec@1::invalid_data"),
 };
 const origin = { source: "test", start: 0, end: 0, invocation: [] };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 function input(chunks: Uint8Array[]) {
@@ -78,10 +86,14 @@ test("bounded stdin keeps exact bytes, huge limits and split UTF-8", async () =>
   ).stdinText(10n ** 100n);
   expect(text).toEqual(success("\ufeffhé😀"));
   expect(await createIO(domain, types, input([])).stdinText(0n)).toEqual(success(""));
-  check(await createIO(domain, types, input([new Uint8Array([255])])).stdinText(1n), 1110, {
-    path: "",
-    reason: "utf8",
-  });
+  check(
+    await createIO(domain, types, input([new Uint8Array([255])])).stdinText(1n),
+    "codec::invalid_data",
+    {
+      path: "",
+      reason: "utf8",
+    },
+  );
 });
 test("negative limits never open input; overflow cancels without partial success", async () => {
   let opens = 0,
@@ -98,14 +110,18 @@ test("negative limits never open input; overflow cancels without partial success
       },
     });
   });
-  check(await api.stdinBytes(-1n), 1212, { limit: -1n });
+  check(await api.stdinBytes(-1n), "io::limit_exceeded", { limit: -1n });
   expect(opens).toBe(0);
-  check(await api.stdinBytes(1n), 1212, { limit: 1n });
+  check(await api.stdinBytes(1n), "io::limit_exceeded", { limit: 1n });
   expect(opens).toBe(1);
   expect(cancels).toBe(1);
-  check(await createIO(domain, types, input([new Uint8Array([0])])).stdinText(0n), 1212, {
-    limit: 0n,
-  });
+  check(
+    await createIO(domain, types, input([new Uint8Array([0])])).stdinText(0n),
+    "io::limit_exceeded",
+    {
+      limit: 0n,
+    },
+  );
 });
 test("expected native read failures map, defects remain standard", async () => {
   for (const method of ["stdinBytes", "stdinText"] as const) {
@@ -119,7 +135,7 @@ test("expected native read failures map, defects remain standard", async () => {
           },
         }),
     );
-    check(await api[method](10n), 1210, {
+    check(await api[method](10n), "io::read_failed", {
       operation: method === "stdinBytes" ? "stdin_bytes" : "stdin_text",
     });
   }
@@ -144,13 +160,13 @@ test("environment validates before lookup and preserves presence and exact value
     },
   );
   for (const bad of ["", "lower", "A-B", "1A", "A=B", "A\0", "À", "A\n"]) {
-    check(await env.required(bad), 1262, { name: bad });
-    check(await env.optional(bad), 1262, { name: bad });
+    check(await env.required(bad), "env::invalid_name", { name: bad });
+    check(await env.optional(bad), "env::invalid_name", { name: bad });
   }
   expect(calls).toBe(0);
   expect(await env.required("EMPTY")).toEqual(success(""));
   expect(await env.required("VALUE")).toEqual(success("hé\n"));
-  check(await env.required("MISSING"), 1101, { variable: "MISSING" });
+  check(await env.required("MISSING"), "http::credentials_missing", { variable: "MISSING" });
   for (const [name, id, value] of [
     ["EMPTY", "some", ""],
     ["VALUE", "some", "hé\n"],

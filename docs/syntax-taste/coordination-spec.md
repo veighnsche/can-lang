@@ -119,7 +119,7 @@ The compiler creates one private adapter promise per participant:
 - a Can success fulfills the adapter with a private non-thenable success box
   containing the complete typed success payload;
 - a declared domain error rejects it with a private tag containing the exact
-  nominal error value, stable error ID, generic specialization, and payload;
+  nominal error value, stable error identity, generic specialization, and payload;
 - a standard failure rejects it with a distinct private tag containing a
   `standard_failure` snapshot.
 
@@ -219,15 +219,17 @@ Every generic error specialization is distinct. [C5.1](technical-spec.md#c51-exa
 
 ## Q6. What exactly is `all_failed`?
 
-The prelude reserves error ID `100` and the unqualified name `all_failed`:
+The prelude reserves the unqualified name `all_failed` with identity
+`can.prelude@1::all_failed`:
 
 ```text
-error 100 all_failed<failure>(failure[] failures)
+error all_failed<failure>(failure[] failures)
 ```
 
-Application code cannot redeclare or shadow this prelude name or allocate ID
-100. All generic specializations are the same error kind and share ID 100, as
-all specializations of an ordinary generic error share their declaration ID.
+Application code cannot redeclare or shadow this prelude name. All generic
+specializations are the same error kind and share its qualified identity, as
+all specializations of an ordinary generic error share their declaration
+identity.
 The arm may spell exact `all_failed<F>`; a bare `all_failed` uses the unique expected variant or remains compiler-private when its payload is ignored, as below.
 
 Every source-denotable specialization `all_failed<F>` requires `F` to be a
@@ -235,8 +237,8 @@ named finite variant. That variant may list record types, declared error types,
 the prelude type `standard_failure`, and other named variants that recursively
 flatten to disjoint nominal leaves. Error types are ordinary nominal data types
 in such a variant. A captured domain failure value retains its error kind,
-stable ID, generic arguments, and complete typed payload. It is not a message
-string. A locally handled aggregate whose payload is never observed can remain
+stable qualified identity, generic arguments, and complete typed payload. It
+is not a message string. A locally handled aggregate whose payload is never observed can remain
 a compiler-private tag over its closed leaf set; it does not create an anonymous
 source type.
 

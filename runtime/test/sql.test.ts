@@ -61,7 +61,7 @@ const fieldTypes: Record<string, Record<string, string>> = {
 };
 const declarations = catalogue.errors
   .filter((e) => fieldTypes[e.name] !== undefined)
-  .map((e) => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
+  .map((e) => ({ identity: e.identity, name: e.name, parameters: 0 }));
 const errorShapes: FailureShape[] = declarations.map((e) => ({
   identity: identity("error", e.identity),
   kind: "error",

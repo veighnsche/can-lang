@@ -173,7 +173,6 @@ func (p *parser) declaration() Declaration {
 		return &VariantDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Parameters: parameters, Alternatives: alternatives}
 	case p.word("error"):
 		p.take()
-		id := p.expect(Integer)
 		name := p.expect(Name)
 		parameters := p.parameters()
 		p.expect("(")
@@ -189,7 +188,7 @@ func (p *parser) declaration() Declaration {
 		}
 		p.expect(")")
 		p.expect(Newline)
-		return &ErrorDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, ID: id, Name: name, Parameters: parameters, Fields: fields}
+		return &ErrorDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Parameters: parameters, Fields: fields}
 	default:
 		binding := p.binding()
 		return &ValueDecl{DeclarationLocation: DeclarationLocation{binding.Span}, Binding: binding}

@@ -46,8 +46,17 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter(
-  (e) => (e.id >= 1100 && e.id <= 1106) || e.id === 1110,
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+  ].includes(e.name),
 );
 const detailIdentity = hash(["variant", "can.std.http@1::failure_detail"]);
 const errors = declarations.map((d) =>
@@ -73,7 +82,9 @@ const detail: FailureShape = {
   declaration: "can.std.http@1::failure_detail",
   fields: [],
   arguments: [],
-  leaves: errors.filter((_, i) => declarations[i].id !== 1106).map((e) => e.identity),
+  leaves: errors
+    .filter((_, i) => declarations[i].name !== "http::request_failed")
+    .map((e) => e.identity),
   inputs: [],
   errors: [],
 };
@@ -112,7 +123,7 @@ function checkDetail(result: Completion, leaf: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw new Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(1106);
+  expect(d.declaration.name).toBe("http::request_failed");
   const leafValue = dataProperty(d.payload, "detail");
   expect(recordIdentity(leafValue)).toBe(leaf);
   expect(leafValue).toMatchObject(payload);

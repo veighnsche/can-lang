@@ -39,7 +39,19 @@ const shape = (
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
 const declarations = catalogue.errors.filter((e) =>
-  [1100, 1104, 1110, 1230, 1231, 1232, 1305, 1316, 1317, 1318, 1319].includes(e.id),
+  [
+    "http::invalid_request",
+    "http::body_limit",
+    "codec::invalid_data",
+    "http::invalid_route",
+    "http::duplicate_route",
+    "http::ambiguous_route",
+    "files::limit_exceeded",
+    "stream::read_failed",
+    "stream::write_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+  ].includes(e.name),
 );
 const errors = declarations.map((e) =>
   shape(
@@ -92,11 +104,11 @@ async function snapshot(url: string, init?: RequestInit, limit = 1024) {
   if (result.kind !== "request") throw Error("rejected request");
   return result.value;
 }
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 test("request URL normalization retains decoded path and query distinctions", async () => {
@@ -110,8 +122,10 @@ test("request URL normalization retains decoded path and query distinctions", as
   expect(value(await api.queryOne(request, "empty"))).toBe("");
   expect(value(await api.queryOne(request, "escaped"))).toBe("&=");
   expect(value(await api.queryAll(request, "absent"))).toEqual([]);
-  check(await api.queryOne(request, "absent"), 1100, { reason: "query_missing" });
-  check(await api.queryOne(request, "x"), 1100, { reason: "query_repeated" });
+  check(await api.queryOne(request, "absent"), "http::invalid_request", {
+    reason: "query_missing",
+  });
+  check(await api.queryOne(request, "x"), "http::invalid_request", { reason: "query_repeated" });
   expect(value(await api.headers(request))).toEqual([
     record("header", [
       ["name", "x-test"],
@@ -124,10 +138,10 @@ test("request URL normalization retains decoded path and query distinctions", as
 test("invalid query encodings fail without native replacement fallback", async () => {
   for (const query of ["x=%", "x=%GG", "x=%FF", "%ED%A0%80=x"]) {
     const request = await snapshot("http://localhost/?" + query);
-    check(await api.queryAll(request, "x"), 1100, { reason: "query_value" });
+    check(await api.queryAll(request, "x"), "http::invalid_request", { reason: "query_value" });
   }
   const request = await snapshot("http://localhost/");
-  check(await api.queryOne(request, "\ud800"), 1100, { reason: "query_name" });
+  check(await api.queryOne(request, "\ud800"), "http::invalid_request", { reason: "query_name" });
   for (const path of ["/%", "/%FF", "/%00", "/%5c"]) {
     expect(await snapshotRequest(new Request("http://localhost" + path), 32)).toEqual({
       kind: "rejected",
@@ -148,7 +162,8 @@ test("body snapshot is detached, cached and independently bounded on each call",
   expect(copy).toEqual(new Uint8Array([1, 2, 3]));
   copy.fill(0);
   expect(copyBytes(first, origin)).toEqual(new Uint8Array([1, 2, 3]));
-  for (const limit of [-1n, 0n, 2n]) check(await api.body(result.value, limit), 1104, { limit });
+  for (const limit of [-1n, 0n, 2n])
+    check(await api.body(result.value, limit), "http::body_limit", { limit });
   const empty = await snapshot("http://localhost/");
   expect(copyBytes(value(await api.body(empty, 0n)), origin)).toHaveLength(0);
 });
@@ -195,8 +210,11 @@ test("JSON preserves exact integers and uses the caller's bounded expansion budg
     body: "1e8",
     headers: { "content-type": "application/json" },
   });
-  check(await api.json(schema, expanded, 3n), 1110, { path: "", reason: "byte_limit" });
-  check(await api.json(schema, expanded, 2n), 1104, { limit: 2n });
+  check(await api.json(schema, expanded, 3n), "codec::invalid_data", {
+    path: "",
+    reason: "byte_limit",
+  });
+  check(await api.json(schema, expanded, 2n), "http::body_limit", { limit: 2n });
 });
 test("form decoding reads the same immutable body and enforces its media contract", async () => {
   const schema = {
@@ -234,20 +252,22 @@ test("form decoding reads the same immutable body and enforces its media contrac
       body: text,
       headers: { "content-type": type },
     });
-    check(await api.form(schema, wrong, 100n), 1100, { reason: "unsupported_media_type" });
+    check(await api.form(schema, wrong, 100n), "http::invalid_request", {
+      reason: "unsupported_media_type",
+    });
   }
-  for (const [body, id, reason] of [
-    ["name=%", 1100, "invalid_form_encoding"],
-    ["name=%FF", 1110, "utf8"],
-    ["tags=x", 1100, "form_missing"],
-    ["name=a&name=b", 1100, "form_repeated"],
+  for (const [body, expected, reason] of [
+    ["name=%", "http::invalid_request", "invalid_form_encoding"],
+    ["name=%FF", "codec::invalid_data", "utf8"],
+    ["tags=x", "http::invalid_request", "form_missing"],
+    ["name=a&name=b", "http::invalid_request", "form_repeated"],
   ] as const) {
     const bad = await snapshot("http://localhost/", {
       method: "POST",
       body,
       headers: { "content-type": "application/x-www-form-urlencoded" },
     });
-    check(await api.form(schema, bad, 100n), id, { reason });
+    check(await api.form(schema, bad, 100n), expected, { reason });
   }
 });
 test("duplicate headers pin native coalescing and exact media precedence", async () => {
@@ -260,7 +280,9 @@ test("duplicate headers pin native coalescing and exact media precedence", async
     ],
   });
   const schema = { root: "int", nodes: [{ identity: "int", kind: "primitive", name: "int" }] };
-  check(await api.json(schema, dup, 100n), 1100, { reason: "unsupported_media_type" });
+  check(await api.json(schema, dup, 100n), "http::invalid_request", {
+    reason: "unsupported_media_type",
+  });
   const multi = await snapshot("http://localhost/", {
     headers: [
       ["x-multi", "1"],
@@ -306,7 +328,7 @@ test("duplicate headers pin native coalescing and exact media precedence", async
       wrong,
       100n,
     ),
-    1110,
+    "codec::invalid_data",
     { path: "/1", reason: "type" },
   );
 });
@@ -332,8 +354,10 @@ test("forged request handles fail without invoking user traps", async () => {
 test("response status boundaries keep bodyless statuses separate", async () => {
   const headers = value(await responses.emptyHeaders());
   for (const code of [-1n, 0n, 199n, 600n, 10n ** 100n]) {
-    check(await responses.makeStatus(code), 1100, { reason: "invalid_status" });
-    check(await responses.makeBodyStatus(code), 1100, { reason: "invalid_status" });
+    check(await responses.makeStatus(code), "http::invalid_request", { reason: "invalid_status" });
+    check(await responses.makeBodyStatus(code), "http::invalid_request", {
+      reason: "invalid_status",
+    });
   }
   for (const code of [200n, 204n, 205n, 304n, 599n]) {
     const status = value(await responses.makeStatus(code));
@@ -343,7 +367,9 @@ test("response status boundaries keep bodyless statuses separate", async () => {
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
   }
   for (const code of [204n, 205n, 304n])
-    check(await responses.makeBodyStatus(code), 1100, { reason: "invalid_status" });
+    check(await responses.makeBodyStatus(code), "http::invalid_request", {
+      reason: "invalid_status",
+    });
   for (const [get, code] of [
     [responses.ok, 200],
     [responses.unprocessable, 422],
@@ -383,10 +409,12 @@ test("native header validation rejects fixed sink overrides and hop-by-hop field
     "bad name",
     "",
   ]) {
-    check(await responses.makeHeaders(header(name, "x")), 1100, { reason: "invalid_header" });
+    check(await responses.makeHeaders(header(name, "x")), "http::invalid_request", {
+      reason: "invalid_header",
+    });
   }
   for (const content of ["a\nb", "a\rb", "a\0b", "\ud800", "😀"])
-    check(await responses.makeHeaders(header("x-test", content)), 1100, {
+    check(await responses.makeHeaders(header("x-test", content)), "http::invalid_request", {
       reason: "invalid_header",
     });
   const headers = value(await responses.makeHeaders(header("X-Test", " value "))),
@@ -439,7 +467,7 @@ test("immutable response reuse makes independent native bodies with fixed encodi
       headers,
       "\ud800",
     ),
-    1110,
+    "codec::invalid_data",
     { path: "", reason: "unicode_scalar" },
   );
 });
@@ -471,10 +499,16 @@ test("router rejects duplicates, normalized aliases and unsupported path pattern
     headers = value(await responses.emptyHeaders());
   const callback = async () => responses.text(status, headers, "ok");
   const first = value(await routing.get("/x", callback));
-  check(await routing.make(array([first, first])), 1231, { method: "GET", path: "/x" });
+  check(await routing.make(array([first, first])), "http::duplicate_route", {
+    method: "GET",
+    path: "/x",
+  });
   for (const alias of ["/%78", "/a/../x"]) {
     const second = value(await routing.get(alias, callback));
-    check(await routing.make(array([first, second])), 1232, { first: "/x", second: alias });
+    check(await routing.make(array([first, second])), "http::ambiguous_route", {
+      first: "/x",
+      second: alias,
+    });
   }
   for (const path of [
     "",
@@ -490,7 +524,7 @@ test("router rejects duplicates, normalized aliases and unsupported path pattern
     "/\ud800",
     "/x\ny",
   ]) {
-    check(await routing.get(path, callback), 1230, { reason: "path" });
+    check(await routing.get(path, callback), "http::invalid_route", { reason: "path" });
   }
   expect((await routing.make(array([first, value(await routing.post("/x", callback))]))).kind).toBe(
     "ok",
@@ -587,7 +621,7 @@ test("method table routes all seven methods with sorted Allow fallback", async (
     await routing.make(
       array([value(await routing.put("/m", callback)), value(await routing.put("/m", callback))]),
     ),
-    1231,
+    "http::duplicate_route",
     { method: "PUT", path: "/m" },
   );
 });
@@ -673,7 +707,7 @@ test("lazy bodies defer bytes until first access then buffer and cache", async (
   expect(native.bodyUsed).toBe(true);
   expect(new TextDecoder().decode(copyBytes(first, origin))).toBe("chunk");
   expect(value(await api.body(result.value, 100n))).toBe(first);
-  check(await api.body(result.value, 4n), 1104, { limit: 4n });
+  check(await api.body(result.value, 4n), "http::body_limit", { limit: 4n });
 });
 test("live buffered access reports ingress cap and read failures in handler", async () => {
   const big = await snapshotRequestLazy(
@@ -681,7 +715,7 @@ test("live buffered access reports ingress cap and read failures in handler", as
     16,
   );
   if (big.kind !== "request") throw Error("rejected request");
-  check(await api.body(big.value, 100n), 1104, { limit: 16n });
+  check(await api.body(big.value, 100n), "http::body_limit", { limit: 16n });
   const failed = new ReadableStream<Uint8Array>({
     pull() {
       throw Error("wire down");
@@ -692,7 +726,7 @@ test("live buffered access reports ingress cap and read failures in handler", as
     16,
   );
   if (broken.kind !== "request") throw Error("rejected request");
-  check(await api.body(broken.value, 100n), 1100, { reason: "body_read" });
+  check(await api.body(broken.value, 100n), "http::invalid_request", { reason: "body_read" });
 });
 test("body readers are one-shot and poison buffered reads once live", async () => {
   const owned = await runOwnedRoot(async () => {
@@ -707,8 +741,10 @@ test("body readers are one-shot and poison buffered reads once live", async () =
       "hel",
       "lo",
     ]);
-    check(await api.bodyStream(lazy.value, 3n), 1100, { reason: "body_consumed" });
-    check(await api.body(lazy.value, 100n), 1100, { reason: "body_consumed" });
+    check(await api.bodyStream(lazy.value, 3n), "http::invalid_request", {
+      reason: "body_consumed",
+    });
+    check(await api.body(lazy.value, 100n), "http::invalid_request", { reason: "body_consumed" });
     expect((await reads.closeReader(reader)).kind).toBe("ok");
     const early = await snapshotRequestLazy(
       new Request("http://localhost/", { method: "POST", body: "hello" }),
@@ -727,9 +763,11 @@ test("body readers are one-shot and poison buffered reads once live", async () =
     const buffered = await snapshot("http://localhost/", { method: "POST", body: "hello" });
     const memory = value(await api.bodyStream(buffered, 10n));
     expect((await reads.closeReader(memory)).kind).toBe("ok");
-    check(await api.bodyStream(buffered, 10n), 1100, { reason: "body_consumed" });
+    check(await api.bodyStream(buffered, 10n), "http::invalid_request", {
+      reason: "body_consumed",
+    });
     expect(value(await api.body(buffered, 100n))).toBe(value(await api.body(buffered, 100n)));
-    check(await api.bodyStream(buffered, 0n), 1104, { limit: 0n });
+    check(await api.bodyStream(buffered, 0n), "http::body_limit", { limit: 0n });
     return success(undefined);
   });
   expect(owned.cleanupFailed).toBe(false);
@@ -748,7 +786,10 @@ test("stream marking routes bodies around the eager pre-read", async () => {
   expect(routeKind(router, "GET", "/u")).toBe("buffered");
   expect(routeKind(router, "PUT", "/u")).toBe(undefined);
   expect(routeKind(router, "POST", "/missing")).toBe(undefined);
-  check(await routing.make(array([plain, marked])), 1231, { method: "POST", path: "/u" });
+  check(await routing.make(array([plain, marked])), "http::duplicate_route", {
+    method: "POST",
+    path: "/u",
+  });
   let traps = 0;
   const forged = new Proxy(
     {},
@@ -825,7 +866,7 @@ test("stream responses produce through short writes into a bounded queue", async
       headers = value(await responses.emptyHeaders());
     const pending = value(await responses.stream(status, headers));
     const out = value(await responses.writer(pending));
-    check(await responses.writer(pending), 1100, { reason: "writer_taken" });
+    check(await responses.writer(pending), "http::invalid_request", { reason: "writer_taken" });
     const first = value(await writes.writeSome(out, ownBytes(new TextEncoder().encode("ab"))));
     const second = value(await writes.writeSome(out, ownBytes(new TextEncoder().encode("c"))));
     expect((await writes.closeWriter(out)).kind).toBe("ok");
@@ -877,7 +918,7 @@ test("pending responses without writers serve empty and convert once", async () 
   const status = value(await responses.ok()),
     headers = value(await responses.emptyHeaders());
   const plain = value(await responses.text(status, headers, "x"));
-  check(await responses.writer(plain), 1100, { reason: "not_streaming" });
+  check(await responses.writer(plain), "http::invalid_request", { reason: "not_streaming" });
   const untaken = value(await responses.stream(status, headers));
   const owned = await runOwnedRoot(async () => {
     const once = value(await responses.stream(status, headers));
@@ -936,12 +977,18 @@ test("SSE frames events with validated fields", async () => {
     expect(value(await responses.sseSend(out, event("", "", "", "100")))).toBe(12n);
     expect(value(await responses.sseSend(out, event("", "", "", "")))).toBe(1n);
     expect(value(await responses.sseComment(out, "still here"))).toBe(14n);
-    check(await responses.sseSend(out, event("x", "bad\nevent", "", "")), 1100, {
+    check(await responses.sseSend(out, event("x", "bad\nevent", "", "")), "http::invalid_request", {
       reason: "sse_event",
     });
-    check(await responses.sseSend(out, event("x", "", "bad\rid", "")), 1100, { reason: "sse_id" });
-    check(await responses.sseSend(out, event("x", "", "", "now")), 1100, { reason: "sse_retry" });
-    check(await responses.sseComment(out, "bad\ncomment"), 1100, { reason: "sse_comment" });
+    check(await responses.sseSend(out, event("x", "", "bad\rid", "")), "http::invalid_request", {
+      reason: "sse_id",
+    });
+    check(await responses.sseSend(out, event("x", "", "", "now")), "http::invalid_request", {
+      reason: "sse_retry",
+    });
+    check(await responses.sseComment(out, "bad\ncomment"), "http::invalid_request", {
+      reason: "sse_comment",
+    });
     return success(pending);
   });
   const served = nativeResponse(value(owned.completion));
@@ -972,7 +1019,7 @@ test("SSE frames are atomic against the queue bound", async () => {
           ["retry", ""],
         ]),
       ),
-      1104,
+      "http::body_limit",
       { limit: 1048576n },
     );
     expect(
@@ -1004,7 +1051,7 @@ test("SSE frames are atomic against the queue bound", async () => {
           ["retry", ""],
         ]),
       ),
-      1100,
+      "http::invalid_request",
       { reason: "not_streaming" },
     );
     expect((await writes.closeWriter(file)).kind).toBe("ok");
@@ -1115,7 +1162,7 @@ test("multipart rejects malformed framing and media", async () => {
         65536n,
         65536n,
       ),
-      1100,
+      "http::invalid_request",
       { reason: "multipart_frame" },
     );
   await bad(
@@ -1181,37 +1228,49 @@ test("multipart rejects malformed framing and media", async () => {
       },
     ]),
   });
-  check(await api.multipart(nested, 65536n, 65536n), 1100, { reason: "multipart_nested" });
+  check(await api.multipart(nested, 65536n, 65536n), "http::invalid_request", {
+    reason: "multipart_nested",
+  });
   const missing = await snapshot("http://localhost/", {
     method: "POST",
     headers: { "content-type": "multipart/form-data" },
     body: multipartBody(boundary, []),
   });
-  check(await api.multipart(missing, 65536n, 65536n), 1100, { reason: "multipart_boundary" });
+  check(await api.multipart(missing, 65536n, 65536n), "http::invalid_request", {
+    reason: "multipart_boundary",
+  });
   const tilde = await snapshot("http://localhost/", {
     method: "POST",
     headers: { "content-type": "multipart/form-data; boundary=a~b" },
     body: multipartBody("a~b", []),
   });
-  check(await api.multipart(tilde, 65536n, 65536n), 1100, { reason: "multipart_boundary" });
+  check(await api.multipart(tilde, 65536n, 65536n), "http::invalid_request", {
+    reason: "multipart_boundary",
+  });
   const quoted = await snapshot("http://localhost/", {
     method: "POST",
     headers: { "content-type": 'multipart/form-data; boundary="a b"' },
     body: multipartBody("a b", []),
   });
-  check(await api.multipart(quoted, 65536n, 65536n), 1100, { reason: "multipart_boundary" });
+  check(await api.multipart(quoted, 65536n, 65536n), "http::invalid_request", {
+    reason: "multipart_boundary",
+  });
   const plain = await snapshot("http://localhost/", {
     method: "POST",
     headers: { "content-type": "text/plain" },
     body: new TextEncoder().encode("x"),
   });
-  check(await api.multipart(plain, 65536n, 65536n), 1100, { reason: "unsupported_media_type" });
+  check(await api.multipart(plain, 65536n, 65536n), "http::invalid_request", {
+    reason: "unsupported_media_type",
+  });
   const spaced = await snapshot("http://localhost/", {
     method: "POST",
     headers: { "content-type": "multipart/form-data; boundary=a b" },
     body: multipartBody("a b", []),
   });
-  check(await api.multipart(spaced, 65536n, 65536n), 1100, { reason: "unsupported_media_type" });
+  check(await api.multipart(spaced, 65536n, 65536n), "http::invalid_request", {
+    reason: "unsupported_media_type",
+  });
   const mojibake = await snapshot("http://localhost/", {
     method: "POST",
     headers,
@@ -1222,7 +1281,10 @@ test("multipart rejects malformed framing and media", async () => {
       },
     ]),
   });
-  check(await api.multipart(mojibake, 65536n, 65536n), 1110, { path: "multipart", reason: "utf8" });
+  check(await api.multipart(mojibake, 65536n, 65536n), "codec::invalid_data", {
+    path: "multipart",
+    reason: "utf8",
+  });
   const big = await snapshot("http://localhost/", {
     method: "POST",
     headers,
@@ -1230,7 +1292,7 @@ test("multipart rejects malformed framing and media", async () => {
       { headers: ['content-disposition: form-data; name="n"'], content: "v" },
     ]),
   });
-  check(await api.multipart(big, 10n, 65536n), 1104, { limit: 10n });
+  check(await api.multipart(big, 10n, 65536n), "http::body_limit", { limit: 10n });
   const capped = await snapshot("http://localhost/", {
     method: "POST",
     headers,
@@ -1238,9 +1300,9 @@ test("multipart rejects malformed framing and media", async () => {
       { headers: ['content-disposition: form-data; name="f"; filename="a.bin"'], content: "12345" },
     ]),
   });
-  check(await api.multipart(capped, 65536n, 4n), 1104, { limit: 4n });
+  check(await api.multipart(capped, 65536n, 4n), "http::body_limit", { limit: 4n });
   expect(fieldOf(value(await api.multipart(capped, 65536n, 5n)))).toEqual([]);
-  check(await api.multipart(capped, 65536n, -1n), 1104, { limit: -1n });
+  check(await api.multipart(capped, 65536n, -1n), "http::body_limit", { limit: -1n });
 });
 test("multipart buffers live bodies once and honors consumption", async () => {
   const owned = await runOwnedRoot(async () => {
@@ -1264,7 +1326,9 @@ test("multipart buffers live bodies once and honors consumption", async () => {
     );
     if (live.kind !== "request") throw Error("rejected request");
     value(await api.bodyStream(live.value, 8n));
-    check(await api.multipart(live.value, 65536n, 65536n), 1100, { reason: "body_consumed" });
+    check(await api.multipart(live.value, 65536n, 65536n), "http::invalid_request", {
+      reason: "body_consumed",
+    });
     return success(undefined);
   });
   expect(owned.cleanupFailed).toBe(false);
@@ -1337,7 +1401,11 @@ test("multipart fuzzing only raises declared issues", async () => {
         }
       } else if (parsed.kind === "domain") {
         const d = domainFailureDiagnostics(parsed.value);
-        expect([1100, 1104, 1110].includes(d.declaration.id)).toBe(true);
+        expect(
+          ["http::invalid_request", "http::body_limit", "codec::invalid_data"].includes(
+            d.declaration.name,
+          ),
+        ).toBe(true);
       } else {
         throw Error("unexpected standard failure");
       }

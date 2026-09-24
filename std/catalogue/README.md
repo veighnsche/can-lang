@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: e8668d307fe5181fb143eeae1e59f1424eb90d4d1a7d7c5d4b9e158ecd54e9d3.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 4484437f6adf2c640c2f53e71bd715a84458e0cfed779973617c675dfbf9b9f9.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -142,110 +142,110 @@ with the same command plus --check. Go tests also reject stale mirrors.
 
 ## Domain errors
 
-| ID | Kind | Parameters | Ordered payload |
-| --- | --- | --- | --- |
-| 100 | all_failed | F:failure_variant | F[] failures |
-| 1000 | number::inexact |  | str reason |
-| 1001 | text::invalid_number |  | str input |
-| 1002 | text::invalid_bool |  | str input |
-| 1003 | number::invalid_bool |  | int value |
-| 1004 | text::empty_separator |  |  |
-| 1005 | text::empty_pattern |  |  |
-| 1006 | text::invalid_unicode |  | str reason |
-| 1007 | collections::key_absent |  |  |
-| 1008 | collections::key_exists |  |  |
-| 1009 | number::zero_divisor |  |  |
-| 1010 | checks::failed |  | str reason |
-| 1100 | http::invalid_request |  | str reason |
-| 1101 | http::credentials_missing |  | str variable |
-| 1102 | http::transport_failed |  | str phase |
-| 1103 | http::timeout |  | int timeout_ms |
-| 1104 | http::body_limit |  | int limit |
-| 1105 | http::status_error |  | int status, http::header[] headers |
-| 1106 | http::request_failed |  | http::failure_detail detail |
-| 1110 | codec::invalid_data |  | str path, str reason |
-| 1120 | ai::invalid_question |  | str reason |
-| 1121 | ai::invalid_answer |  | str question, str reason |
-| 1130 | llm::refused |  | str reason |
-| 1131 | llm::truncated |  |  |
-| 1132 | llm::invalid_response |  | str reason |
-| 1210 | io::read_failed |  | str operation |
-| 1211 | io::write_failed |  | str operation |
-| 1212 | io::limit_exceeded |  | int limit |
-| 1220 | html::invalid_structure |  | str reason |
-| 1221 | html::invalid_url |  | str reason |
-| 1222 | htmx::invalid_target |  | str reason |
-| 1223 | htmx::invalid_interval |  | int milliseconds |
-| 1230 | http::invalid_route |  | str reason |
-| 1231 | http::duplicate_route |  | str method, str path |
-| 1232 | http::ambiguous_route |  | str first, str second |
-| 1233 | http::invalid_server_config |  | str reason |
-| 1234 | http::bind_failed |  | str address |
-| 1235 | http::shutdown_failed |  | str phase |
-| 1240 | sql::connection_failed |  | str phase |
-| 1241 | sql::query_failed |  | str operation, str code |
-| 1242 | sql::row_missing |  | str query |
-| 1243 | sql::row_count |  | str query, int actual |
-| 1244 | sql::schema_mismatch |  | str path, str reason |
-| 1245 | sql::constraint_failed |  | str constraint |
-| 1246 | sql::transaction_failed |  | str phase |
-| 1247 | sql::commit_unknown |  | str transaction_id |
-| 1248 | sql::close_failed |  | str reason |
-| 1249 | sql::row_limit |  | int limit |
-| 1250 | sql::unsupported_value |  | str path, str reason |
-| 1260 | clock::invalid_duration |  | int milliseconds |
-| 1261 | random::invalid_length |  | int length |
-| 1262 | env::invalid_name |  | str name |
-| 1263 | log::write_failed |  | str level |
-| 1300 | files::not_found |  | str path |
-| 1301 | files::denied |  | str path, str operation |
-| 1302 | files::already_exists |  | str path |
-| 1303 | files::invalid_path |  | str path, str reason |
-| 1304 | files::io_error |  | str path, str operation |
-| 1305 | files::limit_exceeded |  | int limit |
-| 1306 | files::not_empty |  | str path |
-| 1307 | files::cross_device |  | str source, str destination |
-| 1308 | files::unexpected_kind |  | str path, str operation |
-| 1310 | process::spawn_failed |  | str executable |
-| 1311 | process::timeout |  | int deadline_ms |
-| 1312 | process::output_limit |  | str stream, int limit |
-| 1313 | process::nonzero |  | int code, str signal |
-| 1314 | process::invalid_config |  | str field, str reason |
-| 1315 | process::io_error |  | str operation |
-| 1316 | stream::read_failed |  | str reason |
-| 1317 | stream::write_failed |  | str reason |
-| 1318 | stream::cancelled |  | str reason |
-| 1319 | stream::close_failed |  | str reason |
-| 1320 | password::cost_rejected |  | int profile |
-| 1321 | password::invalid_hash |  | str reason |
-| 1322 | crypto::invalid_key |  | str reason |
-| 1323 | crypto::invalid_nonce |  | int length |
-| 1324 | crypto::key_misuse |  | str operation, str algorithm |
-| 1325 | crypto::decrypt_failed |  |  |
-| 1326 | url::invalid_url |  | str reason |
-| 1327 | text::invalid_regex |  | str reason |
-| 1328 | text::invalid_limit |  | int limit |
-| 1329 | time::out_of_range |  | int millis |
-| 1330 | time::invalid_zone |  | str zone |
-| 1331 | time::nonexistent_time |  |  |
-| 1332 | time::invalid_option |  | str reason |
-| 1333 | ws::connect_failed |  | str reason |
-| 1334 | ws::upgrade_failed |  | str reason |
-| 1335 | ws::unsupported_protocol |  | str protocol |
-| 1336 | ws::send_failed |  | str reason |
-| 1337 | ws::invalid_close |  | str reason |
-| 1338 | ws::limit_exceeded |  | int limit |
-| 1339 | ws::invalid_url |  | str reason |
-| 1340 | ws::invalid_protocol |  | str protocol |
-| 1341 | cookie::invalid_cookie |  | str reason |
-| 1342 | csrf::invalid_config |  | str reason |
-| 1343 | s3::invalid_config |  | str reason |
-| 1344 | s3::missing_key |  | str key |
-| 1345 | s3::access_denied |  | str operation |
-| 1346 | s3::service_error |  | str code, str operation |
-| 1347 | s3::upload_closed |  | str operation, str state |
-| 1348 | s3::over_limit |  | int limit, int size |
-| 1349 | markdown::over_limit |  | int limit, int size |
+| Kind | Identity | Parameters | Ordered payload |
+| --- | --- | --- | --- | --- |
+| all_failed | can.prelude@1::all_failed | F:failure_variant | F[] failures |
+| number::inexact | can.std.number@1::inexact |  | str reason |
+| text::invalid_number | can.std.text@1::invalid_number |  | str input |
+| text::invalid_bool | can.std.text@1::invalid_bool |  | str input |
+| number::invalid_bool | can.std.number@1::invalid_bool |  | int value |
+| text::empty_separator | can.std.text@1::empty_separator |  |  |
+| text::empty_pattern | can.std.text@1::empty_pattern |  |  |
+| text::invalid_unicode | can.std.text@1::invalid_unicode |  | str reason |
+| collections::key_absent | can.std.collections@1::key_absent |  |  |
+| collections::key_exists | can.std.collections@1::key_exists |  |  |
+| number::zero_divisor | can.std.number@1::zero_divisor |  |  |
+| checks::failed | can.std.checks@1::failed |  | str reason |
+| http::invalid_request | can.std.http@1::invalid_request |  | str reason |
+| http::credentials_missing | can.std.http@1::credentials_missing |  | str variable |
+| http::transport_failed | can.std.http@1::transport_failed |  | str phase |
+| http::timeout | can.std.http@1::timeout |  | int timeout_ms |
+| http::body_limit | can.std.http@1::body_limit |  | int limit |
+| http::status_error | can.std.http@1::status_error |  | int status, http::header[] headers |
+| http::request_failed | can.std.http@1::request_failed |  | http::failure_detail detail |
+| codec::invalid_data | can.std.codec@1::invalid_data |  | str path, str reason |
+| ai::invalid_question | can.std.ai@1::invalid_question |  | str reason |
+| ai::invalid_answer | can.std.ai@1::invalid_answer |  | str question, str reason |
+| llm::refused | can.std.llm@1::refused |  | str reason |
+| llm::truncated | can.std.llm@1::truncated |  |  |
+| llm::invalid_response | can.std.llm@1::invalid_response |  | str reason |
+| io::read_failed | can.std.io@1::read_failed |  | str operation |
+| io::write_failed | can.std.io@1::write_failed |  | str operation |
+| io::limit_exceeded | can.std.io@1::limit_exceeded |  | int limit |
+| html::invalid_structure | can.std.html@1::invalid_structure |  | str reason |
+| html::invalid_url | can.std.html@1::invalid_url |  | str reason |
+| htmx::invalid_target | can.std.htmx@1::invalid_target |  | str reason |
+| htmx::invalid_interval | can.std.htmx@1::invalid_interval |  | int milliseconds |
+| http::invalid_route | can.std.http@1::invalid_route |  | str reason |
+| http::duplicate_route | can.std.http@1::duplicate_route |  | str method, str path |
+| http::ambiguous_route | can.std.http@1::ambiguous_route |  | str first, str second |
+| http::invalid_server_config | can.std.http@1::invalid_server_config |  | str reason |
+| http::bind_failed | can.std.http@1::bind_failed |  | str address |
+| http::shutdown_failed | can.std.http@1::shutdown_failed |  | str phase |
+| sql::connection_failed | can.std.sql@1::connection_failed |  | str phase |
+| sql::query_failed | can.std.sql@1::query_failed |  | str operation, str code |
+| sql::row_missing | can.std.sql@1::row_missing |  | str query |
+| sql::row_count | can.std.sql@1::row_count |  | str query, int actual |
+| sql::schema_mismatch | can.std.sql@1::schema_mismatch |  | str path, str reason |
+| sql::constraint_failed | can.std.sql@1::constraint_failed |  | str constraint |
+| sql::transaction_failed | can.std.sql@1::transaction_failed |  | str phase |
+| sql::commit_unknown | can.std.sql@1::commit_unknown |  | str transaction_id |
+| sql::close_failed | can.std.sql@1::close_failed |  | str reason |
+| sql::row_limit | can.std.sql@1::row_limit |  | int limit |
+| sql::unsupported_value | can.std.sql@1::unsupported_value |  | str path, str reason |
+| clock::invalid_duration | can.std.clock@1::invalid_duration |  | int milliseconds |
+| random::invalid_length | can.std.random@1::invalid_length |  | int length |
+| env::invalid_name | can.std.env@1::invalid_name |  | str name |
+| log::write_failed | can.std.log@1::write_failed |  | str level |
+| files::not_found | can.std.files@1::not_found |  | str path |
+| files::denied | can.std.files@1::denied |  | str path, str operation |
+| files::already_exists | can.std.files@1::already_exists |  | str path |
+| files::invalid_path | can.std.files@1::invalid_path |  | str path, str reason |
+| files::io_error | can.std.files@1::io_error |  | str path, str operation |
+| files::limit_exceeded | can.std.files@1::limit_exceeded |  | int limit |
+| files::not_empty | can.std.files@1::not_empty |  | str path |
+| files::cross_device | can.std.files@1::cross_device |  | str source, str destination |
+| files::unexpected_kind | can.std.files@1::unexpected_kind |  | str path, str operation |
+| process::spawn_failed | can.std.process@1::spawn_failed |  | str executable |
+| process::timeout | can.std.process@1::timeout |  | int deadline_ms |
+| process::output_limit | can.std.process@1::output_limit |  | str stream, int limit |
+| process::nonzero | can.std.process@1::nonzero |  | int code, str signal |
+| process::invalid_config | can.std.process@1::invalid_config |  | str field, str reason |
+| process::io_error | can.std.process@1::io_error |  | str operation |
+| stream::read_failed | can.std.stream@1::read_failed |  | str reason |
+| stream::write_failed | can.std.stream@1::write_failed |  | str reason |
+| stream::cancelled | can.std.stream@1::cancelled |  | str reason |
+| stream::close_failed | can.std.stream@1::close_failed |  | str reason |
+| password::cost_rejected | can.std.password@1::cost_rejected |  | int profile |
+| password::invalid_hash | can.std.password@1::invalid_hash |  | str reason |
+| crypto::invalid_key | can.std.crypto@1::invalid_key |  | str reason |
+| crypto::invalid_nonce | can.std.crypto@1::invalid_nonce |  | int length |
+| crypto::key_misuse | can.std.crypto@1::key_misuse |  | str operation, str algorithm |
+| crypto::decrypt_failed | can.std.crypto@1::decrypt_failed |  |  |
+| url::invalid_url | can.std.url@1::invalid_url |  | str reason |
+| text::invalid_regex | can.std.text@1::invalid_regex |  | str reason |
+| text::invalid_limit | can.std.text@1::invalid_limit |  | int limit |
+| time::out_of_range | can.std.time@1::out_of_range |  | int millis |
+| time::invalid_zone | can.std.time@1::invalid_zone |  | str zone |
+| time::nonexistent_time | can.std.time@1::nonexistent_time |  |  |
+| time::invalid_option | can.std.time@1::invalid_option |  | str reason |
+| ws::connect_failed | can.std.ws@1::connect_failed |  | str reason |
+| ws::upgrade_failed | can.std.ws@1::upgrade_failed |  | str reason |
+| ws::unsupported_protocol | can.std.ws@1::unsupported_protocol |  | str protocol |
+| ws::send_failed | can.std.ws@1::send_failed |  | str reason |
+| ws::invalid_close | can.std.ws@1::invalid_close |  | str reason |
+| ws::limit_exceeded | can.std.ws@1::limit_exceeded |  | int limit |
+| ws::invalid_url | can.std.ws@1::invalid_url |  | str reason |
+| ws::invalid_protocol | can.std.ws@1::invalid_protocol |  | str protocol |
+| cookie::invalid_cookie | can.std.cookie@1::invalid_cookie |  | str reason |
+| csrf::invalid_config | can.std.csrf@1::invalid_config |  | str reason |
+| s3::invalid_config | can.std.s3@1::invalid_config |  | str reason |
+| s3::missing_key | can.std.s3@1::missing_key |  | str key |
+| s3::access_denied | can.std.s3@1::access_denied |  | str operation |
+| s3::service_error | can.std.s3@1::service_error |  | str code, str operation |
+| s3::upload_closed | can.std.s3@1::upload_closed |  | str operation, str state |
+| s3::over_limit | can.std.s3@1::over_limit |  | int limit, int size |
+| markdown::over_limit | can.std.markdown@1::over_limit |  | int limit, int size |
 
 ## Operations
 

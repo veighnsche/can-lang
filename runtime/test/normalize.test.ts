@@ -39,8 +39,17 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter(
-  (e) => (e.id >= 1100 && e.id <= 1106) || e.id === 1110,
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+  ].includes(e.name),
 );
 const detailIdentity = hash(["variant", "can.std.http@1::failure_detail"]);
 const errors = declarations.map((d) =>
@@ -66,7 +75,9 @@ const detail: FailureShape = {
   declaration: "can.std.http@1::failure_detail",
   fields: [],
   arguments: [],
-  leaves: errors.filter((_, i) => declarations[i].id !== 1106).map((e) => e.identity),
+  leaves: errors
+    .filter((_, i) => declarations[i].name !== "http::request_failed")
+    .map((e) => e.identity),
   inputs: [],
   errors: [],
 };
@@ -74,21 +85,29 @@ const domain = createDomainRuntime({
   declarations: declarations.map((d) => ({ ...d, parameters: 0 })),
   shapes: [str, int, header, headers, ...errors, detail],
 });
-const byId = (id: number) => errors[declarations.findIndex((d) => d.id === id)].identity;
+const byName = (name: string) => errors[declarations.findIndex((d) => d.name === name)].identity;
 const origin = { source: "test:normalize", start: 0, end: 0, invocation: [] };
 const operation = "test:normalize/fetch";
 const normalize = createNormalizer(domain, {
-  failed: byId(1106),
-  leaves: [1100, 1101, 1102, 1103, 1104, 1105, 1110].map(byId),
+  failed: byName("http::request_failed"),
+  leaves: [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "codec::invalid_data",
+  ].map(byName),
 });
-const leafPayloads: ReadonlyArray<readonly [number, ReadonlyArray<readonly [string, unknown]>]> = [
-  [1100, [["reason", "url"]]],
-  [1101, [["variable", "TOKEN"]]],
-  [1102, [["phase", "connect"]]],
-  [1103, [["timeout_ms", 5n]]],
-  [1104, [["limit", 3n]]],
+const leafPayloads: ReadonlyArray<readonly [string, ReadonlyArray<readonly [string, unknown]>]> = [
+  ["http::invalid_request", [["reason", "url"]]],
+  ["http::credentials_missing", [["variable", "TOKEN"]]],
+  ["http::transport_failed", [["phase", "connect"]]],
+  ["http::timeout", [["timeout_ms", 5n]]],
+  ["http::body_limit", [["limit", 3n]]],
   [
-    1105,
+    "http::status_error",
     [
       ["status", 418n],
       [
@@ -103,7 +122,7 @@ const leafPayloads: ReadonlyArray<readonly [number, ReadonlyArray<readonly [stri
     ],
   ],
   [
-    1110,
+    "codec::invalid_data",
     [
       ["path", "/0"],
       ["reason", "invalid_json"],
@@ -112,8 +131,8 @@ const leafPayloads: ReadonlyArray<readonly [number, ReadonlyArray<readonly [stri
 ];
 
 test("all seven native leaves map to request_failed with exact Detail and private cause", () => {
-  for (const [id, fields] of leafPayloads) {
-    const token = domain.create(byId(id), record(byId(id), fields), origin, undefined, {
+  for (const [name, fields] of leafPayloads) {
+    const token = domain.create(byName(name), record(byName(name), fields), origin, undefined, {
       boundary: "native",
       operation,
     });
@@ -121,11 +140,11 @@ test("all seven native leaves map to request_failed with exact Detail and privat
     expect(mapped.kind).toBe("domain");
     if (mapped.kind !== "domain") throw Error("expected domain failure");
     const details = domainFailureDiagnostics(mapped.value);
-    expect(details.declaration.id).toBe(1106);
+    expect(details.declaration.name).toBe("http::request_failed");
     expect(details.provenance).toEqual({ boundary: "native", operation });
     expect(details.occurrenceID).not.toBe(domainFailureDiagnostics(token).occurrenceID);
     const leaf = dataProperty(details.payload, "detail");
-    expect(recordIdentity(leaf)).toBe(byId(id));
+    expect(recordIdentity(leaf)).toBe(byName(name));
     const stable = (v: unknown) =>
       JSON.stringify(v, (_, x) => (typeof x === "bigint" ? `#${x}` : x));
     expect(stable(leaf)).toBe(stable(domainFailureDiagnostics(token).payload));
@@ -137,8 +156,8 @@ test("all seven native leaves map to request_failed with exact Detail and privat
 
 test("emitted, foreign-operation, non-leaf, standard and success outcomes pass through", () => {
   const emitted = domain.create(
-    byId(1110),
-    record(byId(1110), [
+    byName("codec::invalid_data"),
+    record(byName("codec::invalid_data"), [
       ["path", ""],
       ["reason", "authored"],
     ]),
@@ -146,8 +165,8 @@ test("emitted, foreign-operation, non-leaf, standard and success outcomes pass t
   );
   expect(normalize.map(failure(emitted), operation)).toMatchObject({ kind: "domain" });
   const foreign = domain.create(
-    byId(1102),
-    record(byId(1102), [["phase", "connect"]]),
+    byName("http::transport_failed"),
+    record(byName("http::transport_failed"), [["phase", "connect"]]),
     origin,
     undefined,
     { boundary: "native", operation: "test:normalize/other" },
@@ -155,11 +174,16 @@ test("emitted, foreign-operation, non-leaf, standard and success outcomes pass t
   const foreignMapped = normalize.map(failure(foreign), operation);
   expect(foreignMapped.kind).toBe("domain");
   if (foreignMapped.kind !== "domain") throw Error("expected domain");
-  expect(domainFailureDiagnostics(foreignMapped.value).declaration.id).toBe(1102);
-  const narrow = createNormalizer(domain, { failed: byId(1106), leaves: [byId(1100)] });
+  expect(domainFailureDiagnostics(foreignMapped.value).declaration.name).toBe(
+    "http::transport_failed",
+  );
+  const narrow = createNormalizer(domain, {
+    failed: byName("http::request_failed"),
+    leaves: [byName("http::invalid_request")],
+  });
   const nonLeaf = domain.create(
-    byId(1102),
-    record(byId(1102), [["phase", "connect"]]),
+    byName("http::transport_failed"),
+    record(byName("http::transport_failed"), [["phase", "connect"]]),
     origin,
     undefined,
     { boundary: "native", operation },
@@ -167,7 +191,9 @@ test("emitted, foreign-operation, non-leaf, standard and success outcomes pass t
   const nonLeafMapped = narrow.map(failure(nonLeaf), operation);
   expect(nonLeafMapped.kind).toBe("domain");
   if (nonLeafMapped.kind !== "domain") throw Error("expected domain");
-  expect(domainFailureDiagnostics(nonLeafMapped.value).declaration.id).toBe(1102);
+  expect(domainFailureDiagnostics(nonLeafMapped.value).declaration.name).toBe(
+    "http::transport_failed",
+  );
   const ok = success(1n);
   expect(normalize.map(ok, operation)).toBe(ok);
   const standard = caught(Error("boom"), origin);

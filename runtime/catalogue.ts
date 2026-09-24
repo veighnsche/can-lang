@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "e8668d307fe5181fb143eeae1e59f1424eb90d4d1a7d7c5d4b9e158ecd54e9d3";
+export const catalogueSHA256 = "4484437f6adf2c640c2f53e71bd715a84458e0cfed779973617c675dfbf9b9f9";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -1611,7 +1611,6 @@ export const catalogue = freeze({
   ],
   "errors": [
     {
-      "id": 100,
       "name": "all_failed",
       "identity": "can.prelude@1::all_failed",
       "parameters": [
@@ -1628,7 +1627,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1000,
       "name": "number::inexact",
       "identity": "can.std.number@1::inexact",
       "parameters": [],
@@ -1640,7 +1638,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1001,
       "name": "text::invalid_number",
       "identity": "can.std.text@1::invalid_number",
       "parameters": [],
@@ -1652,7 +1649,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1002,
       "name": "text::invalid_bool",
       "identity": "can.std.text@1::invalid_bool",
       "parameters": [],
@@ -1664,7 +1660,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1003,
       "name": "number::invalid_bool",
       "identity": "can.std.number@1::invalid_bool",
       "parameters": [],
@@ -1676,21 +1671,18 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1004,
       "name": "text::empty_separator",
       "identity": "can.std.text@1::empty_separator",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1005,
       "name": "text::empty_pattern",
       "identity": "can.std.text@1::empty_pattern",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1006,
       "name": "text::invalid_unicode",
       "identity": "can.std.text@1::invalid_unicode",
       "parameters": [],
@@ -1702,28 +1694,24 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1007,
       "name": "collections::key_absent",
       "identity": "can.std.collections@1::key_absent",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1008,
       "name": "collections::key_exists",
       "identity": "can.std.collections@1::key_exists",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1009,
       "name": "number::zero_divisor",
       "identity": "can.std.number@1::zero_divisor",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1010,
       "name": "checks::failed",
       "identity": "can.std.checks@1::failed",
       "parameters": [],
@@ -1735,7 +1723,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1100,
       "name": "http::invalid_request",
       "identity": "can.std.http@1::invalid_request",
       "parameters": [],
@@ -1747,7 +1734,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1101,
       "name": "http::credentials_missing",
       "identity": "can.std.http@1::credentials_missing",
       "parameters": [],
@@ -1759,7 +1745,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1102,
       "name": "http::transport_failed",
       "identity": "can.std.http@1::transport_failed",
       "parameters": [],
@@ -1771,7 +1756,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1103,
       "name": "http::timeout",
       "identity": "can.std.http@1::timeout",
       "parameters": [],
@@ -1783,7 +1767,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1104,
       "name": "http::body_limit",
       "identity": "can.std.http@1::body_limit",
       "parameters": [],
@@ -1795,7 +1778,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1105,
       "name": "http::status_error",
       "identity": "can.std.http@1::status_error",
       "parameters": [],
@@ -1811,7 +1793,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1106,
       "name": "http::request_failed",
       "identity": "can.std.http@1::request_failed",
       "parameters": [],
@@ -1823,7 +1804,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1110,
       "name": "codec::invalid_data",
       "identity": "can.std.codec@1::invalid_data",
       "parameters": [],
@@ -1839,7 +1819,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1120,
       "name": "ai::invalid_question",
       "identity": "can.std.ai@1::invalid_question",
       "parameters": [],
@@ -1851,7 +1830,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1121,
       "name": "ai::invalid_answer",
       "identity": "can.std.ai@1::invalid_answer",
       "parameters": [],
@@ -1867,7 +1845,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1130,
       "name": "llm::refused",
       "identity": "can.std.llm@1::refused",
       "parameters": [],
@@ -1879,14 +1856,12 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1131,
       "name": "llm::truncated",
       "identity": "can.std.llm@1::truncated",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1132,
       "name": "llm::invalid_response",
       "identity": "can.std.llm@1::invalid_response",
       "parameters": [],
@@ -1898,7 +1873,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1210,
       "name": "io::read_failed",
       "identity": "can.std.io@1::read_failed",
       "parameters": [],
@@ -1910,7 +1884,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1211,
       "name": "io::write_failed",
       "identity": "can.std.io@1::write_failed",
       "parameters": [],
@@ -1922,7 +1895,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1212,
       "name": "io::limit_exceeded",
       "identity": "can.std.io@1::limit_exceeded",
       "parameters": [],
@@ -1934,7 +1906,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1220,
       "name": "html::invalid_structure",
       "identity": "can.std.html@1::invalid_structure",
       "parameters": [],
@@ -1946,7 +1917,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1221,
       "name": "html::invalid_url",
       "identity": "can.std.html@1::invalid_url",
       "parameters": [],
@@ -1958,7 +1928,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1222,
       "name": "htmx::invalid_target",
       "identity": "can.std.htmx@1::invalid_target",
       "parameters": [],
@@ -1970,7 +1939,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1223,
       "name": "htmx::invalid_interval",
       "identity": "can.std.htmx@1::invalid_interval",
       "parameters": [],
@@ -1982,7 +1950,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1230,
       "name": "http::invalid_route",
       "identity": "can.std.http@1::invalid_route",
       "parameters": [],
@@ -1994,7 +1961,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1231,
       "name": "http::duplicate_route",
       "identity": "can.std.http@1::duplicate_route",
       "parameters": [],
@@ -2010,7 +1976,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1232,
       "name": "http::ambiguous_route",
       "identity": "can.std.http@1::ambiguous_route",
       "parameters": [],
@@ -2026,7 +1991,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1233,
       "name": "http::invalid_server_config",
       "identity": "can.std.http@1::invalid_server_config",
       "parameters": [],
@@ -2038,7 +2002,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1234,
       "name": "http::bind_failed",
       "identity": "can.std.http@1::bind_failed",
       "parameters": [],
@@ -2050,7 +2013,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1235,
       "name": "http::shutdown_failed",
       "identity": "can.std.http@1::shutdown_failed",
       "parameters": [],
@@ -2062,7 +2024,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1240,
       "name": "sql::connection_failed",
       "identity": "can.std.sql@1::connection_failed",
       "parameters": [],
@@ -2074,7 +2035,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1241,
       "name": "sql::query_failed",
       "identity": "can.std.sql@1::query_failed",
       "parameters": [],
@@ -2090,7 +2050,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1242,
       "name": "sql::row_missing",
       "identity": "can.std.sql@1::row_missing",
       "parameters": [],
@@ -2102,7 +2061,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1243,
       "name": "sql::row_count",
       "identity": "can.std.sql@1::row_count",
       "parameters": [],
@@ -2118,7 +2076,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1244,
       "name": "sql::schema_mismatch",
       "identity": "can.std.sql@1::schema_mismatch",
       "parameters": [],
@@ -2134,7 +2091,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1245,
       "name": "sql::constraint_failed",
       "identity": "can.std.sql@1::constraint_failed",
       "parameters": [],
@@ -2146,7 +2102,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1246,
       "name": "sql::transaction_failed",
       "identity": "can.std.sql@1::transaction_failed",
       "parameters": [],
@@ -2158,7 +2113,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1247,
       "name": "sql::commit_unknown",
       "identity": "can.std.sql@1::commit_unknown",
       "parameters": [],
@@ -2170,7 +2124,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1248,
       "name": "sql::close_failed",
       "identity": "can.std.sql@1::close_failed",
       "parameters": [],
@@ -2182,7 +2135,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1249,
       "name": "sql::row_limit",
       "identity": "can.std.sql@1::row_limit",
       "parameters": [],
@@ -2194,7 +2146,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1250,
       "name": "sql::unsupported_value",
       "identity": "can.std.sql@1::unsupported_value",
       "parameters": [],
@@ -2210,7 +2161,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1260,
       "name": "clock::invalid_duration",
       "identity": "can.std.clock@1::invalid_duration",
       "parameters": [],
@@ -2222,7 +2172,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1261,
       "name": "random::invalid_length",
       "identity": "can.std.random@1::invalid_length",
       "parameters": [],
@@ -2234,7 +2183,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1262,
       "name": "env::invalid_name",
       "identity": "can.std.env@1::invalid_name",
       "parameters": [],
@@ -2246,7 +2194,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1263,
       "name": "log::write_failed",
       "identity": "can.std.log@1::write_failed",
       "parameters": [],
@@ -2258,7 +2205,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1300,
       "name": "files::not_found",
       "identity": "can.std.files@1::not_found",
       "parameters": [],
@@ -2270,7 +2216,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1301,
       "name": "files::denied",
       "identity": "can.std.files@1::denied",
       "parameters": [],
@@ -2286,7 +2231,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1302,
       "name": "files::already_exists",
       "identity": "can.std.files@1::already_exists",
       "parameters": [],
@@ -2298,7 +2242,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1303,
       "name": "files::invalid_path",
       "identity": "can.std.files@1::invalid_path",
       "parameters": [],
@@ -2314,7 +2257,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1304,
       "name": "files::io_error",
       "identity": "can.std.files@1::io_error",
       "parameters": [],
@@ -2330,7 +2272,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1305,
       "name": "files::limit_exceeded",
       "identity": "can.std.files@1::limit_exceeded",
       "parameters": [],
@@ -2342,7 +2283,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1306,
       "name": "files::not_empty",
       "identity": "can.std.files@1::not_empty",
       "parameters": [],
@@ -2354,7 +2294,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1307,
       "name": "files::cross_device",
       "identity": "can.std.files@1::cross_device",
       "parameters": [],
@@ -2370,7 +2309,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1308,
       "name": "files::unexpected_kind",
       "identity": "can.std.files@1::unexpected_kind",
       "parameters": [],
@@ -2386,7 +2324,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1310,
       "name": "process::spawn_failed",
       "identity": "can.std.process@1::spawn_failed",
       "parameters": [],
@@ -2398,7 +2335,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1311,
       "name": "process::timeout",
       "identity": "can.std.process@1::timeout",
       "parameters": [],
@@ -2410,7 +2346,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1312,
       "name": "process::output_limit",
       "identity": "can.std.process@1::output_limit",
       "parameters": [],
@@ -2426,7 +2361,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1313,
       "name": "process::nonzero",
       "identity": "can.std.process@1::nonzero",
       "parameters": [],
@@ -2442,7 +2376,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1314,
       "name": "process::invalid_config",
       "identity": "can.std.process@1::invalid_config",
       "parameters": [],
@@ -2458,7 +2391,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1315,
       "name": "process::io_error",
       "identity": "can.std.process@1::io_error",
       "parameters": [],
@@ -2470,7 +2402,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1316,
       "name": "stream::read_failed",
       "identity": "can.std.stream@1::read_failed",
       "parameters": [],
@@ -2482,7 +2413,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1317,
       "name": "stream::write_failed",
       "identity": "can.std.stream@1::write_failed",
       "parameters": [],
@@ -2494,7 +2424,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1318,
       "name": "stream::cancelled",
       "identity": "can.std.stream@1::cancelled",
       "parameters": [],
@@ -2506,7 +2435,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1319,
       "name": "stream::close_failed",
       "identity": "can.std.stream@1::close_failed",
       "parameters": [],
@@ -2518,7 +2446,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1320,
       "name": "password::cost_rejected",
       "identity": "can.std.password@1::cost_rejected",
       "parameters": [],
@@ -2530,7 +2457,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1321,
       "name": "password::invalid_hash",
       "identity": "can.std.password@1::invalid_hash",
       "parameters": [],
@@ -2542,7 +2468,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1322,
       "name": "crypto::invalid_key",
       "identity": "can.std.crypto@1::invalid_key",
       "parameters": [],
@@ -2554,7 +2479,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1323,
       "name": "crypto::invalid_nonce",
       "identity": "can.std.crypto@1::invalid_nonce",
       "parameters": [],
@@ -2566,7 +2490,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1324,
       "name": "crypto::key_misuse",
       "identity": "can.std.crypto@1::key_misuse",
       "parameters": [],
@@ -2582,14 +2505,12 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1325,
       "name": "crypto::decrypt_failed",
       "identity": "can.std.crypto@1::decrypt_failed",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1326,
       "name": "url::invalid_url",
       "identity": "can.std.url@1::invalid_url",
       "parameters": [],
@@ -2601,7 +2522,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1327,
       "name": "text::invalid_regex",
       "identity": "can.std.text@1::invalid_regex",
       "parameters": [],
@@ -2613,7 +2533,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1328,
       "name": "text::invalid_limit",
       "identity": "can.std.text@1::invalid_limit",
       "parameters": [],
@@ -2625,7 +2544,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1329,
       "name": "time::out_of_range",
       "identity": "can.std.time@1::out_of_range",
       "parameters": [],
@@ -2637,7 +2555,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1330,
       "name": "time::invalid_zone",
       "identity": "can.std.time@1::invalid_zone",
       "parameters": [],
@@ -2649,14 +2566,12 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1331,
       "name": "time::nonexistent_time",
       "identity": "can.std.time@1::nonexistent_time",
       "parameters": [],
       "fields": []
     },
     {
-      "id": 1332,
       "name": "time::invalid_option",
       "identity": "can.std.time@1::invalid_option",
       "parameters": [],
@@ -2668,7 +2583,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1333,
       "name": "ws::connect_failed",
       "identity": "can.std.ws@1::connect_failed",
       "parameters": [],
@@ -2680,7 +2594,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1334,
       "name": "ws::upgrade_failed",
       "identity": "can.std.ws@1::upgrade_failed",
       "parameters": [],
@@ -2692,7 +2605,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1335,
       "name": "ws::unsupported_protocol",
       "identity": "can.std.ws@1::unsupported_protocol",
       "parameters": [],
@@ -2704,7 +2616,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1336,
       "name": "ws::send_failed",
       "identity": "can.std.ws@1::send_failed",
       "parameters": [],
@@ -2716,7 +2627,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1337,
       "name": "ws::invalid_close",
       "identity": "can.std.ws@1::invalid_close",
       "parameters": [],
@@ -2728,7 +2638,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1338,
       "name": "ws::limit_exceeded",
       "identity": "can.std.ws@1::limit_exceeded",
       "parameters": [],
@@ -2740,7 +2649,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1339,
       "name": "ws::invalid_url",
       "identity": "can.std.ws@1::invalid_url",
       "parameters": [],
@@ -2752,7 +2660,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1340,
       "name": "ws::invalid_protocol",
       "identity": "can.std.ws@1::invalid_protocol",
       "parameters": [],
@@ -2764,7 +2671,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1341,
       "name": "cookie::invalid_cookie",
       "identity": "can.std.cookie@1::invalid_cookie",
       "parameters": [],
@@ -2776,7 +2682,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1342,
       "name": "csrf::invalid_config",
       "identity": "can.std.csrf@1::invalid_config",
       "parameters": [],
@@ -2788,7 +2693,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1343,
       "name": "s3::invalid_config",
       "identity": "can.std.s3@1::invalid_config",
       "parameters": [],
@@ -2800,7 +2704,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1344,
       "name": "s3::missing_key",
       "identity": "can.std.s3@1::missing_key",
       "parameters": [],
@@ -2812,7 +2715,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1345,
       "name": "s3::access_denied",
       "identity": "can.std.s3@1::access_denied",
       "parameters": [],
@@ -2824,7 +2726,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1346,
       "name": "s3::service_error",
       "identity": "can.std.s3@1::service_error",
       "parameters": [],
@@ -2840,7 +2741,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1347,
       "name": "s3::upload_closed",
       "identity": "can.std.s3@1::upload_closed",
       "parameters": [],
@@ -2856,7 +2756,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1348,
       "name": "s3::over_limit",
       "identity": "can.std.s3@1::over_limit",
       "parameters": [],
@@ -2872,7 +2771,6 @@ export const catalogue = freeze({
       ]
     },
     {
-      "id": 1349,
       "name": "markdown::over_limit",
       "identity": "can.std.markdown@1::over_limit",
       "parameters": [],
@@ -15739,7 +15637,6 @@ export type CatalogueErrorName = typeof catalogue.errors[number]["name"];
 export type CatalogueErrorIdentity = {
   readonly name: CatalogueErrorName;
   readonly identity: string;
-  readonly id: number;
   readonly typeArguments: readonly string[];
 };
 export function operation(name: string, target: string = catalogue.targetId, revision: number = catalogue.revision) {
@@ -15763,12 +15660,12 @@ export function errorIdentity(name: string, typeArguments: readonly string[] = [
   if (!error) throw new Error("unallocated catalogue error");
   const argumentsCopy = dataArray(typeArguments);
   if (error.parameters.length !== argumentsCopy.length || argumentsCopy.some(value => typeof value !== "string" || value.length === 0)) throw new Error("invalid error specialization");
-  return freeze({ name: error.name, identity: error.identity, id: error.id, typeArguments: argumentsCopy as string[] });
+  return freeze({ name: error.name, identity: error.identity, typeArguments: argumentsCopy as string[] });
 }
 export function validateErrorIdentity(value: CatalogueErrorIdentity): CatalogueErrorIdentity {
   const keys = dataKeys(value);
-  if (keys.length !== 4 || keys.some(key => typeof key !== "string" || !["name", "identity", "id", "typeArguments"].includes(key))) throw new Error("invalid catalogue identity shape");
+  if (keys.length !== 3 || keys.some(key => typeof key !== "string" || !["name", "identity", "typeArguments"].includes(key))) throw new Error("invalid catalogue identity shape");
   const expected = errorIdentity(dataProperty(value, "name") as string, dataProperty(value, "typeArguments") as string[]);
-  if (dataProperty(value, "identity") !== expected.identity || dataProperty(value, "id") !== expected.id) throw new Error("catalogue error identity mismatch");
+  if (dataProperty(value, "identity") !== expected.identity) throw new Error("catalogue error identity mismatch");
   return expected;
 }

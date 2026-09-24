@@ -14,7 +14,6 @@ import {
 export type ErrorDeclaration = Readonly<{
   identity: string;
   name: string;
-  id: number;
   parameters: number;
 }>;
 export type FailureShape = Readonly<{
@@ -72,34 +71,22 @@ export function createDomainRuntime(
   callableAdmission?: OpaqueAdmission,
 ) {
   const declarations = new Map<string, ErrorDeclaration>();
-  const ids = new Set<number>();
   for (const source of plan.declarations) {
     const d = Object.freeze({ ...source });
     if (
-      !Number.isInteger(d.id) ||
-      d.id <= 0 ||
-      d.id > 2147483647 ||
-      ids.has(d.id) ||
+      typeof d.identity !== "string" ||
+      typeof d.name !== "string" ||
+      !Number.isInteger(d.parameters) ||
+      d.parameters < 0 ||
       declarations.has(d.identity)
     )
-      throw new TypeError("invalid or duplicate error allocation");
+      throw new TypeError("invalid or duplicate error declaration");
     const builtin = catalogue.errors.find((e) => e.identity === d.identity);
-    if (d.id < 1000000 || builtin) {
-      if (
-        !builtin ||
-        builtin.id !== d.id ||
-        builtin.name !== d.name ||
-        builtin.parameters.length !== d.parameters
-      )
-        throw new TypeError("catalogue allocation mismatch");
-    } else if (
-      !d.identity.startsWith("can.project.") ||
-      !d.name.includes("::") ||
-      !Number.isInteger(d.parameters) ||
-      d.parameters < 0
-    )
+    if (builtin) {
+      if (builtin.name !== d.name || builtin.parameters.length !== d.parameters)
+        throw new TypeError("catalogue declaration mismatch");
+    } else if (!d.identity.startsWith("can.project.") || !d.name.includes("::"))
       throw new TypeError("invalid project error declaration");
-    ids.add(d.id);
     declarations.set(d.identity, d);
   }
   const shapes = new Map<string, FailureShape>();
@@ -334,7 +321,12 @@ export function createDomainRuntime(
   function checkBound(occurrence: DomainFailure, allowed: readonly string[]): DomainFailure {
     const details = domainFailureDiagnostics(occurrence);
     const known = declarations.get(details.declaration.identity);
-    if (!known || known.id !== details.declaration.id || !allowed.includes(details.typeIdentity))
+    if (
+      !known ||
+      known.name !== details.declaration.name ||
+      known.parameters !== details.declaration.parameters ||
+      !allowed.includes(details.typeIdentity)
+    )
       throw new TypeError("undeclared escaping domain error");
     return occurrence;
   }

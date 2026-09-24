@@ -14,7 +14,7 @@ Length widens the exact native length to bigint without copying the contents.
 
 UTF-8 encoding uses TextEncoder and a BOM-preserving fatal TextDecoder round-trip
 to reject lone surrogates. Decoding uses fatal TextDecoder with ignoreBOM enabled,
-so an initial U+FEFF remains ordinary text. Expected failures use error 1110 and
+so an initial U+FEFF remains ordinary text. Expected failures use `codec::invalid_data` and
 the specified reasons: byte_range at the offending array index, unicode_scalar
 for invalid text, utf8 for malformed encoding, and type for wrong scalar input.
 Forged opaque buffers fail as resource_state before native access. Arbitrary

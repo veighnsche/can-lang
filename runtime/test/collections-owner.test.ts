@@ -5,7 +5,9 @@ import { createDomainRuntime, type FailureShape } from "../domain.ts";
 import { createMap } from "../collections/map.ts";
 import { record } from "../data.ts";
 import { value, type Completion } from "../completion.ts";
-const declarations = catalogue.errors.filter((e) => [1007, 1008].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  ["collections::key_absent", "collections::key_exists"].includes(e.name),
+);
 const errors: FailureShape[] = declarations.map((e) => ({
   identity: createHash("sha256")
     .update("can-concrete-type-v1\0" + JSON.stringify(["error", e.identity]))
@@ -22,7 +24,6 @@ const domain = createDomainRuntime({
   declarations: declarations.map((e) => ({
     identity: e.identity,
     name: e.name,
-    id: e.id,
     parameters: 0,
   })),
   shapes: errors,

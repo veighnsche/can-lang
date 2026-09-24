@@ -59,13 +59,13 @@ func TestCompleteInventoryAndMirrors(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			ids := map[int]bool{}
+			identities := map[string]bool{}
 			for _, e := range spec.Emits {
-				ids[e.ID] = true
+				identities[e.Identity] = true
 			}
 			for _, name := range op.Emits {
 				d, _ := c.Error(name)
-				if !ids[d.ID] {
+				if !identities[d.Identity] {
 					t.Fatalf("lost declared error %s", name)
 				}
 			}
@@ -81,9 +81,9 @@ func TestRejectMalformedInventory(t *testing.T) {
 		name   string
 		mutate func(*Inventory)
 	}{
-		{"duplicate-error-id", func(i *Inventory) { i.Errors[1].ID = i.Errors[0].ID }},
+		{"duplicate-error-identity", func(i *Inventory) { i.Errors[1].Identity = i.Errors[0].Identity }},
 		{"duplicate-name", func(i *Inventory) { i.Operations = append(i.Operations, i.Operations[0]) }},
-		{"unallocated-error-id", func(i *Inventory) { i.Errors[1].ID = 1099 }},
+		{"mismatched-error-identity", func(i *Inventory) { i.Errors[1].Identity = "can.std.http@1::timeout" }},
 		{"unknown-error-bound", func(i *Inventory) { i.Operations[0].Emits = []string{"number::not_allocated"} }},
 		{"standard-in-domain-bound", func(i *Inventory) { i.Operations[0].Emits = []string{"standard_failure"} }},
 		{"constructible-opaque", func(i *Inventory) {
@@ -183,12 +183,12 @@ func TestCallbackAndStaticBounds(t *testing.T) {
 	if spec.Operation.Receiver != "int[]" || spec.Operation.Result != "str[]" || !reflect.DeepEqual(errorNames(spec.Emits), []string{"http::timeout"}) {
 		t.Fatalf("wrong specialization: %+v", spec)
 	}
-	projectError := ErrorIdentity{Name: "billing::declined", Identity: "project.billing::declined", ID: 1000000, TypeArguments: []string{}}
+	projectError := ErrorIdentity{Name: "billing::declined", Identity: "project.billing::declined", TypeArguments: []string{}}
 	spec, err = c.Resolve("array.find", GeneratedTargetID, 1, map[string]string{"T": "int"}, map[string]CallbackContract{"callback": {Inputs: []string{"int"}, Result: "bool", Emits: []ErrorIdentity{projectError}}}, nil)
 	if err != nil || spec.Operation.Result != "option::value<int>" || !reflect.DeepEqual(errorNames(spec.Emits), []string{"billing::declined"}) {
 		t.Fatalf("project callback bound: %+v %v", spec, err)
 	}
-	for _, bad := range []CallbackContract{{Inputs: []string{"str"}, Result: "str"}, {Inputs: []string{"int"}, Result: "float"}, {Inputs: []string{"int"}, Result: "str", Emits: []ErrorIdentity{{Name: "fake::error", Identity: "fake", ID: 1099}}}} {
+	for _, bad := range []CallbackContract{{Inputs: []string{"str"}, Result: "str"}, {Inputs: []string{"int"}, Result: "float"}, {Inputs: []string{"int"}, Result: "str", Emits: []ErrorIdentity{{Name: "fake::error"}}}} {
 		if _, err := c.Resolve("array.map", GeneratedTargetID, 1, map[string]string{"T": "int", "U": "str"}, map[string]CallbackContract{"callback": bad}, nil); err == nil {
 			t.Fatal("accepted invalid callback")
 		}
@@ -214,11 +214,11 @@ func TestNativeModeBounds(t *testing.T) {
 		flags map[string]bool
 		want  []string
 	}{
-		{"noul", nil, []string{"ai::invalid_question", "ai::invalid_answer"}},
+		{"noul", nil, []string{"ai::invalid_answer", "ai::invalid_question"}},
 		{"fetch_envelope", nil, []string{"http::request_failed"}},
 		{"fetch_body", nil, []string{"http::request_failed"}},
-		{"judge", nil, []string{"http::request_failed", "ai::invalid_question", "ai::invalid_answer"}},
-		{"llm", map[string]bool{"authenticated": true}, []string{"http::invalid_request", "http::credentials_missing", "http::transport_failed", "http::timeout", "http::body_limit", "http::status_error", "codec::invalid_data", "llm::refused", "llm::truncated", "llm::invalid_response"}},
+		{"judge", nil, []string{"ai::invalid_answer", "ai::invalid_question", "http::request_failed"}},
+		{"llm", map[string]bool{"authenticated": true}, []string{"codec::invalid_data", "http::body_limit", "http::credentials_missing", "http::invalid_request", "http::status_error", "http::timeout", "http::transport_failed", "llm::invalid_response", "llm::refused", "llm::truncated"}},
 	}
 	for _, tc := range cases {
 		got, err := c.RequiredNativeBound(tc.mode, tc.flags, nil)
@@ -276,20 +276,20 @@ func TestGenerationDetectsDrift(t *testing.T) {
 	}
 }
 
-func TestCallbackUnionRejectsConflictingIDs(t *testing.T) {
+func TestCallbackUnionRejectsConflictingKinds(t *testing.T) {
 	c := Builtin()
-	left := ErrorIdentity{Name: "billing::declined", Identity: "project.billing::declined", ID: 1000000, TypeArguments: []string{}}
-	right := ErrorIdentity{Name: "shipping::missing", Identity: "project.shipping::missing", ID: 1000000, TypeArguments: []string{}}
+	left := ErrorIdentity{Name: "billing::declined", Identity: "project.billing::declined", TypeArguments: []string{}}
+	right := ErrorIdentity{Name: "shipping::missing", Identity: "project.billing::declined", TypeArguments: []string{}}
 	if _, err := c.union([]ErrorIdentity{left, right}); err == nil {
-		t.Fatal("accepted duplicate ID across callback kinds")
+		t.Fatal("accepted conflicting kind for one error identity")
 	}
 }
 
 func TestRequestFailedContract(t *testing.T) {
 	c := Builtin()
 	failed, ok := c.Error("http::request_failed")
-	if !ok || failed.ID != 1106 || failed.Identity != "can.std.http@1::request_failed" {
-		t.Fatalf("http::request_failed allocation lost: %+v %v", failed, ok)
+	if !ok || failed.Identity != "can.std.http@1::request_failed" {
+		t.Fatalf("http::request_failed identity lost: %+v %v", failed, ok)
 	}
 	if len(failed.Fields) != 1 || failed.Fields[0].Name != "detail" || failed.Fields[0].Type != "http::failure_detail" {
 		t.Fatalf("http::request_failed payload differs from A2.4: %+v", failed.Fields)
@@ -312,8 +312,8 @@ func TestRequestFailedContract(t *testing.T) {
 func TestChecksRequireContract(t *testing.T) {
 	c := Builtin()
 	failed, ok := c.Error("checks::failed")
-	if !ok || failed.ID != 1010 || failed.Identity != "can.std.checks@1::failed" {
-		t.Fatalf("checks::failed allocation lost: %+v %v", failed, ok)
+	if !ok || failed.Identity != "can.std.checks@1::failed" {
+		t.Fatalf("checks::failed identity lost: %+v %v", failed, ok)
 	}
 	if len(failed.Fields) != 1 || failed.Fields[0].Name != "reason" || failed.Fields[0].Type != "str" {
 		t.Fatalf("checks::failed payload differs from C9.2: %+v", failed.Fields)

@@ -10,6 +10,23 @@ import (
 	"sort"
 )
 
+// Intrinsic catalogue error identities required by native declarations.
+const (
+	intrinsicInvalidRequest     = "can.std.http@1::invalid_request"
+	intrinsicCredentialsMissing = "can.std.http@1::credentials_missing"
+	intrinsicTransportFailed    = "can.std.http@1::transport_failed"
+	intrinsicTimeout            = "can.std.http@1::timeout"
+	intrinsicBodyLimit          = "can.std.http@1::body_limit"
+	intrinsicStatusError        = "can.std.http@1::status_error"
+	intrinsicRequestFailed      = "can.std.http@1::request_failed"
+	intrinsicInvalidData        = "can.std.codec@1::invalid_data"
+	intrinsicInvalidQuestion    = "can.std.ai@1::invalid_question"
+	intrinsicInvalidAnswer      = "can.std.ai@1::invalid_answer"
+	intrinsicRefused            = "can.std.llm@1::refused"
+	intrinsicTruncated          = "can.std.llm@1::truncated"
+	intrinsicInvalidResponse    = "can.std.llm@1::invalid_response"
+)
+
 // NativeDeclaration retains checked contracts independently from provider
 // lowering. Questions are registration targets, never ordinary calls.
 type NativeDeclaration struct {
@@ -131,34 +148,34 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		if native.Symbol.Kind != resolve.ChoiceArm && !connected {
 			return fmt.Errorf("native declaration has no checked connection")
 		}
-		required := []uint64{}
-		intrinsic := []uint64{}
+		required := []string{}
+		intrinsic := []string{}
 		switch native.Symbol.Kind {
 		case resolve.Question:
 			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
 				return err
 			}
-			required = []uint64{1120, 1121}
+			required = []string{intrinsicInvalidQuestion, intrinsicInvalidAnswer}
 		case resolve.Judge:
 			if err := policy.CheckAI("typesafe_systemone_v1"); err != nil {
 				return err
 			}
-			required = []uint64{1106, 1120, 1121}
-			intrinsic = []uint64{1100, 1102, 1103, 1104, 1105, 1110}
+			required = []string{intrinsicRequestFailed, intrinsicInvalidQuestion, intrinsicInvalidAnswer}
+			intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData}
 		case resolve.LLM:
 			if err := policy.CheckAI("openai_responses_v1"); err != nil {
 				return err
 			}
-			required = []uint64{1100, 1102, 1103, 1104, 1105, 1110, 1130, 1131, 1132}
+			required = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit, intrinsicStatusError, intrinsicInvalidData, intrinsicRefused, intrinsicTruncated, intrinsicInvalidResponse}
 		case resolve.Fetch:
-			required = []uint64{1106}
-			intrinsic = []uint64{1100, 1102, 1103, 1104}
+			required = []string{intrinsicRequestFailed}
+			intrinsic = []string{intrinsicInvalidRequest, intrinsicTransportFailed, intrinsicTimeout, intrinsicBodyLimit}
 			result := native.Signature.Result()
 			envelope := result.Declaration() == "can.std.http@1::response"
 			if envelope {
 				result = result.Arguments()[0]
 			} else {
-				intrinsic = append(intrinsic, 1105)
+				intrinsic = append(intrinsic, intrinsicStatusError)
 			}
 			if !(scalar(result, "str") || result.Declaration() == "can.std.bytes@1::buffer" || result.Kind() == types.Record && result.Declaration() != "can.std.http@1::response") {
 				return fmt.Errorf("fetch result requires record, str, bytes or one response envelope")
@@ -168,29 +185,28 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 				return fmt.Errorf("HEAD requires text or bytes result")
 			}
 			if result.Declaration() != "can.std.bytes@1::buffer" || declaration.BodyEncoding != nil && declaration.BodyEncoding.Text != "bytes" {
-				intrinsic = append(intrinsic, 1110)
+				intrinsic = append(intrinsic, intrinsicInvalidData)
 			}
 		}
 		if native.Symbol.Kind == resolve.Fetch || native.Symbol.Kind == resolve.Judge {
 			if policy.BearerEnvironment != "" {
-				intrinsic = append(intrinsic, 1101)
+				intrinsic = append(intrinsic, intrinsicCredentialsMissing)
 			}
 		} else if native.Symbol.Kind != resolve.Question && native.Symbol.Kind != resolve.ChoiceArm && policy.BearerEnvironment != "" {
-			required = append(required, 1101)
+			required = append(required, intrinsicCredentialsMissing)
 		}
-		ids := map[uint64]bool{}
+		seen := map[string]bool{}
 		emitted := []string{}
 		for _, typ := range native.Signature.Errors() {
-			allocation, ok := program.Registry.declarations[typ.Declaration()]
-			if !ok {
+			if _, ok := program.Registry.declarations[typ.Declaration()]; !ok {
 				return fmt.Errorf("unregistered native error")
 			}
-			ids[allocation.ID] = true
+			seen[typ.Declaration()] = true
 			emitted = append(emitted, typ.Declaration())
 		}
-		for _, id := range required {
-			if !ids[id] {
-				return fmt.Errorf("native declaration %s emits omits required intrinsic error %d", native.Symbol.Name, id)
+		for _, identity := range required {
+			if !seen[identity] {
+				return fmt.Errorf("native declaration %s emits omits required intrinsic error %s", native.Symbol.Name, identity)
 			}
 		}
 		// N holds the raw infrastructure obligations subject to boundary
@@ -198,19 +214,18 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		// validation is required but preserved, hence E-only; only fetch
 		// and judge maintain a normalization boundary at all. The intrinsic
 		// normalized contribution alone is not an emitted-origin entry.
-		raw := map[uint64]bool{}
-		for _, id := range intrinsic {
-			raw[id] = true
+		raw := map[string]bool{}
+		for _, identity := range intrinsic {
+			raw[identity] = true
 		}
-		byID := map[uint64]string{}
+		registered := map[string]bool{}
 		for _, declaration := range program.Registry.Declarations() {
-			byID[declaration.ID] = declaration.Identity
+			registered[declaration.Identity] = true
 		}
 		native.Native = []string{}
-		for id := range raw {
-			identity, ok := byID[id]
-			if !ok {
-				return fmt.Errorf("intrinsic error %d has no registered identity", id)
+		for identity := range raw {
+			if !registered[identity] {
+				return fmt.Errorf("intrinsic error %s has no registered identity", identity)
 			}
 			native.Native = append(native.Native, identity)
 		}
@@ -218,7 +233,7 @@ func (c *programChecker) checkNativeContracts(program *Program) error {
 		if len(raw) > 0 {
 			kept := emitted[:0]
 			for _, identity := range emitted {
-				if identity != byID[1106] {
+				if identity != intrinsicRequestFailed {
 					kept = append(kept, identity)
 				}
 			}

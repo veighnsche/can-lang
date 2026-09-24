@@ -50,23 +50,23 @@ Type parameters here are ordinary type parameters, not schema objects or a new J
 
 ### A2.2 Domain-error registry
 
-IDs 1100–1199 are reserved for this specification in the distribution catalogue. These are domain-error IDs, separate from standard-runtime-failure tags and compiler diagnostic codes. Qualified names are nominal identities. Fields and their positional order are fixed:
+The `http`, `codec`, `ai` and `llm` catalogue namespaces are reserved for this specification in the distribution catalogue. These qualified identities are separate from standard-runtime-failure tags and compiler diagnostic codes. Qualified names are nominal identities. Fields and their positional order are fixed:
 
-| ID | Error and payload | Precisely covers |
+| Identity | Error and payload | Precisely covers |
 |---|---|---|
-| 1100 | `http::invalid_request(str reason)` | Dynamic URL/path/origin/header/body-mode/config-value validation fails before sending. |
-| 1101 | `http::credentials_missing(str variable)` | A selected credential environment variable is absent or empty at request preparation. |
-| 1102 | `http::transport_failed(str phase)` | A recognized native transport/body failure; phase is `connect`, `body`, `protocol`, or `cancelled`. No complete usable result is available; headers may already have arrived. |
-| 1103 | `http::timeout(int timeout_ms)` | This request's A4 deadline expires. |
-| 1104 | `http::body_limit(int limit)` | Encoded outbound bytes or consumed inbound bytes exceed the selected byte bound. |
-| 1105 | `http::status_error(int status, http::header[] headers)` | Raw final non-2xx response in body-only fetch or an AI protocol request; fetch/judge normalize it under A2.4. No arbitrary response-body text is included. |
-| 1106 | `http::request_failed(http::failure_detail detail)` | Public fetch/judge infrastructure failure; A2.4 fixes its seven typed detail alternatives and origin boundary. |
-| 1110 | `codec::invalid_data(str path, str reason)` | Invalid UTF-8/JSON, duplicate member, schema mismatch, unsupported runtime value, nonfinite numeric input, depth/node/byte budget, or exact numeric representation failure. |
-| 1120 | `ai::invalid_question(str reason)` | Invalid evaluated instructions, criteria, option/level support, threshold, or batch count. |
-| 1121 | `ai::invalid_answer(str question, str reason)` | Valid JSON fails the selected judgment envelope/answer/distribution contract. `question` is the stable registration identifier, or empty for a whole-envelope defect. |
-| 1130 | `llm::refused(str reason)` | Recognized refusal or provider content-filter termination, rather than a value of the declared output type. |
-| 1131 | `llm::truncated()` | Recognized output-token termination; no partial success payload is exposed. |
-| 1132 | `llm::invalid_response(str reason)` | Generation envelope/output structure or completion state violates A10, including provider-declared failed/cancelled responses. |
+| `can.std.http@1::invalid_request` | `http::invalid_request(str reason)` | Dynamic URL/path/origin/header/body-mode/config-value validation fails before sending. |
+| `can.std.http@1::credentials_missing` | `http::credentials_missing(str variable)` | A selected credential environment variable is absent or empty at request preparation. |
+| `can.std.http@1::transport_failed` | `http::transport_failed(str phase)` | A recognized native transport/body failure; phase is `connect`, `body`, `protocol`, or `cancelled`. No complete usable result is available; headers may already have arrived. |
+| `can.std.http@1::timeout` | `http::timeout(int timeout_ms)` | This request's A4 deadline expires. |
+| `can.std.http@1::body_limit` | `http::body_limit(int limit)` | Encoded outbound bytes or consumed inbound bytes exceed the selected byte bound. |
+| `can.std.http@1::status_error` | `http::status_error(int status, http::header[] headers)` | Raw final non-2xx response in body-only fetch or an AI protocol request; fetch/judge normalize it under A2.4. No arbitrary response-body text is included. |
+| `can.std.http@1::request_failed` | `http::request_failed(http::failure_detail detail)` | Public fetch/judge infrastructure failure; A2.4 fixes its seven typed detail alternatives and origin boundary. |
+| `can.std.codec@1::invalid_data` | `codec::invalid_data(str path, str reason)` | Invalid UTF-8/JSON, duplicate member, schema mismatch, unsupported runtime value, nonfinite numeric input, depth/node/byte budget, or exact numeric representation failure. |
+| `can.std.ai@1::invalid_question` | `ai::invalid_question(str reason)` | Invalid evaluated instructions, criteria, option/level support, threshold, or batch count. |
+| `can.std.ai@1::invalid_answer` | `ai::invalid_answer(str question, str reason)` | Valid JSON fails the selected judgment envelope/answer/distribution contract. `question` is the stable registration identifier, or empty for a whole-envelope defect. |
+| `can.std.llm@1::refused` | `llm::refused(str reason)` | Recognized refusal or provider content-filter termination, rather than a value of the declared output type. |
+| `can.std.llm@1::truncated` | `llm::truncated()` | Recognized output-token termination; no partial success payload is exposed. |
+| `can.std.llm@1::invalid_response` | `llm::invalid_response(str reason)` | Generation envelope/output structure or completion state violates A10, including provider-declared failed/cancelled responses. |
 
 Reasons are finite catalogue tokens defined at their production sites below; they are not raw provider messages, arbitrary thrown-value strings, credentials, state, request bodies, or model text. Paths use RFC 6901 escaping, with empty string for the root; a duplicate member points to the duplicate key. AI registration identifiers are `q0`, `q1`, etc. Error matching exposes ordinary payload fields; callers handle/forward each declared kind explicitly. Catching `[_]` does not catch these errors.
 
@@ -81,9 +81,9 @@ Required exported obligations, before adding escaping authored errors, are:
 | Native `noul`, ordinary/record `choice`, ordinary/record `score` | `ai::invalid_question`, `ai::invalid_answer` |
 | `choice_arm` | No intrinsic domain kinds; its authored computation determines its bound |
 | `judge` | `http::request_failed` for native infrastructure; union of the **declared** question bounds; `ai::invalid_question`/`ai::invalid_answer` for request-level defects. Authored errors sharing raw infrastructure names are preserved. |
-| Body-only named fetch | `http::request_failed`; its raw native set contains 1100,1102–1105, plus 1101 if authenticated and 1110 for applicable codecs. |
-| Envelope named fetch | `http::request_failed`; raw set excludes 1105. Byte-only, bodyless requests need no raw codec obligation. |
-| `llm` | 1100,1102–1105; 1101 if authenticated; 1110; 1130–1132 |
+| Body-only named fetch | `http::request_failed`; its raw native set contains `http::invalid_request`, `http::transport_failed`, `http::timeout`, `http::body_limit`, `http::status_error`, plus `http::credentials_missing` if authenticated and `codec::invalid_data` for applicable codecs. |
+| Envelope named fetch | `http::request_failed`; raw set excludes `http::status_error`. Byte-only, bodyless requests need no raw codec obligation. |
+| `llm` | `http::invalid_request`, `http::transport_failed`, `http::timeout`, `http::body_limit`, `http::status_error`; `http::credentials_missing` if authenticated; `codec::invalid_data`; `llm::refused`, `llm::truncated`, `llm::invalid_response` |
 
 Intrinsic sets are fixed by declaration mode, not narrowed by constant-success speculation. Fetch/LLM have no executable success body; their authored `emits` may conservatively expose extra errors but cannot manufacture user error conversions. Fetch/judge operation wrappers can convert their original boundary failures under A3.2; ordinary callers remain available. LLM conversions still use ordinary callers. Static invalid schemas/configuration/options are compile diagnostics, not errors to hide behind a caller arm.
 
@@ -96,7 +96,7 @@ Standard failures remain separate: primitive faults, unexpected compiler-generat
 
 #### Public value and identity
 
-Allocate distribution error ID **1106** to `http::request_failed`. The catalogue declarations are:
+The catalogue declares `http::request_failed` with identity `can.std.http@1::request_failed`. The catalogue declarations are:
 
 ```can
 // Catalogue contracts; these are not project declarations.
@@ -109,7 +109,7 @@ variant failure_detail
     http::status_error
     codec::invalid_data
 
-error 1106 request_failed(http::failure_detail detail)
+error request_failed(http::failure_detail detail)
 ```
 
 The qualified variant is `http::failure_detail`. Its leaves are the existing nominal error values, not new copies of their record types. `http::request_failed(detail)` is ordinary constructible error data; construction alone does not prove a request occurred. Existing error construction/forwarding rules distinguish data from failure completion. The finite variant is an infrastructure-detail contract, not a closed union of all application failures.
@@ -360,7 +360,7 @@ There is no authored untyped JSON value and no automatic shape coercion. The com
 
 Fieldless records/errors encode as `{}`. No null is admitted anywhere by these rules. `option::value<T>` uses the ordinary variant encoding of `option::none` or `option::some<T>`; it is never implicitly a JSON null/missing field. A canonical leaf tag is its fully qualified package/declaration name, followed when generic by `<` and comma-separated recursively canonical argument type names and `>`; array types append `[]`, with no whitespace. Tags identify actual concrete leaves, so `some<int>` and `some<str>` differ. Variant wrappers are codec representation only; they do not change the core unwrapped nominal-value representation.
 
-Records emit fields in declaration order; variants emit `case` then `value`. Decoder object-member order is irrelevant. Exact required-member checks use own properties, never prototype inheritance. Duplicate members, even equal ones or keys with equivalent escaped spellings, are rejected. Error data encodes declared payload fields only, never implicit error IDs, native stacks, completion tags or messages. The special prelude standard-failure value and catalogue opaque types are not wire-admissible through this general rule.
+Records emit fields in declaration order; variants emit `case` then `value`. Decoder object-member order is irrelevant. Exact required-member checks use own properties, never prototype inheritance. Duplicate members, even equal ones or keys with equivalent escaped spellings, are rejected. Error data encodes declared payload fields only, never implicit error identities, native stacks, completion tags or messages. The special prelude standard-failure value and catalogue opaque types are not wire-admissible through this general rule.
 
 Reject callables, choice arms, connections, opaque resources, bytes::buffer, void and containers reaching them at compile time. There is no automatic base64 representation for bytes; an author may choose an explicit declared string representation through a separate catalogue API. Recursive records/variants are codec-admissible if the core accepts their finite inhabitation and finite specialization graph. Values must be finite acyclic data; defensive cycle detection rejects a malformed native cyclic representation. Shared immutable subtrees may be serialized repeatedly without being mistaken for cycles.
 

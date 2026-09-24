@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -196,9 +195,6 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 	if err := g.verifyLock(); err != nil {
 		return nil, err
 	}
-	if err := g.verifyRegistryGraph(); err != nil {
-		return nil, err
-	}
 	return g, nil
 }
 
@@ -341,25 +337,72 @@ func claimOutput(claims map[string]string, path, identity string) error {
 }
 
 func verifySourceRegistry(project *Project) error {
-	active := []ErrorAllocation{}
+	if err := project.Registry.Validate(); err != nil {
+		return err
+	}
+	active := []string{}
 	for _, file := range project.Sources {
 		for _, decl := range file.Syntax.Declarations {
 			errDecl, ok := decl.(*syntax.ErrorDecl)
 			if !ok {
 				continue
 			}
-			id, err := strconv.ParseUint(errDecl.ID.Text, 0, 31)
-			if err != nil || id < 1000000 {
-				return fmt.Errorf("application source error ID out of range: %s", errDecl.ID.Text)
-			}
-			active = append(active, ErrorAllocation{ID: id, Kind: file.Package.Name + "::" + errDecl.Name.Text})
+			active = append(active, file.Package.Name+"::"+errDecl.Name.Text)
 		}
 	}
-	sort.Slice(active, func(i, j int) bool { return active[i].ID < active[j].ID })
+	sort.Strings(active)
 	if !reflect.DeepEqual(active, project.Registry.Active) {
 		return fmt.Errorf("%s error registry differs from source declarations", project.ID)
 	}
+	live := map[string]bool{}
+	for _, kind := range active {
+		live[kind] = true
+	}
+	for _, name := range project.Registry.Retired {
+		if live[name] {
+			return fmt.Errorf("%s reuses retired error %q", project.ID, name)
+		}
+	}
 	return nil
+}
+
+// ResolveErrorReport attributes an archived terminal-report identity to
+// its owning project and current active kind, following that owner's
+// supplied predecessor chains. Catalogue identities resolve to
+// themselves with a nil owner; retired names without a chain do not
+// resolve.
+func (g *Graph) ResolveErrorReport(identity string) (owner *Project, kind string, ok bool) {
+	declaration, found := strings.CutPrefix(identity, ReportIdentityVersion+":")
+	if !found || declaration == "" {
+		return nil, "", false
+	}
+	if catalogueName, isCatalogue := catalogueErrorName(declaration); isCatalogue {
+		return nil, catalogueName, true
+	}
+	for _, key := range sortedKeys(g.Projects) {
+		project := g.Projects[key]
+		rest, found := strings.CutPrefix(declaration, project.ID+"/")
+		if !found || !qualifiedKind(rest) {
+			continue
+		}
+		current, resolved := project.Registry.ResolveKind(rest)
+		if !resolved {
+			return nil, "", false
+		}
+		return project, current, true
+	}
+	return nil, "", false
+}
+
+// catalogueErrorName maps a catalogue declaration identity back to its
+// short error name. Distribution errors carry no predecessor chains.
+func catalogueErrorName(declaration string) (string, bool) {
+	for _, error := range catalogue.Builtin().Inventory().Errors {
+		if error.Identity == declaration {
+			return error.Name, true
+		}
+	}
+	return "", false
 }
 
 func (g *Graph) verifyLock() error {
@@ -418,34 +461,6 @@ func (g *Graph) verifyLock() error {
 	for id := range g.Lock.Projects {
 		if !visited[id] {
 			return fmt.Errorf("unused dependency lock entry for %q", id)
-		}
-	}
-	return nil
-}
-
-func (g *Graph) verifyRegistryGraph() error {
-	owners := map[uint64]string{}
-	for _, e := range catalogue.Builtin().Inventory().Errors {
-		owners[uint64(e.ID)] = "catalogue"
-	}
-	for _, key := range sortedKeys(g.Projects) {
-		project := g.Projects[key]
-		claim := func(id uint64) error {
-			if owner, exists := owners[id]; exists {
-				return fmt.Errorf("error ID %d is claimed by %s and %s", id, owner, project.ID)
-			}
-			owners[id] = project.ID
-			return nil
-		}
-		for _, e := range project.Registry.Active {
-			if err := claim(e.ID); err != nil {
-				return err
-			}
-		}
-		for _, id := range project.Registry.Retired {
-			if err := claim(id); err != nil {
-				return err
-			}
 		}
 	}
 	return nil

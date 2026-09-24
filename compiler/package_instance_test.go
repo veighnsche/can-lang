@@ -27,11 +27,11 @@ func writeInstanceProject(t *testing.T, root, uses, body string) {
 	write("can.errors.json", `{"active":[],"retired":[]}`)
 	write("src/main.can", "package app\n    provides []\n    uses ["+uses+"]\n"+body)
 	write("libs/left/can.project.json", `{"source_root":"src","project":"shop_left","error_registry":"can.errors.json"}`)
-	write("libs/left/can.errors.json", `{"active":[{"id":1000000,"kind":"model::failed"}],"retired":[]}`)
-	write("libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror 1000000 failed(str reason)\n")
+	write("libs/left/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
+	write("libs/left/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed(str reason)\n")
 	write("libs/right/can.project.json", `{"source_root":"src","project":"shop_right","error_registry":"can.errors.json"}`)
-	write("libs/right/can.errors.json", `{"active":[{"id":1000001,"kind":"model::failed"}],"retired":[]}`)
-	write("libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror 1000001 failed(str reason)\n")
+	write("libs/right/can.errors.json", `{"active":["model::failed"],"retired":[]}`)
+	write("libs/right/src/model.can", "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed(str reason)\n")
 	edges := map[string]any{}
 	entries := map[string]any{}
 	for _, lib := range []string{"left", "right"} {

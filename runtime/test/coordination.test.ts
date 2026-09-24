@@ -236,9 +236,9 @@ async function domainFixture() {
   combined.fields = [{ name: "failures", type: array.identity }];
   const domain = createDomainRuntime({
     declarations: [
-      { identity: fault.declaration, name: "app::fault", id: 1000000, parameters: 1 },
-      { identity: offline.declaration, name: "app::offline", id: 1000001, parameters: 0 },
-      { identity: combined.declaration, name: "all_failed", id: 100, parameters: 1 },
+      { identity: fault.declaration, name: "app::fault", parameters: 1 },
+      { identity: offline.declaration, name: "app::offline", parameters: 0 },
+      { identity: combined.declaration, name: "all_failed", parameters: 1 },
     ],
     shapes: [integer, text, standard, fault, offline, variant, array, combined],
   });
@@ -303,7 +303,7 @@ test("typed aggregate keeps nominal generic payloads and opaque standard occurre
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("missing aggregate error");
   const details = domainFailureDiagnostics(result.value);
-  expect(details.declaration.id).toBe(100);
+  expect(details.declaration.name).toBe("all_failed");
   expect(details.typeArguments).toEqual([variant.identity]);
   const values = (details.payload as { failures: unknown[] }).failures;
   expect(values.length).toBe(4);
@@ -318,7 +318,7 @@ test("typed aggregate keeps nominal generic payloads and opaque standard occurre
   expect(domainFailureDiagnostics(original.value)).toMatchObject({
     typeIdentity: fault.identity,
     typeArguments: [integer.identity],
-    declaration: { id: 1000000 },
+    declaration: { name: "app::fault" },
     payload: a,
   });
 });

@@ -6,7 +6,9 @@ import { createMap, isMap } from "../collections/map.ts";
 import { createSet, isSet, type ImmutableSet } from "../collections/set.ts";
 import { record } from "../data.ts";
 import { value, type Completion } from "../completion.ts";
-const declarations = catalogue.errors.filter((e) => [1007, 1008].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  ["collections::key_absent", "collections::key_exists"].includes(e.name),
+);
 const errors: FailureShape[] = declarations.map((e) => ({
   identity: createHash("sha256")
     .update("can-concrete-type-v1\0" + JSON.stringify(["error", e.identity]))
@@ -23,7 +25,6 @@ const domain = createDomainRuntime({
   declarations: declarations.map((e) => ({
     identity: e.identity,
     name: e.name,
-    id: e.id,
     parameters: 0,
   })),
   shapes: errors,
@@ -38,10 +39,10 @@ const maps = createMap<bigint, object>(
   },
   "int",
 );
-function invalid(result: Completion, id: number) {
+function invalid(result: Completion, name: string) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
-  expect(domainFailureDiagnostics(result.value).declaration.id).toBe(id);
+  expect(domainFailureDiagnostics(result.value).declaration.name).toBe(name);
 }
 test("map copies preserve key order, aliases and nominal entries", async () => {
   const empty = value(await maps.empty()),
@@ -63,10 +64,10 @@ test("map copies preserve key order, aliases and nominal entries", async () => {
   expect(
     value(await maps.entries(value(await maps.insert(removed, 3n, a)))).map((e) => e.key),
   ).toEqual([2n, 3n]);
-  invalid(await maps.get(empty, 3n), 1007);
-  invalid(await maps.remove(empty, 3n), 1007);
-  invalid(await maps.replace(empty, 3n, a), 1007);
-  invalid(await maps.insert(first, 3n, b), 1008);
+  invalid(await maps.get(empty, 3n), "collections::key_absent");
+  invalid(await maps.remove(empty, 3n), "collections::key_absent");
+  invalid(await maps.replace(empty, 3n, a), "collections::key_absent");
+  invalid(await maps.insert(first, 3n, b), "collections::key_exists");
 });
 test("collection storage rejects forged, copied and wrong-specialization tokens and keys", async () => {
   const token = value(await maps.empty());

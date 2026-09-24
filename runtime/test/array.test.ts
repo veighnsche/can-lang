@@ -178,7 +178,7 @@ function domainFailure(): Completion<never> {
     .update("can-concrete-type-v1\0" + JSON.stringify(["error", declaration]))
     .digest("hex");
   const domain = createDomainRuntime({
-    declarations: [{ identity: declaration, name: "array::failed", id: 1000000, parameters: 0 }],
+    declarations: [{ identity: declaration, name: "array::failed", parameters: 0 }],
     shapes: [
       {
         identity,

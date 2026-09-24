@@ -33,7 +33,9 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const declarations = catalogue.errors.filter((e) => [1220, 1221, 1230].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  ["html::invalid_structure", "html::invalid_url", "http::invalid_route"].includes(e.name),
+);
 const errors = declarations.map((e) =>
   shape(
     "error",

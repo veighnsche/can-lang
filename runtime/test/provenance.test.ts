@@ -43,8 +43,19 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter(
-  (e) => (e.id >= 1100 && e.id <= 1106) || e.id === 1110 || e.id === 1120 || e.id === 1121,
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+    "ai::invalid_question",
+    "ai::invalid_answer",
+  ].includes(e.name),
 );
 const detailIdentity = hash(["variant", "can.std.http@1::failure_detail"]);
 const errors = declarations.map((d) =>
@@ -71,7 +82,12 @@ const detail: FailureShape = {
   fields: [],
   arguments: [],
   leaves: errors
-    .filter((_, i) => declarations[i].id !== 1106 && declarations[i].id < 1120)
+    .filter(
+      (_, i) =>
+        !["http::request_failed", "ai::invalid_question", "ai::invalid_answer"].includes(
+          declarations[i].name,
+        ),
+    )
     .map((e) => e.identity),
   inputs: [],
   errors: [],
@@ -133,7 +149,7 @@ test("native transport failures carry their producing operation", async () => {
       "test:provenance/fetch-a",
     );
     const details = domainDetails(failed);
-    expect(details.declaration.id).toBe(1102);
+    expect(details.declaration.name).toBe("http::transport_failed");
     expect(details.provenance).toEqual({
       boundary: "native",
       operation: "test:provenance/fetch-a",
@@ -156,11 +172,11 @@ test("native and authored codec failures with identical payloads stay distinguis
         "test:provenance/fetch-b",
       ),
     );
-    expect(mapped.declaration.id).toBe(1106);
+    expect(mapped.declaration.name).toBe("http::request_failed");
     expect(mapped.provenance).toEqual({ boundary: "native", operation: "test:provenance/fetch-b" });
     if (!isDomainFailure(mapped.cause)) throw Error("expected private original cause");
     const native = domainFailureDiagnostics(mapped.cause);
-    expect(native.declaration.id).toBe(1110);
+    expect(native.declaration.name).toBe("codec::invalid_data");
     expect(native.provenance).toEqual({ boundary: "native", operation: "test:provenance/fetch-b" });
     const authored = domain.create(
       ids.invalidData,
@@ -171,7 +187,7 @@ test("native and authored codec failures with identical payloads stay distinguis
       origin,
     );
     const authoredDetails = domainFailureDiagnostics(authored);
-    expect(authoredDetails.declaration.id).toBe(1110);
+    expect(authoredDetails.declaration.name).toBe("codec::invalid_data");
     expect(JSON.stringify(authoredDetails.payload)).toBe(JSON.stringify(native.payload));
     expect(authoredDetails.provenance).toEqual({ boundary: "emitted", operation: "" });
     const key = (boundary: string, name: string) => `${boundary}:${name}`;
@@ -198,7 +214,7 @@ test("judge validation keeps emitted provenance while judge decoding stays nativ
       "test:provenance/judge",
     ),
   );
-  expect(invalid.declaration.id).toBe(1120);
+  expect(invalid.declaration.name).toBe("ai::invalid_question");
   expect(invalid.provenance).toEqual({ boundary: "emitted", operation: "test:provenance/judge" });
   const mapped = domainDetails(
     await api.ask(
@@ -211,11 +227,11 @@ test("judge validation keeps emitted provenance while judge decoding stays nativ
       "test:provenance/judge",
     ),
   );
-  expect(mapped.declaration.id).toBe(1106);
+  expect(mapped.declaration.name).toBe("http::request_failed");
   expect(mapped.provenance).toEqual({ boundary: "native", operation: "test:provenance/judge" });
   if (!isDomainFailure(mapped.cause)) throw Error("expected private original cause");
   const undecodable = domainFailureDiagnostics(mapped.cause);
-  expect(undecodable.declaration.id).toBe(1110);
+  expect(undecodable.declaration.name).toBe("codec::invalid_data");
   expect(undecodable.provenance).toEqual({
     boundary: "native",
     operation: "test:provenance/judge",

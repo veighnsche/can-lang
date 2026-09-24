@@ -19,7 +19,15 @@ const shape = (kind: string, declaration: string): FailureShape => ({
 });
 const text = shape("primitive", "str"),
   integers = shape("primitive", "int"),
-  declarations = catalogue.errors.filter((e) => [1004, 1005, 1006, 1327, 1328].includes(e.id));
+  declarations = catalogue.errors.filter((e) =>
+    [
+      "text::empty_separator",
+      "text::empty_pattern",
+      "text::invalid_unicode",
+      "text::invalid_regex",
+      "text::invalid_limit",
+    ].includes(e.name),
+  );
 const errors = declarations.map((e) => ({
   ...shape("error", e.identity),
   fields: e.fields.map((f) => ({
@@ -31,7 +39,6 @@ const domain = createDomainRuntime({
   declarations: declarations.map((e) => ({
     identity: e.identity,
     name: e.name,
-    id: e.id,
     parameters: 0,
   })),
   shapes: [text, integers, ...errors],
@@ -44,10 +51,10 @@ const api = createText(domain, {
   invalidLimit: errors[4].identity,
   match: "text::regex_match",
 });
-function invalid(result: Completion, id: number) {
+function invalid(result: Completion, name: string) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain failure");
-  expect(domainFailureDiagnostics(result.value).declaration.id).toBe(id);
+  expect(domainFailureDiagnostics(result.value).declaration.name).toBe(name);
 }
 
 test("search, case and trim delegate native code-unit and Unicode behavior", async () => {
@@ -78,8 +85,8 @@ test("literal replacement preserves dollar sequences and split retains every emp
   expect(value(await api.split("", ","))).toEqual([""]);
   expect(value(await api.join(pieces, ","))).toBe(",a,,");
   expect(value(await api.join([], ","))).toBe("");
-  invalid(await api.split("text", ""), 1004);
-  invalid(await api.replaceAll("text", "", "x"), 1005);
+  invalid(await api.split("text", ""), "text::empty_separator");
+  invalid(await api.replaceAll("text", "", "x"), "text::empty_pattern");
 });
 
 test("scalar and grapheme APIs deliberately differ from UTF-16 indexing", async () => {
@@ -100,12 +107,12 @@ test("scalar and grapheme APIs deliberately differ from UTF-16 indexing", async 
 
 test("named Unicode operations reject unpaired surrogates and invalid scalar values", async () => {
   for (const input of ["\ud800", "\udfff", "a\ud800b", "\udc00\ud800"]) {
-    invalid(await api.scalars(input), 1006);
-    invalid(await api.graphemes(input), 1006);
-    invalid(await api.normalizeNFC(input), 1006);
+    invalid(await api.scalars(input), "text::invalid_unicode");
+    invalid(await api.graphemes(input), "text::invalid_unicode");
+    invalid(await api.normalizeNFC(input), "text::invalid_unicode");
   }
   for (const scalar of [-1n, 0xd800n, 0xdfffn, 0x110000n, 10n ** 100n])
-    invalid(await api.fromScalars([65n, scalar, 66n]), 1006);
+    invalid(await api.fromScalars([65n, scalar, 66n]), "text::invalid_unicode");
   for (const scalar of [0n, 0xd7ffn, 0xe000n, 0x10ffffn])
     expect(value(await api.fromScalars([scalar]))).toBe(String.fromCodePoint(Number(scalar)));
 });
@@ -122,9 +129,9 @@ test("bulk fromCodePoint uses bounded native argument chunks", async () => {
 test("regex compiles validated flags and rejects bad patterns", async () => {
   expect(typeof value(await api.compileRegex("(a+)", "im"))).toBe("object");
   for (const flags of ["g", "y", "d", "z", "ii "])
-    invalid(await api.compileRegex("a", flags), 1327);
-  invalid(await api.compileRegex("(a", ""), 1327);
-  invalid(await api.compileRegex("a", "uv"), 1327);
+    invalid(await api.compileRegex("a", flags), "text::invalid_regex");
+  invalid(await api.compileRegex("(a", ""), "text::invalid_regex");
+  invalid(await api.compileRegex("a", "uv"), "text::invalid_regex");
 });
 
 test("matches report UTF-16 offsets, groups, and absent captures", async () => {
@@ -156,6 +163,6 @@ test("matches advance past empty hits without shared lastIndex and honor limits"
   expect(second.length).toBe(3);
   expect((value(await api.findMatches(handle, "ab", 1n)) as unknown[]).length).toBe(1);
   expect((value(await api.findMatches(handle, "ab", 0n)) as unknown[]).length).toBe(0);
-  invalid(await api.findMatches(handle, "ab", -1n), 1328);
-  invalid(await api.findMatches(handle, "ab", 10001n), 1328);
+  invalid(await api.findMatches(handle, "ab", -1n), "text::invalid_limit");
+  invalid(await api.findMatches(handle, "ab", 10001n), "text::invalid_limit");
 });

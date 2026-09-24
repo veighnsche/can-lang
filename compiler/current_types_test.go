@@ -54,7 +54,7 @@ func TestDeclarationInspectionRejectsUnusedGenericErrors(t *testing.T) {
 	cases := []struct{ name, source, registry, diagnostic string }{
 		{"variant", "record box<item>\n    item value\n\nvariant impossible<item>\n    box<item>\n    box<item>\n", `{"active":[],"retired":[]}`, "duplicate variant leaf"},
 		{"constraint", "record holder<item>\n    collections::map<float,item> value\n", `{"active":[],"retired":[]}`, "catalogue constraint map_key"},
-		{"bound", "error 1000000 failed<item>(item value)\nfn item work<item>\n    emits [failed<item>,failed<item>]\n    given\n        item value\n    asserts\n        sample: 1 => ok 1\n    ok value\n", `{"active":[{"id":1000000,"kind":"app::failed"}],"retired":[]}`, "duplicate error in bound"},
+		{"bound", "error failed<item>(item value)\nfn item work<item>\n    emits [failed<item>,failed<item>]\n    given\n        item value\n    asserts\n        sample: 1 => ok 1\n    ok value\n", `{"active":["app::failed"],"retired":[]}`, "duplicate error in bound"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

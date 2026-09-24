@@ -34,7 +34,16 @@ const str = shape("primitive", "str"),
   int = shape("primitive", "int"),
   bool = shape("primitive", "bool");
 const declarations = catalogue.errors.filter((e) =>
-  [1300, 1301, 1310, 1311, 1312, 1313, 1314, 1315].includes(e.id),
+  [
+    "files::not_found",
+    "files::denied",
+    "process::spawn_failed",
+    "process::timeout",
+    "process::output_limit",
+    "process::nonzero",
+    "process::invalid_config",
+    "process::io_error",
+  ].includes(e.name),
 );
 const errors = declarations.map((e) =>
   shape(
@@ -82,11 +91,11 @@ const options = (over: Over = {}) =>
     ["deadline_ms", over.deadline ?? 0n],
     ["grace_ms", over.grace ?? 100n],
   ]);
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 async function owned<T>(body: () => Promise<Completion<T>>): Promise<Completion<T>> {
@@ -127,13 +136,16 @@ test("nonzero exits and signals report distinctly", async () => {
   if (failed.kind !== "ok") throw Error();
   expect(dataProperty(failed.value, "code")).toBe(7n);
   expect(dataProperty(failed.value, "signal")).toBe("");
-  check(await owned(() => processes.requireSuccess(failed.value)), 1313, { code: 7n, signal: "" });
+  check(await owned(() => processes.requireSuccess(failed.value)), "process::nonzero", {
+    code: 7n,
+    signal: "",
+  });
   const signaled = await owned(() => processes.run("/bin/sh", ["-c", "kill -TERM $$"], options()));
   expect(signaled.kind).toBe("ok");
   if (signaled.kind !== "ok") throw Error();
   expect(dataProperty(signaled.value, "code")).toBe(-1n);
   expect(dataProperty(signaled.value, "signal")).toBe("SIGTERM");
-  check(await owned(() => processes.requireSuccess(signaled.value)), 1313, {
+  check(await owned(() => processes.requireSuccess(signaled.value)), "process::nonzero", {
     code: -1n,
     signal: "SIGTERM",
   });
@@ -175,27 +187,38 @@ test("arguments stay literal without a shell", async () => {
 });
 test("missing executables and denied directories are declared failures", async () => {
   await withTemp(async (root) => {
-    check(await owned(() => processes.run("/nonexistent-bin-xyz", [], options())), 1300, {
-      path: "/nonexistent-bin-xyz",
-    });
-    check(await owned(() => processes.which("definitely-not-a-binary-xyz")), 1300, {
+    check(
+      await owned(() => processes.run("/nonexistent-bin-xyz", [], options())),
+      "files::not_found",
+      {
+        path: "/nonexistent-bin-xyz",
+      },
+    );
+    check(await owned(() => processes.which("definitely-not-a-binary-xyz")), "files::not_found", {
       path: "definitely-not-a-binary-xyz",
     });
-    check(await owned(() => processes.which("")), 1314, { field: "name", reason: "empty" });
+    check(await owned(() => processes.which("")), "process::invalid_config", {
+      field: "name",
+      reason: "empty",
+    });
     expect(await owned(() => processes.which("sh"))).toEqual(success("/bin/sh"));
     const locked = join(root, "locked");
     await mkdir(locked);
     await chmod(locked, 0o000);
     try {
-      check(await owned(() => processes.run("/bin/echo", ["x"], options({ cwd: locked }))), 1301, {
-        operation: "spawn",
-      });
+      check(
+        await owned(() => processes.run("/bin/echo", ["x"], options({ cwd: locked }))),
+        "files::denied",
+        {
+          operation: "spawn",
+        },
+      );
     } finally {
       await chmod(locked, 0o700);
     }
     check(
       await owned(() => processes.run("/bin/echo", ["x"], options({ cwd: join(root, "nodir") }))),
-      1300,
+      "files::not_found",
       { path: join(root, "nodir") },
     );
   });
@@ -203,46 +226,70 @@ test("missing executables and denied directories are declared failures", async (
 test("invalid configs fail before spawning", async () => {
   await withTemp(async (root) => {
     const sentinel = join(root, "spawned");
-    check(await owned(() => processes.run("", [], options())), 1314, {
+    check(await owned(() => processes.run("", [], options())), "process::invalid_config", {
       field: "executable",
       reason: "empty",
     });
-    check(await owned(() => processes.run("a\0b", [], options())), 1314, {
+    check(await owned(() => processes.run("a\0b", [], options())), "process::invalid_config", {
       field: "executable",
       reason: "nul_byte",
     });
-    check(await owned(() => processes.run("/bin/echo", ["a\0b"], options())), 1314, {
-      field: "args",
-      reason: "nul_byte",
-    });
-    check(await owned(() => processes.run("/bin/echo", [], options({ env: ["NOEQUALS"] }))), 1314, {
-      field: "env",
-      reason: "entry",
-    });
-    check(await owned(() => processes.run("/bin/echo", [], options({ env: ["1BAD=x"] }))), 1314, {
-      field: "env",
-      reason: "name",
-    });
-    check(await owned(() => processes.run("/bin/echo", [], options({ env: ["K=a\0b"] }))), 1314, {
-      field: "env",
-      reason: "nul_byte",
-    });
-    check(await owned(() => processes.run("/bin/echo", [], options({ out: -1n }))), 1314, {
-      field: "stdout_limit",
-      reason: "negative",
-    });
-    check(await owned(() => processes.run("/bin/echo", [], options({ deadline: -1n }))), 1314, {
-      field: "deadline_ms",
-      reason: "negative",
-    });
+    check(
+      await owned(() => processes.run("/bin/echo", ["a\0b"], options())),
+      "process::invalid_config",
+      {
+        field: "args",
+        reason: "nul_byte",
+      },
+    );
+    check(
+      await owned(() => processes.run("/bin/echo", [], options({ env: ["NOEQUALS"] }))),
+      "process::invalid_config",
+      {
+        field: "env",
+        reason: "entry",
+      },
+    );
+    check(
+      await owned(() => processes.run("/bin/echo", [], options({ env: ["1BAD=x"] }))),
+      "process::invalid_config",
+      {
+        field: "env",
+        reason: "name",
+      },
+    );
+    check(
+      await owned(() => processes.run("/bin/echo", [], options({ env: ["K=a\0b"] }))),
+      "process::invalid_config",
+      {
+        field: "env",
+        reason: "nul_byte",
+      },
+    );
+    check(
+      await owned(() => processes.run("/bin/echo", [], options({ out: -1n }))),
+      "process::invalid_config",
+      {
+        field: "stdout_limit",
+        reason: "negative",
+      },
+    );
+    check(
+      await owned(() => processes.run("/bin/echo", [], options({ deadline: -1n }))),
+      "process::invalid_config",
+      {
+        field: "deadline_ms",
+        reason: "negative",
+      },
+    );
     check(
       await owned(() => processes.run("/bin/echo", [], options({ deadline: 2147483648n }))),
-      1314,
+      "process::invalid_config",
       { field: "deadline_ms", reason: "too_large" },
     );
     check(
       await owned(() => processes.run("/usr/bin/touch", [sentinel], options({ env: ["BAD"] }))),
-      1314,
+      "process::invalid_config",
       { field: "env", reason: "entry" },
     );
     expect(await Bun.file(sentinel).exists()).toBe(false);
@@ -252,18 +299,18 @@ test("output caps terminate runaway producers", async () => {
   const flood = await owned(() =>
     processes.run("/bin/sh", ["-c", "yes | head -c 1000000"], options({ out: 1000n, grace: 50n })),
   );
-  check(flood, 1312, { stream: "stdout", limit: 1000n });
+  check(flood, "process::output_limit", { stream: "stdout", limit: 1000n });
   const exact = await owned(() => processes.run("/bin/echo", ["hello"], options({ out: 6n })));
   expect(exact.kind).toBe("ok");
   const short = await owned(() => processes.run("/bin/echo", ["hello"], options({ out: 5n })));
-  check(short, 1312, { stream: "stdout", limit: 5n });
+  check(short, "process::output_limit", { stream: "stdout", limit: 5n });
 });
 test("deadlines terminate and reap, escalating past SIGTERM traps", async () => {
   const started = Date.now();
   const result = await owned(() =>
     processes.run("/bin/sleep", ["30"], options({ deadline: 300n, grace: 50n })),
   );
-  check(result, 1311, { deadline_ms: 300n });
+  check(result, "process::timeout", { deadline_ms: 300n });
   expect(Date.now() - started).toBeLessThan(10000);
   const trapped = await owned(() =>
     processes.run(
@@ -272,7 +319,7 @@ test("deadlines terminate and reap, escalating past SIGTERM traps", async () => 
       options({ deadline: 300n, grace: 100n }),
     ),
   );
-  check(trapped, 1311, { deadline_ms: 300n });
+  check(trapped, "process::timeout", { deadline_ms: 300n });
   expect(Date.now() - started).toBeLessThan(10000);
 });
 test("group termination reaches grandchildren", async () => {
@@ -285,7 +332,7 @@ test("group termination reaches grandchildren", async () => {
         options({ deadline: 500n, grace: 50n }),
       ),
     );
-    check(result, 1311, { deadline_ms: 500n });
+    check(result, "process::timeout", { deadline_ms: 500n });
     const grand = parseInt((await readFile(pidfile, "utf8")).trim(), 10);
     expect(Number.isSafeInteger(grand)).toBe(true);
     let alive = true;

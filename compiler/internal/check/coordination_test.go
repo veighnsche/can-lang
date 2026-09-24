@@ -514,7 +514,7 @@ func programFixtureRegistry(t *testing.T, files map[string]string, registry stri
 }
 
 func TestGenericBodyExactHeadPerSpecialization(t *testing.T) {
-	text := programHeader + `error 1000010 hold<item>(item value)
+	text := programHeader + `error hold<item>(item value)
 fn str first<item>
     emits [hold<item>]
     given
@@ -532,7 +532,7 @@ fn str describe<item>
         hold<item> as kept => ok "held"
         ok str value => ok "unexpected"
 ` + programMain + "    ok\n"
-	registry := `{"active":[{"id":1000010,"kind":"app::hold"}],"retired":[]}`
+	registry := `{"active":["app::hold"],"retired":[]}`
 	if _, err := programFixtureRegistry(t, map[string]string{"src/main.can": text}, registry); err != nil {
 		t.Fatalf("generic exact head rejected: %v", err)
 	}

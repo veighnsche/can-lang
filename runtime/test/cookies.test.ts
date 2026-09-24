@@ -30,7 +30,14 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const decls = catalogue.errors.filter((e) => [1100, 1110, 1341, 1342].includes(e.id));
+const decls = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "codec::invalid_data",
+    "cookie::invalid_cookie",
+    "csrf::invalid_config",
+  ].includes(e.name),
+);
 const declarations = decls.map((e) => ({ ...e, parameters: 0 }));
 const errors = decls.map((e) =>
   shape(
@@ -46,9 +53,9 @@ const failOf = (result: Completion) => {
   if (result.kind !== "domain") throw Error("expected domain");
   return domainFailureDiagnostics(result.value);
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   const d = failOf(result);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 const COLLECTION = "can.std.cookie@1::collection",
@@ -183,10 +190,10 @@ test("make rejects invalid names paths and domains per field", async () => {
   await owned(async () => {
     const good = attrs("/", none(), false, false, lax(), none(), none());
     for (const name of ["", "a\r\nX", "a;b", "a b", "a=b"])
-      check(await cookies.make(name, "1", good), 1341, { reason: "name" });
+      check(await cookies.make(name, "1", good), "cookie::invalid_cookie", { reason: "name" });
     check(
       await cookies.make("a", "1", attrs("/\r\nX", none(), false, false, lax(), none(), none())),
-      1341,
+      "cookie::invalid_cookie",
       { reason: "path" },
     );
     check(
@@ -195,7 +202,7 @@ test("make rejects invalid names paths and domains per field", async () => {
         "1",
         attrs("/", some("ex ample.com"), false, false, lax(), none(), none()),
       ),
-      1341,
+      "cookie::invalid_cookie",
       { reason: "domain" },
     );
     check(
@@ -204,7 +211,7 @@ test("make rejects invalid names paths and domains per field", async () => {
         "1",
         attrs("/", none(), false, false, lax(), none(), some(8640000000000001n)),
       ),
-      1341,
+      "cookie::invalid_cookie",
       { reason: "expires" },
     );
     check(
@@ -213,7 +220,7 @@ test("make rejects invalid names paths and domains per field", async () => {
         "1",
         attrs("/", none(), false, false, lax(), some(9007199254740993n), none()),
       ),
-      1341,
+      "cookie::invalid_cookie",
       { reason: "max_age" },
     );
   });
@@ -260,7 +267,7 @@ test("expire builds scoped tombstones", async () => {
     expect(value(await cookies.serialize(scoped))).toBe(
       "b=; Domain=example.com; Path=/admin; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax",
     );
-    check(await cookies.remove("a;b", "/", none()), 1341, { reason: "name" });
+    check(await cookies.remove("a;b", "/", none()), "cookie::invalid_cookie", { reason: "name" });
   });
 });
 test("cookie handles reject foreign values", async () => {
@@ -360,14 +367,20 @@ test("invalid config fails without secret or token material", async () => {
       ["s3cret", "", 60000n],
     ] as const) {
       const failed = failOf(await csrf.generate(secret, session, duration));
-      expect(failed.declaration.id).toBe(1342);
+      expect(failed.declaration.name).toBe("csrf::invalid_config");
       expect(Object.keys(failed.payload as object).sort()).toEqual(["reason"]);
     }
-    check(await csrf.generate("s3cret", "A", -1n), 1342, { reason: "duration" });
-    check(await csrf.generate("s3cret", "A", 9007199254740992n), 1342, { reason: "duration" });
-    check(await csrf.verify("", "A", "t", 60000n), 1342, { reason: "secret" });
-    check(await csrf.verify("s3cret", "", "t", 60000n), 1342, { reason: "session" });
-    check(await csrf.verify("s3cret", "A", "t", -1n), 1342, { reason: "duration" });
+    check(await csrf.generate("s3cret", "A", -1n), "csrf::invalid_config", { reason: "duration" });
+    check(await csrf.generate("s3cret", "A", 9007199254740992n), "csrf::invalid_config", {
+      reason: "duration",
+    });
+    check(await csrf.verify("", "A", "t", 60000n), "csrf::invalid_config", { reason: "secret" });
+    check(await csrf.verify("s3cret", "", "t", 60000n), "csrf::invalid_config", {
+      reason: "session",
+    });
+    check(await csrf.verify("s3cret", "A", "t", -1n), "csrf::invalid_config", {
+      reason: "duration",
+    });
   });
 });
 test("expiry is absolute over max age", async () => {

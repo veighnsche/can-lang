@@ -36,9 +36,9 @@ func newRegionFixture(t *testing.T) *regionFixture {
 	text := `package app
     provides []
     uses [sql, bytes, collections]
-error 1000000 missing(int code)
-error 1000001 other()
-error 1000002 wrapped<item>(item value)
+error missing(int code)
+error other()
+error wrapped<item>(item value)
 record receipt
     callable void () emits [] then
 record left
@@ -51,7 +51,7 @@ variant either
 record node
     node[] children
 `
-	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":[{"id":1000000,"kind":"app::missing"},{"id":1000001,"kind":"app::other"},{"id":1000002,"kind":"app::wrapped"}],"retired":[]}`, "src/main.can": text} {
+	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::missing","app::other","app::wrapped"],"retired":[]}`, "src/main.can": text} {
 		p := filepath.Join(root, name)
 		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
 			t.Fatal(err)

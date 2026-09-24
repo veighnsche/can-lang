@@ -34,7 +34,16 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter((e) => e.id >= 1100 && e.id <= 1105);
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+  ].includes(e.name),
+);
 const errors = declarations.map((d) =>
   shape(
     "error",
@@ -64,11 +73,11 @@ const connection = {
   headers: [],
 };
 const request = { path: "/", method: "GET" as const, query: [], headers: [] };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw new Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 test("transport failures construct exact nominal catalogue occurrences", async () => {
@@ -81,7 +90,7 @@ test("transport failures construct exact nominal catalogue occurrences", async (
         origin,
         "test:http/transport",
       ),
-      1100,
+      "http::invalid_request",
       { reason: "origin" },
     );
     check(
@@ -92,7 +101,7 @@ test("transport failures construct exact nominal catalogue occurrences", async (
         origin,
         "test:http/transport",
       ),
-      1101,
+      "http::credentials_missing",
       { variable: "TOKEN" },
     );
     check(
@@ -103,12 +112,12 @@ test("transport failures construct exact nominal catalogue occurrences", async (
         origin,
         "test:http/transport",
       ),
-      1104,
+      "http::body_limit",
       { limit: 3n },
     );
     check(
       await api.request(connection, request, () => success(0n), origin, "test:http/transport"),
-      1102,
+      "http::transport_failed",
       { phase: "connect" },
     );
     return success(undefined);
@@ -137,7 +146,7 @@ test("status and timeout use typed payloads while unexpected decoder faults stay
           origin,
           "test:http/transport",
         ),
-        1105,
+        "http::status_error",
         { status: 401n },
       );
       check(
@@ -152,7 +161,7 @@ test("status and timeout use typed payloads while unexpected decoder faults stay
           origin,
           "test:http/transport",
         ),
-        1103,
+        "http::timeout",
         { timeout_ms: 5n },
       );
       const unexpected = await api.request(

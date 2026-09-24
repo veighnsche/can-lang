@@ -610,7 +610,7 @@ use a different capitalization convention.
 fn int calculate_total
 record order_item
 variant payment_method
-error 1003 invalid_quantity
+error invalid_quantity
 ```
 
 These are declaration-head fragments illustrating naming only. User-defined
@@ -754,7 +754,7 @@ record box<item>
 
 The corresponding function-header shape is `fn item identity<item>`.
 Variant and error declaration-head shapes include `variant outcome<item>` and
-`error 1004 rejected<item>(item value)`. Error fields may use those type parameters.
+`error rejected<item>(item value)`. Error fields may use those type parameters.
 Type-parameter names follow the same `snake_case` rule as other user-defined
 names.
 
@@ -1402,7 +1402,7 @@ fn int lookup_or_zero
 
 Here `lookup` has success type `int` and declared error set `[missing]`, returning
 `ok 42` for `"answer"` and `missing()` for `"other"`. `missing` is a payload-free
-declared error with its own mandatory numeric ID.
+declared error with its own qualified identity.
 
 A bare `ok` arm forwards the matched success and its whole payload unchanged:
 
@@ -1627,11 +1627,11 @@ Here the declared field is `minimum`. If the error declares a field named
 
 Decisions: SURFACE-032–037.
 
-Declare an error with a mandatory stable numeric ID followed by its name, then
-parenthesized type-before-name payload fields:
+Declare an error with its name, then parenthesized type-before-name payload
+fields:
 
 ```text
-error 1002 below_minimum(int actual, int minimum)
+error below_minimum(int actual, int minimum)
 ```
 
 Error payload fields are declared in parentheses after the error name (and any
@@ -1639,13 +1639,12 @@ generic parameters), using comma-separated `<type> <name>` entries on the
 declaration line. This replaces the indented field-list form for errors only;
 record declarations are unchanged. Trailing commas remain forbidden.
 
-[C9](technical-spec.md#c9) defines allocated ranges, generic identity, dependency
-collisions and retired-ID policy. IDs identify error kinds, are unique throughout
-the resolved codebase, and must be visible
-in relevant error reports. Missing and duplicate IDs must be compile-time errors.
+[C9](technical-spec.md#c9) defines qualified identity, generic identity, dependency
+composition and retired-name policy. Qualified identities identify error kinds,
+are unique throughout the resolved codebase, and must be visible
+in relevant error reports. Missing and duplicate registry entries must be compile-time errors.
 They are declaration metadata, not payload arguments or replacements for nominal
-error identity. All occurrences of an error kind share its ID. Numbers in these
-examples are illustrative, not allocated registry entries.
+error identity. All occurrences of an error kind share its qualified identity.
 
 Construct errors with positional payload arguments in field declaration order,
 both in business logic and assertion expectations.
@@ -2198,7 +2197,7 @@ established completion rules of existing match arms.
 ## Technical contract coverage
 
 The formerly unresolved grammar, whitespace, lookup, generics, pattern,
-copy-update, error-ID, callback and initializer questions are resolved in
+copy-update, error-identity, callback and initializer questions are resolved in
 [technical specification C2–C9](technical-spec.md#c2). Coordination, native
 AI/I/O and platform/testing contracts are incorporated above. The
 [traceability and readiness assessment](technical-spec.md#c11) records every

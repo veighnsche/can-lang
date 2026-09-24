@@ -1,413 +1,107 @@
 {
   "active": [
-    {
-      "id": 100,
-      "kind": "all_failed"
-    },
-    {
-      "id": 1000,
-      "kind": "number::inexact"
-    },
-    {
-      "id": 1001,
-      "kind": "text::invalid_number"
-    },
-    {
-      "id": 1002,
-      "kind": "text::invalid_bool"
-    },
-    {
-      "id": 1003,
-      "kind": "number::invalid_bool"
-    },
-    {
-      "id": 1004,
-      "kind": "text::empty_separator"
-    },
-    {
-      "id": 1005,
-      "kind": "text::empty_pattern"
-    },
-    {
-      "id": 1006,
-      "kind": "text::invalid_unicode"
-    },
-    {
-      "id": 1007,
-      "kind": "collections::key_absent"
-    },
-    {
-      "id": 1008,
-      "kind": "collections::key_exists"
-    },
-    {
-      "id": 1009,
-      "kind": "number::zero_divisor"
-    },
-    {
-      "id": 1010,
-      "kind": "checks::failed"
-    },
-    {
-      "id": 1100,
-      "kind": "http::invalid_request"
-    },
-    {
-      "id": 1101,
-      "kind": "http::credentials_missing"
-    },
-    {
-      "id": 1102,
-      "kind": "http::transport_failed"
-    },
-    {
-      "id": 1103,
-      "kind": "http::timeout"
-    },
-    {
-      "id": 1104,
-      "kind": "http::body_limit"
-    },
-    {
-      "id": 1105,
-      "kind": "http::status_error"
-    },
-    {
-      "id": 1106,
-      "kind": "http::request_failed"
-    },
-    {
-      "id": 1110,
-      "kind": "codec::invalid_data"
-    },
-    {
-      "id": 1120,
-      "kind": "ai::invalid_question"
-    },
-    {
-      "id": 1121,
-      "kind": "ai::invalid_answer"
-    },
-    {
-      "id": 1130,
-      "kind": "llm::refused"
-    },
-    {
-      "id": 1131,
-      "kind": "llm::truncated"
-    },
-    {
-      "id": 1132,
-      "kind": "llm::invalid_response"
-    },
-    {
-      "id": 1210,
-      "kind": "io::read_failed"
-    },
-    {
-      "id": 1211,
-      "kind": "io::write_failed"
-    },
-    {
-      "id": 1212,
-      "kind": "io::limit_exceeded"
-    },
-    {
-      "id": 1220,
-      "kind": "html::invalid_structure"
-    },
-    {
-      "id": 1221,
-      "kind": "html::invalid_url"
-    },
-    {
-      "id": 1222,
-      "kind": "htmx::invalid_target"
-    },
-    {
-      "id": 1223,
-      "kind": "htmx::invalid_interval"
-    },
-    {
-      "id": 1230,
-      "kind": "http::invalid_route"
-    },
-    {
-      "id": 1231,
-      "kind": "http::duplicate_route"
-    },
-    {
-      "id": 1232,
-      "kind": "http::ambiguous_route"
-    },
-    {
-      "id": 1233,
-      "kind": "http::invalid_server_config"
-    },
-    {
-      "id": 1234,
-      "kind": "http::bind_failed"
-    },
-    {
-      "id": 1235,
-      "kind": "http::shutdown_failed"
-    },
-    {
-      "id": 1240,
-      "kind": "sql::connection_failed"
-    },
-    {
-      "id": 1241,
-      "kind": "sql::query_failed"
-    },
-    {
-      "id": 1242,
-      "kind": "sql::row_missing"
-    },
-    {
-      "id": 1243,
-      "kind": "sql::row_count"
-    },
-    {
-      "id": 1244,
-      "kind": "sql::schema_mismatch"
-    },
-    {
-      "id": 1245,
-      "kind": "sql::constraint_failed"
-    },
-    {
-      "id": 1246,
-      "kind": "sql::transaction_failed"
-    },
-    {
-      "id": 1247,
-      "kind": "sql::commit_unknown"
-    },
-    {
-      "id": 1248,
-      "kind": "sql::close_failed"
-    },
-    {
-      "id": 1249,
-      "kind": "sql::row_limit"
-    },
-    {
-      "id": 1250,
-      "kind": "sql::unsupported_value"
-    },
-    {
-      "id": 1260,
-      "kind": "clock::invalid_duration"
-    },
-    {
-      "id": 1261,
-      "kind": "random::invalid_length"
-    },
-    {
-      "id": 1262,
-      "kind": "env::invalid_name"
-    },
-    {
-      "id": 1263,
-      "kind": "log::write_failed"
-    },
-    {
-      "id": 1300,
-      "kind": "files::not_found"
-    },
-    {
-      "id": 1301,
-      "kind": "files::denied"
-    },
-    {
-      "id": 1302,
-      "kind": "files::already_exists"
-    },
-    {
-      "id": 1303,
-      "kind": "files::invalid_path"
-    },
-    {
-      "id": 1304,
-      "kind": "files::io_error"
-    },
-    {
-      "id": 1305,
-      "kind": "files::limit_exceeded"
-    },
-    {
-      "id": 1306,
-      "kind": "files::not_empty"
-    },
-    {
-      "id": 1307,
-      "kind": "files::cross_device"
-    },
-    {
-      "id": 1308,
-      "kind": "files::unexpected_kind"
-    },
-    {
-      "id": 1310,
-      "kind": "process::spawn_failed"
-    },
-    {
-      "id": 1311,
-      "kind": "process::timeout"
-    },
-    {
-      "id": 1312,
-      "kind": "process::output_limit"
-    },
-    {
-      "id": 1313,
-      "kind": "process::nonzero"
-    },
-    {
-      "id": 1314,
-      "kind": "process::invalid_config"
-    },
-    {
-      "id": 1315,
-      "kind": "process::io_error"
-    },
-    {
-      "id": 1316,
-      "kind": "stream::read_failed"
-    },
-    {
-      "id": 1317,
-      "kind": "stream::write_failed"
-    },
-    {
-      "id": 1318,
-      "kind": "stream::cancelled"
-    },
-    {
-      "id": 1319,
-      "kind": "stream::close_failed"
-    },
-    {
-      "id": 1320,
-      "kind": "password::cost_rejected"
-    },
-    {
-      "id": 1321,
-      "kind": "password::invalid_hash"
-    },
-    {
-      "id": 1322,
-      "kind": "crypto::invalid_key"
-    },
-    {
-      "id": 1323,
-      "kind": "crypto::invalid_nonce"
-    },
-    {
-      "id": 1324,
-      "kind": "crypto::key_misuse"
-    },
-    {
-      "id": 1325,
-      "kind": "crypto::decrypt_failed"
-    },
-    {
-      "id": 1326,
-      "kind": "url::invalid_url"
-    },
-    {
-      "id": 1327,
-      "kind": "text::invalid_regex"
-    },
-    {
-      "id": 1328,
-      "kind": "text::invalid_limit"
-    },
-    {
-      "id": 1329,
-      "kind": "time::out_of_range"
-    },
-    {
-      "id": 1330,
-      "kind": "time::invalid_zone"
-    },
-    {
-      "id": 1331,
-      "kind": "time::nonexistent_time"
-    },
-    {
-      "id": 1332,
-      "kind": "time::invalid_option"
-    },
-    {
-      "id": 1333,
-      "kind": "ws::connect_failed"
-    },
-    {
-      "id": 1334,
-      "kind": "ws::upgrade_failed"
-    },
-    {
-      "id": 1335,
-      "kind": "ws::unsupported_protocol"
-    },
-    {
-      "id": 1336,
-      "kind": "ws::send_failed"
-    },
-    {
-      "id": 1337,
-      "kind": "ws::invalid_close"
-    },
-    {
-      "id": 1338,
-      "kind": "ws::limit_exceeded"
-    },
-    {
-      "id": 1339,
-      "kind": "ws::invalid_url"
-    },
-    {
-      "id": 1340,
-      "kind": "ws::invalid_protocol"
-    },
-    {
-      "id": 1341,
-      "kind": "cookie::invalid_cookie"
-    },
-    {
-      "id": 1342,
-      "kind": "csrf::invalid_config"
-    },
-    {
-      "id": 1343,
-      "kind": "s3::invalid_config"
-    },
-    {
-      "id": 1344,
-      "kind": "s3::missing_key"
-    },
-    {
-      "id": 1345,
-      "kind": "s3::access_denied"
-    },
-    {
-      "id": 1346,
-      "kind": "s3::service_error"
-    },
-    {
-      "id": 1347,
-      "kind": "s3::upload_closed"
-    },
-    {
-      "id": 1348,
-      "kind": "s3::over_limit"
-    },
-    {
-      "id": 1349,
-      "kind": "markdown::over_limit"
-    }
+    "all_failed",
+    "number::inexact",
+    "text::invalid_number",
+    "text::invalid_bool",
+    "number::invalid_bool",
+    "text::empty_separator",
+    "text::empty_pattern",
+    "text::invalid_unicode",
+    "collections::key_absent",
+    "collections::key_exists",
+    "number::zero_divisor",
+    "checks::failed",
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+    "ai::invalid_question",
+    "ai::invalid_answer",
+    "llm::refused",
+    "llm::truncated",
+    "llm::invalid_response",
+    "io::read_failed",
+    "io::write_failed",
+    "io::limit_exceeded",
+    "html::invalid_structure",
+    "html::invalid_url",
+    "htmx::invalid_target",
+    "htmx::invalid_interval",
+    "http::invalid_route",
+    "http::duplicate_route",
+    "http::ambiguous_route",
+    "http::invalid_server_config",
+    "http::bind_failed",
+    "http::shutdown_failed",
+    "sql::connection_failed",
+    "sql::query_failed",
+    "sql::row_missing",
+    "sql::row_count",
+    "sql::schema_mismatch",
+    "sql::constraint_failed",
+    "sql::transaction_failed",
+    "sql::commit_unknown",
+    "sql::close_failed",
+    "sql::row_limit",
+    "sql::unsupported_value",
+    "clock::invalid_duration",
+    "random::invalid_length",
+    "env::invalid_name",
+    "log::write_failed",
+    "files::not_found",
+    "files::denied",
+    "files::already_exists",
+    "files::invalid_path",
+    "files::io_error",
+    "files::limit_exceeded",
+    "files::not_empty",
+    "files::cross_device",
+    "files::unexpected_kind",
+    "process::spawn_failed",
+    "process::timeout",
+    "process::output_limit",
+    "process::nonzero",
+    "process::invalid_config",
+    "process::io_error",
+    "stream::read_failed",
+    "stream::write_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+    "password::cost_rejected",
+    "password::invalid_hash",
+    "crypto::invalid_key",
+    "crypto::invalid_nonce",
+    "crypto::key_misuse",
+    "crypto::decrypt_failed",
+    "url::invalid_url",
+    "text::invalid_regex",
+    "text::invalid_limit",
+    "time::out_of_range",
+    "time::invalid_zone",
+    "time::nonexistent_time",
+    "time::invalid_option",
+    "ws::connect_failed",
+    "ws::upgrade_failed",
+    "ws::unsupported_protocol",
+    "ws::send_failed",
+    "ws::invalid_close",
+    "ws::limit_exceeded",
+    "ws::invalid_url",
+    "ws::invalid_protocol",
+    "cookie::invalid_cookie",
+    "csrf::invalid_config",
+    "s3::invalid_config",
+    "s3::missing_key",
+    "s3::access_denied",
+    "s3::service_error",
+    "s3::upload_closed",
+    "s3::over_limit",
+    "markdown::over_limit"
   ],
   "retired": []
 }

@@ -64,7 +64,7 @@ func (c *Catalogue) generatedFiles() (map[string][]byte, error) {
 		fmt.Fprintf(&goCode, "const Type%s = %q\n", goName(t.Name), t.Name)
 	}
 	for _, e := range c.inventory.Errors {
-		fmt.Fprintf(&goCode, "const Error%sID = %d\nconst Error%sName = %q\nconst Error%sIdentity = %q\n", goName(e.Name), e.ID, goName(e.Name), e.Name, goName(e.Name), e.Identity)
+		fmt.Fprintf(&goCode, "const Error%sName = %q\nconst Error%sIdentity = %q\n", goName(e.Name), e.Name, goName(e.Name), e.Identity)
 	}
 	for _, op := range c.inventory.Operations {
 		fmt.Fprintf(&goCode, "const Op%s = %q\n", goName(op.Name), op.Name)
@@ -103,9 +103,9 @@ func (c *Catalogue) generatedFiles() (map[string][]byte, error) {
 		}
 		fmt.Fprintf(&doc, "| %s | %s | %s | %s | %t |\n", t.Name, t.Kind, parameterText(t.Parameters), shape, t.Constructible)
 	}
-	doc.WriteString("\n## Domain errors\n\n| ID | Kind | Parameters | Ordered payload |\n| --- | --- | --- | --- |\n")
+	doc.WriteString("\n## Domain errors\n\n| Kind | Identity | Parameters | Ordered payload |\n| --- | --- | --- | --- | --- |\n")
 	for _, e := range c.inventory.Errors {
-		fmt.Fprintf(&doc, "| %d | %s | %s | %s |\n", e.ID, e.Name, parameterText(e.Parameters), fieldText(e.Fields))
+		fmt.Fprintf(&doc, "| %s | %s | %s | %s |\n", e.Name, e.Identity, parameterText(e.Parameters), fieldText(e.Fields))
 	}
 	doc.WriteString("\n## Operations\n\nCallbacks have exact ordered input/result types. Derived means the bound is\nthe actual callback's finite domain error set; it is not authored effect syntax.\nReal assertions run computation; supplied requires a boundary fixture;\nscoped combines real adapter computation with fixture-owned opaque handles or\ncallbacks. Later assertion work must enforce those rules before side effects.\n\n| Operation | Receiver; inputs → result | Domain bound | Callback contracts | Native mapping | Adapter contract | Assertion | Task / references |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n")
 	for _, op := range c.inventory.Operations {
@@ -142,16 +142,12 @@ func (c *Catalogue) generatedFiles() (map[string][]byte, error) {
 		fmt.Fprintf(&doc, "| %s | %s | %s | %s | %s |\n", n.Name, strings.Join(n.Emits, ", "), strings.Join(conditions, "; "), strings.Join(n.UnionBounds, ", "), n.Task)
 	}
 	doc.WriteString("\nStandard failure categories: " + strings.Join(c.inventory.StandardFailures, ", ") + ".\n\nProperty descriptors (array.length, str.length, bytes.length) require no\ncall marker. Method descriptor names such as array.map are internal lookup\nkeys, not new reserved source packages. Package names cli and json remain\nreserved even though this slice declares no callable members in them.\n")
-	type entry struct {
-		ID   int    `json:"id"`
-		Kind string `json:"kind"`
-	}
 	registry := struct {
-		Active  []entry `json:"active"`
-		Retired []int   `json:"retired"`
-	}{Active: []entry{}, Retired: []int{}}
+		Active  []string `json:"active"`
+		Retired []string `json:"retired"`
+	}{Active: []string{}, Retired: []string{}}
 	for _, e := range c.inventory.Errors {
-		registry.Active = append(registry.Active, entry{ID: e.ID, Kind: e.Name})
+		registry.Active = append(registry.Active, e.Name)
 	}
 	registryBytes, err := json.MarshalIndent(registry, "", "  ")
 	if err != nil {

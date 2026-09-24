@@ -51,7 +51,7 @@ const fieldNames: Record<string, string[]> = {
 };
 const declarations = catalogue.errors
   .filter((e) => fieldNames[e.name] !== undefined)
-  .map((e) => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
+  .map((e) => ({ identity: e.identity, name: e.name, parameters: 0 }));
 const intShape: FailureShape = {
   identity: identity("primitive", "int"),
   kind: "primitive",
@@ -566,7 +566,7 @@ import {createResponses} from ${JSON.stringify(join(childRuntime, "platform/http
 const identity=(kind,declaration)=>createHash("sha256").update("can-concrete-type-v1\\0"+JSON.stringify([kind,declaration])).digest("hex");
 const textShape={identity:identity("primitive","str"),kind:"primitive",declaration:"str",arguments:[],fields:[],leaves:[],inputs:[],errors:[]};
 const wanted=new Set(${JSON.stringify(errors)});
-const declarations=catalogue.errors.filter(e=>wanted.has(e.name)).map(e=>({identity:e.identity,name:e.name,id:e.id,parameters:0}));
+const declarations=catalogue.errors.filter(e=>wanted.has(e.name)).map(e=>({identity:e.identity,name:e.name,parameters:0}));
 const lookup=Object.fromEntries(catalogue.errors.filter(e=>wanted.has(e.name)).map(e=>[e.name,e.fields.map(f=>f.name)]));
 const shapes=declarations.map(e=>({identity:identity("error",e.identity),kind:"error",declaration:e.identity,arguments:[],fields:lookup[e.name].map(name=>({name,type:textShape.identity})),leaves:[],inputs:[],errors:[]}));
 const domain=createDomainRuntime({declarations,shapes:[textShape,...shapes]});
@@ -932,7 +932,7 @@ test("dropped connections abort live reads", async () => {
             if (second.kind === "domain") {
               const details = domainFailureDiagnostics(second.value);
               observed +=
-                "failed:" + details.declaration.id + ":" + JSON.stringify(details.payload);
+                "failed:" + details.declaration.name + ":" + JSON.stringify(details.payload);
             } else observed += "unexpected:" + second.kind;
             await reads.closeReader(reader);
             return textResult("done");
@@ -966,5 +966,5 @@ test("dropped connections abort live reads", async () => {
   });
   expect(owned.cleanupFailed).toBe(false);
   expect(owned.completion.kind).toBe("ok");
-  expect(observed).toBe('ab:failed:1316:{"reason":"aborted"}');
+  expect(observed).toBe('ab:failed:stream::read_failed:{"reason":"aborted"}');
 });

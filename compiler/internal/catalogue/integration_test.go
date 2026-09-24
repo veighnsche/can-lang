@@ -70,7 +70,7 @@ func TestPackagedCatalogueBoundary(t *testing.T) {
 	if report.SchemaVersion != 1 || report.Kind != "can.catalogue-conformance" || report.Hash != SourceHash() || len(report.Checks) != 9 || !reflect.DeepEqual(report.Occurrence, input) {
 		t.Fatalf("Go/TS boundary mismatch: %s", output)
 	}
-	t.Logf("packaged Bun %s; native network denied; %d runtime checks; error ID %d, nominal identity, payload and occurrence retained; source %s", distribution.PinnedTarget().Runtime.Version, len(report.Checks), identity.ID, report.Hash)
+	t.Logf("packaged Bun %s; native network denied; %d runtime checks; error %s, nominal identity, payload and occurrence retained; source %s", distribution.PinnedTarget().Runtime.Version, len(report.Checks), identity.Identity, report.Hash)
 }
 
 // TestCatalogueInclusionInventory is the I43 machine-checked inclusion

@@ -40,7 +40,18 @@ const shape = (
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
 const declarations = catalogue.errors.filter((e) =>
-  [1300, 1301, 1303, 1304, 1305, 1308, 1316, 1317, 1318, 1319].includes(e.id),
+  [
+    "files::not_found",
+    "files::denied",
+    "files::invalid_path",
+    "files::io_error",
+    "files::limit_exceeded",
+    "files::unexpected_kind",
+    "stream::read_failed",
+    "stream::write_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+  ].includes(e.name),
 );
 const errors = declarations.map((e) =>
   shape(
@@ -59,9 +70,9 @@ const failOf = (result: Completion) => {
   if (result.kind !== "domain") throw Error("expected domain");
   return domainFailureDiagnostics(result.value);
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   const d = failOf(result);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 const reads = createStreamReads(domain, {
@@ -176,7 +187,7 @@ test("lines frame CRLF, trailing segments and split UTF-8; malformed input fails
     await runOwnedRoot(async () => {
       const opened = await files.readLinesStream(bad, 64n);
       if (opened.kind !== "ok") throw Error("open failed");
-      check(await reads.readMany(opened.value, 4n), 1316, { reason: "utf8" });
+      check(await reads.readMany(opened.value, 4n), "stream::read_failed", { reason: "utf8" });
       expect(await reads.closeReader(opened.value)).toEqual(success(undefined));
       return success(undefined);
     });
@@ -190,7 +201,7 @@ test("line over cap reports limit_exceeded once and ends the reader", async () =
       const opened = await files.readLinesStream(file, 4n);
       if (opened.kind !== "ok") throw Error("open failed");
       const reader = opened.value;
-      check(await reads.readMany(reader, 4n), 1305, { limit: 4n });
+      check(await reads.readMany(reader, 4n), "files::limit_exceeded", { limit: 4n });
       let thrown: unknown;
       try {
         await reads.readMany(reader, 4n);
@@ -230,7 +241,7 @@ test("cancel during a pending read reports cancelled and delivers nothing", asyn
     release();
     return pending;
   });
-  check(out.completion, 1318, { reason: "deadline" });
+  check(out.completion, "stream::cancelled", { reason: "deadline" });
 });
 test("close twice, use-after-close and foreign handles throw resource-state", async () => {
   await runOwnedRoot(async () => {
@@ -298,7 +309,7 @@ test("native read failure reports once; close still succeeds; end is sticky", as
       fail,
       identity("can.std.stream@1::close_failed"),
     );
-    check(await reads.readMany(token, 4n), 1316, { reason: "EIO" });
+    check(await reads.readMany(token, 4n), "stream::read_failed", { reason: "EIO" });
     let thrown: unknown;
     try {
       await reads.readMany(token, 4n);
@@ -351,7 +362,7 @@ test("data then error delivers data first, then fails", async () => {
     const first = await reads.readMany(token, 1n);
     if (first.kind !== "ok") throw Error();
     expect(dataArray(first.value).map(bytesOf)).toEqual([[3]]);
-    check(await reads.readMany(token, 1n), 1316, { reason: "EIO" });
+    check(await reads.readMany(token, 1n), "stream::read_failed", { reason: "EIO" });
     expect(await reads.closeReader(token)).toEqual(success(undefined));
     return success(undefined);
   });
@@ -417,23 +428,31 @@ test("short writes report partial counts; failing ends report close_failed", asy
   };
   await runOwnedRoot(async () => {
     const writer = registerSink(badEnd, fail, identity("can.std.stream@1::close_failed"));
-    check(await writes.closeWriter(writer), 1319, { reason: "close" });
+    check(await writes.closeWriter(writer), "stream::close_failed", { reason: "close" });
     return success(undefined);
   });
 });
 test("open failures attribute acquisition; writers truncate at open", async () => {
   await withTemp(async (root) => {
     await runOwnedRoot(async () => {
-      check(await files.readStream(join(root, "missing.bin"), 8n), 1300, {
+      check(await files.readStream(join(root, "missing.bin"), 8n), "files::not_found", {
         path: join(root, "missing.bin"),
       });
-      check(await files.readStream(root, 8n), 1308, { path: root, operation: "open" });
-      check(await files.readStream(join(root, "x"), 0n), 1305, { limit: 0n });
-      check(await files.readLinesStream(join(root, "x"), -2n), 1305, { limit: -2n });
-      check(await files.writeStream(join(root, "nope", "f.bin")), 1300, {
+      check(await files.readStream(root, 8n), "files::unexpected_kind", {
+        path: root,
+        operation: "open",
+      });
+      check(await files.readStream(join(root, "x"), 0n), "files::limit_exceeded", { limit: 0n });
+      check(await files.readLinesStream(join(root, "x"), -2n), "files::limit_exceeded", {
+        limit: -2n,
+      });
+      check(await files.writeStream(join(root, "nope", "f.bin")), "files::not_found", {
         path: join(root, "nope", "f.bin"),
       });
-      check(await files.writeStream(root), 1308, { path: root, operation: "open" });
+      check(await files.writeStream(root), "files::unexpected_kind", {
+        path: root,
+        operation: "open",
+      });
       return success(undefined);
     });
     const file = join(root, "trunc.bin");

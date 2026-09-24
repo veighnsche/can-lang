@@ -280,7 +280,7 @@ func (f *formatter) render(file *File) {
 			for i, field := range n.Fields {
 				fields[i] = formatField(field)
 			}
-			f.line(0, "error "+n.ID.Text+" "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")", n.DeclSpan().Start)
+			f.line(0, "error "+n.Name.Text+formatParameters(n.Parameters)+"("+strings.Join(fields, ", ")+")", n.DeclSpan().Start)
 		case *ValueDecl:
 			f.binding(0, n.Binding)
 		case *FixtureDecl:

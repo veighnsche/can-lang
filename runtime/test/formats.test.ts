@@ -33,7 +33,14 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const decls = catalogue.errors.filter((e) => [1110, 1316, 1318, 1319].includes(e.id));
+const decls = catalogue.errors.filter((e) =>
+  [
+    "codec::invalid_data",
+    "stream::read_failed",
+    "stream::cancelled",
+    "stream::close_failed",
+  ].includes(e.name),
+);
 const declarations = decls.map((e) => ({ ...e, parameters: 0 }));
 const errors = decls.map((e) =>
   shape(
@@ -49,9 +56,9 @@ const failOf = (result: Completion) => {
   if (result.kind !== "domain") throw Error("expected domain");
   return domainFailureDiagnostics(result.value);
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   const d = failOf(result);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 const origin = { source: "test:formats", start: 0, end: 0, invocation: [] };
@@ -161,21 +168,24 @@ test("toml decodes typed configuration and fails its native violations", async (
   expect(dataArray(out.server.ports)).toEqual([80n, 443n]);
   check(
     await c.decodeToml(from('title = "t"\n[server]\nhost = "h"\nports = [80, 9007199254740993]\n')),
-    1110,
+    "codec::invalid_data",
     { path: "", reason: "invalid_toml" },
   );
   check(
     await c.decodeToml(from('title = "a"\ntitle = "b"\n[server]\nhost = "h"\nports = []\n')),
-    1110,
+    "codec::invalid_data",
     { path: "", reason: "invalid_toml" },
   );
-  check(await c.decodeToml(from("[1,2]")), 1110, { path: "", reason: "invalid_toml" });
+  check(await c.decodeToml(from("[1,2]")), "codec::invalid_data", {
+    path: "",
+    reason: "invalid_toml",
+  });
   const f = createCodec(schema("float"), domain, {
     invalidData: identity("can.std.codec@1::invalid_data"),
     readFailed: identity("can.std.stream@1::read_failed"),
     cancelled: identity("can.std.stream@1::cancelled"),
   });
-  check(await f.decodeToml(from("a = nan")), 1110, { path: "", reason: "type" });
+  check(await f.decodeToml(from("a = nan")), "codec::invalid_data", { path: "", reason: "type" });
   const d = createCodec(
     schema("d", [
       { identity: "d", kind: "record", name: "t::d", fields: [{ name: "d", type: "str" }] },
@@ -187,7 +197,10 @@ test("toml decodes typed configuration and fails its native violations", async (
       cancelled: identity("can.std.stream@1::cancelled"),
     },
   );
-  check(await d.decodeToml(from("d = 2024-01-02")), 1110, { path: "/d", reason: "type" });
+  check(await d.decodeToml(from("d = 2024-01-02")), "codec::invalid_data", {
+    path: "/d",
+    reason: "type",
+  });
 });
 
 test("yaml projects core scalars and pins rounding, sharing and cycles", async () => {
@@ -198,7 +211,7 @@ test("yaml projects core scalars and pins rounding, sharing and cycles", async (
   // is itself not a safe integer, so projection fails closed. No rounded
   // value can land back inside the safe range (no representable double
   // sits between MAX_SAFE_INTEGER and 2^53), so integers stay exact.
-  check(await codec.decodeYaml(from('name: "r"\nn: 9007199254740993\n')), 1110, {
+  check(await codec.decodeYaml(from('name: "r"\nn: 9007199254740993\n')), "codec::invalid_data", {
     path: "/n",
     reason: "integer_token",
   });
@@ -266,7 +279,10 @@ test("yaml projects core scalars and pins rounding, sharing and cycles", async (
       cancelled: identity("can.std.stream@1::cancelled"),
     },
   );
-  check(await loop.decodeYaml(from("b: &x\n  b: *x\n")), 1110, { path: "/b/b", reason: "cycle" });
+  check(await loop.decodeYaml(from("b: &x\n  b: *x\n")), "codec::invalid_data", {
+    path: "/b/b",
+    reason: "cycle",
+  });
   // Multi-document streams project against array schemas.
   const rows = createCodec(
     schema("rows", [{ identity: "rows", kind: "array", name: "t::row[]", element: "row" }, row]),
@@ -287,7 +303,7 @@ test("json5 accepts extensions and pins rounding and duplicates", async () => {
   expect(out.n).toBe(7n);
   const single = value(await codec.decodeJson5(from("{name: 'q', n: 1}"))) as any;
   expect(single.name).toBe("q");
-  check(await codec.decodeJson5(from('{name: "r", n: 9007199254740993}')), 1110, {
+  check(await codec.decodeJson5(from('{name: "r", n: 9007199254740993}')), "codec::invalid_data", {
     path: "/n",
     reason: "integer_token",
   });
@@ -295,7 +311,7 @@ test("json5 accepts extensions and pins rounding and duplicates", async () => {
   expect(edge.n).toBe(9007199254740991n);
   const dup = value(await codec.decodeJson5(from('{name: "a", name: "b", n: 1}'))) as any;
   expect(dup.name).toBe("b");
-  check(await codec.decodeJson5(from('{name: "a", n:}')), 1110, {
+  check(await codec.decodeJson5(from('{name: "a", n:}')), "codec::invalid_data", {
     path: "",
     reason: "invalid_json5",
   });
@@ -316,27 +332,39 @@ test("jsonl bounded decode is exact and strict", async () => {
   expect(dataArray(framed).length).toBe(2);
   expect(dataArray(value(await codec.decodeJsonl(from(""))) as unknown).length).toBe(0);
   // Multi-line records, trailing garbage and truncation fail loudly.
-  check(await codec.decodeJsonl(from('{\n"name": "a", "n": 1\n}\n')), 1110, {
+  check(await codec.decodeJsonl(from('{\n"name": "a", "n": 1\n}\n')), "codec::invalid_data", {
     path: "/0",
     reason: "invalid_json",
   });
-  check(await codec.decodeJsonl(from('{"name":"a","n":1}\nng\n')), 1110, {
+  check(await codec.decodeJsonl(from('{"name":"a","n":1}\nng\n')), "codec::invalid_data", {
     path: "/1",
     reason: "invalid_json",
   });
-  check(await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":')), 1110, {
-    path: "/1",
-    reason: "invalid_json",
-  });
+  check(
+    await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":')),
+    "codec::invalid_data",
+    {
+      path: "/1",
+      reason: "invalid_json",
+    },
+  );
   // Record faults carry the record index.
-  check(await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":1,"n":2}\n')), 1110, {
-    path: "/1/n",
-    reason: "duplicate_member",
-  });
-  check(await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":"x"}\n')), 1110, {
-    path: "/1/n",
-    reason: "type",
-  });
+  check(
+    await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":1,"n":2}\n')),
+    "codec::invalid_data",
+    {
+      path: "/1/n",
+      reason: "duplicate_member",
+    },
+  );
+  check(
+    await codec.decodeJsonl(from('{"name":"a","n":1}\n{"name":"b","n":"x"}\n')),
+    "codec::invalid_data",
+    {
+      path: "/1/n",
+      reason: "type",
+    },
+  );
 });
 
 test("consume matches bounded decode at every split point", async () => {
@@ -394,7 +422,7 @@ test("consume stops on cancellation, read failure and record faults", async () =
     while (!started) await Promise.resolve();
     value(await reads.cancelReader(cancellable, "test-done"));
     release();
-    check(await pending, 1318, { reason: "test-done" });
+    check(await pending, "stream::cancelled", { reason: "test-done" });
     expect(seen.length).toBe(0);
     const boom = new ReadableStream<Uint8Array>({
       pull() {
@@ -407,14 +435,16 @@ test("consume stops on cancellation, read failure and record faults", async () =
       identity("can.std.stream@1::close_failed"),
       { scopeManaged: true },
     );
-    check(await codec.consume(failing, handler([])), 1316, { reason: "reader_boom" });
+    check(await codec.consume(failing, handler([])), "stream::read_failed", {
+      reason: "reader_boom",
+    });
     const partial: unknown[] = [];
     check(
       await codec.consume(
         byteReader([new TextEncoder().encode('{"name":"a","n":1}\n{"name":"b","n":"x"}\n')]),
         handler(partial),
       ),
-      1110,
+      "codec::invalid_data",
       { path: "/1/n", reason: "type" },
     );
     expect(partial.length).toBe(1);

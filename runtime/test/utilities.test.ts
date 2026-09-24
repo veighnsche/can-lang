@@ -30,7 +30,9 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const declarations = catalogue.errors.filter((e) => [1260, 1261, 1263].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  ["clock::invalid_duration", "random::invalid_length", "log::write_failed"].includes(e.name),
+);
 const errors = declarations.map((e) =>
   shape(
     "error",
@@ -45,11 +47,11 @@ const domain = createDomainRuntime({
 const clock = createClock(domain, errors[0]!.identity),
   random = createRandom(domain, errors[1]!.identity);
 const origin = { source: "test", start: 0, end: 0, invocation: [] };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 test("native clock units, monotonic observations and awaited sleep", async () => {
@@ -64,7 +66,7 @@ test("native clock units, monotonic observations and awaited sleep", async () =>
   expect(end - start).toBeGreaterThanOrEqual(5);
   expect(await clock.sleepMillis(0n)).toEqual(success(undefined));
   for (const n of [-1n, 2147483648n, 10n ** 100n])
-    check(await clock.sleepMillis(n), 1260, { milliseconds: n });
+    check(await clock.sleepMillis(n), "clock::invalid_duration", { milliseconds: n });
 });
 test("secure random bounds, immutable bytes and UUID version", async () => {
   for (const n of [0n, 1n, 65536n]) {
@@ -77,7 +79,7 @@ test("secure random bounds, immutable bytes and UUID version", async () => {
     expect(copyBytes(bytes, origin)).toEqual(second);
   }
   for (const n of [-1n, 65537n, 10n ** 100n])
-    check(await random.secureBytes(n), 1261, { length: n });
+    check(await random.secureBytes(n), "random::invalid_length", { length: n });
   for (let i = 0; i < 10; i++)
     expect(value(await random.uuidV4())).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
@@ -146,7 +148,7 @@ test("log serialization and expected I/O failures disclose only level", async ()
         throw Object.assign(new Error("private native path"), { code: "EPIPE" });
       },
     });
-    check(await log.writeError("private message"), 1263, { level: "error" });
+    check(await log.writeError("private message"), "log::write_failed", { level: "error" });
     const reports: string[] = [];
     expect(
       await runEntry(
@@ -159,7 +161,7 @@ test("log serialization and expected I/O failures disclose only level", async ()
       ),
     ).toBe(1);
     expect(reports).toHaveLength(1);
-    expect(reports[0]).toContain('"id":1263');
+    expect(reports[0]).toContain('"identity":"can.error.v2:can.std.log@1::write_failed"');
     expect(reports[0]).not.toContain("private");
   }
   const log = createLog(domain, errors[2]!.identity, {

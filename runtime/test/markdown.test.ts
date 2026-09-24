@@ -26,7 +26,9 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const declarations = catalogue.errors.filter((e) => [1220, 1221, 1349].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  ["html::invalid_structure", "html::invalid_url", "markdown::over_limit"].includes(e.name),
+);
 const errors = declarations.map((e) =>
   shape(
     "error",
@@ -44,10 +46,10 @@ const md = createMarkdown(domain, {
   htmlStructure: identity("can.std.html@1::invalid_structure"),
   htmlURL: identity("can.std.html@1::invalid_url"),
 });
-function check(result: Completion, id: number) {
+function check(result: Completion, name: string) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error();
-  expect(domainFailureDiagnostics(result.value).declaration.id).toBe(id);
+  expect(domainFailureDiagnostics(result.value).declaration.name).toBe(name);
 }
 const failPayload = (result: Completion) => {
   expect(result.kind).toBe("domain");
@@ -125,10 +127,10 @@ test("links and images enforce the strict URL policy", async () => {
     ["//evil.test", "syntax"],
   ]) {
     const result = await md.renderSafe(`[t](${href})\n`);
-    check(result, 1221);
+    check(result, "html::invalid_url");
     expect(dataProperty(failPayload(result), "reason")).toBe(reason);
   }
-  check(await md.renderSafe("![empty]()\n"), 1221);
+  check(await md.renderSafe("![empty]()\n"), "html::invalid_url");
 });
 test("raw HTML degrades to escaped text, never markup", async () => {
   const out = await safe(
@@ -167,17 +169,17 @@ test("render_text_html preserves native output as an ordinary string", async () 
 test("budgets cap input, output and node count", async () => {
   const big = "x".repeat(8_388_608 + 1);
   const over = await md.renderSafe(big);
-  check(over, 1349);
+  check(over, "markdown::over_limit");
   expect(failPayload(over)).toMatchObject({ limit: 8388608n, size: 8388609n });
   const overText = await md.renderTextHTML(big);
-  check(overText, 1349);
+  check(overText, "markdown::over_limit");
   const fat = "x".repeat(8_388_608);
   const outOver = await md.renderSafe(fat);
-  check(outOver, 1349);
+  check(outOver, "markdown::over_limit");
   expect(failPayload(outOver)).toMatchObject({ limit: 8388608n, size: 8388615n });
   const many = "# a\n".repeat(1_000_001);
   const nodeOver = await md.renderSafe(many);
-  check(nodeOver, 1349);
+  check(nodeOver, "markdown::over_limit");
   expect(failPayload(nodeOver)).toMatchObject({ limit: 1000000n, size: 1000000n });
   const ok = value(await md.renderTextHTML("# a\n"));
   expect(ok).toBe("<h1>a</h1>\n");

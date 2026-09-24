@@ -32,9 +32,7 @@ const error: FailureShape = {
   errors: [],
 };
 const domain = createDomainRuntime({
-  declarations: [
-    { identity: declaration.identity, name: declaration.name, id: declaration.id, parameters: 0 },
-  ],
+  declarations: [{ identity: declaration.identity, name: declaration.name, parameters: 0 }],
   shapes: [text, error],
 });
 const api = createBytes(domain, error.identity);
@@ -43,7 +41,7 @@ function invalid(completion: Completion, path: string, reason: string) {
   expect(completion.kind).toBe("domain");
   if (completion.kind !== "domain") throw new Error("expected domain failure");
   const details = domainFailureDiagnostics(completion.value);
-  expect(details.declaration.id).toBe(1110);
+  expect(details.declaration.name).toBe("codec::invalid_data");
   expect(details.payload).toMatchObject({ path, reason });
 }
 

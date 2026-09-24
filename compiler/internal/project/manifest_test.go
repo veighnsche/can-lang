@@ -110,16 +110,25 @@ func TestRealpathConfinement(t *testing.T) {
 }
 
 func TestRegistryAndLockExactContracts(t *testing.T) {
-	registry := `{"active":[{"id":1000000,"kind":"app::failed"}],"retired":[1000001]}`
+	registry := `{"active":["app::failed"],"retired":["app::legacy"],"predecessors":{"app::failed":["app::legacy"]}}`
 	r, err := ParseRegistry([]byte(registry))
-	if err != nil || len(r.Active) != 1 {
+	if err != nil || len(r.Active) != 1 || len(r.Predecessors) != 1 {
 		t.Fatalf("%+v %v", r, err)
 	}
+	if _, err := ParseRegistry([]byte(`{"active":["app::failed"],"retired":[]}`)); err != nil {
+		t.Fatalf("predecessors must be optional: %v", err)
+	}
 	for _, pair := range [][2]string{
-		{`1000000`, `999999`}, {`1000000`, `2147483648`}, {`1000000`, `1e6`}, {`1000000`, `1000000.0`},
-		{`"app::failed"`, `"app::failed<int>"`}, {`1000001`, `1000000`},
-		{`"retired":[1000001]`, `"retired":[1000002,1000001]`},
-		{`"kind":`, `"extra":true,"kind":`},
+		{`"app::failed"`, `"app::failed<int>"`}, {`"app::failed"`, `1000000`},
+		{`"active":["app::failed"]`, `"active":["app::failed","app::failed"]`},
+		{`"retired":["app::legacy"]`, `"retired":["app::legacy","app::failed"]`},
+		{`"retired":["app::legacy"]`, `"retired":["app::legacy","app::legacy"]`},
+		{`"retired":["app::legacy"]`, `"retired":["app::legacy","app::abandoned"]`},
+		{`"predecessors":{"app::failed":["app::legacy"]}`, `"predecessors":{"app::missing":["app::legacy"]}`},
+		{`["app::legacy"]}`, `[]}`},
+		{`["app::legacy"]}`, `["app::legacy","app::legacy"]}`},
+		{`["app::legacy"]}`, `["app::failed"]}`},
+		{`"active":`, `"extra":true,"active":`},
 	} {
 		if _, err := ParseRegistry([]byte(strings.Replace(registry, pair[0], pair[1], 1))); err == nil {
 			t.Fatal(pair)

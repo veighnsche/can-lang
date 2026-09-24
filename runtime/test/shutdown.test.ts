@@ -71,7 +71,7 @@ const fieldNames: Record<string, string[]> = {
 };
 const declarations = catalogue.errors
   .filter((e) => fieldNames[e.name] !== undefined)
-  .map((e) => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
+  .map((e) => ({ identity: e.identity, name: e.name, parameters: 0 }));
 const fieldKinds = new Map(
   catalogue.errors.flatMap((e) => e.fields.map((f) => [e.name + ":" + f.name, f.type])),
 );

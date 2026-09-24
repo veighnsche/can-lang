@@ -43,8 +43,19 @@ const headers: FailureShape = {
   identity: hash(["array", "", header.identity]),
   element: header.identity,
 };
-const declarations = catalogue.errors.filter(
-  (e) => (e.id >= 1100 && e.id <= 1106) || e.id === 1110 || e.id === 1120 || e.id === 1121,
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "http::invalid_request",
+    "http::credentials_missing",
+    "http::transport_failed",
+    "http::timeout",
+    "http::body_limit",
+    "http::status_error",
+    "http::request_failed",
+    "codec::invalid_data",
+    "ai::invalid_question",
+    "ai::invalid_answer",
+  ].includes(e.name),
 );
 const detailIdentity = hash(["variant", "can.std.http@1::failure_detail"]);
 const errors = declarations.map((d) =>
@@ -71,7 +82,12 @@ const detail: FailureShape = {
   fields: [],
   arguments: [],
   leaves: errors
-    .filter((_, i) => declarations[i].id !== 1106 && declarations[i].id < 1120)
+    .filter(
+      (_, i) =>
+        !["http::request_failed", "ai::invalid_question", "ai::invalid_answer"].includes(
+          declarations[i].name,
+        ),
+    )
     .map((e) => e.identity),
   inputs: [],
   errors: [],
@@ -118,18 +134,18 @@ const connection = {
   headers: [],
   bearerEnvironment: "TOKEN",
 };
-function check(result: Completion, id: number, payload: object) {
+function check(result: Completion, name: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(id);
+  expect(d.declaration.name).toBe(name);
   expect(d.payload).toMatchObject(payload);
 }
 function checkDetail(result: Completion, leaf: string, payload: object) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain");
   const d = domainFailureDiagnostics(result.value);
-  expect(d.declaration.id).toBe(1106);
+  expect(d.declaration.name).toBe("http::request_failed");
   expect(d.provenance.boundary).toBe("native");
   const detail = dataProperty(d.payload, "detail");
   expect(recordIdentity(detail)).toBe(leaf);
@@ -178,7 +194,7 @@ test("Noul sends one exact POST and reads credentials only after all input admis
           origin,
           "test:ai/judge",
         ),
-        1120,
+        "ai::invalid_question",
         { reason: "instructions" },
       );
       checkDetail(
@@ -264,7 +280,7 @@ test("Noul malformed responses stay distinct from status failures without retry"
       reply = '{"model":"resolved","answers":{}}';
       check(
         await api.ask(c, "jev-latest", schema, state, [question], origin, "test:ai/judge"),
-        1121,
+        "ai::invalid_answer",
         { question: "", reason: "question_ids" },
       );
       reply =
@@ -279,7 +295,7 @@ test("Noul malformed responses stay distinct from status failures without retry"
           origin,
           "test:ai/judge",
         ),
-        1121,
+        "ai::invalid_answer",
         { question: "q1", reason: "probability" },
       );
       for (const code of [401, 422, 429, 529]) {

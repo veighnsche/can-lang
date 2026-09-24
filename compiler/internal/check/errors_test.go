@@ -22,18 +22,13 @@ import (
 
 func errorFixture(t *testing.T) (*resolve.World, *check.ErrorRegistry, map[string]*types.Type) {
 	t.Helper()
-	return errorFixtureID(t, "1000000")
-}
-
-func errorFixtureID(t *testing.T, spelling string) (*resolve.World, *check.ErrorRegistry, map[string]*types.Type) {
-	t.Helper()
 	root := t.TempDir()
 	var packages []string
 	for _, p := range catalogue.Builtin().Inventory().Packages {
 		packages = append(packages, p.Name)
 	}
-	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror " + spelling + " failed<item>(item value)\nerror 1000001 nested(option::value<int> value)\nvariant failure\n    failed<int>\n    standard_failure\n"
-	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":[{"id":1000000,"kind":"app::failed"},{"id":1000001,"kind":"app::nested"}],"retired":[1000002]}`, "src/main.can": text} {
+	text := "package app\n    provides []\n    uses [" + strings.Join(packages, ", ") + "]\nerror failed<item>(item value)\nerror nested(option::value<int> value)\nvariant failure\n    failed<int>\n    standard_failure\n"
+	for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::failed","app::nested"],"retired":["app::legacy"]}`, "src/main.can": text} {
 		p := filepath.Join(root, name)
 		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
 			t.Fatal(err)
@@ -99,8 +94,11 @@ func TestExactErrorBoundsAndAllocation(t *testing.T) {
 	a := bound(t, r, ts["failed<int>"])
 	b := bound(t, r, ts["failed<str>"])
 	both := bound(t, r, ts["failed<int>"], ts["failed<str>"])
-	if a.Entries()[0].Declaration.ID != 1000000 || a.Entries()[0].Declaration.Identity != b.Entries()[0].Declaration.Identity || a.Entries()[0].TypeIdentity == b.Entries()[0].TypeIdentity {
-		t.Fatal("generic identity/allocation was lost")
+	if a.Entries()[0].Declaration.Identity != b.Entries()[0].Declaration.Identity || a.Entries()[0].TypeIdentity == b.Entries()[0].TypeIdentity {
+		t.Fatal("generic identity was lost")
+	}
+	if a.Entries()[0].Declaration.Name != "app::failed" {
+		t.Fatalf("qualified kind lost: %+v", a.Entries()[0].Declaration)
 	}
 	if err := both.CheckEscaping(a); err != nil {
 		t.Fatal(err)
@@ -141,42 +139,49 @@ func TestExactErrorBoundsAndAllocation(t *testing.T) {
 	}
 }
 
-func TestErrorAllocationIntegerSpellings(t *testing.T) {
-	var identity string
+func TestNumberedErrorDeclarationsRejected(t *testing.T) {
 	for _, spelling := range []string{"1000000", "0xf4240", "0b11110100001001000000", "0o3641100"} {
 		t.Run(spelling, func(t *testing.T) {
-			_, registry, ts := errorFixtureID(t, spelling)
-			entry := bound(t, registry, ts["failed<int>"]).Entries()[0]
-			if entry.Declaration.ID != 1000000 {
-				t.Fatalf("source spelling changed registry allocation: %+v", entry)
+			root := t.TempDir()
+			for name, data := range map[string]string{"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`, "can.errors.json": `{"active":["app::failed"],"retired":[]}`, "src/main.can": "package app\n    provides []\n    uses []\nerror " + spelling + " failed(item value)\n"} {
+				p := filepath.Join(root, name)
+				if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(p, []byte(data), 0600); err != nil {
+					t.Fatal(err)
+				}
 			}
-			if identity == "" {
-				identity = entry.TypeIdentity
-			} else if entry.TypeIdentity != identity {
-				t.Fatal("equivalent integer spelling changed concrete error identity")
+			if _, err := project.Load(root); err == nil {
+				t.Fatalf("numbered error %q admitted", spelling)
 			}
 		})
 	}
 }
 
 func TestErrorRegistryRejectsBrokenWorldAgreement(t *testing.T) {
-	for _, mode := range []string{"duplicate", "reserved", "mismatch", "missing", "retired", "owner"} {
+	for _, mode := range []string{"duplicate", "mismatch", "missing", "retired", "redeclare", "owner", "chain", "unchained"} {
 		t.Run(mode, func(t *testing.T) {
 			w, _, _ := errorFixture(t)
 			owner := w.Graph.Projects[""]
 			switch mode {
 			case "duplicate":
 				owner.Registry.Active = append(owner.Registry.Active, owner.Registry.Active[0])
-			case "reserved":
-				owner.Registry.Active[0].ID = 999999
 			case "mismatch":
-				owner.Registry.Active[0].ID = 1000099
+				owner.Registry.Active[0] = "app::renamed"
 			case "missing":
 				owner.Registry.Active = owner.Registry.Active[1:]
 			case "retired":
-				owner.Registry.Retired = append(owner.Registry.Retired, 1000000)
+				owner.Registry.Active = append(owner.Registry.Active, "app::legacy")
+			case "redeclare":
+				owner.Registry.Active = []string{"app::nested"}
+				owner.Registry.Retired = []string{"app::failed"}
 			case "owner":
-				owner.Registry.Active[0].Kind = "other::failed"
+				owner.Registry.Active[0] = "other::failed"
+			case "chain":
+				owner.Registry.Predecessors = map[string][]string{"app::failed": {"app::unknown"}}
+			case "unchained":
+				owner.Registry.Predecessors = map[string][]string{"app::missing": {"app::legacy"}}
 			}
 			if _, err := check.ErrorDeclarations(w); err == nil {
 				t.Fatal("broken allocation admitted")

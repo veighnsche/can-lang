@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
@@ -17,31 +16,25 @@ import (
 type ErrorDeclaration struct {
 	Identity   string `json:"identity"`
 	Name       string `json:"name"`
-	ID         uint64 `json:"id"`
 	Parameters int    `json:"parameters"`
 }
 type ErrorRegistry struct{ declarations map[string]ErrorDeclaration }
 
 // ErrorDeclarations consumes the manifest/lock/source agreement established by
-// project.Load, and binds each allocation to the resolver's declaration identity.
-// Rechecking the allocation/source association here prevents a registry entry
-// from being used as permission to emit a different declaration with that ID.
+// project.Load, and binds each qualified kind to the resolver's declaration
+// identity. Rechecking the kind/source association here prevents a registry
+// entry from being used as permission to emit a different declaration.
 func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 	registry := &ErrorRegistry{declarations: map[string]ErrorDeclaration{}}
-	ids := map[uint64]string{}
 	add := func(d ErrorDeclaration) error {
-		if prior := ids[d.ID]; prior != "" {
-			return fmt.Errorf("duplicate error allocation %d", d.ID)
-		}
 		if _, exists := registry.declarations[d.Identity]; exists {
 			return fmt.Errorf("duplicate error declaration %s", d.Identity)
 		}
-		ids[d.ID] = d.Identity
 		registry.declarations[d.Identity] = d
 		return nil
 	}
 	for _, d := range catalogue.Builtin().Inventory().Errors {
-		if err := add(ErrorDeclaration{d.Identity, d.Name, uint64(d.ID), len(d.Parameters)}); err != nil {
+		if err := add(ErrorDeclaration{d.Identity, d.Name, len(d.Parameters)}); err != nil {
 			return nil, err
 		}
 	}
@@ -52,17 +45,12 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 	sort.Strings(owners)
 	for _, key := range owners {
 		owner := world.Graph.Projects[key]
-		for _, retired := range owner.Registry.Retired {
-			if retired < 1000000 || retired > 2147483647 || ids[retired] != "" {
-				return nil, fmt.Errorf("invalid or reused retired error ID %d", retired)
-			}
-			ids[retired] = "retired"
+		if err := owner.Registry.Validate(); err != nil {
+			return nil, err
 		}
-		for _, allocation := range owner.Registry.Active {
-			if allocation.ID < 1000000 || allocation.ID > 2147483647 {
-				return nil, fmt.Errorf("project error allocation outside application range")
-			}
-			parts := strings.Split(allocation.Kind, "::")
+		live := map[string]string{}
+		for _, kind := range owner.Registry.Active {
+			parts := strings.Split(kind, "::")
 			if len(parts) != 2 {
 				return nil, fmt.Errorf("invalid allocated error name")
 			}
@@ -74,17 +62,26 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 			if symbol == nil || symbol.Kind != resolve.Error {
 				return nil, fmt.Errorf("error allocation lacks source declaration")
 			}
-			declaration, ok := symbol.Declaration.(*syntax.ErrorDecl)
-			if !ok {
+			if _, ok := symbol.Declaration.(*syntax.ErrorDecl); !ok {
 				return nil, fmt.Errorf("error allocation lacks error AST")
 			}
-			// Match project.Load's approved integer prefixes and C9's ID range.
-			id, err := strconv.ParseUint(declaration.ID.Text, 0, 31)
-			if err != nil || id != allocation.ID {
-				return nil, fmt.Errorf("error source/registry ID mismatch")
-			}
-			if err = add(ErrorDeclaration{symbol.ID, allocation.Kind, allocation.ID, len(symbol.Parameters)}); err != nil {
+			live[kind] = symbol.ID
+			if err := add(ErrorDeclaration{symbol.ID, kind, len(symbol.Parameters)}); err != nil {
 				return nil, err
+			}
+		}
+		for _, retired := range owner.Registry.Retired {
+			if live[retired] != "" {
+				return nil, fmt.Errorf("retired error %q is still active", retired)
+			}
+			parts := strings.Split(retired, "::")
+			if len(parts) != 2 {
+				return nil, fmt.Errorf("invalid retired error name")
+			}
+			if pkg := world.Packages[owner.ID+"/"+parts[0]]; pkg != nil && pkg.Source != nil && pkg.Source.Owner == owner {
+				if symbol := pkg.Scope.Symbols[parts[1]]; symbol != nil && symbol.Kind == resolve.Error {
+					return nil, fmt.Errorf("retired error %q is redeclared", retired)
+				}
 			}
 		}
 	}
@@ -107,7 +104,7 @@ func (r *ErrorRegistry) Declarations() []ErrorDeclaration {
 	for _, d := range r.declarations {
 		out = append(out, d)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i].ID < out[j].ID })
+	sort.Slice(out, func(i, j int) bool { return out[i].Identity < out[j].Identity })
 	return out
 }
 

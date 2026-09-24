@@ -220,7 +220,7 @@ func TestGraphRejectsStaleOrIncompleteLocks(t *testing.T) {
 			case "manifest":
 				writeFixture(t, root, "vendor/can.project.json", `{ "source_root":"src","error_registry":"can.errors.json" }`)
 			case "registry":
-				writeFixture(t, root, "vendor/can.errors.json", `{"active":[],"retired":[1000000]}`)
+				writeFixture(t, root, "vendor/can.errors.json", `{"active":[],"retired":["gamma::failed"]}`)
 			case "missing":
 				if err := os.Remove(filepath.Join(root, "can.lock.json")); err != nil {
 					t.Fatal(err)
@@ -286,20 +286,22 @@ func TestGraphRejectsPackageAndSourceAliases(t *testing.T) {
 	}
 }
 
-func TestGraphRegistrySourceAndGlobalAgreement(t *testing.T) {
+func TestGraphRegistrySourceAgreement(t *testing.T) {
 	root := t.TempDir()
 	projectFixture(t, root)
-	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error 1000000 failed()\n"))
-	writeFixture(t, root, "can.errors.json", `{"active":[{"kind":"alpha::failed","id":1000000}],"retired":[1000001]}`)
+	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed()\n"))
+	writeFixture(t, root, "can.errors.json", `{"active":["alpha::failed"],"retired":["alpha::legacy"]}`)
 	if _, err := Load(root); err != nil {
 		t.Fatal(err)
 	}
-	writeFixture(t, root, "vendor/can.errors.json", `{"active":[],"retired":[1000001]}`)
-	writeFixtureLock(t, root, map[string]string{"vendor": "vendor"})
-	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "claimed") {
-		t.Fatalf("global retired-ID conflict: %v", err)
+	// Retired names stay withdrawn per owner: redeclaring one fails even
+	// though no numeric allocation collides.
+	writeFixture(t, root, "src/a/shared.can", sourceText("alpha", "error failed()\nerror legacy()\n"))
+	writeFixture(t, root, "can.errors.json", `{"active":["alpha::failed","alpha::legacy"],"retired":["alpha::legacy"]}`)
+	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "still active") {
+		t.Fatalf("retired/active overlap admitted: %v", err)
 	}
-	writeFixture(t, root, "can.errors.json", `{"active":[],"retired":[]}`)
+	writeFixture(t, root, "can.errors.json", `{"active":["alpha::failed"],"retired":[]}`)
 	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "differs from source") {
 		t.Fatalf("source registry mismatch: %v", err)
 	}

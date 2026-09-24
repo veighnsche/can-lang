@@ -24,7 +24,14 @@ const shape = (
 });
 const str = shape("primitive", "str"),
   int = shape("primitive", "int");
-const declarations = catalogue.errors.filter((e) => [1220, 1221, 1222, 1223].includes(e.id));
+const declarations = catalogue.errors.filter((e) =>
+  [
+    "html::invalid_structure",
+    "html::invalid_url",
+    "htmx::invalid_target",
+    "htmx::invalid_interval",
+  ].includes(e.name),
+);
 const errors = declarations.map((e) =>
   shape(
     "error",
@@ -43,10 +50,10 @@ const html = createHTML(domain, {
   interval: errors[3]!.identity,
 });
 const origin = { source: "test", start: 0, end: 0, invocation: [] };
-function check(result: Completion, id: number) {
+function check(result: Completion, name: string) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error();
-  expect(domainFailureDiagnostics(result.value).declaration.id).toBe(id);
+  expect(domainFailureDiagnostics(result.value).declaration.name).toBe(name);
 }
 const tag = async (name: string) => value(await html.makeTag(name));
 const text = async (s: string) => value(await html.text(s));
@@ -82,7 +89,7 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     "svg",
     "x-tag",
   ])
-    check(await html.makeTag(name), 1220);
+    check(await html.makeTag(name), "html::invalid_structure");
   for (const name of [
     "onclick",
     "ONLOAD",
@@ -97,7 +104,7 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     "hx-on:click",
     "data-test",
   ])
-    check(await html.textAttribute(name, "value"), 1220);
+    check(await html.textAttribute(name, "value"), "html::invalid_structure");
   for (const [name, val] of [
     ["dir", "sideways"],
     ["hidden", "false"],
@@ -112,7 +119,7 @@ test("closed tags, attributes, enums and tag applicability", async () => {
     ["colspan", "1001"],
     ["rowspan", "65535"],
   ])
-    check(await html.textAttribute(name!, val!), 1220);
+    check(await html.textAttribute(name!, val!), "html::invalid_structure");
   for (const [name, val] of [
     ["dir", "rtl"],
     ["hidden", "until-found"],
@@ -124,14 +131,14 @@ test("closed tags, attributes, enums and tag applicability", async () => {
   ])
     expect((await html.textAttribute(name!, val!)).kind).toBe("ok");
   const checked = value(await html.textAttribute("checked", "checked"));
-  check(await html.element(await tag("div"), [checked], []), 1220);
+  check(await html.element(await tag("div"), [checked], []), "html::invalid_structure");
   check(
     await html.element(
       await tag("button"),
       [value(await html.textAttribute("type", "password"))],
       [],
     ),
-    1220,
+    "html::invalid_structure",
   );
   expect(
     (
@@ -148,12 +155,12 @@ test("closed tags, attributes, enums and tag applicability", async () => {
       [value(await html.textAttribute("id", "a")), value(await html.textAttribute("ID", "b"))],
       [],
     ),
-    1220,
+    "html::invalid_structure",
   );
 });
 test("child categories, table order, pairs and descendant nesting", async () => {
   for (const name of ["input", "br", "hr", "img"])
-    check(await html.element(await tag(name), [], [await text("x")]), 1220);
+    check(await html.element(await tag(name), [], [await text("x")]), "html::invalid_structure");
   for (const [parent, child] of [
     ["ul", "li"],
     ["ol", "li"],
@@ -164,20 +171,20 @@ test("child categories, table order, pairs and descendant nesting", async () => 
   ]) {
     const node = await element(child!);
     expect((await html.element(await tag(parent!), [], [node])).kind).toBe("ok");
-    check(await html.element(await tag(parent!), [], [await text(" ")]), 1220);
+    check(await html.element(await tag(parent!), [], [await text(" ")]), "html::invalid_structure");
   }
   const tbody = await element("tbody"),
     thead = await element("thead");
   expect((await html.element(await tag("table"), [], [thead, tbody])).kind).toBe("ok");
   for (const kids of [[], [thead], [tbody, thead], [tbody, tbody]])
-    check(await html.element(await tag("table"), [], kids), 1220);
+    check(await html.element(await tag("table"), [], kids), "html::invalid_structure");
   const dt = await element("dt"),
     dd = await element("dd");
   expect((await html.element(await tag("dl"), [], [dt, dd])).kind).toBe("ok");
-  check(await html.element(await tag("dl"), [], [dd, dt]), 1220);
+  check(await html.element(await tag("dl"), [], [dd, dt]), "html::invalid_structure");
   for (const name of ["a", "form"]) {
     const nested = await element("div", [await element(name)]);
-    check(await html.element(await tag(name), [], [nested]), 1220);
+    check(await html.element(await tag(name), [], [nested]), "html::invalid_structure");
   }
 });
 test("URL parsing rejects origin and script ambiguity", async () => {
@@ -196,23 +203,23 @@ test("URL parsing rejects origin and script ambiguity", async () => {
     "/%2e//evil.test",
     "https://",
   ])
-    check(await html.parseURL(input), 1221);
+    check(await html.parseURL(input), "html::invalid_url");
   for (const input of ["/", "/a b?q=x&y=z#f", "/a/../b", "https://example.com/path?x=1&y=2"]) {
     const url = value(await html.parseURL(input));
     const attr = value(await html.urlAttribute("href", url));
     expect((await html.element(await tag("a"), [attr], [])).kind).toBe("ok");
-    check(await html.element(await tag("div"), [attr], []), 1220);
+    check(await html.element(await tag("div"), [attr], []), "html::invalid_structure");
   }
   {
     const url = value(await html.parseURL("https://example.com/i.png"));
     const attr = value(await html.urlAttribute("src", url));
     expect((await html.element(await tag("img"), [attr], [])).kind).toBe("ok");
-    check(await html.element(await tag("a"), [attr], []), 1220);
-    check(await html.urlAttribute("srcset", url), 1220);
+    check(await html.element(await tag("a"), [attr], []), "html::invalid_structure");
+    check(await html.urlAttribute("srcset", url), "html::invalid_structure");
   }
   const outside = value(await html.parseURL("https://example.com/"));
-  check(await html.get(outside), 1221);
-  check(await html.post(outside), 1221);
+  check(await html.get(outside), "html::invalid_url");
+  check(await html.post(outside), "html::invalid_url");
   const local = value(await html.parseURL("/search?q=a&x=b"));
   expect(await render([await element("div", [], [value(await html.get(local))])])).toBe(
     '<div hx-get="/search?q=a&amp;x=b"></div>',
@@ -223,11 +230,11 @@ test("head-only nodes, native title escaping and pinned HTMX policy", async () =
     viewport = value(await html.metaViewport()),
     css = value(await html.stylesheet(value(await html.parseURL("/style.css"))));
   for (const n of [runtime, viewport, css]) {
-    check(await html.fragment([n]), 1220);
-    check(await html.element(await tag("div"), [], [n]), 1220);
-    check(await html.document("x", [], [n]), 1220);
+    check(await html.fragment([n]), "html::invalid_structure");
+    check(await html.element(await tag("div"), [], [n]), "html::invalid_structure");
+    check(await html.document("x", [], [n]), "html::invalid_structure");
   }
-  check(await html.document("x", [await text("x")], []), 1220);
+  check(await html.document("x", [await text("x")], []), "html::invalid_structure");
   const output = renderSafe(
     value(await html.document("<title>", [viewport, css, runtime], [await text("<body>")])),
   );
@@ -242,8 +249,8 @@ test("head-only nodes, native title escaping and pinned HTMX policy", async () =
 });
 test("typed HTMX selectors and finite intervals cannot inject trigger code", async () => {
   for (const id of ["", "#id", "x y", "x,body", "x]", "1id", "x\n", "x:has(*)"]) {
-    check(await html.targetID(id), 1222);
-    check(await html.indicatorID(id), 1222);
+    check(await html.targetID(id), "htmx::invalid_target");
+    check(await html.indicatorID(id), "htmx::invalid_target");
   }
   const target = value(await html.targetID("results_1"));
   const attrs = [
@@ -256,8 +263,9 @@ test("typed HTMX selectors and finite intervals cannot inject trigger code", asy
   expect(await render([await element("input", [], attrs)])).toBe(
     '<input hx-target="#results_1" hx-indicator="#busy" hx-swap="innerHTML" hx-disable="this" hx-trigger="input changed delay:60000ms">',
   );
-  for (const n of [-1n, 60001n, 10n ** 50n]) check(await html.triggerInputChanged(n), 1223);
-  for (const n of [0n, 999n, 3600001n]) check(await html.triggerEvery(n), 1223);
+  for (const n of [-1n, 60001n, 10n ** 50n])
+    check(await html.triggerInputChanged(n), "htmx::invalid_interval");
+  for (const n of [0n, 999n, 3600001n]) check(await html.triggerEvery(n), "htmx::invalid_interval");
   for (const n of [1000n, 3600000n]) expect((await html.triggerEvery(n)).kind).toBe("ok");
 });
 test("forged opaque handles fail without inspecting proxies", async () => {
@@ -321,6 +329,6 @@ test("the complete author tag inventory and each tag-checked attribute are admit
   ]) {
     const a = value(await html.textAttribute(name!, val!));
     expect((await html.element(await tag(tagName!), [a], [])).kind).toBe("ok");
-    check(await html.element(await tag("aside"), [a], []), 1220);
+    check(await html.element(await tag("aside"), [a], []), "html::invalid_structure");
   }
 });

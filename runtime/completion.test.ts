@@ -24,7 +24,6 @@ const origin = { source: "test.can", start: 1, end: 2, invocation: ["test"] };
 const declaration = {
   identity: "can.project.root::app::missing",
   name: "app::missing",
-  id: 1000000,
   parameters: 0,
 };
 const identity = createHash("sha256")

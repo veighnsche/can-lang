@@ -42,9 +42,7 @@ const errorShape: FailureShape = {
   errors: [],
 };
 const domain = createDomainRuntime({
-  declarations: [
-    { identity: declaration.identity, name: declaration.name, id: declaration.id, parameters: 0 },
-  ],
+  declarations: [{ identity: declaration.identity, name: declaration.name, parameters: 0 }],
   shapes: [textShape, intShape, errorShape],
 });
 const api = createURLs(domain, {

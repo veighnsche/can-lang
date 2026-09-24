@@ -99,11 +99,11 @@ func twinModelFiles(uses, body string) map[string]string {
 		"can.errors.json":             `{"active":[],"retired":[]}`,
 		"src/main.can":                header("app", "", uses) + body,
 		"libs/left/can.project.json":  `{"source_root":"src","project":"shop_left","error_registry":"can.errors.json"}`,
-		"libs/left/can.errors.json":   `{"active":[{"id":1000000,"kind":"model::failed"}],"retired":[]}`,
-		"libs/left/src/model.can":     "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror 1000000 failed(str reason)\nrecord secret\n    int value\n",
+		"libs/left/can.errors.json":   `{"active":["model::failed"],"retired":[]}`,
+		"libs/left/src/model.can":     "package model\n    provides [item, failed]\n    uses []\nrecord item\n    int value\nerror failed(str reason)\nrecord secret\n    int value\n",
 		"libs/right/can.project.json": `{"source_root":"src","project":"shop_right","error_registry":"can.errors.json"}`,
-		"libs/right/can.errors.json":  `{"active":[{"id":1000001,"kind":"model::failed"}],"retired":[]}`,
-		"libs/right/src/model.can":    "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror 1000001 failed(str reason)\n",
+		"libs/right/can.errors.json":  `{"active":["model::failed"],"retired":[]}`,
+		"libs/right/src/model.can":    "package model\n    provides [item, failed]\n    uses []\nrecord item\n    str label\nerror failed(str reason)\n",
 	}
 }
 

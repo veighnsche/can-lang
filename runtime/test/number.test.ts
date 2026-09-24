@@ -21,7 +21,12 @@ const scalar = (name: string): FailureShape => ({
 const text = scalar("str"),
   integer = scalar("int");
 const declarations = catalogue.errors.filter((error) =>
-  [1000, 1001, 1002, 1003].includes(error.id),
+  [
+    "number::inexact",
+    "text::invalid_number",
+    "text::invalid_bool",
+    "number::invalid_bool",
+  ].includes(error.name),
 );
 const errors = declarations.map((error) => ({
   identity: identity("error", error.identity),
@@ -40,7 +45,6 @@ const domain = createDomainRuntime({
   declarations: declarations.map((error) => ({
     identity: error.identity,
     name: error.name,
-    id: error.id,
     parameters: 0,
   })),
   shapes: [text, integer, ...errors],
@@ -51,11 +55,11 @@ const api = createNumbers(domain, {
   invalidTextBool: errors[2].identity,
   invalidIntBool: errors[3].identity,
 });
-function invalid(result: Completion, id: number, payload: Record<string, unknown>) {
+function invalid(result: Completion, name: string, payload: Record<string, unknown>) {
   expect(result.kind).toBe("domain");
   if (result.kind !== "domain") throw Error("expected domain failure");
   const details = domainFailureDiagnostics(result.value);
-  expect(details.declaration.id).toBe(id);
+  expect(details.declaration.name).toBe(name);
   expect(details.payload).toMatchObject(payload);
 }
 
@@ -82,11 +86,13 @@ test("exact conversion uses native represented values rather than the safe-integ
   for (const input of [0n, -1n, 9007199254740992n, 2n ** 80n, -(2n ** 100n)])
     expect(Object.is(value(await api.intToFloat(input)), Number(input))).toBe(true);
   for (const input of [9007199254740993n, -9007199254740993n, 10n ** 400n])
-    invalid(await api.intToFloat(input), 1000, { reason: "not exactly representable as float" });
+    invalid(await api.intToFloat(input), "number::inexact", {
+      reason: "not exactly representable as float",
+    });
   for (const input of [0, -0, 1, -1, 2 ** 80, Number.MAX_VALUE])
     expect(value(await api.floatToInt(input))).toBe(BigInt(input));
   for (const input of [NaN, Infinity, -Infinity, 0.5, -0.5, Number.MIN_VALUE])
-    invalid(await api.floatToInt(input), 1000, { reason: "not a finite integer" });
+    invalid(await api.floatToInt(input), "number::inexact", { reason: "not a finite integer" });
 });
 
 test("Math and Number predicates agree with qualified native operations on boundaries", async () => {
@@ -141,7 +147,7 @@ test("integer parsing requires the entire exact decimal grammar", async () => {
     "１",
     "1\u0000",
   ]) {
-    invalid(await api.toInt(input), 1001, { input });
+    invalid(await api.toInt(input), "text::invalid_number", { input });
   }
 });
 
@@ -187,7 +193,7 @@ test("float parsing admits only decimal source numbers and finite native results
     "１",
     "1\u0000",
   ]) {
-    invalid(await api.toFloat(input), 1001, { input });
+    invalid(await api.toFloat(input), "text::invalid_number", { input });
   }
 });
 
@@ -201,7 +207,7 @@ test("boolean conversions accept exact spellings and only the integer range zero
     expect(value(await api.toBool(String(input)))).toBe(input);
   }
   for (const input of [-1n, 2n, 2n ** 100n])
-    invalid(await api.intToBool(input), 1003, { value: input });
+    invalid(await api.intToBool(input), "number::invalid_bool", { value: input });
   for (const input of ["True", "FALSE", " true", "false\n", "1", "0", ""])
-    invalid(await api.toBool(input), 1002, { input });
+    invalid(await api.toBool(input), "text::invalid_bool", { input });
 });

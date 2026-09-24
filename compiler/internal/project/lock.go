@@ -10,13 +10,112 @@ import (
 	"strings"
 )
 
-type ErrorAllocation struct {
-	ID   uint64 `json:"id"`
-	Kind string `json:"kind"`
-}
+// Registry records one owner's qualified error names. Active kinds must
+// exactly match that owner's source declarations; retired names are
+// permanently withdrawn and never reused. Predecessors supplies rename
+// lineage: each active kind maps to its chain of former qualified names,
+// immediate predecessor first, so archived reports keep attributing to
+// the current declaration.
 type Registry struct {
-	Active  []ErrorAllocation `json:"active"`
-	Retired []uint64          `json:"retired"`
+	Active       []string            `json:"active"`
+	Retired      []string            `json:"retired"`
+	Predecessors map[string][]string `json:"predecessors,omitempty"`
+}
+
+// ReportIdentityVersion tags qualified error identities in terminal
+// reports: `can.error.v2:<declaration identity>`.
+const ReportIdentityVersion = "can.error.v2"
+
+// Validate enforces the registry contract on parsed or mutated state:
+// sorted unique active/retired qualified names, disjoint sets, and
+// unambiguous predecessor chains over retired names.
+func (r Registry) Validate() error {
+	if !sortedUnique(r.Active) {
+		return fmt.Errorf("active registry kinds must be sorted and unique")
+	}
+	if !sortedUnique(r.Retired) {
+		return fmt.Errorf("retired registry names must be sorted and unique")
+	}
+	for _, kind := range r.Active {
+		if !qualifiedKind(kind) {
+			return fmt.Errorf("registry kind %q must be a qualified declaration name", kind)
+		}
+	}
+	active := map[string]bool{}
+	for _, kind := range r.Active {
+		active[kind] = true
+	}
+	retired := map[string]bool{}
+	for _, name := range r.Retired {
+		if !qualifiedKind(name) {
+			return fmt.Errorf("retired name %q must be a qualified declaration name", name)
+		}
+		if active[name] {
+			return fmt.Errorf("retired error %q is still active", name)
+		}
+		retired[name] = true
+	}
+	chained := map[string]string{}
+	for _, current := range sortedKeys(r.Predecessors) {
+		chain := r.Predecessors[current]
+		if !active[current] {
+			return fmt.Errorf("predecessor chain for %q lacks an active declaration", current)
+		}
+		if len(chain) == 0 {
+			return fmt.Errorf("predecessor chain for %q is empty", current)
+		}
+		seen := map[string]bool{}
+		for _, prior := range chain {
+			if !qualifiedKind(prior) {
+				return fmt.Errorf("predecessor %q must be a qualified declaration name", prior)
+			}
+			if seen[prior] {
+				return fmt.Errorf("predecessor %q repeats within one chain", prior)
+			}
+			seen[prior] = true
+			if !retired[prior] {
+				return fmt.Errorf("predecessor %q is not retired", prior)
+			}
+			if owner, exists := chained[prior]; exists {
+				return fmt.Errorf("predecessor %q chains to both %s and %s", prior, owner, current)
+			}
+			chained[prior] = current
+		}
+	}
+	return nil
+}
+
+func sortedUnique(names []string) bool {
+	for i, name := range names {
+		if i > 0 && names[i-1] >= name {
+			return false
+		}
+	}
+	return true
+}
+
+func qualifiedKind(kind string) bool {
+	parts := strings.Split(kind, "::")
+	return len(parts) == 2 && Identifier(parts[0]) && Identifier(parts[1])
+}
+
+// ResolveKind maps a qualified error name to its current active kind,
+// following one supplied predecessor chain. Active kinds resolve to
+// themselves; retired names without a chain do not resolve.
+func (r Registry) ResolveKind(kind string) (string, bool) {
+	for _, active := range r.Active {
+		if active == kind {
+			return kind, true
+		}
+	}
+	for _, current := range sortedKeys(r.Predecessors) {
+		for _, prior := range r.Predecessors[current] {
+			if prior == kind {
+				return current, true
+			}
+		}
+	}
+	return "", false
 }
 
 // LockEdge pins one direct dependency edge: the local edge name maps to a
@@ -43,11 +142,11 @@ type Lock struct {
 }
 
 func ParseRegistry(data []byte) (Registry, error) {
-	r := Registry{Active: []ErrorAllocation{}, Retired: []uint64{}}
+	r := Registry{Active: []string{}, Retired: []string{}}
 	if err := validateJSON(data); err != nil {
 		return r, err
 	}
-	fields, err := object(data, []string{"active", "retired"}, nil)
+	fields, err := object(data, []string{"active", "retired"}, []string{"predecessors"})
 	if err != nil {
 		return r, err
 	}
@@ -55,59 +154,50 @@ func ParseRegistry(data []byte) (Registry, error) {
 	if err != nil {
 		return r, err
 	}
-	seenIDs := map[uint64]bool{}
-	kinds := map[string]bool{}
-	var previous uint64
 	for _, raw := range active {
-		fields, err := object(raw, []string{"id", "kind"}, nil)
+		kind, err := text(raw)
 		if err != nil {
 			return r, err
 		}
-		id, err := applicationID(fields["id"])
-		if err != nil {
-			return r, err
-		}
-		kind, err := text(fields["kind"])
-		if err != nil {
-			return r, err
-		}
-		parts := strings.Split(kind, "::")
-		if len(parts) != 2 || !Identifier(parts[0]) || !Identifier(parts[1]) {
-			return r, fmt.Errorf("registry kind %q must be a qualified declaration name", kind)
-		}
-		if id <= previous || seenIDs[id] || kinds[kind] {
-			return r, fmt.Errorf("active registry IDs must increase and kinds must be unique")
-		}
-		previous = id
-		seenIDs[id] = true
-		kinds[kind] = true
-		r.Active = append(r.Active, ErrorAllocation{ID: id, Kind: kind})
+		r.Active = append(r.Active, kind)
 	}
 	retired, err := array(fields["retired"])
 	if err != nil {
 		return r, err
 	}
-	previous = 0
 	for _, raw := range retired {
-		id, err := applicationID(raw)
+		name, err := text(raw)
 		if err != nil {
 			return r, err
 		}
-		if id <= previous || seenIDs[id] {
-			return r, fmt.Errorf("retired registry IDs must increase and be disjoint from active IDs")
+		r.Retired = append(r.Retired, name)
+	}
+	if raw, exists := fields["predecessors"]; exists {
+		entries, err := dictionary(raw)
+		if err != nil {
+			return r, err
 		}
-		previous = id
-		seenIDs[id] = true
-		r.Retired = append(r.Retired, id)
+		r.Predecessors = map[string][]string{}
+		for _, current := range sortedKeys(entries) {
+			chain, err := array(entries[current])
+			if err != nil {
+				return r, err
+			}
+			names := []string{}
+			for _, raw := range chain {
+				name, err := text(raw)
+				if err != nil {
+					return r, err
+				}
+				names = append(names, name)
+			}
+			r.Predecessors[current] = names
+		}
+	}
+	if err := r.Validate(); err != nil {
+		return r, err
 	}
 	return r, nil
-}
-func applicationID(raw json.RawMessage) (uint64, error) {
-	id, err := integer(raw)
-	if err != nil || id < 1000000 || id > 2147483647 {
-		return 0, fmt.Errorf("application error ID must be an integer token in 1000000..2147483647")
-	}
-	return id, nil
 }
 
 func ParseLock(data []byte) (Lock, error) {

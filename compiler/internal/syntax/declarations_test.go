@@ -172,7 +172,7 @@ func TestCurrentDeclarationsAndBodies(t *testing.T) {
 	program := testHeader + `record finished
 record box<item>
     item value
-error 1234 missing(str key)
+error missing(str key)
 variant result<item>
     box<item>
     finished
@@ -260,7 +260,7 @@ func TestPatternNodes(t *testing.T) {
 func TestFileParserRejectsObsoleteAndMalformedGrammar(t *testing.T) {
 	for _, fragment := range []string{
 		"rev 1\n", "extern fn int thing\n", "dec value = d\"1.0\"\n",
-		"record box\n    int value,\n", "error missing()\n", "error 1001 bad(int x,)\n", "variant empty\n",
+		"record box\n    int value,\n", "error 1001 missing()\n", "error 1001 bad(int x,)\n", "variant empty\n",
 		"fn int bad\n    emits []\n    ok 1\n",
 		"fn int bad\n    asserts\n        a: => ok 1\n    emits []\n    ok 1\n",
 		"fn int bad\n    emits []\n    asserts\n        a: => ok 1\n        ok 1\n",

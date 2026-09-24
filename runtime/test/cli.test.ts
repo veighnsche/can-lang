@@ -22,7 +22,7 @@ const text: FailureShape = {
 };
 const declarations = catalogue.errors
   .filter((e) => e.name === "codec::invalid_data" || e.name === "io::write_failed")
-  .map((e) => ({ identity: e.identity, name: e.name, id: e.id, parameters: 0 }));
+  .map((e) => ({ identity: e.identity, name: e.name, parameters: 0 }));
 const errors: FailureShape[] = declarations.map((e) => ({
   identity: identity("error", e.identity),
   kind: "error",
@@ -64,7 +64,7 @@ test("unpaired surrogates yield the exact codec domain error", async () => {
     expect(completion.kind).toBe("domain");
     if (completion.kind !== "domain") throw new Error("wrong outcome");
     const details = domainFailureDiagnostics(completion.value);
-    expect(details.declaration.id).toBe(1110);
+    expect(details.declaration.name).toBe("codec::invalid_data");
     expect(details.payload).toMatchObject({ path: "", reason: "unicode_scalar" });
   }
 });

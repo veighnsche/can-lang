@@ -21,6 +21,8 @@ const rootOrigin: FailureOrigin = Object.freeze({
 // separately include their specified C9 message projection. Error
 // payloads can contain application secrets; native messages can contain paths,
 // credentials, or response bodies. Neither is serialized by this terminal reporter.
+// Domain errors identify by qualified can.error.v2 declaration identity plus
+// the concrete generic type identity; no numeric allocation appears.
 function diagnostic(
   completion: Exclude<Completion<void>, { kind: "ok" }>,
   phase: "initialization" | "main",
@@ -32,7 +34,7 @@ function diagnostic(
       JSON.stringify({
         ...base,
         channel: "domain",
-        id: details.declaration.id,
+        identity: "can.error.v2:" + details.declaration.identity,
         error: details.declaration.name,
         typeIdentity: details.typeIdentity,
         occurrence: String(details.occurrenceID),

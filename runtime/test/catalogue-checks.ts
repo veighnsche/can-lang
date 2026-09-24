@@ -22,7 +22,6 @@ export function checkCatalogue(): string[] {
     assert.deepEqual(errorIdentity("codec::invalid_data"), {
       name: "codec::invalid_data",
       identity: "can.std.codec@1::invalid_data",
-      id: 1110,
       typeArguments: [],
     });
   });
@@ -38,7 +37,10 @@ export function checkCatalogue(): string[] {
   check("unallocated and tampered errors rejected", () => {
     assert.throws(() => errorIdentity("codec::not_allocated"));
     assert.throws(() =>
-      validateErrorIdentity({ ...errorIdentity("codec::invalid_data"), id: 1199 }),
+      validateErrorIdentity({
+        ...errorIdentity("codec::invalid_data"),
+        identity: "can.std.codec@1::tampered",
+      }),
     );
     assert.throws(() =>
       validateErrorIdentity({

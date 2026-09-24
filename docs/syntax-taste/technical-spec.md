@@ -64,7 +64,7 @@ record        = 'record', name, parameters?, NL,
 field         = type, name, NL ;
 variant       = 'variant', name, parameters?, NL, INDENT,
                 type, NL, { type, NL }, DEDENT ;
-error         = 'error', integer, name, parameters?,
+error         = 'error', name, parameters?,
                 '(', fields?, ')', NL ;
 binding       = type, name, '=', expression ;
 call_expr     = 'call', invocation, { '.', name, type_args?, arguments } ;
@@ -200,7 +200,7 @@ All success/error completion matches require every error arm, then the optional 
 | `float` arithmetic | Native binary64 `+ - * / % **`, IEEE infinity, signed zero and NaN outcomes included. Both operands must be float, including exponent. No implicit literal conversion. Negative-base fractional powers yield native NaN. |
 | Bitwise | `& | ^ ~ << >>` accept/return int using native bigint operations. Negative shift counts reverse direction as native bigint does. No unsigned-right-shift spelling; no 32-bit coercion of floats. |
 | Equality | Same admitted static type, with variant inclusion to a common expected named variant. Same nominal type and recursively same data. Scalar float equality is native `Object.is`: NaN equals NaN and +0 differs from -0. Other primitive equality is native strict equality. Records/arrays/errors use `Bun.deepEquals(..., true)` over canonical compiler-owned data representations including nominal identity; no custom recursive equality algorithm. `is not` negates this. |
-| Equality eligibility | Primitives, arrays, nominal records/errors/variants whose reachable fields are eligible. Exclude callables, arms, connection declarations, resource/opaque values unless the catalogue defines an explicit comparison. Reject equality on a container of excluded fields. Whole-completion assertion comparison uses these rules and exact error kind, ID, specialization and payload. |
+| Equality eligibility | Primitives, arrays, nominal records/errors/variants whose reachable fields are eligible. Exclude callables, arms, connection declarations, resource/opaque values unless the catalogue defines an explicit comparison. Reject equality on a container of excluded fields. Whole-completion assertion comparison uses these rules and exact error kind, qualified identity, specialization and payload. |
 | Ordering | int/float numeric `< <= > >=`; str native UTF-16 lexicographic order. Mixed numerics, bool and record ordering rejected. Every ordered comparison with NaN is false; use an explicit finite predicate where a total order is needed. |
 | Array/string `.length` | Native property widened exactly to bigint `int`; arrays have native finite storage capacity, distinct from int's mathematical range. |
 | Indexing | Index must be int; require `0 <= i < length`, then convert exactly to native index. Negative or out-of-range index is standard `bounds` failure. Array returns element; str returns one UTF-16 code-unit str, possibly an unpaired surrogate. |
@@ -223,7 +223,7 @@ Explicit conversion catalogue (all parameters positional):
 | `text::to_bool(str) -> bool` | `[text::invalid_bool]`; exactly `true` or `false`. |
 | `number::bool_to_int(bool) -> int`; `int_to_bool(int) -> bool` | First `[]` maps false/true to0/1; second `[number::invalid_bool]` admits only0/1. |
 
-Use the existing `call` marker for every conversion. Domain error allocations: `1000 number::inexact(str reason)`, `1001 text::invalid_number(str input)`, `1002 text::invalid_bool(str input)`, `1003 number::invalid_bool(int value)`. The numbers in older illustrative snippets are not registry allocations; real application IDs use C9's range.
+Use the existing `call` marker for every conversion. Domain error declarations: `number::inexact(str reason)`, `text::invalid_number(str input)`, `text::invalid_bool(str input)`, `number::invalid_bool(int value)`.
 
 <a id="c7"></a>
 ## C7. Collection and text catalogue
@@ -270,11 +270,11 @@ The unnecessary-local error is the following decidable rule, and nothing broader
 When all four hold, reject with a diagnostic showing the direct replacement. `int result = left + right` then `ok result` is rejected. A binding that captures `factor`, retains a fetched observation, supplies an empty array's expected type, changes effect timing or has two uses is permitted. The compiler performs no arbitrary equivalence proof, global purity inference or cost model. This is a language diagnostic, not a claim that every other local is essential.
 
 <a id="c9"></a>
-## C9. Domain IDs and standard failures
+## C9. Domain identity and standard failures
 
 The exact registry and dependency-lock formats, and their required agreement with source declarations, are specified in [P2](platform-testing-spec.md#p2-distribution-catalogue-identity-and-linkage).
 
-Every domain error has a stable positive integer ID at most 2147483647, unique in the resolved application and dependency graph. Identity is its declaring package/declaration plus concrete generic arguments, not its integer alone. All instantiations of a generic kind share one ID. Catalogue IDs1–999999 are distribution-reserved; project/dependency declarations allocate1000000–2147483647. The distribution registry allocates100 to `all_failed`,1000–1099 to this core catalogue,1100–1199 to A and1200–1299 to P. Unallocated reserved IDs are not usable. A dependency lock records its published allocations; resolving duplicate IDs is a compile error, not renumbering. A project registry records retired IDs; do not reuse a retired ID for another kind. Renaming/replacing an obsolete unpublished design may explicitly update the registry; no compatibility obligation is implied. Compiler diagnostic codes use a separate string namespace and are not domain IDs.
+Every domain error has a stable qualified identity: its declaring owner/package/declaration plus concrete generic arguments. Error declarations carry no numeric ID in source, registry, lock, emitted metadata or report. All instantiations of a generic kind share one declaration identity with distinct concrete type identities. Catalogue identities (`can.std.<package>@<revision>::<name>`, `can.prelude@<revision>::<name>`) are distribution-owned; project/dependency identities qualify the short `package::name` kind with the owning instance. Two libraries may expose the same short kind; their qualified identities stay distinct and compose without renumbering. A dependency lock snapshots each dependency's published registry; a project registry records retired names, and a retired name is never reused for another kind. A rename supplies its predecessor chain in the registry so archived reports keep attributing to the current declaration; no compatibility obligation is implied. Terminal domain reports identify failures as `can.error.v2:<declaration identity>` alongside the concrete type identity, with the payload redacted. Compiler diagnostic codes use a separate string namespace and are not domain identities.
 
 Error-arm lookup uses exact nominal specializations under C5.1. A bare generic name requires one applicable specialization; two exact heads can distinguish two instances of the same declaration. Q5/Q6 define the mode-specific sets and outer aggregate inference. No common aggregate conversion is required merely to disambiguate dispatch.
 
@@ -324,7 +324,7 @@ Ordinary catches still cover receiver/callee/argument evaluation and the matched
 <a id="c92-named-runtime-checks"></a>
 ### C9.2. Named runtime checks
 
-LD29 selects the distribution catalogue package `checks` and ordinary callable signature `checks::require(bool condition, str reason) -> void emits [checks::failed]`. Allocate core distribution error ID **1010** to `checks::failed(str reason)`. This is a selected catalogue contract, not a new keyword or an implemented API. The error is ordinary nominal domain data with one positional `str reason` field; existing constructor, identity, equality and registry rules apply.
+LD29 selects the distribution catalogue package `checks` and ordinary callable signature `checks::require(bool condition, str reason) -> void emits [checks::failed]`. The catalogue declares `checks::failed(str reason)` with identity `can.std.checks@1::failed`. This is a selected catalogue contract, not a new keyword or an implemented API. The error is ordinary nominal domain data with one positional `str reason` field; existing constructor, identity, equality and registry rules apply.
 
 Evaluate condition then reason, once each, using ordinary call semantics. The reason evaluates even when condition is true; errors during argument evaluation follow the ordinary caller boundary, before the check itself. True returns void success. False produces a fresh `checks::failed(reason)` occurrence. The call never disables checks in production, reads ambient state or invokes user code beyond ordinary argument evaluation. The condition must be bool and reason must be str, with exactly two arguments and no implicit conversion.
 

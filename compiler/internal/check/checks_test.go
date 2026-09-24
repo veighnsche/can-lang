@@ -56,13 +56,13 @@ func TestChecksArgumentBoundary(t *testing.T) {
 	}
 }
 
-func TestChecksRejectsCoreIDRedeclaration(t *testing.T) {
+func TestChecksRejectsNumberedRedeclaration(t *testing.T) {
 	source, err := os.ReadFile("../../testdata/current/checks/main.can")
 	if err != nil {
 		t.Fatal(err)
 	}
 	text := strings.Replace(string(source), "    uses [checks]\n", "    uses [checks]\nerror 1010 failed(int code)\n", 1)
-	if _, err := programFixtureRegistry(t, map[string]string{"src/main.can": text}, `{"active":[{"id":1010,"kind":"app::failed"}],"retired":[]}`); err == nil {
-		t.Fatal("project core-ID 1010 allocation admitted")
+	if _, err := programFixtureRegistry(t, map[string]string{"src/main.can": text}, `{"active":["app::failed"],"retired":[]}`); err == nil {
+		t.Fatal("numbered error declaration admitted")
 	}
 }
