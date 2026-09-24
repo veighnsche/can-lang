@@ -1,0 +1,149 @@
+{
+  "usage": {
+    "input_tokens": 5747,
+    "output_tokens": 1090
+  },
+  "models": [
+    "jev-1.13.0",
+    "jev-1.13.0",
+    "jev-1.13.0"
+  ],
+  "selected": {
+    "action_binding": [
+      {
+        "choice": "separate_binding",
+        "probability": 0.9,
+        "confidence": 0.85
+      },
+      {
+        "choice": "separate_binding",
+        "probability": 0.89,
+        "confidence": 0.83
+      },
+      {
+        "choice": "separate_binding",
+        "probability": 0.62,
+        "confidence": 0.43
+      }
+    ],
+    "browser_delivery": [
+      {
+        "choice": "browser_runtime",
+        "probability": 0.97,
+        "confidence": 0.96
+      },
+      {
+        "choice": "browser_runtime",
+        "probability": 0.99,
+        "confidence": 0.98
+      },
+      {
+        "choice": "browser_runtime",
+        "probability": 0.51,
+        "confidence": 0.26
+      }
+    ],
+    "generic_composition": [
+      {
+        "choice": "callback_only",
+        "probability": 0.66,
+        "confidence": 0.49
+      },
+      {
+        "choice": "symbolic_calls",
+        "probability": 0.76,
+        "confidence": 0.65
+      },
+      {
+        "choice": "symbolic_calls",
+        "probability": 0.76,
+        "confidence": 0.63
+      }
+    ],
+    "host_surface": [
+      {
+        "choice": "expand_catalogue",
+        "probability": 0.52,
+        "confidence": 0.29
+      },
+      {
+        "choice": "reviewed_adapter",
+        "probability": 0.84,
+        "confidence": 0.76
+      },
+      {
+        "choice": "reviewed_adapter",
+        "probability": 0.61,
+        "confidence": 0.42
+      }
+    ],
+    "ui_composition": [
+      {
+        "choice": "library_first",
+        "probability": 0.72,
+        "confidence": 0.58
+      },
+      {
+        "choice": "library_first",
+        "probability": 0.98,
+        "confidence": 0.97
+      },
+      {
+        "choice": "library_first",
+        "probability": 0.7,
+        "confidence": 0.55
+      }
+    ],
+    "race_lifetime": [
+      {
+        "choice": "explicit_scope_policy",
+        "probability": 0.72,
+        "confidence": 0.59
+      },
+      {
+        "choice": "explicit_scope_policy",
+        "probability": 0.79,
+        "confidence": 0.69
+      },
+      {
+        "choice": "explicit_scope_policy",
+        "probability": 0.86,
+        "confidence": 0.8
+      }
+    ],
+    "iteration": [
+      {
+        "choice": "document_bounds",
+        "probability": 0.73,
+        "confidence": 0.6
+      },
+      {
+        "choice": "self_tail_lowering",
+        "probability": 0.47,
+        "confidence": 0.2
+      },
+      {
+        "choice": "explicit_iteration",
+        "probability": 0.53,
+        "confidence": 0.3
+      }
+    ],
+    "error_abstraction": [
+      {
+        "choice": "finite_rows",
+        "probability": 0.6799999999999999,
+        "confidence": 0.53
+      },
+      {
+        "choice": "result_data",
+        "probability": 0.63,
+        "confidence": 0.45
+      },
+      {
+        "choice": "result_data",
+        "probability": 0.45,
+        "confidence": 0.18
+      }
+    ]
+  }
+}

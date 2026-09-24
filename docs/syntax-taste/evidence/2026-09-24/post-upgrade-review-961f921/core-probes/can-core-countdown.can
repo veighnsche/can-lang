@@ -1,0 +1,19 @@
+package app
+    provides []
+    uses []
+fn int countdown
+    emits []
+    given
+        int remaining
+    asserts
+        sample: 2 => ok 0
+    match remaining is 0
+        false => relay call countdown(remaining - 1)
+        true => ok remaining
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    ok

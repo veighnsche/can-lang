@@ -1,0 +1,26 @@
+[
+  {
+    "case": "ordinary",
+    "auditAccepted": true,
+    "checked": true,
+    "emitted": true
+  },
+  {
+    "case": "literal-host-text",
+    "auditError": "browser audit: packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts contains host token \"Bun.\"",
+    "checked": true,
+    "emitted": true
+  },
+  {
+    "case": "equivalent-concatenation",
+    "auditAccepted": true,
+    "checked": true,
+    "emitted": true
+  },
+  {
+    "case": "literal-node-text",
+    "auditError": "browser audit: packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts contains host token \"node:\"",
+    "checked": true,
+    "emitted": true
+  }
+]

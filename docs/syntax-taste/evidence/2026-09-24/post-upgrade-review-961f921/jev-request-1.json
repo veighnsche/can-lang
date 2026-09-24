@@ -1,0 +1,85 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Assess current Can source 961f921 for recommending one language across SaaS servers and browsers. This is a review, not an implementation request. There are zero external users and no backward compatibility obligation. Prefer equivalent native JS/Bun operations plus adapters for Can contracts and immutability. Recommendations need concrete examples and counterarguments; classifier agreement is not proof.",
+    "core": "Current explicit bind patterns remove unknown-name catchalls; owner records restrict construction/projection; package aliases and owner-qualified error identities compose. Exported generics are now checked symbolically, but cannot call another generic with an opaque type argument even when the callee is a parametric identity. Same-declaration recursion and explicit operation callables are allowed. Private generics retain concrete template checking. Written errors are fixed finite nominal sets; no authored error-set parameter exists, while catalogue map/fold preserve callback error sets.",
+    "actions": "Actions statically describe paths, captures, body, finite outcomes and status codes, and typed browser fetch clients consume them. Handlers accept only captures/body, not request context or a startup pool. The invoice example duplicates client/server contracts with browser stub handlers; the live server mounts a query endpoint instead of the declared captured GET. Its browser integration harness explicitly rewrites that URL, and a source test expects the declared direct path to return 404. Ordinary HTTP callbacks can securely authenticate and use a captured pool. No live matrix was rerun in this review.",
+    "browser": "There is a real Can-authored invoice grid with local immutable state snapshots, compare-and-swap replacement, lifecycle-scoped DOM/listeners/timers, stale-response guards and typed fetch. Browser build publishes TypeScript plus an asset manifest. Shared runtime imports Node fs/util/crypto/AsyncLocalStorage; the test bundler supplies four semantic shims, including synchronous-only AsyncLocalStorage and embedded diagnostic metadata. The artifact audit skips runtime bodies and rejects harmless literal Bun. while accepting equivalent concatenated text. Ordinary TypeScript bundling alone therefore is not the entire supported-runtime problem.",
+    "host_ui": "The browser catalogue is compiler-owned and closed. Events expose only kind, target id, value and key; no checked state, modifiers, event cancellation, files or composition data. Browser persistence and history APIs are absent. Named functions can compose nodes, but the grid manually builds/rebuilds DOM and synchronizes state/focus. General JS escape is not necessary to compare typed adapters against maintaining a larger closed catalogue.",
+    "lifetime_iteration": "Coordination uses native Promise modes. First-success selection can happen at 5ms while its owned root drains an 80ms loser before returning; per-request HTTP scope also drains before publishing its response. Resource leases stay safe and cancellation is not implicit. Empty dynamic race with error uses Promise.race([]) and remains pending. A generated Can self-tail relay countdown passes at 1000 but returns native_exception at 10000 on Bun 1.4.2; general recursion is allowed and collection folds offer an existing stack-safe alternative for arrays."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "What should be investigated first to connect typed actions to real server context without contaminating client contracts?",
+      "criteria": {
+        "separate_binding": "Separate shared transport declarations from server-only bindings that receive explicit request context and dependencies.",
+        "closure_actions": "Make actions context-capturing route callables and design target-specific projection of their client contract.",
+        "manual_routes": "Retain separate manual route adapters and test equality of duplicated contracts as the supported application pattern."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "Which next step best establishes a trustworthy general browser target?",
+      "criteria": {
+        "browser_runtime": "Create a supported browser runtime profile and packaging command; audit its complete reachable runtime dependency graph.",
+        "supported_shims": "Promote the test shim approach to an official general bundler after specifying and testing complete semantic fidelity.",
+        "intermediate_only": "Define browser output as an intermediate profile and leave runtime packaging to expert application integrators for now."
+      }
+    },
+    "generic_composition": {
+      "type": "choice",
+      "instructions": "How should safe helper extraction work under symbolic exported-generic checking?",
+      "criteria": {
+        "symbolic_calls": "Permit calls between symbolically verified generic contracts, with explicit parameter substitution and cycle checks.",
+        "callback_only": "Keep the restriction and require authors to supply helper operations through explicit callable/dictionary parameters.",
+        "concrete_templates": "Use concrete-only specialization for exported and private generics, documenting implementation-dependent admissibility."
+      }
+    },
+    "host_surface": {
+      "type": "choice",
+      "instructions": "What experiment best addresses missing common browser capabilities while retaining typed boundaries?",
+      "criteria": {
+        "expand_catalogue": "First add a bounded maintained set for events, durable drafts and navigation, using a concrete all-Can product as the gate.",
+        "reviewed_adapter": "Prototype reviewed typed host adapters with explicit conversions, capabilities, lifecycle and assertion contracts.",
+        "narrow_scope": "Keep the present catalogue and recommend only products whose browser needs fit its existing operations."
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "instructions": "What should be tried first to reduce manual UI/state synchronization?",
+      "criteria": {
+        "library_first": "Build typed field and keyed-row component libraries first, testing focus, selection, disposal and late responses before new syntax.",
+        "declarative_syntax": "Prototype a checked declarative view/component form now, with explicit event/state/lifetime semantics and native DOM lowering.",
+        "manual_model": "Keep imperative typed node operations as the primary authoring model and improve examples and documentation."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "What should be investigated for useful race latency without weakening resource safety?",
+      "criteria": {
+        "explicit_scope_policy": "Prototype explicit cancellable request groups and supervised loser ownership, defining response publication separately from safe drain.",
+        "deadlines_only": "Retain mandatory drain and require each competing native operation to carry its own deadline; document end-to-end latency.",
+        "early_response_only": "Allow response publication before loser drain while keeping losers in a server-owned supervised scope with explicit shutdown behavior."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "What is the smallest coherent path to stack-safe application iteration?",
+      "criteria": {
+        "self_tail_lowering": "Guarantee self-tail relay lowering to a native loop, preserving evaluation order, failures, assertions and diagnostics.",
+        "explicit_iteration": "Add an explicit immutable-state iteration form or iterator combinator that lowers to a native loop.",
+        "document_bounds": "Retain native stack-limited recursion and direct authors to existing collection folds and documented workload limits."
+      }
+    },
+    "error_abstraction": {
+      "type": "choice",
+      "instructions": "Which next investigation is justified for reusable callback-error-preserving libraries?",
+      "criteria": {
+        "finite_rows": "Compare concrete wrappers with result-data adapters, then trial explicit finite error-set parameters if the cost is material.",
+        "result_data": "Keep finite fixed emits bounds and standardize nominal success/error data as the generic library boundary.",
+        "closed_helpers": "Preserve current source error contracts and add only individually justified built-in higher-order operations."
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+package app
+    provides []
+    uses []
+fn str description
+    emits []
+    asserts
+        sample: => ok "Bun."
+    ok "Bun."
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

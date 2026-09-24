@@ -1,0 +1,210 @@
+{
+  "compiler": {
+    "packages_passed": [
+      "github.com/veighnsche/can-lang/compiler/internal/catalogue",
+      "github.com/veighnsche/can-lang/compiler/internal/source",
+      "github.com/veighnsche/can-lang/compiler/internal/sql/sqlite",
+      "github.com/veighnsche/can-lang/compiler/internal/sql",
+      "github.com/veighnsche/can-lang/compiler/internal/syntax",
+      "github.com/veighnsche/can-lang/compiler/internal/resolve",
+      "github.com/veighnsche/can-lang/compiler/internal/types",
+      "github.com/veighnsche/can-lang/compiler/internal/project",
+      "github.com/veighnsche/can-lang/compiler/internal/browser",
+      "github.com/veighnsche/can-lang/compiler/internal/emit",
+      "github.com/veighnsche/can-lang/compiler/internal/driver",
+      "github.com/veighnsche/can-lang/compiler/internal/check"
+    ],
+    "passed_test_events": 1943,
+    "failures": [],
+    "skips": [
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen",
+        "test": null,
+        "output": [
+          "?   \tgithub.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen\t[no test files]"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/catalogue",
+        "test": "TestPackagedCatalogueBoundary",
+        "output": [
+          "=== RUN   TestPackagedCatalogueBoundary",
+          "integration_test.go:23: set CAN_BUN_ARCHIVE to run the offline packaged catalogue boundary",
+          "--- SKIP: TestPackagedCatalogueBoundary (0.00s)"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/ir",
+        "test": null,
+        "output": [
+          "?   \tgithub.com/veighnsche/can-lang/compiler/internal/ir\t[no test files]"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/sql",
+        "test": "TestMySQLDifferential",
+        "output": [
+          "=== RUN   TestMySQLDifferential",
+          "differential_test.go:25: set CAN_TEST_MYSQL_URL for the live MySQL differential",
+          "--- SKIP: TestMySQLDifferential (0.00s)"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/syntax",
+        "test": "TestFormatTriviaTestdataRoundTrip/lexer/core.can",
+        "output": [
+          "=== RUN   TestFormatTriviaTestdataRoundTrip/lexer/core.can",
+          "format_trivia_test.go:230: negative fixture: [{Code:syntax Message:expected name, found \"(\" Span:{Start:330 End:331}}]",
+          "--- SKIP: TestFormatTriviaTestdataRoundTrip/lexer/core.can (0.00s)"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/driver",
+        "test": "TestPackagedOutputValidationAndExecution",
+        "output": [
+          "=== RUN   TestPackagedOutputValidationAndExecution",
+          "output_runtime_test.go:21: set CAN_BUN_ARCHIVE for staged native output validation",
+          "--- SKIP: TestPackagedOutputValidationAndExecution (0.00s)"
+        ]
+      },
+      {
+        "package": "github.com/veighnsche/can-lang/compiler/internal/driver",
+        "test": "TestPackagedSourceMaps",
+        "output": [
+          "=== RUN   TestPackagedSourceMaps",
+          "source_maps_test.go:24: set CAN_BUN_ARCHIVE for offline source map qualification",
+          "--- SKIP: TestPackagedSourceMaps (0.00s)"
+        ]
+      }
+    ],
+    "test_skip_count": 5,
+    "packages_without_tests": [
+      "github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen",
+      "github.com/veighnsche/can-lang/compiler/internal/ir"
+    ]
+  },
+  "runtime": {
+    "command": "bun test ./runtime/test/",
+    "passed": 592,
+    "skipped": 28,
+    "failed": 0,
+    "expect_calls": 26693,
+    "files": 81,
+    "skips": [
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > open validates credentials, config, and the UTC pin"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > pools round-trip the shared cover exactly"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > execute reports exact affected counts including zero"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > mysql-native types map exactly"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > unsigned overflow and JSON objects reject without coercion"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > dialect mismatch fails before any native call"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > failures classify with verified codes"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > hostile text travels only as a bound parameter"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > descriptors reuse native prepares across executions"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > generated ids read back through LAST_INSERT_ID"
+      },
+      {
+        "file": "runtime/test/mysql.test.ts",
+        "title": "(skip) mysql pools > close validates, closes, and denies later work"
+      },
+      {
+        "file": "runtime/test/mysql-tx.test.ts",
+        "title": "(skip) mysql transactions > transactions commit across awaits and roll back"
+      },
+      {
+        "file": "runtime/test/mysql-tx.test.ts",
+        "title": "(skip) mysql transactions > opposite-order updates deadlock exactly one attempt"
+      },
+      {
+        "file": "runtime/test/mysql-tx.test.ts",
+        "title": "(skip) mysql transactions > lock waits time out with ER_LOCK_WAIT_TIMEOUT"
+      },
+      {
+        "file": "runtime/test/mysql-tx.test.ts",
+        "title": "(skip) mysql transactions > idle expiry self-heals on next use"
+      },
+      {
+        "file": "runtime/test/mysql-tx.test.ts",
+        "title": "(skip) mysql transactions > restart kills in-flight work and the pool recovers"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) roundtrip writes, stats, reads and deletes bytes"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) read_bytes fails over_limit without downloading"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) read_range serves exact windows and pins range faults"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) read_stream reassembles bytes and cancels terminally"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) write_stream pumps readers under byte budgets"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) write_stream cancels the upload when the reader fails"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) write_stream fails timeout past the deadline"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) multipart upload finishes, guards terminals and abandons cleanly"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) abandoned uploads never materialize their key"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) list pages, continues and groups with opaque tokens"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) presigned urls roundtrip and fail closed on misuse"
+      },
+      {
+        "file": "runtime/test/s3.test.ts",
+        "title": "(skip) denied credentials, refused endpoints and missing keys map exactly"
+      }
+    ]
+  },
+  "runtime_check": "passed",
+  "initial_runtime_filter_note": "bun test runtime/test/ treated the argument as a search filter and also traversed generated copies; its 2194 pass/112 skip/0 fail result is retained but not the authoritative maintained-runtime count."
+}

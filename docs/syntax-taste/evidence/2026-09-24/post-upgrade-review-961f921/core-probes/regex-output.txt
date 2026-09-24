@@ -1,0 +1,6 @@
+none {"kind":"ok","value":[{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"1","end":"1","groups":[]},{"text":"","start":"2","end":"2","groups":[]},{"text":"","start":"3","end":"3","groups":[]}]}
+native matchAll [ 0, 1, 2, 3 ]
+u {"kind":"ok","value":[{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]}]}
+native matchAll [ 0, 2, 3 ]
+v {"kind":"ok","value":[{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]},{"text":"","start":"0","end":"0","groups":[]}]}
+native matchAll [ 0, 2, 3 ]

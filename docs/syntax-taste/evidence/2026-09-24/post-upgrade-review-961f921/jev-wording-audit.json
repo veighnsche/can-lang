@@ -1,0 +1,59 @@
+{
+  "state_fields": [
+    "scope",
+    "core",
+    "actions",
+    "browser",
+    "host_ui",
+    "lifetime_iteration"
+  ],
+  "question_alternatives": {
+    "action_binding": [
+      "separate_binding",
+      "closure_actions",
+      "manual_routes"
+    ],
+    "browser_delivery": [
+      "browser_runtime",
+      "supported_shims",
+      "intermediate_only"
+    ],
+    "generic_composition": [
+      "symbolic_calls",
+      "callback_only",
+      "concrete_templates"
+    ],
+    "host_surface": [
+      "expand_catalogue",
+      "reviewed_adapter",
+      "narrow_scope"
+    ],
+    "ui_composition": [
+      "library_first",
+      "declarative_syntax",
+      "manual_model"
+    ],
+    "race_lifetime": [
+      "explicit_scope_policy",
+      "deadlines_only",
+      "early_response_only"
+    ],
+    "iteration": [
+      "self_tail_lowering",
+      "explicit_iteration",
+      "document_bounds"
+    ],
+    "error_abstraction": [
+      "finite_rows",
+      "result_data",
+      "closed_helpers"
+    ]
+  },
+  "all_corresponding_explanatory_fields_distinct": true,
+  "semantic_review": "Coordinator manually compared all triples before dispatch: same facts, constraints, counterevidence and alternatives; technical identifiers unchanged. Differences are wording, not evidence updates. Every request prepared before any response; previous responses excluded. This does not establish absence of framing bias.",
+  "request_sha256": [
+    "6339092b095a29e390669af52d1074db86bae0458cad36ccac6518ac79a48651",
+    "7e3946b1b4de77ca0ea555c4cd9bd5e4b18f1ce224851230facaa3068c087910",
+    "5d104391786490d1d2775e4aa246fb3b690f2b38058d0c6755c53343983b2847"
+  ]
+}

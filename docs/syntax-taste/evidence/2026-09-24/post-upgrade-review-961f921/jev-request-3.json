@@ -1,0 +1,85 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "The task evaluates Can at commit 961f921 for full-stack SaaS recommendations. Only analysis is requested. Compatibility has no product value because external users number zero. Implementation should reuse JavaScript/Bun primitives and add only contract/immutability glue. Concrete evidence and competing explanations must determine judgments, not repeated model votes.",
+    "core": "Can currently offers explicit binding patterns, owner-controlled record representation and composable package/error names. Symbolic validation of exported generic bodies protects callers, yet even forwarding to another parametric generic identity is disallowed for an opaque argument. Recursive calls to the same declaration and explicit callable operation inputs remain legal. Local templates are checked after specialization. Public domain errors stay explicitly finite; library code lacks the error-set polymorphism available to catalogue map/fold.",
+    "actions": "Typed action declarations connect route/input/result metadata to generated browser requests. Server binding currently requires a capture/body-only handler, with no request-derived actor or startup resource input. In the invoice sources the two projects repeat action contracts and the browser supplies dummy handlers. The declared captured load URL differs from the mounted query route; a reviewed integration test checks direct 404 and repairs the path through a rewrite. Secure ordinary route functions with pool captures exist. This audit inspected those test expectations without executing the live browser/server scenario.",
+    "browser": "The browser grid is authored in Can and uses state version checks, owned views/events/timers, late-result protection and checked fetch. Build output is a TS graph with an asset description. Node fs, util, crypto and AsyncLocalStorage remain shared-runtime dependencies; integration packaging substitutes semantic shims, including non-async context storage and preloaded diagnostic data. The audit omits runtime internals and demonstrably confuses literal Bun. with a host access while equivalent string concatenation passes. A general browser runtime contract is therefore distinct from merely compiling TypeScript.",
+    "host_ui": "The closed built-in browser API permits events with four fields: kind, target, value and key. It has no checked property, modifier information, prevent-default control, file payload or composition state, and exposes neither durable local storage nor history. Node composition through named functions works but view reconstruction and synchronization are hand-authored. Broader maintained host support and constrained typed extension are competing solutions, without requiring unrestricted JS execution.",
+    "lifetime_iteration": "The owner waits for losing work after a native Promise winner is selected: measured selection near 5ms and root return after an 80ms loser. HTTP response publication is likewise behind request-scope drainage. Live resource ownership is preserved; losers are not cancelled implicitly. Empty spreads in race with error produce the native permanently pending Promise.race([]). An executed self-tail relay countdown succeeds at depth 1000 and yields native_exception at 10000 with Bun 1.4.2. Recursion is permitted, and built-in array folds are a stack-safe option for collection traversal."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "Which design direction best addresses the action metadata versus live handler gap?",
+      "criteria": {
+        "separate_binding": "Keep client-visible action metadata independent of a server binding carrying explicit actor/resource inputs.",
+        "closure_actions": "Represent actions as bound route functions whose transport metadata can be projected without server captures.",
+        "manual_routes": "Standardize the present manual binding and mirrored declarations, with tests checking the two ends."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "How should the browser runtime and packaging boundary be completed?",
+      "criteria": {
+        "browser_runtime": "Own the browser runtime semantics and delivery path, checking runtime dependencies as well as emitted application code.",
+        "supported_shims": "Make semantic polyfills an explicit supported target layer, validated beyond the invoice subset.",
+        "intermediate_only": "Document the present boundary as an expert integration target and postpone general browser delivery support."
+      }
+    },
+    "generic_composition": {
+      "type": "choice",
+      "instructions": "What is the best next step for composing individually safe exported generic declarations?",
+      "criteria": {
+        "symbolic_calls": "Compose parametric callees through substituted symbolic contracts while preserving per-declaration validation.",
+        "callback_only": "Retain opaque-call rejection and make explicit function-valued dependencies the public generic idiom.",
+        "concrete_templates": "Adopt template semantics uniformly, accepting that supported types depend on generic bodies."
+      }
+    },
+    "host_surface": {
+      "type": "choice",
+      "instructions": "How should ordinary frontend needs become expressible under Can host contracts?",
+      "criteria": {
+        "expand_catalogue": "Fill the demonstrated event/storage/history gaps in the curated catalogue and verify lifecycle/error semantics.",
+        "reviewed_adapter": "Design a narrow validated extension mechanism for browser native libraries, including test and disposal requirements.",
+        "narrow_scope": "Constrain frontend positioning to the currently supported interaction and storage model."
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "instructions": "How should Can make ordinary interactive views economical to maintain?",
+      "criteria": {
+        "library_first": "Establish a library-level component/update baseline with lifecycle and input-preservation tests.",
+        "declarative_syntax": "Make declarative rendering a language construct and evaluate it against the existing grid.",
+        "manual_model": "Accept the current low-level UI style as the design and focus on better authoring guidance."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "How should first-success work compose with HTTP response deadlines and safe ownership?",
+      "criteria": {
+        "explicit_scope_policy": "Evaluate request-scoped cancellation/ownership transfer with explicit response and cleanup boundaries.",
+        "deadlines_only": "Use operation-local time limits and precise guidance without changing group lifetime semantics.",
+        "early_response_only": "Separate response delivery from cleanup by retaining residual work under a server lifetime contract."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "How should Can support growing iterative workloads under native lowering?",
+      "criteria": {
+        "self_tail_lowering": "Eliminate stack growth for direct tail relay using native iteration and defined diagnostic/test semantics.",
+        "explicit_iteration": "Provide a dedicated stack-safe loop abstraction instead of promising tail-call elimination.",
+        "document_bounds": "State the native recursion limit as a practical boundary and defer a new iteration guarantee."
+      }
+    },
+    "error_abstraction": {
+      "type": "choice",
+      "instructions": "Select the next step for library error-set abstraction relative to privileged catalogue combinators.",
+      "criteria": {
+        "finite_rows": "Use reusable wrapper examples to assess limited explicit failure-set genericity against current encodings.",
+        "result_data": "Retain concrete public error sets and make generic libraries manipulate success/failure records as data.",
+        "closed_helpers": "Use a small maintained collection of compiler-specialized helpers rather than introducing error-set parameters."
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "scope": "Review Can revision 961f921 as a candidate for broad backend/frontend SaaS use. No code redesign is authorized by this assessment. With no outside adopters, old syntax and ABI need no preservation. Native JavaScript/Bun lowering with necessary contract and immutable-value adapters is required. Compare remedies through specific programs and their costs, without treating classifications as validation.",
+    "core": "The implementation has unambiguous explicit pattern binders, representation-controlled owner records, dependency aliases, and qualified error identity. Public generic bodies undergo symbolic checking; passing a type variable to a different generic identity helper is rejected. Self recursion with the same variables and supplied operation callbacks work. Nonpublic generics still specialize as templates. Authored emits bounds list concrete nominal errors; built-in map/fold can carry a callback-specific finite bound but libraries cannot quantify over one.",
+    "actions": "A checked action fixes transport path, inputs, outcome variant and HTTP statuses, and generates the browser fetch contract. Its handler signature has space only for captures and body, excluding authenticated request context and injected pool. Invoice duplicates declarations across targets and adds never-served client handler stubs. The server exposes a query-form load route while the declared URL contains a capture; integration source uses a proxy rewrite and asserts 404 for the unrevised direct URL. Manual HTTP callbacks already support secure auth and captured pools. These route facts were source-verified, not freshly exercised against a live service.",
+    "browser": "Can implements a stateful browser invoice editor: versioned state, disposal-owned DOM/event/timer handles, stale reply checks and typed HTTP calls. The browser target emits TS modules and a content manifest. Its common runtime still depends on Node filesystem, utility, hashing and async context modules. Browser tests provide four replacements, with a stack-only AsyncLocalStorage and baked diagnostics index. Audit ignores runtime bodies; a probe rejects the string Bun. but permits its concatenated equivalent. Required runtime adaptation goes beyond normal TS transpilation.",
+    "host_ui": "Host operations are supplied only by the maintained browser catalogue. Its event record has kind/target/value/key, without checkbox state, modifier keys, cancellation, file lists or IME detail. No local persistence or navigation-history capability is exposed. Functions already compose UI nodes, though the editor carries manual rendering and focus/state updates. Alternatives include a reviewed typed adapter seam or expanding the controlled catalogue; arbitrary JavaScript need not be offered.",
+    "lifetime_iteration": "Native Promise selection does not release scoped lifetime obligations. A fresh probe selected a race winner around 5ms but completed the owner only after an approximately 80ms losing task; the HTTP adapter awaits the same request-scope drain. This preserves leases and has no automatic loser cancellation. A zero-participant dynamic race with error never settles, following Promise.race([]). On Bun 1.4.2 emitted self-tail relay handles 1000 countdown steps and fails with native_exception at 10000. Array folds already support safe collection iteration; arbitrary recursive work does not have that guarantee."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "Select the next contract experiment for authenticating and mounting shared actions across both targets.",
+      "criteria": {
+        "separate_binding": "Define an importable wire contract and independently mount it with typed authenticated context and injected services.",
+        "closure_actions": "Attach closures to action declarations, then derive a server-free client view through target partitioning.",
+        "manual_routes": "Keep checked action metadata plus handwritten authenticated routes, backed by cross-project conformance tests."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "Choose the first delivery work needed before broadly recommending browser Can.",
+      "criteria": {
+        "browser_runtime": "Provide maintained target-specific runtime adapters with documented bundling and whole-graph browser validation.",
+        "supported_shims": "Maintain a supported shim-based build pipeline with parity tests covering every allowed language operation.",
+        "intermediate_only": "Limit the recommendation to generated browser-oriented TS whose host adapters are integrator-owned."
+      }
+    },
+    "generic_composition": {
+      "type": "choice",
+      "instructions": "Select a remedy for public generics that cannot forward opaque arguments to another parametric helper.",
+      "criteria": {
+        "symbolic_calls": "Extend declaration checking to consume another validated generic signature without concrete representation assumptions.",
+        "callback_only": "Treat operation injection as the permanent composition mechanism for exported generics.",
+        "concrete_templates": "Remove symbolic public checking and retain whole-instantiation checks as the generic API model."
+      }
+    },
+    "host_surface": {
+      "type": "choice",
+      "instructions": "Choose the next platform direction for browser events, persistence and library extensibility.",
+      "criteria": {
+        "expand_catalogue": "Extend the closed browser API through a persistent-draft and richer-input example before designing general extension.",
+        "reviewed_adapter": "Evaluate a restricted authorable host-module boundary that preserves wire types, errors and ownership.",
+        "narrow_scope": "Retain the limited host surface as a deliberate product boundary rather than adding capabilities now."
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "instructions": "Choose the next experiment for reusable frontend authoring on the existing state/lifecycle foundation.",
+      "criteria": {
+        "library_first": "Compare reusable named render/update functions and typed records against the current manual editor before proposing syntax.",
+        "declarative_syntax": "Investigate dedicated typed UI syntax immediately, specifying update identity and cleanup in the language.",
+        "manual_model": "Retain explicit DOM synchronization and teach disciplined small-function organization."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "Choose the next lifecycle experiment after observing winner selection followed by losing-task drain.",
+      "criteria": {
+        "explicit_scope_policy": "Design a visible policy for cancellable competitors and bounded supervision of uncancellable work while retaining leases.",
+        "deadlines_only": "Keep current ownership policy and bound requests through deadlines on every participant plus external supervision.",
+        "early_response_only": "Move response-independent losers to the service owner and return the selected response without waiting for them."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "Choose a response to self-tail relay exhausting the stack in ordinary emitted code.",
+      "criteria": {
+        "self_tail_lowering": "Prototype loop-based emission for proven self-tail calls with conformance for contract and observation behavior.",
+        "explicit_iteration": "Design a checked iteration primitive whose state transitions remain typed and whose execution uses native looping.",
+        "document_bounds": "Keep current recursion semantics, teaching folds and explicit input bounds for larger work."
+      }
+    },
+    "error_abstraction": {
+      "type": "choice",
+      "instructions": "How should ordinary generic wrappers express callback failures without hiding public contracts?",
+      "criteria": {
+        "finite_rows": "Benchmark real higher-order library APIs against fixed bounds/result encodings before a narrow written error-row prototype.",
+        "result_data": "Use ordinary result variants permanently for higher-order composition and adapt at concrete completion boundaries.",
+        "closed_helpers": "Keep callback-error specialization in the catalogue, extending it selectively when real applications require helpers."
+      }
+    }
+  }
+}

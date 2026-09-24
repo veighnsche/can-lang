@@ -1,0 +1,12 @@
+{
+  "head": "961f921a6a8cf40be54735683caf29613c19cbd8",
+  "reviewed_head_unchanged": true,
+  "report_words": 3622,
+  "local_links_checked": 37,
+  "issues": [],
+  "example_source_changes": [],
+  "tracked_diff": "",
+  "status": "?? docs/syntax-taste/evidence/2026-09-24/post-upgrade-review-961f921/\n?? docs/syntax-taste/post-upgrade-language-review-961f921-2026-09-24.md\n",
+  "temporary_coordinator_runner_removed": true,
+  "compiler_test_skip_count": 5
+}
