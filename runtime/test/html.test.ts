@@ -247,6 +247,20 @@ test("head-only nodes, native title escaping and pinned HTMX policy", async () =
     "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
   );
 });
+test("the emitted HTMX config swaps exactly 200-399 and 422", async () => {
+  const output = renderSafe(
+    value(await html.document("x", [value(await html.runtimeHead())], [await text("x")])),
+  );
+  const encoded = output.match(/<meta name="htmx-config" content="(.*?)">/)?.[1] ?? "";
+  const config = JSON.parse(encoded.replaceAll("&quot;", '"')) as {
+    mode: string;
+    noSwap: number[];
+  };
+  expect(config.mode).toBe("same-origin");
+  const quiet = [204, 304];
+  for (let code = 400; code < 600; code++) if (code !== 422) quiet.push(code);
+  expect(config.noSwap).toEqual(quiet);
+});
 test("typed HTMX selectors and finite intervals cannot inject trigger code", async () => {
   for (const id of ["", "#id", "x y", "x,body", "x]", "1id", "x\n", "x:has(*)"]) {
     check(await html.targetID(id), "htmx::invalid_target");

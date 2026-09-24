@@ -469,6 +469,19 @@
       "../domain.ts"
     ],
     "platform/action-routes.ts": [],
+    "platform/action-json.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain.ts",
+      "../codec/budget.ts",
+      "../codec/json.ts",
+      "../codec/project.ts",
+      "../transport/media.ts",
+      "./http.ts",
+      "./action-routes.ts",
+      "./router.ts"
+    ],
     "platform/router.ts": [
       "../completion.ts",
       "../data.ts",

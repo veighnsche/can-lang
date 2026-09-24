@@ -67,6 +67,68 @@ fn int byte_len
         ok bytes::buffer raw => match call bytes::to_ints(raw)
             ok int[] units => ok units.length
 
+/// One key scalar: digits, ASCII letters, underscore or dash.
+/// Stored keys mint checked form row names, so only keys that
+/// round-trip through the keyed-row wire shape validate.
+fn bool key_char_ok
+    emits []
+    given
+        int scalar
+    asserts
+        digit: 53 => ok true
+        upper: 75 => ok true
+        lower: 107 => ok true
+        underscore: 95 => ok true
+        dash: 45 => ok true
+        space: 32 => ok false
+        bang: 33 => ok false
+        del: 127 => ok false
+    match scalar >= 48 and scalar <= 57
+        false => match scalar >= 65 and scalar <= 90
+            false => match scalar >= 97 and scalar <= 122
+                false => match scalar is 95 or scalar is 45
+                    false => ok false
+                    true => ok true
+                true => ok true
+            true => ok true
+        true => ok true
+
+/// Scan key scalars front to back: every scalar must satisfy the
+/// row-key shape, and the empty scan accepts vacuously (emptiness is
+/// rejected separately by the line check).
+fn bool key_chars_ok
+    emits []
+    given
+        int[] scalars
+        int index
+    asserts
+        clean: [107, 49], 0 => ok true
+        bad: [107, 32], 0 => ok false
+        empty: [], 0 => ok true
+    match index >= scalars.length
+        false => match call key_char_ok(scalars[index])
+            ok bool head => match head
+                false => ok false
+                true => match call key_chars_ok(scalars, index + 1)
+                    ok bool rest => ok rest
+        true => ok true
+
+/// Check one line key against the keyed-row wire shape. Undecodable
+/// text fails closed; only mintable keys reach the store, so the
+/// server-rendered form can always name every stored row.
+fn bool key_shape_ok
+    emits []
+    given
+        str key
+    asserts
+        sample: "k1" => ok true
+        spaced: "k 1" => ok false
+        empty: "" => ok true
+    match call text::scalars(key)
+        text::invalid_unicode => ok false
+        ok int[] units => match call key_chars_ok(units, 0)
+            ok bool shaped => ok shaped
+
 /// Validate one normalized save line. None accepts; some carries the
 /// single finite reason the save reports.
 fn option::value<str> check_line
@@ -76,19 +138,23 @@ fn option::value<str> check_line
     asserts
         valid: records::line_draft("k1", "sku-1", 2) => ok option::none()
         empty_key: records::line_draft("", "sku-1", 2) => ok option::some("empty line key")
+        bad_key: records::line_draft("k 1", "sku-1", 2) => ok option::some("bad line key")
         empty_sku: records::line_draft("k1", "", 2) => ok option::some("empty sku")
         zero_qty: records::line_draft("k1", "sku-1", 0) => ok option::some("bad quantity")
         huge_qty: records::line_draft("k1", "sku-1", 1000001) => ok option::some("bad quantity")
     match draft.key is ""
-        false => match (call byte_len(draft.key)) > 64
-            false => match draft.sku is ""
-                false => match (call byte_len(draft.sku)) > 64
-                    false => match draft.qty < 1 or draft.qty > 1000000
-                        false => ok option::none()
-                        true => ok option::some("bad quantity")
-                    true => ok option::some("sku too long")
-                true => ok option::some("empty sku")
-            true => ok option::some("line key too long")
+        false => match call key_shape_ok(draft.key)
+            ok bool shaped => match shaped
+                false => ok option::some("bad line key")
+                true => match (call byte_len(draft.key)) > 64
+                    false => match draft.sku is ""
+                        false => match (call byte_len(draft.sku)) > 64
+                            false => match draft.qty < 1 or draft.qty > 1000000
+                                false => ok option::none()
+                                true => ok option::some("bad quantity")
+                            true => ok option::some("sku too long")
+                        true => ok option::some("empty sku")
+                    true => ok option::some("line key too long")
         true => ok option::some("empty line key")
 
 /// Pairwise duplicate line-key scan. Keys compare by exact string

@@ -1,6 +1,6 @@
 package web
     provides [save_invoice, save_invoice_form, load_invoice, invoice_routes, health, boot, main]
-    uses [records, model, bytes, clock, codec, env, form, html, http, io, option, sql, text]
+    uses [records, model, render, bytes, clock, codec, env, form, html, htmx, http, io, option, random, sql, text]
 
 action save_invoice
     post "/invoices/save"
@@ -325,6 +325,10 @@ fn records::load_outcome load_for_session
             load_uncertain: pool, callable model::decide_load => sql::commit_unknown("tx-1")
             get_found: pool, callable model::decide_load => ok records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)])
             get_no_cookie: pool, callable model::decide_load => ok records::load_denied("inv-1")
+            form_found: pool, callable model::decide_load => ok records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)])
+            form_denied: pool, callable model::decide_load => ok records::load_denied("inv-9")
+            form_busy: pool, callable model::decide_load => ok records::load_busy("inv-1")
+            form_render_down: pool, callable model::decide_load => ok records::found("inv-1", 1, "Acme", [records::found_line("k 1", "sku-1", 2)])
         sql::connection_failed => ok records::load_busy(invoice_id)
         sql::transaction_failed => ok records::load_busy(invoice_id)
         sql::commit_unknown => ok records::load_busy(invoice_id)
@@ -515,6 +519,109 @@ fn http::server_response load_route
                                 option::some => match call load_for_session(pool, session.value, invoice_id)
                                     ok records::load_outcome outcome => ok call apply_load_outcome(outcome)
 
+/// Answer one notice document at an explicit status. An
+/// inadmissible status or a render failure falls back to a 500 text
+/// answer carrying no invoice content.
+fn http::server_response notice_at
+    emits []
+    given
+        int code
+        str title
+        str message
+    asserts
+        sample: 403, "Invoice denied", "denied inv-9" => ok
+        bad_status: 99, "Invoice denied", "denied inv-9" => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => match call render::notice_page(title, message)
+            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok html::safe document => ok call http::response_html(status, call http::empty_server_headers(), document)
+
+/// Render one protected load for the edit page: a found invoice
+/// becomes the edit form with a fresh operation id, while denials and
+/// outages become notice documents at their truthful statuses.
+/// Unmintable stored row keys fail the render into a 500 rather than
+/// serving a broken form.
+fn http::server_response page_for_load
+    emits []
+    given
+        records::load_outcome outcome
+        str session_token
+    asserts
+        page_found: records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)]), "tok-alice" => ok
+        page_denied: records::load_denied("inv-9"), "" => ok
+        page_busy: records::load_busy("inv-1"), "tok-alice" => ok
+        page_render_down: records::found("inv-1", 1, "Acme", [records::found_line("k 1", "sku-1", 2)]), "tok-alice" => ok
+    match outcome
+        records::found => match call random::uuid_v4()
+            when
+                page_found: => ok "op-9"
+                page_render_down: => ok "op-9"
+                form_found: => ok "op-9"
+                form_render_down: => ok "op-9"
+            ok str operation_id => match call render::edit_page(outcome, session_token, operation_id)
+                html::invalid_structure => ok call fixed_at(500, "error")
+                html::invalid_url => ok call fixed_at(500, "error")
+                htmx::invalid_target => ok call fixed_at(500, "error")
+                form::unknown_field => ok call fixed_at(500, "error")
+                form::invalid_name => ok call fixed_at(500, "error")
+                ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+        records::load_denied => match call notice_at(403, "Invoice denied", "denied " + outcome.invoice_id)
+            ok http::server_response done => ok done
+        records::load_busy => match call notice_at(503, "Invoice unavailable", "busy " + outcome.invoice_id)
+            ok http::server_response done => ok done
+
+/// Serve the invoice edit page: reject any request body, read the
+/// invoice id from its single query value, resolve the session cookie,
+/// then run the protected read and render its outcome. Every outcome
+/// keeps its truthful status; no failure rewrites into success.
+fn http::server_response form_route
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+    asserts
+        form_over_limit: => ok
+        form_bad_query: => ok
+        form_found: => ok
+        form_denied: => ok
+        form_busy: => ok
+        form_render_down: => ok
+    match call http::request_body(req, 8192)
+        when
+            form_over_limit: req, 8192 => http::body_limit(8192)
+            form_bad_query: req, 8192 => ok call bytes::empty()
+            form_found: req, 8192 => ok call bytes::empty()
+            form_denied: req, 8192 => ok call bytes::empty()
+            form_busy: req, 8192 => ok call bytes::empty()
+            form_render_down: req, 8192 => ok call bytes::empty()
+        http::body_limit => ok call fixed_at(413, "Payload Too Large")
+        ok bytes::buffer raw => match call bytes::to_ints(raw)
+            ok int[] units => match units.length is 0
+                false => ok call fixed_at(400, "Bad Request")
+                true => match call http::query_one(req, "invoice_id")
+                    when
+                        form_bad_query: req, "invoice_id" => http::invalid_request("query")
+                        form_found: req, "invoice_id" => ok "inv-1"
+                        form_denied: req, "invoice_id" => ok "inv-9"
+                        form_busy: req, "invoice_id" => ok "inv-1"
+                        form_render_down: req, "invoice_id" => ok "inv-1"
+                    http::invalid_request => ok call fixed_at(400, "Bad Request")
+                    ok str invoice_id => match call http::request_headers(req)
+                        when
+                            form_found: req => ok [http::header("cookie", "session=tok-alice")]
+                            form_denied: req => ok [http::header("x-t", "1")]
+                            form_busy: req => ok [http::header("cookie", "session=tok-alice")]
+                            form_render_down: req => ok [http::header("cookie", "session=tok-alice")]
+                        ok http::header[] headers => match call model::session_of(headers)
+                            ok option::value<str> session => match session
+                                option::none => match call load_for_session(pool, "", invoice_id)
+                                    ok records::load_outcome outcome => match call page_for_load(outcome, "")
+                                        ok http::server_response done => ok done
+                                option::some => match call load_for_session(pool, session.value, invoice_id)
+                                    ok records::load_outcome outcome => match call page_for_load(outcome, session.value)
+                                        ok http::server_response done => ok done
+
 /// Answer readiness for the operator and the test harness.
 fn http::server_response health
     emits []
@@ -526,7 +633,10 @@ fn http::server_response health
 
 /// Render one save outcome as a status fragment. Every value enters
 /// through the escaping text constructor; the stale arm reports the
-/// current revision so the writer can reread.
+/// current revision so the writer can reread. Success announces
+/// politely; every failure arm wraps its summary plus a recovery hint
+/// in an alert region, and the denied arm echoes only the caller-sent
+/// id so foreign and nonexistent targets disclose nothing.
 fn html::safe outcome_fragment
     emits [html::invalid_structure]
     given
@@ -543,7 +653,8 @@ fn html::safe outcome_fragment
             call html::text("saved " + outcome.invoice_id + " revision " + call text::from_int(outcome.revision)) as html::node words
             call html::make_tag("p") as html::tag paragraph
             call html::text_attribute("class", "save-saved") as html::attribute style
-            call html::element(paragraph, [style], [words]) as html::node line
+            call html::text_attribute("role", "status") as html::attribute polite
+            call html::element(paragraph, [style, polite], [words]) as html::node line
             call html::fragment([line]) as html::safe body
             html::invalid_structure
             ok => ok body
@@ -552,7 +663,12 @@ fn html::safe outcome_fragment
             call html::make_tag("p") as html::tag paragraph
             call html::text_attribute("class", "save-rejected") as html::attribute style
             call html::element(paragraph, [style], [words]) as html::node line
-            call html::fragment([line]) as html::safe body
+            call html::text("Fix the form and save again.") as html::node hint_text
+            call html::element(paragraph, [], [hint_text]) as html::node hint
+            call html::make_tag("div") as html::tag alert_tag
+            call html::text_attribute("role", "alert") as html::attribute alert
+            call html::element(alert_tag, [alert], [line, hint]) as html::node notice
+            call html::fragment([notice]) as html::safe body
             html::invalid_structure
             ok => ok body
         records::stale => match chain
@@ -560,7 +676,12 @@ fn html::safe outcome_fragment
             call html::make_tag("p") as html::tag paragraph
             call html::text_attribute("class", "save-stale") as html::attribute style
             call html::element(paragraph, [style], [words]) as html::node line
-            call html::fragment([line]) as html::safe body
+            call html::text("Reload the form to reread, then save again.") as html::node hint_text
+            call html::element(paragraph, [], [hint_text]) as html::node hint
+            call html::make_tag("div") as html::tag alert_tag
+            call html::text_attribute("role", "alert") as html::attribute alert
+            call html::element(alert_tag, [alert], [line, hint]) as html::node notice
+            call html::fragment([notice]) as html::safe body
             html::invalid_structure
             ok => ok body
         records::denied => match chain
@@ -568,7 +689,12 @@ fn html::safe outcome_fragment
             call html::make_tag("p") as html::tag paragraph
             call html::text_attribute("class", "save-denied") as html::attribute style
             call html::element(paragraph, [style], [words]) as html::node line
-            call html::fragment([line]) as html::safe body
+            call html::text("Sign in with an authorized account and try again.") as html::node hint_text
+            call html::element(paragraph, [], [hint_text]) as html::node hint
+            call html::make_tag("div") as html::tag alert_tag
+            call html::text_attribute("role", "alert") as html::attribute alert
+            call html::element(alert_tag, [alert], [line, hint]) as html::node notice
+            call html::fragment([notice]) as html::safe body
             html::invalid_structure
             ok => ok body
         records::busy => match chain
@@ -576,7 +702,12 @@ fn html::safe outcome_fragment
             call html::make_tag("p") as html::tag paragraph
             call html::text_attribute("class", "save-busy") as html::attribute style
             call html::element(paragraph, [style], [words]) as html::node line
-            call html::fragment([line]) as html::safe body
+            call html::text("The store is unavailable; retry the same form.") as html::node hint_text
+            call html::element(paragraph, [], [hint_text]) as html::node hint
+            call html::make_tag("div") as html::tag alert_tag
+            call html::text_attribute("role", "alert") as html::attribute alert
+            call html::element(alert_tag, [alert], [line, hint]) as html::node notice
+            call html::fragment([notice]) as html::safe body
             html::invalid_structure
             ok => ok body
 
@@ -629,7 +760,8 @@ fn html::node issue_item
         ok => ok item
 
 /// Render one structurally rejected form: the heading plus the
-/// retained raw entries and the issue list in document order.
+/// retained raw entries and the issue list in document order, wrapped
+/// in an alert region so the swapped 422 announces its errors.
 fn html::safe rejected_fragment
     emits [html::invalid_structure]
     given
@@ -650,7 +782,10 @@ fn html::safe rejected_fragment
                 call html::element(list_tag, [raw_style], raw) as html::node raw_list
                 call html::text_attribute("class", "form-issues") as html::attribute issue_style
                 call html::element(list_tag, [issue_style], problems) as html::node issue_list
-                call html::fragment([heading, raw_list, issue_list]) as html::safe body
+                call html::make_tag("div") as html::tag alert_tag
+                call html::text_attribute("role", "alert") as html::attribute alert
+                call html::element(alert_tag, [alert], [heading, raw_list, issue_list]) as html::node notice
+                call html::fragment([notice]) as html::safe body
                 html::invalid_structure
                 ok => ok body
 
@@ -667,9 +802,9 @@ fn html::safe render_save_rejected
         ok html::safe done => ok done
 
 /// Mount the invoice callbacks, capturing the serving pool. The form
-/// action serves through the checked adapter; JSON save and load
-/// serve through thin exact-path routes until the action adapter
-/// mounts JSON bodies and captured paths with request context.
+/// action serves through the checked adapter; JSON save, load and the
+/// edit page serve through thin exact-path routes until the action
+/// adapter mounts JSON bodies and captured paths with request context.
 fn http::router invoice_routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
@@ -680,8 +815,9 @@ fn http::router invoice_routes
         call http::serve_form_action<records::save_outcome, records::invoice_form_wire>("save_invoice_form", callable render_save_outcome, callable render_save_rejected) as http::route form
         call http::route_post("/invoices/save", callable json_save_route) as http::route save
         call http::route_get("/invoices/load", callable load_route) as http::route load
+        call http::route_get("/invoices/form", callable form_route) as http::route form_page
         call http::route_get("/health", callable health) as http::route probe
-        call http::make_router([form, save, load, probe]) as http::router built
+        call http::make_router([form, save, load, form_page, probe]) as http::router built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
