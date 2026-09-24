@@ -178,7 +178,7 @@ func TestExportedGenericStructuralComposites(t *testing.T) {
 		},
 		"box match": {
 			provides: "box, get",
-			source:   "record box<item>\n    item value\nfn item get<item>\n    emits []\n    given\n        box<item> cell\n    asserts\n        sample: box(3) => ok 3\n    match cell\n        held => ok held.value\n",
+			source:   "record box<item>\n    item value\nfn item get<item>\n    emits []\n    given\n        box<item> cell\n    asserts\n        sample: box(3) => ok 3\n    match cell\n        bind held => ok held.value\n",
 			instance: "get",
 		},
 		"copy update": {
@@ -275,7 +275,7 @@ func TestExportedGenericMethod(t *testing.T) {
 
 func TestExportedGenericDependencyEdit(t *testing.T) {
 	broken := "package helpers\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits []\n    given\n        item value\n    asserts\n        triple: 3 => ok 6\n    ok value + value\n"
-	main := "package app\n    provides []\n    uses [helpers]\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 6\n    ok call helpers::doubled(3)\n" + programMain + "    ok\n"
+	main := "package app\n    provides []\n    uses [vendor::helpers]\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 6\n    ok call helpers::doubled(3)\n" + programMain + "    ok\n"
 	_, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{"src/lib/lib.can": broken})
 	if err == nil {
 		t.Fatal("dependency body edit adding + admitted")
@@ -288,7 +288,7 @@ func TestExportedGenericDependencyEdit(t *testing.T) {
 		t.Fatalf("failure is not located at the dependency declaration: %v", err)
 	}
 	fixed := "package helpers\n    provides [doubled]\n    uses []\nfn item doubled<item>\n    emits []\n    given\n        item value\n        callable item (item, item) emits [] plus\n    asserts\n        triple: 3, callable int_plus => ok 6\n    ok call plus(value, value)\nfn int int_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 3, 3 => ok 6\n    ok first + second\n"
-	repaired := "package app\n    provides []\n    uses [helpers]\nfn int app_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 8\n    ok call helpers::doubled(4, callable app_plus)\n" + programMain + "    ok\n"
+	repaired := "package app\n    provides []\n    uses [vendor::helpers]\nfn int app_plus\n    emits []\n    given\n        int first\n        int second\n    asserts\n        sample: 1, 2 => ok 3\n    ok first + second\nfn int use_doubled\n    emits []\n    asserts\n        sample: => ok 8\n    ok call helpers::doubled(4, callable app_plus)\n" + programMain + "    ok\n"
 	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": repaired}, map[string]string{"src/lib/lib.can": fixed})
 	if err != nil {
 		t.Fatal(err)
