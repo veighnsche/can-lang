@@ -311,16 +311,111 @@ func TestIdentitySizeAndGraphValidation(t *testing.T) {
 	}
 }
 
-func TestPhantomVariantArgumentsRemainInvariant(t *testing.T) {
+func TestGenericVariantLeafSetCompatibility(t *testing.T) {
 	g := newGraph()
-	leaf := nominal(t, g, Record, "p::leaf")
-	define(t, g, leaf, nil)
-	a := nominal(t, g, Variant, "p::phantom", g.scalar("int"))
-	b := nominal(t, g, Variant, "p::phantom", g.scalar("str"))
-	define(t, g, a, nil, leaf)
-	define(t, g, b, nil, leaf)
+	unit := nominal(t, g, Record, "p::unit")
+	define(t, g, unit, nil)
+	taggedInt := nominal(t, g, Variant, "p::tagged", g.scalar("int"))
+	taggedStr := nominal(t, g, Variant, "p::tagged", g.scalar("str"))
+	define(t, g, taggedInt, nil, unit)
+	define(t, g, taggedStr, nil, unit)
+	bridge := nominal(t, g, Variant, "p::bridge")
+	define(t, g, bridge, nil, unit)
 	seal(t, g)
-	if Assignable(a, b) || Assignable(b, a) {
-		t.Fatal("identical leaves erased invariant phantom arguments")
+	if !Assignable(taggedInt, taggedStr) || !Assignable(taggedStr, taggedInt) {
+		t.Fatal("same-template specializations with equal leaves rejected")
+	}
+	names := map[*Type]string{unit: "unit", taggedInt: "tagged<int>", taggedStr: "tagged<str>", bridge: "bridge"}
+	sources := []*Type{unit, taggedInt, taggedStr, bridge}
+	want := map[*Type]map[*Type]bool{
+		unit:      {unit: true, taggedInt: true, taggedStr: true, bridge: true},
+		taggedInt: {unit: false, taggedInt: true, taggedStr: true, bridge: true},
+		taggedStr: {unit: false, taggedInt: true, taggedStr: true, bridge: true},
+		bridge:    {unit: false, taggedInt: true, taggedStr: true, bridge: true},
+	}
+	for _, source := range sources {
+		for _, target := range sources {
+			if got := Assignable(source, target); got != want[source][target] {
+				t.Fatalf("%s to %s = %v, want %v", names[source], names[target], got, want[source][target])
+			}
+		}
+	}
+}
+
+func TestGenericVariantLeavesKeepArgumentIdentity(t *testing.T) {
+	g := newGraph()
+	i := g.scalar("int")
+	s := g.scalar("str")
+	boxInt := nominal(t, g, Record, "p::box", i)
+	boxStr := nominal(t, g, Record, "p::box", s)
+	define(t, g, boxInt, []Field{{"value", i}})
+	define(t, g, boxStr, []Field{{"value", s}})
+	wrapInt := nominal(t, g, Variant, "p::wrap", i)
+	wrapStr := nominal(t, g, Variant, "p::wrap", s)
+	define(t, g, wrapInt, nil, boxInt)
+	define(t, g, wrapStr, nil, boxStr)
+	seal(t, g)
+	if Assignable(boxInt, boxStr) || Assignable(boxStr, boxInt) {
+		t.Fatal("generic record arguments widened")
+	}
+	if Assignable(wrapInt, wrapStr) || Assignable(wrapStr, wrapInt) {
+		t.Fatal("variants with distinct generic leaves mixed")
+	}
+	if !Assignable(boxInt, wrapInt) || Assignable(boxInt, wrapStr) {
+		t.Fatal("generic leaf inclusion wrong")
+	}
+}
+
+func TestNestedGenericVariantLeafSetCompatibility(t *testing.T) {
+	g := newGraph()
+	i := g.scalar("int")
+	s := g.scalar("str")
+	unit := nominal(t, g, Record, "p::unit")
+	define(t, g, unit, nil)
+	extra := nominal(t, g, Record, "p::extra")
+	define(t, g, extra, nil)
+	innerInt := nominal(t, g, Variant, "p::inner", i)
+	innerStr := nominal(t, g, Variant, "p::inner", s)
+	define(t, g, innerInt, nil, unit)
+	define(t, g, innerStr, nil, unit)
+	outerInt := nominal(t, g, Variant, "p::outer", i)
+	outerStr := nominal(t, g, Variant, "p::outer", s)
+	define(t, g, outerInt, nil, innerInt, extra)
+	define(t, g, outerStr, nil, innerStr, extra)
+	seal(t, g)
+	if len(outerInt.Leaves()) != 2 || len(outerStr.Leaves()) != 2 {
+		t.Fatal("nested generic leaves did not flatten")
+	}
+	if !Assignable(outerInt, outerStr) || !Assignable(outerStr, outerInt) {
+		t.Fatal("nested same-template specializations with equal leaves rejected")
+	}
+	if Assignable(outerInt, innerInt) || !Assignable(innerInt, outerInt) {
+		t.Fatal("nested narrower-variant inclusion wrong")
+	}
+}
+
+func TestOptionSpecializationsStayDistinct(t *testing.T) {
+	g := newGraph()
+	i := g.scalar("int")
+	s := g.scalar("str")
+	none := nominal(t, g, Record, "option::none")
+	define(t, g, none, nil)
+	someInt := nominal(t, g, Record, "option::some", i)
+	define(t, g, someInt, []Field{{"value", i}})
+	someStr := nominal(t, g, Record, "option::some", s)
+	define(t, g, someStr, []Field{{"value", s}})
+	optionInt := nominal(t, g, Variant, "option::value", i)
+	optionStr := nominal(t, g, Variant, "option::value", s)
+	define(t, g, optionInt, nil, none, someInt)
+	define(t, g, optionStr, nil, none, someStr)
+	seal(t, g)
+	if Assignable(optionInt, optionStr) || Assignable(optionStr, optionInt) {
+		t.Fatal("option specializations with distinct leaves mixed")
+	}
+	if !Assignable(none, optionInt) || !Assignable(someInt, optionInt) {
+		t.Fatal("option leaf inclusion rejected")
+	}
+	if Assignable(someInt, optionStr) || Assignable(someStr, optionInt) {
+		t.Fatal("option leaf entered the wrong specialization")
 	}
 }

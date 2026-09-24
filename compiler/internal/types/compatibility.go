@@ -6,8 +6,9 @@ func Equal(a, b *Type) bool {
 	return a != nil && b != nil && a.graph.sealed && b.graph.sealed && a.id == b.id
 }
 
-// Assignable permits named variant inclusion and finite callable-bound widening.
-// It never recursively widens generic arguments, arrays or callable signatures.
+// Assignable permits extensional named-variant inclusion and finite
+// callable-bound widening. It never recursively widens generic record
+// arguments, arrays or callable signatures.
 func Assignable(actual, expected *Type) bool {
 	if Equal(actual, expected) {
 		return true
@@ -15,9 +16,11 @@ func Assignable(actual, expected *Type) bool {
 	if actual == nil || expected == nil || !actual.graph.sealed || !expected.graph.sealed {
 		return false
 	}
-	// Even phantom generic arguments are invariant. Coincidentally equal leaf
-	// sets do not erase distinct specializations of the same nominal template.
-	if actual.declaration != "" && actual.declaration == expected.declaration && (len(actual.arguments) != 0 || len(expected.arguments) != 0) {
+	// Generic records and other non-variant nominals are invariant in their
+	// arguments. Variants are extensional named leaf sets: specializations of
+	// one variant template compare by admitted leaves below, so coincidentally
+	// equal leaf sets are compatible across specializations.
+	if actual.declaration != "" && actual.declaration == expected.declaration && (len(actual.arguments) != 0 || len(expected.arguments) != 0) && actual.kind != Variant && expected.kind != Variant {
 		return false
 	}
 	if expected.kind == Variant {

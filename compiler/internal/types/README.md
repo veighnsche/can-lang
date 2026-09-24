@@ -23,9 +23,10 @@ values are admitted data. Equality separately walks every reachable data field;
 a visited recursive node does not hide a later callable or opaque exclusion.
 
 Compatibility allows leaf/narrower-variant inclusion and callable error-bound
-widening. It never widens existing arrays, nominal generic arguments, or callable
-input/results. Different phantom arguments of one generic variant remain
-invariant even if their current flattened leaves coincide. Copy-update validation
+widening. It never widens existing arrays, generic record arguments, or callable
+input/results. Variants are extensional: specializations of one generic variant
+template are compatible exactly when their flattened leaf sets include, even if
+the arguments differ. Copy-update validation
 requires at least one known unique field, compatible replacements, and the exact
 ordinary record/error receiver specialization. Opaque values cannot be constructed
 or updated through ordinary data emission.
