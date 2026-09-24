@@ -23,6 +23,14 @@ const formWireDomain = "record line_wire\n" +
 	"    saved\n" +
 	"    rejected\n"
 
+const formSaveHandler = "fn save_outcome save_validated\n" +
+	"    emits []\n" +
+	"    given\n" +
+	"        invoice_wire body\n" +
+	"    asserts\n" +
+	"        sample: invoice_wire(\"c\", form::rows<line_wire>([], [])) => ok saved(\"c\")\n" +
+	"    ok saved(body.customer)\n"
+
 const formSaveAction = "action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
 	"    form invoice_wire limit 2048 rows_limit 64\n" +
@@ -86,7 +94,7 @@ const formBuilderFns = "fn form::collection use_collection\n" +
 	"        ok => ok call form::input_name(coll, row, field)\n"
 
 func formWebFile(extra ...string) string {
-	decls := formWireDomain + formSaveAction + formRenderers + formMounted + formBuilderFns
+	decls := formWireDomain + formSaveHandler + formSaveAction + formRenderers + formMounted + formBuilderFns
 	for _, text := range extra {
 		decls += text
 	}
@@ -250,6 +258,13 @@ func TestFormServeActionRejects(t *testing.T) {
 			s = strings.Replace(s, "    match chain\n        call http::serve_form_action", "    str action_name = \"save_invoice\"\n    match chain\n        call http::serve_form_action", 1)
 			return strings.Replace(s, "\"save_invoice\", callable render_outcome", "action_name, callable render_outcome", 1)
 		}, "static string literal"},
+		{"no matching handler", func(s string) string {
+			return strings.Replace(s, formSaveHandler, "", 1)
+		}, "has no matching handler"},
+		{"ambiguous handler", func(s string) string {
+			again := strings.Replace(formSaveHandler, "fn save_outcome save_validated\n", "fn save_outcome save_validated_again\n", 1)
+			return s + again
+		}, "matches multiple handlers"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

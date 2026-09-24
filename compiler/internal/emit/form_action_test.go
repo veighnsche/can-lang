@@ -21,6 +21,13 @@ const formActionEmitWeb = "package web\n" +
 	"variant save_outcome\n" +
 	"    saved\n" +
 	"    rejected\n" +
+	"fn save_outcome save_validated\n" +
+	"    emits []\n" +
+	"    given\n" +
+	"        invoice_wire body\n" +
+	"    asserts\n" +
+	"        sample: invoice_wire(\"c\", form::rows<line_wire>([], [])) => ok saved(\"c\")\n" +
+	"    ok saved(body.customer)\n" +
 	"action save_invoice\n" +
 	"    post \"/invoices/save\"\n" +
 	"    form invoice_wire limit 2048 rows_limit 64\n" +

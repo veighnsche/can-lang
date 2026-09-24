@@ -2,6 +2,7 @@ package check
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
@@ -332,8 +333,11 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 	if err != nil {
 		return ir.FormActionSite{}, err
 	}
-	// Declarations are handler-free; the mount consumer binds callables.
-	site := ir.FormActionSite{Action: identity, Method: action.Method, Path: action.Path, Form: action.Input.Form, Rejected: special.Rejected.Identity(), RawEntry: rawEntry.Identity(), Issue: issue.Identity()}
+	handler, err := c.resolveServeHandler(file, action)
+	if err != nil {
+		return ir.FormActionSite{}, err
+	}
+	site := ir.FormActionSite{Action: identity, Method: action.Method, Path: action.Path, Form: action.Input.Form, Handler: handler, Rejected: special.Rejected.Identity(), RawEntry: rawEntry.Identity(), Issue: issue.Identity()}
 	for _, kase := range action.Cases {
 		leaf, err := c.actionCaseIdentity(action, kase.Leaf)
 		if err != nil {
@@ -342,6 +346,80 @@ func (c *programChecker) serveFormSite(file *resolve.File, special *FormSpeciali
 		site.Cases = append(site.Cases, ir.FormActionCase{Leaf: leaf, Status: kase.Status})
 	}
 	return site, nil
+}
+
+// resolveServeHandler binds the serving package's handler for a
+// serve_form_action site. Declarations are handler-free and the serve
+// intrinsic carries no handler slot, so the site binds the serving
+// package's unique function whose checked contract exactly matches the
+// action: capture inputs in path order plus the wire body, the action
+// returns, and emits []. Zero or multiple matches diagnose; nothing is
+// guessed. This keeps the serve pipeline working through the
+// handler-free transition; UP08's mount names the handler explicitly
+// with a callable argument instead.
+func (c *programChecker) resolveServeHandler(file *resolve.File, action *ActionDeclaration) (string, error) {
+	var matches []string
+	names := make([]string, 0, len(file.Package.Scope.Symbols))
+	for name := range file.Package.Scope.Symbols {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	for _, name := range names {
+		symbol := file.Package.Scope.Symbols[name]
+		if c.serveHandlerMatches(symbol, action) {
+			matches = append(matches, symbol.ID)
+		}
+	}
+	if len(matches) == 0 {
+		return "", fmt.Errorf("serve action %q has no matching handler in package %s", action.Symbol.Name, file.Package.Name)
+	}
+	if len(matches) != 1 {
+		return "", fmt.Errorf("serve action %q matches multiple handlers in package %s: %s", action.Symbol.Name, file.Package.Name, strings.Join(matches, ", "))
+	}
+	return matches[0], nil
+}
+
+// serveHandlerMatches mirrors the retired handles-bound handler contract:
+// a non-generic, non-variadic, method-free function taking each path
+// capture by name and type plus the wire body and returning the action
+// returns with emits [].
+func (c *programChecker) serveHandlerMatches(symbol *resolve.Symbol, action *ActionDeclaration) bool {
+	if symbol.Kind != resolve.Function || symbol.Receiver != nil {
+		return false
+	}
+	if len(symbol.Parameters) != 0 {
+		return false
+	}
+	if c.variadic[symbol.ID] {
+		return false
+	}
+	contract := c.bindings[symbol.ID]
+	if contract == nil {
+		return false
+	}
+	descriptor, ok := c.callables[symbol.ID]
+	if !ok || len(descriptor.Names) != len(contract.Inputs()) {
+		return false
+	}
+	inputs := contract.Inputs()
+	if len(inputs) != len(action.Captures)+1 {
+		return false
+	}
+	for i, capture := range action.Captures {
+		if descriptor.Names[i] != capture.Name {
+			return false
+		}
+		if inputs[i].Identity() != capture.Type.Identity() {
+			return false
+		}
+	}
+	if inputs[len(inputs)-1].Identity() != action.Input.Type.Identity() {
+		return false
+	}
+	if contract.Result().Identity() != action.Returns.Identity() {
+		return false
+	}
+	return len(contract.Errors()) == 0
 }
 
 // actionCaseIdentity resolves a case leaf declaration to its runtime
