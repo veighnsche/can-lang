@@ -660,7 +660,7 @@ func TestGate5GridMatrix(t *testing.T) {
 	if !bytes.Equal(firstBundle, secondBundle) {
 		t.Fatal("grid bundle is not deterministic")
 	}
-	for _, want := range []string{"$canBrowserMain", "platform/browser.ts", "expectedIOFailure", "/invoices/save", "/invoices/{invoice_id}"} {
+	for _, want := range []string{"$canBrowserMain", "platform/browser.ts", "expectedIOFailure", "/invoices/save", "/invoices/:invoice_id"} {
 		if !bytes.Contains(firstBundle, []byte(want)) {
 			t.Fatalf("bundle lacks %q", want)
 		}

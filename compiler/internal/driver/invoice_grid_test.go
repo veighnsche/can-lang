@@ -135,20 +135,20 @@ func TestInvoiceGridCrossTargetContract(t *testing.T) {
 				t.Fatalf("%s capture %d drifted", name, i)
 			}
 		}
-		if (wire.Body == nil) != (live.Body == nil) {
+		if (wire.Input.Mode == "none") != (live.Input.Mode == "none") {
 			t.Fatalf("%s body presence drifted", name)
 		}
-		if wire.Body != nil {
-			if wire.Body.Mode != live.Body.Mode ||
-				types.CanonicalName(wire.Body.Type) != types.CanonicalName(live.Body.Type) {
-				t.Fatalf("%s body drifted: %s %s vs %s %s", name, wire.Body.Mode,
-					types.CanonicalName(wire.Body.Type), live.Body.Mode, types.CanonicalName(live.Body.Type))
+		if wire.Input.Mode != "none" {
+			if wire.Input.Mode != live.Input.Mode ||
+				types.CanonicalName(wire.Input.Type) != types.CanonicalName(live.Input.Type) {
+				t.Fatalf("%s body drifted: %s %s vs %s %s", name, wire.Input.Mode,
+					types.CanonicalName(wire.Input.Type), live.Input.Mode, types.CanonicalName(live.Input.Type))
 			}
-			if normalizeSchema(wire.Body.Schema) != normalizeSchema(live.Body.Schema) {
+			if normalizeSchema(wire.Input.Schema) != normalizeSchema(live.Input.Schema) {
 				t.Fatalf("%s request codec drifted", name)
 			}
 		}
-		if types.CanonicalName(wire.Result) != types.CanonicalName(live.Result) {
+		if types.CanonicalName(wire.Returns) != types.CanonicalName(live.Returns) {
 			t.Fatalf("%s result drifted", name)
 		}
 		if len(wire.Cases) != len(live.Cases) {

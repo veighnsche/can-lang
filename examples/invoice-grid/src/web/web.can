@@ -4,32 +4,32 @@ package web
 
 /// JSON save action: mirrors the invoice server contract exactly
 /// (method, path, wire, cases) so the grid fetch client freezes
-/// the same contract the server serves. The handler is a
-/// never-served anchor: the grid only consumes this action
+/// the same contract the server serves. The declaration is
+/// handler-free: the grid only consumes this action
 /// through its fetch client, and the server owns serving.
 action save_invoice
     post "/invoices/save"
-    body json records::invoice_json_wire
-    handles save_stub
-    result records::save_outcome
+    json records::invoice_json_wire limit 8192
+    returns records::save_outcome
+    body json
     cases
-        records::saved => 200
-        records::rejected => 422
-        records::stale => 409
-        records::denied => 403
-        records::busy => 503
+        records::saved status 200
+        records::rejected status 422
+        records::stale status 409
+        records::denied status 403
+        records::busy status 503
 
 /// Bodyless GET load action over the canonical captured path.
 action load_invoice
-    get "/invoices/{invoice_id}"
-    captures
-        str invoice_id
-    handles load_stub
-    result records::load_outcome
+    get "/invoices/:invoice_id"
+    captures records::invoice_path
+    input none
+    returns records::load_outcome
+    body json
     cases
-        records::found => 200
-        records::load_denied => 403
-        records::load_busy => 503
+        records::found status 200
+        records::load_denied status 403
+        records::load_busy status 503
 
 /// Never-served save anchor: without adapter authentication no
 /// actor reaches it, so it denies like the server contract stub.
