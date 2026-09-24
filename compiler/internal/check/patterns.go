@@ -123,6 +123,13 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 		if t.Kind() != types.Record && t.Kind() != types.Error {
 			return nil, fmt.Errorf("opaque value cannot be destructured")
 		}
+		var pkg string
+		if c.context.Expressions != nil {
+			pkg = c.context.Expressions.Package
+		}
+		if err := checkOwnerRepresentation(pkg, t); err != nil {
+			return nil, err
+		}
 		fields := t.Fields()
 		if len(n.Fields) != len(fields) {
 			return nil, fmt.Errorf("constructor pattern arity mismatch")

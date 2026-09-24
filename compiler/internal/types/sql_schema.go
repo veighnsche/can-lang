@@ -30,6 +30,9 @@ const (
 // finiteness, and Unicode validity are per-value runtime checks; this
 // projection admits only the shapes the driver boundary can carry.
 func SQLFieldOf(field *Type) (SQLField, error) {
+	if field.Owner() {
+		return SQLField{}, fmt.Errorf("owner record %s needs an explicit wire type plus the owner factory", CanonicalName(field))
+	}
 	flat := func(t *Type) (string, bool) {
 		if t.Kind() == Primitive {
 			switch t.Declaration() {
@@ -73,6 +76,9 @@ func SQLFieldOf(field *Type) (SQLField, error) {
 func SQLSchemaOf(root *Type) (SQLSchema, error) {
 	if !Equal(root, root) || root.Kind() != Record || len(root.Arguments()) != 0 {
 		return SQLSchema{}, fmt.Errorf("sql schema at /: requires a concrete ordinary record")
+	}
+	if root.Owner() {
+		return SQLSchema{}, fmt.Errorf("sql schema at /: owner record %s needs an explicit wire type plus the owner factory", CanonicalName(root))
 	}
 	result := SQLSchema{Root: root.Identity(), Fields: []SQLField{}}
 	for _, f := range root.Fields() {

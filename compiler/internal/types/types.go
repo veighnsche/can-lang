@@ -48,18 +48,33 @@ type Type struct {
 	inputs, errors  []*Type
 	defined         bool
 	standardFailure bool
-	graph           *graph
+	// owner marks a value of an `owner record` declaration; ownerPackage
+	// is the declaring resolve package identity. Both are set once at
+	// instantiation and never change, so all specializations agree.
+	owner        bool
+	ownerPackage string
+	graph        *graph
 }
 
 func (t *Type) Kind() Kind          { return t.kind }
 func (t *Type) Identity() string    { return t.id }
 func (t *Type) Declaration() string { return t.declaration }
-func (t *Type) Arguments() []*Type  { return append([]*Type(nil), t.arguments...) }
-func (t *Type) Fields() []Field     { return append([]Field(nil), t.fields...) }
-func (t *Type) Element() *Type      { return t.element }
-func (t *Type) Result() *Type       { return t.result }
-func (t *Type) Inputs() []*Type     { return append([]*Type(nil), t.inputs...) }
-func (t *Type) Errors() []*Type     { return append([]*Type(nil), t.errors...) }
+
+// Owner reports whether values of this type come from an `owner record`
+// declaration. OwnerPackage names the declaring package identity.
+func (t *Type) Owner() bool { return t != nil && t.kind == Record && t.owner }
+func (t *Type) OwnerPackage() string {
+	if t == nil {
+		return ""
+	}
+	return t.ownerPackage
+}
+func (t *Type) Arguments() []*Type { return append([]*Type(nil), t.arguments...) }
+func (t *Type) Fields() []Field    { return append([]Field(nil), t.fields...) }
+func (t *Type) Element() *Type     { return t.element }
+func (t *Type) Result() *Type      { return t.result }
+func (t *Type) Inputs() []*Type    { return append([]*Type(nil), t.inputs...) }
+func (t *Type) Errors() []*Type    { return append([]*Type(nil), t.errors...) }
 
 // JSON array framing separates declaration IDs, argument IDs and structural
 // constructors without relying on source punctuation being absent from an ID.

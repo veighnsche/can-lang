@@ -121,15 +121,15 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 		}
 		switch node := value.Interface().(type) {
 		case *syntax.CallExpr:
-			if err := c.gatherCodec(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
-				return err
+			if err := c.gatherCodec(file, node, node.Invocation.Callee, node.Invocation.Types); err != nil {
+				return locateGather(file, node.ExprSpan(), err)
 			}
 			if err := c.gatherHTTP(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
 				return err
 			}
 		case *syntax.ReferenceExpr:
-			if err := c.gatherCodec(file, node.Callee, node.Types); err != nil {
-				return err
+			if err := c.gatherCodec(file, node, node.Callee, node.Types); err != nil {
+				return locateGather(file, node.ExprSpan(), err)
 			}
 			if err := c.gatherHTTP(file, node.Callee, node.Types); err != nil {
 				return err
@@ -138,7 +138,7 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 		if constructor, ok := value.Interface().(*syntax.ConstructorExpr); ok {
 			symbol, err := file.Lookup(nil, constructor.Name, resolve.ConstructorUse)
 			if err != nil {
-				return err
+				return locateGather(file, constructor.ExprSpan(), err)
 			}
 			if len(constructor.Types) != 0 || len(symbol.Parameters) == 0 {
 				if _, err = c.gather(file, &syntax.NamedType{Name: constructor.Name, Arguments: constructor.Types}); err != nil {
@@ -190,6 +190,27 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 	}
 	return nil
 }
+
+// locateGather attaches the gathering file's use-site span to a constructor
+// or codec discovery failure, so the pre-pass diagnosis points at the
+// offending expression instead of surfacing bare.
+func locateGather(file *resolve.File, span source.Span, err error) error {
+	if file == nil || file.Source == nil {
+		return err
+	}
+	return source.Locate(file.Source.Path, span, err)
+}
+
+// expressionPackage names the checking file's package for owner-record
+// confinement. Synthetic catalogue-only files carry no package and fail
+// closed against owner representation.
+func expressionPackage(file *resolve.File) string {
+	if file == nil || file.Package == nil {
+		return ""
+	}
+	return file.Package.ID
+}
+
 func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *Expressions {
 	lookup := func(name syntax.QualifiedName, use resolve.Usage) (ValueBinding, error) {
 		symbol, err := file.Lookup(scope, name, use)
@@ -203,7 +224,7 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 		}
 		return ValueBinding{Identity: identity, Type: typ}, nil
 	}
-	expressions := &Expressions{Scalars: c.annotations[file],
+	expressions := &Expressions{Scalars: c.annotations[file], Package: expressionPackage(file),
 		Value:     func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ValueUse) },
 		Reference: func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.ReferenceUse) },
 		Function:  func(name syntax.QualifiedName) (ValueBinding, error) { return lookup(name, resolve.CallUse) },
@@ -430,6 +451,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	p.Codecs = c.codecs
 	for id := range c.codecs {
 		if err = c.finishCodec(id); err != nil {
+			if special := c.codecs[id]; special != nil && special.SiteFile != "" {
+				err = source.Locate(special.SiteFile, special.SiteSpan, err)
+			}
 			return nil, err
 		}
 	}

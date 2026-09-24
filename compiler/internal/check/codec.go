@@ -2,7 +2,9 @@ package check
 
 import (
 	"fmt"
+
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
@@ -15,6 +17,10 @@ type CodecSpecialization struct {
 	Data      *types.Type
 	Contract  *types.Type
 	Schema    types.CodecSchema
+	// SiteFile/SiteSpan record the first use-site expression so deferred
+	// post-seal finish failures point at the offending call.
+	SiteFile string
+	SiteSpan source.Span
 }
 
 const (
@@ -46,7 +52,7 @@ func codecDecodeOperation(identity string) bool {
 	}
 	return false
 }
-func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, args []syntax.TypeNode) error {
+func (c *programChecker) gatherCodec(file *resolve.File, site syntax.Expr, callee syntax.Expr, args []syntax.TypeNode) error {
 	name, ok := callee.(*syntax.NameExpr)
 	if !ok {
 		return nil
@@ -90,7 +96,7 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 	// and handler contracts resolve at finish time through the sealed
 	// specializer, which also serves the deferred program path.
 	if symbol.ID == codecConsumeJSONL {
-		c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data}
+		c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data, SiteFile: codecSiteFile(file), SiteSpan: site.ExprSpan()}
 		c.codecParts[key] = []*types.Type{data, invalid}
 		if c.specializer != nil {
 			if err = c.finishCodec(key); err != nil {
@@ -106,7 +112,7 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 		result, input = data, buffer
 	}
 	// Residual signatures can be derived after graph sealing; retain ingredients.
-	c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data}
+	c.codecs[key] = &CodecSpecialization{Operation: symbol.ID, Data: data, SiteFile: codecSiteFile(file), SiteSpan: site.ExprSpan()}
 	c.codecParts[key] = []*types.Type{result, input, invalid}
 	if c.specializer != nil {
 		if err = c.finishCodec(key); err != nil {
@@ -114,6 +120,13 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 		}
 	}
 	return nil
+}
+
+func codecSiteFile(file *resolve.File) string {
+	if file == nil || file.Source == nil {
+		return ""
+	}
+	return file.Source.Path
 }
 
 func (c *programChecker) finishCodec(key string) error {

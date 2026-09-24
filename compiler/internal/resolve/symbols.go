@@ -64,13 +64,17 @@ type Symbol struct {
 	Name, ID                        string
 	Kind                            Kind
 	Public, Constructible, Callable bool
-	Package                         *Package
-	Source                          *project.Source
-	Declaration                     syntax.Declaration
-	GeneratedQuestion               *syntax.QuestionDecl
-	Type                            syntax.TypeNode
-	Receiver                        *Symbol
-	Parameters                      []string
+	// Owner marks an `owner record`: only its declaring package may
+	// construct it. Foreign packages may still name it as a type when it
+	// is exported, receiving the opaque exported projection.
+	Owner             bool
+	Package           *Package
+	Source            *project.Source
+	Declaration       syntax.Declaration
+	GeneratedQuestion *syntax.QuestionDecl
+	Type              syntax.TypeNode
+	Receiver          *Symbol
+	Parameters        []string
 }
 
 func (s *Symbol) Eligible(usage Usage) bool {
@@ -285,6 +289,7 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 		s.Name = d.Name.Text
 		s.Kind = Record
 		s.Constructible = true
+		s.Owner = d.Owner
 		parameters = d.Parameters
 	case *syntax.ErrorDecl:
 		s.Name = d.Name.Text
@@ -480,6 +485,9 @@ func (f *File) Lookup(scope *Scope, name syntax.QualifiedName, usage Usage) (*Sy
 	}
 	if pkg != f.Package && !symbol.Public {
 		return nil, fmt.Errorf("%s::%s is private", name.Package, name.Name)
+	}
+	if usage == ConstructorUse && symbol.Owner && pkg != f.Package {
+		return nil, fmt.Errorf("owner record %s::%s can only be constructed in its declaring package", name.Package, name.Name)
 	}
 	return symbol, nil
 }

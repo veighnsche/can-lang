@@ -144,6 +144,12 @@ func (b *Builder) instantiate(symbol *resolve.Symbol, arguments []*Type) (*Type,
 	if symbol.Package != nil {
 		n.canonical = symbol.Package.Name + "::" + symbol.Name
 	}
+	// Owner marking rides the interned node, so every specialization and
+	// every sealed graph agrees with the declaring symbol.
+	if symbol.Owner && symbol.Package != nil {
+		n.owner = true
+		n.ownerPackage = symbol.Package.ID
+	}
 	// A same-specialization reference may point back to a node whose fields are
 	// being built. Its full shape is checked when the graph is sealed.
 	if n.defined || b.building(n) {

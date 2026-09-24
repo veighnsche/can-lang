@@ -41,6 +41,9 @@ func LLMSchema(root *Type) (GenerationSchema, error) {
 		if t.Kind() != Record && t.Kind() != Array {
 			return fail("unsupported " + string(t.Kind()))
 		}
+		if t.Owner() {
+			return fail(fmt.Sprintf("owner record %s needs an explicit wire type plus the owner factory", CanonicalName(t)))
+		}
 		depth++
 		if depth > 8 {
 			return fail("container depth exceeds 8")

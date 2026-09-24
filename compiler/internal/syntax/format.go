@@ -266,7 +266,11 @@ func (f *formatter) render(file *File) {
 			f.wrapArms("native", n.Native)
 			f.wrapArms("emitted", n.Emitted)
 		case *RecordDecl:
-			f.line(0, "record "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
+			header := "record " + n.Name.Text + formatParameters(n.Parameters)
+			if n.Owner {
+				header = "owner " + header
+			}
+			f.line(0, header, n.DeclSpan().Start)
 			for _, field := range n.Fields {
 				f.line(1, formatField(field), field.Span.Start)
 			}

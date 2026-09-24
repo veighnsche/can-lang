@@ -19,9 +19,15 @@ func Form(root *Type) (FormSchema, error) {
 	if !Equal(root, root) || root.Kind() != Record {
 		return FormSchema{}, fmt.Errorf("form schema at /: requires an ordinary record")
 	}
+	if root.Owner() {
+		return FormSchema{}, fmt.Errorf("form schema at /: owner record %s needs an explicit wire type plus the owner factory", CanonicalName(root))
+	}
 	result := FormSchema{Root: root.Identity(), Fields: []FormField{}}
 	for _, f := range root.Fields() {
 		field := FormField{Name: f.Name}
+		if f.Type.Owner() {
+			return FormSchema{}, fmt.Errorf("form schema at /%s: owner record %s needs an explicit wire type plus the owner factory", f.Name, CanonicalName(f.Type))
+		}
 		switch {
 		case f.Type.Kind() == Primitive && f.Type.Declaration() == "str":
 			field.Kind = "str"

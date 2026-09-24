@@ -136,7 +136,11 @@ func (p *parser) declaration() Declaration {
 		return p.fixture()
 	case p.word("fn"):
 		return p.function()
-	case p.word("record"):
+	case p.word("record") || p.word("owner") && p.index+1 < len(p.tokens) && p.tokens[p.index+1].IsWord("record"):
+		owned := p.word("owner")
+		if owned {
+			p.take()
+		}
 		p.take()
 		name := p.expect(Name)
 		parameters := p.parameters()
@@ -156,7 +160,7 @@ func (p *parser) declaration() Declaration {
 			}
 			p.expect(Dedent)
 		}
-		return &RecordDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Parameters: parameters, Fields: fields}
+		return &RecordDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Owner: owned, Parameters: parameters, Fields: fields}
 	case p.word("variant"):
 		p.take()
 		name := p.expect(Name)

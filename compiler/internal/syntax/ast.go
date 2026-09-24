@@ -199,7 +199,12 @@ func (DeclarationLocation) declaration()            {}
 
 type RecordDecl struct {
 	DeclarationLocation
-	Name       Token
+	Name Token
+	// Owner marks an `owner record`: construction, with-updates and field
+	// representation are confined to the declaring package. Exported owner
+	// records project opaquely: foreign packages may pass, compare and
+	// whole-leaf-match values but never observe fields.
+	Owner      bool
 	Parameters []Token
 	Fields     []Field
 }

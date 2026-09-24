@@ -19,7 +19,11 @@ type ValueBinding struct {
 type Expressions struct {
 	// File is the owning source file for structured failure spans. The
 	// owning body pass sets it; a nil file leaves errors unlocated.
-	File                *source.File
+	File *source.File
+	// Package is the checking file's package identity. Owner-record
+	// representation checks fail closed: an empty package never matches
+	// an owner record's declaring package.
+	Package             string
 	DeferredCheck       func(syntax.Expr, *types.Type, *Expressions, error) (*ir.Expression, error)
 	AggregateFieldCheck func(*syntax.FieldExpr, *types.Type) (*ir.Expression, bool, error)
 	CoordinationCheck   func(*syntax.CoordinationExpr, *types.Type) (*ir.Expression, error)
@@ -46,6 +50,21 @@ func (c *Expressions) scalar(name string) (*types.Type, error) {
 }
 func scalar(t *types.Type, name string) bool {
 	return t != nil && t.Kind() == types.Primitive && t.Declaration() == name
+}
+
+// ownerRepresentation admits field reads, with-updates and pattern
+// destructuring of owner records only in the declaring package. Foreign
+// packages hold the exported projection: pass, compare and whole-leaf
+// match, never representation.
+func (c *Expressions) ownerRepresentation(t *types.Type) error {
+	return checkOwnerRepresentation(c.Package, t)
+}
+
+func checkOwnerRepresentation(pkg string, t *types.Type) error {
+	if t.Owner() && pkg != t.OwnerPackage() {
+		return fmt.Errorf("owner record %s representation is confined to its declaring package; call an owner function instead", types.CanonicalName(t))
+	}
+	return nil
 }
 func numeric(t *types.Type) bool { return scalar(t, "int") || scalar(t, "float") }
 func (c *Expressions) Check(node syntax.Expr, expected *types.Type) (*ir.Expression, error) {
@@ -283,6 +302,9 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 			if receiver.Type.Kind() != types.Record && receiver.Type.Kind() != types.Error {
 				return nil, fmt.Errorf("field access requires an ordinary record/error or an explicit catalogue projection")
 			}
+			if err := c.ownerRepresentation(receiver.Type); err != nil {
+				return nil, err
+			}
 			for _, f := range receiver.Type.Fields() {
 				if f.Name == n.Field.Text {
 					out.Type = f.Type
@@ -386,6 +408,9 @@ func (c *Expressions) expression(node syntax.Expr, expected *types.Type) (*ir.Ex
 		receiver, e := c.Check(n.Receiver, nil)
 		if e != nil {
 			return nil, e
+		}
+		if err := c.ownerRepresentation(receiver.Type); err != nil {
+			return nil, err
 		}
 		out.Kind = ir.Update
 		out.Inputs = []*ir.Expression{receiver}

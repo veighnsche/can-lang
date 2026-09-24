@@ -54,6 +54,9 @@ func Schema(t *Type) (CodecSchema, error) {
 			return nil
 		}
 		seen[t.id] = true
+		if t.Owner() {
+			return fmt.Errorf("owner record %s is not codec-admissible; decode an explicit wire type and construct through the owner factory", CanonicalName(t))
+		}
 		node := CodecNode{Identity: t.id, Kind: t.kind, Name: CanonicalName(t)}
 		switch t.kind {
 		case Primitive:
