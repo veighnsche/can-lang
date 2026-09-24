@@ -98,6 +98,8 @@ func NativeTypeDeclarations(graph []*types.Type) (string, error) {
 				fields = append(fields, "readonly "+quote(f.Name)+": "+TypeName(f.Type))
 			}
 			text = "{ " + strings.Join(fields, "; ") + " }"
+		case types.Parameter:
+			return "", fmt.Errorf("cannot emit opaque type parameter %s from an exported generic declaration: declaration-only proofs never reach runtime output", types.OpaqueParameterName(t))
 		default:
 			return "", fmt.Errorf("unknown emitted type")
 		}

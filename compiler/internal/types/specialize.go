@@ -129,6 +129,25 @@ func (s *Specializer) Resolve(file *resolve.File, node syntax.TypeNode, paramete
 	return s.types[typ.id], nil
 }
 
+// Fork returns an isolated specializer seeded with s's current concrete
+// evidence. Declaration-only symbolic proofs (exported-generic bodies, and
+// later component proofs) resolve inside the fork and the fork is then
+// discarded, so types.Parameter graphs never enter the production model that
+// Model hands to runtime emission. Sealed types are immutable, so the fork
+// safely shares nodes with its parent; only the fork's own additions are
+// dropped. This is the UP02 model boundary for UP07/UP11/UP14: symbolic
+// resolution must always happen in a fork, never in the production
+// specializer. Concrete checking after the fork re-resolves whatever it
+// needs through deterministic interning, so discarding the fork drops no
+// required concrete nested type.
+func (s *Specializer) Fork() *Specializer {
+	fork := &Specializer{world: s.world, types: make(map[string]*Type, len(s.types))}
+	for id, typ := range s.types {
+		fork.types[id] = typ
+	}
+	return fork
+}
+
 func (s *Specializer) Model() *Model {
 	result := &Model{}
 	for _, typ := range s.types {

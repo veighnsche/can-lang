@@ -568,8 +568,17 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.checkNativeBodies(p, callables); err != nil {
 		return nil, err
 	}
-	if err = c.checkExportedGenerics(files); err != nil {
-		return nil, err
+	// Exported-generic declaration proofs resolve declaration-only symbolic
+	// Parameter graphs. They run in an isolated fork that is discarded
+	// afterwards, so the production model handed to runtime emission stays
+	// concrete. Every specializer use is dynamic through c.specializer, so
+	// the swap covers the proof's signature, body and region checks.
+	production := c.specializer
+	c.specializer = production.Fork()
+	exportedErr := c.checkExportedGenerics(files)
+	c.specializer = production
+	if exportedErr != nil {
+		return nil, exportedErr
 	}
 	if err = c.genericAssertions(files); err != nil {
 		return nil, err
