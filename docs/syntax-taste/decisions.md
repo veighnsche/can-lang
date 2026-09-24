@@ -1481,20 +1481,20 @@ through declared errors, handled by the same explicit error arms.
 ## Array patterns
 
 Array patterns use brackets. `[]` matches an empty array, and
-`[first, ...rest]` matches a nonempty array, binding its first element to `first`
+`[bind first, ...rest]` matches a nonempty array, binding its first element to `first`
 and the remaining array to `rest`:
 
 ```text
 match scores
     [] => ok 0
-    [first, ...rest] => ok first
+    [bind first, ...rest] => ok first
 ```
 
 Multiple explicit positions may precede the remainder, for example
-`[first, second, ...rest]`, which requires at least two elements and binds the
+`[bind first, bind second, ...rest]`, which requires at least two elements and binds the
 remaining array to `rest`.
 An underscore `_` ignores one required element; empty positions are not used
-in array patterns. For example, `[first, _, ...rest]` binds the first element,
+in array patterns. For example, `[bind first, _, ...rest]` binds the first element,
 ignores the second and collects the remaining elements. `first` and `rest` are
 arm-local binding names, not reserved keywords. Literal positions and exact-length patterns without a remainder are supported
 under [C5](technical-spec.md#c5).
@@ -1513,7 +1513,7 @@ fn int[] remove_second
         one_value: [10] => ok [10]
         empty: [] => ok []
     match values
-        [first, _, ...rest] => ok [first, ...rest]
+        [bind first, _, ...rest] => ok [first, ...rest]
         _ => ok values
 ```
 
@@ -1795,7 +1795,8 @@ Within a variant arm, the original matched binding remains the value and is
 narrowed to the matched record type. Access its fields through that binding,
 such as `shape.width`, and return or copy-update it as `shape`. The record type
 name does not become a value binding. Only error matching exposes the matched
-value through the error name. [C4](technical-spec.md#c4) admits finite disjoint nominal record/error leaves,
+value through the error name; otherwise write `bind name` to capture the
+matched value explicitly. [C4](technical-spec.md#c4) admits finite disjoint nominal record/error leaves,
 nested variants and the special standard-failure leaf required by aggregates.
 
 ## Arrays and array operations

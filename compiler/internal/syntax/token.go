@@ -77,7 +77,7 @@ type Result struct {
 func (r Result) OK() bool { return len(r.Diagnostics) == 0 }
 
 var hardKeywords = wordSet("package provides uses as fn record variant error given near emits asserts call callable match chain do ok relay on with and or not is true false void int float bool str")
-var contextualWords = wordSet("connection noul choice score judge choice_arm fetch llm from state asks minimum confidence describes endpoint auth bearer env timeout_ms metadata query headers body get post put patch delete head options concurrent race when fixture for use cases")
+var contextualWords = wordSet("connection noul choice score judge choice_arm fetch llm from state asks minimum confidence describes endpoint auth bearer env timeout_ms metadata query headers body get post put patch delete head options concurrent race when fixture for use cases bind")
 
 func wordSet(words string) map[string]bool {
 	out := map[string]bool{}

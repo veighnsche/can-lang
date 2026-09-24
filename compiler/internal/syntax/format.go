@@ -534,6 +534,8 @@ func formatPattern(pattern PatternNode) string {
 		return n.Literal.Text
 	case *NamePattern:
 		return formatName(n.Name) + formatTypeArguments(n.Types)
+	case *BindPattern:
+		return "bind " + n.Name.Text
 	case *ConstructorPattern:
 		fields := make([]string, len(n.Fields))
 		for i, p := range n.Fields {

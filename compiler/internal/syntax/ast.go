@@ -425,6 +425,13 @@ type AlternativePattern struct {
 	Alternatives []PatternNode
 }
 
+// BindPattern captures the matched value under an explicit name. Bare
+// identifiers in patterns are nominal leaf tests, never captures.
+type BindPattern struct {
+	PatternLocation
+	Name Token
+}
+
 type Coordination struct {
 	Span         source.Span
 	Mode         string

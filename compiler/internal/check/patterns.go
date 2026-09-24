@@ -56,9 +56,9 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 		out.Kind = "any"
 	case *syntax.NamePattern:
 		var leaf *types.Type
-		if expected.Kind() == types.Variant || expected.Kind() == types.Error {
+		if expected.Kind() == types.Variant || expected.Kind() == types.Error || expected.Kind() == types.Record {
 			candidates := expected.Leaves()
-			if expected.Kind() == types.Error {
+			if expected.Kind() != types.Variant {
 				candidates = []*types.Type{expected}
 			}
 			if len(n.Types) == 0 && c.context.PatternName != nil {
@@ -99,15 +99,21 @@ func (c *regionChecker) pattern(node syntax.PatternNode, expected *types.Type, b
 				out.Binding.ErrorAlias = true
 			}
 		} else {
+			spelling := n.Name.Name
+			if n.Name.Package != "" {
+				spelling = n.Name.Package + "::" + spelling
+			}
 			if n.Name.Package != "" || len(n.Types) != 0 {
-				return nil, fmt.Errorf("pattern does not name an admitted leaf")
+				return nil, c.locateCode(n.PatternSpan(), "CAN-CHECK-UNKNOWN-PATTERN", fmt.Errorf("pattern %q does not name an admitted leaf", spelling))
 			}
-			out.Kind = "any"
-			var err error
-			out.Binding, err = bind(n.Name.Name, expected)
-			if err != nil {
-				return nil, err
-			}
+			return nil, c.locateCode(n.PatternSpan(), "CAN-CHECK-UNKNOWN-PATTERN", fmt.Errorf("pattern %q does not name an admitted leaf; write bind %s to capture the matched value", spelling, spelling))
+		}
+	case *syntax.BindPattern:
+		out.Kind = "any"
+		var err error
+		out.Binding, err = bind(n.Name.Text, expected)
+		if err != nil {
+			return nil, err
 		}
 	case *syntax.ConstructorPattern:
 		t, err := nominal(n.Name, n.Types)

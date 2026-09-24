@@ -189,9 +189,9 @@ func TestCompletionRegionContracts(t *testing.T) {
 		{"    match chain\n        call lookup(1) as int found\n        call increment(found) as int next\n        call log()\n        missing => ok missing.code\n        ok => ok next\n", "int", nil},
 		{"    match flag\n        false => ok 0\n        true => do\n            call log()\n            relay call first()\n", "int", nil},
 		{"    int result = match number\n        -5..0 => 1\n        1 | 2 => 2\n        _ => 3\n    ok result + 1\n", "int", nil},
-		{"    match items\n        [] => ok 0\n        [head, ...tail] => ok head + tail.length\n", "int", nil},
-		{"    match choice\n        left => ok choice.value\n        right(value) => ok value.length\n", "int", nil},
-		{"    match tree\n        node([]) => ok 0\n        node([head, ...tail]) => ok head.children.length + tail.length\n", "int", nil},
+		{"    match items\n        [] => ok 0\n        [bind head, ...tail] => ok head + tail.length\n", "int", nil},
+		{"    match choice\n        left => ok choice.value\n        right(bind value) => ok value.length\n", "int", nil},
+		{"    match tree\n        node([]) => ok 0\n        node([bind head, ...tail]) => ok head.children.length + tail.length\n", "int", nil},
 	}
 	for i, tc := range good {
 		for _, kind := range []ir.RegionKind{ir.FunctionRegion, ir.HandlerRegion} {
@@ -204,7 +204,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 	}
 	for i, body := range []string{
 		"    match flag, flag\n        true, true => ok 1\n        true, false => ok 2\n        false, _ => ok 3\n",
-		"    match items\n        [] => ok 0\n        [0, ...tail] | [1, ...tail] => ok tail.length\n        [head, ...tail] => ok head\n",
+		"    match items\n        [] => ok 0\n        [0, ...tail] | [1, ...tail] => ok tail.length\n        [bind head, ...tail] => ok head\n",
 		"    match number\n        0..5 => ok 1\n        4..10 => ok 2\n        _ => ok 3\n",
 		"    match choice\n        left | right => ok 1\n",
 	} {
@@ -222,8 +222,8 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match flag, flag\n        true, true => ok 1\n        false, _ => ok 2\n",
 		"    match flag, flag\n        true, _ => ok 1\n        false, _ => ok 2\n        _, true => ok 3\n",
 		"    match number\n        0..5 => ok 1\n        6..10 => ok 2\n        0..10 => ok 3\n        _ => ok 4\n",
-		"    match items\n        [head] | [] => ok head\n        _ => ok 0\n",
-		"    match choice\n        left(value) | right(value) => ok 1\n",
+		"    match items\n        [bind head] | [] => ok head\n        _ => ok 0\n",
+		"    match choice\n        left(bind value) | right(bind value) => ok 1\n",
 
 		"    ok\n",
 		"    missing(1)\n",
@@ -241,7 +241,7 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match flag\n        true => ok 1\n",
 		"    match flag\n        _ => ok 1\n        true => ok 2\n",
 		"    match number\n        0..10 => ok 1\n        1..5 => ok 2\n        _ => ok 3\n",
-		"    match items\n        [head] => ok head\n",
+		"    match items\n        [bind head] => ok head\n",
 		"    int result = match flag\n        false => 2\n        true => ok 1\n    ok result\n",
 		"    int result = 1 + 2\n    ok result\n",
 	}

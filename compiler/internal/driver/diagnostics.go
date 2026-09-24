@@ -987,8 +987,8 @@ func collectCoordinationBinders(coordination *syntax.Coordination, binders map[s
 
 func collectPatternBinders(pattern syntax.PatternNode, binders map[string]bool) {
 	switch node := pattern.(type) {
-	case *syntax.NamePattern:
-		binders[node.Name.Name] = true
+	case *syntax.BindPattern:
+		binders[node.Name.Text] = true
 	case *syntax.ConstructorPattern:
 		for _, field := range node.Fields {
 			collectPatternBinders(field, binders)

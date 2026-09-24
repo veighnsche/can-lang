@@ -165,6 +165,12 @@ func (p *parser) literalPattern() *LiteralPattern {
 func (p *parser) singlePattern() PatternNode {
 	start := p.peek().Span.Start
 	switch {
+	case p.word("bind") && p.index+1 < len(p.tokens) && p.tokens[p.index+1].Kind == Name:
+		// A complete nominal pattern is never followed by another name,
+		// so bind <name> is unambiguous; bare bind stays nominal.
+		p.take()
+		name := p.expect(Name)
+		return &BindPattern{PatternLocation: PatternLocation{p.span(start)}, Name: name}
 	case p.at(Wildcard):
 		p.take()
 		return &WildcardPattern{PatternLocation{p.span(start)}}
