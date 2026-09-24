@@ -101,6 +101,26 @@ function execution(): Execution {
   if (!current || current.scope.state === "closed") invalid();
   return current;
 }
+declare const ownerContextBrand: unique symbol;
+// Explicit owner identity for generated calls. The token is an ordinary
+// frozen object reference, so it survives every suspension without ambient
+// storage. Generated browser code threads exactly one token parameter.
+export type OwnerContext = Readonly<{ readonly [ownerContextBrand]: true }>;
+const ownerContexts = new WeakMap<object, Execution>();
+function tokenFor(entry: Execution): OwnerContext {
+  const token = Object.freeze(Object.create(null)) as OwnerContext;
+  ownerContexts.set(token, entry);
+  return token;
+}
+function requireContext(ctx: OwnerContext): Execution {
+  const current =
+    ctx !== null && (typeof ctx === "object" || typeof ctx === "function")
+      ? ownerContexts.get(ctx)
+      : undefined;
+  if (!current) throw new TypeError("invalid owner context");
+  if (current.scope.state === "closed") invalid();
+  return current;
+}
 function inside(scope: ScopeState, ancestor: ScopeState): boolean {
   for (let at: ScopeState | undefined = scope; at; at = at.parent) if (at === ancestor) return true;
   return false;
@@ -223,17 +243,18 @@ function retain(values: readonly unknown[], current: Execution): () => void {
   };
 }
 
-export function registerResource(
+type RegisterOptions = Readonly<{
+  idempotent?: boolean;
+  scopeManaged?: boolean;
+  shutdownMilliseconds?: number;
+}>;
+function registerResourceCore(
+  current: Execution,
   kind: string,
   native: unknown,
   close: () => Completion<void> | Promise<Completion<void>>,
-  options: Readonly<{
-    idempotent?: boolean;
-    scopeManaged?: boolean;
-    shutdownMilliseconds?: number;
-  }> = {},
+  options: RegisterOptions,
 ): Resource {
-  const current = execution();
   if (!kind || current.scope.state !== "open") invalid();
   if (
     options.shutdownMilliseconds !== undefined &&
@@ -275,6 +296,23 @@ export function registerResource(
   signal(current.root);
   return token;
 }
+export function registerResource(
+  kind: string,
+  native: unknown,
+  close: () => Completion<void> | Promise<Completion<void>>,
+  options: RegisterOptions = {},
+): Resource {
+  return registerResourceCore(execution(), kind, native, close, options);
+}
+export function registerResourceWithContext(
+  ctx: OwnerContext,
+  kind: string,
+  native: unknown,
+  close: () => Completion<void> | Promise<Completion<void>>,
+  options: RegisterOptions = {},
+): Resource {
+  return registerResourceCore(requireContext(ctx), kind, native, close, options);
+}
 export function resourceStatus(value: unknown) {
   const state = resource(value);
   return Object.freeze({
@@ -284,19 +322,34 @@ export function resourceStatus(value: unknown) {
     leases: [...state.leases.values()].reduce((a, b) => a + b, 0),
   });
 }
-export async function useResource<T>(
+async function useResourceCore<T>(
+  current: Execution,
   value: unknown,
   kind: string,
   operation: (native: unknown) => Completion<T> | Promise<Completion<T>>,
 ): Promise<Completion<T>> {
-  const current = execution(),
-    state = resource(value, kind),
+  const state = resource(value, kind),
     release = acquire(state, current);
   try {
     return await invoke(() => operation(state.native), origin);
   } finally {
     release();
   }
+}
+export async function useResource<T>(
+  value: unknown,
+  kind: string,
+  operation: (native: unknown) => Completion<T> | Promise<Completion<T>>,
+): Promise<Completion<T>> {
+  return useResourceCore(execution(), value, kind, operation);
+}
+export async function useResourceWithContext<T>(
+  ctx: OwnerContext,
+  value: unknown,
+  kind: string,
+  operation: (ctx: OwnerContext, native: unknown) => Completion<T> | Promise<Completion<T>>,
+): Promise<Completion<T>> {
+  return useResourceCore(requireContext(ctx), value, kind, (native) => operation(ctx, native));
 }
 function beginClose(state: ResourceState): Promise<Completion<void>> {
   state.state = "closing";
@@ -321,13 +374,14 @@ function beginClose(state: ResourceState): Promise<Completion<void>> {
   state.closing = result;
   return result;
 }
-export async function closeResource(
+type CloseDeadline = Readonly<{ milliseconds: number; failure: () => Completion<void> }>;
+async function closeResourceCore(
+  current: Execution,
   value: unknown,
   kind: string,
-  deadline?: Readonly<{ milliseconds: number; failure: () => Completion<void> }>,
+  deadline?: CloseDeadline,
 ): Promise<Completion<void>> {
-  const current = execution(),
-    state = resource(value, kind);
+  const state = resource(value, kind);
   validateScope(state, current);
   if (state.state !== "open" && !state.idempotent) invalid();
   if (deadline && (!Number.isSafeInteger(deadline.milliseconds) || deadline.milliseconds < 0))
@@ -353,9 +407,28 @@ export async function closeResource(
     if (timer !== undefined) clearTimeout(timer);
   }
 }
+export async function closeResource(
+  value: unknown,
+  kind: string,
+  deadline?: CloseDeadline,
+): Promise<Completion<void>> {
+  return closeResourceCore(execution(), value, kind, deadline);
+}
+export async function closeResourceWithContext(
+  ctx: OwnerContext,
+  value: unknown,
+  kind: string,
+  deadline?: CloseDeadline,
+): Promise<Completion<void>> {
+  return closeResourceCore(requireContext(ctx), value, kind, deadline);
+}
 
 export type Participant = Readonly<{
   run: () => Completion | Promise<Completion>;
+  captures: readonly unknown[];
+}>;
+export type ExplicitParticipant = Readonly<{
+  run: (ctx: OwnerContext) => Completion | Promise<Completion>;
   captures: readonly unknown[];
 }>;
 export type OwnedGroup = Readonly<{
@@ -370,8 +443,24 @@ export function launchOwned(participants: readonly Participant[]): OwnedGroup {
 export function launchNative(participant: Participant): OwnedGroup {
   return launch([participant], true);
 }
-function launch(participants: readonly Participant[], native: boolean): OwnedGroup {
-  const current = execution();
+export function launchOwnedWithContext(
+  ctx: OwnerContext,
+  participants: readonly ExplicitParticipant[],
+): OwnedGroup {
+  return launchWithContext(requireContext(ctx), participants, false);
+}
+export function launchNativeWithContext(
+  ctx: OwnerContext,
+  participant: ExplicitParticipant,
+): OwnedGroup {
+  return launchWithContext(requireContext(ctx), [participant], true);
+}
+type Launchable = Readonly<{ captures: readonly unknown[] }>;
+function prepareLaunch(
+  current: Execution,
+  participants: readonly Launchable[],
+  native: boolean,
+): { group: Group; child: Execution; tasks: Task[] } {
   if (
     current.scope.state !== "open" &&
     !(native && current.task && current.task.completion === undefined)
@@ -396,45 +485,49 @@ function launch(participants: readonly Participant[], native: boolean): OwnedGro
     throw cause;
   }
   current.root.groups.add(group);
-  function observe(index: number): void {
-    const result = group.tasks[index].completion;
-    if (result?.kind === "standard" && !group.selected.has(index))
-      emit(group.root, result.value, "late");
+  const tasks: Task[] = participants.map((participant, index) => ({
+    scope: group.scope,
+    dynamic: [],
+    captures: Object.freeze([...participant.captures]),
+    promise: undefined!,
+    release: retained[index],
+  }));
+  group.tasks.push(...tasks);
+  return { group, child, tasks };
+}
+function observeLaunched(group: Group, index: number): void {
+  const result = group.tasks[index].completion;
+  if (result?.kind === "standard" && !group.selected.has(index))
+    emit(group.root, result.value, "late");
+}
+function finishLaunched(group: Group, index?: number): void {
+  if (!group.sealed) return;
+  // Publication observes completions already available. Each later settlement
+  // observes only its own outcome, so draining a batch takes linear work.
+  if (index === undefined) {
+    for (let i = 0; i < group.tasks.length; i++) observeLaunched(group, i);
+  } else observeLaunched(group, index);
+  if (group.pending === 0) {
+    group.root.groups.delete(group);
+    signal(group.root);
   }
-  function finish(index?: number): void {
-    if (!group.sealed) return;
-    // Publication observes completions already available. Each later settlement
-    // observes only its own outcome, so draining a batch takes linear work.
-    if (index === undefined) {
-      for (let i = 0; i < group.tasks.length; i++) observe(i);
-    } else observe(index);
-    if (group.pending === 0) {
-      group.root.groups.delete(group);
-      signal(group.root);
-    }
-  }
-  for (let i = 0; i < participants.length; i++) {
-    const task: Task = {
-      scope: group.scope,
-      dynamic: [],
-      captures: Object.freeze([...participants[i].captures]),
-      promise: undefined!,
-      release: retained[i],
-    };
-    group.tasks.push(task);
-    task.promise = context
-      .run({ ...child, task }, () => invoke(participants[i].run, origin))
-      .then((completion) => {
-        task.completion = completion;
-        task.release();
-        for (const release of task.dynamic) release();
-        task.dynamic = [];
-        task.captures = undefined;
-        group.pending--;
-        finish(i);
-        return completion;
-      });
-  }
+}
+function settleLaunched(
+  group: Group,
+  task: Task,
+  index: number,
+  completion: Completion,
+): Completion {
+  task.completion = completion;
+  task.release();
+  for (const release of task.dynamic) release();
+  task.dynamic = [];
+  task.captures = undefined;
+  group.pending--;
+  finishLaunched(group, index);
+  return completion;
+}
+function sealLaunched(group: Group): OwnedGroup {
   return Object.freeze({
     promises: Object.freeze(group.tasks.map((task) => task.promise)),
     publish(selected: readonly number[]) {
@@ -445,9 +538,35 @@ function launch(participants: readonly Participant[], native: boolean): OwnedGro
         invalid();
       group.selected = new Set(selected);
       group.sealed = true;
-      finish();
+      finishLaunched(group);
     },
   });
+}
+function launch(participants: readonly Participant[], native: boolean): OwnedGroup {
+  const current = execution();
+  const { group, child, tasks } = prepareLaunch(current, participants, native);
+  for (let i = 0; i < participants.length; i++) {
+    const task = tasks[i];
+    task.promise = context
+      .run({ ...child, task }, () => invoke(participants[i].run, origin))
+      .then((completion) => settleLaunched(group, task, i, completion));
+  }
+  return sealLaunched(group);
+}
+function launchWithContext(
+  current: Execution,
+  participants: readonly ExplicitParticipant[],
+  native: boolean,
+): OwnedGroup {
+  const { group, child, tasks } = prepareLaunch(current, participants, native);
+  for (let i = 0; i < participants.length; i++) {
+    const task = tasks[i];
+    const taskCtx = tokenFor({ ...child, task });
+    task.promise = invoke(() => participants[i].run(taskCtx), origin).then((completion) =>
+      settleLaunched(group, task, i, completion),
+    );
+  }
+  return sealLaunched(group);
 }
 
 export function registerCallableCaptures<T extends Function>(
@@ -459,11 +578,7 @@ export function registerCallableCaptures<T extends Function>(
   captures.set(value, Object.freeze([...values]));
   return value;
 }
-export async function withScope<T>(
-  body: (scope: Scope) => Completion<T> | Promise<Completion<T>>,
-): Promise<Completion<T>> {
-  const current = execution();
-  if (current.scope.state !== "open") invalid();
+function createChildScope(current: Execution): { scope: ScopeState; token: Scope } {
   const scope: ScopeState = {
     exitReleases: [],
     root: current.root,
@@ -473,15 +588,50 @@ export async function withScope<T>(
   };
   const token = Object.freeze(Object.create(null)) as Scope;
   scopes.set(token, scope);
+  return { scope, token };
+}
+async function settleScopeBody<T>(
+  current: Execution,
+  scope: ScopeState,
+  result: Completion<T>,
+): Promise<Completion<T>> {
+  for (const release of scope.exitReleases) release();
+  scope.exitReleases = [];
+  scope.state = "closing";
+  const failed = await drain(current.root, scope);
+  scope.state = "closed";
+  return failed && result.kind === "ok" ? failure(failed) : result;
+}
+export async function withScope<T>(
+  body: (scope: Scope) => Completion<T> | Promise<Completion<T>>,
+): Promise<Completion<T>> {
+  const current = execution();
+  if (current.scope.state !== "open") invalid();
+  const { scope, token } = createChildScope(current);
   return context.run({ ...current, scope }, async () => {
     const result = await invoke(() => body(token), origin);
-    for (const release of scope.exitReleases) release();
-    scope.exitReleases = [];
-    scope.state = "closing";
-    const failed = await drain(current.root, scope);
-    scope.state = "closed";
-    return failed && result.kind === "ok" ? failure(failed) : result;
+    return settleScopeBody(current, scope, result);
   });
+}
+export async function withScopeWithContext<T>(
+  ctx: OwnerContext,
+  body: (ctx: OwnerContext, scope: Scope) => Completion<T> | Promise<Completion<T>>,
+): Promise<Completion<T>> {
+  const current = requireContext(ctx);
+  if (current.scope.state !== "open") invalid();
+  const { scope, token } = createChildScope(current);
+  const child = tokenFor({ ...current, scope });
+  const result = await invoke(() => body(child, token), origin);
+  return settleScopeBody(current, scope, result);
+}
+function settleCallbackTask(root: Root, task: Task, completion: Completion): Completion {
+  task.completion = completion;
+  for (const release of task.dynamic) release();
+  task.dynamic = [];
+  task.captures = undefined;
+  root.callbacks.delete(task);
+  signal(root);
+  return completion;
 }
 export function guardCallback<T extends Function>(token: Scope, callback: T): T {
   const owner = scopes.get(token);
@@ -509,19 +659,41 @@ export function guardCallback<T extends Function>(token: Scope, callback: T): T 
       .run({ root: owner.root, scope, owner: active ? ambient.owner : {}, task }, () =>
         invoke(() => callback(...args), origin),
       )
-      .then((completion) => {
-        task.completion = completion;
-        for (const release of task.dynamic) release();
-        task.dynamic = [];
-        task.captures = undefined;
-        owner.root.callbacks.delete(task);
-        signal(owner.root);
-        return completion;
-      });
+      .then((completion) => settleCallbackTask(owner.root, task, completion));
     return task.promise;
   };
   captures.set(guarded, Object.freeze([callback]));
   return guarded as unknown as T;
+}
+export function guardCallbackWithContext(
+  token: Scope,
+  callback: (
+    ctx: OwnerContext,
+    ...args: unknown[]
+  ) => Completion<unknown> | Promise<Completion<unknown>>,
+): (...args: unknown[]) => Promise<Completion<unknown>> {
+  const owner = scopes.get(token);
+  if (!owner) invalid();
+  // Native dispatch carries no caller context: the callback always runs in
+  // its guard scope under a fresh task token, never an ambient store.
+  const guarded = async (...args: unknown[]) => {
+    if (owner.state === "closed" || owner.state === "closing") invalid();
+    const task: Task = {
+      scope: owner,
+      dynamic: [],
+      captures: [callback, ...args],
+      promise: undefined!,
+      release: () => {},
+    };
+    owner.root.callbacks.add(task);
+    const taskCtx = tokenFor({ root: owner.root, scope: owner, owner: {}, task });
+    task.promise = invoke(() => callback(taskCtx, ...args), origin).then((completion) =>
+      settleCallbackTask(owner.root, task, completion),
+    );
+    return task.promise;
+  };
+  captures.set(guarded, Object.freeze([callback]));
+  return guarded;
 }
 async function drain(root: Root, scope: ScopeState): Promise<StandardFailure | undefined> {
   let first: StandardFailure | undefined;
@@ -566,10 +738,7 @@ async function drain(root: Root, scope: ScopeState): Promise<StandardFailure | u
   while (root.reports.size) await Promise.all(root.reports);
   return first;
 }
-export async function runOwnedRoot<T>(
-  body: () => Completion<T> | Promise<Completion<T>>,
-  report: Reporter = () => {},
-): Promise<Readonly<{ completion: Completion<T>; cleanupFailed: boolean }>> {
+function createRoot(report: Reporter): Root {
   const root = {} as Root;
   Object.assign(root, {
     groups: new Set(),
@@ -582,6 +751,13 @@ export async function runOwnedRoot<T>(
     report,
   });
   root.scope = { exitReleases: [], root, state: "open", base: {} };
+  return root;
+}
+export async function runOwnedRoot<T>(
+  body: () => Completion<T> | Promise<Completion<T>>,
+  report: Reporter = () => {},
+): Promise<Readonly<{ completion: Completion<T>; cleanupFailed: boolean }>> {
+  const root = createRoot(report);
   return context.run({ root, scope: root.scope }, async () => {
     const completion = await invoke(body, origin);
     // Existing owners keep their execution context while this waits. No global
@@ -590,4 +766,17 @@ export async function runOwnedRoot<T>(
     root.scope.state = "closed";
     return Object.freeze({ completion, cleanupFailed: root.failed });
   });
+}
+export async function runExplicitRoot<T>(
+  body: (ctx: OwnerContext) => Completion<T> | Promise<Completion<T>>,
+  report: Reporter = () => {},
+): Promise<Readonly<{ completion: Completion<T>; cleanupFailed: boolean }>> {
+  const root = createRoot(report);
+  const ctx = tokenFor({ root, scope: root.scope });
+  const completion = await invoke(() => body(ctx), origin);
+  // The token is an ordinary reference: suspension cannot redirect it into
+  // another root, and no ambient store is consulted on any path below.
+  await drain(root, root.scope);
+  root.scope.state = "closed";
+  return Object.freeze({ completion, cleanupFailed: root.failed });
 }

@@ -6,12 +6,21 @@ import {
   errorPayload,
   type Completion,
 } from "./completion.ts";
-import { launchOwned } from "./owner.ts";
+import {
+  launchOwned,
+  launchOwnedWithContext,
+  type OwnedGroup,
+  type OwnerContext,
+} from "./owner.ts";
 import { record } from "./data.ts";
 import type { createDomainRuntime } from "./domain.ts";
 import type { FailureOrigin } from "./failure.ts";
 
-import { coordinationContexts, type AssertionContext } from "./assert/context.ts";
+import {
+  coordinationContexts,
+  type AssertionContext,
+  type CoordinationContexts,
+} from "./assert/context.ts";
 
 export type Mode = "all" | "settled" | "any" | "race";
 type Indexed = Readonly<{ index: number; completion: Completion }>;
@@ -38,9 +47,9 @@ export async function settle(
 ): Promise<Selection> {
   const frames =
     context === undefined ? undefined : coordinationContexts(context, site!, positions!, mode);
-  let owner;
+  let group;
   try {
-    owner = launchOwned(
+    group = launchOwned(
       frames
         ? participants.map((participant, index) => ({
             captures: participant.captures,
@@ -55,13 +64,54 @@ export async function settle(
     frames?.abort();
     throw cause;
   }
+  return selectFromGroup(group, mode, participants.length, frames);
+}
+export type ExplicitContextParticipant = Readonly<{
+  captures: readonly unknown[];
+  run: (ctx: OwnerContext, context?: AssertionContext) => Completion | Promise<Completion>;
+}>;
+export async function settleWithContext(
+  ctx: OwnerContext,
+  mode: Mode,
+  participants: readonly ExplicitContextParticipant[],
+  context?: AssertionContext,
+  site?: string,
+  positions?: readonly (readonly number[])[],
+): Promise<Selection> {
+  const frames =
+    context === undefined ? undefined : coordinationContexts(context, site!, positions!, mode);
+  let group;
+  try {
+    group = launchOwnedWithContext(
+      ctx,
+      participants.map((participant, index) => ({
+        captures: participant.captures,
+        run: (taskCtx: OwnerContext) => {
+          if (!frames) return participant.run(taskCtx, undefined);
+          frames.start(index);
+          return participant.run(taskCtx, frames.contexts[index]);
+        },
+      })),
+    );
+  } catch (cause) {
+    frames?.abort();
+    throw cause;
+  }
+  return selectFromGroup(group, mode, participants.length, frames);
+}
+async function selectFromGroup(
+  group: OwnedGroup,
+  mode: Mode,
+  count: number,
+  frames: CoordinationContexts | undefined,
+): Promise<Selection> {
   try {
     const outcomes: Completion[] = [];
-    outcomes.length = participants.length;
+    outcomes.length = count;
     const rejected = new Set<number>();
     let firstSuccess: readonly number[] | undefined;
     const tags = new WeakSet<object>();
-    const promises = owner.promises.map((pending, index) =>
+    const promises = group.promises.map((pending, index) =>
       pending.then((completion) => {
         checkedCompletion(completion);
         frames?.observed(index, completion);
@@ -76,20 +126,20 @@ export async function settle(
         return tagged;
       }),
     );
-    const all = () => participants.map((_, index) => index);
+    const all = () => group.promises.map((_, index) => index);
     const selected = (tag: Indexed): Selection => {
-      owner.publish(mode === "any" ? firstSuccess! : [tag.index]);
+      group.publish(mode === "any" ? firstSuccess! : [tag.index]);
       return carrier({ kind: "one" as const, index: tag.index, completion: tag.completion });
     };
     if (mode === "settled") {
       await Promise.allSettled(promises);
-      owner.publish(all());
+      group.publish(all());
       return carrier({ kind: "all" as const, outcomes: Object.freeze(outcomes) });
     }
     try {
       if (mode === "all") {
         await Promise.all(promises);
-        owner.publish(all());
+        group.publish(all());
         return carrier({ kind: "all" as const, outcomes: Object.freeze(outcomes) });
       }
       if (mode === "any") return selected(await Promise.any(promises));
@@ -99,11 +149,11 @@ export async function settle(
         // Native any rejects only after every adapter rejected. Its AggregateError
         // supplies no Can identity: use the retained original completion sequence.
         if (
-          outcomes.length !== participants.length ||
+          outcomes.length !== count ||
           outcomes.some((value) => value === undefined || value.kind === "ok")
         )
           throw new TypeError("invalid all-failed settlement");
-        owner.publish(all());
+        group.publish(all());
         return carrier({ kind: "all-failed" as const, outcomes: Object.freeze(outcomes) });
       }
       if (typeof cause !== "object" || cause === null || !tags.has(cause)) throw cause;
