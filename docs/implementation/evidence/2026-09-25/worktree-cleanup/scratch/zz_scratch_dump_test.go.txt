@@ -1,0 +1,112 @@
+package driver
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/check"
+	"github.com/veighnsche/can-lang/compiler/internal/emit"
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
+	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/distribution"
+)
+
+func TestScratchDumpValidationRequest(t *testing.T) {
+	example := os.Getenv("SCRATCH_EXAMPLE")
+	if example == "" {
+		example = "gallery"
+	}
+	src, _ := filepath.Abs(filepath.Join("..", "..", "..", "examples", example))
+	graph, err := project.Load(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	program, err := check.CheckProgram(graph)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var dependencies []ir.Artifact
+	root := "../../../runtime"
+	err = filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || len(path) < 3 || path[len(path)-3:] != ".ts" {
+			return err
+		}
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		dependencies = append(dependencies, ir.Artifact{Path: filepath.ToSlash(filepath.Join("runtime", relative))})
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	artifacts, err := emit.AssertionModules(program, "runtime", dependencies)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bundle := os.Getenv("SCRATCH_BUNDLE")
+	if bundle == "" {
+		t.Fatal("set SCRATCH_BUNDLE")
+	}
+	rawManifest, err := os.ReadFile(filepath.Join(bundle, "manifest.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var distManifest distribution.Manifest
+	if err := json.Unmarshal(rawManifest, &distManifest); err != nil {
+		t.Fatal(err)
+	}
+	r := &Runtime{Root: bundle, Executable: filepath.Join(bundle, "runtime", "bun"), manifest: distManifest}
+	artifacts, err = r.encodeSourceMaps(context.Background(), program, artifacts)
+	if err != nil {
+		t.Fatalf("encode maps: %v", err)
+	}
+	inputs := BuildInputs{
+		Source:       "0000000000000000000000000000000000000000000000000000000000000000",
+		Dependencies: "0000000000000000000000000000000000000000000000000000000000000000",
+		Catalogue:    "0000000000000000000000000000000000000000000000000000000000000000",
+		Compiler:     "0000000000000000000000000000000000000000000000000000000000000000",
+		Runtime:      "0000000000000000000000000000000000000000000000000000000000000000",
+		Options:      "0000000000000000000000000000000000000000000000000000000000000000",
+	}
+	prepared, err := PrepareOutput(inputs, "entry.ts", artifacts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	type module struct {
+		Path    string   `json:"path"`
+		Source  string   `json:"source"`
+		Imports []string `json:"imports"`
+	}
+	request := struct {
+		SchemaVersion int                        `json:"schemaVersion"`
+		Modules       []module                   `json:"modules"`
+		SourceIndex   json.RawMessage            `json:"sourceIndex,omitempty"`
+		Maps          map[string]json.RawMessage `json:"maps,omitempty"`
+	}{SchemaVersion: 1, Modules: []module{}}
+	manifest := prepared.manifest
+	files := prepared.files
+	for name, imports := range manifest.Imports {
+		all := append([]string{}, imports...)
+		all = append(all, manifest.NativeImports[name]...)
+		request.Modules = append(request.Modules, module{name, string(files[name]), all})
+	}
+	if index, ok := files["diagnostics/source-index.json"]; ok {
+		request.SourceIndex = index
+		request.Maps = map[string]json.RawMessage{}
+		for name, data := range files {
+			if len(name) > 7 && name[len(name)-7:] == ".ts.map" {
+				request.Maps[name[:len(name)-4]] = data
+			}
+		}
+	}
+	data, _ := json.Marshal(request)
+	if err := os.WriteFile("/tmp/t14req-"+example+".json", data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("wrote request with %d modules", len(request.Modules))
+}

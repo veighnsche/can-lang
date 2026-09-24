@@ -1,0 +1,439 @@
+[
+  {
+    "worktree": "/private/tmp/can-ci-prefetch",
+    "head": "e3879429a500712227a87035c4d694ead3fd512f",
+    "branch": "refs/heads/codex/prefetch-go-modules",
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/e3879429a500"
+  },
+  {
+    "worktree": "/private/tmp/lf12wt",
+    "head": "7f9c066806f9c210ce11cdb54e288462a743f032",
+    "branch": null,
+    "dirty_paths": [
+      " M compiler/internal/check/aggregate.go",
+      " M compiler/internal/check/assertions.go",
+      " M compiler/internal/check/assertions_test.go",
+      " M compiler/internal/check/callables.go",
+      " M compiler/internal/check/completion_matches.go",
+      " M compiler/internal/check/completions.go",
+      " M compiler/internal/check/coordination.go",
+      " M compiler/internal/check/errors.go",
+      " M compiler/internal/check/native_bodies.go",
+      " M compiler/internal/check/native_program.go",
+      " M compiler/internal/check/program.go",
+      " M compiler/internal/emit/program.go",
+      " M compiler/internal/emit/regions.go",
+      " M compiler/internal/ir/assertions.go",
+      " M compiler/internal/ir/regions.go",
+      " M compiler/internal/resolve/native.go",
+      " M compiler/internal/resolve/symbols.go",
+      " M compiler/internal/syntax/ast.go",
+      " M compiler/internal/syntax/declarations.go",
+      " M compiler/internal/syntax/format.go",
+      " M compiler/internal/syntax/native.go",
+      " M compiler/internal/syntax/native_format.go",
+      " M compiler/internal/syntax/parser.go",
+      " M compiler/internal/types/annotations.go",
+      " M docs/implementation/language-fixes-tasks-2026-09-22.md",
+      " M runtime/assert/context.ts",
+      " M runtime/assert/report.ts",
+      " M runtime/modules.json",
+      " M runtime/test/assert-report.test.ts",
+      "?? compiler/internal/check/wrap.go",
+      "?? compiler/internal/check/wrap_test.go",
+      "?? compiler/internal/emit/wrap.go",
+      "?? compiler/internal/syntax/wrap_test.go",
+      "?? compiler/testdata/current/wrap/fixtures/assess.json",
+      "?? compiler/testdata/current/wrap/fixtures/load.json",
+      "?? compiler/testdata/current/wrap/fixtures/load_timeout.json",
+      "?? compiler/testdata/current/wrap/main.can",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-check.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-emit.txt",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-gotest.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-integration.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-policy.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-runtime.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF12-summary.json",
+      "?? runtime/assert/policy.ts",
+      "?? runtime/test/policy.test.ts",
+      "?? tests/integration/wrap_test.go"
+    ],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/7f9c066806f9"
+  },
+  {
+    "worktree": "/private/tmp/lf13wt",
+    "head": "d1fd69bf455f1b4afc43cd8522969d8c4d28ad6e",
+    "branch": null,
+    "dirty_paths": [
+      " M compiler/internal/check/assertions.go",
+      " M compiler/internal/check/completions.go",
+      " M compiler/internal/check/native_bodies.go",
+      " M compiler/internal/check/program.go",
+      " M compiler/internal/check/wrap.go",
+      " M compiler/internal/resolve/symbols.go",
+      " M compiler/internal/syntax/ast.go",
+      " M compiler/internal/syntax/declarations.go",
+      " M compiler/internal/syntax/format.go",
+      " M compiler/internal/syntax/native.go",
+      " M compiler/internal/syntax/token.go",
+      " M compiler/internal/types/annotations.go",
+      " M docs/implementation/language-fixes-tasks-2026-09-22.md",
+      "?? compiler/internal/check/templates.go",
+      "?? compiler/internal/check/templates_test.go",
+      "?? compiler/internal/syntax/fixture_test.go",
+      "?? compiler/testdata/current/templates/fixtures/fetched.json",
+      "?? compiler/testdata/current/templates/fixtures/load.json",
+      "?? compiler/testdata/current/templates/helpers.can",
+      "?? compiler/testdata/current/templates/main.can",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-check.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-gotest.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-integration.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-runtime.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-summary.json",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF13-syntax.log",
+      "?? tests/integration/templates_test.go"
+    ],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/d1fd69bf455f"
+  },
+  {
+    "worktree": "/private/tmp/lf14wt",
+    "head": "f04a6d0191bc878070c46abd91ff6ba77d593753",
+    "branch": null,
+    "dirty_paths": [
+      " M compiler/internal/check/assets_test.go",
+      " M compiler/internal/check/program_test.go",
+      " M compiler/internal/check/raw_fixture.go",
+      " M compiler/internal/check/templates.go",
+      " M compiler/internal/check/templates_test.go",
+      " M compiler/internal/driver/output.go",
+      " M compiler/internal/driver/output_metadata.go",
+      " M compiler/internal/driver/output_test.go",
+      " M compiler/internal/emit/regions.go",
+      " M compiler/internal/ir/expressions.go",
+      " M compiler/internal/project/graph.go",
+      " M compiler/internal/project/graph_test.go",
+      " M compiler/internal/project/lock.go",
+      " M compiler/internal/project/manifest_test.go",
+      " M compiler/internal/resolve/symbols_test.go",
+      " M compiler/testdata/current/project/can.lock.json",
+      " M docs/implementation/language-fixes-tasks-2026-09-22.md",
+      "?? compiler/internal/project/fixtures.go",
+      "?? compiler/internal/project/fixtures_test.go",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF14-check.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF14-gotest.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF14-integration.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF14-runtime.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF14-summary.json",
+      "?? tests/integration/input_capture_test.go"
+    ],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/f04a6d0191bc"
+  },
+  {
+    "worktree": "/private/tmp/lf15wt",
+    "head": "d8239cd4bf8fda49a24486c50cbb9e8ae36007ea",
+    "branch": null,
+    "dirty_paths": [
+      " M compiler/cli_test.go",
+      " M compiler/internal/driver/commands.go",
+      " M compiler/internal/driver/output.go",
+      " M compiler/internal/driver/output_test.go",
+      " M compiler/internal/driver/run.go",
+      " M compiler/internal/driver/source_maps_test.go",
+      " M compiler/main.go",
+      " M compiler/testdata/current/cli/echo.can",
+      " M docs/implementation/language-fixes-tasks-2026-09-22.md",
+      " M tests/integration/applications_test.go",
+      " M tests/integration/cli_test.go",
+      " M tests/integration/fetch_test.go",
+      " M tests/integration/generation_test.go",
+      " M tests/integration/io_env_test.go",
+      " M tests/integration/judge_test.go",
+      " M tests/integration/native_test.go",
+      " M tests/integration/questions_test.go",
+      " M tests/integration/utilities_test.go",
+      "?? compiler/internal/driver/commands_test.go",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF15-check.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF15-gotest.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF15-integration.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF15-runtime.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF15-summary.json",
+      "?? tests/integration/verified_build_test.go"
+    ],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/d8239cd4bf8f"
+  },
+  {
+    "worktree": "/private/tmp/lf16wt",
+    "head": "6898d11e7bc16f474bdffae2a8ba700bff2baca6",
+    "branch": null,
+    "dirty_paths": [
+      " M compiler/internal/check/coordination_test.go",
+      " M compiler/testdata/current/coordination/aggregate-composition.can",
+      " M docs/implementation/coordination.md",
+      " M docs/implementation/language-fixes-tasks-2026-09-22.md",
+      " M runtime/test/coordination.test.ts",
+      " M tests/integration/coordination_test.go",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-check.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-diff-main.can",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-diff-report.json",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-gotest.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-integration.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-runtime.log",
+      "?? docs/implementation/evidence/2026-09-22/language-fixes/LF16-summary.json"
+    ],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/6898d11e7bc1"
+  },
+  {
+    "worktree": "/Users/vince/.codex/worktrees/a3e6/can-lang",
+    "head": "e1ffa9ddce7e5bf1033e5040125bc0f9b775cb7a",
+    "branch": "refs/heads/codex/beginner-gallery",
+    "dirty_paths": [],
+    "ignored_file_count": 1558,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/e1ffa9ddce7e"
+  },
+  {
+    "worktree": "/Users/vince/.codex/worktrees/d05e/can-lang",
+    "head": "e435505771d90444097576ee65984bda4ce869ac",
+    "branch": "refs/heads/codex/false-first-boolean-matches",
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/e435505771d9"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1da-6534-7ca1-8e89-8177587319d4",
+    "head": "07c456c73237e6e2a6c326ee35dbeadfd1170073",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/07c456c73237"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4791-7ef3-8250-1fd0bce0c984",
+    "head": "7cd6d8fbdc4998d7f7a8d40a32061785e69586ac",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/7cd6d8fbdc49"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-49ed-71f3-81ec-bacb7ec00082",
+    "head": "3757b6b0895812ce90e7abd5bc7d4bbc692b033a",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/3757b6b08958"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4cbc-7363-bbfb-b2a97d1e795b",
+    "head": "540bd4000c1b9f31587e3f867efa8e1e413cc142",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/540bd4000c1b"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4f03-75d2-98f1-3f3c759b90bc",
+    "head": "7f7181a472122cf8896a08fe55901cd501e84e57",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/7f7181a47212"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-513f-7ed2-b89e-20dbb62b3099",
+    "head": "82a46d10ecf5172ce283219313b367ef76b02d82",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/82a46d10ecf5"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-537b-7662-b984-4729850d1110",
+    "head": "534040acab1cacf438625a4f3e9e3769a26f916a",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/534040acab1c"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d431-7ed2-9a9c-79dde79c79b5",
+    "head": "aa72987862c6c8b3b3195d3562f3f3d1e7e1a046",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/aa72987862c6"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d736-7d32-bfad-9e60f111e9e6",
+    "head": "a20da217b2fa48851ad7ddf33e5a5e5f58cfb5c9",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/a20da217b2fa"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d9a6-7000-b823-7d311ca402f4",
+    "head": "2eacc4cbf319bee13077769697d9ccfbd01a9b95",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 2565,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/2eacc4cbf319"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-dae9-7b92-a4d7-fc3a575061db",
+    "head": "4f5ae866b19c674ab923eb67b859fab2f75d1bce",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/4f5ae866b19c"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-dd14-7ff3-8524-f1fd44681eda",
+    "head": "64a653ae88aafdc8d38f91838af8896fc5e73d42",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/64a653ae88aa"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-e057-7a82-a50f-f71e748f7a44",
+    "head": "01d3ec037a43307545c25fae528aaf71aa2a3be8",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 463,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/01d3ec037a43"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0aa7-7361-b7fe-edddb521894e",
+    "head": "43c72c953cbd03d5b4b2b9f39ff9579dc5ddd4aa",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 1112,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/43c72c953cbd"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0ce3-7fe3-b07c-bf9cfb956805",
+    "head": "323098421f7c063b5c61e34fd6476eb606863544",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/323098421f7c"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0f1f-7953-a64e-e72a6daeb2e8",
+    "head": "0714ce3599dfce59bf522fe2baf2c65ff404bee4",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/0714ce3599df"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-1199-71b3-9793-fedaa68d6ad5",
+    "head": "29e6e4bae874e0eb17df5b2130a814bcbe6ffca8",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 1172,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/29e6e4bae874"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-13f8-7db0-9b3c-7c37278701eb",
+    "head": "0581011bbc5e117e4c0c7d1497e1204a09eb00b6",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/0581011bbc5e"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2a2-9fa7-7ac0-b830-2a485ce9a4ec",
+    "head": "e0aab95994a25db3920fb5a29de8115d75a22e45",
+    "branch": null,
+    "dirty_paths": [
+      "?? compiler/internal/check/zz_invoice_scratch_test.go",
+      "?? compiler/internal/driver/zz_scratch_dump_test.go"
+    ],
+    "ignored_file_count": 1403,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/e0aab95994a2",
+    "preserved_scratch": [
+      {
+        "source": "compiler/internal/check/zz_invoice_scratch_test.go",
+        "evidence": "scratch/zz_invoice_scratch_test.go.txt",
+        "sha256": "8ee042d6e8e6b97d9ad0f241d9d043c4dff3855d3c06be75e334de1a3df48072"
+      },
+      {
+        "source": "compiler/internal/driver/zz_scratch_dump_test.go",
+        "evidence": "scratch/zz_scratch_dump_test.go.txt",
+        "sha256": "57458644d401f3654483c4ff95572db11a0ae478880b0c1ed56c36af0926822d"
+      }
+    ]
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2a2-a2bf-73e2-9da8-0ab0ab37c3be",
+    "head": "844bd0c3076852c80ac86c5db59fb513e875b385",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/844bd0c30768"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2e6-b99d-7262-a5b5-073ebd50870b",
+    "head": "d4891b08f7e9d65415fedf1e2730be19f9dfb64b",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 1089,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/d4891b08f7e9"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2e6-bc36-7f20-b99e-e2140dfe2756",
+    "head": "952ac8cf04140ee5c8c278f5a12435007f71a5e8",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/952ac8cf0414"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d332-48b1-7e81-8d8a-f3e99b925cfc",
+    "head": "a99695a7cc1807a397ba92c70a47bc311680ee03",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 463,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/a99695a7cc18"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d347-4d49-7790-b07f-b3fce0604a9c",
+    "head": "e657bc6250be743fb5f7ef27574993fe9af510e0",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/e657bc6250be"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d379-0c20-7c62-966f-09211cb974a1",
+    "head": "89f11d10f64ae153eb91f1ff817d9247a5f2528a",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 1708,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/89f11d10f64a"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d3be-41fb-78e3-9832-602251d4f792",
+    "head": "508703bb03fd78bc8c75a1bc5c64615d32a38966",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/508703bb03fd"
+  },
+  {
+    "worktree": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d3c4-51cb-7912-833d-8b549a8bde54",
+    "head": "6f3c93ada6d3121424cc1c2ecfe5aeb0d26a62e5",
+    "branch": null,
+    "dirty_paths": [],
+    "ignored_file_count": 0,
+    "archive_ref": "refs/archive/worktree-cleanup-2026-09-25/6f3c93ada6d3"
+  }
+]

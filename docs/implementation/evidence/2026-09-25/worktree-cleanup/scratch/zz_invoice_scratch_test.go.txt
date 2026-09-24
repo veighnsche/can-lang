@@ -1,0 +1,53 @@
+package check
+
+import (
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/veighnsche/can-lang/compiler/internal/project"
+)
+
+func TestScratchInvoiceExample(t *testing.T) {
+	root := t.TempDir()
+	src, _ := filepath.Abs("../../../examples/invoice")
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var copyTree func(from, to string)
+	copyTree = func(from, to string) {
+		items, err := os.ReadDir(from)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(to, 0700); err != nil {
+			t.Fatal(err)
+		}
+		for _, item := range items {
+			fp, tp := filepath.Join(from, item.Name()), filepath.Join(to, item.Name())
+			if item.IsDir() {
+				copyTree(fp, tp)
+				continue
+			}
+			data, err := os.ReadFile(fp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(tp, data, 0600); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+	_ = entries
+	copyTree(src, root)
+	graph, err := project.Load(root)
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	program, err := CheckProgram(graph)
+	if err != nil {
+		t.Fatalf("check: %v", err)
+	}
+	t.Logf("checked %d functions %d actions %d assertions", len(program.Functions), len(program.Actions), len(program.Assertions))
+}
