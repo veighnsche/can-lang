@@ -1051,6 +1051,30 @@ their exact wire names; renaming a wire field or collection diagnoses
 every statically linked builder. Renderers emit fragments through the
 P9 safe builders, so retained raw text always renders escaped.
 
+JSON-mode actions (POST with a `json` body, and bodyless GET) additionally
+carry the typed `action::response` metadata: the shared JSON wire schema
+of the result variant, checked at the `result` clause. Every result leaf
+must satisfy the shared wire subset, so owner records, opaque values and
+HTML values are compile-time diagnostics on JSON actions, never wire
+representations. Form actions omit the response schema; their outcome
+rendering belongs to the form adapter.
+
+The server JSON adapter mounts exact static paths only; entries with path
+captures need the capturing route table. POST requires the `application/json`
+media type (with only an optional UTF-8 charset parameter), a nonempty body
+of at most 8192 bytes, and a request that decodes under the shared exact
+JSON codec; media, empty-body and codec violations receive a fixed 400 and
+oversize bodies a fixed 413, all before handler entry. GET carries no body:
+any delivered body bytes are a fixed 400. Every handler outcome renders its
+declared finite case status with a JSON representation; handler failures,
+unknown leaves and encoding failures are a fixed 500. Fixed failures are
+`text/plain`, never HTML. The fetch consumer classifies outcomes as the
+named `transport`, `aborted`, `codec` and `unexpected_status` failures: any
+final status outside the finite case table is `unexpected_status` without
+decoding the body, while a finite status with a non-JSON media type or an
+undecodable representation is `codec`. Browser Fetch lowering consumes this
+same contract.
+
 ### HTTP client status rule
 
 For approved native fetch declarations, any final status 200--599 completes an

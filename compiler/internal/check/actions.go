@@ -38,15 +38,19 @@ type ActionCase struct {
 // ActionDeclaration is the checked action contract: method, path template,
 // captures, body, total handler, finite result and exhaustive case table.
 // Actions carry no body; adapters consume the emitted metadata.
+// ResponseSchema is the shared JSON wire schema of the result variant for
+// JSON-mode actions (POST with a json body, and bodyless GET); it is nil
+// for form actions, whose outcome rendering belongs to the form adapter.
 type ActionDeclaration struct {
-	Symbol   *resolve.Symbol
-	Method   string
-	Path     string
-	Captures []ActionCapture
-	Body     *ActionBody
-	Handler  string
-	Result   *types.Type
-	Cases    []ActionCase
+	Symbol         *resolve.Symbol
+	Method         string
+	Path           string
+	Captures       []ActionCapture
+	Body           *ActionBody
+	Handler        string
+	Result         *types.Type
+	Cases          []ActionCase
+	ResponseSchema *types.CodecSchema
 }
 
 // checkActions validates every action declaration after function signatures
@@ -223,7 +227,15 @@ func (c *programChecker) checkAction(file *resolve.File, d *syntax.ActionDecl) (
 	if err != nil {
 		return nil, "", err
 	}
-	return &ActionDeclaration{Symbol: symbol, Method: method, Path: d.Path.Value, Captures: checked, Body: body, Handler: handler, Result: result, Cases: cases}, method + " " + shape, nil
+	var response *types.CodecSchema
+	if body == nil || body.Mode == "json" {
+		schema, err := types.Schema(result)
+		if err != nil {
+			return nil, "", fail(d.Result.TypeSpan(), fmt.Errorf("action result %s is not a JSON response type: %w", types.CanonicalName(result), err))
+		}
+		response = &schema
+	}
+	return &ActionDeclaration{Symbol: symbol, Method: method, Path: d.Path.Value, Captures: checked, Body: body, Handler: handler, Result: result, Cases: cases, ResponseSchema: response}, method + " " + shape, nil
 }
 
 func (c *programChecker) checkActionCases(file *resolve.File, d *syntax.ActionDecl, result *types.Type, leaves []*types.Type, fail func(source.Span, error) error) ([]ActionCase, error) {

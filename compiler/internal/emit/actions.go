@@ -29,15 +29,19 @@ type emittedActionCase struct {
 
 // emittedAction is the frozen contract one action declaration contributes.
 // Server and browser adapters consume the table; it carries no behavior.
+// ResponseSchema is the typed action::response metadata: the shared JSON
+// wire schema of the result variant. JSON-mode actions (POST with a json
+// body, and bodyless GET) always carry it; form actions omit it.
 type emittedAction struct {
-	Identity string                 `json:"identity"`
-	Method   string                 `json:"method"`
-	Path     string                 `json:"path"`
-	Captures []emittedActionCapture `json:"captures"`
-	Body     *emittedActionBody     `json:"body,omitempty"`
-	Handler  string                 `json:"handler"`
-	Result   string                 `json:"result"`
-	Cases    []emittedActionCase    `json:"cases"`
+	Identity       string                 `json:"identity"`
+	Method         string                 `json:"method"`
+	Path           string                 `json:"path"`
+	Captures       []emittedActionCapture `json:"captures"`
+	Body           *emittedActionBody     `json:"body,omitempty"`
+	Handler        string                 `json:"handler"`
+	Result         string                 `json:"result"`
+	Cases          []emittedActionCase    `json:"cases"`
+	ResponseSchema interface{}            `json:"responseSchema,omitempty"`
 }
 
 // emitActionConstants freezes the checked action table after the shared
@@ -74,6 +78,12 @@ func (builder *stateBuilder) emitActionConstants() error {
 		}
 		for _, kase := range action.Cases {
 			entry.Cases = append(entry.Cases, emittedActionCase{Leaf: kase.Leaf, Status: kase.Status})
+		}
+		if action.Body == nil || action.Body.Mode == "json" {
+			if action.ResponseSchema == nil {
+				return fmt.Errorf("JSON action %s has no checked response schema", action.Symbol.ID)
+			}
+			entry.ResponseSchema = action.ResponseSchema
 		}
 		emitted = append(emitted, entry)
 	}
