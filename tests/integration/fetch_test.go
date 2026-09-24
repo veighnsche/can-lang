@@ -255,12 +255,12 @@ func TestCurrentBundledFetch(t *testing.T) {
 		if count != 8 {
 			t.Fatalf("expected 8 runtime requests and no assertion requests, got %d", count)
 		}
-		for _, bad := range []struct{ mode, id, reason string }{{"status", "1106", ""}, {"media", "1106", "media_type"}, {"charset", "1106", "charset"}, {"malformed", "1106", "type"}} {
+		for _, bad := range []struct{ mode, want, reason string }{{"status", `"error":"http::request_failed"`, ""}, {"media", `"error":"http::request_failed"`, "media_type"}, {"charset", `"error":"http::request_failed"`, "charset"}, {"malformed", `"error":"http::request_failed"`, "type"}} {
 			mu.Lock()
 			mode = bad.mode
 			mu.Unlock()
 			status, _, diag = run("run")
-			if status == 0 || !strings.Contains(diag, bad.id) {
+			if status == 0 || !strings.Contains(diag, bad.want) {
 				t.Fatalf("fetch error %s: %d %s", bad.mode, status, diag)
 			}
 		}
@@ -289,7 +289,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		write("src/main.can", source)
 		if compiler := os.Getenv("CAN_TSC"); compiler != "" {
 			nodeModules := filepath.Dir(filepath.Dir(filepath.Dir(compiler)))
-			args := []string{compiler, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(nodeModules, "@types"), "--types", "bun,node"}
+			args := []string{compiler, "--noEmit", "--ignoreConfig", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(nodeModules, "@types"), "--types", "bun,node"}
 			err := filepath.WalkDir(filepath.Join(root, "dist"), func(path string, entry os.DirEntry, err error) error {
 				if err != nil {
 					return err

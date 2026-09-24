@@ -308,7 +308,7 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 	vendorSource := "package helpers\n    provides [double]\n    uses []\nfn int double\n    emits []\n    given\n        int value\n    asserts\n        sample: 2 => ok 4\n        triple: 3 => ok 6\n    ok value + value\n"
 	write(dep, "can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 	write(dep, "can.errors.json", `{"active":[],"retired":[]}`)
-	write(dep, "src/main.can", "package app\n    provides []\n    uses [helpers]\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 4\n    relay call helpers::double(2)\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
+	write(dep, "src/main.can", "package app\n    provides []\n    uses [vendor::helpers]\nfn int consumer\n    emits []\n    asserts\n        sample: => ok 4\n    relay call helpers::double(2)\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
 	write(dep, "vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write(dep, "vendor/can.errors.json", `{"active":[],"retired":[]}`)
 	write(dep, "vendor/src/lib.can", vendorSource)
@@ -319,11 +319,15 @@ func TestCurrentBundledVerifiedBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		manifestSum := sha256.Sum256(manifestData)
-		lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{
-			"path": "vendor", "manifest_sha256": hex.EncodeToString(manifestSum[:]),
-			"source_sha256":   captureTreeDigest(t, "can-source-tree-v1", map[string]string{"lib.can": source}),
-			"fixtures_sha256": captureTreeDigest(t, "can-fixture-tree-v1", map[string]string{}),
-			"error_registry":  map[string]any{"active": []any{}, "retired": []any{}}}}})
+		lock, err := json.Marshal(map[string]any{
+			"edges": map[string]any{"vendor": map[string]any{
+				"target": "can.project.dependency/vendor", "path": "vendor"}},
+			"projects": map[string]any{"can.project.dependency/vendor": map[string]any{
+				"lineage": "", "manifest_sha256": hex.EncodeToString(manifestSum[:]),
+				"source_sha256":   captureTreeDigest(t, "can-source-tree-v1", map[string]string{"lib.can": source}),
+				"fixtures_sha256": captureTreeDigest(t, "can-fixture-tree-v1", map[string]string{}),
+				"error_registry":  map[string]any{"active": []any{}, "retired": []any{}},
+				"edges":           map[string]any{}}}})
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -165,14 +165,14 @@ func TestCurrentBundledProcess(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, want := range []string{"$canProcesses.run", "$canCreateProcesses", "Bun.spawn(", "Bun.which", "process.kill", "detached:true"} {
+		for _, want := range []string{"$canProcesses.run", "$canCreateProcesses", "Bun.spawn(", "Bun.which", "process.kill", "detached: true"} {
 			if strings.Contains(string(data), want) {
 				lowered[want] = true
 			}
 		}
 		return nil
 	})
-	for _, want := range []string{"$canProcesses.run", "$canCreateProcesses", "Bun.spawn(", "Bun.which", "process.kill", "detached:true"} {
+	for _, want := range []string{"$canProcesses.run", "$canCreateProcesses", "Bun.spawn(", "Bun.which", "process.kill", "detached: true"} {
 		if !lowered[want] {
 			t.Fatalf("generated output lacks native lowering %q", want)
 		}

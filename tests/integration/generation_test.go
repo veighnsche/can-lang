@@ -167,14 +167,14 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		t.Fatalf("transformed Choice request: %s", goodBodies[2])
 	}
 	for _, bad := range []struct {
-		mode, id string
-		count    int
-	}{{"refusal", "1130", 1}, {"truncated", "1131", 1}, {"invalid", "1132", 1}, {"record", "1110", 2}} {
+		mode, want string
+		count      int
+	}{{"refusal", `"error":"llm::refused"`, 1}, {"truncated", `"error":"llm::truncated"`, 1}, {"invalid", `"error":"llm::invalid_response"`, 1}, {"record", `"error":"codec::invalid_data"`, 2}} {
 		mu.Lock()
 		mode = bad.mode
 		before := len(bodies)
 		mu.Unlock()
-		if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, bad.id) {
+		if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, bad.want) {
 			t.Fatalf("%s: %d %s %s", bad.mode, code, out, diag)
 		}
 		mu.Lock()
@@ -214,7 +214,7 @@ func TestCurrentBundledGeneration(t *testing.T) {
 		t.Fatal(err)
 	}
 	if tsc := os.Getenv("CAN_TSC"); tsc != "" {
-		cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
+		cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--ignoreConfig", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
 		if output, err := cmd.CombinedOutput(); err != nil {
 			t.Fatalf("generation strict TypeScript: %v %s", err, output)
 		}

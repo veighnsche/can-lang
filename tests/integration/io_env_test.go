@@ -80,8 +80,8 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 						t.Fatalf("environment %s: %d %q %s", tc.name, code, out, diag)
 					}
 				}
-				for _, tc := range []struct{ name, id string }{{"MISSING", "1101"}, {"lower", "1262"}, {"A=B", "1262"}, {"", "1262"}} {
-					if code, out, diag := run("run", nil, tc.name); code != 1 || len(out) != 0 || !strings.Contains(diag, `"id":`+tc.id) {
+				for _, tc := range []struct{ name, want string }{{"MISSING", `"error":"http::credentials_missing"`}, {"lower", `"error":"env::invalid_name"`}, {"A=B", `"error":"env::invalid_name"`}, {"", `"error":"env::invalid_name"`}} {
+					if code, out, diag := run("run", nil, tc.name); code != 1 || len(out) != 0 || !strings.Contains(diag, tc.want) {
 						t.Fatalf("environment error %s: %d %q %s", tc.name, code, out, diag)
 					}
 				}
@@ -100,18 +100,18 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 						t.Fatalf("input roundtrip: %d %q %q", code, out, diag)
 					}
 				}
-				if code, out, diag := run("run", bytes.Repeat([]byte{'x'}, 17)); code != 1 || len(out) != 0 || !strings.Contains(diag, `"id":1212`) {
+				if code, out, diag := run("run", bytes.Repeat([]byte{'x'}, 17)); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
 					t.Fatalf("overflow: %d %q %s", code, out, diag)
 				}
 				if name == "input-text" {
-					if code, out, diag := run("run", []byte{255}); code != 1 || len(out) != 0 || !strings.Contains(diag, `"id":1110`) {
+					if code, out, diag := run("run", []byte{255}); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"codec::invalid_data"`) {
 						t.Fatalf("UTF-8: %d %q %s", code, out, diag)
 					}
 				}
 				// Run verifies first, so limit mutations must stay consistent
 				// with their fixture rows; the live path still enforces them.
 				write("src/main.can", strings.ReplaceAll(strings.ReplaceAll(string(source), "(16)", "(-1)"), "sample: 16 =>", "sample: -1 =>"))
-				if code, out, diag := run("run", nil); code != 1 || len(out) != 0 || !strings.Contains(diag, `"id":1212`) {
+				if code, out, diag := run("run", nil); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
 					t.Fatalf("negative limit: %d %q %s", code, out, diag)
 				}
 				if name == "input" {
@@ -134,7 +134,7 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 				t.Fatal(err)
 			}
 			if tsc := os.Getenv("CAN_TSC"); tsc != "" {
-				cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
+				cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--ignoreConfig", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
 				if result, err := cmd.CombinedOutput(); err != nil {
 					t.Fatalf("strict generated TypeScript: %v %s", err, result)
 				}

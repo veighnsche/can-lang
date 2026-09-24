@@ -98,7 +98,7 @@ func TestCurrentBundledInputCapture(t *testing.T) {
 	// captured, locked, staged and executed end to end.
 	write("can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
-	write("src/main.can", "package app\n    provides []\n    uses [http, codec, helpers]\nfn helpers::receipt load_helper\n    emits [http::request_failed]\n    asserts\n        direct: => ok helpers::receipt(1)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n            direct: => ok helpers::receipt(1)\n        http::request_failed\n        ok helpers::receipt got => ok got\nfn helpers::receipt load_consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call load_helper()\n        http::request_failed\n        ok helpers::receipt first => match call load_helper()\n            http::request_failed\n            ok helpers::receipt second => ok second\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
+	write("src/main.can", "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt load_helper\n    emits [http::request_failed]\n    asserts\n        direct: => ok helpers::receipt(1)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n            direct: => ok helpers::receipt(1)\n        http::request_failed\n        ok helpers::receipt got => ok got\nfn helpers::receipt load_consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call load_helper()\n        http::request_failed\n        ok helpers::receipt first => match call load_helper()\n            http::request_failed\n            ok helpers::receipt second => ok second\nfn void main\n    emits []\n    given\n        str[] args\n    asserts\n        empty: [] => ok\n    ok\n")
 	write("vendor/can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write("vendor/can.errors.json", `{"active":[],"retired":[]}`)
 	vendorSource := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://127.0.0.1:1/\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
@@ -118,10 +118,14 @@ func TestCurrentBundledInputCapture(t *testing.T) {
 		"src/fixtures/fetched.json": fixture(),
 		"src/fixtures/load.json":    fixture(),
 	})
-	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{
-		"path": "vendor", "manifest_sha256": hex.EncodeToString(manifestSum[:]),
-		"source_sha256": sourceDigest, "fixtures_sha256": fixtureDigest,
-		"error_registry": map[string]any{"active": []any{}, "retired": []any{}}}}})
+	lock, err := json.Marshal(map[string]any{
+		"edges": map[string]any{"vendor": map[string]any{
+			"target": "can.project.dependency/vendor", "path": "vendor"}},
+		"projects": map[string]any{"can.project.dependency/vendor": map[string]any{
+			"lineage": "", "manifest_sha256": hex.EncodeToString(manifestSum[:]),
+			"source_sha256": sourceDigest, "fixtures_sha256": fixtureDigest,
+			"error_registry": map[string]any{"active": []any{}, "retired": []any{}},
+			"edges":          map[string]any{}}}})
 	if err != nil {
 		t.Fatal(err)
 	}

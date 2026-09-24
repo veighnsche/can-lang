@@ -103,7 +103,7 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 	}
 	response = `{"model":"resolved-model","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"noul","noul":0.25},"q2":{"type":"noul","noul":2}}}`
 	mu.Unlock()
-	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1121") {
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, `"error":"ai::invalid_answer"`) {
 		t.Fatalf("invalid later answer ran handlers: %d %q %s", code, out, diag)
 	}
 	// A blank descriptor cannot verify, so the gate rejects before any

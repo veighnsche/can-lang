@@ -147,7 +147,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	}
 	response = `{"model":"resolved-model","answers":{"q0":{"type":"noul","noul":0.5},"q1":{"type":"choice","choice":"second","confidence":0.5,"probabilities":{"first":0.5,"second":0.5}},"q2":{"type":"choice","choice":"__proto__","confidence":0.8,"probabilities":{"one":0.1,"__proto__":0.9}},"q3":{"type":"score","score":1,"confidence":0.5,"probabilities":{"0":0.25,"1":0.5,"2":0.25},"legend":{"0":"Low","1":"Medium","2":"High"}},"q4":{"type":"choice","choice":"second","confidence":0.5,"probabilities":{"first":0.5,"second":0.5}},"q5":{"type":"score","score":0.75,"confidence":0.5,"probabilities":{"0":0.25,"1":0.75},"legend":{"0":"Low","1":"High"}},"q6":{"type":"choice","choice":"left","confidence":0.5,"probabilities":{"left":0.5,"right":0.5}},"q7":{"type":"choice","choice":"left","confidence":0.5,"probabilities":{"before":0.25,"left":2,"right":0.25,"after":0.25}}}}`
 	mu.Unlock()
-	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, "1121") {
+	if code, out, diag := run("run"); code == 0 || out != "" || !strings.Contains(diag, `"error":"ai::invalid_answer"`) {
 		t.Fatalf("invalid later answer ran handlers: %d %q %s", code, out, diag)
 	}
 	// A duplicate criterion cannot verify, so the gate rejects before any
@@ -284,7 +284,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 		t.Fatal(err)
 	}
 	if tsc := os.Getenv("CAN_TSC"); tsc != "" {
-		cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
+		cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), tsc, "--noEmit", "--ignoreConfig", "--strict", "--skipLibCheck", "--target", "esnext", "--module", "esnext", "--moduleResolution", "bundler", "--allowImportingTsExtensions", "--typeRoots", filepath.Join(filepath.Dir(filepath.Dir(filepath.Dir(tsc))), "@types"), "--types", "bun,node", filepath.Join(build.Directory, "entry.ts"))
 		if output, err := cmd.CombinedOutput(); err != nil {
 			t.Fatalf("mixed question strict TypeScript: %v %s", err, output)
 		}
