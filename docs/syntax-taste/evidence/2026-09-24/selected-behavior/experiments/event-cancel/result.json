@@ -1,0 +1,40 @@
+{
+  "browser": "140.0.7339.186",
+  "observed": {
+    "delayedHandler": {
+      "immediate": false,
+      "afterMicrotask": true
+    },
+    "registrationPolicy": {
+      "matched": {
+        "key": "Enter",
+        "cancelable": true,
+        "defaultPrevented": true,
+        "handled": 1
+      },
+      "unmatched": {
+        "key": "Tab",
+        "cancelable": true,
+        "defaultPrevented": false,
+        "handled": 2
+      },
+      "notCancelable": {
+        "key": "Enter",
+        "cancelable": false,
+        "defaultPrevented": false,
+        "handled": 3
+      },
+      "disposed": {
+        "key": "Enter",
+        "cancelable": true,
+        "defaultPrevented": false,
+        "handled": 3
+      },
+      "handled": [
+        "Enter",
+        "Tab",
+        "Enter"
+      ]
+    }
+  }
+}

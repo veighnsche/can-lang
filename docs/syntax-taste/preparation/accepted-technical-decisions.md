@@ -1,5 +1,7 @@
 # Accepted technical design decisions for planning
 
+**Status after the upgrade (24 September 2026):** Selected pre-implementation contracts, preserved as decision evidence. T01–T27 subsequently implemented substantial portions. The post-upgrade reconciliation distinguishes current syntax/behavior, unfinished accepted requirements and proposals; this packet alone is not a shipping claim. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. These are engineering selections for the **planned** Can
 design after current-source research, alternatives, three fresh Jev requests
 where the choice was difficult, and bounded probes. Current compiler behavior

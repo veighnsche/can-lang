@@ -1,5 +1,7 @@
 # Can design decision inventory
 
+**Status after the upgrade (24 September 2026):** Historical inventory assembled before design selection and implementation. Read the disposition ledger for the later selections and the post-upgrade reconciliation for current implementation status; alternatives and then-open questions below are not newly reopened here. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · P1 coverage ledger · preparation artifact, not an adopted design
 
 ## Status and reading rules

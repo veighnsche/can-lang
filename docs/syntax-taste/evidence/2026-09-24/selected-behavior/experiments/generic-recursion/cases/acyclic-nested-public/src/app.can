@@ -1,0 +1,26 @@
+package app
+    provides [box, identity, nested]
+    uses []
+record box<item>
+    item value
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok 3
+    ok value
+fn box<item> nested<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok box(3)
+    ok call identity<box<item>>(box(value))
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

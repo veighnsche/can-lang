@@ -1,5 +1,7 @@
 # Stage 3 — Implementation reconciliation
 
+**Historical implementation round:** this record describes I01–I50. Later LF01–LF21 and T01–T27 added or revised capabilities, including browser Can. Read the [post-upgrade reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md) for current status; earlier scope exclusions below are historical.
+
 Completed after [research](research.md), [brainstorm](brainstorm.md) and the fresh [Jev experiment](evidence/2026-09-21/jev/). This stage chooses engineering direction. It does not amend C/Q/A/P or claim their implementation.
 
 ## Jev results and disagreement investigation

@@ -1,0 +1,43 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "mandate": "This is mechanism advice for Can's already selected upgrade, not a vote to defer it. Shared action metadata without a handler, request-aware mounting, general browser delivery, the recorded bug/UI repairs and public generic-to-generic composition are mandatory results. AI agents author Can; obsolete forms need no compatibility. Generated TypeScript should use native JavaScript/Bun behavior except adapters preserving exact Can semantics. Judge only the evidence given here.",
+    "browser_runtime": "Browser Can already executes in a grid harness, with emitted TS plus a digest manifest. Production bundling is absent; the harness aliases four Node builtins. Its stack-scoped async-hooks substitute is not faithful after suspension, and diagnostics use a baked index without module maps. The required product path must build arbitrary admitted apps including an empty one, audit every reachable runtime edge and secret-bearing output, publish the verified same-origin asset under CSP, and preserve Bun/browser contract results including owner-backed concurrency.",
+    "entry_and_events": "There is a startup mismatch: selected main() has zero inputs, current main(args) depends on a harness snippet that extracts an invoice query value. The id is mere client-supplied routing data. Current on_event converts Event to strings and settles an asynchronous handler; preventDefault must occur during the original native dispatch. The browser surface must never expose a retained mutable Event and must honor disposal before cancellation.",
+    "generic_boundary": "Public generics have a DI-04 universal body check under declaration-qualified opaque types; local private templates check at concrete use sites. Current opaqueArgument rejection blocks even representation-independent F<T> calling validated G<T>. P03 selects such composition, not implicit traits or generic errors. The checker must separate symbolic proof edges from executable specializations, keep illegal operations failing at the callee, and bound mutual/expanding call graphs."
+  },
+  "questions": {
+    "runtime_architecture": {
+      "type": "choice",
+      "instructions": "What runtime architecture should the supported Can browser build own?",
+      "criteria": {
+        "browser_profile": "Create a maintained main-thread browser runtime surface with explicit owner tokens, build-sealed identity data, branded Can values and bundled source metadata; adapt only missing host contracts around native JS/browser operations.",
+        "maintained_shims": "Support a documented Node-compatibility layer over the current grid build; upgrade each shim to cover real ownership across awaits, safe host-object checks, exact hashes and diagnostic mappings before release."
+      }
+    },
+    "bootstrap_input": {
+      "type": "choice",
+      "instructions": "How should the supported asset pass an untrusted invoice id to no-argument browser startup?",
+      "criteria": {
+        "query_parameter": "Let main() call a restricted query-parameter catalogue operation backed by URLSearchParams, not a history/navigation object; cap and validate the value and never infer authority from it.",
+        "root_boot_data": "Carry invoice selection as a bounded encoded record in verified root markup; a narrow boot-data catalogue read yields the typed value, and server authorization still occurs on each action."
+      }
+    },
+    "generic_proof_order": {
+      "type": "choice",
+      "instructions": "Which checker boundary admits helper forwarding without circular proof or runaway specialization?",
+      "criteria": {
+        "scc_certification": "Prove mutually recursive exported generics together under declared signatures; publish the proof only when the whole component passes, with cyclic arguments limited to bare caller variables or opaque-free concrete types.",
+        "acyclic_only": "Reuse validated callee signatures only after they are final, so identity/helper chains compile but any cycle among public opaque calls gets a clear diagnostic and no provisional proof."
+      }
+    },
+    "event_cancellation": {
+      "type": "choice",
+      "instructions": "Which event API can request default prevention without exposing a live Event object?",
+      "criteria": {
+        "registration_policy": "Add narrowly typed canceling event registrations whose native code prevents the admitted default immediately on a matching live event, leaving subsequent asynchronous handler work separate.",
+        "synchronous_predicate": "Compile a provably synchronous pure event selector on copied fields into the dispatch stack, then call preventDefault from its result and separately schedule the existing asynchronous callback."
+      }
+    }
+  }
+}

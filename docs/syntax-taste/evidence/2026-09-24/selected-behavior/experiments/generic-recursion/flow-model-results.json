@@ -1,0 +1,34 @@
+{
+  "acyclic-nested-public": {
+    "outcome": "stopped",
+    "states": [
+      "nested<int>",
+      "identity<box<int>>"
+    ]
+  },
+  "expanding-mutual": {
+    "outcome": "step cap reached",
+    "states": [
+      "a<int>",
+      "b<int[]>",
+      "a<int[]>",
+      "b<int[][]>",
+      "a<int[][]>",
+      "b<int[][][]>",
+      "a<int[][][]>",
+      "b<int[][][][]>",
+      "a<int[][][][]>",
+      "b<int[][][][][]>",
+      "a<int[][][][][]>",
+      "b<int[][][][][][]>"
+    ]
+  },
+  "stationary-mutual": {
+    "outcome": "repeated state",
+    "repeat_at": 0,
+    "states": [
+      "first<int>",
+      "second<int>"
+    ]
+  }
+}

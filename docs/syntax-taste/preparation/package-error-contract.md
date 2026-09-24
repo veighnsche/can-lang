@@ -1,5 +1,7 @@
 # Planned package and application-error contract (DI-05a/b)
 
+**Status after the upgrade (24 September 2026):** Package-instance identities, dependency aliases and qualified error reporting were implemented in T03/T04. This original design packet is preserved as decision evidence; its pre-implementation description is historical, not a claim that those capabilities are absent. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. This is a **proposed P8 specification input**, not current Can behavior or an implementation. It combines the user's confirmed `uses [billing::model as bill_model, crm::model as crm_model]` syntax with the accepted unnumbered-error direction. The instance/lock details below are engineering choices after [three fresh Jev consultations](jev-package-instance/findings.md). Jev advised; it did not verify the contract. The [current package/error evidence](packages-assertions-evidence.md), [consumer audit](error-identity-audit.md) and [accepted decisions](accepted-technical-decisions.md) give the background.
 
 ## What the current compiler actually does

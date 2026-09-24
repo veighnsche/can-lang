@@ -14,6 +14,12 @@ disagreement is a defect to report, not a silent revision.
 Every claim below names the file, test or gate that demonstrates it.
 Nothing in this guide is inferred from Jev advice.
 
+**Post-upgrade status:** the platform and delivery descriptions below have been
+reconciled with current source and the later final acceptance record. The
+[finding ledger](post-upgrade-reconciliation-2026-09-24.md) records unfinished
+shared action binding, browser runtime delivery and UI acceptance. Recorded
+test passes qualify their tested paths; they do not close those requirements.
+
 ## 1. Supported platforms
 
 ### 1.1 Server runtime
@@ -39,10 +45,13 @@ Nothing in this guide is inferred from Jev advice.
 
 Qualification: Gate 3 server matrix (`tests/integration/gate3_matrix_test.go`)
 and Gate 4 fault suites (`tests/integration/gate4_fault_test.go`) run
-against staged builds on these targets. Known limit: under emulated
-linux/amd64 the pre-existing `runtime/test/transport-late.test.ts`
-25ms budget races fetch+read+decode, so an emulated run cannot fully
-qualify Gate 4; a native (non-emulated) linux/amd64 run is required.
+against staged builds on these targets. The first emulated linux/amd64 run
+failed a test-local 25ms budget in `runtime/test/transport-late.test.ts`.
+Follow-up `5d96ac9` raised that budget to 2000ms while preserving the assertions;
+the [final acceptance record](can-implementation-task-list-2026-09-24.md#final-acceptance-2026-09-24-head-5d96ac9)
+reports the installed-artifact Linux rerun passing, including the shutdown
+suite. This is recorded qualification under emulation, not evidence of a new
+native (non-emulated) linux/amd64 run or arbitrary Linux-host coverage.
 
 ### 1.2 Browser matrix
 
@@ -55,24 +64,33 @@ harness `tests/integration/browser/grid.mjs`):
 - firefox — unavailable in the qualification run (Playwright
   launcher timeout); best-effort per design, not qualified.
 
-The served browser bundle is the single compiler-produced
-content-addressed same-origin asset from
-`canlc build --target browser`. Server projects are rejected for the
-browser target (9 SQL descriptors in the invoice project prove the
-rejection leg).
+`canlc build --target browser` emits TypeScript, a distinct browser root and
+a content-addressed asset manifest. The served JavaScript in Gate 5 is built
+separately by `tests/integration/browser/build-grid.mjs`, with filesystem,
+utility, crypto and async-context shims. Those shims have grid-specific limits;
+the test does not establish a general browser runtime or supported public
+bundling path. Server projects are rejected for the browser target (9 SQL
+descriptors in the invoice project exercise that rejection). The artifact
+audit's text scan and skipped runtime bodies are remaining gaps.
 
 ### 1.3 What is not supported
 
 No worker profile, no authored JS/TS in browser code, no arbitrary
 raw markup or scripts, no server secrets/SQL pools/process access in
 browser code (compile-time transitive capability closure, T21/T22).
-Firefox, non-PostgreSQL databases, database migrations and offline
-reload durability are outside the qualified scope below.
+Firefox, database migrations and offline reload durability are outside the
+qualified scope below. SQLite is implemented and used by the invoice/webhook
+examples; PostgreSQL 17.11 has separate native/application test evidence.
+Other database versions or dialects require their own qualification.
 
 ## 2. Action recipes
 
-Both modes are live in `examples/invoice/src/web/web.can`. The three
-public invoice declarations are quoted exactly:
+The form action is mounted through its typed adapter in
+`examples/invoice/src/web/web.can`; JSON save/load use manual authenticated
+routes. The declared captured GET is not the mounted `/invoices/load` query
+route. The browser test rewrites between them, and the grid duplicates action
+declarations with stub handlers. The three server declarations are quoted below;
+their presence does not establish shared contextual mounting:
 
 ```text
 action save_invoice
@@ -122,8 +140,9 @@ action load_invoice
 - The compiler freezes typed `action::request` metadata (captures
   plus the JSON body wire contract) and typed `action::response`
   metadata (result plus the case table and the shared JSON wire
-  schema of the result variant) into each `$canActions` row. Only
-  finite declared case statuses are ever served.
+  schema of the result variant) into each `$canActions` row. Domain results
+  map to the declared finite statuses; adapter/protocol failures can produce
+  separate responses such as 400, 413 or 415.
 - Browser Fetch lowering (`canlc build --target browser` plus
   `runtime/platform/action-json.ts`) distinguishes transport, abort,
   codec and unknown-status failures from finite domain cases.
@@ -131,9 +150,11 @@ action load_invoice
 - JSON wire types reject form-only rows and owner records
   (`compiler/internal/check` JSON body checks;
   `bun test runtime/test/action-json.test.ts`, 14 pass).
-- Changing a path, method, wire field or result leaf diagnoses or
-  regenerates every statically linked use on both targets (T23
-  cross-target contract agreement).
+- Consumers of the same action symbol use checked metadata. The current
+  invoice/grid projects duplicate declarations, so cross-project edits can
+  drift without a diagnostic. Gate 5 records route/wire/unlinked-server
+  limitations; its passing result is not proof of the earlier shared-contract
+  edit-propagation requirement.
 
 ### 2.2 Keyed-row form POST
 
@@ -154,6 +175,8 @@ action load_invoice
   (`runtime/platform/html.ts`: `noSwap` holds 204/304 and every
   4xx/5xx except 422); 409/403/503 fragments are served but never
   swapped into the form target.
+  This remains short of the [accepted visible-503 requirement](preparation/integrated-action-contract.md#request-operation-and-response-policy);
+  the product matrix's recorded pass does not supersede that requirement.
 
 ### 2.3 Routes and captures
 

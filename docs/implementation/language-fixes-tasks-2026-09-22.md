@@ -1,6 +1,11 @@
 # Language design fixes — ordered implementation tasks
 
-Status: **21 pending tasks; implementation has not started for this revision list.** This is the new work queue for the September 22 fixes. The completed [I01–I50 list](tasks.md) remains historical. Read the [implementation plan](language-fixes-plan-2026-09-22.md) first.
+Status: **all 21 tasks have recorded completion evidence below.** This is the
+September 22 execution record; LF21 states its qualification limits, including
+that it was not a release. The later [T01–T27 upgrade](../syntax-taste/can-implementation-task-list-2026-09-24.md)
+and [post-upgrade reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md)
+describe subsequent work and remaining gaps. The original execution instructions
+below are preserved with their evidence.
 
 Execute LF01 through LF21 in the written order. Every declared prerequisite occurs earlier; numeric order is a safe topological order. A task is complete only when its code, necessary current-source migration and listed evidence pass. Do not check a box because a specification already exists. Each task contributes to the full linked AE contract; LF21 audits integrated closure. Paths below are current owner directories/files; new focused files may be added inside them.
 

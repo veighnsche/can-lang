@@ -96,7 +96,7 @@ This maps capability families, including existing exposure and specialized runti
 | mmap, buffer sinks, unsafe/shared memory | B3-08 review; no raw mutable/unsafe public buffer assumption |
 | bun:test and native mocks | B3-09; conformance support, not a second Can assertion contract |
 | Package manager/install, runtime auto-install | Outside Can runtime stdlib integration; no npm expansion or import bypass |
-| JSX, transpilation, browser build output | Only B3-05 artifact processing candidates; no Can frontend framework or browser target selected |
+| JSX, transpilation, browser build output | B3-05 covers additional artifact-processing candidates. A Can browser target and invoice grid now exist (T21–T25); general runtime/bundling support remains unfinished. No Can frontend framework is selected. See the [current reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md). |
 | Other Bun-implemented Web/Node APIs | Operation-level inventory under the owning family before admission; no assumed complete compatibility |
 
 [Machine-readable tasks](tasks.json), [planning validator](evidence/validate.py) and its [report](evidence/validation.json) check priority/dependency order, pending status, source references and consultation integrity. They do not claim any integration is implemented.

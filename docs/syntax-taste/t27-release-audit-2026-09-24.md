@@ -1,5 +1,30 @@
 # T27 release audit: DI dispositions, gate evidence and supported recommendation
 
+**Status correction after the upgrade (24 September 2026):** this is the
+historical T27 audit, followed below by its original evidence and verdicts.
+Use the [current reconciliation](post-upgrade-reconciliation-2026-09-24.md) and
+updated [T26 product guide](t26-product-guide-2026-09-24.md) for present status.
+
+- The preparation directory was absent from the T27 commit but was committed
+  in `961f921`. Its [selection ledger](preparation/design-disposition-ledger.md)
+  now supplies DI-11 browser scope, DI-13 companion effect tests, DI-14 SQL
+  boundaries and DI-16 Linux target decisions. The original “unattested” rows
+  below describe the audit's then-available inputs; they are not current
+  absence or rejection decisions.
+- The [final acceptance follow-up](can-implementation-task-list-2026-09-24.md#final-acceptance-2026-09-24-head-5d96ac9)
+  records a repaired test-local timeout and passing installed-artifact Linux
+  Gate 4 rerun under emulation. The earlier failure and requirement for a
+  native (non-emulated) linux/amd64 run below are superseded as descriptions
+  of that blocker. No new native-host run is claimed here.
+- Chromium/WebKit passes establish the tested Can-authored grid path with
+  its route rewrite and test bundler/shims. They do not qualify general
+  browser runtime delivery or fulfill shared action linkage. Firefox is not
+  qualified. SQLite is implemented and exercised by the examples; the original
+  blanket exclusion of non-PostgreSQL databases below is too broad.
+- Shared request-aware actions, supported browser delivery and specified UI
+  observations remain unfinished accepted requirements. Original gate PASS
+  entries are preserved as historical results, not as closure of these gaps.
+
 24 September 2026. Final release audit for the
 [implementation task list](can-implementation-task-list-2026-09-24.md)
 (T01–T27). This document records the disposition of every DI
@@ -25,6 +50,9 @@ scans, generated-artifact freshness, gate-evidence links and the
 recommendation scope. All commands in §8 ran at the audit commit.
 
 ## 1. DI inventory dispositions
+
+The following is the original audit table. Read it with the status correction
+above; current reconciliation uses the subsequently committed preparation inputs.
 
 Source of truth is the committed task list (its per-task DI grants
 plus its "Deliberately outside this implementation graph"
@@ -174,6 +202,10 @@ significance claimed. The native-AI candidate stays deferred per
 §3.
 
 ## 7. Supported recommendation
+
+The recommendation below is the original T27 verdict. Its Linux blocker,
+database exclusion and general browser implication are superseded by the
+status correction above and the current reconciliation.
 
 Only the platforms and browser versions that passed the §5 gates
 are recommended. Anything else is explicitly out of scope until it

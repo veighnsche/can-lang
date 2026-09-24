@@ -1,0 +1,43 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "mandate": "Can is an AI-agent-authored language with zero external users and no compatibility obligation. The next upgrade must finish the earlier handler-free shared action/request-aware mount and supported browser target, repair two defects and accepted UI gaps, and admit bounded public generic helper composition. Compile to equivalent native JavaScript/Bun operations, using only contract and immutability adapters. You advise technical mechanisms from supplied evidence, not scope or research.",
+    "browser_runtime": "The compiler emits browser TypeScript and a content-addressed module manifest, but the grid's test-only Bun bundler replaces node:crypto, node:util, node:fs and node:async_hooks. Its async context is synchronous-only and loses ownership across await; its file shim omits source maps. A supported empty app and invoice grid need one maintained JS delivery path, full reachable runtime/secret auditing, error/equality/codec/owner parity, CSP-safe same-origin assets and admitted coordination in named browsers.",
+    "entry_and_events": "The accepted browser contract says main has no arguments. Current grid main takes str[] supplied by three handwritten test boot lines reading location.search; those lines must disappear. Invoice identity is untrusted bootstrap data, never permission. Existing browser::on_event passes an immutable four-field snapshot into an async Can callback. Native preventDefault must run before dispatch returns; awaiting the callback is too late. Raw Event objects cannot escape to Can, and disposed views cannot cancel later events.",
+    "generic_boundary": "DI-04 already checks public generic bodies once with opaque symbolic parameters, forbidding unprovided arithmetic/equality/codec operations; private generics remain concrete templates. Today specialize.go rejects a second generic call when its type argument contains the caller's opaque parameter, though public identity-to-identity forwarding is safe. Selected P03 requires that ordinary public helper extraction work across packages without false parametric proof or emitted opaque specialization. Mutual cycles and expanding type recursion need predictable sound checking."
+  },
+  "questions": {
+    "runtime_architecture": {
+      "type": "choice",
+      "instructions": "Which maintained browser runtime design best meets the accepted semantic closure?",
+      "criteria": {
+        "browser_profile": "Build a browser-specific runtime profile: precompute concrete identities, use private Can-value branding and safe native errors, pass execution context explicitly across async branches, and embed verified diagnostic maps. Keep native Promise/DOM/Fetch operations.",
+        "maintained_shims": "Promote the existing Node-shim bundle only after replacing all four limited shims with faithful implementations for async context, proxy/error classification, hashing and source-map file access, then qualify every reachable operation."
+      }
+    },
+    "bootstrap_input": {
+      "type": "choice",
+      "instructions": "What narrow source supplies invoice selection to an argument-free Can browser main?",
+      "criteria": {
+        "query_parameter": "Add a bounded browser::query_parameter literal-key read over native URLSearchParams(location.search); reject duplicate/oversized values, return immutable optional text, and recheck the captured resource on every server request.",
+        "root_boot_data": "Have the verified server page place one typed transparent boot record on the admitted root; a checked browser operation reads and decodes that inert data before boot, with no general DOM attribute or raw-script escape."
+      }
+    },
+    "generic_proof_order": {
+      "type": "choice",
+      "instructions": "How should validated public generic helper calls handle mutual cycles?",
+      "criteria": {
+        "scc_certification": "Validate a strongly connected component as one unit using provisional signatures; commit none until every body and edge checks, and reject constructor growth on an internal opaque edge while allowing bare formals or closed concrete types.",
+        "acyclic_only": "Certify public generic declarations only in dependency order; allow opaque forwarding to a completed callee but reject every cross-generic opaque cycle, including stationary ones, as outside this bounded feature."
+      }
+    },
+    "event_cancellation": {
+      "type": "choice",
+      "instructions": "Where should the cancellation choice be made so native preventDefault runs in time?",
+      "criteria": {
+        "registration_policy": "A checked registration declares cancel-on-submit or cancel-on-specific-key; its native listener tests liveness/cancelability and calls preventDefault synchronously before invoking the ordinary async snapshot handler.",
+        "synchronous_predicate": "Introduce a specially checked synchronous no-suspend Can predicate over an immutable event snapshot; native dispatch runs it to completion and prevents the default only when it returns cancel, before an async handler starts."
+      }
+    }
+  }
+}

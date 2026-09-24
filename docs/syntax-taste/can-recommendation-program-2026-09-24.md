@@ -8,7 +8,15 @@ This document consolidates the [SaaS review](saas-language-review-2026-09-24.md)
 
 This is a design recommendation and acceptance program, not an amendment to the [current authoritative decisions](decisions.md) or the [September 22 disposition ledger](../implementation/language-design-dispositions-2026-09-22.md). Exact syntax and implementation work need a recorded design change. There are no external users or compatibility requirements to protect old spellings when that change is chosen.
 
-The [design preparation](can-design-preparation-2026-09-24.md) has now evaluated these recommendations against the user-confirmed AI-agent identity and produced a [dependency-ordered implementation task list](can-implementation-task-list-2026-09-24.md). Total tokens per successful AI coding task are a secondary measured goal. The linked [disposition ledger](preparation/design-disposition-ledger.md) records accepted, retained and deferred recommendations; no production implementation is claimed by these documents.
+The [design preparation](can-design-preparation-2026-09-24.md) and subsequent
+[27-task upgrade](can-implementation-task-list-2026-09-24.md) now have completed
+execution records. The source-state descriptions and proposed gates below refer
+to the earlier reviewed revision. Use the
+[post-upgrade review](post-upgrade-language-review-961f921-2026-09-24.md) and
+[current reconciliation](post-upgrade-reconciliation-2026-09-24.md) for remaining
+gaps. The [disposition ledger](preparation/design-disposition-ledger.md) preserves
+the earlier selections; total tokens per successful AI coding task remains a
+secondary measured goal, with no live agent-trial advantage established.
 
 ## One language direction
 

@@ -1,0 +1,207 @@
+{
+  "checked_at_utc": "2026-09-24T22:32:10.957524+00:00",
+  "kind": "documentation-plan-validation",
+  "passed": true,
+  "task_count": 27,
+  "fix_count": 11,
+  "wave_count": 14,
+  "max_coding_workers": 3,
+  "local_links_checked": 20,
+  "checks": [
+    "ordered-acyclic-dependencies",
+    "complete-task-details",
+    "each-task-scheduled-once",
+    "dependencies-precede-wave",
+    "lane-match",
+    "disjoint-declared-write-sets",
+    "exclusive-integration-gates",
+    "all-selected-fixes-covered",
+    "local-link-targets-exist"
+  ],
+  "inputs_sha256": {
+    "post-upgrade-implementation-plan-2026-09-24.md": "d7a16a8891c04597f71250bf53ae5b2a6506cf56554be38dac04aa8018ca3e71",
+    "post-upgrade-implementation-tasks-2026-09-24.md": "0e8aabee79e2b618fda80af6bec4c0deea4e53c9a91e873b8d18093424f6cdb5",
+    "post-upgrade-dispositions-2026-09-24.md": "9591229903a5a11bf73f765d4445f92d1a9b4ca8e7dfd4ba3531dca09ece853c",
+    "validate.py": "a74269a80d48640d91e93ffd17410732749d9ddf9a5e99c9c871b70e666ac49e"
+  },
+  "coverage": {
+    "B01": [
+      "UP10",
+      "UP11",
+      "UP15",
+      "UP23"
+    ],
+    "B02": [
+      "UP03",
+      "UP23",
+      "UP24"
+    ],
+    "U01": [
+      "UP05",
+      "UP08",
+      "UP16",
+      "UP19",
+      "UP20",
+      "UP21"
+    ],
+    "U02": [
+      "UP06",
+      "UP08",
+      "UP09",
+      "UP16",
+      "UP19",
+      "UP22"
+    ],
+    "U03": [
+      "UP08",
+      "UP09",
+      "UP13",
+      "UP19",
+      "UP20",
+      "UP21",
+      "UP22"
+    ],
+    "U04": [
+      "UP04",
+      "UP07",
+      "UP10",
+      "UP11",
+      "UP13",
+      "UP15",
+      "UP18",
+      "UP20",
+      "UP23",
+      "UP25"
+    ],
+    "U05": [
+      "UP11",
+      "UP13",
+      "UP20",
+      "UP23"
+    ],
+    "S01": [
+      "UP08",
+      "UP12",
+      "UP19",
+      "UP22",
+      "UP23"
+    ],
+    "S02": [
+      "UP07",
+      "UP11",
+      "UP13",
+      "UP23"
+    ],
+    "S03": [
+      "UP20",
+      "UP23"
+    ],
+    "P03": [
+      "UP02",
+      "UP14",
+      "UP17",
+      "UP21",
+      "UP24"
+    ]
+  },
+  "waves": [
+    {
+      "wave": 0,
+      "tasks": {
+        "I": "UP01"
+      }
+    },
+    {
+      "wave": 1,
+      "tasks": {
+        "C": "UP02",
+        "R": "UP03",
+        "B": "UP04"
+      }
+    },
+    {
+      "wave": 2,
+      "tasks": {
+        "C": "UP05",
+        "R": "UP06",
+        "B": "UP07"
+      }
+    },
+    {
+      "wave": 3,
+      "tasks": {
+        "C": "UP08",
+        "B": "UP10"
+      }
+    },
+    {
+      "wave": 4,
+      "tasks": {
+        "C": "UP11",
+        "R": "UP09"
+      }
+    },
+    {
+      "wave": 5,
+      "tasks": {
+        "C": "UP14",
+        "R": "UP12",
+        "B": "UP13"
+      }
+    },
+    {
+      "wave": 6,
+      "tasks": {
+        "C": "UP17",
+        "R": "UP16",
+        "B": "UP15"
+      }
+    },
+    {
+      "wave": 7,
+      "tasks": {
+        "B": "UP18"
+      }
+    },
+    {
+      "wave": 8,
+      "tasks": {
+        "R": "UP19",
+        "B": "UP20"
+      }
+    },
+    {
+      "wave": 9,
+      "tasks": {
+        "C": "UP21",
+        "R": "UP22",
+        "B": "UP23"
+      }
+    },
+    {
+      "wave": 10,
+      "tasks": {
+        "I": "UP24"
+      }
+    },
+    {
+      "wave": 11,
+      "tasks": {
+        "I": "UP25"
+      }
+    },
+    {
+      "wave": 12,
+      "tasks": {
+        "C": "UP26"
+      }
+    },
+    {
+      "wave": 13,
+      "tasks": {
+        "I": "UP27"
+      }
+    }
+  ],
+  "limit": "Validates declared scheduling and coverage, not implementation or runtime behavior."
+}

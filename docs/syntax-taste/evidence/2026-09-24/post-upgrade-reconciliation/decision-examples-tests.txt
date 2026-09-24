@@ -1,0 +1,1 @@
+ok  	github.com/veighnsche/can-lang/compiler/internal/syntax	0.221s

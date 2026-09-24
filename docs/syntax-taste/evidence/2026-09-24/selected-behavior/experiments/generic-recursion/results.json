@@ -1,0 +1,208 @@
+{
+  "build_checker": {
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+      "/Users/vince/Projects/can-lang/compiler/.selected-generic-recursion-probe"
+    ],
+    "status": 0,
+    "stderr": "go: writing stat cache: open /Users/vince/go/pkg/mod/cache/download/github.com/veighnsche/can-lang/@v/v0.0.0-20260924200047-fbd2a5614dbb.info204366103.tmp: operation not permitted\n",
+    "stdout": ""
+  },
+  "build_parser": {
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+      "./compiler"
+    ],
+    "status": 0,
+    "stderr": "go: writing stat cache: open /Users/vince/go/pkg/mod/cache/download/github.com/veighnsche/can-lang/@v/v0.0.0-20260924200047-fbd2a5614dbb.info402563669.tmp: operation not permitted\n",
+    "stdout": ""
+  },
+  "cases": {
+    "acyclic-nested-private": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-private",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":true,\"concrete_functions\":[\"can.project.root/app::identity\",\"can.project.root/app::identity\",\"can.project.root/app::nested\"],\"emitted_modules\":7,\"symbolic_parameter_model_nodes\":0}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-private/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-private/src/app.can: package app, 4 declarations\n"
+      },
+      "result": {
+        "checked": true,
+        "concrete_functions": [
+          "can.project.root/app::identity",
+          "can.project.root/app::identity",
+          "can.project.root/app::nested"
+        ],
+        "emitted_modules": 7,
+        "symbolic_parameter_model_nodes": 0
+      }
+    },
+    "acyclic-nested-public": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-public",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":false,\"error\":\"exported generic function can.project.root/app::nested requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-public/src/app.can region can.project.root/app::nested/symbolic: expression at byte 327: generic function can.project.root/app::identity cannot be instantiated with opaque type parameter nested\\u003citem\\u003e from exported generic declaration can.project.root/app::nested: pass the value through a non-generic contract or an explicit callable input\"}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-public/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-public/src/app.can: package app, 4 declarations\n"
+      },
+      "result": {
+        "checked": false,
+        "error": "exported generic function can.project.root/app::nested requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/acyclic-nested-public/src/app.can region can.project.root/app::nested/symbolic: expression at byte 327: generic function can.project.root/app::identity cannot be instantiated with opaque type parameter nested<item> from exported generic declaration can.project.root/app::nested: pass the value through a non-generic contract or an explicit callable input"
+      }
+    },
+    "expanding-mutual": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/expanding-mutual",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":false,\"error\":\"exported generic function can.project.root/app::a requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/expanding-mutual/src/app.can region can.project.root/app::a/symbolic: generic function can.project.root/app::b cannot be instantiated with opaque type parameter a\\u003citem\\u003e from exported generic declaration can.project.root/app::a: pass the value through a non-generic contract or an explicit callable input\"}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/expanding-mutual/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/expanding-mutual/src/app.can: package app, 3 declarations\n"
+      },
+      "result": {
+        "checked": false,
+        "error": "exported generic function can.project.root/app::a requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/expanding-mutual/src/app.can region can.project.root/app::a/symbolic: generic function can.project.root/app::b cannot be instantiated with opaque type parameter a<item> from exported generic declaration can.project.root/app::a: pass the value through a non-generic contract or an explicit callable input"
+      }
+    },
+    "public-identity-control": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/public-identity-control",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":true,\"concrete_functions\":[\"can.project.root/app::identity\"],\"emit_error\":\"unknown emitted type\",\"symbolic_parameter_model_nodes\":1}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/public-identity-control/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/public-identity-control/src/app.can: package app, 2 declarations\n"
+      },
+      "result": {
+        "checked": true,
+        "concrete_functions": [
+          "can.project.root/app::identity"
+        ],
+        "emit_error": "unknown emitted type",
+        "symbolic_parameter_model_nodes": 1
+      }
+    },
+    "stationary-mutual": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-mutual",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":false,\"error\":\"exported generic function can.project.root/app::first requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-mutual/src/app.can region can.project.root/app::first/symbolic: expression at byte 210: generic function can.project.root/app::second cannot be instantiated with opaque type parameter first\\u003citem\\u003e from exported generic declaration can.project.root/app::first: pass the value through a non-generic contract or an explicit callable input\"}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-mutual/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-mutual/src/app.can: package app, 3 declarations\n"
+      },
+      "result": {
+        "checked": false,
+        "error": "exported generic function can.project.root/app::first requires operations on type variables to be explicit named callable or dictionary inputs: /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-mutual/src/app.can region can.project.root/app::first/symbolic: expression at byte 210: generic function can.project.root/app::second cannot be instantiated with opaque type parameter first<item> from exported generic declaration can.project.root/app::first: pass the value through a non-generic contract or an explicit callable input"
+      }
+    },
+    "stationary-self": {
+      "check_and_emit": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/check-probe",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-self",
+          "/Users/vince/Projects/can-lang/runtime"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "{\"checked\":true,\"concrete_functions\":[\"can.project.root/app::first\"],\"emit_error\":\"unknown emitted type\",\"symbolic_parameter_model_nodes\":1}\n"
+      },
+      "parse": {
+        "command": [
+          "/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/can-generic-recursion-e2b3cun0/canlc",
+          "parse",
+          "/Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-self/src/app.can"
+        ],
+        "status": 0,
+        "stderr": "",
+        "stdout": "parsed /Users/vince/Projects/can-lang/docs/syntax-taste/evidence/2026-09-24/selected-behavior/experiments/generic-recursion/cases/stationary-self/src/app.can: package app, 2 declarations\n"
+      },
+      "result": {
+        "checked": true,
+        "concrete_functions": [
+          "can.project.root/app::first"
+        ],
+        "emit_error": "unknown emitted type",
+        "symbolic_parameter_model_nodes": 1
+      }
+    }
+  },
+  "compiler_revision": {
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "status": 0,
+    "stderr": "",
+    "stdout": "fbd2a5614dbba660b085b6fec8aef4f5d902c051\n"
+  }
+}

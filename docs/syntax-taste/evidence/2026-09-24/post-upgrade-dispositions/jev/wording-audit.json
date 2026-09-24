@@ -1,0 +1,138 @@
+{
+  "semantic_invariants": {
+    "state_fields": [
+      "task_and_constraints",
+      "accepted_platform_contracts",
+      "core_and_runtime_evidence",
+      "other_boundaries"
+    ],
+    "question_ids": [
+      "action_binding",
+      "browser_delivery",
+      "generic_calls",
+      "failure_wrappers",
+      "iteration",
+      "race_lifetime",
+      "browser_host_surface",
+      "ui_reuse",
+      "bulk_collections",
+      "capture_binding",
+      "multiline_layout"
+    ],
+    "option_ids_by_question": {
+      "action_binding": [
+        "selected_split",
+        "alternate_projection",
+        "manual_contracts"
+      ],
+      "browser_delivery": [
+        "maintained_profile",
+        "complete_shims",
+        "grid_only"
+      ],
+      "generic_calls": [
+        "implement",
+        "experiment",
+        "retain"
+      ],
+      "failure_wrappers": [
+        "implement",
+        "compare",
+        "retain"
+      ],
+      "iteration": [
+        "implement",
+        "compare",
+        "retain"
+      ],
+      "race_lifetime": [
+        "redesign",
+        "measure",
+        "retain"
+      ],
+      "browser_host_surface": [
+        "add_now",
+        "experiment",
+        "retain"
+      ],
+      "ui_reuse": [
+        "implement_library",
+        "prototype",
+        "retain"
+      ],
+      "bulk_collections": [
+        "implement",
+        "measure",
+        "retain"
+      ],
+      "capture_binding": [
+        "implement",
+        "trial",
+        "retain"
+      ],
+      "multiline_layout": [
+        "implement",
+        "trial",
+        "retain"
+      ]
+    },
+    "model": "jev-latest"
+  },
+  "rewritten_explanatory_fields": 48,
+  "checked_fields": [
+    "state.task_and_constraints",
+    "state.accepted_platform_contracts",
+    "state.core_and_runtime_evidence",
+    "state.other_boundaries",
+    "questions.action_binding.instructions",
+    "questions.action_binding.criteria.alternate_projection",
+    "questions.action_binding.criteria.manual_contracts",
+    "questions.action_binding.criteria.selected_split",
+    "questions.browser_delivery.instructions",
+    "questions.browser_delivery.criteria.maintained_profile",
+    "questions.browser_delivery.criteria.complete_shims",
+    "questions.browser_delivery.criteria.grid_only",
+    "questions.generic_calls.instructions",
+    "questions.generic_calls.criteria.experiment",
+    "questions.generic_calls.criteria.retain",
+    "questions.generic_calls.criteria.implement",
+    "questions.failure_wrappers.instructions",
+    "questions.failure_wrappers.criteria.retain",
+    "questions.failure_wrappers.criteria.implement",
+    "questions.failure_wrappers.criteria.compare",
+    "questions.iteration.instructions",
+    "questions.iteration.criteria.retain",
+    "questions.iteration.criteria.implement",
+    "questions.iteration.criteria.compare",
+    "questions.race_lifetime.instructions",
+    "questions.race_lifetime.criteria.redesign",
+    "questions.race_lifetime.criteria.measure",
+    "questions.race_lifetime.criteria.retain",
+    "questions.browser_host_surface.instructions",
+    "questions.browser_host_surface.criteria.experiment",
+    "questions.browser_host_surface.criteria.add_now",
+    "questions.browser_host_surface.criteria.retain",
+    "questions.ui_reuse.instructions",
+    "questions.ui_reuse.criteria.retain",
+    "questions.ui_reuse.criteria.implement_library",
+    "questions.ui_reuse.criteria.prototype",
+    "questions.bulk_collections.instructions",
+    "questions.bulk_collections.criteria.retain",
+    "questions.bulk_collections.criteria.measure",
+    "questions.bulk_collections.criteria.implement",
+    "questions.capture_binding.instructions",
+    "questions.capture_binding.criteria.trial",
+    "questions.capture_binding.criteria.retain",
+    "questions.capture_binding.criteria.implement",
+    "questions.multiline_layout.instructions",
+    "questions.multiline_layout.criteria.trial",
+    "questions.multiline_layout.criteria.retain",
+    "questions.multiline_layout.criteria.implement"
+  ],
+  "request_sha256": [
+    "74d33826f706b669218c3c6314f1890a45bbda38f9a90ab96235b631a11fee7e",
+    "fe1dea3b6674ac35a6d94580f579cb71504132f5092d380939490d69c3ad52d8",
+    "4755992196540bdae155dc2704d22ed3c70bf618412ba0781d202d3f89c7e948"
+  ],
+  "meaning_check": "All three state variants preserve facts/constraints; every question preserves its choice set, outcome meaning and decision boundary. The prose was manually compared before transmission. Exact identifiers stay stable."
+}

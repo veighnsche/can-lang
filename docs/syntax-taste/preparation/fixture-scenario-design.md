@@ -1,5 +1,7 @@
 # DI-06: bounded exported helper scenarios
 
+**Status after the upgrade (24 September 2026):** Lexical fixture ownership and explicit scenario links were implemented in T08. This original design packet is preserved as decision evidence; its pre-implementation description is historical. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. Planned source and runtime contract, not current Can
 behavior. The [hard private-effect comparison](fixture-hard-case.md) ran both
 ordinary injection idioms and a disposable exported-scenario spike. Three

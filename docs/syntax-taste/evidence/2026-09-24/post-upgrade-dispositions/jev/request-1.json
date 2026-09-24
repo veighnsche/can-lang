@@ -1,0 +1,110 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "task_and_constraints": "Select next-upgrade scope for Can, a language for AI coding agents. Correct contracts, dependable edits and native JavaScript/Bun behavior lead; whole-task tokens are secondary. No external users require compatibility. This is an advisory classification, not research or a language decision. The two confirmed implementation defects will be fixed independently of your choices.",
+    "accepted_platform_contracts": "Earlier selected design specifies a shared handler-free action declaration imported by server and browser, and server mounting that receives the request plus explicit services. Current declarations require `handles`, handlers accept captures/body only, the invoice grid duplicates declarations with stubs, and a browser test rewrites its declared GET path to the live query route. A Can browser target and real grid exist, but emitted TypeScript needs a test bundler with four Node semantic shims. The browser design selected supported delivery, cancelable events and observable handler failures; general bundling and these event behaviors remain unfinished.",
+    "core_and_runtime_evidence": "Exported generic bodies receive symbolic declaration checks, but one exported generic cannot pass its opaque parameter to another verified generic identity; private templates can. Catalogue map/fold propagate callback-specific finite failures, authored wrappers cannot parameterize `emits`; finite error-set parameters were deferred. A self-tail `relay` countdown overflows around 10000 steps on local Bun 1.4.2, with no selected tail-call guarantee. Native race selection can finish around 2 ms while its owner returns around 83 ms after an 80 ms loser; HTTP latency follows from source but has not been measured live. Owners deliberately drain losers to preserve leases.",
+    "other_boundaries": "The first browser catalogue omits checked input, modifier, file, composition, persistence, history and client WebSocket operations; reload-durable drafts were expressly excluded. Typed node functions compose but the grid manually rebuilds fields and focus. `near` name-based capture, false-before-true Boolean order, local-elision validity and single-line delimiters are selected or deferred rules. Native Map/Set point updates copy collections and a small probe suggests quadratic distinct-key construction; bulk operations are deferred. The invoice/grid is the acceptance workload. No live AI-agent comparison has established a token benefit for new syntax."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "Which action architecture should the next upgrade treat as its required completion target?",
+      "criteria": {
+        "selected_split": "Implement the accepted handler-free wire declaration and separate request-aware server mount, with explicit service binding and one imported client contract.",
+        "alternate_projection": "Reopen the design for a bound callable whose client projection is provably server-free and still shares one contract.",
+        "manual_contracts": "Retain separate manual JSON routes and duplicated client declarations as the supported pattern, with drift tests."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "How should supported browser delivery be scoped for this upgrade?",
+      "criteria": {
+        "maintained_profile": "Ship a maintained browser runtime/build profile and audit every reachable dependency, using native browser operations and small adapters.",
+        "complete_shims": "Turn the shim layer into an official build path only after specifying and testing full admitted async, diagnostics and ownership behavior.",
+        "grid_only": "Keep TypeScript plus manifest as intermediate output and qualify only the existing test-bundled grid integration."
+      }
+    },
+    "generic_calls": {
+      "type": "choice",
+      "instructions": "Should safe public generic-to-generic forwarding enter this upgrade?",
+      "criteria": {
+        "implement": "Admit calls through validated parametric callee signatures with symbolic substitution and cycle checks; still reject representation-dependent bodies.",
+        "experiment": "Keep current rejection temporarily and run helper-extraction, nested-call and agent repair trials before extending the checker.",
+        "retain": "Preserve the exported-generic call restriction and require explicit operation/callable parameters for extracted helpers."
+      }
+    },
+    "failure_wrappers": {
+      "type": "choice",
+      "instructions": "What should this upgrade do about authored generic wrappers that lose callback-specific failure sets?",
+      "criteria": {
+        "implement": "Add an explicit finite error-set parameter to authored generic contracts, retaining exact public error obligations.",
+        "compare": "Defer syntax while comparing fixed bounds, result data and a finite-parameter prototype on two unrelated callbacks and nested wrappers.",
+        "retain": "Keep written concrete `emits` and nominal result-data APIs as the long-term authoring model."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "Should general growing iteration be included now despite the absence of a prior stack-safety promise?",
+      "criteria": {
+        "implement": "Add one explicitly stack-safe route for immutable dynamic state, preserving evaluation, failures, fixture identity and diagnostics.",
+        "compare": "Defer syntax and compare self-tail lowering with an immutable-state iterator on pagination and state-machine programs.",
+        "retain": "State native recursion limits as a supported scope boundary and direct array work to stack-safe folds."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "Which scope is justified for race-result latency while resource owners retain losing leases?",
+      "criteria": {
+        "redesign": "Implement response-independent supervised losers or explicit cooperative cancellation after specifying cleanup, shutdown and side-effect ownership.",
+        "measure": "Retain current owner drainage while measuring a real HTTP hedge and comparing deadlines with supervised ownership before design selection.",
+        "retain": "Keep mandatory draining and documented latency as the intended permanent policy; require operation-local timeouts where needed."
+      }
+    },
+    "browser_host_surface": {
+      "type": "choice",
+      "instructions": "How much richer browser input/host support belongs in this upgrade beyond the already accepted cancelable-event minimum?",
+      "criteria": {
+        "add_now": "Ship checked state, modifiers and IME/file input plus reload drafts, choosing a maintained typed extension architecture now.",
+        "experiment": "Complete the accepted event minimum, then prototype persistent drafts and rich inputs under catalogue expansion and reviewed adapters before selection.",
+        "retain": "Keep the first browser catalogue narrow and support only frontends whose native needs fit its admitted operations."
+      }
+    },
+    "ui_reuse": {
+      "type": "choice",
+      "instructions": "Should the next upgrade add an authored UI reuse mechanism beyond functions and typed nodes?",
+      "criteria": {
+        "implement_library": "Ship a reusable typed field/keyed-row library after proving focus, IME, row reorder, late response and disposal behavior.",
+        "prototype": "Defer a supported abstraction while prototyping the same grid field and keyed editor as named helpers and measuring edit costs.",
+        "retain": "Keep named functions and typed nodes as the stable authoring approach with clearer examples only."
+      }
+    },
+    "bulk_collections": {
+      "type": "choice",
+      "instructions": "What is the disposition of immutable Map/Set bulk creation given the observed copying cost?",
+      "criteria": {
+        "implement": "Add bulk constructors or grouping with one native Map/Set build and one immutable publication, specifying duplicate/order/failure rules.",
+        "measure": "Defer the API while benchmarking representative unique and duplicate-heavy workloads and agent tasks against current folds.",
+        "retain": "Keep immutable point updates only and document their cost as the collection model."
+      }
+    },
+    "capture_binding": {
+      "type": "choice",
+      "instructions": "Should explicit `near` capture binding syntax be reopened in this upgrade?",
+      "criteria": {
+        "implement": "Add explicit reference-site capture mappings while preserving immutable capture timing and type checks.",
+        "trial": "Retain `near` while comparing explicit context records and capture-map syntax on registered rename/shadow repair tasks.",
+        "retain": "Keep exact-name capture as the intended permanent rule and rely on explicit context records when identity matters."
+      }
+    },
+    "multiline_layout": {
+      "type": "choice",
+      "instructions": "Should delimiter continuation enter this upgrade after the formatter shipped?",
+      "criteria": {
+        "implement": "Permit continuation within delimiters while keeping indentation block semantics and exact formatting checks.",
+        "trial": "Keep current grammar while measuring held-out agent edits and formatter output on wide declarations and assertion rows.",
+        "retain": "Keep every delimited expression on one physical line as the stable language layout rule."
+      }
+    }
+  }
+}

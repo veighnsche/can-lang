@@ -1,5 +1,7 @@
 # DI-02: owner-controlled record design
 
+**Status after the upgrade (24 September 2026):** Owner records were implemented in T05, including owner-only construction, projection, update and destructuring. The original contract below remains decision evidence; consult current source and the reconciliation for qualifications such as codec rejection and representation-based equality. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. Planned language contract, not implemented compiler behavior.
 This resolves the remaining declaration and boundary details in the
 [accepted DI-02 direction](accepted-technical-decisions.md#di-02--owner-controlled-public-records-for-validated-values).

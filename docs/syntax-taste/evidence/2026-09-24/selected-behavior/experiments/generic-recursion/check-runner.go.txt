@@ -1,0 +1,62 @@
+package main
+
+import (
+    "encoding/json"
+    "os"
+    "path/filepath"
+    "sort"
+    "strings"
+
+    "github.com/veighnsche/can-lang/compiler/internal/check"
+    "github.com/veighnsche/can-lang/compiler/internal/emit"
+    "github.com/veighnsche/can-lang/compiler/internal/ir"
+    "github.com/veighnsche/can-lang/compiler/internal/project"
+    "github.com/veighnsche/can-lang/compiler/internal/types"
+)
+
+func main() {
+    result := map[string]any{"checked": false}
+    graph, err := project.Load(os.Args[1])
+    if err == nil {
+        var program *check.Program
+        program, err = check.CheckProgram(graph)
+        if err == nil {
+            result["checked"] = true
+            var concrete []string
+            for _, fn := range program.Functions {
+                if fn.Instance != "" && !strings.Contains(fn.Instance, "/symbolic") {
+                    concrete = append(concrete, fn.Symbol.ID)
+                }
+            }
+            sort.Strings(concrete)
+            result["concrete_functions"] = concrete
+            var symbolicTypes int
+            for _, typ := range program.Model.Types() {
+                if typ.Kind() == types.Parameter { symbolicTypes++ }
+            }
+            result["symbolic_parameter_model_nodes"] = symbolicTypes
+            var dependencies []ir.Artifact
+            walkErr := filepath.WalkDir(os.Args[2], func(path string, entry os.DirEntry, err error) error {
+                if err != nil || entry.IsDir() || !strings.HasSuffix(path, ".ts") { return err }
+                relative, err := filepath.Rel(os.Args[2], path)
+                if err != nil { return err }
+                dependencies = append(dependencies, ir.Artifact{Path: filepath.ToSlash(filepath.Join("runtime", relative))})
+                return nil
+            })
+            if walkErr != nil { result["emit_error"] = walkErr.Error() } else {
+            var artifacts int
+            modules, emitErr := emit.AssertionModules(program, "runtime", dependencies)
+            if emitErr != nil {
+                result["emit_error"] = emitErr.Error()
+            } else {
+                for _, module := range modules {
+                    if len(module.Bytes) > 0 { artifacts++ }
+                }
+                result["emitted_modules"] = artifacts
+            }
+            }
+        }
+    }
+    if err != nil { result["error"] = err.Error() }
+    json.NewEncoder(os.Stdout).Encode(result)
+}

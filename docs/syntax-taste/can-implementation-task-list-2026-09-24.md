@@ -1,6 +1,19 @@
 # Can implementation task list, dependency ordered
 
-24 September 2026. This is the result of the [design preparation](can-design-preparation-2026-09-24.md). It is a **plan**, not a claim that any production change below has shipped. Can is for AI coding agents; correctness, stable contracts and observable product behavior lead, while total tokens per successful agent task is a secondary measured outcome. There are no external users or compatibility requirements. The [disposition ledger](preparation/design-disposition-ledger.md) covers every DI-01–DI-23 item; only accepted mechanisms and qualification work appear as build tasks. The [integrated action contract](preparation/integrated-action-contract.md), [product acceptance matrix](preparation/product-acceptance-matrix.md), and linked topic packets define exact semantics.
+24 September 2026. This is the plan and **completed execution record** resulting
+from the [design preparation](can-design-preparation-2026-09-24.md). All T01–T27
+entries have integration evidence below. Checked tasks and passing gates do not
+establish full compliance with every planned contract: the
+[post-upgrade reconciliation](post-upgrade-reconciliation-2026-09-24.md)
+records remaining bugs, unfinished accepted requirements and new proposals.
+Can is for AI coding agents; correctness, stable contracts and observable product
+behavior lead, while total tokens per successful agent task is a secondary
+measured outcome. There are no external users or compatibility requirements.
+The [disposition ledger](preparation/design-disposition-ledger.md),
+[integrated action contract](preparation/integrated-action-contract.md),
+[product acceptance matrix](preparation/product-acceptance-matrix.md), and topic
+packets preserve the earlier selected requirements. The task descriptions below
+remain the original execution scope, not a new queue.
 
 ## How to execute this graph
 

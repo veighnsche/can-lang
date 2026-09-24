@@ -1,6 +1,12 @@
 # Current build and run pipeline
 
-This document describes the current implementation. The selected revised contract is [P15.1](../syntax-taste/platform-testing-spec.md#p151-verified-build-and-publication), with native assertions in [P4.1](../syntax-taste/platform-testing-spec.md#p41-attached-native-and-wrapper-assertions). The [targeted verification report](implementation-gap-verification-2026-09-22.md) records the confirmed gaps; the selected behavior is not yet an implementation claim.
+This document describes the current implementation. Verified build publication
+and supervised assertions were implemented in LF03/LF04/LF15; see their
+[completion evidence](language-fixes-tasks-2026-09-22.md). Their contracts are
+[P15.1](../syntax-taste/platform-testing-spec.md#p151-verified-build-and-publication)
+and [P4.1](../syntax-taste/platform-testing-spec.md#p41-attached-native-and-wrapper-assertions).
+The [September 22 gap report](implementation-gap-verification-2026-09-22.md)
+records the earlier baseline, not current missing build behavior.
 
 Use a development bundle assembled with the pinned local archive as described
 in [distribution instructions](../../distribution/README.md). A plain Go-built
@@ -20,6 +26,13 @@ path through authored calls, callable references or generic specializations
 to SQL, process, filesystem, environment-secret, server-crypto or adjacent
 server capabilities fails the build with a located diagnostic. Unknown
 targets fail closed; there is no worker profile.
+
+This output is TypeScript plus an asset manifest, not a browser-ready JavaScript
+bundle. The invoice grid's recorded browser tests additionally use
+[`build-grid.mjs`](../../tests/integration/browser/build-grid.mjs), which supplies
+four Node-module shims with grid-specific limits. A maintained general browser
+runtime/bundling contract and full runtime dependency audit remain unfinished;
+see the [current reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md).
 
 The project directory must use real, canonical directory components, as required
 by manifest-owned output safety. `build` prints a versioned `can.build` JSON

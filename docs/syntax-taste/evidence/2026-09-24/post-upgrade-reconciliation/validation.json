@@ -1,0 +1,54 @@
+{
+  "date": "2026-09-24",
+  "source_baseline": "fbd2a5614dbba660b085b6fec8aef4f5d902c051",
+  "review_baseline": "961f921a6a8cf40be54735683caf29613c19cbd8",
+  "source_equivalence": "git diff 961f921..fbd2a56 contains only the review and its evidence",
+  "markdown_files_checked": 39,
+  "new_or_changed_markdown_links_checked": 368,
+  "link_errors": [],
+  "ledger_entries": 39,
+  "categories": {
+    "U": 6,
+    "P": 21,
+    "O": 5,
+    "B": 4,
+    "S": 3
+  },
+  "categories_note": "B includes two implementation bugs and two documentation groups; U06 is addressed by this change; S are supplementary unfinished accepted requirements; O are retained observations, not new scope.",
+  "checks": [
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    },
+    {
+      "command": "bun run check:runtime",
+      "result": "pass",
+      "log": "runtime-check.txt"
+    },
+    {
+      "command": "GOCACHE=/tmp/can-reconciliation-go-cache go test ./tests/baseline/ -count=1",
+      "result": "pass",
+      "log": "baseline-tests.txt"
+    },
+    {
+      "command": "GOCACHE=/tmp/can-reconciliation-go-cache go test ./compiler/internal/syntax/ -run 'TestCompleteCoreDecisionExamples|TestCoreConsumerSpecification' -count=1",
+      "result": "pass",
+      "log": "decision-examples-tests.txt"
+    },
+    {
+      "command": "local Markdown target/heading validation on added or changed links; full validation for new Markdown files",
+      "result": "pass"
+    }
+  ],
+  "production_source_changes": [],
+  "original_review_or_evidence_changes": [],
+  "not_rerun": [
+    "full compiler/runtime test suites",
+    "release build",
+    "installed Linux qualification",
+    "live database/provider application flows",
+    "HTTP hedge",
+    "Playwright matrix"
+  ],
+  "coverage_review": "Independent core auditor reviewed coordinator ledger; corrected handler-free action classification, LD references, retained-observation scope and documentation closure."
+}

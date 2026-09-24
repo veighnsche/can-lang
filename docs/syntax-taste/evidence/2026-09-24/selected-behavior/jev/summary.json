@@ -1,0 +1,128 @@
+[
+  {
+    "request": 1,
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1243,
+      "output_tokens": 160
+    },
+    "answers": {
+      "runtime_architecture": {
+        "choice": "browser_profile",
+        "confidence": 0.79,
+        "probabilities": {
+          "browser_profile": 0.89,
+          "maintained_shims": 0.11
+        }
+      },
+      "bootstrap_input": {
+        "choice": "root_boot_data",
+        "confidence": 0.15,
+        "probabilities": {
+          "root_boot_data": 0.57,
+          "query_parameter": 0.43
+        }
+      },
+      "generic_proof_order": {
+        "choice": "scc_certification",
+        "confidence": 0.61,
+        "probabilities": {
+          "scc_certification": 0.81,
+          "acyclic_only": 0.19
+        }
+      },
+      "event_cancellation": {
+        "choice": "synchronous_predicate",
+        "confidence": 0.41,
+        "probabilities": {
+          "registration_policy": 0.29,
+          "synchronous_predicate": 0.71
+        }
+      }
+    }
+  },
+  {
+    "request": 2,
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1203,
+      "output_tokens": 156
+    },
+    "answers": {
+      "runtime_architecture": {
+        "choice": "browser_profile",
+        "confidence": 0.92,
+        "probabilities": {
+          "maintained_shims": 0.04,
+          "browser_profile": 0.96
+        }
+      },
+      "bootstrap_input": {
+        "choice": "root_boot_data",
+        "confidence": 0.71,
+        "probabilities": {
+          "query_parameter": 0.15,
+          "root_boot_data": 0.85
+        }
+      },
+      "generic_proof_order": {
+        "choice": "scc_certification",
+        "confidence": 0.86,
+        "probabilities": {
+          "acyclic_only": 0.07,
+          "scc_certification": 0.93
+        }
+      },
+      "event_cancellation": {
+        "choice": "registration_policy",
+        "confidence": 0.24,
+        "probabilities": {
+          "synchronous_predicate": 0.38,
+          "registration_policy": 0.62
+        }
+      }
+    }
+  },
+  {
+    "request": 3,
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1171,
+      "output_tokens": 156
+    },
+    "answers": {
+      "runtime_architecture": {
+        "choice": "browser_profile",
+        "confidence": 0.82,
+        "probabilities": {
+          "maintained_shims": 0.09,
+          "browser_profile": 0.91
+        }
+      },
+      "bootstrap_input": {
+        "choice": "root_boot_data",
+        "confidence": 0.03,
+        "probabilities": {
+          "root_boot_data": 0.52,
+          "query_parameter": 0.48
+        }
+      },
+      "generic_proof_order": {
+        "choice": "scc_certification",
+        "confidence": 0.27,
+        "probabilities": {
+          "acyclic_only": 0.37,
+          "scc_certification": 0.63
+        }
+      },
+      "event_cancellation": {
+        "choice": "registration_policy",
+        "confidence": 0.1,
+        "probabilities": {
+          "registration_policy": 0.55,
+          "synchronous_predicate": 0.45
+        }
+      }
+    }
+  }
+]

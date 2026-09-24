@@ -1,5 +1,7 @@
 # Supporting-topic resolution status
 
+**Status after the upgrade (24 September 2026):** Historical preparation-stage working record. Later selections and T01–T27 execution supersede its pending-work status. The post-upgrade reconciliation records current support boundaries and proposals. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · working disposition draft. The
 [support alternatives](support-alternatives.md), [source evidence](ai-support-evidence.md)
 and [three fresh Jev consultations per set](jev-support-contracts/findings.md)

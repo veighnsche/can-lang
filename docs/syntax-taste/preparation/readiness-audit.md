@@ -1,5 +1,7 @@
 # Implementation-planning readiness audit
 
+**Status after the upgrade (24 September 2026):** Historical design-readiness audit, completed before T01–T27 execution. Its evidence limits describe that earlier moment, not the current checkout. The later execution ledger records completed gates; the post-upgrade reconciliation identifies accepted requirements those gates did not establish. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. This is a separate consistency pass over the completed design packets and the [implementation graph](../can-implementation-task-list-2026-09-24.md), not production qualification. It checks the decision inventory rather than endorsing every mechanism. The user directed us to ask no more design questions and consult Jev for difficult technical choices. Earlier user choices of `bind name` and dependency-qualified imports remain unchanged.
 
 | Audit axis | Result and evidence |

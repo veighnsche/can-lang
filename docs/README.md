@@ -1,12 +1,25 @@
 # docs — can-lang design records (reviewer index)
 
-Current authority lives in the [task ledger](implementation/tasks.md),
-[coverage](implementation/coverage.md), [evidence](implementation/evidence/2026-09-21/),
-and package READMEs — implementation is complete and all fifty tasks
-are checked. The design inputs below are dated records, not policy.
+For current implementation status, start with the
+[post-upgrade reconciliation](syntax-taste/post-upgrade-reconciliation-2026-09-24.md).
+The original [I01–I50 ledger](implementation/tasks.md), September 22
+[LF01–LF21 ledger](implementation/language-fixes-tasks-2026-09-22.md), and
+September 24 [T01–T27 ledger](syntax-taste/can-implementation-task-list-2026-09-24.md)
+record completed execution rounds. Their checked tasks do not establish that
+every accepted contract is fulfilled; the reconciliation identifies remaining
+gaps against current source. [Decisions](syntax-taste/decisions.md) and selected
+design packets describe requirements, while dated evidence records describe
+the particular checks that ran.
 
 ## Current recommendation program (2026-09-24)
 
+- [Post-upgrade language review](syntax-taste/post-upgrade-language-review-961f921-2026-09-24.md) — source-based assessment after the upgrade.
+- [Finding-by-finding reconciliation](syntax-taste/post-upgrade-reconciliation-2026-09-24.md) — bugs, unfinished accepted requirements and new proposals, with current evidence and earlier decisions.
+- [Next-upgrade dispositions](syntax-taste/post-upgrade-dispositions-2026-09-24.md) — selected fix, retain or defer scope for every reconciled finding.
+- [Selected next-upgrade behavior](syntax-taste/post-upgrade-selected-behavior-2026-09-24.md) — proposed Can source, compile/failure matrix, browser build and native lowering contract for the fixes.
+- [Invoice composition acceptance](syntax-taste/post-upgrade-invoice-acceptance-2026-09-24.md) — live server/browser/database gate, supported delivery path and cross-target contract-edit checks for the existing invoice examples.
+- [Post-upgrade implementation plan](syntax-taste/post-upgrade-implementation-plan-2026-09-24.md) — architecture, migration sequence and verification boundaries for all 11 fixes.
+- [Ordered implementation tasks and lanes](syntax-taste/post-upgrade-implementation-tasks-2026-09-24.md) — 27 tasks with prerequisites, source ownership, concurrent worker waves and completion checks.
 - [Consolidated Can recommendation program](syntax-taste/can-recommendation-program-2026-09-24.md) — non-normative roadmap and acceptance gates for server-driven and Can-authored browser SaaS; reconciles the two September 24 reviews.
 
 ## Design records (2026-09-20)

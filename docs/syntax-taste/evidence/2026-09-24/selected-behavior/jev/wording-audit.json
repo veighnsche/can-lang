@@ -1,0 +1,59 @@
+{
+  "rewritten_explanatory_fields": 16,
+  "checked_fields": [
+    "questions.bootstrap_input.criteria.query_parameter",
+    "questions.bootstrap_input.criteria.root_boot_data",
+    "questions.bootstrap_input.instructions",
+    "questions.event_cancellation.criteria.registration_policy",
+    "questions.event_cancellation.criteria.synchronous_predicate",
+    "questions.event_cancellation.instructions",
+    "questions.generic_proof_order.criteria.acyclic_only",
+    "questions.generic_proof_order.criteria.scc_certification",
+    "questions.generic_proof_order.instructions",
+    "questions.runtime_architecture.criteria.browser_profile",
+    "questions.runtime_architecture.criteria.maintained_shims",
+    "questions.runtime_architecture.instructions",
+    "state.browser_runtime",
+    "state.entry_and_events",
+    "state.generic_boundary",
+    "state.mandate"
+  ],
+  "request_sha256": [
+    "fd618b0faae4730f4e2200973e7c7e6910d88f54f78756b01565c614a6ee2938",
+    "216130956ede1fcc70449fbdffa144206e159670157a557f68f5c0c61864b89e",
+    "4f1f0978563a8c10c6bea0f4d8c3e270779a82443b506993eedd2d1117bb5d6b"
+  ],
+  "semantic_invariants": {
+    "state_fields": [
+      "mandate",
+      "browser_runtime",
+      "entry_and_events",
+      "generic_boundary"
+    ],
+    "question_ids": [
+      "runtime_architecture",
+      "bootstrap_input",
+      "generic_proof_order",
+      "event_cancellation"
+    ],
+    "option_ids_by_question": {
+      "runtime_architecture": [
+        "browser_profile",
+        "maintained_shims"
+      ],
+      "bootstrap_input": [
+        "query_parameter",
+        "root_boot_data"
+      ],
+      "generic_proof_order": [
+        "scc_certification",
+        "acyclic_only"
+      ],
+      "event_cancellation": [
+        "registration_policy",
+        "synchronous_predicate"
+      ]
+    }
+  },
+  "meaning_check": "All state variants preserve each factual constraint; each question retains its choice set and technical outcome. The coordinator compared all prose before dispatch. Exact technical names are stable; earlier answers are not present in later requests."
+}

@@ -1,5 +1,7 @@
 # Current constraints for Can design preparation
 
+**Status after the upgrade (24 September 2026):** Historical constraint snapshot from preparation. Its browser and platform availability rows predate the implemented browser target and Linux packaging. The post-upgrade reconciliation supplies current status; the AI-agent audience, native lowering and no-compatibility constraints remain applicable. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · preparation evidence, not a revised language decision
 
 This is the P2.2 constraint register for the [preparation checklist](../can-design-preparation-2026-09-24.md).

@@ -1,0 +1,17 @@
+package app
+    provides [identity]
+    uses []
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok 3
+    ok value
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

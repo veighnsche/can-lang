@@ -5,6 +5,12 @@ coding-agent audience, including syntax and the Can-to-Bun architecture. It take
 precedence over conflicting rules in other design documents. These are design
 requirements, not claims about implemented or compiler-validated behavior.
 
+For implementation status after the September 24 upgrade, read the
+[reconciliation](post-upgrade-reconciliation-2026-09-24.md) alongside the
+[T01–T27 execution record](can-implementation-task-list-2026-09-24.md).
+Earlier selected preparation contracts and current compiler behavior can differ;
+the reconciliation records those differences without silently selecting new rules.
+
 Decision: SURFACE-069, with the selected September 22 revisions below.
 
 The source forms and product choices recorded here establish the current design.
@@ -106,8 +112,10 @@ language recommendation against this audience rather than human preferences.
 
 **September 24 user choice:** measure token efficiency as a secondary design
 goal over a successful AI coding task, including prompts, source, diagnostics
-and retries. Its measurement protocol and weight remain to be specified in the
-[preparation todo list](can-design-preparation-2026-09-24.md). It does not
+and retries. The [evaluation protocol](preparation/evaluation-protocol.md) and
+[registered baseline](../../tests/baseline/README.md) now define the trials.
+The T26 comparison record contains zero live agent attempts and no measured
+token advantage. This objective does not
 authorize minimizing source length at the expense of correct contracts or
 agent repair reliability. This identity and objective do not select new syntax
 or authorize implementation changes.
@@ -2330,13 +2338,24 @@ typed HTML, HTMX attributes, response integration, assets and lifecycle.
 This does not select additional syntax, arbitrary inline script support, or
 promise arbitrary offline/client-side computation.
 
+The September 24 [browser design](preparation/browser-target-design.md) extended
+this initial server-driven scope. T21–T25 implemented a Can browser target and
+an actual Can-authored invoice grid. Its recorded browser runs use test bundling
+and semantic shims; general browser runtime delivery remains an unfinished
+accepted requirement. The initial U7 boundary above is not a statement that
+browser Can is absent from the current compiler.
+
 
 ### Initial distribution scope
 
-Windows is not a supported platform. Start with macOS support. Linux is a possible additional target, not yet a
-committed initial platform. The [distribution contract](platform-testing-spec.md) selects initial macOS
-architecture coverage. Runtime packaging should be platform-specific rather than
-shipping binaries for every operating system in each download.
+Windows is not a supported platform. The initial
+[distribution contract](platform-testing-spec.md) selected macOS architecture
+coverage. The September 24 upgrade added a pinned Debian 13 amd64/glibc Bun
+target; T19 packaging and the T20 follow-up record installed-artifact checks
+under emulation. See the [product guide](t26-product-guide-2026-09-24.md#11-server-runtime)
+for exact observed scope; those records are not evidence of a fresh native
+Linux run. Runtime packaging is platform-specific rather than shipping binaries
+for every operating system in each download.
 
 Current boundary: SURFACE-066. Catalogue ownership and command-execution
 constraints: SURFACE-063–064.

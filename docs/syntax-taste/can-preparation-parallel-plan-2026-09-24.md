@@ -1,6 +1,10 @@
 # Can preparation dependencies and parallel launch plan
 
-24 September 2026 · live preparation in progress
+24 September 2026 · historical execution map for the completed preparation round
+
+The subsequent T01–T27 upgrade has recorded completion. Use the
+[post-upgrade reconciliation](post-upgrade-reconciliation-2026-09-24.md) for
+remaining gaps; the launch instructions below describe the earlier round.
 
 This is the execution map for the [preparation checklist](can-design-preparation-2026-09-24.md)
 and its [model assignments](can-preparation-model-allocation-2026-09-24.md).

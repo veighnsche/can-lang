@@ -1,5 +1,7 @@
 # Resource lifetime and deployment evidence
 
+**Historical preparation evidence:** this audit predates T18/T19/T20. The stream pump now explicitly closes in its read-error branches, Linux packaging exists, and the final task acceptance records an installed-artifact fault-suite pass under emulation. The original observations below remain before-change evidence; see the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · R-D preparation packet · source HEAD `02a549d` · no design or syntax selected
 
 ## Scope and authority

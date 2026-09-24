@@ -1,0 +1,31 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/owner.test.ts:
+(pass) published groups inspect each losing outcome once while preserving occurrence dedup [15.33ms]
+(pass) late standard failures stay observed without replacing the selected success [4.74ms]
+(pass) closing preserves existing-owner subleases and deadlines never force close [12.27ms]
+(pass) reverse automatic cleanup reports omissions even when native closes succeed [1.04ms]
+(pass) scoped handles reject escapes and host callbacks block user code [0.98ms]
+(pass) resource preparation fails before every participant and rolls back leases [0.11ms]
+(pass) interleaved roots preserve native async context and reject cross-root handles [0.17ms]
+(pass) scoped shutdown drains losers before releasing the scoped native resource [0.12ms]
+(pass) wrong-kind and forged resources reject without touching native state [1.93ms]
+(pass) automatic close faults propagate cleanup from a managed scope [0.10ms]
+(pass) resources opened by a loser retain its lease across registered shutdown expiry [1.62ms]
+(pass) a participant-created managed child scope releases its initial lease at callback exit [0.32ms]
+(pass) a participant can explicitly close its own newly opened resource [0.07ms]
+(pass) idempotent reentrant close shares the installed native close attempt [0.07ms]
+(pass) host callback wrappers preserve nested capture evidence for participants [0.30ms]
+(pass) ordinary callable receipts do not add self-deadlocking close leases [0.04ms]
+(pass) selected standard outcomes are not late and repeated losing occurrences report once [0.07ms]
+(pass) native callbacks bind their operation scope and drain without ambient context [0.13ms]
+
+runtime/test/owner-roots.test.ts:
+(pass) CLI waits for late losers yet their diagnostics alone keep status zero [1.74ms]
+(pass) CLI reports omitted close as nonzero even after successful automatic close [0.13ms]
+(pass) assertion result waits for every owned participant before closing context [1.65ms]
+
+ 21 pass
+ 0 fail
+ 99 expect() calls
+Ran 21 tests across 2 files. [121.00ms]

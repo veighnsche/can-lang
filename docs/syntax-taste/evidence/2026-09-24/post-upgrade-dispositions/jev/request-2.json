@@ -1,0 +1,110 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "task_and_constraints": "Advise which optional Can findings deserve the coming upgrade. AI agents author the language, so reliable semantics and repair matter more than human taste; successful-task token use is a measured secondary aim. Old source and ABI need no preservation for outside users. Favor matching native JavaScript/Bun operations with limited contract adapters. The two concrete bugs are already in the fix scope; this classifier does not research or decide policy.",
+    "accepted_platform_contracts": "The accepted action packet puts wire metadata in one handler-free package and binds request-aware server handlers separately, with startup dependencies available through explicit composition. Shipped `action` syntax instead mandates `handles`; the server uses manual JSON routes, the grid repeats action definitions, and a harness redirects the captured path to a query endpoint. Browser Can runs in the grid, yet its TypeScript is bundled by a grid-only test tool supplying four Node shims. Accepted browser delivery, `preventDefault` for admitted events and failure reporting are not complete.",
+    "core_and_runtime_evidence": "DI-04 symbolic exported-generic checking shipped, but opaque type arguments at calls to a second generic still reject; private specialization differs. Public wrapper `emits` sets stay concrete even though built-in array callbacks retain their exact finite errors; the parameterized-error proposal was postponed. The saved terminal `relay` probe succeeds at 1000 and stack-overflows at 10000 on Bun 1.4.2, without a stack-safety promise. A root race measured early choice and roughly 80 ms later owner return; an HTTP response waits on the same scope, but no actual HTTP hedge trace was taken. Losing work retains resource leases by accepted policy.",
+    "other_boundaries": "The accepted initial browser target is intentionally narrow: no native checkbox/modifier/file/IME snapshot, storage/history/client socket, or durable reload draft. Existing function-built nodes support UI, with repetitive grid state and focus code. Name-derived `near`, compile-time redundant-local rejection, the user-chosen Boolean arm order, and no multiline continuation remain current design. Immutable native Map/Set updates copy each time; distinct-key microtimings motivate but do not qualify a bulk API. Existing invoice/grid examples provide concrete tests. Registered agent cases have zero live attempts, so proposed syntax has no measured whole-task win."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "Choose the contract-completion path for sharing authenticated invoice operations across Bun and browser Can.",
+      "criteria": {
+        "selected_split": "Finish the previously chosen shared metadata package, attach authenticated handlers at the server mount, and give them explicit startup dependencies.",
+        "alternate_projection": "Replace the selected split only after designing a context-capturing action with a checked browser-safe projection of its wire shape.",
+        "manual_contracts": "Accept mirrored invoice actions and hand-mounted endpoints, relying on comparison tests for client/server agreement."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "Which browser runtime commitment should accompany the accepted Can-authored grid target now?",
+      "criteria": {
+        "maintained_profile": "Provide a supported main-thread runtime and bundling command with complete transitive closure checks and browser-native semantics.",
+        "complete_shims": "Maintain the current bundler strategy as product tooling, qualifying each Node shim against all exposed browser operations.",
+        "grid_only": "Retain the browser compiler artifact without promising a general delivery pipeline beyond the named grid harness."
+      }
+    },
+    "generic_calls": {
+      "type": "choice",
+      "instructions": "What is the justified disposition of opaque generic helper calls after DI-04 shipped?",
+      "criteria": {
+        "implement": "Implement bounded opaque-argument forwarding between declaration-checked generic contracts, preserving illegal-operation diagnostics.",
+        "experiment": "Defer the new rule until controlled public/private composition examples show a material task benefit and safe cycles.",
+        "retain": "Treat today's opaque call rejection as the permanent public boundary, even for identity forwarding."
+      }
+    },
+    "failure_wrappers": {
+      "type": "choice",
+      "instructions": "Choose scope for public error-bound abstraction after the earlier DI-03 deferral.",
+      "criteria": {
+        "implement": "Introduce named finite failure-bound parameters so wrappers propagate caller-specific `emits` types.",
+        "compare": "Run the registered two-domain library and agent-edit trial before promoting the previously deferred parameter mechanism.",
+        "retain": "Treat fixed finite bounds or explicit success/failure data as sufficient for user libraries without a new error kind."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "What disposition fits the recorded deep `relay` overflow and application loops?",
+      "criteria": {
+        "implement": "Ship a bounded native-loop-lowered iteration construct or proven self-tail case with exact completion and assertion semantics.",
+        "compare": "Run focused recursion/loop prototypes and agent tasks first, including fixture and diagnostic identity checks.",
+        "retain": "Document that `relay` forwards completion but does not optimize the stack, retaining current collection traversal idioms."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "How should the next upgrade address the unmeasured HTTP hedge implication of owner drainage?",
+      "criteria": {
+        "redesign": "Change request race lifetime now with an explicit server-owned scope for unfinished losers and contract-safe response publication.",
+        "measure": "Keep existing safety semantics this round; gather server timing and cleanup evidence for each cancellation alternative.",
+        "retain": "Accept response delay behind owned losers as part of the service contract and focus on deadline guidance."
+      }
+    },
+    "browser_host_surface": {
+      "type": "choice",
+      "instructions": "Choose the scope of additional browser capabilities after completing admitted event cancellation and error reporting.",
+      "criteria": {
+        "add_now": "Expand the browser capability catalogue for rich inputs and durable drafts in this round, with lifecycle and codec tests.",
+        "experiment": "Keep new host APIs out of this implementation scope but compare two bounded extension paths on the same draft/IME app.",
+        "retain": "Preserve the existing host API range as the product boundary after satisfying the already selected event requirements."
+      }
+    },
+    "ui_reuse": {
+      "type": "choice",
+      "instructions": "What is justified by the grid's manual rendering and focus management now?",
+      "criteria": {
+        "implement_library": "Implement shared field and row-editor helpers in maintained Can packages, with product-level focus and lifecycle checks.",
+        "prototype": "Trial reusable functions on the existing grid before making an API promise or adding new component syntax.",
+        "retain": "Accept manual render/state synchronization as the current UI model and avoid a new reusable abstraction."
+      }
+    },
+    "bulk_collections": {
+      "type": "choice",
+      "instructions": "Choose whether unique-key insertion scaling justifies a new native-backed collection API now.",
+      "criteria": {
+        "implement": "Ship bounded batch collection operations that preserve immutable handles and callback error contracts.",
+        "measure": "Run a realistic batch construction trial and define collision/order/error contracts before promoting DI-20.",
+        "retain": "Accept quadratic repeated distinct-key construction in exchange for a minimal stable API."
+      }
+    },
+    "capture_binding": {
+      "type": "choice",
+      "instructions": "How should same-typed shadow/rename risk in callable capture be disposed?",
+      "criteria": {
+        "implement": "Replace implicit same-name `near` lookup with checked caller-provided capture bindings.",
+        "trial": "Test the existing context-record idiom against same-typed refactors before selecting a new capture form.",
+        "retain": "Preserve `near` parameter-name lookup without a formal refactor experiment."
+      }
+    },
+    "multiline_layout": {
+      "type": "choice",
+      "instructions": "What scope follows from long records and mandatory assertion rows under physical-line limits?",
+      "criteria": {
+        "implement": "Add a bounded multiline expression grammar with preserved block layout and formatter round trips.",
+        "trial": "Compare single-line formatting against continuation prototypes on registered creation/refactor/repair tasks first.",
+        "retain": "Accept wide record and assertion rows under the present lexer and rely on formatting conventions."
+      }
+    }
+  }
+}

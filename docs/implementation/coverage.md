@@ -1,5 +1,7 @@
 # Coverage and admission ledger
 
+**Historical implementation round:** this record describes I01–I50. Later LF01–LF21 and T01–T27 added or revised capabilities, including browser Can. Read the [post-upgrade reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md) for current status; earlier scope exclusions below are historical.
+
 This ledger maps approved contracts to their owning tasks and required evidence. Completion status is recorded in [tasks](tasks.md): all fifty tasks are checked with evidence as of 2026-09-21. The [remaining task plans](remaining-tasks.md) now record every plan closed. C/Q/A/P refer to the linked current specs there. A task's absence from the first runnable milestone does not defer it from the final initial distribution.
 
 ## Traceability

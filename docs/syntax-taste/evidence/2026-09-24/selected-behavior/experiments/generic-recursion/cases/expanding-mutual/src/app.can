@@ -1,0 +1,30 @@
+package app
+    provides [a, b]
+    uses []
+fn void a<item>
+    emits []
+    given
+        item value
+        bool stop
+    asserts
+        base: 3, true => ok
+    match stop
+        false => relay call b<item[]>([value], true)
+        true => ok
+fn void b<item>
+    emits []
+    given
+        item value
+        bool stop
+    asserts
+        base: 3, true => ok
+    match stop
+        false => relay call a<item>(value, true)
+        true => ok
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

@@ -1,5 +1,7 @@
 # Native reuse and custom-component budget
 
+**Historical implementation round:** this record describes I01–I50. Later LF01–LF21 and T01–T27 added or revised capabilities, including browser Can. Read the [post-upgrade reconciliation](../syntax-taste/post-upgrade-reconciliation-2026-09-24.md) for current status; earlier scope exclusions below are historical.
+
 Stage 1 inventory, carried into stages 3–5. “New” means new Can glue, never permission to recreate the upstream facility. Every runtime helper needs a row here (or a reviewed addition naming a precise contract mismatch). References C/Q/A/P refer to the current companion specifications linked in [research](research.md).
 
 | Capability | Upstream operation/library | Exact Can adapter and reason | Existing disposition / task |

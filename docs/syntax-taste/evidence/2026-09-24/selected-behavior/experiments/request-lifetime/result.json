@@ -1,0 +1,27 @@
+{
+  "bun": "1.4.2",
+  "cases": [
+    {
+      "kind": "buffered",
+      "before": {
+        "recognized": true,
+        "method": "POST"
+      },
+      "after": {
+        "recognized": true,
+        "snapshot": "POST"
+      }
+    },
+    {
+      "kind": "lazy",
+      "before": {
+        "recognized": true,
+        "method": "POST"
+      },
+      "after": {
+        "recognized": true,
+        "snapshot": "POST"
+      }
+    }
+  ]
+}

@@ -76,9 +76,11 @@ records the attempt durably. `GET /health` answers `ok`.
 
 ## Outbox carrier protocol
 
-Can owns receipt, the ledger, the outbox and the attempt rows; the
-wire carrier is the operator because Can has no HTTP client. The
-carrier loops: pull pending, POST each payload to the downstream
+Can owns receipt, the ledger, the outbox and the attempt rows. This
+sample assigns downstream delivery and retry scheduling to an operator
+carrier. Can supports named, fixed-origin outbound HTTP clients; this
+sample does not define a tenant-selected destination policy or a
+Can-authored carrier. The carrier loops: pull pending, POST each payload to the downstream
 receiver, ack `settled:true` on its 200 or `settled:false` otherwise.
 Downstream receivers deduplicate by `delivery_id`, so a crash between
 their 200 and our ack is safe: the row stays pending, the carrier

@@ -1,5 +1,7 @@
 # Confirmed syntax choices for the planned design
 
+**Status after the upgrade (24 September 2026):** The recorded user choices were subsequently implemented: explicit bind captures in T02 and dependency-qualified imports in T03. The original choice record below is preserved; its pre-implementation tense is historical. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. These are the user's answers during design preparation.
 They are binding inputs to P8 specification integration and the eventual
 implementation list. They describe **planned** syntax; the current compiler

@@ -5,11 +5,14 @@
 **Destination:** a complete implementation task list in dependency order, with
 the necessary product, syntax and technical decisions already resolved.
 
-**Current boundary:** design preparation is complete for the selected scope.
-The [27-task implementation list](can-implementation-task-list-2026-09-24.md)
-is dependency ordered and qualified by a separate [readiness audit](preparation/readiness-audit.md).
-Production implementation has not begun; current compiler behavior remains distinct
-from the planned design.
+**Current status:** this preparation round and the subsequent
+[27-task execution round](can-implementation-task-list-2026-09-24.md) have
+recorded completion. The [readiness audit](preparation/readiness-audit.md)
+was a pre-implementation design check. The
+[post-upgrade reconciliation](post-upgrade-reconciliation-2026-09-24.md)
+now distinguishes delivered behavior, unfinished accepted requirements and
+new proposals. The completed checklist below is historical preparation;
+its future-tense statements are not the current implementation status.
 
 The [recommendation program](can-recommendation-program-2026-09-24.md) supplies
 the initial findings and proposed outcomes. Its gate numbers are recommendation
@@ -291,7 +294,8 @@ design without silently widening the implementation.
 
 **Final deliverable:** the [complete 27-task implementation list](can-implementation-task-list-2026-09-24.md)
 in dependency order, including parallel-ready lanes and Gate 1–5 exit checks.
-Executing that list is a subsequent phase.
+That list was subsequently executed; its completion evidence and the current
+reconciliation must be read together when preparing further work.
 
 ## Coverage check for the future inventory
 

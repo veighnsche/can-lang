@@ -1,5 +1,7 @@
 # Planned design dispositions across the recommendation program
 
+**Status after the upgrade (24 September 2026):** Historical selection ledger for the first upgrade. Accept/retain/defer entries are prior decision evidence, not per-feature shipping status. Implementation now exists; the post-upgrade reconciliation records delivered behavior and remaining gaps without changing these selections. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. This is the P8 integration ledger for the planned design, not current
 compiler behavior. An **accept** entry
 means the planned design includes the stated contract; **retain** preserves a

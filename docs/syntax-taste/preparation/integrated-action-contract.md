@@ -1,5 +1,7 @@
 # Integrated invoice action and browser wire contract
 
+**Status after the upgrade (24 September 2026):** Partially implemented accepted contract. Actions, typed routes, forms and browser Fetch exist, but the shared request-aware binding and linked invoice client/server path specified below remain unfinished. The illustrative grammar below is not the current compiler grammar. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. This is the selected **planned** P8 specification, not current Can behavior. It reconciles the [HTML action packet](action-contract-design.md), [typed capture increment](route-capture-design.md), [keyed form rows](keyed-row-design.md), [browser target](browser-target-design.md), [JSON-action judgments](jev-json-action/findings.md) and [grid-read judgments](jev-grid-read/findings.md). Earlier exact-route/query and malformed-form examples are historical alternatives; this document governs the selected invoice shape. No compatibility alias is required.
 
 ## Source declarations and boundaries

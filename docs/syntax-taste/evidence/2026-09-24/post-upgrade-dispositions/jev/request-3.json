@@ -1,0 +1,110 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "task_and_constraints": "Can has zero external users and is designed for AI programmers. Prioritize accurate public contracts, predictable changes and equivalent native JS/Bun lowering, with total tokens through a successful task considered second. Do not optimize human familiarity or preserve obsolete interfaces. Recommend scope only from the supplied evidence; engineering retains the decision. Both confirmed conformance bugs are mandatory repairs and are not among the choices below.",
+    "accepted_platform_contracts": "A prior contract already chose one shared action wire declaration with no declaration handler, plus explicit request-context server mounting and service binding. The present checker requires `handles` and capture/body-only handlers, while the invoice browser carries stub copies and its GET is rewritten to a differently mounted route. Can-authored browser execution is real; its emitted TS/asset manifest depends on a test bundler's four limited Node shims. The earlier browser contract also calls for maintained delivery, cancelable native events and visible callback faults; those remain open.",
+    "core_and_runtime_evidence": "Current public generic declarations are checked against symbolic types, yet safe-looking generic-to-generic identity forwarding fails on an opaque argument; local private templates succeed. Higher-order catalogue operations keep callback failure bounds, while user generic libraries have fixed public `emits` or result data; DI-03 deferred new error parameters. Native emitted `relay` recursion has a recorded 1000-pass/10000-stack-failure, and no accepted loop or tail-call guarantee. The owner race probe observed selection near 2 ms but completion near 83 ms with an 80 ms loser. HTTP publication awaits owner drainage according to source, without a measured server request. Lease safety explains the retained drainage rule.",
+    "other_boundaries": "Outside the accepted browser event minimum, common input fields, persistent drafts, navigation and browser WebSocket remain unavailable; the first scope explicitly disclaimed reload survival. The Can grid uses typed named functions and substantial manual rendering/focus work. `near` lookup, local-elision errors and physical-line restrictions have prior retain/defer decisions; Boolean `false` then `true` was a direct user selection. Point updates publish copied native Maps/Sets and a local unique-key probe shows increasing cost, but no representative application workload was measured. The existing invoice and grid can test changes. AI agent comparisons were registered but not run live."
+  },
+  "questions": {
+    "action_binding": {
+      "type": "choice",
+      "instructions": "What action binding direction best closes the already selected invoice client/server requirement?",
+      "criteria": {
+        "selected_split": "Honor the selected server-free declaration plus context-bearing mount so both targets import the same action and services stay server-owned.",
+        "alternate_projection": "Investigate one bound operation callable and derive an isolated client view, revising the prior declaration/mount contract explicitly.",
+        "manual_contracts": "Make current copied declarations, stub handlers and manual transport matching an intentional supported application convention."
+      }
+    },
+    "browser_delivery": {
+      "type": "choice",
+      "instructions": "Select the next delivery boundary for emitted browser Can while preserving its existing execution evidence.",
+      "criteria": {
+        "maintained_profile": "Own the browser-target runtime profile, packaged output and reachable module audit as a tested distribution path.",
+        "complete_shims": "Support a documented semantic-shim bundle after exhaustive admitted-operation conformance and runtime-closure tests.",
+        "grid_only": "Scope browser support to the current integrated example and leave arbitrary application bundling to expert callers."
+      }
+    },
+    "generic_calls": {
+      "type": "choice",
+      "instructions": "Choose whether extracting a verified public generic helper deserves a compiler change now.",
+      "criteria": {
+        "implement": "Allow certified public generic signatures to compose symbolically without concrete specialization, with recursion safeguards and strict body checks.",
+        "experiment": "Prototype symbolic forwarding and compare it with explicit callable inputs on held-out library changes before adoption.",
+        "retain": "Keep generic composition via written dictionaries or concrete private templates without a new symbolic call rule."
+      }
+    },
+    "failure_wrappers": {
+      "type": "choice",
+      "instructions": "How should reusable callback-failure preservation be handled in the next work round?",
+      "criteria": {
+        "implement": "Ship a bounded authored error-set kind that composes through nested generic wrappers without a general effects system.",
+        "compare": "Keep the existing public contract this round and measure result adapters versus finite error rows in a reusable wrapper experiment.",
+        "retain": "Preserve current authored error contracts and add only individually justified built-in higher-order operations."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "Choose next-upgrade scope for dynamic stack-safe repetition beyond array folds.",
+      "criteria": {
+        "implement": "Guarantee ordinary growing work without stack growth through one carefully specified native-loop lowering path.",
+        "compare": "Keep current runtime this round while testing both native-loop candidates and a real dynamic-continuation workload.",
+        "retain": "Accept bounded native stack behavior for recursion and recommend existing array combinators where applicable."
+      }
+    },
+    "race_lifetime": {
+      "type": "choice",
+      "instructions": "Choose the immediate response-timing work without assuming cancellation reverses effects.",
+      "criteria": {
+        "redesign": "Ship a new request-scope cancellation/ownership policy that releases responses early while preserving leases and late diagnostics.",
+        "measure": "Run a live request race and operation-deadline comparison first, leaving loser ownership unchanged until results justify revision.",
+        "retain": "Preserve the present race and request completion rule without a new hedge experiment or cancellation surface."
+      }
+    },
+    "browser_host_surface": {
+      "type": "choice",
+      "instructions": "What next work on native input, persistence and host adapters has sufficient evidence for near-term inclusion?",
+      "criteria": {
+        "add_now": "Implement native input detail and persistent draft features immediately behind typed host operations and product acceptance.",
+        "experiment": "Defer expanded browser capabilities while testing native-event detail and storage with both controlled admission mechanisms.",
+        "retain": "Declare richer input and persistence outside Can's browser recommendation rather than opening new capabilities."
+      }
+    },
+    "ui_reuse": {
+      "type": "choice",
+      "instructions": "Choose the authoring-reuse disposition for editable fields and keyed rows.",
+      "criteria": {
+        "implement_library": "Make a tested typed UI helper library part of this upgrade while leaving component grammar out.",
+        "prototype": "Study one field-addition and row-reorder workflow with a helper library, keeping the current public UI surface this round.",
+        "retain": "Preserve the imperative node toolkit as the full supported composition layer without a library experiment."
+      }
+    },
+    "bulk_collections": {
+      "type": "choice",
+      "instructions": "How should this upgrade respond to repeated copy-on-insert behavior?",
+      "criteria": {
+        "implement": "Provide native-backed one-pass Map/Set aggregation with exact collision and ownership semantics this round.",
+        "measure": "Keep copy-on-point-update semantics and test native bulk candidates at registered data sizes first.",
+        "retain": "Treat current copied native Map/Set updates as sufficient without bulk-workload qualification."
+      }
+    },
+    "capture_binding": {
+      "type": "choice",
+      "instructions": "Choose the next scope for parameter-name-based closure capture.",
+      "criteria": {
+        "implement": "Ship source syntax that names the intended value at callable creation and diagnoses stale bindings.",
+        "trial": "Defer grammar changes and measure whether context records and diagnostics prevent the demonstrated rename hazard.",
+        "retain": "Accept the current closure-binding convention, documenting its shadow behavior and existing typed-record alternative."
+      }
+    },
+    "multiline_layout": {
+      "type": "choice",
+      "instructions": "Choose whether the deferred multiline grammar has enough evidence for implementation now.",
+      "criteria": {
+        "implement": "Ship newline admission only inside delimited expressions, with clear lexer and parser failure cases.",
+        "trial": "Defer parser changes pending evidence that line pressure materially impairs AI coding after existing formatting help.",
+        "retain": "Treat no-newline delimiters as the long-term grammar without additional trials."
+      }
+    }
+  }
+}

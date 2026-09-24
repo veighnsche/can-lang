@@ -1,5 +1,7 @@
 # DI-09b: checked keyed rows for HTML forms
 
+**Status after the upgrade (24 September 2026):** Checked keyed rows and form adapters were implemented in T12. This original design packet is preserved as decision evidence, not a current statement that keyed forms are unavailable. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. Planned second increment of the source `action` form
 contract, not current compiler behavior. The [native FormData probe](keyed-row-probe.md)
 exposes a cross-row misassociation that parallel array length checks cannot

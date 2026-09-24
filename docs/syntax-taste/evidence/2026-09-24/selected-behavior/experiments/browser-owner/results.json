@@ -1,0 +1,210 @@
+{
+  "bun": "1.4.2",
+  "chromium": "140.0.7339.186",
+  "asyncShimSha256": "b1ea5acd1d77048f10cbee2a9549da0f68c11a86f96b5f9d5d5ef1b5a294c8ae",
+  "native": {
+    "context": {
+      "trace": [
+        [
+          "A",
+          "before",
+          "A"
+        ],
+        [
+          "B",
+          "before",
+          "B"
+        ],
+        [
+          "B",
+          "after-gate",
+          "B"
+        ],
+        [
+          "B",
+          "after-microtask",
+          "B"
+        ],
+        [
+          "A",
+          "after-gate",
+          "A"
+        ],
+        [
+          "A",
+          "after-microtask",
+          "A"
+        ]
+      ],
+      "isolated": true,
+      "outside": null
+    },
+    "explicitTokens": {
+      "trace": [
+        [
+          "A",
+          "A"
+        ],
+        [
+          "B",
+          "B"
+        ],
+        [
+          "A",
+          "A"
+        ],
+        [
+          "B",
+          "B"
+        ]
+      ],
+      "isolated": true
+    },
+    "runtime": {
+      "interleavedRoots": {
+        "trace": [
+          "A:entered",
+          "B:entered",
+          "B:native:B",
+          "B:use:ok",
+          "A:native:A",
+          "B:close",
+          "A:use:ok",
+          "A:close"
+        ],
+        "outcomes": [
+          {
+            "completion": "ok",
+            "cleanupFailed": false
+          },
+          {
+            "completion": "ok",
+            "cleanupFailed": false
+          }
+        ],
+        "resources": [
+          "closed",
+          "closed"
+        ]
+      },
+      "guardedCallback": {
+        "beforeRelease": {
+          "rootDone": false,
+          "leases": 1
+        },
+        "completion": "ok",
+        "rootCompletion": "ok",
+        "cleanupFailed": false,
+        "resource": "closed",
+        "afterClose": "resource_state"
+      }
+    }
+  },
+  "browser": {
+    "context": {
+      "trace": [
+        [
+          "A",
+          "before",
+          "A"
+        ],
+        [
+          "B",
+          "before",
+          "B"
+        ],
+        [
+          "B",
+          "after-gate",
+          null
+        ],
+        [
+          "B",
+          "after-microtask",
+          null
+        ],
+        [
+          "A",
+          "after-gate",
+          null
+        ],
+        [
+          "A",
+          "after-microtask",
+          null
+        ]
+      ],
+      "isolated": false,
+      "outside": null
+    },
+    "explicitTokens": {
+      "trace": [
+        [
+          "A",
+          "A"
+        ],
+        [
+          "B",
+          "B"
+        ],
+        [
+          "A",
+          "A"
+        ],
+        [
+          "B",
+          "B"
+        ]
+      ],
+      "isolated": true
+    },
+    "runtime": {
+      "interleavedRoots": {
+        "trace": [
+          "A:entered",
+          "B:entered",
+          "B:use:resource_state",
+          "A:use:resource_state",
+          "B:close",
+          "A:close"
+        ],
+        "outcomes": [
+          {
+            "completion": "resource_state",
+            "cleanupFailed": false
+          },
+          {
+            "completion": "resource_state",
+            "cleanupFailed": false
+          }
+        ],
+        "resources": [
+          "closed",
+          "closed"
+        ]
+      },
+      "guardedCallback": {
+        "beforeRelease": {
+          "rootDone": false,
+          "leases": 1
+        },
+        "completion": "resource_state",
+        "rootCompletion": "ok",
+        "cleanupFailed": false,
+        "resource": "closed",
+        "afterClose": "resource_state"
+      }
+    }
+  },
+  "pageErrors": [],
+  "checks": {
+    "nativeContextIsolated": true,
+    "shimContextLost": true,
+    "nativeResourceUsesSucceed": true,
+    "shimResourceUsesFail": true,
+    "nativeCallbackResumes": true,
+    "shimCallbackFailsAfterAwait": true,
+    "explicitTokenControlsPass": true,
+    "noPageErrors": true
+  }
+}

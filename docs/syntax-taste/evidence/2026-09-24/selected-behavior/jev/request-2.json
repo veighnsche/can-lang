@@ -1,0 +1,43 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "mandate": "The chosen Can scope is fixed: one server/browser wire action, explicit request-bearing server binding, maintained browser delivery, two conformance repairs, required UI behavior and safe public-generic forwarding. There are no outside users whose old spelling or ABI must survive. Prefer native JS/Bun execution with narrow Can-contract adapters. Can is written by coding agents; this classification may compare designs but cannot remove a selected outcome or inspect code itself.",
+    "browser_runtime": "Today's browser entry and hash manifest are compiler artifacts, not served executable JavaScript. Gate 5 adds four Node semantic shims only in test tooling: crypto, util/proxy checks, filesystem diagnostics and AsyncLocalStorage. That context stub does not preserve asynchronous ownership, and diagnostic maps are discarded. The accepted target requires a reusable build for empty and grid apps, audited transitive modules and secrets, verified same-origin CSP publication, and observable parity for native failures, equality, codecs and coordination.",
+    "entry_and_events": "Earlier design chose an argument-free browser main, whereas shipped grid boot accepts str[] from a test-authored query-string launcher. A supported build must supply initial invoice selection through a checked bounded path and still reauthorize on the server. Event handlers run asynchronously over copied fields. Browser default cancellation is synchronous during the native listener, so a decision after an await cannot work; retain immutable snapshots and view-scoped disposal.",
+    "generic_boundary": "The current checker proves exported generic declarations symbolically, but permits opaque type arguments only for identical self-recursion. A public wrapper cannot call a separately valid public identity helper; a private template has no universal body proof. The upgrade promises bounded safe cross-package helper calls, while still diagnosing representation-dependent bodies at declaration and emitting only reached concrete instances. Cross-generic cycles must not commit an unvalidated callee or expand forever."
+  },
+  "questions": {
+    "runtime_architecture": {
+      "type": "choice",
+      "instructions": "Select the browser delivery mechanism that can be qualified for both empty and invoice apps.",
+      "criteria": {
+        "browser_profile": "Choose host-specific browser modules and generated context threading rather than Node aliases; seal build-time identities, guard foreign values, package maps with the final asset, and leave coordination selection to native promises.",
+        "maintained_shims": "Keep the present alias-based bundler as the product path, but implement and test complete node:async_hooks, node:util, node:crypto and node:fs semantics for admitted Can browser execution."
+      }
+    },
+    "bootstrap_input": {
+      "type": "choice",
+      "instructions": "Pick a checked boot input path that removes the handwritten grid launcher while keeping main() and server authorization.",
+      "criteria": {
+        "query_parameter": "Expose only a checked read of one named current-URL query value, with explicit missing/invalid outcomes; the application passes it to boot and the server treats it solely as an identifier.",
+        "root_boot_data": "Use a server-rendered, schema-checked bootstrap value attached to the known grid root and decode it through the shared wire codec, keeping the main signature empty and avoiding general location access."
+      }
+    },
+    "generic_proof_order": {
+      "type": "choice",
+      "instructions": "Choose the proof rule for safe symbolic public-to-public calls, including cyclic declarations.",
+      "criteria": {
+        "scc_certification": "Build resolved public-generic call components, type internal calls against provisional contracts, certify all members atomically, and forbid any cycle edge that wraps an opaque formal in a new type constructor.",
+        "acyclic_only": "Ship helper composition for a directed acyclic public-generic proof graph; fail mutually recursive symbolic calls rather than introduce component-level certification this round."
+      }
+    },
+    "event_cancellation": {
+      "type": "choice",
+      "instructions": "Select a bounded native-event cancellation contract compatible with asynchronous Can handlers.",
+      "criteria": {
+        "registration_policy": "Make cancellation a finite listener policy chosen when registering, with optional exact key filter; the adapter cancels during native dispatch, then sends immutable fields to the Can callback.",
+        "synchronous_predicate": "Add a restricted sync Can decision callback that cannot await or call effects; run it in the native listener before launching the normal handler and use its Boolean decision for preventDefault."
+      }
+    }
+  }
+}

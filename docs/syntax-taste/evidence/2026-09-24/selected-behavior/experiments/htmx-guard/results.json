@@ -1,0 +1,1015 @@
+{
+  "missing_before_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": null,
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": null
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": null
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 1,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "source"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": null
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": null
+      }
+    ],
+    "consoleMessages": [
+      "warning: htmx: '#missing' on hx-target did not match any element {elt: button#source, selector: #missing, attr: hx-target}"
+    ]
+  },
+  "missing_before_guarded": {
+    "requests": [
+      "/",
+      "/asset"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": null,
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": null
+      }
+    ],
+    "consoleMessages": [
+      "warning: htmx: '#missing' on hx-target did not match any element {elt: button#source, selector: #missing, attr: hx-target}"
+    ]
+  },
+  "redirect_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply",
+      "/hijack"
+    ],
+    "url": "http://127.0.0.1:19877/hijack",
+    "target": null,
+    "other": null,
+    "consoleMessages": []
+  },
+  "redirect_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "retarget_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "<p>main</p>",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 1,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": null
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": null
+      }
+    ],
+    "consoleMessages": []
+  },
+  "retarget_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "oob_200_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "<p>main</p>",
+    "other": "new other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "oob",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "oob_200_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "oob",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "partial_200_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "<p>main</p>",
+    "other": "<p>new partial</p>",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "partial",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "partial_200_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "partial",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": []
+  },
+  "oob_503_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "<p>main</p>",
+    "other": "new other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "oob",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": [
+      "error: Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ]
+  },
+  "oob_503_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "oob",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": [
+      "error: Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ]
+  },
+  "partial_503_unguarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "<p>main</p>",
+    "other": "<p>new partial</p>",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "partial",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:after:swap",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": [
+      "error: Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ]
+  },
+  "partial_503_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": "old target",
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 2,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          },
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement"
+            ],
+            "kind": null,
+            "type": "partial",
+            "swap": null,
+            "target": "other"
+          }
+        ],
+        "responseStatus": 503,
+        "swap": "innerHTML",
+        "connected": true
+      }
+    ],
+    "consoleMessages": [
+      "error: Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ]
+  },
+  "removed_in_flight_guarded": {
+    "requests": [
+      "/",
+      "/asset",
+      "/reply"
+    ],
+    "url": "http://127.0.0.1:19877/",
+    "target": null,
+    "other": "old other",
+    "events": [
+      {
+        "name": "htmx:before:request",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": null,
+        "swap": "innerHTML",
+        "connected": true
+      },
+      {
+        "name": "htmx:before:response",
+        "target": "source",
+        "keys": [
+          "ctx"
+        ],
+        "taskCount": null,
+        "tasks": null,
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": false
+      },
+      {
+        "name": "htmx:before:swap",
+        "target": "source",
+        "keys": [
+          "ctx",
+          "tasks"
+        ],
+        "taskCount": 1,
+        "tasks": [
+          {
+            "keys": [
+              "type",
+              "fragment",
+              "target",
+              "swapSpec",
+              "sourceElement",
+              "transition"
+            ],
+            "kind": null,
+            "type": "main",
+            "swap": null,
+            "target": "target"
+          }
+        ],
+        "responseStatus": 200,
+        "swap": "innerHTML",
+        "connected": false
+      }
+    ],
+    "consoleMessages": []
+  }
+}

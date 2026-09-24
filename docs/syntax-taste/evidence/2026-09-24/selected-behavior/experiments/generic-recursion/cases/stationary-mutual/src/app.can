@@ -1,0 +1,30 @@
+package app
+    provides [first, second]
+    uses []
+fn item first<item>
+    emits []
+    given
+        item value
+        bool stop
+    asserts
+        base: 3, true => ok 3
+    match stop
+        false => ok call second<item>(value, true)
+        true => ok value
+fn item second<item>
+    emits []
+    given
+        item value
+        bool stop
+    asserts
+        base: 3, true => ok 3
+    match stop
+        false => ok call first<item>(value, true)
+        true => ok value
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

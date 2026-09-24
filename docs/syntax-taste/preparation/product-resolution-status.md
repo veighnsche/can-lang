@@ -1,5 +1,7 @@
 # Product and platform resolution status
 
+**Status after the upgrade (24 September 2026):** Historical preparation-stage working record. Later selections and T01–T27 execution supersede its pending-work status. The post-upgrade reconciliation records which product requirements remain incomplete. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · working engineering record, not authoritative syntax or a
 production implementation. The [current invoice slice](invoice-current-probe.md)
 passes 18 Can assertions but has no live SQL/HTTP/browser observation. The

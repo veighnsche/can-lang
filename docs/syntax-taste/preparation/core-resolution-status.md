@@ -1,5 +1,7 @@
 # Core design resolution status
 
+**Status after the upgrade (24 September 2026):** Historical preparation-stage working record. Later selections and T01–T27 execution supersede its pending-work status. The post-upgrade reconciliation records which core requirements remain incomplete. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026 · working record. This is not yet the authoritative language
 specification or an implementation task list. The [decision inventory](decision-inventory.md)
 remains the coverage source, and current behavior in `decisions.md` remains

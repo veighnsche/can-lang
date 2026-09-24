@@ -1,5 +1,7 @@
 # DI-11: first Can browser target and grid state contract
 
+**Status after the upgrade (24 September 2026):** Partially implemented accepted contract. The Can browser target and grid now exist. General runtime delivery and some selected event behavior remain unfinished; the tested grid uses a separate test bundler with semantic shims. The original design below is preserved. See the [current reconciliation](../post-upgrade-reconciliation-2026-09-24.md).
+
 24 September 2026. Planned P8 design for a **Can-authored** main-thread
 frontend, not current compiler behavior. The recommendation program requires
 an editable invoice grid with keyboard interaction, local calculations,
