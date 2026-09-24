@@ -25,6 +25,68 @@ func exportedInstance(t *testing.T, program *Program, name string) *ProgramFunct
 	return nil
 }
 
+// Six-fixture probe from the generic-recursion experiment (UP02): the three
+// accepted cases must check with zero declaration-only Parameter nodes in
+// the runtime model, and the three broader symbolic calls must keep their
+// hard opaque-parameter rejection until UP14 enables them.
+func TestExportedGenericSymbolicProofIsolation(t *testing.T) {
+	const main = "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
+	const identity = "fn item identity<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok value\n"
+	cases := map[string]struct {
+		source string
+		accept bool
+	}{
+		"public-identity-control": {
+			source: "package app\n    provides [identity]\n    uses []\n" + identity + main,
+			accept: true,
+		},
+		"stationary-self": {
+			source: "package app\n    provides [first]\n    uses []\nfn item first<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call first<item>(value, true)\n        true => ok value\n" + main,
+			accept: true,
+		},
+		"acyclic-nested-private": {
+			source: "package app\n    provides [box]\n    uses []\nrecord box<item>\n    item value\n" + identity + "fn box<item> nested<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok box(3)\n    ok call identity<box<item>>(box(value))\n" + main,
+			accept: true,
+		},
+		"stationary-mutual": {
+			source: "package app\n    provides [first, second]\n    uses []\nfn item first<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call second<item>(value, true)\n        true => ok value\nfn item second<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call first<item>(value, true)\n        true => ok value\n" + main,
+		},
+		"expanding-mutual": {
+			source: "package app\n    provides [a, b]\n    uses []\nfn void a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<item[]>([value], true)\n        true => ok\nfn void b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<item>(value, true)\n        true => ok\n" + main,
+		},
+		"acyclic-nested-public": {
+			source: "package app\n    provides [box, identity, nested]\n    uses []\nrecord box<item>\n    item value\n" + identity + "fn box<item> nested<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok box(3)\n    ok call identity<box<item>>(box(value))\n" + main,
+		},
+	}
+	for name, kase := range cases {
+		t.Run(name, func(t *testing.T) {
+			program, err := programFixture(t, map[string]string{"src/app.can": kase.source})
+			if !kase.accept {
+				if err == nil {
+					t.Fatalf("broader symbolic call admitted before UP14: %s", name)
+				}
+				if !strings.Contains(err.Error(), "exported generic function") || !strings.Contains(err.Error(), "opaque type parameter") {
+					t.Fatalf("missing opaque-parameter rejection for %s: %v", name, err)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, typ := range program.Model.Types() {
+				if typ.Kind() == types.Parameter {
+					t.Fatalf("symbolic proof graph leaked into the runtime model: %s", typ.Declaration())
+				}
+			}
+			for _, fn := range program.Functions {
+				if strings.Contains(fn.Instance, "/symbolic") {
+					t.Fatalf("symbolic declaration %s leaked into emitted functions", fn.Instance)
+				}
+			}
+		})
+	}
+}
+
 func TestExportedGenericPassThrough(t *testing.T) {
 	program, err := programFixture(t, map[string]string{
 		"src/lib/lib.can":  "package lib\n    provides [identity]\n    uses []\nfn value identity<value>\n    emits []\n    given\n        value input\n    asserts\n        one: 1 => ok 1\n    ok input\n",

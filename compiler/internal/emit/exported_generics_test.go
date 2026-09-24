@@ -7,7 +7,9 @@ import (
 	"testing"
 
 	"github.com/veighnsche/can-lang/compiler/internal/check"
+	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
+	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
 func exportedGenericProgram(t *testing.T) *check.Program {
@@ -82,5 +84,84 @@ func TestExportedGenericCallableLowering(t *testing.T) {
 	}
 	if !strings.Contains(plusBody, ") + (") {
 		t.Fatalf("written operation lost native lowering:\n%s", plusBody)
+	}
+}
+
+const exportedIdentitySource = `package app
+    provides [identity]
+    uses []
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok 3
+    ok value
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
+`
+
+func emittedBytes(t *testing.T, artifacts []ir.Artifact) string {
+	t.Helper()
+	var out strings.Builder
+	nonempty := 0
+	for _, module := range artifacts {
+		if len(module.Bytes) > 0 {
+			nonempty++
+			out.Write(module.Bytes)
+		}
+	}
+	if nonempty == 0 {
+		t.Fatal("emission produced no modules")
+	}
+	return out.String()
+}
+
+// UP02: the public identity control must emit both assertion and production
+// modules with complete concrete types and no symbolic placeholder.
+func TestExportedGenericPublicIdentityEmitsModules(t *testing.T) {
+	program := browserEmitProgram(t, map[string]string{"src/app.can": exportedIdentitySource})
+	dependencies := httpDependencies(t)
+	assertion, err := AssertionModules(program, "runtime", dependencies)
+	if err != nil {
+		t.Fatalf("assertion emission failed for public identity: %v", err)
+	}
+	production, err := ProgramModules(program, "runtime", dependencies)
+	if err != nil {
+		t.Fatalf("production emission failed for public identity: %v", err)
+	}
+	for name, body := range map[string]string{
+		"assertion":  emittedBytes(t, assertion),
+		"production": emittedBytes(t, production),
+	} {
+		if strings.Contains(strings.ToLower(body), "symbolic") {
+			t.Fatalf("%s modules leak a symbolic placeholder", name)
+		}
+		// Concrete nested types survive isolation: the assertion's int
+		// and main's str[] keep their native lowerings.
+		for _, want := range []string{"bigint", "ReadonlyArray", "string"} {
+			if !strings.Contains(body, want) {
+				t.Fatalf("%s modules dropped concrete type lowering %q", name, want)
+			}
+		}
+	}
+}
+
+// UP02: an opaque type that actually reaches a runtime boundary is still a
+// hard emission failure, diagnosed at the offending variable.
+func TestNativeTypeDeclarationsRejectsOpaqueParameter(t *testing.T) {
+	param, err := types.SymbolicParameter("can.project.root/lib::identity", "item")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := NativeTypeDeclarations([]*types.Type{param}); err == nil {
+		t.Fatal("opaque type parameter admitted at the emission boundary")
+	} else if !strings.Contains(err.Error(), "opaque type parameter") || !strings.Contains(err.Error(), "identity<item>") {
+		t.Fatalf("opaque emission misdiagnosed: %v", err)
 	}
 }
