@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "4484437f6adf2c640c2f53e71bd715a84458e0cfed779973617c675dfbf9b9f9";
+export const catalogueSHA256 = "f6621c33fbcd73a24424647476b10fe120d102e6354abbe07b93f839628b676e";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -64,6 +64,10 @@ export const catalogue = freeze({
     {
       "name": "files",
       "identity": "can.std.files@1"
+    },
+    {
+      "name": "form",
+      "identity": "can.std.form@1"
     },
     {
       "name": "html",
@@ -519,6 +523,146 @@ export const catalogue = freeze({
     {
       "name": "bytes::buffer",
       "identity": "can.std.bytes@1::buffer",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "form::rows",
+      "identity": "can.std.form@1::rows",
+      "kind": "record",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [
+        {
+          "name": "order",
+          "type": "str[]"
+        },
+        {
+          "name": "items",
+          "type": "form::row_item<T>[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "form::row_item",
+      "identity": "can.std.form@1::row_item",
+      "kind": "record",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "T"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "form::rejected",
+      "identity": "can.std.form@1::rejected",
+      "kind": "record",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [
+        {
+          "name": "raw",
+          "type": "form::raw_entry[]"
+        },
+        {
+          "name": "issues",
+          "type": "form::issue[]"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "form::raw_entry",
+      "identity": "can.std.form@1::raw_entry",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "form::issue",
+      "identity": "can.std.form@1::issue",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "form::collection",
+      "identity": "can.std.form@1::collection",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "form::row",
+      "identity": "can.std.form@1::row",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "form::field",
+      "identity": "can.std.form@1::field",
       "kind": "opaque",
       "parameters": [],
       "fields": [],
@@ -1902,6 +2046,28 @@ export const catalogue = freeze({
         {
           "name": "limit",
           "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "form::unknown_field",
+      "identity": "can.std.form@1::unknown_field",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "form::invalid_name",
+      "identity": "can.std.form@1::invalid_name",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
         }
       ]
     },
@@ -6163,6 +6329,208 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "form::named_collection",
+      "identity": "can.std.form@1::named_collection",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Wire",
+          "constraint": "form"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [
+        "name"
+      ],
+      "result": "form::collection",
+      "callbacks": [],
+      "emits": [
+        "form::unknown_field"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String match"
+        ],
+        "adapter": "Check the static name against the wire record's keyed-row collections and mint the collection token.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "form::named_field",
+      "identity": "can.std.form@1::named_field",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Row",
+          "constraint": "form"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [
+        "name"
+      ],
+      "result": "form::field",
+      "callbacks": [],
+      "emits": [
+        "form::unknown_field"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String match"
+        ],
+        "adapter": "Check the static name against the row record's scalar fields and mint the field token.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "form::row_key",
+      "identity": "can.std.form@1::row_key",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "form::row",
+      "callbacks": [],
+      "emits": [
+        "form::invalid_name"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String match"
+        ],
+        "adapter": "Validate a dynamic row key against the keyed-row grammar and mint the row token.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "form::order_name",
+      "identity": "can.std.form@1::order_name",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "form::collection"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String concat"
+        ],
+        "adapter": "Render the collection's exact order field name.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "form::input_name",
+      "identity": "can.std.form@1::input_name",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "collection",
+          "type": "form::collection"
+        },
+        {
+          "name": "row",
+          "type": "form::row"
+        },
+        {
+          "name": "field",
+          "type": "form::field"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String concat"
+        ],
+        "adapter": "Render one keyed-row input name from checked tokens.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "form::field_name",
+      "identity": "can.std.form@1::field_name",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "field",
+          "type": "form::field"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "String identity"
+        ],
+        "adapter": "Render one checked scalar field name.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
       "name": "html::make_tag",
       "identity": "can.std.html@1::make_tag",
       "kind": "function",
@@ -8207,6 +8575,78 @@ export const catalogue = freeze({
         ],
         "adapter": "Mark a route for lazy bodies consumed once through a stream reader.",
         "task": "B1-06"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "http::serve_form_action",
+      "identity": "can.std.http@1::serve_form_action",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        },
+        {
+          "name": "Wire",
+          "constraint": "form"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "str"
+        },
+        {
+          "name": "outcome",
+          "type": "$outcome"
+        },
+        {
+          "name": "structural",
+          "type": "$structural"
+        }
+      ],
+      "staticInputs": [
+        "action"
+      ],
+      "result": "http::route",
+      "callbacks": [
+        {
+          "name": "outcome",
+          "inputs": [
+            "Result"
+          ],
+          "result": "html::safe",
+          "deriveErrors": false,
+          "emits": []
+        },
+        {
+          "name": "structural",
+          "inputs": [
+            "form::rejected<Wire>"
+          ],
+          "result": "html::safe",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Request",
+          "URLSearchParams",
+          "FormData",
+          "TextDecoder"
+        ],
+        "adapter": "Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses.",
+        "task": "I32"
       },
       "assertion": "real",
       "refs": [
@@ -12580,6 +13020,185 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "form::rows",
+    "identity": "can.std.form@1::rows",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "order",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "items",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "form::row_item",
+              "arguments": [
+                {
+                  "name": "T",
+                  "arguments": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::row_item",
+    "identity": "can.std.form@1::row_item",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::rejected",
+    "identity": "can.std.form@1::rejected",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "raw",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "form::raw_entry",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "issues",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "form::issue",
+              "arguments": null
+            }
+          ]
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::raw_entry",
+    "identity": "can.std.form@1::raw_entry",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::issue",
+    "identity": "can.std.form@1::issue",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::collection",
+    "identity": "can.std.form@1::collection",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "form::row",
+    "identity": "can.std.form@1::row",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "form::field",
+    "identity": "can.std.form@1::field",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
     "name": "html::node",
     "identity": "can.std.html@1::node",
     "kind": "opaque",
@@ -14323,6 +14942,38 @@ export const catalogueTypeShapes = freeze([
         "name": "limit",
         "type": {
           "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::unknown_field",
+    "identity": "can.std.form@1::unknown_field",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "form::invalid_name",
+    "identity": "can.std.form@1::invalid_name",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
           "arguments": null
         }
       }

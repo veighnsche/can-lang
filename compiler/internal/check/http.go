@@ -259,6 +259,9 @@ func (c *programChecker) finishHTTP(key string) error {
 		if err != nil {
 			return err
 		}
+		if err = c.fillFormRowItems(special.Data, &special.Form); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("unknown HTTP specialization %s", special.Operation)
 	}

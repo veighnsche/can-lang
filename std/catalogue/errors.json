@@ -28,6 +28,8 @@
     "io::read_failed",
     "io::write_failed",
     "io::limit_exceeded",
+    "form::unknown_field",
+    "form::invalid_name",
     "html::invalid_structure",
     "html::invalid_url",
     "htmx::invalid_target",

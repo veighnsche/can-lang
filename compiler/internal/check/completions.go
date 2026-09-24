@@ -55,6 +55,9 @@ type CompletionContext struct {
 	// SQLSite records one static descriptor name in the calling project
 	// and returns the splice the emitter renders for the call site.
 	SQLSite func(key, name string) ir.SQLCallSite
+	// FormSite validates one static form name against its specialization
+	// and returns the adapter contract the emitter splices, if any.
+	FormSite func(operation, key, name string) (ir.FormActionSite, error)
 	// Raw carries assertion-time native evidence for using-raw rows. It is
 	// set on file-owned root contexts and inherited by derived regions.
 	Raw *RawScope
@@ -629,6 +632,13 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 			step.SQL = &resolution
+		}
+		if operation := formSiteOperation(binding.Identity); operation != "" {
+			site, err := c.resolveFormSite(operation, binding.Identity, args, span)
+			if err != nil {
+				return err
+			}
+			step.FormAction = site
 		}
 		var err error
 		step.Prepare, step.Arguments, err = c.arguments(e, binding, args, receiver)

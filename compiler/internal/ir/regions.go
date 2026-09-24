@@ -72,6 +72,7 @@ type InvocationStep struct {
 	SuccessBinding string
 	Asset          *AssetResolution
 	SQL            *SQLCallSite
+	FormAction     *FormActionSite
 }
 type CompletionKind string
 

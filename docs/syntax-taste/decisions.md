@@ -1386,6 +1386,17 @@ method and route shape. Emission freezes an adapter-consumed metadata
 table; actions never mount legacy routes. The [HTTP contract](platform-testing-spec.md#p10-http-request-response-routing-and-server-catalogue)
 defines checking and emission precisely.
 
+A form body may carry keyed-row collections: a `form::rows<line_wire>`
+field named `lines` decodes from the exact `lines_order` values plus
+`lines[<key>][<field>]` entries, bounded to 64 rows and 2048 bytes per
+row value. `http::serve_form_action` binds the declared handler, the
+outcome renderer and the structural-422 renderer into one mounted
+route; structural violations redisplay through `form::rejected<Wire>`,
+which retains the known raw text in document order with one finite
+issue per violation. Checked `form::named_collection`,
+`form::named_field` and `form::row_key` builders mint the wire names,
+so renaming a collection or field diagnoses every linked use.
+
 ### Assertions for AI and fetch consumers
 
 Reuse ordinary `asserts` and approved call-site `when` tables when testing

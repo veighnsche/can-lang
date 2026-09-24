@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 4484437f6adf2c640c2f53e71bd715a84458e0cfed779973617c675dfbf9b9f9.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: f6621c33fbcd73a24424647476b10fe120d102e6354abbe07b93f839628b676e.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -26,6 +26,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - csrf → can.std.csrf@1
 - env → can.std.env@1
 - files → can.std.files@1
+- form → can.std.form@1
 - html → can.std.html@1
 - htmx → can.std.htmx@1
 - http → can.std.http@1
@@ -70,6 +71,14 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | http::response | record | T:data | int status, http::header[] headers, T body | true |
 | http::failure_detail | variant |  | http::invalid_request, http::credentials_missing, http::transport_failed, http::timeout, http::body_limit, http::status_error, codec::invalid_data | false |
 | bytes::buffer | opaque |  |  | false |
+| form::rows | record | T:data | str[] order, form::row_item&lt;T&gt;[] items | true |
+| form::row_item | record | T:data | str key, T value | true |
+| form::rejected | record | T:data | form::raw_entry[] raw, form::issue[] issues | true |
+| form::raw_entry | record |  | str name, str value | true |
+| form::issue | record |  | str name, str reason | true |
+| form::collection | opaque |  |  | false |
+| form::row | opaque |  |  | false |
+| form::field | opaque |  |  | false |
 | html::node | opaque |  |  | false |
 | html::safe | opaque |  |  | false |
 | html::url | opaque |  |  | false |
@@ -172,6 +181,8 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | io::read_failed | can.std.io@1::read_failed |  | str operation |
 | io::write_failed | can.std.io@1::write_failed |  | str operation |
 | io::limit_exceeded | can.std.io@1::limit_exceeded |  | int limit |
+| form::unknown_field | can.std.form@1::unknown_field |  | str name |
+| form::invalid_name | can.std.form@1::invalid_name |  | str name |
 | html::invalid_structure | can.std.html@1::invalid_structure |  | str reason |
 | html::invalid_url | can.std.html@1::invalid_url |  | str reason |
 | htmx::invalid_target | can.std.htmx@1::invalid_target |  | str reason |
@@ -356,6 +367,12 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | env::optional | str name → option::value&lt;str&gt; | [env::invalid_name] |  | Bun.env | Validate uppercase environment names before exact caller-snapshot lookup. Absence is distinct from a present empty string; assertion execution requires supplied completions. | supplied | I29 / P8 |
 | log::write_info | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Serialize exactly level/info and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary. | supplied | I30 / P8 |
 | log::write_error | str message → void | [log::write_failed] |  | JSON.stringify, Bun.write | Serialize exactly level/error and message string fields with native JSON.stringify, append newline, await stderr; map serialization and expected I/O failures to a level-only payload; supplied assertion boundary. | supplied | I30 / P8 |
+| form::named_collection | Wire:form; str name → form::collection; static name | [form::unknown_field] |  | String match | Check the static name against the wire record's keyed-row collections and mint the collection token. | real | I32 / P10 |
+| form::named_field | Row:form; str name → form::field; static name | [form::unknown_field] |  | String match | Check the static name against the row record's scalar fields and mint the field token. | real | I32 / P10 |
+| form::row_key | str name → form::row | [form::invalid_name] |  | String match | Validate a dynamic row key against the keyed-row grammar and mint the row token. | real | I32 / P10 |
+| form::order_name | form::collection collection → str | [] |  | String concat | Render the collection's exact order field name. | real | I32 / P10 |
+| form::input_name | form::collection collection, form::row row, form::field field → str | [] |  | String concat | Render one keyed-row input name from checked tokens. | real | I32 / P10 |
+| form::field_name | form::field field → str | [] |  | String identity | Render one checked scalar field name. | real | I32 / P10 |
 | html::make_tag | str name → html::tag | [html::invalid_structure] |  | Set.prototype.has | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::text | str value → html::node | [] |  | Bun.escapeHTML | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
 | html::parse_url | str value → html::url | [html::invalid_url] |  | URL | Enforce P9 closed tags/attributes, context, URL policy and opaque provenance before native serialization. | real | I31 / P6,P9 |
@@ -416,6 +433,7 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | http::route_head | str path, $callback callback → http::route; static path | [http::invalid_route] | callback(http::request) → http::server_response emits [] | URL | Validate exact normalized path and mount a named boxed Can callback. | real | B1-06 / P10 |
 | http::make_router | http::route[] routes → http::router | [http::duplicate_route, http::ambiguous_route] |  | Map | Closed exact dispatch with 404/405/Allow, no implicit HEAD. | real | I32 / P10 |
 | http::route_stream | http::route route → http::route | [] |  | Map | Mark a route for lazy bodies consumed once through a stream reader. | real | B1-06 / P10 |
+| http::serve_form_action | Result:data, Wire:form; str action, $outcome outcome, $structural structural → http::route; static action | [http::invalid_route] | outcome(Result) → html::safe emits []; structural(form::rejected&lt;Wire&gt;) → html::safe emits [] | Request, URLSearchParams, FormData, TextDecoder | Bind one form action's handler, outcome renderer and structural-422 renderer into a mounted route; decode the body through a single native parse and map result leaves to case statuses. | real | I32 / P10 |
 | http::request_body_stream | http::request request, int max_chunk → stream::reader&lt;bytes::buffer&gt; | [http::body_limit, http::invalid_request] |  | ReadableStream | Open the one-shot body reader: live wire bytes or replayed buffered bytes. | supplied | B1-06 / P10 |
 | http::make_server_config | str host, int port, int body_limit, int shutdown_ms → http::server_config | [http::invalid_server_config] |  | Number | Validate bounded config before server start. | real | I33 / P10 |
 | http::server_start | http::server_config config, http::router router → http::server | [http::bind_failed] |  | Bun.serve | Register ownership; await each Can callback and sanitize standard failures. | supplied | I33 / P6,P10 |

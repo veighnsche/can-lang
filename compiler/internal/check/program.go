@@ -31,6 +31,7 @@ type Program struct {
 	Streams      map[string]*StreamSpecialization
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
+	Forms        map[string]*FormSpecialization
 	Actions      []*ActionDeclaration
 	SQLs         map[string]*SQLSpecialization
 	Transactions map[string]*TransactionSpecialization
@@ -64,6 +65,7 @@ type programChecker struct {
 	codecParts  map[string][]*types.Type
 	https       map[string]*HTTPSpecialization
 	httpParts   map[string]*httpParts
+	forms       map[string]*FormSpecialization
 	sqlSites    []SQLSiteRecord
 	world       *resolve.World
 	builder     *types.Builder
@@ -128,11 +130,17 @@ func (c *programChecker) gatherBody(file *resolve.File, value reflect.Value) err
 			if err := c.gatherHTTP(file, node.Invocation.Callee, node.Invocation.Types); err != nil {
 				return err
 			}
+			if err := c.gatherForm(file, node, node.Invocation.Callee, node.Invocation.Types); err != nil {
+				return err
+			}
 		case *syntax.ReferenceExpr:
 			if err := c.gatherCodec(file, node, node.Callee, node.Types); err != nil {
 				return locateGather(file, node.ExprSpan(), err)
 			}
 			if err := c.gatherHTTP(file, node.Callee, node.Types); err != nil {
+				return err
+			}
+			if err := c.gatherForm(file, node, node.Callee, node.Types); err != nil {
 				return err
 			}
 		}
@@ -278,9 +286,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 			continue
 		}
-		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) {
+		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) {
 			continue
-		} // I32, I35, B1-05 and codec generics specialize per concrete type argument on use.
+		} // I32, I35, B1-05, codec and form generics specialize per concrete type argument on use.
 		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
 			continue
 		}
@@ -483,6 +491,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			return nil, err
 		}
 	}
+	p.Forms = c.forms
+	for id := range c.forms {
+		if err = c.finishForm(id); err != nil {
+			return nil, err
+		}
+	}
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables
 	for _, native := range p.Natives {
@@ -632,6 +646,8 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	}, SQLSite: func(key, name string) ir.SQLCallSite {
 		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})
 		return ir.SQLCallSite{Owner: owner.Key, Name: name}
+	}, FormSite: func(operation, key, name string) (ir.FormActionSite, error) {
+		return c.formSite(file, operation, key, name)
 	}}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {

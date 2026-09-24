@@ -198,6 +198,9 @@ func (c *programChecker) checkAction(file *resolve.File, d *syntax.ActionDecl) (
 			if err != nil {
 				return nil, "", fail(d.Body.Type.TypeSpan(), err)
 			}
+			if err := c.fillFormRowItems(typ, &form); err != nil {
+				return nil, "", fail(d.Body.Type.TypeSpan(), err)
+			}
 			body.Form = form
 		}
 	}

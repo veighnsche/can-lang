@@ -23,6 +23,8 @@ export type Reason =
   | "node_limit"
   | "byte_limit"
   | "media_type"
+  | "row_limit"
+  | "row_value_limit"
   | "charset";
 export class CodecIssue extends Error {
   constructor(

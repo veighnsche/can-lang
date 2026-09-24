@@ -1013,6 +1013,44 @@ values. Native route callbacks reenter the existing asset, ingress, scope
 and header lifecycle, and anything actions do not claim falls through to the
 legacy router.
 
+### Keyed-row form bodies
+
+A form wire record may hold keyed-row collections typed
+`form::rows<Row>`, where `Row` is an ordinary flat record of `str`,
+`str[]` and `option::value<str>` fields. Collections do not nest, admit
+no owner records, and collide with a sibling field that spells their
+order name. One collection field named `lines` decodes from the exact
+order field `lines_order` plus `lines[<key>][<field>]` entries, parsed
+by one native `FormData` over the strictly gated pairs. Row keys match
+`[A-Za-z0-9_-]{1,64}`; each collection admits at most 64 distinct keys
+and each row value at most 2048 UTF-8 bytes.
+
+The order values list every present key exactly once, in row order. A
+duplicate order key or scalar entry, an unknown collection, key shape
+or field, a partial row, an order/entry mismatch, an invalid order
+value, or a row or value limit breach is a structural violation. The
+adapter retains every known raw pair in document order and reports one
+`form::issue` per violation with a finite reason (`form_missing`,
+`form_repeated`, `type`, `row_limit`, `row_value_limit`); unknown names
+never enter the retained raw text. An empty collection submits neither
+order nor entries and stays valid.
+
+`http::serve_form_action` binds one form action's three server callables
+into a mounted route: the declared valid-wire handler, the outcome
+renderer `(Result) -> html::safe`, and the structural-422 renderer
+`(form::rejected<Wire>) -> html::safe`. The action name is static and
+must agree with the spelled result and wire types. Valid wire flows
+through the handler and the outcome renderer with the case status of
+the result leaf. Structural violations flow through the 422 renderer
+with status 422. Media, body and encoding failures before parsing
+receive compiler-owned fixed 400 or 413 responses without entering a
+renderer. The static builders `form::named_collection`,
+`form::named_field` and `form::row_key` mint checked name tokens, and
+`form::order_name`, `form::input_name` and `form::field_name` render
+their exact wire names; renaming a wire field or collection diagnoses
+every statically linked builder. Renderers emit fragments through the
+P9 safe builders, so retained raw text always renders escaped.
+
 ### HTTP client status rule
 
 For approved native fetch declarations, any final status 200--599 completes an

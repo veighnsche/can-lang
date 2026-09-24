@@ -279,6 +279,67 @@ function read<T>(map: WeakMap<object, T>, value: unknown): T {
   if (!object(value) || !map.has(value)) throw resourceStateFailure(undefined, origin);
   return map.get(value)!;
 }
+function textBytes(text: string) {
+  return ownBytes(new TextEncoder().encode(text));
+}
+function buildResponse(
+  status: unknown,
+  headers: unknown,
+  body: Bytes | PendingBody | null,
+  mime?: string,
+): unknown {
+  const code = read(body === null ? statuses : bodyStatuses, status),
+    entries = read(serverHeaders, headers);
+  // Set-Cookie never enters the coalescing Headers: repeats stay separate
+  // entries so expires dates (which contain commas) survive intact.
+  const rest = entries.filter(([name]) => name.toLowerCase() !== "set-cookie"),
+    cookies = entries.filter(([name]) => name.toLowerCase() === "set-cookie");
+  const native = new Headers(rest.map(([name, value]) => [name, value]));
+  native.set("x-content-type-options", "nosniff");
+  if (mime) native.set("content-type", mime);
+  return opaque(
+    responses,
+    Object.freeze({
+      status: code,
+      headers: Object.freeze([
+        ...Array.from(native.entries(), (entry) => Object.freeze(entry)),
+        ...cookies.map(([, value]) => Object.freeze(["set-cookie", value] as const)),
+      ]),
+      body,
+    }),
+  );
+}
+// Compiler-owned complete response for adapter ingress failures and action
+// outcomes: fixed headers plus caller-selected text or fragment bytes.
+export function ownedResponse(status: number, text: string, html: boolean): unknown {
+  if (!Number.isInteger(status) || status < 200 || status > 599)
+    throw new TypeError("invalid compiler action status");
+  return buildResponse(
+    opaque(bodyStatuses, status),
+    opaque(serverHeaders, Object.freeze([])),
+    textBytes(text),
+    html ? "text/html; charset=utf-8" : "text/plain; charset=utf-8",
+  );
+}
+export type SnapshotBody = Readonly<
+  { kind: "bytes"; value: Bytes } | { kind: "consumed" } | { kind: "failed" } | { kind: "limited" }
+>;
+// Adapter body read: buffered snapshots stay repeatable from cached bytes,
+// while a first live touch drains the wire stream exactly once.
+export async function snapshotBodyBytes(token: unknown): Promise<SnapshotBody> {
+  const snapshot = requestSnapshot(token),
+    cell = bodyCell(token);
+  if (cell.kind === "live") {
+    if (cell.buffered !== undefined) return { kind: "bytes", value: cell.buffered };
+    if (cell.reader) return { kind: "consumed" };
+    const drained = await drainBody(cell.native.body, cell.limit);
+    if (drained.kind === "rejected")
+      return drained.status === 413 ? { kind: "limited" } : { kind: "failed" };
+    cell.buffered = drained.value;
+    return { kind: "bytes", value: drained.value };
+  }
+  return { kind: "bytes", value: snapshot.body };
+}
 export function isHTTPValue(kind: string | undefined, value: unknown): boolean {
   if (kind === "request") return isRequest(value);
   const map =
@@ -423,34 +484,7 @@ export function createResponses(
     );
     return pending;
   }
-  function response(
-    status: unknown,
-    headers: unknown,
-    body: Bytes | PendingBody | null,
-    mime?: string,
-  ): unknown {
-    const code = read(body === null ? statuses : bodyStatuses, status),
-      entries = read(serverHeaders, headers);
-    // Set-Cookie never enters the coalescing Headers: repeats stay separate
-    // entries so expires dates (which contain commas) survive intact.
-    const rest = entries.filter(([name]) => name.toLowerCase() !== "set-cookie"),
-      cookies = entries.filter(([name]) => name.toLowerCase() === "set-cookie");
-    const native = new Headers(rest.map(([name, value]) => [name, value]));
-    native.set("x-content-type-options", "nosniff");
-    if (mime) native.set("content-type", mime);
-    return opaque(
-      responses,
-      Object.freeze({
-        status: code,
-        headers: Object.freeze([
-          ...Array.from(native.entries(), (entry) => Object.freeze(entry)),
-          ...cookies.map(([, value]) => Object.freeze(["set-cookie", value] as const)),
-        ]),
-        body,
-      }),
-    );
-  }
-  const textBytes = (text: string) => ownBytes(new TextEncoder().encode(text));
+  const response = buildResponse;
   return Object.freeze({
     async makeStatus(value: bigint, _context?: AssertionContext): Promise<Completion<unknown>> {
       return status(value, false);

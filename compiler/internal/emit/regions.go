@@ -285,6 +285,20 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			// the authored arguments, including the static name literal.
 			callArgs = append(append([]string{}, args...), "$canSQL.declareDescriptor("+quote(step.SQL.Owner)+","+quote(step.SQL.Name)+")")
 		}
+		if step.FormAction != nil {
+			// The frozen adapter contract and the declared handler join
+			// the invocation only: fixture matching still compares the
+			// authored action name and renderer callables.
+			metadata, err := formActionMetadata(step.FormAction)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			handler, err := e.target(step.FormAction.Handler)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			callArgs = append(append([]string{}, args...), metadata, handler)
+		}
 		if step.Identity == "can.std.checks@1::require" {
 			// C9.2: the call-site span and invocation path travel as a
 			// hidden argument into private occurrence metadata. Fixture

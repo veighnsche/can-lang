@@ -161,7 +161,7 @@ func (builder *stateBuilder) prerequisites() error {
 // declareCoreState emits the pre-B1 factory bindings. HTTP entries move to
 // their feature file with B1-06; SQL entries live in runtime_sql.go.
 func (builder *stateBuilder) declareCoreState() {
-	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
+	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\nexport let $canForm:ReturnType<typeof $canCreateForm>;\nexport let $canFormActions:ReturnType<typeof $canCreateFormActions>;\n")
 	if !builder.assembly.browser {
 		builder.declareSQLState()
 		builder.declareCryptoState()
@@ -299,6 +299,8 @@ func (builder *stateBuilder) initializeCoreState() {
 	fmt.Fprintf(&builder.out, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s,close:%s,writeFailed:%s,multipartForm:%s,multipartField:%s,multipartFile:%s});\n", builder.headerType, quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.http@1::header"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::multipart_form"]), quote(builder.numberIDs["can.std.http@1::multipart_field"]), quote(builder.numberIDs["can.std.http@1::multipart_file"]))
 	fmt.Fprintf(&builder.out, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s,close:%s,writeFailed:%s,limit:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::body_limit"]))
 	fmt.Fprintf(&builder.out, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_route"]), quote(builder.numberIDs["can.std.http@1::duplicate_route"]), quote(builder.numberIDs["can.std.http@1::ambiguous_route"]))
+	fmt.Fprintf(&builder.out, "$canForm=$canCreateForm($canDomain,{unknownField:%s,invalidName:%s});\n", quote(builder.numberIDs["can.std.form@1::unknown_field"]), quote(builder.numberIDs["can.std.form@1::invalid_name"]))
+	fmt.Fprintf(&builder.out, "$canFormActions=$canCreateFormActions($canDomain,{invalidRoute:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_route"]))
 	if !builder.assembly.browser {
 		fmt.Fprintf(&builder.out, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s},$canAssets);\n", quote(builder.numberIDs["can.std.http@1::invalid_server_config"]), quote(builder.numberIDs["can.std.http@1::bind_failed"]), quote(builder.numberIDs["can.std.http@1::shutdown_failed"]))
 	}
@@ -390,6 +392,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/codec/json.ts", Names: []ImportName{{"createCodec", "$canCreateCodec"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/form.ts", Names: []ImportName{{"createForm", "$canCreateForm"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
 	if !browser {
 		imports = append(imports, builder.assembly.sqlStateImports(runtime)...)
@@ -397,7 +400,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	}
 	imports = append(imports, builder.assembly.utilitiesStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
+	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"createFormActions", "$canCreateFormActions"}, {"isRouterValue", "$canIsRouter"}}})
 	if !browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
 		imports = append(imports, builder.assembly.fileStateImports(runtime)...)
