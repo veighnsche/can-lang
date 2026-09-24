@@ -1,0 +1,225 @@
+{
+  "date": "2026-09-25",
+  "extra_worktrees_removed": 35,
+  "remaining_worktrees": [
+    "/Users/vince/Projects/can-lang"
+  ],
+  "main_clean_before_evidence_write": true,
+  "main_head_before_evidence_commit": "655da3da2ac9f995f953eded3977159b58f4a587",
+  "production_source_changed": false,
+  "all_original_heads_preserved": true,
+  "lf_dirty_paths_exactly_integrated": 137,
+  "scratch_files_preserved": 2,
+  "results": [
+    {
+      "path": "/private/tmp/can-ci-prefetch",
+      "head": "e3879429a500712227a87035c4d694ead3fd512f",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/private/tmp/lf12wt",
+      "head": "7f9c066806f9c210ce11cdb54e288462a743f032",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/private/tmp/lf13wt",
+      "head": "d1fd69bf455f1b4afc43cd8522969d8c4d28ad6e",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/private/tmp/lf14wt",
+      "head": "f04a6d0191bc878070c46abd91ff6ba77d593753",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/private/tmp/lf15wt",
+      "head": "d8239cd4bf8fda49a24486c50cbb9e8ae36007ea",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/private/tmp/lf16wt",
+      "head": "6898d11e7bc16f474bdffae2a8ba700bff2baca6",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/.codex/worktrees/a3e6/can-lang",
+      "head": "e1ffa9ddce7e5bf1033e5040125bc0f9b775cb7a",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/.codex/worktrees/d05e/can-lang",
+      "head": "e435505771d90444097576ee65984bda4ce869ac",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1da-6534-7ca1-8e89-8177587319d4",
+      "head": "07c456c73237e6e2a6c326ee35dbeadfd1170073",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4791-7ef3-8250-1fd0bce0c984",
+      "head": "7cd6d8fbdc4998d7f7a8d40a32061785e69586ac",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-49ed-71f3-81ec-bacb7ec00082",
+      "head": "3757b6b0895812ce90e7abd5bc7d4bbc692b033a",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4cbc-7363-bbfb-b2a97d1e795b",
+      "head": "540bd4000c1b9f31587e3f867efa8e1e413cc142",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-4f03-75d2-98f1-3f3c759b90bc",
+      "head": "7f7181a472122cf8896a08fe55901cd501e84e57",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-513f-7ed2-b89e-20dbb62b3099",
+      "head": "82a46d10ecf5172ce283219313b367ef76b02d82",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d1df-537b-7662-b984-4729850d1110",
+      "head": "534040acab1cacf438625a4f3e9e3769a26f916a",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d431-7ed2-9a9c-79dde79c79b5",
+      "head": "aa72987862c6c8b3b3195d3562f3f3d1e7e1a046",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d736-7d32-bfad-9e60f111e9e6",
+      "head": "a20da217b2fa48851ad7ddf33e5a5e5f58cfb5c9",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d211-d9a6-7000-b823-7d311ca402f4",
+      "head": "2eacc4cbf319bee13077769697d9ccfbd01a9b95",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-dae9-7b92-a4d7-fc3a575061db",
+      "head": "4f5ae866b19c674ab923eb67b859fab2f75d1bce",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-dd14-7ff3-8524-f1fd44681eda",
+      "head": "64a653ae88aafdc8d38f91838af8896fc5e73d42",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d236-e057-7a82-a50f-f71e748f7a44",
+      "head": "01d3ec037a43307545c25fae528aaf71aa2a3be8",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0aa7-7361-b7fe-edddb521894e",
+      "head": "43c72c953cbd03d5b4b2b9f39ff9579dc5ddd4aa",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0ce3-7fe3-b07c-bf9cfb956805",
+      "head": "323098421f7c063b5c61e34fd6476eb606863544",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-0f1f-7953-a64e-e72a6daeb2e8",
+      "head": "0714ce3599dfce59bf522fe2baf2c65ff404bee4",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-1199-71b3-9793-fedaa68d6ad5",
+      "head": "29e6e4bae874e0eb17df5b2130a814bcbe6ffca8",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d26e-13f8-7db0-9b3c-7c37278701eb",
+      "head": "0581011bbc5e117e4c0c7d1497e1204a09eb00b6",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2a2-9fa7-7ac0-b830-2a485ce9a4ec",
+      "head": "e0aab95994a25db3920fb5a29de8115d75a22e45",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2a2-a2bf-73e2-9da8-0ab0ab37c3be",
+      "head": "844bd0c3076852c80ac86c5db59fb513e875b385",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2e6-b99d-7262-a5b5-073ebd50870b",
+      "head": "d4891b08f7e9d65415fedf1e2730be19f9dfb64b",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d2e6-bc36-7f20-b99e-e2140dfe2756",
+      "head": "952ac8cf04140ee5c8c278f5a12435007f71a5e8",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d332-48b1-7e81-8d8a-f3e99b925cfc",
+      "head": "a99695a7cc1807a397ba92c70a47bc311680ee03",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d347-4d49-7790-b07f-b3fce0604a9c",
+      "head": "e657bc6250be743fb5f7ef27574993fe9af510e0",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d379-0c20-7c62-966f-09211cb974a1",
+      "head": "89f11d10f64ae153eb91f1ff817d9247a5f2528a",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d3be-41fb-78e3-9832-602251d4f792",
+      "head": "508703bb03fd78bc8c75a1bc5c64615d32a38966",
+      "removed": true,
+      "archive_ref_verified": true
+    },
+    {
+      "path": "/Users/vince/Projects/can-lang/.muse/worktrees/subagent-v2-01a0d1cf-8dd4-7540-93e9-74aba7281213-01a0d3c4-51cb-7912-833d-8b549a8bde54",
+      "head": "6f3c93ada6d3121424cc1c2ecfe5aeb0d26a62e5",
+      "removed": true,
+      "archive_ref_verified": true
+    }
+  ]
+}
