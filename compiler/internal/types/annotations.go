@@ -71,6 +71,9 @@ func CheckDeclarations(world *resolve.World) (*Model, error) {
 				// The target contract resolves at fixture checking; only
 				// the parameter annotations are templated here.
 				fields = d.Given
+			case *syntax.ScenarioDecl:
+				// A scenario marker carries no annotations.
+				continue
 			case *syntax.WrapDecl:
 				// Inherited annotations resolve in the root's declaring
 				// file. The bound is calculated from checked handlers in

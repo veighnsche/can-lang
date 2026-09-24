@@ -25,15 +25,18 @@ type CompletionContext struct {
 	AggregateType     func(*types.Type) (*types.Type, error)
 	Identity, Parent  string
 	Kind              ir.RegionKind
-	File              *source.File
-	Scope             *resolve.Scope
-	Result            *types.Type
-	Errors            ErrorBound
-	Registry          *ErrorRegistry
-	Expressions       *Expressions
-	Type              func(syntax.TypeNode, bool) (*types.Type, error)
-	ErrorName         func(syntax.QualifiedName) (string, error)
-	PatternName       func(syntax.QualifiedName) (string, error)
+	// Package is the canonical identity of the file under checking.
+	// Fixture rows record it as their selecting owner.
+	Package     string
+	File        *source.File
+	Scope       *resolve.Scope
+	Result      *types.Type
+	Errors      ErrorBound
+	Registry    *ErrorRegistry
+	Expressions *Expressions
+	Type        func(syntax.TypeNode, bool) (*types.Type, error)
+	ErrorName   func(syntax.QualifiedName) (string, error)
+	PatternName func(syntax.QualifiedName) (string, error)
 	// Variadic declaration contracts have a final array input in the private ABI.
 	Specialize     func(*resolve.Scope, syntax.QualifiedName, []syntax.TypeNode) (ValueBinding, error)
 	InferReference func(*resolve.Scope, syntax.QualifiedName, *types.Type, *Expressions) (ValueBinding, bool, error)

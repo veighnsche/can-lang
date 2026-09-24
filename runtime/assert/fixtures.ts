@@ -7,11 +7,20 @@ import {
   scheduledFixture,
   fixtureMismatch,
   suppliedEvidence,
+  useScenarioLink,
   type AssertionContext,
 } from "./context.ts";
 
+function selectedScenarios(rows: readonly FixtureRow[]): readonly string[] {
+  const seen = new Set<string>();
+  for (const row of rows) if (row.scenario !== undefined) seen.add(row.scenario);
+  return Object.freeze([...seen]);
+}
+
 type FixtureRow = Readonly<{
   selector: string;
+  owner: string;
+  scenario?: string;
   arguments: () => Promise<Completion<readonly unknown[]>>;
   expected: () => Promise<Completion>;
   raw?: Readonly<{ operation: string; spec: RawFixtureInput }>;
@@ -26,8 +35,18 @@ export async function withFixture(
   origin: FailureOrigin,
 ): Promise<Completion> {
   if (context === undefined) return invoke(run, origin);
-  const selected = rows.filter((row) => row.selector === contextReport(context).root.name);
+  const report = contextReport(context);
+  const links = report.root.links ?? [];
+  // Plain rows activate only for same-owner roots: a caller label can no
+  // longer select rows inside another package. Scenario rows activate
+  // only through an explicit root link to their canonical identity.
+  const selected = rows.filter((row) =>
+    row.scenario !== undefined
+      ? links.includes(row.scenario)
+      : row.selector === report.root.name && row.owner === report.root.package,
+  );
   if (selected.length === 0) return invoke(run, origin);
+  for (const scenario of selectedScenarios(selected)) useScenarioLink(context, scenario);
   return scheduledFixture(context, identity, selected.length, origin, async (allocation) => {
     const row = selected[allocation.row];
     const expectedArguments = await invoke(row.arguments, origin);

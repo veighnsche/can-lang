@@ -68,6 +68,15 @@ type FixtureCase struct {
 	Mode      *AssertionMode
 }
 
+// ScenarioDecl is a DI-06 exported test seam marker. It names a scenario
+// whose rows are tagged at lexical when tables and activated by caller
+// links. It carries no rows or target; checking validates tags and links,
+// and the marker is erased from production output.
+type ScenarioDecl struct {
+	DeclarationLocation
+	Name Token
+}
+
 // WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
 // judge or wrapper base; the complete signature, grouped state, result and
 // connection are inherited. Handles tables hold origin-specific policy arms.
@@ -298,6 +307,13 @@ func (p *parser) fixture() Declaration {
 	p.expect(Dedent)
 	p.expect(Dedent)
 	return &FixtureDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Target: target, Types: types, Given: given, Cases: cases}
+}
+
+func (p *parser) scenario() Declaration {
+	start := p.expectWord("scenario").Span.Start
+	name := p.expect(Name)
+	p.expect(Newline)
+	return &ScenarioDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name}
 }
 
 func (p *parser) fixtureCase() FixtureCase {

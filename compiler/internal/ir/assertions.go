@@ -6,6 +6,9 @@ type AssertionRoot struct {
 	Package     string `json:"package"`
 	Declaration string `json:"declaration"`
 	Name        string `json:"name"`
+	// Links carries the canonical scenario identities this root
+	// linked. It is omitted when the root links nothing.
+	Links []string `json:"links,omitempty"`
 }
 type Assertion struct {
 	Root     AssertionRoot
@@ -32,7 +35,15 @@ type FixtureTable struct {
 	Rows     []FixtureRow
 }
 type FixtureRow struct {
-	Selector  string
+	Selector string
+	// Owner is the canonical package identity of the lexical when
+	// table. Plain rows activate only for same-owner roots; this is
+	// the DI-06 same-owner lexical selection rule.
+	Owner string
+	// Scenario is the canonical scenario identity for tagged rows
+	// and empty for plain rows. Tagged rows activate only through
+	// a caller link, never by root name.
+	Scenario  string
 	Prepare   []Preparation
 	Arguments []*Expression
 	Expected  *Completion

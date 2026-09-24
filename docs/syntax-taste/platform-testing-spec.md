@@ -222,10 +222,15 @@ order. Runtime completion order cannot change an identity.
 
 The text before `:` in a `when` row is an assertion selector. Assertion names
 are scoped by their declaring executable declaration; they are not globally unique. For one
-compiled root assertion, the harness activates rows at dynamically entered call
-sites whose selector text equals that root assertion's name. A helper row with
-the same selector may intentionally serve multiple reachable roots; each root
-gets an isolated queue, full root identity, and independent type checking.
+compiled root assertion, the harness activates plain rows at dynamically entered call
+sites whose selector text equals that root assertion's name and whose owning
+package equals the root's package. A caller label can no longer select rows
+inside another package; renaming a root never changes helper behavior.
+A row tagged `scenario name` instead activates only when the running root
+explicitly links that package's exported scenario, never by root name.
+Rows under one selector or scenario may intentionally serve multiple
+reachable roots; each root gets an isolated queue, full root identity,
+and independent type checking.
 
 A lexical table may repeat the same selector. The selected rows form one
 ordered queue per `(root assertion identity, lexical when-table identity)`,
@@ -283,6 +288,8 @@ following occurs:
 - **unexpected live boundary**: generated test code attempts a real platform
   operation; or
 - **unused fixture**: a row remains unused after the root completion settles.
+  A scenario link that never supplies a selected row fails the same way,
+  with the scenario identity in the diagnostic.
 
 Argument comparison uses the core equality contract. Opaque fixture handles
 compare compiler-issued harness-token identity only; their native object and

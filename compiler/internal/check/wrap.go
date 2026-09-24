@@ -553,7 +553,7 @@ func regionHasInherit(region *ir.Region) bool {
 // inputs in scope, the inherited result, an open escaping bound while the
 // calculated contract is still unknown, and the predecessor rule for inherit.
 func (c *programChecker) wrapperContext(program *Program, native *NativeDeclaration, file *resolve.File, result *types.Type, params []ir.Local, inherit *InheritContext, scope *resolve.Scope, callables map[string]CallableDeclaration) CompletionContext {
-	ctx := CompletionContext{Kind: ir.HandlerRegion, File: file.Source.Syntax.Source, Scope: scope, Result: result, Errors: OpenBound(), Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file), Parameters: params, Inherit: inherit, Wrappers: wrapperPlans(program)}
+	ctx := CompletionContext{Kind: ir.HandlerRegion, Package: file.Package.ID, File: file.Source.Syntax.Source, Scope: scope, Result: result, Errors: OpenBound(), Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file), Parameters: params, Inherit: inherit, Wrappers: wrapperPlans(program)}
 	ctx.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
 		symbol, err := file.Lookup(scope, name, resolve.CallUse)
 		if err != nil {

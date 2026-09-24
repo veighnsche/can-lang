@@ -9,9 +9,9 @@ fn void main
         str[] args
     asserts
         empty: [] => ok
-        triage: ["Ann"] => ok
-        down: ["Ann"] => ok
-        unclosed: ["Ann"] => sql::close_failed("drain")
+        triage: ["Ann"] => ok link model::triage
+        down: ["Ann"] => ok link model::down
+        unclosed: ["Ann"] => sql::close_failed("drain") link model::unclosed
     match args.length is 0
         false => match call oracles::draft_account(args[0])
             when
@@ -85,7 +85,7 @@ fn records::count_value[] concurrent_counts
     given
         near sql::pool pool
     asserts
-        sample: => ok [records::count_value(2, true), records::count_value(2, true)]
+        sample: => ok [records::count_value(2, true), records::count_value(2, true)] link model::sample
     records::count_value[] numbers = match call concurrent
         model::recent_count(pool)
             ok records::count_value count => ok count

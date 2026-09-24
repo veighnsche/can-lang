@@ -318,6 +318,8 @@ func (f *formatter) render(file *File) {
 					}
 				}
 			}
+		case *ScenarioDecl:
+			f.line(0, "scenario "+n.Name.Text, n.DeclSpan().Start)
 		case *FunctionDecl:
 			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
 			if n.Receiver != nil {
@@ -351,22 +353,51 @@ func (f *formatter) render(file *File) {
 }
 
 func (f *formatter) assertion(level int, a Assertion) {
+	prefix := ""
+	if a.Scenario != nil {
+		prefix = "scenario "
+	}
 	if a.Use != nil {
-		f.line(level, a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")", a.Span.Start)
+		f.line(level, prefix+a.Name.Text+": use "+formatName(a.Use.Template)+"("+formatArguments(a.Use.Arguments)+")", a.Span.Start)
 		return
 	}
-	text := a.Name.Text + ": "
+	text := prefix + a.Name.Text + ": "
 	if a.Receiver != nil {
 		text += FormatExpression(a.Receiver) + " => "
 	}
 	text += formatArguments(a.Arguments) + " => "
-	f.body(level, text, a.Expected)
+	if len(a.Links) != 0 {
+		targets := make([]string, len(a.Links))
+		for i, link := range a.Links {
+			targets[i] = formatName(link)
+		}
+		f.line(level, text+formatCompletion(a.Expected)+" link "+strings.Join(targets, ", "), a.Span.Start)
+	} else {
+		f.body(level, text, a.Expected)
+	}
 	if a.Mode != nil {
 		if a.Mode.Failure != nil {
 			f.line(level+1, "using failure "+a.Mode.Failure.Origin.Text+" "+FormatExpression(a.Mode.Failure.Value), a.Mode.Span.Start)
 		} else {
 			f.line(level+1, "using raw "+a.Mode.Raw.Text, a.Mode.Span.Start)
 		}
+	}
+}
+
+// formatCompletion renders the single-line completions the row parser
+// admits, so link clauses stay on the row's physical line.
+func formatCompletion(body Body) string {
+	switch n := body.(type) {
+	case *SuccessBody:
+		text := "ok"
+		if n.Value != nil {
+			text += " " + FormatExpression(n.Value)
+		}
+		return text
+	case *FailureBody:
+		return FormatExpression(n.Error)
+	default:
+		panic("row completion must be ok or an error constructor")
 	}
 }
 func (f *formatter) binding(level int, b Binding) {

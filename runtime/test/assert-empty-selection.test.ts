@@ -11,6 +11,7 @@ for (const inner of ["all", "settled", "any"] as Mode[])
     const events: string[] = [];
     const rows = [0, 1].map((i) => ({
       selector: "sample",
+      owner: "p",
       arguments: async () => success([i]),
       expected: async () => {
         events.push("row" + i);

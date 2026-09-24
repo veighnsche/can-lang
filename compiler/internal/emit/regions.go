@@ -340,13 +340,18 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 				if err != nil {
 					return LoweredExpression{}, err
 				}
-				literal := "{selector:" + quote(row.Selector) + ", arguments: async () => {" + prepare.String() + "return $canSuccess([" + strings.Join(expectedArgs, ",") + "]);}, expected: async () => {" + expected + "}}"
+				head := "{selector:" + quote(row.Selector) + ", owner:" + quote(row.Owner)
+				if row.Scenario != "" {
+					head += ", scenario:" + quote(row.Scenario)
+				}
+				arguments := ", arguments: async () => {" + prepare.String() + "return $canSuccess([" + strings.Join(expectedArgs, ",") + "]);}, expected: async () => {" + expected + "}"
+				literal := head + arguments + "}"
 				if row.Raw != nil {
 					spec, err := RawSpec(row.Raw)
 					if err != nil {
 						return LoweredExpression{}, err
 					}
-					literal = "{selector:" + quote(row.Selector) + ", arguments: async () => {" + prepare.String() + "return $canSuccess([" + strings.Join(expectedArgs, ",") + "]);}, expected: async () => {" + expected + "}, raw:{operation:" + quote(row.Raw.Operation) + ",spec:" + spec + "}}"
+					literal = head + arguments + ", raw:{operation:" + quote(row.Raw.Operation) + ",spec:" + spec + "}}"
 				}
 				rows = append(rows, literal)
 			}

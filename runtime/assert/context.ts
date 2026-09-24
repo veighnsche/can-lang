@@ -41,7 +41,12 @@ import {
 import type { Completion } from "../completion.ts";
 import { createEvidence, recordEvidence, evidenceReport, type Evidence } from "./report.ts";
 
-export type AssertionRoot = Readonly<{ package: string; declaration: string; name: string }>;
+export type AssertionRoot = Readonly<{
+  package: string;
+  declaration: string;
+  name: string;
+  links?: readonly string[];
+}>;
 declare const contextBrand: unique symbol;
 export type AssertionContext = Readonly<{ readonly [contextBrand]: true }>;
 type Violation =
@@ -70,8 +75,15 @@ type State = {
   evidence: Evidence;
   closed: boolean;
   tables: Map<string, { used: number; total: number; origin: FailureOrigin }>;
+  links: Map<string, boolean>;
   scope: unknown;
 };
+const linkOrigin: FailureOrigin = Object.freeze({
+  source: "can:assertion",
+  start: 0,
+  end: 0,
+  invocation: Object.freeze([]),
+});
 type View = { shared: State; identity: InvocationIdentity; frame: Frame };
 const contexts = new WeakMap<object, View>();
 function view(context: AssertionContext): View {
@@ -87,6 +99,13 @@ function makeView(shared: State, identity: InvocationIdentity): AssertionContext
 export function assertionContext(root: AssertionRoot): AssertionContext {
   if (!root.package || !root.declaration || !root.name)
     throw new TypeError("incomplete assertion root");
+  const links = root.links ?? [];
+  if (
+    !Array.isArray(links) ||
+    links.some((link) => typeof link !== "string" || !link) ||
+    new Set(links).size !== links.length
+  )
+    throw new TypeError("invalid scenario links");
   const identity = rootIdentity(root),
     barrier = createBarrier(identity);
   const evidence = createEvidence("assertion");
@@ -98,18 +117,28 @@ export function assertionContext(root: AssertionRoot): AssertionContext {
       queues: fixtureQueues(identity),
       paths: [],
       origins: new Map(),
-      root: Object.freeze({ ...root }),
+      root: Object.freeze(
+        root.links === undefined ? { ...root } : { ...root, links: Object.freeze([...links]) },
+      ),
       violations: [],
       failures: [],
       evidence,
       closed: false,
       tables: new Map(),
+      links: new Map(links.map((link) => [link, false])),
       scope: undefined,
     },
     identity,
   );
   startFrame(view(context).frame);
   return context;
+}
+// useScenarioLink records that a linked scenario supplied at least one
+// row at an entered table. Links that never supply a row fail the root
+// as unused fixtures when the context closes.
+export function useScenarioLink(context: AssertionContext, scenario: string): void {
+  const current = state(context);
+  if (current.links.has(scenario)) current.links.set(scenario, true);
 }
 function state(context: AssertionContext): State {
   return view(context).shared;
@@ -213,6 +242,17 @@ export function closeContext(context: AssertionContext): void {
       current.origins.get(problem.expected.table)!,
       problem.expected,
       problem.actual,
+    );
+  }
+  for (const [link, used] of current.links) {
+    if (used) continue;
+    const path = invocationPath(view(context).identity);
+    violation(
+      context,
+      "unused fixture",
+      linkOrigin,
+      Object.freeze({ table: link, row: 0, path }),
+      path,
     );
   }
   current.closed = true;

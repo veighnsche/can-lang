@@ -21,6 +21,7 @@ test("generated-style calls share lexical FIFO across repeated and transitive in
   const consumed: number[] = [];
   const rows = [0, 1, 2].map((index) => ({
     selector: "sample",
+    owner: "p",
     arguments: async () => success([index]),
     expected: async () => {
       consumed.push(index);
@@ -62,6 +63,7 @@ for (const mode of ["all", "settled", "any", "race"] as Mode[])
       events: string[] = [];
     const rows = [0, 1].map((index) => ({
       selector: "sample",
+      owner: "p",
       arguments: async () => success([index]),
       expected: async () => {
         events.push(`row${index}`);
@@ -132,6 +134,7 @@ test("first-row mismatch consumes that row and reports full paths without search
           "table",
           [0, 1].map((value) => ({
             selector: "sample",
+            owner: "p",
             arguments: async () => success([value]),
             expected: async () => success(value),
           })),
@@ -158,6 +161,7 @@ test("nested coordination and spread positions retain one shared root queue", as
   const consumed: number[] = [];
   const rows = [0, 1, 2].map((index) => ({
     selector: "sample",
+    owner: "p",
     arguments: async () => success([index]),
     expected: async () => {
       consumed.push(index);

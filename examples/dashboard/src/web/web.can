@@ -23,8 +23,8 @@ fn http::server_response dashboard_data
         http::request req
         near sql::pool pool
     asserts
-        ready: => ok
-        down: => ok
+        ready: => ok link model::ready
+        down: => ok link model::down
     records::count_value[] numbers = match call concurrent
         model::recent_count(pool)
             ok records::count_value count => ok count

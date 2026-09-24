@@ -42,6 +42,7 @@ const (
 	LLM           Kind = "llm"
 	Wrapper       Kind = "wrapper"
 	Fixture       Kind = "fixture"
+	Scenario      Kind = "scenario"
 	Value         Kind = "value"
 )
 
@@ -58,6 +59,7 @@ const (
 	ErrorUse       Usage = "error"
 	WrapBaseUse    Usage = "wrapper base"
 	FixtureUse     Usage = "fixture"
+	ScenarioUse    Usage = "scenario"
 )
 
 type Symbol struct {
@@ -101,6 +103,8 @@ func (s *Symbol) Eligible(usage Usage) bool {
 		return s.Kind == Fetch || s.Kind == Judge || s.Kind == Wrapper
 	case FixtureUse:
 		return s.Kind == Fixture
+	case ScenarioUse:
+		return s.Kind == Scenario
 	default:
 		return false
 	}
@@ -279,6 +283,9 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 	case *syntax.FixtureDecl:
 		s.Name = d.Name.Text
 		s.Kind = Fixture
+	case *syntax.ScenarioDecl:
+		s.Name = d.Name.Text
+		s.Kind = Scenario
 	case *syntax.QuestionDecl:
 		s.Name = d.Name.Text
 		s.Kind = Question
@@ -333,6 +340,8 @@ func declarationNameSpan(declaration syntax.Declaration) source.Span {
 	case *syntax.WrapDecl:
 		return d.Name.Span
 	case *syntax.FixtureDecl:
+		return d.Name.Span
+	case *syntax.ScenarioDecl:
 		return d.Name.Span
 	case *syntax.QuestionDecl:
 		return d.Name.Span

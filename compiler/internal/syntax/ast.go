@@ -255,6 +255,12 @@ type Assertion struct {
 	// Use expands a fixture template in place; it carries no arguments,
 	// expected completion or execution mode of its own.
 	Use *AssertionUse
+	// Scenario tags a when row with a package-local scenario marker.
+	// The row activates only through a caller link, never by root name.
+	Scenario *Token
+	// Links wires an assertion root to exported scenarios. Only roots
+	// carry links; when rows and template expansions must not.
+	Links []QualifiedName
 }
 
 // AssertionUse is `use template(arguments)` at a lexical when row: the

@@ -147,6 +147,7 @@ test("supplied completion replaces only the exact call and labels its evidence",
         [
           {
             selector: "sample",
+            owner: "can.project.root/app",
             arguments: async () => success([3n]),
             expected: async () => success(7n),
           },
@@ -171,6 +172,7 @@ test("supplied completion replaces only the exact call and labels its evidence",
 test("basic fixture FIFO never searches later rows and reports leftovers", async () => {
   const rows = [1n, 2n].map((value) => ({
     selector: "sample",
+    owner: "can.project.root/app",
     arguments: async () => success([value]),
     expected: async () => success(value),
   }));
@@ -198,11 +200,13 @@ test("mismatch reports identify root, site and invocations without dumping value
   const rows = [
     {
       selector: "sample",
+      owner: "can.project.root/app",
       arguments: async () => success([secret]),
       expected: async () => success(1n),
     },
     {
       selector: "sample",
+      owner: "can.project.root/app",
       arguments: async () => success([other]),
       expected: async () => success(2n),
     },

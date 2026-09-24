@@ -2,6 +2,7 @@ package check
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -188,7 +189,7 @@ func (c *irComparer) programs(a, b *Program) {
 	}
 	for i := range a.Assertions {
 		ra, rb := a.Assertions[i].Root, b.Assertions[i].Root
-		if ra != rb {
+		if ra.Package != rb.Package || ra.Declaration != rb.Declaration || ra.Name != rb.Name || !slices.Equal(ra.Links, rb.Links) {
 			c.fail("assertion root [%d] %+v != %+v", i, ra, rb)
 		}
 		c.region("assertion actual", a.Assertions[i].Actual, b.Assertions[i].Actual)

@@ -134,6 +134,8 @@ func (p *parser) declaration() Declaration {
 		return p.wrap()
 	case p.word("fixture"):
 		return p.fixture()
+	case p.word("scenario"):
+		return p.scenario()
 	case p.word("fn"):
 		return p.function()
 	case p.word("record") || p.word("owner") && p.index+1 < len(p.tokens) && p.tokens[p.index+1].IsWord("record"):
@@ -279,20 +281,31 @@ func (p *parser) expressionList(end Kind) []Expr {
 }
 
 func (p *parser) assertion(method bool) Assertion {
-	name := p.expect(Name)
-	p.expect(":")
+	start := p.peek().Span.Start
+	var scenario *Token
+	var name Token
+	if p.scenarioTag() {
+		p.take()
+		tag := p.expect(Name)
+		scenario = &tag
+		name = tag
+		p.expect(":")
+	} else {
+		name = p.expect(Name)
+		p.expect(":")
+	}
 	if p.word("use") {
-		start := p.take().Span.Start
+		use := p.take().Span.Start
 		template := p.qualified()
 		p.expect("(")
 		arguments := p.invocationArguments(")")
 		p.expect(")")
-		p.singleLine(start, p.span(start).End)
+		p.singleLine(use, p.span(use).End)
 		p.expect(Newline)
 		if p.at(Indent) {
 			p.fail("use expansion carries no execution mode")
 		}
-		return Assertion{Span: p.span(name.Span.Start), Name: name, Use: &AssertionUse{Span: p.span(start), Template: template, Arguments: arguments}}
+		return Assertion{Span: p.span(start), Name: name, Scenario: scenario, Use: &AssertionUse{Span: p.span(use), Template: template, Arguments: arguments}}
 	}
 	var receiver Expr
 	if method {
@@ -307,10 +320,55 @@ func (p *parser) assertion(method bool) Assertion {
 	}
 	p.expect("=>")
 	expected := p.completion()
-	p.singleLine(name.Span.Start, expected.BodySpan().End)
+	var links []QualifiedName
+	if p.word("link") {
+		p.take()
+		for {
+			links = append(links, p.qualified())
+			if !p.at(",") {
+				break
+			}
+			p.take()
+		}
+	}
+	end := expected.BodySpan().End
+	if len(links) != 0 {
+		end = links[len(links)-1].Span.End
+	}
+	p.singleLine(start, end)
 	p.expect(Newline)
 	mode := p.assertionMode()
-	return Assertion{Span: p.span(name.Span.Start), Name: name, Receiver: receiver, Arguments: arguments, Expected: expected, Mode: mode}
+	return Assertion{Span: p.span(start), Name: name, Receiver: receiver, Arguments: arguments, Expected: expected, Mode: mode, Scenario: scenario, Links: links}
+}
+
+// linkClauseFollows reports whether a link clause starts at the cursor: the
+// word link followed by a target name. A bare value literally named link
+// keeps its meaning when anything else follows: no valid value expression
+// continues with an adjacent bare name, and qualified link::name values
+// still parse as expressions.
+func (p *parser) linkClauseFollows() bool {
+	if !p.word("link") || p.pending != nil {
+		return false
+	}
+	next := p.index + 1
+	if next >= len(p.tokens) {
+		return false
+	}
+	return p.tokens[next].Kind == Name
+}
+
+// scenarioTag reports whether the row starts with a `scenario name :` tag.
+// A bare selector literally named scenario keeps its plain meaning, since
+// scenario is contextual: only a following Name and colon form a tag.
+func (p *parser) scenarioTag() bool {
+	if !p.word("scenario") || p.pending != nil {
+		return false
+	}
+	first, second := p.index+1, p.index+2
+	if second >= len(p.tokens) {
+		return false
+	}
+	return p.tokens[first].Kind == Name && p.tokens[second].Kind == ":"
 }
 
 // assertionMode parses the optional indented execution-mode line under an
@@ -381,7 +439,7 @@ func (p *parser) completion() Body {
 	if p.word("ok") {
 		p.take()
 		var value Expr
-		if !p.at(Newline) {
+		if !p.at(Newline) && !p.linkClauseFollows() {
 			value = p.expression(1)
 		}
 		return &SuccessBody{BodyLocation: BodyLocation{p.span(start)}, Value: value}

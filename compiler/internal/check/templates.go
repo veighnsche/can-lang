@@ -102,7 +102,7 @@ func (c *programChecker) checkTemplate(program *Program, file *resolve.File, d *
 	// and raw rules. The definition table is retained; expansion
 	// substitutes use-argument IR into its rows.
 	region := &ir.Region{ID: symbol.ID + "/definition"}
-	context := CompletionContext{Identity: region.ID, Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: target.Type.Result(), Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file)}
+	context := CompletionContext{Identity: region.ID, Kind: ir.FunctionRegion, Package: file.Package.ID, File: file.Source.Syntax.Source, Scope: scope, Result: target.Type.Result(), Registry: program.Registry, Expressions: c.expressions(file, scope), Callables: callables, Variadic: c.variadic, Raw: c.rawScope(file)}
 	checker := &regionChecker{context: context, region: region, locals: map[string]*types.Type{}, uses: LocalUses{Names: map[*syntax.NameExpr]string{}, Captures: map[*syntax.ReferenceExpr][]string{}}}
 	step := &ir.InvocationStep{Site: region.ID, Identity: target.Identity, Contract: target.Type, Result: target.Type.Result(), Errors: target.Type.Errors(), Span: d.DeclSpan()}
 	rows := make([]syntax.Assertion, 0, len(d.Cases))

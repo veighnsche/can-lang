@@ -1298,6 +1298,45 @@ business-logic grammar. The [testing contract](platform-testing-spec.md) defines
 fixtures, dynamic invocation paths and coordination wrappers. No old fixture
 policy is inherited automatically.
 
+### Same-owner fixture selection and scenario links (DI-06)
+
+A plain `when` row activates only when the running root assertion is owned
+by the same package as the lexical table: renaming a caller root can no
+longer select or abandon rows inside a helper package. A helper that wants
+callers to drive its nested boundaries declares and exports named
+scenarios instead:
+
+```text
+scenario checkout
+```
+
+at the top level, with rows tagged at its lexical tables:
+
+```text
+match call text::from_int(7)
+    when
+        scenario checkout: 7 => ok "fixture"
+```
+
+A scenario row activates only through an explicit root link, never by
+root name. The caller links it on its assertion row:
+
+```text
+asserts
+    customer: => ok "fixture" link helper::checkout
+```
+
+Links resolve through ordinary package lookup: qualified links require an
+imported alias and an exported scenario, while unqualified links must
+resolve to exactly one reachable scenario and never shadow. A link that
+resolves nowhere is stale, one that resolves twice is ambiguous, and a
+link that never supplies a row fails as an unused fixture; all are
+compile-time or harness diagnostics, never silent behavior changes.
+Linked rows keep exact argument checks, invocation identity, queue
+isolation and FIFO order, and supplied rows keep their truthful evidence
+labels. Stubbing the whole helper at the caller's own boundary remains
+the supported caller-unit alternative and still skips the helper body.
+
 ### Assertions for AI and fetch consumers
 
 Reuse ordinary `asserts` and approved call-site `when` tables when testing

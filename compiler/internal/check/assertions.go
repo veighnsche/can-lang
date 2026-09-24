@@ -29,6 +29,14 @@ func (c *programChecker) assertionRows(file *resolve.File, fn *ProgramFunction, 
 		if row.Use != nil {
 			return nil, fmt.Errorf("assertion %s: fixture templates expand at lexical when tables only", row.Name.Text)
 		}
+		if row.Scenario != nil {
+			return nil, fmt.Errorf("assertion %s: scenario rows belong to when tables, not assertion roots", row.Name.Text)
+		}
+		links, err := scenarioLinks(file, row)
+		if err != nil {
+			return nil, err
+		}
+		root.Links = links
 		if row.Mode != nil && row.Mode.Failure != nil {
 			return nil, fmt.Errorf("assertion %s: using failure is confined to attached wrapper assertions", row.Name.Text)
 		}
@@ -116,13 +124,24 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 		receiver = step.Arguments[0]
 	}
 	for _, row := range rows {
+		if len(row.Links) != 0 {
+			return nil, fmt.Errorf("fixture %s: scenario links attach to assertion roots, not when rows", row.Name.Text)
+		}
+		scenario := ""
+		if row.Scenario != nil {
+			symbol, err := c.context.Scope.Lookup(row.Scenario.Text, resolve.ScenarioUse)
+			if err != nil {
+				return nil, fmt.Errorf("fixture %s: scenario %q is not declared in this package", row.Name.Text, row.Scenario.Text)
+			}
+			scenario = symbol.ID
+		}
 		if row.Use != nil {
-			if err := c.expandUse(table, step, scope, row); err != nil {
+			if err := c.expandUse(table, step, scope, row, scenario); err != nil {
 				return nil, err
 			}
 			continue
 		}
-		if err := c.fixtureRow(table, step, scope, row, receiver); err != nil {
+		if err := c.fixtureRow(table, step, scope, row, receiver, scenario); err != nil {
 			return nil, err
 		}
 	}
@@ -133,7 +152,7 @@ func (c *regionChecker) fixtures(rows []syntax.Assertion, step *ir.InvocationSte
 // selector after enforcing exact target identity. Rows arrive fully
 // checked from the definition; expansion owns no queue, and rows keep
 // the site's identity, fingerprints and FIFO order.
-func (c *regionChecker) expandUse(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion) error {
+func (c *regionChecker) expandUse(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion, scenario string) error {
 	if c.context.Expand == nil {
 		return fmt.Errorf("fixture %s: template expansion is unavailable here", row.Name.Text)
 	}
@@ -148,16 +167,20 @@ func (c *regionChecker) expandUse(table *ir.FixtureTable, step *ir.InvocationSte
 	}
 	// Expanded completions re-home to the use region exactly as literal
 	// rows would; their value expressions are region-independent.
+	// Expansion owns no queue: rows take the use site's owner and the
+	// row's scenario tag, never the template definition's package.
 	for i := range expanded {
 		if expanded[i].Expected != nil {
 			expanded[i].Expected.RegionID = c.region.ID
 		}
+		expanded[i].Owner = c.context.Package
+		expanded[i].Scenario = scenario
 	}
 	table.Rows = append(table.Rows, expanded...)
 	return nil
 }
 
-func (c *regionChecker) fixtureRow(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion, receiver *ir.Expression) error {
+func (c *regionChecker) fixtureRow(table *ir.FixtureTable, step *ir.InvocationStep, scope bodyScope, row syntax.Assertion, receiver *ir.Expression, scenario string) error {
 	if row.Receiver != nil || row.Name.Text == "" {
 		return fmt.Errorf("fixture receiver is implicit and selector must be named")
 	}
@@ -219,7 +242,7 @@ func (c *regionChecker) fixtureRow(table *ir.FixtureTable, step *ir.InvocationSt
 		}
 		raw = convertRawFixture(operation, fixture)
 	}
-	table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
+	table.Rows = append(table.Rows, ir.FixtureRow{Selector: row.Name.Text, Owner: c.context.Package, Scenario: scenario, Prepare: prepared, Arguments: args, Expected: expected, Raw: raw})
 	return nil
 }
 
@@ -265,6 +288,14 @@ func (c *programChecker) nativeAssertions(program *Program, callables map[string
 			if row.Use != nil {
 				return fmt.Errorf("assertion %s: fixture templates expand at lexical when tables only", row.Name.Text)
 			}
+			if row.Scenario != nil {
+				return fmt.Errorf("assertion %s: scenario rows belong to when tables, not assertion roots", row.Name.Text)
+			}
+			links, err := scenarioLinks(file, row)
+			if err != nil {
+				return err
+			}
+			root.Links = links
 			if row.Receiver != nil {
 				return fmt.Errorf("assertion %s: native assertions cannot supply a receiver", row.Name.Text)
 			}
@@ -452,7 +483,7 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 					}
 					constraints = append(constraints, argumentConstraint{d.Result, success.Value})
 				}
-				provisional := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: symbol.ID + "/assert/inference", Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}
+				provisional := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: symbol.ID + "/assert/inference", Package: file.Package.ID, Scope: file.Scope, Expressions: c.expressions(file, file.Scope), Callables: c.callables, Variadic: c.variadic}
 
 				provisional.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {
 					symbol, err := file.Lookup(scope, name, resolve.CallUse)

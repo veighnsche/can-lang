@@ -602,7 +602,7 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return CompletionContext{}, e
 	}
 	owner := file.Source.Package.Owner
-	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Raw: c.rawScope(file), Wrappers: wrapperPlans(c.program), Asset: func(name string) ir.AssetResolution {
+	context := CompletionContext{Sites: indexLexicalSites(symbol.ID, d), Identity: fn.Identity(), Kind: ir.FunctionRegion, Package: file.Package.ID, File: file.Source.Syntax.Source, Scope: scope, Result: signature.Result(), Errors: bound, Registry: c.program.Registry, Expressions: c.expressions(file, scope), Variadic: c.variadic, Callables: c.callables, Raw: c.rawScope(file), Wrappers: wrapperPlans(c.program), Asset: func(name string) ir.AssetResolution {
 		return resolveAssetName(c.world.Graph, owner, name)
 	}, SQLSite: func(key, name string) ir.SQLCallSite {
 		c.sqlSites = append(c.sqlSites, SQLSiteRecord{Key: key, Owner: owner.Key, Name: name})

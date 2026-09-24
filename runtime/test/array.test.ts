@@ -314,6 +314,7 @@ test("native mapping gaps keep later participant fixtures behind the current tra
   const events: number[] = [];
   const rows = [0, 1, 2].map((index) => ({
     selector: "sample",
+    owner: "p",
     arguments: async () => success([index]),
     expected: async () => {
       events.push(index);

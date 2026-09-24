@@ -118,6 +118,7 @@ test("a recovered application check cannot clear a separate harness violation", 
           [
             {
               selector: "zero",
+              owner: "can.project.root/positive_checks",
               arguments: async () => success([1n]),
               expected: async () => success(1n),
             },
