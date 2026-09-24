@@ -1,6 +1,6 @@
 // Compiler-private failure occurrences. Can projections never contain native
 // causes, stacks, diagnostic origins, or mutable host objects.
-import { types as nativeTypes } from "node:util";
+import { isHostNativeError, isHostProxy } from "./reflect.ts";
 import { primitiveFailureKind, primitiveFailureMessage } from "./primitive.ts";
 
 export type StandardKind =
@@ -74,7 +74,7 @@ function prototypeErrorName(value: object): string {
   // Inspect identities only, never constructor/name properties. Stop before a
   // proxy can receive getPrototypeOf or any descriptor operation.
   for (let depth = 0; prototype !== null && depth < 64; depth++) {
-    if (nativeTypes.isProxy(prototype)) return "Error";
+    if (isHostProxy(prototype)) return "Error";
     for (const [known, name] of nativeErrorNames) if (prototype === known) return name;
     prototype = Object.getPrototypeOf(prototype);
   }
@@ -97,8 +97,8 @@ export function describeNativeFailure(value: unknown): string {
       case "object":
         break;
     }
-    if (nativeTypes.isProxy(value)) return "native proxy";
-    if (!nativeTypes.isNativeError(value))
+    if (isHostProxy(value)) return "native proxy";
+    if (!isHostNativeError(value))
       return typeof value === "function" ? "native function" : "native object";
     const nameDescriptor = Object.getOwnPropertyDescriptor(value, "name");
     const messageDescriptor = Object.getOwnPropertyDescriptor(value, "message");

@@ -1,0 +1,145 @@
+// Browser-profile coordination. Native Promise selection over explicitly
+// owned participants; assertion context stays outside the shipped profile,
+// so settlement takes only the owner token, mode and participants.
+import {
+  checkedCompletion,
+  invoke,
+  success,
+  failure,
+  errorPayload,
+  type Completion,
+} from "../completion.ts";
+import { launchOwnedWithContext, type OwnedGroup, type OwnerContext } from "../owner-core.ts";
+import { record } from "../data.ts";
+import type { DomainRuntime } from "../domain-core.ts";
+import type { FailureOrigin } from "../failure.ts";
+
+export type Mode = "all" | "settled" | "any" | "race";
+type Indexed = Readonly<{ index: number; completion: Completion }>;
+export type Selection = Readonly<
+  | { kind: "all"; outcomes: readonly Completion[] }
+  | { kind: "one"; index: number; completion: Completion }
+  | { kind: "all-failed"; outcomes: readonly Completion[] }
+>;
+// Null-prototype private carriers never expose a Can payload to Promise
+// resolution. Rejecting an adapter preserves its exact original completion.
+function carrier<T extends object>(fields: T): Readonly<T> {
+  return Object.freeze(Object.assign(Object.create(null), fields));
+}
+export type ExplicitParticipant = Readonly<{
+  captures: readonly unknown[];
+  run: (ctx: OwnerContext) => Completion | Promise<Completion>;
+}>;
+export async function settleWithContext(
+  ctx: OwnerContext,
+  mode: Mode,
+  participants: readonly ExplicitParticipant[],
+): Promise<Selection> {
+  const group = launchOwnedWithContext(
+    ctx,
+    participants.map((participant) => ({
+      captures: participant.captures,
+      run: (taskCtx: OwnerContext) => participant.run(taskCtx),
+    })),
+  );
+  return selectFromGroup(group, mode, participants.length);
+}
+async function selectFromGroup(group: OwnedGroup, mode: Mode, count: number): Promise<Selection> {
+  const outcomes: Completion[] = [];
+  outcomes.length = count;
+  const rejected = new Set<number>();
+  let firstSuccess: readonly number[] | undefined;
+  const tags = new WeakSet<object>();
+  const promises = group.promises.map((pending, index) =>
+    pending.then((completion) => {
+      checkedCompletion(completion);
+      outcomes[index] = completion;
+      const tagged = carrier({ index, completion });
+      tags.add(tagged);
+      if (completion.kind !== "ok") {
+        rejected.add(index);
+        throw tagged;
+      }
+      if (firstSuccess === undefined) firstSuccess = Object.freeze([...rejected, index]);
+      return tagged;
+    }),
+  );
+  const all = () => group.promises.map((_, index) => index);
+  const selected = (tag: Indexed): Selection => {
+    group.publish(mode === "any" ? firstSuccess! : [tag.index]);
+    return carrier({ kind: "one" as const, index: tag.index, completion: tag.completion });
+  };
+  if (mode === "settled") {
+    await Promise.allSettled(promises);
+    group.publish(all());
+    return carrier({ kind: "all" as const, outcomes: Object.freeze(outcomes) });
+  }
+  try {
+    if (mode === "all") {
+      await Promise.all(promises);
+      group.publish(all());
+      return carrier({ kind: "all" as const, outcomes: Object.freeze(outcomes) });
+    }
+    if (mode === "any") return selected(await Promise.any(promises));
+    return selected(await Promise.race(promises));
+  } catch (cause) {
+    if (mode === "any") {
+      // Native any rejects only after every adapter rejected. Its AggregateError
+      // supplies no Can identity: use the retained original completion sequence.
+      if (
+        outcomes.length !== count ||
+        outcomes.some((value) => value === undefined || value.kind === "ok")
+      )
+        throw new TypeError("invalid all-failed settlement");
+      group.publish(all());
+      return carrier({ kind: "all-failed" as const, outcomes: Object.freeze(outcomes) });
+    }
+    if (typeof cause !== "object" || cause === null || !tags.has(cause)) throw cause;
+    return selected(cause as Indexed);
+  }
+}
+
+export type Handlers = Readonly<{
+  each: (index: number, completion: Completion) => Completion | Promise<Completion>;
+  shared: (index: number, completion: Completion) => Completion | Promise<Completion>;
+  allFailed: (outcomes: readonly Completion[]) => Completion | Promise<Completion>;
+}>;
+// Dispatch starts after native selection. A failed handler exits directly,
+// without another participant arm and without publishing a partial collection.
+export async function handle(
+  selection: Selection,
+  handlers: Handlers,
+  collect: boolean,
+  origin: FailureOrigin,
+): Promise<Completion> {
+  if (selection.kind === "one")
+    return invoke(() => handlers.shared(selection.index, selection.completion), origin);
+  if (selection.kind === "all-failed")
+    return invoke(() => handlers.allFailed(selection.outcomes), origin);
+  const values: unknown[] = [];
+  for (let index = 0; index < selection.outcomes.length; index++) {
+    const result = await invoke(() => handlers.each(index, selection.outcomes[index]), origin);
+    if (result.kind !== "ok") return result;
+    if (collect) values.push(result.value);
+  }
+  return success(collect ? Object.freeze(values) : undefined);
+}
+
+// Failure payload injection happens once at aggregate construction. Domain
+// values retain their original nominal records; standard values are the exact
+// opaque snapshots, never diagnostic strings or native AggregateError objects.
+export function aggregate(
+  outcomes: readonly Completion[],
+  domain: DomainRuntime,
+  identity: string,
+  origin: FailureOrigin,
+): Completion {
+  const failures = Object.freeze(
+    outcomes.map((outcome) => {
+      checkedCompletion(outcome);
+      if (outcome.kind === "ok") throw new TypeError("successful aggregate member");
+      return outcome.kind === "domain" ? errorPayload(outcome) : outcome.value;
+    }),
+  );
+  return failure(domain.create(identity, record(identity, [["failures", failures]]), origin));
+}

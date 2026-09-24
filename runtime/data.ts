@@ -1,4 +1,4 @@
-import { types as nativeTypes } from "node:util";
+import { isHostProxy } from "./reflect.ts";
 // Compiler-private representation of ordinary nominal Can data. Authored code
 // cannot import this module or obtain the nominal key. Opaque resources use
 // their own maintained constructors and never enter these ordinary adapters.
@@ -64,14 +64,25 @@ export function recordIdentity(value: unknown): string | undefined {
     : undefined;
 }
 export function dataKeys(value: unknown): (string | symbol)[] {
-  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value))
+  if (value === null || typeof value !== "object" || isHostProxy(value))
     throw new TypeError("expected non-proxy data object");
-  return Reflect.ownKeys(value);
+  try {
+    return Reflect.ownKeys(value);
+  } catch {
+    // A proxy missed by a contained host check still fails closed here with
+    // the same identity instead of leaking its trap error to the caller.
+    throw new TypeError("expected non-proxy data object");
+  }
 }
 export function dataProperty(value: unknown, key: string | symbol): unknown {
-  if (value === null || typeof value !== "object" || nativeTypes.isProxy(value))
+  if (value === null || typeof value !== "object" || isHostProxy(value))
     throw new TypeError("expected non-proxy data object");
-  const descriptor = Object.getOwnPropertyDescriptor(value, key);
+  let descriptor: PropertyDescriptor | undefined;
+  try {
+    descriptor = Object.getOwnPropertyDescriptor(value, key);
+  } catch {
+    throw new TypeError("expected non-proxy data object");
+  }
   if (!descriptor || !("value" in descriptor)) throw new TypeError("expected own data property");
   return descriptor.value;
 }
