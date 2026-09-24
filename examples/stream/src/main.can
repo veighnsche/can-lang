@@ -2,9 +2,11 @@ package stream_example
     provides [pump, main]
     uses [bytes, codec, files, io, stream, text]
 
-/// Count lines through a pull loop. An empty batch is the normal end;
-/// every terminal arm closes the reader, and failure arms re-raise the
-/// primary error after cleanup. Fixture transcripts replay per-read
+/// Count lines through a pull loop. An empty batch is the normal end.
+/// Every terminal arm closes the reader exactly once: the success path
+/// reports a close failure, while failure arms re-raise the primary
+/// error after cleanup. A close failure during failure cleanup never
+/// replaces the primary error. Fixture transcripts replay per-read
 /// rows in order across the recursion.
 fn int pump
     emits [stream::read_failed, stream::cancelled, files::limit_exceeded, stream::close_failed]
@@ -14,6 +16,10 @@ fn int pump
     asserts
         end: 5 => ok 5
         more: 0 => ok 2
+        failed_read: 0 => stream::read_failed("EIO")
+        failed_close: 0 => stream::read_failed("EIO")
+        cancelled: 0 => stream::cancelled("deadline")
+        limited: 0 => files::limit_exceeded(4)
     match call stream::read_many(input, 2)
         when
             end: input, 2 => ok []
@@ -21,9 +27,26 @@ fn int pump
             more: input, 2 => ok []
             sample: input, 2 => ok ["a", "b"]
             sample: input, 2 => ok []
-        stream::read_failed
-        stream::cancelled
-        files::limit_exceeded
+            failed_read: input, 2 => stream::read_failed("EIO")
+            failed_close: input, 2 => stream::read_failed("EIO")
+            cancelled: input, 2 => stream::cancelled("deadline")
+            limited: input, 2 => files::limit_exceeded(4)
+        stream::read_failed => match call stream::close_reader(input)
+            when
+                failed_read: input => ok
+                failed_close: input => stream::close_failed("close")
+            stream::close_failed => stream::read_failed(read_failed.reason)
+            ok => stream::read_failed(read_failed.reason)
+        stream::cancelled => match call stream::close_reader(input)
+            when
+                cancelled: input => ok
+            stream::close_failed => stream::cancelled(cancelled.reason)
+            ok => stream::cancelled(cancelled.reason)
+        files::limit_exceeded => match call stream::close_reader(input)
+            when
+                limited: input => ok
+            stream::close_failed => files::limit_exceeded(limit_exceeded.limit)
+            ok => files::limit_exceeded(limit_exceeded.limit)
         ok str[] batch => match batch.length is 0
             false => match call pump(count + batch.length, input)
                 stream::read_failed
