@@ -10,7 +10,7 @@ Source baseline `13b6cdb`; UP01 `163fd8a`; current baseline **`b1f74c7`**
 | --- | --- | --- |
 | UP01 | done | `163fd8a` + `b1f74c7`; `implementation-up01/` (7 records, 18 digests verified) |
 | UP02 | in progress (C) | `codex/up02-symbolic-proof`, wt `can-lang-wt/up02-c` |
-| UP03 | in progress (R) | `codex/up03-regex-matchall`, wt `can-lang-wt/up03-r` |
+| UP03 | done | `9b2005a` merged as `189f2e6`; text suite 9 pass, lint/check clean (coordinator-verified) |
 | UP04 | in progress (B) | `codex/up04-owner-context`, wt `can-lang-wt/up04-b` |
 | UP05–UP27 | not started | per dependency ledger in `post-upgrade-implementation-tasks-2026-09-24.md` |
 
