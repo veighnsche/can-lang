@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
+	"github.com/veighnsche/can-lang/compiler/internal/browser"
 	"github.com/veighnsche/can-lang/compiler/internal/driver"
 )
 
@@ -74,30 +76,48 @@ func run(argv []string) int {
 	}
 	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
 		timeoutMs := driver.DefaultAssertTimeoutMs
+		target := browser.TargetBun
 		rest := argv[1:]
-		if argv[0] == "build" && len(rest) >= 1 && rest[0] == "--assert-timeout-ms" {
-			if len(rest) != 3 {
-				fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
-				return 2
+		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
+		if argv[0] == "build" {
+			for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
+				if len(rest) < 3 {
+					fmt.Fprintln(os.Stderr, buildUsage)
+					return 2
+				}
+				switch rest[0] {
+				case "--assert-timeout-ms":
+					parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
+					if parseErr != nil {
+						fmt.Fprintln(os.Stderr, buildUsage)
+						fmt.Fprintln(os.Stderr, parseErr)
+						return 2
+					}
+					timeoutMs = parsed
+				case "--target":
+					parsed, parseErr := browser.ParseTarget(rest[1])
+					if parseErr != nil {
+						fmt.Fprintln(os.Stderr, buildUsage)
+						fmt.Fprintln(os.Stderr, parseErr)
+						return 2
+					}
+					target = parsed
+				default:
+					fmt.Fprintln(os.Stderr, buildUsage)
+					return 2
+				}
+				rest = rest[2:]
 			}
-			parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
-			if parseErr != nil {
-				fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
-				fmt.Fprintln(os.Stderr, parseErr)
-				return 2
-			}
-			timeoutMs = parsed
-			rest = rest[2:]
 		}
 		if len(rest) < 1 || rest[0] == "" || (argv[0] == "build" && len(rest) != 1) || (argv[0] == "run" && len(rest) > 1 && rest[1] != "--") {
-			fmt.Fprintln(os.Stderr, "usage: canlc build [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]")
+			fmt.Fprintln(os.Stderr, buildUsage)
 			return 2
 		}
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
 			if argv[0] == "build" {
 				var report driver.BuildReport
-				report, err = sidecar.Build(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs)
+				report, err = sidecar.BuildTarget(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs, target)
 				if err == nil {
 					err = json.NewEncoder(os.Stdout).Encode(report)
 				}

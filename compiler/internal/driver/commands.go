@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/veighnsche/can-lang/compiler/internal/browser"
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
 	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/emit"
@@ -25,9 +26,11 @@ type BuildAssertionSummary struct {
 type BuildReport struct {
 	SchemaVersion int                   `json:"schemaVersion"`
 	Kind          string                `json:"kind"`
+	Target        string                `json:"target"`
 	BuildID       string                `json:"buildID"`
 	Directory     string                `json:"directory"`
 	Entry         string                `json:"entry"`
+	Asset         string                `json:"asset,omitempty"`
 	Inputs        BuildInputs           `json:"inputs"`
 	Assertions    BuildAssertionSummary `json:"assertions"`
 	TimeoutMs     int                   `json:"timeoutMs"`
@@ -91,7 +94,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 		return BuildReport{}, err
 	}
 	discardTest = false
-	return BuildReport{SchemaVersion: 1, Kind: "can.build", BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts", Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
+	return BuildReport{SchemaVersion: 1, Kind: "can.build", Target: string(browser.TargetBun), BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts", Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
 }
 
 // summarizeBuildRoots requires every supervised root to pass. A single

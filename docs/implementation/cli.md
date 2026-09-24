@@ -8,8 +8,18 @@ launcher refuses `build` and `run` because it has no qualified sidecar.
 
 ```sh
 /absolute/version/bin/canlc build /absolute/canonical/project
+/absolute/version/bin/canlc build --target browser /absolute/canonical/project
 /absolute/version/bin/canlc run /absolute/canonical/project -- 'application argument'
 ```
+
+`build --target browser` verifies the same assertion roots under Bun, then
+ships the distinct `browser.ts` main-thread root with its content-addressed
+`browser/asset.json` manifest instead of the Bun entry. The checked program
+must pass the transitive browser capability closure first: any reachable
+path through authored calls, callable references or generic specializations
+to SQL, process, filesystem, environment-secret, server-crypto or adjacent
+server capabilities fails the build with a located diagnostic. Unknown
+targets fail closed; there is no worker profile.
 
 The project directory must use real, canonical directory components, as required
 by manifest-owned output safety. `build` prints a versioned `can.build` JSON

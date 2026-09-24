@@ -38,22 +38,33 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if err := builder.prerequisites(); err != nil {
 		return Module{}, nil, err
 	}
+	browser := builder.assembly.browser
 	builder.out.WriteString(builder.declarations)
 	builder.declareCoreState()
-	if err := builder.declareConnections(); err != nil {
-		return Module{}, nil, err
+	if !browser {
+		if err := builder.declareConnections(); err != nil {
+			return Module{}, nil, err
+		}
+		builder.declareAIState()
 	}
-	builder.declareAIState()
 	builder.declareCodecState()
 	builder.declareCollectionState()
-	builder.declareFileState()
-	builder.declareProcessState()
-	builder.declareStreamState()
-	builder.declareWebSocketState()
+	if !browser {
+		builder.declareFileState()
+		builder.declareProcessState()
+		builder.declareStreamState()
+		builder.declareWebSocketState()
+	}
 	builder.declareCookiesState()
-	builder.declareS3State()
+	if !browser {
+		builder.declareS3State()
+	}
 	builder.declareMarkdownState()
-	builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	if browser {
+		builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	} else {
+		builder.out.WriteString("export let $canText: ReturnType<typeof $canCreateText>;\nexport let $canAmounts: ReturnType<typeof $canCreateExactAmounts>;\nexport let $canNumbers: ReturnType<typeof $canCreateNumbers>;\nexport let $canChecks: ReturnType<typeof $canCreateChecks>;\nexport let $canBytes: ReturnType<typeof $canCreateBytes>;\nexport let $canCLI: ReturnType<typeof $canCreateCLI>;\nexport let $canDomain: ReturnType<typeof $canCreateDomain>;\nexport const $canValues: Record<string, unknown> = Object.create(null);\nexport function $canInitialize(): void {\n")
+	}
 	if err := builder.initializeDomain(); err != nil {
 		return Module{}, nil, err
 	}
@@ -62,22 +73,30 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if err != nil {
 		return Module{}, nil, err
 	}
-	if err := builder.initializeSQLState(); err != nil {
-		return Module{}, nil, err
+	if !browser {
+		if err := builder.initializeSQLState(); err != nil {
+			return Module{}, nil, err
+		}
+		builder.initializeCryptoState()
 	}
-	builder.initializeCryptoState()
 	builder.initializeUtilitiesState()
 	builder.initializeCoreState()
-	builder.initializeFileState()
-	builder.initializeProcessState()
-	builder.initializeStreamState()
-	builder.initializeWebSocketState()
+	if !browser {
+		builder.initializeFileState()
+		builder.initializeProcessState()
+		builder.initializeStreamState()
+		builder.initializeWebSocketState()
+	}
 	builder.initializeCookiesState()
-	builder.initializeS3State()
+	if !browser {
+		builder.initializeS3State()
+	}
 	builder.initializeMarkdownState()
 	builder.initializeCollectionState()
-	if err := builder.initializeAIState(); err != nil {
-		return Module{}, nil, err
+	if !browser {
+		if err := builder.initializeAIState(); err != nil {
+			return Module{}, nil, err
+		}
 	}
 	if err := builder.initializeCodecs(); err != nil {
 		return Module{}, nil, err
@@ -143,12 +162,20 @@ func (builder *stateBuilder) prerequisites() error {
 // their feature file with B1-06; SQL entries live in runtime_sql.go.
 func (builder *stateBuilder) declareCoreState() {
 	builder.out.WriteString("export let $canHTML:ReturnType<typeof $canCreateHTML>;\n")
-	builder.declareSQLState()
-	builder.declareCryptoState()
+	if !builder.assembly.browser {
+		builder.declareSQLState()
+		builder.declareCryptoState()
+	}
 	builder.declareUtilitiesState()
-	fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
+	if builder.assembly.browser {
+		fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\n", builder.headerType)
+	} else {
+		fmt.Fprintf(&builder.out, "export let $canHTTPRequests: ReturnType<typeof $canCreateRequests<%s>>;\nexport let $canHTTPResponses: ReturnType<typeof $canCreateHTTPResponses>;\nexport let $canRouter: ReturnType<typeof $canCreateRouter>;\nexport let $canServer: ReturnType<typeof $canCreateServer>;\n", builder.headerType)
+	}
 	builder.out.WriteString("export let $canClock:ReturnType<typeof $canCreateClock>;\nexport let $canRandom:ReturnType<typeof $canCreateRandom>;\nexport let $canLog:ReturnType<typeof $canCreateLog>;\n")
-	fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
+	if !builder.assembly.browser {
+		fmt.Fprintf(&builder.out, "export let $canIO: ReturnType<typeof $canCreateIO>;\nexport let $canEnv: ReturnType<typeof $canCreateEnv<%s>>;\n", builder.optionType)
+	}
 }
 
 // declareCodecState emits one codec binding per JSON and document
@@ -199,29 +226,40 @@ func (builder *stateBuilder) initializeDomain() error {
 	}
 	fmt.Fprintf(&builder.out, "const $canHTMLKinds:Readonly<Record<string,string>>=%s;\n", htmlKindsJSON)
 	fmt.Fprintf(&builder.out, "const $canHTTPKinds:Readonly<Record<string,string>>=%s;\n", httpKindsJSON)
-	if err := builder.emitSQLKinds(); err != nil {
-		return err
-	}
-	if err := builder.emitCryptoKinds(); err != nil {
-		return err
+	if !builder.assembly.browser {
+		if err := builder.emitSQLKinds(); err != nil {
+			return err
+		}
+		if err := builder.emitCryptoKinds(); err != nil {
+			return err
+		}
 	}
 	if err := builder.emitUtilitiesKinds(); err != nil {
 		return err
 	}
-	if err := builder.emitStreamKinds(); err != nil {
-		return err
-	}
-	if err := builder.emitWebSocketKinds(); err != nil {
-		return err
+	if !builder.assembly.browser {
+		if err := builder.emitStreamKinds(); err != nil {
+			return err
+		}
+		if err := builder.emitWebSocketKinds(); err != nil {
+			return err
+		}
 	}
 	if err := builder.emitCookiesKinds(); err != nil {
 		return err
 	}
-	if err := builder.emitS3Kinds(); err != nil {
-		return err
+	if !builder.assembly.browser {
+		if err := builder.emitS3Kinds(); err != nil {
+			return err
+		}
 	}
-	fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value));\n", builder.plan, quote(bytesID))
-	fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	if builder.assembly.browser {
+		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value));\n", builder.plan, quote(bytesID))
+		fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n", quote(invalidData))
+	} else {
+		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value));\n", builder.plan, quote(bytesID))
+		fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
+	}
 	builder.numberIDs = map[string]string{}
 	return nil
 }
@@ -261,9 +299,13 @@ func (builder *stateBuilder) initializeCoreState() {
 	fmt.Fprintf(&builder.out, "$canHTTPRequests=$canCreateRequests<%s>($canDomain,{invalid:%s,limit:%s,invalidData:%s,header:%s,close:%s,writeFailed:%s,multipartForm:%s,multipartField:%s,multipartFile:%s});\n", builder.headerType, quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.http@1::body_limit"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.http@1::header"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::multipart_form"]), quote(builder.numberIDs["can.std.http@1::multipart_field"]), quote(builder.numberIDs["can.std.http@1::multipart_file"]))
 	fmt.Fprintf(&builder.out, "$canHTTPResponses=$canCreateHTTPResponses($canDomain,{invalid:%s,invalidData:%s,close:%s,writeFailed:%s,limit:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_request"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), quote(builder.numberIDs["can.std.stream@1::close_failed"]), quote(builder.numberIDs["can.std.stream@1::write_failed"]), quote(builder.numberIDs["can.std.http@1::body_limit"]))
 	fmt.Fprintf(&builder.out, "$canRouter=$canCreateRouter($canDomain,{invalid:%s,duplicate:%s,ambiguous:%s});\n", quote(builder.numberIDs["can.std.http@1::invalid_route"]), quote(builder.numberIDs["can.std.http@1::duplicate_route"]), quote(builder.numberIDs["can.std.http@1::ambiguous_route"]))
-	fmt.Fprintf(&builder.out, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s},$canAssets);\n", quote(builder.numberIDs["can.std.http@1::invalid_server_config"]), quote(builder.numberIDs["can.std.http@1::bind_failed"]), quote(builder.numberIDs["can.std.http@1::shutdown_failed"]))
+	if !builder.assembly.browser {
+		fmt.Fprintf(&builder.out, "$canServer=$canCreateServer($canDomain,{invalidConfig:%s,bindFailed:%s,shutdownFailed:%s},$canAssets);\n", quote(builder.numberIDs["can.std.http@1::invalid_server_config"]), quote(builder.numberIDs["can.std.http@1::bind_failed"]), quote(builder.numberIDs["can.std.http@1::shutdown_failed"]))
+	}
 	fmt.Fprintf(&builder.out, "$canClock=$canCreateClock($canDomain,%s);\n$canRandom=$canCreateRandom($canDomain,%s);\n$canLog=$canCreateLog($canDomain,%s);\n", quote(builder.numberIDs["can.std.clock@1::invalid_duration"]), quote(builder.numberIDs["can.std.random@1::invalid_length"]), quote(builder.numberIDs["can.std.log@1::write_failed"]))
-	fmt.Fprintf(&builder.out, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(builder.numberIDs["can.std.io@1::read_failed"]), quote(builder.numberIDs["can.std.io@1::limit_exceeded"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), builder.optionType, quote(builder.numberIDs["can.std.env@1::invalid_name"]), quote(builder.numberIDs["can.std.http@1::credentials_missing"]), quote(builder.optionIDs["can.std.option@1::some"]), quote(builder.optionIDs["can.std.option@1::none"]))
+	if !builder.assembly.browser {
+		fmt.Fprintf(&builder.out, "$canIO=$canCreateIO($canDomain,{readFailed:%s,limit:%s,invalidData:%s});\n$canEnv=$canCreateEnv<%s>($canDomain,{invalidName:%s,missing:%s,some:%s,none:%s},$canOriginalEnvironment);\n", quote(builder.numberIDs["can.std.io@1::read_failed"]), quote(builder.numberIDs["can.std.io@1::limit_exceeded"]), quote(builder.numberIDs["can.std.codec@1::invalid_data"]), builder.optionType, quote(builder.numberIDs["can.std.env@1::invalid_name"]), quote(builder.numberIDs["can.std.http@1::credentials_missing"]), quote(builder.optionIDs["can.std.option@1::some"]), quote(builder.optionIDs["can.std.option@1::none"]))
+	}
 	fmt.Fprintf(&builder.out, "$canNumbers = $canCreateNumbers($canDomain, {inexact:%s,invalidNumber:%s,invalidTextBool:%s,invalidIntBool:%s});\n", quote(builder.numberIDs["can.std.number@1::inexact"]), quote(builder.numberIDs["can.std.text@1::invalid_number"]), quote(builder.numberIDs["can.std.text@1::invalid_bool"]), quote(builder.numberIDs["can.std.number@1::invalid_bool"]))
 	fmt.Fprintf(&builder.out, "$canChecks = $canCreateChecks($canDomain, {failed:%s});\n", quote(builder.numberIDs["can.std.checks@1::failed"]))
 	fmt.Fprintf(&builder.out, "$canAmounts = $canCreateExactAmounts($canDomain, {zeroDivisor:%s,division:%s,rounded:%s});\n", quote(builder.numberIDs["can.std.number@1::zero_divisor"]), quote(builder.numberIDs["can.std.number@1::division"]), quote(builder.numberIDs["can.std.number@1::rounded"]))
@@ -325,14 +367,22 @@ func (builder *stateBuilder) emitSpecializationConstants() error {
 		}
 		fmt.Fprintf(&builder.out, "export const %s = Object.freeze({%s});\n", builder.assembly.httpNames[id], shape)
 	}
+	if builder.assembly.browser {
+		return nil
+	}
 	return builder.emitSQLSpecializationConstants()
 }
 
 // stateImports lists the factory modules the shared state module needs, in
 // the fixed order the initializer depends on.
 func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
+	browser := builder.assembly.browser
 	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	if browser {
+		imports = append(imports, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	} else {
+		imports = append(imports, ModuleImport{Target: runtime + "/platform/cli.ts", Names: []ImportName{{"createCLI", "$canCreateCLI"}}}, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
+	}
 	imports = append(imports, builder.assembly.collectionStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/text.ts", Names: []ImportName{{"createText", "$canCreateText"}, {"isTextRegexValue", "$canIsTextRegex"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/number.ts", Names: []ImportName{{"createNumbers", "$canCreateNumbers"}, {"createExactAmounts", "$canCreateExactAmounts"}}})
@@ -341,22 +391,30 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/clock.ts", Names: []ImportName{{"createClock", "$canCreateClock"}}}, ModuleImport{Target: runtime + "/platform/random.ts", Names: []ImportName{{"createRandom", "$canCreateRandom"}}}, ModuleImport{Target: runtime + "/platform/log.ts", Names: []ImportName{{"createLog", "$canCreateLog"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/html.ts", Names: []ImportName{{"createHTML", "$canCreateHTML"}, {"isHTMLValue", "$canIsHTML"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/assets.ts", Names: []ImportName{{"createAssets", "$canCreateAssets"}}})
-	imports = append(imports, builder.assembly.sqlStateImports(runtime)...)
-	imports = append(imports, builder.assembly.cryptoStateImports(runtime)...)
+	if !browser {
+		imports = append(imports, builder.assembly.sqlStateImports(runtime)...)
+		imports = append(imports, builder.assembly.cryptoStateImports(runtime)...)
+	}
 	imports = append(imports, builder.assembly.utilitiesStateImports(runtime)...)
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/http.ts", Names: []ImportName{{"createRequests", "$canCreateRequests"}, {"createResponses", "$canCreateHTTPResponses"}, {"isHTTPValue", "$canIsHTTP"}}})
 	imports = append(imports, ModuleImport{Target: runtime + "/platform/router.ts", Names: []ImportName{{"createRouter", "$canCreateRouter"}, {"isRouterValue", "$canIsRouter"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
-	imports = append(imports, builder.assembly.fileStateImports(runtime)...)
-	imports = append(imports, builder.assembly.processStateImports(runtime)...)
-	imports = append(imports, builder.assembly.streamStateImports(runtime)...)
-	imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
+	if !browser {
+		imports = append(imports, ModuleImport{Target: runtime + "/platform/server.ts", Names: []ImportName{{"createServer", "$canCreateServer"}, {"isServerValue", "$canIsServer"}}})
+		imports = append(imports, builder.assembly.fileStateImports(runtime)...)
+		imports = append(imports, builder.assembly.processStateImports(runtime)...)
+		imports = append(imports, builder.assembly.streamStateImports(runtime)...)
+		imports = append(imports, builder.assembly.websocketStateImports(runtime)...)
+	}
 	imports = append(imports, builder.assembly.cookiesStateImports(runtime)...)
-	imports = append(imports, builder.assembly.s3StateImports(runtime)...)
+	if !browser {
+		imports = append(imports, builder.assembly.s3StateImports(runtime)...)
+	}
 	imports = append(imports, builder.assembly.markdownStateImports(runtime)...)
-	imports = append(imports, builder.assembly.aiStateImports(runtime)...)
-	imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
-	imports = append(imports, builder.assembly.armDescriptionImports()...)
+	if !browser {
+		imports = append(imports, builder.assembly.aiStateImports(runtime)...)
+		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
+		imports = append(imports, builder.assembly.armDescriptionImports()...)
+	}
 	return imports
 }
 

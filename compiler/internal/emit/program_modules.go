@@ -141,9 +141,15 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 // for one authored output module.
 func authoredModuleImports(assembly *programAssembly, runtime, path string) []ModuleImport {
 	program := assembly.program
-	imports := append(programImports(runtime), ModuleImport{Target: programStatePath, Names: stateValueImportNames()})
-	imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
-	imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
+	values := stateValueImportNames()
+	if assembly.browser {
+		values = browserStateValueImportNames()
+	}
+	imports := append(programImports(runtime), ModuleImport{Target: programStatePath, Names: values})
+	if !assembly.browser {
+		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
+		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
+	}
 	if assembly.fetches {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{"$canFetch", "$canFetch"}}})
 	}

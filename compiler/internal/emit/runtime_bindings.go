@@ -37,11 +37,13 @@ func combineBindingContributions(contributions ...bindingContribution) (map[stri
 
 // programAssembly holds every computed name/binding table shared by the state,
 // authored-module and entry emitters. It carries no source semantics; the
-// checker owns those.
+// checker owns those. The browser flag selects the trimmed browser profile;
+// the Bun profile is byte-identical with it unset.
 type programAssembly struct {
 	program   *check.Program
 	functions map[string]string
 	bindings  map[string]string
+	browser   bool
 
 	httpIDs    []string
 	httpNames  map[string]string
