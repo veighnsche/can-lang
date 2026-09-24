@@ -1,0 +1,770 @@
+package web
+    provides [save_invoice, save_invoice_form, load_invoice, invoice_routes, health, boot, main]
+    uses [records, model, bytes, clock, codec, env, form, html, http, io, option, sql, text]
+
+action save_invoice
+    post "/invoices/save"
+    body json records::invoice_json_wire
+    handles save_json_validated
+    result records::save_outcome
+    cases
+        records::saved => 200
+        records::rejected => 422
+        records::stale => 409
+        records::denied => 403
+        records::busy => 503
+
+action save_invoice_form
+    post "/invoices/save-form"
+    body form records::invoice_form_wire
+    handles save_form_validated
+    result records::save_outcome
+    cases
+        records::saved => 200
+        records::rejected => 422
+        records::stale => 409
+        records::denied => 403
+        records::busy => 503
+
+action load_invoice
+    get "/invoices/{invoice_id}"
+    captures
+        str invoice_id
+    handles model::load_validated
+    result records::load_outcome
+    cases
+        records::found => 200
+        records::load_denied => 403
+        records::load_busy => 503
+
+/// Handle one JSON save: validate before any store touch, then run
+/// the protected transaction on a per-request pool and close it on
+/// every path. Served action handlers take only the wire body, so
+/// the pool opens here from INVOICE_DB and the session token arrives
+/// in the body (the JSON route overwrites it from the authoritative
+/// session cookie before calling). An uncertain commit reconciles
+/// through the ledger; a failed close reads busy because the
+/// identical retry replays safely.
+fn records::save_outcome save_json_validated
+    emits []
+    given
+        records::invoice_json_wire body
+    asserts
+        json_saved: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::saved("inv-1", 2)
+        json_rejected: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::rejected("empty customer")
+        json_denied: records::invoice_json_wire("tok-ghost", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::denied("inv-1")
+        json_tx_down: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::busy("inv-1")
+        json_conn_down: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::busy("inv-1")
+        json_uncertain_replay: records::invoice_json_wire("tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::saved("inv-1", 2)
+        json_env_down: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::busy("inv-1")
+        json_close_down: records::invoice_json_wire("tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::busy("inv-1")
+    match call model::check_json_save(body)
+        ok records::save_check checked => match checked
+            records::flawed_save => ok records::rejected(checked.reason)
+            records::checked_save => match call clock::wall_millis()
+                when
+                    json_saved: => ok 2000
+                    json_denied: => ok 2000
+                    json_tx_down: => ok 2000
+                    json_conn_down: => ok 2000
+                    json_uncertain_replay: => ok 2000
+                    json_env_down: => ok 2000
+                    json_close_down: => ok 2000
+                    post_saved: => ok 2000
+                    post_no_cookie: => ok 2000
+                ok int now => match call env::required("INVOICE_DB")
+                    when
+                        json_saved: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        json_denied: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        json_tx_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        json_conn_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        json_uncertain_replay: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        json_env_down: "INVOICE_DB" => http::credentials_missing("INVOICE_DB")
+                        json_close_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        post_saved: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        post_no_cookie: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                    env::invalid_name => ok records::busy(body.invoice_id)
+                    http::credentials_missing => ok records::busy(body.invoice_id)
+                    ok str db => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
+                        when
+                            json_saved: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            json_denied: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            json_tx_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            json_conn_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            json_uncertain_replay: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            json_close_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            post_saved: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            post_no_cookie: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                        sql::connection_failed => ok records::busy(body.invoice_id)
+                        ok sql::pool pool => do
+                            str session_token = body.session_token
+                            str operation_id = body.operation_id
+                            str invoice_id = body.invoice_id
+                            int revision = checked.revision
+                            str customer = checked.customer
+                            records::line_draft[] drafts = checked.lines
+                            str digest = call model::digest_of(body.invoice_id, checked.revision, checked.customer, checked.lines)
+                            int now_ms = now
+                            match call sql::with_transaction<records::save_outcome>(pool, callable model::decide_save)
+                                when
+                                    json_saved: pool, callable model::decide_save => ok records::saved("inv-1", 2)
+                                    json_denied: pool, callable model::decide_save => ok records::denied("inv-1")
+                                    json_tx_down: pool, callable model::decide_save => sql::transaction_failed("commit")
+                                    json_conn_down: pool, callable model::decide_save => sql::connection_failed("begin")
+                                    json_uncertain_replay: pool, callable model::decide_save => sql::commit_unknown("tx-1")
+                                    json_close_down: pool, callable model::decide_save => ok records::saved("inv-1", 2)
+                                    post_saved: pool, callable model::decide_save => ok records::saved("inv-1", 2)
+                                    post_no_cookie: pool, callable model::decide_save => ok records::denied("inv-1")
+                                sql::connection_failed => match call sql::pool_close(pool, 1000)
+                                    when
+                                        json_conn_down: pool, 1000 => ok
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok records::busy(body.invoice_id)
+                                sql::transaction_failed => match call sql::pool_close(pool, 1000)
+                                    when
+                                        json_tx_down: pool, 1000 => ok
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok records::busy(body.invoice_id)
+                                sql::commit_unknown => match call reconcile_save(body.session_token, body.invoice_id, body.operation_id, call model::digest_of(body.invoice_id, checked.revision, checked.customer, checked.lines), pool)
+                                    ok records::save_outcome settled => match call sql::pool_close(pool, 1000)
+                                        when
+                                            json_uncertain_replay: pool, 1000 => ok
+                                        sql::close_failed => ok records::busy(body.invoice_id)
+                                        ok => ok settled
+                                ok records::save_outcome outcome => match call sql::pool_close(pool, 1000)
+                                    when
+                                        json_saved: pool, 1000 => ok
+                                        json_denied: pool, 1000 => ok
+                                        json_close_down: pool, 1000 => sql::close_failed("close")
+                                        post_saved: pool, 1000 => ok
+                                        post_no_cookie: pool, 1000 => ok
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok outcome
+
+/// Handle one form save: the same protected transaction as the JSON
+/// handler over parsed form content. The form wire carries the
+/// session token as a field because the form adapter invokes the
+/// handler with the decoded body alone.
+fn records::save_outcome save_form_validated
+    emits []
+    given
+        records::invoice_form_wire body
+    asserts
+        form_saved: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::saved("inv-1", 2)
+        form_rejected: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::rejected("empty customer")
+        form_denied: records::invoice_form_wire("tok-ghost", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::denied("inv-1")
+        form_tx_down: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::busy("inv-1")
+        form_conn_down: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::busy("inv-1")
+        form_uncertain_replay: records::invoice_form_wire("tok-alice", "op-7", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::saved("inv-1", 2)
+        form_env_down: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::busy("inv-1")
+        form_close_down: records::invoice_form_wire("tok-alice", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::busy("inv-1")
+    match call model::check_form_save(body)
+        ok records::save_check checked => match checked
+            records::flawed_save => ok records::rejected(checked.reason)
+            records::checked_save => match call clock::wall_millis()
+                when
+                    form_saved: => ok 2000
+                    form_denied: => ok 2000
+                    form_tx_down: => ok 2000
+                    form_conn_down: => ok 2000
+                    form_uncertain_replay: => ok 2000
+                    form_env_down: => ok 2000
+                    form_close_down: => ok 2000
+                ok int now => match call env::required("INVOICE_DB")
+                    when
+                        form_saved: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        form_denied: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        form_tx_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        form_conn_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        form_uncertain_replay: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                        form_env_down: "INVOICE_DB" => http::credentials_missing("INVOICE_DB")
+                        form_close_down: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                    env::invalid_name => ok records::busy(body.invoice_id)
+                    http::credentials_missing => ok records::busy(body.invoice_id)
+                    ok str db => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
+                        when
+                            form_saved: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            form_denied: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            form_tx_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            form_conn_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            form_uncertain_replay: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                            form_close_down: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                        sql::connection_failed => ok records::busy(body.invoice_id)
+                        ok sql::pool pool => do
+                            str session_token = body.session_token
+                            str operation_id = body.operation_id
+                            str invoice_id = body.invoice_id
+                            int revision = checked.revision
+                            str customer = checked.customer
+                            records::line_draft[] drafts = checked.lines
+                            str digest = call model::digest_of(body.invoice_id, checked.revision, checked.customer, checked.lines)
+                            int now_ms = now
+                            match call sql::with_transaction<records::save_outcome>(pool, callable model::decide_save)
+                                when
+                                    form_saved: pool, callable model::decide_save => ok records::saved("inv-1", 2)
+                                    form_denied: pool, callable model::decide_save => ok records::denied("inv-1")
+                                    form_tx_down: pool, callable model::decide_save => sql::transaction_failed("commit")
+                                    form_conn_down: pool, callable model::decide_save => sql::connection_failed("begin")
+                                    form_uncertain_replay: pool, callable model::decide_save => sql::commit_unknown("tx-1")
+                                    form_close_down: pool, callable model::decide_save => ok records::saved("inv-1", 2)
+                                sql::connection_failed => match call sql::pool_close(pool, 1000)
+                                    when
+                                        form_conn_down: pool, 1000 => ok
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok records::busy(body.invoice_id)
+                                sql::transaction_failed => match call sql::pool_close(pool, 1000)
+                                    when
+                                        form_tx_down: pool, 1000 => ok
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok records::busy(body.invoice_id)
+                                sql::commit_unknown => match call reconcile_save(body.session_token, body.invoice_id, body.operation_id, call model::digest_of(body.invoice_id, checked.revision, checked.customer, checked.lines), pool)
+                                    ok records::save_outcome settled => match call sql::pool_close(pool, 1000)
+                                        when
+                                            form_uncertain_replay: pool, 1000 => ok
+                                        sql::close_failed => ok records::busy(body.invoice_id)
+                                        ok => ok settled
+                                ok records::save_outcome outcome => match call sql::pool_close(pool, 1000)
+                                    when
+                                        form_saved: pool, 1000 => ok
+                                        form_denied: pool, 1000 => ok
+                                        form_close_down: pool, 1000 => sql::close_failed("close")
+                                    sql::close_failed => ok records::busy(body.invoice_id)
+                                    ok => ok outcome
+
+/// Reconcile one uncertain save commit: reread the actor-scoped
+/// ledger outside the lost transaction. A stored row replays the
+/// saved outcome or conflicts by digest; a missing row reads busy
+/// and the identical retry either records or replays the save.
+/// A revoked or vanished session denies: without the actor the
+/// caller cannot prove the operation is theirs.
+fn records::save_outcome reconcile_save
+    emits []
+    given
+        str session_token
+        str invoice_id
+        str operation_id
+        str digest
+        sql::pool pool
+    asserts
+        rec_replay: "tok-alice", "inv-1", "op-7", "d1" => ok records::saved("inv-1", 2)
+        rec_conflict: "tok-alice", "inv-1", "op-7", "d9" => ok records::stale("inv-1", 2)
+        rec_missing: "tok-alice", "inv-1", "op-9", "dx" => ok records::busy("inv-1")
+        rec_denied: "tok-ghost", "inv-1", "op-7", "dx" => ok records::denied("inv-1")
+        rec_lookup_down: "tok-alice", "inv-1", "op-7", "dx" => ok records::busy("inv-1")
+        json_uncertain_replay: "tok-alice", "inv-1", "op-7", "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c" => ok records::saved("inv-1", 2)
+        form_uncertain_replay: "tok-alice", "inv-1", "op-7", "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c" => ok records::saved("inv-1", 2)
+    match call sql::query_optional<records::session_key, records::session_row>(pool, "session_by_token", records::session_key(session_token))
+        when
+            rec_replay: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_conflict: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_missing: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_denied: pool, "session_by_token", records::session_key("tok-ghost") => ok option::none()
+            rec_lookup_down: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            json_uncertain_replay: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            form_uncertain_replay: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+        sql::unsupported_value => ok records::busy(invoice_id)
+        sql::connection_failed => ok records::busy(invoice_id)
+        sql::query_failed => ok records::busy(invoice_id)
+        sql::constraint_failed => ok records::busy(invoice_id)
+        sql::row_count => ok records::busy(invoice_id)
+        sql::schema_mismatch => ok records::busy(invoice_id)
+        ok option::value<records::session_row> session => match session
+            option::none => ok records::denied(invoice_id)
+            option::some => match session.value.revoked_ms is 0
+                false => ok records::denied(invoice_id)
+                true => match call sql::query_optional<records::replay_key, records::replay_row>(pool, "replay_lookup", records::replay_key(session.value.actor, invoice_id, operation_id))
+                    when
+                        rec_replay: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                        rec_conflict: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                        rec_missing: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-9") => ok option::none()
+                        rec_lookup_down: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => sql::query_failed("replay_lookup", "SQLITE_IOERR")
+                        json_uncertain_replay: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c", 2, 1500))
+                        form_uncertain_replay: pool, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c", 2, 1500))
+                    sql::unsupported_value => ok records::busy(invoice_id)
+                    sql::connection_failed => ok records::busy(invoice_id)
+                    sql::query_failed => ok records::busy(invoice_id)
+                    sql::constraint_failed => ok records::busy(invoice_id)
+                    sql::row_count => ok records::busy(invoice_id)
+                    sql::schema_mismatch => ok records::busy(invoice_id)
+                    ok option::value<records::replay_row> prior => match prior
+                        option::none => ok records::busy(invoice_id)
+                        option::some => match prior.value.digest is digest
+                            false => match call sql::query_optional<records::invoice_key, records::invoice_row>(pool, "invoice_by_id", records::invoice_key(invoice_id))
+                                when
+                                    rec_conflict: pool, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
+                                sql::unsupported_value => ok records::busy(invoice_id)
+                                sql::connection_failed => ok records::busy(invoice_id)
+                                sql::query_failed => ok records::busy(invoice_id)
+                                sql::constraint_failed => ok records::busy(invoice_id)
+                                sql::row_count => ok records::busy(invoice_id)
+                                sql::schema_mismatch => ok records::busy(invoice_id)
+                                ok option::value<records::invoice_row> current => match current
+                                    option::none => ok records::denied(invoice_id)
+                                    option::some => ok records::stale(invoice_id, current.value.revision)
+                            true => ok records::saved(invoice_id, prior.value.revision)
+
+/// Load one invoice for a session token on the serving pool: the
+/// transaction decides, transport failures read busy, and an
+/// uncertain read reads busy because the GET retry is always safe.
+fn records::load_outcome load_for_session
+    emits []
+    given
+        sql::pool pool
+        str session_token
+        str invoice_id
+    asserts
+        load_ok: "tok-alice", "inv-1" => ok records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)])
+        load_route_denied: "tok-ghost", "inv-1" => ok records::load_denied("inv-1")
+        load_tx_down: "tok-alice", "inv-1" => ok records::load_busy("inv-1")
+        load_uncertain: "tok-alice", "inv-1" => ok records::load_busy("inv-1")
+    match call sql::with_transaction<records::load_outcome>(pool, callable model::decide_load)
+        when
+            load_ok: pool, callable model::decide_load => ok records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)])
+            load_route_denied: pool, callable model::decide_load => ok records::load_denied("inv-1")
+            load_tx_down: pool, callable model::decide_load => sql::transaction_failed("commit")
+            load_uncertain: pool, callable model::decide_load => sql::commit_unknown("tx-1")
+            get_found: pool, callable model::decide_load => ok records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)])
+            get_no_cookie: pool, callable model::decide_load => ok records::load_denied("inv-1")
+        sql::connection_failed => ok records::load_busy(invoice_id)
+        sql::transaction_failed => ok records::load_busy(invoice_id)
+        sql::commit_unknown => ok records::load_busy(invoice_id)
+        ok records::load_outcome outcome => ok outcome
+
+/// Answer one fixed transport failure as plain text, carrying no
+/// wire detail past the status line.
+fn http::server_response fixed_at
+    emits []
+    given
+        int code
+        str text
+    asserts
+        bad_request: 400, "Bad Request" => ok
+        too_large: 413, "Payload Too Large" => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => ok call http::response_text(status, call http::empty_server_headers(), text)
+
+/// Answer one save outcome at an explicit status with its typed JSON
+/// wire value. An inadmissible status or an unencodable body falls
+/// back to a 500 text answer.
+fn http::server_response outcome_at
+    emits []
+    given
+        int code
+        records::save_outcome value
+    asserts
+        sample: 200, records::saved("inv-1", 2) => ok
+        bad_status: 99, records::saved("inv-1", 2) => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => match call http::response_json<records::save_outcome>(status, call http::empty_server_headers(), value)
+            codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok http::server_response done => ok done
+
+/// Answer one load outcome at an explicit status with its typed JSON
+/// wire value.
+fn http::server_response load_at
+    emits []
+    given
+        int code
+        records::load_outcome value
+    asserts
+        sample: 200, records::found("inv-1", 1, "Acme", []) => ok
+        bad_status: 99, records::found("inv-1", 1, "Acme", []) => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => match call http::response_json<records::load_outcome>(status, call http::empty_server_headers(), value)
+            codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok http::server_response done => ok done
+
+/// Map the five save cases to their declared finite statuses.
+fn http::server_response apply_save_outcome
+    emits []
+    given
+        records::save_outcome outcome
+    asserts
+        saved: records::saved("inv-1", 2) => ok
+        rejected: records::rejected("empty customer") => ok
+        stale: records::stale("inv-1", 2) => ok
+        denied: records::denied("inv-1") => ok
+        busy: records::busy("inv-1") => ok
+    match outcome
+        records::saved => ok call outcome_at(200, outcome)
+        records::rejected => ok call outcome_at(422, outcome)
+        records::stale => ok call outcome_at(409, outcome)
+        records::denied => ok call outcome_at(403, outcome)
+        records::busy => ok call outcome_at(503, outcome)
+
+/// Map the three load cases to their declared finite statuses.
+fn http::server_response apply_load_outcome
+    emits []
+    given
+        records::load_outcome outcome
+    asserts
+        found: records::found("inv-1", 1, "Acme", []) => ok
+        denied: records::load_denied("inv-1") => ok
+        busy: records::load_busy("inv-1") => ok
+    match outcome
+        records::found => ok call load_at(200, outcome)
+        records::load_denied => ok call load_at(403, outcome)
+        records::load_busy => ok call load_at(503, outcome)
+
+/// Gate one request media value for the JSON save: exact
+/// application/json with no parameters, or with an explicit
+/// utf-8 charset. Anything else never reaches the decoder.
+fn bool json_media_ok
+    emits []
+    given
+        str media
+    asserts
+        plain: "application/json" => ok true
+        charset: "application/json; charset=utf-8" => ok true
+        html: "text/html" => ok false
+        empty: "" => ok false
+    match media is "application/json"
+        false => match media is "application/json; charset=utf-8"
+            false => ok false
+            true => ok true
+        true => ok true
+
+/// Serve one JSON save: bound the body, gate the media type, decode
+/// the wire, overwrite the session token from the authoritative
+/// session cookie, then run the declared handler and answer its
+/// finite case. Transport failures answer fixed 400/413 before the
+/// protected entry; every domain outcome answers its case status.
+fn http::server_response json_save_route
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+    asserts
+        over_limit: => ok
+        bad_media: => ok
+        invalid_body: => ok
+        post_saved: => ok
+        post_no_cookie: => ok
+    match call http::request_body(req, 8192)
+        when
+            over_limit: req, 8192 => http::body_limit(8192)
+            bad_media: req, 8192 => ok call bytes::empty()
+            invalid_body: req, 8192 => ok call bytes::empty()
+            post_saved: req, 8192 => ok call bytes::empty()
+            post_no_cookie: req, 8192 => ok call bytes::empty()
+        http::body_limit => ok call fixed_at(413, "Payload Too Large")
+        ok bytes::buffer raw => match call http::request_headers(req)
+            when
+                bad_media: req => ok [http::header("content-type", "text/html"), http::header("cookie", "session=tok-alice")]
+                invalid_body: req => ok [http::header("content-type", "application/json"), http::header("cookie", "session=tok-alice")]
+                post_saved: req => ok [http::header("content-type", "application/json"), http::header("cookie", "session=tok-alice")]
+                post_no_cookie: req => ok [http::header("content-type", "application/json")]
+            ok http::header[] headers => match call model::find_header(headers, "content-type")
+                ok option::value<str> media => match media
+                    option::none => ok call fixed_at(400, "Bad Request")
+                    option::some => match call json_media_ok(media.value)
+                        ok bool gated => match gated
+                            false => ok call fixed_at(400, "Bad Request")
+                            true => match call codec::decode_json<records::invoice_json_wire>(raw)
+                                when
+                                    post_saved: raw => ok records::invoice_json_wire("stale", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)])
+                                    post_no_cookie: raw => ok records::invoice_json_wire("stale", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)])
+                                codec::invalid_data => ok call fixed_at(400, "Bad Request")
+                                ok records::invoice_json_wire wire => match call model::session_of(headers)
+                                    ok option::value<str> session => match session
+                                        option::none => match call save_json_validated(wire with session_token = "")
+                                            ok records::save_outcome outcome => ok call apply_save_outcome(outcome)
+                                        option::some => match call save_json_validated(wire with session_token = session.value)
+                                            ok records::save_outcome outcome => ok call apply_save_outcome(outcome)
+
+/// Serve one invoice load: reject any request body, read the invoice
+/// id from its single query value, resolve the session cookie, then
+/// run the protected read and answer its finite case.
+fn http::server_response load_route
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+    asserts
+        get_over_limit: => ok
+        get_bad_query: => ok
+        get_found: => ok
+        get_no_cookie: => ok
+    match call http::request_body(req, 8192)
+        when
+            get_over_limit: req, 8192 => http::body_limit(8192)
+            get_bad_query: req, 8192 => ok call bytes::empty()
+            get_found: req, 8192 => ok call bytes::empty()
+            get_no_cookie: req, 8192 => ok call bytes::empty()
+        http::body_limit => ok call fixed_at(413, "Payload Too Large")
+        ok bytes::buffer raw => match call bytes::to_ints(raw)
+            ok int[] units => match units.length is 0
+                false => ok call fixed_at(400, "Bad Request")
+                true => match call http::query_one(req, "invoice_id")
+                    when
+                        get_bad_query: req, "invoice_id" => http::invalid_request("query")
+                        get_found: req, "invoice_id" => ok "inv-1"
+                        get_no_cookie: req, "invoice_id" => ok "inv-1"
+                    http::invalid_request => ok call fixed_at(400, "Bad Request")
+                    ok str invoice_id => match call http::request_headers(req)
+                        when
+                            get_found: req => ok [http::header("cookie", "session=tok-alice")]
+                            get_no_cookie: req => ok [http::header("x-t", "1")]
+                        ok http::header[] headers => match call model::session_of(headers)
+                            ok option::value<str> session => match session
+                                option::none => match call load_for_session(pool, "", invoice_id)
+                                    ok records::load_outcome outcome => ok call apply_load_outcome(outcome)
+                                option::some => match call load_for_session(pool, session.value, invoice_id)
+                                    ok records::load_outcome outcome => ok call apply_load_outcome(outcome)
+
+/// Answer readiness for the operator and the test harness.
+fn http::server_response health
+    emits []
+    given
+        http::request req
+    asserts
+        sample: => ok
+    ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "ok")
+
+/// Render one save outcome as a status fragment. Every value enters
+/// through the escaping text constructor; the stale arm reports the
+/// current revision so the writer can reread.
+fn html::safe outcome_fragment
+    emits [html::invalid_structure]
+    given
+        records::save_outcome outcome
+    asserts
+        saved: records::saved("inv-1", 2) => ok
+        rejected: records::rejected("empty customer") => ok
+        stale: records::stale("inv-1", 2) => ok
+        denied: records::denied("inv-1") => ok
+        busy: records::busy("inv-1") => ok
+        hostile: records::rejected("<script>bad()</script>") => ok
+    match outcome
+        records::saved => match chain
+            call html::text("saved " + outcome.invoice_id + " revision " + call text::from_int(outcome.revision)) as html::node words
+            call html::make_tag("p") as html::tag paragraph
+            call html::text_attribute("class", "save-saved") as html::attribute style
+            call html::element(paragraph, [style], [words]) as html::node line
+            call html::fragment([line]) as html::safe body
+            html::invalid_structure
+            ok => ok body
+        records::rejected => match chain
+            call html::text("rejected: " + outcome.reason) as html::node words
+            call html::make_tag("p") as html::tag paragraph
+            call html::text_attribute("class", "save-rejected") as html::attribute style
+            call html::element(paragraph, [style], [words]) as html::node line
+            call html::fragment([line]) as html::safe body
+            html::invalid_structure
+            ok => ok body
+        records::stale => match chain
+            call html::text("stale " + outcome.invoice_id + " revision " + call text::from_int(outcome.revision)) as html::node words
+            call html::make_tag("p") as html::tag paragraph
+            call html::text_attribute("class", "save-stale") as html::attribute style
+            call html::element(paragraph, [style], [words]) as html::node line
+            call html::fragment([line]) as html::safe body
+            html::invalid_structure
+            ok => ok body
+        records::denied => match chain
+            call html::text("denied " + outcome.invoice_id) as html::node words
+            call html::make_tag("p") as html::tag paragraph
+            call html::text_attribute("class", "save-denied") as html::attribute style
+            call html::element(paragraph, [style], [words]) as html::node line
+            call html::fragment([line]) as html::safe body
+            html::invalid_structure
+            ok => ok body
+        records::busy => match chain
+            call html::text("busy " + outcome.invoice_id) as html::node words
+            call html::make_tag("p") as html::tag paragraph
+            call html::text_attribute("class", "save-busy") as html::attribute style
+            call html::element(paragraph, [style], [words]) as html::node line
+            call html::fragment([line]) as html::safe body
+            html::invalid_structure
+            ok => ok body
+
+/// Render one save outcome for the form adapter. Structure failures
+/// fall back to a fixed fragment so the renderer stays total.
+fn html::safe render_save_outcome
+    emits []
+    given
+        records::save_outcome outcome
+    asserts
+        saved: records::saved("inv-1", 2) => ok
+        rejected: records::rejected("empty customer") => ok
+        stale: records::stale("inv-1", 2) => ok
+        denied: records::denied("inv-1") => ok
+        busy: records::busy("inv-1") => ok
+        hostile: records::rejected("<script>bad()</script>") => ok
+    match call outcome_fragment(outcome)
+        html::invalid_structure => ok call html::text_fragment("invoice save")
+        ok html::safe done => ok done
+
+/// Render one retained raw form entry as a list item, echoing the
+/// submitted name and value verbatim through escaping.
+fn html::node raw_entry_item
+    emits [html::invalid_structure]
+    given
+        form::raw_entry entry
+    asserts
+        sample: form::raw_entry("customer", "Acme") => ok
+        hostile: form::raw_entry("customer", "</li><script>bad()</script>") => ok
+    match chain
+        call html::text(entry.name + "=" + entry.value) as html::node words
+        call html::make_tag("li") as html::tag item_tag
+        call html::element(item_tag, [], [words]) as html::node item
+        html::invalid_structure
+        ok => ok item
+
+/// Render one structural issue as a list item naming the wire field
+/// and its finite violation reason.
+fn html::node issue_item
+    emits [html::invalid_structure]
+    given
+        form::issue issue
+    asserts
+        sample: form::issue("lines", "form_missing") => ok
+    match chain
+        call html::text(issue.name + ": " + issue.reason) as html::node words
+        call html::make_tag("li") as html::tag item_tag
+        call html::element(item_tag, [], [words]) as html::node item
+        html::invalid_structure
+        ok => ok item
+
+/// Render one structurally rejected form: the heading plus the
+/// retained raw entries and the issue list in document order.
+fn html::safe rejected_fragment
+    emits [html::invalid_structure]
+    given
+        form::rejected<records::invoice_form_wire> bad
+    asserts
+        sample: form::rejected<records::invoice_form_wire>([form::raw_entry("customer", "Acme")], [form::issue("lines", "form_missing")]) => ok
+        hostile: form::rejected<records::invoice_form_wire>([form::raw_entry("customer", "</li><script>bad()</script>")], [form::issue("lines", "form_missing")]) => ok
+    match call bad.raw.map(callable raw_entry_item)
+        html::invalid_structure
+        ok html::node[] raw => match call bad.issues.map(callable issue_item)
+            html::invalid_structure
+            ok html::node[] problems => match chain
+                call html::text("invoice form rejected") as html::node heading_text
+                call html::make_tag("p") as html::tag paragraph
+                call html::element(paragraph, [], [heading_text]) as html::node heading
+                call html::make_tag("ul") as html::tag list_tag
+                call html::text_attribute("class", "form-raw") as html::attribute raw_style
+                call html::element(list_tag, [raw_style], raw) as html::node raw_list
+                call html::text_attribute("class", "form-issues") as html::attribute issue_style
+                call html::element(list_tag, [issue_style], problems) as html::node issue_list
+                call html::fragment([heading, raw_list, issue_list]) as html::safe body
+                html::invalid_structure
+                ok => ok body
+
+/// Render one structural rejection for the form adapter at 422.
+fn html::safe render_save_rejected
+    emits []
+    given
+        form::rejected<records::invoice_form_wire> bad
+    asserts
+        sample: form::rejected<records::invoice_form_wire>([form::raw_entry("customer", "Acme")], [form::issue("lines", "form_missing")]) => ok
+        hostile: form::rejected<records::invoice_form_wire>([form::raw_entry("customer", "</li><script>bad()</script>")], [form::issue("lines", "form_missing")]) => ok
+    match call rejected_fragment(bad)
+        html::invalid_structure => ok call html::text_fragment("invoice form rejected")
+        ok html::safe done => ok done
+
+/// Mount the invoice callbacks, capturing the serving pool. The form
+/// action serves through the checked adapter; JSON save and load
+/// serve through thin exact-path routes until the action adapter
+/// mounts JSON bodies and captured paths with request context.
+fn http::router invoice_routes
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    given
+        near sql::pool pool
+    asserts
+        sample: => ok
+    match chain
+        call http::serve_form_action<records::save_outcome, records::invoice_form_wire>("save_invoice_form", callable render_save_outcome, callable render_save_rejected) as http::route form
+        call http::route_post("/invoices/save", callable json_save_route) as http::route save
+        call http::route_get("/invoices/load", callable load_route) as http::route load
+        call http::route_get("/health", callable health) as http::route probe
+        call http::make_router([form, save, load, probe]) as http::router built
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok built
+
+/// Open the invoice database and start the invoice server. The pool
+/// opens read-write against the INVOICE_DB path the operator
+/// prepared; a missing file or schema fails closed instead of
+/// creating an empty database.
+fn http::server boot
+    emits [env::invalid_name, http::credentials_missing, sql::connection_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed]
+    given
+        int port
+    asserts
+        sample: 0 => ok
+    match call env::required("INVOICE_DB")
+        when
+            sample: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+        env::invalid_name
+        http::credentials_missing
+        ok str db => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
+            when
+                sample: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+            sql::connection_failed
+            ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                http::invalid_server_config
+                ok http::server_config config => match call invoice_routes(pool)
+                    http::invalid_route
+                    http::duplicate_route
+                    http::ambiguous_route
+                    ok http::router built => match call http::server_start(config, built)
+                        when
+                            sample: config, built => ok
+                        http::bind_failed
+                        ok http::server sturdy => ok sturdy
+
+/// Serve invoices until a shutdown signal, then close the pool. The
+/// serving path inlines boot so the serving assertion owns every
+/// completion; boot stays for embedding.
+fn void main
+    emits [codec::invalid_data, io::write_failed, env::invalid_name, http::credentials_missing, sql::connection_failed, sql::close_failed, http::invalid_server_config, http::invalid_route, http::duplicate_route, http::ambiguous_route, http::bind_failed, http::shutdown_failed]
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+        serve: ["18495"] => ok
+    match args.length is 1
+        false => match call bytes::from_utf8("usage: invoice <port>")
+            codec::invalid_data
+            ok bytes::buffer message => match call io::stdout_write(message)
+                when
+                    empty: message => ok 0
+                io::write_failed
+                ok int written => ok
+        true => match call bytes::from_utf8(args[0])
+            codec::invalid_data
+            ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+                codec::invalid_data
+                ok int port => match call env::required("INVOICE_DB")
+                    when
+                        serve: "INVOICE_DB" => ok "/tmp/inv.sqlite"
+                    env::invalid_name
+                    http::credentials_missing
+                    ok str db => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
+                        when
+                            serve: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
+                        sql::connection_failed
+                        ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                            http::invalid_server_config
+                            ok http::server_config config => match call invoice_routes(pool)
+                                http::invalid_route
+                                http::duplicate_route
+                                http::ambiguous_route
+                                ok http::router built => match call http::server_start(config, built)
+                                    when
+                                        serve: config, built => ok
+                                    http::bind_failed
+                                    ok http::server sturdy => match call http::server_wait(sturdy)
+                                        when
+                                            serve: sturdy => ok
+                                        http::shutdown_failed
+                                        ok => match call sql::pool_close(pool, 1000)
+                                            when
+                                                serve: pool, 1000 => ok
+                                            sql::close_failed
+                                            ok => ok

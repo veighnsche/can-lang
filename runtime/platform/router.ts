@@ -296,7 +296,13 @@ export function createFormActions(
     ): Promise<Completion<unknown>> {
       if (typeof action !== "string") throw new TypeError("invalid compiler form action");
       const checked = readSite(site);
-      if (checked.action !== action) throw new TypeError("invalid compiler form action");
+      // The frozen site carries the fully qualified action identity while
+      // the invocation carries the authored spelling (bare or
+      // package-qualified), so agreement compares the authored suffix.
+      // The checker resolves the spelling before splicing the site, and
+      // a wrong action name still disagrees on its tail.
+      if (checked.action !== action && !checked.action.endsWith("::" + action))
+        throw new TypeError("invalid compiler form action");
       if (
         typeof outcome !== "function" ||
         typeof structural !== "function" ||

@@ -437,7 +437,10 @@
     "platform/form.ts": [
       "../data.ts",
       "../bytes.ts",
-      "../codec/budget.ts"
+      "../codec/budget.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "../failure.ts"
     ],
     "platform/http.ts": [
       "../completion.ts",
@@ -465,12 +468,19 @@
       "../data.ts",
       "../domain.ts"
     ],
+    "platform/action-routes.ts": [],
     "platform/router.ts": [
       "../completion.ts",
       "../data.ts",
       "../domain.ts",
       "../failure.ts",
-      "./http.ts"
+      "./http.ts",
+      "../assert/context.ts",
+      "../bytes.ts",
+      "../codec/budget.ts",
+      "../transport/media.ts",
+      "./form.ts",
+      "./html.ts"
     ],
     "platform/assets.ts": [],
     "platform/browser.ts": [
@@ -491,7 +501,8 @@
       "./assets.ts",
       "./http.ts",
       "./router.ts",
-      "./websocket.ts"
+      "./websocket.ts",
+      "./action-routes.ts"
     ],
     "platform/websocket.ts": [
       "../completion.ts",

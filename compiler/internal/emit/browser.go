@@ -88,7 +88,7 @@ func emitBrowserEntry(assembly *programAssembly, runtime string) Module {
 // factories (SQL, crypto, files, processes, streams, websockets, S3,
 // IO, environment, CLI and server) are absent.
 func browserStateValueImportNames() []ImportName {
-	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}}
+	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canForm", "$canForm"}, {"$canFormActions", "$canFormActions"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}}
 	names = append(names, utilitiesStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)
 	names = append(names, markdownStateValueImportNames()...)

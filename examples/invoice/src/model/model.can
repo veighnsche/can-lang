@@ -1,0 +1,578 @@
+package model
+    provides [find_header, session_of, check_json_save, check_form_save, digest_of, decide_save, decide_load, load_validated]
+    uses [records, bytes, codec, cookie, crypto, form, http, option, sql, text]
+
+/// Authority for one protected invoice write. Only this package can
+/// construct the guard or read its fields: wire records can never be
+/// decoded into it, foreign packages can never forge or inspect it,
+/// and the write step takes it as an explicit input, so a typed id
+/// alone never authorizes. The guard is built at the single point in
+/// decide_save where session, invoice and membership are all proven.
+owner record invoice_guard
+    str actor
+    str tenant
+    str invoice_id
+    int base_revision
+
+/// Scan request headers for the first field with the given name. Header
+/// order is caller-controlled, so the scan walks the array instead of
+/// indexing; the first occurrence wins.
+fn option::value<str> find_header
+    emits []
+    given
+        http::header[] headers
+        str name
+    asserts
+        hit: [http::header("x-t", "1"), http::header("cookie", "session=A")], "cookie" => ok option::some("session=A")
+        miss: [http::header("x-t", "1")], "cookie" => ok option::none()
+        empty: [], "cookie" => ok option::none()
+    match headers.length is 0
+        false => match headers[0].name is name
+            false => match call find_header(call headers.slice(...[1, 1000]), name)
+                ok option::value<str> rest => ok rest
+            true => ok option::some(headers[0].value)
+        true => ok option::none()
+
+/// Project the session token out of request headers. Absent cookie,
+/// unparsable cookie and missing session name all read none; the
+/// protected operations map none to the shared nondisclosing denial.
+fn option::value<str> session_of
+    emits []
+    given
+        http::header[] headers
+    asserts
+        present: [http::header("cookie", "theme=dark; session=A")] => ok option::some("A")
+        absent: [http::header("cookie", "theme=dark")] => ok option::none()
+        no_cookie: [http::header("x-t", "1")] => ok option::none()
+    match call find_header(headers, "cookie")
+        ok option::value<str> found => match found
+            option::none => ok option::none()
+            option::some => match call cookie::parse(found.value)
+                ok cookie::collection jar => match call cookie::get(jar, "session")
+                    ok option::value<str> id => ok id
+
+/// Count the UTF-8 bytes of a value for wire limits. Can strings are
+/// well-formed, so the invalid arm is an unreachable-safe fallback
+/// that validation treats as a failure.
+fn int byte_len
+    emits []
+    given
+        str text
+    asserts
+        sample: "abc" => ok 3
+        empty: "" => ok 0
+        wide: "é" => ok 2
+    match call bytes::from_utf8(text)
+        codec::invalid_data => ok 0 - 1
+        ok bytes::buffer raw => match call bytes::to_ints(raw)
+            ok int[] units => ok units.length
+
+/// Validate one normalized save line. None accepts; some carries the
+/// single finite reason the save reports.
+fn option::value<str> check_line
+    emits []
+    given
+        records::line_draft draft
+    asserts
+        valid: records::line_draft("k1", "sku-1", 2) => ok option::none()
+        empty_key: records::line_draft("", "sku-1", 2) => ok option::some("empty line key")
+        empty_sku: records::line_draft("k1", "", 2) => ok option::some("empty sku")
+        zero_qty: records::line_draft("k1", "sku-1", 0) => ok option::some("bad quantity")
+        huge_qty: records::line_draft("k1", "sku-1", 1000001) => ok option::some("bad quantity")
+    match draft.key is ""
+        false => match (call byte_len(draft.key)) > 64
+            false => match draft.sku is ""
+                false => match (call byte_len(draft.sku)) > 64
+                    false => match draft.qty < 1 or draft.qty > 1000000
+                        false => ok option::none()
+                        true => ok option::some("bad quantity")
+                    true => ok option::some("sku too long")
+                true => ok option::some("empty sku")
+            true => ok option::some("line key too long")
+        true => ok option::some("empty line key")
+
+/// Pairwise duplicate line-key scan. Keys compare by exact string
+/// equality; order is the submitted draft order.
+fn bool has_duplicate
+    emits []
+    given
+        records::line_draft[] drafts
+        int outer
+        int inner
+    asserts
+        clean: [records::line_draft("k1", "sku-1", 1), records::line_draft("k2", "sku-2", 1)], 0, 1 => ok false
+        clash: [records::line_draft("k1", "sku-1", 1), records::line_draft("k1", "sku-9", 1)], 0, 1 => ok true
+        single: [records::line_draft("k1", "sku-1", 1)], 0, 1 => ok false
+    match outer >= drafts.length - 1
+        false => match inner >= drafts.length
+            false => match drafts[outer].key is drafts[inner].key
+                false => match call has_duplicate(drafts, outer, inner + 1)
+                    ok bool rest => ok rest
+                true => ok true
+            true => match call has_duplicate(drafts, outer + 1, outer + 2)
+                ok bool rest => ok rest
+        true => ok false
+
+/// Validate drafts front to back, then reject duplicate keys. The
+/// first failure in submitted order wins; duplicates report only
+/// when every line is otherwise valid.
+fn records::save_check check_lines
+    emits []
+    given
+        records::line_draft[] drafts
+        str customer
+        int revision
+        int index
+    asserts
+        one: [records::line_draft("k1", "sku-1", 2)], "Acme", 1, 0 => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
+        bad_second: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "", 1)], "Acme", 1, 0 => ok records::flawed_save("empty sku")
+        clash: [records::line_draft("k1", "sku-1", 1), records::line_draft("k1", "sku-9", 1)], "Acme", 1, 0 => ok records::flawed_save("duplicate line key")
+    match index >= drafts.length
+        false => match call check_line(drafts[index])
+            ok option::value<str> bad => match bad
+                option::some => ok records::flawed_save(bad.value)
+                option::none => match call check_lines(drafts, customer, revision, index + 1)
+                    ok records::save_check rest => ok rest
+        true => match call has_duplicate(drafts, 0, 1)
+            ok bool clash => match clash
+                false => ok records::checked_save(customer, revision, drafts)
+                true => ok records::flawed_save("duplicate line key")
+
+/// Validate save content before any store touch: customer text, line
+/// count, then lines in order. The base revision arrives validated
+/// by the channel check and passes through untouched. Reasons are
+/// finite documented strings.
+fn records::save_check check_save
+    emits []
+    given
+        str customer
+        int revision
+        records::line_draft[] drafts
+    asserts
+        valid: "Acme", 1, [records::line_draft("k1", "sku-1", 2)] => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
+        empty_customer: "", 1, [records::line_draft("k1", "sku-1", 2)] => ok records::flawed_save("empty customer")
+        no_lines: "Acme", 1, [] => ok records::flawed_save("no lines")
+        bad_line: "Acme", 1, [records::line_draft("k1", "", 2)] => ok records::flawed_save("empty sku")
+    match customer is ""
+        false => match (call byte_len(customer)) > 200
+            false => match drafts.length is 0
+                false => match drafts.length > 64
+                    false => match call check_lines(drafts, customer, revision, 0)
+                        ok records::save_check checked => ok checked
+                    true => ok records::flawed_save("too many lines")
+                true => ok records::flawed_save("no lines")
+            true => ok records::flawed_save("customer too long")
+        true => ok records::flawed_save("empty customer")
+
+/// Normalize one JSON wire line. JSON integers arrive typed, so this
+/// only rekeys; bounds stay with the shared validation.
+fn records::line_draft json_draft
+    emits []
+    given
+        records::line_json_wire line
+    asserts
+        sample: records::line_json_wire("k1", "sku-1", 2) => ok records::line_draft("k1", "sku-1", 2)
+    ok records::line_draft(line.key, line.sku, line.qty)
+
+/// Validate one JSON save body: the base revision must be positive,
+/// then shared content validation runs over normalized drafts.
+fn records::save_check check_json_save
+    emits []
+    given
+        records::invoice_json_wire body
+    asserts
+        valid: records::invoice_json_wire("tok", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
+        bad_revision: records::invoice_json_wire("tok", "op-1", "inv-1", 0, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::flawed_save("bad revision")
+        bad_line: records::invoice_json_wire("tok", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "", 2)]) => ok records::flawed_save("empty sku")
+    match body.revision >= 1
+        false => ok records::flawed_save("bad revision")
+        true => match call check_save(body.customer, body.revision, call body.lines.map(callable json_draft))
+            ok records::save_check checked => ok checked
+
+/// Parse form row items front to back into drafts. Quantities are
+/// text on the wire; unparsable text fails the whole save with the
+/// same reason an out-of-range count reports.
+fn records::save_check parse_form_lines
+    emits []
+    given
+        str customer
+        int revision
+        form::row_item<records::line_form_wire>[] items
+        int index
+        records::line_draft[] grown
+    asserts
+        one: "Acme", 1, [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))], 0, [] => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
+        bad_qty: "Acme", 1, [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "many"))], 0, [] => ok records::flawed_save("bad quantity")
+        empty: "Acme", 1, [], 0, [] => ok records::flawed_save("no lines")
+    match index >= items.length
+        false => match call text::to_int(items[index].value.qty)
+            text::invalid_number => ok records::flawed_save("bad quantity")
+            ok int qty => match call parse_form_lines(customer, revision, items, index + 1, call append<records::line_draft>(grown, records::line_draft(items[index].key, items[index].value.sku, qty)))
+                ok records::save_check rest => ok rest
+        true => match call check_save(customer, revision, grown)
+            ok records::save_check checked => ok checked
+
+/// Validate one form save body: text revision and quantities parse
+/// first, then shared content validation runs over parsed drafts.
+fn records::save_check check_form_save
+    emits []
+    given
+        records::invoice_form_wire body
+    asserts
+        valid: records::invoice_form_wire("tok", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
+        bad_revision: records::invoice_form_wire("tok", "op-1", "inv-1", "next", "Acme", form::rows<records::line_form_wire>([], [])) => ok records::flawed_save("bad revision")
+        bad_qty: records::invoice_form_wire("tok", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "many"))])) => ok records::flawed_save("bad quantity")
+    match call text::to_int(body.revision)
+        text::invalid_number => ok records::flawed_save("bad revision")
+        ok int revision => match revision >= 1
+            false => ok records::flawed_save("bad revision")
+            true => match call parse_form_lines(body.customer, revision, body.lines.items, 0, [])
+                ok records::save_check checked => ok checked
+
+/// Fold drafts into the canonical digest input: head lines plus one
+/// newline-separated triple per line in submitted order. Both wire
+/// channels normalize here, so identical content digests identically
+/// however it was encoded.
+fn str digest_lines
+    emits []
+    given
+        records::line_draft[] drafts
+        int index
+        str grown
+    asserts
+        empty: [], 0, "inv-1\n1\nAcme" => ok "inv-1\n1\nAcme"
+        two: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "sku-2", 1)], 0, "inv-1\n1\nAcme" => ok "inv-1\n1\nAcme\nk1\nsku-1\n2\nk2\nsku-2\n1"
+    match index >= drafts.length
+        false => match call digest_lines(drafts, index + 1, grown + "\n" + drafts[index].key + "\n" + drafts[index].sku + "\n" + call text::from_int(drafts[index].qty))
+            ok str rest => ok rest
+        true => ok grown
+
+/// Digest one save intent for the replay ledger. The digest covers
+/// invoice, base revision, customer and ordered lines; session and
+/// operation id stay out (authentication and keying, not content).
+fn str digest_of
+    emits []
+    given
+        str invoice_id
+        int revision
+        str customer
+        records::line_draft[] drafts
+    asserts
+        sample: "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)] => ok "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c"
+        empty: "inv-9", 3, "", [] => ok "80f2a3c54976880dafb82e372ba9f73004cd26932c6a326b082971ed14a18268"
+    match call bytes::from_utf8(call digest_lines(drafts, 0, invoice_id + "\n" + call text::from_int(revision) + "\n" + customer))
+        codec::invalid_data => ok ""
+        ok bytes::buffer raw => ok call bytes::encode_hex(call crypto::sha256(raw))
+
+/// Insert drafts front to back in one transaction, stamping stored
+/// positions in submitted order. True commits the batch; any store
+/// failure rolls the whole save back to busy.
+fn bool insert_lines
+    emits []
+    given
+        records::line_draft[] drafts
+        str invoice_id
+        int index
+        sql::transaction tx
+    asserts
+        insert_empty: [], "inv-1", 0 => ok true
+        insert_one: [records::line_draft("k1", "sku-1", 2)], "inv-1", 0 => ok true
+        insert_two: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "sku-2", 1)], "inv-1", 0 => ok true
+        insert_store_down: [records::line_draft("k1", "sku-1", 2)], "inv-1", 0 => ok false
+    match index >= drafts.length
+        false => match call sql::transaction_execute<records::line_insert>(tx, "line_insert", records::line_insert(invoice_id, drafts[index].key, drafts[index].sku, drafts[index].qty, index))
+            when
+                insert_one: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                insert_two: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                insert_two: tx, "line_insert", records::line_insert("inv-1", "k2", "sku-2", 1, 1) => ok 1
+                insert_store_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                save_granted: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                save_lost_race: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                save_conflict_race: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                apply_ok: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                apply_lines_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                apply_replay_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+            sql::unsupported_value => ok false
+            sql::query_failed => ok false
+            sql::constraint_failed => ok false
+            ok int inserted => match call insert_lines(drafts, invoice_id, index + 1, tx)
+                ok bool rest => ok rest
+        true => ok true
+
+/// Run one protected save in a single transaction: resolve the actor
+/// from the session, prove invoice and membership, replay or conflict
+/// on the actor-scoped ledger, check the base revision, then apply
+/// the write plus its ledger row atomically. Foreign, nonexistent
+/// and unauthenticated targets share one nondisclosing denial; every
+/// store failure rolls back to busy so the identical retry stays
+/// safe. The invoice guard is built where the three proofs meet and
+/// the write consumes its fields, never the raw wire strings.
+fn sql::decision<records::save_outcome> decide_save
+    emits []
+    given
+        near str session_token
+        near str operation_id
+        near str invoice_id
+        near int revision
+        near str customer
+        near records::line_draft[] drafts
+        near str digest
+        near int now_ms
+        sql::transaction tx
+    asserts
+        save_granted: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::commit<records::save_outcome>(records::saved("inv-1", 2))
+        save_replay_same: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d1", 2000 => ok sql::rollback<records::save_outcome>(records::saved("inv-1", 2))
+        save_replay_changed: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d2", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 1))
+        save_denied_session: "tok-ghost", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-1"))
+        save_denied_revoked: "tok-revoked", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-1"))
+        save_denied_missing: "tok-alice", "op-1", "inv-9", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-9"))
+        save_denied_foreign: "tok-alice", "op-1", "inv-2", 1, "Globex", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-2"))
+        save_stale: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 2))
+        save_busy: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
+        save_lost_race: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d1", 2000 => ok sql::rollback<records::save_outcome>(records::saved("inv-1", 2))
+        save_conflict_race: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d9", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 2))
+    match call sql::transaction_query_optional<records::session_key, records::session_row>(tx, "session_by_token", records::session_key(session_token))
+        when
+            save_granted: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_replay_same: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_replay_changed: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_denied_session: tx, "session_by_token", records::session_key("tok-ghost") => ok option::none()
+            save_denied_revoked: tx, "session_by_token", records::session_key("tok-revoked") => ok option::some(records::session_row("tok-revoked", "mallory", 1700000000000))
+            save_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_denied_foreign: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_stale: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
+            save_lost_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_conflict_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        ok option::value<records::session_row> session => match session
+            option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+            option::some => match session.value.revoked_ms is 0
+                false => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(invoice_id))
+                    when
+                        save_granted: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
+                        save_replay_same: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
+                        save_replay_changed: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
+                        save_denied_missing: tx, "invoice_by_id", records::invoice_key("inv-9") => ok option::none()
+                        save_denied_foreign: tx, "invoice_by_id", records::invoice_key("inv-2") => ok option::some(records::invoice_row("inv-2", "tenant-b", 1, "Globex", 800))
+                        save_stale: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
+                        save_lost_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
+                        save_conflict_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
+                    sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                    sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                    sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                    sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                    sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                    ok option::value<records::invoice_row> stored => match stored
+                        option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+                        option::some => match call sql::transaction_query_optional<records::membership_key, records::membership_row>(tx, "membership_lookup", records::membership_key(session.value.actor, stored.value.tenant))
+                            when
+                                save_granted: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                save_replay_same: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                save_replay_changed: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                save_denied_foreign: tx, "membership_lookup", records::membership_key("alice", "tenant-b") => ok option::none()
+                                save_stale: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                save_lost_race: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                save_conflict_race: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                            sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                            sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                            ok option::value<records::membership_row> member => match member
+                                option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+                                option::some => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(session.value.actor, invoice_id, operation_id))
+                                    when
+                                        save_granted: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-1") => ok option::none()
+                                        save_replay_same: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                                        save_replay_changed: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                                        save_stale: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-1") => ok option::none()
+                                        save_lost_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::none()
+                                        save_conflict_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::none()
+                                    sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                    sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                    sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                    sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                    sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                    ok option::value<records::replay_row> prior => match prior
+                                        option::some => match prior.value.digest is digest
+                                            false => ok sql::rollback<records::save_outcome>(records::stale(invoice_id, stored.value.revision))
+                                            true => ok sql::rollback<records::save_outcome>(records::saved(invoice_id, prior.value.revision))
+                                        option::none => match revision is stored.value.revision
+                                            false => ok sql::rollback<records::save_outcome>(records::stale(invoice_id, stored.value.revision))
+                                            true => match call apply_save(invoice_guard(session.value.actor, stored.value.tenant, invoice_id, stored.value.revision), customer, drafts, digest, operation_id, now_ms, tx)
+                                                ok sql::decision<records::save_outcome> applied => ok applied
+
+/// Apply one authorized save inside its transaction: bump the invoice
+/// row, replace its lines, and record the replay row atomically. The
+/// guard input is the proof of session, invoice and membership; only
+/// this package can build one, so the write is unreachable without
+/// the three proofs. A lost ledger race rereads the winner in the
+/// same transaction and replays or conflicts without writing.
+fn sql::decision<records::save_outcome> apply_save
+    emits []
+    given
+        invoice_guard guard
+        str customer
+        records::line_draft[] drafts
+        str digest
+        str operation_id
+        int now_ms
+        sql::transaction tx
+    asserts
+        apply_ok: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::commit<records::save_outcome>(records::saved("inv-1", 2))
+        apply_lines_down: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
+        apply_replay_down: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
+    match call sql::transaction_execute<records::invoice_update>(tx, "invoice_update", records::invoice_update(guard.base_revision + 1, customer, now_ms, guard.invoice_id))
+        when
+            apply_ok: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+            apply_lines_down: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+            apply_replay_down: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+            save_granted: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+            save_lost_race: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+            save_conflict_race: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
+        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+        ok int moved => match call sql::transaction_execute<records::lines_key>(tx, "lines_delete", records::lines_key(guard.invoice_id))
+            when
+                apply_ok: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+                apply_lines_down: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+                apply_replay_down: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+                save_granted: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+                save_lost_race: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+                save_conflict_race: tx, "lines_delete", records::lines_key("inv-1") => ok 1
+            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+            ok int cleared => match call insert_lines(drafts, guard.invoice_id, 0, tx)
+                ok bool placed => match placed
+                    false => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                    true => match call sql::transaction_execute<records::replay_insert>(tx, "replay_insert", records::replay_insert(guard.actor, guard.invoice_id, operation_id, digest, guard.base_revision + 1, now_ms))
+                        when
+                            apply_ok: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-9", "dx", 2, 2000) => ok 1
+                            apply_replay_down: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-9", "dx", 2, 2000) => sql::query_failed("replay_insert", "SQLITE_IOERR")
+                            save_granted: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-1", "dx", 2, 2000) => ok 1
+                            save_lost_race: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-7", "d1", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
+                            save_conflict_race: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-7", "d9", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
+                        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                        sql::constraint_failed => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(guard.actor, guard.invoice_id, operation_id))
+                            when
+                                save_lost_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                                save_conflict_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
+                            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                            sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                            sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                            ok option::value<records::replay_row> winner => match winner
+                                option::none => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                option::some => match winner.value.digest is digest
+                                    false => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(guard.invoice_id))
+                                        when
+                                            save_conflict_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
+                                        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                        sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                        sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
+                                        ok option::value<records::invoice_row> current => match current
+                                            option::none => ok sql::rollback<records::save_outcome>(records::denied(guard.invoice_id))
+                                            option::some => ok sql::rollback<records::save_outcome>(records::stale(guard.invoice_id, current.value.revision))
+                                    true => ok sql::rollback<records::save_outcome>(records::saved(guard.invoice_id, winner.value.revision))
+                        ok int kept => ok sql::commit<records::save_outcome>(records::saved(guard.invoice_id, guard.base_revision + 1))
+
+/// Project one stored line into its load shape. Positions order the
+/// read; the projection keeps key, sku and count only.
+fn records::found_line to_found_line
+    emits []
+    given
+        records::line_row row
+    asserts
+        sample: records::line_row("inv-1", "k1", "sku-1", 2, 0) => ok records::found_line("k1", "sku-1", 2)
+    ok records::found_line(row.line_key, row.sku, row.qty)
+
+/// Run one protected read in a single transaction so invoice and
+/// lines cannot tear under a concurrent write: resolve the actor,
+/// prove invoice and membership, then load. Denials match the save
+/// shape exactly; store failures read busy.
+fn sql::decision<records::load_outcome> decide_load
+    emits []
+    given
+        near str session_token
+        near str invoice_id
+        sql::transaction tx
+    asserts
+        load_found: "tok-alice", "inv-1" => ok sql::commit<records::load_outcome>(records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)]))
+        load_denied_session: "tok-ghost", "inv-1" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-1"))
+        load_denied_missing: "tok-alice", "inv-9" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-9"))
+        load_denied_foreign: "tok-alice", "inv-2" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-2"))
+        load_busy: "tok-alice", "inv-1" => ok sql::rollback<records::load_outcome>(records::load_busy("inv-1"))
+    match call sql::transaction_query_optional<records::session_key, records::session_row>(tx, "session_by_token", records::session_key(session_token))
+        when
+            load_found: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            load_denied_session: tx, "session_by_token", records::session_key("tok-ghost") => ok option::none()
+            load_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            load_denied_foreign: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            load_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        ok option::value<records::session_row> session => match session
+            option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+            option::some => match session.value.revoked_ms is 0
+                false => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(invoice_id))
+                    when
+                        load_found: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
+                        load_denied_missing: tx, "invoice_by_id", records::invoice_key("inv-9") => ok option::none()
+                        load_denied_foreign: tx, "invoice_by_id", records::invoice_key("inv-2") => ok option::some(records::invoice_row("inv-2", "tenant-b", 1, "Globex", 800))
+                    sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                    sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                    sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                    sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                    sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                    ok option::value<records::invoice_row> stored => match stored
+                        option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+                        option::some => match call sql::transaction_query_optional<records::membership_key, records::membership_row>(tx, "membership_lookup", records::membership_key(session.value.actor, stored.value.tenant))
+                            when
+                                load_found: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
+                                load_denied_foreign: tx, "membership_lookup", records::membership_key("alice", "tenant-b") => ok option::none()
+                            sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                            sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                            sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                            sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                            ok option::value<records::membership_row> member => match member
+                                option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+                                option::some => match call sql::transaction_query_rows<records::lines_key, records::line_row>(tx, "lines_by_invoice", records::lines_key(invoice_id), 64)
+                                    when
+                                        load_found: tx, "lines_by_invoice", records::lines_key("inv-1"), 64 => ok [records::line_row("inv-1", "k1", "sku-1", 2, 0)]
+                                    sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                    sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                    sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                    sql::row_limit => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                    sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                    ok records::line_row[] rows => ok sql::commit<records::load_outcome>(records::found(invoice_id, stored.value.revision, stored.value.customer, call rows.map(callable to_found_line)))
+
+/// Load handler for the canonical captured GET action. Served action
+/// handlers take captures alone, so this unmounted contract handler
+/// denies: without adapter authentication no actor reaches it. The
+/// live GET leg serves the same protected read with cookie
+/// authentication through load_for_session until the action adapter
+/// mounts captured routes with request context.
+fn records::load_outcome load_validated
+    emits []
+    given
+        str invoice_id
+    asserts
+        load_contract_denied: "inv-1" => ok records::load_denied("inv-1")
+    ok records::load_denied(invoice_id)

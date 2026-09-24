@@ -133,3 +133,20 @@ func TestFormServeEmissionSplicesAdapterContract(t *testing.T) {
 		t.Fatal("serve site lost its spliced handler binding")
 	}
 }
+
+func TestFormStateValuesReachAuthoredModules(t *testing.T) {
+	for name, names := range map[string][]ImportName{
+		"server":  stateValueImportNames(),
+		"browser": browserStateValueImportNames(),
+	} {
+		have := map[string]bool{}
+		for _, entry := range names {
+			have[entry.Local] = true
+		}
+		for _, want := range []string{"$canForm", "$canFormActions"} {
+			if !have[want] {
+				t.Fatalf("%s state imports omit %s", name, want)
+			}
+		}
+	}
+}

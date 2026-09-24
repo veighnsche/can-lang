@@ -1,0 +1,176 @@
+package records
+    provides [line_json_wire, invoice_json_wire, line_form_wire, invoice_form_wire, saved, rejected, stale, denied, busy, save_outcome, found_line, found, load_denied, load_busy, load_outcome, line_draft, checked_save, flawed_save, save_check, session_row, session_key, membership_row, membership_key, invoice_row, invoice_key, invoice_update, line_row, lines_key, line_insert, replay_row, replay_key, replay_insert]
+    uses [form]
+
+/// One JSON save line: keyed identity, sku text and a validated count.
+/// Money and totals arrive with the grid (T24); this slice pins the
+/// protected-operation contract on counts only.
+record line_json_wire
+    str key
+    str sku
+    int qty
+/// JSON save wire. The session token authenticates the actor; the
+/// operation id scopes exactly-once grid retries; the revision is the
+/// base the writer read. The live JSON route overwrites session_token
+/// from the session cookie, which is authoritative.
+record invoice_json_wire
+    str session_token
+    str operation_id
+    str invoice_id
+    int revision
+    str customer
+    line_json_wire[] lines
+/// One form row body: key arrives as the row key, revision and counts
+/// arrive as text because form fields carry no integers.
+record line_form_wire
+    str sku
+    str qty
+/// Form save wire. Token, operation, invoice and customer mirror the
+/// JSON wire; revision and quantities are text parsed by the handler.
+record invoice_form_wire
+    str session_token
+    str operation_id
+    str invoice_id
+    str revision
+    str customer
+    form::rows<line_form_wire> lines
+/// Stored save: the invoice id plus the committed new revision.
+record saved
+    str invoice_id
+    int revision
+/// Rejected save: one finite human-readable validation reason.
+record rejected
+    str reason
+/// Stale or conflicting save: the invoice id plus the current stored
+/// revision so the writer can reread and retry. Returned only to
+/// members, after membership is proven.
+record stale
+    str invoice_id
+    int revision
+/// Denied save: the requested id echoes back (the caller sent it, so
+/// it discloses nothing). Foreign, nonexistent and unauthenticated
+/// targets share this one nondisclosing shape.
+record denied
+    str invoice_id
+/// Unavailable store: the save may or may not have committed; the
+/// identical operation id replays safely.
+record busy
+    str invoice_id
+/// The five JSON and five HTML save cases.
+variant save_outcome
+    saved
+    rejected
+    stale
+    denied
+    busy
+/// One loaded line in stored position order.
+record found_line
+    str key
+    str sku
+    int qty
+/// Loaded invoice: identity, current revision, customer and lines.
+record found
+    str invoice_id
+    int revision
+    str customer
+    found_line[] lines
+/// Denied load: same nondisclosing shape as a denied save.
+record load_denied
+    str invoice_id
+/// Unavailable store on a read: the GET retry is always safe.
+record load_busy
+    str invoice_id
+/// The three typed GET load cases.
+variant load_outcome
+    found
+    load_denied
+    load_busy
+/// One normalized save line shared by both wire channels.
+record line_draft
+    str key
+    str sku
+    int qty
+/// Validated save content ready for the protected write: the base
+/// revision arrives pre-validated by the channel check.
+record checked_save
+    str customer
+    int revision
+    line_draft[] lines
+/// Failed validation: one finite reason string.
+record flawed_save
+    str reason
+/// Pure validation outcome: validation runs before any store touch.
+variant save_check
+    checked_save
+    flawed_save
+/// One session row: token, actor and revocation marker (0 = live).
+record session_row
+    str token
+    str actor
+    int revoked_ms
+/// Session lookup key.
+record session_key
+    str token
+/// One membership row: actor belongs to tenant.
+record membership_row
+    str actor
+    str tenant
+/// Membership lookup key.
+record membership_key
+    str actor
+    str tenant
+/// One invoice row: tenant guard, optimistic revision, customer.
+record invoice_row
+    str id
+    str tenant
+    int revision
+    str customer
+    int updated_ms
+/// Invoice lookup key.
+record invoice_key
+    str id
+/// Invoice update parameters in statement order.
+record invoice_update
+    int revision
+    str customer
+    int updated_ms
+    str id
+/// One stored invoice line.
+record line_row
+    str invoice_id
+    str line_key
+    str sku
+    int qty
+    int position
+/// Line collection key (scan and delete).
+record lines_key
+    str invoice_id
+/// Line insert parameters in statement order.
+record line_insert
+    str invoice_id
+    str line_key
+    str sku
+    int qty
+    int position
+/// One replay ledger row: actor-scoped operation id, content digest
+/// and the revision that operation committed.
+record replay_row
+    str actor
+    str invoice_id
+    str operation_id
+    str digest
+    int revision
+    int recorded_ms
+/// Replay lookup key.
+record replay_key
+    str actor
+    str invoice_id
+    str operation_id
+/// Replay insert parameters in statement order.
+record replay_insert
+    str actor
+    str invoice_id
+    str operation_id
+    str digest
+    int revision
+    int recorded_ms

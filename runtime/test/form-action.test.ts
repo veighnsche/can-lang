@@ -208,6 +208,13 @@ test("serve validates its contract", async () => {
   await expect(forms.serve("web::other", outcome, structural, site, handler)).rejects.toThrow(
     TypeError,
   );
+  // The frozen site carries the fully qualified action identity while the
+  // invocation carries the authored spelling; the tails must agree.
+  const bare = await forms.serve("save_invoice", outcome, structural, site, handler);
+  expect(bare.kind).toBe("ok");
+  await expect(forms.serve("save_other", outcome, structural, site, handler)).rejects.toThrow(
+    TypeError,
+  );
   await expect(forms.serve("web::save_invoice", outcome, structural, site, "nope")).rejects.toThrow(
     TypeError,
   );
