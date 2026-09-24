@@ -151,6 +151,29 @@ test("matches report UTF-16 offsets, groups, and absent captures", async () => {
   const first = value(await api.findMatches(astral, "\ud83d\ude00x", 10n)) as unknown[];
   expect([dataProperty(first[0], "start"), dataProperty(first[0], "end")]).toEqual([0n, 2n]);
 });
+test("empty matches advance like native matchAll and honor the maximum cap", async () => {
+  for (const flags of ["u", "v"]) {
+    const handle = value(await api.compileRegex("(?:)", flags));
+    const hits = value(await api.findMatches(handle, "😀x", 10n)) as unknown[];
+    const starts = hits.map((hit) => dataProperty(hit, "start"));
+    const native = [..."😀x".matchAll(new RegExp("(?:)", `${flags}g`))].map((m) =>
+      BigInt(m.index!),
+    );
+    expect(starts).toEqual([0n, 2n, 3n]);
+    expect(starts).toEqual(native);
+    expect(hits.map((hit) => [dataProperty(hit, "text"), dataProperty(hit, "end")])).toEqual([
+      ["", 0n],
+      ["", 2n],
+      ["", 3n],
+    ]);
+  }
+  const plain = value(await api.compileRegex("(?:)", ""));
+  const ascii = value(await api.findMatches(plain, "😀x", 10n)) as unknown[];
+  expect(ascii.map((hit) => dataProperty(hit, "start"))).toEqual([0n, 1n, 2n, 3n]);
+  const capped = value(await api.findMatches(plain, "a".repeat(9999), 10000n)) as unknown[];
+  expect(capped.length).toBe(10000);
+  expect(dataProperty(capped[9999], "start")).toBe(9999n);
+});
 test("matches advance past empty hits without shared lastIndex and honor limits", async () => {
   const handle = value(await api.compileRegex("x*", ""));
   const first = value(await api.findMatches(handle, "ab", 10n)) as unknown[];

@@ -167,12 +167,15 @@ export function createText(
           ),
         );
       // Fresh global scan per call: no shared lastIndex can leak between
-      // matches calls. Start/end are UTF-16 code units, consistent with
-      // str.slice and str.length. Absent captures read as "".
+      // matches calls. Native matchAll advances past empty matches (code
+      // point steps under u/v, code unit steps otherwise); the loop breaks
+      // at the cap so unbounded results are never materialized. Start/end
+      // are UTF-16 code units, consistent with str.slice and str.length.
+      // Absent captures read as "".
       const scanned = new RegExp(compiled.source, compiled.flags + "g");
       const out: unknown[] = [];
-      let match: RegExpExecArray | null;
-      while (BigInt(out.length) < limit && (match = scanned.exec(text)) !== null) {
+      for (const match of text.matchAll(scanned)) {
+        if (BigInt(out.length) >= limit) break;
         out.push(
           record(identities.match, [
             ["text", match[0]],
@@ -181,7 +184,6 @@ export function createText(
             ["groups", array(match.slice(1).map((group) => group ?? ""))],
           ]),
         );
-        if (match[0] === "") scanned.lastIndex++;
       }
       return success(array(out));
     },
