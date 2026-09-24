@@ -1,0 +1,16 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 4 state fields, 3 instructions and 9 option descriptions has a distinct complete phrasing (48 fields). Task IDs (T01-T27), gate names, Bun 1.4.2, Debian 13 amd64/glibc, canlc build --target browser, operation_id, status codes, byte/row caps, DI identifiers, probe counts and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "T01 baseline/harness/registry; parallel T02/T03/T06/T07/T18/T19; unlock chain T03->T04/T05/T08, T05+T06->T10, T03/T05/T06/T07->T21, T10->T11/T12/T13, T21->T22; T09 integrates T02-T08 before T16 with one regeneration and Gate 1/2 on reproduction",
+    "T10 exact-path contract with captured public invoice paths and no compatibility route; T14 protected ops with 5 HTML + 5 JSON save cases and 3 GET load cases; T17 Gate 3; T19 Bun 1.4.2 on Debian 13; T20 Gate 4; T21 distinct browser root/profile with content-addressed same-origin asset; T26 agent trials; T27 audit",
+    "Probes: 11 owner roots, 13 nested-pattern cases, 16-case variant matrix (12 builds/24 pass/4 rejections), 28/28 helper assertions, 12 FormData checks, 82 route assertions, HTMX 503 unswapped observation, 18-assertion invoice sketch with no live DB/HTTP/DOM",
+    "Limits: no live invoice/webhook/grid/Linux qualification; no held-out agent comparison; token effects unmeasured; Jev output is advisory; calls run no Can code and establish no calibration",
+    "Constraints: positive/negative/span tests plus regenerated goldens; bun run lint:fix:runtime, format:runtime, check:runtime; lint:runtime --format=agent; never hand-edit runtime/catalogue.ts or vendor files; native HTTP/browser/DB inspection; record model/version/revision/env/failures; deferred DI-03/DI-08/DI-14a/DI-17/DI-18/DI-19/DI-20/DI-22/DI-23 excluded"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "request_sha256": {
+    "request-1.json": "780db27d2f72d442b58441051ff319362f7f946274d46908601166f2b2572c6d",
+    "request-2.json": "a757172ac3f3b082ce1f413bcb2469796143926e929b75774eb77ee7463c7fa3",
+    "request-3.json": "2bf5087f4d3734dc2c716a63310b9b00930d0d530370fcab62ffd2bef5a618c8"
+  }
+}
