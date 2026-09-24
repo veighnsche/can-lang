@@ -53,7 +53,7 @@ func (c *programChecker) instantiateSQLQuery(op *catalogue.Operation, args []*ty
 	if err != nil {
 		return ValueBinding{}, err
 	}
-	if op.Identity == sqlQueryOptional {
+	if op.Identity == sqlQueryOptional || op.Identity == sqlTransactionQueryOption {
 		for _, leaf := range result.Leaves() {
 			switch leaf.Declaration() {
 			case "can.std.option@1::some":

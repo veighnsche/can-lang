@@ -1,0 +1,174 @@
+package model
+    provides [find_header, signature_valid, digest_of, decide_receive, decide_ack]
+    uses [records, bytes, codec, crypto, http, option, sql]
+
+/// Scan request headers for the first field with the given name. Header
+/// order is caller-controlled, so the scan walks the array instead of
+/// indexing; the first occurrence wins and the provider sends exactly one
+/// signature field.
+fn option::value<str> find_header
+    emits []
+    given
+        http::header[] headers
+        str name
+    asserts
+        hit: [http::header("x-t", "1"), http::header("x-provider-signature", "ab12")], "x-provider-signature" => ok option::some("ab12")
+        miss: [http::header("x-t", "1")], "x-provider-signature" => ok option::none()
+        empty: [], "x-provider-signature" => ok option::none()
+    match headers.length is 0
+        false => match headers[0].name is name
+            false => match call find_header(call headers.slice(...[1, 1000]), name)
+                ok option::value<str> rest => ok rest
+            true => ok option::some(headers[0].value)
+        true => ok option::none()
+
+/// Check the provider signature over the exact delivery text. The tag is
+/// HMAC-SHA-256 under the shared secret, submitted as lowercase hex; any
+/// other spelling, an empty secret, or unencodable input reads false
+/// instead of failing, so every rejection answers 401 through one arm.
+fn bool signature_valid
+    emits []
+    given
+        str secret
+        str body
+        str supplied
+    asserts
+        valid: "whsec-test-0123456789abcdef", "{\"delivery_id\":\"del-1\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "2b87730a46757768bf7060ce712fa0089f04bfb12629ba9ad6695d99545e32ac" => ok true
+        tampered: "whsec-test-0123456789abcdef", "{\"delivery_id\":\"del-1\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}", "2b87730a46757768bf7060ce712fa0089f04bfb12629ba9ad6695d99545e32ad" => ok false
+        wrong_body: "whsec-test-0123456789abcdef", "{}", "2b87730a46757768bf7060ce712fa0089f04bfb12629ba9ad6695d99545e32ac" => ok false
+        empty_secret: "", "{\"delivery_id\":\"del-1\"}", "2b87730a46757768bf7060ce712fa0089f04bfb12629ba9ad6695d99545e32ac" => ok false
+    match call bytes::from_utf8(secret)
+        codec::invalid_data => ok false
+        ok bytes::buffer raw_secret => match call bytes::from_utf8(body)
+            codec::invalid_data => ok false
+            ok bytes::buffer raw_body => match call crypto::hmac_sha256(raw_secret, raw_body)
+                crypto::invalid_key => ok false
+                ok bytes::buffer tag => ok call bytes::encode_hex(tag) is supplied
+
+/// Digest the exact delivery text for the idempotency ledger. Equal
+/// bytes share a digest, so a replayed delivery compares equal while
+/// any changed byte conflicts.
+fn str digest_of
+    emits []
+    given
+        str body
+    asserts
+        sample: "{\"delivery_id\":\"del-1\",\"event\":\"invoice.paid\",\"subscription\":\"sub-9\"}" => ok "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79"
+        empty: "" => ok "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    match call bytes::from_utf8(body)
+        codec::invalid_data => ok ""
+        ok bytes::buffer raw => ok call bytes::encode_hex(call crypto::sha256(raw))
+
+/// Record one verified delivery: insert the ledger row first, then the
+/// outbox row, and commit only when this delivery wrote both. A lost
+/// insert race rereads the winner and replays duplicate or conflict
+/// without writing; every store failure rolls back to store_unavailable
+/// so the provider retry stays safe.
+fn sql::decision<records::receipt> decide_receive
+    emits []
+    given
+        near str delivery_id
+        near str digest
+        near str event
+        near str subscription
+        near int now_ms
+        sql::transaction tx
+    asserts
+        accepted: "del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", 1000 => ok sql::commit<records::receipt>(records::receipt("accepted"))
+        duplicate: "del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", 1000 => ok sql::rollback<records::receipt>(records::receipt("duplicate"))
+        conflict: "del-1", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "invoice.paid", "sub-9", 1000 => ok sql::rollback<records::receipt>(records::receipt("conflict"))
+        lost_race: "del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", 1000 => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+        store_down: "del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", 1000 => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+    match call sql::transaction_execute<records::ledger_insert>(tx, "ledger_insert", records::ledger_insert(delivery_id, digest, event, subscription, "accepted", now_ms))
+        when
+            accepted: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => ok 1
+            duplicate: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
+            conflict: tx, "ledger_insert", records::ledger_insert("del-1", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
+            lost_race: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::constraint_failed("webhook_ledger_pkey")
+            store_down: tx, "ledger_insert", records::ledger_insert("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 1000) => sql::query_failed("ledger_insert", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+        sql::query_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+        sql::constraint_failed => match call sql::transaction_query_optional<records::ledger_key, records::ledger_row>(tx, "ledger_by_id", records::ledger_key(delivery_id))
+            when
+                duplicate: tx, "ledger_by_id", records::ledger_key("del-1") => ok option::some(records::ledger_row("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 900))
+                conflict: tx, "ledger_by_id", records::ledger_key("del-1") => ok option::some(records::ledger_row("del-1", "d5b8fa54776e2e01808025b646b42c020c8546abc3834d96c1baacc610faac79", "invoice.paid", "sub-9", "accepted", 900))
+                lost_race: tx, "ledger_by_id", records::ledger_key("del-1") => ok option::none()
+            sql::unsupported_value => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::query_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::constraint_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::row_count => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::schema_mismatch => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            ok option::value<records::ledger_row> found => match found
+                option::some => match found.value.digest is digest
+                    false => ok sql::rollback<records::receipt>(records::receipt("conflict"))
+                    true => ok sql::rollback<records::receipt>(records::receipt("duplicate"))
+                option::none => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+        ok int inserted => match call sql::transaction_execute<records::outbox_insert>(tx, "outbox_insert", records::outbox_insert(delivery_id, event, subscription, "pending", 0, now_ms))
+            when
+                accepted: tx, "outbox_insert", records::outbox_insert("del-1", "invoice.paid", "sub-9", "pending", 0, 1000) => ok 1
+            sql::unsupported_value => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::query_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            sql::constraint_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
+            ok int queued => ok sql::commit<records::receipt>(records::receipt("accepted"))
+
+/// Apply one carrier acknowledgement: append the durable attempt row and
+/// move the outbox row to done or back to pending in the same
+/// transaction. Unknown ids replay unknown without writing, and an
+/// already done row replays done so a duplicate ack never appends a
+/// second attempt for one delivery.
+fn sql::decision<records::ack_result> decide_ack
+    emits []
+    given
+        near str delivery_id
+        near bool settled
+        near int now_ms
+        sql::transaction tx
+    asserts
+        delivered: "del-1", true, 2000 => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
+        failed: "del-1", false, 2000 => ok sql::commit<records::ack_result>(records::ack_result("pending", 2))
+        unknown: "del-9", true, 2000 => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
+        already_done: "del-1", true, 2000 => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
+        store_down: "del-1", true, 2000 => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+    match call sql::transaction_query_optional<records::outbox_key, records::outbox_row>(tx, "outbox_by_id", records::outbox_key(delivery_id))
+        when
+            delivered: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000))
+            failed: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 1, 1000))
+            unknown: tx, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+            already_done: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 1500))
+            store_down: tx, "outbox_by_id", records::outbox_key("del-1") => sql::query_failed("outbox_by_id", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+        sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+        sql::row_count => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+        sql::schema_mismatch => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+        ok option::value<records::outbox_row> found => match found
+            option::none => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
+            option::some => match found.value.state is "done"
+                false => match settled
+                    false => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "failed", now_ms))
+                        when
+                            failed: tx, "attempt_insert", records::attempt_insert("del-1", "failed", 2000) => ok 1
+                        sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("pending", found.value.attempts + 1, now_ms, delivery_id))
+                            when
+                                failed: tx, "outbox_update", records::outbox_update("pending", 2, 2000, "del-1") => ok 1
+                            sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            ok int moved => ok sql::commit<records::ack_result>(records::ack_result("pending", found.value.attempts + 1))
+                    true => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "delivered", now_ms))
+                        when
+                            delivered: tx, "attempt_insert", records::attempt_insert("del-1", "delivered", 2000) => ok 1
+                        sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                        ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("done", found.value.attempts + 1, now_ms, delivery_id))
+                            when
+                                delivered: tx, "outbox_update", records::outbox_update("done", 1, 2000, "del-1") => ok 1
+                            sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                            ok int moved => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts + 1))
+                true => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts))

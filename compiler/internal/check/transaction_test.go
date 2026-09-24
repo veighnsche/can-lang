@@ -177,6 +177,102 @@ func TestSQLTransactionAccepts(t *testing.T) {
 	}
 }
 
+const sqlTransactionOptionalManifest = `{"source_root":"src","error_registry":"can.errors.json","sql":{` +
+	`"account_by_term":{"dialect":"postgresql","statement":"SELECT id, display_name FROM accounts WHERE display_name = $1 LIMIT $2","parameters":["term"],"parameter_type":"app::search_parameters","row_type":"app::account_row","cardinality":"optional","row_limit_parameter":2}}}`
+
+const sqlTransactionOptionalSource = `package app
+    provides []
+    uses [sql, http, option]
+record search_parameters
+    str term
+record account_row
+    int id
+    str display_name
+fn sql::decision<int> decide
+    emits []
+    given
+        sql::transaction tx
+    asserts
+        sample: => ok sql::commit<int>(7)
+    match call sql::transaction_query_optional<search_parameters, account_row>(tx, "account_by_term", search_parameters("Zed"))
+        when
+            sample: tx, "account_by_term", search_parameters("Zed") => ok option::some(account_row(7, "Zed"))
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+        sql::row_count => ok sql::rollback<int>(0)
+        sql::schema_mismatch => ok sql::rollback<int>(0)
+        ok option::value<account_row> found => match found
+            option::none => ok sql::rollback<int>(0)
+            option::some => ok sql::commit<int>(found.value.id)
+fn int run
+    emits [http::credentials_missing, sql::connection_failed, sql::transaction_failed, sql::commit_unknown]
+    asserts
+        sample: => ok 1
+    match call sql::pool_open("CAN_TEST_POSTGRES", 5)
+        when
+            sample: "CAN_TEST_POSTGRES", 5 => ok
+        http::credentials_missing
+        sql::connection_failed
+        ok sql::pool pool => match call sql::with_transaction<int>(pool, callable decide)
+            when
+                sample: pool, callable decide => ok 1
+            sql::connection_failed
+            sql::transaction_failed
+            sql::commit_unknown
+            ok int total => ok total
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok
+`
+
+func writeSQLTransactionProjectManifest(t *testing.T, manifest, source string) string {
+	t.Helper()
+	root := t.TempDir()
+	write := func(name, text string) {
+		t.Helper()
+		path := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("can.project.json", manifest)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	write("src/main.can", source)
+	return root
+}
+
+func TestSQLTransactionOptionalPopulatesOptionIdentities(t *testing.T) {
+	graph, err := project.Load(writeSQLTransactionProjectManifest(t, sqlTransactionOptionalManifest, sqlTransactionOptionalSource))
+	if err != nil {
+		t.Fatal(err)
+	}
+	program, err := CheckProgram(graph)
+	if err != nil {
+		t.Fatalf("transaction optional program rejected: %v", err)
+	}
+	found := false
+	for _, sql := range program.SQLs {
+		if sql.Operation != sqlTransactionQueryOption {
+			continue
+		}
+		found = true
+		if sql.ResultSome == "" || sql.ResultNone == "" || sql.ResultSome == sql.ResultNone {
+			t.Fatalf("bad optional identities %+v", sql)
+		}
+	}
+	if !found {
+		t.Fatal("transaction query_optional left no query specialization")
+	}
+}
+
 func TestSQLTransactionRejects(t *testing.T) {
 	cases := []struct {
 		name   string

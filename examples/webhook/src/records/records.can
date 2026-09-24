@@ -1,0 +1,81 @@
+package records
+    provides [delivery, receipt, pending_item, outbox_page, ack, ack_result, ledger_row, ledger_key, ledger_insert, outbox_row, outbox_key, outbox_insert, outbox_update, outbox_state, attempt_insert]
+    uses []
+
+/// One provider delivery envelope, decoded from the signed bytes.
+record delivery
+    str delivery_id
+    str event
+    str subscription
+/// JSON outcome body answered for every webhook and ack call.
+record receipt
+    str status
+/// One pending outbox row handed to the carrier.
+record pending_item
+    str delivery_id
+    str event
+    str subscription
+    int attempts
+/// Bounded pending page answered to the carrier.
+record outbox_page
+    pending_item[] items
+/// Carrier acknowledgement for one delivered outbox row.
+record ack
+    str delivery_id
+    bool settled
+/// JSON outcome body for one acknowledgement.
+record ack_result
+    str status
+    int attempts
+/// One idempotency ledger row.
+record ledger_row
+    str delivery_id
+    str digest
+    str event
+    str subscription
+    str outcome
+    int received_ms
+/// Ledger lookup key.
+record ledger_key
+    str delivery_id
+/// Ledger insert parameters in statement order.
+record ledger_insert
+    str delivery_id
+    str digest
+    str event
+    str subscription
+    str outcome
+    int received_ms
+/// One outbox row.
+record outbox_row
+    str delivery_id
+    str event
+    str subscription
+    str state
+    int attempts
+    int updated_ms
+/// Outbox lookup key.
+record outbox_key
+    str delivery_id
+/// Outbox insert parameters in statement order.
+record outbox_insert
+    str delivery_id
+    str event
+    str subscription
+    str state
+    int attempts
+    int updated_ms
+/// Outbox update parameters in statement order.
+record outbox_update
+    str state
+    int attempts
+    int updated_ms
+    str delivery_id
+/// Outbox state scan key.
+record outbox_state
+    str state
+/// Attempt insert parameters in statement order.
+record attempt_insert
+    str delivery_id
+    str outcome
+    int at_ms
