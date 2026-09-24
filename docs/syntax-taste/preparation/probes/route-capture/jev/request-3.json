@@ -1,0 +1,38 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Decide a narrow capture contract for future Can agent-authored code. Accuracy and sound edits rank ahead of measured total task tokens. No user base requires old route spellings, and native Bun/JavaScript should do equivalent work under minimal Can adapters. The current exact source action decision is already made; this question only addresses the separate typed-path trial.",
+    "contract": "A source action may change from exact/query routing to `post \"/tenants/:tenant_id/invoices/:invoice_id\"` plus `captures invoice_key`. Its record has `int tenant_id` and `int invoice_id`; generated URL and mount use that declaration identity. The proposed first increment permits required nonempty per-segment `int` and `str`, giving `/tenants/1/invoices/7` for the sample. Can `int` is signed int64, and application rules decide whether a particular key must be positive. Syntax validity says nothing about the actor or stored invoice.",
+    "observations": "With Bun 1.4.2, the live Request URL leaves encoded separators and malformed percent/UTF-8 in pathname. Existing whole-path decode would promote `%2F` to a separator. Splitting before strict decode keeps the captured segment separate. Dot and encoded-dot segments, and unescaped backslashes, undergo native URL normalization before request dispatch; source code cannot recover those original bytes from `Request.url`. The present router handles exact literal paths and rejects duplicate method/path registrations; no capture semantics exist yet.",
+    "obligations": "The resulting proposal must distinguish bad capture/encoding as HTTP 400 without running the protected operation, absent path as 404, and wrong method on a known path as 405 plus Allow. Define static versus captured route selection and collisions, exact segment round trips, Unicode and signed 64-bit conversion. Do not infer that a builder grants access. The actual implementation still needs native HTTP, source-rename and UI acceptance cases."
+  },
+  "questions": {
+    "route_overlap": {
+      "type": "choice",
+      "instructions": "Which registration rule and path-versus-method ordering should the implementation specification prefer?",
+      "criteria": {
+        "reject_overlap": "Treat even literal-versus-variable intersections as ambiguous, reject them when routes are assembled across verbs, and only share exactly one shape among different methods. Runtime matching stays small but useful static exceptions cannot coexist with a broad captured pattern.",
+        "static_first": "Admit static exceptions by ordering exact segments before capture segments independently of request method, while rejecting duplicates and unresolved equally specific overlaps. After selecting the path, use its allowed methods for 405 and Allow. The same URL has one route identity regardless of verb.",
+        "method_first": "Find the incoming verb's route candidates first and select their most specific pattern, rejecting only method-local ties. Check other verbs for 405 when none match. Registration is permissive, though changing the verb may change which path declaration the URL denotes."
+      }
+    },
+    "segment_policy": {
+      "type": "choice",
+      "instructions": "Set the boundary for `str` path captures using the observed URL normalization and strict segment decoding behavior.",
+      "criteria": {
+        "strict_segment": "Use native per-segment percent encoding and one strict per-segment decode, with an adapter guard against empty strings, slash/backslash, exactly `.`/`..`, C0/DEL, malformed escaping and invalid Unicode scalars. Reject an invalid captured value with 400; the builder reports invalid input. If Bun already normalized raw dot/backslash structure into another shape, that path may be 404.",
+        "escaped_separator_data": "Keep single-segment encoding/decoding and scalar validation, but preserve percent-escaped separators as `str` values instead of refusing them. Reject dots and controls. This allows more identifiers, provided all later consumers keep the segment typed rather than reinterpreting it as a path string.",
+        "native_path": "Reuse native whole-path normalization as the entire capture matcher, with no explicit segment boundary guard. This is simple but an encoded slash can become a delimiter and URL dot/backslash normalization can silently redirect the original input."
+      }
+    },
+    "integer_wire": {
+      "type": "choice",
+      "instructions": "Pick a precise first-version numeric capture rule consistent with Can `int` and a canonical URL builder.",
+      "criteria": {
+        "canonical_signed": "Decode only canonical `0` or `-?[1-9][0-9]*` between negative and positive int64 endpoints. A leading plus/zero, `-0`, fractional or exponent form, and overflow yield 400. BigInt.toString yields the sole builder spelling, leaving resource positivity to domain rules.",
+        "lenient_signed": "Convert several integer-text spellings, including `+1`, `01` and `-0`, within signed int64 and have the builder normalize them. Convenient inbound acceptance permits multiple textual URLs for one Can int.",
+        "canonical_positive": "Restrict capture `int` to positive digits without leading zeros through int64 max. It matches IDs in this fixture but bakes a positive-only meaning into the otherwise signed `int` type."
+      }
+    }
+  }
+}

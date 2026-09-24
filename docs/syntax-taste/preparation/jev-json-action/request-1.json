@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can serves AI coding agents, prioritizing reliable product behavior and repair, with total tokens per successful task secondary. No old source compatibility is needed. Planned server HTML action returns safe fragments and uses shallow keyed form rows; a planned Can browser target needs typed Fetch responses and immutable grid state. Current exact JSON request/response codecs exist, but the new action grammar is unimplemented. HTML `edit_outcome` includes `form::rows`, which is not JSON-admissible. Both clients must call one protected authorization/transaction operation. Native JS/Bun/Fetch should perform transport work."
+  },
+  "questions": {
+    "wire_action": {
+      "type": "choice",
+      "instructions": "Which contract should the first Can browser grid use for typed submission and response while preserving the selected HTML form action?",
+      "criteria": {
+        "separate_json_action": "Declare a second source action for JSON with a transparent row-record input, transparent finite result payload, codec/body limits and checked Fetch builder. Keep the HTML action and its raw rejection renderer. Bind both server handlers to the same protected operation. Browser mutation ID and expected revision are explicit JSON fields; server dedup/reconciliation or authorized read handles uncertain saves.",
+        "dual_format_action": "Expand one action declaration to have both HTML-form and JSON body modes and two response representations under a shared route symbol, with content negotiation. It can share identity but requires conditional codec, renderer, status, body-limit and client-adapter semantics in one declaration.",
+        "html_status_client": "Reuse only the HTML form action from browser code: submit URL-encoded rows, inspect status and possibly parse or mount returned fragments. Avoid JSON action machinery, but the browser receives no typed result/revision payload from that action and must obtain it elsewhere."
+      }
+    }
+  }
+}

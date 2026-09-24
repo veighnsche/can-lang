@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The future language is optimized for agent-written correct software, with complete-task token use a second metric and no migration obligations to outside adopters. Generated TS should call native Bun where equivalent, using small Can contract guards. Exact source actions are already selected; captured paths can be gated independently. A Bun 1.4.2 HTTP experiment sent `/tenants/%2E%2E/invoices/7` without curl path cleanup, yet the `fetch` callback saw `/invoices/7`. Another POST action at `/invoices/:slug` then matched and received `slug=7`. The callback has no raw request-target bytes through native `Request.url`, so it cannot tell this from a direct `/invoices/7` request. A route builder can reject dot-valued segments, while protected handlers still enforce authorization. Bad percent/UTF-8 is separately visible for 400. Select the truthful capture boundary.",
+  "questions": {
+    "dot_normalization": {
+      "type": "choice",
+      "instructions": "How should the planned captured action describe inbound dot-segment behavior after seeing the concrete cross-route normalization?",
+      "criteria": {
+        "normalized_contract": "Promise matching of Bun's post-normalization pathname only, openly stating that `%2E%2E` can reroute before Can sees it. The checked URL builder refuses dot captures and all handlers retain their own authorization. A direct raw spelling is not an endpoint-identity guarantee; continue rejecting visible malformed encoding as 400 and test the alias.",
+        "gate_raw_target": "Hold the separate capture increment until raw request-target access exists in the selected native server path, allowing a pre-normalization dot rejection. Ship planning for exact-path actions first. The stronger guarantee remains unimplemented until that ingress evidence exists.",
+        "custom_http": "Use a custom byte-level HTTP ingress instead of Bun.serve's Request URL so the raw dot escape can be rejected. This gains the stronger inbound route promise, while enlarging the HTTP implementation and deviating from preferred native Bun operations."
+      }
+    }
+  }
+}

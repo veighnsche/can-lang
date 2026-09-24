@@ -1,0 +1,19 @@
+{
+  "started_at": "2026-09-24T00:22:23.910096+00:00",
+  "elapsed_seconds": 0.893,
+  "status": 200,
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "request_sha256": "ca27e29c871f6b5391695cb828b8272ceb2f433a98c988a4380ceb6e7ba5b24e",
+  "response_sha256": "7445da6153d0bc11372973976c9f52963b230e3c98a43e2a40275ed97fdb3fc1",
+  "safe_response_headers": {
+    "date": "Thu, 24 Sep 2026 00:22:23 GMT",
+    "content-type": "application/json"
+  },
+  "requested_model": "jev-latest",
+  "returned_model": "jev-1.13.0",
+  "usage": {
+    "input_tokens": 4004,
+    "output_tokens": 486
+  },
+  "fresh_call": true
+}

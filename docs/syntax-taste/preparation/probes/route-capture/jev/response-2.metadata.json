@@ -1,0 +1,8 @@
+{
+  "startedAt": "2026-09-24T00:52:37.502081+00:00",
+  "status": 200,
+  "attempt": 1,
+  "endpoint": "v1/systemone",
+  "requestSha256": "5b3a6d6949dda2f21473770c5d23a434a6092435510b6e51335bb161cb599df7",
+  "responseSha256": "06aa885dfdece920c12f42ef557d6ab0ada8b14a50398777e16e51e11267e7a2"
+}

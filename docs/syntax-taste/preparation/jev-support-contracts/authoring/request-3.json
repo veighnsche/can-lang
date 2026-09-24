@@ -1,0 +1,32 @@
+{
+  "model": "jev-latest",
+  "state": "Assess an authoring experiment for an AI-agent language, with correctness and contract preservation first and whole successful-task tokens second. No compatibility or human-comfort requirement is imposed. Nominal immutable records are currently built by declaration-order arguments; same-typed total and recent illustrate possible reorder misbinding, not an established agent mistake. Strong types, constructor helpers and with updates provide current controls, though a pass-through factory with two ints remains positional. Calls/constructors/assertion rows are line-bound. Examples include 154 lines over 120 characters and one of 336, but width alone proves no editing failure. Precise diagnostics and comment-safe canonical formatting are already chosen; multiline continuation is deferred. Immediate forwarded locals, including a meaningful permitted step, can be invalidated by the checker, with no observed task penalty yet. Compare agents creating, renaming and repairing these constructs, including redundant aliases; validate nominal identity, evaluation count, assertion attachment, spans, first-pass success and total task costs. This is technical advice only.",
+  "questions": {
+    "di22_fields": {
+      "type": "choice",
+      "instructions": "How should same-typed record field refactoring be compared before a new form is adopted?",
+      "criteria": {
+        "positional_controls": "Use current construction plus domain types/factories as the control and measure correctness and repair on field edits.",
+        "named_form_trial": "Trial explicit field-name binding lowered to the existing frozen record operation, with exact diagnostics and no implicit defaults.",
+        "tooling_trial": "Test source-tool rewrites or diff checks that flag likely argument reorder mistakes without changing grammar."
+      }
+    },
+    "di23a_layout": {
+      "type": "choice",
+      "instructions": "How should physical-line limits be evaluated on agent editing tasks?",
+      "criteria": {
+        "formatter_first": "Use accepted diagnostic/format tooling as the control, preserving parse/format/parse and attached assertion semantics.",
+        "delimited_continuation": "Compare delimiter-only multiline forms after the baseline, defining terminators, nesting, formatter idempotence and parser diagnostics."
+      }
+    },
+    "di23b_local": {
+      "type": "choice",
+      "instructions": "How should useful intermediate locals and accidental aliases be handled in the next agent trial?",
+      "criteria": {
+        "hard_rule_fix": "Use hard rejection plus an accurate autofix as control and count build retries and semantic mistakes.",
+        "advisory_lint": "Compare accepting ordinary locals with an advisory suggestion, ensuring one evaluation and unchanged error behavior.",
+        "semantic_only_rule": "Test whether a precise semantic-danger rule can replace style-based invalidity without broad exemptions."
+      }
+    }
+  }
+}

@@ -1,0 +1,174 @@
+package main
+    provides [main]
+    uses [domain, helper]
+
+record a_detail
+    str reason
+record b_detail
+    str reason
+
+fn int a_action
+    emits [domain::a_failure]
+    asserts
+        sample: => ok 3
+    ok 3
+fn int b_action
+    emits [domain::b_failure]
+    asserts
+        sample: => ok 4
+    ok 4
+fn int a_fail
+    emits [domain::a_failure]
+    asserts
+        sample: => domain::a_failure("A")
+    domain::a_failure("A")
+fn int b_fail
+    emits [domain::b_failure]
+    asserts
+        sample: => domain::b_failure("B")
+    domain::b_failure("B")
+fn int double
+    emits []
+    given
+        int value
+    asserts
+        sample: 3 => ok 6
+    ok value * 2
+fn bool positive
+    emits []
+    given
+        int value
+    asserts
+        sample: 6 => ok true
+    ok value > 0
+
+fn int a_chain
+    emits [domain::a_failure]
+    asserts
+        sample: => ok 6
+    match chain
+        call a_action() as int original
+        domain::a_failure
+        ok => do
+            int changed = call double(original)
+            bool accepted = call positive(changed)
+            match accepted
+                false => ok original
+                true => ok changed
+fn int b_chain
+    emits [domain::b_failure]
+    asserts
+        sample: => ok 8
+    match chain
+        call b_action() as int original
+        domain::b_failure
+        ok => do
+            int changed = call double(original)
+            bool accepted = call positive(changed)
+            match accepted
+                false => ok original
+                true => ok changed
+
+fn int a_fixed
+    emits [domain::a_failure]
+    asserts
+        sample: => ok 6
+    match call helper::audit_fixed(callable a_action, callable double, callable positive)
+        domain::a_failure as failure => domain::a_failure(failure.reason)
+        domain::b_failure as failure => domain::a_failure(failure.reason)
+        ok int value => ok value
+
+fn int b_fixed
+    emits [domain::b_failure]
+    asserts
+        sample: => ok 8
+    match call helper::audit_fixed(callable b_action, callable double, callable positive)
+        domain::a_failure as failure => domain::b_failure(failure.reason)
+        domain::b_failure as failure => domain::b_failure(failure.reason)
+        ok int value => ok value
+fn int a_fixed_failure
+    emits [domain::a_failure]
+    asserts
+        sample: => domain::a_failure("A")
+    match call helper::audit_fixed(callable a_fail, callable double, callable positive)
+        domain::a_failure as failure => domain::a_failure(failure.reason)
+        domain::b_failure as failure => domain::a_failure(failure.reason)
+        ok int value => ok value
+fn int b_fixed_failure
+    emits [domain::b_failure]
+    asserts
+        sample: => domain::b_failure("B")
+    match call helper::audit_fixed(callable b_fail, callable double, callable positive)
+        domain::a_failure as failure => domain::b_failure(failure.reason)
+        domain::b_failure as failure => domain::b_failure(failure.reason)
+        ok int value => ok value
+
+fn helper::outcome<int, a_detail> a_as_data
+    emits []
+    asserts
+        sample: => ok helper::succeeded<int>(3)
+    match call a_action()
+        domain::a_failure as failure => ok helper::rejected<a_detail>(a_detail(failure.reason))
+        ok int value => ok helper::succeeded<int>(value)
+fn helper::outcome<int, b_detail> b_as_data
+    emits []
+    asserts
+        sample: => ok helper::succeeded<int>(4)
+    match call b_action()
+        domain::b_failure as failure => ok helper::rejected<b_detail>(b_detail(failure.reason))
+        ok int value => ok helper::succeeded<int>(value)
+fn helper::outcome<int, a_detail> a_failure_data
+    emits []
+    asserts
+        sample: => ok helper::rejected<a_detail>(a_detail("A"))
+    match call a_fail()
+        domain::a_failure as failure => ok helper::rejected<a_detail>(a_detail(failure.reason))
+        ok int value => ok helper::succeeded<int>(value)
+fn helper::outcome<int, b_detail> b_failure_data
+    emits []
+    asserts
+        sample: => ok helper::rejected<b_detail>(b_detail("B"))
+    match call b_fail()
+        domain::b_failure as failure => ok helper::rejected<b_detail>(b_detail(failure.reason))
+        ok int value => ok helper::succeeded<int>(value)
+
+fn int a_data
+    emits [domain::a_failure]
+    asserts
+        sample: => ok 6
+    helper::outcome<int, a_detail> result = call helper::audit_data<a_detail>(callable a_as_data, callable double, callable positive)
+    match result
+        helper::rejected => domain::a_failure(result.value.reason)
+        helper::succeeded => ok result.value
+fn int b_data
+    emits [domain::b_failure]
+    asserts
+        sample: => ok 8
+    helper::outcome<int, b_detail> result = call helper::audit_data<b_detail>(callable b_as_data, callable double, callable positive)
+    match result
+        helper::rejected => domain::b_failure(result.value.reason)
+        helper::succeeded => ok result.value
+fn int a_data_failure
+    emits [domain::a_failure]
+    asserts
+        sample: => domain::a_failure("A")
+    helper::outcome<int, a_detail> result = call helper::audit_data<a_detail>(callable a_failure_data, callable double, callable positive)
+    match result
+        helper::rejected => domain::a_failure(result.value.reason)
+        helper::succeeded => ok result.value
+fn int b_data_failure
+    emits [domain::b_failure]
+    asserts
+        sample: => domain::b_failure("B")
+    helper::outcome<int, b_detail> result = call helper::audit_data<b_detail>(callable b_failure_data, callable double, callable positive)
+    match result
+        helper::rejected => domain::b_failure(result.value.reason)
+        helper::succeeded => ok result.value
+
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        sample: [] => ok
+    ok

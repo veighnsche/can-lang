@@ -1,0 +1,76 @@
+{
+  "captured_at": "2026-09-24T00:22:23.327492+00:00",
+  "repository_sources": {
+    "product-alternatives.md": {
+      "sha256": "7601ae784ced75a86b03c6706a6a70f8663bf6ad8932a7ea734394e8d93e9d5e",
+      "bytes": 34053
+    },
+    "server-evidence.md": {
+      "sha256": "6b50fd3cc77a7ec7677026d9df4336221a636555e6935e9fdcac7e3c46a20163",
+      "bytes": 16498
+    },
+    "browser-evidence.md": {
+      "sha256": "c40770a1edb08b471ea85cc1241a0f90a4e93c43cdc0fc16a253f0233fbffd87",
+      "bytes": 13118
+    },
+    "lifetime-deployment-evidence.md": {
+      "sha256": "ff3e4d05d4672ca734b3af17bb489b26ee02eb3a677847200654b2c252eddab8",
+      "bytes": 14145
+    },
+    "platform-research.md": {
+      "sha256": "cef9f8980c415481c256fd1aa86e7807c2abdf6e761148ce533ef89dd6b3eda8",
+      "bytes": 11661
+    },
+    "evaluation-protocol.md": {
+      "sha256": "5c417a94226935399ed7ef342882b1ed1a1f845359900a8adf4da9744be2ce38",
+      "bytes": 10693
+    },
+    "constraints.md": {
+      "sha256": "f62a35a4e5dd4d89b3dc61dda0191c24b49c0e2ba0ca035eeeca985995cf964a",
+      "bytes": 7112
+    }
+  },
+  "live_docs": {
+    "https://docs.typesafe.ai/llms.txt": {
+      "snapshot": "typesafe-index.txt",
+      "sha256": "3bad966207794ce900ebc81759fd48185cd2d1f287df13a08ae4d601e96450fd",
+      "bytes": 16019
+    },
+    "https://docs.typesafe.ai/api.md": {
+      "snapshot": "typesafe-api.md",
+      "sha256": "7ea1c82d9d16bd06e3d38885a5292548293f91e6d1ade4682c27398ced51a9e5",
+      "bytes": 11772
+    },
+    "https://docs.typesafe.ai/primitives/choice.md": {
+      "snapshot": "typesafe-choice.md",
+      "sha256": "4c55085131f8f2d7ae1faefdec52b1c7b379d40657d701cd2c786021cfe9dac9",
+      "bytes": 26794
+    }
+  },
+  "disagreement_source_investigation": {
+    "compiler/internal/check/assertions.go": {
+      "sha256": "65e7f66c7e0c666d6564a998dde5581557d12aa6aaa17e21228a2296a7088e6a"
+    },
+    "compiler/internal/sql/cardinality.go": {
+      "sha256": "566650ac20562a7b5d88bc572e9ff5269945939f2577fb4b6d791eb1e0a0c574"
+    },
+    "runtime/platform/sql/pool.ts": {
+      "sha256": "2df9ab8542576cfdc2523779aa5155946be400a930a1f421df823740d217471e"
+    },
+    "runtime/platform/sql/transaction.ts": {
+      "sha256": "28c714f404831b4162d5d2cebbd821266cda0fd3a29d38c6a3ab52853de8e765"
+    },
+    "runtime/platform/html.ts": {
+      "sha256": "b7542861ad32d16301abc1d26deacea4144062151a5d864163db49c92cd51131"
+    },
+    "tests/integration/applications_test.go": {
+      "sha256": "e7e5bc724c4cc2e5b624333ee446526b0e6a1579f1c1e5652fdbc9d569a116ab"
+    },
+    "tests/integration/browser/forms.mjs": {
+      "sha256": "33f2a87bf78efac7da4d7f5f1cd95a7efbc2d899e3b82dac54a87fc65dfdbbbf"
+    },
+    "tests/integration/browser/assets.mjs": {
+      "sha256": "5cb9b179d32d45965d45f59ba0275c3cf643157d3e7aa0b14ed028203376cc42"
+    }
+  }
+}

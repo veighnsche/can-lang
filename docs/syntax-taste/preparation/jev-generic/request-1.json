@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "Can is for AI coding agents, with correctness and reliable edits first and total tokens per successful task second. This question selects a bounded technical experiment, not syntax or production semantics. There are no external users requiring compatibility. Generated TypeScript should use native JS/Bun operations with only contract adapters.",
+    "observations": "At current HEAD, 28/28 assertions pass in an isolated helper project with two callers. Caller A emits only domain::a_failure and caller B only domain::b_failure. Direct match chain keeps each exact bound but repeats work. A shared fixed-bound audit_fixed declares both errors, so each caller handles an impossible other arm. A generic outcome<int,failure> data variant preserves each payload type but requires conversions into and out of completion. Explicit transform and inspect callable parameters expose the operations required by the public helper. Concrete specialization checks operations inside a generic body but its signature alone does not reveal those requirements.",
+    "limits": "The probe used singleton error sets and measured source lines, not agent success or total tokens. An arbitrary finite caller error set cannot currently be a source error type parameter; compiler-owned collection combinators specialize callback errors. A trial must preserve named finite outward errors and fail when an operation contract is unmet. Avoid adding many intrinsics without evidence."
+  },
+  "questions": {
+    "next_generic_trial": {
+      "type": "choice",
+      "instructions": "Which next bounded trial most directly tests whether authored reusable helpers need an error-set abstraction beyond the strongest current idioms? Do not infer final language adoption.",
+      "criteria": {
+        "explicit_error_set_trial": "Prototype an explicitly named finite error-set parameter for authored helpers; compare against direct chains and result-as-data on two larger disjoint error sets, with explicit callable inputs for required operations.",
+        "data_result_only": "Treat generic outcome data plus adapters as permanently sufficient; spend the next trial measuring that design under multi-error callers without a compiler prototype.",
+        "fixed_bound_only": "Retain one written union bound in each reusable helper and require callers to handle or map unreachable members; measure only this current approach on larger cases.",
+        "catalogue_intrinsics": "Add compiler-owned specializations for each useful retry/audit helper, as collection combinators do, instead of testing a general authored failure-set parameter."
+      }
+    }
+  }
+}

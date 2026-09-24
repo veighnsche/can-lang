@@ -1,0 +1,5 @@
+package domain
+    provides [a_failure, b_failure]
+    uses []
+error 1000101 a_failure(str reason)
+error 1000102 b_failure(str reason)

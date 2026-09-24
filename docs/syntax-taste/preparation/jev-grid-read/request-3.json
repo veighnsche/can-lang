@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "The proposed Can browser frontend needs to obtain invoice rows, revision and totals before editing and to reconcile uncertain saves without assuming rollback. A separate JSON save action is planned, while HTML form handling remains its own action. Shared strict codecs and transparent wire records exist; owner data requires factory/projection conversion. Authentication, tenant and resource checks must run on every read and write. Can is optimized for AI agents rather than human syntax and has no compatibility obligation. Compare bounded native-backed read designs; no production action implementation has shipped."
+  },
+  "questions": {
+    "grid_read": {
+      "type": "choice",
+      "instructions": "What read boundary should engineering specify so the Can grid can start and resolve uncertain saves with typed data?",
+      "criteria": {
+        "get_json_action": "Extend the bounded action grammar with `get` and `input none` for JSON output. The browser gets one checked snapshot action for both startup and authorized reread, preserving strict status and codec behavior. Server rechecks actor, tenant and resource. The save remains POST with its own mutation replay contract.",
+        "html_bootstrap_plus_read_post": "Use a server-generated typed bootstrap payload in the HTML page, while uncertainty resolution posts a JSON read request. Reuse POST-only action syntax; specify how safe HTML and browser asset find and verify the initial payload. This adds two mechanisms for the same snapshot.",
+        "save_post_replay_only": "Avoid new read source syntax: parse current page inputs as the starting draft and resubmit the same operation ID if a response is lost. This keeps one JSON action but weakens explicit fresh-read reconciliation and typed initial snapshot linkage."
+      }
+    }
+  }
+}

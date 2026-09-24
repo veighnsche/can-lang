@@ -1,0 +1,20 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "fixture_contract": {
+      "type": "choice",
+      "choice": "discriminating_trial",
+      "confidence": 0.53,
+      "probabilities": {
+        "lexical_injection": 0.34,
+        "discriminating_trial": 0.64,
+        "exported_scenarios": 0.01,
+        "exported_seams": 0.01
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1277,
+    "output_tokens": 67
+  }
+}

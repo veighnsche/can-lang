@@ -1,0 +1,5 @@
+# Grid initial-load and reconciliation consultation
+
+24 September 2026. Three fresh SystemOne requests with fully rewritten context, question and option prose were checked before sending. The [wording audit](wording-audit.json), complete [requests](request-1.json), [second request](request-2.json), [third request](request-3.json), and [responses](response-1.json), [second response](response-2.json), [third response](response-3.json) are saved. All three selected `get_json_action`, with probabilities 1.00, .96 and .99. Agreement is advice, not evidence of browser or server behavior.
+
+Engineering selects a bounded GET JSON snapshot action because one typed, authorized native Fetch path serves initial load and later reread. HTML bootstrap plus POST read would duplicate wire paths; extracting form DOM values and relying only on save replay would leave no independent typed refresh. The GET action does not resolve an identified uncertain write by itself if another writer changed the revision; the save operation-ID ledger settles that identity. The [integrated contract](../integrated-action-contract.md) fixes both boundaries.

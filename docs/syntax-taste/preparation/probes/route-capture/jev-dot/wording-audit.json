@@ -1,0 +1,4 @@
+{
+  "review": "Manually checked each complete request before sending: same agent-first criteria, native preference, selected exact action, optional captures, live Bun cross-route dot normalization, inability to recover raw target, builder guard, independent authorization and visible malformed escape handling. Three alternatives have identical obligations and tradeoffs. All explanatory prose in state, instruction and option descriptions is rewritten. Stable technical strings and keys retain exact meaning. Distinct wording is not proof against framing bias.",
+  "all_explanatory_triples_distinct": true
+}

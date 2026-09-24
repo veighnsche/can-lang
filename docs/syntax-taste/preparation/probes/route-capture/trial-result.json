@@ -1,0 +1,123 @@
+{
+  "bun": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "assertions": 66,
+  "liveCases": [
+    [
+      "POST",
+      "/tenants/1/invoices/7",
+      200
+    ],
+    [
+      "PATCH",
+      "/tenants/1/invoices/7",
+      405,
+      "POST"
+    ],
+    [
+      "POST",
+      "/tenants/01/invoices/7",
+      400
+    ],
+    [
+      "POST",
+      "/tenants/%ZZ/invoices/7",
+      400
+    ],
+    [
+      "POST",
+      "/tenants/%2F/invoices/7",
+      400
+    ],
+    [
+      "POST",
+      "/tenants/%2E/invoices/7",
+      404
+    ],
+    [
+      "POST",
+      "/tenants/%2E%2E/invoices/7",
+      200
+    ],
+    [
+      "POST",
+      "/tenants/1/invoices/7/",
+      404
+    ],
+    [
+      "POST",
+      "/invoices/new",
+      405,
+      "GET"
+    ],
+    [
+      "GET",
+      "/invoices/new",
+      200
+    ],
+    [
+      "POST",
+      "/invoices/A%20B%25%E2%82%AC",
+      200
+    ]
+  ],
+  "served": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "url": "http://127.0.0.1:65352/tenants/1/invoices/7",
+      "status": 405,
+      "allow": "POST"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/01/invoices/7",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/%ZZ/invoices/7",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/%2F/invoices/7",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/invoices/7",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/tenants/1/invoices/7/",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/invoices/new",
+      "status": 405,
+      "allow": "GET"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:65352/invoices/new",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:65352/invoices/A%20B%25%E2%82%AC",
+      "status": 200
+    }
+  ]
+}

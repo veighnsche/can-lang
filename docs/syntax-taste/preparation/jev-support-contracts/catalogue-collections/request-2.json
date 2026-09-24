@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Agent completion and sound contracts lead this comparison; tally all successful-task tokens afterward. Old generated layouts need no compatibility, and equivalent operations should run through JavaScript/Bun with minimal adapters. The language admits a controlled distribution catalogue only: source cannot freely import JS/Bun. Existing typed fetch, cryptography and process calls can implement provider protocols; no documented necessary SDK defeats that route yet. Use a named invoice/webhook API and inject auth, duplicate event/key, bad payload, version drift, timeouts, sensitive diagnostics, lifecycle, immutable result and fixture behavior. Immutable collections currently wrap native Map and Set, copying the container at each point update; a mostly distinct-key fold therefore has a quadratic copying implication, without measured performance data. A bulk test must fix key equality, first insertion order, duplicate replacement, callback order/errors, no mutable exposure and realistic volumes. Compare native bulk construction and a tightly scoped internal builder only if evidence warrants. This consultation chooses experiments.",
+  "questions": {
+    "di19_provider": {
+      "type": "choice",
+      "instructions": "Select the next provider-boundary experiment given no demonstrated required SDK blockage.",
+      "criteria": {
+        "protocol_catalogue": "Use the protocol client as control, then fill a proven low-level admitted-operation gap rather than widening source imports.",
+        "distribution_adapter": "If the protocol path is materially costly, test a narrowly admitted native SDK adapter in the distribution with deterministic contract checks.",
+        "binding_manifest": "Reserve a constrained external SDK manifest experiment for a reproduced operation impossible or materially impractical through HTTP and distribution code."
+      }
+    },
+    "di20_bulk": {
+      "type": "choice",
+      "instructions": "Choose the next bounded bulk-map/set trial after realistic size and error behavior are measured.",
+      "criteria": {
+        "retain_folds": "Use current cloning updates as the baseline and defer additions unless realistic throughput or completion trials expose a meaningful cost.",
+        "bulk_operations": "Compare targeted bulk functions using internal native mutation and a single immutable publication, specifying duplicates and callback timing.",
+        "scoped_builder": "Compare an owner-like temporary Map/Set builder when fixed bulk APIs fail; reject post-publication use and mutable aliases."
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "startedAt": "2026-09-24T00:18:13.883003+00:00",
+  "status": 200,
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "request_sha256": "d376e34e06dc9d2abba4a613374768c0f5ed6be22b471b9627488e04dcc7161a",
+  "returned_model": "jev-1.13.0"
+}

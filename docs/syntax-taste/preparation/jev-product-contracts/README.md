@@ -1,0 +1,81 @@
+# Jev product-contract technical advice
+
+24 September 2026. Preparation only: **no syntax selected, canonical disposition changed, product promise made, runtime edited, or platform qualified.**
+
+## Scope and provenance
+
+This consultation covers DI-09a/b/d, DI-10, DI-11, DI-13, DI-14a/b and DI-15a using the supplied [product alternatives](../product-alternatives.md), [server](../server-evidence.md), [browser](../browser-evidence.md), [lifetime/deployment](../lifetime-deployment-evidence.md), [platform research](../platform-research.md), [evaluation protocol](../evaluation-protocol.md) and [constraints](../constraints.md). Their inspected implementation baseline is `02a549d28fd5fc5c3996160e65a97de332390d30`.
+
+Twelve narrow technical judgments were each submitted in three fresh requests. Eleven independent questions shared one evidence state in each of three calls. A separate three-call field-identity consultation keeps the static field-link question distinct from row encoding. No earlier response was included in any request. Jev was asked which experiments to prioritize, **not** to choose user syntax, product preference, or a durable-offline commitment.
+
+All six calls returned HTTP 200 and model `jev-1.13.0` after requesting `jev-latest`. Reported usage totals **14,944 input tokens and 1,599 output tokens (16,543 total)**. This is consultation usage, not measured successful coding-task cost. Exact request bytes, raw response bytes, returned usage, UTC start time, elapsed time and SHA-256 hashes are saved alongside this report. Credentials are neither stored nor printed.
+
+The [TypeSafe skill](../../../../.agents/skills/typesafe-ai/SKILL.md) and live [API](https://docs.typesafe.ai/api) / [Choice](https://docs.typesafe.ai/primitives/choice) documentation were read. The index was accessible via web; Markdown API/Choice web reads failed, so direct HTTPS fetches supplied the live content. Local snapshots and hashes are in [sources.json](sources.json). Choice supplies categories and distributions, **not explanations**. Every causal interpretation below is engineering analysis rather than a reason authored by Jev.
+
+## Request audit
+
+[consult.py](consult.py) authored three complete versions of the evidence, question instructions and option descriptions. [wording-audit.json](wording-audit.json) checks all 65 explanatory paths before transmission. [consult-field-links.py](consult-field-links.py) and its [audit](field-links-wording-audit.json) check all nine explanatory paths for the separate field-identity judgment. Every explanatory leaf differs across its three requests. Stable keys, source hash and technical identifiers preserve their exact meaning. Option display order rotates while A/B/C/D semantics stay fixed; D permits insufficient evidence.
+
+Manual review checked the same facts, evidence gaps, constraints and alternative meanings in each triple. The source packets were synthesized into rewritten state rather than appended verbatim, so the explanatory context also varies. Mechanical uniqueness proves neither semantic equivalence nor absence of framing bias; manual equivalence remains a fallible review judgment. Rephrasing and order rotation do not create independent empirical observations or guarantee bias removal.
+
+## Results
+
+Numbers below are the selected option's reported probability in request order. They are **not** probabilities that a design is correct. Full distributions and confidence are retained in the raw responses and [summary.json](summary.json).
+
+| Judgment | Selected option in calls 1 / 2 / 3 | Selected probability | Engineering reading |
+| --- | --- | --- | --- |
+| DI-09a endpoint prototype | Checked exact-path identity / same / same | .96 / .94 / 1.00 | Compare exact mount/method/input/output/URL linkage before coupling it to captures. |
+| DI-09b field identity | Wire-derived checked field references / same / same | .78 / .99 / .79 | Isolate control/retained-value/error-path links from a full action-form mechanism. |
+| DI-09b line rows | Checked keyed form rows / same / same | .79 / .63 / .52 | A useful candidate, but the third distribution nearly ties validated parallel arrays (.42). |
+| DI-09d action cases | Checked status/render/swap mapping / same / same | .90 / .68 / .57 | Test exhaustive case linkage; typed target scopes and runtime absence remain separate. |
+| DI-10 safe HTML | Static checking of existing literal builders / same / same | .82 / .89 / .99 | Isolate earlier diagnostics before introducing a component representation. |
+| DI-11 browser profile | Bounded main-thread Can target / same / same | 1.00 / .99 / .97 | Narrow target qualification can test the actual Can-authored frontend requirement. |
+| DI-11 offline minimum | View-memory draft with explicit retry / same / same | .91 / .99 / .86 | Provisional evaluation baseline only; does not choose a durability promise. |
+| DI-11 lifecycle | View resources separate from application-owned saves / same / same | .98 / .75 / .93 | Retain identified mutation accountability after UI disposal. |
+| DI-13 observation | Companion scenarios / source scenario runner / companion scenarios | .43 / .55 / .68 | Tooling sequence is unresolved; all meaningful options still require external observations. |
+| DI-14a mutation rows | Paired bounded RETURNING trial / baseline first / paired bounded RETURNING trial | .98 / .63 / .97 | The timing of prototype investment is sensitive to wording; executable baseline is required either way. |
+| DI-14b schema assurance | Versioned deterministic snapshot trial / same / same | .61 / .76 / .90 | Evidence to trial a bounded schema artifact, not permission to claim deployed-schema agreement. |
+| DI-15a shutdown | Operation-specific probes and host qualification / same / same | .96 / .69 / .55 | Shared cancellation context remains a plausible next comparison (.39 in call 3). |
+
+Ten of twelve winners agree across the three requests. Agreement is advice about experimental ordering, not an adoption vote. Several agreed winners are materially less stable than endpoint or browser-profile choices: field rows, action mapping, lifecycle, schema assurance and shutdown show meaningful distribution changes.
+
+## Disagreement investigation
+
+### DI-13: companion scenarios versus an authored runner
+
+The first request gave A=.43 and C=.39 with confidence .24; the second gave A=.44 and C=.55 with confidence .40; the third gave A=.68 and C=.28 with confidence .58. The candidates overlap: both can inspect real HTTP, browser and database outcomes, while the authored runner adds a source-facing coordination mechanism. The facts do not include measured setup burden, reusable-scenario failure rates or agent repair cost that could distinguish that added machinery. No classifier explanation identifies why the winner moved.
+
+A targeted source recheck confirmed that [opaque assertions](../../../../compiler/internal/check/assertions.go) reject named expected values and require bare `ok`, that [browser form checks](../../../../tests/integration/browser/forms.mjs) inspect real response statuses and resulting DOM, and that [the integration harness](../../../../tests/integration/applications_test.go) requires a staged archive, Node/Playwright and installed Chromium. Its live database legs can be skipped separately. [The asset configuration](../../../../runtime/platform/html.ts) still excludes 503 from swaps, and [the asset test](../../../../tests/integration/browser/assets.mjs) checks that configuration. These source observations reproduce the claimed boundary, **not** the missing dedicated account-search 503 browser case.
+
+**Engineering advice:** register and run companion protocol/browser/live-database scenarios first because that machinery already supplies the required observation surfaces. Use wrong-body 200, executable hostile output, unswapped 503, UI/database disagreement and duplicate webhook effects as negative controls. Preserve checked fixture arguments, identity, isolation/FIFO and label-rename stability. Consider source-authored orchestration only after a reproducible reuse/repair cost appears. Read-only response projections can improve source diagnostics but cannot establish DOM swaps or durable effects. This is a conservative sequence based on existing capability and missing measurements, not resolution by a 2–1 vote.
+
+### DI-14a: paired RETURNING prototype versus baseline first
+
+Requests 1 and 3 favored a paired trial at .98 and .97. Request 2 instead assigned .63 to baseline first, .19 to a paired trial and .18 to insufficient evidence. All request versions state the same absent canonical-row/concurrency measurements and alternatives. Small emphasis changes around what should precede admission may affect how the model weighs premature implementation versus a useful controlled comparison; that is a hypothesis, not an observed model rationale. There is no empirical result here deciding the investment sequence.
+
+Source reinspection confirmed [cardinality admission](../../../../compiler/internal/sql/cardinality.go) accepts only bounded `SELECT` for row results and rejects mutation `RETURNING`; [mutation execution](../../../../runtime/platform/sql/pool.ts) exposes affected-row counts; and [transaction completion](../../../../runtime/platform/sql/transaction.ts) still reports `commit_unknown` after a commit decision can no longer be resolved locally. The limitation is real, but these facts do not show that a correct transaction-local read is too costly or unworkable.
+
+**Engineering advice:** establish the executable current-Can invoice/outbox baseline and freeze a case that genuinely requires canonical post-write values. If that case exposes extra query cost, projection/repair burden or another measurable gap, pair it with a bounded PostgreSQL `RETURNING` prototype. The comparison must retain parameter binding, row codecs, declared finite cardinality, zero/multiple-row handling, constraints, tenant/revision predicates and uncertain-commit reconciliation. Record trigger/concurrency assumptions behind canonical returned values. Do not generalize this experiment into multi-dialect admission or infer commit certainty from returned rows. This ordering makes the missing baseline explicit while preserving the majority's useful comparative candidate.
+
+### Material variation despite matching winners
+
+- **Rows:** keyed rows beat validated parallel arrays by only .10 in request 3. Reorder, removed/partial rows, duplicate keys and stable error association are the discriminator; keyed paths must not silently invent nested-form semantics. Keep the baseline's explicit stable IDs/alignment checks strong.
+- **Action mapping:** request 2 assigns .27 to explicit handler/policy improvements; request 3 assigns .38 to scoped typed target references. These solve different portions of the problem and can compose. Reproduce 200/422/409/403/503, retained input, focus/announcements, target removal and out-of-order responses before deciding which addition earns its complexity. Preserve real failure statuses.
+- **Shutdown:** the third request assigns .55 to operation-specific qualification and .39 to shared cancellation propagation. Both retain ownership and distinguish timeout from settlement. No supplied evidence shows that context propagation would cancel currently unsupported SQL/callback work. Inventory and qualification should therefore produce the support matrix that a later shared context would consume.
+
+## Bounded engineering recommendations
+
+1. **Route and form identities:** first evaluate exact endpoint linkage and wire-derived field references as separable experiments against centralized builders and factored validation/render helpers. Exercise source route rename, wire-path change, method change, wire-field rename and independent domain-field rename. Export/import identity must compose with DI-05. Neither endpoint identity nor safe URL admission proves authorization, deployment availability or DOM presence. Add captures only with encoding, conversion, precedence and ambiguity semantics verified on the pinned Bun runtime.
+2. **Safe rendering:** compare literal checking of current builders before a declarative component model. Preserve escaping, URL policy, immutable nodes, dynamic structural checks and controlled assets. Test hostile text/attributes, invalid URLs, known-invalid structure, dynamically invalid structure and wrong field/action references. Extra accessibility tags are catalogue coverage, not evidence for grammar.
+3. **Browser qualification:** use a separately compiled main-thread Can slice for shared codecs/validation, DOM/events, Fetch, explicit state/rendering and disposal. Verify transitive rejection of server-only capabilities through imports, generics and callbacks, absence of secrets/server modules from the bundle, exact wire integers/finite floats, record/variant/option parity, unknown/duplicate rejection, immutable aliases and completion boxing. A foreign client and SSR remain useful narrower baselines. Worker support, a framework and a reactive effect system do not follow from this advice.
+4. **Offline evaluation and lifecycle:** start the representative experiment with in-memory retained drafts, explicit unsaved/failed state and deliberate retry while the view remains alive. This baseline makes **no** navigation/reload durability promise. Fault-test a versioned durable draft and a durable identified mutation queue independently. Storage failure/eviction, tenant/user isolation, logout, migration, crash windows, multiple tabs and authorization expiry remain their additional obligations; app-shell offline reload and background sync are separate. Track server revision, current edits, mutation identity and uncertain outcomes; late replies must not overwrite newer drafts. Separate view cleanup from application-owned save settlement/reconciliation, without treating Fetch abort as rollback.
+5. **Schema assurance:** trial a provenance/versioned schema snapshot only with explicit dialect/version, supported query subset, migration freshness and deployment drift checks. Compare against migration-linked live-database tests. Keep runtime codecs. A build check against any snapshot or live database certifies only the checked input, not an unchecked production schema.
+6. **Shutdown:** qualify native operation-specific abort and deadlines, acquisition versus active work, owner/lease drain and named host grace/kill behavior before promising a shared cancellation contract. Observe disconnect during commit/outbox, hung losers, close timeout and forced exit against real rows/external effects. Host termination bounds process lifetime, not cleanup or rollback. No changes to native empty-race/winner semantics or consumed-fault reporting are recommended by this consultation; DI-15b/c require their own focused evidence if revisited.
+
+These are inputs to the registered trials in the [evaluation protocol](../evaluation-protocol.md). Retain current authority until a later explicit disposition. A new mechanism still needs the relevant compiler/runtime/security tests and a reproduced baseline failure or material benefit on held-out agent tasks; shorter source and Jev confidence do not satisfy that gate.
+
+## Verification and limits
+
+The preparation scripts parsed all six requests and responses; each expected question has one Choice result with a complete A/B/C/D distribution. Saved byte hashes were verified against metadata. All six API calls succeeded. The wording audit ran before sending, and relevant source branches were reread to investigate the two disagreements; additional source hashes are in [sources.json](sources.json).
+
+No application probe, runtime test, live database, browser run, Linux qualification or agent benchmark was executed for this consultation. Runtime checks are not applicable to these document/Python-artifact-only additions. Existing component tests described by evidence packets are not new test results from this work. No classifier result establishes correctness, security, immutable semantics, accessible behavior or lifetime boundedness. The three runs share an author, evidence selection, alternatives and model, so agreement is correlated and remains sensitive to framing.

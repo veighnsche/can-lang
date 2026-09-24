@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Can serves AI coding agents even where its source is uncomfortable for humans. Correctness, reliable modification and explicit boundaries take priority; total tokens per successful agent task are secondary. There are no external users or old-syntax compatibility duties. Generated TypeScript must delegate equivalent operations to native JavaScript/Bun with only necessary Can adapters. Choose future design contracts, not implemented behavior.",
+    "generic_evidence": "Current exported generic bodies are checked at concrete specialization; a body can add value + value while its public signature stays unchanged, so a new consumer lacking addition fails later. Ordinary named callable inputs and dictionary records already express required operations. A current two-caller probe passed 28 assertions and showed those explicit inputs work; no held-out agent comparison establishes their cost. Existing local templates deliberately use specialization checks. The exact universally valid operation set needs enumeration. DI-03 finite error-set syntax is deferred pending measured benefit and is separate from declaring operations.",
+    "offline_evidence": "The recommendation target includes one Can-authored browser invoice grid with keyboard edits, local unsaved drafts, immediate totals, optimistic save/rollback, slow or disconnected behavior and disposal. It does not state that drafts survive reload or that mutations are automatically queued offline. Current Can has no browser execution target; a bounded main-thread target is planned. Three earlier fresh Jev requests favored an in-view memory draft and explicit retry as the evaluation baseline, explicitly not a final durability promise. Durable draft storage adds user/tenant isolation, logout, schema migration, eviction and multi-tab rules; a mutation queue also adds authorization expiry, operation identity and uncertain-commit reconciliation. Application-owned saves must outlive view cleanup without a client abort being treated as rollback."
+  },
+  "questions": {
+    "public_generic_operations": {
+      "type": "choice",
+      "instructions": "Which planned public generic operation policy best serves independent agent-authored libraries on the evidence, without assuming an unmeasured token advantage?",
+      "criteria": {
+        "explicit_public": "For an exported generic, permit only enumerated universal operations and operations supplied in written named callable/dictionary inputs; reject a hidden new + in the generic declaration until an input is added. Preserve specialization checking for local non-exported templates. No implicit instance search or new trait syntax; compile supplied callables to native JS function calls.",
+        "template_artifact": "Retain specialization-checked exported generic bodies, including hidden body requirements, but emit a versioned dependency/body-digest requirement artifact and recheck all consuming specializations after changes. Diagnostics name the body requirement and instantiation path; the artifact cannot promise universal correctness for unknown future types.",
+        "small_capabilities": "Add a finite compiler-defined capability vocabulary to public type parameters, with exact operations and any enforceable laws; require the body to declare + through that capability. Instantiate only when the concrete type satisfies it. Named callables remain for unsupported domain operations; no general traits or implicit arbitrary instances."
+      }
+    },
+    "grid_offline_promise": {
+      "type": "choice",
+      "instructions": "What final minimum offline behavior should the first Can-authored invoice grid promise, given the stated product goal and the additional obligations of persistence and queuing?",
+      "criteria": {
+        "in_view_explicit_retry": "Keep unsaved edits in memory while the view stays alive; remain editable during disconnection, show unsaved/failed state, and allow deliberate retry or reconciliation after reconnect. An identified in-flight save remains application-owned through view disposal. Promise neither reload/navigation durability nor automatic offline queue; test loss and late responses visibly.",
+        "durable_draft": "Persist a versioned, user/tenant-scoped draft locally so it can survive reload/navigation and be restored after reconnect, but do not automatically send a pending write. Specify storage denial/eviction, schema migration, logout erasure and cross-tab conflict. Saves still need explicit retry and server reconciliation.",
+        "durable_queue": "Persist draft and identified save intent through reload and automatically replay writes after reconnection, with authentication expiry, revision conflict, idempotency key, crash window, multiple-tab arbitration and uncertain-commit reconciliation. The server must deduplicate or expose a safe reconciliation contract; a client abort cannot imply rollback."
+      }
+    }
+  }
+}

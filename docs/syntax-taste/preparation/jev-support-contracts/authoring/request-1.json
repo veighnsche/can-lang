@@ -1,0 +1,32 @@
+{
+  "model": "jev-latest",
+  "state": "Can is agent-first: correct semantics, explicit contracts and edit reliability are hard gates; full tokens per successful task are secondary. Human visual taste is not a goal and no outside users require compatibility. Positional nominal record construction follows declaration order; adjacent int total and int recent show a same-type reorder risk, but no controlled production misbinding has been observed. Strong domain types, named factories and with replacements are available; a factory merely forwarding two ints does not remove the ambiguity. Calls, constructors and assertions currently use one physical line. A review counted 154 example lines above 120 characters, longest 336, but no agent failure was measured. Precise spans and a comment-preserving formatter are already accepted; multiline syntax is deferred. The checker rejects some immediately forwarded locals such as meaningful permitted, with no quantified agent cost. Compare creation, same-type reorder/rename, long-form edit, parser/formatter repair and meaningful versus redundant local on the same controlled agent task. Keep nominal immutability, evaluation order and assertion behavior. This selects trials, not exact syntax or policy.",
+  "questions": {
+    "di22_fields": {
+      "type": "choice",
+      "instructions": "Which next trial should resolve whether named-field construction reduces same-type reorder errors?",
+      "criteria": {
+        "positional_controls": "Retain positional construction with stronger domain types or genuinely safe factories; compare silent swaps and agent repairs against the baseline.",
+        "named_form_trial": "Prototype nominal named-field construction with duplicate, missing and unknown checks plus defined evaluation order; measure reorder safety.",
+        "tooling_trial": "Try a checked constructor rewrite or suspicious reorder diagnostic; quantify missed edits and false positives."
+      }
+    },
+    "di23a_layout": {
+      "type": "choice",
+      "instructions": "Which layout trial should follow accepted formatter and span work if long-form repair remains costly?",
+      "criteria": {
+        "formatter_first": "Complete canonical comment-preserving formatting, precise spans and refactor helpers under current one-line grammar; measure repair outcomes.",
+        "delimited_continuation": "Only for remaining measured failures, trial newline-as-whitespace inside explicit delimiters with specified comments, trailing separators and recovery."
+      }
+    },
+    "di23b_local": {
+      "type": "choice",
+      "instructions": "Which validity-policy trial should test an immediately forwarded but meaningful local?",
+      "criteria": {
+        "hard_rule_fix": "Retain rejection with a precise diagnostic and safe automatic inline fix; measure whether it prevents mistakes or costs repairs.",
+        "advisory_lint": "Allow the local and report style advice, preserving an intentionally named step; check evaluation and agent completion.",
+        "semantic_only_rule": "Reserve hard errors for a demonstrable semantic ambiguity, with exact negative examples; make pure style cases advisory."
+      }
+    }
+  }
+}

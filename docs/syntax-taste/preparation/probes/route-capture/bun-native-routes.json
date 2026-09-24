@@ -1,0 +1,108 @@
+{
+  "bun": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "observations": [
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 131\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"1\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/1/invoices/7\"}"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/1/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 404 Not Found\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 89\r\n\r\n{\"route\":\"fallback\",\"method\":\"PATCH\",\"url\":\"http://127.0.0.1:65514/tenants/1/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/01/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 133\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"01\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/01/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%ZZ/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 135\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"�\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/%ZZ/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2F/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 133\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"/\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/%2F/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%5C/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 134\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"\\\\\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/%5C/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%ED%A0%80/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 141\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"�\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/%ED%A0%80/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%31/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 133\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"1\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/%31/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2E/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 129\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\".\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2E%2E/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 122\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"..\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/a\\b/invoices/7",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 136\r\n\r\n{\"route\":\"invoice\",\"method\":\"POST\",\"params\":{\"tenant_id\":\"a\\\\b\",\"invoice_id\":\"7\"},\"url\":\"http://127.0.0.1:65514/tenants/a/b/invoices/7\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7/",
+      "exit": 0,
+      "response": "HTTP/1.1 404 Not Found\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 89\r\n\r\n{\"route\":\"fallback\",\"method\":\"POST\",\"url\":\"http://127.0.0.1:65514/tenants/1/invoices/7/\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7/extra",
+      "exit": 0,
+      "response": "HTTP/1.1 404 Not Found\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 94\r\n\r\n{\"route\":\"fallback\",\"method\":\"POST\",\"url\":\"http://127.0.0.1:65514/tenants/1/invoices/7/extra\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/new",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 100\r\n\r\n{\"route\":\"slug\",\"method\":\"POST\",\"params\":{\"slug\":\"new\"},\"url\":\"http://127.0.0.1:65514/invoices/new\"}"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices/new",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 89\r\n\r\n{\"route\":\"static\",\"method\":\"PUT\",\"params\":{},\"url\":\"http://127.0.0.1:65514/invoices/new\"}"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices/new",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 89\r\n\r\n{\"route\":\"static\",\"method\":\"GET\",\"params\":{},\"url\":\"http://127.0.0.1:65514/invoices/new\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/A%20B%25%E2%82%AC",
+      "exit": 0,
+      "response": "HTTP/1.1 200 OK\r\nContent-Type: application/json;charset=utf-8\r\nDate: Thu, 24 Sep 2026 01:00:17 GMT\r\nContent-Length: 118\r\n\r\n{\"route\":\"slug\",\"method\":\"POST\",\"params\":{\"slug\":\"A B%€\"},\"url\":\"http://127.0.0.1:65514/invoices/A%20B%25%E2%82%AC\"}"
+    }
+  ]
+}

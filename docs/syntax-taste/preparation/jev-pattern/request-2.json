@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "audience": "The intended author is an AI coding agent, even where the resulting syntax is hard for a person. Prefer correct generation and safe refactoring; count whole successful-task tokens only as a secondary metric.",
+    "observed_rule": "Current ordinary matching gives paid/pending/declined bare identifiers nominal-case meaning when resolvable. Unknown plain decliend binds the entire scrutinee, so a misspelled last arm remains accepted when refunded extends the variant. A correctly spelled three-arm match reports missing refunded; a nonexistent decliend() constructor is rejected. The probe ran on the reviewed revision and current checker source is unchanged.",
+    "constraints": "The candidate rule has to reject the misspelled final case, admit deliberate wildcard/whole-value binding, and compose through nested and array patterns without swallowing newly added leaves. Generated TypeScript should use equivalent JS/Bun operations plus contract glue. With no external adopters, migration is not a constraint. A later user discussion decides concrete spelling."
+  },
+  "questions": {
+    "pattern_intent_trial": {
+      "type": "choice",
+      "instructions": "Select the strongest first technical trial among these complete matching policies. All diagnose decliend; weigh compositional checks and likely repair clarity while acknowledging missing agent measurements.",
+      "criteria": {
+        "explicit_binding_everywhere": "Across all matching contexts, a plain name must name a nominal leaf; an unknown one is invalid. Use bind x for captures and _ for discard, including array elements and nested destructuring.",
+        "explicit_both_intents": "Reserve constructor-shaped leaf() for tests and bind x for value capture within every variant-valued pattern location; keep _ as ignore. A lone name there is diagnosed.",
+        "contextual_variant_rule": "Use type-directed checking only for variant-valued locations: recognized simple leaf names are tests and unresolved names fail; bind x and _ are deliberate fallback. Outside that type context, plain binder behavior remains."
+      }
+    }
+  }
+}

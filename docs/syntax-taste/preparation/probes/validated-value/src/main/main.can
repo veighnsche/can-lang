@@ -1,0 +1,74 @@
+package main
+    provides [main]
+    uses [values, codec, bytes]
+
+fn bool valid_factory_control
+    emits [values::invalid_email, values::invalid_quantity]
+    asserts
+        accepted: => ok true
+    match chain
+        call values::make_email("valid@example.test") as values::email address
+        call values::make_quantity(3) as values::quantity count
+        values::invalid_email
+        values::invalid_quantity
+        ok => ok address.address is "valid@example.test" and count.amount is 3
+
+fn bool direct_invalid
+    emits []
+    asserts
+        imported: => ok true
+    values::email address = values::email("")
+    values::quantity count = values::quantity(0)
+    ok address.address is "" and count.amount is 0
+
+fn bool updated_invalid
+    emits [values::invalid_email, values::invalid_quantity]
+    asserts
+        imported: => ok true
+    match chain
+        call values::make_email("valid@example.test") as values::email valid_address
+        call values::make_quantity(3) as values::quantity valid_count
+        values::invalid_email
+        values::invalid_quantity
+        ok => do
+            values::email invalid_address = valid_address with address = ""
+            values::quantity invalid_count = valid_count with amount = 0
+            ok invalid_address.address is "" and invalid_count.amount is 0
+
+fn bool decoded_invalid
+    emits [codec::invalid_data]
+    asserts
+        imported: => ok true
+    match chain
+        call bytes::from_utf8("{\"address\":\"\"}") as bytes::buffer email_json
+        call codec::decode_json<values::email>(email_json) as values::email address
+        call bytes::from_utf8("{\"amount\":0}") as bytes::buffer quantity_json
+        call codec::decode_json<values::quantity>(quantity_json) as values::quantity count
+        codec::invalid_data
+        ok => ok address.address is "" and count.amount is 0
+
+fn bool fixture_foreign_constructor
+    emits []
+    given
+        values::email address
+    asserts
+        imported: values::email("") => ok true
+    ok address.address is ""
+
+fn bool fixture_supplied_invalid
+    emits [values::invalid_email]
+    asserts
+        imported: => ok true
+    match call values::make_email("valid@example.test")
+        when
+            imported: "valid@example.test" => ok values::email("")
+        values::invalid_email
+        ok values::email address => ok address.address is ""
+
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

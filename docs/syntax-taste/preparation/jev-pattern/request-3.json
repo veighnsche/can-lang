@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "audience": "Can serves machine coding workflows. Human-friendly spelling has no independent value. The primary tests are semantic success and edit reliability, with prompts, code, diagnostics and retries measured secondarily as total task tokens.",
+    "observed_rule": "The checked nominal variant has leaves paid, pending and declined. Name-pattern resolution treats a recognized leaf as a case and any unknown simple identifier as an all-covering capture. The tested typo decliend at the end therefore masks both the intended declined check and a subsequently added refunded case, while declined exposes that addition and decliend() diagnoses the typo. Current source retains the same rule as the executed probe.",
+    "constraints": "A viable semantic experiment must distinguish intended nominal tests from captures at the typo site, provide intentional fallback and binding, handle embedded patterns, and retain future-case detection. Native JS/Bun lowering is required, with adapters only for Can semantics; backward compatibility is unnecessary. Treat proposed keywords as illustrative pending user syntax choice."
+  },
+  "questions": {
+    "pattern_intent_trial": {
+      "type": "choice",
+      "instructions": "For a bounded compiler experiment, choose the rule most likely to preserve case-exhaustiveness under edits without surprising nested behavior. Each alternative satisfies the typo acceptance gate; task-token evidence is still absent.",
+      "criteria": {
+        "explicit_binding_everywhere": "Make unadorned names checked case references universally, with bind x and _ as explicit capture/discard forms in both top-level and embedded patterns.",
+        "explicit_both_intents": "In variant contexts, require both alternatives to show intent: leaf() for nominal checking and bind x for capture, with _ for catch-all; a bare identifier is invalid.",
+        "contextual_variant_rule": "At positions statically expected to hold a nominal variant, plain names must resolve as admitted leaves; captures use bind x and discards _. Other expected types still interpret bare names as captures, even inside arrays."
+      }
+    }
+  }
+}

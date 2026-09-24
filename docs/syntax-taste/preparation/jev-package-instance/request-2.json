@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goal": "Choose an identity rule for an agent-authored language with no outside adopters to migrate. A correct, repairable graph matters before secondary whole-task token cost. This decision is for a planned compiler contract only.",
+    "observed": "Today project identity is derived from a single globally interpreted dependency key; the loader disallows reuse of a key for different directories and two keys for the same directory. Short package names also have one flat global table. Locked dependency rows contain root-relative paths, manifest/source/fixture hashes and active/retired numeric allocations. Existing uses entries have no dependency qualifier. The user chose uses [billing::model as bill_model, crm::model as crm_model] for the planned syntax, with each key relative to its importing project. Planned application errors drop authored numbers in favor of qualified textual identity; current nominal checks distinguish full generic specializations.",
+    "required": "The target graph allows independently authored model packages in one caller and confines imports to direct dependencies. An alias, absolute checkout directory or unrelated node cannot change a nominal error key. Shared occurrences of one locked release merge, while different releases remain separate even if their package names match. The same checked graph after dependency-key rename or relocation must preserve unchanged declaration identities; graph growth by an unrelated project does too. Reject contradictory pin data or target edges. Owner-local retirement prevents its own reuse only. The redesign may replace manifests and locks because compatibility is not required; it should not force vendor source renaming for composition."
+  },
+  "questions": {
+    "canonical_instance": {
+      "type": "choice",
+      "instructions": "Select the planned owner and resolved-release identity scheme that can satisfy every stated merge, stability and retirement requirement.",
+      "criteria": {
+        "publisher_release": "Use two explicit manifest identities: a long-lived owner UUID and a release UUID. Lock every node's IDs, content hashes and resolved outgoing edges. Identical ID pairs and pins share an instance, disagreements reject, and different release IDs coexist. Qualified type/report keys contain owner plus release plus package/declaration. A separate owner-level retired-name set applies across releases. Dependency labels and filesystem location are only lookup paths. This adds publisher ID administration but gives root-independent identity.",
+        "root_lock_instance": "Assign each loaded project an instance UUID in the importing application's lock instead of its manifest. Reuse that ID across local dependency-label changes and graph growth, bind it to verified content and edges, and merge matching lock IDs. Source error keys reference the lock UUID. A root can relocate with its lock, but unrelated importers may assign different IDs and owner-level tombstones become root-local or require another mechanism.",
+        "content_instance": "Derive graph identity from a cryptographic digest of canonical project contents and resolved outgoing nodes. Lock the hash tree; equal trees merge and different versions separate without minted IDs. Normalize dependency labels and machine paths so alias edits and relocation do not perturb the hash. Source edits inevitably produce fresh nominal/report identities even for unchanged declarations, so retirement requires an additional stable owner namespace."
+      }
+    }
+  }
+}

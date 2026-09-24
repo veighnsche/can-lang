@@ -1,0 +1,804 @@
+{
+  "positive": [
+    {
+      "name": "single",
+      "checkExit": 0,
+      "accepted": true,
+      "diagnostic": "",
+      "roots": [
+        {
+          "index": 0,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::preview",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::preview",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 1,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::receipt",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::receipt",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 2,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::read_customer",
+                "name": "renamed"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":true}\n"
+        },
+        {
+          "index": 3,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::main",
+              "name": "empty"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::main",
+                "name": "empty"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+        },
+        {
+          "index": 4,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "unit"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"},\"passed\":true}\n"
+        },
+        {
+          "index": 5,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "fixed_time"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "fixed_time"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"},\"passed\":true}\n"
+        },
+        {
+          "index": 6,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::stamp",
+              "name": "unit"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::stamp",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"},\"passed\":true}\n"
+        }
+      ],
+      "caller": {
+        "index": 2,
+        "exit": 0,
+        "report": {
+          "schemaVersion": 1,
+          "kind": "can.assertion-root-report",
+          "root": {
+            "package": "can.project.root/app",
+            "declaration": "can.project.root/app::read_customer",
+            "name": "renamed"
+          },
+          "passed": true,
+          "assertion": {
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "frames": [],
+            "violations": [],
+            "evidence": [
+              "real-can",
+              "supplied-completion"
+            ],
+            "fixturePaths": [],
+            "passed": true
+          }
+        },
+        "stdout": null,
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":true}\n"
+      }
+    },
+    {
+      "name": "suffix-change",
+      "checkExit": 0,
+      "accepted": true,
+      "diagnostic": "",
+      "roots": [
+        {
+          "index": 0,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::preview",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::preview",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 1,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::receipt",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::receipt",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 2,
+          "exit": 1,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "passed": false,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::read_customer",
+                "name": "renamed"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": false,
+              "reason": "outcome mismatch"
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":false}\n"
+        },
+        {
+          "index": 3,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::main",
+              "name": "empty"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::main",
+                "name": "empty"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+        },
+        {
+          "index": 4,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "unit"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"},\"passed\":true}\n"
+        },
+        {
+          "index": 5,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "fixed_time"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "fixed_time"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"},\"passed\":true}\n"
+        },
+        {
+          "index": 6,
+          "exit": 1,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::stamp",
+              "name": "unit"
+            },
+            "passed": false,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::stamp",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": false,
+              "reason": "outcome mismatch"
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"},\"passed\":false}\n"
+        }
+      ],
+      "caller": {
+        "index": 2,
+        "exit": 1,
+        "report": {
+          "schemaVersion": 1,
+          "kind": "can.assertion-root-report",
+          "root": {
+            "package": "can.project.root/app",
+            "declaration": "can.project.root/app::read_customer",
+            "name": "renamed"
+          },
+          "passed": false,
+          "assertion": {
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "frames": [],
+            "violations": [],
+            "evidence": [
+              "real-can",
+              "supplied-completion"
+            ],
+            "fixturePaths": [],
+            "passed": false,
+            "reason": "outcome mismatch"
+          }
+        },
+        "stdout": null,
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":false}\n"
+      }
+    },
+    {
+      "name": "two-calls",
+      "checkExit": 0,
+      "accepted": true,
+      "diagnostic": "",
+      "roots": [
+        {
+          "index": 0,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::preview",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::preview",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::preview\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 1,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::receipt",
+              "name": "sample"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::receipt",
+                "name": "sample"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::receipt\",\"name\":\"sample\"},\"passed\":true}\n"
+        },
+        {
+          "index": 2,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::read_customer",
+                "name": "renamed"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":true}\n"
+        },
+        {
+          "index": 3,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::main",
+              "name": "empty"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/app",
+                "declaration": "can.project.root/app::main",
+                "name": "empty"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::main\",\"name\":\"empty\"},\"passed\":true}\n"
+        },
+        {
+          "index": 4,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "unit"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"unit\"},\"passed\":true}\n"
+        },
+        {
+          "index": 5,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::sample_time",
+              "name": "fixed_time"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::sample_time",
+                "name": "fixed_time"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::sample_time\",\"name\":\"fixed_time\"},\"passed\":true}\n"
+        },
+        {
+          "index": 6,
+          "exit": 0,
+          "report": {
+            "schemaVersion": 1,
+            "kind": "can.assertion-root-report",
+            "root": {
+              "package": "can.project.root/helper",
+              "declaration": "can.project.root/helper::stamp",
+              "name": "unit"
+            },
+            "passed": true,
+            "assertion": {
+              "root": {
+                "package": "can.project.root/helper",
+                "declaration": "can.project.root/helper::stamp",
+                "name": "unit"
+              },
+              "frames": [],
+              "violations": [],
+              "evidence": [
+                "real-can",
+                "supplied-completion"
+              ],
+              "fixturePaths": [],
+              "passed": true
+            }
+          },
+          "stdout": null,
+          "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/helper\",\"declaration\":\"can.project.root/helper::stamp\",\"name\":\"unit\"},\"passed\":true}\n"
+        }
+      ],
+      "caller": {
+        "index": 2,
+        "exit": 0,
+        "report": {
+          "schemaVersion": 1,
+          "kind": "can.assertion-root-report",
+          "root": {
+            "package": "can.project.root/app",
+            "declaration": "can.project.root/app::read_customer",
+            "name": "renamed"
+          },
+          "passed": true,
+          "assertion": {
+            "root": {
+              "package": "can.project.root/app",
+              "declaration": "can.project.root/app::read_customer",
+              "name": "renamed"
+            },
+            "frames": [],
+            "violations": [],
+            "evidence": [
+              "real-can",
+              "supplied-completion"
+            ],
+            "fixturePaths": [],
+            "passed": true
+          }
+        },
+        "stdout": null,
+        "stderr": "CAN-PROGRESS {\"version\":1,\"phase\":\"started\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"}}\nCAN-PROGRESS {\"version\":1,\"phase\":\"finished\",\"root\":{\"package\":\"can.project.root/app\",\"declaration\":\"can.project.root/app::read_customer\",\"name\":\"renamed\"},\"passed\":true}\n"
+      }
+    }
+  ],
+  "negativeManifestChecks": [
+    {
+      "name": "missing-scenario",
+      "rejected": true,
+      "diagnostic": "scenario link scenario mismatch"
+    },
+    {
+      "name": "stale-target",
+      "rejected": true,
+      "diagnostic": "scenario link target mismatch"
+    },
+    {
+      "name": "wrong-callee",
+      "rejected": true,
+      "diagnostic": "scenario link callee mismatch"
+    },
+    {
+      "name": "missing-call-site",
+      "rejected": true,
+      "diagnostic": "scenario link call-site list mismatch"
+    },
+    {
+      "name": "wrong-success-type",
+      "rejected": true,
+      "diagnostic": "scenario link successType mismatch"
+    },
+    {
+      "name": "wrong-arguments",
+      "rejected": true,
+      "diagnostic": "scenario link targetArguments mismatch"
+    }
+  ]
+}

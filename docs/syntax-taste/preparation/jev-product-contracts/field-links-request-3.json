@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "constraints": "Judge experimental engineering for an agent-authored language with no external users and no need to retain old interfaces. Semantic correctness, declared boundaries and robust agent edits are primary; count all tokens through successful repair as a secondary metric, without optimizing for human comfort or line count. Native JavaScript/Bun/web operations should implement equivalent behavior, supplemented only to preserve Can contracts and immutable data. Your choice is advisory preparation, never a syntax decision or a customer-facing commitment. Use solely the evidence provided rather than assuming researched facts.",
+    "evidence_status": "Treat 02a549d28fd5fc5c3996160e65a97de332390d30 as the inspected implementation revision. Qualification covers bun-1.4.2-darwin-arm64-v1 alone, with Linux still unverified; documented native features must be exercised on pinned binaries. Audits and isolated tests exist, but this evidence does not contain running invoice/webhook flows, an account-search 503 browser reproduction, a Can browser compiler, offline experiments, a schema snapshot validator or measured agent comparisons. Those missing demonstrations limit the strength of advice. Can-written client and server remain the wider goal; SSR and a client in another language are narrower baselines.",
+    "forms": "In DI-09b, shallow string/optional-string/string-array records are the admitted form schema. The decoder enforces UTF-8 and escape validity, rejects unknown fields or duplicate scalar controls, and keeps repeated array values. A separate validation step builds domain records while preserving rejected text and collecting unrelated field failures. Repeated names across columns supply no checked row pairing. Compare an alignment-checked array representation, keyed row paths with validation, and a distinct JSON endpoint under the existing exact codec. Semantics must cover missing/empty/partial rows, repeated keys, reorder/delete and persistent field-error identity. Ordinary form encoding stays distinct from JSON; protected values and server checks cannot be bypassed.",
+    "field_identity": "Control markup, rejected-value retention and error addressing currently use independent field spellings. Factored helpers are the baseline but offer no guarantee of complete static rename checking. The alternatives are wire-record-derived field identities or a linked action/form declaration covering those identities plus decoding, validation and result cases. A domain member's rename need not rename the wire control. Row codecs and field linkage require distinct judgments; no measured rename experiment has yet distinguished the linking options."
+  },
+  "questions": {
+    "form_field_links": {
+      "type": "choice",
+      "instructions": "Select the initial DI-09b field-identity experiment for measuring static repair of wire-name drift in controls, retained raw data and error paths relative to factored helpers, while larger action integration remains open.",
+      "criteria": {
+        "C": "Evaluate integrated action/form linkage from the outset, covering wire fields plus named decoding, validation and response-case contracts.",
+        "D": "Request a focused additional measurement because the supplied facts do not support ordering these alternatives.",
+        "A": "First measure enhanced helper composition and rename tests, adding no compiler-linked field model until the baseline shows an actual failure.",
+        "B": "Add a trial of checked wire-field links joining control naming, raw-value retention and error addressing while leaving validation as explicit application logic."
+      }
+    }
+  }
+}

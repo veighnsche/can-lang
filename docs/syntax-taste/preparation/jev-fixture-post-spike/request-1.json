@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Select the smallest honest cross-package fixture design for Can, a language authored by AI coding agents. Correct integrated behavior and safe refactoring outrank complete successful-task tokens, which are secondary and unmeasured here. Human convenience and backwards compatibility are not requirements; generated TS should use native JS/Bun operations with only Can assertion adapters. Jev gives advice, not implementation proof.",
+    "current_can": "Current helper stamp(int) privately calls sample_time() -> clock::wall_millis(), converts time to text and appends '!'. An ambient helper row keyed by a caller display label passes customer but fails when only that label becomes renamed, with no compiler diagnostic. A whole-stamp stub survives rename but keeps passing after the helper suffix changes, so it bypasses the body. Current Can public callable injection exercises real stamp and fake clock, but changes all three app calls and moves the clock dependency into app. A separate exported stamp_with_clock(int, callable now) leaves two normal calls unchanged and changes one assertion call; it executes the real body yet publishes the private clock dependency as test API. All current-Can forms were built and 58 roots exercised, with 57 expected passes and the ambient rename failure.",
+    "scenario_spike": "A disposable F2 sidecar names helper-owned fixed_time for the exact app::read_customer#0 -> helper::stamp(7) invocation and supplies ok 1000 at private sample_time -> clock::wall_millis(). It validates six mutated link fields before execution, patches generated app code and a copied runtime only in /private/tmp, and passes seven roots with renamed caller and two linked sequential calls using existing FIFO; a changed helper suffix makes the caller fail. Reports distinguish supplied-completion at the clock from real-can helper logic. This is not Can grammar/checker support: validation is hard-coded, and recursive/concurrent selection, arbitrary visibility/type changes and agent costs remain unproved."
+  },
+  "questions": {
+    "fixture_contract": {
+      "type": "choice",
+      "instructions": "Which final DI-06 planning contract best balances the demonstrated helper-body requirement, private dependency boundary and new mechanism cost after this spike?",
+      "criteria": {
+        "exported_test_entry": "Retain same-owner lexical fixtures only and use an ordinary exported stamp_with_clock test entry for cross-package integrated coverage. It runs real helper logic and survives the caller rename while changing one test call; accept that the private dependency becomes public API. Whole-helper stubs remain labeled as bypassing the body. Do not add scenario grammar/runtime linking.",
+        "exported_scenario": "Add a helper-owned named exported scenario that can bind a checked internal fixture plan to one exact qualified caller invocation without changing stamp(int) or ordinary call sites. The compiler checks owner/callee/site/target/argument/completion and rejects stale, missing, duplicate or unused links before runtime; selection is invocation-scoped with FIFO and honest supplied/real evidence. Implement recursive/concurrent isolation and compare against stamp_with_clock before claiming agent benefit.",
+        "public_parameter": "Change stamp itself to accept a now callable and require ordinary consumers to pass the real adapter, with the test passing a fake. This uses current callable semantics and tests the body without new fixtures, but changes three app calls and moves private time dependency into public functional API. Repair ambient rows to same-owner selection separately."
+      }
+    }
+  }
+}

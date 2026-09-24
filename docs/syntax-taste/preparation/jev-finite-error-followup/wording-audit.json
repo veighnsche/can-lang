@@ -1,0 +1,5 @@
+{
+  "equivalence": "Manual review: all three requests state the same 28/28 singleton-domain probe, priority order, finite-row candidate, three specialization rules and three forwarding rules. The options keep the same semantic affordances, including broad-bound consequences, exact-set optional override for callback-derived E, and fixed audit_down. No prior Jev result is included in state.",
+  "rewrite": "Every explanatory state field, question instruction and criterion description has a distinct full phrasing; code identifiers and the stable option keys are intentionally unchanged.",
+  "limit": "The audit checks wording and intended semantic equivalence, not absence of framing effects. Distribution disagreements will be assessed against the contract requirements and probe limitations."
+}

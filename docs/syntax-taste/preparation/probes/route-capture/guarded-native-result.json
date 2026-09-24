@@ -1,0 +1,243 @@
+{
+  "bun": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "assertions": 82,
+  "cases": [
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7",
+      "status": 200,
+      "allow": null,
+      "body": "invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/0/invoices/-1",
+      "status": 200,
+      "allow": null,
+      "body": "invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/-9223372036854775808/invoices/9223372036854775807",
+      "status": 200,
+      "allow": null,
+      "body": "invoice"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/9223372036854775808/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/-9223372036854775809",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/1/invoices/7",
+      "status": 405,
+      "allow": "POST",
+      "body": "rejected"
+    },
+    {
+      "method": "PATCH",
+      "path": "/tenants/01/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/01/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%31/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%ZZ/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%ED%A0%80/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2F/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%5C/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2E/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/%2E%2E/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/a\\b/invoices/7",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/",
+      "status": 404,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7/",
+      "status": 404,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/tenants/1/invoices/7/extra",
+      "status": 404,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/new",
+      "status": 200,
+      "allow": null,
+      "body": "slug"
+    },
+    {
+      "method": "GET",
+      "path": "/invoices/new",
+      "status": 200,
+      "allow": null,
+      "body": "static"
+    },
+    {
+      "method": "PUT",
+      "path": "/invoices/new",
+      "status": 200,
+      "allow": null,
+      "body": "static"
+    },
+    {
+      "method": "PATCH",
+      "path": "/invoices/new",
+      "status": 405,
+      "allow": "GET, POST, PUT",
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/A%20B%25%E2%82%AC",
+      "status": 200,
+      "allow": null,
+      "body": "slug"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/a%252Fb",
+      "status": 200,
+      "allow": null,
+      "body": "slug"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/%2F",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    },
+    {
+      "method": "POST",
+      "path": "/invoices/%2E",
+      "status": 400,
+      "allow": null,
+      "body": "rejected"
+    }
+  ],
+  "callbacks": [
+    {
+      "route": "invoice",
+      "values": {
+        "tenant_id": "1",
+        "invoice_id": "7"
+      }
+    },
+    {
+      "route": "invoice",
+      "values": {
+        "tenant_id": "0",
+        "invoice_id": "-1"
+      }
+    },
+    {
+      "route": "invoice",
+      "values": {
+        "tenant_id": "-9223372036854775808",
+        "invoice_id": "9223372036854775807"
+      }
+    },
+    {
+      "route": "slug",
+      "values": {
+        "slug": "new"
+      }
+    },
+    {
+      "route": "static"
+    },
+    {
+      "route": "static"
+    },
+    {
+      "route": "slug",
+      "values": {
+        "slug": "A B%€"
+      }
+    },
+    {
+      "route": "slug",
+      "values": {
+        "slug": "a%2Fb"
+      }
+    }
+  ]
+}

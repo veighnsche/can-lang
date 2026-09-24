@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Can targets AI agents rather than human readers. Pick an implementation-plan direction for cross-package controlled tests, prioritizing correct real helper execution and robust edits; measure whole-task tokens later. Old source compatibility is unnecessary. Emitted TS delegates ordinary operations to JS/Bun and adds only fixture-context adapters. This is design advice on supplied evidence, not a test result.",
+    "current_can": "The library's unchanged functional API is stamp(int), with a private sample_time() clock read and a trailing '!'. A caller assertion label edit breaks an ambient helper fixture without static rejection; stubbing stamp entirely misses helper-body regressions. An ordinary callable parameter is executable and rename-stable but forces each of three consumer calls to supply a clock function. An additional exported stamp_with_clock preserves the normal signature/calls and runs the helper body for one test caller, while making private timing dependency public. Current-Can evidence includes eight valid projects and 58 assertion roots, with one deliberate ambient failure and both injection controls catching fake-time and suffix mutations.",
+    "scenario_spike": "F2 has a narrow generated-output simulation: an explicit sidecar link selects the helper-owned fixed_time row only while the named app call invokes stamp(7). The copied runtime supplies clock ok 1000 inside the real helper, leaves normal stamp calls untouched, and carries supplied-completion plus real-can evidence. Seven roots pass after caller rename; mutating the helper suffix fails; two sequential selected calls pass with two FIFO occurrences; six changed manifest fields reject before execution. The spike patches temporary emitted code and validates known fields by hand, so source syntax, arbitrary checked links, nested/concurrent/recursive isolation and comparative agent behavior are still future obligations."
+  },
+  "questions": {
+    "fixture_contract": {
+      "type": "choice",
+      "instructions": "What should the implementation plan adopt for deliberate helper-owned behavior in a caller test, given the executed alternatives and remaining prototype limits?",
+      "criteria": {
+        "exported_test_entry": "Choose current-language stamped test entry plus owner-local lexical rows. An exported stamp_with_clock exposes the clock seam to testing clients but permits actual body execution and mutation detection without a new scenario selector. Document API cost and distinct evidence for whole-function stubs; do not ship F2.",
+        "exported_scenario": "Adopt F2 named helper-owned scenarios as planned language support: a caller explicitly attaches the checked scenario to one stamp(7) invocation, with no display-label coupling or public clock parameter. Report both supplied internal completion and real helper execution; diagnose every broken link and preserve root/invocation queue isolation including concurrency. The sidecar spike shows only feasibility; production compiler and runtime checks plus agent comparison remain required.",
+        "public_parameter": "Retain only current language by adding a clock callable parameter to stamp(int), altering each of three consumer invocations. Fake and real callbacks both execute through the helper, but the library's internal clock boundary becomes an ordinary public requirement. Fix lexical fixture ownership and add no test entry or exported scenario."
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": "For this agent-oriented language, success means sound contracts and dependable program edits; whole-task token use matters afterward. Old spellings need no preservation, and native JS/Bun should perform equivalent work behind only necessary adapters. Can already has separate llm, judge, fetch and question declarations plus grouped state tied to written connection identities. A working example makes a typed LLM result and then a dynamic Choice using two calls. Existing ordinary forwarding around llm cannot distinguish a decoder-origin error from an authored error sharing its nominal identity, whereas fetch/judge wrap can distinguish handles native from handles emitted. A judge runs one batch request and checks all answers before invoking registered handlers in order, so a first handler's provider effect is not rolled back when the next fails. A named function provides an ordinary callable for grouped judge/LLM state; direct references are excluded, and no agent benchmark establishes harm from adapters. Use a controlled flow testing provenance, grouped fan-out, a ledger write followed by failure, exact requests, state disclosure, outward bounds and edit/repair outcomes. Select bounded trials only.",
+  "questions": {
+    "di17a_recovery": {
+      "type": "choice",
+      "instructions": "What is the best next comparison for origin-sensitive llm recovery under the stated controlled fault case?",
+      "criteria": {
+        "ordinary_helpers": "Measure shared ordinary adapters with written match arms, leaving origin handling manual and testing whether agents preserve request and failure behavior.",
+        "llm_wrap_trial": "Try extending the existing native wrap mechanism solely to llm calls, preserving private fault origin and public finite errors across request/decode/validation/authored cases."
+      }
+    },
+    "di17b_effects": {
+      "type": "choice",
+      "instructions": "Select the most useful bounded handling trial when handler one writes and handler two fails after batch validation.",
+      "criteria": {
+        "phase_documentation": "Clarify and test existing phase semantics, including the surviving first write, in a controlled example without altering batch execution.",
+        "transaction_trial": "Compare a written transaction for ledger effects, testing failure and indeterminate commit while keeping external operations outside its rollback guarantee.",
+        "outbox_trial": "Compare an explicit durable outbox with stated at-least-once and idempotency behavior after response validation, including duplicate dispatch."
+      }
+    },
+    "di17c_callable": {
+      "type": "choice",
+      "instructions": "Choose the next experiment for multi-judge fan-out while retaining group and connection identity.",
+      "criteria": {
+        "named_adapters": "Keep ordinary named adapters with written group/context fields and measure fan-out editing, disclosure and failure propagation.",
+        "direct_reference_trial": "Try a direct judge/LLM callable contract limited to grouped state, checking disclosure and explicit connection identity without flattening or inferred errors."
+      }
+    }
+  }
+}

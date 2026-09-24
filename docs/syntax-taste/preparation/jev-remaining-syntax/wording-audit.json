@@ -1,0 +1,5 @@
+{
+  "review": "Before sending, manually compared all three requests: same objectives, current source/registry and audit findings, report/type obligations, 18-assertion limitations, exact invoice contract, boundaries, candidate mechanisms and costs. Every explanatory state field, question instruction and option description has independently rewritten prose. Exact language/API identifiers and literal code remain stable. Prior consultation answers and preferred recommendations are excluded.",
+  "automated_check": "All explanatory string triples have length three and pairwise distinct full wording.",
+  "limit": "Semantic equivalence is a reviewed judgment, not a machine proof. Rephrasing cannot establish absence of bias; report all distributions and investigate splits."
+}

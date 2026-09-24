@@ -1,0 +1,127 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "constraints": "Judge experimental engineering for an agent-authored language with no external users and no need to retain old interfaces. Semantic correctness, declared boundaries and robust agent edits are primary; count all tokens through successful repair as a secondary metric, without optimizing for human comfort or line count. Native JavaScript/Bun/web operations should implement equivalent behavior, supplemented only to preserve Can contracts and immutable data. Your choice is advisory preparation, never a syntax decision or a customer-facing commitment. Use solely the evidence provided rather than assuming researched facts.",
+    "evidence_status": "Treat 02a549d28fd5fc5c3996160e65a97de332390d30 as the inspected implementation revision. Qualification covers bun-1.4.2-darwin-arm64-v1 alone, with Linux still unverified; documented native features must be exercised on pinned binaries. Audits and isolated tests exist, but this evidence does not contain running invoice/webhook flows, an account-search 503 browser reproduction, a Can browser compiler, offline experiments, a schema snapshot validator or measured agent comparisons. Those missing demonstrations limit the strength of advice. Can-written client and server remain the wider goal; SSR and a client in another language are narrower baselines.",
+    "routes": "The DI-09a baseline uses named handlers mounted at literal paths; dynamic segments are disallowed. Tenant/invoice identifiers can instead travel as query text with application parsing, with shared URL helpers or an endpoint record centralizing construction. html::url proves only URL admission, never an endpoint's existence, verb, input shape or live target. Exact-path checked identity can tie declaration and request/response/method/URL consumers together. Capture support expands that work to conversion failures, encode/decode parity, slash handling, invalid escapes and route conflict ordering. Although Bun documents parameter routes, the pinned build has not been tested. Cross-package identity is required, and source identifier refactors are separate from wire-path edits.",
+    "forms": "In DI-09b, shallow string/optional-string/string-array records are the admitted form schema. The decoder enforces UTF-8 and escape validity, rejects unknown fields or duplicate scalar controls, and keeps repeated array values. A separate validation step builds domain records while preserving rejected text and collecting unrelated field failures. Repeated names across columns supply no checked row pairing. Compare an alignment-checked array representation, keyed row paths with validation, and a distinct JSON endpoint under the existing exact codec. Semantics must cover missing/empty/partial rows, repeated keys, reorder/delete and persistent field-error identity. Ordinary form encoding stays distinct from JSON; protected values and server checks cannot be bypassed.",
+    "actions_html": "The existing DI-09d idiom explicitly maps application cases in named response functions. Can's HTMX asset swaps status 422 and suppresses all remaining 4xx/5xx swaps; this implies the 503 account-search body will not appear, but that exact browser experiment has not run. Possible additions are a configured application status policy, checked per-result mappings or scoped target identities. Conditional DOM disappearance is not ruled out by a typed target name. Real HTTP codes 200/422/409/403/503, retained fields, focus/error announcements and ordering of replies all matter. DI-10 already offers immutable safe HTML constructors and factored render helpers using Bun.escapeHTML plus runtime URL, attribute and structural validation. Static literal-call analysis or checked component declarations could move known faults earlier. Retain runtime validation for unknown values, URL constraints and controlled browser assets; admit neither raw HTML nor authored script, and treat accessibility element coverage separately.",
+    "browser": "Can currently authors Bun applications with safe HTML/HTMX only; browser JS/TS supplied by an app is outside admission. Showing SSR or a foreign-language typed client establishes less than the requested Can-written rich frontend. The bounded candidate is a distinct main-thread browser build admitting shared validation/data, DOM/event work, Fetch, explicit local transitions/rendering and lifecycle cleanup. Workers cannot touch the document and require separate treatment. Server environment, SQL, process/file and HTTP operations must neither remain callable through imports/generics/callbacks nor leak into the bundle. Both targets need identical exact integer and finite-float wire behavior, record and tagged variant/option encodings, unknown/duplicate rejection, immutable aliases and boxed completions. Full int behavior cannot be presumed from Number. No such browser build or parity experiment is in the evidence.",
+    "offline_lifecycle": "Three technical offline models await evaluation: live-view memory edits with manual retry; a versioned local draft restored subject to storage availability and explicitly submitted; and a durable mutation queue with stable IDs, ordered recovery/reconciliation and server-supported deduplication. The online flag is merely advisory about connectivity. Local persistence introduces identity isolation across tenants/users, sign-out behavior, schema upgrades and quota/eviction outcomes. Queued effects also introduce multi-tab races, expired authorization and crash recovery. Do not conflate either with offline app-shell reload or background synchronization, and do not make a product promise from the selected trial baseline. Independently, saves require the acknowledged server revision, present draft, identified pending change and outcome state, preserving edits newer than a reply. Listener/timer cleanup and suppression of disposed-view updates are local duties; Fetch abort cannot reverse a server write. View and application owners must distinguish work that ends on disposal from tracked mutations that continue, with uncertain effects reconciled.",
+    "observation": "Existing DI-13 attached tests inspect Can computations and fixture queues, but bare => ok on an opaque server result cannot inspect its protocol contents, resulting DOM or lasting effects. Today's layered alternative uses companion HTTP, browser and live-database observations. Consider improving that tooling, admitting read-only HTTP projections, or introducing a source-authored multi-layer scenario runner. An HTTP-level projection is insufficient to certify target updates. Reusable fixtures must preserve argument checks, isolated FIFO invocation identity and caller-rename stability via DI-06. Observation adequacy is tested by incorrect success bodies, executable hostile output, suppressed 503 rendering, wrong database rows despite a correct UI and duplicate webhook effects behind success statuses. Missing integration runs remain explicitly missing; no scenario machinery supplies universal proof.",
+    "sql": "For DI-14, Can statically checks descriptors and parameter/cardinality admission and dynamically binds parameters and validates row names, scalar types and values. Only bounded SELECT can return rows; mutation execute returns counts and disallows RETURNING. Canonical post-write values currently need a known-value response or a transaction-local follow-up read. PostgreSQL's native RETURNING can be assessed if mutation forms, dialect, finite result bounds, zero rows and row codecs are explicit. It cannot replace tenant/revision protection at the write or stated isolation/locking, since Read Committed does not freeze an earlier read. Nor can it resolve commit_unknown after a commit decision; durable operation identity and reconciliation remain necessary. Schema agreement is not checked at compile time today. The alternatives add migration-backed database tests, a reproducible schema snapshot with version/provenance and staleness/deployment checks, or builds consulting a named live schema. Each still needs runtime row checks and verification that the deployed database matches what was checked.",
+    "cancellation": "DI-15 currently keeps ownership and resource leases for all unsettled participants, including race losers, without automatic cancellation. Deadlines on close/shutdown limit the caller's patience but cannot discard the underlying lease or terminate arbitrary native work; a never-settling owner can hold drain forever. Fetch and stream adapters support particular cancellation actions. Documented SQL reservation abort covers only waiting before acquisition and establishes nothing about cancelling an executing query. Existing native semantics leave an empty Promise.race unresolved and make empty Promise.any fail; explicit nonempty guards are the current idiom. Compare per-operation controls plus qualified supervisor timeout/kill, a context conveyed only to cancellable adapters, and worker/process separation to stop bounded computations at serialization/recovery cost. Keep cancel intent distinct from settlement, actual release and host termination; forced exit is not rollback or cleanup evidence. Probe disconnect around commit/outbox delivery, a hung loser and forced shutdown using owner/lease counts, database state and external effects on a named installed target."
+  },
+  "questions": {
+    "endpoint_probe": {
+      "type": "choice",
+      "instructions": "Choose the initial DI-09a experiment that most cleanly evaluates checked endpoint references versus factored exact routing, while limiting unsupported additional routing commitments.",
+      "criteria": {
+        "C": "Build the linked endpoint trial with captured segments from the start and specify their wire conversion, round trips and overlap rules.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "First trial a strengthened library/tooling baseline with shared endpoint construction and protocol checks, leaving identity checking for later.",
+        "B": "Test compiler-known identity for literal routes and their method/input/output/URL references before adding parameterized paths."
+      }
+    },
+    "form_rows": {
+      "type": "choice",
+      "instructions": "Select a DI-09b row-encoding trial for HTML edits that preserves row/error correspondence through reordering and removal, using checked parallel arrays as the current baseline.",
+      "criteria": {
+        "C": "Trial complete row objects through a distinct JSON contract whose browser serialization is separately provided from ordinary form submission.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Retain column-wise arrays, carrying row identity and verifying matching lengths and ordering before validation produces values.",
+        "B": "Evaluate a row-key-based form representation with checked field paths and defined handling for key collisions and missing row parts."
+      }
+    },
+    "action_mapping": {
+      "type": "choice",
+      "instructions": "Choose the next DI-09d comparison aimed at incomplete action outcome handling, with live target existence explicitly outside an ordinary static ID proof.",
+      "criteria": {
+        "C": "Evaluate render-scope target linkage before checked action mappings, retaining runtime absence behavior and explicit status/render/swap handlers.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Strengthen the existing manual result mapping and limited swap configuration; let external tests detect incomplete coverage.",
+        "B": "Check every action outcome's HTTP code, renderer and swap choice statically, with an explicit dynamic target-absence path."
+      }
+    },
+    "html_probe": {
+      "type": "choice",
+      "instructions": "Choose a DI-10 trial focused on diagnosing known-invalid HTML before execution while retaining the established immutable safe-node and dynamic-check behavior.",
+      "criteria": {
+        "C": "Prototype a declarative component model with validated boundaries and an explicit account of what conditional children can prove.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Extend the factored safe-builder library and its failure messages, keeping static-looking calls validated at runtime.",
+        "B": "Add static analysis of literal safe-constructor calls without replacing their dynamic checks or immutable representations."
+      }
+    },
+    "browser_profile": {
+      "type": "choice",
+      "instructions": "Select the first browser-execution scope for a Can-written invoice grid trial that is sufficient to test the requested local interaction while containing qualification work.",
+      "criteria": {
+        "C": "Use a checked external-language client first to exercise route/data sharing, recording that Can-authored client execution remains unqualified.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Limit the initial target to main-thread shared validation/codecs, DOM/event and state/render operations, Fetch and lifecycle, with closed server-capability rejection.",
+        "B": "Make the first qualification encompass main-thread UI plus worker computation, with validated messages, owners and termination semantics."
+      }
+    },
+    "offline_minimum": {
+      "type": "choice",
+      "instructions": "What temporary offline baseline should be tested first for DI-11, leaving product durability requirements undecided and retaining independent experiments for stronger persistence?",
+      "criteria": {
+        "C": "Make recoverable queued mutations the minimum, including operation IDs, uncertain-commit reconciliation, supported server deduplication and multi-tab/auth/crash policy.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Start with view-lifetime drafts, clear pending/error feedback and intentional retry using mutation identity, making no claim after navigation or reload.",
+        "B": "Use a persistent schema-versioned draft as the baseline, with isolated identities and reported storage faults, while remote submission stays explicit rather than queued."
+      }
+    },
+    "lifecycle_ownership": {
+      "type": "choice",
+      "instructions": "Select a lifecycle design for DI-11 save completion after view removal that blocks stale UI updates and preserves responsibility for ambiguous server effects.",
+      "criteria": {
+        "C": "Hold view teardown until pending writes settle or responsibility is handed to reconciliation, and test the declared delay to navigation.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Use view-scoped save ownership with supported abort on cleanup and a mandatory explicit handoff of uncertain effects to reconciliation.",
+        "B": "Split local view resources from app-lifetime mutation records; stop view activity on removal while retaining ownership of save completion and ambiguous effects."
+      }
+    },
+    "observation_layer": {
+      "type": "choice",
+      "instructions": "Choose the initial DI-13 evidence improvement most likely to detect the described protocol, DOM and persistence mismatches without overstating source assertions.",
+      "criteria": {
+        "C": "Trial source-defined end-to-end scenarios spanning responses, DOM and database state with specified fixture ownership/FIFO isolation and execution prerequisites.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "First build better companion scenario reuse across HTTP, DOM and live persistence observations, keeping source fixture behavior and prerequisite/skipped-run reporting intact.",
+        "B": "Begin with read-only protocol assertion operations, relying on existing companion DOM/persistence checks beyond the projection boundary."
+      }
+    },
+    "returning": {
+      "type": "choice",
+      "instructions": "Choose the next DI-14a evaluation that would meaningfully separate mutation-returning descriptors from current approaches without mistaking row results for commit certainty.",
+      "criteria": {
+        "C": "Evaluate a general multi-dialect returning-descriptor implementation ahead of invoice/outbox trials, defining each dialect's projection and cardinality behavior.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Establish the current known-data or same-transaction read solution experimentally before investing in a RETURNING alternative.",
+        "B": "Build a paired baseline/native RETURNING experiment for canonical invoice/outbox data under concurrency, checking empty/excess rows, constraints and commit ambiguity in both."
+      }
+    },
+    "schema_assurance": {
+      "type": "choice",
+      "instructions": "Select a DI-14b experiment for detecting projection and migration disagreement that accurately bounds both build inputs and production-schema assurance.",
+      "criteria": {
+        "C": "Test build-time queries against a specifically named live schema, making mutable-input and reachability costs explicit and independently verifying deployment.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Use the current static admission/runtime codecs with better migration integration testing and precise failure reporting as the first assurance upgrade.",
+        "B": "Evaluate a deterministic schema snapshot carrying dialect/version/provenance and bounded query analysis, with migration freshness and deployment verification."
+      }
+    },
+    "shutdown": {
+      "type": "choice",
+      "instructions": "Choose the next DI-15a comparison that can improve shutdown guarantees while preserving the distinction between timeout, native settlement, cleanup and forced exit.",
+      "criteria": {
+        "C": "Trial process/worker boundaries first to bound computation lifetime, accepting specified serialization and resource/effect recovery costs.",
+        "D": "Leave the experimental ordering unresolved because the evidence lacks a needed discriminator among these alternatives.",
+        "A": "Begin with adapter-level cancellation/timeout probes and installed-host grace/kill tests over current ownership, then assess whether a unified context is warranted.",
+        "B": "Evaluate cooperative context propagation across proven abortable adapters, keeping actual owner release, supervisor termination and effect reconciliation distinct."
+      }
+    }
+  }
+}

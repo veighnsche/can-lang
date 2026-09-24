@@ -1,0 +1,502 @@
+{
+  "bun": "1.4.2",
+  "revision": "744846f844374847c902b5e7fd59b4342a51ef99",
+  "parsed": [
+    {
+      "input": "/tenants/1/invoices/7",
+      "pathname": "/tenants/1/invoices/7",
+      "wholeDecode": "/tenants/1/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "1",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/01/invoices/7",
+      "pathname": "/tenants/01/invoices/7",
+      "wholeDecode": "/tenants/01/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "01",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/+1/invoices/7",
+      "pathname": "/tenants/+1/invoices/7",
+      "wholeDecode": "/tenants/+1/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "+1",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/-1/invoices/7",
+      "pathname": "/tenants/-1/invoices/7",
+      "wholeDecode": "/tenants/-1/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "-1",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/9223372036854775808/invoices/7",
+      "pathname": "/tenants/9223372036854775808/invoices/7",
+      "wholeDecode": "/tenants/9223372036854775808/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "9223372036854775808",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/1/invoices/",
+      "pathname": "/tenants/1/invoices/",
+      "wholeDecode": "/tenants/1/invoices/",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "1",
+        "invoices",
+        ""
+      ]
+    },
+    {
+      "input": "/tenants/1/invoices/7/extra",
+      "pathname": "/tenants/1/invoices/7/extra",
+      "wholeDecode": "/tenants/1/invoices/7/extra",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "1",
+        "invoices",
+        "7",
+        "extra"
+      ]
+    },
+    {
+      "input": "/tenants/1/invoices/7/",
+      "pathname": "/tenants/1/invoices/7/",
+      "wholeDecode": "/tenants/1/invoices/7/",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "1",
+        "invoices",
+        "7",
+        ""
+      ]
+    },
+    {
+      "input": "/tenants/%2F/invoices/7",
+      "pathname": "/tenants/%2F/invoices/7",
+      "wholeDecode": "/tenants///invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "/",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%5C/invoices/7",
+      "pathname": "/tenants/%5C/invoices/7",
+      "wholeDecode": "/tenants/\\/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "\\",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/a%252Fb/invoices/7",
+      "pathname": "/tenants/a%252Fb/invoices/7",
+      "wholeDecode": "/tenants/a%2Fb/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "a%2Fb",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/a%20b/invoices/7",
+      "pathname": "/tenants/a%20b/invoices/7",
+      "wholeDecode": "/tenants/a b/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "a b",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%E2%82%AC/invoices/7",
+      "pathname": "/tenants/%E2%82%AC/invoices/7",
+      "wholeDecode": "/tenants/€/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "€",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%ED%A0%80/invoices/7",
+      "pathname": "/tenants/%ED%A0%80/invoices/7",
+      "wholeDecode": "throws:URIError",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "throws:URIError",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%/invoices/7",
+      "pathname": "/tenants/%/invoices/7",
+      "wholeDecode": "throws:URIError",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "throws:URIError",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%ZZ/invoices/7",
+      "pathname": "/tenants/%ZZ/invoices/7",
+      "wholeDecode": "throws:URIError",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "throws:URIError",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/./invoices/7",
+      "pathname": "/tenants/invoices/7",
+      "wholeDecode": "/tenants/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%2E/invoices/7",
+      "pathname": "/tenants/invoices/7",
+      "wholeDecode": "/tenants/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%2E%2E/invoices/7",
+      "pathname": "/invoices/7",
+      "wholeDecode": "/invoices/7",
+      "segmentDecodes": [
+        "",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/a%2Fb/invoices/7",
+      "pathname": "/tenants/a%2Fb/invoices/7",
+      "wholeDecode": "/tenants/a/b/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "a/b",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/a\\b/invoices/7",
+      "pathname": "/tenants/a/b/invoices/7",
+      "wholeDecode": "/tenants/a/b/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "a",
+        "b",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/a%00b/invoices/7",
+      "pathname": "/tenants/a%00b/invoices/7",
+      "wholeDecode": "/tenants/a\u0000b/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "a\u0000b",
+        "invoices",
+        "7"
+      ]
+    },
+    {
+      "input": "/tenants/%25/invoices/7",
+      "pathname": "/tenants/%25/invoices/7",
+      "wholeDecode": "/tenants/%/invoices/7",
+      "segmentDecodes": [
+        "",
+        "tenants",
+        "%",
+        "invoices",
+        "7"
+      ]
+    }
+  ],
+  "request": [
+    {
+      "input": "/tenants/1/invoices/7",
+      "url": "http://localhost/tenants/1/invoices/7"
+    },
+    {
+      "input": "/tenants/01/invoices/7",
+      "url": "http://localhost/tenants/01/invoices/7"
+    },
+    {
+      "input": "/tenants/+1/invoices/7",
+      "url": "http://localhost/tenants/+1/invoices/7"
+    },
+    {
+      "input": "/tenants/-1/invoices/7",
+      "url": "http://localhost/tenants/-1/invoices/7"
+    },
+    {
+      "input": "/tenants/9223372036854775808/invoices/7",
+      "url": "http://localhost/tenants/9223372036854775808/invoices/7"
+    },
+    {
+      "input": "/tenants/1/invoices/",
+      "url": "http://localhost/tenants/1/invoices/"
+    },
+    {
+      "input": "/tenants/1/invoices/7/extra",
+      "url": "http://localhost/tenants/1/invoices/7/extra"
+    },
+    {
+      "input": "/tenants/1/invoices/7/",
+      "url": "http://localhost/tenants/1/invoices/7/"
+    },
+    {
+      "input": "/tenants/%2F/invoices/7",
+      "url": "http://localhost/tenants/%2F/invoices/7"
+    },
+    {
+      "input": "/tenants/%5C/invoices/7",
+      "url": "http://localhost/tenants/%5C/invoices/7"
+    },
+    {
+      "input": "/tenants/a%252Fb/invoices/7",
+      "url": "http://localhost/tenants/a%252Fb/invoices/7"
+    },
+    {
+      "input": "/tenants/a%20b/invoices/7",
+      "url": "http://localhost/tenants/a%20b/invoices/7"
+    },
+    {
+      "input": "/tenants/%E2%82%AC/invoices/7",
+      "url": "http://localhost/tenants/%E2%82%AC/invoices/7"
+    },
+    {
+      "input": "/tenants/%ED%A0%80/invoices/7",
+      "url": "http://localhost/tenants/%ED%A0%80/invoices/7"
+    },
+    {
+      "input": "/tenants/%/invoices/7",
+      "url": "http://localhost/tenants/%/invoices/7"
+    },
+    {
+      "input": "/tenants/%ZZ/invoices/7",
+      "url": "http://localhost/tenants/%ZZ/invoices/7"
+    },
+    {
+      "input": "/tenants/./invoices/7",
+      "url": "http://localhost/tenants/invoices/7"
+    },
+    {
+      "input": "/tenants/%2E/invoices/7",
+      "url": "http://localhost/tenants/invoices/7"
+    },
+    {
+      "input": "/tenants/%2E%2E/invoices/7",
+      "url": "http://localhost/invoices/7"
+    },
+    {
+      "input": "/tenants/a%2Fb/invoices/7",
+      "url": "http://localhost/tenants/a%2Fb/invoices/7"
+    },
+    {
+      "input": "/tenants/a\\b/invoices/7",
+      "url": "http://localhost/tenants/a/b/invoices/7"
+    },
+    {
+      "input": "/tenants/a%00b/invoices/7",
+      "url": "http://localhost/tenants/a%00b/invoices/7"
+    },
+    {
+      "input": "/tenants/%25/invoices/7",
+      "url": "http://localhost/tenants/%25/invoices/7"
+    }
+  ],
+  "served": [
+    {
+      "request": "/tenants/1/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/1/invoices/7"
+    },
+    {
+      "request": "/tenants/01/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/01/invoices/7"
+    },
+    {
+      "request": "/tenants/+1/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/+1/invoices/7"
+    },
+    {
+      "request": "/tenants/-1/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/-1/invoices/7"
+    },
+    {
+      "request": "/tenants/9223372036854775808/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/9223372036854775808/invoices/7"
+    },
+    {
+      "request": "/tenants/1/invoices/",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/1/invoices/"
+    },
+    {
+      "request": "/tenants/1/invoices/7/extra",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/1/invoices/7/extra"
+    },
+    {
+      "request": "/tenants/1/invoices/7/",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/1/invoices/7/"
+    },
+    {
+      "request": "/tenants/%2F/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%2F/invoices/7"
+    },
+    {
+      "request": "/tenants/%5C/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%5C/invoices/7"
+    },
+    {
+      "request": "/tenants/a%252Fb/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/a%252Fb/invoices/7"
+    },
+    {
+      "request": "/tenants/a%20b/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/a%20b/invoices/7"
+    },
+    {
+      "request": "/tenants/%E2%82%AC/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%E2%82%AC/invoices/7"
+    },
+    {
+      "request": "/tenants/%ED%A0%80/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%ED%A0%80/invoices/7"
+    },
+    {
+      "request": "/tenants/%/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%/invoices/7"
+    },
+    {
+      "request": "/tenants/%ZZ/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%ZZ/invoices/7"
+    },
+    {
+      "request": "/tenants/./invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/invoices/7"
+    },
+    {
+      "request": "/tenants/%2E/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/invoices/7"
+    },
+    {
+      "request": "/tenants/%2E%2E/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/invoices/7"
+    },
+    {
+      "request": "/tenants/a%2Fb/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/a%2Fb/invoices/7"
+    },
+    {
+      "request": "/tenants/a\\b/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/a/b/invoices/7"
+    },
+    {
+      "request": "/tenants/a%00b/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/a%00b/invoices/7"
+    },
+    {
+      "request": "/tenants/%25/invoices/7",
+      "method": "GET",
+      "url": "http://127.0.0.1:65015/tenants/%25/invoices/7"
+    },
+    {
+      "request": "/tenants/1/invoices/7",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:65015/tenants/1/invoices/7"
+    },
+    {
+      "request": "/tenants/%ZZ/invoices/7",
+      "method": "PATCH",
+      "url": "http://127.0.0.1:65015/tenants/%ZZ/invoices/7"
+    }
+  ]
+}

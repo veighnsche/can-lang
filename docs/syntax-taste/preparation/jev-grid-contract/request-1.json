@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Can is designed for AI coding agents, not human comfort. Correct behavior and dependable edits lead, with total tokens per successful coding task measured second. Old syntax needs no compatibility and generated TS should delegate equivalent work to native JS/Bun/browser APIs. Choose bounded contracts for the full server and Can-authored browser invoice grid, not implemented features.",
+    "row_evidence": "The invoice edit requires repeated line rows, stable association of each ID with quantity and price, retained rejected text, and precise field errors after reorder or partial input. Current Can form decoding admits only shallow str, optional str and str[] with strict duplicate-scalar/unknown-field rules. Three earlier Jev trials favored a checked keyed-row experiment (.79/.63/.52), but the last nearly tied validated parallel arrays (.42). A length check on parallel id[], quantity[] and price[] cannot detect equal-length cross-row omissions: with three rows, omit row B's id, row C's quantity and row A's price; each column has two elements but zipping misassociates surviving values. A separate JSON form action is not ordinary HTML form decoding and may require browser code. No new row decoder has been built or agent-benchmarked.",
+    "browser_evidence": "The broad goal requires a separately compiled Can main-thread browser grid: keyboard navigation, immutable draft transitions, exact totals, optimistic save/rollback, Fetch, safe rendering, offline in-view editing and view disposal. Current Can runs on Bun with safe server HTML/HTMX and forbids authored browser scripts; no browser target exists. Three prior Jev requests favored a bounded main-thread target. Native DOM APIs create/update nodes and register listeners; Fetch handles requests. Server-only SQL, process, secrets and file capabilities must be rejected transitively, and shared codecs must match Bun for int64/finite floats, variants and strict fields. An application-owned identified save must remain accountable after view listeners dispose. No framework/reactivity or worker requirement was stated."
+  },
+  "questions": {
+    "line_row_contract": {
+      "type": "choice",
+      "instructions": "Which first HTML form row contract should the linked invoice action use to prevent cross-row misassociation under the stated partial-input case?",
+      "criteria": {
+        "keyed_rows": "Extend only the shallow form boundary with checked `rows<line_wire>` keyed field names such as lines[key].quantity; group by a stable row key, reject duplicate keys/fields, partial rows and unknown nested names, and retain per-key raw values/errors. Do not infer domain numbers or authorization. Compile to native FormData iteration plus validation adapter.",
+        "parallel_arrays": "Keep shallow id[], quantity[] and price[] string arrays; verify equal lengths and unique IDs, then zip positions. Preserve raw arrays and surface errors. Accept that equal-length omissions in different rows can still pair unrelated values unless an additional association code is introduced; no new row decoder ships.",
+        "json_action": "Move line edits to a separate JSON action with an ordinary array of line records and exact existing codec rules; abandon standard HTML form submission for these rows. A Can browser client must serialize the JSON payload, and the server still retains invalid field text by its own model."
+      }
+    },
+    "browser_dom_architecture": {
+      "type": "choice",
+      "instructions": "Which first browser-target authoring/runtime architecture satisfies the Can-authored grid with the smallest justified machinery and native lowering?",
+      "criteria": {
+        "explicit_dom": "Compile ordinary Can named functions and immutable records for draft logic, with a small browser-only catalogue for native DOM element/text/property updates, listener registration, focus and Fetch. Use opaque view-scoped listener/resource ownership and an app-scoped identified-save owner; explicit state transitions live in Can, with a bounded state-cell adapter if needed. No virtual DOM, implicit effects or worker profile.",
+        "reducer_runner": "Introduce a typed application runner over State and Event, with declared pure update, safe-node render and effect-command functions; the runtime owns dispatch, DOM reconciliation and command scheduling. This gives one controlled state loop but adds a general runner/reconciliation engine beyond native DOM wrappers.",
+        "foreign_bridge": "Generate typed wire/client contracts for a separately authored JavaScript/TypeScript grid and keep Can on the server. This avoids implementing browser Can but satisfies only a narrower integration claim, not the requested Can-authored frontend gate."
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "review": "Before transmission, compared all three full requests. Every version includes the same agent-first objective, existing exact source action, optional required int/str captures, signed int64, native Bun 1.4.2 observations, current whole-path decoding, 400/404/405 contract, security limits and the same alternatives. Each contextual statement, instruction and option description is separately rewritten; identifiers and exact code are retained. No prior model answer is included. The semantic review is human engineering judgment and cannot prove wording independence.",
+  "rewritten_explanatory_paths": 16,
+  "all_distinct": true,
+  "stable_option_keys": [
+    "canonical_positive",
+    "canonical_signed",
+    "escaped_separator_data",
+    "integer_wire",
+    "lenient_signed",
+    "method_first",
+    "native_path",
+    "reject_overlap",
+    "route_overlap",
+    "segment_policy",
+    "static_first",
+    "strict_segment"
+  ]
+}

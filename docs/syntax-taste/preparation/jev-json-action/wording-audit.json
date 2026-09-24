@@ -1,0 +1,5 @@
+{
+  "manual_review": "All three full requests independently rephrase context, question and every option. They preserve AI-agent audience, secondary whole-task token cost, no compatibility, current JSON codecs, planned HTML form-only rows, browser typed state, shared protected operation, native lowering and all three alternatives. Identifiers are retained literally. No earlier Jev answer is included.",
+  "mechanical_check": "Three distinct context, instruction and per-option strings.",
+  "limit": "Semantic comparison is an engineering check, not proof against wording bias."
+}

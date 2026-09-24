@@ -1,0 +1,4 @@
+{
+  "semantic_check": "All three requests preserve the same 28/28 probe result, baseline alternatives, singleton-limit, finite-error and visible-operation constraints. Every explanatory state field, instruction and option description has a distinct full phrasing; technical identifiers remain exact. Prior Jev answers are excluded.",
+  "limit": "Manual equivalence review plus text uniqueness cannot prove absence of framing effects; investigate disagreement."
+}

@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Select a bounded client/server wire design for the agent-authored Can invoice grid. Correct status, draft retention, edit reconciliation and type linkage outweigh source brevity; measure full-task tokens later. The server-driven flow already plans an HTML form action with keyed raw fields and five rendered statuses. A separate main-thread Can frontend must send row records, receive typed data, and guard late saves. The form rows type cannot pass the existing JSON codec. Existing `http::request_json<T>` and `response_json<T>` provide a foundation. No production action feature exists, and no compatibility with earlier spellings is owed. Keep protected business checks shared."
+  },
+  "questions": {
+    "wire_action": {
+      "type": "choice",
+      "instructions": "Choose the implementable action boundary linking the browser grid to the protected invoice operation without pretending an HTML fragment decodes to a typed result.",
+      "criteria": {
+        "separate_json_action": "Use two linked but distinct action declarations: form-to-HTML for server rendering and JSON-to-JSON for the browser. JSON input/output are codec-admissible wire records/variants, and generated request/response adapters use native Fetch/Bun JSON support. Share only domain validation, actor authorization, revision write and mutation reconciliation in the server operation; retain structural form errors separately.",
+        "dual_format_action": "Create a single polymorphic action descriptor whose content type selects form/HTML or JSON/JSON at runtime, with separate typed branches and generated client helpers. This reduces declaration count but couples two decoding and rendering contracts to one route and status map.",
+        "html_status_client": "Have the Can browser grid call the existing HTML endpoint and treat response status/body as display markup. Preserve form decoder and HTMX behavior; any typed update or authoritative revision requires an extra read or parsing convention outside the action type."
+      }
+    }
+  }
+}

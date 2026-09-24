@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Evaluate two Can product-design decisions for AI-agent-authored applications. Prefer secure, observable semantics and repairable contracts; account for complete prompt/code/diagnostic/retry tokens only after correctness. No external users require preserving old source. Native JavaScript, Bun and browser operations should do equivalent work, with small adapters for immutability and Can rules. These options are planning candidates.",
+    "row_evidence": "The server-driven invoice form and later Can grid need multiple editable lines without shifting an amount onto another item when controls are absent or reordered. Present form wire types are flat str/optional str/str[]; unknown fields and duplicate scalar names fail. Earlier three Jev requests ranked checked keyed row decoding above arrays, though one was close. Parallel id/quantity/price arrays can all retain equal count after different rows omit one control each, yielding type-valid but false pairings; a count comparison alone cannot identify the original row. JSON submissions are a separate codec/action mode rather than current form behavior. No candidate has production or comparative agent evidence.",
+    "browser_evidence": "Can currently compiles Bun/server output and allows only pinned HTMX execution in browsers. The target product is an actual Can-authored editable invoice grid, so a typed bridge to another language would prove a narrower claim. Prior Jev advice consistently chose a main-thread browser slice. It needs DOM events, controlled text/structure rendering, Fetch, immutable state updates, keyboard/focus behavior and explicit disposal. Native browser primitives should implement these. SQL/process/secret modules cannot enter the bundle through direct calls, imports, callbacks or generic specialization; server and browser codecs must agree on exact numbers and data. A view owner may dispose listeners, while a tracked app-level save still needs settlement or reconciliation."
+  },
+  "questions": {
+    "line_row_contract": {
+      "type": "choice",
+      "instructions": "Choose the bounded repeated-row wire representation for the server-driven invoice form given the concrete equal-length omission hazard.",
+      "criteria": {
+        "keyed_rows": "Add a bounded row-group decoder to the action form contract, where each control carries its stable row identifier and typed direct field reference. Missing or duplicated members fail per row; reordering does not change associations; original text and key-specific problems remain available. Use native FormData parsing with strict Can checks, no general nested object grammar.",
+        "parallel_arrays": "Retain current repeated-array fields and application length/ID validation. Align columns by position and reject detected mismatch, while explicitly admitting that the supplied cross-row omission case can evade count checks without extra keyed data. Avoid new form syntax initially.",
+        "json_action": "Use a distinct JSON endpoint for line rows, with array records preserving ID/quantity/price together under the shared codec. This requires authored browser behavior rather than the server-driven HTML form baseline and does not claim JSON is form decoding."
+      }
+    },
+    "browser_dom_architecture": {
+      "type": "choice",
+      "instructions": "Select a bounded main-thread Can browser execution model for the required grid, considering capability safety, native DOM behavior and explicit lifetime.",
+      "criteria": {
+        "explicit_dom": "Add a separate browser profile and direct typed wrappers over document.createElement, textContent, event listeners, focus and fetch. The application writes named transition/render functions over immutable draft records, while opaque view ownership releases listeners and app ownership tracks in-flight mutations. Keep any mutable state cell an explicit adapter rather than a general language mutation feature.",
+        "reducer_runner": "Build a source-level reducer/render/command contract and runtime that queues events, diffs safe views into DOM nodes and interprets Fetch/timer commands. Explicit state is maintained through the runner; it centralizes lifecycle but requires a new framework-like execution layer and effect vocabulary.",
+        "foreign_bridge": "Use Can server code and an external browser language consuming generated types/actions. It may be practical for a product yet does not make the editable frontend Can-authored, so the broad recommendation would remain unqualified."
+      }
+    }
+  }
+}

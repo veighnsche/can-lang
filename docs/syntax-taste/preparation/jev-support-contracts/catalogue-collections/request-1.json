@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "Can is for AI agents; correctness and explicit contracts are gates, complete tokens per successful task secondary. No external users require compatibility. Can code cannot embed JavaScript/TypeScript or import arbitrary Bun APIs; the distribution owns admitted catalogue operations, which lower to native JS/Bun plus necessary contract adapters. Typed HTTP, crypto and process operations exist, and no required payment/email/queue SDK has been shown impractical through them. A concrete invoice/webhook provider trial must cover authentication, idempotency, malformed payload, drift, timeout, redaction, immutable output, cleanup and deterministic raw fixtures. Map/Set values are opaque and immutable to callers, backed by native Map/Set; each insert/replace clones, implying quadratic copies for mostly unique folding, but throughput is unmeasured. Compare realistic duplicate-heavy and unique sizes, order/equality/duplicate rules, callback failure timing, aliases, failed builds, time/allocation and agent repair. Retain no generic npm import or mutable alias. These are bounded next trials, not new syntax or product decisions.",
+  "questions": {
+    "di19_provider": {
+      "type": "choice",
+      "instructions": "Which bounded integration trial should follow the HTTP baseline before admitting an external SDK mechanism?",
+      "criteria": {
+        "protocol_catalogue": "Build a named typed HTTP/crypto/process package; add only a specifically missing controlled catalogue primitive with fixtures and finite errors.",
+        "distribution_adapter": "Compare a distribution-owned provider adapter with reviewed signatures, codecs, fixture ownership, abort/lifetime, redaction and finite errors.",
+        "binding_manifest": "Only after a named SDK feature defeats the first paths, trial a narrowly reviewed third-party binding manifest with the same admission contracts."
+      }
+    },
+    "di20_bulk": {
+      "type": "choice",
+      "instructions": "Which collection construction experiment best addresses the cloning implication while preserving immutability?",
+      "criteria": {
+        "retain_folds": "Keep immutable per-item insert/add folds while measured workloads remain small or no material performance/agent benefit appears.",
+        "bulk_operations": "Trial specific native Map/Set grouping or aggregation operations that build once and publish one immutable value with defined order, equality and callback failures.",
+        "scoped_builder": "Only if bulk operations cannot express the measured workload, trial a nonescaping internal builder invalid after immutable publication."
+      }
+    }
+  }
+}

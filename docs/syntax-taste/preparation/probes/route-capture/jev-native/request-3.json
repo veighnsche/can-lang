@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The design target is Can for AI agents, with correctness first and total task tokens later, no old-source promise, and native Bun operations when equivalent. Captured `int`/`str` path segments follow the planned exact source action. Actual Bun 1.4.2 routing accepts per-method dynamic routes: exact GET `/invoices/new` and captured POST `/invoices/:slug` both serve the same pathname according to method. A PATCH invoice path reaches fallback (default 404), while the Can contract wants 405/Allow. Native parameter decoding is lossy on `%ZZ` and decodes `%2F`; however `Request.url` retains those escapes for a strict guard. For `/tenants/%2E%2E/invoices/7`, Bun called the original native invoice route with param `..`, even though Request.url showed `/invoices/7`. A callback guard can reject before protected code. A custom matcher inside `fetch` cannot reconstruct that original target and in the probe normalized it to a different action. Decide the smallest truthful routing semantics and necessary adapters, still testing 400/404/405 and ambiguity at assembly.",
+  "questions": {
+    "native_route_policy": {
+      "type": "choice",
+      "instructions": "What implementation-plan route strategy is preferable for the optional typed-path trial with the required status and safety checks?",
+      "criteria": {
+        "guarded_native_method_first": "Prefer Bun.serve routes, with an explicit method-first contract and static wins only among that verb's routes. Before action code, a small adapter inspects preserved raw escapes plus captured params, forbids unsafe strings and parses canonical signed int64, returning 400. A metadata-backed fallback supplies 405/Allow or 404; compilation rejects duplicate/ambiguous patterns. Verify all cases on the pinned target because Bun's param decoder can replace malformed bytes.",
+        "custom_static_first": "Route every request through a compiler-generated Can decision table in Bun's fetch callback, selecting static over captures independently of HTTP verb and manufacturing statuses. This avoids native method-first semantics but duplicates Bun routing and cannot distinguish a request whose dot segment was normalized into another path before the callback.",
+        "defer_captures": "Exclude dynamic paths from the implementation task list for now while retaining exact actions, pending proof of raw-target handling and error statuses. This sacrifices the navigable invoice resource path in the optional trial."
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "constraints": "Can targets AI coding agents. Correctness, explicit contracts and edit reliability rank before total tokens per successful task; human familiarity and source brevity do not settle design. There are no external users or compatibility duties. Prefer equivalent native JavaScript/Bun/browser operations plus only contract/immutability adapters. These are technical prototype judgments, not syntax choices or product preferences; no new contract is adopted. Jev cannot research, and these supplied facts are the complete evidence.",
+    "evidence_status": "The audited source baseline is 02a549d28fd5fc5c3996160e65a97de332390d30. Current deployment qualification is bun-1.4.2-darwin-arm64-v1, not Linux. Upstream facts describe possibilities and need pinned-binary probes. No invoice/webhook product slice, dedicated account-search 503 browser reproduction, browser compiler, offline prototype, schema-snapshot check or comparative agent trial has been executed in these packets. Component tests and source audits support narrower claims. The broader target includes Can-authored frontend and backend; SSR or a foreign client qualifies a narrower result.",
+    "forms": "DI-09b form decoding produces shallow str, optional str and str[] records; strict UTF-8/percent parsing rejects unknown fields and scalar duplicates while retaining repeated array entries. Explicit validation maps text to domain values and can retain raw values plus independent field errors. Separate repeated columns do not intrinsically preserve row identity. Candidate line items use validated parallel arrays, checked keyed rows, or a separately declared exact JSON action. Missing/empty/partial values, duplicate keys, deletion/reorder and stable error paths all need definition. Form text is not JSON, and server validation and package-owned validated-value construction remain required.",
+    "field_identity": "A form's control names, retained raw values and error paths are separately spelled today. Named helpers can centralize them but do not supply compiler-linked rename diagnostics. Candidates add field references derived from the shallow wire record, or an action-linked contract additionally declaring decoder, validator and response cases. Renaming a domain property is distinct from renaming its form-wire field. The row representation question does not decide these links. No comparative field-rename trial has run."
+  },
+  "questions": {
+    "form_field_links": {
+      "type": "choice",
+      "instructions": "For DI-09b, which first prototype most cleanly tests compiler detection of wire-field/control/retained-value/error-path drift against the best validation/render library, before larger action-form coupling is justified?",
+      "criteria": {
+        "A": "Strengthen only shared validation/render helpers and rename tests, postponing compiler field references until a concrete baseline failure is reproduced.",
+        "B": "Prototype checked field references derived from the wire record that connect controls, retained raw values and error paths, keeping validation explicit.",
+        "C": "Prototype the full action-linked form contract together: wire field references, declared decoder, validator and response cases.",
+        "D": "The evidence cannot yet prioritize these experiments; collect a missing discriminator first."
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": "Can serves AI agents; correctness, safety and repair success are gates, while all tokens in a successful task are a secondary metric. No external compatibility is required; native JS/Bun operations should carry equivalent behavior. Resource owners and leases enforce scope at runtime before native use. Returning an own scoped handle, including in a record or closure, later fails resource_state; returning an enclosing live pool can be valid. Four runtime escape shapes have been probed, but no sound useful static checker rule is established. First-success race uses native Promise.any: pre-winner failures are consumed, late standard failures are diagnosed, losers retain leases, and empty/pending dynamic behavior remains selected. A close deadline stops the caller's wait but neither cancels pending work nor frees its lease. Test direct/aggregate/captured own escapes versus live pool, and a real fallback with zero/one/many participants, early win, expected/accidental faults, late standard fault, pending loser and close deadline. Compare diagnostic usefulness, noise, root drain and agent repairs. Ask for bounded trials, not grammar or final semantics.",
+  "questions": {
+    "di18a_escape": {
+      "type": "choice",
+      "instructions": "Which next diagnostic experiment is proportionate to scoped resource escapes while preserving valid outer-pool returns?",
+      "criteria": {
+        "runtime_context": "Improve resource_state with creation, close and use context while retaining the owner/lease guard; measure repairs for all escape forms.",
+        "narrow_checker": "Prototype a checker warning for obvious direct and known field returns of the scope's own token; avoid rejecting outer pools or claiming alias/capture completeness."
+      }
+    },
+    "di18b_faults": {
+      "type": "choice",
+      "instructions": "Which observability trial best tests consumed first-success race failures without changing Promise.any selection?",
+      "criteria": {
+        "application_observation": "Have service code observe each participant's classified failure before the original race settles; measure useful diagnoses and routine noise.",
+        "opt_in_policy": "Prototype optional consumed-fault diagnostics at the race adapter; specify domain/standard inclusion, identity, timing, order, redaction and sink failure handling."
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": "For agent-first Can, explicit contracts and safe effects are mandatory, with whole successful-task tokens measured second. No old ABI or spelling needs migration. Compile equivalent coordination to native Promise.any and guard resource use at the owner boundary. A scope's own reader/transaction can escape syntactically but its later use receives resource_state before native work; an enclosing pool with a live owner is legitimate. A four-case runtime probe exists, yet no static escape diagnostic has been validated. In first-success races, earlier failed candidates do not determine the winner, late standard faults are diagnosed, and losing operations hold leases until settlement. Empty dynamic input and never-settling candidates have selected behavior; a close deadline only limits waiting and reports cleanup failure. Evaluate direct, record and captured own returns against a valid outer return, then a controlled fallback with participant counts, early success, fault categories, late fault and close deadline. Require unchanged winner/drain behavior and count agent diagnosis and noise. The consultation chooses experiments, not surface syntax.",
+  "questions": {
+    "di18a_escape": {
+      "type": "choice",
+      "instructions": "What trial should address expired own handles given the existing runtime safety boundary?",
+      "criteria": {
+        "runtime_context": "Enrich runtime ownership errors with the handle's creation/closure/use trail and compare repair attempts, including valid outer pools.",
+        "narrow_checker": "Compare a precise static check for direct/known-record own escapes with runtime feedback; test false positives on enclosing-owned resources."
+      }
+    },
+    "di18b_faults": {
+      "type": "choice",
+      "instructions": "How should hidden pre-winner faults be evaluated before adding any race policy?",
+      "criteria": {
+        "application_observation": "Compare written participant observers around Promise.any, with service-owned redaction and fault reporting, on the controlled fallback.",
+        "opt_in_policy": "Compare a native-boundary diagnostic policy for swallowed pre-winner faults, with explicit fault classes and sink behavior, against application reporting."
+      }
+    }
+  }
+}

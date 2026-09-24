@@ -1,0 +1,24 @@
+{
+  "model": "jev-latest",
+  "state": "For an AI coding language, valid effects and reliable repair outrank token savings, which are assessed over an entire successful attempt. There is no external migration obligation. Generated TypeScript delegates to native facilities, with adapters to keep Can immutable and contract-bound. The source language has no arbitrary npm or JS escape; approved catalogue entries belong to the distribution. Typed HTTP, crypto and process support is already present, and an indispensable blocked SDK operation has not been identified. Test one provider operation for invoice/webhook flows with signature/auth, deduplication, malformed and changed responses, timeout, redaction, raw fixtures, ownership and immutable values. Can maps and sets hide native Map/Set; single-item updates clone before publication. Distinct-key construction may copy quadratically but has not been benchmarked. Trial duplicate-rich and mostly unique batches, midstream callback failure, insertion order, key equality, alias attempts and a failed build at real sizes; compare time, allocation and total agent cost. No answer admits general imports or public mutation.",
+  "questions": {
+    "di19_provider": {
+      "type": "choice",
+      "instructions": "How should the catalogue respond to a concrete invoice/webhook provider gap if one is reproduced?",
+      "criteria": {
+        "protocol_catalogue": "Trial provider handling through native fetch/crypto/process and narrowly extend distribution primitives only when the operation cannot be expressed.",
+        "distribution_adapter": "Prototype one maintained provider binding under catalogue authority, specifying errors, fixtures, ownership, cancellation and sanitized diagnostics.",
+        "binding_manifest": "Test a third-party manifest solely for a measured SDK-only capability, with explicit signatures, codecs, fixtures, ownership and error admission."
+      }
+    },
+    "di20_bulk": {
+      "type": "choice",
+      "instructions": "What construction path should be compared with immutable folds on actual workloads?",
+      "criteria": {
+        "retain_folds": "Continue source folds if measured time/allocation and successful agent tasks do not justify another API.",
+        "bulk_operations": "Test bounded bulk aggregation lowered to one native container build, with no exposed mutators and exact duplicate/order/error contracts.",
+        "scoped_builder": "Prototype a scoped native collection builder as a fallback, with failed-build cleanup and one immutable result, after targeted bulk operations are tested."
+      }
+    }
+  }
+}

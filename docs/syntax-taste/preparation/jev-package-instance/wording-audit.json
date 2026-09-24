@@ -1,0 +1,5 @@
+{
+  "manualReview": "All three requests state the same current graph/lock behavior, fixed user import syntax, accepted unnumbered error direction, required alias/relocation/graph-growth stability, exact-instance merging, version separation, and owner retirement. Every explanatory field, instruction and option description is fresh prose; technical syntax and identifiers are stable. Options remain in the same order. No preferred answer or previous Jev response was included.",
+  "mechanicalReview": "Every three-member explanatory prose set is pairwise distinct by exact string comparison; all request files are retained.",
+  "limit": "Semantic equivalence is manually reviewed and cannot prove freedom from phrasing effects. Jev supplies judgment, not implementation proof."
+}

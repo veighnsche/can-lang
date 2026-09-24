@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "The language serves agent-authored programs rather than human taste. Prioritize sound behavior and edits; measure whole successful-task tokens as a secondary objective. We seek the next controlled prototype, not a final grammar choice. Old spellings need no migration support, and lowering should delegate equivalent operations to JS/Bun.",
+    "observations": "A reproducible Can probe passed 28 checks across two disjoint singleton failure domains. Repeated direct chains retain precise outward errors. One named fixed-bound helper accepts either callback yet advertises their union, forcing an unused error branch per caller. Parameterized result-as-data transports different failure records but adds ingress/egress adapters. The helper can state its transformation and predicate as ordinary callable inputs; without those inputs, generic body requirements appear only when a concrete instance is checked.",
+    "limits": "Only one error per caller and one integer helper were exercised. Source length is not an agent benchmark. Source functions cannot quantify over an arbitrary callback error set, though catalogue operations can compute such sets. Keep public failures finite and inspectable and reject missing callable requirements; require comparative benefit before expanding core grammar."
+  },
+  "questions": {
+    "next_generic_trial": {
+      "type": "choice",
+      "instructions": "Choose the most informative experiment after the fixed-bound and data-result probe, while protecting explicit finite failures and operation contracts.",
+      "criteria": {
+        "explicit_error_set_trial": "Test a written failure-row variable in a source helper, specialized to each caller, against the existing direct and data-adapter baselines; make transform/inspect callable requirements public and exercise multi-error domains.",
+        "data_result_only": "Extend the present result-as-data example to larger failure sets and use explicit completion conversions as the lasting general abstraction, with no trial of error-set parameters.",
+        "fixed_bound_only": "Scale the fixed error-union baseline, accepting impossible branches in callers and avoiding a new generic mechanism even if the disjoint domains remain separate.",
+        "catalogue_intrinsics": "Move the reusable workflow into maintained catalogue operations with computed callback errors, leaving ordinary source helpers fixed-bound."
+      }
+    }
+  }
+}

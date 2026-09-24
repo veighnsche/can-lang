@@ -1,0 +1,4 @@
+{
+  "semantic_check": "All three requests retain the same observed typo behavior, agent-first objective, native-lowering and no-compatibility constraints, and three complete alternative rules. Every explanatory state field, question and option description is freshly worded. Illustrative bind x/leaf() identifiers are stable technical examples. No prior Jev answer is included.",
+  "limits": "This mechanical uniqueness check and human semantic audit cannot prove absence of wording bias; disagreements require investigation."
+}

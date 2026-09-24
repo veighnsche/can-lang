@@ -1,0 +1,36 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goals": "The audience is coding agents, not human readers. Success and robust refactoring outrank a yet-unmeasured reduction in complete-task tokens. Old source and ABI need no preservation. Prefer JavaScript/Bun operations plus required contract checks in emitted TypeScript; make a design selection without user consultation.",
+    "evidence": "A reproducible values/main project ran 11 passing assertions and demonstrated invalid email/quantity inhabitants made outside rejecting factories by ordinary constructor, with, JSON decoder, assertion parameter and supplied-result routes. Today provides is the public-name list, record introduces indented type/name fields, and a private type is prohibited in exported signatures. Lowering uses frozen nominal objects rather than mutable data. Structural immutable equality is available only when every reachable component is eligible, excluding resource and callable contents.",
+    "fixed_contract": "Assume the planned owner boundary is adopted: only its defining canonical package instance controls a record\u2019s creation, with updates and field destructuring, including harness expressions. An exported name remains usable as a signature type or variant member. Other packages retain transport, whole-value capture and leaf-identity matching, and may supply existing owner-minted objects in fixtures. Generic code is checked with its own lexical owner rather than whichever package instantiates it. Neither shared project location nor an alias changes ownership. This boundary trusts factories to enforce predicates; it cannot infer invoice authorization from a valid tenant ID.",
+    "policy_context": "Hold semantics constant when choosing the record header: normal records stay transparent and each candidate uses the same owner checks/native objects. A new field marker would expose named immutable projections safely for minting but broaden the language surface; existing exported functions can expose the same values explicitly. Equality of eligible hidden data remains observable and is not a secret-preserving boundary. The current schema graph supports both serialization directions, including recursively nested protected leaves. Ordinary wire records converted by owner functions avoid any automatic validator or codec-dispatch registry."
+  },
+  "questions": {
+    "declaration": {
+      "type": "choice",
+      "instructions": "Choose the source header to specify for this record boundary. Prefer a readily checked distinction for agents; do not infer token performance from word counts.",
+      "criteria": {
+        "owner_modifier": "Adopt owner record email; retain ordinary field grammar and make owner contextual in the declaration prefix. Public naming still uses provides.",
+        "owned_declaration": "Spell the new form owned email and treat it as its own declaration production; field syntax and ownership stay the same and provides exports the name.",
+        "owner_suffix": "Adopt record email owner as a header qualifier after the type name; unchanged field grammar and provides still apply."
+      }
+    },
+    "projections": {
+      "type": "choice",
+      "instructions": "What initial projection policy best completes this boundary without changing the accepted ownership or equality semantics?",
+      "criteria": {
+        "functions_only": "Use exported owner functions for observations while denying importer field access uniformly; leave field visibility grammar unextended.",
+        "public_fields": "Introduce field-level public annotations enabling immutable projections and matching of those slots outside the owner; protect remaining slots and all creation operations."
+      }
+    },
+    "codec": {
+      "type": "choice",
+      "instructions": "Choose how generic serialization and schema derivation should treat this record kind, both directly and through containers, in owner and importer code.",
+      "criteria": {
+        "wire_only_everywhere": "Use one context-independent prohibition on automatically derived schema, encoding and decoding of graphs reaching owner records. Owner code writes explicit wire-record conversion and validation instead.",
+        "owner_derivation": "Allow automatic codecs/schema under a package privilege check covering all protected leaves; foreign callers need owner conversion functions, and the owner must ensure decoding does not bypass its intended predicates."
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+package values
+    provides [email, quantity, invalid_email, invalid_quantity, make_email, make_quantity]
+    uses []
+
+record email
+    str address
+record quantity
+    int amount
+error 1000201 invalid_email(str reason)
+error 1000202 invalid_quantity(str reason)
+
+fn email make_email
+    emits [invalid_email]
+    given
+        str address
+    asserts
+        accepted: "valid@example.test" => ok email("valid@example.test")
+        blank: "" => invalid_email("blank")
+    match address is ""
+        false => ok email(address)
+        true => invalid_email("blank")
+
+fn quantity make_quantity
+    emits [invalid_quantity]
+    given
+        int amount
+    asserts
+        accepted: 3 => ok quantity(3)
+        zero: 0 => invalid_quantity("nonpositive")
+    match amount > 0
+        false => invalid_quantity("nonpositive")
+        true => ok quantity(amount)

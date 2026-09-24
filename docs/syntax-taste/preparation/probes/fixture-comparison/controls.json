@@ -1,0 +1,172 @@
+[
+  {
+    "case": "ambient-lexical",
+    "edit": "selector-repair",
+    "changed": "src/helper/main.can",
+    "checkExit": 0,
+    "accepted": true,
+    "diagnostic": null,
+    "callerExit": 0,
+    "callerReport": {
+      "schemaVersion": 1,
+      "kind": "can.assertion-root-report",
+      "root": {
+        "package": "can.project.root/app",
+        "declaration": "can.project.root/app::read_customer",
+        "name": "renamed"
+      },
+      "passed": true,
+      "assertion": {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "frames": [],
+        "violations": [],
+        "evidence": [
+          "real-can",
+          "supplied-completion"
+        ],
+        "fixturePaths": [],
+        "passed": true
+      }
+    }
+  },
+  {
+    "case": "lexical-template",
+    "edit": "selector-repair",
+    "changed": "src/helper/main.can",
+    "checkExit": 0,
+    "accepted": true,
+    "diagnostic": null,
+    "callerExit": 0,
+    "callerReport": {
+      "schemaVersion": 1,
+      "kind": "can.assertion-root-report",
+      "root": {
+        "package": "can.project.root/app",
+        "declaration": "can.project.root/app::read_customer",
+        "name": "renamed"
+      },
+      "passed": true,
+      "assertion": {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "frames": [],
+        "violations": [],
+        "evidence": [
+          "real-can",
+          "supplied-completion"
+        ],
+        "fixturePaths": [],
+        "passed": true
+      }
+    }
+  },
+  {
+    "case": "injected-callable",
+    "edit": "converter-change",
+    "changed": "src/app/main.can",
+    "checkExit": 0,
+    "accepted": true,
+    "diagnostic": null,
+    "callerExit": 1,
+    "callerReport": {
+      "schemaVersion": 1,
+      "kind": "can.assertion-root-report",
+      "root": {
+        "package": "can.project.root/app",
+        "declaration": "can.project.root/app::read_customer",
+        "name": "renamed"
+      },
+      "passed": false,
+      "assertion": {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "frames": [],
+        "violations": [],
+        "evidence": [
+          "real-can"
+        ],
+        "fixturePaths": [],
+        "passed": false,
+        "reason": "outcome mismatch"
+      }
+    }
+  },
+  {
+    "case": "injected-callable",
+    "edit": "helper-body-change",
+    "changed": "src/helper/main.can",
+    "checkExit": 0,
+    "accepted": true,
+    "diagnostic": null,
+    "callerExit": 1,
+    "callerReport": {
+      "schemaVersion": 1,
+      "kind": "can.assertion-root-report",
+      "root": {
+        "package": "can.project.root/app",
+        "declaration": "can.project.root/app::read_customer",
+        "name": "renamed"
+      },
+      "passed": false,
+      "assertion": {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "frames": [],
+        "violations": [],
+        "evidence": [
+          "real-can"
+        ],
+        "fixturePaths": [],
+        "passed": false,
+        "reason": "outcome mismatch"
+      }
+    }
+  },
+  {
+    "case": "whole-helper-stub",
+    "edit": "helper-body-change",
+    "changed": "src/helper/main.can",
+    "checkExit": 0,
+    "accepted": true,
+    "diagnostic": null,
+    "callerExit": 0,
+    "callerReport": {
+      "schemaVersion": 1,
+      "kind": "can.assertion-root-report",
+      "root": {
+        "package": "can.project.root/app",
+        "declaration": "can.project.root/app::read_customer",
+        "name": "renamed"
+      },
+      "passed": true,
+      "assertion": {
+        "root": {
+          "package": "can.project.root/app",
+          "declaration": "can.project.root/app::read_customer",
+          "name": "renamed"
+        },
+        "frames": [],
+        "violations": [],
+        "evidence": [
+          "real-can",
+          "supplied-completion"
+        ],
+        "fixturePaths": [],
+        "passed": true
+      }
+    }
+  }
+]

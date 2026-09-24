@@ -1,0 +1,56 @@
+{
+  "preparedAt": "2026-09-24T00:18:13.007266+00:00",
+  "model": "jev-latest",
+  "independent_questions": [
+    "validated_value_trial",
+    "package_identity_trial",
+    "error_identity_trial",
+    "fixture_ownership_trial",
+    "variant_policy_trial"
+  ],
+  "manual_semantic_review": "Reviewed all three columns before sending. Facts, observation strength, goals, constraints, acceptance matrices and viable alternative contracts are equivalent. Each question asks the next technical experiment, not final semantics or user taste. All options include tradeoffs. Every family includes defer_measure. The owner_record option conservatively denies direct derived schema as well as decoding; schema of a public wire shape remains available. Technical identifiers, question keys and option labels are deliberately stable.",
+  "invariants": {
+    "validated_value_trial": "Owner record, full opacity, universal validation or baseline-first; codecs, fixtures, equality and authorization all covered.",
+    "package_identity_trial": "Qualified imports, manifest handles, author-qualified declarations or baseline-first; unchanged-input limitation and separate instances preserved.",
+    "error_identity_trial": "Scoped numbers, build-local numbers, direct keys or audit-first; unknown consumers/rename needs, retirement, exact generic identity and two builds preserved.",
+    "fixture_ownership_trial": "Lexical-only, helper scenarios, exported seams or current-idiom-first; coverage difference, deliberate selection, exact arguments and isolated FIFO paths preserved.",
+    "variant_policy_trial": "Extensional leaves, documented present admission, nominal wrappers or matrix-first; direct/bridge/leaf, option, record and codec cases preserved."
+  },
+  "full_request_wording_checks": [
+    {
+      "requests": [
+        1,
+        2
+      ],
+      "explanatory_fields": 33,
+      "unchanged_explanatory_paths": []
+    },
+    {
+      "requests": [
+        1,
+        3
+      ],
+      "explanatory_fields": 33,
+      "unchanged_explanatory_paths": []
+    },
+    {
+      "requests": [
+        2,
+        3
+      ],
+      "explanatory_fields": 33,
+      "unchanged_explanatory_paths": []
+    }
+  ],
+  "allowed_exact_strings": [
+    "jev-latest",
+    "choice",
+    "JSON keys, answer labels and embedded technical identifiers"
+  ],
+  "request_sha256": {
+    "1": "1737b80af07e3d93361822fc804976eb736ac2132016ef22bea04bd471fbce0b",
+    "2": "d376e34e06dc9d2abba4a613374768c0f5ed6be22b471b9627488e04dcc7161a",
+    "3": "6a64d6b32e18cc198a7beefeec63cb72d0477651675b9dd6a50fc904a85c0576"
+  },
+  "limitations": "Text inequality is checked mechanically; equivalence is manual. This neither proves semantic identity nor removes framing bias. All alternatives share a fixed order. Prior Jev outputs are excluded from request state. Agreement remains advice, never validation."
+}

@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Judge planned Can behavior for programs authored and repaired by AI agents. Human ease has no independent weight; successful semantics and predictable edits lead, while prompts, code, diagnostics and retries contribute to a secondary whole-task token metric. The repository has no outside adopters. Emit native JS/Bun operations rather than a substitute interpreter, adding only contract-preserving adaptation. These are design choices, not claims of shipped features.",
+    "generic_evidence": "Can presently admits a public generic whose implementation later begins using value + value without modifying its written interface; incompatibility appears when a consuming specialization is checked. Named function parameters or records of functions can already make an operation requirement visible, and the executed generic-helper baseline verified this pattern across two callers. It has not measured agent creation/repair against a capability system. Locally scoped template behavior remains useful. Any stronger public contract must define universally admitted operations, and the optional finite-error parameter is a distinct undecided mechanism.",
+    "offline_evidence": "The broad frontend gate asks a Can browser client to handle an editable invoice grid, including unsaved local work, rapid totals, optimistic failure recovery, network loss/slowness and view lifetime. No source requirement promises persistence through navigation/reload or background replay. Browser Can is itself proposed, not implemented. Prior three-way Jev advice chose view-memory plus deliberate retry only as the first experiment. Persisting drafts safely requires account/tenant partition, storage failures, versioned migrations, logout and concurrent tabs. Queuing writes additionally requires stable mutation IDs, expired permissions and uncertain server-commit handling. Identified saves owned by the application are distinct from listeners and timers owned by one view."
+  },
+  "questions": {
+    "public_generic_operations": {
+      "type": "choice",
+      "instructions": "Select the design for exposing operation requirements of exported Can generics, taking the specialization failure and existing callable baseline into account.",
+      "criteria": {
+        "explicit_public": "Require public generic signatures to list needed behavior as explicit function or dictionary parameters beyond a fixed universal core. A body-only addition requirement diagnoses at the exported source rather than surprising a downstream instantiation. Locally scoped template helpers may retain concrete checks. Reuse ordinary callable semantics and native calls, not global typeclass lookup.",
+        "template_artifact": "Continue the current public template policy and publish compiler-derived requirements tied to lock and implementation digest. A dependency edit invalidates summaries and all known clients re-specialize, receiving precise instantiation diagnostics. Do not claim the unchanged written signature fully describes operations needed by untested types.",
+        "small_capabilities": "Specify a small built-in set of public generic capabilities, each listing exact admitted operators and verifiable obligations. Adding a body operation updates the public capability requirement; consumers prove membership at instantiation. Domain-specific behavior still travels through callable inputs, without a user-defined trait registry."
+      }
+    },
+    "grid_offline_promise": {
+      "type": "choice",
+      "instructions": "Choose the bounded offline contract for the broad frontend gate itself, beyond merely naming an evaluation baseline; the stated goal does not ask for reload survival.",
+      "criteria": {
+        "in_view_explicit_retry": "Guarantee that a live grid retains and edits its local draft when offline, labels it unsaved, and offers an explicit reconnect/retry path with stale-response protection. Preserve app-owned mutation identity after a view closes. Do not represent an in-memory draft as persistent across reload, or silently enqueue writes for background delivery.",
+        "durable_draft": "Promise a browser-stored draft surviving a reload for the same account and tenant, with versioning, logout removal, storage failure handling and multi-tab resolution. Recovery shows the draft but never assumes an unacknowledged mutation committed; the user explicitly retries after reconciling with the server.",
+        "durable_queue": "Support a local durable mutation queue as well as draft recovery, with automatic resume after connectivity returns. Define stable operation IDs, server idempotency, auth/revision expiry, duplicate tabs and crash/replay windows; uncertain commits require lookup instead of blind repeat."
+      }
+    }
+  }
+}

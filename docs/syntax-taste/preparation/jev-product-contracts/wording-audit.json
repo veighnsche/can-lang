@@ -1,0 +1,37 @@
+{
+  "before_send": true,
+  "explanatory_paths_checked": 65,
+  "identical_explanatory_paths": [],
+  "request_sha256": {
+    "1": "ca27e29c871f6b5391695cb828b8272ceb2f433a98c988a4380ceb6e7ba5b24e",
+    "2": "6bad8f54bdc53f90089d34e6b6b0d7e92ef4f42e3b2b287028e403555b0a2a1e",
+    "3": "c4c9526f6e0f356170fe0b1867a9f057ebae742a2d92bb30a1662bf486ff6e4b"
+  },
+  "semantic_review": "Manually compared every triple for the same facts, constraints, question scope and A/B/C/D alternatives. All state paragraphs, instructions and option descriptions were rewritten; only schema/model/option keys and exact technical identifiers remain fixed. Option display order rotates. No prior Jev answer is included. Each question is an independent engineering-experiment choice, not a final product preference or syntax approval.",
+  "fact_coverage": [
+    "constraints",
+    "evidence_status",
+    "routes",
+    "forms",
+    "actions_html",
+    "browser",
+    "offline_lifecycle",
+    "observation",
+    "sql",
+    "cancellation"
+  ],
+  "question_coverage": [
+    "endpoint_probe",
+    "form_rows",
+    "action_mapping",
+    "html_probe",
+    "browser_profile",
+    "offline_minimum",
+    "lifecycle_ownership",
+    "observation_layer",
+    "returning",
+    "schema_assurance",
+    "shutdown"
+  ],
+  "limitations": "Paraphrase uniqueness is mechanically checked; semantic equivalence is a reviewer judgment, not proven. Shared authored framing, option sets and classifier correlations remain. Rotation and three fresh calls cannot guarantee bias removal. No probe outcomes beyond the supplied evidence are implied."
+}

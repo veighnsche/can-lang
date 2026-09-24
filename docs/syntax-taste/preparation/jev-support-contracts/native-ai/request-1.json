@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": "Can targets AI coding agents. Correct behavior, explicit finite errors and reliable edits outrank the secondary measure of complete tokens per successful task. There are no external users or compatibility duties. Generated TypeScript should delegate equivalent operations to JavaScript/Bun with narrow contract adapters. Current native AI forms keep llm, judge, fetch and question kinds distinct, with grouped state and explicit connections. The example already composes typed LLM generation with a dynamic Choice in two requests. Ordinary llm wrappers forward errors but cannot separate authored and decoder failures of one nominal kind; fetch/judge wrap has handles native and handles emitted provenance policy. Judge batches prepare registrations, make one native request, validate every answer, then run handlers in source order; an early external write survives a later handler failure. Named functions currently adapt grouped judge/LLM inputs; direct references are disallowed and repetition alone has no measured cost. Compare alternatives on one generated-record flow with same-kind authored/decoder faults, two state groups, multi-judge fan-out, a second handler failure after a controlled ledger write, request count, disclosure, errors, effects and agent repair. This is an experiment choice, not syntax or adoption.",
+  "questions": {
+    "di17a_recovery": {
+      "type": "choice",
+      "instructions": "Which bounded recovery experiment should follow for same-kind authored and decoder llm failures, without assuming the new policy is needed?",
+      "criteria": {
+        "ordinary_helpers": "Keep named forwarding/recovery helpers and explicit branches; benchmark whether they correctly avoid wrong recovery and extra request replay.",
+        "llm_wrap_trial": "Prototype a narrow llm wrap origin tag and declared handles native/handles emitted policy; test request, decode, validation and authored errors with finite outward bounds."
+      }
+    },
+    "di17b_effects": {
+      "type": "choice",
+      "instructions": "How should the controlled two-handler batch test examine partial external effects before any language change?",
+      "criteria": {
+        "phase_documentation": "Keep the one-request, validate-all, ordered-handler rule; make the partial-effect outcome explicit in docs, diagnostics and a ledger example.",
+        "transaction_trial": "Wrap compatible database writes in an explicit native transaction; inject rollback and uncertain commit, without claiming atomicity for provider calls.",
+        "outbox_trial": "Stage intentions in an outbox after validated answers, then dispatch idempotently; inject duplicate delivery and replay failures."
+      }
+    },
+    "di17c_callable": {
+      "type": "choice",
+      "instructions": "Which grouped-state callable trial is justified before changing direct judge/LLM reference rules?",
+      "criteria": {
+        "named_adapters": "Use one named function per grouped state contract, optionally with explicit context; test renames, captures, request counts and finite errors.",
+        "direct_reference_trial": "Prototype a narrowly typed grouped-state native reference that retains group and connection descriptors through capture, invocation and fixtures."
+      }
+    }
+  }
+}

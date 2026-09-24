@@ -1,0 +1,22 @@
+{
+  "model": "jev-latest",
+  "state": "The design target is dependable agent-written Can code; include complete tokens only after contract and safety checks pass. Legacy compatibility has no constituency, and generated TypeScript should use native JavaScript/Bun selection with adapters for ownership. A scoped transaction or reader belongs to an owner: an escaped own token is rejected by a pre-native runtime lease guard even if carried through an aggregate or capture, while an outer pool may remain usable. Current probes show four forms, without proving a worthwhile static analysis. First-success coordination delegates selection to Promise.any. A failure before a later success is consumed, a late standard failure is reported, a losing live operation keeps its lease, and a timeout on close does not settle or cancel it. Dynamic empty and permanently pending cases retain their contract. Exercise own-handle return in direct, field and closure forms plus outer pool; also exercise replica fallback counts, fault timing, pending loser and shutdown. Judge both fault signal/noise and repair effort; this is preparation only.",
+  "questions": {
+    "di18a_escape": {
+      "type": "choice",
+      "instructions": "Choose a bounded scope-escape comparison that improves agent repair without overstating static coverage.",
+      "criteria": {
+        "runtime_context": "Keep pre-native runtime rejection and add provenance to the fault diagnostic, then test how agents fix direct, field and capture cases.",
+        "narrow_checker": "Try a limited compile-time diagnostic for syntactically evident own-handle return and known aggregate fields, explicitly excluding arbitrary aliases."
+      }
+    },
+    "di18b_faults": {
+      "type": "choice",
+      "instructions": "Select a bounded way to compare fault visibility on an actual replica fallback while retaining winner and lease rules.",
+      "criteria": {
+        "application_observation": "Instrument every fallback candidate explicitly in the application and record faults while leaving native selection, pending work and leases intact.",
+        "opt_in_policy": "Try an opt-in race observer that reports consumed failures without canceling losers or changing winner, pending, lease or root-drain semantics."
+      }
+    }
+  }
+}

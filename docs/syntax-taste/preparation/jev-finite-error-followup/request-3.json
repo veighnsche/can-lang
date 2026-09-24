@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Choose technical details for a disposable Can experiment serving AI coding agents, not a syntax adoption vote. Prioritize preserved behavior, explicit failure contracts and repairability over brevity; count all tokens used by a successful coding task as a secondary measure. No compatibility migration is required. The TS backend should delegate ordinary operations to JS/Bun and retain necessary completion adapters.",
+    "evidence": "In a current isolated library example, 28 assertions succeed. One caller has domain::a_failure and another domain::b_failure. Duplicated match-chain logic retains their precise errors. Reusing one helper with both errors in its fixed signature forces an irrelevant other-error arm at each site. A generic result variant instead requires conversions on both sides of the helper. Its transform and inspect capabilities are visible as ordinary callable inputs. The test covers one error per domain and no controlled agent completion comparison.",
+    "candidate": "For the proposed trial, the source helper binds finite nominal error set E explicitly as `errors E`; the callback type contains `emits [E]`, and the helper's written bound is `emits [E, audit_down]`. Set union removes duplicate identities and accepts an empty E. A body can relay an arbitrary E completion but can examine fields only when it names a concrete member. E has no runtime representation after compilation."
+  },
+  "questions": {
+    "specialization": {
+      "type": "choice",
+      "instructions": "For a trial with two independently supplied error sets, which rule most clearly identifies the resulting set and a failure after a callback edit?",
+      "criteria": {
+        "callback_static_bound": "Bind E to the callback value's declared finite error list at the invocation; do not narrow by unreachable runtime branches. If E is stated explicitly, require the same normalized set. The helper also lists audit_down.",
+        "mandatory_explicit_row": "Have agents state E in type arguments on every helper call, accepting a callback whose written error list is contained in E; all stated E members remain possible to the enclosing caller, along with audit_down.",
+        "caller_context_row": "Infer E from the enclosing function's declared permitted errors and check the callback against it; a callback change can be hidden when that outer list is already broad."
+      }
+    },
+    "forwarding": {
+      "type": "choice",
+      "instructions": "Which limited helper-body construct should account for all possible E failures without making a general effect system?",
+      "criteria": {
+        "grouped_forward_arm": "Write `E as failure => failure` once in a completion match; that arm can only preserve the original typed error, while named arms handle any examined or remapped error.",
+        "automatic_call_relay": "Let a call expression transparently pass E failures to the helper's caller whenever the written helper bound includes them, bypassing a source match arm.",
+        "specialization_arms": "Expand E into member-specific completion arms after the generic helper is specialized, so the generic source needs no explicit grouped forwarding construct."
+      }
+    }
+  }
+}

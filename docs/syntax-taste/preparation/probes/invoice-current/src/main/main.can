@@ -1,0 +1,145 @@
+package invoice_probe
+    provides [invoice_form, edit_result, actor_context, invoice_row, save_parameters, validate_edit, protected_edit, save_invoice, form_response, decode_and_edit, main]
+    uses [text, sql, http, codec]
+
+/// A request form is text even where the domain needs numbers.
+record invoice_form
+    str seats
+    str details
+    str revision
+
+/// The application result retains raw fields for a rejected form.
+record edit_result
+    int status
+    str seats
+    str details
+    str revision
+    str field_error
+
+/// In a real handler, this must come from authenticated server state.
+record actor_context
+    int actor_id
+    int tenant_id
+
+record invoice_row
+    int id
+    int tenant_id
+    int seats
+    str details
+    int revision
+
+record save_parameters
+    int seats
+    str details
+    int tenant_id
+    int invoice_id
+    int revision
+
+/// Validate numeric wire fields before any domain operation.
+fn edit_result validate_edit
+    emits []
+    given
+        invoice_form form
+    asserts
+        valid: invoice_form("3", "desk", "2") => ok edit_result(200, "3", "desk", "2", "")
+        bad_number: invoice_form("many", "retain", "2") => ok edit_result(422, "many", "retain", "2", "seats")
+        bad_range: invoice_form("0", "retain", "2") => ok edit_result(422, "0", "retain", "2", "seats")
+        bad_revision: invoice_form("3", "retain", "oops") => ok edit_result(422, "3", "retain", "oops", "revision")
+    match call text::to_int(form.seats)
+        text::invalid_number => ok edit_result(422, form.seats, form.details, form.revision, "seats")
+        ok int seats => match seats >= 1 and seats <= 1000
+            false => ok edit_result(422, form.seats, form.details, form.revision, "seats")
+            true => match call text::to_int(form.revision)
+                text::invalid_number => ok edit_result(422, form.seats, form.details, form.revision, "revision")
+                ok int revision => match revision >= 0
+                    false => ok edit_result(422, form.seats, form.details, form.revision, "revision")
+                    true => ok edit_result(200, form.seats, form.details, form.revision, "")
+
+/// The actor tenant is supplied by trusted server context, not the form.
+/// The resource's tenant and current revision are checked at this operation.
+fn edit_result protected_edit
+    emits []
+    given
+        actor_context actor
+        invoice_row stored
+        invoice_form form
+        bool storage_available
+    asserts
+        saved: actor_context(41, 1), invoice_row(7, 1, 2, "old", 2), invoice_form("3", "desk", "2"), true => ok edit_result(200, "3", "desk", "2", "")
+        invalid: actor_context(41, 1), invoice_row(7, 1, 2, "old", 2), invoice_form("many", "retain", "2"), true => ok edit_result(422, "many", "retain", "2", "seats")
+        forbidden: actor_context(41, 1), invoice_row(7, 2, 2, "old", 2), invoice_form("3", "desk", "2"), true => ok edit_result(403, "3", "desk", "2", "")
+        no_actor: actor_context(0, 1), invoice_row(7, 1, 2, "old", 2), invoice_form("3", "desk", "2"), true => ok edit_result(403, "3", "desk", "2", "")
+        conflict: actor_context(41, 1), invoice_row(7, 1, 2, "old", 3), invoice_form("3", "desk", "2"), true => ok edit_result(409, "3", "desk", "2", "")
+        unavailable: actor_context(41, 1), invoice_row(7, 1, 2, "old", 2), invoice_form("3", "desk", "2"), false => ok edit_result(503, "3", "desk", "2", "")
+    match actor.actor_id > 0 and actor.tenant_id is stored.tenant_id
+        false => ok edit_result(403, form.seats, form.details, form.revision, "")
+        true => match call validate_edit(form)
+            ok edit_result checked => match checked.status is 200
+                false => ok checked
+                true => match call text::to_int(form.revision)
+                    text::invalid_number => ok edit_result(422, form.seats, form.details, form.revision, "revision")
+                    ok int expected => match expected is stored.revision
+                        false => ok edit_result(409, form.seats, form.details, form.revision, "")
+                        true => match storage_available
+                            false => ok edit_result(503, form.seats, form.details, form.revision, "")
+                            true => ok checked
+
+/// Static descriptor applies tenant and revision predicates in the write itself.
+fn int save_invoice
+    emits [sql::unsupported_value, sql::connection_failed, sql::query_failed, sql::constraint_failed]
+    given
+        sql::pool pool
+        save_parameters input
+    asserts
+        saved: save_parameters(3, "desk", 1, 7, 2) => ok 1
+    match call sql::execute<save_parameters>(pool, "save_invoice", input)
+        when
+            saved: pool, "save_invoice", save_parameters(3, "desk", 1, 7, 2) => ok 1
+        sql::unsupported_value
+        sql::connection_failed
+        sql::query_failed
+        sql::constraint_failed
+        ok int changed => ok changed
+
+/// Each result case carries an HTTP status and the rejected wire values.
+fn http::server_response form_response
+    emits []
+    given
+        edit_result view
+    asserts
+        saved: edit_result(200, "3", "desk", "2", "") => ok
+        invalid: edit_result(422, "many", "retain", "2", "seats") => ok
+        forbidden: edit_result(403, "3", "desk", "2", "") => ok
+        conflict: edit_result(409, "3", "desk", "2", "") => ok
+        unavailable: edit_result(503, "3", "desk", "2", "") => ok
+    match call http::make_body_status(view.status)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "invalid status")
+        ok http::body_status status => ok call http::response_text(status, call http::empty_server_headers(), call text::join([view.seats, view.details, view.revision, view.field_error], "|"))
+
+/// Decode the native request form, then pass trusted context to the operation.
+/// A real route must resolve actor and resource from server-owned state.
+fn http::server_response decode_and_edit
+    emits []
+    given
+        http::request req
+        actor_context actor
+        invoice_row stored
+        bool storage_available
+    asserts
+        sample: actor_context(41, 1), invoice_row(7, 1, 2, "old", 2), true => ok
+    match call http::request_form<invoice_form>(req, 2048)
+        when
+            sample: req, 2048 => ok invoice_form("3", "desk", "2")
+        http::body_limit => ok call form_response(edit_result(422, "", "", "", "form"))
+        http::invalid_request => ok call form_response(edit_result(422, "", "", "", "form"))
+        codec::invalid_data => ok call form_response(edit_result(422, "", "", "", "form"))
+        ok invoice_form form => ok call form_response(call protected_edit(actor, stored, form, storage_available))
+
+/// Assertions are the executable probe; this entry point has no side effects.
+fn void main
+    emits []
+    given
+        str[] args
+    asserts
+        empty: [] => ok
+    ok

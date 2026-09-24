@@ -1,0 +1,7 @@
+{
+  "before_send": true,
+  "checked_explanatory_paths": 9,
+  "identical_explanatory_paths": [],
+  "semantic_review": "Reviewed all three state/question/option wordings for identical baseline, missing evidence, rename target and A/B/C/D alternatives. Context includes the already prepared independently reworded evidence for this separate judgment. No responses from earlier questions are included. Option order rotates. Field identity is separated from line-row encoding so independent judgments are not bundled.",
+  "limits": "Uniqueness does not prove semantic equivalence or remove shared framing bias."
+}

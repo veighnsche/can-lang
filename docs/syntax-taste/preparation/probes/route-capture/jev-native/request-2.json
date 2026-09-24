@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Judge a future agent-authored Can capture increment under native-first lowering and no legacy constraints. The exact action prototype already exists as a design; total successful-task tokens are secondary to sound routing. Live pinned Bun 1.4.2 `routes` tests found that verb selection precedes static specificity: POST `/invoices/new` runs `/invoices/:slug`, GET runs `/invoices/new`. A PATCH miss enters fallback with 404 by default; Can requires 405 plus Allow for a known shape. Bun decodes `%ZZ` into replacement text in params, although req.url retains bad escape bytes, and `%2F` becomes `/` in params. Notably, encoded `..` matched the `/tenants/:tenant_id/invoices/:invoice_id` callback with `tenant_id=..` before Request.url was normalized elsewhere. Thus guarded native callbacks could reject it; a separate `fetch` matcher sees only normalized `/invoices/7` and may invoke another action. Metadata can assist the native fallback with 400/405. Compare native guarded dispatch with a custom static-first matcher and a strict but deferred capture feature.",
+  "questions": {
+    "native_route_policy": {
+      "type": "choice",
+      "instructions": "Select the planned captured-action execution rule given Bun's observed method selection, lossy params and pre-normalization route choice.",
+      "criteria": {
+        "guarded_native_method_first": "Compile each action into Bun's native method route table, letting verb choice precede literal-over-parameter preference. Reject ambiguous registrations at Can assembly. Add a strict callback guard for percent text, decoded parameter validity and int64 conversion, plus a fallback matcher solely for 404 versus 405 with Allow. Native params are hints, not trusted typed data. The source action's method is part of its identity, so differing verbs may name differing actions at one path.",
+        "custom_static_first": "Implement a dedicated matcher behind Bun.serve fetch, ranking literal path shapes across verbs before choosing the method. It can enforce the proposed 400/405 rule from URL.pathname, but uses more custom dispatch and cannot see a raw encoded dot that native URL normalization has erased; another route may then run.",
+        "defer_captures": "Do not qualify the captured route yet. Proceed with the independent exact action only and require additional platform access/evidence before allowing `/tenants/:tenant_id/invoices/:invoice_id` in source."
+      }
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"fixture_contract":{"type":"choice","choice":"exported_scenario","confidence":0.67,"probabilities":{"exported_test_entry":0.21,"public_parameter":0.01,"exported_scenario":0.78}}},"usage":{"input_tokens":976,"output_tokens":54}}

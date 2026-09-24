@@ -1,0 +1,5 @@
+{
+  "manual_review": "Each whole request freshly rewrites context, instruction and all option descriptions. Preserved facts: agent-first/secondary tokens/no compatibility, typed JSON POST save, initial load plus uncertain reconciliation, protected read authorization, exact codecs and native lowering. Alternatives are GET JSON action, HTML bootstrap with POST read, or DOM and replay only. No previous Jev answer is present.",
+  "mechanical_check": "All prose triples are distinct; technical identifiers and alternatives stay fixed.",
+  "limit": "This equivalence audit does not prove absence of framing bias."
+}

@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can targets AI coding agents; correctness and reliable edits precede measured total task tokens. There are no external users or old-route compatibility duties. Native Bun/JavaScript lowering is preferred with adapters only where required. The chosen source action first has an exact path; typed captures are a separate optional increment. On Bun 1.4.2, a live curl `--path-as-is` request to `/tenants/%2E%2E/invoices/7` reached `Bun.serve` as `/invoices/7`. In a trial router also mounting POST `/invoices/:slug`, that normalized URL successfully invoked the latter action with slug `7`. Neither `Request.url` nor `URL.pathname` contains the original dot segment. The generated builder can prohibit `.`/`..`, and each handler must authorize its own operation; source action identity cannot claim to recover the original request target. Other malformed escapes remain available for strict 400 handling. Decide how to specify this platform fact before implementation.",
+  "questions": {
+    "dot_normalization": {
+      "type": "choice",
+      "instructions": "Which honest implementation-plan disposition best fits the live Bun normalization result while preserving the native lowering preference?",
+      "criteria": {
+        "normalized_contract": "Define route identity over the normalized URL path that Bun supplies. Builder rejects dot segments and produces canonical resource links; inbound raw or escaped dot navigation may become a different normalized route, so do not promise a 400/404 for the original spelling. Every selected action authorizes independently; protocol tests document cross-route normalization. Keep strict 400 for malformed encoding still visible in Request.url.",
+        "gate_raw_target": "Do not implement typed captures until the chosen Bun integration can read and reject the original request target before URL normalization. Continue exact source actions meanwhile. This prevents the observed alias at the cost of delaying capture routes and possibly requiring a platform feature unavailable in native Request.",
+        "custom_http": "Build a lower-level HTTP request-target parser/server to inspect raw bytes, reject dot traversal before normalization, then run action matching. This can give a raw-target 400 promise, but replaces Bun.serve request parsing and adds substantial protocol/security work beyond a bounded capture increment."
+      }
+    }
+  }
+}

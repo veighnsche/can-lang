@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "We are specifying an optional typed route feature for Can, an agent-first language. Sound behavior outranks any later agent-token savings; compatibility with old callers is unnecessary. Equivalent operations should lower to Bun/JS rather than a new HTTP stack when possible. The exact source-action design proceeds independently. In pinned Bun 1.4.2, the native server normalizes a raw percent-encoded dotdot segment before exposing the URL. Sending `/tenants/%2E%2E/invoices/7` produced the same callback URL as `/invoices/7`; a separate mounted POST `/invoices/:slug` executed. A Can matcher based on `Request.url` cannot reconstruct the sender's initial spelling. Builders can refuse `.` and `..`, and route handlers need resource/tenant checks regardless. Malformed percent sequences are still detectable. Choose the design promise for the capture trial given this observed alias.",
+  "questions": {
+    "dot_normalization": {
+      "type": "choice",
+      "instructions": "Select the bounded route policy or gate that follows from the observed loss of the raw target in Bun's Request API.",
+      "criteria": {
+        "normalized_contract": "Scope captured route dispatch to the URL after Bun normalization. Canonical action builders cannot create dot segments; clients may still submit one that Bun maps elsewhere, and the original spelling cannot be diagnosed. Enforce permissions in the reached operation and retain 400 on bad input that remains observable. Qualify this behavior with HTTP tests.",
+        "gate_raw_target": "Treat original-target rejection as essential: postpone typed routes while exact actions proceed, pending a proven Bun API or adapter that exposes the original target before dot normalization. No claim of capture support is made until then.",
+        "custom_http": "Implement a raw HTTP target layer that parses requests before WHATWG URL normalization, blocks the dot alias and forwards admitted requests to actions. This supplies strict raw-path rejection but introduces a broad non-native server/parser responsibility."
+      }
+    }
+  }
+}

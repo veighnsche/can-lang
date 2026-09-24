@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "audience": "Can is a language for AI coding agents. Human familiarity and comfort are not design goals. Correctness and reliable editing dominate; total tokens per successful agent task are a secondary measured outcome.",
+    "observed_rule": "In a match over paid | pending | declined, the compiler resolves known bare leaf names as tests, but an unresolved unqualified bare name becomes a whole-value binder with exhaustive coverage. A final-arm typo decliend compiles and still hides a later refunded leaf; declined instead becomes non-exhaustive after refunded is added. decliend() already fails. These outcomes were executed at an earlier source-equivalent compiler revision and inspected in the current checker.",
+    "constraints": "Any replacement must make decliend a compile error in that position, preserve an explicit catch-all and a way to capture the whole value, work in nested/array patterns, keep exhaustiveness meaningful under a new leaf, and lower to native JavaScript/Bun with only Can-contract adapters. No old syntax compatibility is required. These are technical prototype choices; the user chooses syntax later."
+  },
+  "questions": {
+    "pattern_intent_trial": {
+      "type": "choice",
+      "instructions": "Which coherent pattern-intent rule should be prototyped first for safe agent edits, given that all options reject the observed typo? Answer from the supplied rules and constraints, not an imagined benchmark.",
+      "criteria": {
+        "explicit_binding_everywhere": "Bare identifiers are always resolved nominal tests or errors at every pattern depth. A distinct bind x form captures a value; _ ignores it. Apply the same intent rule to variant, record and array subpatterns.",
+        "explicit_both_intents": "Nominal tests must spell leaf(); captures must spell bind x; _ is fallback. Unadorned names have no pattern meaning in nominal-variant positions, including nested ones.",
+        "contextual_variant_rule": "Where the expected type is a nominal variant or leaf, bare known leaf names test, unknown bare names error, bind x captures and _ ignores. Retain existing bare binders in other pattern contexts, including nonvariant array elements."
+      }
+    }
+  }
+}

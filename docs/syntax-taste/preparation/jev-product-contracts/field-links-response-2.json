@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"form_field_links":{"type":"choice","choice":"B","confidence":0.99,"probabilities":{"C":0.0,"D":0.0,"B":0.99,"A":0.01}}},"usage":{"input_tokens":961,"output_tokens":47}}

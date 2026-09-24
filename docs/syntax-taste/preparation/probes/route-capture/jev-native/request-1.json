@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can is an AI-agent language; correctness and reliable edits precede secondary measured task tokens. No external-user compatibility applies. Prefer equivalent native Bun/JS lowering with only contract adapters. Exact source actions are selected, typed int/str captures optional. A Bun 1.4.2 live `Bun.serve({routes})` experiment mounted GET `/invoices/new`, POST `/invoices/:slug`, and POST `/tenants/:tenant_id/invoices/:invoice_id`. POST `/invoices/new` invoked the dynamic POST, GET invoked the exact GET: route choice is method-first. PATCH to the invoice route fell to `fetch` and produced 404 unless adapted, although the desired contract is 405 with Allow. `%ZZ` produced a route param replacement character despite `Request.url` still containing `%ZZ`; `%2F` decoded to `/`. A raw encoded `..` invoice route invoked its own native callback with param `..`, while `Request.url` was normalized to `/invoices/7`. A small Can guard can validate native params and raw URL escapes before business code, and an unmatched fallback can synthesize 405/400 from route metadata. An alternative is a Can dispatcher in Bun's `fetch`, using URL.pathname but then the original encoded dot can reroute to another normalized action. Resolve the architecture and path/method semantics for the bounded trial.",
+  "questions": {
+    "native_route_policy": {
+      "type": "choice",
+      "instructions": "Which route-dispatch/lowering direction best preserves a bounded Can capture contract after this native evidence?",
+      "criteria": {
+        "guarded_native_method_first": "Use Bun.serve native routes for method-first matching and static specificity within each method. Can statically rejects same-method duplicate/equally ranked overlaps. Every callback strictly validates original URL escape text and native params, typed int64/str, and rejects invalid input with 400 before the handler. The fallback consults compiled route metadata to return 405/Allow for a recognized path or 404 otherwise. A path can select a different action by method, which is explicit in action identity. Test dot aliases and never trust lossy params alone.",
+        "custom_static_first": "Retain a Can route selector in Bun.serve fetch that selects a path by static specificity before method, then returns 405/Allow and validates captures. This gives a method-independent path identity but bypasses Bun's native route matcher. Request.url has already normalized escaped dot segments, so original-target rejection cannot be promised; the observed `/tenants/%2E%2E/invoices/7` can become another action.",
+        "defer_captures": "Keep exact source actions and postpone typed captures until a stronger raw-target/405 integration is specified and validated. The invoice resource URL remains unavailable in this phase, but no uncertain routing contract is adopted."
+      }
+    }
+  }
+}

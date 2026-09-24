@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can targets AI coding agents. Semantic correctness, safe edits, and inspectable contracts take priority; total tokens across a successful task are secondary. There are no external users or compatibility obligations. Generated TypeScript should use native JS/Bun calls plus existing Can failure adapters. This is a proposed trial, not an implemented feature or a final grammar decision.",
+    "evidence": "A separate-library Can probe passed 28/28 assertions. An A caller emits only domain::a_failure, and a B caller emits only domain::b_failure. Direct match chains preserve exact bounds but duplicate the flow. A shared helper with a fixed union makes each caller handle the other impossible error. Generic outcome data needs adapters into and out of Can completion. Transform and inspect requirements are already explicit callable arguments. Only singleton caller sets have been tested; no agent trials establish a benefit from a new feature.",
+    "candidate": "A bounded prototype would declare `errors E` in a helper header, `callable int () emits [E] action` in its inputs, and `emits [E, audit_down]` outward. E is a finite set of fully specialized nominal errors, possibly empty; duplicates normalize away. The helper may forward an unknown E member but may inspect only a named error after narrowing. Error-set parameters erase in generated code."
+  },
+  "questions": {
+    "specialization": {
+      "type": "choice",
+      "instructions": "Which specialization rule gives the trial the most checkable public and call-site error contract? Choose only among the described rules, not overall feature adoption.",
+      "criteria": {
+        "callback_static_bound": "Infer E from the supplied action callable's declared finite emits set; a broader declared callable bound stays broad. Optional explicit E must agree with the callback bound, and callers see E union audit_down.",
+        "mandatory_explicit_row": "Require each use to spell a finite E argument at the call site, then check the callback's declared errors are contained in that argument; the helper bound substitutes that written set union audit_down.",
+        "caller_context_row": "Choose E from the enclosing caller's expected outward emits list, then admit the action when its declared errors fit that list; the callback alone need not determine E."
+      }
+    },
+    "forwarding": {
+      "type": "choice",
+      "instructions": "How should an authored helper relay the unknown finite E errors while preserving explicit control flow and named-error checking in this limited prototype?",
+      "criteria": {
+        "grouped_forward_arm": "Permit one explicit `E as failure => failure` completion arm that only relays an unchanged member of E; concrete named arms remain necessary for inspection or conversion.",
+        "automatic_call_relay": "When E is included in the function's outward bound, let an ordinary `call action()` propagate its failure without a match arm; success remains an ordinary expression.",
+        "specialization_arms": "Require a helper body to enumerate concrete arms after each E specialization; source or generated requirements must cover every member separately rather than one row forwarding arm."
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "The intended Can programmer is an AI coding agent, and human hostility is acceptable if it serves that audience. Prioritize program correctness and dependable refactors, then measure complete successful-task token consumption. Compatibility with previous source and generated layout is unnecessary because there are zero external users. Lower to equivalent JavaScript/Bun behavior with minimal immutable-contract adapters. Advice is for an implementation plan, not validation of code already written.",
+    "generic_evidence": "The compiler specializes generic bodies for concrete callers, so changing an exported body to require + can break a separate consumer without a public-signature edit. A 28-assertion current-Can example demonstrates working callable injection and two independent callers, not a task-token advantage. A dictionary is an ordinary record of such named operations. A local template may reasonably keep body-at-specialization checking. A public-body restriction needs a precise universal-operation list; finite higher-order error rows are separate and not selected for production.",
+    "offline_evidence": "For a rich Can-authored invoice grid, the stated outcomes are keyboard work, immediate calculations, unsaved drafts, optimistic save with rollback, disconnected/slow handling and cleanup on disappearing view. The recommendation program says nothing about reload-durable draft state or automatic offline send. A separate main-thread browser target remains a design proposal. An earlier Jev set recommended memory-only drafts with explicit retry for evaluation, without choosing the final product promise. Browser persistence would need eviction, tenant/user separation, logout, schema version and multi-tab behavior; an offline write queue would further need operation keys, permission expiry and commit reconciliation. View disposal cannot erase accountability for an application-owned identified save."
+  },
+  "questions": {
+    "public_generic_operations": {
+      "type": "choice",
+      "instructions": "What contract should engineering specify for operations used by public generic bodies, given the current template behavior and candidate implementation costs?",
+      "criteria": {
+        "explicit_public": "Enforce a declaration-time boundary on exported generics: universal primitives plus operations named by callable/dictionary arguments, with other body uses rejected until the public API changes. Keep internal templates specialization-checked. Add no capability vocabulary; generated code invokes the ordinary passed JS functions and Can error adapters.",
+        "template_artifact": "Keep exported templates checked only when concretely used, with generated operation summaries bound to the locked body hash. Rebuild dependents and report the operation plus specialization trail when a body edit fails. Unknown future type arguments remain outside any universal contract; no new source requirement form is introduced.",
+        "small_capabilities": "Introduce narrow compiler-known operation constraints for exported generic types, so a + body requires a written matching capability and callers satisfy it. Restrict the vocabulary and do not infer an unlimited typeclass system; use explicit function arguments for operations outside it."
+      }
+    },
+    "grid_offline_promise": {
+      "type": "choice",
+      "instructions": "Which initial product promise should engineering freeze for an editable Can browser grid that works through slow and disconnected periods?",
+      "criteria": {
+        "in_view_explicit_retry": "For the first supported grid, keep draft state for the active view during network loss, calculate locally, signal unsaved status and require a deliberate retry/reconcile after connection returns. Application-owned saves settle independently of view listeners. Reload persistence and automatic queued mutation are outside this promise and remain separately testable additions.",
+        "durable_draft": "Add durable client-side draft storage with account/tenant partition and migration, eviction, logout and multi-tab policy. On reload restore unsent text without auto-replaying a mutation. Server revision and uncertain outcomes are checked before an explicit retry.",
+        "durable_queue": "Ship offline write replay in the initial grid: versioned local draft and queue survive reload, and identified operations resume automatically. The contract includes permission changes, server deduplication, stale revision, storage failure, multiple tabs and commit-unknown reconciliation; merely storing request bytes is insufficient."
+      }
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "The intended Can programmer is an AI coding agent even if syntax is harsh to people. Rank reliable product behavior and agent refactoring above measured whole-task token cost. There is no backwards-compatibility duty. Lower operations to native JS/Bun/DOM/Fetch instead of recreating their engines, adding only necessary language-contract adapters. Select a first implementable grid contract, not a claim of passing tests.",
+    "row_evidence": "A required invoice workload submits repeated rows and must preserve row identity, raw invalid values and error location through moves and missing fields. Current Can parses only shallow string-oriented form members. Previous Jev advice for a keyed row trial was .79, .63 and .52, versus .42 for parallel arrays in one wording. Equal-length arrays are not sufficient: three rows may lose an ID in B, quantity in C and price in A, leaving two values per array that zip into incorrect records. A JSON body could carry row objects but is not an HTML form decoder and needs distinct client authoring. Neither keyed syntax nor agent benefit is measured.",
+    "browser_evidence": "For the full Can frontend gate, a browser-target build must run the invoice grid itself rather than serving only HTML/HTMX or generated foreign client calls. The repository has no Can browser execution now; previous three Jev choices favored main-thread scope. The first grid needs typed shared wire data, native DOM/event/Fetch access, pure draft calculations, optimistic response handling, offline in-view state and cleanup. Capability checking must exclude server secrets, filesystem, processes and SQL transitively and preserve codec parity, including int64. View disposal cannot silently abandon an identified mutation. There is no requirement for a general reactive framework, virtual DOM, worker execution or a new statement language."
+  },
+  "questions": {
+    "line_row_contract": {
+      "type": "choice",
+      "instructions": "What row decoding rule should engineering specify for the invoice action so reorder and missing controls retain exact ownership?",
+      "criteria": {
+        "keyed_rows": "Select a checked keyed row form extension: row IDs live in each wire field path, and the decoder collects one row record per key with exact member set, duplicate/unknown rejection and stable error paths. Preserve text values for invalid input; domain conversion stays explicit. Do not turn this into arbitrary nested forms or an ORM.",
+        "parallel_arrays": "Use the existing three parallel str[] columns with length and duplicate-ID checks, matching items by index. Record the unresolved case where missing controls leave all arrays equal in size but shift meanings. Rely on browser/protocol tests rather than a new keyed wire mechanism.",
+        "json_action": "Represent each line as a JSON record in a separate typed client action, so arrays of rows cannot misalign fields. Change the server-driven form workflow accordingly and maintain its own raw-input/error rendering; no keyed form extension is built."
+      }
+    },
+    "browser_dom_architecture": {
+      "type": "choice",
+      "instructions": "What browser programming surface should engineering plan first for the actual Can-authored invoice grid, avoiding an unproved general framework?",
+      "criteria": {
+        "explicit_dom": "Choose normal Can code plus a browser catalogue mapping to native DOM/event/Fetch APIs. State changes are explicit immutable values stored by a scoped opaque cell; views own event/timer handles and an application owner retains identified saves. Avoid a renderer engine, reactive dependency graph, new source grammar and worker support.",
+        "reducer_runner": "Plan an Elm-like typed runner: Can functions map state plus event to next state and commands, render a safe tree, and a browser runtime reconciles DOM and handles effects. It can structure the grid, but introduces a new render engine and command scheduler rather than direct DOM operations.",
+        "foreign_bridge": "Defer Can browser execution and expose typed action/codec bindings to a foreign client implementation. Keep the grid functional, but state plainly that the full Can-backend-and-frontend objective is unmet."
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "model": "jev-latest",
+  "state": "For Can's coding agents, success is a sound build and dependable refactoring; measure total prompt/code/diagnostic/retry tokens only for successful work. Source aesthetics have no independent weight and legacy syntax needs no migration. A record constructor binds by position, making two neighboring int fields total/recent vulnerable to silent swaps, although the example is not a measured product failure. Domain-distinct types, factories and named with updates are present; two same-type factory parameters can preserve the hazard. One-line calls, record expressions and assertion rows are the grammar today. The 154 long example lines and 336-character maximum indicate layout pressure only. Diagnostic spans and canonical comment-preserving formatting are accepted work; continuation remains deferred. A local named permitted may be rejected as immediate forwarding, but no agent benchmark demonstrates the consequence. Use controlled field reorder/add/rename, lengthy expression edits, comment-preserving parse/format/parse, attached assertions and both useful/redundant locals. Demand valid values, exact spans, unchanged effects and repair measurements; do not select spelling.",
+  "questions": {
+    "di22_fields": {
+      "type": "choice",
+      "instructions": "Choose an experiment for positional constructor safety under controlled add, reorder and rename edits.",
+      "criteria": {
+        "positional_controls": "Test existing positional calls with nominally distinct field values or checked helper contracts, avoiding pass-through same-int factory claims.",
+        "named_form_trial": "Compare a compile-time named constructor that binds by declared field identity and diagnoses omissions/repetition, preserving immutable output.",
+        "tooling_trial": "Compare IDE/compiler assistance for same-type positional swaps, measuring detection coverage and spurious warnings."
+      }
+    },
+    "di23a_layout": {
+      "type": "choice",
+      "instructions": "Select a comparison for lengthy calls, constructors and assertions after tooling improvements.",
+      "criteria": {
+        "formatter_first": "Keep existing line rules while improving formatter and error locations, then benchmark agents on long expressions and assertion rows.",
+        "delimited_continuation": "Prototype bounded continuation inside parentheses/brackets if tooling leaves a reproducible problem; retain block indentation and row attachment."
+      }
+    },
+    "di23b_local": {
+      "type": "choice",
+      "instructions": "Choose a bounded comparison for the checker rejecting permitted-like names.",
+      "criteria": {
+        "hard_rule_fix": "Keep the current validity rule but improve the source span and checked fix, then test meaningful and redundant aliases.",
+        "advisory_lint": "Trial a nonblocking lint for immediate forwarding while agents may retain meaningful intermediate names.",
+        "semantic_only_rule": "Try a narrowly defined rejection only where the alias causes a real contract ambiguity, after specifying counterexamples."
+      }
+    }
+  }
+}

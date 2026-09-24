@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Choose a first typed invoice-load and reconciliation boundary for a Can-authored browser grid. The target is agent-first Can, no old spellings, and native JS/Bun/Fetch lowering. Planned JSON POST save has revision, operation ID and five typed outcomes; a durable replay ledger handles identical attempts. The grid still needs authoritative initial state and a fresh authorized snapshot after uncertainty. Server HTML bootstrap is a distinct wire context; current action declaration syntax has no GET mode yet. Avoid granting access merely because a typed path exists. Whole-task tokens are measured only after correctness."
+  },
+  "questions": {
+    "grid_read": {
+      "type": "choice",
+      "instructions": "Select the narrowest checked source/API design for first load and later authorized re-read of the grid.",
+      "criteria": {
+        "get_json_action": "Declare a distinct GET action for an authenticated invoice snapshot, carrying the same typed path key but no input body. Its finite JSON response includes revision and row records, with generic denial/unavailable cases. Browser initial load and uncertainty reconciliation call it through a checked Fetch request. Native Bun routing and Fetch implement transport; no typed ID grants permission.",
+        "html_bootstrap_plus_read_post": "Start from JSON data serialized into an approved HTML data island and use a POST JSON query action for later reread. The browser decodes both with the same codec. It can work but introduces separate bootstrap and Fetch transfer mechanisms plus cache/CSRF details.",
+        "save_post_replay_only": "Read initial rows/revision out of server-rendered form controls and use the durable save ledger as the only uncertainty resolution path. No distinct read contract is added, but the grid has no general authoritative refresh after another writer changes the invoice."
+      }
+    }
+  }
+}

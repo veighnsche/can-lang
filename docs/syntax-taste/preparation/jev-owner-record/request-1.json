@@ -1,0 +1,36 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goals": "Can serves AI coding agents. Correct behavior and reliable edits lead; total tokens per successful task is secondary and unmeasured here. No compatibility is needed. Generated TypeScript should use native JS/Bun with only invariant adapters. Select planned syntax and policy without asking the user.",
+    "evidence": "An executed two-package baseline passed 11 assertion roots: an exported email factory rejects blank text and quantity factory rejects nonpositive numbers, yet importers obtain invalid values through constructors, with, JSON decoding, assertion inputs and supplied completions. Current record name followed by indented typed fields has no construction permission bit; provides controls public declaration names, and private types cannot occur in public signatures. Runtime records are frozen nominal objects. Equality already compares eligible reachable immutable data; resource/callable fields make equality ineligible.",
+    "fixed_contract": "Owner-controlled records have already been selected as planned semantics. Ownership means the canonical declaring package instance, not an import alias or project. Public type names can occur in signatures and variants. Only owner-authored source may construct, change representation with with, or destructure hidden fields, including assertions. Foreign code may hold, pass, whole-bind and nominal-leaf-test the value. A fixture may forward a genuine owner-produced value but cannot fabricate one. Generic specialization retains the lexical package of the generic definition; caller location grants no owner privilege. Owners are trusted to validate; the compiler does not prove factory predicates. A validated tenant identifier is no authorization proof.",
+    "policy_context": "Compare spelling independently from field exposure and codec policy: all spelling alternatives have identical ownership and runtime semantics. Ordinary record syntax remains transparent. Exposing read-only fields cannot mint a protected value but exposes representation and adds field-level syntax. Exported ordinary projection functions need no new field grammar. Structural equality, when eligible, can reveal equality of hidden representation but not its fields; this is invariant protection, not secrecy. Generic codecs currently derive one schema used for encode and decode; recursive arrays/records/variants can hide a protected leaf. Explicit owner wire conversion uses a transparent DTO and validating factory, with no automatic custom-codec registry."
+  },
+  "questions": {
+    "declaration": {
+      "type": "choice",
+      "instructions": "Which one header should be the canonical planned spelling for owner-controlled records? Judge explicit agent intent and grammar consistency, without claiming measured token savings.",
+      "criteria": {
+        "owner_modifier": "Use owner record email followed by the existing field block; owner is a contextual modifier before record, while provides independently publishes the type.",
+        "owned_declaration": "Introduce owned email as a separate declaration head with the same typed field block and owner semantics; provides independently exports it.",
+        "owner_suffix": "Use record email owner followed by existing typed fields; the postfix contextual word records owner-only creation while provides controls visibility."
+      }
+    },
+    "projections": {
+      "type": "choice",
+      "instructions": "Which observation surface should the initial owner-record contract specify, given hidden construction and unchanged eligible equality?",
+      "criteria": {
+        "functions_only": "Hide every representation field from nonowners; expose selected values through ordinary exported projection functions. Add no field-level visibility syntax.",
+        "public_fields": "Add explicit public markers on selected fields for importer read-only access and matching those fields; unmarked fields remain owner-only, all constructor/update restrictions unchanged."
+      }
+    },
+    "codec": {
+      "type": "choice",
+      "instructions": "Which codec policy should accompany the boundary, including nested protected leaves and code defined inside the owner?",
+      "criteria": {
+        "wire_only_everywhere": "Reject automatic encode, decode and wire-schema derivation for any type graph containing an owner record, even in its owner; require explicit owner projection to/from a transparent wire DTO and factory validation.",
+        "owner_derivation": "Permit generic encode, decode and schema derivation only when every reachable owner record is owned by the lexical source package; foreign code must use exported explicit conversions. Owners remain trusted to validate decoded values."
+      }
+    }
+  }
+}

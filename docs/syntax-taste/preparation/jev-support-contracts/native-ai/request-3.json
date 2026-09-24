@@ -1,0 +1,31 @@
+{
+  "model": "jev-latest",
+  "state": "Assess preparation for Can, whose programs are written by agents: semantic safety and correct repairs are hard gates, with total successful-task tokens a secondary outcome. With zero outside users, migration compatibility is irrelevant; generated TS should call native JavaScript/Bun equivalents plus minimal Can-contract adaptation. Separate llm, judge, fetch and question forms currently preserve state groups and connection identities. Typed generation followed by runtime Choice already works in an example with two requests. Manual llm forwarding loses origin information when an authored and decoder fault have the same nominal kind; fetch/judge wrap already carries handles native/handles emitted provenance. A judge validates one full batched response before ordered handlers, but cannot reverse handler one's external effect if handler two fails. For grouped inputs, a named adapter is accepted as a callable; a direct judge/LLM reference is not, and adapter cost is unmeasured. The decisive case combines a generated record, same-kind faults, two groups and several judges, and a controlled first-write/second-failure sequence; inspect request count, disclosure, error bounds, ledger state and agent attempts. No response selects grammar or production behavior.",
+  "questions": {
+    "di17a_recovery": {
+      "type": "choice",
+      "instructions": "Choose a trial that resolves whether llm failure provenance warrants a native policy extension.",
+      "criteria": {
+        "ordinary_helpers": "Use reusable source-level forwarding plus explicit recovery paths as the control; count faulty retries and repair effort without changing native llm policy.",
+        "llm_wrap_trial": "Build an llm-specific provenance adapter at the native boundary, with explicit eligible recovery arms and no recovery outside policy; compare against ordinary helpers."
+      }
+    },
+    "di17b_effects": {
+      "type": "choice",
+      "instructions": "Which workflow comparison best clarifies ordered judge handler effects without promising general rollback?",
+      "criteria": {
+        "phase_documentation": "Specify the current sequence and failure propagation precisely, showing that an earlier effect remains after a later handler error.",
+        "transaction_trial": "Trial native database transaction use around eligible handler writes and probe rollback/commit uncertainty; do not infer arbitrary effect reversal.",
+        "outbox_trial": "Test persisted effect plans and idempotent delivery after the batch, measuring replay and failure paths rather than changing judge's native request."
+      }
+    },
+    "di17c_callable": {
+      "type": "choice",
+      "instructions": "How should direct native AI references be compared with the current callable adaptation?",
+      "criteria": {
+        "named_adapters": "Run the controlled fan-out with named wrappers as callable values; verify group fields, connection rename, capture-once and outward bounds.",
+        "direct_reference_trial": "Build a constrained native AI reference lowering to a closure on the existing call path with checked group/connection data, then compare agent edits."
+      }
+    }
+  }
+}

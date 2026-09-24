@@ -1,0 +1,21 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "constraints": "The language's audience is AI agents, so assess reliable changes, contract precision and correct behavior first, and whole successful-task token cost second. Neither familiar notation nor shorter source is decisive. Compatibility has no value here because Can has zero outside users. Lower to matching native JavaScript, Bun or browser APIs with bounded safety/immutability glue. Advise on engineering experiments only: do not select spellings, user priorities or final guarantees. All available evidence is included; no independent research is available to this classifier.",
+    "evidence_status": "Evidence comes from source revision 02a549d28fd5fc5c3996160e65a97de332390d30 and component checks. The only qualified runtime target is bun-1.4.2-darwin-arm64-v1; Linux lacks qualification. Current native-platform documentation is not a test of that pinned runtime. These notes have no executed end-to-end invoice or webhook, account-search 503 browser case, browser compilation, offline model, versioned-schema check or agent comparison. Keep all such claims provisional. The program seeks both frontend and backend authored in Can, whereas server rendering and foreign-browser code demonstrate less.",
+    "forms": "The current DI-09b wire contract is a flat record containing str, optional str or str[]: malformed UTF-8/escapes, unknown names and repeated scalars fail; repeated array fields survive. Applications parse domain values explicitly and can return the original text with accumulated independent errors. Row association does not follow from several repeated columns. Options are parallel arrays with validated alignment, an identified-row decoder, and an independent action using the exact JSON codec. Each must address absent versus empty data, incomplete rows, repeated row identifiers, removal/reordering and error-to-control correspondence. Do not reinterpret HTML fields as JSON or bypass server/domain-owner validation.",
+    "field_identity": "Today the same form field is named independently in controls, preserved input and validation errors. Shared render/validation helpers reduce duplication without proving that a compiler finds every broken rename. A proposal can derive checked references from the flat wire schema; a larger one links those references with the action's declared decoder, validation and output cases. Domain-field and wire-name changes are separate edits. Choosing row encoding does not choose this identity mechanism, and a controlled rename comparison is still missing."
+  },
+  "questions": {
+    "form_field_links": {
+      "type": "choice",
+      "instructions": "What DI-09b increment should first be compared with shared validation/render helpers to isolate checked field-reference value across controls, retained inputs and errors without presupposing a whole linked-action mechanism?",
+      "criteria": {
+        "B": "Test wire-schema-derived static identities across control names, preserved inputs and field errors, with ordinary explicit domain validation.",
+        "C": "Build field identity inside a joint action/form declaration that also fixes its wire decoder, domain validator and outcome variants.",
+        "D": "Leave the comparison order open until an absent observation distinguishes the candidates.",
+        "A": "Improve the library's shared form render/validation functions and controlled rename checks first; defer static identities pending a demonstrated shortcoming."
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "fixture_disposition": {
+      "type": "choice",
+      "choice": "bounded_prototype",
+      "confidence": 0.79,
+      "probabilities": {
+        "public_parameter": 0.01,
+        "test_entry": 0.03,
+        "bounded_prototype": 0.85,
+        "exported_scenario": 0.11
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1266,
+    "output_tokens": 62
+  }
+}

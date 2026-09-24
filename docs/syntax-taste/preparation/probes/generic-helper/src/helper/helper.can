@@ -1,0 +1,79 @@
+package helper
+    provides [audit_fixed, audit_data, outcome, succeeded, rejected]
+    uses [domain]
+
+record succeeded<item>
+    item value
+record rejected<failure>
+    failure value
+variant outcome<item, failure>
+    succeeded<item>
+    rejected<failure>
+
+record sample_failure
+    str reason
+fn int sample_action
+    emits []
+    asserts
+        sample: => ok 3
+    ok 3
+fn int sample_transform
+    emits []
+    given
+        int value
+    asserts
+        sample: 3 => ok 6
+    ok value * 2
+fn bool sample_inspect
+    emits []
+    given
+        int value
+    asserts
+        sample: 6 => ok true
+    ok value > 0
+fn outcome<int, sample_failure> sample_data
+    emits []
+    asserts
+        sample: => ok succeeded<int>(3)
+    ok succeeded<int>(3)
+fn outcome<int, sample_failure> sample_expected
+    emits []
+    asserts
+        sample: => ok succeeded<int>(6)
+    ok succeeded<int>(6)
+
+fn int audit_fixed
+    emits [domain::a_failure, domain::b_failure]
+    given
+        callable int () emits [domain::a_failure, domain::b_failure] action
+        callable int (int) emits [] transform
+        callable bool (int) emits [] inspect
+    asserts
+        sample: callable sample_action, callable sample_transform, callable sample_inspect => ok 6
+    match call action()
+        domain::a_failure as failure => domain::a_failure(failure.reason)
+        domain::b_failure as failure => domain::b_failure(failure.reason)
+        ok int original => do
+            int changed = call transform(original)
+            bool accepted = call inspect(changed)
+            match accepted
+                false => ok original
+                true => ok changed
+
+fn outcome<int, failure> audit_data<failure>
+    emits []
+    given
+        callable outcome<int, failure> () emits [] action
+        callable int (int) emits [] transform
+        callable bool (int) emits [] inspect
+    asserts
+        sample: callable sample_data, callable sample_transform, callable sample_inspect => ok call sample_expected()
+    outcome<int, failure> result = call action()
+    match result
+        rejected => ok result
+        succeeded => do
+            int changed = call transform(result.value)
+            bool accepted = call inspect(changed)
+            match accepted
+                false => ok succeeded<int>(result.value)
+                true => ok succeeded<int>(changed)

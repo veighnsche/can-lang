@@ -1,0 +1,20 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "purpose": "Assess a technical trial for an AI-agent language. A successful program and safe repair outrank source brevity; total task tokens are a secondary measured cost. The result cannot enact a syntax decision. With zero external adopters, compatibility is irrelevant; generated TS should rely on native JS/Bun behavior where equivalent.",
+    "observations": "The tested baseline has a separate library and callers whose only failures are domain::a_failure and domain::b_failure respectively; all 28 assertions passed. Direct sequencing duplicates the shared operation, fixed-bound reuse widens caller handling to both kinds, and outcome<int,failure> reuse needs explicit completion/data conversions. Passing transform and inspect functions makes required operations visible in the public type. Authored generic bodies are validated after substitution, leaving implicit body-operation needs absent from the declaration header.",
+    "limits": "Neither multi-error growth nor model edit/repair cost has been tested. Current error-use grammar requires named error declarations, while selected built-ins derive callback bounds. Any proposal must state finite outward possibilities and visible operation requirements. A one-off reduction in lines cannot justify a new language mechanism."
+  },
+  "questions": {
+    "next_generic_trial": {
+      "type": "choice",
+      "instructions": "What should be prototyped next to resolve the library-composition gap on evidence rather than source-line preference? Treat this as experiment selection only.",
+      "criteria": {
+        "explicit_error_set_trial": "Build a narrow authored generic finite-bound prototype and measure larger A/B caller sets plus refactor/diagnostic repair, retaining visible operation parameters and current idioms as controls.",
+        "data_result_only": "Keep the generic data variant and boundary adapters as the sole reusable mechanism; benchmark its scale and agent repair before contemplating any new bound syntax.",
+        "fixed_bound_only": "Use current fixed outward error lists as the permanent source pattern, adapting every caller's unused cases; test whether agent tools handle that burden as error sets grow.",
+        "catalogue_intrinsics": "Build separate distribution intrinsics for fallible helper patterns and measure their use, rather than making finite error sets an authored generic dimension."
+      }
+    }
+  }
+}

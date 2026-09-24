@@ -97,10 +97,20 @@ values and may be passed as inputs to other functions. Future design proposals
 should take this functional direction as their baseline without treating
 unselected syntax or semantics as confirmed.
 
-Can is designed for AI coding agents. Human authoring convenience must not be
-prioritized in language design; inconvenience for humans is acceptable.
-Evaluate design trade-offs for AI coding agents rather than treating fewer
-keystrokes or inline convenience for humans as goals.
+**Identity confirmed by the user on September 24:** Can is a programming
+language made for AI coding agents. Human readability, familiarity, authoring
+convenience and comfort are not design goals. Syntax may be difficult, even
+cruel, for humans when that serves AI coding agents better. Human difficulty is
+acceptable; creating difficulty is not itself an objective. Evaluate every
+language recommendation against this audience rather than human preferences.
+
+**September 24 user choice:** measure token efficiency as a secondary design
+goal over a successful AI coding task, including prompts, source, diagnostics
+and retries. Its measurement protocol and weight remain to be specified in the
+[preparation todo list](can-design-preparation-2026-09-24.md). It does not
+authorize minimizing source length at the expense of correct contracts or
+agent repair reliability. This identity and objective do not select new syntax
+or authorize implementation changes.
 
 All function declarations are named and top-level. Nested and anonymous
 function declarations are not supported. Functions remain first-class values;

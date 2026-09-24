@@ -1,0 +1,17 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "context": "Can is for AI coding agents; correct and repairable behavior leads, complete-task tokens are secondary. No compatibility is needed. A planned main-thread Can grid sends typed JSON saves and keeps in-view drafts; uncertain commits require authorized read or same-ID replay. HTML form and JSON save actions share protected invoice authorization. The browser must first acquire a typed invoice snapshot and later re-read it. Existing action proposal has POST with body and finite status cases, but no read contract. Native Bun/Fetch and exact shared JSON codecs should do transport work."
+  },
+  "questions": {
+    "grid_read": {
+      "type": "choice",
+      "instructions": "Which initial read/reconciliation contract should accompany the browser JSON save action?",
+      "criteria": {
+        "get_json_action": "Add a bounded source GET JSON action with typed captures, no request body, exact codec-admissible snapshot result and finite 200/403/503 cases. A checked browser read builder uses native Fetch; server mount performs authorization for every read. Use this same action for initial load and explicit reconciliation. Keep operation-ID POST replay separate.",
+        "html_bootstrap_plus_read_post": "Embed an initial typed JSON snapshot in server-rendered safe HTML, then add a POST read-only JSON action for reconciliation using a small request record. This avoids GET grammar but requires safe bootstrap/CSP handling and two load paths with parity checks.",
+        "save_post_replay_only": "Make the browser obtain initial values from form DOM controls, then rely solely on identical-ID POST replay after uncertain saves. Do not add an authorized typed read action; typed initial state and independent reconciliation remain tied to DOM serialization and replay retention."
+      }
+    }
+  }
+}

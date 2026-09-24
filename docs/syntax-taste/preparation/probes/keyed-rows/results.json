@@ -1,0 +1,175 @@
+{
+  "bun": "1.4.2",
+  "checks": 12,
+  "observations": {
+    "complete": {
+      "ok": true,
+      "rows": [
+        {
+          "key": "a",
+          "id": "id-a",
+          "quantity": "quantity-a",
+          "price": "price-a"
+        },
+        {
+          "key": "b",
+          "id": "id-b",
+          "quantity": "quantity-b",
+          "price": "price-b"
+        },
+        {
+          "key": "c",
+          "id": "id-c",
+          "quantity": "quantity-c",
+          "price": "price-c"
+        }
+      ]
+    },
+    "reordered": {
+      "ok": true,
+      "rows": [
+        {
+          "key": "c",
+          "id": "id-c",
+          "quantity": "quantity-c",
+          "price": "price-c"
+        },
+        {
+          "key": "a",
+          "id": "id-a",
+          "quantity": "quantity-a",
+          "price": "price-a"
+        },
+        {
+          "key": "b",
+          "id": "id-b",
+          "quantity": "quantity-b",
+          "price": "price-b"
+        }
+      ]
+    },
+    "parallelEqualLengthOmission": [
+      {
+        "id": "id-a",
+        "quantity": "quantity-a",
+        "price": "price-b"
+      },
+      {
+        "id": "id-c",
+        "quantity": "quantity-b",
+        "price": "price-c"
+      }
+    ],
+    "partial": {
+      "ok": false,
+      "problems": [
+        "a.price: missing field"
+      ],
+      "raw": {
+        "lines_order": [
+          "a"
+        ],
+        "lines[a].id": [
+          "id-a"
+        ],
+        "lines[a].quantity": [
+          "quantity-a"
+        ]
+      }
+    },
+    "duplicate": {
+      "ok": false,
+      "problems": [
+        "lines[a].quantity: duplicate field"
+      ],
+      "raw": {
+        "lines_order": [
+          "a"
+        ],
+        "lines[a].id": [
+          "id-a"
+        ],
+        "lines[a].quantity": [
+          "quantity-a",
+          "second"
+        ],
+        "lines[a].price": [
+          "price-a"
+        ]
+      }
+    },
+    "duplicateOrder": {
+      "ok": false,
+      "problems": [
+        "lines_order: duplicate row key"
+      ],
+      "raw": {
+        "lines_order": [
+          "a",
+          "a"
+        ],
+        "lines[a].id": [
+          "id-a"
+        ],
+        "lines[a].quantity": [
+          "quantity-a"
+        ],
+        "lines[a].price": [
+          "price-a"
+        ]
+      }
+    },
+    "unknown": {
+      "ok": false,
+      "problems": [
+        "lines[a].discount: unknown field"
+      ],
+      "raw": {
+        "lines_order": [
+          "a"
+        ],
+        "lines[a].id": [
+          "id-a"
+        ],
+        "lines[a].quantity": [
+          "quantity-a"
+        ],
+        "lines[a].price": [
+          "price-a"
+        ],
+        "lines[a].discount": [
+          "1"
+        ]
+      }
+    },
+    "unlisted": {
+      "ok": false,
+      "problems": [
+        "b: unlisted row"
+      ],
+      "raw": {
+        "lines_order": [
+          "a"
+        ],
+        "lines[a].id": [
+          "id-a"
+        ],
+        "lines[a].quantity": [
+          "quantity-a"
+        ],
+        "lines[a].price": [
+          "price-a"
+        ],
+        "lines[b].id": [
+          "id-b"
+        ],
+        "lines[b].quantity": [
+          "quantity-b"
+        ],
+        "lines[b].price": [
+          "price-b"
+        ]
+      }
+    }
+  }
+}

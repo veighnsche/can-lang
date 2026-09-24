@@ -1,0 +1,14 @@
+{
+  "startedAt": "2026-09-24T00:20:09.786054+00:00",
+  "completedAt": "2026-09-24T00:20:11.456989+00:00",
+  "status": 200,
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "attempts": [
+    {
+      "startedAt": "2026-09-24T00:20:09.786054+00:00",
+      "completedAt": "2026-09-24T00:20:11.456989+00:00",
+      "status": 200,
+      "endpoint": "https://api.typesafe.ai/v1/systemone"
+    }
+  ]
+}

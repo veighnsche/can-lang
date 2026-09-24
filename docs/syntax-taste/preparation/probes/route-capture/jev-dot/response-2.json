@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"dot_normalization":{"type":"choice","choice":"normalized_contract","confidence":0.99,"probabilities":{"custom_http":0.0,"normalized_contract":0.99,"gate_raw_target":0.01}}},"usage":{"input_tokens":699,"output_tokens":48}}

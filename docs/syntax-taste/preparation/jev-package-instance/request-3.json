@@ -1,0 +1,19 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "goal": "The planned Can redesign targets AI agents, including syntax that may be harsh for people. Favor sound composition and predictable changes, then measure successful-task tokens. Current users do not impose migration compatibility; no candidate is built yet.",
+    "observed": "Current graph IDs depend on global dependency aliases, and source package lookup uses global short names. The loader rejects both conflicting alias-to-directory mappings and duplicate aliases of one real directory. Root lock entries pin path plus three digests and numeric error registry. Planned source qualification is fixed by the user's answer: uses [billing::model as bill_model, crm::model as crm_model], with dependency-relative keys. Separately accepted unnumbered application errors need an owner-qualified textual report key; type matching already distinguishes generic arguments.",
+    "required": "Accept duplicate short package declarations from two independent dependencies, without granting access to transitive-only packages. Identity must survive local import alias edits, direct dependency-key edits that retain the same resolved target, physical relocation and unrelated graph expansion. Multiple paths to the exact locked release should share one instance; separately selected releases must never merge by short name. Validate lock pins and graph edges reproducibly, enforce owner-scope error tombstones without foreign reservations, and remove application integer coordination. Manifest/lock migration is permitted, but unchanged library source must still compose."
+  },
+  "questions": {
+    "canonical_instance": {
+      "type": "choice",
+      "instructions": "For the future compiler specification, which of these complete ID/lock approaches should engineering adopt given the observed loader and required tests?",
+      "criteria": {
+        "publisher_release": "Put persistent project UUID and immutable release-instance UUID in owning manifests, then pin their pair and verified tree/edge state in the lock. Intern repeated exact instances by pair; reject duplicate pairs with divergent payload or edges and keep distinct releases separate. Form nominal names from those IDs with package/declaration and use project-level tombstones across releases. Local dependency keys and paths select nodes rather than defining identity. The publisher manages IDs and release changes.",
+        "root_lock_instance": "Make the root lock the authority for random node instance IDs, preserving each ID through local edge renaming and physical relocation. Bind IDs to payload and outgoing target data, coalesce identical pins, separate independently assigned IDs, and qualify error keys by lock instance. This avoids publisher release metadata but leaves cross-root declaration identity and publisher-wide retirement unclear without extra coordination.",
+        "content_instance": "Build a path-independent instance hash from the project tree plus pinned dependency graph, using the lock to verify it. Equal fingerprints intern and different snapshots remain separate; spelling-only local handles should be normalized out. Reports use this fingerprint with package/declaration. An unrelated graph node leaves hashes alone, but any edit inside one project changes every error identity and an owner-level tombstone ledger cannot follow the hash alone."
+      }
+    }
+  }
+}

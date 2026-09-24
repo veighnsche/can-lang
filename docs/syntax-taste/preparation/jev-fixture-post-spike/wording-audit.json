@@ -1,0 +1,5 @@
+{
+  "manual_review": "Before sending, compared all complete payloads: same AI-agent priorities, no compatibility, native lowering, exact hard-case behavior and counts, equal current-Can alternatives, F2 post-spike evidence and limitations, unchanged three options. Every explanatory state, instruction and criterion has separately rewritten wording. No prior Jev answer or preferred conclusion was supplied.",
+  "mechanical_check": "All explanatory triples have three pairwise distinct full strings.",
+  "limit": "Equivalence and absence of framing bias are not mechanically proved."
+}

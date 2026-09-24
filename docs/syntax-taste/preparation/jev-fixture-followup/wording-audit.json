@@ -1,0 +1,43 @@
+{
+  "fact_and_option_equivalence_review": "Manually checked: all three state variants include identity/goal, exact present selector and queue mechanics, rename/template/stub/injection observations and coverage labels, API-cost limit, no candidate or agent-cost evidence, shared guarantees and four alternatives. No prior Jev result appears in any request.",
+  "prose_fields_per_request": 10,
+  "all_explanatory_strings_pairwise_distinct": true,
+  "pairwise_similarity_by_field": {
+    "1-2": {
+      "state.goal": 0.099,
+      "state.current_mechanism": 0.099,
+      "state.new_probe": 0.05,
+      "state.requirements": 0.027,
+      "state.decision_policy": 0.019,
+      "questions.fixture_contract.instructions": 0.042,
+      "questions.fixture_contract.criteria.lexical_injection": 0.01,
+      "questions.fixture_contract.criteria.exported_scenarios": 0.04,
+      "questions.fixture_contract.criteria.exported_seams": 0.046,
+      "questions.fixture_contract.criteria.discriminating_trial": 0.008
+    },
+    "1-3": {
+      "state.goal": 0.05,
+      "state.current_mechanism": 0.047,
+      "state.new_probe": 0.098,
+      "state.requirements": 0.116,
+      "state.decision_policy": 0.029,
+      "questions.fixture_contract.instructions": 0.296,
+      "questions.fixture_contract.criteria.lexical_injection": 0.032,
+      "questions.fixture_contract.criteria.exported_scenarios": 0.033,
+      "questions.fixture_contract.criteria.exported_seams": 0.013,
+      "questions.fixture_contract.criteria.discriminating_trial": 0.018
+    },
+    "2-3": {
+      "state.goal": 0.044,
+      "state.current_mechanism": 0.016,
+      "state.new_probe": 0.046,
+      "state.requirements": 0.035,
+      "state.decision_policy": 0.018,
+      "questions.fixture_contract.instructions": 0.228,
+      "questions.fixture_contract.criteria.lexical_injection": 0.032,
+      "questions.fixture_contract.criteria.exported_scenarios": 0.012,
+      "questions.fixture_contract.criteria.exported_seams": 0.014,
+      "questions.fixture_contract.criteria.discriminating_trial": 0.011
+    }
+  }
+}
