@@ -484,6 +484,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.checkNativeBodies(p, callables); err != nil {
 		return nil, err
 	}
+	if err = c.checkExportedGenerics(files); err != nil {
+		return nil, err
+	}
 	if err = c.genericAssertions(files); err != nil {
 		return nil, err
 	}

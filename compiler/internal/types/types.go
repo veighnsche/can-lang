@@ -22,6 +22,9 @@ const (
 	Opaque    Kind = "opaque"
 	Callable  Kind = "callable"
 	ChoiceArm Kind = "choice_arm"
+	// Parameter is an opaque exported-generic type variable. It carries no
+	// representation: only its declaring symbol and name identify it.
+	Parameter Kind = "parameter"
 )
 
 type Field struct {
@@ -29,8 +32,10 @@ type Field struct {
 	Type *Type
 }
 
-// Type is an interned concrete node. Its shape cannot be changed by consumers.
+// Type is an interned node. Its shape cannot be changed by consumers.
 // Recursive fields refer to the same node instead of duplicating a string tree.
+// Nodes are concrete except opaque Parameter leaves, which only the
+// exported-generic declaration pass introduces and never emits.
 type Type struct {
 	kind            Kind
 	id, declaration string

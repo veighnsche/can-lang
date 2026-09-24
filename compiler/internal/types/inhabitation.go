@@ -24,6 +24,12 @@ func (g *graph) seal() error {
 			if t.kind == Record || t.kind == Error || t.kind == Opaque && t.standardFailure {
 				return []*Type{t}, nil
 			}
+			// An opaque parameter is a symbolic leaf, not a concrete
+			// inhabitant claim. Only exported-generic declaration graphs
+			// contain parameters; concrete checking never seals one.
+			if t.kind == Parameter {
+				return []*Type{t}, nil
+			}
 			return nil, fmt.Errorf("ineligible variant leaf %s", t.id)
 		}
 		if active[t] {
@@ -61,10 +67,12 @@ func (g *graph) seal() error {
 	}
 	// Least fixed point: never assume a required recursive field already has a
 	// value. Empty arrays, primitives and callable/resource values are bases.
+	// An opaque parameter is also a base: its future arguments supply the
+	// inhabitant, and the symbolic pass checks operations, not inhabitation.
 	inhabited := map[*Type]bool{}
 	for _, t := range nodes {
 		switch t.kind {
-		case Primitive, Void, Array, Opaque, Callable, ChoiceArm:
+		case Primitive, Void, Array, Opaque, Callable, ChoiceArm, Parameter:
 			inhabited[t] = true
 		}
 	}
@@ -140,6 +148,10 @@ func EqualityEligible(t *Type) bool {
 				}
 			}
 			return true
+		case Parameter:
+			// Nothing is known about an opaque variable, including
+			// whether its future arguments support equality.
+			return false
 		default:
 			return false
 		}

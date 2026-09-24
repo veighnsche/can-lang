@@ -188,6 +188,9 @@ func (c *programChecker) gatherHTTP(file *resolve.File, callee syntax.Expr, args
 	if err != nil {
 		return err
 	}
+	if name := types.OpaqueParameterName(data); name != "" {
+		return fmt.Errorf("HTTP %s cannot use opaque type parameter %s from an exported generic declaration", symbol.ID, name)
+	}
 	key := symbol.ID + "<" + data.Identity() + ">"
 	if c.https == nil {
 		c.https = map[string]*HTTPSpecialization{}

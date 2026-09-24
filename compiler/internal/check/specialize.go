@@ -70,6 +70,22 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 }
 
 func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request string, substitutions ...[]syntax.TypeNode) (ValueBinding, error) {
+	if opaque := opaqueArgument(arguments); opaque != "" {
+		// Opaque variables only arise while an exported generic declaration
+		// checks symbolically. Same-declaration recursion with identical
+		// variables reuses the symbolic contract, exactly like the concrete
+		// same-instance cache; any other generic instantiation would need
+		// the callee template to be parametric, which the declaration
+		// check cannot assume.
+		if c.current != nil && c.current.Symbol.ID == symbol.ID && identicalParameters(c.current, symbol, arguments) {
+			return ValueBinding{Identity: c.current.Instance, Type: c.bindings[c.current.Instance]}, nil
+		}
+		caller := "an exported generic declaration"
+		if c.current != nil {
+			caller = "exported generic declaration " + c.current.Symbol.ID
+		}
+		return ValueBinding{}, fmt.Errorf("generic function %s cannot be instantiated with opaque type parameter %s from %s: pass the value through a non-generic contract or an explicit callable input", symbol.ID, opaque, caller)
+	}
 	key, err := types.SpecializationKey(symbol.ID, arguments)
 	if err != nil {
 		return ValueBinding{}, err
@@ -91,29 +107,12 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 		parameters[name] = arguments[i]
 	}
 	file := c.world.Files[symbol.Source]
-	signature := &syntax.CallableType{Result: declaration.Result, Errors: declaration.Errors}
-	descriptor := CallableDeclaration{Kind: resolve.Function, Receiver: declaration.Receiver != nil}
-	var fields []syntax.Field
-	if declaration.Receiver != nil {
-		fields = append(fields, *declaration.Receiver)
-		descriptor.Names = append(descriptor.Names, declaration.Receiver.Name.Text)
-		descriptor.Near = append(descriptor.Near, false)
+	signature, descriptor, fields, err := genericSignature(declaration)
+	if err != nil {
+		return ValueBinding{}, err
 	}
-	for i, input := range declaration.Inputs {
-		field := input.Field
-		if input.Variadic {
-			if i != len(declaration.Inputs)-1 {
-				return ValueBinding{}, fmt.Errorf("variadic input must be last")
-			}
-			field.Type = &syntax.ArrayType{Element: field.Type}
-			c.variadic[key] = true
-		}
-		fields = append(fields, field)
-		descriptor.Names = append(descriptor.Names, input.Name.Text)
-		descriptor.Near = append(descriptor.Near, input.Near)
-	}
-	for _, field := range fields {
-		signature.Inputs = append(signature.Inputs, field.Type)
+	if len(declaration.Inputs) > 0 && declaration.Inputs[len(declaration.Inputs)-1].Variadic {
+		c.variadic[key] = true
 	}
 	contract, err := c.specializer.Resolve(file, signature, parameters, true)
 	if err != nil {
@@ -129,6 +128,63 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	c.instances[key] = fn
 	c.program.Functions = append(c.program.Functions, fn)
 	return ValueBinding{Identity: key, Type: contract}, nil
+}
+
+// genericSignature builds the callable signature, declaration descriptor and
+// ordered receiver/input fields shared by concrete instantiation and the
+// exported-generic symbolic declaration check. The variadic tail input is
+// wrapped as an array, exactly as call sites observe it.
+func genericSignature(declaration *syntax.FunctionDecl) (*syntax.CallableType, CallableDeclaration, []syntax.Field, error) {
+	signature := &syntax.CallableType{Result: declaration.Result, Errors: declaration.Errors}
+	descriptor := CallableDeclaration{Kind: resolve.Function, Receiver: declaration.Receiver != nil}
+	var fields []syntax.Field
+	if declaration.Receiver != nil {
+		fields = append(fields, *declaration.Receiver)
+		descriptor.Names = append(descriptor.Names, declaration.Receiver.Name.Text)
+		descriptor.Near = append(descriptor.Near, false)
+	}
+	for i, input := range declaration.Inputs {
+		field := input.Field
+		if input.Variadic {
+			if i != len(declaration.Inputs)-1 {
+				return nil, CallableDeclaration{}, nil, fmt.Errorf("variadic input must be last")
+			}
+			field.Type = &syntax.ArrayType{Element: field.Type}
+		}
+		fields = append(fields, field)
+		descriptor.Names = append(descriptor.Names, input.Name.Text)
+		descriptor.Near = append(descriptor.Near, input.Near)
+	}
+	for _, field := range fields {
+		signature.Inputs = append(signature.Inputs, field.Type)
+	}
+	return signature, descriptor, fields, nil
+}
+
+// opaqueArgument names the first opaque exported-generic type variable
+// mentioned by arguments, or "" when every argument is concrete.
+func opaqueArgument(arguments []*types.Type) string {
+	for _, argument := range arguments {
+		if name := types.OpaqueParameterName(argument); name != "" {
+			return name
+		}
+	}
+	return ""
+}
+
+// identicalParameters reports whether arguments reproduce the current
+// function's parameter bindings exactly, so symbolic self-recursion reuses
+// the symbolic contract instead of instantiating a second declaration.
+func identicalParameters(current *ProgramFunction, symbol *resolve.Symbol, arguments []*types.Type) bool {
+	if len(arguments) != len(symbol.Parameters) {
+		return false
+	}
+	for i, name := range symbol.Parameters {
+		if !types.Equal(arguments[i], current.Parameters[name]) {
+			return false
+		}
+	}
+	return true
 }
 
 // Concrete containment corroborates source substitution evidence; it is not a

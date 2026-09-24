@@ -62,6 +62,9 @@ func (c *programChecker) gatherCodec(file *resolve.File, callee syntax.Expr, arg
 	if err != nil {
 		return err
 	}
+	if name := types.OpaqueParameterName(data); name != "" {
+		return fmt.Errorf("codec %s cannot use opaque type parameter %s from an exported generic declaration", symbol.ID, name)
+	}
 	key := symbol.ID + "<" + data.Identity() + ">"
 	if c.codecs == nil {
 		c.codecs = map[string]*CodecSpecialization{}

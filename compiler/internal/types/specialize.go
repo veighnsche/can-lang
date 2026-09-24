@@ -149,6 +149,9 @@ func SpecializationKey(declaration string, arguments []*Type) (string, error) {
 		if !Equal(arg, arg) || arg.kind == Void {
 			return "", fmt.Errorf("specialization requires concrete data arguments")
 		}
+		if name := OpaqueParameterName(arg); name != "" {
+			return "", fmt.Errorf("cannot specialize %s with opaque type parameter %s from an exported generic declaration: pass the value through a non-generic contract or an explicit callable input", declaration, name)
+		}
 		parts = append(parts, arg.id)
 	}
 	encoded, err := json.Marshal(parts)
