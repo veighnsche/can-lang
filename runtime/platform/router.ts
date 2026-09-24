@@ -10,6 +10,7 @@ import {
   normalizedPath,
   requestSnapshot,
   abandonRequest,
+  revokeRequest,
   nativeResponse,
   snapshotBodyBytes,
   ownedResponse,
@@ -70,10 +71,21 @@ export async function dispatch(
   const table = read(routers, router),
     snapshot = requestSnapshot(request),
     methods = table.get(snapshot.path);
+  const route = methods?.get(snapshot.method);
+  // A rejected route admits no handler work, so no per-request child can hold
+  // the token: abandon any unread body, then end the capability here. The
+  // server boundary repeats the revocation idempotently after drainage.
+  if (route === undefined) {
+    try {
+      return success(
+        methods === undefined ? fixed(404) : fixed(405, [...methods.keys()].sort().join(", ")),
+      );
+    } finally {
+      await abandonRequest(request);
+      revokeRequest(request);
+    }
+  }
   try {
-    if (!methods) return success(fixed(404));
-    const route = methods.get(snapshot.method);
-    if (!route) return success(fixed(405, [...methods.keys()].sort().join(", ")));
     const completed = await invoke(() => route.callback(request, context), origin);
     if (completed.kind !== "ok") return completed;
     // Upgraded requests hold a live socket; the server answers no HTTP reply.

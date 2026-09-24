@@ -1,0 +1,74 @@
+{
+  "request_1": {
+    "revocation_boundary": {
+      "choice": "split_boundary",
+      "confidence": 0.35,
+      "probabilities": {
+        "server_only_revoke": 0.43,
+        "split_boundary": 0.57,
+        "dispatch_only_revoke": 0.0
+      }
+    },
+    "revoke_failure_mode": {
+      "choice": "silent_idempotent",
+      "confidence": 0.82,
+      "probabilities": {
+        "throw_unknown": 0.09,
+        "silent_idempotent": 0.91
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1180,
+      "output_tokens": 89
+    }
+  },
+  "request_2": {
+    "revocation_boundary": {
+      "choice": "split_boundary",
+      "confidence": 0.76,
+      "probabilities": {
+        "dispatch_only_revoke": 0.0,
+        "split_boundary": 0.84,
+        "server_only_revoke": 0.16
+      }
+    },
+    "revoke_failure_mode": {
+      "choice": "silent_idempotent",
+      "confidence": 0.95,
+      "probabilities": {
+        "silent_idempotent": 0.97,
+        "throw_unknown": 0.03
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1229,
+      "output_tokens": 89
+    }
+  },
+  "request_3": {
+    "revocation_boundary": {
+      "choice": "split_boundary",
+      "confidence": 0.83,
+      "probabilities": {
+        "server_only_revoke": 0.11,
+        "split_boundary": 0.89,
+        "dispatch_only_revoke": 0.0
+      }
+    },
+    "revoke_failure_mode": {
+      "choice": "silent_idempotent",
+      "confidence": 0.9,
+      "probabilities": {
+        "silent_idempotent": 0.95,
+        "throw_unknown": 0.05
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1209,
+      "output_tokens": 89
+    }
+  }
+}

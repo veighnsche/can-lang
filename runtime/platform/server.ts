@@ -18,6 +18,7 @@ import {
   snapshotRequestLazy,
   normalizedPath,
   abandonRequest,
+  revokeRequest,
   nativeResponse,
   bindRequestServer,
   isUpgradedResponse,
@@ -239,8 +240,15 @@ export function createServer(
             if (snapshot.kind === "rejected") return success(fixed(snapshot.status));
             bindRequestServer(snapshot.value, server);
             // Body readers live and die in this per-request scope; dispatch
-            // abandons an unread live body before the scope drains.
-            return withScope(async () => serveSnapshot(native, snapshot.value));
+            // abandons an unread live body before the scope drains, and the
+            // outer boundary revokes the token only after drainage, before
+            // the response returns. Handler faults and rejected routes pass
+            // through the same finally, so no path leaks a usable token.
+            try {
+              return await withScope(async () => serveSnapshot(native, snapshot.value));
+            } finally {
+              revokeRequest(snapshot.value);
+            }
           });
         };
       const guarded = guardCallback(scope, serveNative(true)),

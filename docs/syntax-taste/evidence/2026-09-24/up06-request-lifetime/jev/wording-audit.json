@@ -1,0 +1,33 @@
+{
+  "compared_fields": [
+    "lifetime_requirements",
+    "mandate",
+    "production_paths",
+    "revocation_boundary.dispatch_only_revoke",
+    "revocation_boundary.instructions",
+    "revocation_boundary.server_only_revoke",
+    "revocation_boundary.split_boundary",
+    "revoke_failure_mode.instructions",
+    "revoke_failure_mode.silent_idempotent",
+    "revoke_failure_mode.throw_unknown",
+    "token_mechanism"
+  ],
+  "all_rewritten": true,
+  "full_request_sha256": [
+    "19cc2106983a3aa00191d7bbfcc0c0cc58496831de6a55e419f672a7740b0005",
+    "7114b4602d7eae1e48ae389e001ba59a0e0ab26f55880e66c97c8934c5f4a5b4",
+    "134d9658d1fe9c1433560c121e9988a73e0f98e99c55892b62e50fa1081cabf2"
+  ],
+  "same_facts_constraints_alternatives": true,
+  "option_keys": {
+    "revocation_boundary": [
+      "dispatch_only_revoke",
+      "server_only_revoke",
+      "split_boundary"
+    ],
+    "revoke_failure_mode": [
+      "silent_idempotent",
+      "throw_unknown"
+    ]
+  }
+}

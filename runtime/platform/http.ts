@@ -219,6 +219,20 @@ export async function snapshotRequestLazy(
   bodies.set(token, { kind: "live", native: request, limit, reader: false });
   return { kind: "request", value: token };
 }
+// Lifetime revocation is separate from body abandonment: abandonRequest only
+// releases an unread live body, while revokeRequest ends the Can capability
+// for buffered and live tokens alike. The outer request boundary calls this
+// after the per-request owner scope drains; retained header, body, snapshot,
+// and upgrade operations then fail with the resource-state failure. Unknown,
+// forged, or already-revoked input is a silent no-op so the call stays safe
+// in finally paths and under overlapping dispatch-plus-server coverage.
+export function revokeRequest(request: unknown): void {
+  if (!object(request)) return;
+  requests.delete(request);
+  bodies.delete(request);
+  upgradeServers.delete(request);
+  upgraded.delete(request);
+}
 export async function abandonRequest(request: unknown): Promise<void> {
   const cell = object(request) && bodies.has(request) ? bodies.get(request)! : undefined;
   if (cell === undefined || cell.kind !== "live") return;
