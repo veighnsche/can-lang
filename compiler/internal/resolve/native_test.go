@@ -31,11 +31,11 @@ llm str generate from service
 		t.Fatal(err)
 	}
 	file := fileNamed(world, "app", "main.can")
-	question := world.Packages["app"].Scope.Symbols["classify"]
+	question := world.Packages["can.project.root/app"].Scope.Symbols["classify"]
 	if !question.Eligible(QuestionUse) || question.Eligible(CallUse) || question.Eligible(ReferenceUse) {
 		t.Fatal("question gained ordinary call eligibility")
 	}
-	record := world.Packages["app"].Scope.Symbols["weights"]
+	record := world.Packages["can.project.root/app"].Scope.Symbols["weights"]
 	if record.Kind != Record || !record.Constructible || !record.Public || record.ID == question.ID {
 		t.Fatal("generated nominal identity missing")
 	}

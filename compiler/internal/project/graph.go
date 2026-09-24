@@ -17,9 +17,15 @@ import (
 )
 
 type Graph struct {
-	Root     *Project
-	Projects map[string]*Project // empty key is the root; dependency keys are global
-	Packages map[string]*Package // flat source names are globally unique
+	Root *Project
+	// Projects is keyed by canonical node identity; the empty key is the
+	// root. Dependency edge names are parent-local: the same edge name in
+	// different parents may reach different instances.
+	Projects map[string]*Project
+	// Packages is keyed by canonical package identity
+	// (<project-ID>/<package>). One package name may occur in many
+	// instances, but only once per instance.
+	Packages map[string]*Package
 	Lock     Lock
 	// LockSHA256 binds the exact can.lock.json bytes into verification
 	// identity. It is empty when the root project carries no lock file.
@@ -27,6 +33,7 @@ type Graph struct {
 }
 type Project struct {
 	Key, ID, Root                string
+	Lineage                      string // declared manifest lineage; empty means legacy edge-path identity
 	Manifest                     Manifest
 	ManifestSHA256, SourceSHA256 string
 	FixturesSHA256               string
@@ -80,7 +87,7 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 	if err != nil {
 		return nil, err
 	}
-	g := &Graph{Projects: map[string]*Project{}, Packages: map[string]*Package{}, Lock: Lock{Dependencies: map[string]LockEntry{}}}
+	g := &Graph{Projects: map[string]*Project{}, Packages: map[string]*Package{}, Lock: Lock{Edges: map[string]LockEdge{}, Projects: map[string]LockEntry{}}}
 	lockPath := filepath.Join(root, "can.lock.json")
 	if _, err := os.Lstat(lockPath); err == nil {
 		data, err := readConfined(root, "can.lock.json")
@@ -96,28 +103,25 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 		return nil, err
 	}
 	loading := map[string]bool{}
-	owners := map[string]string{}
+	nodes := map[string]*Project{}
+	lineages := map[string]*Project{}
 	outputs := map[string]string{}
-	var load func(string, string, int) (*Project, error)
-	load = func(key, directory string, depth int) (*Project, error) {
+	var load func([]string, string, int) (*Project, error)
+	load = func(edgePath []string, directory string, depth int) (*Project, error) {
 		if depth > 256 {
 			return nil, fmt.Errorf("dependency graph exceeds 256 levels")
 		}
 		if loading[directory] {
 			return nil, fmt.Errorf("dependency manifest cycle at %s", directory)
 		}
-		if existing, ok := g.Projects[key]; ok {
-			if existing.Root != directory {
-				return nil, fmt.Errorf("dependency key %q resolves to different directories", key)
-			}
+		// Identical real paths intern to one instance however many edges
+		// reach them. The cycle check above runs first so a manifest
+		// cycle still fails instead of resolving to a half-loaded node.
+		if existing, ok := nodes[directory]; ok {
 			return existing, nil
-		}
-		if owner, exists := owners[directory]; exists && owner != key {
-			return nil, fmt.Errorf("different dependency keys name one real directory: %q and %q", owner, key)
 		}
 		loading[directory] = true
 		defer delete(loading, directory)
-		owners[directory] = key
 		data, err := readConfined(directory, "can.project.json")
 		if err != nil {
 			return nil, err
@@ -134,12 +138,27 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 		if err != nil {
 			return nil, fmt.Errorf("%s registry: %w", directory, err)
 		}
-		identity := "can.project.root"
-		if key != "" {
-			identity = "can.project.dependency/" + key
+		if manifest.Project != "" {
+			if owner, exists := lineages[manifest.Project]; exists {
+				return nil, fmt.Errorf("project lineage %q names divergent instances at %s and %s", manifest.Project, owner.Root, directory)
+			}
 		}
-		project := &Project{Key: key, ID: identity, Root: directory, Manifest: manifest, ManifestSHA256: Digest(data), Registry: registry, Dependencies: map[string]*Project{}}
+		identity := "can.project.root"
+		key := ""
+		if edgePath != nil {
+			key = "can.project.dependency/" + strings.Join(edgePath, "/")
+			identity = key
+			if manifest.Project != "" {
+				identity = "can.project.lineage/" + manifest.Project
+				key = identity
+			}
+		}
+		project := &Project{Key: key, ID: identity, Root: directory, Lineage: manifest.Project, Manifest: manifest, ManifestSHA256: Digest(data), Registry: registry, Dependencies: map[string]*Project{}}
 		g.Projects[key] = project
+		nodes[directory] = project
+		if manifest.Project != "" {
+			lineages[manifest.Project] = project
+		}
 		project.CheckedAssets, err = Snapshot(directory, manifest.Assets)
 		if err != nil {
 			return nil, err
@@ -152,7 +171,8 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 			if err != nil {
 				return nil, err
 			}
-			dep, err := load(name, depDir, depth+1)
+			child := append(append([]string{}, edgePath...), name)
+			dep, err := load(child, depDir, depth+1)
 			if err != nil {
 				return nil, err
 			}
@@ -169,7 +189,7 @@ func load(directory string, substitute func(real string) ([]byte, bool)) (*Graph
 		}
 		return project, nil
 	}
-	g.Root, err = load("", root, 0)
+	g.Root, err = load(nil, root, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -270,10 +290,10 @@ func (g *Graph) readSources(project *Project, outputs map[string]string, substit
 				if err := catalogue.Builtin().CheckProjectPackage(packageName); err != nil {
 					return err
 				}
-				if existing := g.Packages[packageName]; existing != nil {
-					return fmt.Errorf("package name %q occurs in more than one directory", packageName)
-				}
 				id := project.ID + "/" + packageName
+				if existing := g.Packages[id]; existing != nil {
+					return fmt.Errorf("package name %q occurs in more than one directory of %s", packageName, project.ID)
+				}
 				output := "packages/p-" + Digest([]byte("can-package-path-v1\x00"+id))
 				if err := claimOutput(outputs, output, id); err != nil {
 					return err
@@ -281,7 +301,7 @@ func (g *Graph) readSources(project *Project, outputs map[string]string, substit
 				pkg = &Package{Name: packageName, ID: id, Directory: packageDir, OutputDirectory: output, Owner: project}
 				packages[packageDir] = pkg
 				project.Packages = append(project.Packages, pkg)
-				g.Packages[packageName] = pkg
+				g.Packages[id] = pkg
 			} else if pkg.Name != packageName {
 				return fmt.Errorf("source folder %s contains different package names", packageDir)
 			}
@@ -343,30 +363,61 @@ func verifySourceRegistry(project *Project) error {
 }
 
 func (g *Graph) verifyLock() error {
-	if len(g.Lock.Dependencies) != len(g.Projects)-1 {
+	visited := map[string]bool{}
+	var visit func(parent *Project, edges map[string]LockEdge) error
+	visit = func(parent *Project, edges map[string]LockEdge) error {
+		if len(edges) != len(parent.Manifest.Dependencies) {
+			return fmt.Errorf("dependency lock edges do not match the %s manifest", parent.ID)
+		}
+		for _, name := range sortedKeys(parent.Manifest.Dependencies) {
+			edge, exists := edges[name]
+			if !exists {
+				return fmt.Errorf("missing dependency lock edge %q of %s", name, parent.ID)
+			}
+			if edge.Path != parent.Manifest.Dependencies[name] {
+				return fmt.Errorf("dependency lock path mismatch for edge %q of %s", name, parent.ID)
+			}
+			child := parent.Dependencies[name]
+			if child.ID != edge.Target {
+				return fmt.Errorf("dependency lock target mismatch for edge %q of %s", name, parent.ID)
+			}
+			if visited[child.ID] {
+				continue
+			}
+			visited[child.ID] = true
+			entry, exists := g.Lock.Projects[child.ID]
+			if !exists {
+				return fmt.Errorf("missing dependency lock entry for %q", child.ID)
+			}
+			if entry.Lineage != child.Lineage {
+				return fmt.Errorf("dependency lock lineage mismatch for %q", child.ID)
+			}
+			if entry.ManifestSHA256 != child.ManifestSHA256 || entry.SourceSHA256 != child.SourceSHA256 || entry.FixturesSHA256 != child.FixturesSHA256 {
+				return fmt.Errorf("stale dependency digest for %q", child.ID)
+			}
+			if !reflect.DeepEqual(entry.ErrorRegistry, child.Registry) {
+				return fmt.Errorf("dependency registry snapshot mismatch for %q", child.ID)
+			}
+			if err := visit(child, entry.Edges); err != nil {
+				return err
+			}
+		}
+		for _, name := range sortedKeys(edges) {
+			if _, exists := parent.Manifest.Dependencies[name]; !exists {
+				return fmt.Errorf("unused dependency lock edge %q of %s", name, parent.ID)
+			}
+		}
+		return nil
+	}
+	if err := visit(g.Root, g.Lock.Edges); err != nil {
+		return err
+	}
+	if len(visited) != len(g.Lock.Projects) {
 		return fmt.Errorf("dependency lock has missing or unused entries")
 	}
-	for _, key := range sortedKeys(g.Projects) {
-		if key == "" {
-			continue
-		}
-		project := g.Projects[key]
-		entry, exists := g.Lock.Dependencies[key]
-		if !exists {
-			return fmt.Errorf("missing dependency lock entry %q", key)
-		}
-		real, err := ConfinedPath(g.Root.Root, entry.Path, true)
-		if err != nil {
-			return err
-		}
-		if real != project.Root {
-			return fmt.Errorf("dependency lock path mismatch for %q", key)
-		}
-		if entry.ManifestSHA256 != project.ManifestSHA256 || entry.SourceSHA256 != project.SourceSHA256 || entry.FixturesSHA256 != project.FixturesSHA256 {
-			return fmt.Errorf("stale dependency digest for %q", key)
-		}
-		if !reflect.DeepEqual(entry.ErrorRegistry, project.Registry) {
-			return fmt.Errorf("dependency registry snapshot mismatch for %q", key)
+	for id := range g.Lock.Projects {
+		if !visited[id] {
+			return fmt.Errorf("unused dependency lock entry for %q", id)
 		}
 	}
 	return nil

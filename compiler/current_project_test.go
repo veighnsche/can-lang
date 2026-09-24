@@ -51,7 +51,7 @@ func TestCurrentProjectInspectionIsInertAndRelocatable(t *testing.T) {
 		if err := json.Unmarshal(out.Bytes(), &report); err != nil {
 			t.Fatal(err)
 		}
-		if report.SchemaVersion != 1 || report.Kind != "can.package-resolution" || len(report.Packages) != 4 || len(report.Projects) != 2 {
+		if report.SchemaVersion != 2 || report.Kind != "can.package-resolution" || len(report.Packages) != 4 || len(report.Projects) != 2 {
 			t.Fatal(report)
 		}
 		seen := map[string]bool{}

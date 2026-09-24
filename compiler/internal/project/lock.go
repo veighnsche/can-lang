@@ -18,11 +18,29 @@ type Registry struct {
 	Active  []ErrorAllocation `json:"active"`
 	Retired []uint64          `json:"retired"`
 }
-type LockEntry struct {
-	Path, ManifestSHA256, SourceSHA256, FixturesSHA256 string
-	ErrorRegistry                                      Registry
+
+// LockEdge pins one direct dependency edge: the local edge name maps to a
+// canonical node identity reached through a parent-relative path.
+type LockEdge struct {
+	Target, Path string
 }
-type Lock struct{ Dependencies map[string]LockEntry }
+
+// LockEntry pins one non-root instance: its lineage, content digests,
+// registry snapshot, and direct edges.
+type LockEntry struct {
+	Lineage                                      string
+	ManifestSHA256, SourceSHA256, FixturesSHA256 string
+	ErrorRegistry                                Registry
+	Edges                                        map[string]LockEdge
+}
+
+// Lock pins the root's direct edges plus every non-root instance by
+// canonical node identity. Paths stay parent-relative so checkout
+// relocation never invalidates a lock.
+type Lock struct {
+	Edges    map[string]LockEdge
+	Projects map[string]LockEntry
+}
 
 func ParseRegistry(data []byte) (Registry, error) {
 	r := Registry{Active: []ErrorAllocation{}, Retired: []uint64{}}
@@ -93,28 +111,33 @@ func applicationID(raw json.RawMessage) (uint64, error) {
 }
 
 func ParseLock(data []byte) (Lock, error) {
-	lock := Lock{Dependencies: map[string]LockEntry{}}
+	lock := Lock{Edges: map[string]LockEdge{}, Projects: map[string]LockEntry{}}
 	if err := validateJSON(data); err != nil {
 		return lock, err
 	}
-	fields, err := object(data, []string{"dependencies"}, nil)
+	fields, err := object(data, []string{"edges", "projects"}, nil)
 	if err != nil {
 		return lock, err
 	}
-	entries, err := dictionary(fields["dependencies"])
+	edges, err := parseLockEdges(fields["edges"])
 	if err != nil {
 		return lock, err
 	}
-	for _, name := range sortedKeys(entries) {
-		if !Identifier(name) {
-			return lock, fmt.Errorf("invalid dependency lock identity %q", name)
+	lock.Edges = edges
+	entries, err := dictionary(fields["projects"])
+	if err != nil {
+		return lock, err
+	}
+	for _, id := range sortedKeys(entries) {
+		if !ValidNodeID(id) || id == "can.project.root" {
+			return lock, fmt.Errorf("invalid lock project identity %q", id)
 		}
-		fields, err := object(entries[name], []string{"path", "manifest_sha256", "source_sha256", "fixtures_sha256", "error_registry"}, nil)
+		fields, err := object(entries[id], []string{"lineage", "manifest_sha256", "source_sha256", "fixtures_sha256", "error_registry", "edges"}, nil)
 		if err != nil {
 			return lock, err
 		}
-		entry := LockEntry{}
-		destinations := map[string]*string{"path": &entry.Path, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256, "fixtures_sha256": &entry.FixturesSHA256}
+		entry := LockEntry{Edges: map[string]LockEdge{}}
+		destinations := map[string]*string{"lineage": &entry.Lineage, "manifest_sha256": &entry.ManifestSHA256, "source_sha256": &entry.SourceSHA256, "fixtures_sha256": &entry.FixturesSHA256}
 		for _, key := range sortedKeys(destinations) {
 			dest := destinations[key]
 			value, err := text(fields[key])
@@ -123,8 +146,11 @@ func ParseLock(data []byte) (Lock, error) {
 			}
 			*dest = value
 		}
-		if err := NormalizePath(entry.Path); err != nil {
-			return lock, err
+		if entry.Lineage != "" && !Identifier(entry.Lineage) {
+			return lock, fmt.Errorf("lock lineage %q must be a lowercase identifier", entry.Lineage)
+		}
+		if NodeLineage(id) != entry.Lineage {
+			return lock, fmt.Errorf("lock project %q disagrees with its lineage pin", id)
 		}
 		for _, digest := range []string{entry.ManifestSHA256, entry.SourceSHA256, entry.FixturesSHA256} {
 			if len(digest) != 64 || strings.ToLower(digest) != digest {
@@ -138,12 +164,80 @@ func ParseLock(data []byte) (Lock, error) {
 		if err != nil {
 			return lock, err
 		}
-		lock.Dependencies[name] = entry
+		entry.Edges, err = parseLockEdges(fields["edges"])
+		if err != nil {
+			return lock, err
+		}
+		lock.Projects[id] = entry
 	}
 	return lock, nil
 }
 
+func parseLockEdges(raw json.RawMessage) (map[string]LockEdge, error) {
+	edges := map[string]LockEdge{}
+	entries, err := dictionary(raw)
+	if err != nil {
+		return edges, err
+	}
+	for _, name := range sortedKeys(entries) {
+		if !Identifier(name) {
+			return edges, fmt.Errorf("invalid lock edge name %q", name)
+		}
+		fields, err := object(entries[name], []string{"target", "path"}, nil)
+		if err != nil {
+			return edges, err
+		}
+		target, err := text(fields["target"])
+		if err != nil {
+			return edges, err
+		}
+		if !ValidNodeID(target) || target == "can.project.root" {
+			return edges, fmt.Errorf("invalid lock edge target %q", target)
+		}
+		edgePath, err := text(fields["path"])
+		if err != nil {
+			return edges, err
+		}
+		if err := NormalizePath(edgePath); err != nil {
+			return edges, err
+		}
+		edges[name] = LockEdge{Target: target, Path: edgePath}
+	}
+	return edges, nil
+}
+
 func Digest(data []byte) string { sum := sha256.Sum256(data); return hex.EncodeToString(sum[:]) }
+
+// ValidNodeID reports whether id is a canonical instance identity: the
+// root, a declared lineage, or a legacy edge path from the root.
+func ValidNodeID(id string) bool {
+	if id == "can.project.root" {
+		return true
+	}
+	if lineage, ok := strings.CutPrefix(id, "can.project.lineage/"); ok {
+		return Identifier(lineage)
+	}
+	path, ok := strings.CutPrefix(id, "can.project.dependency/")
+	if !ok {
+		return false
+	}
+	for _, edge := range strings.Split(path, "/") {
+		if !Identifier(edge) {
+			return false
+		}
+	}
+	return true
+}
+
+// NodeLineage returns the declared lineage carried by a lineage identity,
+// or "" for the root and legacy edge-path identities.
+func NodeLineage(id string) string {
+	lineage, ok := strings.CutPrefix(id, "can.project.lineage/")
+	if !ok || !Identifier(lineage) {
+		return ""
+	}
+	return lineage
+}
 
 type SourceBytes struct {
 	Path  string

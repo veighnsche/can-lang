@@ -698,9 +698,9 @@ func outputVendorRawProject(t *testing.T, fixtureBytes string) string {
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{
-		"path": "vendor", "manifest_sha256": project.Digest(manifestData),
-		"source_sha256": sourceDigest, "fixtures_sha256": fixtureDigest, "error_registry": registry}}})
+	lock, err := json.Marshal(map[string]any{"edges": map[string]any{"vendor": map[string]any{"target": "can.project.dependency/vendor", "path": "vendor"}}, "projects": map[string]any{"can.project.dependency/vendor": map[string]any{
+		"lineage": "", "manifest_sha256": project.Digest(manifestData),
+		"source_sha256": sourceDigest, "fixtures_sha256": fixtureDigest, "error_registry": registry, "edges": map[string]any{}}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -721,7 +721,7 @@ func TestBuildInputsChangeOnFixtureOnlyDependencyEdit(t *testing.T) {
 	if one.Source == two.Source {
 		t.Fatal("fixture-only change kept the root identity")
 	}
-	vendor, other := first.Graph.Projects["vendor"], second.Graph.Projects["vendor"]
+	vendor, other := first.Graph.Root.Dependencies["vendor"], second.Graph.Root.Dependencies["vendor"]
 	if vendor.ManifestSHA256 != other.ManifestSHA256 || vendor.SourceSHA256 != other.SourceSHA256 {
 		t.Fatal("manifest/source identity moved on a fixture-only change")
 	}

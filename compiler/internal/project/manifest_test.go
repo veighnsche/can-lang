@@ -126,13 +126,65 @@ func TestRegistryAndLockExactContracts(t *testing.T) {
 		}
 	}
 	digest := strings.Repeat("a", 64)
-	lock := `{"dependencies":{"vendor":{"path":"vendor","manifest_sha256":"` + digest + `","source_sha256":"` + digest + `","fixtures_sha256":"` + digest + `","error_registry":` + registry + `}}}`
+	id := "can.project.dependency/vendor"
+	lock := `{"edges":{"vendor":{"target":"` + id + `","path":"vendor"}},"projects":{"` + id + `":{"lineage":"","manifest_sha256":"` + digest + `","source_sha256":"` + digest + `","fixtures_sha256":"` + digest + `","error_registry":` + registry + `,"edges":{}}}}`
 	if _, err := ParseLock([]byte(lock)); err != nil {
 		t.Fatal(err)
 	}
-	for _, pair := range [][2]string{{`"path":"vendor"`, `"path":"../vendor"`}, {digest, strings.Repeat("A", 64)}, {digest, "00"}, {`"path":`, `"hook":"run","path":`}, {`"dependencies":`, `"dependencies":{},"dependencies":`}, {`,"fixtures_sha256":"` + digest + `"`, ``}, {`"fixtures_sha256":"` + digest + `"`, `"fixtures_sha256":"00"`}} {
+	lineageLock := `{"edges":{"lib":{"target":"can.project.lineage/acme_lib","path":"vendor/lib"}},"projects":{"can.project.lineage/acme_lib":{"lineage":"acme_lib","manifest_sha256":"` + digest + `","source_sha256":"` + digest + `","fixtures_sha256":"` + digest + `","error_registry":{"active":[],"retired":[]},"edges":{}}}}`
+	if _, err := ParseLock([]byte(lineageLock)); err != nil {
+		t.Fatal(err)
+	}
+	for _, pair := range [][2]string{
+		{`"path":"vendor"`, `"path":"../vendor"`}, {digest, strings.Repeat("A", 64)}, {digest, "00"},
+		{`"path":`, `"hook":"run","path":`}, {`"edges":`, `"edges":{},"edges":`},
+		{`,"fixtures_sha256":"` + digest + `"`, ``}, {`"fixtures_sha256":"` + digest + `"`, `"fixtures_sha256":"00"`},
+		{`"lineage":""`, `"lineage":"acme_lib"`}, {`"target":"` + id + `"`, `"target":"can.project.root"`},
+	} {
 		if _, err := ParseLock([]byte(strings.Replace(lock, pair[0], pair[1], 1))); err == nil {
 			t.Fatal(pair)
+		}
+	}
+	for _, raw := range []string{
+		`{"edges":{},"projects":{}}`,
+		`{"edges":{"vendor":{"target":"can.project.dependency/vendor","path":"vendor"}}}`,
+		strings.Replace(lock, `"projects":`, `"dependencies":`, 1),
+		strings.Replace(lock, id, "can.project.root", -1),
+		strings.Replace(lineageLock, `"lineage":"acme_lib"`, `"lineage":"other_lib"`, 1),
+		strings.Replace(lineageLock, `"lineage":"acme_lib"`, `"lineage":"Bad"`, 1),
+	} {
+		parsed, err := ParseLock([]byte(raw))
+		if raw == `{"edges":{},"projects":{}}` {
+			if err != nil || len(parsed.Edges) != 0 || len(parsed.Projects) != 0 {
+				t.Fatalf("empty lock rejected: %v", err)
+			}
+			continue
+		}
+		if err == nil {
+			t.Fatalf("accepted %s", raw)
+		}
+	}
+}
+
+func TestManifestLineageDeclaresOptionalIdentity(t *testing.T) {
+	manifest, err := ParseManifest([]byte(`{"source_root":"src","project":"acme_lib","error_registry":"can.errors.json"}`))
+	if err != nil || manifest.Project != "acme_lib" {
+		t.Fatalf("%+v %v", manifest, err)
+	}
+	manifest, err = ParseManifest([]byte(`{"source_root":"src","error_registry":"can.errors.json"}`))
+	if err != nil || manifest.Project != "" {
+		t.Fatalf("%+v %v", manifest, err)
+	}
+	for _, raw := range []string{
+		`{"source_root":"src","project":"","error_registry":"can.errors.json"}`,
+		`{"source_root":"src","project":"Bad","error_registry":"can.errors.json"}`,
+		`{"source_root":"src","project":"has-dash","error_registry":"can.errors.json"}`,
+		`{"source_root":"src","project":"fn","error_registry":"can.errors.json"}`,
+		`{"source_root":"src","project":1,"error_registry":"can.errors.json"}`,
+		`{"source_root":"src","project":null,"error_registry":"can.errors.json"}`,
+	} {
+		if _, err := ParseManifest([]byte(raw)); err == nil {
+			t.Errorf("accepted %s", raw)
 		}
 	}
 }

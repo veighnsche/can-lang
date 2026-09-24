@@ -209,6 +209,9 @@ func (f *formatter) render(file *File) {
 	uses := make([]string, len(file.Header.Uses))
 	for i, u := range file.Header.Uses {
 		uses[i] = u.Package.Text
+		if u.Dependency != nil {
+			uses[i] = u.Dependency.Text + "::" + uses[i]
+		}
 		if u.Alias != nil {
 			uses[i] += " as " + u.Alias.Text
 		}

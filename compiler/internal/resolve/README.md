@@ -2,9 +2,12 @@
 
 `Build(projectGraph)` registers every package declaration before checking exports,
 file-local imports, and signatures. Package import cycles are allowed. Dependency
-manifest cycles are not. A package may import its own project's packages, direct
-explicit dependency owners, and the closed catalogue; transitive dependencies do
-not become implicit direct imports.
+manifest cycles are not. A package may import its own project's packages and the
+closed catalogue unqualified, and a direct dependency's packages only through a
+qualified `edge::package` entry with an optional `as` alias; transitive
+dependencies do not become implicit direct imports, and unqualified names never
+resolve into a dependency. Two instances may expose the same package name;
+local aliases disambiguate them without entering canonical symbol identities.
 
 Provides entries must name declarations in that exact file. Duplicate declarations
 across kinds, duplicate exports, alias collisions, reserved prelude shadowing,

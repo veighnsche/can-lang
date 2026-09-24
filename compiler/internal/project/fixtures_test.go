@@ -253,7 +253,7 @@ func TestVendorFixtureChangeStalesLock(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	vendor, other := before.Projects["vendor"], second.Projects["vendor"]
+	vendor, other := before.Root.Dependencies["vendor"], second.Root.Dependencies["vendor"]
 	if vendor.ManifestSHA256 != other.ManifestSHA256 || vendor.SourceSHA256 != other.SourceSHA256 {
 		t.Fatal("manifest/source identity moved on a fixture-only change")
 	}
@@ -265,7 +265,7 @@ func TestVendorFixtureChangeStalesLock(t *testing.T) {
 	}
 	// Tampering with the locked digest alone also rejects.
 	tampered := string(locked)
-	tampered = strings.Replace(tampered, before.Projects["vendor"].FixturesSHA256, strings.Repeat("0", 64), 1)
+	tampered = strings.Replace(tampered, before.Root.Dependencies["vendor"].FixturesSHA256, strings.Repeat("0", 64), 1)
 	writeFixture(t, root, "vendor/src/fixtures/load.json", `{"version":1}`)
 	writeFixture(t, root, "can.lock.json", tampered)
 	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "stale dependency digest") {

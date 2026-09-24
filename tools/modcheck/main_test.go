@@ -90,6 +90,26 @@ func TestAliasUses(t *testing.T) {
 	}
 }
 
+func TestQualifiedUses(t *testing.T) {
+	good := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [vendor::alpha, codec]", 1)
+	dir := writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": good})
+	if _, errs := check([]string{dir}, testCatalogue()); len(errs) > 0 {
+		t.Fatalf("qualified uses failed: %v", errs)
+	}
+	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [vendor::ghost]", 1)
+	dir = writeFixtures(t, map[string]string{"beta.can": bad})
+	_, errs := check([]string{dir}, testCatalogue())
+	if !contains(errs, "uses vendor::ghost resolves nowhere") {
+		t.Fatalf("expected resolution violation, got %v", errs)
+	}
+	twin := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [one::alpha, two::alpha]", 1)
+	dir = writeFixtures(t, map[string]string{"alpha.can": goodAlpha, "beta.can": twin})
+	_, errs = check([]string{dir}, testCatalogue())
+	if !contains(errs, `import alias "alpha" collides`) {
+		t.Fatalf("expected twin-alias collision, got %v", errs)
+	}
+}
+
 func TestUnresolvableUses(t *testing.T) {
 	bad := strings.Replace(goodBeta, "uses [alpha, codec]", "uses [ghost]", 1)
 	dir := writeFixtures(t, map[string]string{"beta.can": bad})

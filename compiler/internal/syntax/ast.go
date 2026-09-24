@@ -180,9 +180,13 @@ type PackageHeader struct {
 	Uses     []Import
 }
 type Import struct {
-	Span    source.Span
-	Package Token
-	Alias   *Token
+	Span source.Span
+	// Dependency names a direct dependency edge of the owning project for
+	// cross-project imports (`dep::pkg`). It is nil for same-project and
+	// catalogue imports, which stay unqualified.
+	Dependency *Token
+	Package    Token
+	Alias      *Token
 }
 type Declaration interface {
 	DeclSpan() source.Span

@@ -12,20 +12,33 @@ confinement to the owning manifest directory. Contained symlinks are allowed;
 escapes, source aliases and directory cycles fail. SQL entries have P12's exact
 data shape; actual PostgreSQL statement validation remains the native SQL task.
 
-Dependency keys are global identities. Repeated keys must identify the same real
-directory, distinct keys cannot identify one directory, and manifest cycles fail.
-The root lock must cover exactly the transitive dependency graph. Manifest bytes
-are hashed exactly. Source hashes use P2's `can-source-tree-v1` NUL prefix and
-big-endian length framing over byte-sorted logical `.can` paths and exact content.
+Dependency edge names are parent-local: the same edge name in different
+manifests may reach different instances. Each manifest may declare a `project`
+lineage ID. A declared lineage names exactly one real directory; a second
+directory claiming the lineage fails even when byte-identical, as does a
+root/dependency lineage collision. Instances without a lineage take a legacy
+edge-path identity from first discovery in sorted edge order. Identical real
+paths intern to one instance however many edges reach them, while manifest
+cycles still fail.
+
+The root lock pins the root's direct edges plus every transitively reachable
+instance by canonical node identity: lineage, content digests, registry
+snapshot, and each instance's own direct edges. Edited manifests, sources,
+fixtures, registries, renamed lineages, retargeted or repathed edges, and
+missing or unused entries all fail verification. Manifest bytes are hashed
+exactly. Source hashes use P2's `can-source-tree-v1` NUL prefix and big-endian
+length framing over byte-sorted logical `.can` paths and exact content.
 Registry snapshots are compared structurally; active allocations must match each
 project's source declarations and active/retired IDs must be globally disjoint.
 
-Source folders form flat packages. Canonical source folders determine ownership,
-including `internal` access boundaries for a symlinked source file. Package names
-must agree within a folder, be globally unique, and avoid reserved catalogue names.
+Source folders form per-instance packages. Canonical source folders determine
+ownership, including `internal` access boundaries for a symlinked source file.
+Package names must agree within a folder, be unique within one instance, and
+avoid reserved catalogue names; the same name composes across instances.
 
-Nominal package identities are `can.project.root/<package>` or
-`can.project.dependency/<dependency-key>/<package>`. Declaration IDs append `::name`.
+Nominal package identities are `can.project.root/<package>`,
+`can.project.lineage/<lineage>/<package>`, or
+`can.project.dependency/<edge-path>/<package>`. Declaration IDs append `::name`.
 File IDs append the normalized source-root-relative logical path used in the
 source digest. Absolute paths and load order never enter these identities.
 Package output folders are `packages/p-<sha256>` and files are `s-<sha256>.ts`,

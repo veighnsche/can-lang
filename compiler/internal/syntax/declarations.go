@@ -64,13 +64,24 @@ func (p *parser) packageHeader() PackageHeader {
 	if !p.at("]") {
 		for {
 			name := p.expect(Name)
+			var dependency *Token
+			if p.at("::") {
+				p.take()
+				dep := name
+				dependency = &dep
+				name = p.expect(Name)
+			}
 			var alias *Token
 			if p.word("as") {
 				p.take()
 				t := p.expect(Name)
 				alias = &t
 			}
-			uses = append(uses, Import{Span: p.span(name.Span.Start), Package: name, Alias: alias})
+			start := name.Span.Start
+			if dependency != nil {
+				start = dependency.Span.Start
+			}
+			uses = append(uses, Import{Span: p.span(start), Dependency: dependency, Package: name, Alias: alias})
 			if !p.at(",") {
 				break
 			}

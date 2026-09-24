@@ -20,6 +20,7 @@ type projectReport struct {
 }
 type projectOwnerReport struct {
 	ID             string `json:"id"`
+	Lineage        string `json:"lineage"`
 	ManifestSHA256 string `json:"manifestSHA256"`
 	SourceSHA256   string `json:"sourceSHA256"`
 }
@@ -60,9 +61,9 @@ func runInspectProject(stdout, stderr io.Writer, args []string) int {
 		fmt.Fprintln(stderr, err)
 		return 1
 	}
-	report := projectReport{SchemaVersion: 1, Kind: "can.package-resolution", CatalogueRevision: catalogue.GeneratedRevision, Projects: []projectOwnerReport{}, Packages: []projectPackageReport{}}
+	report := projectReport{SchemaVersion: 2, Kind: "can.package-resolution", CatalogueRevision: catalogue.GeneratedRevision, Projects: []projectOwnerReport{}, Packages: []projectPackageReport{}}
 	for _, owner := range graph.Projects {
-		report.Projects = append(report.Projects, projectOwnerReport{ID: owner.ID, ManifestSHA256: owner.ManifestSHA256, SourceSHA256: owner.SourceSHA256})
+		report.Projects = append(report.Projects, projectOwnerReport{ID: owner.ID, Lineage: owner.Lineage, ManifestSHA256: owner.ManifestSHA256, SourceSHA256: owner.SourceSHA256})
 	}
 	sort.Slice(report.Projects, func(i, j int) bool { return report.Projects[i].ID < report.Projects[j].ID })
 	for _, pkg := range graph.Packages {
@@ -75,7 +76,7 @@ func runInspectProject(stdout, stderr io.Writer, args []string) int {
 			item.Sources = append(item.Sources, projectSourceReport{ID: source.ID, SourcePath: source.RelativePath, OutputPath: source.OutputPath, Imports: imports})
 		}
 		sort.Slice(item.Sources, func(i, j int) bool { return item.Sources[i].ID < item.Sources[j].ID })
-		for _, symbol := range world.Packages[pkg.Name].Scope.Symbols {
+		for _, symbol := range world.Packages[pkg.ID].Scope.Symbols {
 			item.Symbols = append(item.Symbols, projectSymbolReport{ID: symbol.ID, Name: symbol.Name, Kind: symbol.Kind, Public: symbol.Public})
 		}
 		sort.Slice(item.Symbols, func(i, j int) bool { return item.Symbols[i].ID < item.Symbols[j].ID })

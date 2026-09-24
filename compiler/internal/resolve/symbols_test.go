@@ -1,7 +1,6 @@
 package resolve
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,8 +66,8 @@ func TestFlatPackagesFileImportsAndIndependentIdentities(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	alpha := w.Packages["alpha"].Scope.Symbols["item"]
-	beta := w.Packages["beta"].Scope.Symbols["item"]
+	alpha := w.Packages["can.project.root/alpha"].Scope.Symbols["item"]
+	beta := w.Packages["can.project.root/beta"].Scope.Symbols["item"]
 	if alpha == beta || alpha.ID == beta.ID || alpha.Source.OutputPath == beta.Source.OutputPath {
 		t.Fatal("same basename/name merged identities")
 	}
@@ -162,7 +161,7 @@ func TestReceiverPackageMethodOwnership(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	receiver := w.Packages["panels"].Scope.Symbols["panel"]
+	receiver := w.Packages["can.project.root/panels"].Scope.Symbols["panel"]
 	file := fileNamed(w, "app", "main.can")
 	if got, err := file.Method(receiver, "area"); err != nil || got.Receiver != receiver {
 		t.Fatalf("method lookup: %v", err)
@@ -210,7 +209,7 @@ func TestGenericParametersPrecedeReturnTypeResolution(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fn := w.Packages["app"].Scope.Symbols["identity"].Declaration.(*syntax.FunctionDecl)
+	fn := w.Packages["can.project.root/app"].Scope.Symbols["identity"].Declaration.(*syntax.FunctionDecl)
 	if got, err := w.Functions[fn].Lookup("item", TypeUse); err != nil || got.Kind != TypeParameter {
 		t.Fatal("return-first parameter not registered")
 	}
@@ -266,29 +265,23 @@ func TestTransitiveDependencyDoesNotGrantDirectImport(t *testing.T) {
 		"vendor/child/can.errors.json":  `{"active":[],"retired":[]}`,
 		"vendor/child/src/main.can":     header("child_pkg", "item", "") + "record item\n",
 	}
-	entries := map[string]any{}
-	for key, dir := range map[string]string{"vendor": "vendor", "child": "vendor/child"} {
-		manifest := files[dir+"/can.project.json"]
-		data := files[dir+"/src/main.can"]
-		digest, err := project.SourceDigest([]project.SourceBytes{{Path: "main.can", Bytes: []byte(data)}})
-		if err != nil {
-			t.Fatal(err)
-		}
-		fixtures, err := project.FixtureDigest(nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		entries[key] = map[string]any{"path": dir, "manifest_sha256": project.Digest([]byte(manifest)), "source_sha256": digest, "fixtures_sha256": fixtures, "error_registry": map[string]any{"active": []any{}, "retired": []any{}}}
-	}
-	lock, err := json.Marshal(map[string]any{"dependencies": entries})
-	if err != nil {
-		t.Fatal(err)
-	}
-	files["can.lock.json"] = string(lock)
-	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), "undeclared direct dependency") {
+	pinInstanceLock(t, files, map[string]string{"vendor": "can.project.dependency/vendor", "vendor/child": "can.project.dependency/vendor/child"})
+	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), `unknown package "child_pkg"`) {
 		t.Fatalf("transitive dependency became visible: %v", err)
 	}
+	files["src/main.can"] = header("app", "", "vendor::child_pkg") + "record holder\n    child_pkg::item value\n"
+	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), `dependency "vendor" has no package "child_pkg"`) {
+		t.Fatalf("transitive package admitted through the wrong edge: %v", err)
+	}
+	files["src/main.can"] = header("app", "", "child::child_pkg") + "record holder\n    child_pkg::item value\n"
+	if _, err := buildFiles(t, files); err == nil || !strings.Contains(err.Error(), `unknown dependency "child"`) {
+		t.Fatalf("transitive edge admitted without a declaration: %v", err)
+	}
+	files["src/main.can"] = header("app", "", "child::child_pkg as child_pkg") + "record holder\n    child_pkg::item value\n"
 	files["can.project.json"] = `{"source_root":"src","dependencies":{"vendor":"vendor","child":"vendor/child"},"error_registry":"can.errors.json"}`
+	// The root edge "child" sorts before "vendor", so the interned
+	// instance keeps its first-discovery edge-path identity.
+	pinInstanceLock(t, files, map[string]string{"vendor": "can.project.dependency/vendor", "vendor/child": "can.project.dependency/child"})
 	if _, err := buildFiles(t, files); err != nil {
 		t.Fatalf("explicit repeated dependency failed: %v", err)
 	}

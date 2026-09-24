@@ -3,8 +3,9 @@
 // manifest-backed maintained example project under std/ and examples/
 // must carry a parseable current-syntax package header, every uses
 // entry must name a catalogue package or another package in the tree
-// (mirroring resolve.Build's package graph), and retired predecessor
-// shapes must not reappear. Retired predecessor sources were deleted
+// (a `dep::pkg` qualifier names the dependency edge and resolves by
+// package, mirroring resolve.Build's package graph), and retired
+// predecessor shapes must not reappear. Retired predecessor sources were deleted
 // by I44; only their history notes remain under docs/archive/.
 // Those carry no can.project.json, stay out of scope here, and are
 // owned by I44.
@@ -66,7 +67,8 @@ func names(raw string) []string {
 }
 
 // useEntry splits a uses entry into its package and alias: `beta` is
-// both, `beta as other` separates them.
+// both, `beta as other` separates them. A `dep::pkg` qualifier names
+// the dependency edge; resolution and the default alias use the package.
 func useEntry(entry string) (pkg, alias string) {
 	fields := strings.Fields(entry)
 	if len(fields) == 0 {
@@ -75,8 +77,20 @@ func useEntry(entry string) (pkg, alias string) {
 	pkg, alias = fields[0], fields[0]
 	if len(fields) >= 3 && fields[1] == "as" {
 		alias = fields[2]
+		return pkg, alias
+	}
+	if _, name, ok := strings.Cut(pkg, "::"); ok {
+		alias = name
 	}
 	return pkg, alias
+}
+
+// useTarget strips a dependency qualifier for package resolution.
+func useTarget(pkg string) string {
+	if _, name, ok := strings.Cut(pkg, "::"); ok {
+		return name
+	}
+	return pkg
 }
 
 // stripCode removes string literals (plain, triple, and r-prefixed) and
@@ -229,10 +243,11 @@ func check(roots []string, catalogue map[string]bool) (scanned int, errs []strin
 	}
 	for file, deps := range uses {
 		for _, dep := range deps {
-			if catalogue[dep[0]] {
+			target := useTarget(dep[0])
+			if catalogue[target] {
 				continue
 			}
-			if _, ok := packages[dep[0]]; ok {
+			if _, ok := packages[target]; ok {
 				continue
 			}
 			errs = append(errs, fmt.Sprintf("%s: uses %s resolves nowhere", file, dep[0]))

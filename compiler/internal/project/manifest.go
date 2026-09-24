@@ -15,6 +15,7 @@ import (
 
 type Manifest struct {
 	SourceRoot    string
+	Project       string // optional lineage ID; empty means a legacy edge-path identity
 	Dependencies  map[string]string
 	Assets        map[string]string
 	SQL           map[string]SQLDescriptor
@@ -93,9 +94,19 @@ func ParseManifest(data []byte) (Manifest, error) {
 	if err := validateJSON(data); err != nil {
 		return m, err
 	}
-	fields, err := object(data, []string{"source_root", "error_registry"}, []string{"dependencies", "assets", "sql"})
+	fields, err := object(data, []string{"source_root", "error_registry"}, []string{"project", "dependencies", "assets", "sql"})
 	if err != nil {
 		return m, err
+	}
+	if raw, exists := fields["project"]; exists {
+		lineage, err := text(raw)
+		if err != nil {
+			return m, fmt.Errorf("project: %w", err)
+		}
+		if !Identifier(lineage) {
+			return m, fmt.Errorf("project lineage %q must be a lowercase identifier", lineage)
+		}
+		m.Project = lineage
 	}
 	destinations := map[string]*string{"source_root": &m.SourceRoot, "error_registry": &m.ErrorRegistry}
 	for _, key := range sortedKeys(destinations) {

@@ -152,8 +152,11 @@ type File struct {
 	Imports map[string]*Package
 }
 type World struct {
-	Graph        *project.Graph
-	Prelude      *Scope
+	Graph   *project.Graph
+	Prelude *Scope
+	// Packages holds every instance: project packages keyed by canonical
+	// package identity (<project-ID>/<package>), catalogue packages by
+	// bare name. Identity keys contain "/" so the two sets never collide.
 	Packages     map[string]*Package
 	Files        map[*project.Source]*File
 	Functions    map[*syntax.FunctionDecl]*Scope
@@ -165,10 +168,10 @@ func Build(graph *project.Graph) (*World, error) {
 	if err := w.catalogue(); err != nil {
 		return nil, err
 	}
-	for _, name := range keys(graph.Packages) {
-		p := graph.Packages[name]
-		pkg := &Package{Name: name, ID: p.ID, Source: p, Scope: NewScope(w.Prelude)}
-		w.Packages[name] = pkg
+	for _, id := range keys(graph.Packages) {
+		p := graph.Packages[id]
+		pkg := &Package{Name: p.Name, ID: p.ID, Source: p, Scope: NewScope(w.Prelude)}
+		w.Packages[id] = pkg
 		for _, src := range p.Sources {
 			file := &File{Source: src, Package: pkg, Scope: NewScope(pkg.Scope), Imports: map[string]*Package{}}
 			w.Files[src] = file
@@ -193,8 +196,8 @@ func Build(graph *project.Graph) (*World, error) {
 	}
 	// All tables exist before exports, imports or signatures are inspected. Source
 	// package import cycles are legal and do not require loading-order resolution.
-	for _, name := range keys(graph.Packages) {
-		for _, src := range graph.Packages[name].Sources {
+	for _, id := range keys(graph.Packages) {
+		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			seen := map[string]bool{}
 			for _, export := range src.Syntax.Header.Provides {
@@ -210,13 +213,13 @@ func Build(graph *project.Graph) (*World, error) {
 			}
 		}
 	}
-	for _, name := range keys(graph.Packages) {
-		for _, src := range graph.Packages[name].Sources {
+	for _, id := range keys(graph.Packages) {
+		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			for _, entry := range src.Syntax.Header.Uses {
-				target := w.Packages[entry.Package.Text]
-				if target == nil {
-					return nil, located(src, entry.Package.Span, fmt.Errorf("%s: unknown package %q", src.Path, entry.Package.Text))
+				target, err := w.resolveImport(src, entry)
+				if err != nil {
+					return nil, err
 				}
 				alias := entry.Package.Text
 				if entry.Alias != nil {
@@ -229,16 +232,6 @@ func Build(graph *project.Graph) (*World, error) {
 					return nil, located(src, importEntrySpan(entry), fmt.Errorf("import alias %q claims a reserved catalogue package", alias))
 				}
 				if target.Source != nil {
-					owner := src.Package.Owner
-					permitted := target.Source.Owner == owner
-					for _, dep := range owner.Dependencies {
-						if dep == target.Source.Owner {
-							permitted = true
-						}
-					}
-					if !permitted {
-						return nil, located(src, entry.Package.Span, fmt.Errorf("%s: package %q belongs to an undeclared direct dependency", src.Path, target.Name))
-					}
 					if err := internalVisibility(src, target.Source); err != nil {
 						return nil, located(src, entry.Package.Span, err)
 					}
@@ -247,8 +240,8 @@ func Build(graph *project.Graph) (*World, error) {
 			}
 		}
 	}
-	for _, name := range keys(graph.Packages) {
-		for _, src := range graph.Packages[name].Sources {
+	for _, id := range keys(graph.Packages) {
+		for _, src := range graph.Packages[id].Sources {
 			file := w.Files[src]
 			for _, declaration := range src.Syntax.Declarations {
 				if err := w.signature(file, declaration); err != nil {
@@ -353,6 +346,55 @@ func declarationNameSpan(declaration syntax.Declaration) source.Span {
 	default:
 		return declaration.DeclSpan()
 	}
+}
+
+// resolveImport binds one uses entry to a package instance. Qualified
+// entries (`dep::pkg`) name a direct dependency edge of the owning
+// project, so transitive instances stay unreachable without an explicit
+// edge. Unqualified entries resolve to the owning project's own packages
+// or the closed catalogue, never to a dependency's packages.
+func (w *World) resolveImport(src *project.Source, entry syntax.Import) (*Package, error) {
+	owner := src.Package.Owner
+	if entry.Dependency != nil {
+		dep, ok := owner.Dependencies[entry.Dependency.Text]
+		if !ok {
+			return nil, located(src, entry.Dependency.Span, fmt.Errorf("%s: unknown dependency %q", src.Path, entry.Dependency.Text))
+		}
+		target := w.projectPackage(dep, entry.Package.Text)
+		if target == nil {
+			return nil, located(src, entry.Package.Span, fmt.Errorf("%s: dependency %q has no package %q", src.Path, entry.Dependency.Text, entry.Package.Text))
+		}
+		return target, nil
+	}
+	if target := w.projectPackage(owner, entry.Package.Text); target != nil {
+		return target, nil
+	}
+	if target := w.Packages[entry.Package.Text]; target != nil && target.Source == nil {
+		return target, nil
+	}
+	if edge := qualifyingEdge(owner, entry.Package.Text); edge != "" {
+		return nil, located(src, entry.Package.Span, fmt.Errorf("%s: package %q is not declared by this project; import it as %s::%q", src.Path, entry.Package.Text, edge, entry.Package.Text))
+	}
+	return nil, located(src, entry.Package.Span, fmt.Errorf("%s: unknown package %q", src.Path, entry.Package.Text))
+}
+
+// projectPackage returns the named package of one project instance, or
+// nil. Packages share names across instances, never within one.
+func (w *World) projectPackage(owner *project.Project, name string) *Package {
+	return w.Packages[owner.ID+"/"+name]
+}
+
+// qualifyingEdge names the first direct edge (in sorted order) whose
+// instance declares the package, for the unqualified-import diagnostic.
+func qualifyingEdge(owner *project.Project, name string) string {
+	for _, edge := range keys(owner.Dependencies) {
+		for _, pkg := range owner.Dependencies[edge].Packages {
+			if pkg.Name == name {
+				return edge
+			}
+		}
+	}
+	return ""
 }
 
 // importEntrySpan points at the alias when one is written, else the package.

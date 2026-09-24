@@ -66,7 +66,7 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 			if len(parts) != 2 {
 				return nil, fmt.Errorf("invalid allocated error name")
 			}
-			pkg := world.Packages[parts[0]]
+			pkg := world.Packages[owner.ID+"/"+parts[0]]
 			if pkg == nil || pkg.Source == nil || pkg.Source.Owner != owner {
 				return nil, fmt.Errorf("error allocation has wrong nominal owner")
 			}

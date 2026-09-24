@@ -41,11 +41,19 @@ func writeFixtureLock(t *testing.T, root string, dependencies map[string]string)
 	writeFixtureLockWith(t, root, dependencies, nil)
 }
 
+// writeFixtureLockWith pins the root's direct edges plus every transitively
+// reachable instance by canonical node identity. Fixture captures are keyed
+// by project directory relative to the root.
 func writeFixtureLockWith(t *testing.T, root string, dependencies map[string]string, fixtures map[string][]Fixture) {
 	t.Helper()
-	entries := map[string]any{}
-	for key, dir := range dependencies {
-		manifestData, err := os.ReadFile(filepath.Join(root, dir, "can.project.json"))
+	ids := map[string]string{}
+	manifests := map[string]Manifest{}
+	var assign func(dir string, edgePath []string)
+	assign = func(dir string, edgePath []string) {
+		if _, done := ids[dir]; done {
+			return
+		}
+		manifestData, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(dir), "can.project.json"))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -53,7 +61,44 @@ func writeFixtureLockWith(t *testing.T, root string, dependencies map[string]str
 		if err != nil {
 			t.Fatal(err)
 		}
-		registryData, err := os.ReadFile(filepath.Join(root, dir, manifest.ErrorRegistry))
+		manifests[dir] = manifest
+		id := "can.project.dependency/" + strings.Join(edgePath, "/")
+		if manifest.Project != "" {
+			id = "can.project.lineage/" + manifest.Project
+		}
+		ids[dir] = id
+		for _, name := range sortedKeys(manifest.Dependencies) {
+			child := dir + "/" + manifest.Dependencies[name]
+			if dir == "" {
+				child = manifest.Dependencies[name]
+			}
+			assign(child, append(append([]string{}, edgePath...), name))
+		}
+	}
+	for _, edge := range sortedKeys(dependencies) {
+		assign(dependencies[edge], []string{edge})
+	}
+	rootManifestData, err := os.ReadFile(filepath.Join(root, "can.project.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rootManifest, err := ParseManifest(rootManifestData)
+	if err != nil {
+		t.Fatal(err)
+	}
+	edges := map[string]any{}
+	for _, name := range sortedKeys(rootManifest.Dependencies) {
+		dir := rootManifest.Dependencies[name]
+		edges[name] = map[string]any{"target": ids[dir], "path": dir}
+	}
+	entries := map[string]any{}
+	for _, dir := range sortedKeys(ids) {
+		manifest := manifests[dir]
+		manifestData, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(dir), "can.project.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		registryData, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(dir), filepath.FromSlash(manifest.ErrorRegistry)))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -62,7 +107,7 @@ func writeFixtureLockWith(t *testing.T, root string, dependencies map[string]str
 			t.Fatal(err)
 		}
 		var files []SourceBytes
-		sourceRoot := filepath.Join(root, dir, manifest.SourceRoot)
+		sourceRoot := filepath.Join(root, filepath.FromSlash(dir), filepath.FromSlash(manifest.SourceRoot))
 		err = filepath.WalkDir(sourceRoot, func(name string, entry os.DirEntry, err error) error {
 			if err != nil {
 				return err
@@ -88,13 +133,18 @@ func writeFixtureLockWith(t *testing.T, root string, dependencies map[string]str
 		if err != nil {
 			t.Fatal(err)
 		}
-		fixtureDigest, err := FixtureDigest(fixtures[key])
+		fixtureDigest, err := FixtureDigest(fixtures[dir])
 		if err != nil {
 			t.Fatal(err)
 		}
-		entries[key] = map[string]any{"path": filepath.ToSlash(dir), "manifest_sha256": Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry}
+		childEdges := map[string]any{}
+		for _, name := range sortedKeys(manifest.Dependencies) {
+			child := dir + "/" + manifest.Dependencies[name]
+			childEdges[name] = map[string]any{"target": ids[child], "path": manifest.Dependencies[name]}
+		}
+		entries[ids[dir]] = map[string]any{"lineage": manifest.Project, "manifest_sha256": Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry, "edges": childEdges}
 	}
-	data, err := json.Marshal(map[string]any{"dependencies": entries})
+	data, err := json.Marshal(map[string]any{"edges": edges, "projects": entries})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -108,7 +158,7 @@ func TestGraphIdentityAndOutputStability(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(graph.Packages) != 3 || len(graph.Packages["alpha"].Sources) != 2 || len(graph.Projects) != 2 {
+	if len(graph.Packages) != 3 || len(graph.Packages["can.project.root/alpha"].Sources) != 2 || len(graph.Projects) != 2 {
 		t.Fatal("missing package/source graph")
 	}
 	paths := func(g *Graph) map[string]string {
@@ -196,7 +246,7 @@ func TestGraphRejectsStaleOrIncompleteLocks(t *testing.T) {
 }
 
 func TestGraphRejectsPackageAndSourceAliases(t *testing.T) {
-	for _, name := range []string{"package-collision", "folder-mismatch", "reserved", "source-escape", "source-alias", "directory-cycle", "dependency-escape", "dependency-cycle", "dependency-key-alias"} {
+	for _, name := range []string{"package-collision", "folder-mismatch", "reserved", "source-escape", "source-alias", "directory-cycle", "dependency-escape", "dependency-cycle"} {
 		t.Run(name, func(t *testing.T) {
 			root := t.TempDir()
 			projectFixture(t, root)
@@ -228,8 +278,6 @@ func TestGraphRejectsPackageAndSourceAliases(t *testing.T) {
 				writeFixture(t, root, "can.project.json", `{"source_root":"src","dependencies":{"vendor":"outside"},"error_registry":"can.errors.json"}`)
 			case "dependency-cycle":
 				writeFixture(t, root, "vendor/can.project.json", `{"source_root":"src","dependencies":{"self":"."},"error_registry":"can.errors.json"}`)
-			case "dependency-key-alias":
-				writeFixture(t, root, "can.project.json", `{"source_root":"src","dependencies":{"one":"vendor","two":"vendor"},"error_registry":"can.errors.json"}`)
 			}
 			if _, err := Load(root); err == nil {
 				t.Fatal("ambiguous/unconfined graph accepted")
@@ -257,7 +305,7 @@ func TestGraphRegistrySourceAndGlobalAgreement(t *testing.T) {
 	}
 }
 
-func TestGraphRepeatedDependencyKeyMustKeepItsDirectory(t *testing.T) {
+func TestGraphRepeatedEdgeNamesStayParentLocal(t *testing.T) {
 	root := t.TempDir()
 	projectFixture(t, root)
 	writeFixture(t, root, "can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor","shared":"other"},"error_registry":"can.errors.json"}`)
@@ -271,8 +319,18 @@ func TestGraphRepeatedDependencyKeyMustKeepItsDirectory(t *testing.T) {
 		}
 		writeFixture(t, root, dir+"/src/main.can", sourceText(pkg, ""))
 	}
-	if _, err := Load(root); err == nil || !strings.Contains(err.Error(), "different directories") {
-		t.Fatalf("inconsistent repeated identity admitted: %v", err)
+	writeFixtureLock(t, root, map[string]string{"vendor": "vendor", "shared": "other"})
+	graph, err := Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outer := graph.Root.Dependencies["shared"]
+	inner := graph.Root.Dependencies["vendor"].Dependencies["shared"]
+	if outer == inner || outer.ID != "can.project.dependency/shared" || inner.ID != "can.project.dependency/vendor/shared" {
+		t.Fatalf("parent-local edges merged: %v %v", outer, inner)
+	}
+	if graph.Packages["can.project.dependency/shared/outer_child"] == nil || graph.Packages["can.project.dependency/vendor/shared/inner_child"] == nil {
+		t.Fatal("per-instance packages missing")
 	}
 }
 
@@ -291,7 +349,7 @@ func TestContainedSourceSymlinkPreservesCanonicalPackageOwner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pkg := graph.Packages["internal_pkg"]
+	pkg := graph.Packages["can.project.root/internal_pkg"]
 	if !strings.Contains(filepath.ToSlash(pkg.Directory), "/owned/internal/pkg") || pkg.Sources[0].Name != "alias.can" || pkg.Sources[0].RelativePath != "alias.can" {
 		t.Fatal("canonical ownership or logical digest path lost")
 	}

@@ -238,7 +238,7 @@ func TestFixtureImportedTemplateResolvesRawAtDefinition(t *testing.T) {
 	// The imported template's raw path resolves relative to its own
 	// defining directory; no copy exists beside the use site.
 	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
-	main := "package app\n    provides []\n    uses [http, codec, helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
+	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{
 		"src/lib.can":               vendor,
 		"src/fixtures/load.json":    nativeRawFixture("can.project.dependency/vendor/helpers::load"),
@@ -257,7 +257,7 @@ func TestFixtureExpansionTagsDefinitionSources(t *testing.T) {
 	// Expanded rows mix definition and use nodes; every span must validate
 	// against its attributed file or source-map encoding fails the stage.
 	vendor := "package helpers\n    provides [fetched, receipt, load, service]\n    uses [http, codec]\nrecord receipt\n    int count\nconnection service\n    endpoint \"http://localhost:1\"\n    timeout_ms 1000\nfetch receipt load from service\n    emits [http::request_failed]\n    asserts\n        decoded: => ok receipt(7)\n            using raw \"fixtures/load.json\"\n    get \"/load\"\nfixture fetched for load\n    given\n        int count\n    cases\n        => ok receipt(count)\n        => ok receipt(7)\n            using raw \"fixtures/fetched.json\"\n"
-	main := "package app\n    provides []\n    uses [http, codec, helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
+	main := "package app\n    provides []\n    uses [http, codec, vendor::helpers]\nfn helpers::receipt consumer\n    emits [http::request_failed]\n    asserts\n        sample: => ok helpers::receipt(7)\n    match call helpers::load()\n        when\n            sample: use helpers::fetched(7)\n        http::request_failed\n        ok helpers::receipt got => ok got\n" + programMain + "    ok\n"
 	program, err := programFixtureWithVendor(t, map[string]string{"src/main.can": main}, map[string]string{
 		"src/lib.can":               vendor,
 		"src/fixtures/load.json":    nativeRawFixture("can.project.dependency/vendor/helpers::load"),
@@ -372,7 +372,7 @@ func programFixtureWithVendor(t *testing.T, main, vendor map[string]string) (*Pr
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{"path": "vendor", "manifest_sha256": project.Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry}}})
+	lock, err := json.Marshal(map[string]any{"edges": map[string]any{"vendor": map[string]any{"target": "can.project.dependency/vendor", "path": "vendor"}}, "projects": map[string]any{"can.project.dependency/vendor": map[string]any{"lineage": "", "manifest_sha256": project.Digest(manifestData), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry, "edges": map[string]any{}}}})
 	if err != nil {
 		t.Fatal(err)
 	}

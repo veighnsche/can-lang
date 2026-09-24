@@ -79,7 +79,7 @@ fn void main
 	if err != nil {
 		t.Fatal(err)
 	}
-	lock, err := json.Marshal(map[string]any{"dependencies": map[string]any{"vendor": map[string]any{"path": "vendor", "manifest_sha256": project.Digest(vendorManifest), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry}}})
+	lock, err := json.Marshal(map[string]any{"edges": map[string]any{"vendor": map[string]any{"target": "can.project.dependency/vendor", "path": "vendor"}}, "projects": map[string]any{"can.project.dependency/vendor": map[string]any{"lineage": "", "manifest_sha256": project.Digest(vendorManifest), "source_sha256": digest, "fixtures_sha256": fixtureDigest, "error_registry": registry, "edges": map[string]any{}}}})
 	if err != nil {
 		t.Fatal(err)
 	}

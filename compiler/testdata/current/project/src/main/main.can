@@ -1,6 +1,6 @@
 package main
     provides [main]
-    uses [alpha, beta, utils]
+    uses [alpha, beta, sample::utils]
 
 // Project inspection is inert: this initializer must not execute.
 int not_executed = 1 / 0
