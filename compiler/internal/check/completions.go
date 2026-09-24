@@ -618,6 +618,11 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 				return err
 			}
 		}
+		if browserStaticOperation(binding.Identity) {
+			if err := c.checkBrowserCall(binding.Identity, args, span); err != nil {
+				return err
+			}
+		}
 		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: binding.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: binding.Type.Result(), Errors: binding.Type.Errors(), SuccessBinding: c.identity("call")}
 		if binding.Identity == assetURL {
 			resolution, err := c.resolveAsset(args)

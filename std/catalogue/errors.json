@@ -103,7 +103,11 @@
     "s3::service_error",
     "s3::upload_closed",
     "s3::over_limit",
-    "markdown::over_limit"
+    "markdown::over_limit",
+    "browser::missing_root",
+    "browser::disposed",
+    "browser::rejected",
+    "browser::stale_version"
   ],
   "retired": []
 }

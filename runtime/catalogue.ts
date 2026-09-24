@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "f6621c33fbcd73a24424647476b10fe120d102e6354abbe07b93f839628b676e";
+export const catalogueSHA256 = "44415d98559d5b8d4a057263e4ad3aa5383da991104008f2bc94d1174f8ec3cb";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -24,6 +24,10 @@ export const catalogue = freeze({
     {
       "name": "bytes",
       "identity": "can.std.bytes@1"
+    },
+    {
+      "name": "browser",
+      "identity": "can.std.browser@1"
     },
     {
       "name": "checks",
@@ -1751,6 +1755,102 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "browser::app",
+      "identity": "can.std.browser@1::app",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "browser::view",
+      "identity": "can.std.browser@1::view",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "browser::node",
+      "identity": "can.std.browser@1::node",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "browser::state",
+      "identity": "can.std.browser@1::state",
+      "kind": "opaque",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
+    },
+    {
+      "name": "browser::snapshot",
+      "identity": "can.std.browser@1::snapshot",
+      "kind": "record",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "fields": [
+        {
+          "name": "version",
+          "type": "int"
+        },
+        {
+          "name": "value",
+          "type": "T"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "browser::event",
+      "identity": "can.std.browser@1::event",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "kind",
+          "type": "str"
+        },
+        {
+          "name": "target",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
     }
   ],
   "errors": [
@@ -2947,6 +3047,49 @@ export const catalogue = freeze({
         },
         {
           "name": "size",
+          "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "browser::missing_root",
+      "identity": "can.std.browser@1::missing_root",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "root",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "browser::disposed",
+      "identity": "can.std.browser@1::disposed",
+      "parameters": [],
+      "fields": []
+    },
+    {
+      "name": "browser::rejected",
+      "identity": "can.std.browser@1::rejected",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
+        }
+      ]
+    },
+    {
+      "name": "browser::stale_version",
+      "identity": "can.std.browser@1::stale_version",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "expected",
+          "type": "int"
+        },
+        {
+          "name": "actual",
           "type": "int"
         }
       ]
@@ -12400,6 +12543,667 @@ export const catalogue = freeze({
       "refs": [
         "B1-12"
       ]
+    },
+    {
+      "name": "browser::mount",
+      "identity": "can.std.browser@1::mount",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "root",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::app",
+      "callbacks": [],
+      "emits": [
+        "browser::missing_root"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Document.getElementById"
+        ],
+        "adapter": "Resolve the mount root by id; a missing document or element fails closed as browser::missing_root naming the requested root.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::root",
+      "identity": "can.std.browser@1::root",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "app",
+          "type": "browser::app"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::node",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Element"
+        ],
+        "adapter": "Project the mounted root element as an append anchor; the root never detaches implicitly.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::open_view",
+      "identity": "can.std.browser@1::open_view",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "app",
+          "type": "browser::app"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::view",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "AbortController"
+        ],
+        "adapter": "Open a disposal scope sharing the app registry; the scope owns one AbortController for its listeners.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::dispose_view",
+      "identity": "can.std.browser@1::dispose_view",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "AbortController.abort",
+          "clearTimeout",
+          "ChildNode.remove"
+        ],
+        "adapter": "Abort the view listeners, clear its pending timers, detach its nodes and poison its handles; idempotent.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::dispose_app",
+      "identity": "can.std.browser@1::dispose_app",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "app",
+          "type": "browser::app"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "AbortController.abort",
+          "clearTimeout",
+          "ChildNode.remove"
+        ],
+        "adapter": "Dispose every open view, then poison the app; the mounted root element stays in the document; idempotent.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::create_element",
+      "identity": "can.std.browser@1::create_element",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "tag",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::node",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Document.createElement"
+        ],
+        "adapter": "Create a detached element after admitting the tag against the shared author vocabulary; dynamic names re-check at runtime.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::create_text",
+      "identity": "can.std.browser@1::create_text",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::node",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Document.createTextNode"
+        ],
+        "adapter": "Create a detached text node; native text construction carries no markup parsing.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::set_text",
+      "identity": "can.std.browser@1::set_text",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Node.textContent"
+        ],
+        "adapter": "Replace rendered text through the native text setter, which never parses markup.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::set_attribute",
+      "identity": "can.std.browser@1::set_attribute",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Element.setAttribute"
+        ],
+        "adapter": "Admit the attribute name against the bounded vocabulary, same-origin/https-check URL attributes, then set natively.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::remove_attribute",
+      "identity": "can.std.browser@1::remove_attribute",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "name",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Element.removeAttribute"
+        ],
+        "adapter": "Admit the attribute name, then remove natively; absent attributes succeed.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::append_child",
+      "identity": "can.std.browser@1::append_child",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "parent",
+          "type": "browser::node"
+        },
+        {
+          "name": "child",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Node.appendChild"
+        ],
+        "adapter": "Require one live view scope for both handles, reject ancestor cycles, then append natively (native adoption moves already-parented nodes).",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::remove_node",
+      "identity": "can.std.browser@1::remove_node",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "ChildNode.remove"
+        ],
+        "adapter": "Detach a non-root node natively; the handle stays live for re-append; the root anchor is rejected.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::focus",
+      "identity": "can.std.browser@1::focus",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLElement.focus"
+        ],
+        "adapter": "Move focus natively; non-focusable nodes are a native no-op, never a failure.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::on_event",
+      "identity": "can.std.browser@1::on_event",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "browser::event"
+          ],
+          "result": "void",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "EventTarget.addEventListener",
+          "AbortController"
+        ],
+        "adapter": "Admit the event kind, snapshot kind/target/value/key synchronously at dispatch, and bind the named Can handler to the view AbortController; a failed handler completion ends that dispatch without affecting later events.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::set_timeout",
+      "identity": "can.std.browser@1::set_timeout",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "delay_ms",
+          "type": "int"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [],
+          "result": "void",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "setTimeout",
+          "clearTimeout"
+        ],
+        "adapter": "Schedule the named Can handler once within the setTimeout range; firing unregisters, disposal clears pending timers; a failed handler completion ends that firing.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::create_state",
+      "identity": "can.std.browser@1::create_state",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "value",
+          "type": "T"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::state<T>",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Object.freeze"
+        ],
+        "adapter": "Mint a versioned cell at version 0 holding the immutable value; the cell belongs to its view scope.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::read_state",
+      "identity": "can.std.browser@1::read_state",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "type": "browser::state<T>"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::snapshot<T>",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Object.freeze"
+        ],
+        "adapter": "Copy the live version and value atomically into an immutable snapshot record.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::replace_state",
+      "identity": "can.std.browser@1::replace_state",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "T",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "type": "browser::state<T>"
+        },
+        {
+          "name": "expected",
+          "type": "int"
+        },
+        {
+          "name": "value",
+          "type": "T"
+        }
+      ],
+      "staticInputs": [],
+      "result": "int",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::stale_version"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Object.is"
+        ],
+        "adapter": "Compare-and-swap the cell: matching versions install the value and return the next version, mismatches fail with browser::stale_version carrying expected and actual.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -14513,6 +15317,108 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "browser::app",
+    "identity": "can.std.browser@1::app",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "browser::view",
+    "identity": "can.std.browser@1::view",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "browser::node",
+    "identity": "can.std.browser@1::node",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "browser::state",
+    "identity": "can.std.browser@1::state",
+    "kind": "opaque",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "browser::snapshot",
+    "identity": "can.std.browser@1::snapshot",
+    "kind": "record",
+    "parameters": [
+      {
+        "name": "T",
+        "constraint": "data"
+      }
+    ],
+    "fields": [
+      {
+        "name": "version",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "T",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::event",
+    "identity": "can.std.browser@1::event",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "kind",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "target",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "value",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -16273,6 +17179,69 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "size",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::missing_root",
+    "identity": "can.std.browser@1::missing_root",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "root",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::disposed",
+    "identity": "can.std.browser@1::disposed",
+    "kind": "error",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
+    "name": "browser::rejected",
+    "identity": "can.std.browser@1::rejected",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::stale_version",
+    "identity": "can.std.browser@1::stale_version",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "expected",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "actual",
         "type": {
           "name": "int",
           "arguments": null

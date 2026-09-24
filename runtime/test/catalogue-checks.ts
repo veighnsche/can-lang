@@ -14,7 +14,7 @@ export function checkCatalogue(): string[] {
     passed.push(name);
   }
   check("complete operation lookup", () => {
-    assert.equal(catalogue.operations.length, 261);
+    assert.equal(catalogue.operations.length, 279);
     for (const item of catalogue.operations)
       assert.equal(operation(item.name).identity, item.identity);
   });
@@ -30,7 +30,14 @@ export function checkCatalogue(): string[] {
     assert.throws(() => operation("append", catalogue.targetId, 2));
   });
   check("opaque constructors rejected", () => {
-    for (const name of ["bytes::buffer", "html::safe", "sql::transaction", "standard_failure"])
+    for (const name of [
+      "browser::app",
+      "browser::node",
+      "bytes::buffer",
+      "html::safe",
+      "sql::transaction",
+      "standard_failure",
+    ])
       assert.throws(() => requireConstructor(name));
     assert.equal(requireConstructor("choice_option").name, "choice_option");
   });

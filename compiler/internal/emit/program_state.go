@@ -49,6 +49,8 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	}
 	builder.declareCodecState()
 	builder.declareCollectionState()
+	builder.declareBrowserState()
+	builder.declareBrowserStateSpecializations()
 	if !browser {
 		builder.declareFileState()
 		builder.declareProcessState()
@@ -92,6 +94,8 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 		builder.initializeS3State()
 	}
 	builder.initializeMarkdownState()
+	builder.initializeBrowserState()
+	builder.initializeBrowserStateSpecializations()
 	builder.initializeCollectionState()
 	if !browser {
 		if err := builder.initializeAIState(); err != nil {
@@ -248,16 +252,19 @@ func (builder *stateBuilder) initializeDomain() error {
 	if err := builder.emitCookiesKinds(); err != nil {
 		return err
 	}
+	if err := builder.emitBrowserKinds(); err != nil {
+		return err
+	}
 	if !builder.assembly.browser {
 		if err := builder.emitS3Kinds(); err != nil {
 			return err
 		}
 	}
 	if builder.assembly.browser {
-		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value));\n", builder.plan, quote(bytesID))
+		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsBrowser($canBrowserKinds[identity],value) || $canIsBrowserState(identity,value));\n", builder.plan, quote(bytesID))
 		fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n", quote(invalidData))
 	} else {
-		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value));\n", builder.plan, quote(bytesID))
+		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value) || $canIsBrowser($canBrowserKinds[identity],value) || $canIsBrowserState(identity,value));\n", builder.plan, quote(bytesID))
 		fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n$canCLI = $canCreateCLI($canDomain, {writeFailed: %s});\n", quote(invalidData), quote(writeFailed))
 	}
 	builder.numberIDs = map[string]string{}
@@ -413,6 +420,7 @@ func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 		imports = append(imports, builder.assembly.s3StateImports(runtime)...)
 	}
 	imports = append(imports, builder.assembly.markdownStateImports(runtime)...)
+	imports = append(imports, builder.assembly.browserStateImports(runtime)...)
 	if !browser {
 		imports = append(imports, builder.assembly.aiStateImports(runtime)...)
 		imports = append(imports, ModuleImport{Target: runtime + "/environment.ts", Names: []ImportName{{"originalEnvironment", "$canOriginalEnvironment"}}}, ModuleImport{Target: runtime + "/platform/io.ts", Names: []ImportName{{"createIO", "$canCreateIO"}}}, ModuleImport{Target: runtime + "/platform/env.ts", Names: []ImportName{{"createEnvironment", "$canCreateEnv"}}})
@@ -434,5 +442,6 @@ func stateValueImportNames() []ImportName {
 	names = append(names, websocketStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)
 	names = append(names, s3StateValueImportNames()...)
-	return append(names, markdownStateValueImportNames()...)
+	names = append(names, markdownStateValueImportNames()...)
+	return append(names, browserCatalogueValueImportNames()...)
 }

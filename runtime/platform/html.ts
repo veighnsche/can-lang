@@ -61,14 +61,17 @@ function string(value: string): string {
   return value;
 }
 const lower = (value: string) => string(value).replace(/[A-Z]/g, (c) => c.toLowerCase());
-const authorTags = new Set(
+// Shared with the live-DOM browser catalogue (platform/browser.ts): the
+// author tag and attribute vocabularies are one definition, and
+// runtime/test/browser-names.json pins their effective admission.
+export const authorTags = new Set(
   "main header footer nav section article aside h1 h2 h3 h4 h5 h6 p div span ul ol li a form label input textarea select option button table thead tbody tr th td dl dt dd strong em small br hr code pre blockquote img del".split(
     " ",
   ),
 );
 const voidTags = new Set(["input", "br", "hr", "img"]);
-const globals = new Set("id class title lang dir hidden tabindex role".split(" "));
-const applicability: Readonly<Record<string, readonly string[]>> = Object.freeze({
+export const globals = new Set("id class title lang dir hidden tabindex role".split(" "));
+export const applicability: Readonly<Record<string, readonly string[]>> = Object.freeze({
   name: ["form", "input", "textarea", "select", "button"],
   value: ["input", "option", "button", "li"],
   type: ["input", "button", "a", "ol"],

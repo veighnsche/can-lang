@@ -172,6 +172,9 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 	for _, id := range assembly.collectionIDs {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.collectionNames[id], assembly.collectionNames[id]}}})
 	}
+	for _, id := range assembly.browserStateIDs {
+		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.browserStateNames[id], assembly.browserStateNames[id]}}})
+	}
 	for _, id := range assembly.codecIDs {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.codecNames[id], assembly.codecNames[id]}}})
 	}

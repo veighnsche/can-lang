@@ -245,7 +245,12 @@ func uniqueJSONKeys(data []byte) error {
 }
 
 var identifier = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
-var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2}|B1-[0-9]{2})$`)
+
+// taskID admits the I/B1/LF implementation tasks plus the T-list integration
+// tasks from docs/syntax-taste/can-implementation-task-list-2026-09-24.md.
+// T-tasked operations record acceptance in committed tests rather than
+// I/B1 evidence logs; TestCatalogueInclusionInventory enforces that rule.
+var taskID = regexp.MustCompile(`^(I[0-9]{2}|LF[0-9]{2}|B1-[0-9]{2}|T[0-9]{2})$`)
 
 func (c *Catalogue) identity(name string) (string, error) {
 	if p, m, ok := strings.Cut(name, "::"); ok {

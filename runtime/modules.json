@@ -473,6 +473,13 @@
       "./http.ts"
     ],
     "platform/assets.ts": [],
+    "platform/browser.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "./html.ts"
+    ],
     "platform/server.ts": [
       "../completion.ts",
       "../assert/context.ts",

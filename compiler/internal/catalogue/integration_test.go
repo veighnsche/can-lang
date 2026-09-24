@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -228,6 +229,12 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		if task == "" {
 			continue
 		}
+		if isTTask(task) {
+			if err := checkTTaskEvidence(sourceRoot, task, ops); err != nil {
+				t.Error(err)
+			}
+			continue
+		}
 		if !held[task] {
 			t.Errorf("task %s holds no implementation evidence for %d operations (e.g. %s)", task, len(ops), ops[0])
 		}
@@ -236,4 +243,68 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		t.FailNow()
 	}
 	t.Logf("%d operations across %d packages resolve to %d evidenced tasks", len(inventory.Operations), len(inventory.Packages), len(tasks))
+}
+
+// isTTask reports whether task is a T-list integration task from
+// docs/syntax-taste/can-implementation-task-list-2026-09-24.md.
+func isTTask(task string) bool {
+	if len(task) != 3 || task[0] != 'T' {
+		return false
+	}
+	return task[1] >= '0' && task[1] <= '9' && task[2] >= '0' && task[2] <= '9'
+}
+
+// checkTTaskEvidence requires committed test coverage for T-tasked
+// operations. T-list tasks record acceptance in maintained tests rather
+// than I/B1 evidence logs, so every T-task-owned catalogue package must
+// be referenced by at least one compiler Go test and one runtime test.
+// An included operation without test references fails here instead of
+// passing silently.
+func checkTTaskEvidence(sourceRoot, task string, ops []string) error {
+	packages := map[string]bool{}
+	for _, name := range ops {
+		if pkg, _, ok := strings.Cut(name, "::"); ok {
+			packages[pkg] = true
+		}
+	}
+	if len(packages) == 0 {
+		return nil
+	}
+	goTests, err := filepath.Glob(filepath.Join(sourceRoot, "compiler", "*", "*", "*_test.go"))
+	if err != nil {
+		return err
+	}
+	deepGoTests, err := filepath.Glob(filepath.Join(sourceRoot, "compiler", "*", "*", "*", "*_test.go"))
+	if err != nil {
+		return err
+	}
+	goTests = append(goTests, deepGoTests...)
+	runtimeTests, err := filepath.Glob(filepath.Join(sourceRoot, "runtime", "test", "*.test.ts"))
+	if err != nil {
+		return err
+	}
+	mentions := func(files []string, markers []string) bool {
+		for _, path := range files {
+			raw, err := os.ReadFile(path)
+			if err != nil {
+				continue
+			}
+			for _, marker := range markers {
+				if strings.Contains(string(raw), marker) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	for pkg := range packages {
+		markers := []string{pkg + "::", "can.std." + pkg + "@", "platform/" + pkg}
+		if !mentions(goTests, markers) {
+			return fmt.Errorf("task %s holds no compiler test evidence for package %s (e.g. %s)", task, pkg, ops[0])
+		}
+		if !mentions(runtimeTests, markers) {
+			return fmt.Errorf("task %s holds no runtime test evidence for package %s (e.g. %s)", task, pkg, ops[0])
+		}
+	}
+	return nil
 }

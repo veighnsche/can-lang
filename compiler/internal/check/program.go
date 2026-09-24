@@ -18,26 +18,27 @@ import (
 // Program contains only sealed types and checked bodies. Source files retain
 // their own import scopes even when they contribute to the same flat package.
 type Program struct {
-	Natives      []*NativeDeclaration
-	Connections  map[string]ConnectionPolicy
-	World        *resolve.World
-	Model        *types.Model
-	Registry     *ErrorRegistry
-	Functions    []*ProgramFunction
-	Initializers []ir.Initializer
-	Entry        *ProgramFunction
-	Intrinsics   map[string]*types.Type
-	Collections  map[string]*CollectionSpecialization
-	Streams      map[string]*StreamSpecialization
-	Codecs       map[string]*CodecSpecialization
-	HTTPs        map[string]*HTTPSpecialization
-	Forms        map[string]*FormSpecialization
-	Actions      []*ActionDeclaration
-	SQLs         map[string]*SQLSpecialization
-	Transactions map[string]*TransactionSpecialization
-	Assertions   []*ir.Assertion
-	Assets       []project.Asset
-	SQL          []ir.SQLDescriptor
+	Natives       []*NativeDeclaration
+	Connections   map[string]ConnectionPolicy
+	World         *resolve.World
+	Model         *types.Model
+	Registry      *ErrorRegistry
+	Functions     []*ProgramFunction
+	Initializers  []ir.Initializer
+	Entry         *ProgramFunction
+	Intrinsics    map[string]*types.Type
+	Collections   map[string]*CollectionSpecialization
+	BrowserStates map[string]*BrowserStateSpecialization
+	Streams       map[string]*StreamSpecialization
+	Codecs        map[string]*CodecSpecialization
+	HTTPs         map[string]*HTTPSpecialization
+	Forms         map[string]*FormSpecialization
+	Actions       []*ActionDeclaration
+	SQLs          map[string]*SQLSpecialization
+	Transactions  map[string]*TransactionSpecialization
+	Assertions    []*ir.Assertion
+	Assets        []project.Asset
+	SQL           []ir.SQLDescriptor
 }
 type ProgramFunction struct {
 	Symbol        *resolve.Symbol
@@ -286,10 +287,16 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			}
 			continue
 		}
-		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) {
+		if browserListenerOperation(op.Identity) {
+			if err = c.admitBrowserListener(p, builtinFile, op); err != nil {
+				return nil, err
+			}
 			continue
-		} // I32, I35, B1-05, codec and form generics specialize per concrete type argument on use.
-		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
+		}
+		if httpGenericOperation(op.Identity) || sqlGenericOperation(op.Identity) || streamGenericOperation(op.Identity) || codecOperation(op.Identity) || formGenericOperation(op.Identity) || browserStateOperation(op.Identity) != nil {
+			continue
+		} // I32, I35, B1-05, codec, form and T22 state generics specialize per concrete type argument on use.
+		if op.Lowering.Task != "I22" && op.Lowering.Task != "I23" && op.Lowering.Task != "I24" && !strings.HasPrefix(op.Name, "bytes::") && op.Lowering.Task != "I29" && op.Lowering.Task != "I30" && op.Lowering.Task != "I31" && op.Lowering.Task != "I32" && op.Lowering.Task != "I33" && op.Lowering.Task != "I34" && op.Lowering.Task != "I35" && op.Lowering.Task != "LF08" && op.Lowering.Task != "T22" && !strings.HasPrefix(op.Lowering.Task, "B1-") {
 			continue
 		}
 		signature := &syntax.CallableType{}

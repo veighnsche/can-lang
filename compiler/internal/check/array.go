@@ -54,6 +54,9 @@ func (c *programChecker) inferCallback(file *resolve.File, scope *resolve.Scope,
 	if op := collectionOperation(symbol.ID); op != nil {
 		return c.referenceCollection(op, nil, inputs, result)
 	}
+	if op := browserStateOperation(symbol.ID); op != nil {
+		return c.referenceBrowserState(op, nil, inputs, result)
+	}
 	d, ok := symbol.Declaration.(*syntax.FunctionDecl)
 	if !ok || len(symbol.Parameters) == 0 {
 		return ValueBinding{}, false, nil

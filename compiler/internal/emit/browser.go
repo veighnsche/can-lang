@@ -91,5 +91,6 @@ func browserStateValueImportNames() []ImportName {
 	names := []ImportName{{"$canHTML", "$canHTML"}, {"$canClock", "$canClock"}, {"$canRandom", "$canRandom"}, {"$canLog", "$canLog"}, {"$canText", "$canText"}, {"$canAmounts", "$canAmounts"}, {"$canNumbers", "$canNumbers"}, {"$canChecks", "$canChecks"}, {"$canDomain", "$canDomain"}, {"$canValues", "$canValues"}, {"$canBytes", "$canBytes"}, {"$canHTTPRequests", "$canHTTPRequests"}, {"$canHTTPResponses", "$canHTTPResponses"}, {"$canRouter", "$canRouter"}}
 	names = append(names, utilitiesStateValueImportNames()...)
 	names = append(names, cookiesStateValueImportNames()...)
-	return append(names, markdownStateValueImportNames()...)
+	names = append(names, markdownStateValueImportNames()...)
+	return append(names, browserCatalogueValueImportNames()...)
 }

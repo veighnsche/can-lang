@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: f6621c33fbcd73a24424647476b10fe120d102e6354abbe07b93f839628b676e.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 44415d98559d5b8d4a057263e4ad3aa5383da991104008f2bc94d1174f8ec3cb.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -16,6 +16,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 - ai → can.std.ai@1
 - asset → can.std.asset@1
 - bytes → can.std.bytes@1
+- browser → can.std.browser@1
 - checks → can.std.checks@1
 - cli → can.std.cli@1
 - clock → can.std.clock@1
@@ -148,6 +149,12 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | s3::write_options | record |  | option::value&lt;str&gt; content_type | true |
 | s3::upload_options | record |  | option::value&lt;str&gt; content_type, option::value&lt;int&gt; part_size | true |
 | s3::list_options | record |  | str prefix, int limit, option::value&lt;str&gt; delimiter, option::value&lt;s3::continuation&gt; continuation | true |
+| browser::app | opaque |  |  | false |
+| browser::view | opaque |  |  | false |
+| browser::node | opaque |  |  | false |
+| browser::state | opaque | T:data |  | false |
+| browser::snapshot | record | T:data | int version, T value | true |
+| browser::event | record |  | str kind, str target, str value, str key | true |
 
 ## Domain errors
 
@@ -257,6 +264,10 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | s3::upload_closed | can.std.s3@1::upload_closed |  | str operation, str state |
 | s3::over_limit | can.std.s3@1::over_limit |  | int limit, int size |
 | markdown::over_limit | can.std.markdown@1::over_limit |  | int limit, int size |
+| browser::missing_root | can.std.browser@1::missing_root |  | str root |
+| browser::disposed | can.std.browser@1::disposed |  |  |
+| browser::rejected | can.std.browser@1::rejected |  | str reason |
+| browser::stale_version | can.std.browser@1::stale_version |  | int expected, int actual |
 
 ## Operations
 
@@ -529,6 +540,24 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | codec::consume_jsonl | T:wire; stream::reader&lt;bytes::buffer&gt; reader, $callback callback → int | [codec::invalid_data, stream::read_failed, stream::cancelled] | callback(T) → void emits [] | ReadableStreamDefaultReader.read, JSON.parse, JSON.rawJSON, TextDecoder | Incremental bounded line framing over a byte reader with fatal UTF-8; each record projects through the exact JSON path and awaits a total handler; shared node budget bounds the pump; cancellation stops reads; returns the record count. | real | B1-11 / B1-11 |
 | markdown::render_text_html | str source → str | [markdown::over_limit] |  | Bun.markdown.html | Fixed standaloneBytes input/output ceilings; default native options preserve raw HTML, so the result stays an ordinary str and never converts into html::safe. | real | B1-12 / B1-12 |
 | markdown::render_safe | str source → html::safe | [markdown::over_limit, html::invalid_url] |  | Bun.markdown.render | Two-phase trusted construction: synchronous private callbacks capture tag trees over a NUL-token alphabet the parser keeps unforgeable (text arrives unescaped with newlines intact; NUL fails closed), then async assembly reuses the html factory (text, makeTag, textAttribute, element, parseURL, urlAttribute, fragment). Parser options fix tables/strikethrough/tasklists on, heading ids on, raw HTML demoted to text via noHtmlBlocks/noHtmlSpans, and wikiLinks/underline/latexMath/autolinks off. Lists (with task checkboxes and ordered start), tables (with cell align), headings, quotes, spans, code, links and images render fully; hard breaks normalize to soft newlines; info strings outside [A-Za-z0-9_-] lose their language class; href/src rejections propagate html::invalid_url; node count is capped at maxNodes and bytes at standaloneBytes. | real | B1-12 / B1-12 |
+| browser::mount | str root → browser::app | [browser::missing_root] |  | Document.getElementById | Resolve the mount root by id; a missing document or element fails closed as browser::missing_root naming the requested root. | real | T22 / T22 |
+| browser::root | browser::app app → browser::node | [browser::disposed] |  | Element | Project the mounted root element as an append anchor; the root never detaches implicitly. | real | T22 / T22 |
+| browser::open_view | browser::app app → browser::view | [browser::disposed] |  | AbortController | Open a disposal scope sharing the app registry; the scope owns one AbortController for its listeners. | real | T22 / T22 |
+| browser::dispose_view | browser::view view → void | [] |  | AbortController.abort, clearTimeout, ChildNode.remove | Abort the view listeners, clear its pending timers, detach its nodes and poison its handles; idempotent. | real | T22 / T22 |
+| browser::dispose_app | browser::app app → void | [] |  | AbortController.abort, clearTimeout, ChildNode.remove | Dispose every open view, then poison the app; the mounted root element stays in the document; idempotent. | real | T22 / T22 |
+| browser::create_element | browser::view view, str tag → browser::node | [browser::disposed, browser::rejected] |  | Document.createElement | Create a detached element after admitting the tag against the shared author vocabulary; dynamic names re-check at runtime. | real | T22 / T22 |
+| browser::create_text | browser::view view, str value → browser::node | [browser::disposed] |  | Document.createTextNode | Create a detached text node; native text construction carries no markup parsing. | real | T22 / T22 |
+| browser::set_text | browser::node node, str value → void | [browser::disposed] |  | Node.textContent | Replace rendered text through the native text setter, which never parses markup. | real | T22 / T22 |
+| browser::set_attribute | browser::node node, str name, str value → void | [browser::disposed, browser::rejected] |  | Element.setAttribute | Admit the attribute name against the bounded vocabulary, same-origin/https-check URL attributes, then set natively. | real | T22 / T22 |
+| browser::remove_attribute | browser::node node, str name → void | [browser::disposed, browser::rejected] |  | Element.removeAttribute | Admit the attribute name, then remove natively; absent attributes succeed. | real | T22 / T22 |
+| browser::append_child | browser::node parent, browser::node child → void | [browser::disposed, browser::rejected] |  | Node.appendChild | Require one live view scope for both handles, reject ancestor cycles, then append natively (native adoption moves already-parented nodes). | real | T22 / T22 |
+| browser::remove_node | browser::node node → void | [browser::disposed, browser::rejected] |  | ChildNode.remove | Detach a non-root node natively; the handle stays live for re-append; the root anchor is rejected. | real | T22 / T22 |
+| browser::focus | browser::node node → void | [browser::disposed] |  | HTMLElement.focus | Move focus natively; non-focusable nodes are a native no-op, never a failure. | real | T22 / T22 |
+| browser::on_event | browser::view view, browser::node node, str kind, $callback callback → void | [browser::disposed, browser::rejected] | callback(browser::event) → void emits [] | EventTarget.addEventListener, AbortController | Admit the event kind, snapshot kind/target/value/key synchronously at dispatch, and bind the named Can handler to the view AbortController; a failed handler completion ends that dispatch without affecting later events. | real | T22 / T22 |
+| browser::set_timeout | browser::view view, int delay_ms, $callback callback → void | [browser::disposed, browser::rejected] | callback() → void emits [] | setTimeout, clearTimeout | Schedule the named Can handler once within the setTimeout range; firing unregisters, disposal clears pending timers; a failed handler completion ends that firing. | real | T22 / T22 |
+| browser::create_state | T:data; browser::view view, T value → browser::state&lt;T&gt; | [browser::disposed] |  | Object.freeze | Mint a versioned cell at version 0 holding the immutable value; the cell belongs to its view scope. | real | T22 / T22 |
+| browser::read_state | T:data; browser::state&lt;T&gt; state → browser::snapshot&lt;T&gt; | [browser::disposed] |  | Object.freeze | Copy the live version and value atomically into an immutable snapshot record. | real | T22 / T22 |
+| browser::replace_state | T:data; browser::state&lt;T&gt; state, int expected, T value → int | [browser::disposed, browser::stale_version] |  | Object.is | Compare-and-swap the cell: matching versions install the value and return the next version, mismatches fail with browser::stale_version carrying expected and actual. | real | T22 / T22 |
 
 ## Native declaration profiles
 

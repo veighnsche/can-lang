@@ -58,6 +58,9 @@ type programAssembly struct {
 	collectionNames map[string]string
 	collectionTypes map[string]*check.CollectionSpecialization
 
+	browserStateIDs   []string
+	browserStateNames map[string]string
+
 	nativeNames map[string]string
 	nativePaths map[string]string
 	questions   map[string]*ir.Question
@@ -96,6 +99,8 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		markdownOperationBindings(),
 		formOperationBindings(),
 		assembly.formSpecializationBindings(),
+		browserOperationBindings(),
+		assembly.browserSpecializationBindings(),
 		assembly.functionBindings(),
 	}
 	functions, err := combineBindingContributions(contributions...)
