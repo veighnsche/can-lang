@@ -86,6 +86,9 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	if err := builder.emitSpecializationConstants(); err != nil {
 		return Module{}, nil, err
 	}
+	if err := builder.emitActionConstants(); err != nil {
+		return Module{}, nil, err
+	}
 	return Module{Path: programStatePath, Imports: builder.stateImports(runtime), Body: builder.out.String()}, assetFiles, nil
 }
 

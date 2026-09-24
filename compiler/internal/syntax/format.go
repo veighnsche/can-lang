@@ -320,6 +320,24 @@ func (f *formatter) render(file *File) {
 			}
 		case *ScenarioDecl:
 			f.line(0, "scenario "+n.Name.Text, n.DeclSpan().Start)
+		case *ActionDecl:
+			f.line(0, "action "+n.Name.Text, n.DeclSpan().Start)
+			f.line(1, n.Method.Text+" "+n.Path.Text, n.Method.Span.Start)
+			if len(n.Captures) != 0 {
+				f.lineSame(1, "captures")
+				for _, field := range n.Captures {
+					f.line(2, formatField(field), field.Span.Start)
+				}
+			}
+			if n.Body != nil {
+				f.line(1, "body "+n.Body.Mode.Text+" "+FormatType(n.Body.Type), n.Body.Span.Start)
+			}
+			f.line(1, "handles "+formatName(n.Handler), n.Handler.Span.Start)
+			f.line(1, "result "+FormatType(n.Result), n.Result.TypeSpan().Start)
+			f.lineSame(1, "cases")
+			for _, kase := range n.Cases {
+				f.line(2, formatName(kase.Leaf)+" => "+kase.Status.Text, kase.Span.Start)
+			}
 		case *FunctionDecl:
 			f.line(0, "fn "+FormatType(n.Result)+" "+n.Name.Text+formatParameters(n.Parameters), n.DeclSpan().Start)
 			if n.Receiver != nil {

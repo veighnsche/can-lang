@@ -136,6 +136,8 @@ func (p *parser) declaration() Declaration {
 		return p.fixture()
 	case p.word("scenario"):
 		return p.scenario()
+	case p.word("action"):
+		return p.action()
 	case p.word("fn"):
 		return p.function()
 	case p.word("record") || p.word("owner") && p.index+1 < len(p.tokens) && p.tokens[p.index+1].IsWord("record"):

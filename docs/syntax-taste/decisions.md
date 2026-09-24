@@ -1337,6 +1337,55 @@ isolation and FIFO order, and supplied rows keep their truthful evidence
 labels. Stubbing the whole helper at the caller's own boundary remains
 the supported caller-unit alternative and still skips the helper body.
 
+### Checked action declarations
+
+An `action` declaration binds one POST or GET route to its wire body,
+total handler function, finite result variant and exhaustive
+leaf-to-status case table, so renaming a route, wire field or result leaf
+diagnoses every statically linked use at compile time:
+
+```text
+action save_invoice
+    post "/invoices/save"
+    body json invoice_wire
+    handles save_validated
+    result save_outcome
+    cases
+        saved => 200
+        rejected => 422
+        stale => 409
+        denied => 403
+        busy => 503
+```
+
+Static path segments follow the exact-route contract; a capture occupies
+one whole `{name}` segment with a `str` or `int` row in `captures`:
+
+```text
+action load_invoice
+    get "/invoices/{invoice_id}"
+    captures
+        str invoice_id
+    handles load_validated
+    result load_outcome
+    cases
+        found => 200
+        denied => 403
+        busy => 503
+```
+
+POST requires a `json` or `form` record body; GET carries none. The
+handler is a named non-generic function whose inputs are the captures in
+path order plus the body, whose result is the action result, and whose
+bound is `emits []`: every outcome, including validation, conflict,
+forbidden and unavailable, is data in the result variant. Cases map each
+result leaf to a 200--599 status that carries a representation. Actions
+are package symbols: they export through `provides`, resolve through
+ordinary lookup, and collide program-wide when two declare the same
+method and route shape. Emission freezes an adapter-consumed metadata
+table; actions never mount legacy routes. The [HTTP contract](platform-testing-spec.md#p10-http-request-response-routing-and-server-catalogue)
+defines checking and emission precisely.
+
 ### Assertions for AI and fetch consumers
 
 Reuse ordinary `asserts` and approved call-site `when` tables when testing

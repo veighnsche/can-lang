@@ -193,7 +193,7 @@ func (w *rawWalker) assertion(row *syntax.Assertion) error {
 
 func (w *rawWalker) declaration(decl syntax.Declaration) error {
 	switch n := decl.(type) {
-	case *syntax.RecordDecl, *syntax.VariantDecl, *syntax.ErrorDecl, *syntax.ScenarioDecl:
+	case *syntax.RecordDecl, *syntax.VariantDecl, *syntax.ErrorDecl, *syntax.ScenarioDecl, *syntax.ActionDecl:
 		return nil
 	case *syntax.FunctionDecl:
 		for i := range n.Assertions {

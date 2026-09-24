@@ -43,6 +43,7 @@ const (
 	Wrapper       Kind = "wrapper"
 	Fixture       Kind = "fixture"
 	Scenario      Kind = "scenario"
+	Action        Kind = "action"
 	Value         Kind = "value"
 )
 
@@ -60,6 +61,7 @@ const (
 	WrapBaseUse    Usage = "wrapper base"
 	FixtureUse     Usage = "fixture"
 	ScenarioUse    Usage = "scenario"
+	ActionUse      Usage = "action"
 )
 
 type Symbol struct {
@@ -105,6 +107,8 @@ func (s *Symbol) Eligible(usage Usage) bool {
 		return s.Kind == Fixture
 	case ScenarioUse:
 		return s.Kind == Scenario
+	case ActionUse:
+		return s.Kind == Action
 	default:
 		return false
 	}
@@ -286,6 +290,9 @@ func declarationSymbol(declaration syntax.Declaration) *Symbol {
 	case *syntax.ScenarioDecl:
 		s.Name = d.Name.Text
 		s.Kind = Scenario
+	case *syntax.ActionDecl:
+		s.Name = d.Name.Text
+		s.Kind = Action
 	case *syntax.QuestionDecl:
 		s.Name = d.Name.Text
 		s.Kind = Question
@@ -342,6 +349,8 @@ func declarationNameSpan(declaration syntax.Declaration) source.Span {
 	case *syntax.FixtureDecl:
 		return d.Name.Span
 	case *syntax.ScenarioDecl:
+		return d.Name.Span
+	case *syntax.ActionDecl:
 		return d.Name.Span
 	case *syntax.QuestionDecl:
 		return d.Name.Span
@@ -590,6 +599,27 @@ func (w *World) signature(file *File, declaration syntax.Declaration) error {
 		return file.checkBound(scope, d.Errors, symbol.Public)
 	case *syntax.FixtureDecl:
 		return fields(d.Given)
+	case *syntax.ActionDecl:
+		// Handler, path, case-table and duplicate-route validation
+		// belong to the checker, which owns the sealed type graph.
+		// Signatures only bind the declared types and capture names.
+		if err := fields(d.Captures); err != nil {
+			return err
+		}
+		if d.Body != nil {
+			if err := check(d.Body.Type); err != nil {
+				return err
+			}
+		}
+		if err := check(d.Result); err != nil {
+			return err
+		}
+		for _, kase := range d.Cases {
+			if err := check(&syntax.NamedType{Span: kase.Span, Name: kase.Leaf}); err != nil {
+				return err
+			}
+		}
+		return nil
 	case *syntax.RecordDecl:
 		return fields(d.Fields)
 	case *syntax.ErrorDecl:

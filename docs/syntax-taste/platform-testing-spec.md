@@ -962,6 +962,39 @@ contract and is covered by conformance tests. URL construction rejects unpaired
 surrogates. JSON remains the shared codec's strict scalar-validating contract
 and returns `codec::invalid_data` instead of applying this replacement.
 
+### Actions
+
+An `action` declaration is the checked source contract for one POST or
+GET endpoint. Its route line names the method and a static string path;
+static segments follow the exact-path contract above, and a capture
+occupies one whole `{name}` segment declared with a `str` or `int` row
+in `captures`. Every path capture needs its row and every row needs its
+path capture; duplicate or malformed captures are compile-time
+diagnostics. A POST action requires a `body json <record>` or
+`body form <record>` wire contract and derives the shared JSON codec or
+form schema, rejecting owner records and non-record bodies; a GET action
+carries no body.
+
+`handles` names the total handler function through ordinary reference
+lookup, so a rename or a lost export diagnoses the clause. The handler
+is non-generic and non-variadic, takes the captures in path order plus
+the body input, returns the action `result` variant, and emits `[]`.
+`cases` maps every leaf of that finite result variant to exactly one
+200--599 status; 204, 205 and 304 are rejected because every action case
+renders a body. Missing, duplicate and foreign leaves are diagnostics.
+Two actions collide program-wide when they declare the same method and
+route shape, where capture names normalize away: `GET /invoices/{a}`
+and `GET /invoices/{b}` are the same route, while GET and POST may share
+a path. Exported actions must not expose private wire, result or leaf
+types.
+
+Emission freezes one `$canActions` table entry per action with identity,
+method, path template, captures, body mode and schema, handler, result
+and case mapping. Server and browser adapters consume that metadata;
+actions never mount a compatibility route. Changing a path, method, wire
+field or result leaf diagnoses or rebuilds every statically linked use
+through the same checking on the next build.
+
 ### HTTP client status rule
 
 For approved native fetch declarations, any final status 200--599 completes an

@@ -31,6 +31,7 @@ type Program struct {
 	Streams      map[string]*StreamSpecialization
 	Codecs       map[string]*CodecSpecialization
 	HTTPs        map[string]*HTTPSpecialization
+	Actions      []*ActionDeclaration
 	SQLs         map[string]*SQLSpecialization
 	Transactions map[string]*TransactionSpecialization
 	Assertions   []*ir.Assertion
@@ -429,6 +430,25 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 				if err = c.gatherBody(file, reflect.ValueOf(d.Binding.Value)); err != nil {
 					return nil, err
 				}
+			case *syntax.ActionDecl:
+				for _, capture := range d.Captures {
+					if _, e := c.gather(file, capture.Type); e != nil {
+						return nil, e
+					}
+				}
+				if d.Body != nil {
+					if _, e := c.gather(file, d.Body.Type); e != nil {
+						return nil, e
+					}
+				}
+				if _, e := c.gather(file, d.Result); e != nil {
+					return nil, e
+				}
+				for _, kase := range d.Cases {
+					if _, e := c.gather(file, &syntax.NamedType{Span: kase.Span, Name: kase.Leaf}); e != nil {
+						return nil, e
+					}
+				}
 			}
 		}
 	}
@@ -498,6 +518,11 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 			descriptor.Near = append(descriptor.Near, input.Near)
 		}
 		callables[fn.Symbol.ID] = descriptor
+	}
+	// Action contracts bind after every callable signature is known: the
+	// handler check reads the gathered bindings and input names.
+	if err = c.checkActions(files); err != nil {
+		return nil, err
 	}
 	if err = c.checkWrapperPolicies(p, callables); err != nil {
 		return nil, err

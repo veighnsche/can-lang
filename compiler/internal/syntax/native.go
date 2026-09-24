@@ -77,6 +77,38 @@ type ScenarioDecl struct {
 	Name Token
 }
 
+// ActionDecl is a checked HTTP endpoint contract. It binds one POST or GET
+// route to a wire body type, a total handler function, a finite result
+// variant and an exhaustive leaf-to-status case table. Checking validates
+// the path, capture, body-mode, handler and case contracts; emission
+// records the metadata the server and browser adapters consume.
+type ActionDecl struct {
+	DeclarationLocation
+	Name     Token
+	Method   Token
+	Path     Token
+	Captures []Field
+	Body     *ActionBody
+	Handler  QualifiedName
+	Result   TypeNode
+	Cases    []ActionCase
+}
+
+// ActionBody is the POST wire contract: a json or form mode plus the
+// record type crossing the wire. GET actions carry no body.
+type ActionBody struct {
+	Span source.Span
+	Mode Token
+	Type TypeNode
+}
+
+// ActionCase maps one result-variant leaf to its wire status.
+type ActionCase struct {
+	Span   source.Span
+	Leaf   QualifiedName
+	Status Token
+}
+
 // WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
 // judge or wrapper base; the complete signature, grouped state, result and
 // connection are inherited. Handles tables hold origin-specific policy arms.
@@ -314,6 +346,93 @@ func (p *parser) scenario() Declaration {
 	name := p.expect(Name)
 	p.expect(Newline)
 	return &ScenarioDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name}
+}
+
+func (p *parser) action() Declaration {
+	start := p.expectWord("action").Span.Start
+	name := p.expect(Name)
+	p.expect(Newline)
+	if !p.at(Indent) {
+		p.fail("action requires a method and path")
+	}
+	p.take()
+	method := p.expect(Name)
+	switch method.Text {
+	case "get", "post":
+	default:
+		p.fail("unknown action method")
+	}
+	path := p.expect(String)
+	p.expect(Newline)
+	var captures []Field
+	if p.word("captures") {
+		p.take()
+		p.expect(Newline)
+		p.expect(Indent)
+		captures = []Field{p.field()}
+		p.expect(Newline)
+		for !p.at(Dedent) && !p.at(EOF) {
+			captures = append(captures, p.field())
+			p.expect(Newline)
+		}
+		p.expect(Dedent)
+	}
+	var body *ActionBody
+	if p.word("body") {
+		bodyStart := p.take().Span.Start
+		mode := p.expect(Name)
+		switch mode.Text {
+		case "json", "form":
+		default:
+			p.fail("unknown action body mode")
+		}
+		bodyType := p.parseType()
+		body = &ActionBody{Span: p.span(bodyStart), Mode: mode, Type: bodyType}
+		p.expect(Newline)
+		if method.Text == "get" {
+			p.fail("GET actions cannot have a body")
+		}
+	}
+	if method.Text == "post" && body == nil {
+		p.fail("POST actions require a body")
+	}
+	if p.word("captures") || p.word("body") {
+		p.fail("duplicate action clause")
+	}
+	if !p.word("handles") {
+		p.fail("action requires a handles clause")
+	}
+	p.take()
+	handler := p.qualified()
+	p.expect(Newline)
+	if !p.word("result") {
+		p.fail("action requires a result clause")
+	}
+	p.take()
+	result := p.parseType()
+	p.expect(Newline)
+	if p.word("handles") || p.word("result") {
+		p.fail("duplicate action clause")
+	}
+	p.expectWord("cases")
+	p.expect(Newline)
+	p.expect(Indent)
+	cases := []ActionCase{p.actionCase()}
+	for !p.at(Dedent) && !p.at(EOF) {
+		cases = append(cases, p.actionCase())
+	}
+	p.expect(Dedent)
+	p.expect(Dedent)
+	return &ActionDecl{DeclarationLocation: DeclarationLocation{p.span(start)}, Name: name, Method: method, Path: path, Captures: captures, Body: body, Handler: handler, Result: result, Cases: cases}
+}
+
+func (p *parser) actionCase() ActionCase {
+	start := p.peek().Span.Start
+	leaf := p.qualified()
+	p.expect("=>")
+	status := p.expect(Integer)
+	p.expect(Newline)
+	return ActionCase{Span: p.span(start), Leaf: leaf, Status: status}
 }
 
 func (p *parser) fixtureCase() FixtureCase {
