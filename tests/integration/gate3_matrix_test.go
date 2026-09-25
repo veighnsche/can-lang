@@ -1615,3 +1615,120 @@ func TestGate3ReplayExpiry(t *testing.T) {
 	}
 	t.Logf("gate3 replay: %d can assertions, revoked/live/expired replay and revision invariants live with row evidence", assertions)
 }
+
+// TestGate3RendererFault proves a post-commit renderer fault fails closed:
+// a committed write whose stored row the HTML renderer cannot mint
+// answers 500 with a fixed body carrying no invoice content, the rows
+// stay intact and readable over JSON, and removing the row restores the
+// page. A store outage likewise renders the 503 fragment into the
+// admitted shape instead of failing the swap contract.
+func TestGate3RendererFault(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-render")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3RenderPort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3RenderPort)
+	const formPath = "/tenants/1/invoices/7"
+	const pagePath = "/invoices/form?tenant_id=1&invoice_id=7"
+	formValues := func(seats, details, revision string) url.Values {
+		values := url.Values{}
+		values.Set("seats", seats)
+		values.Set("details", details)
+		values.Set("revision", revision)
+		values.Add("lines_order", "k1")
+		values.Set("lines[k1][id]", "a")
+		values.Set("lines[k1][quantity]", "2")
+		values.Set("lines[k1][price]", "5.00")
+		return values
+	}
+	entries := func() protectedEntries {
+		t.Helper()
+		return snapshotEntries(inspectInvoice(t, ctx, bundle, home, driver, db), "7")
+	}
+
+	// Commit one form save with row evidence first.
+	status, body, _ := postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "1"))
+	if status != 200 || !strings.Contains(body, "saved revision 2") {
+		t.Fatalf("render setup save: %d %s", status, body)
+	}
+	requireInvoice(t, inspectInvoice(t, ctx, bundle, home, driver, db), "7", "2", "4", "Rush order")
+
+	// A stored row the renderer cannot mint fails the page into a
+	// fixed 500 carrying no invoice content and no entry effect.
+	injectLine(t, ctx, bundle, home, driver, db, "7", "k 1", "a", "2", "500", "2")
+	before := entries()
+	status, page, _ := invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 500 || page != "error" {
+		t.Fatalf("renderer fault page: %d %q, want 500 error", status, page)
+	}
+	requireNoEntry(t, "renderer fault", before, entries())
+	store := inspectInvoice(t, ctx, bundle, home, driver, db)
+	row := requireInvoice(t, store, "7", "2", "4", "Rush order")
+	if len(row.Lines) != 2 {
+		t.Fatalf("renderer fault lost committed rows %+v", row.Lines)
+	}
+
+	// The store itself is healthy: the JSON load still answers the
+	// current snapshot including the unmintable key.
+	status, loaded, _ := invoiceGet(t, base, "/api/tenants/1/invoices/7", "tok-alice")
+	if status != 200 {
+		t.Fatalf("renderer fault load: %d %s, want 200", status, loaded)
+	}
+	value := gate3Case(t, "renderer fault load", loaded, "invoice_contract::grid_loaded")
+	current, _ := value["current"].(map[string]any)
+	if current["revision"] != "2" {
+		t.Fatalf("renderer fault load value %+v", value)
+	}
+
+	// Removing the row restores the page with the committed content.
+	deleteLine(t, ctx, bundle, home, driver, db, "7", "k 1")
+	status, page, _ = invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 200 || !strings.Contains(page, "Rush order") || !strings.Contains(page, `value="2"`) {
+		t.Fatalf("renderer recovery page: %d %.500s, want 200 with committed content", status, page)
+	}
+
+	// A store outage renders the 503 fragment with its alert region
+	// and commits nothing; the page degrades to its 503 notice; the
+	// identical save commits after restore.
+	before = entries()
+	faultInvoice(t, ctx, bundle, home, driver, db, "drop-lines")
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "2"))
+	if status != 503 || !strings.Contains(body, "unavailable") || !strings.Contains(body, `role="alert"`) {
+		t.Fatalf("form outage save: %d %s, want 503 unavailable alert", status, body)
+	}
+	status, page, _ = invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 503 || !strings.Contains(page, "Invoice unavailable") {
+		t.Fatalf("form outage page: %d %.300s, want 503 notice", status, page)
+	}
+	// The mid-fault revision read bypasses the dropped lines table.
+	if mid := invoiceRevision(t, ctx, bundle, home, driver, db, "7"); mid != before.revision {
+		t.Fatalf("drop-lines form fault moved revision %s to %s", before.revision, mid)
+	}
+	t.Logf("fault drop-lines form: committed=false (revision %s held, lines table dropped)", before.revision)
+	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid invoice restore report %v %s", err, string(setup))
+	}
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "2"))
+	if status != 200 || !strings.Contains(body, "saved revision 3") {
+		t.Fatalf("form recovery save: %d %s, want 200 saved revision 3", status, body)
+	}
+	if !recordFaultOutcome(t, "drop-lines form retry", before, entries()) {
+		t.Fatal("drop-lines form retry committed nothing")
+	}
+	t.Logf("gate3 render: %d can assertions, post-commit renderer 500, JSON health, page recovery and form 503 fragment live with row evidence", assertions)
+}
