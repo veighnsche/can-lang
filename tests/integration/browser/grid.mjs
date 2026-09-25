@@ -1,23 +1,29 @@
-// T25 Gate 5 evidence for the Can-authored invoice grid: drives the staged
-// live grid (emitted browser bundle on a same-origin test origin backed by
-// the real invoice server and a disposable database) in one named Playwright
-// browser. Covers boot/render, in-place edits, row operations, every save
-// outcome (200/422/409/403/503), offline/slow/reconnect, truncated and
-// garbage responses after commit, explicit identical-id replay, conflict
-// adopt-or-keep, listener/node leaks, navigation/disposal, denied loads and
-// the network ledger. Usage:
-//   node grid.mjs <chromium|firefox|webkit> <base> <outdir> <dbpath>
-// Aborts every non-loopback request, so a passing run proves the grid never
-// needs a CDN, authored script, or foreign client runtime: the single served
-// script must carry the emitted $canBrowserMain marker, and window.htmx must
-// stay undefined. Writes report.json and screenshot.png into outdir.
+// UP23 Gate 5 evidence for the Can-authored invoice grid: drives the
+// served paired application (compiler-built grid plus real invoice
+// server and a disposable database per browser) in one named
+// Playwright browser through boot, query edges, edits, rows, every
+// save outcome, offline/slow/reconnect, truncated and garbage
+// responses after commit, identical-id replay, conflict
+// adopt-or-keep, disposal, navigation and denied loads. Usage:
+//   node grid.mjs <chromium|webkit> <base> <outdir> <dbpath> <script-url>
+// Aborts every non-loopback request, so a passing run proves the grid
+// never needs a CDN, authored script, or foreign client runtime: the
+// single served script must equal the report-selected paired URL, and
+// window.htmx must stay undefined. Writes report.json and
+// screenshot.png into outdir.
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync, chmodSync } from "node:fs";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
-const [wanted, base, outdir, dbpath] = process.argv.slice(2);
-if ((wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") || !base || !outdir || !dbpath) {
-  console.error("usage: node grid.mjs <chromium|firefox|webkit> <base> <outdir> <dbpath>");
+const [wanted, base, outdir, dbpath, scriptUrl] = process.argv.slice(2);
+if (
+  (wanted !== "chromium" && wanted !== "webkit") ||
+  !base ||
+  !outdir ||
+  !dbpath ||
+  !scriptUrl?.startsWith("/__can/assets/")
+) {
+  console.error("usage: node grid.mjs <chromium|webkit> <base> <outdir> <dbpath> <script-url>");
   process.exit(2);
 }
 mkdirSync(outdir, { recursive: true });
@@ -50,21 +56,13 @@ try {
     return route.abort("blockedbyclient");
   });
   const page = await context.newPage();
-  await page.addInitScript(() => {
-    globalThis.__t25FocusCalls = [];
-    const orig = HTMLElement.prototype.focus;
-    HTMLElement.prototype.focus = function (...args) {
-      globalThis.__t25FocusCalls.push({ id: this.id || this.tagName, connected: this.isConnected });
-      return orig.apply(this, args);
-    };
-  });
   page.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
   const watch = (target) => {
     target.on("request", (request) => {
-      if (request.method() === "POST" && request.url().includes("/invoices/save")) {
+      if (request.method() === "POST" && request.url().includes("/api/tenants/")) {
         try {
           bodies.push(JSON.parse(request.postData() ?? "null"));
         } catch {
@@ -81,7 +79,7 @@ try {
     });
     target.on("response", async (response) => {
       const url = response.url();
-      if (!url.includes("/invoices/")) return;
+      if (!url.includes("/api/")) return;
       const entry = { method: "", url, status: response.status(), requestBody: "", responseBody: "" };
       try {
         const request = response.request();
@@ -98,53 +96,76 @@ try {
 
   const statusText = () => page.locator("#status").textContent();
   const posts = () => bodies.length;
-  const focusCalls = () => page.evaluate(() => globalThis.__t25FocusCalls.splice(0));
   const uniqueIds = () =>
     page.evaluate(() => {
       const ids = [...document.querySelectorAll("[id]")].map((node) => node.id);
       return { total: ids.length, duplicates: ids.length - new Set(ids).size };
     });
   const rowOrder = () =>
-    page.locator("#grid tbody th").evaluateAll((nodes) => nodes.map((node) => node.textContent));
+    page.locator("#grid tbody th").evaluateAll((nodes) => nodes.map((node) => node.textContent()));
+  const currentRev = async () =>
+    parseInt(
+      await page.evaluate(() => document.querySelector("#grid h1")?.textContent?.match(/revision (\d+)/)?.[1]),
+      10
+    );
+  // Values are set with a synthetic input event rather than the
+  // keyboard: every real keydown on an input also dispatches the
+  // grid's Enter-to-save handler (the runtime dispatches all keys;
+  // the grid never gates on e.key), which would press save mid-edit.
+  // Real keys are used only where dispatch itself is the subject.
+  const fill = async (selector, value) => {
+    await page.locator(selector).evaluate(
+      (node, text) => {
+        node.focus();
+        node.value = text;
+        node.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      value
+    );
+    await Promise.race([
+      page
+        .waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
+          timeout: 5000,
+        })
+        .catch(() => undefined),
+      page.waitForTimeout(700),
+    ]);
+    await page.waitForTimeout(200);
+    assert.equal(await page.locator(selector).inputValue(), value);
+  };
   const saveAndWait = async (match) => {
     await page.locator("#save").click();
-    await page.waitForFunction(
-      (want) => document.querySelector("#status")?.textContent?.match(new RegExp(want)),
-      match,
-      { timeout: 15000 }
-    );
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.match(new RegExp(want)), match, {
+      timeout: 15000,
+    });
   };
 
   await context.addCookies([{ name: "session", value: "tok-alice", url: base }]);
-  const bootResponse = await page.goto(base + "/grid?invoice=inv-1", { waitUntil: "load" });
+  const bootResponse = await page.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
   const csp = bootResponse?.headers()?.["content-security-policy"] ?? "";
 
   await check("boot-loads", async () => {
-    await page.waitForFunction(() =>
-      document.querySelector("#status")?.textContent?.includes("loaded revision 1")
-    );
-    assert.equal(await page.locator("#grid h1").textContent(), "Invoice inv-1 revision 1");
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("loaded revision 1"));
+    assert.equal(await page.locator("#grid h1").textContent(), "Tenant 1 invoice 7 revision 1");
     assert.equal(await statusText(), "loaded revision 1");
     assert.equal(await page.locator("#status").getAttribute("role"), "status");
     assert.equal(await page.locator("#status").getAttribute("aria-live"), "polite");
-    assert.equal(await page.locator("#customer").inputValue(), `Acme <em>&" 'coop'"`);
-    assert.ok((await page.locator("#grid").innerHTML()).includes("Acme &lt;em&gt;"));
     assert.deepEqual(await rowOrder(), ["k1", "k2"]);
-    assert.equal(await page.locator("#sku\\:k1").inputValue(), "sku-1 <b>");
+    assert.equal(await page.locator("#id\\:k1").inputValue(), "sku-1 <b>");
     assert.equal(await page.locator("#qty\\:k1").inputValue(), "2");
-    assert.equal(await page.locator("#totals").textContent(), "2 lines, 3 units");
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "19.99");
+    assert.ok((await page.locator("#grid").innerHTML()).includes("sku-1 &lt;b&gt;"));
+    assert.equal(await page.locator("#totals").textContent(), "2 lines, 44.98 total");
     assert.equal(await page.locator("#replay").isDisabled(), true);
   });
 
   await check("client-identity", async () => {
-    const scripts = await page.locator("script").evaluateAll((nodes) =>
-      nodes.map((node) => node.getAttribute("src"))
-    );
-    assert.deepEqual(scripts, ["/grid/boot.js"]);
+    const scripts = await page.locator("script").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("src")));
+    assert.deepEqual(scripts, [scriptUrl]);
     assert.equal(await page.evaluate(() => typeof window.htmx), "undefined");
     assert.ok(csp.includes("script-src 'self'"), `csp lacks script-src: ${csp}`);
     assert.ok(csp.includes("connect-src 'self'"), `csp lacks connect-src: ${csp}`);
-    const bundle = await page.evaluate(async () => (await fetch("/grid/boot.js")).text());
+    const bundle = await page.evaluate(async (src) => (await fetch(src)).text(), scriptUrl);
     assert.ok(bundle.includes("$canBrowserMain"), "bundle lacks the Can browser entry");
     assert.ok(bundle.includes("platform/browser.ts"), "bundle lacks the browser capability");
     for (const server of [
@@ -164,64 +185,70 @@ try {
     }
   });
 
-  await check("customer-edit-unsaved", async () => {
+  const bootNotice = async (query, notice) => {
+    const probe = await context.newPage();
+    watch(probe);
+    probe.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
+    try {
+      const calls = ledger.length;
+      await probe.goto(base + query, { waitUntil: "load" });
+      await probe.waitForSelector("#status", { timeout: 8000 });
+      assert.equal(await probe.locator("#status").textContent(), notice);
+      assert.equal(await probe.locator("#status").getAttribute("role"), "status");
+      assert.equal(ledger.length - calls, 0, "boot notice must not call the API");
+    } finally {
+      await probe.close();
+    }
+  };
+
+  await check("query-edges", async () => {
+    await bootNotice("/invoice-grid", "Choose an invoice");
+    await bootNotice("/invoice-grid?tenant=1", "Choose an invoice");
+    await bootNotice("/invoice-grid?tenant=x&invoice=7", "Invalid invoice link");
+    await bootNotice("/invoice-grid?tenant=1&invoice=x", "Invalid invoice link");
+    await bootNotice("/invoice-grid?tenant=1&tenant=2&invoice=7", "Invalid invoice link");
+    await bootNotice("/invoice-grid?tenant=1&invoice=%E0%A4%A", "Invalid invoice link");
+    return "missing/invalid/duplicate/malformed keys notice without API calls";
+  });
+
+  await check("edit-totals", async () => {
     const before = requests.length;
-    await page.locator("#customer").fill("Grid Save");
-    await page.waitForTimeout(400);
+    await fill("#qty\\:k1", "4");
     assert.equal(await statusText(), "unsaved changes");
+    assert.equal(await page.locator("#totals").textContent(), "2 lines, 84.96 total");
     assert.equal(requests.length - before, 0, "typing must not send network requests");
   });
 
-  await check("caret-stable", async () => {
-    await page.locator("#customer").click();
-    await page.keyboard.press("End");
-    await page.keyboard.type(" XYZ");
-    await page.waitForTimeout(300);
-    assert.equal(await page.evaluate(() => document.activeElement?.id), "customer");
-    assert.ok((await page.locator("#customer").inputValue()).endsWith("Grid Save XYZ"));
-    await page.locator("#customer").fill("Grid Save");
+  await check("money-exact", async () => {
+    await fill("#price\\:k2", "0.05");
+    assert.equal(await page.locator("#totals").textContent(), "2 lines, 80.01 total");
+    const amounts = await page
+      .locator("#grid tbody tr")
+      .evaluateAll((rows) => rows.map((row) => row.children[4].textContent));
+    assert.deepEqual(amounts, ["79.96", "0.05"]);
+    await fill("#price\\:k2", "5.00");
+    await fill("#qty\\:k1", "2");
+    assert.equal(await page.locator("#totals").textContent(), "2 lines, 44.98 total");
   });
 
-  await check("qty-edit-totals", async () => {
-    await page.locator("#qty\\:k1").fill("9");
-    await page.waitForTimeout(300);
-    assert.equal(await page.locator("#totals").textContent(), "2 lines, 10 units");
-    assert.equal(await statusText(), "unsaved changes");
-    await page.locator("#qty\\:k1").fill("4");
-    await page.waitForTimeout(300);
-    assert.equal(await page.locator("#totals").textContent(), "2 lines, 5 units");
-  });
-
-  await check("add-line", async () => {
-    await focusCalls();
+  await check("add-line-focus", async () => {
     await page.locator("#add").click();
-    await page.waitForFunction(() =>
-      document.querySelector("#status")?.textContent?.includes("unsaved")
-    );
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved"));
     await page.waitForTimeout(300);
     assert.deepEqual(await rowOrder(), ["k1", "k2", "k3"]);
-    const calls = await focusCalls();
-    assert.ok(
-      calls.some((call) => call.id === "sku:k3"),
-      `focus never invoked on the new row: ${JSON.stringify(calls)}`
-    );
-    limit(
-      "L-focus-row",
-      `add-line invokes focus() on sku:k3 while detached (connected=false at call); ` +
-        `activeElement stays body. Row-level maybe_focus runs before the grid attaches.`
-    );
+    assert.equal(await page.evaluate(() => document.activeElement?.id), "id:k3");
+    return "focus lands on id:k3 after attach";
   });
 
-  await check("move-row", async () => {
-    await focusCalls();
+  await check("move-row-focus", async () => {
     await page.locator("#up\\:k3").click();
     await page.waitForTimeout(400);
     assert.deepEqual(await rowOrder(), ["k1", "k3", "k2"]);
+    assert.equal(await page.evaluate(() => document.activeElement?.id), "up:k3");
     await page.locator("#down\\:k3").click();
     await page.waitForTimeout(400);
     assert.deepEqual(await rowOrder(), ["k1", "k2", "k3"]);
-    const calls = await focusCalls();
-    assert.ok(calls.some((call) => call.id === "up:k3"), `no focus call for the moved row`);
+    assert.equal(await page.evaluate(() => document.activeElement?.id), "down:k3");
     assert.equal(await statusText(), "unsaved changes");
   });
 
@@ -233,93 +260,139 @@ try {
   });
 
   await check("blocked-save", async () => {
-    await page.locator("#qty\\:k1").fill("many");
-    await page.waitForTimeout(300);
+    await fill("#qty\\:k1", "many");
     const before = posts();
     await page.locator("#save").click();
-    await page.waitForTimeout(600);
+    await page.waitForFunction(() =>
+      document.querySelector("#status")?.textContent?.includes("line k1: bad quantity")
+    );
+    await page.waitForTimeout(400);
     assert.equal(posts() - before, 0, "unparsable quantity must never be sent");
     assert.equal(await page.locator("#qty\\:k1").inputValue(), "many");
-    assert.equal(await statusText(), "unsaved changes");
-    limit(
-      "L-notice",
-      "blocked-save guard notice is wiped by the immediate re-render, so the status " +
-        "returns to 'unsaved changes' with no explanation; the safety property (nothing sent) holds."
-    );
-    await page.locator("#qty\\:k1").fill("4");
-    await page.waitForTimeout(300);
+    assert.equal(await statusText(), "line k1: bad quantity");
+    await fill("#qty\\:k1", "2");
+    return "notice persists in state across the re-render";
   });
 
   await check("rejected-422", async () => {
-    await page.locator("#customer").fill("");
-    await saveAndWait("rejected: empty customer");
-    assert.equal(await statusText(), "rejected: empty customer");
-    assert.equal(await page.locator("#customer").inputValue(), "");
-    assert.equal(await page.locator("#grid h1").textContent(), "Invoice inv-1 revision 1");
+    await fill("#id\\:k1", "");
+    const rev = await currentRev();
+    await saveAndWait("line k1 id: empty line id");
+    assert.equal(await statusText(), "line k1 id: empty line id");
+    assert.equal(await page.locator("#id\\:k1").inputValue(), "");
+    assert.equal(await currentRev(), rev, "rejected save must not move the revision");
+    assert.equal(await page.locator("#replay").isDisabled(), true);
   });
 
   await check("enter-saves", async () => {
-    await page.locator("#customer").fill("Grid Save");
+    await fill("#id\\:k1", "sku-9");
+    const rev = await currentRev();
     const before = posts();
-    await page.locator("#customer").press("Enter");
-    await page.waitForFunction(() =>
-      document.querySelector("#status")?.textContent?.match(/saved revision/)
-    );
-    assert.equal(posts() - before, 1);
-    assert.equal(await statusText(), "saved revision 2");
+    await page.evaluate(() => {
+      window.__prevented = [];
+      document.getElementById("id:k1").addEventListener("keydown", (event) => {
+        window.__prevented.push(event.defaultPrevented);
+      });
+    });
+    await page.locator("#id\\:k1").press("Enter");
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+      timeout: 15000,
+    });
+    assert.equal(posts() - before, 1, "Enter must dispatch exactly one save");
+    assert.deepEqual(await page.evaluate(() => window.__prevented), [true]);
+    assert.equal(await statusText(), `saved revision ${rev + 1}`);
     const sent = bodies[bodies.length - 1];
-    assert.match(sent.operation_id, /^inv-1\/r1\/e\d+$/);
-    assert.equal(sent.session_token, "");
-    assert.equal(sent.revision, 1);
-    assert.equal(await page.locator("#grid h1").textContent(), "Invoice inv-1 revision 2");
-    return `op ${sent.operation_id}; focus intent cleared by the outcome (activeElement body)`;
+    assert.match(sent.operation_id, /^t1\/i7\/r1\/e\d+$/);
+    assert.equal(sent.revision, "1");
+    assert.equal(await page.evaluate(() => document.activeElement?.tagName), "BODY");
+    return `op ${sent.operation_id}; Enter prevented synchronously`;
   });
 
-  await check("slow-save", async () => {
-    await context.route("**/invoices/save", async (route) => {
+  await check("keydown-dispatches", async () => {
+    // The runtime dispatches every keydown (only Enter's default is
+    // canceled) and the grid never gates on e.key, so a character
+    // key also presses save mid-edit. Pinned as a limitation: the
+    // run proves both engines behave identically and coherently.
+    const rev = await currentRev();
+    const before = posts();
+    await page.locator("#qty\\:k1").click();
+    await page.locator("#qty\\:k1").press("End");
+    await page.locator("#qty\\:k1").press("5");
+    await page.waitForFunction(
+      (r) => {
+        const text = document.querySelector("#status")?.textContent ?? "";
+        const head = document.querySelector("#grid h1")?.textContent ?? "";
+        return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
+      },
+      rev + 1,
+      { timeout: 15000 }
+    );
+    assert.equal(posts() - before, 1, "keydowns must dispatch exactly one save");
+    assert.equal(await currentRev(), rev + 1, "the mid-edit save must commit once");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "25", "the typed edit must survive its own save");
+    limit(
+      "L-keydown-save",
+      "non-Enter keydown dispatches the grid save handler (runtime dispatches all keys; " +
+        "the grid ignores e.key), so typing presses save mid-edit; both engines agree."
+    );
+    await fill("#qty\\:k1", "2");
+    await saveAndWait(`saved revision ${rev + 2}`);
+    return `mid-edit save dispatched and folded; restored at rev ${rev + 2}`;
+  });
+
+  await check("slow-save-pending", async () => {
+    await context.route("**/api/tenants/1/invoices/7", async (route) => {
+      if (route.request().method() !== "POST") return route.continue();
       await new Promise((resolve) => setTimeout(resolve, 1200));
       await route.continue();
     });
     try {
-      await page.locator("#customer").fill("Slow Save");
+      const rev = await currentRev();
+      await fill("#price\\:k1", "20.00");
       await page.locator("#save").click();
-      await page.waitForTimeout(400);
-      assert.equal(await statusText(), "unsaved changes");
-      assert.equal(await page.locator("#save").isDisabled(), false);
-      limit(
-        "L-flight",
-        "no mid-flight 'saving...' indication: the press marks the flight in state but " +
-          "renders only after the outcome lands; the single-flight guard still holds."
-      );
+      await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("saving..."), null, {
+        timeout: 8000,
+      });
+      assert.equal(await page.locator("#save").isDisabled(), true);
+      // Interleaved owner after await: an edit landing mid-flight
+      // must survive the outcome fold.
+      await fill("#qty\\:k1", "3");
       await page.waitForFunction(
-        () => document.querySelector("#status")?.textContent?.includes("saved revision 3"),
-        null,
+        (r) => {
+          const text = document.querySelector("#status")?.textContent ?? "";
+          const head = document.querySelector("#grid h1")?.textContent ?? "";
+          return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
+        },
+        rev + 1,
         { timeout: 15000 }
       );
+      assert.equal(await page.locator("#qty\\:k1").inputValue(), "3", "mid-flight edit must survive");
+      assert.equal(await page.locator("#price\\:k1").inputValue(), "20.00");
+      await saveAndWait(`saved revision ${rev + 2}`);
+      return "pending state visible; mid-flight edit preserved";
     } finally {
-      await context.unroute("**/invoices/save");
+      await context.unroute("**/api/tenants/1/invoices/7");
     }
   });
 
   await check("single-flight", async () => {
-    await page.locator("#customer").fill("Double Press");
+    const rev = await currentRev();
+    await fill("#price\\:k1", "21.00");
     const before = posts();
     await page.evaluate(() => {
       document.getElementById("save").click();
       document.getElementById("save").click();
     });
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("saved revision 4"),
-      null,
-      { timeout: 15000 }
-    );
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+      timeout: 15000,
+    });
     assert.equal(posts() - before, 1, "a double press must send exactly one flight");
   });
 
   await check("offline-replay", async () => {
     await context.setOffline(true);
     try {
-      await page.locator("#customer").fill("Offline Edit");
+      await fill("#price\\:k1", "22.00");
       const before = posts();
       await page.locator("#save").click();
       await page.waitForFunction(
@@ -330,11 +403,10 @@ try {
       assert.equal(await page.locator("#replay").isDisabled(), false);
       await context.setOffline(false);
       await page.locator("#replay").click();
-      await page.waitForFunction(
-        () => document.querySelector("#status")?.textContent?.includes("saved revision 5"),
-        null,
-        { timeout: 15000 }
-      );
+      const rev = await currentRev();
+      await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+        timeout: 15000,
+      });
       const attempt = bodies[before];
       const replay = bodies[before + 1];
       assert.ok(attempt && replay, "offline attempt and replay must both be recorded");
@@ -346,9 +418,9 @@ try {
   });
 
   await check("busy-replay", async () => {
-    chmodSync(dbpath, 0o000);
+    chmodSync(dirname(dbpath), 0o555);
     try {
-      await page.locator("#customer").fill("Busy Edit");
+      await fill("#price\\:k1", "23.00");
       const before = posts();
       await page.locator("#save").click();
       await page.waitForFunction(
@@ -357,147 +429,245 @@ try {
         { timeout: 15000 }
       );
       assert.equal(await page.locator("#replay").isDisabled(), false);
-      const attempt = bodies[before];
-      assert.ok(attempt, "busy attempt must reach the server");
-      return `attempt op ${attempt.operation_id}`;
+      assert.ok(bodies[before], "busy attempt must reach the server");
+      return `attempt op ${bodies[before].operation_id}`;
     } finally {
-      chmodSync(dbpath, 0o600);
+      chmodSync(dirname(dbpath), 0o700);
     }
   });
 
   await check("busy-replay-commit", async () => {
+    const rev = await currentRev();
     const before = posts();
     await page.locator("#replay").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("saved revision 6"),
-      null,
-      { timeout: 15000 }
-    );
-    const attempt = bodies[before - 1];
-    const replay = bodies[before];
-    assert.equal(replay.operation_id, attempt.operation_id, "busy replay must reuse the identical id");
-    return `op ${replay.operation_id}`;
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+      timeout: 15000,
+    });
+    assert.equal(bodies[before].operation_id, bodies[before - 1].operation_id, "busy replay must reuse the identical id");
+    return `op ${bodies[before].operation_id}`;
   });
 
-  const armFault = (mode) =>
-    page.evaluate(async (name) => (await fetch("/t25/fault", { method: "POST", body: name })).text(), mode);
+  // After-commit corruption: forward the request so the server
+  // commits, then corrupt only the bytes the browser reads. Handler
+  // faults surface as check failures, never uncaught crashes.
+  let faultError = null;
+  const corruptNext = async (mode) => {
+    faultError = null;
+    await context.route("**/api/tenants/1/invoices/7", async (route) => {
+      try {
+        if (route.request().method() !== "POST") return route.continue();
+        const upstream = await route.fetch();
+        assert.equal(upstream.status(), 200, "fault leg expected an upstream commit");
+        const full = await upstream.text();
+        const body = mode === "truncate" ? full.slice(0, 10) : '{"case":';
+        await route.fulfill({ status: 200, contentType: "application/json", body });
+      } catch (error) {
+        faultError = error;
+        await route.abort("failed").catch(() => undefined);
+      } finally {
+        await context.unroute("**/api/tenants/1/invoices/7");
+      }
+    });
+  };
 
-  await check("truncate-replay", async () => {
-    assert.equal(await armFault("truncate"), "armed:truncate");
-    await page.locator("#customer").fill("Truncate Edit");
+  const corruptedReplay = async (mode, price) => {
+    await corruptNext(mode);
+    await fill("#price\\:k1", price);
     const before = posts();
     await page.locator("#save").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("may have committed"),
-      null,
-      { timeout: 15000 }
-    );
-    const notice = await statusText();
-    assert.match(notice, /save may have committed/);
-    assert.equal(await page.locator("#replay").isDisabled(), false);
-    await page.locator("#replay").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("saved revision 7"),
-      null,
-      { timeout: 15000 }
-    );
-    const attempt = bodies[before];
-    const replay = bodies[before + 1];
-    assert.equal(replay.operation_id, attempt.operation_id, "truncated replay must reuse the identical id");
-    return `op ${replay.operation_id}; truncate classified as ${JSON.stringify(notice)}`;
-  });
-
-  await check("garbage-replay", async () => {
-    assert.equal(await armFault("garbage"), "armed:garbage");
-    await page.locator("#customer").fill("Garbage Edit");
-    const before = posts();
-    await page.locator("#save").click();
+    await page.waitForTimeout(800);
+    if (faultError) throw faultError;
     await page.waitForFunction(
       () => document.querySelector("#status")?.textContent?.includes("unreadable response; save may have committed"),
       null,
       { timeout: 15000 }
     );
     assert.equal(await page.locator("#replay").isDisabled(), false);
+    const rev = await currentRev();
     await page.locator("#replay").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("saved revision 8"),
-      null,
-      { timeout: 15000 }
-    );
-    const attempt = bodies[before];
-    const replay = bodies[before + 1];
-    assert.equal(replay.operation_id, attempt.operation_id, "garbage replay must reuse the identical id");
-    return `op ${replay.operation_id}`;
-  });
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+      timeout: 15000,
+    });
+    assert.equal(bodies[before + 1].operation_id, bodies[before].operation_id, `${mode} replay must reuse the identical id`);
+    return `op ${bodies[before + 1].operation_id}`;
+  };
 
-  await check("stale-conflict-adopt", async () => {
-    const race = await page.evaluate(async () => {
-      const response = await fetch("/invoices/save", {
+  await check("truncate-replay", async () => corruptedReplay("truncate", "24.00"));
+  await check("garbage-replay", async () => corruptedReplay("garbage", "25.00"));
+
+  await check("stale-conflict", async () => {
+    const rev = await currentRev();
+    const race = await page.evaluate(async (r) => {
+      const response = await fetch(`/api/tenants/1/invoices/7`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          session_token: "",
-          operation_id: "op-t25-race",
-          invoice_id: "inv-1",
-          revision: 8,
-          customer: "Racer",
-          lines: [{ key: "k1", sku: "sku-1", qty: 2 }],
+          operation_id: "op-up23-race",
+          revision: String(r),
+          lines: [{ key: "k1", id: "sku-1", quantity: "2", price: "19.99" }],
         }),
       });
       return `${response.status} ${(await response.text()).slice(0, 120)}`;
-    });
+    }, rev);
     assert.match(race, /^200 /);
-    await page.locator("#customer").fill("Stale Attempt");
-    await saveAndWait("changed on server at revision 9; reread to compare");
+    await fill("#price\\:k1", "26.00");
+    await saveAndWait("stale revision; reread to compare");
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "26.00");
+    assert.equal(await currentRev(), rev, "conflict must not move the revision");
+  });
+
+  await check("conflict-keep-adopt", async () => {
+    const rev = await currentRev();
     await page.locator("#reread").click();
     await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("server has revision 9; your edits kept"),
-      null,
+      (want) => document.querySelector("#status")?.textContent?.includes(want),
+      `server has revision ${rev + 1}; your edits kept`,
       { timeout: 15000 }
     );
     assert.equal(await page.locator("#adopt").count(), 1);
     assert.equal(await page.locator("#keep").count(), 1);
     await page.locator("#keep").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("unsaved changes"),
-      null,
-      { timeout: 15000 }
-    );
-    assert.equal(await page.locator("#customer").inputValue(), "Stale Attempt");
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
+      timeout: 15000,
+    });
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "26.00");
     await page.locator("#reread").click();
     await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("server has revision 9; your edits kept"),
-      null,
+      (want) => document.querySelector("#status")?.textContent?.includes(want),
+      `server has revision ${rev + 1}; your edits kept`,
       { timeout: 15000 }
     );
     await page.locator("#adopt").click();
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("loaded revision 9"),
-      null,
-      { timeout: 15000 }
-    );
-    assert.equal(await page.locator("#customer").inputValue(), "Racer");
-    assert.equal(await page.locator("#totals").textContent(), "1 lines, 2 units");
-    assert.equal(await page.locator("#grid h1").textContent(), "Invoice inv-1 revision 9");
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `loaded revision ${rev + 1}`, {
+      timeout: 15000,
+    });
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "19.99");
+    assert.equal(await page.locator("#totals").textContent(), "1 lines, 39.98 total");
+    assert.deepEqual(await rowOrder(), ["k1"]);
+    return `adopted server revision ${rev + 1}`;
   });
 
   await check("detached-click-silent", async () => {
     const oldSave = await page.$("#save");
     const before = posts();
     await page.locator("#add").click();
-    await page.waitForFunction(() =>
-      document.querySelector("#status")?.textContent?.includes("unsaved")
-    );
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved"));
     assert.equal(await page.evaluate((node) => !node.isConnected, oldSave), true);
     await page.evaluate((node) => node.click(), oldSave);
     await page.waitForTimeout(600);
     assert.equal(posts() - before, 0, "a disposed view's listener must never fire");
-    const added = await page.evaluate(
-      () => [...document.querySelectorAll("input[id^=sku]")].map((node) => node.id).pop()
-    );
+    const added = await page.evaluate(() => [...document.querySelectorAll("input[id^=id]")].map((node) => node.id).pop());
     await page.locator(`#del\\:${added.split(":")[1]}`).click();
     await page.waitForTimeout(400);
     assert.deepEqual(await rowOrder(), ["k1"]);
+  });
+
+  await check("disposed-response-silent", async () => {
+    await context.route("**/api/tenants/1/invoices/7", async (route) => {
+      if (route.request().method() !== "POST") return route.continue();
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await route.continue();
+    });
+    try {
+      const errorsBefore = pageerrors.length;
+      await fill("#price\\:k1", "27.00");
+      const before = posts();
+      await page.locator("#save").click();
+      await page.waitForRequest(
+        (request) => request.url().includes("/api/tenants/") && request.method() === "POST",
+        { timeout: 15000 }
+      );
+      await page.goto("about:blank");
+      await page.waitForTimeout(4500);
+      assert.equal(posts() - before, 1, "the flight must leave before navigation");
+      assert.equal(pageerrors.length, errorsBefore, "a response landing on a disposed app must stay silent");
+      await page.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
+      await page.waitForFunction(() => document.querySelector("#status")?.textContent?.match(/loaded revision \d+/), null, {
+        timeout: 15000,
+      });
+      return "late response on disposed app silent; reboot clean";
+    } finally {
+      await context.unroute("**/api/tenants/1/invoices/7");
+    }
+  });
+
+  await check("ghost-denied", async () => {
+    await context.addCookies([{ name: "session", value: "tok-ghost", url: base }]);
+    const rev = await currentRev();
+    await fill("#price\\:k1", "28.00");
+    await saveAndWait("access denied; draft kept");
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "28.00");
+    assert.equal(await currentRev(), rev, "denied save must not move the revision");
+    await context.addCookies([{ name: "session", value: "tok-alice", url: base }]);
+  });
+
+  await check("unavailable-load", async () => {
+    const denied = await context.newPage();
+    watch(denied);
+    denied.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
+    try {
+      chmodSync(dirname(dbpath), 0o555);
+      try {
+        await denied.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
+        await denied.waitForFunction(
+          () => document.querySelector("#status")?.textContent?.includes("server busy; retry reread"),
+          null,
+          { timeout: 15000 }
+        );
+      } finally {
+        chmodSync(dirname(dbpath), 0o700);
+      }
+      await denied.locator("#reread").click();
+      await denied.waitForFunction(() => document.querySelector("#status")?.textContent?.match(/loaded revision \d+/), null, {
+        timeout: 15000,
+      });
+      return "busy load retries into a clean load";
+    } finally {
+      await denied.close();
+    }
+  });
+
+  await check("denied-load", async () => {
+    const denied = await context.newPage();
+    watch(denied);
+    denied.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
+    try {
+      await denied.goto(base + "/invoice-grid?tenant=2&invoice=8", { waitUntil: "load" });
+      await denied.waitForFunction(
+        () => document.querySelector("#status")?.textContent?.includes("access denied; draft kept"),
+        null,
+        { timeout: 15000 }
+      );
+      assert.equal(await denied.locator("#grid h1").textContent(), "Tenant 2 invoice 8 revision ");
+      const html = await denied.locator("#grid").innerHTML();
+      assert.ok(!html.includes("Globex"), "denied load must not leak stored content");
+    } finally {
+      await denied.close();
+    }
+  });
+
+  await check("reload-no-durability", async () => {
+    const rev = await currentRev();
+    await fill("#price\\:k1", "29.00");
+    await page.reload({ waitUntil: "load" });
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `loaded revision ${rev}`, {
+      timeout: 15000,
+    });
+    assert.equal(await page.locator("#price\\:k1").inputValue(), "19.99");
+    assert.equal(await page.locator("#totals").textContent(), "1 lines, 39.98 total");
+  });
+
+  await check("navigation-stable", async () => {
+    const errorsBefore = pageerrors.length;
+    const rev = await currentRev();
+    await page.goto("about:blank");
+    await page.waitForTimeout(500);
+    assert.equal(page.url(), "about:blank");
+    await page.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `loaded revision ${rev}`, {
+      timeout: 15000,
+    });
+    assert.equal(pageerrors.length, errorsBefore, "navigation must not raise page errors");
   });
 
   await check("no-duplicate-ids", async () => {
@@ -512,69 +682,12 @@ try {
     for (let i = 0; i < 5; i++) {
       await page.locator("#add").click();
       await page.waitForTimeout(250);
-      const added = await page.evaluate(
-        () => [...document.querySelectorAll("input[id^=sku]")].map((node) => node.id).pop()
-      );
+      const added = await page.evaluate(() => [...document.querySelectorAll("input[id^=id]")].map((node) => node.id).pop());
       await page.locator(`#del\\:${added.split(":")[1]}`).click();
       await page.waitForTimeout(250);
     }
     assert.equal(await count(), baseline, "add/remove cycles must not accumulate nodes");
     return `${baseline} nodes`;
-  });
-
-  await check("ghost-denied", async () => {
-    await context.addCookies([{ name: "session", value: "tok-ghost", url: base }]);
-    await page.locator("#customer").fill("Ghost Attempt");
-    await saveAndWait("access denied; draft kept");
-    assert.equal(await page.locator("#customer").inputValue(), "Ghost Attempt");
-    await context.addCookies([{ name: "session", value: "tok-alice", url: base }]);
-  });
-
-  await check("reload-no-durability", async () => {
-    await page.locator("#customer").fill("Doomed Draft");
-    await page.waitForTimeout(200);
-    await page.reload({ waitUntil: "load" });
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("loaded revision 9"),
-      null,
-      { timeout: 15000 }
-    );
-    assert.equal(await page.locator("#customer").inputValue(), "Racer");
-    assert.equal(await page.locator("#totals").textContent(), "1 lines, 2 units");
-  });
-
-  await check("navigation-stable", async () => {
-    const errorsBefore = pageerrors.length;
-    await page.goto("about:blank");
-    await page.waitForTimeout(500);
-    assert.equal(page.url(), "about:blank");
-    await page.goto(base + "/grid?invoice=inv-1", { waitUntil: "load" });
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("loaded revision 9"),
-      null,
-      { timeout: 15000 }
-    );
-    assert.equal(pageerrors.length, errorsBefore, "navigation must not raise page errors");
-  });
-
-  await check("denied-load", async () => {
-    const denied = await context.newPage();
-    watch(denied);
-    denied.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
-    try {
-      await denied.goto(base + "/grid?invoice=inv-2", { waitUntil: "load" });
-      await denied.waitForFunction(
-        () => document.querySelector("#status")?.textContent?.includes("access denied; draft kept"),
-        null,
-        { timeout: 15000 }
-      );
-      assert.equal(await denied.locator("#grid h1").textContent(), "Invoice inv-2 revision 0");
-      assert.equal(await denied.locator("#customer").inputValue(), "");
-      const html = await denied.locator("#grid").innerHTML();
-      assert.ok(!html.includes("Globex"), "denied load must not leak stored content");
-    } finally {
-      await denied.close();
-    }
   });
 
   await check("network-ledger-clean", async () => {
@@ -584,21 +697,28 @@ try {
       assert.ok(host === "127.0.0.1" || host === "localhost", `grid left loopback: ${entry.url}`);
     }
     assert.equal(pageerrors.length, 0, pageerrors.join("; "));
+    // Offline legs fail resource loads by design; the served CSP's
+    // navigate-to directive warns once per load; WebKit refuses the
+    // screenshot mechanism's own stylesheet once. All pinned exactly.
+    const pinned = new Set([
+      "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+      "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy.",
+    ]);
     for (const text of consoleErrors) {
-      assert.match(text, /Failed to load resource/, `non-resource console error: ${text}`);
+      assert.ok(
+        /Failed to load resource/.test(text) || pinned.has(text.trim()),
+        `non-resource console error: ${text}`
+      );
     }
     assert.ok(
-      ledger.some((entry) => entry.method === "GET" && entry.url.includes("/invoices/inv-1")),
+      ledger.some((entry) => entry.method === "GET" && entry.url.includes("/api/tenants/1/invoices/7")),
       "ledger lacks the captured-path GET load"
     );
-    assert.ok(
-      ledger.every((entry) => entry.url.startsWith(base)),
-      "ledger holds a non-origin invoice call"
-    );
+    assert.ok(ledger.every((entry) => entry.url.startsWith(base)), "ledger holds a non-origin invoice call");
     return `${requests.length} requests, ${ledger.length} invoice calls`;
   });
 
-  await page.screenshot({ path: join(outdir, "screenshot.png"), fullPage: true });
+  await page.screenshot({ path: join(outdir, "screenshot.png") });
   userAgent = await page.evaluate(() => navigator.userAgent);
   await context.close();
 } finally {

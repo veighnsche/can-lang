@@ -7,21 +7,30 @@
 // case table, so every declared outcome (200/422/409/403/503) swaps into
 // the status region with the draft and focus preserved and errors
 // announced. Session travels by cookie only: no hidden session, operation,
-// or invoice inputs exist anywhere on the page.
-// Usage: node invoice.mjs <base> <outdir> <dbpath>
+// or invoice inputs exist anywhere on the page. UP23 runs the same legs on
+// the paired server (where the grid module script rides along inertly) in
+// both named browsers, and adds guard legs: control headers, OOB content,
+// redirects, missing targets before/during requests with
+// can:action-occurrence evidence, and remount stability.
+// Usage: node invoice.mjs <base> <outdir> <dbpath> [browser] [script-url]
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { chromium } from "playwright";
 
-const [base, outdir, dbpath] = process.argv.slice(2);
+const [base, outdir, dbpath, wantedArg, scriptArg] = process.argv.slice(2);
 if (!base || !outdir || !dbpath) {
-  console.error("usage: node invoice.mjs <base> <outdir> <dbpath>");
+  console.error("usage: node invoice.mjs <base> <outdir> <dbpath> [browser] [script-url]");
+  process.exit(2);
+}
+const wanted = wantedArg ?? "chromium";
+if (wanted !== "chromium" && wanted !== "webkit") {
+  console.error(`unknown browser ${wanted}`);
   process.exit(2);
 }
 mkdirSync(outdir, { recursive: true });
 
-const browser = await chromium.launch();
+const playwright = await import("playwright");
+const browser = await playwright[wanted].launch({ timeout: 120000 });
 const checks = [];
 const requests = [];
 const aborted = [];
