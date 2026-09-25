@@ -36,6 +36,10 @@ const (
 	browserCreateState     = "can.std.browser@1::create_state"
 	browserReadState       = "can.std.browser@1::read_state"
 	browserReplaceState    = "can.std.browser@1::replace_state"
+	browserQueryParameter  = "can.std.browser@1::query_parameter"
+	browserOnCancelKey     = "can.std.browser@1::on_cancel_key"
+	browserOnCancelEvent   = "can.std.browser@1::on_cancel_event"
+	browserInvalidQuery    = "can.std.browser@1::invalid_query"
 )
 
 // browserMaxDelayMs is the largest setTimeout delay the catalogue admits:
@@ -84,7 +88,8 @@ var browserEvents = map[string]bool{
 }
 
 func browserListenerOperation(identity string) bool {
-	return identity == browserOnEvent || identity == browserSetTimeout
+	return identity == browserOnEvent || identity == browserSetTimeout ||
+		identity == browserOnCancelKey || identity == browserOnCancelEvent
 }
 
 // browserStateOperation resolves the three generic state operations for
@@ -108,7 +113,8 @@ func browserStateOperation(identity string) *catalogue.Operation {
 
 func browserStaticOperation(identity string) bool {
 	switch identity {
-	case browserCreateElement, browserSetAttribute, browserRemoveAttribute, browserOnEvent, browserSetTimeout:
+	case browserCreateElement, browserSetAttribute, browserRemoveAttribute, browserOnEvent, browserSetTimeout,
+		browserQueryParameter, browserOnCancelKey, browserOnCancelEvent:
 		return true
 	}
 	return false
@@ -161,6 +167,44 @@ func checkBrowserEvent(kind string) error {
 		return nil
 	}
 	return fmt.Errorf("browser event %q is not admitted", kind)
+}
+
+// checkBrowserQueryKey enforces the compile-time literal key rule for
+// browser::query_parameter: ASCII [a-z][a-z0-9_]*, at most 64 bytes.
+// Dynamic keys are rejected before this runs; the runtime re-checks the
+// literal plus the strict location.search budgets.
+func checkBrowserQueryKey(key string) error {
+	if len(key) == 0 || len(key) > 64 {
+		return fmt.Errorf("browser query key %q must be 1-64 ASCII bytes", key)
+	}
+	if key[0] < 'a' || key[0] > 'z' {
+		return fmt.Errorf("browser query key %q must match [a-z][a-z0-9_]*", key)
+	}
+	for i := 1; i < len(key); i++ {
+		c := key[i]
+		if c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '_' {
+			continue
+		}
+		return fmt.Errorf("browser query key %q must match [a-z][a-z0-9_]*", key)
+	}
+	return nil
+}
+
+// checkBrowserCancelKeyEvent admits only keydown/keyup for on_cancel_key.
+func checkBrowserCancelKeyEvent(kind string) error {
+	switch browserLower(kind) {
+	case "keydown", "keyup":
+		return nil
+	}
+	return fmt.Errorf("browser cancel key event %q is not admitted; expected keydown or keyup", kind)
+}
+
+// checkBrowserCancelEvent admits only submit for on_cancel_event.
+func checkBrowserCancelEvent(kind string) error {
+	if browserLower(kind) == "submit" {
+		return nil
+	}
+	return fmt.Errorf("browser cancel event %q is not admitted; expected submit", kind)
 }
 
 // checkBrowserURLValue mirrors the runtime URL rule for URL-valued
@@ -234,6 +278,12 @@ func (c *programChecker) admitBrowserListener(p *Program, builtin *resolve.File,
 	case browserSetTimeout:
 		callback := &syntax.CallableType{Result: result}
 		signature = &syntax.CallableType{Result: result, Inputs: []syntax.TypeNode{view, integer, callback}}
+	case browserOnCancelKey:
+		callback := &syntax.CallableType{Result: result, Inputs: []syntax.TypeNode{event}}
+		signature = &syntax.CallableType{Result: result, Inputs: []syntax.TypeNode{view, node, str, str, callback}}
+	case browserOnCancelEvent:
+		callback := &syntax.CallableType{Result: result, Inputs: []syntax.TypeNode{event}}
+		signature = &syntax.CallableType{Result: result, Inputs: []syntax.TypeNode{view, node, str, callback}}
 	default:
 		return fmt.Errorf("unknown browser listener %s", op.Identity)
 	}
@@ -338,6 +388,52 @@ func (c *regionChecker) checkBrowserCall(identity string, args []syntax.Argument
 		}
 		if _, ok := fetchUngroup(fixedArgs[2].Value).(*syntax.ReferenceExpr); !ok {
 			return c.locate(span, fmt.Errorf("browser timer callback must be a named reference"))
+		}
+		return nil
+	case browserQueryParameter:
+		fixedArgs, err := fixed(1)
+		if err != nil {
+			return err
+		}
+		key := literal(fixedArgs[0])
+		if key == nil || key.Token.Kind != syntax.String {
+			return c.locate(span, fmt.Errorf("browser query key must be a static literal"))
+		}
+		if err := checkBrowserQueryKey(key.Token.Value); err != nil {
+			return c.locate(key.Token.Span, err)
+		}
+		return nil
+	case browserOnCancelKey:
+		fixedArgs, err := fixed(5)
+		if err != nil {
+			return err
+		}
+		if kind := literal(fixedArgs[2]); kind != nil && kind.Token.Kind == syntax.String {
+			if err := checkBrowserCancelKeyEvent(kind.Token.Value); err != nil {
+				return c.locate(kind.Token.Span, err)
+			}
+		}
+		if key := literal(fixedArgs[3]); key != nil && key.Token.Kind == syntax.String {
+			if key.Token.Value == "" {
+				return c.locate(key.Token.Span, fmt.Errorf("browser cancel key must be a nonempty exact key"))
+			}
+		}
+		if _, ok := fetchUngroup(fixedArgs[4].Value).(*syntax.ReferenceExpr); !ok {
+			return c.locate(span, fmt.Errorf("browser cancel callback must be a named reference"))
+		}
+		return nil
+	case browserOnCancelEvent:
+		fixedArgs, err := fixed(4)
+		if err != nil {
+			return err
+		}
+		if kind := literal(fixedArgs[2]); kind != nil && kind.Token.Kind == syntax.String {
+			if err := checkBrowserCancelEvent(kind.Token.Value); err != nil {
+				return c.locate(kind.Token.Span, err)
+			}
+		}
+		if _, ok := fetchUngroup(fixedArgs[3].Value).(*syntax.ReferenceExpr); !ok {
+			return c.locate(span, fmt.Errorf("browser cancel callback must be a named reference"))
 		}
 		return nil
 	default:

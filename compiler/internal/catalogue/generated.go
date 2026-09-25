@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "7b8edb207ec030a9aec45d824e304b3d1dacaf7dbb5a0ac7ba34935df1f04fba"
+const GeneratedSourceSHA256 = "fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -322,6 +322,8 @@ const ErrorBrowserRejectedName = "browser::rejected"
 const ErrorBrowserRejectedIdentity = "can.std.browser@1::rejected"
 const ErrorBrowserStaleVersionName = "browser::stale_version"
 const ErrorBrowserStaleVersionIdentity = "can.std.browser@1::stale_version"
+const ErrorBrowserInvalidQueryName = "browser::invalid_query"
+const ErrorBrowserInvalidQueryIdentity = "can.std.browser@1::invalid_query"
 const ErrorActionInvalidPathName = "action::invalid_path"
 const ErrorActionInvalidPathIdentity = "can.std.action@1::invalid_path"
 const OpTextFromInt = "text::from_int"
@@ -605,6 +607,9 @@ const OpBrowserSetTimeout = "browser::set_timeout"
 const OpBrowserCreateState = "browser::create_state"
 const OpBrowserReadState = "browser::read_state"
 const OpBrowserReplaceState = "browser::replace_state"
+const OpBrowserQueryParameter = "browser::query_parameter"
+const OpBrowserOnCancelKey = "browser::on_cancel_key"
+const OpBrowserOnCancelEvent = "browser::on_cancel_event"
 const OpActionMount = "action::mount"
 const OpActionUrl = "action::url"
 const OpActionRequest = "action::request"

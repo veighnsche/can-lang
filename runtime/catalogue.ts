@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "7b8edb207ec030a9aec45d824e304b3d1dacaf7dbb5a0ac7ba34935df1f04fba";
+export const catalogueSHA256 = "fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -3105,6 +3105,21 @@ export const catalogue = freeze({
         {
           "name": "actual",
           "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "browser::invalid_query",
+      "identity": "can.std.browser@1::invalid_query",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "reason",
+          "type": "str"
         }
       ]
     },
@@ -13328,6 +13343,154 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "browser::query_parameter",
+      "identity": "can.std.browser@1::query_parameter",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "key",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [
+        "key"
+      ],
+      "result": "option::value<str>",
+      "callbacks": [],
+      "emits": [
+        "browser::invalid_query"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URLSearchParams",
+          "decodeURIComponent"
+        ],
+        "adapter": "Read one literal query key from location.search under strict budgets: scan every raw pair with decodeURIComponent after plus-to-space, reject malformed escapes, invalid UTF-8, oversized or duplicate values as browser::invalid_query, return none for zero and some for one.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::on_cancel_key",
+      "identity": "can.std.browser@1::on_cancel_key",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        },
+        {
+          "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "browser::event"
+          ],
+          "result": "void",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "EventTarget.addEventListener",
+          "AbortController"
+        ],
+        "adapter": "Register a cancel-policy key listener: admit only keydown or keyup with a nonempty exact key, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; mismatched or noncancelable events still dispatch once without cancellation.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
+      "name": "browser::on_cancel_event",
+      "identity": "can.std.browser@1::on_cancel_event",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "view",
+          "type": "browser::view"
+        },
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "kind",
+          "type": "str"
+        },
+        {
+          "name": "callback",
+          "type": "$callback"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [
+        {
+          "name": "callback",
+          "inputs": [
+            "browser::event"
+          ],
+          "result": "void",
+          "deriveErrors": false,
+          "emits": []
+        }
+      ],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "EventTarget.addEventListener",
+          "AbortController"
+        ],
+        "adapter": "Register a cancel-policy event listener: initially admit only submit, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; otherwise dispatch once without cancellation.",
+        "task": "T22"
+      },
+      "assertion": "real",
+      "refs": [
+        "T22"
+      ]
+    },
+    {
       "name": "action::mount",
       "identity": "can.std.action@1::mount",
       "kind": "function",
@@ -17528,6 +17691,29 @@ export const catalogueTypeShapes = freeze([
         "name": "actual",
         "type": {
           "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::invalid_query",
+    "identity": "can.std.browser@1::invalid_query",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
           "arguments": null
         }
       }
