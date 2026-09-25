@@ -1,0 +1,133 @@
+/// Shared invoice action contract (UP16). One handler-free locked
+/// package imported by both the invoice server and the invoice grid.
+/// Transparent wire records, finite result variants and the three
+/// selected action declarations live here exactly once; consumers
+/// never mirror them. Frozen before UP19/20: later edits update this
+/// source and both consumer locks together, never per-lane copies.
+package invoice_contract
+    provides [invoice_key, grid_line_wire, grid_snapshot, grid_loaded, grid_load_forbidden, grid_load_unavailable, grid_load_outcome, grid_problem, grid_edit_input, grid_saved, grid_invalid, grid_conflict, grid_forbidden, grid_unavailable, grid_edit_outcome, line_wire, invoice_form, field_error, saved, invalid, conflict, forbidden, unavailable, edit_outcome, load_invoice_grid, save_invoice_grid, save_invoice_html]
+    uses [form, option]
+
+record invoice_key
+    int tenant_id
+    int invoice_id
+record grid_line_wire
+    str key
+    str id
+    str quantity
+    str price
+record grid_snapshot
+    str revision
+    grid_line_wire[] lines
+    int total_minor_units
+record grid_loaded
+    grid_snapshot current
+record grid_load_forbidden
+    str message
+record grid_load_unavailable
+    str message
+variant grid_load_outcome
+    grid_loaded
+    grid_load_forbidden
+    grid_load_unavailable
+
+record grid_problem
+    option::value<str> row_key
+    str field
+    str message
+record grid_edit_input
+    str operation_id
+    str revision
+    grid_line_wire[] lines
+record grid_saved
+    str operation_id
+    grid_snapshot acknowledged
+record grid_invalid
+    str operation_id
+    grid_edit_input draft
+    grid_problem[] errors
+record grid_conflict
+    str operation_id
+    grid_edit_input draft
+    str message
+record grid_forbidden
+    str operation_id
+    str message
+record grid_unavailable
+    str operation_id
+    str message
+variant grid_edit_outcome
+    grid_saved
+    grid_invalid
+    grid_conflict
+    grid_forbidden
+    grid_unavailable
+
+record line_wire
+    str id
+    str quantity
+    str price
+record invoice_form
+    str seats
+    option::value<str> details
+    str revision
+    form::rows<line_wire> lines
+record field_error
+    str field
+    str message
+record saved
+    invoice_form acknowledged
+record invalid
+    option::value<invoice_form> raw
+    field_error[] errors
+record conflict
+    invoice_form raw
+    str message
+record forbidden
+    str message
+record unavailable
+    invoice_form raw
+    str message
+variant edit_outcome
+    saved
+    invalid
+    conflict
+    forbidden
+    unavailable
+
+action load_invoice_grid
+    get "/api/tenants/:tenant_id/invoices/:invoice_id"
+    captures invoice_key
+    input none
+    returns grid_load_outcome
+    body json
+    cases
+        grid_loaded status 200
+        grid_load_forbidden status 403
+        grid_load_unavailable status 503
+
+action save_invoice_grid
+    post "/api/tenants/:tenant_id/invoices/:invoice_id"
+    captures invoice_key
+    json grid_edit_input limit 8192
+    returns grid_edit_outcome
+    body json
+    cases
+        grid_saved status 200
+        grid_invalid status 422
+        grid_conflict status 409
+        grid_forbidden status 403
+        grid_unavailable status 503
+
+action save_invoice_html
+    post "/tenants/:tenant_id/invoices/:invoice_id"
+    captures invoice_key
+    form invoice_form limit 2048 rows_limit 64
+    returns edit_outcome
+    body html
+    cases
+        saved status 200 swap inner
+        invalid status 422 swap inner
+        conflict status 409 swap inner
+        forbidden status 403 swap inner
+        unavailable status 503 swap inner
