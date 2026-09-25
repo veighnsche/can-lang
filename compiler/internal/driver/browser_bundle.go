@@ -22,9 +22,9 @@ import (
 // the generation manifest like every other published byte.
 const (
 	browserBundleDirectory = "browser"
-	browserBundleTable    = "diagnostics/table.json"
-	browserBundleManifest = "browser/manifest.json"
-	browserBundleTool     = "tools/runtime/browser-bundle.ts"
+	browserBundleTable     = "diagnostics/table.json"
+	browserBundleManifest  = "browser/manifest.json"
+	browserBundleTool      = "tools/runtime/browser-bundle.ts"
 )
 
 // browserBundleOutputs is one normalized, audited browser bundle: logical
@@ -35,13 +35,59 @@ type browserBundleOutputs struct {
 	files map[string][]byte
 }
 
+// browserTablePlaceholder is the exact UP11 placeholder table line the
+// compiler-owned browser entry carries. UP15 replaces it with the checked
+// sealed table (one line for one line, so sealed mappings keep their
+// coordinates) and publishes the same bytes as a verified asset. The match
+// is exact and the replacement is mandatory: an entry without the known
+// placeholder fails instead of shipping an unknown table state.
+const browserTablePlaceholder = `const $canTable = Object.freeze({index: Object.freeze({schemaVersion: 1, kind: "can.source-index", sources: Object.freeze([]), modules: Object.freeze([])}), maps: Object.freeze({})});`
+
+// sealBrowserEntryTable swaps the placeholder table line in the browser
+// root for the frozen checked table. It runs before the asset manifest and
+// the pre-bundle audit so both bind the exact shipped bytes.
+func sealBrowserEntryTable(artifacts []ir.Artifact, table []byte) ([]ir.Artifact, error) {
+	if len(table) == 0 {
+		return nil, fmt.Errorf("browser entry sealing requires the checked table")
+	}
+	sealed := append([]ir.Artifact{}, artifacts...)
+	found := false
+	for i := range sealed {
+		if sealed[i].Path != browser.BrowserEntry {
+			continue
+		}
+		lines := strings.Split(string(sealed[i].Bytes), "\n")
+		for j, line := range lines {
+			if line != browserTablePlaceholder {
+				continue
+			}
+			if found {
+				return nil, fmt.Errorf("browser entry carries the table placeholder twice")
+			}
+			found = true
+			lines[j] = "const $canTable = Object.freeze(" + string(table) + ");"
+		}
+		if !found {
+			return nil, fmt.Errorf("browser entry lacks the known table placeholder")
+		}
+		sealed[i].Bytes = []byte(strings.Join(lines, "\n"))
+	}
+	if !found {
+		return nil, fmt.Errorf("browser sealing lacks the %s root", browser.BrowserEntry)
+	}
+	return sealed, nil
+}
+
 // buildBrowserBundle bundles the audited pre-bundle tree with the native
 // pinned bundler and returns the publishable bundle artifacts: final digest
 // JavaScript plus maps, the sealed diagnostic table, and the I-6 browser
 // manifest. It runs after the pre-bundle graph audit and before output
 // preparation, so any bundle, audit, or shaping failure prevents staging
 // and publication. The same inputs always yield identical bytes.
-func (r *Runtime) buildBrowserBundle(ctx context.Context, graph *project.Graph, inputs BuildInputs, toolchain browserToolchain, artifacts []ir.Artifact) ([]ir.Artifact, error) {
+func (r *Runtime) buildBrowserBundle(ctx context.Context, graph *project.Graph, inputs BuildInputs, toolchain browserToolchain, artifacts []ir.Artifact, table []byte) ([]ir.Artifact, error) {
+	if len(table) == 0 {
+		return nil, fmt.Errorf("browser bundling requires the sealed diagnostic table")
+	}
 	raw, staged, sourceDir, outDir, cleanup, err := r.invokeBrowserBundler(ctx, toolchain, artifacts)
 	if err != nil {
 		return nil, err
@@ -51,11 +97,7 @@ func (r *Runtime) buildBrowserBundle(ctx context.Context, graph *project.Graph, 
 	if err != nil {
 		return nil, err
 	}
-	table, err := sealBrowserDiagnosticTable(artifacts)
-	if err != nil {
-		return nil, err
-	}
-	bundle.files[browserBundleTable] = table
+	bundle.files[browserBundleTable] = append([]byte(nil), table...)
 	if err := auditBrowserBundle(bundle); err != nil {
 		return nil, err
 	}
@@ -96,11 +138,11 @@ type browserTreeFile struct {
 }
 
 type browserBundleRequest struct {
-	SchemaVersion int              `json:"schemaVersion"`
-	Kind          string           `json:"kind"`
-	SourceDir     string           `json:"sourceDir"`
-	Entry         string           `json:"entry"`
-	OutDir        string           `json:"outDir"`
+	SchemaVersion int               `json:"schemaVersion"`
+	Kind          string            `json:"kind"`
+	SourceDir     string            `json:"sourceDir"`
+	Entry         string            `json:"entry"`
+	OutDir        string            `json:"outDir"`
 	Files         []browserTreeFile `json:"files"`
 	Expected      struct {
 		Version  string `json:"version"`
@@ -131,6 +173,8 @@ type browserBundleReport struct {
 func (r *Runtime) invokeBrowserBundler(ctx context.Context, toolchain browserToolchain, artifacts []ir.Artifact) (map[string][]byte, map[string][]byte, string, string, func(), error) {
 	failed := func() {}
 	modules := map[string][]byte{}
+	inventories := map[string][]string{}
+	runtimeFlags := map[string]bool{}
 	for _, artifact := range artifacts {
 		if !strings.HasSuffix(artifact.Path, ".ts") {
 			continue
@@ -139,9 +183,15 @@ func (r *Runtime) invokeBrowserBundler(ctx context.Context, toolchain browserToo
 			return nil, nil, "", "", failed, fmt.Errorf("browser bundler input %s is duplicated", artifact.Path)
 		}
 		modules[artifact.Path] = artifact.Bytes
+		inventories[artifact.Path] = artifact.Imports
+		runtimeFlags[artifact.Path] = artifact.Runtime
 	}
 	if modules[browser.BrowserEntry] == nil {
 		return nil, nil, "", "", failed, fmt.Errorf("browser bundler input lacks the %s root", browser.BrowserEntry)
+	}
+	modules, err := applyBrowserOverlay(modules, inventories, runtimeFlags)
+	if err != nil {
+		return nil, nil, "", "", failed, err
 	}
 	sourceDir, err := os.MkdirTemp("", "can-browser-stage-")
 	if err != nil {
@@ -219,6 +269,131 @@ func (r *Runtime) invokeBrowserBundler(ctx context.Context, toolchain browserToo
 		raw[file.Path] = data
 	}
 	return raw, modules, sourceDir, outDir, cleanup, nil
+}
+
+// applyBrowserOverlay redirects every staged edge that resolves to an
+// overlaid canonical runtime module to its sealed alternate, using the
+// exact substitution the pre-bundle audit models (browser.OverlayShipping).
+// The bundler therefore loads the inspected bodies with no resolve hooks:
+// the staged bytes are the shipped sources. An overlaid edge whose
+// alternate is absent from the generation is left untouched, exactly as
+// the audit inspects it as-is; the bundled canonical then fails the
+// post-bundle audit on its own host edges.
+func applyBrowserOverlay(modules map[string][]byte, inventories map[string][]string, runtimeFlags map[string]bool) (map[string][]byte, error) {
+	rewritten := map[string][]byte{}
+	for _, name := range sortedOutputKeys(modules) {
+		redirects := map[string]string{}
+		for _, spec := range inventories[name] {
+			if !strings.HasPrefix(spec, "./") && !strings.HasPrefix(spec, "../") {
+				continue
+			}
+			resolved := path.Join(path.Dir(name), spec)
+			target, ok := modules[resolved]
+			if !ok || target == nil {
+				continue
+			}
+			shipping := browser.OverlayShipping(resolved, runtimeFlags[resolved])
+			if shipping == resolved || modules[shipping] == nil {
+				continue
+			}
+			fresh, err := relativeModuleSpecifier(path.Dir(name), shipping)
+			if err != nil {
+				return nil, err
+			}
+			redirects[spec] = fresh
+		}
+		if len(redirects) == 0 {
+			rewritten[name] = modules[name]
+			continue
+		}
+		scan, err := browser.ScanModule(modules[name])
+		if err != nil {
+			return nil, fmt.Errorf("browser overlay cannot inspect %s structurally: %w", name, err)
+		}
+		rewritten[name], err = rewriteModuleSpecifiers(name, modules[name], scan, redirects)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return rewritten, nil
+}
+
+// rewriteModuleSpecifiers splices replacement specifiers into the lexed
+// static edge positions, from the end of the module backward so offsets
+// stay valid. Every redirected specifier must appear lexed at least once;
+// anything else fails closed rather than shipping a half-substituted tree.
+func rewriteModuleSpecifiers(name string, data []byte, scan browser.ModuleScan, redirects map[string]string) ([]byte, error) {
+	type splice struct {
+		offset  int
+		length  int
+		current string
+	}
+	var splices []splice
+	seen := map[string]bool{}
+	for _, edge := range scan.Edges {
+		fresh, ok := redirects[edge.Specifier]
+		if !ok {
+			continue
+		}
+		seen[edge.Specifier] = true
+		start := edge.Pos.Offset + 1
+		if start < 1 || start+len(edge.Specifier) > len(data) || string(data[start:start+len(edge.Specifier)]) != edge.Specifier {
+			return nil, fmt.Errorf("browser overlay cannot locate edge %q in %s", edge.Specifier, name)
+		}
+		quote := data[edge.Pos.Offset]
+		if quote != '"' && quote != '\'' {
+			return nil, fmt.Errorf("browser overlay cannot locate edge %q in %s", edge.Specifier, name)
+		}
+		splices = append(splices, splice{start, len(edge.Specifier), fresh})
+	}
+	for spec := range redirects {
+		if !seen[spec] {
+			return nil, fmt.Errorf("browser overlay found no lexed edge %q in %s", spec, name)
+		}
+	}
+	out := append([]byte(nil), data...)
+	for i := len(splices) - 1; i >= 0; i-- {
+		cut := splices[i]
+		next := make([]byte, 0, len(out)-cut.length+len(cut.current))
+		next = append(next, out[:cut.offset]...)
+		next = append(next, cut.current...)
+		out = append(next, out[cut.offset+cut.length:]...)
+	}
+	return out, nil
+}
+
+// relativeModuleSpecifier renders target as a canonical relative import
+// from the importing directory: dot-prefixed, slash-separated, with no
+// redundant segments.
+func relativeModuleSpecifier(fromDir, target string) (string, error) {
+	if fromDir == "" || target == "" || !strings.HasSuffix(target, ".ts") {
+		return "", fmt.Errorf("browser overlay cannot redirect to %q", target)
+	}
+	from := strings.Split(path.Clean(fromDir), "/")
+	if path.Clean(fromDir) == "." {
+		from = []string{}
+	}
+	to := strings.Split(path.Clean(target), "/")
+	shared := 0
+	for shared < len(from) && shared < len(to) && from[shared] == to[shared] {
+		shared++
+	}
+	var parts []string
+	for range from[shared:] {
+		parts = append(parts, "..")
+	}
+	parts = append(parts, to[shared:]...)
+	spec := path.Join(parts...)
+	if spec == "" || spec == "." {
+		return "", fmt.Errorf("browser overlay cannot redirect to %q", target)
+	}
+	if !strings.HasPrefix(spec, ".") {
+		spec = "./" + spec
+	}
+	if !strings.HasPrefix(spec, "./") && !strings.HasPrefix(spec, "../") {
+		return "", fmt.Errorf("browser overlay cannot redirect to %q", target)
+	}
+	return spec, nil
 }
 
 func truncateBundleLog(detail string) string {
@@ -415,7 +590,7 @@ func sealBrowserDiagnosticTable(artifacts []ir.Artifact) ([]byte, error) {
 		return nil, fmt.Errorf("browser diagnostic table requires the sealed source index")
 	}
 	var decoded struct {
-		SchemaVersion int `json:"schemaVersion"`
+		SchemaVersion int    `json:"schemaVersion"`
 		Kind          string `json:"kind"`
 		Sources       []struct {
 			ID   string `json:"id"`
@@ -446,9 +621,9 @@ func sealBrowserDiagnosticTable(artifacts []ir.Artifact) ([]byte, error) {
 		bound[module.Path] = data
 	}
 	table := struct {
-		SchemaVersion int                    `json:"schemaVersion"`
-		Kind          string                 `json:"kind"`
-		Index         json.RawMessage        `json:"index"`
+		SchemaVersion int                        `json:"schemaVersion"`
+		Kind          string                     `json:"kind"`
+		Index         json.RawMessage            `json:"index"`
 		Maps          map[string]json.RawMessage `json:"maps"`
 	}{1, "can.diagnostic-table", index, bound}
 	return json.Marshal(table)
@@ -482,11 +657,11 @@ type browserManifestFile struct {
 // same inputs yield identical bytes and manifest; UP18 verifies this whole
 // record before serving any byte.
 type browserManifest struct {
-	SchemaVersion  int                  `json:"schemaVersion"`
-	Kind           string               `json:"kind"`
-	BrowserBuildID string               `json:"browserBuildId"`
-	Entry          string               `json:"entry"`
-	Table          string               `json:"table"`
+	SchemaVersion  int                   `json:"schemaVersion"`
+	Kind           string                `json:"kind"`
+	BrowserBuildID string                `json:"browserBuildId"`
+	Entry          string                `json:"entry"`
+	Table          string                `json:"table"`
 	Files          []browserManifestFile `json:"files"`
 	Toolchain      struct {
 		Target   string `json:"target"`

@@ -5,7 +5,7 @@ import {
   invocationIdentity,
   participantIdentities,
   compareInvocations,
-} from "../assert/identity.ts";
+} from "../assert/lineage.ts";
 import {
   createBarrier,
   reserveFrame,

@@ -16,7 +16,7 @@ import {
   type InvocationIdentity,
   type InvocationPath,
   type CallableIdentity,
-} from "./identity.ts";
+} from "./lineage.ts";
 import {
   createBarrier,
   reserveFrame,

@@ -1,15 +1,15 @@
 import { test, expect } from "bun:test";
+import { callableIdentity } from "../assert/identity.ts";
 import {
   rootIdentity,
   invocationIdentity,
   participantIdentities,
-  callableIdentity,
   callableCaptures,
   invocationPath,
   compareInvocations,
   type InvocationIdentity,
   type CallableIdentity,
-} from "../assert/identity.ts";
+} from "../assert/lineage.ts";
 const root = { package: "p", declaration: "p::main", name: "sample" };
 
 test("invocation occurrences belong to each parent and compare numeric preorder ordinals", () => {

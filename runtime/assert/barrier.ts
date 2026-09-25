@@ -1,5 +1,5 @@
 import { checkedCompletion, type Completion } from "../completion.ts";
-import { compareInvocations, invocationPath, type InvocationIdentity } from "./identity.ts";
+import { compareInvocations, invocationPath, type InvocationIdentity } from "./lineage.ts";
 
 declare const barrierBrand: unique symbol;
 declare const frameBrand: unique symbol;

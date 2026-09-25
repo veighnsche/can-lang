@@ -118,6 +118,14 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 	if err != nil {
 		return "", nil, err
 	}
+	table, err := sealBrowserDiagnosticTable(artifacts)
+	if err != nil {
+		return "", nil, err
+	}
+	artifacts, err = sealBrowserEntryTable(artifacts, table)
+	if err != nil {
+		return "", nil, err
+	}
 	artifacts, err = appendBrowserAsset(artifacts)
 	if err != nil {
 		return "", nil, err
@@ -147,7 +155,7 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 		Minify    bool
 	}{"browser", "external", false}, roots, timeoutMs})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
-	bundled, err := r.buildBrowserBundle(ctx, store.Graph, inputs, browserBundlerToolchain(inputs.Compiler, inputs.Runtime), artifacts)
+	bundled, err := r.buildBrowserBundle(ctx, store.Graph, inputs, browserBundlerToolchain(inputs.Compiler, inputs.Runtime), artifacts, table)
 	if err != nil {
 		return "", nil, err
 	}

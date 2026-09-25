@@ -33,7 +33,7 @@ test("native callable receipts retain immutable aliases and protected results", 
 test("creation receipts distinguish frozen captures and preserve initialization identity across roots", async () => {
   const { assertionContext, callContext, contextIdentity, finishAssertionExecution, closeContext } =
     await import("../assert/context.ts");
-  const { invocationPath } = await import("../assert/identity.ts");
+  const { invocationPath } = await import("../assert/lineage.ts");
   const { callableInstance } = await import("../callable.ts");
   const makeRoot = (name: string) =>
     assertionContext({ package: "p", declaration: "p::main", name });

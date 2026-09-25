@@ -4,7 +4,7 @@ import {
   invocationIdentity,
   participantIdentities,
   invocationPath,
-} from "../assert/identity.ts";
+} from "../assert/lineage.ts";
 import {
   createBarrier,
   reserveFrame,
