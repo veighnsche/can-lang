@@ -90,6 +90,13 @@ func TestBuildRejectsTamperedHTMX(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(source, "distribution/assets/htmx-4.0.0.min.js"), []byte("tampered"), 0644); err != nil {
 		t.Fatal(err)
 	}
+	guard, err := os.ReadFile("assets/htmx-guard.js")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(source, "distribution/assets/htmx-guard.js"), guard, 0644); err != nil {
+		t.Fatal(err)
+	}
 	notice, err := os.ReadFile("notices/htmx-LICENSE.txt")
 	if err != nil {
 		t.Fatal(err)
