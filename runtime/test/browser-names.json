@@ -107,5 +107,17 @@
   "delays": {
     "accept": [0, 1, 250, 2147483647],
     "reject": [-1, -250, 2147483648, 9999999999999]
+  },
+  "query_keys": {
+    "accept": ["invoice", "a", "a1", "a_b", "tenant", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_z9_"],
+    "reject": ["", "Invoice", "INVOICE", "1voice", "9", "_key", "in-voice", "in voice", "in.voice", "in/voice", "\u00e9toile", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "invoice?"]
+  },
+  "cancel_key_events": {
+    "accept": ["keydown", "keyup", "KEYDOWN", "KeyUp"],
+    "reject": ["", "click", "submit", "input", "change", "key", "keydownx"]
+  },
+  "cancel_events": {
+    "accept": ["submit", "SUBMIT", "Submit"],
+    "reject": ["", "click", "keydown", "keyup", "input", "submits"]
   }
 }

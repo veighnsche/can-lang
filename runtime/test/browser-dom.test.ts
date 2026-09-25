@@ -551,6 +551,9 @@ test("shared admission corpus matches the checker", async () => {
     events: { accept: string[]; reject: string[] };
     urls: { accept: string[]; reject: string[] };
     delays: { accept: number[]; reject: number[] };
+    query_keys: { accept: string[]; reject: string[] };
+    cancel_key_events: { accept: string[]; reject: string[] };
+    cancel_events: { accept: string[]; reject: string[] };
   };
   expect(corpus.tags.accept.length).toBeGreaterThan(0);
   const { browser } = setup();
@@ -596,6 +599,32 @@ test("shared admission corpus matches the checker", async () => {
   }
   for (const delay of corpus.delays.reject) {
     expect(failureName(await browser.setTimeout(view, BigInt(delay), async () => {}))).toBe(
+      "browser::rejected",
+    );
+  }
+  expect(corpus.query_keys.accept.length).toBeGreaterThan(0);
+  for (const key of corpus.query_keys.accept) {
+    const result = await browser.queryParameter(key);
+    expect(result.kind).toBe("ok");
+  }
+  for (const key of corpus.query_keys.reject) {
+    expect(failureName(await browser.queryParameter(key))).toBe("browser::invalid_query");
+  }
+  for (const kind of corpus.cancel_key_events.accept) {
+    const result = await browser.onCancelKey(view, box, kind, "Enter", async () => {});
+    expect(result.kind).toBe("ok");
+  }
+  for (const kind of corpus.cancel_key_events.reject) {
+    expect(failureName(await browser.onCancelKey(view, box, kind, "Enter", async () => {}))).toBe(
+      "browser::rejected",
+    );
+  }
+  for (const kind of corpus.cancel_events.accept) {
+    const result = await browser.onCancelEvent(view, box, kind, async () => {});
+    expect(result.kind).toBe("ok");
+  }
+  for (const kind of corpus.cancel_events.reject) {
+    expect(failureName(await browser.onCancelEvent(view, box, kind, async () => {}))).toBe(
       "browser::rejected",
     );
   }
