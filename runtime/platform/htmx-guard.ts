@@ -119,18 +119,13 @@ function isObject(value: unknown): value is Record<string, unknown> {
 
 function readStatus(response: unknown): number | null {
   const status = isObject(response) ? response["status"] : undefined;
-  return typeof status === "number" &&
-    Number.isInteger(status) &&
-    status >= 100 &&
-    status <= 599
+  return typeof status === "number" && Number.isInteger(status) && status >= 100 && status <= 599
     ? status
     : null;
 }
 
 function readContext(detail: GuardEventDetail | null | undefined): GuardContext | undefined {
-  return detail != null && isObject(detail.ctx)
-    ? (detail.ctx as GuardContext)
-    : undefined;
+  return detail != null && isObject(detail.ctx) ? (detail.ctx as GuardContext) : undefined;
 }
 
 function controlHeaderName(name: string): string | undefined {
@@ -140,9 +135,7 @@ function controlHeaderName(name: string): string | undefined {
 }
 
 function taskStyle(task: GuardTask): unknown {
-  return isObject(task.swapSpec)
-    ? (task.swapSpec as GuardSwapSpec).style
-    : undefined;
+  return isObject(task.swapSpec) ? (task.swapSpec as GuardSwapSpec).style : undefined;
 }
 
 export type GuardVerdict = Readonly<{
@@ -180,13 +173,7 @@ export function checkRequestTarget(ctx: unknown): GuardVerdict {
   if (target === null || target === undefined) {
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::missing_target",
-        "request",
-        null,
-        "none",
-        "target_absent",
-      ),
+      occurrence: occurrence("action::missing_target", "request", null, "none", "target_absent"),
     };
   }
   if (!isObject(target)) {
@@ -198,13 +185,7 @@ export function checkRequestTarget(ctx: unknown): GuardVerdict {
   if ((target as GuardNode).isConnected !== true) {
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::missing_target",
-        "request",
-        null,
-        "none",
-        "target_detached",
-      ),
+      occurrence: occurrence("action::missing_target", "request", null, "none", "target_detached"),
     };
   }
   return { admit: true, capture: target as GuardNode };
@@ -217,13 +198,7 @@ export function checkResponseHeaders(ctx: unknown): GuardVerdict {
   if (!isObject(ctx)) {
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::protocol",
-        "response",
-        null,
-        "uncertain",
-        "unexpected_shape",
-      ),
+      occurrence: occurrence("action::protocol", "response", null, "uncertain", "unexpected_shape"),
     };
   }
   const context = ctx as GuardContext;
@@ -272,19 +247,12 @@ export function checkResponseHeaders(ctx: unknown): GuardVerdict {
     ? (context.response as GuardResponse & { raw?: unknown }).raw
     : undefined;
   if (
-    (isObject(context.response) &&
-      (context.response as GuardResponse).redirected === true) ||
+    (isObject(context.response) && (context.response as GuardResponse).redirected === true) ||
     (isObject(raw) && (raw as { redirected?: unknown }).redirected === true)
   ) {
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::protocol",
-        "response",
-        status,
-        "uncertain",
-        "redirect",
-      ),
+      occurrence: occurrence("action::protocol", "response", status, "uncertain", "redirect"),
     };
   }
   const response = context.response;
@@ -393,30 +361,17 @@ export function checkSwapTasks(
   if (context === undefined || !Array.isArray(tasks)) {
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::protocol",
-        "swap",
-        status,
-        "uncertain",
-        "unexpected_shape",
-      ),
+      occurrence: occurrence("action::protocol", "swap", status, "uncertain", "unexpected_shape"),
     };
   }
   if (context.swap === "none") {
     if (!blockedHazard(tasks)) return { admit: true };
     return {
       admit: false,
-      occurrence: occurrence(
-        "action::protocol",
-        "swap",
-        status,
-        "uncertain",
-        "blocked_tasks",
-      ),
+      occurrence: occurrence("action::protocol", "swap", status, "uncertain", "blocked_tasks"),
     };
   }
-  const main =
-    tasks.length === 1 && isObject(tasks[0]) ? (tasks[0] as GuardTask) : undefined;
+  const main = tasks.length === 1 && isObject(tasks[0]) ? (tasks[0] as GuardTask) : undefined;
   const same =
     main !== undefined &&
     main.type === "main" &&
@@ -439,9 +394,7 @@ export function checkSwapTasks(
         "swap",
         status,
         "uncertain",
-        main.target === null || main.target === undefined
-          ? "target_absent"
-          : "target_detached",
+        main.target === null || main.target === undefined ? "target_absent" : "target_detached",
       ),
     };
   }
@@ -520,8 +473,7 @@ export function installHTMXGuard(host: GuardHost, options: GuardOptions = {}): (
     guard(() => {
       const ctx = readContext(event.detail);
       const tasks = event.detail?.tasks;
-      const captured =
-        ctx !== undefined && isObject(ctx) ? targets.get(ctx as object) : undefined;
+      const captured = ctx !== undefined && isObject(ctx) ? targets.get(ctx as object) : undefined;
       return checkSwapTasks(ctx, tasks, captured);
     }, event);
   };

@@ -354,7 +354,10 @@ function fakeHost(): GuardHost & { listeners(type: string): ((e: GuardEvent) => 
       table.set(type, [...(table.get(type) ?? []), listener]);
     },
     removeEventListener(type, listener) {
-      table.set(type, (table.get(type) ?? []).filter((entry) => entry !== listener));
+      table.set(
+        type,
+        (table.get(type) ?? []).filter((entry) => entry !== listener),
+      );
     },
     dispatchEvent: (event: object) => {
       events.push(event);
@@ -478,7 +481,8 @@ try {
   );
 }
 const pinned = pinnedBrowser === undefined ? test.skip : test;
-if (pinnedBrowser !== undefined) console.log(`pinned htmx guard tests on ${pinnedBrowser.version()}`);
+if (pinnedBrowser !== undefined)
+  console.log(`pinned htmx guard tests on ${pinnedBrowser.version()}`);
 
 type BrowserShape = FailureShape;
 const typeHash = (kind: string, name: string) =>
@@ -540,15 +544,16 @@ const guardSource = await Bun.file(new URL("../platform/htmx-guard.ts", import.m
 const guardBytes = new TextEncoder().encode(
   new Bun.Transpiler({ loader: "ts" }).transformSync(guardSource),
 );
-const suiteHead = renderSafe(
-  value(
-    await guardHTML.document(
-      "guard",
-      [value(await guardHTML.metaViewport()), value(await guardHTML.runtimeHead())],
-      [],
+const suiteHead =
+  renderSafe(
+    value(
+      await guardHTML.document(
+        "guard",
+        [value(await guardHTML.metaViewport()), value(await guardHTML.runtimeHead())],
+        [],
+      ),
     ),
-  ),
-).match(/<head>(.*)<\/head>/)?.[1] ?? "";
+  ).match(/<head>(.*)<\/head>/)?.[1] ?? "";
 
 type Reply = Readonly<{
   status: number;
@@ -590,7 +595,7 @@ const suiteServer = Bun.serve({
 const suiteBase = `http://127.0.0.1:${suiteServer.port}`;
 
 afterAll(async () => {
-  suiteServer.stop(true);
+  await suiteServer.stop(true);
   await pinnedBrowser?.close();
 });
 
@@ -691,7 +696,9 @@ pinned(
   async () => {
     seen.length = 0;
     reply = { status: 200, body: "<p>fresh</p>" };
-    const screen = await openPinnedPage(`${declaredSource("source")}<div id="other">old other</div>`);
+    const screen = await openPinnedPage(
+      `${declaredSource("source")}<div id="other">old other</div>`,
+    );
     try {
       await screen.page.locator("#source").click();
       const found = await awaitOccurrences(screen, 1);
