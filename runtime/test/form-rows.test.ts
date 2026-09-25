@@ -176,6 +176,23 @@ test("row count beyond 64 rejects with row_limit", () => {
   expect(bad.raw.length).toBe(1 + 65 + 65);
   expect(bad.raw[0]).toEqual(["customer", "ann"]);
 });
+test("declared rows_limit binds the adapter below the shared cap", () => {
+  const text =
+    "customer=ann&lines_order=a&lines_order=b&lines_order=c" +
+    "&lines%5Ba%5D%5Bsku%5D=x&lines%5Bb%5D%5Bsku%5D=y&lines%5Bc%5D%5Bsku%5D=z";
+  const input = bytes(text);
+  const capped = decodeActionForm(schema, input, limit(text), ids, 2);
+  expect(capped.kind).toBe("rejected");
+  if (capped.kind !== "rejected") throw Error("accepted");
+  const issues = dataArray(dataProperty(capped.value, "issues")).map(
+    (entry) => [dataProperty(entry, "name"), dataProperty(entry, "reason")] as [string, string],
+  );
+  expect(issues).toEqual([["lines[c]", "row_limit"]]);
+  const admitted = decodeActionForm(schema, input, limit(text), ids, 3);
+  expect(admitted.kind).toBe("wire");
+  expect(() => decodeActionForm(schema, input, limit(text), ids, 0)).toThrow(TypeError);
+  expect(() => decodeActionForm(schema, input, limit(text), ids, 65)).toThrow(TypeError);
+});
 test("row values beyond 2048 bytes reject", () => {
   const big = "x".repeat(2049);
   const bad = rejected(`customer=ann&lines_order=a&lines%5Ba%5D%5Bsku%5D=${big}`);

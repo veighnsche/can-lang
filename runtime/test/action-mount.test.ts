@@ -741,3 +741,346 @@ test("guarded probe matrix keeps invalid input out of protected handlers", async
   expect(owned.cleanupFailed).toBe(false);
   expect(owned.completion.kind).toBe("ok");
 });
+
+test("mounts enforce media, declared budgets and JSON shape", async () => {
+  calls.length = 0;
+  const owned = await runOwnedRoot(async () => {
+    const save = value(await mounts.mount(saveHandler, saveSite));
+    const load = value(await mounts.mount(loadHandler, loadSite));
+    const token = await serve(18614, [save, load]);
+    const base = "http://127.0.0.1:18614";
+    const target = base + "/api/tenants/1/invoices/7";
+    const edit = JSON.stringify({ operation_id: "op-1", label: "r1" });
+    // Wrong media is 415 without handler entry, even with a valid body.
+    for (const headers of [
+      {},
+      { "content-type": "text/plain" },
+      { "content-type": "application/json; charset=latin-1" },
+      { "content-type": "not-a-media-type" },
+    ]) {
+      const response = await fetch(target, { method: "POST", headers, body: edit });
+      expect(response.status).toBe(415);
+      expect(await response.text()).toBe("Unsupported Media Type");
+    }
+    const json = { "content-type": "application/json" };
+    // The declared 256-byte budget 413s; the boundary byte still serves.
+    const prefix = '{"operation_id":"op-1","label":"';
+    const suffix = '"}';
+    const exact = await fetch(target, {
+      method: "POST",
+      headers: json,
+      body: prefix + "p".repeat(256 - prefix.length - suffix.length) + suffix,
+    });
+    expect(exact.status).toBe(200);
+    await exact.text();
+    const over = await fetch(target, {
+      method: "POST",
+      headers: json,
+      body: prefix + "p".repeat(257 - prefix.length - suffix.length) + suffix,
+    });
+    expect(over.status).toBe(413);
+    expect(await over.text()).toBe("Payload Too Large");
+    // Empty, malformed and mistyped JSON is a fixed 400.
+    const empty = await fetch(target, { method: "POST", headers: json, body: "" });
+    expect(empty.status).toBe(400);
+    expect(await empty.text()).toBe("Bad Request");
+    for (const body of [
+      "{oops",
+      JSON.stringify({ operation_id: "op-1", label: "r1", seats: 2 }),
+      JSON.stringify({ operation_id: "op-1" }),
+      JSON.stringify({ operation_id: 7, label: "r1" }),
+    ]) {
+      const response = await fetch(target, { method: "POST", headers: json, body });
+      expect(`${body}: ${response.status}`).toBe(`${body}: 400`);
+      expect(await response.text()).toBe("Bad Request");
+    }
+    // A GET body smuggled past native construction is a fixed 400.
+    const smuggled = new Request(target, { method: "POST", body: "x" });
+    Object.defineProperty(smuggled, "method", { value: "GET", configurable: true });
+    const dirty = await snapshotRequest(smuggled, 65536);
+    if (dirty.kind !== "request") throw new Error("snapshot rejected");
+    const table = value(await router.make([load]));
+    const rejected = value(await dispatch(table, dirty.value));
+    expect(rejected.status).toBe(400);
+    expect(await rejected.text()).toBe("Bad Request");
+    expect(calls).toEqual(["save:1,7,op-1"]);
+    await stop(token);
+    return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  expect(owned.completion.kind).toBe("ok");
+});
+
+test("server body budget preempts mount entry", async () => {
+  calls.length = 0;
+  const owned = await runOwnedRoot(async () => {
+    const save = value(await mounts.mount(saveHandler, saveSite));
+    const token = await serve(18615, [save], 16n);
+    const response = await fetch("http://127.0.0.1:18615/api/tenants/1/invoices/7", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ operation_id: "op-1", label: "r1" }),
+    });
+    expect(response.status).toBe(413);
+    expect(await response.text()).toBe("Payload Too Large");
+    expect(calls).toEqual([]);
+    await stop(token);
+    return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  expect(owned.completion.kind).toBe("ok");
+});
+
+test("form mounts render wire, structural and row-limit outcomes", async () => {
+  calls.length = 0;
+  const owned = await runOwnedRoot(async () => {
+    const form = value(await mounts.mountForm(formHandler, outcomeRenderer, structuralRenderer, formSite));
+    const token = await serve(18616, [form]);
+    const base = "http://127.0.0.1:18616";
+    const target = base + "/tenants/1/invoices/7";
+    const encoded = { "content-type": "application/x-www-form-urlencoded" };
+    const wire = "customer=ann&lines_order=r1&lines%5Br1%5D%5Bsku%5D=s1";
+    const saved = await fetch(target, { method: "POST", headers: encoded, body: wire });
+    expect(saved.status).toBe(200);
+    expect(saved.headers.get("content-type")).toBe("text/html; charset=utf-8");
+    expect(await saved.text()).toContain("ok:up09::saved");
+    const stale = await fetch(target, {
+      method: "POST",
+      headers: encoded,
+      body: wire.replace("customer=ann", "customer=stale"),
+    });
+    expect(stale.status).toBe(409);
+    expect(await stale.text()).toContain("ok:up09::failed");
+    // A repeated order row is structural: the handler never runs and the
+    // 422 renderer redisplay the raw pairs in document order.
+    const repeated = await fetch(target, {
+      method: "POST",
+      headers: encoded,
+      body: wire + "&lines_order=r1",
+    });
+    expect(repeated.status).toBe(422);
+    expect(await repeated.text()).toContain("bad:ann|r1|s1|r1");
+    // The declared rows_limit of two turns a third row structural too.
+    const third =
+      "customer=ann&lines_order=r1&lines_order=r2&lines_order=r3" +
+      "&lines%5Br1%5D%5Bsku%5D=s1&lines%5Br2%5D%5Bsku%5D=s2&lines%5Br3%5D%5Bsku%5D=s3";
+    const limited = await fetch(target, { method: "POST", headers: encoded, body: third });
+    expect(limited.status).toBe(422);
+    expect(await limited.text()).toContain("bad:");
+    // Wrong media is 415 and an over-budget body is 413, both pre-handler.
+    const media = await fetch(target, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: wire,
+    });
+    expect(media.status).toBe(415);
+    expect(await media.text()).toBe("Unsupported Media Type");
+    const over = await fetch(target, {
+      method: "POST",
+      headers: encoded,
+      body: wire + "&pad=" + "p".repeat(2048),
+    });
+    expect(over.status).toBe(413);
+    expect(await over.text()).toBe("Payload Too Large");
+    const malformed = await fetch(target, { method: "POST", headers: encoded, body: "customer=%" });
+    expect(malformed.status).toBe(400);
+    expect(await malformed.text()).toBe("Bad Request");
+    expect(calls).toEqual([
+      "form:1,ann",
+      "outcome:up09::saved",
+      "form:1,stale",
+      "outcome:up09::failed",
+      "structural:ann|r1|s1|r1",
+      "structural:ann|r1|r2|r3|s1|s2|s3",
+    ]);
+    await stop(token);
+    return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  expect(owned.completion.kind).toBe("ok");
+});
+
+test("handler and renderer faults become 500 without serving domain cases", async () => {
+  calls.length = 0;
+  const owned = await runOwnedRoot(async () => {
+    const fault = failure(
+      domain.create(
+        id("can.std.http@1::invalid_route"),
+        record(id("can.std.http@1::invalid_route"), [["reason", "boom"]]),
+        origin,
+      ),
+    );
+    const exploding = async () => {
+      calls.push("exploding");
+      throw new Error("handler fault");
+    };
+    const missing = async () => {
+      calls.push("missing");
+      return success(record("up09::archived", []));
+    };
+    const unencodable = async () => {
+      calls.push("unencodable");
+      return success(record("up09::grid_saved", [["operation_id", 7n]]));
+    };
+    const failingOutcome = async () => {
+      calls.push("failingOutcome");
+      return fault;
+    };
+    const failingStructural = async () => {
+      calls.push("failingStructural");
+      return fault;
+    };
+    const flatFormHandler = async (request: unknown, form: unknown) => {
+      calls.push(`flatForm:${dataProperty(form, "customer") as string}`);
+      return success(record("up09::saved", []));
+    };
+    const flat = <T extends object>(site: T, action: string, path: string) => ({
+      ...site,
+      action,
+      path,
+      capturesType: undefined,
+      captures: [],
+    });
+    const crash = value(await mounts.mount(exploding, flat(saveSite, "up09::crash", "/fault/crash")));
+    const stray = value(await mounts.mount(missing, flat(saveSite, "up09::stray", "/fault/stray")));
+    const broken = value(
+      await mounts.mount(unencodable, flat(saveSite, "up09::broken", "/fault/broken")),
+    );
+    const badOutcome = value(
+      await mounts.mountForm(
+        flatFormHandler,
+        failingOutcome,
+        structuralRenderer,
+        flat(formSite, "up09::bad_outcome", "/fault/outcome"),
+      ),
+    );
+    const badStructural = value(
+      await mounts.mountForm(
+        flatFormHandler,
+        outcomeRenderer,
+        failingStructural,
+        flat(formSite, "up09::bad_structural", "/fault/structural"),
+      ),
+    );
+    const token = await serve(18617, [crash, stray, broken, badOutcome, badStructural]);
+    const base = "http://127.0.0.1:18617";
+    const json = { "content-type": "application/json" };
+    const edit = JSON.stringify({ operation_id: "op-1", label: "r1" });
+    for (const target of ["/fault/crash", "/fault/stray", "/fault/broken"]) {
+      const response = await fetch(base + target, { method: "POST", headers: json, body: edit });
+      expect(`${target}: ${response.status}`).toBe(`${target}: 500`);
+      expect(await response.text()).toBe("Internal Server Error");
+    }
+    const encoded = { "content-type": "application/x-www-form-urlencoded" };
+    const wire = "customer=ann&lines_order=r1&lines%5Br1%5D%5Bsku%5D=s1";
+    const outcome = await fetch(base + "/fault/outcome", {
+      method: "POST",
+      headers: encoded,
+      body: wire,
+    });
+    expect(outcome.status).toBe(500);
+    expect(await outcome.text()).toBe("Internal Server Error");
+    const structural = await fetch(base + "/fault/structural", {
+      method: "POST",
+      headers: encoded,
+      body: wire + "&lines_order=r1",
+    });
+    expect(structural.status).toBe(500);
+    expect(await structural.text()).toBe("Internal Server Error");
+    // Every fault entered its adapter exactly once; the structural fault
+    // never reached the form handler.
+    expect(calls).toEqual([
+      "exploding",
+      "missing",
+      "unencodable",
+      "flatForm:ann",
+      "failingOutcome",
+      "failingStructural",
+    ]);
+    await stop(token);
+    return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  expect(owned.completion.kind).toBe("ok");
+});
+
+test("url fails unbuildable captures as invalid_path", async () => {
+  const site = {
+    action: "up09::load_grid",
+    path: "/api/tenants/:tenant_id/invoices/:invoice_id",
+    captures,
+  };
+  const key = (tenant: unknown, invoice: unknown) =>
+    record(keyIdentity, [
+      ["tenant_id", tenant],
+      ["invoice_id", invoice],
+    ]);
+  // The int-typed captures record exercises int failures; the str
+  // capture failures ride the slug builder below.
+  const bad: [string, unknown][] = [
+    ["int as str", key("1", 2n)],
+    ["str as int", key(1n, "x")],
+    ["out of range", key(2n ** 63n, 1n)],
+  ];
+  expect(bad.length).toBe(3);
+  for (const [name, keyValue] of bad) {
+    const completed = await mounts.url(keyValue, site, undefined);
+    expect(`${name}: ${completed.kind}`).toBe(`${name}: domain`);
+    expect(errorType(completed as never)).toBe(id("can.std.action@1::invalid_path"));
+    expect(`${name}: ${failedField(completed, "reason")}`).toBe(
+      `${name}: ${name === "out of range" ? "capture-value" : "capture-type"}`,
+    );
+  }
+  const slugSite = {
+    action: "up09::save_slug",
+    path: "/invoices/:slug",
+    captures: [{ name: "slug", type: "str" }],
+  };
+  for (const [name, slug, reason] of [
+    ["empty", "", "capture-value"],
+    ["separator", "a/b", "capture-value"],
+    ["dot", "..", "capture-value"],
+    ["mistyped", 7n, "capture-type"],
+  ] as const) {
+    const completed = await mounts.url(record("up09::slug_key", [["slug", slug]]), slugSite, undefined);
+    expect(`${name}: ${completed.kind}`).toBe(`${name}: domain`);
+    expect(failedField(completed, "reason")).toBe(reason);
+  }
+  // Captures-record arity disagreements and malformed sites throw.
+  await expect(mounts.url(site, undefined)).rejects.toThrow(TypeError);
+  await expect(mounts.url(key(1n, 2n), site)).rejects.toThrow(TypeError);
+  await expect(mounts.url(key(1n, 2n), { ...site, path: "" }, undefined)).rejects.toThrow(TypeError);
+  await expect(
+    mounts.url(key(1n, 2n), { ...site, path: "/api/:Tenant" }, undefined),
+  ).rejects.toThrow(TypeError);
+});
+
+test("combined dispatch unions 405 claims across both tables", async () => {
+  const legacy = value(await router.post("/invoices/new", async () => success(ownedResponse(200, "x", false))));
+  const fresh = value(await mounts.mount(staticHandler, staticSite));
+  const table = value(await router.make([legacy, fresh]));
+  const put = await snapshotRequest(new Request("http://test.local/invoices/new", { method: "PUT" }), 65536);
+  if (put.kind !== "request") throw new Error("snapshot rejected");
+  const denied = value(await dispatch(table, put.value));
+  expect(denied.status).toBe(405);
+  expect(denied.headers.get("allow")).toBe("GET, POST");
+  expect(await denied.text()).toBe("Method Not Allowed");
+  // Either table alone still classifies: the slug mount claims POST under
+  // a capture, and unknown paths stay 404.
+  const slug = value(await mounts.mount(slugHandler, slugSite));
+  const solo = value(await router.make([slug]));
+  const other = await snapshotRequest(
+    new Request("http://test.local/invoices/abc", { method: "PUT" }),
+    65536,
+  );
+  if (other.kind !== "request") throw new Error("snapshot rejected");
+  const foreign = value(await dispatch(solo, other.value));
+  expect(foreign.status).toBe(405);
+  expect(foreign.headers.get("allow")).toBe("POST");
+  await foreign.text();
+  const nowhere = await snapshotRequest(new Request("http://test.local/nope", { method: "PUT" }), 65536);
+  if (nowhere.kind !== "request") throw new Error("snapshot rejected");
+  const missing = value(await dispatch(solo, nowhere.value));
+  expect(missing.status).toBe(404);
+  expect(await missing.text()).toBe("Not Found");
+});
