@@ -147,8 +147,26 @@ func TestCurrentBundledAssets(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(files) != 2 {
-				t.Fatalf("expected pinned script plus one project asset, got %v", files)
+			if len(files) != 3 {
+				t.Fatalf("expected pinned scripts plus one project asset, got %v", files)
+			}
+			script, err := distribution.HTMXAsset()
+			if err != nil {
+				t.Fatal(err)
+			}
+			guard, err := distribution.GuardAsset()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if files["assets/"+distribution.Hash(script)+"/htmx-4.0.0.min.js"] != string(script) {
+				t.Fatal("staged htmx script differs from the pinned asset")
+			}
+			if files["assets/"+distribution.Hash(guard)+"/htmx-guard.js"] != string(guard) {
+				t.Fatal("staged guard script differs from the pinned asset")
+			}
+			cssDigest := distribution.Hash([]byte("body{color:black}\n"))
+			if files["assets/"+cssDigest+"/site.css"] != "body{color:black}\n" {
+				t.Fatal("staged project asset differs from the declared bytes")
 			}
 			return files
 		}
@@ -216,6 +234,8 @@ const owned=await runOwnedRoot(async ()=>{
  const html=await page.text();
  assert.ok(html.includes("/__can/assets/htmx-4.0.0.min.js"));
  assert.ok(html.includes("sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"));
+ assert.ok(html.includes("/__can/assets/htmx-guard.js"));
+ assert.ok(html.includes("sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"));
  assert.ok(html.includes("htmx-config"));
  const policy=page.headers.get("content-security-policy")??"";
  assert.ok(policy.includes("script-src 'self'")&&!policy.includes("unsafe-eval"));
@@ -237,11 +257,16 @@ const owned=await runOwnedRoot(async ()=>{
  assert.equal(head.status,200);assert.equal(await head.text(),"");
  const posted=await fetch(base+"/__can/assets/htmx-4.0.0.min.js",{method:"POST"});
  assert.equal(posted.status,405);assert.equal(posted.headers.get("allow"),"GET, HEAD");
+ const guard=await fetch(base+"/__can/assets/htmx-guard.js");
+ assert.equal(guard.status,200);
+ assert.equal(guard.headers.get("content-type"),"text/javascript");
+ const pinnedGuard=new Uint8Array(await Bun.file(%s).bytes());
+ assert.deepEqual(new Uint8Array(await guard.arrayBuffer()),pinnedGuard);
  const style=await fetch(base+css);
  assert.equal(style.status,200);
  assert.equal(style.headers.get("content-type"),"text/css; charset=utf-8");
  assert.equal(await style.text(),"body{color:black}\n");
- for(const bad of ["/__can/nope","/__can/assets/","/__can/assets/htmx-4.0.0.min.js.map","/__can"])assert.equal((await fetch(base+bad)).status,404);
+ for(const bad of ["/__can/nope","/__can/assets/","/__can/assets/htmx-4.0.0.min.js.map","/__can/assets/htmx-guard.js.map","/__can"])assert.equal((await fetch(base+bad)).status,404);
  const traversal=await fetch(base+"/__can/project/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/../x");
  assert.equal(traversal.status,404);
  const blank=await fetch(base+"/validate",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"name="});
@@ -269,7 +294,7 @@ const owned=await runOwnedRoot(async ()=>{
 });
 assert.equal(owned.completion.kind,"ok");assert.equal(owned.cleanupFailed,false);
 console.log("compiled asset loopback passed");
-`, bootName, quote(module), quote(filepath.Join(firstDir, "program/state.ts")), quote(filepath.Join(runtimes[0], "owner.ts")), quote(filepath.Join(runtimes[0], "completion.ts")), quote(filepath.Join(sourceRoot, "distribution/assets/htmx-4.0.0.min.js")), quote(firstDir))
+`, bootName, quote(module), quote(filepath.Join(firstDir, "program/state.ts")), quote(filepath.Join(runtimes[0], "owner.ts")), quote(filepath.Join(runtimes[0], "completion.ts")), quote(filepath.Join(sourceRoot, "distribution/assets/htmx-4.0.0.min.js")), quote(filepath.Join(sourceRoot, "distribution/assets/htmx-guard.js")), quote(firstDir))
 	harnessPath := filepath.Join(t.TempDir(), "assets.ts")
 	if err := os.WriteFile(harnessPath, []byte(harness), 0600); err != nil {
 		t.Fatal(err)
