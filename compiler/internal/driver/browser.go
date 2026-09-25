@@ -101,8 +101,10 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 }
 
 // stageBrowserProgram emits the browser profile, seals source maps, binds
-// the content-addressed asset manifest, and validates and audits the
-// generation. It never selects production current.
+// the content-addressed asset manifest, audits the pre-bundle graph,
+// bundles the audited tree with the native pinned bundler, audits the
+// published bundle, and validates the generation. It never selects
+// production current.
 func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, program *check.Program, timeoutMs int) (string, *PreparedOutput, error) {
 	assets, err := r.PrivateArtifacts()
 	if err != nil {
@@ -132,10 +134,24 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 		Schema     int
 		Assertions bool
 		Target     string
-		Roots      []ir.AssertionRoot
-		TimeoutMs  int
-	}{1, false, string(browser.TargetBrowser), roots, timeoutMs})
+		Bundle     struct {
+			Target    string
+			Sourcemap string
+			Minify    bool
+		}
+		Roots     []ir.AssertionRoot
+		TimeoutMs int
+	}{2, false, string(browser.TargetBrowser), struct {
+		Target    string
+		Sourcemap string
+		Minify    bool
+	}{"browser", "external", false}, roots, timeoutMs})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
+	bundled, err := r.buildBrowserBundle(ctx, store.Graph, inputs, browserBundlerToolchain(inputs.Compiler, inputs.Runtime), artifacts)
+	if err != nil {
+		return "", nil, err
+	}
+	artifacts = append(artifacts, bundled...)
 	prepared, err := PrepareOutput(inputs, browser.BrowserEntry, artifacts)
 	if err != nil {
 		return "", nil, err
