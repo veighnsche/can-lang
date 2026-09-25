@@ -206,7 +206,8 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 	root, write := stage(t)
 	write("can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
-	write("src/app/main.can", fixture("chain-main"))
+	mainSource := fixture("chain-main")
+	write("src/app/main.can", mainSource)
 	vendorManifest := `{"source_root":"src","error_registry":"can.errors.json"}`
 	vendorRegistry := `{"active":["core::denied"],"retired":[]}`
 	write("vendor/can.project.json", vendorManifest)
@@ -398,7 +399,9 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 				if err != nil || entry.IsDir() || !strings.HasSuffix(path, ".ts") {
 					return err
 				}
-				checkSourceMap(t, path)
+				// The state module is fully synthesized, so its map is
+				// structurally complete but carries no .can mappings.
+				checkSourceMap(t, path, filepath.Base(path) != "state.ts")
 				checked++
 				return nil
 			})
@@ -406,7 +409,7 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 				t.Fatal(err)
 			}
 		}
-		checkSourceMap(t, filepath.Join(gen, "entry.ts"))
+		checkSourceMap(t, filepath.Join(gen, "entry.ts"), false)
 		if checked == 0 {
 			t.Fatalf("generation %s has no mapped modules", gen)
 		}
@@ -470,6 +473,18 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 			}
 			t.Logf("generation %s strict-clean except the known UP13 state.ts invalidQuery error", gen)
 		}
+	}
+
+	// The execution proof is nonvacuous: corrupting one expected
+	// composed value fails verification instead of running silent.
+	mutated := strings.Replace(mainSource, "direct.value is 9", "direct.value is 8", 1)
+	if mutated == mainSource {
+		t.Fatal("chain-main fixture lost the direct-value guard")
+	}
+	write("src/app/main.can", mutated)
+	status, out, diag = runAt(root, "run")
+	if status == 0 || !strings.Contains(diag, "outcome mismatch") {
+		t.Fatalf("mutated chain executed: %d %s %s", status, out, diag)
 	}
 
 	// A stale locked dependency fails before any check, emission or
@@ -546,8 +561,10 @@ func TestCurrentBundledGenericChain(t *testing.T) {
 }
 
 // checkSourceMap requires a sibling .map plus trailer for one emitted
-// module and exact mappings back to .can sources.
-func checkSourceMap(t *testing.T, path string) {
+// module. When mapped, the map must also carry exact mappings back to
+// .can sources; synthesized modules (state, entry) only need the
+// structural sibling and trailer.
+func checkSourceMap(t *testing.T, path string, mapped bool) {
 	t.Helper()
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -564,6 +581,9 @@ func checkSourceMap(t *testing.T, path string) {
 	var decoded map[string]any
 	if err := json.Unmarshal(raw, &decoded); err != nil {
 		t.Fatalf("invalid source map for %s: %v", path, err)
+	}
+	if !mapped {
+		return
 	}
 	sources, ok := decoded["sources"].([]any)
 	if !ok || len(sources) == 0 || decoded["mappings"] == "" {
