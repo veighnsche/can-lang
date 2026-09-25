@@ -169,21 +169,38 @@ fn option::value<records::grid_state> finish_load
                 browser::stale_version => ok option::none()
                 ok int version => ok option::some<records::grid_state>(next)
 
-/// Run one save press: guard, mark the flight, send the
-/// identified input body, and fold the answer back into the cell.
-/// A blocked press persists its notice into immutable state and
-/// leaves the draft and the pending attempt record untouched, so
-/// the feedback survives re-render. A press while anything flies
-/// is ignored, keeping the pending attempt visible. Returns none
-/// when the view is gone or a swap loses; callers render on some.
+/// Paint the pending save indication in place on the live status
+/// line. Best effort: a disposed view skips the paint and the save
+/// still flies; the outcome render replaces the notice either way.
+fn void paint_pending
+    emits []
+    given
+        browser::node status_line
+    asserts
+        sample: => ok
+    match call browser::set_text(status_line, "saving...")
+        browser::disposed => ok
+        ok => ok
+
+/// Run one save press: guard, mark the flight, paint the pending
+/// indication, send the identified input body, and fold the answer
+/// back into the cell. A blocked press persists its notice into
+/// immutable state and leaves the draft and the pending attempt
+/// record untouched, so the feedback survives re-render. A press
+/// while anything flies is ignored without touching the cell and
+/// without rendering, so the in-flight outcome render stays the
+/// single next render and no second tree can leak. Returns none
+/// when the view is gone, a swap loses, or the press is ignored
+/// mid-flight; callers render on some.
 fn option::value<records::grid_state> send_save
     emits []
     given
         browser::state<records::grid_state> cell
+        browser::node status_line
     asserts
         blocked:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status"))
         invalid:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status"))
-        flying:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"))
+        flying:  => ok option::none()
         sent_saved:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("2", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000), records::clean_state("saved revision 2"), ""))
         sent_transport:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status"))
         read_gone:  => ok option::none()
@@ -211,7 +228,7 @@ fn option::value<records::grid_state> send_save
                         browser::stale_version => ok option::none()
                         ok int version => ok option::some<records::grid_state>(held)
                 true => match snap.value.flight is 0
-                    false => ok option::some<records::grid_state>(snap.value)
+                    false => ok option::none()
                     true => match call model::operation_id(snap.value.key, snap.value.current.base_revision, snap.value.current.edit_seq)
                         ok str op => match call model::save_marked(snap.value, snap.value.attempt + 1, op)
                             ok records::grid_state marked => match call browser::replace_state(cell, snap.version, marked)
@@ -221,31 +238,36 @@ fn option::value<records::grid_state> send_save
                                     replace_stale: cell, 3, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => browser::stale_version(3, 4)
                                 browser::disposed => ok option::none()
                                 browser::stale_version => ok option::none()
-                                ok int version => match call model::to_input(marked.current, op)
-                                    ok contract::grid_edit_input wire => match call fetch_save(marked.key, wire)
-                                        when
-                                            sent_saved: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
-                                            sent_transport: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed("connect")
-                                        http::transport_failed => match call finish_save_fail(cell, marked.attempt, "transport")
+                                ok int version => match call paint_pending(status_line)
+                                    when
+                                        sent_saved: status_line => ok
+                                        sent_transport: status_line => ok
+                                    ok => match call model::to_input(marked.current, op)
+                                        ok contract::grid_edit_input wire => match call fetch_save(marked.key, wire)
                                             when
-                                                sent_transport: cell, 2, "transport" => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status"))
-                                            ok option::value<records::grid_state> done => ok done
-                                        http::invalid_request => match call finish_save_fail(cell, marked.attempt, "request")
-                                            ok option::value<records::grid_state> done => ok done
-                                        http::body_limit => match call finish_save_fail(cell, marked.attempt, "limit")
-                                            ok option::value<records::grid_state> done => ok done
-                                        http::status_error => match call finish_save_fail(cell, marked.attempt, "status")
-                                            ok option::value<records::grid_state> done => ok done
-                                        codec::invalid_data => match call finish_save_fail(cell, marked.attempt, "codec")
-                                            ok option::value<records::grid_state> done => ok done
-                                        ok contract::grid_edit_outcome outcome => match call finish_save(cell, marked.attempt, outcome)
-                                            when
-                                                sent_saved: cell, 2, contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000)) => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("2", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000), records::clean_state("saved revision 2"), ""))
-                                            ok option::value<records::grid_state> done => ok done
+                                                sent_saved: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+                                                sent_transport: contract::invoice_key(1, 7), contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => http::transport_failed("connect")
+                                            http::transport_failed => match call finish_save_fail(cell, marked.attempt, "transport")
+                                                when
+                                                    sent_transport: cell, 2, "transport" => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status"))
+                                                ok option::value<records::grid_state> done => ok done
+                                            http::invalid_request => match call finish_save_fail(cell, marked.attempt, "request")
+                                                ok option::value<records::grid_state> done => ok done
+                                            http::body_limit => match call finish_save_fail(cell, marked.attempt, "limit")
+                                                ok option::value<records::grid_state> done => ok done
+                                            http::status_error => match call finish_save_fail(cell, marked.attempt, "status")
+                                                ok option::value<records::grid_state> done => ok done
+                                            codec::invalid_data => match call finish_save_fail(cell, marked.attempt, "codec")
+                                                ok option::value<records::grid_state> done => ok done
+                                            ok contract::grid_edit_outcome outcome => match call finish_save(cell, marked.attempt, outcome)
+                                                when
+                                                    sent_saved: cell, 2, contract::grid_saved("t1/i7/r1/e1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000)) => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("2", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), 2, 0, contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1, contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000), records::clean_state("saved revision 2"), ""))
+                                                ok option::value<records::grid_state> done => ok done
 
 /// Run one reread press: mark the load flight, fetch the typed
 /// authorized GET, and fold the answer back into the cell. A
-/// press while anything flies is ignored.
+/// press while anything flies is ignored without rendering, so the
+/// in-flight outcome render stays the single next render.
 fn option::value<records::grid_state> load_pressed
     emits []
     given
@@ -253,7 +275,7 @@ fn option::value<records::grid_state> load_pressed
     asserts
         loaded:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), ""))
         load_transport:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::failed_state("connection lost; retry reread"), "status"))
-        flying:  => ok option::some<records::grid_state>(records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", []), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"))
+        flying:  => ok option::none()
         read_gone:  => ok option::none()
         replace_stale:  => ok option::none()
     match call browser::read_state(cell)
@@ -265,7 +287,7 @@ fn option::value<records::grid_state> load_pressed
         browser::disposed => ok option::none()
         ok browser::snapshot<records::grid_state> snap => match call model::load_marked(snap.value, snap.value.attempt + 1)
             ok records::grid_state marked => match marked.flight is 2
-                false => ok option::some<records::grid_state>(snap.value)
+                false => ok option::none()
                 true => match call browser::replace_state(cell, snap.version, marked)
                     when
                         loaded: cell, 4, records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok 5
@@ -827,10 +849,13 @@ fn void on_price_input
                                 browser::disposed => ok
                                 ok => ok
 
-/// Field key handling: Enter runs the same guarded save press
-/// as the save button, then re-renders. Registration cancels the
-/// key during native dispatch, so this callback only ever sees
-/// Enter; tab order follows the document.
+/// Field key handling: only Enter runs the same guarded save
+/// press as the save button, then re-renders. The runtime
+/// dispatches every key to registered handlers by design and only
+/// gates the synchronous cancellation on the registered key, so
+/// this callback gates on e.key itself: any other key returns
+/// without touching state or the tree, leaving typing, caret and
+/// tab order to the document.
 fn void on_field_key
     emits []
     given
@@ -838,13 +863,17 @@ fn void on_field_key
         near browser::state<records::grid_state> cell
         near browser::app app
         near browser::view view
+        near browser::node status_line
     asserts
         enter: browser::event("keydown", "qty:k1", "4", "Enter") => ok
-    match call send_save(cell)
-        ok option::value<records::grid_state> done => match done
-            option::some => match call render_replace(app, cell, view)
-                ok => ok
-            option::none => ok
+        other: browser::event("keydown", "qty:k1", "45", "5") => ok
+    match e.key is "Enter"
+        false => ok
+        true => match call send_save(cell, status_line)
+            ok option::value<records::grid_state> done => match done
+                option::some => match call render_replace(app, cell, view)
+                    ok => ok
+                option::none => ok
 
 /// Move one keyed row up, then re-render with focus kept on the
 /// moved button.
@@ -929,7 +958,8 @@ fn void on_add_line
                     ok => ok
 
 /// Save press: run the guarded identified save, then re-render
-/// on every state the press returns.
+/// on every state the press returns. An ignored mid-flight press
+/// returns none and renders nothing.
 fn void on_save_click
     emits []
     given
@@ -937,9 +967,10 @@ fn void on_save_click
         near browser::state<records::grid_state> cell
         near browser::app app
         near browser::view view
+        near browser::node status_line
     asserts
         sample: browser::event("click", "save", "", "") => ok
-    match call send_save(cell)
+    match call send_save(cell, status_line)
         ok option::value<records::grid_state> done => match done
             option::some => match call render_replace(app, cell, view)
                 ok => ok
@@ -947,7 +978,8 @@ fn void on_save_click
 
 /// Reread press: run the typed authorized GET, then re-render.
 /// Changed rows hold for an explicit choice instead of
-/// clobbering newer edits.
+/// clobbering newer edits. An ignored mid-flight press returns
+/// none and renders nothing.
 fn void on_reread_click
     emits []
     given
@@ -974,6 +1006,7 @@ fn void on_replay_click
         near browser::state<records::grid_state> cell
         near browser::app app
         near browser::view view
+        near browser::node status_line
     asserts
         sample: browser::event("click", "replay", "", "") => ok
     match call browser::read_state(cell)
@@ -981,7 +1014,7 @@ fn void on_replay_click
         ok browser::snapshot<records::grid_state> snap => match call model::replay_ready(snap.value)
             ok bool ready => match ready
                 false => ok
-                true => match call send_save(cell)
+                true => match call send_save(cell, status_line)
                     ok option::value<records::grid_state> done => match done
                         option::some => match call render_replace(app, cell, view)
                             ok => ok

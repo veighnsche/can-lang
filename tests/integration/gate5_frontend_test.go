@@ -21,16 +21,14 @@
 // Known divergences pinned here rather than hidden (see the per-leg
 // asserts and the reports' limitations):
 //
-//   - every keydown runs the grid save handler and re-renders, so typed
-//     characters usually lose the race and sometimes ghost
-//     (L-keystroke-eaten; the dispatch itself is deterministic);
-//   - no mid-flight "saving..." indication ever paints
-//     (L-flight; the single-flight guard holds);
-//   - an ignored mid-flight press plus the outcome render leaks a second
-//     grid tree (L-double-render, pinned on a throwaway page);
 //   - no same-origin 302 is producible under WebKit interception, so the
 //     invoice redirect leg records L-redirect-webkit while Chromium
 //     qualifies the engine-independent guard branch end to end.
+//
+// The grid qualifies with no limitations: only Enter dispatches its
+// save handler, the pending "saving..." indication paints mid-flight,
+// and an ignored mid-flight press renders nothing, so the outcome
+// render stays the single next render on exactly one grid tree.
 package integration
 
 import (
@@ -970,9 +968,8 @@ func (m *gate5Matrix) gridLeg(t *testing.T, engine string, port int) {
 		t.Fatal(err)
 	}
 	report := gate5ReadReport(t, "grid", engine, raw, 32, true)
-	if len(report.Limitations) != 3 || report.Limitations[0].ID != "L-keystroke-eaten" ||
-		report.Limitations[1].ID != "L-flight" || report.Limitations[2].ID != "L-double-render" {
-		t.Fatalf("grid %s limitations %+v, want the three pinned limits", engine, report.Limitations)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("grid %s limitations %+v, want none", engine, report.Limitations)
 	}
 	gate5Screenshot(t, "grid", engine, outdir)
 	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
@@ -1195,9 +1192,6 @@ func TestGate5ServedMatrix(t *testing.T) {
 		"empty":   map[string]any{"roots": browserRoots["empty"], "browser": browserBuilds["empty"], "paired": matrix.pairings["empty"].BuildID, "entry": matrix.pairings["empty"].Entry},
 		"matrix":  matrix.versions,
 		"limitations": []string{
-			"L-keystroke-eaten: every keydown runs the grid save handler and re-renders; typed characters usually lose the race and sometimes ghost",
-			"L-flight: no mid-flight saving indication paints; the single-flight guard holds",
-			"L-double-render: an ignored mid-flight press plus the outcome render leaks a second grid tree",
 			"L-redirect-webkit: no same-origin 302 is producible under WebKit interception; the redirect guard branch is qualified on Chromium",
 		},
 	}, "", "  ")

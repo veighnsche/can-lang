@@ -39,7 +39,6 @@ const bodies = [];
 const aborted = [];
 const pageerrors = [];
 const consoleErrors = [];
-const limit = (id, detail) => limitations.push({ id, detail });
 const checkLater = [];
 const check = (name, fn) => checkLater[0](name, fn);
 
@@ -121,11 +120,11 @@ try {
       await page.evaluate(() => document.querySelector("#grid h1")?.textContent?.match(/revision (\d+)/)?.[1]),
       10
     );
-  // Values are set with a synthetic input event rather than the
-  // keyboard: every real keydown on an input also dispatches the
-  // grid's Enter-to-save handler (the runtime dispatches all keys;
-  // the grid never gates on e.key), which would press save mid-edit.
-  // Real keys are used only where dispatch itself is the subject.
+  // Values are set with a synthetic input event for fast
+  // deterministic fills; only Enter dispatches the grid's save
+  // handler, so real keys type normally. The real-keystrokes leg
+  // proves typing, Enter-to-save and the clean guard with the
+  // physical keyboard path.
   const fill = async (selector, value) => {
     await page.locator(selector).evaluate(
       (node, text) => {
@@ -327,76 +326,61 @@ try {
     return `op ${sent.operation_id}; Enter prevented synchronously`;
   });
 
-  await check("keydown-eaten", async () => {
-    // The runtime dispatches every keydown and the grid never gates
-    // on e.key, so each keystroke runs the save handler and
-    // re-renders. The typed character races the re-render: usually
-    // it is lost from both DOM and state, sometimes the input fold
-    // lands late and ghosts into state. Both parts pin the race
-    // soundly: the dispatch itself is deterministic, the character
-    // fate is recorded, and correlated pairs are asserted atomically.
+  await check("real-keystrokes", async () => {
+    // Only Enter dispatches the save handler; every other keydown
+    // returns without touching state or the tree, so real typing
+    // lands in the DOM, folds into state, and reaches the wire.
     const rev = await currentRev();
     const before = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("5");
-    await page.waitForTimeout(800);
-    assert.equal(posts() - before, 0, "clean-guard keydown must not send");
-    assert.equal(await statusText(), "no changes to save");
-    const domClean = await page.locator("#qty\\:k1").inputValue();
-    assert.ok(domClean === "2" || domClean === "5", `unexpected clean-press DOM ${domClean}`);
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
+      timeout: 8000,
+    });
+    assert.equal(posts() - before, 0, "typing must not dispatch a save");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "5", "typed char must survive in the DOM");
+    assert.equal(await statusText(), "unsaved changes");
+    assert.equal(await page.locator("#totals").textContent(), "2 lines, 104.95 total");
     await saveAndWait(`saved revision ${rev + 1}`);
     const proof = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
-    const domProof = await page.locator("#qty\\:k1").inputValue();
-    assert.ok(proof.quantity === "2" || proof.quantity === "5", `unexpected proof qty ${proof.quantity}`);
-    assert.equal(proof.quantity, domProof, "the outcome render must show state truth");
-    limit(
-      "L-keystroke-eaten",
-      "every keydown runs the save handler and re-renders; the typed character usually " +
-        "loses the race (lost from DOM and state) and sometimes ghosts (late input fold); " +
-        "typing into the grid is unusable either way."
-    );
-    // On an unsaved state the same keystroke sends mid-edit: the
-    // dispatch always carries the pre-keystroke draft; the char fate
-    // races as above. (No End press: every keydown dispatches, so
-    // selecting with the keyboard would send first. Triple-click
-    // selects mousely.)
+    assert.equal(proof.quantity, "5", "typed char must reach the wire");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "5");
+    // Mid-edit Enter dispatches exactly once with the post-keystroke
+    // draft; Enter on a clean draft hits the guard and sends nothing.
     await fill("#qty\\:k1", "7");
     const mid = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("8");
-    await page.waitForFunction(
-      (r) => {
-        const text = document.querySelector("#status")?.textContent ?? "";
-        const head = document.querySelector("#grid h1")?.textContent ?? "";
-        return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
-      },
-      rev + 2,
-      { timeout: 15000 }
-    );
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
+      timeout: 8000,
+    });
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "8");
+    await page.locator("#qty\\:k1").press("Enter");
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 2}`, {
+      timeout: 15000,
+    });
+    assert.equal(posts() - mid, 1, "Enter must dispatch exactly one save");
     const sent = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
-    assert.equal(posts() - mid, 1, "one keydown must dispatch exactly one save");
-    assert.equal(sent.quantity, "7", "mid-edit dispatch carries the pre-keystroke draft");
-    const settled = await page.evaluate(() => ({
-      status: document.querySelector("#status")?.textContent ?? "",
-      qty: document.querySelector("#qty\\:k1")?.value ?? "",
-    }));
-    const lost = settled.status.includes(`saved revision ${rev + 2}`) && settled.qty === "7";
-    const ghosted = settled.status.includes("unsaved changes") && settled.qty === "8";
-    assert.ok(lost || ghosted, `incoherent mid-edit settle ${JSON.stringify(settled)}`);
+    assert.equal(sent.quantity, "8", "Enter dispatch carries the post-keystroke draft");
+    assert.equal(await statusText(), `saved revision ${rev + 2}`);
+    await page.locator("#qty\\:k1").press("Enter");
+    await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("no changes to save"), null, {
+      timeout: 8000,
+    });
+    assert.equal(posts() - mid, 1, "clean-guard Enter must not send");
     await fill("#qty\\:k1", "2");
     await saveAndWait(`saved revision ${rev + 3}`);
-    return `clean press ${proof.quantity === "2" ? "lost" : "ghosted"}, mid-edit press ${lost ? "lost" : "ghosted"}; restored at rev ${rev + 3}`;
+    return `typed chars survive to the wire; Enter sends the typed draft; restored at rev ${rev + 3}`;
   });
 
   await check("slow-save-pending", async () => {
-    // The cell holds the saving state mid-flight but no render runs
-    // until the outcome lands, so no "saving..." indication ever
-    // paints; pinned as L-flight. The leg proves the single-flight
-    // guard holds during the flight and a mid-flight edit (an
-    // interleaved owner after await) survives the outcome fold.
+    // The save flight paints "saving..." when it starts, holds the
+    // single-flight guard while outstanding, keeps a mid-flight edit
+    // (an interleaved owner after await) through the outcome fold,
+    // and clears the notice when the outcome render lands.
     await context.route("**/api/tenants/1/invoices/7", async (route) => {
       if (route.request().method() !== "POST") return route.continue();
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 2500));
       await route.continue();
     });
     try {
@@ -409,12 +393,13 @@ try {
       );
       await page.locator("#save").click();
       await sent;
-      // No second press here: an ignored mid-flight press renders
-      // the marked state, and the outcome render after it leaks a
-      // second grid (L-double-render pins that on its own page).
-      await page.waitForTimeout(400);
+      await page.waitForFunction(() => document.querySelector("#status")?.textContent === "saving...", null, {
+        timeout: 5000,
+      });
+      assert.equal(await statusText(), "saving...", "pending indication must paint mid-flight");
       assert.equal(posts() - before, 1, "one press must send exactly one flight");
       await fill("#qty\\:k1", "3");
+      assert.equal(await statusText(), "saving...", "mid-flight edit must keep the pending notice");
       await page.waitForFunction(
         (r) => {
           const text = document.querySelector("#status")?.textContent ?? "";
@@ -426,26 +411,20 @@ try {
       );
       assert.equal(await page.locator("#qty\\:k1").inputValue(), "3", "mid-flight edit must survive");
       assert.equal(await page.locator("#price\\:k1").inputValue(), "20.00");
-      limit(
-        "L-flight",
-        "no mid-flight 'saving...' indication paints: the cell holds the pending state " +
-          "but the grid renders only after the outcome lands; the single-flight guard holds."
-      );
+      assert.equal(await page.locator("#grid").count(), 1, "press plus outcome must leave one grid");
       await saveAndWait(`saved revision ${rev + 2}`);
-      return "guard holds mid-flight; mid-flight edit preserved";
+      return "saving paints mid-flight and clears on the outcome; mid-flight edit preserved";
     } finally {
       await context.unroute("**/api/tenants/1/invoices/7");
     }
   });
 
-  await check("double-render-leak", async () => {
-    // Two render_replaces from one captured view leak a tree: the
-    // ignored mid-flight press disposes the captured view and builds
-    // a second grid, then the outcome render disposes the same
-    // already-disposed view (a no-op) and appends another, so two
-    // grids survive. Pinned on a throwaway page whose POST is
-    // fulfilled synthetically (the shared server never commits),
-    // closed after.
+  await check("midflight-press-single-grid", async () => {
+    // An ignored mid-flight press returns without rendering, so the
+    // in-flight outcome render stays the single next render and
+    // exactly one grid survives. Proved on a throwaway page whose
+    // POST is fulfilled synthetically (the shared server never
+    // commits), closed after.
     const probe = await context.newPage();
     watch(probe);
     probe.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
@@ -456,7 +435,7 @@ try {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: '{"case":"invoice_contract::grid_saved","value":{"current":{"revision":"99","lines":[{"key":"k1","id":"sku-9","quantity":"9","price":"20.00"}],"total_minor_units":18000}}}',
+          body: '{"case":"invoice_contract::grid_saved","value":{"operation_id":"synthetic-probe-op","acknowledged":{"revision":"99","lines":[{"key":"k1","id":"sku-9","quantity":"9","price":"20.00"}],"total_minor_units":18000}}}',
         });
       });
       try {
@@ -471,21 +450,27 @@ try {
         await probe.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
           timeout: 8000,
         });
+        const before = posts();
         const sent = probe.waitForRequest(
           (request) => request.url().includes("/api/tenants/") && request.method() === "POST",
           { timeout: 15000 }
         );
         await probe.locator("#save").click();
         await sent;
+        await probe.waitForFunction(() => document.querySelector("#status")?.textContent === "saving...", null, {
+          timeout: 5000,
+        });
         await probe.locator("#save").click();
-        await probe.waitForFunction(() => document.querySelectorAll("#grid").length === 2, null, { timeout: 15000 });
-        limit(
-          "L-double-render",
-          "an ignored mid-flight press renders the marked state and the outcome render " +
-            "after it leaks the tree: two #grid divs survive; every re-render pair from one " +
-            "captured view accumulates another tree."
-        );
-        return "two grids pinned on a throwaway page";
+        await probe.waitForTimeout(400);
+        assert.equal(posts() - before, 1, "ignored mid-flight press must not send");
+        assert.equal(await probe.locator("#grid").count(), 1, "ignored press must not render a second tree");
+        await probe.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("saved revision 99"), null, {
+          timeout: 15000,
+        });
+        assert.equal(posts() - before, 1, "press plus outcome must send exactly one flight");
+        assert.equal(await probe.locator("#grid").count(), 1, "press plus outcome must leave one grid");
+        assert.equal(await probe.locator("#status").textContent(), "saved revision 99");
+        return "ignored press renders nothing; outcome leaves one grid at rev 99";
       } finally {
         await context.unroute("**/api/tenants/1/invoices/7");
       }
