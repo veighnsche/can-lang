@@ -1,158 +1,342 @@
 package model
-    provides [totals_text, operation_id, to_wire, from_found, with_customer, with_sku, with_qty, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, customer_edited, sku_edited, qty_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, rejected_applied, stale_applied, denied_applied, busy_applied, save_failed, found_applied, load_denied_applied, load_busy_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state]
-    uses [records, text]
+    provides [totals_text, minor_to_price, parse_price, parse_qty, parse_key, operation_id, to_input, from_snapshot, with_id, with_quantity, with_price, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, blocked_applied, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, id_edited, quantity_edited, price_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, invalid_applied, conflict_applied, forbidden_applied, unavailable_applied, save_failed, loaded_applied, load_forbidden_applied, load_unavailable_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state, row_focus_control]
+    uses [billing::invoice_contract as contract, records, number, option, text]
 
-/// Fold step for exact quantity totals. Integer arithmetic only: no
-/// float ever touches a total, so totals are exact by construction.
-fn int add_qty
+/// Report whether one scalar is an ASCII digit.
+fn bool digit_ok
     emits []
     given
-        int acc
-        records::draft_line line
+        int scalar
     asserts
-        sample: 4, records::draft_line("k1", "sku-1", "2", 2, true) => ok 6
-        zero: 0, records::draft_line("k1", "sku-1", "1", 1, true) => ok 1
-    ok acc + line.qty
+        zero: 48 => ok true
+        nine: 57 => ok true
+        dot: 46 => ok false
+        letter: 97 => ok false
+    match scalar >= 48 and scalar <= 57
+        false => ok false
+        true => ok true
 
-/// Exact total units across the draft lines in order.
-fn int total_units
+/// A leading zero integer part is padded only when another digit
+/// follows it: "0" and "0.5" stay canonical while "05" fails.
+fn bool leading_zero_bad
+    emits []
+    given
+        int[] units
+        int index
+        int int_digits
+    asserts
+        padded: [48, 53], 0, 0 => ok true
+        lone: [48], 0, 0 => ok false
+        dotted: [48, 46, 53], 0, 0 => ok false
+        later: [53, 48], 1, 1 => ok false
+    match int_digits is 0 and units[index] is 48
+        false => ok false
+        true => match index + 1 >= units.length
+            false => match call digit_ok(units[(index + 1)])
+                ok bool digit => ok digit
+            true => ok false
+
+/// Scan price scalars into minor units: a canonical integer part
+/// (0 or no leading zero), an optional dot, then one or two fraction
+/// digits. Anything else reads none; values above one million major
+/// units read none. The accumulator never nears int64 range: the
+/// integer part fails fast past one hundred million minor units.
+fn option::value<int> price_scan
+    emits []
+    given
+        int[] units
+        int index
+        int int_value
+        int int_digits
+        int frac_value
+        int frac_digits
+        int dotted
+    asserts
+        whole: [53], 0, 0, 0, 0, 0, 0 => ok option::some(500)
+        cents: [53, 46, 48, 53], 0, 0, 0, 0, 0, 0 => ok option::some(505)
+        dime: [53, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::some(550)
+        zero: [48], 0, 0, 0, 0, 0, 0 => ok option::some(0)
+        padded: [48, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        trailing_dot: [53, 46], 0, 0, 0, 0, 0, 0 => ok option::none()
+        leading_dot: [46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        three_dp: [53, 46, 48, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+        double_dot: [53, 46, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        letter: [53, 120], 0, 0, 0, 0, 0, 0 => ok option::none()
+        empty: [], 0, 0, 0, 0, 0, 0 => ok option::none()
+        cap: [49, 48, 48, 48, 48, 48, 48, 46, 48, 48], 0, 0, 0, 0, 0, 0 => ok option::some(100000000)
+        over: [49, 48, 48, 48, 48, 48, 48, 46, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+    match index >= units.length
+        false => match call digit_ok(units[index])
+            ok bool digit => match digit
+                false => match units[index] is 46 and dotted is 0 and int_digits >= 1
+                    false => ok option::none()
+                    true => match call price_scan(units, index + 1, int_value, int_digits, frac_value, frac_digits, 1)
+                        ok option::value<int> rest => ok rest
+                true => match dotted is 1
+                    false => match call leading_zero_bad(units, index, int_digits)
+                        ok bool padded => match padded
+                            false => match int_value > 100000000
+                                false => match call price_scan(units, index + 1, int_value * 10 + units[index] - 48, int_digits + 1, frac_value, frac_digits, dotted)
+                                    ok option::value<int> rest => ok rest
+                                true => ok option::none()
+                            true => ok option::none()
+                    true => match frac_digits >= 2
+                        false => match call price_scan(units, index + 1, int_value, int_digits, frac_value * 10 + units[index] - 48, frac_digits + 1, dotted)
+                            ok option::value<int> rest => ok rest
+                        true => ok option::none()
+        true => match int_digits is 0
+            false => match dotted is 1 and frac_digits is 0
+                false => match frac_digits is 1
+                    false => match int_value * 100 + frac_value > 100000000
+                        false => ok option::some(int_value * 100 + frac_value)
+                        true => ok option::none()
+                    true => match int_value * 100 + frac_value * 10 > 100000000
+                        false => ok option::some(int_value * 100 + frac_value * 10)
+                        true => ok option::none()
+                true => ok option::none()
+            true => ok option::none()
+
+/// Parse one price text into minor units. The grid accepts exactly
+/// the server wire shape: major units with at most two fraction
+/// digits ("19.99", "5", "0.50"). Money is always integer minor
+/// units past this point, so totals are exact by construction.
+fn option::value<int> parse_price
+    emits []
+    given
+        str text
+    asserts
+        whole: "5" => ok option::some(500)
+        cents: "19.99" => ok option::some(1999)
+        dime: "0.5" => ok option::some(50)
+        zero: "0" => ok option::some(0)
+        cap: "1000000.00" => ok option::some(100000000)
+        over: "1000000.01" => ok option::none()
+        empty: "" => ok option::none()
+        padded: "05" => ok option::none()
+        trailing_dot: "5." => ok option::none()
+        leading_dot: ".5" => ok option::none()
+        three_dp: "5.001" => ok option::none()
+        negative: "-1" => ok option::none()
+        spaced: " 5" => ok option::none()
+    match call text::scalars(text)
+        text::invalid_unicode => ok option::none()
+        ok int[] units => match call price_scan(units, 0, 0, 0, 0, 0, 0)
+            ok option::value<int> minor => ok minor
+
+/// Parse one quantity text into its count. The strict integer grammar
+/// rejects blanks, signs and leading zeros, and the count must fit
+/// 1..1000000 like the server bound.
+fn option::value<int> parse_qty
+    emits []
+    given
+        str text
+    asserts
+        sample: "2" => ok option::some(2)
+        one: "1" => ok option::some(1)
+        cap: "1000000" => ok option::some(1000000)
+        zero: "0" => ok option::none()
+        over: "1000001" => ok option::none()
+        bad_text: "many" => ok option::none()
+        empty: "" => ok option::none()
+        padded: "02" => ok option::none()
+        negative: "-1" => ok option::none()
+    match call text::to_int(text)
+        text::invalid_number => ok option::none()
+        ok int qty => match qty < 1 or qty > 1000000
+            false => ok option::some(qty)
+            true => ok option::none()
+
+/// Parse one bootstrap query key into its id. The spelling must be
+/// canonical decimal (a from_int round trip) and the id positive;
+/// tenant and invoice ids share this one rule.
+fn option::value<int> parse_key
+    emits []
+    given
+        str text
+    asserts
+        sample: "7" => ok option::some(7)
+        one: "1" => ok option::some(1)
+        zero: "0" => ok option::none()
+        negative: "-1" => ok option::none()
+        padded: "07" => ok option::none()
+        bad_text: "many" => ok option::none()
+        empty: "" => ok option::none()
+        spaced: " 7" => ok option::none()
+        huge: "9999999999999999999999" => ok option::none()
+    match call text::to_int(text)
+        text::invalid_number => ok option::none()
+        ok int id => match id < 1
+            false => match call text::from_int(id) is text
+                false => ok option::none()
+                true => ok option::some(id)
+            true => ok option::none()
+
+/// Render minor units back to canonical wire price: whole units, a
+/// dot, and exactly two fraction digits. Totals are never negative.
+fn str minor_to_price
+    emits []
+    given
+        int minor
+    asserts
+        zero: 0 => ok "0.00"
+        cents: 5 => ok "0.05"
+        dime: 50 => ok "0.50"
+        whole: 500 => ok "5.00"
+        mixed: 1999 => ok "19.99"
+        cap: 100000000 => ok "1000000.00"
+    match call number::divmod(minor, 100)
+        number::zero_divisor => ok ""
+        ok number::division split => match split.remainder < 10
+            false => ok call text::from_int(split.quotient) + "." + call text::from_int(split.remainder)
+            true => ok call text::from_int(split.quotient) + ".0" + call text::from_int(split.remainder)
+
+/// Exact total minor units across the draft lines in order. Integer
+/// arithmetic only: no float ever touches a total, so totals are
+/// exact by construction. Only parsed values feed the sum.
+fn int total_minor
     emits []
     given
         records::draft_line[] lines
+        int index
+        int grown
     asserts
-        empty: [] => ok 0
-        one: [records::draft_line("k1", "sku-1", "2", 2, true)] => ok 2
-        two: [records::draft_line("k1", "sku-1", "2", 2, true), records::draft_line("k2", "sku-2", "1", 1, true)] => ok 3
-    ok call lines.fold(0, callable add_qty)
+        empty: [], 0, 0 => ok 0
+        one: [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 0, 0 => ok 1000
+        two: [records::draft_line("k1", "a", "2", "5.00", 2, 500, true), records::draft_line("k2", "b", "1", "0.50", 1, 50, true)], 0, 0 => ok 1050
+    match index >= lines.length
+        false => match call total_minor(lines, index + 1, grown + lines[index].qty * lines[index].price_minor)
+            ok int rest => ok rest
+        true => ok grown
 
-/// Totals line for the grid chrome: line count and exact units.
+/// Totals line for the grid chrome: line count and exact total.
 fn str totals_text
     emits []
     given
         records::draft draft
     asserts
-        empty: records::draft("inv-1", 1, "Acme", [], 0) => ok "0 lines, 0 units"
-        one: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "sku-1", "2", 2, true)], 1) => ok "1 lines, 2 units"
-        two: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "sku-1", "2", 2, true), records::draft_line("k2", "sku-2", "1", 1, true)], 2) => ok "2 lines, 3 units"
-    ok call text::from_int(draft.lines.length) + " lines, " + call text::from_int(call total_units(draft.lines)) + " units"
+        empty: records::draft("1", [], 0) => ok "0 lines, 0.00 total"
+        one: records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1) => ok "1 lines, 10.00 total"
+        two: records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true), records::draft_line("k2", "b", "1", "0.50", 1, 50, true)], 2) => ok "2 lines, 10.50 total"
+    ok call text::from_int(draft.lines.length) + " lines, " + call minor_to_price(call total_minor(draft.lines, 0, 0)) + " total"
 
-/// App-owned operation id: invoice, base revision and edit sequence.
-/// Same content retries reuse the identical id (the sequence only
-/// moves on real edits); a new intent mints a new id.
+/// App-owned operation id: tenant, invoice, base revision and edit
+/// sequence. Same content retries reuse the identical id (the sequence
+/// only moves on real edits); a new intent mints a new id.
 fn str operation_id
     emits []
     given
-        str invoice_id
-        int base_revision
+        contract::invoice_key key
+        str revision
         int edit_seq
     asserts
-        sample: "inv-1", 1, 0 => ok "inv-1/r1/e0"
-        second: "inv-1", 2, 3 => ok "inv-1/r2/e3"
-    ok invoice_id + "/r" + call text::from_int(base_revision) + "/e" + call text::from_int(edit_seq)
+        sample: contract::invoice_key(1, 7), "1", 0 => ok "t1/i7/r1/e0"
+        second: contract::invoice_key(1, 7), "2", 3 => ok "t1/i7/r2/e3"
+    ok "t" + call text::from_int(key.tenant_id) + "/i" + call text::from_int(key.invoice_id) + "/r" + revision + "/e" + call text::from_int(edit_seq)
 
 /// Project one valid draft line onto the JSON save wire. Callers
-/// only send drafts with no invalid line (see save_blocked).
-fn records::line_json_wire to_wire_line
+/// only send drafts with no invalid line (see save_blocked). The
+/// edited texts ride verbatim: a valid line parses, so the server
+/// parses the same text.
+fn contract::grid_line_wire to_wire_line
     emits []
     given
         records::draft_line line
     asserts
-        sample: records::draft_line("k1", "sku-1", "2", 2, true) => ok records::line_json_wire("k1", "sku-1", 2)
-    ok records::line_json_wire(line.key, line.sku, line.qty)
+        sample: records::draft_line("k1", "a", "2", "5.00", 2, 500, true) => ok contract::grid_line_wire("k1", "a", "2", "5.00")
+    ok contract::grid_line_wire(line.key, line.id, line.quantity, line.price)
 
 /// Project draft lines onto the wire in order.
-fn records::line_json_wire[] to_wire_lines
+fn contract::grid_line_wire[] to_wire_lines
     emits []
     given
         records::draft_line[] lines
     asserts
         empty: [] => ok []
-        one: [records::draft_line("k1", "sku-1", "2", 2, true)] => ok [records::line_json_wire("k1", "sku-1", 2)]
+        one: [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)] => ok [contract::grid_line_wire("k1", "a", "2", "5.00")]
     ok call lines.map(callable to_wire_line)
 
-/// Project one draft onto the JSON save wire. The session token
-/// stays empty: the browser sends the same-origin session cookie
-/// and the server route overwrites this field from that cookie.
-fn records::invoice_json_wire to_wire
+/// Project one draft onto the JSON save input: the app-owned
+/// operation id, the base revision the draft was read from, and the
+/// keyed lines in order.
+fn contract::grid_edit_input to_input
     emits []
     given
         records::draft draft
         str op
     asserts
-        sample: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "sku-1", "2", 2, true)], 1), "inv-1/r1/e1" => ok records::invoice_json_wire("", "inv-1/r1/e1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)])
-    ok records::invoice_json_wire("", op, draft.invoice_id, draft.base_revision, draft.customer, call to_wire_lines(draft.lines))
+        sample: records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1), "t1/i7/r1/e1" => ok contract::grid_edit_input("t1/i7/r1/e1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")])
+    ok contract::grid_edit_input(op, draft.base_revision, call to_wire_lines(draft.lines))
 
-/// Project one loaded line into a valid draft line.
-fn records::draft_line from_found_line
+/// Project one loaded wire line into a draft line. Loaded lines are
+/// canonical, so both texts parse; a defensive miss parses to zero
+/// and blocks the save until the line is fixed.
+fn records::draft_line from_wire_line
     emits []
     given
-        records::found_line line
+        contract::grid_line_wire line
     asserts
-        sample: records::found_line("k1", "sku-1", 2) => ok records::draft_line("k1", "sku-1", "2", 2, true)
-    ok records::draft_line(line.key, line.sku, call text::from_int(line.qty), line.qty, true)
+        sample: contract::grid_line_wire("k1", "a", "2", "5.00") => ok records::draft_line("k1", "a", "2", "5.00", 2, 500, true)
+        bad_qty: contract::grid_line_wire("k1", "a", "many", "5.00") => ok records::draft_line("k1", "a", "many", "5.00", 0, 500, false)
+        bad_price: contract::grid_line_wire("k1", "a", "2", "five") => ok records::draft_line("k1", "a", "2", "five", 2, 0, false)
+    match call parse_qty(line.quantity)
+        ok option::value<int> qty => match call parse_price(line.price)
+            ok option::value<int> minor => match qty
+                option::none => match minor
+                    option::none => ok records::draft_line(line.key, line.id, line.quantity, line.price, 0, 0, false)
+                    option::some => ok records::draft_line(line.key, line.id, line.quantity, line.price, 0, minor.value, false)
+                option::some => match minor
+                    option::none => ok records::draft_line(line.key, line.id, line.quantity, line.price, qty.value, 0, false)
+                    option::some => ok records::draft_line(line.key, line.id, line.quantity, line.price, qty.value, minor.value, true)
 
-/// Adopt one loaded invoice as a clean draft: the base revision is
+/// Adopt one loaded snapshot as a clean draft: the base revision is
 /// the loaded revision and the edit sequence restarts at zero.
-fn records::draft from_found
+fn records::draft from_snapshot
     emits []
     given
-        records::found loaded
+        contract::grid_snapshot loaded
     asserts
-        sample: records::found("inv-1", 3, "Acme", [records::found_line("k1", "sku-1", 2)]) => ok records::draft("inv-1", 3, "Acme", [records::draft_line("k1", "sku-1", "2", 2, true)], 0)
-        empty: records::found("inv-1", 1, "", []) => ok records::draft("inv-1", 1, "", [], 0)
-    ok records::draft(loaded.invoice_id, loaded.revision, loaded.customer, call loaded.lines.map(callable from_found_line), 0)
+        sample: contract::grid_snapshot("3", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000) => ok records::draft("3", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 0)
+        empty: contract::grid_snapshot("1", [], 0) => ok records::draft("1", [], 0)
+    ok records::draft(loaded.revision, call loaded.lines.map(callable from_wire_line), 0)
 
-/// Retarget the draft customer. An unchanged value is not an edit:
-/// the sequence only moves when the value actually changes, so an
-/// identical retry keeps its operation id.
-fn records::draft with_customer
-    emits []
-    given
-        records::draft draft
-        str customer
-    asserts
-        changed: records::draft("inv-1", 1, "Acme", [], 2), "Globex" => ok records::draft("inv-1", 1, "Globex", [], 3)
-        same: records::draft("inv-1", 1, "Acme", [], 2), "Acme" => ok records::draft("inv-1", 1, "Acme", [], 2)
-    match customer is draft.customer
-        false => ok records::draft(draft.invoice_id, draft.base_revision, customer, draft.lines, draft.edit_seq + 1)
-        true => ok draft
-
-/// Rewrite the sku of the named line front to back, copying the rest
-/// untouched. An unknown key copies every line unchanged.
-fn records::draft_line[] sku_lines
+/// Rewrite the id of the named line front to back, copying the rest
+/// untouched. An unknown key copies every line unchanged. Id edits
+/// never move validity by themselves: the server validates the id on
+/// save and reports it through the 422 errors.
+fn records::draft_line[] id_lines
     emits []
     given
         records::draft_line[] lines
         str key
-        str sku
+        str id
         int index
         records::draft_line[] grown
     asserts
-        hit: [records::draft_line("k1", "a", "1", 1, true)], "k1", "b", 0, [] => ok [records::draft_line("k1", "b", "1", 1, true)]
-        miss: [records::draft_line("k1", "a", "1", 1, true)], "k9", "b", 0, [] => ok [records::draft_line("k1", "a", "1", 1, true)]
+        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "b", 0, [] => ok [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)]
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", "b", 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
         empty: [], "k1", "b", 0, [] => ok []
     match index >= lines.length
         false => match lines[index].key is key
-            false => match call sku_lines(lines, key, sku, index + 1, call append<records::draft_line>(grown, lines[index]))
+            false => match call id_lines(lines, key, id, index + 1, call append<records::draft_line>(grown, lines[index]))
                 ok records::draft_line[] rest => ok rest
-            true => match call sku_lines(lines, key, sku, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, sku, lines[index].qty_text, lines[index].qty, lines[index].valid)))
+            true => match call id_lines(lines, key, id, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, id, lines[index].quantity, lines[index].price, lines[index].qty, lines[index].price_minor, lines[index].valid)))
                 ok records::draft_line[] rest => ok rest
         true => ok grown
 
-/// Retarget one line sku by key. Unknown keys and unchanged values
+/// Retarget one line id by key. Unknown keys and unchanged values
 /// leave the sequence alone.
-fn records::draft with_sku
+fn records::draft with_id
     emits []
     given
         records::draft draft
         str key
-        str sku
+        str id
     asserts
-        changed: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k1", "b" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "b", "1", 1, true)], 3)
-        unknown: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k9", "b" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2)
+        changed: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "b" => ok records::draft("1", [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)], 3)
+        unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "b" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
     match (call key_at(draft.lines, key, 0)) >= draft.lines.length
-        false => match (call current_sku(draft.lines, key, 0)) is sku
-            false => ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call sku_lines(draft.lines, key, sku, 0, []), draft.edit_seq + 1)
+        false => match (call current_id(draft.lines, key, 0)) is id
+            false => ok records::draft(draft.base_revision, call id_lines(draft.lines, key, id, 0, []), draft.edit_seq + 1)
             true => ok draft
         true => ok draft
 
@@ -164,7 +348,7 @@ fn str line_key
         records::draft_line[] lines
         int index
     asserts
-        sample: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 1 => ok "k2"
+        sample: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1 => ok "k2"
     ok lines[index].key
 
 /// Read the line at a known position. Callers only pass positions
@@ -175,7 +359,7 @@ fn records::draft_line line_at
         records::draft_line[] lines
         int index
     asserts
-        sample: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 1 => ok records::draft_line("k2", "b", "1", 1, true)
+        sample: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1 => ok records::draft_line("k2", "b", "1", "1.00", 1, 100, true)
     ok lines[index]
 
 /// Locate a line index by key; an unknown key reads past the end.
@@ -186,9 +370,9 @@ fn int key_at
         str key
         int index
     asserts
-        head: [records::draft_line("k1", "a", "1", 1, true)], "k1", 0 => ok 0
-        tail: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], "k2", 0 => ok 1
-        miss: [records::draft_line("k1", "a", "1", 1, true)], "k9", 0 => ok 1
+        head: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok 0
+        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], "k2", 0 => ok 1
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0 => ok 1
     match index >= lines.length
         false => match lines[index].key is key
             false => match call key_at(lines, key, index + 1)
@@ -196,93 +380,172 @@ fn int key_at
             true => ok index
         true => ok lines.length
 
-/// Read the current sku of a known key; unknown keys read "".
-fn str current_sku
+/// Read the current id of a known key; unknown keys read "".
+fn str current_id
     emits []
     given
         records::draft_line[] lines
         str key
         int index
     asserts
-        hit: [records::draft_line("k1", "a", "1", 1, true)], "k1", 0 => ok "a"
-        miss: [records::draft_line("k1", "a", "1", 1, true)], "k9", 0 => ok ""
+        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok "a"
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0 => ok ""
     match index >= lines.length
         false => match lines[index].key is key
-            false => match call current_sku(lines, key, index + 1)
+            false => match call current_id(lines, key, index + 1)
                 ok str rest => ok rest
-            true => ok lines[index].sku
+            true => ok lines[index].id
         true => ok ""
 
 /// Rewrite the quantity text of the named line front to back. The
-/// text parses here because the JSON wire needs a typed int: the
+/// text parses here because exact totals need a typed count: the
 /// strict integer grammar rejects blanks, signs and leading zeros,
 /// and the count must fit 1..1000000 like the server bound. The raw
 /// text is always kept on screen; the parsed count only moves on a
 /// valid parse, and the flag records whether the line can be sent.
-fn records::draft_line[] qty_lines
+fn records::draft_line[] quantity_lines
     emits []
     given
         records::draft_line[] lines
         str key
-        str qty_text
+        str quantity
         int index
         records::draft_line[] grown
     asserts
-        valid: [records::draft_line("k1", "a", "1", 1, true)], "k1", "4", 0, [] => ok [records::draft_line("k1", "a", "4", 4, true)]
-        bad_text: [records::draft_line("k1", "a", "1", 1, true)], "k1", "many", 0, [] => ok [records::draft_line("k1", "a", "many", 1, false)]
-        bad_range: [records::draft_line("k1", "a", "1", 1, true)], "k1", "0", 0, [] => ok [records::draft_line("k1", "a", "0", 1, false)]
-        miss: [records::draft_line("k1", "a", "1", 1, true)], "k9", "4", 0, [] => ok [records::draft_line("k1", "a", "1", 1, true)]
+        valid: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "4", 0, [] => ok [records::draft_line("k1", "a", "4", "1.00", 4, 100, true)]
+        bad_text: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "many", 0, [] => ok [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)]
+        bad_range: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "0", 0, [] => ok [records::draft_line("k1", "a", "0", "1.00", 1, 100, false)]
+        bad_price_kept: [records::draft_line("k1", "a", "1", "five", 1, 100, false)], "k1", "4", 0, [] => ok [records::draft_line("k1", "a", "4", "five", 4, 100, false)]
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", "4", 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
     match index >= lines.length
         false => match lines[index].key is key
-            false => match call qty_lines(lines, key, qty_text, index + 1, call append<records::draft_line>(grown, lines[index]))
+            false => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, lines[index]))
                 ok records::draft_line[] rest => ok rest
-            true => match call text::to_int(qty_text)
-                text::invalid_number => match call qty_lines(lines, key, qty_text, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].sku, qty_text, lines[index].qty, false)))
-                    ok records::draft_line[] rest => ok rest
-                ok int qty => match qty < 1 or qty > 1000000
-                    false => match call qty_lines(lines, key, qty_text, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].sku, qty_text, qty, true)))
-                        ok records::draft_line[] rest => ok rest
-                    true => match call qty_lines(lines, key, qty_text, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].sku, qty_text, lines[index].qty, false)))
-                        ok records::draft_line[] rest => ok rest
+            true => match call parse_qty(quantity)
+                ok option::value<int> qty => match call parse_price(lines[index].price)
+                    ok option::value<int> minor => match qty
+                        option::none => match minor
+                            option::none => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, quantity, lines[index].price, lines[index].qty, lines[index].price_minor, false)))
+                                ok records::draft_line[] rest => ok rest
+                            option::some => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, quantity, lines[index].price, lines[index].qty, minor.value, false)))
+                                ok records::draft_line[] rest => ok rest
+                        option::some => match minor
+                            option::none => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, quantity, lines[index].price, qty.value, lines[index].price_minor, false)))
+                                ok records::draft_line[] rest => ok rest
+                            option::some => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, quantity, lines[index].price, qty.value, minor.value, true)))
+                                ok records::draft_line[] rest => ok rest
         true => ok grown
 
 /// Retarget one line quantity text by key. Unknown keys and
 /// unchanged text leave the sequence alone; a text change always
 /// counts as an edit even when it does not parse, because the
 /// screen content changed.
-fn records::draft with_qty
+fn records::draft with_quantity
     emits []
     given
         records::draft draft
         str key
-        str qty_text
+        str quantity
     asserts
-        changed: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k1", "4" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "4", 4, true)], 3)
-        invalid: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k1", "many" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "many", 1, false)], 3)
-        same: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k1", "1" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2)
-        unknown: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k9", "4" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2)
+        changed: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "4" => ok records::draft("1", [records::draft_line("k1", "a", "4", "1.00", 4, 100, true)], 3)
+        invalid: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "many" => ok records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 3)
+        same: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "1" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
+        unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "4" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
     match (call key_at(draft.lines, key, 0)) >= draft.lines.length
-        false => match (call current_qty_text(draft.lines, key, 0)) is qty_text
-            false => ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call qty_lines(draft.lines, key, qty_text, 0, []), draft.edit_seq + 1)
+        false => match (call current_quantity(draft.lines, key, 0)) is quantity
+            false => ok records::draft(draft.base_revision, call quantity_lines(draft.lines, key, quantity, 0, []), draft.edit_seq + 1)
             true => ok draft
         true => ok draft
 
 /// Read the current quantity text of a known key; unknown keys
 /// read "".
-fn str current_qty_text
+fn str current_quantity
     emits []
     given
         records::draft_line[] lines
         str key
         int index
     asserts
-        hit: [records::draft_line("k1", "a", "7", 7, true)], "k1", 0 => ok "7"
-        miss: [records::draft_line("k1", "a", "7", 7, true)], "k9", 0 => ok ""
+        hit: [records::draft_line("k1", "a", "7", "1.00", 7, 100, true)], "k1", 0 => ok "7"
+        miss: [records::draft_line("k1", "a", "7", "1.00", 7, 100, true)], "k9", 0 => ok ""
     match index >= lines.length
         false => match lines[index].key is key
-            false => match call current_qty_text(lines, key, index + 1)
+            false => match call current_quantity(lines, key, index + 1)
                 ok str rest => ok rest
-            true => ok lines[index].qty_text
+            true => ok lines[index].quantity
+        true => ok ""
+
+/// Rewrite the price text of the named line front to back. The text
+/// parses here because exact totals need typed minor units: the wire
+/// price grammar above admits major units with at most two fraction
+/// digits. The raw text is always kept on screen; the parsed minor
+/// value only moves on a valid parse.
+fn records::draft_line[] price_lines
+    emits []
+    given
+        records::draft_line[] lines
+        str key
+        str price
+        int index
+        records::draft_line[] grown
+    asserts
+        valid: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "2.50", 0, [] => ok [records::draft_line("k1", "a", "1", "2.50", 1, 250, true)]
+        bad_text: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", "five", 0, [] => ok [records::draft_line("k1", "a", "1", "five", 1, 100, false)]
+        bad_qty_kept: [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], "k1", "2.50", 0, [] => ok [records::draft_line("k1", "a", "many", "2.50", 1, 250, false)]
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", "2.50", 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
+    match index >= lines.length
+        false => match lines[index].key is key
+            false => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, lines[index]))
+                ok records::draft_line[] rest => ok rest
+            true => match call parse_qty(lines[index].quantity)
+                ok option::value<int> qty => match call parse_price(price)
+                    ok option::value<int> minor => match qty
+                        option::none => match minor
+                            option::none => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, lines[index].quantity, price, lines[index].qty, lines[index].price_minor, false)))
+                                ok records::draft_line[] rest => ok rest
+                            option::some => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, lines[index].quantity, price, lines[index].qty, minor.value, false)))
+                                ok records::draft_line[] rest => ok rest
+                        option::some => match minor
+                            option::none => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, lines[index].quantity, price, qty.value, lines[index].price_minor, false)))
+                                ok records::draft_line[] rest => ok rest
+                            option::some => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, lines[index].quantity, price, qty.value, minor.value, true)))
+                                ok records::draft_line[] rest => ok rest
+        true => ok grown
+
+/// Retarget one line price text by key. Unknown keys and unchanged
+/// text leave the sequence alone.
+fn records::draft with_price
+    emits []
+    given
+        records::draft draft
+        str key
+        str price
+    asserts
+        changed: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "2.50" => ok records::draft("1", [records::draft_line("k1", "a", "1", "2.50", 1, 250, true)], 3)
+        invalid: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "five" => ok records::draft("1", [records::draft_line("k1", "a", "1", "five", 1, 100, false)], 3)
+        same: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "1.00" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
+        unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "2.50" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
+    match (call key_at(draft.lines, key, 0)) >= draft.lines.length
+        false => match (call current_price(draft.lines, key, 0)) is price
+            false => ok records::draft(draft.base_revision, call price_lines(draft.lines, key, price, 0, []), draft.edit_seq + 1)
+            true => ok draft
+        true => ok draft
+
+/// Read the current price text of a known key; unknown keys read "".
+fn str current_price
+    emits []
+    given
+        records::draft_line[] lines
+        str key
+        int index
+    asserts
+        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok "1.00"
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0 => ok ""
+    match index >= lines.length
+        false => match lines[index].key is key
+            false => match call current_price(lines, key, index + 1)
+                ok str rest => ok rest
+            true => ok lines[index].price
         true => ok ""
 
 /// Report whether a line key is already taken.
@@ -293,8 +556,8 @@ fn bool key_taken
         str key
         int index
     asserts
-        taken: [records::draft_line("k1", "a", "1", 1, true)], "k1", 0 => ok true
-        free: [records::draft_line("k1", "a", "1", 1, true)], "k2", 0 => ok false
+        taken: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok true
+        free: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k2", 0 => ok false
     match index >= lines.length
         false => match lines[index].key is key
             false => match call key_taken(lines, key, index + 1)
@@ -311,8 +574,8 @@ fn str free_key
         int n
     asserts
         first: [], 1 => ok "k1"
-        gap: [records::draft_line("k1", "a", "1", 1, true)], 1 => ok "k2"
-        hole: [records::draft_line("k2", "a", "1", 1, true)], 1 => ok "k1"
+        gap: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1 => ok "k2"
+        hole: [records::draft_line("k2", "a", "1", "1.00", 1, 100, true)], 1 => ok "k1"
     match call key_taken(lines, "k" + call text::from_int(n), 0)
         ok bool taken => match taken
             false => ok "k" + call text::from_int(n)
@@ -320,15 +583,15 @@ fn str free_key
                 ok str rest => ok rest
 
 /// Append one blank line under the first free key. The new line
-/// starts with quantity 1; its empty sku stays editable and the
-/// server validates it on save.
+/// starts with quantity 1 and price 0.00; its empty id stays editable
+/// and the server validates it on save.
 fn records::draft added_line
     emits []
     given
         records::draft draft
     asserts
-        sample: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2) => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "", "1", 1, true)], 3)
-    ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call append<records::draft_line>(draft.lines, records::draft_line(call free_key(draft.lines, 1), "", "1", 1, true)), draft.edit_seq + 1)
+        sample: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2) => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "", "1", "0.00", 1, 0, true)], 3)
+    ok records::draft(draft.base_revision, call append<records::draft_line>(draft.lines, records::draft_line(call free_key(draft.lines, 1), "", "1", "0.00", 1, 0, true)), draft.edit_seq + 1)
 
 /// Copy every line except the named key front to back.
 fn records::draft_line[] removed_lines
@@ -339,8 +602,8 @@ fn records::draft_line[] removed_lines
         int index
         records::draft_line[] grown
     asserts
-        hit: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], "k1", 0, [] => ok [records::draft_line("k2", "b", "1", 1, true)]
-        miss: [records::draft_line("k1", "a", "1", 1, true)], "k9", 0, [] => ok [records::draft_line("k1", "a", "1", 1, true)]
+        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], "k1", 0, [] => ok [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
+        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
     match index >= lines.length
         false => match lines[index].key is key
             false => match call removed_lines(lines, key, index + 1, call append<records::draft_line>(grown, lines[index]))
@@ -356,10 +619,10 @@ fn records::draft removed_line
         records::draft draft
         str key
     asserts
-        hit: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 2), "k1" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true)], 3)
-        miss: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k9" => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2)
+        hit: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1" => ok records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 3)
+        miss: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
     match (call key_at(draft.lines, key, 0)) >= draft.lines.length
-        false => ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call removed_lines(draft.lines, key, 0, []), draft.edit_seq + 1)
+        false => ok records::draft(draft.base_revision, call removed_lines(draft.lines, key, 0, []), draft.edit_seq + 1)
         true => ok draft
 
 /// Copy every line except the index, front to back.
@@ -371,8 +634,8 @@ fn records::draft_line[] cut_at
         int index
         records::draft_line[] grown
     asserts
-        head: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 0, 0, [] => ok [records::draft_line("k2", "b", "1", 1, true)]
-        tail: [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 1, 0, [] => ok [records::draft_line("k1", "a", "1", 1, true)]
+        head: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0, 0, [] => ok [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
+        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1, 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
     match index >= lines.length
         false => match index is at
             false => match call cut_at(lines, at, index + 1, call append<records::draft_line>(grown, lines[index]))
@@ -392,8 +655,8 @@ fn records::draft_line[] insert_at
         int index
         records::draft_line[] grown
     asserts
-        head: [records::draft_line("k2", "b", "1", 1, true)], 0, records::draft_line("k1", "a", "1", 1, true), 0, [] => ok [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)]
-        tail: [records::draft_line("k1", "a", "1", 1, true)], 1, records::draft_line("k2", "b", "1", 1, true), 0, [] => ok [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)]
+        head: [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0, records::draft_line("k1", "a", "1", "1.00", 1, 100, true), 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
+        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1, records::draft_line("k2", "b", "1", "1.00", 1, 100, true), 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
     match index >= lines.length
         false => match index is at
             false => match call insert_at(lines, at, line, index + 1, call append<records::draft_line>(grown, lines[index]))
@@ -414,33 +677,33 @@ fn records::draft moved_line
         str key
         int dir
     asserts
-        up: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 2), "k2", 0 => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true), records::draft_line("k1", "a", "1", 1, true)], 3)
-        down: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 2), "k1", 1 => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true), records::draft_line("k1", "a", "1", 1, true)], 3)
-        top: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 2), "k1", 0 => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 2)
-        unknown: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2), "k9", 1 => ok records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 2)
+        up: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k2", 0 => ok records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true), records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 3)
+        down: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1", 1 => ok records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true), records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 3)
+        top: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1", 0 => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2)
+        unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", 1 => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
     match call key_at(draft.lines, key, 0)
         ok int at => match at >= draft.lines.length
             false => match dir is 0
                 false => match dir is 1
                     false => ok draft
                     true => match at + 1 >= draft.lines.length
-                        false => ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call insert_at(call cut_at(draft.lines, at, 0, []), at + 1, draft.lines[at], 0, []), draft.edit_seq + 1)
+                        false => ok records::draft(draft.base_revision, call insert_at(call cut_at(draft.lines, at, 0, []), at + 1, draft.lines[at], 0, []), draft.edit_seq + 1)
                         true => ok draft
                 true => match at is 0
-                    false => ok records::draft(draft.invoice_id, draft.base_revision, draft.customer, call insert_at(call cut_at(draft.lines, at, 0, []), at - 1, draft.lines[at], 0, []), draft.edit_seq + 1)
+                    false => ok records::draft(draft.base_revision, call insert_at(call cut_at(draft.lines, at, 0, []), at - 1, draft.lines[at], 0, []), draft.edit_seq + 1)
                     true => ok draft
             true => ok draft
 
-/// Report whether any line is unparsable or out of range and so
-/// blocks the save: the JSON wire needs a typed int per line.
+/// Report whether any line is unparsable and so blocks the save:
+/// exact totals need a typed count and typed minor units per line.
 fn bool save_blocked
     emits []
     given
         records::draft_line[] lines
         int index
     asserts
-        clean: [records::draft_line("k1", "a", "1", 1, true)], 0 => ok false
-        invalid: [records::draft_line("k1", "a", "many", 1, false)], 0 => ok true
+        clean: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0 => ok false
+        invalid: [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 0 => ok true
         empty: [], 0 => ok false
     match index >= lines.length
         false => match lines[index].valid
@@ -456,8 +719,8 @@ fn str blocked_key
         records::draft_line[] lines
         int index
     asserts
-        first: [records::draft_line("k1", "a", "many", 1, false), records::draft_line("k2", "b", "xx", 1, false)], 0 => ok "k1"
-        clean: [records::draft_line("k1", "a", "1", 1, true)], 0 => ok ""
+        first: [records::draft_line("k1", "a", "many", "1.00", 1, 100, false), records::draft_line("k2", "b", "xx", "1.00", 1, 100, false)], 0 => ok "k1"
+        clean: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0 => ok ""
     match index >= lines.length
         false => match lines[index].valid
             false => ok lines[index].key
@@ -465,23 +728,57 @@ fn str blocked_key
                 ok str rest => ok rest
         true => ok ""
 
-/// Save-block notice: "" when sendable, else the first bad line.
+/// First bad field of one invalid line: quantity is checked before
+/// price. Callers only pass invalid lines.
+fn str bad_field
+    emits []
+    given
+        records::draft_line line
+    asserts
+        quantity: records::draft_line("k1", "a", "many", "1.00", 1, 100, false) => ok "quantity"
+        price: records::draft_line("k1", "a", "1", "five", 1, 100, false) => ok "price"
+        both: records::draft_line("k1", "a", "many", "five", 1, 100, false) => ok "quantity"
+    match call parse_qty(line.quantity)
+        ok option::value<int> qty => match qty
+            option::none => ok "quantity"
+            option::some => ok "price"
+
+/// First bad field of the first invalid line, front to back.
+fn str blocked_field
+    emits []
+    given
+        records::draft_line[] lines
+        int index
+    asserts
+        first: [records::draft_line("k1", "a", "many", "1.00", 1, 100, false), records::draft_line("k2", "b", "1", "five", 1, 100, false)], 0 => ok "quantity"
+        second: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "five", 1, 100, false)], 0 => ok "price"
+    match index >= lines.length
+        false => match lines[index].valid
+            false => match call bad_field(lines[index])
+                ok str field => ok field
+            true => match call blocked_field(lines, index + 1)
+                ok str rest => ok rest
+        true => ok ""
+
+/// Save-block notice: "" when sendable, else the first bad line and
+/// field.
 fn str blocked_notice
     emits []
     given
         records::draft draft
     asserts
-        clean: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 1) => ok ""
-        blocked: records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "many", 1, false)], 1) => ok "bad quantity in line k1"
+        clean: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1) => ok ""
+        blocked_qty: records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1) => ok "line k1: bad quantity"
+        blocked_price: records::draft("1", [records::draft_line("k1", "a", "1", "five", 1, 100, false)], 1) => ok "line k1: bad price"
     match call save_blocked(draft.lines, 0)
         ok bool blocked => match blocked
             false => ok ""
-            true => ok "bad quantity in line " + call blocked_key(draft.lines, 0)
+            true => ok "line " + call blocked_key(draft.lines, 0) + ": bad " + call blocked_field(draft.lines, 0)
 
-/// Mark one save press: the flight carries the attempt, the base
-/// and the sequence move into the save record for replay checks,
-/// and focus returns to the save button after the re-render. A
-/// press while anything flies is ignored (single flight).
+/// Mark one save press: the flight carries the attempt, the current
+/// draft projects onto the attempt-owned pending input for replay
+/// checks, and focus returns to the save button after the re-render.
+/// A press while anything flies is ignored (single flight).
 fn records::grid_state save_marked
     emits []
     given
@@ -489,15 +786,15 @@ fn records::grid_state save_marked
         int attempt
         str op
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 1, 0, "", 1, 1, records::unsaved_state("unsaved changes"), ""), 2, "inv-1/r1/e2" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-        flying: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 3, "inv-1/r1/e2" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 1, 0, contract::grid_edit_input("", "", []), 1, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), ""), 2, "t1/i7/r1/e2" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+        flying: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 3, "t1/i7/r1/e2" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
     match state.flight is 0
         false => ok state
-        true => ok records::grid_state(state.current, attempt, 1, op, state.current.base_revision, state.current.edit_seq, records::saving_state("saving..."), "save")
+        true => ok records::grid_state(state.key, state.current, attempt, 1, call to_input(state.current, op), state.current.edit_seq, state.acknowledged, records::saving_state("saving..."), "save")
 
 /// Mark one load press: the flight carries the attempt while the
-/// status, the replay record and the focus stay untouched, so a
-/// reread never disturbs an uncertain save waiting for its
+/// status, the pending attempt record and the focus stay untouched,
+/// so a reread never disturbs an uncertain save waiting for its
 /// explicit replay (the load outcome decides adopt-or-hold from
 /// the preserved status). A press while anything flies is ignored.
 fn records::grid_state load_marked
@@ -506,11 +803,11 @@ fn records::grid_state load_marked
         records::grid_state state
         int attempt
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 1, 0, "inv-1/r1/e2", 1, 2, records::failed_state("server busy; retry reread"), "status"), 2 => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 2, "inv-1/r1/e2", 1, 2, records::failed_state("server busy; retry reread"), "status")
-        flying: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 3 => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 1, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("server busy; retry reread"), "status"), 2 => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("server busy; retry reread"), "status")
+        flying: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 3 => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
     match state.flight is 0
         false => ok state
-        true => ok records::grid_state(state.current, attempt, 2, state.operation_id, state.save_base, state.save_seq, state.status, state.focus)
+        true => ok records::grid_state(state.key, state.current, attempt, 2, state.submitted, state.submit_seq, state.acknowledged, state.status, state.focus)
 
 /// Fold one local edit into the status: a clean draft turns
 /// unsaved, everything else keeps its notice (a save outcome
@@ -521,11 +818,11 @@ fn records::grid_state marked_unsaved
     given
         records::grid_state state
     asserts
-        clean: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 0, 0, "", 0, 0, records::clean_state("saved revision 1"), "") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "")
-        saving: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e1", 1, 1, records::saving_state("saving..."), "save")
-        failed: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status")
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("saved revision 1"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
+        saving: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", []), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", []), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+        failed: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status")
     match state.status
-        records::clean_state => ok records::grid_state(state.current, state.attempt, state.flight, state.operation_id, state.save_base, state.save_seq, records::unsaved_state("unsaved changes"), state.focus)
+        records::clean_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::unsaved_state("unsaved changes"), state.focus)
         records::unsaved_state => ok state
         records::saving_state => ok state
         records::failed_state => ok state
@@ -533,377 +830,26 @@ fn records::grid_state marked_unsaved
         records::denied_state => ok state
         records::conflict_state => ok state
 
-/// Apply one saved outcome. Late or wrong-flight arrivals are
-/// ignored so a reordered response never clobbers newer state. A
-/// fresh save moves the base to the committed revision; edits made
-/// while the request flew keep the draft unsaved on the new base
-/// instead of showing a clean draft that still holds edits.
-fn records::grid_state saved_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::saved outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::saved("inv-1", 2) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "")
-        newer_edits: records::grid_state(records::draft("inv-1", 1, "Acme", [], 3), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::saved("inv-1", 2) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 3), 2, 0, "inv-1/r1/e2", 1, 2, records::unsaved_state("unsaved changes"), "")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::saved("inv-1", 2) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-        wrong_flight: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 2, "inv-1/r1/e2", 1, 2, records::saving_state("loading..."), "reread"), 2, records::saved("inv-1", 2) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 2, "inv-1/r1/e2", 1, 2, records::saving_state("loading..."), "reread")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => match state.current.edit_seq is state.save_seq
-                false => ok records::grid_state(records::draft(state.current.invoice_id, outcome.revision, state.current.customer, state.current.lines, state.current.edit_seq), state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::unsaved_state("unsaved changes"), "")
-                true => ok records::grid_state(records::draft(state.current.invoice_id, outcome.revision, state.current.customer, state.current.lines, state.current.edit_seq), state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::clean_state("saved revision " + call text::from_int(outcome.revision)), "")
-
-/// Apply one rejected (422) outcome: the draft stays editable and
-/// the server reason names the fix.
-fn records::grid_state rejected_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::rejected outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 1, "", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::rejected("empty customer") => ok records::grid_state(records::draft("inv-1", 1, "", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::rejected("empty customer") => ok records::grid_state(records::draft("inv-1", 1, "", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("rejected: " + outcome.reason), "status")
-
-/// Apply one stale (409) outcome: another writer moved the stored
-/// revision, so the notice points at reread instead of retry.
-fn records::grid_state stale_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::stale outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::stale("inv-1", 4) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("changed on server at revision 4; reread to compare"), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::stale("inv-1", 4) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("changed on server at revision " + call text::from_int(outcome.revision) + "; reread to compare"), "status")
-
-/// Apply one denied (403) outcome: foreign, nonexistent and
-/// unauthenticated targets share the nondisclosing notice and the
-/// in-view draft stays put.
-fn records::grid_state denied_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::denied outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::denied("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::denied_state("access denied; draft kept"), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::denied("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::denied_state("access denied; draft kept"), "status")
-
-/// Apply one busy (503) outcome: the save may or may not have
-/// committed, so the state turns uncertain and keeps the identical
-/// operation id for explicit replay.
-fn records::grid_state busy_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::busy outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::busy("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::busy("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::uncertain_state("save may have committed; replay or reread"), "status")
-
-/// Apply one save transport failure. A lost response, an unexpected
-/// status or an undecodable answer all leave the commit unknown, so
-/// the draft turns uncertain with its replay id intact. A request
-/// that never left (over the wire limit, or locally invalid) is a
-/// plain failure instead: nothing was sent, so nothing is unknown.
-fn records::grid_state save_failed
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        str kind
-    asserts
-        transport: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "transport" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("connection lost; save may have committed"), "status")
-        status: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "status" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unexpected response; save may have committed"), "status")
-        codec: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "codec" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("unreadable response; save may have committed"), "status")
-        limit: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "limit" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("save too large; remove lines and retry"), "status")
-        request: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "request" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("request invalid; reread and retry"), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, "transport" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 1
-            false => ok state
-            true => match kind is "transport"
-                false => match kind is "status"
-                    false => match kind is "codec"
-                        false => match kind is "limit"
-                            false => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("request invalid; reread and retry"), "status")
-                            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("save too large; remove lines and retry"), "status")
-                        true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::uncertain_state("unreadable response; save may have committed"), "status")
-                    true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::uncertain_state("unexpected response; save may have committed"), "status")
-                true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::uncertain_state("connection lost; save may have committed"), "status")
-
-/// Apply one loaded invoice. A clean draft adopts the server copy
-/// as its new base; anything else (local edits, an uncertain save,
-/// a failure, a denial, a held copy) holds the server copy aside
-/// for an explicit adopt-or-keep choice, so changed rows never
-/// clobber newer edits. Late or wrong-flight arrivals are ignored.
-fn records::grid_state found_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::found loaded
-    asserts
-        adopt: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::found("inv-1", 2, "Acme", [records::found_line("k1", "sku-1", 2)]) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [records::draft_line("k1", "sku-1", "2", 2, true)], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), "")
-        hold_dirty: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 2, "", 1, 0, records::saving_state("loading..."), "reread"), 2, records::found("inv-1", 2, "Acme", []) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status")
-        hold_uncertain: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 2, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status"), 3, records::found("inv-1", 1, "Acme", []) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 0, "inv-1/r1/e2", 1, 2, records::conflict_state("server has revision 1; your edits kept", records::found("inv-1", 1, "Acme", [])), "status")
-        late: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::found("inv-1", 2, "Acme", []) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 2
-            false => ok state
-            true => match state.status
-                records::clean_state => match state.current.edit_seq is state.save_seq
-                    false => ok call hold_found(state, loaded)
-                    true => ok call adopt_found(state, loaded)
-                records::saving_state => match state.current.edit_seq is state.save_seq
-                    false => ok call hold_found(state, loaded)
-                    true => ok call adopt_found(state, loaded)
-                records::unsaved_state => ok call hold_found(state, loaded)
-                records::failed_state => ok call hold_found(state, loaded)
-                records::uncertain_state => ok call hold_found(state, loaded)
-                records::denied_state => ok call hold_found(state, loaded)
-                records::conflict_state => ok call hold_found(state, loaded)
-
-/// Adopt a loaded invoice as the clean draft: the base moves to
-/// the loaded revision and both sequences restart at zero.
-fn records::grid_state adopt_found
-    emits []
-    given
-        records::grid_state state
-        records::found loaded
-    asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), records::found("inv-1", 2, "Acme", []) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), "")
-    ok records::grid_state(call from_found(loaded), state.attempt, 0, state.operation_id, state.save_base, 0, records::clean_state("loaded revision " + call text::from_int(loaded.revision)), "")
-
-/// Hold a loaded invoice beside the draft for an explicit choice.
-/// The draft, the replay record and the sequences stay untouched.
-fn records::grid_state hold_found
-    emits []
-    given
-        records::grid_state state
-        records::found loaded
-    asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 2, "", 1, 0, records::saving_state("loading..."), "reread"), records::found("inv-1", 2, "Acme", []) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status")
-    ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::conflict_state("server has revision " + call text::from_int(loaded.revision) + "; your edits kept", loaded), "status")
-
-/// Apply one denied load: the draft stays put behind the
-/// nondisclosing notice.
-fn records::grid_state load_denied_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::load_denied outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_denied("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::denied_state("access denied; draft kept"), "status")
-        late: records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_denied("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 2
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::denied_state("access denied; draft kept"), "status")
-
-/// Dispatch one save outcome onto the matching applier: the
-/// fetch client returns the whole variant, and each leaf lands in
-/// its own version-checked transition.
-fn records::grid_state save_outcome_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::save_outcome outcome
-    asserts
-        saved: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::saved("inv-1", 2) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "")
-        rejected: records::grid_state(records::draft("inv-1", 1, "", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::rejected("empty customer") => ok records::grid_state(records::draft("inv-1", 1, "", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("rejected: empty customer"), "status")
-        stale: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::stale("inv-1", 4) => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::failed_state("changed on server at revision 4; reread to compare"), "status")
-        denied: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::denied("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::denied_state("access denied; draft kept"), "status")
-        busy: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 1, "inv-1/r1/e2", 1, 2, records::saving_state("saving..."), "save"), 2, records::busy("inv-1") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status")
-    match outcome
-        records::saved => match call saved_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::rejected => match call rejected_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::stale => match call stale_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::denied => match call denied_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::busy => match call busy_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-
-/// Dispatch one load outcome onto the matching applier.
-fn records::grid_state load_outcome_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::load_outcome outcome
-    asserts
-        found: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::found("inv-1", 2, "Acme", []) => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 0, 0, records::clean_state("loaded revision 2"), "")
-        denied: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_denied("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::denied_state("access denied; draft kept"), "status")
-        busy: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_busy("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("server busy; retry reread"), "status")
-    match outcome
-        records::found => match call found_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::load_denied => match call load_denied_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-        records::load_busy => match call load_busy_applied(state, attempt, outcome)
-            ok records::grid_state next => ok next
-
-/// Apply one busy load: a read never commits, so the retry is
-/// always safe and the state stays a plain failure.
-fn records::grid_state load_busy_applied
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        records::load_busy outcome
-    asserts
-        fresh: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_busy("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("server busy; retry reread"), "status")
-        late: records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, records::load_busy("inv-1") => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 2
-            false => ok state
-            true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("server busy; retry reread"), "status")
-
-/// Apply one load transport failure. Reads never commit, so every
-/// load failure is a plain retryable failure, never uncertainty.
-fn records::grid_state load_failed
-    emits []
-    given
-        records::grid_state state
-        int attempt
-        str kind
-    asserts
-        transport: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("connection lost; retry reread"), "status")
-        status: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, "status" => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unexpected response; retry reread"), "status")
-        codec: records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, "codec" => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 1, 0, "", 0, 0, records::failed_state("unreadable response; retry reread"), "status")
-        late: records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 2, 2, "", 0, 0, records::saving_state("loading..."), "reread")
-    match attempt is state.attempt
-        false => ok state
-        true => match state.flight is 2
-            false => ok state
-            true => match kind is "transport"
-                false => match kind is "status"
-                    false => match kind is "codec"
-                        false => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("request invalid; retry reread"), "status")
-                        true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("unreadable response; retry reread"), "status")
-                    true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("unexpected response; retry reread"), "status")
-                true => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::failed_state("connection lost; retry reread"), "status")
-
-/// Explicit identical-id replay is available only while the last
-/// save is uncertain, nothing newer is in flight, the draft still
-/// holds the sent content, and an operation id exists to reuse. Any
-/// edit after the press mints a new intent instead.
-fn bool replay_ready
-    emits []
-    given
-        records::grid_state state
-    asserts
-        ready: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok true
-        edited: records::grid_state(records::draft("inv-1", 1, "Acme", [], 3), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
-        flying: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 3, 2, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
-        clean: records::grid_state(records::draft("inv-1", 2, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::clean_state("saved revision 2"), "") => ok false
-    match state.status
-        records::uncertain_state => match state.flight is 0
-            false => ok false
-            true => match state.operation_id is ""
-                false => match state.current.edit_seq is state.save_seq
-                    false => ok false
-                    true => ok true
-                true => ok false
-        records::clean_state => ok false
-        records::unsaved_state => ok false
-        records::saving_state => ok false
-        records::failed_state => ok false
-        records::denied_state => ok false
-        records::conflict_state => ok false
-
-/// Adopt the held server copy as the clean draft (authorized
-/// reconciliation: the user chose the server copy explicitly).
-/// Outside a conflict the state is untouched.
-fn records::grid_state adopted_server
-    emits []
-    given
-        records::grid_state state
-    asserts
-        adopt: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status") => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 1, 0, records::clean_state("loaded revision 2"), "")
-        clean: records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), "") => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), "")
-    match call status_of(state)
-        ok records::grid_status status => match status
-            records::conflict_state => ok records::grid_state(call from_found(status.server), state.attempt, 0, state.operation_id, state.save_base, 0, records::clean_state("loaded revision " + call text::from_int(status.server.revision)), "")
-            records::clean_state => ok state
-            records::unsaved_state => ok state
-            records::saving_state => ok state
-            records::failed_state => ok state
-            records::uncertain_state => ok state
-            records::denied_state => ok state
-
-/// Dismiss the held server copy and keep editing the draft.
-/// Outside a conflict the state is untouched.
-fn records::grid_state dismissed_held
-    emits []
-    given
-        records::grid_state state
-    asserts
-        dismiss: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::unsaved_state("unsaved changes"), "")
-        clean: records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), "") => ok records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 2, 0, "", 2, 0, records::clean_state("loaded revision 2"), "")
-    match state.status
-        records::conflict_state => ok records::grid_state(state.current, state.attempt, 0, state.operation_id, state.save_base, state.save_seq, records::unsaved_state("unsaved changes"), "")
-        records::clean_state => ok state
-        records::unsaved_state => ok state
-        records::saving_state => ok state
-        records::failed_state => ok state
-        records::uncertain_state => ok state
-        records::denied_state => ok state
-
 /// Save-press guard: "" when the press sends, else the notice.
 /// A conflict must resolve first (saving around it would discard
-/// the comparison); unparsable quantities cannot encode; a clean
-/// unchanged draft has nothing to send. Uncertain and failed
-/// drafts send: an unchanged press reuses the identical operation
-/// id, which is exactly the safe replay.
+/// the comparison); unparsable quantities and prices cannot feed
+/// exact totals; a clean unchanged draft has nothing to send.
+/// Uncertain and failed drafts send: an unchanged press reuses the
+/// identical operation id, which is exactly the safe replay.
 fn str save_notice
     emits []
     given
         records::grid_state state
     asserts
-        dirty: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 0, 0, "", 1, 0, records::unsaved_state("unsaved changes"), "") => ok ""
-        replay: records::grid_state(records::draft("inv-1", 1, "Acme", [], 2), 2, 0, "inv-1/r1/e2", 1, 2, records::uncertain_state("save may have committed; replay or reread"), "status") => ok ""
-        conflict: records::grid_state(records::draft("inv-1", 1, "Acme", [], 1), 2, 0, "", 1, 0, records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])), "status") => ok "resolve the held server copy first"
-        invalid: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "many", 1, false)], 1), 0, 0, "", 1, 0, records::unsaved_state("unsaved changes"), "") => ok "bad quantity in line k1"
-        clean: records::grid_state(records::draft("inv-1", 2, "Acme", [], 0), 1, 0, "", 2, 0, records::clean_state("loaded revision 2"), "") => ok "no changes to save"
+        dirty: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "") => ok ""
+        replay: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok ""
+        conflict: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => ok "server has revision 2; your edits kept"
+        invalid: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "") => ok "line k1: bad quantity"
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => ok "no changes to save"
     match state.status
-        records::conflict_state => ok "resolve the held server copy first"
-        records::clean_state => match state.current.edit_seq is state.save_seq
+        records::conflict_state => match call status_notice(state.status)
+            ok str held => ok held
+        records::clean_state => match state.current.edit_seq is state.submit_seq
             false => ok ""
             true => ok "no changes to save"
         records::unsaved_state => match (call blocked_notice(state.current)) is ""
@@ -922,15 +868,435 @@ fn str save_notice
             false => ok call blocked_notice(state.current)
             true => ok ""
 
+/// Persist one blocked-press notice into immutable state: the draft
+/// and the attempt-owned pending record stay untouched, the status
+/// carries the notice to the live region, and focus moves to the
+/// status line on the next render. Rendering stays a pure function
+/// of state, so the feedback survives re-render. A held conflict
+/// keeps its server copy: only the notice refocuses.
+fn records::grid_state blocked_applied
+    emits []
+    given
+        records::grid_state state
+        str notice
+    asserts
+        conflict: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), ""), "server has revision 2; your edits kept" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), ""), "no changes to save" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::failed_state("no changes to save"), "status")
+        invalid: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), ""), "line k1: bad quantity" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status")
+    match call status_of(state)
+        ok records::grid_status status => match status
+            records::conflict_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::conflict_state(notice, status.server), "status")
+            records::clean_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::unsaved_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::saving_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::failed_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::uncertain_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::denied_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+
+/// Apply one saved outcome. Late or wrong-flight arrivals are
+/// ignored so a reordered response never clobbers newer state. A
+/// fresh save moves the base to the acknowledged revision and records
+/// the acknowledged snapshot; edits made while the request flew keep
+/// the draft unsaved on the new base instead of showing a clean draft
+/// that still holds edits.
+fn records::grid_state saved_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_saved outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_saved("t1/i7/r1/e2", contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "")
+        newer_edits: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 3), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_saved("t1/i7/r1/e2", contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 3), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::unsaved_state("unsaved changes"), "")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_saved("t1/i7/r1/e2", contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+        wrong_flight: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 2, contract::grid_saved("t1/i7/r1/e2", contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => match state.current.edit_seq is state.submit_seq
+                false => ok records::grid_state(state.key, records::draft(outcome.acknowledged.revision, state.current.lines, state.current.edit_seq), state.attempt, 0, state.submitted, state.submit_seq, outcome.acknowledged, records::unsaved_state("unsaved changes"), "")
+                true => ok records::grid_state(state.key, records::draft(outcome.acknowledged.revision, state.current.lines, state.current.edit_seq), state.attempt, 0, state.submitted, state.submit_seq, outcome.acknowledged, records::clean_state("saved revision " + outcome.acknowledged.revision), "")
+
+/// Render one 422 problem as its status notice. Row problems name
+/// the line; draft-wide problems name the field only.
+fn str problem_notice
+    emits []
+    given
+        contract::grid_problem problem
+    asserts
+        row: contract::grid_problem(option::some("k1"), "quantity", "bad quantity") => ok "line k1 quantity: bad quantity"
+        draft: contract::grid_problem(option::none(), "revision", "stale revision") => ok "revision: stale revision"
+    match call problem_row(problem)
+        ok option::value<str> row => match row
+            option::none => ok problem.field + ": " + problem.message
+            option::some => ok "line " + row.value + " " + problem.field + ": " + problem.message
+
+/// Read the row key out of one problem. Callers match the bound
+/// result: arm-local narrowing only follows resolved bindings.
+fn option::value<str> problem_row
+    emits []
+    given
+        contract::grid_problem problem
+    asserts
+        sample: contract::grid_problem(option::some("k1"), "quantity", "bad quantity") => ok option::some("k1")
+    ok problem.row_key
+
+/// Render the 422 errors as one status notice: the first problem
+/// wins, since the status line holds a single notice.
+fn str invalid_notice
+    emits []
+    given
+        contract::grid_problem[] errors
+    asserts
+        one: [contract::grid_problem(option::some("k1"), "id", "empty line id")] => ok "line k1 id: empty line id"
+        first: [contract::grid_problem(option::some("k1"), "id", "empty line id"), contract::grid_problem(option::some("k2"), "quantity", "bad quantity")] => ok "line k1 id: empty line id"
+        empty: [] => ok "rejected by server; edit and retry"
+    match errors.length is 0
+        false => match call problem_notice(errors[0])
+            ok str notice => ok notice
+        true => ok "rejected by server; edit and retry"
+
+/// Apply one invalid (422) outcome: the draft stays editable and
+/// the first server problem names the fix.
+fn records::grid_state invalid_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_invalid outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "", "1", "1.00", 1, 100, true)], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_invalid("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), [contract::grid_problem(option::some("k1"), "id", "empty line id")]) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "", "1", "1.00", 1, 100, true)], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1 id: empty line id"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_invalid("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", []), []) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => match call invalid_notice(outcome.errors)
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+
+/// Apply one conflict (409) outcome: another writer moved the stored
+/// revision, so the notice points at reread instead of retry.
+fn records::grid_state conflict_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_conflict outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_conflict("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", []), "stale revision") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("stale revision; reread to compare"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_conflict("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", []), "stale revision") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(outcome.message + "; reread to compare"), "status")
+
+/// Apply one forbidden (403) outcome: foreign, nonexistent and
+/// unauthenticated targets share the nondisclosing notice and the
+/// in-view draft stays put.
+fn records::grid_state forbidden_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_forbidden outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_forbidden("t1/i7/r1/e2", "request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::denied_state("access denied; draft kept"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_forbidden("t1/i7/r1/e2", "request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state("access denied; draft kept"), "status")
+
+/// Apply one unavailable (503) outcome: the save may or may not have
+/// committed, so the state turns uncertain and keeps the identical
+/// operation id for explicit replay.
+fn records::grid_state unavailable_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_unavailable outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_unavailable("t1/i7/r1/e2", "store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_unavailable("t1/i7/r1/e2", "store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("save may have committed; replay or reread"), "status")
+
+/// Apply one save transport failure. A lost response, an unexpected
+/// status or an undecodable answer all leave the commit unknown, so
+/// the draft turns uncertain with its replay id intact. A request
+/// that never left (over the wire limit, or locally invalid) is a
+/// plain failure instead: nothing was sent, so nothing is unknown.
+fn records::grid_state save_failed
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        str kind
+    asserts
+        transport: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("connection lost; save may have committed"), "status")
+        status: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "status" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("unexpected response; save may have committed"), "status")
+        codec: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "codec" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("unreadable response; save may have committed"), "status")
+        limit: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "limit" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("save too large; remove lines and retry"), "status")
+        request: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "request" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("request invalid; reread and retry"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 1
+            false => ok state
+            true => match kind is "transport"
+                false => match kind is "status"
+                    false => match kind is "codec"
+                        false => match kind is "limit"
+                            false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("request invalid; reread and retry"), "status")
+                            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("save too large; remove lines and retry"), "status")
+                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("unreadable response; save may have committed"), "status")
+                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("unexpected response; save may have committed"), "status")
+                true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("connection lost; save may have committed"), "status")
+
+/// Dispatch one save outcome onto the matching applier: the
+/// fetch client returns the whole variant, and each leaf lands in
+/// its own version-checked transition.
+fn records::grid_state save_outcome_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_edit_outcome outcome
+    asserts
+        saved: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_saved("t1/i7/r1/e2", contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "")
+        invalid: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "", "1", "1.00", 1, 100, true)], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_invalid("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), [contract::grid_problem(option::some("k1"), "id", "empty line id")]) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "", "1", "1.00", 1, 100, true)], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", [contract::grid_line_wire("k1", "", "1", "1.00")]), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1 id: empty line id"), "status")
+        conflict: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_conflict("t1/i7/r1/e2", contract::grid_edit_input("t1/i7/r1/e2", "1", []), "stale revision") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("stale revision; reread to compare"), "status")
+        forbidden: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_forbidden("t1/i7/r1/e2", "request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::denied_state("access denied; draft kept"), "status")
+        unavailable: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, contract::grid_unavailable("t1/i7/r1/e2", "store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status")
+    match outcome
+        contract::grid_saved => match call saved_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_invalid => match call invalid_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_conflict => match call conflict_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_forbidden => match call forbidden_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_unavailable => match call unavailable_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+
+/// Apply one loaded snapshot. A clean draft adopts the server copy
+/// as its new base; anything else (local edits, an uncertain save,
+/// a failure, a denial, a held copy) holds the server copy aside
+/// for an explicit adopt-or-keep choice, so changed rows never
+/// clobber newer edits. Late or wrong-flight arrivals are ignored.
+fn records::grid_state loaded_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_loaded outcome
+    asserts
+        adopt: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_loaded(contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000), records::clean_state("loaded revision 2"), "")
+        hold_dirty: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 2, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
+        hold_uncertain: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status"), 3, contract::grid_loaded(contract::grid_snapshot("1", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 1; your edits kept", contract::grid_snapshot("1", [], 0)), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 2
+            false => ok state
+            true => match state.status
+                records::clean_state => match state.current.edit_seq is state.submit_seq
+                    false => ok call hold_snapshot(state, outcome.current)
+                    true => ok call adopt_snapshot(state, outcome.current)
+                records::saving_state => match state.current.edit_seq is state.submit_seq
+                    false => ok call hold_snapshot(state, outcome.current)
+                    true => ok call adopt_snapshot(state, outcome.current)
+                records::unsaved_state => ok call hold_snapshot(state, outcome.current)
+                records::failed_state => ok call hold_snapshot(state, outcome.current)
+                records::uncertain_state => ok call hold_snapshot(state, outcome.current)
+                records::denied_state => ok call hold_snapshot(state, outcome.current)
+                records::conflict_state => ok call hold_snapshot(state, outcome.current)
+
+/// Adopt a loaded snapshot as the clean draft: the base moves to
+/// the loaded revision, the snapshot becomes the acknowledged
+/// state, and both sequences restart at zero.
+fn records::grid_state adopt_snapshot
+    emits []
+    given
+        records::grid_state state
+        contract::grid_snapshot loaded
+    asserts
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), contract::grid_snapshot("2", [], 0) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
+    ok records::grid_state(state.key, call from_snapshot(loaded), state.attempt, 0, state.submitted, 0, loaded, records::clean_state("loaded revision " + loaded.revision), "")
+
+/// Hold a loaded snapshot beside the draft for an explicit choice.
+/// The draft, the acknowledged snapshot, the pending attempt record
+/// and the sequences stay untouched.
+fn records::grid_state hold_snapshot
+    emits []
+    given
+        records::grid_state state
+        contract::grid_snapshot loaded
+    asserts
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), contract::grid_snapshot("2", [], 0) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
+    ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::conflict_state("server has revision " + loaded.revision + "; your edits kept", loaded), "status")
+
+/// Apply one forbidden load: the draft stays put behind the
+/// nondisclosing notice.
+fn records::grid_state load_forbidden_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_load_forbidden outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_forbidden("request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::denied_state("access denied; draft kept"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_forbidden("request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 2
+            false => ok state
+            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state("access denied; draft kept"), "status")
+
+/// Apply one unavailable load: a read never commits, so the retry is
+/// always safe and the state stays a plain failure.
+fn records::grid_state load_unavailable_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_load_unavailable outcome
+    asserts
+        fresh: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_unavailable("store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("server busy; retry reread"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_unavailable("store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 2
+            false => ok state
+            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("server busy; retry reread"), "status")
+
+/// Dispatch one load outcome onto the matching applier.
+fn records::grid_state load_outcome_applied
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        contract::grid_load_outcome outcome
+    asserts
+        loaded: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
+        forbidden: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_forbidden("request denied") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::denied_state("access denied; draft kept"), "status")
+        unavailable: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_load_unavailable("store unavailable") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("server busy; retry reread"), "status")
+    match outcome
+        contract::grid_loaded => match call loaded_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_load_forbidden => match call load_forbidden_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+        contract::grid_load_unavailable => match call load_unavailable_applied(state, attempt, outcome)
+            ok records::grid_state next => ok next
+
+/// Apply one load transport failure. Reads never commit, so every
+/// load failure is a plain retryable failure, never uncertainty.
+fn records::grid_state load_failed
+    emits []
+    given
+        records::grid_state state
+        int attempt
+        str kind
+    asserts
+        transport: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("connection lost; retry reread"), "status")
+        status: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "status" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unexpected response; retry reread"), "status")
+        codec: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "codec" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unreadable response; retry reread"), "status")
+        late: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread")
+    match attempt is state.attempt
+        false => ok state
+        true => match state.flight is 2
+            false => ok state
+            true => match kind is "transport"
+                false => match kind is "status"
+                    false => match kind is "codec"
+                        false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("request invalid; retry reread"), "status")
+                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("unreadable response; retry reread"), "status")
+                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("unexpected response; retry reread"), "status")
+                true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("connection lost; retry reread"), "status")
+
+/// Explicit identical-id replay is available only while the last
+/// save is uncertain, nothing newer is in flight, the draft still
+/// holds the sent content, and an operation id exists to reuse. Any
+/// edit after the press mints a new intent instead.
+fn bool replay_ready
+    emits []
+    given
+        records::grid_state state
+    asserts
+        ready: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok true
+        edited: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 3), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
+        flying: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "") => ok false
+    match state.status
+        records::uncertain_state => match state.flight is 0
+            false => ok false
+            true => match state.submitted.operation_id is ""
+                false => match state.current.edit_seq is state.submit_seq
+                    false => ok false
+                    true => ok true
+                true => ok false
+        records::clean_state => ok false
+        records::unsaved_state => ok false
+        records::saving_state => ok false
+        records::failed_state => ok false
+        records::denied_state => ok false
+        records::conflict_state => ok false
+
+/// Adopt the held server copy as the clean draft (authorized
+/// reconciliation: the user chose the server copy explicitly).
+/// Outside a conflict the state is untouched.
+fn records::grid_state adopted_server
+    emits []
+    given
+        records::grid_state state
+    asserts
+        adopt: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
+    match call status_of(state)
+        ok records::grid_status status => match status
+            records::conflict_state => ok records::grid_state(state.key, call from_snapshot(status.server), state.attempt, 0, state.submitted, 0, status.server, records::clean_state("loaded revision " + status.server.revision), "")
+            records::clean_state => ok state
+            records::unsaved_state => ok state
+            records::saving_state => ok state
+            records::failed_state => ok state
+            records::uncertain_state => ok state
+            records::denied_state => ok state
+
+/// Dismiss the held server copy and keep editing the draft.
+/// Outside a conflict the state is untouched.
+fn records::grid_state dismissed_held
+    emits []
+    given
+        records::grid_state state
+    asserts
+        dismiss: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
+        clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
+    match state.status
+        records::conflict_state => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::unsaved_state("unsaved changes"), "")
+        records::clean_state => ok state
+        records::unsaved_state => ok state
+        records::saving_state => ok state
+        records::failed_state => ok state
+        records::uncertain_state => ok state
+        records::denied_state => ok state
+
 /// The boot cell: an empty draft waiting on its first authorized
 /// load. The boot press marks the load flight before fetching.
 fn records::grid_state boot_state
     emits []
     given
-        str invoice_id
+        contract::invoice_key key
     asserts
-        sample: "inv-1" => ok records::grid_state(records::draft("inv-1", 0, "", [], 0), 0, 0, "", 0, 0, records::saving_state("loading invoice..."), "")
-    ok records::grid_state(records::draft(invoice_id, 0, "", [], 0), 0, 0, "", 0, 0, records::saving_state("loading invoice..."), "")
+        sample: contract::invoice_key(1, 7) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading invoice..."), "")
+    ok records::grid_state(key, records::draft("", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading invoice..."), "")
 
 /// Read the status leaf out of a state. Callers match the bound
 /// result: arm-local narrowing only follows resolved bindings,
@@ -940,7 +1306,7 @@ fn records::grid_status status_of
     given
         records::grid_state state
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "") => ok records::clean_state("loaded revision 1")
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok records::clean_state("loaded revision 1")
     ok state.status
 
 /// Read the status-line notice out of any status leaf.
@@ -950,7 +1316,7 @@ fn str status_notice
         records::grid_status status
     asserts
         clean: records::clean_state("saved revision 2") => ok "saved revision 2"
-        conflict: records::conflict_state("server has revision 2; your edits kept", records::found("inv-1", 2, "Acme", [])) => ok "server has revision 2; your edits kept"
+        conflict: records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)) => ok "server has revision 2; your edits kept"
     match status
         records::clean_state => ok status.notice
         records::unsaved_state => ok status.notice
@@ -960,16 +1326,16 @@ fn str status_notice
         records::denied_state => ok status.notice
         records::conflict_state => ok status.notice
 
-/// Swap the draft inside a state, keeping attempt, flight, replay
-/// record, status and focus untouched.
+/// Swap the draft inside a state, keeping key, attempt, flight,
+/// pending record, acknowledgement, status and focus untouched.
 fn records::grid_state with_current
     emits []
     given
         records::grid_state state
         records::draft draft
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), records::draft("inv-1", 1, "Globex", [], 1) => ok records::grid_state(records::draft("inv-1", 1, "Globex", [], 1), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "")
-    ok records::grid_state(draft, state.attempt, state.flight, state.operation_id, state.save_base, state.save_seq, state.status, state.focus)
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), records::draft("1", [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)], 1) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
+    ok records::grid_state(state.key, draft, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, state.status, state.focus)
 
 /// Retarget the focus intent, keeping everything else untouched.
 fn records::grid_state refocused
@@ -978,37 +1344,22 @@ fn records::grid_state refocused
         records::grid_state state
         str focus
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "save" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "save")
-    ok records::grid_state(state.current, state.attempt, state.flight, state.operation_id, state.save_base, state.save_seq, state.status, focus)
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "save" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "save")
+    ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, state.status, focus)
 
-/// Apply one customer edit to the whole state. A no-op edit
+/// Apply one id edit to the whole state. A no-op edit
 /// (same text) returns the state untouched: no phantom unsaved,
 /// no focus jump.
-fn records::grid_state customer_edited
-    emits []
-    given
-        records::grid_state state
-        str customer
-    asserts
-        changed: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "Globex" => ok records::grid_state(records::draft("inv-1", 1, "Globex", [], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "")
-        same: records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "save"), "Acme" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "save")
-    match call with_customer(state.current, customer)
-        ok records::draft next => match next.edit_seq is state.current.edit_seq
-            false => match call marked_unsaved(call with_current(state, next))
-                ok records::grid_state marked => ok marked
-            true => ok state
-
-/// Apply one sku edit to the whole state; no-ops pass through.
-fn records::grid_state sku_edited
+fn records::grid_state id_edited
     emits []
     given
         records::grid_state state
         str key
-        str sku
+        str id
     asserts
-        changed: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1", "b" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "b", "1", 1, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "")
-        unknown: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k9", "b" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "")
-    match call with_sku(state.current, key, sku)
+        changed: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", "b" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
+        unknown: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k9", "b" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
+    match call with_id(state.current, key, id)
         ok records::draft next => match next.edit_seq is state.current.edit_seq
             false => match call marked_unsaved(call with_current(state, next))
                 ok records::grid_state marked => ok marked
@@ -1017,31 +1368,48 @@ fn records::grid_state sku_edited
 /// Apply one quantity-text edit to the whole state; unchanged
 /// text passes through (an unparsable change still counts: the
 /// screen content changed and the line now blocks the save).
-fn records::grid_state qty_edited
+fn records::grid_state quantity_edited
     emits []
     given
         records::grid_state state
         str key
-        str qty_text
+        str quantity
     asserts
-        changed: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1", "4" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "4", 4, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "")
-        same: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1", "1" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "")
-    match call with_qty(state.current, key, qty_text)
+        changed: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", "4" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "4", "1.00", 4, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
+        same: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", "1" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
+    match call with_quantity(state.current, key, quantity)
         ok records::draft next => match next.edit_seq is state.current.edit_seq
             false => match call marked_unsaved(call with_current(state, next))
                 ok records::grid_state marked => ok marked
             true => ok state
 
-/// Append one blank line and move focus to its sku field.
+/// Apply one price-text edit to the whole state; unchanged text
+/// passes through.
+fn records::grid_state price_edited
+    emits []
+    given
+        records::grid_state state
+        str key
+        str price
+    asserts
+        changed: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", "2.50" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "2.50", 1, 250, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
+        same: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", "1.00" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
+    match call with_price(state.current, key, price)
+        ok records::draft next => match next.edit_seq is state.current.edit_seq
+            false => match call marked_unsaved(call with_current(state, next))
+                ok records::grid_state marked => ok marked
+            true => ok state
+
+/// Append one blank line and move focus to its id field.
 fn records::grid_state line_added
     emits []
     given
         records::grid_state state
     asserts
-        sample: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "") => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "", "1", 1, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "sku:k2")
+        sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "", "1", "0.00", 1, 0, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "id:k2")
     match call free_key(state.current.lines, 1)
         ok str key => match call marked_unsaved(call with_current(state, call added_line(state.current)))
-            ok records::grid_state marked => match call refocused(marked, "sku:" + key)
+            ok records::grid_state marked => match call refocused(marked, "id:" + key)
                 ok records::grid_state moved => ok moved
 
 /// Drop one line and move focus to the add-line button. Unknown
@@ -1052,8 +1420,8 @@ fn records::grid_state line_removed
         records::grid_state state
         str key
     asserts
-        hit: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "add")
-        miss: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k9" => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "")
+        hit: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "add")
+        miss: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k9" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
     match call removed_line(state.current, key)
         ok records::draft next => match next.edit_seq is state.current.edit_seq
             false => match call marked_unsaved(call with_current(state, next))
@@ -1071,9 +1439,9 @@ fn records::grid_state line_moved
         str key
         int dir
     asserts
-        up: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k2", 0 => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true), records::draft_line("k1", "a", "1", 1, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "up:k2")
-        down: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true), records::draft_line("k2", "b", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1", 1 => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k2", "b", "1", 1, true), records::draft_line("k1", "a", "1", 1, true)], 1), 0, 0, "", 0, 0, records::unsaved_state("unsaved changes"), "down:k1")
-        edge: records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), ""), "k1", 0 => ok records::grid_state(records::draft("inv-1", 1, "Acme", [records::draft_line("k1", "a", "1", 1, true)], 0), 0, 0, "", 0, 0, records::clean_state("loaded revision 1"), "")
+        up: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k2", 0 => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true), records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "up:k2")
+        down: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", 1 => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true), records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "down:k1")
+        edge: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), ""), "k1", 0 => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "")
     match call moved_line(state.current, key, dir)
         ok records::draft next => match next.edit_seq is state.current.edit_seq
             false => match dir is 0
@@ -1084,3 +1452,36 @@ fn records::grid_state line_moved
                     ok records::grid_state marked => match call refocused(marked, "up:" + key)
                         ok records::grid_state moved => ok moved
             true => ok state
+
+/// Resolve one row focus intent against one stable row key: the
+/// control name ("id", "qty", "price", "up", "down" or "del") when
+/// the intent names this row's control, else "". Chrome intents
+/// ("save", "status", ...) never match a row.
+fn str row_focus_control
+    emits []
+    given
+        str focus
+        str row
+    asserts
+        id: "id:k1", "k1" => ok "id"
+        qty: "qty:k1", "k1" => ok "qty"
+        price: "price:k1", "k1" => ok "price"
+        up: "up:k1", "k1" => ok "up"
+        down: "down:k1", "k1" => ok "down"
+        del: "del:k1", "k1" => ok "del"
+        other_row: "qty:k2", "k1" => ok ""
+        chrome: "save", "k1" => ok ""
+        empty: "", "k1" => ok ""
+    match focus is "id:" + row
+        false => match focus is "qty:" + row
+            false => match focus is "price:" + row
+                false => match focus is "up:" + row
+                    false => match focus is "down:" + row
+                        false => match focus is "del:" + row
+                            false => ok ""
+                            true => ok "del"
+                        true => ok "down"
+                    true => ok "up"
+                true => ok "price"
+            true => ok "qty"
+        true => ok "id"
