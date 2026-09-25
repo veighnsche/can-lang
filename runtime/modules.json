@@ -716,6 +716,7 @@
       "../completion.ts",
       "./diagnostics.ts",
       "../failure.ts"
-    ]
+    ],
+    "platform/htmx-guard.ts": []
   }
 }

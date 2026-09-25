@@ -401,14 +401,18 @@ export function createHTML(
     },
     async runtimeHead(_context?: AssertionContext) {
       // htmx 4 swaps every status except noSwap entries. The compiler-owned
-      // policy keeps 204/304 quiet and every 4xx/5xx except 422 out of swaps,
-      // with same-origin fetch pinned explicitly.
-      const noSwap = [204, 304];
-      for (let code = 400; code < 600; code++) if (code !== 422) noSwap.push(code);
+      // policy keeps 204/304 quiet and every 4xx/5xx out of swaps; exact
+      // hx-status attributes generated only from a checked HTML action's
+      // cases re-admit declared error statuses per source element, with
+      // same-origin fetch pinned explicitly. The owned guard module loads
+      // after htmx and enforces target identity, response-control, and
+      // task-shape policy. Its integrity pins the Bun-transpiled bytes of
+      // runtime/platform/htmx-guard.ts; re-pin after any guard edit.
+      const noSwap = [204, 304, "4xx", "5xx"];
       const config = JSON.stringify({ mode: "same-origin", noSwap });
       return success(
         node(
-          `<meta name="htmx-config" content="${Bun.escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>`,
+          `<meta name="htmx-config" content="${Bun.escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script><script type="module" src="/__can/assets/htmx-guard.js" integrity="sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"></script>`,
           "runtime",
           true,
         ),
