@@ -23,6 +23,7 @@ type ExpressionEmitter struct {
 	Match        func(*ir.Match) (LoweredExpression, error)
 	Call         func(identity string, arguments []string) (LoweredExpression, error)
 	Mark         func(*ir.Expression) string
+	Browser      bool
 	serial       int
 }
 
@@ -108,6 +109,9 @@ func (e *ExpressionEmitter) Lower(node *ir.Expression) (LoweredExpression, error
 		}
 		return bind(value), nil
 	case ir.ScopeRequest:
+		if e.Browser {
+			return LoweredExpression{}, fmt.Errorf("browser production admits no harness scope request")
+		}
 		switch node.Type.Declaration() {
 		case "can.std.http@1::request", "can.std.sql@1::transaction", "can.std.sql@1::pool", "can.std.stream@1::reader", "can.std.stream@1::writer", "can.std.crypto@1::key", "can.std.ws@1::session",
 			"can.std.browser@1::app", "can.std.browser@1::view", "can.std.browser@1::node", "can.std.browser@1::state":

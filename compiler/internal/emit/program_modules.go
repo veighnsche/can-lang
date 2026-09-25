@@ -80,13 +80,13 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	// Initializer references may name types absent from function signatures.
 	allTypes := append(program.Model.Types(), checkedTypes(regions, descriptors)...)
-	localTypes, err := NativeTypeDeclarations(allTypes)
+	localTypes, err := NativeTypeDeclarationsForTarget(allTypes, assembly.browser)
 	if err != nil {
 		return Module{}, err
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -142,10 +142,12 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 func authoredModuleImports(assembly *programAssembly, runtime, path string) []ModuleImport {
 	program := assembly.program
 	values := stateValueImportNames()
+	base := programImports(runtime)
 	if assembly.browser {
 		values = browserStateValueImportNames()
+		base = browserProgramImports(runtime)
 	}
-	imports := append(programImports(runtime), ModuleImport{Target: programStatePath, Names: values})
+	imports := append(base, ModuleImport{Target: programStatePath, Names: values})
 	if !assembly.browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})

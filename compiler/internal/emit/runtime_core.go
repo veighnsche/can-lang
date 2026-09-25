@@ -20,6 +20,26 @@ func programImports(runtime string) []ModuleImport {
 	}
 }
 
+// browserProgramImports lists the runtime modules every browser authored
+// module needs. Assertion fixtures, callContext and scopeRequest are absent:
+// no fixtures ship in browser production, and ownership is explicit via
+// $canCtx. Coordination uses the explicit settleWithContext surface; the
+// bundler overlays canonical modules with their browser alternates.
+func browserProgramImports(runtime string) []ModuleImport {
+	return []ModuleImport{
+		{Target: runtime + "/collections/array.ts", Names: arrayImports()},
+		{Target: runtime + "/coordination.ts", Names: []ImportName{{"settleWithContext", "$canCoordinateSettleWithContext"}, {"handle", "$canCoordinateHandle"}, {"aggregate", "$canCoordinateAggregate"}}},
+		{Target: runtime + "/owner.ts", TypeOnly: true, Names: []ImportName{{"Participant", "$canParticipant"}, {"OwnerContext", "$canOwnerContext"}}},
+		{Target: runtime + "/bytes.ts", Names: []ImportName{{"byteLength", "$canByteLength"}}},
+		{Target: runtime + "/callable.ts", Names: []ImportName{{"ownCallable", "$canOwnCallable"}, {"callableInstance", "$canCallableInstance"}}},
+		{Target: runtime + "/completion.ts", Names: []ImportName{{"success", "$canSuccess"}, {"failure", "$canFailure"}, {"value", "$canValue"}, {"invoke", "$canInvoke"}, {"caught", "$canCaught"}, {"errorType", "$canErrorType"}, {"errorPayload", "$canErrorPayload"}}},
+		{Target: runtime + "/completion.ts", TypeOnly: true, Names: []ImportName{{"Completion", "$canCompletion"}, {"AssertionContext", "$canAssertionContext"}}},
+		{Target: runtime + "/data.ts", Names: []ImportName{{"record", "$canRecord"}, {"update", "$canUpdate"}, {"array", "$canArray"}, {"recordIdentity", "$canRecordIdentity"}}},
+		{Target: runtime + "/primitive.ts", Names: []ImportName{{"intDivide", "$canIntDivide"}, {"intRemainder", "$canIntRemainder"}, {"intPower", "$canIntPower"}, {"index", "$canIndex"}, {"slice", "$canSlice"}}},
+		{Target: runtime + "/failure.ts", Names: []ImportName{{"captureStandard", "$canCaptureStandard"}, {"isStandardFailure", "$canIsStandardFailure"}, {"standardFailureKind", "$canFailureKind"}, {"standardFailureMessage", "$canFailureMessage"}, {"standardFailureOccurrenceID", "$canFailureOccurrenceID"}}},
+	}
+}
+
 // coreOperationBindings maps the stable pre-B1 library operations to their
 // state-module targets. New B1 capabilities add their own binding files;
 // this table keeps only behavior owned before the Bun milestone. Existing

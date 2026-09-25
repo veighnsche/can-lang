@@ -76,7 +76,11 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 			return LoweredExpression{}, fmt.Errorf("invalid callable bound")
 		}
 	}
-	parameters = append(parameters, "$canContext?: $canAssertionContext")
+	if e.Browser {
+		parameters = append(parameters, "$canCtx: $canOwnerContext", "$canContext?: $canAssertionContext")
+	} else {
+		parameters = append(parameters, "$canContext?: $canAssertionContext")
+	}
 	var invoke string
 	if declaration.Array != nil {
 		var err error
@@ -85,11 +89,19 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 			return LoweredExpression{}, err
 		}
 	} else {
-		arguments = append(arguments, "$canContext")
+		if e.Browser {
+			arguments = append(arguments, e.callContexts(declaration.Target)...)
+		} else {
+			arguments = append(arguments, "$canContext")
+		}
 		invoke = savedTarget + "(" + strings.Join(arguments, ", ") + ")"
 	}
 	name := e.temp()
 	out.WriteString(e.mark(node.Span, "callable"))
-	fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+	if e.Browser {
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+	} else {
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+	}
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

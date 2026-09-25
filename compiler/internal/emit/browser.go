@@ -70,17 +70,31 @@ func assertBrowserAssembly(assembly *programAssembly) error {
 	return nil
 }
 
-// emitBrowserEntry builds the distinct main-thread root: an inert module
-// exporting the browser profile marker and the checked main through the
-// same configure-then-initialize lifecycle as the Bun entry, without any
-// host process reference.
+// emitBrowserEntry builds the distinct main-thread root: the compiler-owned
+// once-only DOM-ready startup for the checked zero-argument main. It
+// initializes Can state inside the explicit owner root and reports a startup
+// fault once through the sealed reporter; no test-authored boot module
+// invokes main. The diagnostic table below is the UP11 placeholder shape
+// (empty sealed index); UP15 seals it with checked source locations and
+// publishes it as a verified asset. No host process reference appears.
 func emitBrowserEntry(assembly *programAssembly, runtime string) Module {
 	main := assembly.program.Entry
+	body := "export const BROWSER_PROFILE = " + quote(browser.Profile) + ";\n" +
+		"const $canTable = Object.freeze({index: Object.freeze({schemaVersion: 1, kind: \"can.source-index\", sources: Object.freeze([]), modules: Object.freeze([])}), maps: Object.freeze({})});\n" +
+		"let $canStarted = false;\n" +
+		"export async function $canBrowserMain(): Promise<void> {\n" +
+		"if ($canStarted) return;\n" +
+		"$canStarted = true;\n" +
+		"await $canRunBrowserEntry({table: $canTable, main: async ($canCtx) => {$canInitialize();\n" +
+		"return $canMain($canCtx);\n" +
+		"}});\n" +
+		"}\n" +
+		"void $canBrowserMain();\n"
 	return Module{Path: browser.BrowserEntry, Imports: []ModuleImport{
 		{Target: programStatePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
-		{Target: runtime + "/diagnostics.ts", Names: []ImportName{{"configureDiagnostics", "$canConfigureDiagnostics"}}},
+		{Target: runtime + "/browser/entry.ts", Names: []ImportName{{"runBrowserEntry", "$canRunBrowserEntry"}}},
 		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{assembly.functions[main.Identity()], "$canMain"}}},
-	}, Body: "export const BROWSER_PROFILE = " + quote(browser.Profile) + ";\nexport async function $canBrowserMain(...$canArgs: Parameters<typeof $canMain>): Promise<Awaited<ReturnType<typeof $canMain>>> {\n$canConfigureDiagnostics(import.meta.url);\n$canInitialize();\nreturn $canMain(...$canArgs);\n}\n"}
+	}, Body: body}
 }
 
 // browserStateValueImportNames lists the shared factory values browser

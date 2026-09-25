@@ -143,7 +143,7 @@ func (builder *stateBuilder) prerequisites() error {
 		return err
 	}
 	builder.initial = initial
-	declarations, err := NativeTypeDeclarations(program.Model.Types())
+	declarations, err := NativeTypeDeclarationsForTarget(program.Model.Types(), builder.assembly.browser)
 	if err != nil {
 		return err
 	}
@@ -390,7 +390,11 @@ func (builder *stateBuilder) emitSpecializationConstants() error {
 // the fixed order the initializer depends on.
 func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	browser := builder.assembly.browser
-	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
+	base := programImports(runtime)
+	if browser {
+		base = browserProgramImports(runtime)
+	}
+	imports := append(base, ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	if browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	} else {

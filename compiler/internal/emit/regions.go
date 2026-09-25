@@ -19,10 +19,50 @@ func PatternImports(dataPath, failurePath string) string {
 }
 func TypeName(t *types.Type) string { return "$canType" + t.Identity() }
 
+// browserOpDeclaration strips specialization suffixes (/instance/<hex> or
+// <T,...>) to recover the catalogue declaration for browser routing.
+func browserOpDeclaration(identity string) string {
+	decl := identity
+	if i := strings.Index(decl, "/instance/"); i >= 0 {
+		decl = decl[:i]
+	}
+	if i := strings.Index(decl, "<"); i >= 0 {
+		decl = decl[:i]
+	}
+	return decl
+}
+
+// isBrowserOp reports whether an invocation identity names a browser
+// catalogue operation (including per-type specializations). In browser
+// emission these take explicit $canCtx; shared catalogue ops take only
+// $canContext (undefined in production); authored functions take both.
+func isBrowserOp(identity string) bool {
+	return strings.HasPrefix(browserOpDeclaration(identity), "can.std.browser@1::")
+}
+
+// isAuthoredCall reports whether an invocation identity names authored Can
+// code (as opposed to a shared catalogue operation). Authored browser
+// functions take ($canCtx, $canContext?); shared ops take $canContext only.
+func isAuthoredCall(identity string) bool {
+	decl := browserOpDeclaration(identity)
+	if strings.HasPrefix(decl, "can.std.") || strings.HasPrefix(decl, "can.intrinsic.") || strings.HasPrefix(decl, "can.prelude@") {
+		return false
+	}
+	return decl != ""
+}
+
 // NativeTypeDeclarations supplies strict TS annotations for the sealed graph.
 // Can nominal admission is already checked in Go and branded at runtime; emitted
 // structural aliases do not authorize new source assignments.
 func NativeTypeDeclarations(graph []*types.Type) (string, error) {
+	return NativeTypeDeclarationsForTarget(graph, false)
+}
+
+// NativeTypeDeclarationsForTarget supplies the same annotations with the
+// browser callable shape (explicit $canCtx plus optional $canContext) when
+// browser is true. Choice arms never ship in browser production; their
+// shape stays Bun-only.
+func NativeTypeDeclarationsForTarget(graph []*types.Type, browser bool) (string, error) {
 	nodes := map[string]*types.Type{}
 	var add func(*types.Type) error
 	add = func(t *types.Type) error {
@@ -84,7 +124,11 @@ func NativeTypeDeclarations(graph []*types.Type) (string, error) {
 			for i, arg := range t.Inputs() {
 				args = append(args, fmt.Sprintf("arg%d: %s", i, TypeName(arg)))
 			}
-			args = append(args, "$canContext?: $canAssertionContext")
+			if browser {
+				args = append(args, "$canCtx: $canOwnerContext", "$canContext?: $canAssertionContext")
+			} else {
+				args = append(args, "$canContext?: $canAssertionContext")
+			}
 			text = "(" + strings.Join(args, ", ") + ") => Promise<$canCompletion<" + TypeName(t.Result()) + ">>"
 		case types.Variant:
 			var parts []string
@@ -117,9 +161,14 @@ type RegionEmitter struct {
 	// DomainRuntime is the private instance created from the checked error plan.
 	DomainRuntime string
 	SourceID      string
-	expression    ExpressionEmitter
-	region        *ir.Region
-	serial        int
+	// Browser selects explicit OwnerContext threading: functions take
+	// ($canCtx: OwnerContext, $canContext?) with no ambient discovery,
+	// coordination uses settleWithContext, callables omit assertion
+	// context, and fixture wrappers are skipped (no fixtures ship).
+	Browser    bool
+	expression ExpressionEmitter
+	region     *ir.Region
+	serial     int
 }
 
 func (e *RegionEmitter) temp() string { e.serial++; return fmt.Sprintf("$canRegion%d", e.serial) }
@@ -181,7 +230,7 @@ func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 	for id, value := range e.Bindings {
 		bindings[id] = value
 	}
-	e.expression = ExpressionEmitter{Bindings: bindings, TypeName: TypeName}
+	e.expression = ExpressionEmitter{Bindings: bindings, TypeName: TypeName, Browser: e.Browser}
 	if e.SourceID != "" {
 		e.expression.Mark = func(node *ir.Expression) string { return e.markNode(node, string(node.Kind)) }
 	}
@@ -195,7 +244,11 @@ func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 			return LoweredExpression{}, err
 		}
 		boxed := e.temp()
-		return LoweredExpression{Statements: fmt.Sprintf("const %s = await $canInvoke(() => %s(%s), %s);\n", boxed, target, strings.Join(append(args, "$canContext"), ", "), e.origin(region.Span)), Value: "$canValue(" + boxed + ")"}, nil
+		callArgs := append(append([]string{}, args...), "$canContext")
+		if e.Browser {
+			callArgs = append(append([]string{}, args...), e.callContexts(id)...)
+		}
+		return LoweredExpression{Statements: fmt.Sprintf("const %s = await $canInvoke(() => %s(%s), %s);\n", boxed, target, strings.Join(callArgs, ", "), e.origin(region.Span)), Value: "$canValue(" + boxed + ")"}, nil
 	}
 	var args []string
 	for i, input := range region.Inputs {
@@ -206,8 +259,26 @@ func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 		bindings[input.Identity] = param
 		args = append(args, param+": "+TypeName(input.Type))
 	}
-	args = append(args, "$canContext?: $canAssertionContext")
+	if e.Browser {
+		args = append(args, "$canCtx: $canOwnerContext", "$canContext?: $canAssertionContext")
+	} else {
+		args = append(args, "$canContext?: $canAssertionContext")
+	}
 	return args, nil
+}
+
+// callContexts selects the trailing context arguments for a direct call in
+// browser emission: browser ops take $canCtx only, authored calls take both,
+// shared ops take $canContext only (undefined in production). Bun callers
+// always pass $canContext.
+func (e *RegionEmitter) callContexts(identity string) []string {
+	if isBrowserOp(identity) {
+		return []string{"$canCtx"}
+	}
+	if isAuthoredCall(identity) {
+		return []string{"$canCtx", "$canContext"}
+	}
+	return []string{"$canContext"}
 }
 func (e *RegionEmitter) target(id string) (string, error) {
 	if name := e.Functions[id]; name != "" {
@@ -351,9 +422,17 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 				return LoweredExpression{}, err
 			}
 		} else {
-			invocation = target + "(" + strings.Join(append(callArgs, "$canContext"), ", ") + ")"
+			contexts := []string{"$canContext"}
+			if e.Browser {
+				if step.Callee != nil {
+					contexts = []string{"$canCtx", "$canContext"}
+				} else {
+					contexts = e.callContexts(step.Identity)
+				}
+			}
+			invocation = target + "(" + strings.Join(append(append([]string{}, callArgs...), contexts...), ", ") + ")"
 		}
-		if step.Fixtures != nil {
+		if step.Fixtures != nil && !e.Browser {
 			var rows []string
 			for _, row := range step.Fixtures.Rows {
 				var prepare strings.Builder
@@ -397,11 +476,13 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			invocation = "$canWithFixture($canContext," + quote(step.Fixtures.Identity) + ",[" + strings.Join(rows, ",") + "],[" + strings.Join(args, ",") + "],()=>" + invocation + "," + e.origin(step.Span) + ")"
 		}
-		instance := "undefined"
-		if step.Native == nil && step.Array == nil && step.Asset == nil {
-			instance = "$canCallableInstance(" + target + ")"
+		if !e.Browser {
+			instance := "undefined"
+			if step.Native == nil && step.Array == nil && step.Asset == nil {
+				instance = "$canCallableInstance(" + target + ")"
+			}
+			invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"
 		}
-		invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"
 		out.WriteString(e.mark(step.Span, "call"))
 		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
 	}

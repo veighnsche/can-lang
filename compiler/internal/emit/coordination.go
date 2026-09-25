@@ -41,7 +41,9 @@ func (e *RegionEmitter) coordination(node *ir.Coordination) (LoweredExpression, 
 	var out strings.Builder
 	participants, handlers := e.temp(), e.temp()
 	positions := e.temp()
-	fmt.Fprintf(&out, "const %s: number[][] = [];\n", positions)
+	if !e.Browser {
+		fmt.Fprintf(&out, "const %s: number[][] = [];\n", positions)
+	}
 	fmt.Fprintf(&out, "const %s: $canParticipant[] = [];\nconst %s: ((outcome: $canCompletion<unknown>) => Promise<$canCompletion<unknown>>)[] = [];\n", participants, handlers)
 	for writtenIndex, entry := range node.Entries {
 		handler, err := e.outcomeHandler(entry.Handler)
@@ -57,8 +59,12 @@ func (e *RegionEmitter) coordination(node *ir.Coordination) (LoweredExpression, 
 			}
 			out.WriteString(spread.Statements)
 			snapshot, action := e.temp(), e.temp()
-			fmt.Fprintf(&out, "const %s = Object.freeze([...%s]);\nfor (const %s of %s) {\n%s.push({captures:[%s],run:($canContext?: $canAssertionContext)=> $canInvoke(()=> $canCallContext($canContext,%s,($canContext)=>%s($canContext),$canCallableInstance(%s)),%s)});\n%s.push(%s);\n}\n", snapshot, spread.Value, action, snapshot, participants, action, quote(node.Site), action, action, e.origin(entry.Span), handlers, callback)
-			fmt.Fprintf(&out, "for(let i=0;i<%s.length;i++) %s.push([%d,i]);\n", snapshot, positions, writtenIndex)
+			if e.Browser {
+				fmt.Fprintf(&out, "const %s = Object.freeze([...%s]);\nfor (const %s of %s) {\n%s.push({captures:[%s],run:($canCtx: $canOwnerContext)=> $canInvoke(()=> %s($canCtx,$canContext),%s)});\n%s.push(%s);\n}\n", snapshot, spread.Value, action, snapshot, participants, action, action, e.origin(entry.Span), handlers, callback)
+			} else {
+				fmt.Fprintf(&out, "const %s = Object.freeze([...%s]);\nfor (const %s of %s) {\n%s.push({captures:[%s],run:($canContext?: $canAssertionContext)=> $canInvoke(()=> $canCallContext($canContext,%s,($canContext)=>%s($canContext),$canCallableInstance(%s)),%s)});\n%s.push(%s);\n}\n", snapshot, spread.Value, action, snapshot, participants, action, quote(node.Site), action, action, e.origin(entry.Span), handlers, callback)
+				fmt.Fprintf(&out, "for(let i=0;i<%s.length;i++) %s.push([%d,i]);\n", snapshot, positions, writtenIndex)
+			}
 			continue
 		}
 		prepared, captures, err := e.prepareParticipant(entry.Call)
@@ -66,8 +72,12 @@ func (e *RegionEmitter) coordination(node *ir.Coordination) (LoweredExpression, 
 			return LoweredExpression{}, err
 		}
 		out.WriteString(prepared.Statements)
-		fmt.Fprintf(&out, "%s.push({captures:[%s],run:($canContext?: $canAssertionContext)=> $canInvoke(%s,%s)});\n%s.push(%s);\n", participants, strings.Join(captures, ","), prepared.Value, e.origin(entry.Span), handlers, callback)
-		fmt.Fprintf(&out, "%s.push([%d]);\n", positions, writtenIndex)
+		if e.Browser {
+			fmt.Fprintf(&out, "%s.push({captures:[%s],run:($canCtx: $canOwnerContext)=> $canInvoke(%s,%s)});\n%s.push(%s);\n", participants, strings.Join(captures, ","), prepared.Value, e.origin(entry.Span), handlers, callback)
+		} else {
+			fmt.Fprintf(&out, "%s.push({captures:[%s],run:($canContext?: $canAssertionContext)=> $canInvoke(%s,%s)});\n%s.push(%s);\n", participants, strings.Join(captures, ","), prepared.Value, e.origin(entry.Span), handlers, callback)
+			fmt.Fprintf(&out, "%s.push([%d]);\n", positions, writtenIndex)
+		}
 	}
 	aggregate, err := e.outcomeHandler(node.Aggregate)
 	if err != nil {
@@ -82,7 +92,11 @@ func (e *RegionEmitter) coordination(node *ir.Coordination) (LoweredExpression, 
 	sharedName, selection, result := e.temp(), e.temp(), e.temp()
 	fmt.Fprintf(&out, "const %s = %s;\n", sharedName, shared)
 	out.WriteString(e.mark(node.Span, "coordination"))
-	fmt.Fprintf(&out, "const %s = await $canCoordinateSettle(%s,%s,$canContext,%s,%s);\n", selection, quote(node.Mode), participants, quote(node.Site), positions)
+	if e.Browser {
+		fmt.Fprintf(&out, "const %s = await $canCoordinateSettleWithContext($canCtx,%s,%s);\n", selection, quote(node.Mode), participants)
+	} else {
+		fmt.Fprintf(&out, "const %s = await $canCoordinateSettle(%s,%s,$canContext,%s,%s);\n", selection, quote(node.Mode), participants, quote(node.Site), positions)
+	}
 	aggregateCompletion := "$canSuccess(undefined)"
 	if node.AggregateType != nil {
 		if e.DomainRuntime == "" {
