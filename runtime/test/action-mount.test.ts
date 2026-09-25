@@ -4,11 +4,11 @@ import { createHash } from "node:crypto";
 import { catalogue } from "../catalogue.ts";
 import { createDomainRuntime, type FailureShape } from "../domain.ts";
 import { success, failure, value, errorType, errorPayload } from "../completion.ts";
-import { record, array, dataArray, dataProperty, recordIdentity } from "../data.ts";
+import { record, dataArray, dataProperty, recordIdentity } from "../data.ts";
 import { runOwnedRoot, resourceStatus } from "../owner.ts";
 import { createServer } from "../platform/server.ts";
 import { createRouter, dispatch } from "../platform/router.ts";
-import { snapshotRequest, nativeResponse, ownedResponse } from "../platform/http.ts";
+import { snapshotRequest, ownedResponse } from "../platform/http.ts";
 import { createHTML } from "../platform/html.ts";
 import type { Schema } from "../codec/json.ts";
 import type { FormSchema } from "../platform/form.ts";
@@ -112,7 +112,6 @@ const fragment = async (text: string) => value(await html.fragment([value(await 
 const keyDecl = "up09::invoice_key";
 const keyIdentity = identity("record", keyDecl);
 const strNode = { identity: "up09::str", kind: "primitive", name: "str" };
-const intNode = { identity: "up09::int", kind: "primitive", name: "int" };
 const loadResponse: Schema = {
   root: "up09::grid_load_outcome",
   nodes: [
@@ -236,7 +235,13 @@ const formSite = {
   path: "/tenants/:tenant_id/invoices/:invoice_id",
   capturesType: keyDecl,
   captures,
-  input: { mode: "form", type: "up09::invoice_form", limit: 2048, rowsLimit: 2, schema: formSchema },
+  input: {
+    mode: "form",
+    type: "up09::invoice_form",
+    limit: 2048,
+    rowsLimit: 2,
+    schema: formSchema,
+  },
   returns: "up09::edit_outcome",
   body: "html",
   cases: [
@@ -489,20 +494,22 @@ test("mount rejects malformed sites, callables and templates", async () => {
   expect(bad.length).toBe(22);
   for (const [name, handler, site] of bad) {
     if (name === "JSON at form entry") {
-      await expect(mounts.mountForm(loadHandler, outcomeRenderer, structuralRenderer, site)).rejects.toThrow(
-        TypeError,
-      );
+      await expect(
+        mounts.mountForm(loadHandler, outcomeRenderer, structuralRenderer, site),
+      ).rejects.toThrow(TypeError);
       continue;
     }
     await expect(mounts.mount(handler, site)).rejects.toThrow(TypeError);
   }
+  await expect(mounts.mountForm(loadHandler, outcomeRenderer, "nope", formSite)).rejects.toThrow(
+    TypeError,
+  );
   await expect(
-    mounts.mountForm(loadHandler, outcomeRenderer, "nope", formSite),
+    mounts.mountForm(loadHandler, outcomeRenderer, structuralRenderer, {
+      ...formSite,
+      rejected: "",
+    }),
   ).rejects.toThrow(TypeError);
-  await expect(mounts.mountForm(loadHandler, outcomeRenderer, structuralRenderer, {
-    ...formSite,
-    rejected: "",
-  })).rejects.toThrow(TypeError);
   // Template faults fail as the declared invalid_route, never a throw.
   const templates = [
     "api/tenants/:tenant_id",
@@ -614,11 +621,12 @@ test("guarded probe matrix keeps invalid input out of protected handlers", async
     const edit = JSON.stringify({ operation_id: "op-1", label: "r1" });
     // Canonical int64 endpoints enter with typed bigints, including the
     // negative minimum, which the handler denies with its 403 leaf.
-    for (const [tenant, line, status] of [
+    const canonical: [string, string, number][] = [
       ["1", "7", 200],
       ["0", "-1", 200],
       ["-9223372036854775808", "9223372036854775807", 403],
-    ]) {
+    ];
+    for (const [tenant, line, status] of canonical) {
       const response = await fetch(invoice(tenant, line));
       expect(`${tenant}/${line}: ${response.status}`).toBe(`${tenant}/${line}: ${status}`);
       const text = await response.text();
@@ -643,13 +651,30 @@ test("guarded probe matrix keeps invalid input out of protected handlers", async
     // a handler; only the 200 cases above entered callbacks. Encoded dots
     // travel below over path-as-is sockets: fetch would normalize them
     // client-side before Bun ever sees the wire bytes.
-    for (const [tenant, line] of [["%ZZ", "7"], ["%ED%A0%80", "7"], ["%2F", "7"], ["%5C", "7"]]) {
-      const response = await fetch(invoice(tenant, line), { method: "POST", headers: json, body: edit });
+    for (const [tenant, line] of [
+      ["%ZZ", "7"],
+      ["%ED%A0%80", "7"],
+      ["%2F", "7"],
+      ["%5C", "7"],
+    ]) {
+      const response = await fetch(invoice(tenant, line), {
+        method: "POST",
+        headers: json,
+        body: edit,
+      });
       expect(`${tenant}/${line}: ${response.status}`).toBe(`${tenant}/${line}: 400`);
     }
-    expect(calls).toEqual(["load:1,7", "load:0,-1", "load:-9223372036854775808,9223372036854775807"]);
+    expect(calls).toEqual([
+      "load:1,7",
+      "load:0,-1",
+      "load:-9223372036854775808,9223372036854775807",
+    ]);
     // Method selection with static precedence inside one method.
-    const created = await fetch(base + "/invoices/new", { method: "POST", headers: json, body: edit });
+    const created = await fetch(base + "/invoices/new", {
+      method: "POST",
+      headers: json,
+      body: edit,
+    });
     expect(created.status).toBe(200);
     expect(calls.at(-1)).toBe("slug:new,op-1");
     await created.text();
@@ -752,12 +777,13 @@ test("mounts enforce media, declared budgets and JSON shape", async () => {
     const target = base + "/api/tenants/1/invoices/7";
     const edit = JSON.stringify({ operation_id: "op-1", label: "r1" });
     // Wrong media is 415 without handler entry, even with a valid body.
-    for (const headers of [
+    const headerSets: Record<string, string>[] = [
       {},
       { "content-type": "text/plain" },
       { "content-type": "application/json; charset=latin-1" },
       { "content-type": "not-a-media-type" },
-    ]) {
+    ];
+    for (const headers of headerSets) {
       const response = await fetch(target, { method: "POST", headers, body: edit });
       expect(response.status).toBe(415);
       expect(await response.text()).toBe("Unsupported Media Type");
@@ -834,7 +860,9 @@ test("server body budget preempts mount entry", async () => {
 test("form mounts render wire, structural and row-limit outcomes", async () => {
   calls.length = 0;
   const owned = await runOwnedRoot(async () => {
-    const form = value(await mounts.mountForm(formHandler, outcomeRenderer, structuralRenderer, formSite));
+    const form = value(
+      await mounts.mountForm(formHandler, outcomeRenderer, structuralRenderer, formSite),
+    );
     const token = await serve(18616, [form]);
     const base = "http://127.0.0.1:18616";
     const target = base + "/tenants/1/invoices/7";
@@ -941,7 +969,9 @@ test("handler and renderer faults become 500 without serving domain cases", asyn
       capturesType: undefined,
       captures: [],
     });
-    const crash = value(await mounts.mount(exploding, flat(saveSite, "up09::crash", "/fault/crash")));
+    const crash = value(
+      await mounts.mount(exploding, flat(saveSite, "up09::crash", "/fault/crash")),
+    );
     const stray = value(await mounts.mount(missing, flat(saveSite, "up09::stray", "/fault/stray")));
     const broken = value(
       await mounts.mount(unencodable, flat(saveSite, "up09::broken", "/fault/broken")),
@@ -1027,8 +1057,8 @@ test("url fails unbuildable captures as invalid_path", async () => {
     const completed = await mounts.url(keyValue, site, undefined);
     expect(`${name}: ${completed.kind}`).toBe(`${name}: domain`);
     expect(errorType(completed as never)).toBe(id("can.std.action@1::invalid_path"));
-    expect(`${name}: ${failedField(completed, "reason")}`).toBe(
-      `${name}: ${name === "out of range" ? "capture-value" : "capture-type"}`,
+    expect(failedField(completed, "reason")).toBe(
+      name === "out of range" ? "capture-value" : "capture-type",
     );
   }
   const slugSite = {
@@ -1042,24 +1072,35 @@ test("url fails unbuildable captures as invalid_path", async () => {
     ["dot", "..", "capture-value"],
     ["mistyped", 7n, "capture-type"],
   ] as const) {
-    const completed = await mounts.url(record("up09::slug_key", [["slug", slug]]), slugSite, undefined);
+    const completed = await mounts.url(
+      record("up09::slug_key", [["slug", slug]]),
+      slugSite,
+      undefined,
+    );
     expect(`${name}: ${completed.kind}`).toBe(`${name}: domain`);
     expect(failedField(completed, "reason")).toBe(reason);
   }
   // Captures-record arity disagreements and malformed sites throw.
   await expect(mounts.url(site, undefined)).rejects.toThrow(TypeError);
   await expect(mounts.url(key(1n, 2n), site)).rejects.toThrow(TypeError);
-  await expect(mounts.url(key(1n, 2n), { ...site, path: "" }, undefined)).rejects.toThrow(TypeError);
+  await expect(mounts.url(key(1n, 2n), { ...site, path: "" }, undefined)).rejects.toThrow(
+    TypeError,
+  );
   await expect(
     mounts.url(key(1n, 2n), { ...site, path: "/api/:Tenant" }, undefined),
   ).rejects.toThrow(TypeError);
 });
 
 test("combined dispatch unions 405 claims across both tables", async () => {
-  const legacy = value(await router.post("/invoices/new", async () => success(ownedResponse(200, "x", false))));
+  const legacy = value(
+    await router.post("/invoices/new", async () => success(ownedResponse(200, "x", false))),
+  );
   const fresh = value(await mounts.mount(staticHandler, staticSite));
   const table = value(await router.make([legacy, fresh]));
-  const put = await snapshotRequest(new Request("http://test.local/invoices/new", { method: "PUT" }), 65536);
+  const put = await snapshotRequest(
+    new Request("http://test.local/invoices/new", { method: "PUT" }),
+    65536,
+  );
   if (put.kind !== "request") throw new Error("snapshot rejected");
   const denied = value(await dispatch(table, put.value));
   expect(denied.status).toBe(405);
@@ -1078,7 +1119,10 @@ test("combined dispatch unions 405 claims across both tables", async () => {
   expect(foreign.status).toBe(405);
   expect(foreign.headers.get("allow")).toBe("POST");
   await foreign.text();
-  const nowhere = await snapshotRequest(new Request("http://test.local/nope", { method: "PUT" }), 65536);
+  const nowhere = await snapshotRequest(
+    new Request("http://test.local/nope", { method: "PUT" }),
+    65536,
+  );
   if (nowhere.kind !== "request") throw new Error("snapshot rejected");
   const missing = value(await dispatch(solo, nowhere.value));
   expect(missing.status).toBe(404);
