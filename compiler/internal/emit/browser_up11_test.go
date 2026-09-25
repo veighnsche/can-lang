@@ -475,6 +475,127 @@ fn void main
 	}
 }
 
+func TestBrowserImportedActionsMountNothing(t *testing.T) {
+	program := browserUP11Program(t, map[string]string{"src/app/main.can": `package app
+    provides []
+    uses [records, codec]
+record invoice
+    str id
+action save_invoice
+    post "/invoices/save"
+    json records::invoice_json_wire limit 8192
+    returns records::save_outcome
+    body json
+    cases
+        records::saved status 200
+        records::rejected status 422
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    ok
+`, "src/records/records.can": `package records
+    provides [invoice_json_wire, save_outcome, saved, rejected]
+    uses [codec]
+record invoice_json_wire
+    str id
+variant save_outcome
+    saved
+    rejected
+record saved
+    str id
+record rejected
+    str reason
+`})
+	artifacts := browserUP11Artifacts(t, program)
+	var bodies []string
+	for _, artifact := range artifacts {
+		if strings.HasSuffix(artifact.Path, ".ts") {
+			bodies = append(bodies, string(artifact.Bytes))
+		}
+	}
+	joined := strings.Join(bodies, "\n")
+	if !strings.Contains(joined, "$canActions") {
+		t.Fatalf("browser emission omits action metadata table")
+	}
+	for _, banned := range []string{
+		"$canActionRoutes",
+		"action-routes",
+		".mount(",
+		"$canServer",
+		"platform/server.ts",
+	} {
+		if strings.Contains(joined, banned) {
+			t.Fatalf("browser emission mounts imported action via %q", banned)
+		}
+	}
+	if program.ActionRoutes {
+		t.Fatal("checker marked unmounted action as routed")
+	}
+}
+
+func TestBrowserUnusedSharedCodeAddsNoEdge(t *testing.T) {
+	program := browserUP11Program(t, map[string]string{
+		"src/app/main.can": `package app
+    provides []
+    uses [shared]
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    match call shared::used_helper("hi")
+        ok => ok
+`,
+		"src/shared/shared.can": `package shared
+    provides [used_helper, unused_form_helper, unused_server_helper]
+    uses [browser, codec]
+fn void used_helper
+    emits []
+    given
+        str text
+    asserts
+        sample: "hi" => ok
+    ok
+fn void unused_form_helper
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "x" => codec::invalid_data("", "")
+    codec::invalid_data("", "")
+fn void unused_server_helper
+    emits []
+    given
+        str text
+    asserts
+        sample: "x" => ok
+    ok
+`,
+	})
+	if len(program.Functions) != 4 {
+		t.Fatalf("checker pruned shared source; functions = %d, want 4", len(program.Functions))
+	}
+	artifacts := browserUP11Artifacts(t, program)
+	authored := browserUP11Authored(t, artifacts)
+	if strings.Contains(authored, "unused_form_helper") || strings.Contains(authored, "unused_server_helper") {
+		t.Fatalf("browser emission retains unused shared helpers")
+	}
+	for _, artifact := range artifacts {
+		if artifact.Runtime {
+			continue
+		}
+		for _, edge := range artifact.Imports {
+			switch {
+			case strings.Contains(edge, "platform/server.ts"),
+				strings.Contains(edge, "platform/sql/"),
+				strings.Contains(edge, "platform/env.ts"),
+				strings.Contains(edge, "platform/io.ts"):
+				t.Fatalf("%s gains server edge %q from unused shared code", artifact.Path, edge)
+			}
+		}
+	}
+}
+
 func TestBunEmissionKeepsAssertionContext(t *testing.T) {
 	program := browserEmitProgram(t, map[string]string{"src/main.can": browserPureSource})
 	artifacts, err := ProgramModules(program, "runtime", httpDependencies(t))
