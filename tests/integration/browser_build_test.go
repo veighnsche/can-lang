@@ -295,6 +295,385 @@ fn void main
 			t.Fatalf("bun build of the same project: %d %s", code, diag)
 		}
 	})
+
+	t.Run("empty app builds a verified bundle", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/main.can", `package app
+    provides []
+    uses []
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
+`)
+		code, out, diag := run("build", "--target", "browser", root)
+		if code != 0 {
+			t.Fatalf("empty browser build: %d %s %s", code, out, diag)
+		}
+		var report struct {
+			BuildID   string `json:"buildID"`
+			Directory string `json:"directory"`
+		}
+		if err := json.Unmarshal([]byte(out), &report); err != nil {
+			t.Fatal(err)
+		}
+		assertVerifiedBundle(t, report.Directory)
+	})
+
+	t.Run("bundle publishes verified outputs", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/app/main.can", browserPureMain)
+		write("src/strings/join.can", browserHelperPackage)
+		code, out, diag := run("build", "--target", "browser", root)
+		if code != 0 {
+			t.Fatalf("browser build: %d %s %s", code, out, diag)
+		}
+		var report struct {
+			BuildID   string `json:"buildID"`
+			Directory string `json:"directory"`
+		}
+		if err := json.Unmarshal([]byte(out), &report); err != nil {
+			t.Fatal(err)
+		}
+		assertVerifiedBundle(t, report.Directory)
+		// The entry ships the sealed table, never the empty placeholder.
+		entry, err := os.ReadFile(filepath.Join(report.Directory, "browser.ts"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(entry), `"can.diagnostic-table"`) || strings.Contains(string(entry), "sources: Object.freeze([])") {
+			t.Fatal("browser entry does not seal the checked table")
+		}
+		// No assertion roots or test-only edges ship in the browser tree.
+		if _, err := os.Stat(filepath.Join(report.Directory, "assertions")); !os.IsNotExist(err) {
+			t.Fatal("browser generation ships assertion roots")
+		}
+		manifestRaw, err := os.ReadFile(filepath.Join(report.Directory, "manifest.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		var generation struct {
+			Imports map[string][]string `json:"imports"`
+		}
+		if err := json.Unmarshal(manifestRaw, &generation); err != nil {
+			t.Fatal(err)
+		}
+		for from, edges := range generation.Imports {
+			if strings.HasPrefix(from, "runtime/") {
+				continue
+			}
+			for _, edge := range edges {
+				if strings.Contains(edge, "/assert/") {
+					t.Fatalf("generated edge %s -> %s reaches test code", from, edge)
+				}
+			}
+		}
+	})
+
+	t.Run("repeated clean builds are identical", func(t *testing.T) {
+		build := func(t *testing.T) (string, string) {
+			t.Helper()
+			root, write := newProject(t)
+			write("src/app/main.can", browserPureMain)
+			write("src/strings/join.can", browserHelperPackage)
+			code, out, diag := run("build", "--target", "browser", root)
+			if code != 0 {
+				t.Fatalf("browser build: %d %s %s", code, out, diag)
+			}
+			var report struct {
+				BuildID   string `json:"buildID"`
+				Directory string `json:"directory"`
+			}
+			if err := json.Unmarshal([]byte(out), &report); err != nil {
+				t.Fatal(err)
+			}
+			return report.BuildID, report.Directory
+		}
+		firstID, firstDir := build(t)
+		secondID, secondDir := build(t)
+		if firstID != secondID {
+			t.Fatalf("clean builds diverge: %s vs %s", firstID, secondID)
+		}
+		for _, name := range []string{"browser/browser.js", "browser/browser.js.map", "diagnostics/table.json", "browser/manifest.json"} {
+			first, err := os.ReadFile(filepath.Join(firstDir, filepath.FromSlash(name)))
+			if err != nil {
+				t.Fatal(err)
+			}
+			second, err := os.ReadFile(filepath.Join(secondDir, filepath.FromSlash(name)))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(first) != string(second) {
+				t.Fatalf("clean builds diverge in %s", name)
+			}
+		}
+	})
+
+	t.Run("failing assertions prevent browser publication", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/app/main.can", strings.Replace(browserPureMain, "ok point(1, 2)", "ok point(9, 9)", 1))
+		code, _, diag := run("build", "--target", "browser", root)
+		if code == 0 || !strings.Contains(diag, "build verification failed") {
+			t.Fatalf("wrong assertion published: %d %s", code, diag)
+		}
+		if _, err := os.Stat(filepath.Join(root, "dist/current.json")); !os.IsNotExist(err) {
+			t.Fatal("failed browser build selected production current")
+		}
+	})
+
+	t.Run("tampered bundle prevents publication", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/app/main.can", browserPureMain)
+		write("src/strings/join.can", browserHelperPackage)
+		code, out, diag := run("build", "--target", "browser", root)
+		if code != 0 {
+			t.Fatalf("browser build: %d %s %s", code, out, diag)
+		}
+		var report struct {
+			Directory string `json:"directory"`
+		}
+		if err := json.Unmarshal([]byte(out), &report); err != nil {
+			t.Fatal(err)
+		}
+		before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		entry := filepath.Join(report.Directory, "browser/browser.js")
+		raw, err := os.ReadFile(entry)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(entry, append(raw, []byte("//tamper\n")...), 0600); err != nil {
+			t.Fatal(err)
+		}
+		code, _, diag = run("build", "--target", "browser", root)
+		if code == 0 {
+			t.Fatalf("tampered bundle published: %s", diag)
+		}
+		after, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(after) != string(before) {
+			t.Fatal("tampered rebuild moved production current")
+		}
+	})
+
+	t.Run("missing map prevents publication", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/app/main.can", browserPureMain)
+		write("src/strings/join.can", browserHelperPackage)
+		code, out, diag := run("build", "--target", "browser", root)
+		if code != 0 {
+			t.Fatalf("browser build: %d %s %s", code, out, diag)
+		}
+		var report struct {
+			Directory string `json:"directory"`
+		}
+		if err := json.Unmarshal([]byte(out), &report); err != nil {
+			t.Fatal(err)
+		}
+		before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Remove(filepath.Join(report.Directory, "browser/browser.js.map")); err != nil {
+			t.Fatal(err)
+		}
+		code, _, diag = run("build", "--target", "browser", root)
+		if code == 0 {
+			t.Fatalf("map-less bundle published: %s", diag)
+		}
+		after, err := os.ReadFile(filepath.Join(root, "dist/current.json"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(after) != string(before) {
+			t.Fatal("map-less rebuild moved production current")
+		}
+	})
+
+	t.Run("profile-unavailable operations diagnose", func(t *testing.T) {
+		root, write := newProject(t)
+		write("src/main.can", `package app
+    provides []
+    uses [cookie, option]
+fn option::value<str> session_id
+    emits []
+    given
+        str header
+    asserts
+        present: "theme=dark; session=A" => ok option::some("A")
+    match call cookie::parse(header)
+        ok cookie::collection found => match call cookie::get(found, "session")
+            ok option::value<str> id => ok id
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    match call session_id("session=A")
+        ok option::value<str> id => ok
+`)
+		code, out, diag := run("build", "--target", "browser", root)
+		if code != 1 || out != "" || !strings.Contains(diag, "can.std.cookie@1::parse") {
+			t.Fatalf("cookie gate: %d %q %q", code, out, diag)
+		}
+		if _, err := os.Stat(filepath.Join(root, "dist/current.json")); !os.IsNotExist(err) {
+			t.Fatal("gated browser build selected production current")
+		}
+		code, _, diag = run("build", root)
+		if code != 0 {
+			t.Fatalf("bun build of the same project: %d %s", code, diag)
+		}
+	})
+}
+
+func assertVerifiedBundle(t *testing.T, directory string) {
+	t.Helper()
+	read := func(name string) []byte {
+		t.Helper()
+		raw, err := os.ReadFile(filepath.Join(directory, filepath.FromSlash(name)))
+		if err != nil {
+			t.Fatalf("missing %s: %v", name, err)
+		}
+		return raw
+	}
+	script := read("browser/browser.js")
+	scriptMap := read("browser/browser.js.map")
+	tableRaw := read("diagnostics/table.json")
+	manifestRaw := read("browser/manifest.json")
+	if !strings.HasSuffix(string(script), "//# sourceMappingURL=browser.js.map\n") {
+		t.Fatal("bundle entry lacks its map trailer")
+	}
+	var parsedMap struct {
+		Version        int      `json:"version"`
+		File           string   `json:"file"`
+		Sources        []string `json:"sources"`
+		SourcesContent []string `json:"sourcesContent"`
+		Names          []string `json:"names"`
+		Mappings       string   `json:"mappings"`
+	}
+	decoder := json.NewDecoder(bytes.NewReader(scriptMap))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&parsedMap); err != nil || parsedMap.Version != 3 || parsedMap.File != "browser.js" || len(parsedMap.Sources) == 0 || len(parsedMap.Sources) != len(parsedMap.SourcesContent) || parsedMap.Mappings == "" {
+		t.Fatalf("bundle map invalid: %v", err)
+	}
+	for _, source := range parsedMap.Sources {
+		if !strings.HasSuffix(source, ".ts") || strings.Contains(source, ":") {
+			t.Fatalf("bundle map names non-logical source %q", source)
+		}
+	}
+	var table struct {
+		SchemaVersion int    `json:"schemaVersion"`
+		Kind          string `json:"kind"`
+		Index         struct {
+			Kind    string `json:"kind"`
+			Modules []struct {
+				Path string `json:"path"`
+			} `json:"modules"`
+		} `json:"index"`
+		Maps map[string]json.RawMessage `json:"maps"`
+	}
+	if err := json.Unmarshal(tableRaw, &table); err != nil || table.SchemaVersion != 1 || table.Kind != "can.diagnostic-table" || table.Index.Kind != "can.source-index" || len(table.Index.Modules) == 0 {
+		t.Fatalf("diagnostic table invalid: %v", err)
+	}
+	for _, module := range table.Index.Modules {
+		published, ok := table.Maps[module.Path]
+		if !ok || len(published) == 0 {
+			t.Fatalf("table lacks the %s map", module.Path)
+		}
+		sealed, err := os.ReadFile(filepath.Join(directory, filepath.FromSlash(module.Path+".map")))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if string(published) != string(sealed) {
+			t.Fatalf("table map for %s differs from the sealed map", module.Path)
+		}
+	}
+	var manifest struct {
+		SchemaVersion  int    `json:"schemaVersion"`
+		Kind           string `json:"kind"`
+		BrowserBuildID string `json:"browserBuildId"`
+		Entry          string `json:"entry"`
+		Table          string `json:"table"`
+		Files          []struct {
+			Path   string `json:"path"`
+			SHA256 string `json:"sha256"`
+			Route  string `json:"route"`
+		} `json:"files"`
+		Toolchain struct {
+			Target   string `json:"target"`
+			Version  string `json:"version"`
+			Revision string `json:"revision"`
+			SHA256   string `json:"sha256"`
+		} `json:"toolchain"`
+		Inputs struct {
+			Source, Dependencies, Catalogue, Compiler, Runtime, Options string
+		} `json:"inputs"`
+		Lock string `json:"lock"`
+	}
+	if err := json.Unmarshal(manifestRaw, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.SchemaVersion != 1 || manifest.Kind != "can.browser-manifest" || len(manifest.BrowserBuildID) != 64 || manifest.Entry != "browser/browser.js" || manifest.Table != "diagnostics/table.json" {
+		t.Fatalf("browser manifest invalid: %s", manifestRaw)
+	}
+	pinned := distribution.PinnedTarget()
+	if manifest.Toolchain.Target != pinned.TargetID || manifest.Toolchain.Version != pinned.Runtime.Version || manifest.Toolchain.Revision != pinned.Runtime.Revision || manifest.Toolchain.SHA256 != pinned.Runtime.SHA256 {
+		t.Fatalf("manifest toolchain %+v diverges from the pinned target", manifest.Toolchain)
+	}
+	for _, digest := range []string{manifest.Inputs.Source, manifest.Inputs.Dependencies, manifest.Inputs.Catalogue, manifest.Inputs.Compiler, manifest.Inputs.Runtime, manifest.Inputs.Options} {
+		if len(digest) != 64 {
+			t.Fatalf("manifest omits input identity: %s", manifestRaw)
+		}
+	}
+	seen := map[string]bool{}
+	scripts := map[string]bool{}
+	for _, file := range manifest.Files {
+		raw, err := os.ReadFile(filepath.Join(directory, filepath.FromSlash(file.Path)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		sum := sha256.Sum256(raw)
+		if hex.EncodeToString(sum[:]) != file.SHA256 {
+			t.Fatalf("manifest digest mismatch for %s", file.Path)
+		}
+		if !strings.HasPrefix(file.Route, "/__can/assets/"+file.SHA256) {
+			t.Fatalf("manifest route for %s is not content addressed", file.Path)
+		}
+		seen[file.Path] = true
+		if strings.HasSuffix(file.Path, ".js") {
+			scripts[file.Path] = true
+		}
+	}
+	for _, required := range []string{"browser/browser.js", "browser/browser.js.map", "diagnostics/table.json"} {
+		if !seen[required] {
+			t.Fatalf("manifest omits %s", required)
+		}
+	}
+	for name := range scripts {
+		if !seen[name+".map"] {
+			t.Fatalf("published script %s lacks its manifest map", name)
+		}
+		// Structural host-operation and edge verification of every
+		// published script happens inside the build via the post-bundle
+		// audit; a successful build implies it passed, and the driver
+		// unit tests prove hostile scripts fail it.
+		raw, err := os.ReadFile(filepath.Join(directory, filepath.FromSlash(name)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		base := name[strings.LastIndex(name, "/")+1:]
+		if !strings.HasSuffix(string(raw), "//# sourceMappingURL="+base+".map\n") {
+			t.Fatalf("published script %s lacks its map trailer", name)
+		}
+	}
 }
 
 type wireVectorResult struct {
