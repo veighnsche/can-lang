@@ -928,7 +928,7 @@ console.log("paired asset loopback passed");
 	// identical snapshot pairs.
 	vendorX := browserHelperPackage
 	vendorY := browserHelperPackage + "\n"
-	if captureTreeDigest(t, "can-source-tree-v1", map[string]string{"src/strings/join.can": vendorX}) == captureTreeDigest(t, "can-source-tree-v1", map[string]string{"src/strings/join.can": vendorY}) {
+	if captureTreeDigest(t, "can-source-tree-v1", map[string]string{"strings/join.can": vendorX}) == captureTreeDigest(t, "can-source-tree-v1", map[string]string{"strings/join.can": vendorY}) {
 		t.Fatal("vendor variants share a source digest")
 	}
 	depMain := strings.Replace(browserPureMain, "uses [text, codec, bytes, strings]", "uses [text, codec, bytes, vendor::strings as strings]", 1)
@@ -945,7 +945,7 @@ console.log("paired asset loopback passed");
 			"edges": map[string]any{"vendor": map[string]any{"target": "can.project.dependency/vendor", "path": "vendor"}},
 			"projects": map[string]any{"can.project.dependency/vendor": map[string]any{
 				"lineage": "", "manifest_sha256": hex.EncodeToString(manifestSum[:]),
-				"source_sha256":   captureTreeDigest(t, "can-source-tree-v1", map[string]string{"src/strings/join.can": vendor}),
+				"source_sha256":   captureTreeDigest(t, "can-source-tree-v1", map[string]string{"strings/join.can": vendor}),
 				"fixtures_sha256": captureTreeDigest(t, "can-fixture-tree-v1", map[string]string{}),
 				"error_registry":  map[string]any{"active": []any{}, "retired": []any{}},
 				"edges":           map[string]any{}}},
