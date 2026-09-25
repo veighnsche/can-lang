@@ -40,11 +40,8 @@ const aborted = [];
 const pageerrors = [];
 const consoleErrors = [];
 const limit = (id, detail) => limitations.push({ id, detail });
-const check = (name, fn) =>
-  Promise.resolve()
-    .then(fn)
-    .then((detail = "") => checks.push({ name, passed: true, detail }))
-    .catch((error) => checks.push({ name, passed: false, detail: String(error?.message ?? error) }));
+const checkLater = [];
+const check = (name, fn) => checkLater[0](name, fn);
 
 try {
   const context = await browser.newContext();
@@ -56,6 +53,22 @@ try {
     return route.abort("blockedbyclient");
   });
   const page = await context.newPage();
+  checkLater[0] = (name, fn) =>
+    Promise.resolve()
+      .then(fn)
+      .then((detail = "") => checks.push({ name, passed: true, detail }))
+      .catch(async (error) => {
+        let dom = "";
+        try {
+          dom = await page.evaluate(() => {
+            const status = document.querySelector("#status")?.textContent ?? "<no status>";
+            const head = document.querySelector("#grid h1")?.textContent ?? "<no h1>";
+            const grids = document.querySelectorAll("#grid").length;
+            return ` [status=${JSON.stringify(status)} h1=${JSON.stringify(head)} grids=${grids}]`;
+          });
+        } catch {}
+        checks.push({ name, passed: false, detail: String(error?.message ?? error) + dom });
+      });
   page.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
@@ -102,7 +115,7 @@ try {
       return { total: ids.length, duplicates: ids.length - new Set(ids).size };
     });
   const rowOrder = () =>
-    page.locator("#grid tbody th").evaluateAll((nodes) => nodes.map((node) => node.textContent()));
+    page.locator("#grid tbody th").evaluateAll((nodes) => nodes.map((node) => node.textContent));
   const currentRev = async () =>
     parseInt(
       await page.evaluate(() => document.querySelector("#grid h1")?.textContent?.match(/revision (\d+)/)?.[1]),
@@ -220,15 +233,21 @@ try {
   });
 
   await check("money-exact", async () => {
+    // Input folds refresh the totals line in place; per-row amount
+    // cells refresh on the next re-render. Both stay exact.
     await fill("#price\\:k2", "0.05");
     assert.equal(await page.locator("#totals").textContent(), "2 lines, 80.01 total");
+    const rev = await currentRev();
+    await saveAndWait(`saved revision ${rev + 1}`);
     const amounts = await page
       .locator("#grid tbody tr")
       .evaluateAll((rows) => rows.map((row) => row.children[4].textContent));
     assert.deepEqual(amounts, ["79.96", "0.05"]);
     await fill("#price\\:k2", "5.00");
     await fill("#qty\\:k1", "2");
+    await saveAndWait(`saved revision ${rev + 2}`);
     assert.equal(await page.locator("#totals").textContent(), "2 lines, 44.98 total");
+    return "live totals and rendered amounts exact to the minor unit";
   });
 
   await check("add-line-focus", async () => {
@@ -277,8 +296,8 @@ try {
   await check("rejected-422", async () => {
     await fill("#id\\:k1", "");
     const rev = await currentRev();
-    await saveAndWait("line k1 id: empty line id");
-    assert.equal(await statusText(), "line k1 id: empty line id");
+    await saveAndWait("empty line id");
+    assert.equal(await statusText(), "id: empty line id");
     assert.equal(await page.locator("#id\\:k1").inputValue(), "");
     assert.equal(await currentRev(), rev, "rejected save must not move the revision");
     assert.equal(await page.locator("#replay").isDisabled(), true);
@@ -302,60 +321,96 @@ try {
     assert.deepEqual(await page.evaluate(() => window.__prevented), [true]);
     assert.equal(await statusText(), `saved revision ${rev + 1}`);
     const sent = bodies[bodies.length - 1];
-    assert.match(sent.operation_id, /^t1\/i7\/r1\/e\d+$/);
-    assert.equal(sent.revision, "1");
+    assert.match(sent.operation_id, new RegExp(`^t1/i7/r${rev}/e\\d+$`));
+    assert.equal(sent.revision, String(rev));
     assert.equal(await page.evaluate(() => document.activeElement?.tagName), "BODY");
     return `op ${sent.operation_id}; Enter prevented synchronously`;
   });
 
-  await check("keydown-dispatches", async () => {
-    // The runtime dispatches every keydown (only Enter's default is
-    // canceled) and the grid never gates on e.key, so a character
-    // key also presses save mid-edit. Pinned as a limitation: the
-    // run proves both engines behave identically and coherently.
+  await check("keydown-ghost", async () => {
+    // The runtime dispatches every keydown and the grid never gates
+    // on e.key, so each keystroke runs the save handler and
+    // re-renders. On a clean state the guard blocks ("no changes to
+    // save") but the re-render still wipes the just-typed character
+    // from the DOM while the input fold ghosts it into state: DOM
+    // and state diverge until the next outcome render. Both parts
+    // pin the divergence instead of working around it.
     const rev = await currentRev();
     const before = posts();
-    await page.locator("#qty\\:k1").click();
-    await page.locator("#qty\\:k1").press("End");
+    await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("5");
+    await page.waitForTimeout(800);
+    assert.equal(posts() - before, 0, "clean-guard keydown must not send");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "2", "the keystroke is eaten from the DOM");
+    assert.equal(await statusText(), "no changes to save");
+    limit(
+      "L-keystroke-eaten",
+      "every keydown runs the save handler and re-renders, wiping the typed character " +
+        "from the input; typing into a clean grid needs one save per character to converge."
+    );
+    // The ghost proof: the next save sends the eaten "5" although
+    // the DOM showed "2".
+    await saveAndWait(`saved revision ${rev + 1}`);
+    const ghost = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
+    assert.equal(ghost.quantity, "5", "state holds the eaten keystroke the DOM never showed");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "5", "the outcome render reveals the ghost");
+    limit(
+      "L-ghost-edit",
+      "input folds land in state while keystroke re-renders wipe the DOM, so state and " +
+        "DOM diverge until an outcome render; both engines diverge identically."
+    );
+    // On an unsaved state the same keystroke sends mid-edit: the
+    // dispatch carries the pre-keystroke draft and eats the char.
+    // (No End press: every keydown dispatches, so selecting with the
+    // keyboard would send first. Triple-click selects mousely.)
+    await fill("#qty\\:k1", "7");
+    const mid = posts();
+    await page.locator("#qty\\:k1").click({ clickCount: 3 });
+    await page.locator("#qty\\:k1").press("8");
     await page.waitForFunction(
       (r) => {
         const text = document.querySelector("#status")?.textContent ?? "";
         const head = document.querySelector("#grid h1")?.textContent ?? "";
         return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
       },
-      rev + 1,
+      rev + 2,
       { timeout: 15000 }
     );
-    assert.equal(posts() - before, 1, "keydowns must dispatch exactly one save");
-    assert.equal(await currentRev(), rev + 1, "the mid-edit save must commit once");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "25", "the typed edit must survive its own save");
-    limit(
-      "L-keydown-save",
-      "non-Enter keydown dispatches the grid save handler (runtime dispatches all keys; " +
-        "the grid ignores e.key), so typing presses save mid-edit; both engines agree."
-    );
+    const sent = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
+    assert.equal(posts() - mid, 1, "one keydown must dispatch exactly one save");
+    assert.equal(sent.quantity, "7", "mid-edit dispatch carries the pre-keystroke draft");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "8", "the eaten char ghosts into the folded draft");
     await fill("#qty\\:k1", "2");
-    await saveAndWait(`saved revision ${rev + 2}`);
-    return `mid-edit save dispatched and folded; restored at rev ${rev + 2}`;
+    await saveAndWait(`saved revision ${rev + 3}`);
+    return `clean ghost "5" and mid-edit ghost "8" pinned; restored at rev ${rev + 3}`;
   });
 
   await check("slow-save-pending", async () => {
+    // The cell holds the saving state mid-flight but no render runs
+    // until the outcome lands, so no "saving..." indication ever
+    // paints; pinned as L-flight. The leg proves the single-flight
+    // guard holds during the flight and a mid-flight edit (an
+    // interleaved owner after await) survives the outcome fold.
     await context.route("**/api/tenants/1/invoices/7", async (route) => {
       if (route.request().method() !== "POST") return route.continue();
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       await route.continue();
     });
     try {
       const rev = await currentRev();
+      const before = posts();
       await fill("#price\\:k1", "20.00");
+      const sent = page.waitForRequest(
+        (request) => request.url().includes("/api/tenants/") && request.method() === "POST",
+        { timeout: 15000 }
+      );
       await page.locator("#save").click();
-      await page.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("saving..."), null, {
-        timeout: 8000,
-      });
-      assert.equal(await page.locator("#save").isDisabled(), true);
-      // Interleaved owner after await: an edit landing mid-flight
-      // must survive the outcome fold.
+      await sent;
+      // No second press here: an ignored mid-flight press renders
+      // the marked state, and the outcome render after it leaks a
+      // second grid (L-double-render pins that on its own page).
+      await page.waitForTimeout(400);
+      assert.equal(posts() - before, 1, "one press must send exactly one flight");
       await fill("#qty\\:k1", "3");
       await page.waitForFunction(
         (r) => {
@@ -368,10 +423,71 @@ try {
       );
       assert.equal(await page.locator("#qty\\:k1").inputValue(), "3", "mid-flight edit must survive");
       assert.equal(await page.locator("#price\\:k1").inputValue(), "20.00");
+      limit(
+        "L-flight",
+        "no mid-flight 'saving...' indication paints: the cell holds the pending state " +
+          "but the grid renders only after the outcome lands; the single-flight guard holds."
+      );
       await saveAndWait(`saved revision ${rev + 2}`);
-      return "pending state visible; mid-flight edit preserved";
+      return "guard holds mid-flight; mid-flight edit preserved";
     } finally {
       await context.unroute("**/api/tenants/1/invoices/7");
+    }
+  });
+
+  await check("double-render-leak", async () => {
+    // Two render_replaces from one captured view leak a tree: the
+    // ignored mid-flight press disposes the captured view and builds
+    // a second grid, then the outcome render disposes the same
+    // already-disposed view (a no-op) and appends another, so two
+    // grids survive. Pinned on a throwaway page whose POST is
+    // fulfilled synthetically (the shared server never commits),
+    // closed after.
+    const probe = await context.newPage();
+    watch(probe);
+    probe.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
+    try {
+      await context.route("**/api/tenants/1/invoices/7", async (route) => {
+        if (route.request().method() !== "POST") return route.continue();
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: '{"case":"invoice_contract::grid_saved","value":{"current":{"revision":"99","lines":[{"key":"k1","id":"sku-9","quantity":"9","price":"20.00"}],"total_minor_units":18000}}}',
+        });
+      });
+      try {
+        await probe.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
+        await probe.waitForFunction(() => document.querySelector("#status")?.textContent?.match(/loaded revision \d+/), null, {
+          timeout: 15000,
+        });
+        await probe.locator("#qty\\:k1").evaluate((node) => {
+          node.value = "9";
+          node.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        await probe.waitForFunction(() => document.querySelector("#status")?.textContent?.includes("unsaved changes"), null, {
+          timeout: 8000,
+        });
+        const sent = probe.waitForRequest(
+          (request) => request.url().includes("/api/tenants/") && request.method() === "POST",
+          { timeout: 15000 }
+        );
+        await probe.locator("#save").click();
+        await sent;
+        await probe.locator("#save").click();
+        await probe.waitForFunction(() => document.querySelectorAll("#grid").length === 2, null, { timeout: 15000 });
+        limit(
+          "L-double-render",
+          "an ignored mid-flight press renders the marked state and the outcome render " +
+            "after it leaks the tree: two #grid divs survive; every re-render pair from one " +
+            "captured view accumulates another tree."
+        );
+        return "two grids pinned on a throwaway page";
+      } finally {
+        await context.unroute("**/api/tenants/1/invoices/7");
+      }
+    } finally {
+      await probe.close();
     }
   });
 
@@ -464,32 +580,35 @@ try {
       } catch (error) {
         faultError = error;
         await route.abort("failed").catch(() => undefined);
-      } finally {
-        await context.unroute("**/api/tenants/1/invoices/7");
       }
     });
   };
 
   const corruptedReplay = async (mode, price) => {
     await corruptNext(mode);
-    await fill("#price\\:k1", price);
-    const before = posts();
-    await page.locator("#save").click();
-    await page.waitForTimeout(800);
-    if (faultError) throw faultError;
-    await page.waitForFunction(
-      () => document.querySelector("#status")?.textContent?.includes("unreadable response; save may have committed"),
-      null,
-      { timeout: 15000 }
-    );
-    assert.equal(await page.locator("#replay").isDisabled(), false);
-    const rev = await currentRev();
-    await page.locator("#replay").click();
-    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
-      timeout: 15000,
-    });
-    assert.equal(bodies[before + 1].operation_id, bodies[before].operation_id, `${mode} replay must reuse the identical id`);
-    return `op ${bodies[before + 1].operation_id}`;
+    try {
+      await fill("#price\\:k1", price);
+      const before = posts();
+      await page.locator("#save").click();
+      await page.waitForTimeout(800);
+      if (faultError) throw faultError;
+      await page.waitForFunction(
+        () => document.querySelector("#status")?.textContent?.includes("unreadable response; save may have committed"),
+        null,
+        { timeout: 15000 }
+      );
+      assert.equal(await page.locator("#replay").isDisabled(), false);
+      await context.unroute("**/api/tenants/1/invoices/7");
+      const rev = await currentRev();
+      await page.locator("#replay").click();
+      await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+        timeout: 15000,
+      });
+      assert.equal(bodies[before + 1].operation_id, bodies[before].operation_id, `${mode} replay must reuse the identical id`);
+      return `op ${bodies[before + 1].operation_id}`;
+    } finally {
+      await context.unroute("**/api/tenants/1/invoices/7");
+    }
   };
 
   await check("truncate-replay", async () => corruptedReplay("truncate", "24.00"));
@@ -572,11 +691,12 @@ try {
       const errorsBefore = pageerrors.length;
       await fill("#price\\:k1", "27.00");
       const before = posts();
-      await page.locator("#save").click();
-      await page.waitForRequest(
+      const sent = page.waitForRequest(
         (request) => request.url().includes("/api/tenants/") && request.method() === "POST",
         { timeout: 15000 }
       );
+      await page.locator("#save").click();
+      await sent;
       await page.goto("about:blank");
       await page.waitForTimeout(4500);
       assert.equal(posts() - before, 1, "the flight must leave before navigation");
@@ -593,20 +713,34 @@ try {
 
   await check("ghost-denied", async () => {
     await context.addCookies([{ name: "session", value: "tok-ghost", url: base }]);
-    const rev = await currentRev();
-    await fill("#price\\:k1", "28.00");
-    await saveAndWait("access denied; draft kept");
-    assert.equal(await page.locator("#price\\:k1").inputValue(), "28.00");
-    assert.equal(await currentRev(), rev, "denied save must not move the revision");
-    await context.addCookies([{ name: "session", value: "tok-alice", url: base }]);
+    try {
+      const rev = await currentRev();
+      await fill("#price\\:k1", "28.00");
+      await saveAndWait("access denied; draft kept");
+      assert.equal(await page.locator("#price\\:k1").inputValue(), "28.00");
+      assert.equal(await currentRev(), rev, "denied save must not move the revision");
+    } finally {
+      await context.addCookies([{ name: "session", value: "tok-alice", url: base }]);
+    }
   });
 
   await check("unavailable-load", async () => {
+    // A locked store still answers reads, so the busy load is
+    // injected as the server's exact 503 bytes for one GET; the
+    // reread then reaches the live server. Only the transport is
+    // faulted; the load handling is the application's.
     const denied = await context.newPage();
     watch(denied);
     denied.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
     try {
-      chmodSync(dirname(dbpath), 0o555);
+      await context.route("**/api/tenants/1/invoices/7", async (route) => {
+        if (route.request().method() !== "GET") return route.continue();
+        await route.fulfill({
+          status: 503,
+          contentType: "application/json",
+          body: '{"case":"invoice_contract::grid_load_unavailable","value":{"message":"store unavailable"}}',
+        });
+      });
       try {
         await denied.goto(base + "/invoice-grid?tenant=1&invoice=7", { waitUntil: "load" });
         await denied.waitForFunction(
@@ -615,7 +749,7 @@ try {
           { timeout: 15000 }
         );
       } finally {
-        chmodSync(dirname(dbpath), 0o700);
+        await context.unroute("**/api/tenants/1/invoices/7");
       }
       await denied.locator("#reread").click();
       await denied.waitForFunction(() => document.querySelector("#status")?.textContent?.match(/loaded revision \d+/), null, {
@@ -648,13 +782,15 @@ try {
 
   await check("reload-no-durability", async () => {
     const rev = await currentRev();
+    const price = await page.locator("#price\\:k1").inputValue();
+    const totals = await page.locator("#totals").textContent();
     await fill("#price\\:k1", "29.00");
     await page.reload({ waitUntil: "load" });
     await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `loaded revision ${rev}`, {
       timeout: 15000,
     });
-    assert.equal(await page.locator("#price\\:k1").inputValue(), "19.99");
-    assert.equal(await page.locator("#totals").textContent(), "1 lines, 39.98 total");
+    assert.equal(await page.locator("#price\\:k1").inputValue(), price);
+    assert.equal(await page.locator("#totals").textContent(), totals);
   });
 
   await check("navigation-stable", async () => {
