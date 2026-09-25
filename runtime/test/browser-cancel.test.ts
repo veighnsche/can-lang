@@ -2,10 +2,7 @@ import { test, expect } from "bun:test";
 import { createHash } from "node:crypto";
 import { catalogue } from "../catalogue.ts";
 import { createDomainRuntime, domainFailureDiagnostics, type FailureShape } from "../domain.ts";
-import {
-  createBrowser,
-  type BrowserDocument,
-} from "../platform/browser.ts";
+import { createBrowser, type BrowserDocument } from "../platform/browser.ts";
 import { success, value, type Completion } from "../completion.ts";
 import { dataProperty, recordIdentity } from "../data.ts";
 
@@ -280,13 +277,13 @@ test("cancel admission rejects unadmitted kinds and empty keys", async () => {
   }
   const second = value(await browser.openView(app));
   const foreign = value(await browser.createElement(second, "input"));
-  expect(failureName(await browser.onCancelKey(view, foreign, "keydown", "Enter", async () => {}))).toBe(
-    "browser::rejected",
-  );
+  expect(
+    failureName(await browser.onCancelKey(view, foreign, "keydown", "Enter", async () => {})),
+  ).toBe("browser::rejected");
   value(await browser.disposeView(view));
-  expect(failureName(await browser.onCancelKey(view, field, "keydown", "Enter", async () => {}))).toBe(
-    "browser::disposed",
-  );
+  expect(
+    failureName(await browser.onCancelKey(view, field, "keydown", "Enter", async () => {})),
+  ).toBe("browser::disposed");
   expect(failureName(await browser.onCancelEvent(view, field, "submit", async () => {}))).toBe(
     "browser::disposed",
   );
