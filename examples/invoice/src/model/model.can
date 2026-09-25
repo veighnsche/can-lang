@@ -1,18 +1,21 @@
 package model
-    provides [find_header, session_of, check_json_save, check_form_save, digest_of, decide_save, decide_load, load_validated]
-    uses [records, bytes, codec, cookie, crypto, form, http, option, sql, text]
+    provides [find_header, session_of, exact_origin, valid_public_origin, valid_window, minor_to_price, check_json_save, check_form_save, digest_of_grid, digest_of_form, decide_save, decide_load, load_authorized, save_authorized, save_html_authorized, reconcile_save, cleanup_expired]
+    uses [billing::invoice_contract as contract, records, bytes, clock, codec, cookie, crypto, form, http, number, option, random, sql, text]
 
 /// Authority for one protected invoice write. Only this package can
 /// construct the guard or read its fields: wire records can never be
 /// decoded into it, foreign packages can never forge or inspect it,
-/// and the write step takes it as an explicit input, so a typed id
+/// and the write step takes it as an explicit input, so a typed key
 /// alone never authorizes. The guard is built at the single point in
-/// decide_save where session, invoice and membership are all proven.
+/// decide_save where session, invoice and membership are all proven,
+/// and it carries the witnessed row values the write preserves.
 owner record invoice_guard
     str actor
-    str tenant
-    str invoice_id
+    int tenant
+    int invoice_id
     int base_revision
+    int seats
+    str details
 
 /// Scan request headers for the first field with the given name. Header
 /// order is caller-controlled, so the scan walks the array instead of
@@ -50,6 +53,320 @@ fn option::value<str> session_of
             option::some => match call cookie::parse(found.value)
                 ok cookie::collection jar => match call cookie::get(jar, "session")
                     ok option::value<str> id => ok id
+
+/// Scan headers front to back for a unique field value. Zero or two
+/// or more matches read none; security comparisons must never see a
+/// first-match pick between duplicates.
+fn option::value<str> unique_scan
+    emits []
+    given
+        http::header[] headers
+        str name
+        int index
+        option::value<str> seen
+    asserts
+        one: [http::header("origin", "https://a.example")], "origin", 0, option::none() => ok option::some("https://a.example")
+        two: [http::header("origin", "https://a.example"), http::header("origin", "https://b.example")], "origin", 0, option::none() => ok option::none()
+        none: [http::header("x-t", "1")], "origin", 0, option::none() => ok option::none()
+        skip: [http::header("x-t", "1"), http::header("origin", "https://a.example")], "origin", 0, option::none() => ok option::some("https://a.example")
+    match index >= headers.length
+        false => match headers[index].name is name
+            false => match call unique_scan(headers, name, index + 1, seen)
+                ok option::value<str> rest => ok rest
+            true => match seen
+                option::some => ok option::none()
+                option::none => match call unique_scan(headers, name, index + 1, option::some(headers[index].value))
+                    ok option::value<str> rest => ok rest
+        true => ok seen
+
+/// Read the single value of a header field, or none when the field
+/// is absent or repeated.
+fn option::value<str> unique_header
+    emits []
+    given
+        http::header[] headers
+        str name
+    asserts
+        single: [http::header("origin", "https://a.example")], "origin" => ok option::some("https://a.example")
+        doubled: [http::header("origin", "https://a.example"), http::header("origin", "https://a.example")], "origin" => ok option::none()
+        missing: [], "origin" => ok option::none()
+    match call unique_scan(headers, name, 0, option::none())
+        ok option::value<str> found => ok found
+
+/// Enforce the exact-Origin CSRF policy: exactly one Origin value
+/// byte-equal to the configured canonical public origin passes.
+/// Missing, null, malformed, repeated, comma-joined or foreign
+/// origins deny; the native header snapshot lowercases names, so the
+/// lookup uses the exact lowercase field name. A live mixed-case
+/// Origin leg proves the snapshot guarantee end to end.
+fn bool exact_origin
+    emits []
+    given
+        http::header[] headers
+        str public_origin
+    asserts
+        exact: [http::header("origin", "https://shop.example")], "https://shop.example" => ok true
+        missing: [http::header("cookie", "session=A")], "https://shop.example" => ok false
+        null: [http::header("origin", "null")], "https://shop.example" => ok false
+        foreign: [http::header("origin", "https://evil.example")], "https://shop.example" => ok false
+        sibling: [http::header("origin", "https://shop.example.evil.example")], "https://shop.example" => ok false
+        scheme: [http::header("origin", "http://shop.example")], "https://shop.example" => ok false
+        port: [http::header("origin", "https://shop.example:8443")], "https://shop.example" => ok false
+        slash: [http::header("origin", "https://shop.example/")], "https://shop.example" => ok false
+        doubled: [http::header("origin", "https://shop.example"), http::header("origin", "https://shop.example")], "https://shop.example" => ok false
+        joined: [http::header("origin", "https://shop.example, https://shop.example")], "https://shop.example" => ok false
+        empty: [http::header("origin", "")], "https://shop.example" => ok false
+    match call unique_header(headers, "origin")
+        ok option::value<str> found => match found
+            option::none => ok false
+            option::some => match found.value is public_origin
+                false => ok false
+                true => ok true
+
+/// Match scalar prefix bytes front to back.
+fn bool scalars_prefix
+    emits []
+    given
+        int[] units
+        int[] prefix
+        int index
+    asserts
+        hit: [104, 116, 116, 112, 115], [104, 116], 0 => ok true
+        miss: [104, 116, 116, 112, 115], [104, 120], 0 => ok false
+        short: [104], [104, 116], 0 => ok false
+        empty: [104], [], 0 => ok true
+    match index >= prefix.length
+        false => match index >= units.length
+            false => match units[index] is prefix[index]
+                false => ok false
+                true => match call scalars_prefix(units, prefix, index + 1)
+                    ok bool rest => ok rest
+            true => ok false
+        true => ok true
+
+/// One hostname scalar: ASCII letters, digits, dot or dash.
+fn bool host_char_ok
+    emits []
+    given
+        int scalar
+    asserts
+        lower: 97 => ok true
+        upper: 90 => ok true
+        digit: 55 => ok true
+        dot: 46 => ok true
+        dash: 45 => ok true
+        slash: 47 => ok false
+        colon: 58 => ok false
+        at: 64 => ok false
+    match scalar >= 48 and scalar <= 57
+        false => match scalar >= 65 and scalar <= 90
+            false => match scalar >= 97 and scalar <= 122
+                false => match scalar is 46 or scalar is 45
+                    false => ok false
+                    true => ok true
+                true => ok true
+            true => ok true
+        true => ok true
+
+/// Scan hostname scalars in [start, bound): every scalar must be a
+/// hostname character.
+fn bool host_chars_ok
+    emits []
+    given
+        int[] units
+        int start
+        int bound
+    asserts
+        clean: [97, 46, 98], 0, 3 => ok true
+        bad: [97, 47, 98], 0, 3 => ok false
+        empty: [97], 1, 1 => ok true
+    match start >= bound
+        false => match call host_char_ok(units[start])
+            ok bool head => match head
+                false => ok false
+                true => match call host_chars_ok(units, start + 1, bound)
+                    ok bool rest => ok rest
+        true => ok true
+
+/// Find the first colon at or after start, or -1 when the rest of
+/// the origin carries no port separator.
+fn int colon_at
+    emits []
+    given
+        int[] units
+        int start
+    asserts
+        hit: [97, 58, 56], 0 => ok 1
+        miss: [97, 98, 99], 0 => ok 0 - 1
+        tail: [97, 58], 2 => ok 0 - 1
+    match start >= units.length
+        false => match units[start] is 58
+            false => match call colon_at(units, start + 1)
+                ok int rest => ok rest
+            true => ok start
+        true => ok 0 - 1
+
+/// Compare the scalar slice [start, bound) against a literal.
+fn bool scalars_equal
+    emits []
+    given
+        int[] units
+        int start
+        int bound
+        int[] literal
+        int index
+    asserts
+        hit: [97, 98], 0, 2, [97, 98], 0 => ok true
+        miss: [97, 98], 0, 2, [97, 99], 0 => ok false
+        short: [97], 0, 1, [97, 98], 0 => ok false
+    match index >= literal.length
+        false => match start + index >= bound
+            false => match units[(start + index)] is literal[index]
+                false => ok false
+                true => match call scalars_equal(units, start, bound, literal, index + 1)
+                    ok bool rest => ok rest
+            true => ok false
+        true => ok (start + index) is bound
+
+/// Validate an explicit port slice: 1-5 canonical digits in range.
+fn bool port_ok
+    emits []
+    given
+        int[] units
+        int start
+        int bound
+    asserts
+        bare: [56, 48], 0, 2 => ok true
+        max: [54, 53, 53, 51, 53], 0, 5 => ok true
+        over: [54, 53, 53, 51, 54], 0, 5 => ok false
+        zero: [48], 0, 1 => ok false
+        padded: [48, 56, 48], 0, 3 => ok false
+        empty: [56], 1, 1 => ok false
+        long: [49, 50, 51, 52, 53, 54], 0, 6 => ok false
+    match (bound - start) >= 1 and (bound - start) <= 5
+        false => ok false
+        true => match units[start] is 48 and (bound - start) > 1
+            false => match call text::from_scalars(call units.slice(...[start, bound]))
+                text::invalid_unicode => ok false
+                ok str digits => match call text::to_int(digits)
+                    text::invalid_number => ok false
+                    ok int port => ok port >= 1 and port <= 65535
+            true => ok false
+
+/// Validate one host slice: nonempty hostname characters with no
+/// leading or trailing dot.
+fn bool host_ok
+    emits []
+    given
+        int[] units
+        int start
+        int bound
+    asserts
+        clean: [97, 46, 98], 0, 3 => ok true
+        empty: [97], 1, 1 => ok false
+        leading_dot: [46, 97], 0, 2 => ok false
+        trailing_dot: [97, 46], 0, 2 => ok false
+        slash: [97, 47], 0, 2 => ok false
+    match (bound - start) >= 1
+        false => ok false
+        true => match units[start] is 46 or units[(bound - 1)] is 46
+            false => match call host_chars_ok(units, start, bound)
+                ok bool shaped => ok shaped
+            true => ok false
+
+/// Validate host and optional port after the scheme. Loopback-only
+/// origins admit exactly 127.0.0.1 or localhost; anything else must
+/// fail closed at startup rather than serve under HTTP.
+fn bool hostport_ok
+    emits []
+    given
+        int[] units
+        int start
+        int loopback_only
+    asserts
+        bare: [97, 46, 98], 0, 0 => ok true
+        ported: [97, 58, 56, 48], 0, 0 => ok true
+        loop: [49, 50, 55, 46, 48, 46, 48, 46, 49], 0, 1 => ok true
+        name: [108, 111, 99, 97, 108, 104, 111, 115, 116], 0, 1 => ok true
+        remote: [97, 46, 98], 0, 1 => ok false
+        empty: [97], 1, 0 => ok false
+        bad_port: [97, 58, 120], 0, 0 => ok false
+    match call colon_at(units, start)
+        ok int colon => match colon is 0 - 1
+            false => match call host_ok(units, start, colon)
+                ok bool host => match host
+                    false => ok false
+                    true => match call port_ok(units, colon + 1, units.length)
+                        ok bool port => match port
+                            false => ok false
+                            true => match loopback_only is 1
+                                false => ok true
+                                true => match call scalars_equal(units, start, colon, [49, 50, 55, 46, 48, 46, 48, 46, 49], 0)
+                                    ok bool quad => match quad
+                                        false => match call scalars_equal(units, start, colon, [108, 111, 99, 97, 108, 104, 111, 115, 116], 0)
+                                            ok bool named => ok named
+                                        true => ok true
+            true => match call host_ok(units, start, units.length)
+                ok bool host => match host
+                    false => ok false
+                    true => match loopback_only is 1
+                        false => ok true
+                        true => match call scalars_equal(units, start, units.length, [49, 50, 55, 46, 48, 46, 48, 46, 49], 0)
+                            ok bool quad => match quad
+                                false => match call scalars_equal(units, start, units.length, [108, 111, 99, 97, 108, 104, 111, 115, 116], 0)
+                                    ok bool named => ok named
+                                true => ok true
+
+/// Validate one canonical public origin at startup: exactly
+/// https://host[:port] with no path, query, fragment or userinfo,
+/// or explicitly configured loopback HTTP for local tests. Anything
+/// else fails closed before serving; request Origins later compare
+/// byte-equal against the accepted string.
+fn bool valid_public_origin
+    emits []
+    given
+        str origin
+    asserts
+        https: "https://shop.example" => ok true
+        ported: "https://shop.example:8443" => ok true
+        loop: "http://127.0.0.1:18551" => ok true
+        loop_name: "http://localhost" => ok true
+        remote_http: "http://shop.example" => ok false
+        missing_scheme: "shop.example" => ok false
+        upper_scheme: "HTTPS://shop.example" => ok false
+        path: "https://shop.example/" => ok false
+        query: "https://shop.example?x=1" => ok false
+        userinfo: "https://me@shop.example" => ok false
+        wildcard: "https://*.example" => ok false
+        empty: "" => ok false
+        trailing_dot: "https://shop.example." => ok false
+    match call text::scalars(origin)
+        text::invalid_unicode => ok false
+        ok int[] units => match call scalars_prefix(units, [104, 116, 116, 112, 115, 58, 47, 47], 0)
+            ok bool secure => match secure
+                false => match call scalars_prefix(units, [104, 116, 116, 112, 58, 47, 47], 0)
+                    ok bool plain => match plain
+                        false => ok false
+                        true => match call hostport_ok(units, 7, 1)
+                            ok bool shaped => ok shaped
+                true => match call hostport_ok(units, 8, 0)
+                    ok bool shaped => ok shaped
+
+/// Validate the replay retention window: strictly positive
+/// milliseconds. Startup fails closed on anything else; helpers
+/// never shorten the guarantee on a non-positive window.
+fn bool valid_window
+    emits []
+    given
+        int w_ms
+    asserts
+        week: 604800000 => ok true
+        one: 1 => ok true
+        zero: 0 => ok false
+        negative: 0 - 5 => ok false
+    match w_ms >= 1
+        false => ok false
+        true => ok true
 
 /// Count the UTF-8 bytes of a value for wire limits. Can strings are
 /// well-formed, so the invalid arm is an unreachable-safe fallback
@@ -129,33 +446,177 @@ fn bool key_shape_ok
         ok int[] units => match call key_chars_ok(units, 0)
             ok bool shaped => ok shaped
 
+/// One decimal digit scalar.
+fn bool digit_ok
+    emits []
+    given
+        int scalar
+    asserts
+        zero: 48 => ok true
+        nine: 57 => ok true
+        dot: 46 => ok false
+        letter: 97 => ok false
+    match scalar >= 48 and scalar <= 57
+        false => ok false
+        true => ok true
+
+/// A leading zero integer part is padded only when another digit
+/// follows it: "0" and "0.5" stay canonical while "05" fails.
+fn bool leading_zero_bad
+    emits []
+    given
+        int[] units
+        int index
+        int int_digits
+    asserts
+        padded: [48, 53], 0, 0 => ok true
+        lone: [48], 0, 0 => ok false
+        dotted: [48, 46, 53], 0, 0 => ok false
+        later: [53, 48], 1, 1 => ok false
+    match int_digits is 0 and units[index] is 48
+        false => ok false
+        true => match index + 1 >= units.length
+            false => match call digit_ok(units[(index + 1)])
+                ok bool digit => ok digit
+            true => ok false
+
+/// Scan price scalars into minor units: a canonical integer part
+/// (0 or no leading zero), an optional dot, then one or two fraction
+/// digits. Anything else reads none; values above one million major
+/// units read none. The accumulator never nears int64 range: the
+/// integer part fails fast past one hundred million minor units.
+fn option::value<int> price_scan
+    emits []
+    given
+        int[] units
+        int index
+        int int_value
+        int int_digits
+        int frac_value
+        int frac_digits
+        int dotted
+    asserts
+        whole: [53], 0, 0, 0, 0, 0, 0 => ok option::some(500)
+        cents: [53, 46, 48, 53], 0, 0, 0, 0, 0, 0 => ok option::some(505)
+        dime: [53, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::some(550)
+        zero: [48], 0, 0, 0, 0, 0, 0 => ok option::some(0)
+        padded: [48, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        trailing_dot: [53, 46], 0, 0, 0, 0, 0, 0 => ok option::none()
+        leading_dot: [46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        three_dp: [53, 46, 48, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+        double_dot: [53, 46, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        letter: [53, 120], 0, 0, 0, 0, 0, 0 => ok option::none()
+        empty: [], 0, 0, 0, 0, 0, 0 => ok option::none()
+        cap: [49, 48, 48, 48, 48, 48, 48, 46, 48, 48], 0, 0, 0, 0, 0, 0 => ok option::some(100000000)
+        over: [49, 48, 48, 48, 48, 48, 48, 46, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+    match index >= units.length
+        false => match call digit_ok(units[index])
+            ok bool digit => match digit
+                false => match units[index] is 46 and dotted is 0 and int_digits >= 1
+                    false => ok option::none()
+                    true => match call price_scan(units, index + 1, int_value, int_digits, frac_value, frac_digits, 1)
+                        ok option::value<int> rest => ok rest
+                true => match dotted is 1
+                    false => match call leading_zero_bad(units, index, int_digits)
+                        ok bool padded => match padded
+                            false => match int_value > 100000000
+                                false => match call price_scan(units, index + 1, int_value * 10 + units[index] - 48, int_digits + 1, frac_value, frac_digits, dotted)
+                                    ok option::value<int> rest => ok rest
+                                true => ok option::none()
+                            true => ok option::none()
+                    true => match frac_digits >= 2
+                        false => match call price_scan(units, index + 1, int_value, int_digits, frac_value * 10 + units[index] - 48, frac_digits + 1, dotted)
+                            ok option::value<int> rest => ok rest
+                        true => ok option::none()
+        true => match int_digits is 0
+            false => match dotted is 1 and frac_digits is 0
+                false => match frac_digits is 1
+                    false => match int_value * 100 + frac_value > 100000000
+                        false => ok option::some(int_value * 100 + frac_value)
+                        true => ok option::none()
+                    true => match int_value * 100 + frac_value * 10 > 100000000
+                        false => ok option::some(int_value * 100 + frac_value * 10)
+                        true => ok option::none()
+                true => ok option::none()
+            true => ok option::none()
+
+/// Parse one wire price into minor units. The wire carries major
+/// units with at most two fraction digits ("19.99", "5", "0.50");
+/// stored and computed money is always integer minor units, so
+/// totals are exact by construction.
+fn option::value<int> parse_price
+    emits []
+    given
+        str text
+    asserts
+        whole: "5" => ok option::some(500)
+        cents: "19.99" => ok option::some(1999)
+        dime: "0.5" => ok option::some(50)
+        zero: "0" => ok option::some(0)
+        cap: "1000000.00" => ok option::some(100000000)
+        over: "1000000.01" => ok option::none()
+        empty: "" => ok option::none()
+        padded: "05" => ok option::none()
+        trailing_dot: "5." => ok option::none()
+        leading_dot: ".5" => ok option::none()
+        three_dp: "5.001" => ok option::none()
+        negative: "-1" => ok option::none()
+        spaced: " 5" => ok option::none()
+    match call text::scalars(text)
+        text::invalid_unicode => ok option::none()
+        ok int[] units => match call price_scan(units, 0, 0, 0, 0, 0, 0)
+            ok option::value<int> minor => ok minor
+
+/// Render minor units back to canonical wire price: whole units, a
+/// dot, and exactly two fraction digits. Total formatting for both
+/// channels goes through this one exact function.
+fn str minor_to_price
+    emits []
+    given
+        int minor
+    asserts
+        zero: 0 => ok "0.00"
+        cents: 5 => ok "0.05"
+        dime: 50 => ok "0.50"
+        whole: 500 => ok "5.00"
+        mixed: 1999 => ok "19.99"
+        cap: 100000000 => ok "1000000.00"
+    match call number::divmod(minor, 100)
+        number::zero_divisor => ok ""
+        ok number::division split => match split.remainder < 10
+            false => ok call text::from_int(split.quotient) + "." + call text::from_int(split.remainder)
+            true => ok call text::from_int(split.quotient) + ".0" + call text::from_int(split.remainder)
+
 /// Validate one normalized save line. None accepts; some carries the
-/// single finite reason the save reports.
-fn option::value<str> check_line
+/// single finite reason and wire field the save reports.
+fn option::value<records::flawed_save> check_line
     emits []
     given
         records::line_draft draft
     asserts
-        valid: records::line_draft("k1", "sku-1", 2) => ok option::none()
-        empty_key: records::line_draft("", "sku-1", 2) => ok option::some("empty line key")
-        bad_key: records::line_draft("k 1", "sku-1", 2) => ok option::some("bad line key")
-        empty_sku: records::line_draft("k1", "", 2) => ok option::some("empty sku")
-        zero_qty: records::line_draft("k1", "sku-1", 0) => ok option::some("bad quantity")
-        huge_qty: records::line_draft("k1", "sku-1", 1000001) => ok option::some("bad quantity")
+        valid: records::line_draft("k1", "a", 2, 500) => ok option::none()
+        empty_key: records::line_draft("", "a", 2, 500) => ok option::some(records::flawed_save("empty line key", "key"))
+        bad_key: records::line_draft("k 1", "a", 2, 500) => ok option::some(records::flawed_save("bad line key", "key"))
+        empty_id: records::line_draft("k1", "", 2, 500) => ok option::some(records::flawed_save("empty line id", "id"))
+        zero_qty: records::line_draft("k1", "a", 0, 500) => ok option::some(records::flawed_save("bad quantity", "quantity"))
+        huge_qty: records::line_draft("k1", "a", 1000001, 500) => ok option::some(records::flawed_save("bad quantity", "quantity"))
+        huge_price: records::line_draft("k1", "a", 2, 100000001) => ok option::some(records::flawed_save("bad price", "price"))
     match draft.key is ""
         false => match call key_shape_ok(draft.key)
             ok bool shaped => match shaped
-                false => ok option::some("bad line key")
+                false => ok option::some(records::flawed_save("bad line key", "key"))
                 true => match (call byte_len(draft.key)) > 64
-                    false => match draft.sku is ""
-                        false => match (call byte_len(draft.sku)) > 64
-                            false => match draft.qty < 1 or draft.qty > 1000000
-                                false => ok option::none()
-                                true => ok option::some("bad quantity")
-                            true => ok option::some("sku too long")
-                        true => ok option::some("empty sku")
-                    true => ok option::some("line key too long")
-        true => ok option::some("empty line key")
+                    false => match draft.id is ""
+                        false => match (call byte_len(draft.id)) > 64
+                            false => match draft.quantity < 1 or draft.quantity > 1000000
+                                false => match draft.price_minor < 0 or draft.price_minor > 100000000
+                                    false => ok option::none()
+                                    true => ok option::some(records::flawed_save("bad price", "price"))
+                                true => ok option::some(records::flawed_save("bad quantity", "quantity"))
+                            true => ok option::some(records::flawed_save("line id too long", "id"))
+                        true => ok option::some(records::flawed_save("empty line id", "id"))
+                    true => ok option::some(records::flawed_save("line key too long", "key"))
+        true => ok option::some(records::flawed_save("empty line key", "key"))
 
 /// Pairwise duplicate line-key scan. Keys compare by exact string
 /// equality; order is the submitted draft order.
@@ -166,9 +627,9 @@ fn bool has_duplicate
         int outer
         int inner
     asserts
-        clean: [records::line_draft("k1", "sku-1", 1), records::line_draft("k2", "sku-2", 1)], 0, 1 => ok false
-        clash: [records::line_draft("k1", "sku-1", 1), records::line_draft("k1", "sku-9", 1)], 0, 1 => ok true
-        single: [records::line_draft("k1", "sku-1", 1)], 0, 1 => ok false
+        clean: [records::line_draft("k1", "a", 1, 100), records::line_draft("k2", "b", 1, 100)], 0, 1 => ok false
+        clash: [records::line_draft("k1", "a", 1, 100), records::line_draft("k1", "b", 1, 100)], 0, 1 => ok true
+        single: [records::line_draft("k1", "a", 1, 100)], 0, 1 => ok false
     match outer >= drafts.length - 1
         false => match inner >= drafts.length
             false => match drafts[outer].key is drafts[inner].key
@@ -186,117 +647,228 @@ fn records::save_check check_lines
     emits []
     given
         records::line_draft[] drafts
-        str customer
         int revision
         int index
     asserts
-        one: [records::line_draft("k1", "sku-1", 2)], "Acme", 1, 0 => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
-        bad_second: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "", 1)], "Acme", 1, 0 => ok records::flawed_save("empty sku")
-        clash: [records::line_draft("k1", "sku-1", 1), records::line_draft("k1", "sku-9", 1)], "Acme", 1, 0 => ok records::flawed_save("duplicate line key")
+        one: [records::line_draft("k1", "a", 2, 500)], 1, 0 => ok records::checked_save(1, [records::line_draft("k1", "a", 2, 500)])
+        bad_second: [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "", 1, 100)], 1, 0 => ok records::flawed_save("empty line id", "id")
+        clash: [records::line_draft("k1", "a", 1, 100), records::line_draft("k1", "b", 1, 100)], 1, 0 => ok records::flawed_save("duplicate line key", "lines")
     match index >= drafts.length
         false => match call check_line(drafts[index])
-            ok option::value<str> bad => match bad
-                option::some => ok records::flawed_save(bad.value)
-                option::none => match call check_lines(drafts, customer, revision, index + 1)
+            ok option::value<records::flawed_save> bad => match bad
+                option::some => ok records::flawed_save(bad.value.reason, bad.value.field)
+                option::none => match call check_lines(drafts, revision, index + 1)
                     ok records::save_check rest => ok rest
         true => match call has_duplicate(drafts, 0, 1)
             ok bool clash => match clash
-                false => ok records::checked_save(customer, revision, drafts)
-                true => ok records::flawed_save("duplicate line key")
+                false => ok records::checked_save(revision, drafts)
+                true => ok records::flawed_save("duplicate line key", "lines")
 
-/// Validate save content before any store touch: customer text, line
-/// count, then lines in order. The base revision arrives validated
-/// by the channel check and passes through untouched. Reasons are
-/// finite documented strings.
-fn records::save_check check_save
+/// Validate save lines before any store touch: line count, then
+/// lines in order. The base revision arrives validated by the
+/// channel check and passes through untouched.
+fn records::save_check check_drafts
     emits []
     given
-        str customer
-        int revision
         records::line_draft[] drafts
-    asserts
-        valid: "Acme", 1, [records::line_draft("k1", "sku-1", 2)] => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
-        empty_customer: "", 1, [records::line_draft("k1", "sku-1", 2)] => ok records::flawed_save("empty customer")
-        no_lines: "Acme", 1, [] => ok records::flawed_save("no lines")
-        bad_line: "Acme", 1, [records::line_draft("k1", "", 2)] => ok records::flawed_save("empty sku")
-    match customer is ""
-        false => match (call byte_len(customer)) > 200
-            false => match drafts.length is 0
-                false => match drafts.length > 64
-                    false => match call check_lines(drafts, customer, revision, 0)
-                        ok records::save_check checked => ok checked
-                    true => ok records::flawed_save("too many lines")
-                true => ok records::flawed_save("no lines")
-            true => ok records::flawed_save("customer too long")
-        true => ok records::flawed_save("empty customer")
-
-/// Normalize one JSON wire line. JSON integers arrive typed, so this
-/// only rekeys; bounds stay with the shared validation.
-fn records::line_draft json_draft
-    emits []
-    given
-        records::line_json_wire line
-    asserts
-        sample: records::line_json_wire("k1", "sku-1", 2) => ok records::line_draft("k1", "sku-1", 2)
-    ok records::line_draft(line.key, line.sku, line.qty)
-
-/// Validate one JSON save body: the base revision must be positive,
-/// then shared content validation runs over normalized drafts.
-fn records::save_check check_json_save
-    emits []
-    given
-        records::invoice_json_wire body
-    asserts
-        valid: records::invoice_json_wire("tok", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
-        bad_revision: records::invoice_json_wire("tok", "op-1", "inv-1", 0, "Acme", [records::line_json_wire("k1", "sku-1", 2)]) => ok records::flawed_save("bad revision")
-        bad_line: records::invoice_json_wire("tok", "op-1", "inv-1", 1, "Acme", [records::line_json_wire("k1", "", 2)]) => ok records::flawed_save("empty sku")
-    match body.revision >= 1
-        false => ok records::flawed_save("bad revision")
-        true => match call check_save(body.customer, body.revision, call body.lines.map(callable json_draft))
-            ok records::save_check checked => ok checked
-
-/// Parse form row items front to back into drafts. Quantities are
-/// text on the wire; unparsable text fails the whole save with the
-/// same reason an out-of-range count reports.
-fn records::save_check parse_form_lines
-    emits []
-    given
-        str customer
         int revision
-        form::row_item<records::line_form_wire>[] items
+    asserts
+        valid: [records::line_draft("k1", "a", 2, 500)], 1 => ok records::checked_save(1, [records::line_draft("k1", "a", 2, 500)])
+        no_lines: [], 1 => ok records::flawed_save("no lines", "lines")
+        bad_line: [records::line_draft("k1", "", 2, 500)], 1 => ok records::flawed_save("empty line id", "id")
+    match drafts.length is 0
+        false => match drafts.length > 64
+            false => match call check_lines(drafts, revision, 0)
+                ok records::save_check checked => ok checked
+            true => ok records::flawed_save("too many lines", "lines")
+        true => ok records::flawed_save("no lines", "lines")
+
+/// Parse one JSON wire line into its draft. Quantities and prices
+/// are text on the wire; unparsable text fails the whole save with
+/// the same reason an out-of-range value reports.
+fn records::save_check json_parse_lines
+    emits []
+    given
+        contract::grid_line_wire[] lines
+        int revision
         int index
         records::line_draft[] grown
     asserts
-        one: "Acme", 1, [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))], 0, [] => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
-        bad_qty: "Acme", 1, [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "many"))], 0, [] => ok records::flawed_save("bad quantity")
-        empty: "Acme", 1, [], 0, [] => ok records::flawed_save("no lines")
-    match index >= items.length
-        false => match call text::to_int(items[index].value.qty)
-            text::invalid_number => ok records::flawed_save("bad quantity")
-            ok int qty => match call parse_form_lines(customer, revision, items, index + 1, call append<records::line_draft>(grown, records::line_draft(items[index].key, items[index].value.sku, qty)))
-                ok records::save_check rest => ok rest
-        true => match call check_save(customer, revision, grown)
+        one: [contract::grid_line_wire("k1", "a", "2", "5.00")], 1, 0, [] => ok records::checked_save(1, [records::line_draft("k1", "a", 2, 500)])
+        bad_qty: [contract::grid_line_wire("k1", "a", "many", "5.00")], 1, 0, [] => ok records::flawed_save("bad quantity", "quantity")
+        bad_price: [contract::grid_line_wire("k1", "a", "2", "five")], 1, 0, [] => ok records::flawed_save("bad price", "price")
+        empty: [], 1, 0, [] => ok records::flawed_save("no lines", "lines")
+    match index >= lines.length
+        false => match call text::to_int(lines[index].quantity)
+            text::invalid_number => ok records::flawed_save("bad quantity", "quantity")
+            ok int qty => match call parse_price(lines[index].price)
+                ok option::value<int> minor => match minor
+                    option::none => ok records::flawed_save("bad price", "price")
+                    option::some => match call json_parse_lines(lines, revision, index + 1, call append<records::line_draft>(grown, records::line_draft(lines[index].key, lines[index].id, qty, minor.value)))
+                        ok records::save_check rest => ok rest
+        true => match call check_drafts(grown, revision)
             ok records::save_check checked => ok checked
 
-/// Validate one form save body: text revision and quantities parse
-/// first, then shared content validation runs over parsed drafts.
-fn records::save_check check_form_save
+/// Validate one JSON save body: the base revision must be a
+/// positive canonical integer, then shared content validation runs
+/// over parsed drafts.
+fn records::save_check check_json_save
     emits []
     given
-        records::invoice_form_wire body
+        contract::grid_edit_input body
     asserts
-        valid: records::invoice_form_wire("tok", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "2"))])) => ok records::checked_save("Acme", 1, [records::line_draft("k1", "sku-1", 2)])
-        bad_revision: records::invoice_form_wire("tok", "op-1", "inv-1", "next", "Acme", form::rows<records::line_form_wire>([], [])) => ok records::flawed_save("bad revision")
-        bad_qty: records::invoice_form_wire("tok", "op-1", "inv-1", "1", "Acme", form::rows<records::line_form_wire>(["k1"], [form::row_item<records::line_form_wire>("k1", records::line_form_wire("sku-1", "many"))])) => ok records::flawed_save("bad quantity")
+        valid: contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok records::checked_save(1, [records::line_draft("k1", "a", 2, 500)])
+        bad_revision: contract::grid_edit_input("op-1", "0", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok records::flawed_save("bad revision", "revision")
+        padded_revision: contract::grid_edit_input("op-1", "01", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok records::flawed_save("bad revision", "revision")
+        bad_line: contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "", "2", "5.00")]) => ok records::flawed_save("empty line id", "id")
     match call text::to_int(body.revision)
-        text::invalid_number => ok records::flawed_save("bad revision")
+        text::invalid_number => ok records::flawed_save("bad revision", "revision")
         ok int revision => match revision >= 1
-            false => ok records::flawed_save("bad revision")
-            true => match call parse_form_lines(body.customer, revision, body.lines.items, 0, [])
+            false => ok records::flawed_save("bad revision", "revision")
+            true => match call json_parse_lines(body.lines, revision, 0, [])
                 ok records::save_check checked => ok checked
 
-/// Fold drafts into the canonical digest input: head lines plus one
-/// newline-separated triple per line in submitted order. Both wire
+/// Parse form row items front to back into drafts. The row key is
+/// the client-stable wire identity; quantities and prices parse
+/// from text exactly like the JSON channel.
+fn records::save_check parse_form_lines
+    emits []
+    given
+        int revision
+        form::row_item<contract::line_wire>[] items
+        int index
+        records::line_draft[] grown
+    asserts
+        one: 1, [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))], 0, [] => ok records::checked_save(1, [records::line_draft("k1", "a", 2, 500)])
+        bad_qty: 1, [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))], 0, [] => ok records::flawed_save("bad quantity", "quantity")
+        bad_price: 1, [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "five"))], 0, [] => ok records::flawed_save("bad price", "price")
+        empty: 1, [], 0, [] => ok records::flawed_save("no lines", "lines")
+    match index >= items.length
+        false => match call text::to_int(items[index].value.quantity)
+            text::invalid_number => ok records::flawed_save("bad quantity", "quantity")
+            ok int qty => match call parse_price(items[index].value.price)
+                ok option::value<int> minor => match minor
+                    option::none => ok records::flawed_save("bad price", "price")
+                    option::some => match call parse_form_lines(revision, items, index + 1, call append<records::line_draft>(grown, records::line_draft(items[index].key, items[index].value.id, qty, minor.value)))
+                        ok records::save_check rest => ok rest
+        true => match call check_drafts(grown, revision)
+            ok records::save_check checked => ok checked
+
+/// Validate seats and details, then wrap parsed line content into
+/// the form save both renderers retain.
+fn records::form_check check_form_content
+    emits []
+    given
+        int seats
+        str details
+        int revision
+        records::line_draft[] drafts
+    asserts
+        valid: 2, "rush", 1, [records::line_draft("k1", "a", 2, 500)] => ok records::checked_form(2, "rush", 1, [records::line_draft("k1", "a", 2, 500)])
+        bad_seats: 0 - 1, "", 1, [records::line_draft("k1", "a", 2, 500)] => ok records::flawed_save("bad seats", "seats")
+        long_details: 2, "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789X", 1, [records::line_draft("k1", "a", 2, 500)] => ok records::flawed_save("details too long", "details")
+        bad_line: 2, "", 1, [records::line_draft("k1", "", 2, 500)] => ok records::flawed_save("empty line id", "id")
+    match seats < 0 or seats > 1000000
+        false => match (call byte_len(details)) > 200
+            false => match call check_drafts(drafts, revision)
+                ok records::save_check checked => match checked
+                    records::flawed_save => ok records::flawed_save(checked.reason, checked.field)
+                    records::checked_save => ok records::checked_form(seats, details, revision, drafts)
+            true => ok records::flawed_save("details too long", "details")
+        true => ok records::flawed_save("bad seats", "seats")
+
+/// Validate one form save body: revision, seats and details parse
+/// first, then shared content validation runs over parsed drafts.
+/// A missing optional details reads empty; a present empty string
+/// stays empty through the same path.
+fn records::form_check check_form_save
+    emits []
+    given
+        contract::invoice_form body
+    asserts
+        valid: contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])) => ok records::checked_form(2, "rush", 1, [records::line_draft("k1", "a", 2, 500)])
+        bare: contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])) => ok records::checked_form(2, "", 1, [records::line_draft("k1", "a", 2, 500)])
+        bad_revision: contract::invoice_form("2", option::none(), "next", form::rows<contract::line_wire>([], [])) => ok records::flawed_save("bad revision", "revision")
+        bad_seats: contract::invoice_form("many", option::none(), "1", form::rows<contract::line_wire>([], [])) => ok records::flawed_save("bad seats", "seats")
+        bad_qty: contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))])) => ok records::flawed_save("bad quantity", "quantity")
+    match call text::to_int(body.revision)
+        text::invalid_number => ok records::flawed_save("bad revision", "revision")
+        ok int revision => match revision >= 1
+            false => ok records::flawed_save("bad revision", "revision")
+            true => match call text::to_int(body.seats)
+                text::invalid_number => ok records::flawed_save("bad seats", "seats")
+                ok int seats => do
+                    option::value<str> details = body.details
+                    match details
+                        option::none => match call parse_form_lines(revision, body.lines.items, 0, [])
+                            ok records::save_check parsed => match parsed
+                                records::flawed_save => ok records::flawed_save(parsed.reason, parsed.field)
+                                records::checked_save => match call check_form_content(seats, "", revision, parsed.lines)
+                                    ok records::form_check checked => ok checked
+                        option::some => match call parse_form_lines(revision, body.lines.items, 0, [])
+                            ok records::save_check parsed => match parsed
+                                records::flawed_save => ok records::flawed_save(parsed.reason, parsed.field)
+                                records::checked_save => match call check_form_content(seats, details.value, revision, parsed.lines)
+                                    ok records::form_check checked => ok checked
+
+/// Fold drafts into exact minor-unit totals. Integer arithmetic
+/// only: no float ever touches a total, and validated bounds keep
+/// every partial sum far inside int64 range.
+fn int total_drafts
+    emits []
+    given
+        records::line_draft[] drafts
+        int index
+        int grown
+    asserts
+        empty: [], 0, 0 => ok 0
+        two: [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "b", 1, 199)], 0, 0 => ok 1199
+    match index >= drafts.length
+        false => match call total_drafts(drafts, index + 1, grown + drafts[index].quantity * drafts[index].price_minor)
+            ok int rest => ok rest
+        true => ok grown
+
+/// Fold stored rows into exact minor-unit totals.
+fn int total_rows
+    emits []
+    given
+        records::line_row[] rows
+        int index
+        int grown
+    asserts
+        empty: [], 0, 0 => ok 0
+        two: [records::line_row(7, "k1", "a", 2, 500, 0), records::line_row(7, "k2", "b", 1, 199, 1)], 0, 0 => ok 1199
+    match index >= rows.length
+        false => match call total_rows(rows, index + 1, grown + rows[index].quantity * rows[index].price_minor)
+            ok int rest => ok rest
+        true => ok grown
+
+/// Project one draft into its grid wire shape.
+fn contract::grid_line_wire to_grid_line
+    emits []
+    given
+        records::line_draft draft
+    asserts
+        sample: records::line_draft("k1", "a", 2, 500) => ok contract::grid_line_wire("k1", "a", "2", "5.00")
+    ok contract::grid_line_wire(draft.key, draft.id, call text::from_int(draft.quantity), call minor_to_price(draft.price_minor))
+
+/// Project drafts front to back into grid wire order.
+fn contract::grid_line_wire[] to_grid_lines
+    emits []
+    given
+        records::line_draft[] drafts
+        int index
+        contract::grid_line_wire[] grown
+    asserts
+        empty: [], 0, [] => ok []
+        two: [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "b", 1, 199)], 0, [] => ok [contract::grid_line_wire("k1", "a", "2", "5.00"), contract::grid_line_wire("k2", "b", "1", "1.99")]
+    match index >= drafts.length
+        false => match call to_grid_lines(drafts, index + 1, call append<contract::grid_line_wire>(grown, call to_grid_line(drafts[index])))
+            ok contract::grid_line_wire[] rest => ok rest
+        true => ok grown
+
+/// Fold drafts into one canonical digest input: the head plus one
+/// newline-separated quad per line in submitted order. Both wire
 /// channels normalize here, so identical content digests identically
 /// however it was encoded.
 fn str digest_lines
@@ -306,29 +878,54 @@ fn str digest_lines
         int index
         str grown
     asserts
-        empty: [], 0, "inv-1\n1\nAcme" => ok "inv-1\n1\nAcme"
-        two: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "sku-2", 1)], 0, "inv-1\n1\nAcme" => ok "inv-1\n1\nAcme\nk1\nsku-1\n2\nk2\nsku-2\n1"
+        empty: [], 0, "1\n7\n1" => ok "1\n7\n1"
+        two: [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "b", 1, 199)], 0, "1\n7\n1" => ok "1\n7\n1\nk1\na\n2\n500\nk2\nb\n1\n199"
     match index >= drafts.length
-        false => match call digest_lines(drafts, index + 1, grown + "\n" + drafts[index].key + "\n" + drafts[index].sku + "\n" + call text::from_int(drafts[index].qty))
+        false => match call digest_lines(drafts, index + 1, grown + "\n" + drafts[index].key + "\n" + drafts[index].id + "\n" + call text::from_int(drafts[index].quantity) + "\n" + call text::from_int(drafts[index].price_minor))
             ok str rest => ok rest
         true => ok grown
 
-/// Digest one save intent for the replay ledger. The digest covers
-/// invoice, base revision, customer and ordered lines; session and
-/// operation id stay out (authentication and keying, not content).
-fn str digest_of
+/// Hash one canonical digest input. The invalid arm is an
+/// unreachable-safe fallback: Can strings always encode.
+fn str digest_hash
     emits []
     given
-        str invoice_id
-        int revision
-        str customer
-        records::line_draft[] drafts
+        str canonical
     asserts
-        sample: "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)] => ok "1ce2cb49c46c051bf0c3c01e3ef13ce198c7d80dee62185dc67f465f811f1d9c"
-        empty: "inv-9", 3, "", [] => ok "80f2a3c54976880dafb82e372ba9f73004cd26932c6a326b082971ed14a18268"
-    match call bytes::from_utf8(call digest_lines(drafts, 0, invoice_id + "\n" + call text::from_int(revision) + "\n" + customer))
+        sample: "1\n7\n1\nk1\na\n2\n500" => ok "4d46b9de513aede4b424a717d32c48e056994a5b34af329b7a88421aee399210"
+    match call bytes::from_utf8(canonical)
         codec::invalid_data => ok ""
         ok bytes::buffer raw => ok call bytes::encode_hex(call crypto::sha256(raw))
+
+/// Digest one JSON save intent for the replay ledger. The digest
+/// covers captured tenant/invoice, base revision and ordered lines;
+/// session and operation id stay out (authentication and keying, not
+/// content). Seats and details stay out too: JSON preserves them.
+fn str digest_of_grid
+    emits []
+    given
+        int tenant
+        int invoice_id
+        int revision
+        records::line_draft[] drafts
+    asserts
+        sample: 1, 7, 1, [records::line_draft("k1", "a", 2, 500)] => ok "4d46b9de513aede4b424a717d32c48e056994a5b34af329b7a88421aee399210"
+    ok call digest_hash(call digest_lines(drafts, 0, call text::from_int(tenant) + "\n" + call text::from_int(invoice_id) + "\n" + call text::from_int(revision)))
+
+/// Digest one form save intent. The digest covers captured
+/// tenant/invoice, base revision, seats, details and ordered lines.
+fn str digest_of_form
+    emits []
+    given
+        int tenant
+        int invoice_id
+        int revision
+        int seats
+        str details
+        records::line_draft[] drafts
+    asserts
+        sample: 1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)] => ok "64c39abd490484de846a631a241e919e495f76f3428666c2cb7ae1a2273853a1"
+    ok call digest_hash(call digest_lines(drafts, 0, call text::from_int(tenant) + "\n" + call text::from_int(invoice_id) + "\n" + call text::from_int(revision) + "\n" + call text::from_int(seats) + "\n" + details))
 
 /// Insert drafts front to back in one transaction, stamping stored
 /// positions in submitted order. True commits the batch; any store
@@ -337,27 +934,32 @@ fn bool insert_lines
     emits []
     given
         records::line_draft[] drafts
-        str invoice_id
+        int invoice_id
         int index
         sql::transaction tx
     asserts
-        insert_empty: [], "inv-1", 0 => ok true
-        insert_one: [records::line_draft("k1", "sku-1", 2)], "inv-1", 0 => ok true
-        insert_two: [records::line_draft("k1", "sku-1", 2), records::line_draft("k2", "sku-2", 1)], "inv-1", 0 => ok true
-        insert_store_down: [records::line_draft("k1", "sku-1", 2)], "inv-1", 0 => ok false
+        insert_empty: [], 7, 0 => ok true
+        insert_one: [records::line_draft("k1", "a", 2, 500)], 7, 0 => ok true
+        insert_two: [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "b", 1, 199)], 7, 0 => ok true
+        insert_store_down: [records::line_draft("k1", "a", 2, 500)], 7, 0 => ok false
     match index >= drafts.length
-        false => match call sql::transaction_execute<records::line_insert>(tx, "line_insert", records::line_insert(invoice_id, drafts[index].key, drafts[index].sku, drafts[index].qty, index))
+        false => match call sql::transaction_execute<records::line_insert>(tx, "line_insert", records::line_insert(invoice_id, drafts[index].key, drafts[index].id, drafts[index].quantity, drafts[index].price_minor, index))
             when
-                insert_one: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                insert_two: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                insert_two: tx, "line_insert", records::line_insert("inv-1", "k2", "sku-2", 1, 1) => ok 1
-                insert_store_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
-                save_granted: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                save_lost_race: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                save_conflict_race: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                apply_ok: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
-                apply_lines_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
-                apply_replay_down: tx, "line_insert", records::line_insert("inv-1", "k1", "sku-1", 2, 0) => ok 1
+                insert_one: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                insert_two: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                insert_two: tx, "line_insert", records::line_insert(7, "k2", "b", 1, 199, 1) => ok 1
+                insert_store_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                save_granted: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                save_form_stored: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                save_lost_race: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                save_conflict_race: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                apply_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                apply_form: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                commit_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                writes_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                apply_lines_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
+                apply_replay_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                apply_cleanup_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
             sql::unsupported_value => ok false
             sql::query_failed => ok false
             sql::constraint_failed => ok false
@@ -365,43 +967,297 @@ fn bool insert_lines
                 ok bool rest => ok rest
         true => ok true
 
+/// Project one stored row into its draft shape. Positions order the
+/// read; the projection keeps key, id and exact parsed values.
+fn records::line_draft to_draft
+    emits []
+    given
+        records::line_row row
+    asserts
+        sample: records::line_row(7, "k1", "a", 2, 500, 0) => ok records::line_draft("k1", "a", 2, 500)
+    ok records::line_draft(row.line_key, row.id, row.quantity, row.price_minor)
+
+/// Project stored rows front to back into drafts.
+fn records::line_draft[] to_drafts
+    emits []
+    given
+        records::line_row[] rows
+        int index
+        records::line_draft[] grown
+    asserts
+        empty: [], 0, [] => ok []
+        two: [records::line_row(7, "k1", "a", 2, 500, 0), records::line_row(7, "k2", "b", 1, 199, 1)], 0, [] => ok [records::line_draft("k1", "a", 2, 500), records::line_draft("k2", "b", 1, 199)]
+    match index >= rows.length
+        false => match call to_drafts(rows, index + 1, call append<records::line_draft>(grown, call to_draft(rows[index])))
+            ok records::line_draft[] rest => ok rest
+        true => ok grown
+
+/// Apply one authorized save inside its transaction: encode the
+/// neutral committed result, expire the retention tail, bump the
+/// invoice row under its revision predicate, replace its lines, and
+/// record the replay row atomically. The guard input is the proof of
+/// session, invoice and membership; only this package can build one,
+/// so the write is unreachable without the three proofs. A lost
+/// ledger race rereads the winner in the same transaction and
+/// replays or conflicts without writing; a lost revision race
+/// rereads the current revision and conflicts.
+fn sql::decision<records::write_outcome> apply_save
+    emits []
+    given
+        invoice_guard guard
+        int seats
+        str details
+        int preserve_stored
+        records::line_draft[] drafts
+        str digest
+        str operation_id
+        int now_ms
+        int w_ms
+        sql::transaction tx
+    asserts
+        apply_ok: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        apply_form: invoice_guard("alice", 1, 7, 1, 2, "rush"), 3, "x", 0, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000))
+        apply_predicate_miss: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 3))
+        apply_predicate_gone: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_denied(1, 7))
+        apply_lines_down: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
+        apply_replay_down: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
+        apply_cleanup_down: invoice_guard("alice", 1, 7, 1, 2, "rush"), 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
+    match preserve_stored is 1
+        false => match call apply_commit(guard, seats, details, drafts, digest, operation_id, now_ms, w_ms, tx)
+            ok sql::decision<records::write_outcome> applied => ok applied
+        true => match call apply_commit(guard, guard.seats, guard.details, drafts, digest, operation_id, now_ms, w_ms, tx)
+            ok sql::decision<records::write_outcome> applied => ok applied
+
+/// Run the commit sequence for resolved write values: encode the
+/// neutral result, expire the retention tail, predicate the invoice
+/// bump, replace lines and record the replay row.
+fn sql::decision<records::write_outcome> apply_commit
+    emits []
+    given
+        invoice_guard guard
+        int seats
+        str details
+        records::line_draft[] drafts
+        str digest
+        str operation_id
+        int now_ms
+        int w_ms
+        sql::transaction tx
+    asserts
+        commit_ok: invoice_guard("alice", 1, 7, 1, 2, "rush"), 2, "rush", [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+    match call total_drafts(drafts, 0, 0)
+        ok int total => do
+            records::written done = records::written(guard.tenant, guard.invoice_id, guard.base_revision + 1, seats, details, drafts, total)
+            match call codec::encode_json<records::written>(done)
+                when
+                    commit_ok: done => ok call bytes::empty()
+                    apply_ok: done => ok call bytes::empty()
+                    apply_form: done => ok call bytes::empty()
+                    apply_predicate_miss: done => ok call bytes::empty()
+                    apply_predicate_gone: done => ok call bytes::empty()
+                    apply_lines_down: done => ok call bytes::empty()
+                    apply_replay_down: done => ok call bytes::empty()
+                    apply_cleanup_down: done => ok call bytes::empty()
+                    save_granted: done => ok call bytes::empty()
+                    save_form_stored: done => ok call bytes::empty()
+                    save_lost_race: done => ok call bytes::empty()
+                    save_conflict_race: done => ok call bytes::empty()
+                codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                ok bytes::buffer encoded => match call bytes::to_utf8(encoded)
+                    codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                    ok str result => match w_ms >= 1
+                        false => match call apply_writes(guard, seats, details, drafts, digest, operation_id, result, now_ms, tx)
+                            ok sql::decision<records::write_outcome> applied => ok applied
+                        true => match call sql::transaction_execute<records::replay_cutoff>(tx, "replay_cleanup", records::replay_cutoff(now_ms - w_ms))
+                            when
+                                commit_ok: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_ok: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_form: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_predicate_miss: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_predicate_gone: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_lines_down: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_replay_down: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                apply_cleanup_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed("replay_cleanup", "SQLITE_IOERR")
+                                save_granted: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                save_form_stored: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                save_lost_race: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                                save_conflict_race: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+                            sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                            sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                            ok int expired => match call apply_writes(guard, seats, details, drafts, digest, operation_id, result, now_ms, tx)
+                                ok sql::decision<records::write_outcome> applied => ok applied
+
+/// Run the invoice bump, line replacement and replay insert for one
+/// encoded commit. A zero-row bump rereads the current revision and
+/// conflicts instead of clobbering a concurrent commit.
+fn sql::decision<records::write_outcome> apply_writes
+    emits []
+    given
+        invoice_guard guard
+        int seats
+        str details
+        records::line_draft[] drafts
+        str digest
+        str operation_id
+        str result
+        int now_ms
+        sql::transaction tx
+    asserts
+        writes_ok: invoice_guard("alice", 1, 7, 1, 2, "rush"), 2, "rush", [records::line_draft("k1", "a", 2, 500)], "dx", "op-9", "rj", 2000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+    match call sql::transaction_execute<records::invoice_update>(tx, "invoice_update", records::invoice_update(guard.base_revision + 1, seats, details, now_ms, guard.tenant, guard.invoice_id, guard.base_revision))
+        when
+            writes_ok: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            commit_ok: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            apply_ok: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            apply_form: tx, "invoice_update", records::invoice_update(2, 3, "x", 2000, 1, 7, 1) => ok 1
+            apply_predicate_miss: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 0
+            apply_predicate_gone: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 0
+            apply_lines_down: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            apply_replay_down: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            apply_cleanup_down: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            save_granted: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            save_form_stored: tx, "invoice_update", records::invoice_update(2, 3, "x", 2000, 1, 7, 1) => ok 1
+            save_lost_race: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+            save_conflict_race: tx, "invoice_update", records::invoice_update(2, 2, "rush", 2000, 1, 7, 1) => ok 1
+        sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+        sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+        ok int moved => match moved is 1
+            false => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(guard.tenant, guard.invoice_id))
+                when
+                    apply_predicate_miss: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 3, 2, "rush", 1900))
+                    apply_predicate_gone: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::none()
+                sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                ok option::value<records::invoice_row> current => match current
+                    option::none => ok sql::rollback<records::write_outcome>(records::write_denied(guard.tenant, guard.invoice_id))
+                    option::some => ok sql::rollback<records::write_outcome>(records::write_conflict(guard.tenant, guard.invoice_id, current.value.revision))
+            true => match call sql::transaction_execute<records::lines_key>(tx, "lines_delete", records::lines_key(guard.invoice_id))
+                when
+                    writes_ok: tx, "lines_delete", records::lines_key(7) => ok 1
+                    commit_ok: tx, "lines_delete", records::lines_key(7) => ok 1
+                    apply_ok: tx, "lines_delete", records::lines_key(7) => ok 1
+                    apply_form: tx, "lines_delete", records::lines_key(7) => ok 1
+                    apply_lines_down: tx, "lines_delete", records::lines_key(7) => ok 1
+                    apply_replay_down: tx, "lines_delete", records::lines_key(7) => ok 1
+                    apply_cleanup_down: tx, "lines_delete", records::lines_key(7) => ok 1
+                    save_granted: tx, "lines_delete", records::lines_key(7) => ok 1
+                    save_form_stored: tx, "lines_delete", records::lines_key(7) => ok 1
+                    save_lost_race: tx, "lines_delete", records::lines_key(7) => ok 1
+                    save_conflict_race: tx, "lines_delete", records::lines_key(7) => ok 1
+                sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                ok int cleared => match call insert_lines(drafts, guard.invoice_id, 0, tx)
+                    ok bool placed => match placed
+                        false => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                        true => match call sql::transaction_execute<records::replay_insert>(tx, "replay_insert", records::replay_insert(guard.actor, guard.tenant, guard.invoice_id, operation_id, digest, result, guard.base_revision + 1, now_ms))
+                            when
+                                writes_ok: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "rj", 2, 2000) => ok 1
+                                commit_ok: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
+                                apply_ok: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
+                                apply_form: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => ok 1
+                                apply_replay_down: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-9", "dx", "", 2, 2000) => sql::query_failed("replay_insert", "SQLITE_IOERR")
+                                save_granted: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-1", "dx", "", 2, 2000) => ok 1
+                                save_form_stored: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-2", "dx", "", 2, 2000) => ok 1
+                                save_lost_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d1", "", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
+                                save_conflict_race: tx, "replay_insert", records::replay_insert("alice", 1, 7, "op-7", "d9", "", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
+                            sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                            sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                            sql::constraint_failed => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(guard.actor, guard.tenant, guard.invoice_id, operation_id))
+                                when
+                                    save_lost_race: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "win", 2, 1500))
+                                    save_conflict_race: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "win", 2, 1500))
+                                sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                ok option::value<records::replay_row> winner => match winner
+                                    option::none => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                    option::some => match winner.value.digest is digest
+                                        false => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(guard.tenant, guard.invoice_id))
+                                            when
+                                                save_conflict_race: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                                            sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            ok option::value<records::invoice_row> current => match current
+                                                option::none => ok sql::rollback<records::write_outcome>(records::write_denied(guard.tenant, guard.invoice_id))
+                                                option::some => ok sql::rollback<records::write_outcome>(records::write_conflict(guard.tenant, guard.invoice_id, current.value.revision))
+                                        true => match call bytes::from_utf8(winner.value.result)
+                                            codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                            ok bytes::buffer raw => match call codec::decode_json<records::written>(raw)
+                                                when
+                                                    save_lost_race: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(guard.tenant, guard.invoice_id))
+                                                ok records::written found => ok sql::rollback<records::write_outcome>(found)
+                            ok int kept => ok sql::commit<records::write_outcome>(records::written(guard.tenant, guard.invoice_id, guard.base_revision + 1, seats, details, drafts, call total_drafts(drafts, 0, 0)))
+
 /// Run one protected save in a single transaction: resolve the actor
 /// from the session, prove invoice and membership, replay or conflict
 /// on the actor-scoped ledger, check the base revision, then apply
-/// the write plus its ledger row atomically. Foreign, nonexistent
-/// and unauthenticated targets share one nondisclosing denial; every
-/// store failure rolls back to busy so the identical retry stays
-/// safe. The invoice guard is built where the three proofs meet and
-/// the write consumes its fields, never the raw wire strings.
-fn sql::decision<records::save_outcome> decide_save
+/// the write plus its ledger row atomically. Authorization is
+/// rechecked on every replay before any ledger result is disclosed,
+/// so a revoked actor cannot recover a prior saved snapshot. Expired
+/// ledger rows behave as missing: the identical old request then
+/// conflicts on its advanced revision instead of causing a second
+/// effect. Foreign, nonexistent and unauthenticated targets share one
+/// nondisclosing denial; every store failure rolls back to busy so
+/// the identical retry stays safe. The invoice guard is built where
+/// the three proofs meet and the write consumes its fields, never
+/// the raw wire values. Fixture windows are small integers so the
+/// retention cutoff stays positive and readable; the deployed
+/// default is seven days and the code treats W uniformly.
+fn sql::decision<records::write_outcome> decide_save
     emits []
     given
         near str session_token
         near str operation_id
-        near str invoice_id
+        near int tenant
+        near int invoice_id
         near int revision
-        near str customer
+        near int seats
+        near str details
+        near int preserve_stored
         near records::line_draft[] drafts
         near str digest
         near int now_ms
+        near int w_ms
         sql::transaction tx
     asserts
-        save_granted: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::commit<records::save_outcome>(records::saved("inv-1", 2))
-        save_replay_same: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d1", 2000 => ok sql::rollback<records::save_outcome>(records::saved("inv-1", 2))
-        save_replay_changed: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d2", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 1))
-        save_denied_session: "tok-ghost", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-1"))
-        save_denied_revoked: "tok-revoked", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-1"))
-        save_denied_missing: "tok-alice", "op-1", "inv-9", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-9"))
-        save_denied_foreign: "tok-alice", "op-1", "inv-2", 1, "Globex", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::denied("inv-2"))
-        save_stale: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 2))
-        save_busy: "tok-alice", "op-1", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
-        save_lost_race: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d1", 2000 => ok sql::rollback<records::save_outcome>(records::saved("inv-1", 2))
-        save_conflict_race: "tok-alice", "op-7", "inv-1", 1, "Acme", [records::line_draft("k1", "sku-1", 2)], "d9", 2000 => ok sql::rollback<records::save_outcome>(records::stale("inv-1", 2))
+        save_granted: "tok-alice", "op-1", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_form_stored: "tok-alice", "op-2", 1, 7, 1, 3, "x", 0, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_replay_same: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d1", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_replay_changed: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d2", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 2))
+        save_replay_expired: "tok-alice", "op-8", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d8", 2000, 1000 => ok sql::commit<records::write_outcome>(records::write_conflict(1, 7, 2))
+        save_replay_at_edge: "tok-alice", "op-9", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_no_window: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d0", 2000, 0 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_expire_down: "tok-alice", "op-8", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d8", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
+        save_denied_session: "tok-ghost", "op-1", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_denied(1, 7))
+        save_denied_revoked: "tok-revoked", "op-1", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_denied(1, 7))
+        save_denied_missing: "tok-alice", "op-1", 1, 9, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_denied(1, 9))
+        save_denied_foreign: "tok-alice", "op-1", 2, 8, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_denied(2, 8))
+        save_stale: "tok-alice", "op-1", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 2))
+        save_busy: "tok-alice", "op-1", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
+        save_lost_race: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d1", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        save_conflict_race: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 2))
     match call sql::transaction_query_optional<records::session_key, records::session_row>(tx, "session_by_token", records::session_key(session_token))
         when
             save_granted: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_form_stored: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_replay_same: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_replay_changed: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_replay_expired: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_replay_at_edge: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_no_window: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            save_expire_down: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_denied_session: tx, "session_by_token", records::session_key("tok-ghost") => ok option::none()
             save_denied_revoked: tx, "session_by_token", records::session_key("tok-revoked") => ok option::some(records::session_row("tok-revoked", "mallory", 1700000000000))
             save_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
@@ -410,176 +1266,122 @@ fn sql::decision<records::save_outcome> decide_save
             save_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
             save_lost_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             save_conflict_race: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
-        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-        sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-        sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+        sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+        sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+        sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+        sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
         ok option::value<records::session_row> session => match session
-            option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+            option::none => ok sql::rollback<records::write_outcome>(records::write_denied(tenant, invoice_id))
             option::some => match session.value.revoked_ms is 0
-                false => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
-                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(invoice_id))
+                false => ok sql::rollback<records::write_outcome>(records::write_denied(tenant, invoice_id))
+                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(tenant, invoice_id))
                     when
-                        save_granted: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
-                        save_replay_same: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
-                        save_replay_changed: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
-                        save_denied_missing: tx, "invoice_by_id", records::invoice_key("inv-9") => ok option::none()
-                        save_denied_foreign: tx, "invoice_by_id", records::invoice_key("inv-2") => ok option::some(records::invoice_row("inv-2", "tenant-b", 1, "Globex", 800))
-                        save_stale: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
-                        save_lost_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
-                        save_conflict_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
-                    sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                    sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                    sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                    sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                    sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                        save_granted: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        save_form_stored: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        save_replay_same: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_replay_changed: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_replay_expired: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_replay_at_edge: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_no_window: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_expire_down: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_denied_missing: tx, "invoice_by_id", records::invoice_key(1, 9) => ok option::none()
+                        save_denied_foreign: tx, "invoice_by_id", records::invoice_key(2, 8) => ok option::some(records::invoice_row(2, 8, 1, 1, "bob", 800))
+                        save_stale: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        save_lost_race: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        save_conflict_race: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                    sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                    sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                    sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                    sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                    sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                     ok option::value<records::invoice_row> stored => match stored
-                        option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
+                        option::none => ok sql::rollback<records::write_outcome>(records::write_denied(tenant, invoice_id))
                         option::some => match call sql::transaction_query_optional<records::membership_key, records::membership_row>(tx, "membership_lookup", records::membership_key(session.value.actor, stored.value.tenant))
                             when
-                                save_granted: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                save_replay_same: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                save_replay_changed: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                save_denied_foreign: tx, "membership_lookup", records::membership_key("alice", "tenant-b") => ok option::none()
-                                save_stale: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                save_lost_race: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                save_conflict_race: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                            sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                            sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                save_granted: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_form_stored: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_replay_same: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_replay_changed: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_replay_expired: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_replay_at_edge: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_no_window: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_expire_down: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_denied_foreign: tx, "membership_lookup", records::membership_key("alice", 2) => ok option::none()
+                                save_stale: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_lost_race: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                save_conflict_race: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                            sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                            sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                            sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                            sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                             ok option::value<records::membership_row> member => match member
-                                option::none => ok sql::rollback<records::save_outcome>(records::denied(invoice_id))
-                                option::some => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(session.value.actor, invoice_id, operation_id))
+                                option::none => ok sql::rollback<records::write_outcome>(records::write_denied(tenant, invoice_id))
+                                option::some => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(session.value.actor, tenant, invoice_id, operation_id))
                                     when
-                                        save_granted: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-1") => ok option::none()
-                                        save_replay_same: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
-                                        save_replay_changed: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
-                                        save_stale: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-1") => ok option::none()
-                                        save_lost_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::none()
-                                        save_conflict_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::none()
-                                    sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                                    sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                                    sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                                    sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
-                                    sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(invoice_id))
+                                        save_granted: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-1") => ok option::none()
+                                        save_form_stored: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-2") => ok option::none()
+                                        save_replay_same: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "rs", 2, 1500))
+                                        save_replay_changed: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "rs", 2, 1500))
+                                        save_replay_expired: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-8") => ok option::some(records::replay_row("alice", 1, 7, "op-8", "d8", "rx", 2, 500))
+                                        save_replay_at_edge: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-9") => ok option::some(records::replay_row("alice", 1, 7, "op-9", "d9", "re", 2, 1000))
+                                        save_no_window: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d0", "rn", 2, 500))
+                                        save_expire_down: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-8") => ok option::some(records::replay_row("alice", 1, 7, "op-8", "d8", "rx", 2, 500))
+                                        save_stale: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-1") => ok option::none()
+                                        save_lost_race: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::none()
+                                        save_conflict_race: tx, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::none()
+                                    sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                    sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                    sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                    sql::row_count => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                    sql::schema_mismatch => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                                     ok option::value<records::replay_row> prior => match prior
-                                        option::some => match prior.value.digest is digest
-                                            false => ok sql::rollback<records::save_outcome>(records::stale(invoice_id, stored.value.revision))
-                                            true => ok sql::rollback<records::save_outcome>(records::saved(invoice_id, prior.value.revision))
+                                        option::some => match w_ms >= 1 and prior.value.recorded_ms < (now_ms - w_ms)
+                                            false => match prior.value.digest is digest
+                                                false => ok sql::rollback<records::write_outcome>(records::write_conflict(tenant, invoice_id, stored.value.revision))
+                                                true => match call bytes::from_utf8(prior.value.result)
+                                                    codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                                    ok bytes::buffer raw => match call codec::decode_json<records::written>(raw)
+                                                        when
+                                                            save_replay_same: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                            save_replay_at_edge: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                            save_no_window: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                        codec::invalid_data => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                                        ok records::written found => ok sql::rollback<records::write_outcome>(found)
+                                            true => match call sql::transaction_execute<records::replay_expire>(tx, "replay_expire", records::replay_expire(session.value.actor, tenant, invoice_id, operation_id, now_ms - w_ms))
+                                                when
+                                                    save_replay_expired: tx, "replay_expire", records::replay_expire("alice", 1, 7, "op-8", 1000) => ok 1
+                                                    save_expire_down: tx, "replay_expire", records::replay_expire("alice", 1, 7, "op-8", 1000) => sql::query_failed("replay_expire", "SQLITE_IOERR")
+                                                sql::unsupported_value => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                                sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                                sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
+                                                ok int cleared => match revision is stored.value.revision
+                                                    false => ok sql::commit<records::write_outcome>(records::write_conflict(tenant, invoice_id, stored.value.revision))
+                                                    true => match call apply_save(invoice_guard(session.value.actor, stored.value.tenant, invoice_id, stored.value.revision, stored.value.seats, stored.value.details), seats, details, preserve_stored, drafts, digest, operation_id, now_ms, w_ms, tx)
+                                                        ok sql::decision<records::write_outcome> applied => ok applied
                                         option::none => match revision is stored.value.revision
-                                            false => ok sql::rollback<records::save_outcome>(records::stale(invoice_id, stored.value.revision))
-                                            true => match call apply_save(invoice_guard(session.value.actor, stored.value.tenant, invoice_id, stored.value.revision), customer, drafts, digest, operation_id, now_ms, tx)
-                                                ok sql::decision<records::save_outcome> applied => ok applied
-
-/// Apply one authorized save inside its transaction: bump the invoice
-/// row, replace its lines, and record the replay row atomically. The
-/// guard input is the proof of session, invoice and membership; only
-/// this package can build one, so the write is unreachable without
-/// the three proofs. A lost ledger race rereads the winner in the
-/// same transaction and replays or conflicts without writing.
-fn sql::decision<records::save_outcome> apply_save
-    emits []
-    given
-        invoice_guard guard
-        str customer
-        records::line_draft[] drafts
-        str digest
-        str operation_id
-        int now_ms
-        sql::transaction tx
-    asserts
-        apply_ok: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::commit<records::save_outcome>(records::saved("inv-1", 2))
-        apply_lines_down: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
-        apply_replay_down: invoice_guard("alice", "tenant-a", "inv-1", 1), "Acme", [records::line_draft("k1", "sku-1", 2)], "dx", "op-9", 2000 => ok sql::rollback<records::save_outcome>(records::busy("inv-1"))
-    match call sql::transaction_execute<records::invoice_update>(tx, "invoice_update", records::invoice_update(guard.base_revision + 1, customer, now_ms, guard.invoice_id))
-        when
-            apply_ok: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-            apply_lines_down: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-            apply_replay_down: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-            save_granted: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-            save_lost_race: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-            save_conflict_race: tx, "invoice_update", records::invoice_update(2, "Acme", 2000, "inv-1") => ok 1
-        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-        ok int moved => match call sql::transaction_execute<records::lines_key>(tx, "lines_delete", records::lines_key(guard.invoice_id))
-            when
-                apply_ok: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-                apply_lines_down: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-                apply_replay_down: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-                save_granted: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-                save_lost_race: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-                save_conflict_race: tx, "lines_delete", records::lines_key("inv-1") => ok 1
-            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-            ok int cleared => match call insert_lines(drafts, guard.invoice_id, 0, tx)
-                ok bool placed => match placed
-                    false => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                    true => match call sql::transaction_execute<records::replay_insert>(tx, "replay_insert", records::replay_insert(guard.actor, guard.invoice_id, operation_id, digest, guard.base_revision + 1, now_ms))
-                        when
-                            apply_ok: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-9", "dx", 2, 2000) => ok 1
-                            apply_replay_down: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-9", "dx", 2, 2000) => sql::query_failed("replay_insert", "SQLITE_IOERR")
-                            save_granted: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-1", "dx", 2, 2000) => ok 1
-                            save_lost_race: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-7", "d1", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
-                            save_conflict_race: tx, "replay_insert", records::replay_insert("alice", "inv-1", "op-7", "d9", 2, 2000) => sql::constraint_failed("invoice_replay_pkey")
-                        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                        sql::constraint_failed => match call sql::transaction_query_optional<records::replay_key, records::replay_row>(tx, "replay_lookup", records::replay_key(guard.actor, guard.invoice_id, operation_id))
-                            when
-                                save_lost_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
-                                save_conflict_race: tx, "replay_lookup", records::replay_key("alice", "inv-1", "op-7") => ok option::some(records::replay_row("alice", "inv-1", "op-7", "d1", 2, 1500))
-                            sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                            sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                            sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                            sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                            sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                            ok option::value<records::replay_row> winner => match winner
-                                option::none => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                option::some => match winner.value.digest is digest
-                                    false => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(guard.invoice_id))
-                                        when
-                                            save_conflict_race: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 2, "Acme", 1500))
-                                        sql::unsupported_value => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                        sql::query_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                        sql::constraint_failed => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                        sql::row_count => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                        sql::schema_mismatch => ok sql::rollback<records::save_outcome>(records::busy(guard.invoice_id))
-                                        ok option::value<records::invoice_row> current => match current
-                                            option::none => ok sql::rollback<records::save_outcome>(records::denied(guard.invoice_id))
-                                            option::some => ok sql::rollback<records::save_outcome>(records::stale(guard.invoice_id, current.value.revision))
-                                    true => ok sql::rollback<records::save_outcome>(records::saved(guard.invoice_id, winner.value.revision))
-                        ok int kept => ok sql::commit<records::save_outcome>(records::saved(guard.invoice_id, guard.base_revision + 1))
-
-/// Project one stored line into its load shape. Positions order the
-/// read; the projection keeps key, sku and count only.
-fn records::found_line to_found_line
-    emits []
-    given
-        records::line_row row
-    asserts
-        sample: records::line_row("inv-1", "k1", "sku-1", 2, 0) => ok records::found_line("k1", "sku-1", 2)
-    ok records::found_line(row.line_key, row.sku, row.qty)
+                                            false => ok sql::rollback<records::write_outcome>(records::write_conflict(tenant, invoice_id, stored.value.revision))
+                                            true => match call apply_save(invoice_guard(session.value.actor, stored.value.tenant, invoice_id, stored.value.revision, stored.value.seats, stored.value.details), seats, details, preserve_stored, drafts, digest, operation_id, now_ms, w_ms, tx)
+                                                ok sql::decision<records::write_outcome> applied => ok applied
 
 /// Run one protected read in a single transaction so invoice and
 /// lines cannot tear under a concurrent write: resolve the actor,
 /// prove invoice and membership, then load. Denials match the save
 /// shape exactly; store failures read busy.
-fn sql::decision<records::load_outcome> decide_load
+fn sql::decision<records::read_outcome> decide_load
     emits []
     given
         near str session_token
-        near str invoice_id
+        near int tenant
+        near int invoice_id
         sql::transaction tx
     asserts
-        load_found: "tok-alice", "inv-1" => ok sql::commit<records::load_outcome>(records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)]))
-        load_denied_session: "tok-ghost", "inv-1" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-1"))
-        load_denied_missing: "tok-alice", "inv-9" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-9"))
-        load_denied_foreign: "tok-alice", "inv-2" => ok sql::rollback<records::load_outcome>(records::load_denied("inv-2"))
-        load_busy: "tok-alice", "inv-1" => ok sql::rollback<records::load_outcome>(records::load_busy("inv-1"))
+        load_found: "tok-alice", 1, 7 => ok sql::commit<records::read_outcome>(records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
+        load_denied_session: "tok-ghost", 1, 7 => ok sql::rollback<records::read_outcome>(records::read_denied(1, 7))
+        load_denied_missing: "tok-alice", 1, 9 => ok sql::rollback<records::read_outcome>(records::read_denied(1, 9))
+        load_denied_foreign: "tok-alice", 2, 8 => ok sql::rollback<records::read_outcome>(records::read_denied(2, 8))
+        load_busy: "tok-alice", 1, 7 => ok sql::rollback<records::read_outcome>(records::read_busy(1, 7))
     match call sql::transaction_query_optional<records::session_key, records::session_row>(tx, "session_by_token", records::session_key(session_token))
         when
             load_found: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
@@ -587,58 +1389,473 @@ fn sql::decision<records::load_outcome> decide_load
             load_denied_missing: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             load_denied_foreign: tx, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
             load_busy: tx, "session_by_token", records::session_key("tok-alice") => sql::query_failed("session_by_token", "SQLITE_IOERR")
-        sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-        sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-        sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-        sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-        sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+        sql::unsupported_value => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+        sql::query_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+        sql::constraint_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+        sql::row_count => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+        sql::schema_mismatch => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
         ok option::value<records::session_row> session => match session
-            option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+            option::none => ok sql::rollback<records::read_outcome>(records::read_denied(tenant, invoice_id))
             option::some => match session.value.revoked_ms is 0
-                false => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
-                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(invoice_id))
+                false => ok sql::rollback<records::read_outcome>(records::read_denied(tenant, invoice_id))
+                true => match call sql::transaction_query_optional<records::invoice_key, records::invoice_row>(tx, "invoice_by_id", records::invoice_key(tenant, invoice_id))
                     when
-                        load_found: tx, "invoice_by_id", records::invoice_key("inv-1") => ok option::some(records::invoice_row("inv-1", "tenant-a", 1, "Acme", 900))
-                        load_denied_missing: tx, "invoice_by_id", records::invoice_key("inv-9") => ok option::none()
-                        load_denied_foreign: tx, "invoice_by_id", records::invoice_key("inv-2") => ok option::some(records::invoice_row("inv-2", "tenant-b", 1, "Globex", 800))
-                    sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                    sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                    sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                    sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                    sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                        load_found: tx, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        load_denied_missing: tx, "invoice_by_id", records::invoice_key(1, 9) => ok option::none()
+                        load_denied_foreign: tx, "invoice_by_id", records::invoice_key(2, 8) => ok option::some(records::invoice_row(2, 8, 1, 1, "bob", 800))
+                    sql::unsupported_value => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                    sql::query_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                    sql::constraint_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                    sql::row_count => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                    sql::schema_mismatch => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
                     ok option::value<records::invoice_row> stored => match stored
-                        option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+                        option::none => ok sql::rollback<records::read_outcome>(records::read_denied(tenant, invoice_id))
                         option::some => match call sql::transaction_query_optional<records::membership_key, records::membership_row>(tx, "membership_lookup", records::membership_key(session.value.actor, stored.value.tenant))
                             when
-                                load_found: tx, "membership_lookup", records::membership_key("alice", "tenant-a") => ok option::some(records::membership_row("alice", "tenant-a"))
-                                load_denied_foreign: tx, "membership_lookup", records::membership_key("alice", "tenant-b") => ok option::none()
-                            sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                            sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                            sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                            sql::row_count => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                            sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
+                                load_found: tx, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                load_denied_foreign: tx, "membership_lookup", records::membership_key("alice", 2) => ok option::none()
+                            sql::unsupported_value => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                            sql::query_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                            sql::constraint_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                            sql::row_count => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                            sql::schema_mismatch => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
                             ok option::value<records::membership_row> member => match member
-                                option::none => ok sql::rollback<records::load_outcome>(records::load_denied(invoice_id))
+                                option::none => ok sql::rollback<records::read_outcome>(records::read_denied(tenant, invoice_id))
                                 option::some => match call sql::transaction_query_rows<records::lines_key, records::line_row>(tx, "lines_by_invoice", records::lines_key(invoice_id), 64)
                                     when
-                                        load_found: tx, "lines_by_invoice", records::lines_key("inv-1"), 64 => ok [records::line_row("inv-1", "k1", "sku-1", 2, 0)]
-                                    sql::unsupported_value => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                                    sql::query_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                                    sql::constraint_failed => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                                    sql::row_limit => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                                    sql::schema_mismatch => ok sql::rollback<records::load_outcome>(records::load_busy(invoice_id))
-                                    ok records::line_row[] rows => ok sql::commit<records::load_outcome>(records::found(invoice_id, stored.value.revision, stored.value.customer, call rows.map(callable to_found_line)))
+                                        load_found: tx, "lines_by_invoice", records::lines_key(7), 64 => ok [records::line_row(7, "k1", "a", 2, 500, 0)]
+                                    sql::unsupported_value => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                                    sql::query_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                                    sql::constraint_failed => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                                    sql::row_limit => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                                    sql::schema_mismatch => ok sql::rollback<records::read_outcome>(records::read_busy(tenant, invoice_id))
+                                    ok records::line_row[] rows => match call total_rows(rows, 0, 0)
+                                        ok int total => match call to_drafts(rows, 0, [])
+                                            ok records::line_draft[] drafts => ok sql::commit<records::read_outcome>(records::read_found(tenant, invoice_id, stored.value.revision, stored.value.seats, stored.value.details, drafts, total))
 
-/// Load handler for the canonical captured GET action. Served action
-/// handlers take captures alone, so this unmounted contract handler
-/// denies: without adapter authentication no actor reaches it. The
-/// live GET leg serves the same protected read with cookie
-/// authentication through load_for_session until the action adapter
-/// mounts captured routes with request context.
-fn records::load_outcome load_validated
+/// Delete retention-expired replay rows in one transaction so
+/// cleanup serializes with lookup and mutation. Only rows strictly
+/// older than the cutoff go; a non-positive window never reaches
+/// this callback.
+fn sql::decision<int> decide_cleanup
     emits []
     given
-        str invoice_id
+        near int now_ms
+        near int w_ms
+        sql::transaction tx
     asserts
-        load_contract_denied: "inv-1" => ok records::load_denied("inv-1")
-    ok records::load_denied(invoice_id)
+        clean_some: 2000, 1000 => ok sql::commit<int>(2)
+        clean_none: 2000, 1000 => ok sql::commit<int>(0)
+        clean_down: 2000, 1000 => ok sql::rollback<int>(0)
+    match call sql::transaction_execute<records::replay_cutoff>(tx, "replay_cleanup", records::replay_cutoff(now_ms - w_ms))
+        when
+            clean_some: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 2
+            clean_none: tx, "replay_cleanup", records::replay_cutoff(1000) => ok 0
+            clean_down: tx, "replay_cleanup", records::replay_cutoff(1000) => sql::query_failed("replay_cleanup", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<int>(0)
+        sql::query_failed => ok sql::rollback<int>(0)
+        sql::constraint_failed => ok sql::rollback<int>(0)
+        ok int expired => ok sql::commit<int>(expired)
+
+/// Project one committed write into its grid snapshot.
+fn contract::grid_snapshot written_to_snapshot
+    emits []
+    given
+        records::written done
+    asserts
+        sample: records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000)
+    ok contract::grid_snapshot(call text::from_int(done.revision), call to_grid_lines(done.lines, 0, []), done.total)
+
+/// Project drafts front to back into keyed form rows.
+fn form::rows<contract::line_wire> to_form_rows
+    emits []
+    given
+        records::line_draft[] drafts
+        int index
+        str[] keys
+        form::row_item<contract::line_wire>[] items
+    asserts
+        empty: [], 0, [], [] => ok form::rows<contract::line_wire>([], [])
+        one: [records::line_draft("k1", "a", 2, 500)], 0, [], [] => ok form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])
+    match index >= drafts.length
+        false => match call to_form_rows(drafts, index + 1, call append<str>(keys, drafts[index].key), call append<form::row_item<contract::line_wire>>(items, form::row_item<contract::line_wire>(drafts[index].key, contract::line_wire(drafts[index].id, call text::from_int(drafts[index].quantity), call minor_to_price(drafts[index].price_minor)))))
+            ok form::rows<contract::line_wire> rest => ok rest
+        true => ok form::rows<contract::line_wire>(keys, items)
+
+/// Project one committed write into its acknowledged form. Stored
+/// empty details read back as missing: the acknowledged form is
+/// canonical, never a byte echo of the submission.
+fn contract::invoice_form written_to_form
+    emits []
+    given
+        records::written done
+    asserts
+        sample: records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok contract::invoice_form("2", option::some("rush"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))]))
+        bare: records::written(1, 7, 2, 2, "", [records::line_draft("k1", "a", 2, 500)], 1000) => ok contract::invoice_form("2", option::none(), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))]))
+    match done.details is ""
+        false => ok contract::invoice_form(call text::from_int(done.seats), option::some(done.details), call text::from_int(done.revision), call to_form_rows(done.lines, 0, [], []))
+        true => ok contract::invoice_form(call text::from_int(done.seats), option::none(), call text::from_int(done.revision), call to_form_rows(done.lines, 0, [], []))
+
+/// Project one loaded invoice into its grid snapshot.
+fn contract::grid_snapshot read_to_snapshot
+    emits []
+    given
+        records::read_found found
+    asserts
+        sample: records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok contract::grid_snapshot("1", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000)
+    ok contract::grid_snapshot(call text::from_int(found.revision), call to_grid_lines(found.lines, 0, []), found.total)
+
+/// Map one neutral write to its JSON outcome. Denials carry no
+/// protected data or echoed draft; conflicts keep the draft.
+fn contract::grid_edit_outcome map_write_grid
+    emits []
+    given
+        records::write_outcome outcome
+        contract::grid_edit_input draft
+    asserts
+        saved: records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_saved("op-1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+        conflict: records::write_conflict(1, 7, 2), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_conflict("op-1", contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "stale revision")
+        denied: records::write_denied(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_forbidden("op-1", "request denied")
+        busy: records::write_busy(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]) => ok contract::grid_unavailable("op-1", "store unavailable")
+    match outcome
+        records::written => ok contract::grid_saved(draft.operation_id, call written_to_snapshot(outcome))
+        records::write_conflict => ok contract::grid_conflict(draft.operation_id, draft, "stale revision")
+        records::write_denied => ok contract::grid_forbidden(draft.operation_id, "request denied")
+        records::write_busy => ok contract::grid_unavailable(draft.operation_id, "store unavailable")
+
+/// Map one neutral write to its HTML outcome. The raw form is the
+/// submitted draft the writer keeps; denials echo nothing.
+fn contract::edit_outcome map_write_html
+    emits []
+    given
+        records::write_outcome outcome
+        contract::invoice_form raw
+    asserts
+        saved: records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])) => ok contract::saved(contract::invoice_form("2", option::some("rush"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])))
+        conflict: records::write_conflict(1, 7, 2), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>([], [])) => ok contract::conflict(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>([], [])), "stale revision")
+        denied: records::write_denied(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>([], [])) => ok contract::forbidden("request denied")
+        busy: records::write_busy(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>([], [])) => ok contract::unavailable(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>([], [])), "store unavailable")
+    match outcome
+        records::written => ok contract::saved(call written_to_form(outcome))
+        records::write_conflict => ok contract::conflict(raw, "stale revision")
+        records::write_denied => ok contract::forbidden("request denied")
+        records::write_busy => ok contract::unavailable(raw, "store unavailable")
+
+/// Map one neutral read to its JSON load outcome.
+fn contract::grid_load_outcome map_read
+    emits []
+    given
+        records::read_outcome outcome
+    asserts
+        found: records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok contract::grid_loaded(contract::grid_snapshot("1", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+        denied: records::read_denied(1, 7) => ok contract::grid_load_forbidden("request denied")
+        busy: records::read_busy(1, 7) => ok contract::grid_load_unavailable("store unavailable")
+    match outcome
+        records::read_found => ok contract::grid_loaded(call read_to_snapshot(outcome))
+        records::read_denied => ok contract::grid_load_forbidden("request denied")
+        records::read_busy => ok contract::grid_load_unavailable("store unavailable")
+
+/// Load one invoice for a session token on the serving pool: the
+/// transaction decides, transport failures read unavailable, and an
+/// uncertain read reads unavailable because the GET retry is safe.
+fn contract::grid_load_outcome load_authorized
+    emits []
+    given
+        sql::pool pool
+        str token
+        contract::invoice_key key
+    asserts
+        load_ok: "tok-alice", contract::invoice_key(1, 7) => ok contract::grid_loaded(contract::grid_snapshot("1", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+        load_route_denied: "tok-alice", contract::invoice_key(1, 7) => ok contract::grid_load_forbidden("request denied")
+        load_tx_down: "tok-alice", contract::invoice_key(1, 7) => ok contract::grid_load_unavailable("store unavailable")
+        load_uncertain: "tok-alice", contract::invoice_key(1, 7) => ok contract::grid_load_unavailable("store unavailable")
+    match key
+        contract::invoice_key => do
+            str session_token = token
+            int tenant = key.tenant_id
+            int invoice_id = key.invoice_id
+            match call sql::with_transaction<records::read_outcome>(pool, callable decide_load)
+                when
+                    load_ok: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                    load_route_denied: pool, callable decide_load => ok records::read_denied(1, 7)
+                    load_tx_down: pool, callable decide_load => sql::transaction_failed("commit")
+                    load_uncertain: pool, callable decide_load => sql::commit_unknown("tx-1")
+                sql::connection_failed => ok contract::grid_load_unavailable("store unavailable")
+                sql::transaction_failed => ok contract::grid_load_unavailable("store unavailable")
+                sql::commit_unknown => ok contract::grid_load_unavailable("store unavailable")
+                ok records::read_outcome outcome => ok call map_read(outcome)
+
+/// Save one JSON edit for a session token on the serving pool:
+/// validate before any store touch, then run the protected
+/// transaction and map its neutral outcome. An uncertain commit
+/// reconciles through the ledger; every other transport failure
+/// reads unavailable and the identical retry replays safely.
+fn contract::grid_edit_outcome save_authorized
+    emits []
+    given
+        sql::pool pool
+        str token
+        contract::invoice_key key
+        contract::grid_edit_input body
+        int window
+    asserts
+        json_saved: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_saved("op-1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+        json_invalid: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "", "2", "5.00")]), 1000 => ok contract::grid_invalid("op-1", contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "", "2", "5.00")]), [contract::grid_problem(option::none(), "id", "empty line id")])
+        json_denied: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_forbidden("op-1", "request denied")
+        json_stale: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_conflict("op-1", contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "stale revision")
+        json_busy: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_unavailable("op-1", "store unavailable")
+        json_conn_down: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-1", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_unavailable("op-1", "store unavailable")
+        json_uncertain_replay: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), 1000 => ok contract::grid_saved("op-7", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+    match call check_json_save(body)
+        ok records::save_check checked => match checked
+            records::flawed_save => ok contract::grid_invalid(body.operation_id, body, [contract::grid_problem(option::none(), checked.field, checked.reason)])
+            records::checked_save => match call clock::wall_millis()
+                when
+                    json_saved: => ok 2000
+                    json_denied: => ok 2000
+                    json_stale: => ok 2000
+                    json_busy: => ok 2000
+                    json_conn_down: => ok 2000
+                    json_uncertain_replay: => ok 2000
+                ok int now => do
+                    str session_token = token
+                    str operation_id = body.operation_id
+                    int tenant = key.tenant_id
+                    int invoice_id = key.invoice_id
+                    int revision = checked.revision
+                    int seats = 0
+                    str details = ""
+                    int preserve_stored = 1
+                    records::line_draft[] drafts = checked.lines
+                    str digest = call digest_of_grid(key.tenant_id, key.invoice_id, checked.revision, checked.lines)
+                    int now_ms = now
+                    int w_ms = window
+                    match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
+                        when
+                            json_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                            json_denied: pool, callable decide_save => ok records::write_denied(1, 7)
+                            json_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
+                            json_busy: pool, callable decide_save => sql::transaction_failed("commit")
+                            json_conn_down: pool, callable decide_save => sql::connection_failed("begin")
+                            json_uncertain_replay: pool, callable decide_save => sql::commit_unknown("tx-1")
+                        sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                        sql::transaction_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                        sql::commit_unknown => match call reconcile_save(pool, token, key, body, call digest_of_grid(key.tenant_id, key.invoice_id, checked.revision, checked.lines), window)
+                            ok contract::grid_edit_outcome settled => ok settled
+                        ok records::write_outcome outcome => ok call map_write_grid(outcome, body)
+
+/// Save one form edit for a session token on the serving pool: the
+/// same protected transaction as the JSON channel over parsed form
+/// content, with a server-minted operation id per save. HTML never
+/// replays: an uncertain commit reads unavailable and the writer
+/// rereads before another mutation.
+fn contract::edit_outcome save_html_authorized
+    emits []
+    given
+        sql::pool pool
+        str token
+        contract::invoice_key key
+        contract::invoice_form form
+        int window
+    asserts
+        form_saved: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::saved(contract::invoice_form("3", option::some("x"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])))
+        form_invalid: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))])), 1000 => ok contract::invalid(option::some(contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))]))), [contract::field_error("quantity", "bad quantity")])
+        form_denied: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::forbidden("request denied")
+        form_stale: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::conflict(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), "stale revision")
+        form_busy: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::unavailable(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), "store unavailable")
+        form_conn_down: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::unavailable(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), "store unavailable")
+        form_uncertain: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::unavailable(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), "store unavailable")
+    match call check_form_save(form)
+        ok records::form_check checked => match checked
+            records::flawed_save => ok contract::invalid(option::some(form), [contract::field_error(checked.field, checked.reason)])
+            records::checked_form => match call random::uuid_v4()
+                when
+                    form_saved: => ok "op-9"
+                    form_denied: => ok "op-9"
+                    form_stale: => ok "op-9"
+                    form_busy: => ok "op-9"
+                    form_conn_down: => ok "op-9"
+                    form_uncertain: => ok "op-9"
+                ok str operation_id => match call clock::wall_millis()
+                    when
+                        form_saved: => ok 2000
+                        form_denied: => ok 2000
+                        form_stale: => ok 2000
+                        form_busy: => ok 2000
+                        form_conn_down: => ok 2000
+                        form_uncertain: => ok 2000
+                    ok int now => do
+                        str session_token = token
+                        int tenant = key.tenant_id
+                        int invoice_id = key.invoice_id
+                        int revision = checked.revision
+                        int seats = checked.seats
+                        str details = checked.details
+                        int preserve_stored = 0
+                        records::line_draft[] drafts = checked.lines
+                        str digest = call digest_of_form(key.tenant_id, key.invoice_id, checked.revision, checked.seats, checked.details, checked.lines)
+                        int now_ms = now
+                        int w_ms = window
+                        match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
+                            when
+                                form_saved: pool, callable decide_save => ok records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                form_denied: pool, callable decide_save => ok records::write_denied(1, 7)
+                                form_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
+                                form_busy: pool, callable decide_save => sql::transaction_failed("commit")
+                                form_conn_down: pool, callable decide_save => sql::connection_failed("begin")
+                                form_uncertain: pool, callable decide_save => sql::commit_unknown("tx-1")
+                            sql::connection_failed => ok contract::unavailable(form, "store unavailable")
+                            sql::transaction_failed => ok contract::unavailable(form, "store unavailable")
+                            sql::commit_unknown => ok contract::unavailable(form, "store unavailable")
+                            ok records::write_outcome outcome => ok call map_write_html(outcome, form)
+
+/// Reconcile one uncertain JSON commit: recheck the current session,
+/// invoice and membership, then reread the actor-scoped ledger
+/// outside the lost transaction. A stored unexpired row replays the
+/// saved result or conflicts by digest; an expired or missing row
+/// reads unavailable and the identical retry either records or
+/// replays the save. Auth is rechecked before any ledger result is
+/// disclosed: a revoked actor or lost membership denies without
+/// seeing the prior saved snapshot.
+fn contract::grid_edit_outcome reconcile_save
+    emits []
+    given
+        sql::pool pool
+        str token
+        contract::invoice_key key
+        contract::grid_edit_input body
+        str digest
+        int window
+    asserts
+        rec_replay: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "d1", 1000 => ok contract::grid_saved("op-7", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+        rec_conflict: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "d9", 1000 => ok contract::grid_conflict("op-7", contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "stale revision")
+        rec_expired: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-8", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "d8", 1000 => ok contract::grid_unavailable("op-8", "store unavailable")
+        rec_missing: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-9", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "dx", 1000 => ok contract::grid_unavailable("op-9", "store unavailable")
+        rec_denied: "tok-ghost", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "dx", 1000 => ok contract::grid_forbidden("op-7", "request denied")
+        rec_revoked: "tok-revoked", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "d1", 1000 => ok contract::grid_forbidden("op-7", "request denied")
+        rec_unmembered: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "d1", 1000 => ok contract::grid_forbidden("op-7", "request denied")
+        rec_lookup_down: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "dx", 1000 => ok contract::grid_unavailable("op-7", "store unavailable")
+        json_uncertain_replay: "tok-alice", contract::invoice_key(1, 7), contract::grid_edit_input("op-7", "1", [contract::grid_line_wire("k1", "a", "2", "5.00")]), "4d46b9de513aede4b424a717d32c48e056994a5b34af329b7a88421aee399210", 1000 => ok contract::grid_saved("op-7", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
+    match call sql::query_optional<records::session_key, records::session_row>(pool, "session_by_token", records::session_key(token))
+        when
+            rec_replay: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_conflict: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_expired: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_missing: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_denied: pool, "session_by_token", records::session_key("tok-ghost") => ok option::none()
+            rec_revoked: pool, "session_by_token", records::session_key("tok-revoked") => ok option::some(records::session_row("tok-revoked", "mallory", 1700000000000))
+            rec_unmembered: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            rec_lookup_down: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+            json_uncertain_replay: pool, "session_by_token", records::session_key("tok-alice") => ok option::some(records::session_row("tok-alice", "alice", 0))
+        sql::unsupported_value => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        sql::query_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        sql::constraint_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        sql::row_count => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        sql::schema_mismatch => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+        ok option::value<records::session_row> session => match session
+            option::none => ok contract::grid_forbidden(body.operation_id, "request denied")
+            option::some => match session.value.revoked_ms is 0
+                false => ok contract::grid_forbidden(body.operation_id, "request denied")
+                true => match call sql::query_optional<records::invoice_key, records::invoice_row>(pool, "invoice_by_id", records::invoice_key(key.tenant_id, key.invoice_id))
+                    when
+                        rec_replay: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        rec_conflict: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        rec_expired: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        rec_missing: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        rec_unmembered: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                        rec_lookup_down: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 1, 2, "rush", 900))
+                        json_uncertain_replay: pool, "invoice_by_id", records::invoice_key(1, 7) => ok option::some(records::invoice_row(1, 7, 2, 2, "rush", 1500))
+                    sql::unsupported_value => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    sql::query_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    sql::constraint_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    sql::row_count => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    sql::schema_mismatch => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                    ok option::value<records::invoice_row> stored => match stored
+                        option::none => ok contract::grid_forbidden(body.operation_id, "request denied")
+                        option::some => match call sql::query_optional<records::membership_key, records::membership_row>(pool, "membership_lookup", records::membership_key(session.value.actor, stored.value.tenant))
+                            when
+                                rec_replay: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                rec_conflict: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                rec_expired: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                rec_missing: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                rec_unmembered: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::none()
+                                rec_lookup_down: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                                json_uncertain_replay: pool, "membership_lookup", records::membership_key("alice", 1) => ok option::some(records::membership_row("alice", 1))
+                            sql::unsupported_value => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            sql::query_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            sql::constraint_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            sql::row_count => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            sql::schema_mismatch => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                            ok option::value<records::membership_row> member => match member
+                                option::none => ok contract::grid_forbidden(body.operation_id, "request denied")
+                                option::some => match call sql::query_optional<records::replay_key, records::replay_row>(pool, "replay_lookup", records::replay_key(session.value.actor, key.tenant_id, key.invoice_id, body.operation_id))
+                                    when
+                                        rec_replay: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "rs", 2, 1500))
+                                        rec_conflict: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "d1", "rs", 2, 1500))
+                                        rec_expired: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-8") => ok option::some(records::replay_row("alice", 1, 7, "op-8", "d8", "rx", 2, 500))
+                                        rec_missing: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-9") => ok option::none()
+                                        rec_lookup_down: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => sql::query_failed("replay_lookup", "SQLITE_IOERR")
+                                        json_uncertain_replay: pool, "replay_lookup", records::replay_key("alice", 1, 7, "op-7") => ok option::some(records::replay_row("alice", 1, 7, "op-7", "4d46b9de513aede4b424a717d32c48e056994a5b34af329b7a88421aee399210", "rj", 2, 1500))
+                                    sql::unsupported_value => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    sql::connection_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    sql::query_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    sql::constraint_failed => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    sql::row_count => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    sql::schema_mismatch => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                    ok option::value<records::replay_row> prior => match prior
+                                        option::none => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                        option::some => match call clock::wall_millis()
+                                            when
+                                                rec_replay: => ok 2000
+                                                rec_conflict: => ok 2000
+                                                rec_expired: => ok 2000
+                                                json_uncertain_replay: => ok 2000
+                                            ok int now => match window >= 1 and prior.value.recorded_ms < (now - window)
+                                                false => match prior.value.digest is digest
+                                                    false => ok contract::grid_conflict(body.operation_id, body, "stale revision")
+                                                    true => match call bytes::from_utf8(prior.value.result)
+                                                        codec::invalid_data => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                                        ok bytes::buffer raw => match call codec::decode_json<records::written>(raw)
+                                                            when
+                                                                rec_replay: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                                json_uncertain_replay: raw => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
+                                                            codec::invalid_data => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+                                                            ok records::written found => ok contract::grid_saved(body.operation_id, call written_to_snapshot(found))
+                                                true => ok contract::grid_unavailable(body.operation_id, "store unavailable")
+
+/// Expire retention-old replay rows outside any save: return the
+/// deleted count. A non-positive window deletes nothing and touches
+/// no clock or store.
+fn int cleanup_expired
+    emits []
+    given
+        sql::pool pool
+        int window
+    asserts
+        clean_run: 1000 => ok 2
+        clean_zero: 0 => ok 0
+        clean_negative: 0 - 5 => ok 0
+        clean_down: 1000 => ok 0
+        clean_unknown: 1000 => ok 0
+    match window >= 1
+        false => ok 0
+        true => match call clock::wall_millis()
+            when
+                clean_run: => ok 2000
+                clean_down: => ok 2000
+                clean_unknown: => ok 2000
+            ok int now => do
+                int now_ms = now
+                int w_ms = window
+                match call sql::with_transaction<int>(pool, callable decide_cleanup)
+                    when
+                        clean_run: pool, callable decide_cleanup => ok 2
+                        clean_down: pool, callable decide_cleanup => sql::transaction_failed("commit")
+                        clean_unknown: pool, callable decide_cleanup => sql::commit_unknown("tx-9")
+                    sql::connection_failed => ok 0
+                    sql::transaction_failed => ok 0
+                    sql::commit_unknown => ok 0
+                    ok int expired => ok expired

@@ -1,108 +1,7 @@
 package records
-    provides [line_json_wire, invoice_json_wire, line_form_wire, invoice_form_wire, saved, rejected, stale, denied, busy, save_outcome, found_line, found, load_denied, load_busy, load_outcome, line_draft, checked_save, flawed_save, save_check, session_row, session_key, membership_row, membership_key, invoice_row, invoice_key, invoice_path, invoice_update, line_row, lines_key, line_insert, replay_row, replay_key, replay_insert]
-    uses [form]
+    provides [session_row, session_key, membership_row, membership_key, invoice_row, invoice_key, invoice_update, line_row, lines_key, line_insert, replay_row, replay_key, replay_insert, replay_expire, replay_cutoff, line_draft, checked_save, checked_form, flawed_save, save_check, form_check, written, write_conflict, write_denied, write_busy, write_outcome, read_found, read_denied, read_busy, read_outcome]
+    uses []
 
-/// One JSON save line: keyed identity, sku text and a validated count.
-/// Money and totals arrive with the grid (T24); this slice pins the
-/// protected-operation contract on counts only.
-record line_json_wire
-    str key
-    str sku
-    int qty
-/// JSON save wire. The session token authenticates the actor; the
-/// operation id scopes exactly-once grid retries; the revision is the
-/// base the writer read. The live JSON route overwrites session_token
-/// from the session cookie, which is authoritative.
-record invoice_json_wire
-    str session_token
-    str operation_id
-    str invoice_id
-    int revision
-    str customer
-    line_json_wire[] lines
-/// One form row body: key arrives as the row key, revision and counts
-/// arrive as text because form fields carry no integers.
-record line_form_wire
-    str sku
-    str qty
-/// Form save wire. Token, operation, invoice and customer mirror the
-/// JSON wire; revision and quantities are text parsed by the handler.
-record invoice_form_wire
-    str session_token
-    str operation_id
-    str invoice_id
-    str revision
-    str customer
-    form::rows<line_form_wire> lines
-/// Stored save: the invoice id plus the committed new revision.
-record saved
-    str invoice_id
-    int revision
-/// Rejected save: one finite human-readable validation reason.
-record rejected
-    str reason
-/// Stale or conflicting save: the invoice id plus the current stored
-/// revision so the writer can reread and retry. Returned only to
-/// members, after membership is proven.
-record stale
-    str invoice_id
-    int revision
-/// Denied save: the requested id echoes back (the caller sent it, so
-/// it discloses nothing). Foreign, nonexistent and unauthenticated
-/// targets share this one nondisclosing shape.
-record denied
-    str invoice_id
-/// Unavailable store: the save may or may not have committed; the
-/// identical operation id replays safely.
-record busy
-    str invoice_id
-/// The five JSON and five HTML save cases.
-variant save_outcome
-    saved
-    rejected
-    stale
-    denied
-    busy
-/// One loaded line in stored position order.
-record found_line
-    str key
-    str sku
-    int qty
-/// Loaded invoice: identity, current revision, customer and lines.
-record found
-    str invoice_id
-    int revision
-    str customer
-    found_line[] lines
-/// Denied load: same nondisclosing shape as a denied save.
-record load_denied
-    str invoice_id
-/// Unavailable store on a read: the GET retry is always safe.
-record load_busy
-    str invoice_id
-/// The three typed GET load cases.
-variant load_outcome
-    found
-    load_denied
-    load_busy
-/// One normalized save line shared by both wire channels.
-record line_draft
-    str key
-    str sku
-    int qty
-/// Validated save content ready for the protected write: the base
-/// revision arrives pre-validated by the channel check.
-record checked_save
-    str customer
-    int revision
-    line_draft[] lines
-/// Failed validation: one finite reason string.
-record flawed_save
-    str reason
-/// Pure validation outcome: validation runs before any store touch.
-variant save_check
-    checked_save
-    flawed_save
 /// One session row: token, actor and revocation marker (0 = live).
 record session_row
     str token
@@ -111,69 +10,186 @@ record session_row
 /// Session lookup key.
 record session_key
     str token
-/// One membership row: actor belongs to tenant.
+/// One membership row: actor belongs to the integer tenant.
 record membership_row
     str actor
-    str tenant
+    int tenant
 /// Membership lookup key.
 record membership_key
     str actor
-    str tenant
-/// One invoice row: tenant guard, optimistic revision, customer.
+    int tenant
+/// One stored invoice: integer tenant/invoice key, never-reused
+/// optimistic revision, seat count, details text and write stamp.
 record invoice_row
-    str id
-    str tenant
+    int tenant
+    int id
     int revision
-    str customer
+    int seats
+    str details
     int updated_ms
-/// Invoice lookup key.
+/// Invoice lookup key: the integer tenant/invoice pair.
 record invoice_key
-    str id
-/// Load path captures: the invoice id from the canonical path.
-record invoice_path
-    str invoice_id
-/// Invoice update parameters in statement order.
+    int tenant
+    int id
+/// Invoice update parameters in statement order. The trailing
+/// expected revision predicates the write, so a concurrent commit
+/// blocks this one instead of clobbering it.
 record invoice_update
     int revision
-    str customer
+    int seats
+    str details
     int updated_ms
-    str id
-/// One stored invoice line.
+    int tenant
+    int id
+    int expected
+/// One stored invoice line: keyed identity, validated line id,
+/// exact quantity and minor-unit price, stored position order.
 record line_row
-    str invoice_id
+    int invoice_id
     str line_key
-    str sku
-    int qty
+    str id
+    int quantity
+    int price_minor
     int position
 /// Line collection key (scan and delete).
 record lines_key
-    str invoice_id
+    int invoice_id
 /// Line insert parameters in statement order.
 record line_insert
-    str invoice_id
+    int invoice_id
     str line_key
-    str sku
-    int qty
+    str id
+    int quantity
+    int price_minor
     int position
-/// One replay ledger row: actor-scoped operation id, content digest
-/// and the revision that operation committed.
+/// One replay ledger row: actor- and invoice-scoped operation id,
+/// canonical content digest, committed result JSON, committed
+/// revision and server commit stamp. Rows older than the retention
+/// window expire: exact-result replay is no longer promised.
 record replay_row
     str actor
-    str invoice_id
+    int tenant
+    int invoice_id
     str operation_id
     str digest
+    str result
     int revision
     int recorded_ms
-/// Replay lookup key.
+/// Replay lookup key: actor plus captured tenant/invoice plus id.
 record replay_key
     str actor
-    str invoice_id
+    int tenant
+    int invoice_id
     str operation_id
 /// Replay insert parameters in statement order.
 record replay_insert
     str actor
-    str invoice_id
+    int tenant
+    int invoice_id
     str operation_id
     str digest
+    str result
     int revision
     int recorded_ms
+/// Expired-row replacement key: deletes the one expired ledger row
+/// for an operation before a fresh commit reuses its id.
+record replay_expire
+    str actor
+    int tenant
+    int invoice_id
+    str operation_id
+    int cutoff
+/// Retention cleanup bound: delete rows recorded before cutoff.
+record replay_cutoff
+    int cutoff
+/// One normalized save line shared by both wire channels: keyed
+/// identity, validated line id and exact parsed quantity/price.
+record line_draft
+    str key
+    str id
+    int quantity
+    int price_minor
+/// Validated JSON save content ready for the protected write: the
+/// base revision arrives pre-validated by the channel check. Seats
+/// and details are preserved from the stored row, never from JSON.
+record checked_save
+    int revision
+    line_draft[] lines
+/// Validated form save content: seats/details/revision plus lines.
+record checked_form
+    int seats
+    str details
+    int revision
+    line_draft[] lines
+/// Failed validation: one finite reason plus the wire field or
+/// form-level marker it belongs to, so both channels report the
+/// first failure in submitted order without remapping tables.
+record flawed_save
+    str reason
+    str field
+/// Pure JSON validation outcome: validation runs before any store touch.
+variant save_check
+    checked_save
+    flawed_save
+/// Pure form validation outcome.
+variant form_check
+    checked_form
+    flawed_save
+/// Committed write: the new revision plus the exact acknowledged
+/// content both channels project into their own result shapes.
+record written
+    int tenant
+    int invoice
+    int revision
+    int seats
+    str details
+    line_draft[] lines
+    int total
+/// Stale or conflicting write: the key plus the current stored
+/// revision so the writer can reread and retry. Returned only to
+/// members, after membership is proven.
+record write_conflict
+    int tenant
+    int invoice
+    int revision
+/// Denied write: the key echoes back (the caller sent it, so it
+/// discloses nothing). Foreign, nonexistent and unauthenticated
+/// targets share this one nondisclosing shape.
+record write_denied
+    int tenant
+    int invoice
+/// Unavailable store: the write may or may not have committed; the
+/// identical JSON operation id replays safely.
+record write_busy
+    int tenant
+    int invoice
+/// The four neutral protected-write cases. Each channel maps these
+/// to its own wire outcome; neither decoder invents cases here.
+variant write_outcome
+    written
+    write_conflict
+    write_denied
+    write_busy
+/// Loaded invoice: key, current revision, seats, details and lines
+/// in stored position order with their exact total.
+record read_found
+    int tenant
+    int invoice
+    int revision
+    int seats
+    str details
+    line_draft[] lines
+    int total
+/// Denied load: same nondisclosing shape as a denied write.
+record read_denied
+    int tenant
+    int invoice
+/// Unavailable store on a read: the GET retry is always safe.
+record read_busy
+    int tenant
+    int invoice
+/// The three neutral protected-read cases.
+variant read_outcome
+    read_found
+    read_denied
+    read_busy

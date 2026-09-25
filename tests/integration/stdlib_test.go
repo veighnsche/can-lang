@@ -59,6 +59,26 @@ func discoverMaintained(t *testing.T, sourceRoot string) []string {
 			return nil
 		})
 	}
+	// A manifest nested under another manifest's tree is a vendored
+	// dependency, asserted and built through its root, never standalone.
+	roots := map[string]bool{}
+	for _, rel := range found {
+		roots[rel] = true
+	}
+	standalone := found[:0]
+	for _, rel := range found {
+		nested := false
+		for parent := range roots {
+			if rel != parent && strings.HasPrefix(rel, parent+"/") {
+				nested = true
+				break
+			}
+		}
+		if !nested {
+			standalone = append(standalone, rel)
+		}
+	}
+	found = standalone
 	sort.Strings(found)
 	seen := map[string]bool{}
 	for _, rel := range found {

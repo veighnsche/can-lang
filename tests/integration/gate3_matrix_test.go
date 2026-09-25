@@ -1,19 +1,22 @@
-// T17 Gate 3 server product matrix. Sibling suites own the form/browser
-// lanes (TestInvoiceFormLive, TestInvoiceBrowser) and the webhook lane
-// (TestWebhookSliceLive); this file owns the rows those suites do not
-// cover, all on real HTTP and database surfaces against staged builds:
+// UP16 Gate 3 server product matrix. Sibling suites own the form/JSON
+// live lanes (TestInvoiceFormLive, TestInvoiceBrowser); this file owns
+// the rows those suites do not cover, all on real HTTP and database
+// surfaces against staged builds:
 //
-//   - contract edits: one breaking route/field/case/error edit per leg
-//     must fail canlc assert and build with a diagnostic naming the
-//     stale statically linked use;
-//   - route rebuild: a fresh path edit rebuilds the adapter, served
-//     live to prove the new route answers;
+//   - contract edits: one breaking shared-lock/server/mount edit per
+//     leg must fail canlc assert and build with a diagnostic naming
+//     the stale use or digest;
+//   - route rebuild: a shared-route edit plus its lock update
+//     rebuilds the adapter, and the served edit page follows through
+//     its checked action URL (the old convention-linked limitation
+//     is gone);
 //   - JSON matrix: POST-save and GET-load over real HTTP with row
 //     evidence for every finite case plus transport failures;
 //   - keyed-row reorder: swapped lines_order persists positions and
 //     renders in the new order; a malformed order answers 422;
-//   - swap-config regression: the served page swaps exactly 200-399
-//     and 422, parsed from real served bytes;
+//   - swap-config regression: the served global policy plus the
+//     current absence of per-element error admission, parsed from
+//     real served bytes;
 //   - uncertain commits: SIGKILL mid-flight and after commit converge
 //     to exactly one ledger effect under identical replay.
 //
@@ -23,6 +26,9 @@ package integration
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -82,38 +88,29 @@ func TestGate3ContractEdits(t *testing.T) {
 	}
 	edits := []gate3Edit{
 		{
-			name: "action-rename-diagnoses-stale-serve",
+			name: "shared-route-edit-breaks-lock",
 			apply: func(t *testing.T, root string) {
 				t.Helper()
-				rewriteGate3File(t, root, "src/web/web.can", "action save_invoice_form\n", "action save_invoice_form_v2\n")
-				rewriteGate3File(t, root, "src/web/web.can", "save_invoice, save_invoice_form,", "save_invoice, save_invoice_form_v2,")
+				rewriteGate3File(t, root, "vendor/billing/src/invoice_contract/invoice_contract.can", `    post "/tenants/:tenant_id/invoices/:invoice_id"`, `    post "/t/:tenant_id/i/:invoice_id"`)
 			},
-			want: []string{`unknown form action "save_invoice_form"`, "invoice_routes"},
+			want: []string{`stale dependency digest for "can.project.lineage/billing"`},
 		},
 		{
-			name: "path-collision-diagnoses-duplicate-route",
+			name: "mount-handler-mismatch-diagnoses",
 			apply: func(t *testing.T, root string) {
 				t.Helper()
-				rewriteGate3File(t, root, "src/web/web.can", "action save_invoice_form\n    post \"/invoices/save-form\"", "action save_invoice_form\n    post \"/invoices/save\"")
+				rewriteGate3File(t, root, "src/web/web.can", "call action::mount(contract::save_invoice_grid, callable save_grid)", "call action::mount(contract::save_invoice_grid, callable load_grid)")
 			},
-			want: []string{"duplicates the POST /invoices/save route", "save_invoice_form"},
+			want: []string{`action::mount handler "load_grid"`, `contract::save_invoice_grid`},
 		},
 		{
 			name: "field-rename-diagnoses-stale-use",
 			apply: func(t *testing.T, root string) {
 				t.Helper()
-				old := "record invoice_form_wire\n    str session_token\n    str operation_id\n    str invoice_id\n    str revision\n    str customer\n"
-				rewriteGate3File(t, root, "src/records/records.can", old, strings.Replace(old, "    str customer\n", "    str customer_name\n", 1))
+				old := "record line_draft\n    str key\n    str id\n"
+				rewriteGate3File(t, root, "src/records/records.can", old, strings.Replace(old, "    str id\n", "    str line_id\n", 1))
 			},
-			want: []string{"unknown field customer", "check_form_save"},
-		},
-		{
-			name: "case-drop-diagnoses-omitted-leaf",
-			apply: func(t *testing.T, root string) {
-				t.Helper()
-				rewriteGate3File(t, root, "src/web/web.can", "    form records::invoice_form_wire limit 8192 rows_limit 64\n    returns records::save_outcome\n    body html\n    cases\n        records::saved status 200 swap inner\n        records::rejected status 422 swap inner\n        records::stale status 409 swap inner\n        records::denied status 403 swap inner\n        records::busy status 503 swap inner\n", "    form records::invoice_form_wire limit 8192 rows_limit 64\n    returns records::save_outcome\n    body html\n    cases\n        records::saved status 200 swap inner\n        records::rejected status 422 swap inner\n        records::stale status 409 swap inner\n        records::denied status 403 swap inner\n")
-			},
-			want: []string{"action cases omit returns leaves records::busy", "save_invoice_form"},
+			want: []string{"unknown field id", "check_line"},
 		},
 		{
 			name: "bogus-registry-entry-fails",
@@ -180,13 +177,72 @@ func gate3BundleGrep(t *testing.T, dir, s string) bool {
 	return found
 }
 
-// TestGate3RouteRebuildLive proves a fresh route-path edit rebuilds the
-// served adapter: the staged edit builds twice with identical IDs, the
-// emitted route table carries the new path, and the served build answers
-// the new path with a real 200. It also records a known limitation: the
-// edit page's hx-post URL is a convention-linked literal, so the rebuilt
-// page still posts to the old path and that post answers 404. A future
-// checked page-URL linkage must update this leg.
+// gate3WriteLock recomputes the staged billing dependency lock from the
+// staged vendored bytes, mirroring the current lineage/lock digest
+// format: the manifest digest covers the raw manifest bytes and the
+// source digest covers the length-prefixed path-tagged source tree.
+func gate3WriteLock(t *testing.T, root string) {
+	t.Helper()
+	manifest, err := os.ReadFile(filepath.Join(root, "vendor/billing/can.project.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source, err := os.ReadFile(filepath.Join(root, "vendor/billing/src/invoice_contract/invoice_contract.can"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	registryBytes, err := os.ReadFile(filepath.Join(root, "vendor/billing/can.errors.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	digest := func(data []byte) string {
+		sum := sha256.Sum256(data)
+		return hex.EncodeToString(sum[:])
+	}
+	sourceSum := sha256.New()
+	sourceSum.Write([]byte("can-source-tree-v1\x00"))
+	var length [8]byte
+	path := "invoice_contract/invoice_contract.can"
+	binary.BigEndian.PutUint64(length[:], uint64(len(path)))
+	sourceSum.Write(length[:])
+	sourceSum.Write([]byte(path))
+	binary.BigEndian.PutUint64(length[:], uint64(len(source)))
+	sourceSum.Write(length[:])
+	sourceSum.Write(source)
+	var registry any
+	if err := json.Unmarshal(registryBytes, &registry); err != nil {
+		t.Fatal(err)
+	}
+	id := "can.project.lineage/billing"
+	lock := map[string]any{
+		"edges": map[string]any{
+			"billing": map[string]any{"target": id, "path": "vendor/billing"},
+		},
+		"projects": map[string]any{
+			id: map[string]any{
+				"lineage":         "billing",
+				"manifest_sha256": digest(manifest),
+				"source_sha256":   hex.EncodeToString(sourceSum.Sum(nil)),
+				"fixtures_sha256": digest([]byte("can-fixture-tree-v1\x00")),
+				"error_registry":  registry,
+				"edges":           map[string]any{},
+			},
+		},
+	}
+	lockBytes, err := json.Marshal(lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "can.lock.json"), lockBytes, 0600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestGate3RouteRebuildLive proves a shared-route edit plus its lock
+// update rebuilds the served adapter: the staged edit builds twice with
+// identical IDs, the emitted route table carries the new path, the
+// served edit page follows through its checked action URL, and the new
+// path answers 200 with row evidence while the old path answers 404.
 func TestGate3RouteRebuildLive(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -200,7 +256,8 @@ func TestGate3RouteRebuildLive(t *testing.T) {
 		t.Fatal(err)
 	}
 	root, home := stageApplication(t, ctx, bundle, sourceRoot, "invoice")
-	rewriteGate3File(t, root, "src/web/web.can", "action save_invoice_form\n    post \"/invoices/save-form\"", "action save_invoice_form\n    post \"/invoices/save-form-v2\"")
+	rewriteGate3File(t, root, "vendor/billing/src/invoice_contract/invoice_contract.can", `    post "/tenants/:tenant_id/invoices/:invoice_id"`, `    post "/t/:tenant_id/i/:invoice_id"`)
+	gate3WriteLock(t, root)
 	if status, out, diag := canlcOffline(t, ctx, bundle, home, "assert", root); status != 0 || diag != "" {
 		t.Fatalf("edited assert: %d %s %s", status, out, diag)
 	}
@@ -209,45 +266,41 @@ func TestGate3RouteRebuildLive(t *testing.T) {
 	if firstID != secondID {
 		t.Fatalf("edited rebuild drifted: %s vs %s", firstID, secondID)
 	}
-	if !gate3BundleGrep(t, firstDir, "/invoices/save-form-v2") {
+	if !gate3BundleGrep(t, firstDir, "/t/:tenant_id/i/:invoice_id") {
 		t.Fatal("rebuilt bundle lacks the new route path")
 	}
 	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
 	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
-	snapshot := snapshotCredential(t, home, "INVOICE_DB", db)
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3RoutePort)
+	snapshot := snapshotMap(t, home, "snapshot-gate3-route", map[string]string{"INVOICE_DB": db, "PUBLIC_ORIGIN": origin})
 	base, stop := serveApplication(t, ctx, bundle, home, filepath.Join(firstDir, "entry.ts"), snapshot, gate3RoutePort, "/health")
 	defer stop()
 
-	status, page, _ := invoiceGet(t, base, "/invoices/form?invoice_id=inv-1", "tok-alice")
+	status, page, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("edited form page: %d %s", status, page)
 	}
-	if !strings.Contains(page, `hx-post="/invoices/save-form"`) {
-		t.Fatalf("edited page lost its hx-post in %.500s", page)
+	if !strings.Contains(page, `hx-post="/t/1/i/7"`) {
+		t.Fatalf("edited page lost its checked hx-post in %.800s", page)
 	}
-	t.Logf("KNOWN LIMITATION: rebuilt page still posts to /invoices/save-form after the route moved to /invoices/save-form-v2")
 
 	values := url.Values{}
-	values.Set("session_token", "tok-alice")
-	values.Set("operation_id", "op-route-1")
-	values.Set("invoice_id", "inv-1")
+	values.Set("seats", "2")
+	values.Set("details", "Route")
 	values.Set("revision", "1")
-	values.Set("customer", "Acme Route")
 	values.Add("lines_order", "k1")
-	values.Add("lines_order", "k2")
-	values.Set("lines[k1][sku]", "sku-1")
-	values.Set("lines[k1][qty]", "2")
-	values.Set("lines[k2][sku]", "sku-2")
-	values.Set("lines[k2][qty]", "1")
-	if status, body, _ := invoicePostForm(t, base, "/invoices/save-form", values); status != 404 {
-		t.Fatalf("stale page post: %d %s, want 404", status, body)
+	values.Set("lines[k1][id]", "a")
+	values.Set("lines[k1][quantity]", "2")
+	values.Set("lines[k1][price]", "5.00")
+	if status, body, _ := postInvoiceForm(t, base, "/tenants/1/invoices/7", "tok-alice", origin, values); status != 404 {
+		t.Fatalf("stale route post: %d %s, want 404", status, body)
 	}
-	if status, body, _ := invoicePostForm(t, base, "/invoices/save-form-v2", values); status != 200 || !strings.Contains(body, "saved inv-1 revision 2") {
+	if status, body, _ := postInvoiceForm(t, base, "/t/1/i/7", "tok-alice", origin, values); status != 200 || !strings.Contains(body, "saved revision 2") {
 		t.Fatalf("rebuilt route post: %d %s, want 200 saved", status, body)
 	}
 	store := inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme Route")
-	t.Logf("gate3 route rebuild: build %s, new path 200 with row evidence, stale page post 404", firstID[:12])
+	requireInvoice(t, store, "7", "2", "2", "Route")
+	t.Logf("gate3 route rebuild: build %s, new path 200 with row evidence, page follows checked URL", firstID[:12])
 }
 
 // gate3ServeInvoice runs a staged invoice entry with a port argument and
@@ -329,6 +382,7 @@ func gate3PostJSONRaw(base, path, session, media, body string) (int, string, htt
 		return 0, "", nil, err
 	}
 	request.Header.Set("Content-Type", media)
+	request.Header.Set("Origin", base)
 	if session != "" {
 		request.AddCookie(&http.Cookie{Name: "session", Value: session})
 	}
@@ -403,18 +457,20 @@ func TestGate3ServerMatrix(t *testing.T) {
 	}
 	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
 	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
-	snapshot := snapshotCredential(t, home, "INVOICE_DB", db)
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3MatrixPort)
+	snapshot := snapshotMap(t, home, "snapshot-gate3-matrix", map[string]string{"INVOICE_DB": db, "PUBLIC_ORIGIN": origin})
 	base, crash, stop := gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3MatrixPort)
 
 	rev := 1
 	committed := 0
-	saveBody := func(op, id string, baseRev int, customer string) string {
-		lines := `[{"key":"k1","sku":"sku-9","qty":4},{"key":"k2","sku":"sku-2","qty":1}]`
-		return `{"session_token":"ignored","operation_id":"` + op + `","invoice_id":"` + id + `","revision":` + strconv.Itoa(baseRev) + `,"customer":"` + customer + `","lines":` + lines + `}`
+	const savePath = "/api/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		lines := `[{"key":"k1","id":"sku-9","quantity":"4","price":"9.99"},{"key":"k2","id":"sku-2","quantity":"1","price":"2.00"}]`
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":` + lines + `}`
 	}
 	post := func(note, session, media, body string, want int) (string, http.Header) {
 		t.Helper()
-		status, payload, headers := gate3PostJSON(t, base, "/invoices/save", session, media, body)
+		status, payload, headers := gate3PostJSON(t, base, savePath, session, media, body)
 		if status != want {
 			t.Fatalf("%s: %d %s, want %d", note, status, payload, want)
 		}
@@ -422,9 +478,10 @@ func TestGate3ServerMatrix(t *testing.T) {
 	}
 
 	// JSON save: a valid write commits and records one replay row.
-	payload, headers := post("json save", "tok-alice", "application/json", saveBody("op-m1", "inv-1", rev, "Acme JSON"), 200)
-	value := gate3Case(t, "json save", payload, "records::saved")
-	if value["invoice_id"] != "inv-1" || value["revision"] != 2.0 {
+	payload, headers := post("json save", "tok-alice", "application/json", saveBody("op-m1", rev), 200)
+	value := gate3Case(t, "json save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if value["operation_id"] != "op-m1" || acknowledged["revision"] != "2" {
 		t.Fatalf("json save value %+v", value)
 	}
 	if content := headers.Get("Content-Type"); !strings.Contains(content, "application/json") {
@@ -432,159 +489,164 @@ func TestGate3ServerMatrix(t *testing.T) {
 	}
 	rev, committed = 2, 1
 	store := inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme JSON")
-	if len(store.Replay) != 1 || store.Replay[0].OperationID != "op-m1" || store.Replay[0].Revision != "2" || len(store.Replay[0].Digest) != 64 {
-		t.Fatalf("json save replay %+v", store.Replay)
+	row := requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
+	if len(row.Lines) != 2 || row.Lines[0].Price != "999" {
+		t.Fatalf("json save lines %+v", row.Lines)
+	}
+	ledger := requireReplay(t, store, "op-m1", "2")
+	if ledger.Actor != "alice" || ledger.Tenant != "1" || ledger.InvoiceID != "7" {
+		t.Fatalf("json save replay scope %+v", ledger)
 	}
 
 	// Identical retry replays without a second effect; changed content
-	// under the same operation conflicts with the current revision.
-	payload, _ = post("json replay", "tok-alice", "application/json", saveBody("op-m1", "inv-1", 1, "Acme JSON"), 200)
-	if value := gate3Case(t, "json replay", payload, "records::saved"); value["revision"] != 2.0 {
+	// under the same operation conflicts.
+	payload, _ = post("json replay", "tok-alice", "application/json", saveBody("op-m1", 1), 200)
+	value = gate3Case(t, "json replay", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "2" {
 		t.Fatalf("json replay value %+v", value)
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme JSON")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	if len(store.Replay) != 1 {
 		t.Fatalf("json replay duplicated %+v", store.Replay)
 	}
-	payload, _ = post("json changed replay", "tok-alice", "application/json", saveBody("op-m1", "inv-1", 1, "Acme Changed"), 409)
-	if value := gate3Case(t, "json changed replay", payload, "records::stale"); value["revision"] != 2.0 {
+	changed := `{"operation_id":"op-m1","revision":"1","lines":[{"key":"k1","id":"changed","quantity":"4","price":"9.99"}]}`
+	payload, _ = post("json changed replay", "tok-alice", "application/json", changed, 409)
+	if value := gate3Case(t, "json changed replay", payload, "invoice_contract::grid_conflict"); value["message"] != "stale revision" {
 		t.Fatalf("json changed replay value %+v", value)
 	}
 
 	// A stale base answers 409; validation failures answer 422 and
 	// write nothing.
-	payload, _ = post("json stale", "tok-alice", "application/json", saveBody("op-m2", "inv-1", 1, "Stale"), 409)
-	if value := gate3Case(t, "json stale", payload, "records::stale"); value["revision"] != 2.0 {
-		t.Fatalf("json stale value %+v", value)
-	}
-	payload, _ = post("json empty customer", "tok-alice", "application/json", saveBody("op-m3", "inv-1", 2, ""), 422)
-	gate3Case(t, "json empty customer", payload, "records::rejected")
-	badQty := `{"session_token":"ignored","operation_id":"op-m4","invoice_id":"inv-1","revision":2,"customer":"Acme JSON","lines":[{"key":"k1","sku":"sku-9","qty":0}]}`
+	payload, _ = post("json stale", "tok-alice", "application/json", saveBody("op-m2", 1), 409)
+	gate3Case(t, "json stale", payload, "invoice_contract::grid_conflict")
+	badQty := `{"operation_id":"op-m4","revision":"2","lines":[{"key":"k1","id":"sku-9","quantity":"0","price":"9.99"}]}`
 	payload, _ = post("json bad qty", "tok-alice", "application/json", badQty, 422)
-	gate3Case(t, "json bad qty", payload, "records::rejected")
+	value = gate3Case(t, "json bad qty", payload, "invoice_contract::grid_invalid")
+	problems, _ := value["errors"].([]any)
+	if len(problems) != 1 || problems[0].(map[string]any)["field"] != "quantity" {
+		t.Fatalf("json bad qty value %+v", value)
+	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme JSON")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	if len(store.Replay) != committed {
 		t.Fatalf("rejections recorded %+v", store.Replay)
 	}
 
 	// Foreign, nonexistent, anonymous, revoked, and ghost writers share
-	// one nondisclosing 403 carrying only the caller-sent id.
+	// one nondisclosing 403 carrying only the caller-sent operation id.
 	for _, leg := range []struct {
-		note, session, id string
+		note, session, tenant, invoice string
 	}{
-		{"json foreign", "tok-alice", "inv-2"},
-		{"json missing", "tok-alice", "inv-9"},
-		{"json anonymous", "", "inv-1"},
-		{"json revoked", "tok-revoked", "inv-1"},
-		{"json ghost", "tok-ghost", "inv-1"},
+		{"json foreign", "tok-alice", "2", "8"},
+		{"json missing", "tok-alice", "1", "9"},
+		{"json anonymous", "", "1", "7"},
+		{"json revoked", "tok-revoked", "1", "7"},
+		{"json ghost", "tok-ghost", "1", "7"},
 	} {
-		payload, _ := post(leg.note, leg.session, "application/json", saveBody("op-denied", leg.id, 1, "X"), 403)
-		value := gate3Case(t, leg.note, payload, "records::denied")
-		if value["invoice_id"] != leg.id || len(value) != 1 {
+		status, payload, _ := gate3PostJSON(t, base, "/api/tenants/"+leg.tenant+"/invoices/"+leg.invoice, leg.session, "application/json", saveBody("op-denied", 1))
+		if status != 403 {
+			t.Fatalf("%s: %d %s, want 403", leg.note, status, payload)
+		}
+		value := gate3Case(t, leg.note, payload, "invoice_contract::grid_forbidden")
+		if value["operation_id"] != "op-denied" || len(value) != 2 {
 			t.Fatalf("%s value %+v discloses or mismatches", leg.note, value)
 		}
-		if strings.Contains(payload, "Globex") || strings.Contains(payload, "tenant-") || strings.Contains(payload, "Acme") {
+		if strings.Contains(payload, "Globex") || strings.Contains(payload, "tenant") || strings.Contains(payload, "Acme") {
 			t.Fatalf("%s leaks stored content in %q", leg.note, payload)
 		}
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme JSON")
-	requireInvoiceRevision(t, store, "inv-2", "1", "Globex")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
+	requireInvoice(t, store, "8", "1", "1", "Globex")
 
 	// Transport failures never reach the protected entry: bad media
-	// and malformed bodies answer 400, oversize bodies answer 413.
-	payload, _ = post("json bad media", "tok-alice", "text/plain", saveBody("op-m5", "inv-1", 2, "X"), 400)
-	if payload != "Bad Request" {
+	// answers 415, malformed bodies answer 400, oversize bodies 413.
+	payload, _ = post("json bad media", "tok-alice", "text/plain", saveBody("op-m5", 2), 415)
+	if payload != "Unsupported Media Type" {
 		t.Fatalf("json bad media body %q", payload)
 	}
 	payload, _ = post("json malformed", "tok-alice", "application/json", "not json", 400)
 	if payload != "Bad Request" {
 		t.Fatalf("json malformed body %q", payload)
 	}
-	payload, _ = post("json oversize", "tok-alice", "application/json", saveBody("op-m6", "inv-1", 2, strings.Repeat("p", 9000)), 413)
+	payload, _ = post("json oversize", "tok-alice", "application/json", saveBody("op-m6", 2)[:100]+strings.Repeat("p", 9000)+`}]}`, 413)
 	if payload != "Payload Too Large" {
 		t.Fatalf("json oversize body %q", payload)
 	}
 
 	// The explicit utf-8 charset variant is accepted and commits.
-	payload, _ = post("json charset", "tok-alice", "application/json; charset=utf-8", saveBody("op-m7", "inv-1", rev, "Acme Charset"), 200)
-	if value := gate3Case(t, "json charset", payload, "records::saved"); value["revision"] != 3.0 {
+	payload, _ = post("json charset", "tok-alice", "application/json; charset=utf-8", saveBody("op-m7", rev), 200)
+	value = gate3Case(t, "json charset", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "3" {
 		t.Fatalf("json charset value %+v", value)
 	}
 	rev, committed = 3, 2
 
-	// JSON load: a member reads the current typed invoice with lines
-	// in stored position order.
-	status, body, _ := invoiceGet(t, base, "/invoices/load?invoice_id=inv-1", "tok-alice")
+	// JSON load: a member reads the current snapshot with lines in
+	// stored position order and the exact total.
+	status, body, _ := invoiceGet(t, base, "/api/tenants/1/invoices/7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("json load: %d %s", status, body)
 	}
-	value = gate3Case(t, "json load", body, "records::found")
-	if value["invoice_id"] != "inv-1" || value["revision"] != 3.0 || value["customer"] != "Acme Charset" {
+	value = gate3Case(t, "json load", body, "invoice_contract::grid_loaded")
+	current, _ := value["current"].(map[string]any)
+	if current["revision"] != "3" || current["total_minor_units"] != 4196.0 {
 		t.Fatalf("json load value %+v", value)
 	}
-	lines, ok := value["lines"].([]any)
+	lines, ok := current["lines"].([]any)
 	if !ok || len(lines) != 2 || lines[0].(map[string]any)["key"] != "k1" || lines[1].(map[string]any)["key"] != "k2" {
-		t.Fatalf("json load lines %+v", value["lines"])
+		t.Fatalf("json load lines %+v", current["lines"])
 	}
 	for _, leg := range []struct {
-		note, session, id string
+		note, session, tenant, invoice string
 	}{
-		{"load foreign", "tok-alice", "inv-2"},
-		{"load missing", "tok-alice", "inv-9"},
-		{"load anonymous", "", "inv-1"},
+		{"load foreign", "tok-alice", "2", "8"},
+		{"load missing", "tok-alice", "1", "9"},
+		{"load anonymous", "", "1", "7"},
 	} {
-		status, body, _ := invoiceGet(t, base, "/invoices/load?invoice_id="+leg.id, leg.session)
+		status, body, _ := invoiceGet(t, base, "/api/tenants/"+leg.tenant+"/invoices/"+leg.invoice, leg.session)
 		if status != 403 {
 			t.Fatalf("%s: %d %s, want 403", leg.note, status, body)
 		}
-		value := gate3Case(t, leg.note, body, "records::load_denied")
-		if value["invoice_id"] != leg.id || len(value) != 1 {
-			t.Fatalf("%s value %+v discloses or mismatches", leg.note, value)
-		}
+		gate3Case(t, leg.note, body, "invoice_contract::grid_load_forbidden")
 	}
 	// A GET body never reaches the read: Bun 1.4.2 delivers GET
 	// requests with a null body even when the wire carries bytes
 	// (verified with a raw socket against the pinned runtime), so the
 	// smuggled byte has zero effect on the outcome.
-	plainStatus, plainBody, _ := invoiceGet(t, base, "/invoices/load?invoice_id=inv-1", "tok-alice")
-	bodyStatus, withBody := gate3GetWithBody(t, base, "/invoices/load?invoice_id=inv-1", "tok-alice", "x")
+	plainStatus, plainBody, _ := invoiceGet(t, base, "/api/tenants/1/invoices/7", "tok-alice")
+	bodyStatus, withBody := gate3GetWithBody(t, base, "/api/tenants/1/invoices/7", "tok-alice", "x")
 	if bodyStatus != plainStatus || withBody != plainBody {
 		t.Fatalf("load with body: %d %s, want identical %d %s", bodyStatus, withBody, plainStatus, plainBody)
 	}
-	if status, body, _ := invoiceGet(t, base, "/invoices/load", "tok-alice"); status != 400 {
-		t.Fatalf("load without query: %d %s, want 400", status, body)
+	if status, body, _ := invoiceGet(t, base, "/api/tenants/1/invoices", "tok-alice"); status != 404 {
+		t.Fatalf("load without capture: %d %s, want 404", status, body)
 	}
 
-	// A store outage turns writes into truthful 503s while reads keep
-	// serving the current committed content: saves open a per-request
-	// pool, which the outage breaks, whereas loads read through the
-	// boot pool's open handle. The identical writes retry safely once
-	// access returns.
-	if err := os.Chmod(db, 0); err != nil {
-		t.Fatal(err)
+	// A store fault turns reads and writes into truthful 503s; the
+	// identical write retries safely once the table is restored.
+	faultInvoice(t, ctx, bundle, home, driver, db, "drop-lines")
+	payload, _ = post("json outage", "tok-alice", "application/json", saveBody("op-m8", rev), 503)
+	gate3Case(t, "json outage", payload, "invoice_contract::grid_unavailable")
+	status, body, _ = invoiceGet(t, base, "/api/tenants/1/invoices/7", "tok-alice")
+	if status != 503 {
+		t.Fatalf("load outage: %d %s, want truthful 503", status, body)
 	}
-	func() {
-		defer func() {
-			if err := os.Chmod(db, 0600); err != nil {
-				t.Fatal(err)
-			}
-		}()
-		payload, _ := post("json outage", "tok-alice", "application/json", saveBody("op-m8", "inv-1", rev, "Outage"), 503)
-		gate3Case(t, "json outage", payload, "records::busy")
-		status, body, _ := invoiceGet(t, base, "/invoices/load?invoice_id=inv-1", "tok-alice")
-		if status != 200 {
-			t.Fatalf("load outage: %d %s, want truthful 200", status, body)
-		}
-		if value := gate3Case(t, "load outage", body, "records::found"); value["revision"] != float64(rev) {
-			t.Fatalf("load outage value %+v, want current revision %d", value, rev)
-		}
-	}()
-	payload, _ = post("json recovery", "tok-alice", "application/json", saveBody("op-m8", "inv-1", rev, "Recovered"), 200)
-	if value := gate3Case(t, "json recovery", payload, "records::saved"); value["revision"] != 4.0 {
+	gate3Case(t, "load outage", body, "invoice_contract::grid_load_unavailable")
+	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid invoice restore report %v %s", err, string(setup))
+	}
+	payload, _ = post("json recovery", "tok-alice", "application/json", saveBody("op-m8", rev), 200)
+	value = gate3Case(t, "json recovery", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
 		t.Fatalf("json recovery value %+v", value)
 	}
 	rev, committed = 4, 3
@@ -592,27 +654,28 @@ func TestGate3ServerMatrix(t *testing.T) {
 	// Keyed-row reorder: swapping lines_order persists swapped
 	// positions and renders in the new order.
 	reorder := url.Values{}
-	reorder.Set("session_token", "tok-alice")
-	reorder.Set("operation_id", "op-m9")
-	reorder.Set("invoice_id", "inv-1")
+	reorder.Set("seats", "6")
+	reorder.Set("details", "Reordered")
 	reorder.Set("revision", strconv.Itoa(rev))
-	reorder.Set("customer", "Reordered")
 	reorder.Add("lines_order", "k2")
 	reorder.Add("lines_order", "k1")
-	reorder.Set("lines[k1][sku]", "sku-9")
-	reorder.Set("lines[k1][qty]", "4")
-	reorder.Set("lines[k2][sku]", "sku-2")
-	reorder.Set("lines[k2][qty]", "7")
-	status, payload, _ = invoicePostForm(t, base, "/invoices/save-form", reorder)
-	if status != 200 || !strings.Contains(payload, "saved inv-1 revision 5") {
+	reorder.Set("lines[k1][id]", "sku-9")
+	reorder.Set("lines[k1][quantity]", "4")
+	reorder.Set("lines[k1][price]", "9.99")
+	reorder.Set("lines[k2][id]", "sku-2")
+	reorder.Set("lines[k2][quantity]", "7")
+	reorder.Set("lines[k2][price]", "2.00")
+	status, payload, _ = postInvoiceForm(t, base, "/tenants/1/invoices/7", "tok-alice", origin, reorder)
+	if status != 200 || !strings.Contains(payload, "saved revision 5") {
 		t.Fatalf("reorder: %d %s, want 200 saved rev 5", status, payload)
 	}
 	rev, committed = 5, 4
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	if len(store.Lines) != 2 || store.Lines[0].LineKey != "k2" || store.Lines[0].Position != "0" || store.Lines[1].LineKey != "k1" || store.Lines[1].Position != "1" || store.Lines[0].Qty != "7" {
-		t.Fatalf("reordered lines %+v", store.Lines)
+	row = requireInvoice(t, store, "7", "5", "6", "Reordered")
+	if len(row.Lines) != 2 || row.Lines[0].Key != "k2" || row.Lines[0].Position != "0" || row.Lines[1].Key != "k1" || row.Lines[1].Position != "1" || row.Lines[0].Quantity != "7" {
+		t.Fatalf("reordered lines %+v", row.Lines)
 	}
-	status, page, _ := invoiceGet(t, base, "/invoices/form?invoice_id=inv-1", "tok-alice")
+	status, page, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("reordered page: %d", status)
 	}
@@ -623,28 +686,29 @@ func TestGate3ServerMatrix(t *testing.T) {
 	// A malformed order naming an unknown key answers 422 and writes
 	// nothing.
 	badOrder := url.Values{}
-	badOrder.Set("session_token", "tok-alice")
-	badOrder.Set("operation_id", "op-m10")
-	badOrder.Set("invoice_id", "inv-1")
+	badOrder.Set("seats", "6")
+	badOrder.Set("details", "Reordered")
 	badOrder.Set("revision", strconv.Itoa(rev))
-	badOrder.Set("customer", "Reordered")
 	badOrder.Add("lines_order", "k9")
-	badOrder.Set("lines[k1][sku]", "sku-9")
-	badOrder.Set("lines[k1][qty]", "4")
-	status, payload, _ = invoicePostForm(t, base, "/invoices/save-form", badOrder)
+	badOrder.Set("lines[k1][id]", "sku-9")
+	badOrder.Set("lines[k1][quantity]", "4")
+	badOrder.Set("lines[k1][price]", "9.99")
+	status, payload, _ = postInvoiceForm(t, base, "/tenants/1/invoices/7", "tok-alice", origin, badOrder)
 	if status != 422 || !strings.Contains(payload, `role="alert"`) {
 		t.Fatalf("malformed order: %d %s, want 422 alert", status, payload)
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "5", "Reordered")
+	requireInvoice(t, store, "7", "5", "6", "Reordered")
 	if len(store.Replay) != committed {
 		t.Fatalf("malformed order recorded %+v", store.Replay)
 	}
 
-	// Swap-config regression on served bytes: exactly 200-399 and 422
-	// swap into the status region; every other 4xx/5xx plus the quiet
-	// 204/304 stay unswapped.
-	status, page, _ = invoiceGet(t, base, "/invoices/form?invoice_id=inv-1", "tok-alice")
+	// Swap-config regression on served bytes: the global policy keeps
+	// the quiet 204/304 and every 4xx/5xx class out of swaps, and the
+	// served form carries no per-element hx-status admission, so error
+	// fragments stay unswapped until UP12/UP19 generate admission from
+	// the checked case table. 2xx/3xx outside the quiet pair swap.
+	status, page, _ = invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("swap page: %d", status)
 	}
@@ -656,24 +720,22 @@ func TestGate3ServerMatrix(t *testing.T) {
 	encoded := rest[:strings.Index(rest, `">`)]
 	var config struct {
 		Mode   string `json:"mode"`
-		NoSwap []int  `json:"noSwap"`
+		NoSwap []any  `json:"noSwap"`
 	}
 	if err := json.Unmarshal([]byte(strings.ReplaceAll(encoded, "&quot;", `"`)), &config); err != nil {
 		t.Fatalf("invalid served htmx-config %v %q", err, encoded)
 	}
-	want := []int{204, 304}
-	for code := 400; code < 600; code++ {
-		if code != 422 {
-			want = append(want, code)
-		}
-	}
+	want := []any{204.0, 304.0, "4xx", "5xx"}
 	if config.Mode != "same-origin" || len(config.NoSwap) != len(want) {
-		t.Fatalf("served htmx-config %+v, want same-origin with %d noSwap codes", config, len(want))
+		t.Fatalf("served htmx-config %+v, want same-origin with %d noSwap entries", config, len(want))
 	}
 	for i, code := range want {
 		if config.NoSwap[i] != code {
-			t.Fatalf("served htmx-config noSwap[%d]=%d, want %d", i, config.NoSwap[i], code)
+			t.Fatalf("served htmx-config noSwap[%d]=%v, want %v", i, config.NoSwap[i], code)
 		}
+	}
+	if strings.Contains(page, "hx-status:") {
+		t.Fatalf("swap page admits error swaps in %.800s", page)
 	}
 
 	// Uncertain commit: SIGKILL mid-flight, then the identical replay
@@ -681,7 +743,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 	// race landed.
 	inflight := make(chan string, 1)
 	go func() {
-		status, payload, _, err := gate3PostJSONRaw(base, "/invoices/save", "tok-alice", "application/json", saveBody("op-m11", "inv-1", rev, "Uncertain"))
+		status, payload, _, err := gate3PostJSONRaw(base, savePath, "tok-alice", "application/json", saveBody("op-m11", rev))
 		if err != nil {
 			inflight <- "transport: " + err.Error()
 			return
@@ -698,17 +760,19 @@ func TestGate3ServerMatrix(t *testing.T) {
 		t.Fatal("in-flight save never returned")
 	}
 	for i := 0; i < 3; i++ {
-		status, payload, _ := gate3PostJSON(t, base, "/invoices/save", "tok-alice", "application/json", saveBody("op-m11", "inv-1", rev, "Uncertain"))
+		status, payload, _ := gate3PostJSON(t, base, savePath, "tok-alice", "application/json", saveBody("op-m11", rev))
 		if status != 200 {
 			t.Fatalf("converge replay %d: %d %s", i, status, payload)
 		}
-		if value := gate3Case(t, "converge replay", payload, "records::saved"); value["revision"] != float64(rev+1) {
+		value := gate3Case(t, "converge replay", payload, "invoice_contract::grid_saved")
+		acknowledged, _ := value["acknowledged"].(map[string]any)
+		if acknowledged["revision"] != strconv.Itoa(rev+1) {
 			t.Fatalf("converge replay %d value %+v", i, value)
 		}
 	}
 	rev, committed = rev+1, committed+1
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", strconv.Itoa(rev), "Uncertain")
+	requireInvoice(t, store, "7", strconv.Itoa(rev), "6", "Reordered")
 	effects := 0
 	for _, row := range store.Replay {
 		if row.OperationID == "op-m11" {
@@ -722,21 +786,26 @@ func TestGate3ServerMatrix(t *testing.T) {
 	// Lost acknowledgement after commit: the write answered 200, the
 	// server died, and the identical retry replays the stored revision
 	// while a changed retry conflicts.
-	payload, _ = post("pre-crash save", "tok-alice", "application/json", saveBody("op-m12", "inv-1", rev, "Ack Lost"), 200)
-	if value := gate3Case(t, "pre-crash save", payload, "records::saved"); value["revision"] != float64(rev+1) {
+	payload, _ = post("pre-crash save", "tok-alice", "application/json", saveBody("op-m12", rev), 200)
+	value = gate3Case(t, "pre-crash save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != strconv.Itoa(rev+1) {
 		t.Fatalf("pre-crash save value %+v", value)
 	}
 	rev, committed = rev+1, committed+1
 	crash()
 	base, _, stop = gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3MatrixPort)
-	payload, _ = post("lost-ack replay", "tok-alice", "application/json", saveBody("op-m12", "inv-1", rev-1, "Ack Lost"), 200)
-	if value := gate3Case(t, "lost-ack replay", payload, "records::saved"); value["revision"] != float64(rev) {
+	payload, _ = post("lost-ack replay", "tok-alice", "application/json", saveBody("op-m12", rev-1), 200)
+	value = gate3Case(t, "lost-ack replay", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != strconv.Itoa(rev) {
 		t.Fatalf("lost-ack replay value %+v", value)
 	}
-	payload, _ = post("lost-ack changed", "tok-alice", "application/json", saveBody("op-m12", "inv-1", rev-1, "Ack Changed"), 409)
-	gate3Case(t, "lost-ack changed", payload, "records::stale")
+	lostChanged := `{"operation_id":"op-m12","revision":"` + strconv.Itoa(rev-1) + `","lines":[{"key":"k1","id":"changed","quantity":"4","price":"9.99"}]}`
+	payload, _ = post("lost-ack changed", "tok-alice", "application/json", lostChanged, 409)
+	gate3Case(t, "lost-ack changed", payload, "invoice_contract::grid_conflict")
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", strconv.Itoa(rev), "Ack Lost")
+	requireInvoice(t, store, "7", strconv.Itoa(rev), "6", "Reordered")
 	if len(store.Replay) != committed {
 		t.Fatalf("lost-ack ledger %+v, want %d rows", store.Replay, committed)
 	}
