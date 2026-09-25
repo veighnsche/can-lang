@@ -48,7 +48,7 @@ func (c *programChecker) inferCall(file *resolve.File, scope *resolve.Scope, nam
 		return ValueBinding{}, true, fmt.Errorf("generic call %s at byte %d: %w", symbol.ID, name.Span.Start, err)
 	}
 	substitutions := c.inferredSubstitutions(file, scope, symbol, constraints)
-	binding, err := c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start), substitutions)
+	binding, err := c.instantiateFunction(symbol, declaration, arguments, makeCallSite(file, name.Span), substitutions)
 	return binding, true, err
 }
 
@@ -195,10 +195,10 @@ func (c *programChecker) inferReference(file *resolve.File, scope *resolve.Scope
 	if d.Receiver != nil {
 		return ValueBinding{}, true, fmt.Errorf("generic method reference requires receiver application")
 	}
-	return c.inferDeclaredReference(symbol, d, expected, e, applicationSite(file, name.Span.Start))
+	return c.inferDeclaredReference(symbol, d, expected, e, makeCallSite(file, name.Span))
 }
 
-func (c *programChecker) inferDeclaredReference(symbol *resolve.Symbol, d *syntax.FunctionDecl, expected *types.Type, e *Expressions, request string, seeds ...typeConstraint) (ValueBinding, bool, error) {
+func (c *programChecker) inferDeclaredReference(symbol *resolve.Symbol, d *syntax.FunctionDecl, expected *types.Type, e *Expressions, request callSite, seeds ...typeConstraint) (ValueBinding, bool, error) {
 	solver, err := types.NewInference(symbol.Parameters)
 	if err != nil {
 		return ValueBinding{}, true, err

@@ -517,7 +517,7 @@ func (c *programChecker) genericAssertions(files []*resolve.File) error {
 				if err != nil {
 					return fmt.Errorf("generic assertion %s in %s: %w", row.Name.Text, symbol.ID, err)
 				}
-				binding, err := c.instantiateFunction(symbol, d, arguments, applicationSite(file, row.Span.Start))
+				binding, err := c.instantiateFunction(symbol, d, arguments, makeCallSite(file, row.Span))
 				if err != nil {
 					return err
 				}

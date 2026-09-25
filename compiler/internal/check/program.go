@@ -97,6 +97,15 @@ type programChecker struct {
 	bindings    map[string]*types.Type
 	variadic    map[string]bool
 	templates   map[string]*Template
+	// symbolicComponent maps a public generic declaration identity to its
+	// dependency component during exported-generic proof. symbolicProofs
+	// holds only committed components; nothing is committed until every
+	// member body and internal call succeeds. symbolicScan records the
+	// syntactic call edges the component graph was built from, for cycle
+	// diagnostics. All three are nil outside checkExportedGenerics.
+	symbolicComponent map[string]int
+	symbolicProofs    map[string]bool
+	symbolicScan      []symbolicScanEdge
 }
 
 func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*types.Type, error) {

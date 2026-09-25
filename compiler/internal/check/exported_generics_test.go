@@ -25,10 +25,11 @@ func exportedInstance(t *testing.T, program *Program, name string) *ProgramFunct
 	return nil
 }
 
-// Six-fixture probe from the generic-recursion experiment (UP02): the three
-// accepted cases must check with zero declaration-only Parameter nodes in
-// the runtime model, and the three broader symbolic calls must keep their
-// hard opaque-parameter rejection until UP14 enables them.
+// Six-fixture probe from the generic-recursion experiment (UP02, enabled by
+// UP14): the five finite cases must check with zero declaration-only
+// Parameter nodes in the runtime model, and only the expanding cycle keeps
+// its hard rejection, now diagnosed as a cycle rather than a broad opaque
+// restriction.
 func TestExportedGenericSymbolicProofIsolation(t *testing.T) {
 	const main = "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n"
 	const identity = "fn item identity<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok 3\n    ok value\n"
@@ -50,12 +51,14 @@ func TestExportedGenericSymbolicProofIsolation(t *testing.T) {
 		},
 		"stationary-mutual": {
 			source: "package app\n    provides [first, second]\n    uses []\nfn item first<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call second<item>(value, true)\n        true => ok value\nfn item second<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok 3\n    match stop\n        false => ok call first<item>(value, true)\n        true => ok value\n" + main,
+			accept: true,
 		},
 		"expanding-mutual": {
 			source: "package app\n    provides [a, b]\n    uses []\nfn void a<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call b<item[]>([value], true)\n        true => ok\nfn void b<item>\n    emits []\n    given\n        item value\n        bool stop\n    asserts\n        base: 3, true => ok\n    match stop\n        false => relay call a<item>(value, true)\n        true => ok\n" + main,
 		},
 		"acyclic-nested-public": {
 			source: "package app\n    provides [box, identity, nested]\n    uses []\nrecord box<item>\n    item value\n" + identity + "fn box<item> nested<item>\n    emits []\n    given\n        item value\n    asserts\n        number: 3 => ok box(3)\n    ok call identity<box<item>>(box(value))\n" + main,
+			accept: true,
 		},
 	}
 	for name, kase := range cases {
@@ -63,10 +66,10 @@ func TestExportedGenericSymbolicProofIsolation(t *testing.T) {
 			program, err := programFixture(t, map[string]string{"src/app.can": kase.source})
 			if !kase.accept {
 				if err == nil {
-					t.Fatalf("broader symbolic call admitted before UP14: %s", name)
+					t.Fatalf("expanding symbolic cycle admitted: %s", name)
 				}
-				if !strings.Contains(err.Error(), "exported generic function") || !strings.Contains(err.Error(), "opaque type parameter") {
-					t.Fatalf("missing opaque-parameter rejection for %s: %v", name, err)
+				if !strings.Contains(err.Error(), "exported generic function") || !strings.Contains(err.Error(), "expanding symbolic cycle") {
+					t.Fatalf("missing cycle rejection for %s: %v", name, err)
 				}
 				return
 			}

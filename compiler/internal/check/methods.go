@@ -126,7 +126,7 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 				}
 				seeds = append(seeds, more...)
 			}
-			binding, _, err := c.inferDeclaredReference(symbol, d, a.Expected, a.Expressions, applicationSite(file, a.Name.Span.Start), seeds...)
+			binding, _, err := c.inferDeclaredReference(symbol, d, a.Expected, a.Expressions, makeCallSite(file, a.Name.Span), seeds...)
 			return binding, err
 		}
 		constraints, err := genericArguments(d.Inputs, a.Arguments)
@@ -138,5 +138,5 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 			return ValueBinding{}, fmt.Errorf("generic method %s at byte %d: %w", symbol.ID, a.Name.Span.Start, err)
 		}
 	}
-	return c.instantiateFunction(symbol, d, arguments, applicationSite(file, a.Name.Span.Start), a.Types)
+	return c.instantiateFunction(symbol, d, arguments, makeCallSite(file, a.Name.Span), a.Types)
 }
