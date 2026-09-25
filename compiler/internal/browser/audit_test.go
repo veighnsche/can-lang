@@ -133,6 +133,66 @@ func TestAuditInspectsReachableRuntimeBodies(t *testing.T) {
 	}
 }
 
+func TestForbiddenModuleMatching(t *testing.T) {
+	runtime := func(path string) ir.Artifact { return ir.Artifact{Path: path, Runtime: true} }
+	generated := func(path string) ir.Artifact { return ir.Artifact{Path: path} }
+	for path, denied := range map[string]bool{
+		"runtime/r-0/platform/sql/pool.ts":          true,
+		"runtime/r-0/platform/process/spawn.ts":     true,
+		"runtime/r-0/platform/files/read.ts":        true,
+		"runtime/r-0/platform/crypto/keys.ts":       true,
+		"runtime/r-0/ai/typesafe.ts":                true,
+		"runtime/r-0/platform/env.ts":               true,
+		"runtime/r-0/environment.ts":                true,
+		"runtime/r-0/platform/s3.ts":                true,
+		"runtime/r-0/platform/server.ts":            true,
+		"runtime/r-0/platform/io.ts":                true,
+		"runtime/r-0/platform/cli.ts":               true,
+		"runtime/r-0/platform/websocket.ts":         true,
+		"runtime/r-0/entry.ts":                      true,
+		"runtime/r-0/browser/entry.ts":              false,
+		"runtime/r-0/domain.ts":                     false,
+		"runtime/r-0/platform/router.ts":            false,
+		"runtime/r-0/platform/log.ts":               false,
+		"runtime/r-0/transport/stream/lifecycle.ts": false,
+	} {
+		if _, forbidden := forbiddenModule(runtime(path)); forbidden != denied {
+			t.Fatalf("forbiddenModule(%s) = %v, want %v", path, forbidden, denied)
+		}
+	}
+	// Bare inventory names match runtime paths only; directory-qualified
+	// server domains match anywhere.
+	if _, forbidden := forbiddenModule(generated("program/entry.ts")); forbidden {
+		t.Fatal("generated program/entry.ts forbidden")
+	}
+	if _, forbidden := forbiddenModule(generated("packages/p-0/platform/sql/x.ts")); !forbidden {
+		t.Fatal("generated server-domain path admitted")
+	}
+	if _, forbidden := forbiddenModule(generated("packages/p-0/s-0.ts")); forbidden {
+		t.Fatal("generated module forbidden")
+	}
+}
+
+func TestRuntimeRelativeShapes(t *testing.T) {
+	for path, want := range map[string]string{
+		"runtime/r-abc/domain.ts":          "domain.ts",
+		"runtime/domain.ts":                "domain.ts",
+		"gen/runtime/r-abc/a/b.ts":         "a/b.ts",
+		"runtime/r-abc/browser/reflect.ts": "browser/reflect.ts",
+	} {
+		rel, ok := runtimeRelative(ir.Artifact{Path: path, Runtime: true})
+		if !ok || rel != want {
+			t.Fatalf("runtimeRelative(%s) = %q, %v, want %q", path, rel, ok, want)
+		}
+	}
+	if _, ok := runtimeRelative(ir.Artifact{Path: "program/state.ts"}); ok {
+		t.Fatal("generated path resolves as runtime")
+	}
+	if _, ok := runtimeRelative(ir.Artifact{Path: "runtime/r-abc/domain.ts"}); ok {
+		t.Fatal("unflagged runtime path resolves")
+	}
+}
+
 func TestAuditRejectsTransitiveForbiddenModule(t *testing.T) {
 	runtime := "runtime/r-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 	artifacts := sealGraph(t, []graphModule{

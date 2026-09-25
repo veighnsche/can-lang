@@ -800,11 +800,11 @@ func classMembers(tokens []scriptToken) map[int]bool {
 		if open < 0 {
 			continue
 		}
-		close := matchingBrace(tokens, open)
-		if close < 0 {
+		end := matchingBrace(tokens, open)
+		if end < 0 {
 			continue
 		}
-		markMembers(tokens, members, open, close)
+		markMembers(tokens, members, open, end)
 	}
 	return members
 }
@@ -861,9 +861,9 @@ func matchingBrace(tokens []scriptToken, open int) int {
 	return -1
 }
 
-func markMembers(tokens []scriptToken, members map[int]bool, open, close int) {
+func markMembers(tokens []scriptToken, members map[int]bool, open, end int) {
 	brace, bracket, paren := 0, 0, 0
-	for scan := open + 1; scan < close; scan++ {
+	for scan := open + 1; scan < end; scan++ {
 		token := tokens[scan]
 		if token.kind == tokPunct {
 			switch token.text {
