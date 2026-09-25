@@ -7,7 +7,12 @@ import { decodeJSON, encodeJSON, type Schema } from "../codec/json.ts";
 import { graph } from "../codec/project.ts";
 import { jsonRequestMedia, responseMedia } from "../transport/media.ts";
 import { requestSnapshot, createResponses } from "./http.ts";
-import { compileActionRoutes, buildActionURL, ActionRouteIssue } from "./action-routes.ts";
+import {
+  compileActionRoutes,
+  buildActionURL,
+  actionTemplate,
+  ActionRouteIssue,
+} from "./action-routes.ts";
 import type { MountedCallback } from "./router.ts";
 
 const origin = Object.freeze({
@@ -246,6 +251,7 @@ export type ActionFetchInput = Readonly<{
   response: Schema;
   cases: readonly ActionJsonCase[];
   signal?: AbortSignal;
+  requestLimit?: number;
   responseLimit?: number;
 }>;
 
@@ -292,7 +298,10 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
       throw new TypeError("action fetch POST body is not request-admissible");
     }
     encoded = new Uint8Array(copyBytes(bytes, origin));
-    if (encoded.byteLength > ACTION_JSON_BODY_LIMIT)
+    const requestLimit = input.requestLimit ?? ACTION_JSON_BODY_LIMIT;
+    if (!Number.isSafeInteger(requestLimit) || requestLimit < 1)
+      throw new TypeError("action fetch needs a positive request limit");
+    if (encoded.byteLength > requestLimit)
       throw new TypeError("action fetch POST body exceeds the wire limit");
   } else {
     if (input.body !== undefined) throw new TypeError("action fetch GET carries no body");
@@ -401,6 +410,7 @@ export type JsonFetchSite = Readonly<{
   request?: unknown;
   response: unknown;
   cases: readonly ActionJsonCase[];
+  limit?: unknown;
 }>;
 
 export type JsonFetchTypes = Readonly<{
@@ -420,6 +430,9 @@ type CheckedFetchSite = Readonly<{
   request: Schema | null;
   response: Schema;
   cases: readonly ActionJsonCase[];
+  // Declared JSON request budget in bytes, or null when the site
+  // carries none and the default wire cap applies.
+  limit: number | null;
 }>;
 
 function checkedFetchSite(site: unknown): CheckedFetchSite {
@@ -444,6 +457,12 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
   const captures = site.captures as CheckedFetchSite["captures"];
   const cases = checkedCases(action, site.cases);
   const response = checkedSchema(action, "response", site.response);
+  let limit: number | null = null;
+  if (site.limit !== undefined && site.limit !== null) {
+    if (!Number.isSafeInteger(site.limit) || (site.limit as number) < 1)
+      throw new TypeError(`fetch site ${action} carries a malformed request budget`);
+    limit = site.limit as number;
+  }
   if (site.method === "GET") {
     if (site.request !== undefined && site.request !== null)
       throw new TypeError(`fetch site ${action} is a bodyless GET site with a request contract`);
@@ -455,12 +474,22 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
       request: null,
       response,
       cases,
+      limit,
     };
   }
   if (site.request === undefined || site.request === null)
     throw new TypeError(`fetch site ${action} is a POST site with no request contract`);
   const request = checkedSchema(action, "request", site.request);
-  return { action, method: site.method, path: site.path, captures, request, response, cases };
+  return {
+    action,
+    method: site.method,
+    path: site.path,
+    captures,
+    request,
+    response,
+    cases,
+    limit,
+  };
 }
 
 // createJsonActionFetch lowers checked JSON action calls to canonical URL
@@ -505,7 +534,12 @@ export function createJsonActionFetch(
     let url: string;
     try {
       const table = compileActionRoutes([
-        { identity: site.action, method: site.method, path: site.path, captures: site.captures },
+        {
+          identity: site.action,
+          method: site.method,
+          path: actionTemplate(site.action, site.path),
+          captures: site.captures,
+        },
       ]);
       url = buildActionURL(table, site.action, captureValues);
     } catch (cause) {
@@ -535,8 +569,9 @@ export function createJsonActionFetch(
         if (!(cause instanceof CodecIssue)) throw cause;
         return fail(types.invalidRequest, [["reason", "request"]], site.action);
       }
-      if (byteLength(encoded) > BigInt(ACTION_JSON_BODY_LIMIT))
-        return fail(types.bodyLimit, [["limit", BigInt(ACTION_JSON_BODY_LIMIT)]], site.action);
+      const budget = site.limit ?? ACTION_JSON_BODY_LIMIT;
+      if (byteLength(encoded) > BigInt(budget))
+        return fail(types.bodyLimit, [["limit", BigInt(budget)]], site.action);
     }
     const outcome = await fetchJsonAction({
       url,
@@ -545,6 +580,7 @@ export function createJsonActionFetch(
       body,
       response: site.response,
       cases: site.cases,
+      requestLimit: site.limit ?? undefined,
     });
     switch (outcome.kind) {
       case "ok":

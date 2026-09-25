@@ -116,7 +116,7 @@ func actionURLMetadata(site *ir.ActionSite) (string, error) {
 // response schema and the finite case table. No handler, renderer or
 // form binding enters the client projection.
 func actionClientMetadata(site *ir.ActionSite) (string, error) {
-	fetch := &ir.JSONFetchSite{Action: site.Action, Method: site.Method, Path: site.Path, Request: site.Request, Response: *site.Response}
+	fetch := &ir.JSONFetchSite{Action: site.Action, Method: site.Method, Path: site.Path, Request: site.Request, Response: *site.Response, Limit: site.Limit}
 	for _, capture := range site.Captures {
 		fetch.Captures = append(fetch.Captures, ir.JSONFetchCapture{Name: capture.Name, Type: capture.Type})
 	}

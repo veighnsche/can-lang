@@ -554,10 +554,8 @@ const pairedEmptyBrowser = `package app
     uses []
 fn void main
     emits []
-    given
-        str[] arguments
     asserts
-        empty: [] => ok
+        empty: => ok
     ok
 `
 
@@ -823,7 +821,7 @@ console.log("paired asset loopback passed");
 	browserRoot2, writeBrowser2 := newProject(t)
 	writeBrowser2("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	writeBrowser2("can.errors.json", `{"active":[],"retired":[]}`)
-	writeBrowser2("src/app/main.can", browserPureMain)
+	writeBrowser2("src/app/main.can", browserPureMainBrowser)
 	writeBrowser2("src/strings/join.can", browserHelperPackage)
 	browserV2 := buildBrowser(browserRoot2)
 	if browserV2.BuildID == browserV1.BuildID {
@@ -957,10 +955,11 @@ console.log("paired asset loopback passed");
 		t.Fatal("vendor variants share a source digest")
 	}
 	depMain := strings.Replace(browserPureMain, "uses [text, codec, bytes, strings]", "uses [text, codec, bytes, vendor::strings as strings]", 1)
-	writeDep := func(write func(name, text string), vendor string) {
+	depMainBrowser := strings.Replace(browserPureMainBrowser, "uses [text, codec, bytes, strings]", "uses [text, codec, bytes, vendor::strings as strings]", 1)
+	writeDep := func(write func(name, text string), vendor string, main string) {
 		write("can.project.json", `{"source_root":"src","dependencies":{"vendor":"vendor"},"error_registry":"can.errors.json"}`)
 		write("can.errors.json", `{"active":[],"retired":[]}`)
-		write("src/app/main.can", depMain)
+		write("src/app/main.can", main)
 		vendorManifest := `{"source_root":"src","error_registry":"can.errors.json"}`
 		write("vendor/can.project.json", vendorManifest)
 		write("vendor/can.errors.json", `{"active":[],"retired":[]}`)
@@ -981,11 +980,11 @@ console.log("paired asset loopback passed");
 		write("can.lock.json", string(lock))
 	}
 	depBrowserRoot, writeDepBrowser := newProject(t)
-	writeDep(writeDepBrowser, vendorX)
+	writeDep(writeDepBrowser, vendorX, depMainBrowser)
 	depBrowser := buildBrowser(depBrowserRoot)
 	depManifest := manifestOf(depBrowser)
 	depBadRoot, writeDepBad := newProject(t)
-	writeDep(writeDepBad, vendorY)
+	writeDep(writeDepBad, vendorY, depMain)
 	code, out, diag = buildServer(depBadRoot, depManifest)
 	if code == 0 || !strings.Contains(out+diag, "differently") {
 		t.Fatalf("drifted shared snapshot admitted: %d %s %s", code, out, diag)
@@ -994,7 +993,7 @@ console.log("paired asset loopback passed");
 		t.Fatal("rejected pairing selected production current")
 	}
 	depGoodRoot, writeDepGood := newProject(t)
-	writeDep(writeDepGood, vendorX)
+	writeDep(writeDepGood, vendorX, depMain)
 	code, out, diag = buildServer(depGoodRoot, depManifest)
 	if code != 0 {
 		t.Fatalf("matched shared snapshot rejected: %d %s %s", code, out, diag)

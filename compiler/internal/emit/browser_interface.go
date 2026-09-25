@@ -22,6 +22,10 @@ package emit
 //     kind:"can.source-index",sources:[],modules:[]},maps:{}}.
 //   - main is invoked as $canMain($canCtx) with explicit OwnerContext; no
 //     ambient AsyncLocalStorage discovery occurs in browser production.
+//   - Before $canInitialize, the entry awaits $canVerifyErrorPlan over the
+//     state module's exported $canErrorPlan, sealing concrete error
+//     identities through WebCrypto; the sealed browser domain runtime
+//     admits only that verified plan object.
 //
 // Calls (RegionEmitter with Browser=true):
 //   - Authored functions take (args..., $canCtx: $canOwnerContext,

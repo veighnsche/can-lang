@@ -40,6 +40,13 @@ func emitStateModule(assembly *programAssembly, runtime string) (Module, []ir.Ar
 	}
 	browser := builder.assembly.browser
 	builder.out.WriteString(builder.declarations)
+	if browser {
+		// The sealed browser domain runtime verifies concrete error
+		// identities asynchronously before any domain use, so the
+		// browser entry awaits verification of this exported plan
+		// before $canInitialize constructs the domain runtime.
+		fmt.Fprintf(&builder.out, "export const $canErrorPlan = %s;\n", builder.plan)
+	}
 	builder.declareCoreState()
 	if !browser {
 		if err := builder.declareConnections(); err != nil {
@@ -275,7 +282,7 @@ func (builder *stateBuilder) initializeDomain() error {
 		}
 	}
 	if builder.assembly.browser {
-		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsBrowser($canBrowserKinds[identity],value) || $canIsBrowserState(identity,value));\n", builder.plan, quote(bytesID))
+		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain($canErrorPlan, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsBrowser($canBrowserKinds[identity],value) || $canIsBrowserState(identity,value));\n", quote(bytesID))
 		fmt.Fprintf(&builder.out, "$canBytes = $canCreateBytes($canDomain, %s);\n", quote(invalidData))
 	} else {
 		fmt.Fprintf(&builder.out, "$canDomain = $canCreateDomain(%s, (identity, value) => (identity === %s && $canIsBytes(value)) || $canIsMap(identity,value) || $canIsSet(identity,value) || $canIsHTML($canHTMLKinds[identity],value) || $canIsHTTP($canHTTPKinds[identity],value) || $canIsRouter($canHTTPKinds[identity],value) || $canIsServer($canHTTPKinds[identity],value) || $canIsSQLPool($canSQLKinds[identity],value) || $canIsSQLTransaction($canSQLKinds[identity],value) || $canIsCryptoKey($canCryptoKinds[identity],value) || $canIsTextRegex($canUtilitiesKinds[identity],value) || $canIsTimeInstant($canUtilitiesKinds[identity],value) || $canIsStream($canStreamKinds[identity],value) || $canIsWebSocket($canWebSocketKinds[identity],value) || $canIsCookie($canCookiesKinds[identity],value) || $canIsS3($canS3Kinds[identity],value) || $canIsBrowser($canBrowserKinds[identity],value) || $canIsBrowserState(identity,value));\n", builder.plan, quote(bytesID))
