@@ -147,6 +147,15 @@ try {
       );
       // The Go suite asserts the exact status (200, or 201 after the
       // status edit); the observer pins exactly one save round trip.
+      // The ledger fills from an async response handler, so wait for
+      // the save to land before counting: reading immediately after
+      // the UI signal races the handler on a loaded machine. Quiesce
+      // afterwards so a late duplicate cannot slip past the pin.
+      const deadline = Date.now() + 15000;
+      while (Date.now() < deadline && !ledger.some((call) => call.method === "POST")) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      await page.waitForLoadState("networkidle");
       const saves = ledger.filter((call) => call.method === "POST");
       assert.equal(saves.length, 1, `saves: ${JSON.stringify(saves.map((s) => s.url))}`);
     });
@@ -172,6 +181,9 @@ try {
       await page.waitForFunction(() =>
         document.querySelector("#status")?.textContent?.includes("save too large; remove lines and retry")
       );
+      // Quiesce before asserting absence: without this a slow async
+      // ledger handler can hide a stray POST and false-pass.
+      await page.waitForLoadState("networkidle");
       const saves = ledger.filter((call) => call.method === "POST");
       assert.equal(saves.length, 0, `unexpected saves: ${JSON.stringify(saves.map((s) => s.url))}`);
     });
