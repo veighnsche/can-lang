@@ -206,7 +206,7 @@ export function createServer(
             const match = matchActionRoute(
               actions.table,
               native.method,
-              new URL(native.url).pathname,
+              requestSnapshot(snapshot).rawPath,
             );
             if (match.kind === "match") {
               try {

@@ -128,6 +128,22 @@ type Head = Readonly<{
   queryInvalid: boolean;
   headers: readonly (readonly [string, string])[];
 }>;
+// Verbatim request target for strict capture dispatch. WHATWG pathname
+// normalization would rewrite backslashes to slashes before validation,
+// so the raw bytes come from a manual split instead. Dots stay resolved:
+// Bun normalizes them before user code runs, and direct callers cover the
+// strict dot rejection through the pure table.
+function rawTarget(url: string): string {
+  const scheme = url.indexOf("://");
+  const start = scheme < 0 ? 0 : url.indexOf("/", scheme + 3);
+  if (start < 0) return "/";
+  let end = url.length;
+  for (const mark of ["?", "#"]) {
+    const at = url.indexOf(mark, start);
+    if (at >= 0) end = Math.min(end, at);
+  }
+  return url.slice(start, end);
+}
 function snapshotHead(
   request: Request,
 ): Readonly<{ kind: "head"; value: Head } | { kind: "rejected"; status: 400 }> {
@@ -154,7 +170,14 @@ function snapshotHead(
   );
   return {
     kind: "head",
-    value: { method: request.method, path, rawPath: url.pathname, query, queryInvalid, headers },
+    value: {
+      method: request.method,
+      path,
+      rawPath: rawTarget(request.url),
+      query,
+      queryInvalid,
+      headers,
+    },
   };
 }
 async function drainBody(
