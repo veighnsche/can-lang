@@ -69,13 +69,14 @@ func ScanModule(src []byte) (ModuleScan, error) {
 	if err != nil {
 		return ModuleScan{}, err
 	}
+	members := classMembers(tokens)
 	scan := ModuleScan{}
 	for index := range tokens {
 		if edge, ok := staticEdge(tokens, index); ok {
 			scan.Edges = append(scan.Edges, edge)
 			continue
 		}
-		if finding, ok := forbiddenReference(tokens, index); ok {
+		if finding, ok := forbiddenReference(tokens, index, members); ok {
 			scan.Findings = append(scan.Findings, finding)
 		}
 	}
@@ -683,9 +684,12 @@ var hostGlobals = map[string]bool{
 // Members (x.require), declarations (async require()), and property keys
 // ({Bun: 1}) never match. A bare typeof Bun existence sniff is not a host
 // operation and never matches; typeof Bun.x still touches the host.
-func forbiddenReference(tokens []scriptToken, index int) (Finding, bool) {
+func forbiddenReference(tokens []scriptToken, index int, members map[int]bool) (Finding, bool) {
 	token := tokens[index]
 	if token.kind != tokIdent {
+		return Finding{}, false
+	}
+	if members[index] {
 		return Finding{}, false
 	}
 	var prev, next *scriptToken
@@ -750,6 +754,150 @@ func forbiddenReference(tokens []scriptToken, index int) (Finding, bool) {
 			}
 		}
 		return Finding{}, false
+	}
+}
+
+// memberPrev names the tokens that can precede a class member definition:
+// the class opening brace, member separators, generator stars and member
+// modifiers. Any other predecessor (notably '=' and '@') keeps the
+// identifier a reference: initializers, computed keys and decorators
+// execute.
+var memberPrev = map[string]bool{
+	"{": true, ";": true, "}": true, "*": true,
+	"static": true, "async": true, "get": true, "set": true,
+	"declare": true, "override": true, "abstract": true,
+	"public": true, "private": true, "protected": true, "readonly": true,
+}
+
+// classMembers returns the token indexes that define class members. A
+// bare require/eval/Bun/process in member-name position is a method or
+// field definition, never a host reference, so the pinned vendor script's
+// process() method and any similar member pass while genuine references
+// in extends clauses, initializers, decorators and method bodies still
+// fail. Unmodified object-literal methods are not recognized (telling an
+// object literal from a block needs a full parser) and keep failing
+// closed; none occur in compiler output, the pinned runtime, or the
+// pinned vendor script.
+func classMembers(tokens []scriptToken) map[int]bool {
+	members := map[int]bool{}
+	for index, token := range tokens {
+		if !token.isIdent("class") {
+			continue
+		}
+		if index > 0 {
+			prev := tokens[index-1]
+			if prev.kind == tokPunct && (prev.text == "." || prev.text == "?.") {
+				continue
+			}
+		}
+		if index+1 < len(tokens) {
+			next := tokens[index+1]
+			if next.kind == tokPunct && next.text == ":" {
+				continue
+			}
+		}
+		open := classOpen(tokens, index)
+		if open < 0 {
+			continue
+		}
+		close := matchingBrace(tokens, open)
+		if close < 0 {
+			continue
+		}
+		markMembers(tokens, members, open, close)
+	}
+	return members
+}
+
+// classOpen finds the body brace of the class at index: the first '{' at
+// parenthesis/bracket depth zero past any name and extends clause.
+func classOpen(tokens []scriptToken, index int) int {
+	paren, bracket := 0, 0
+	for scan := index + 1; scan < len(tokens); scan++ {
+		token := tokens[scan]
+		if token.kind != tokPunct {
+			continue
+		}
+		switch token.text {
+		case "(":
+			paren++
+		case ")":
+			paren--
+		case "[":
+			bracket++
+		case "]":
+			bracket--
+		case "{":
+			if paren == 0 && bracket == 0 {
+				return scan
+			}
+		case ";":
+			return -1
+		}
+		if paren < 0 || bracket < 0 {
+			return -1
+		}
+	}
+	return -1
+}
+
+func matchingBrace(tokens []scriptToken, open int) int {
+	depth := 0
+	for scan := open; scan < len(tokens); scan++ {
+		token := tokens[scan]
+		if token.kind != tokPunct {
+			continue
+		}
+		switch token.text {
+		case "{":
+			depth++
+		case "}":
+			depth--
+			if depth == 0 {
+				return scan
+			}
+		}
+	}
+	return -1
+}
+
+func markMembers(tokens []scriptToken, members map[int]bool, open, close int) {
+	brace, bracket, paren := 0, 0, 0
+	for scan := open + 1; scan < close; scan++ {
+		token := tokens[scan]
+		if token.kind == tokPunct {
+			switch token.text {
+			case "{":
+				brace++
+			case "}":
+				brace--
+			case "[":
+				bracket++
+			case "]":
+				bracket--
+			case "(":
+				paren++
+			case ")":
+				paren--
+			}
+			continue
+		}
+		if token.kind != tokIdent || brace != 0 || bracket != 0 || paren != 0 {
+			continue
+		}
+		switch token.text {
+		case "require", "eval", "Bun", "process":
+		default:
+			continue
+		}
+		prev := tokens[scan-1]
+		if prev.kind == tokPunct && memberPrev[prev.text] {
+			members[scan] = true
+			continue
+		}
+		if prev.kind == tokIdent && memberPrev[prev.text] {
+			members[scan] = true
+		}
 	}
 }
 

@@ -289,5 +289,16 @@ func scanBundleSecrets(file BundleFile, secrets []string) error {
 	if err := scanCanaryList(file.Path, file.Bytes, nil, secretCanaries); err != nil {
 		return err
 	}
-	return scanCanaryList(file.Path, file.Bytes, nil, secrets)
+	text := string(file.Bytes)
+	for _, secret := range secrets {
+		if secret == "" {
+			continue
+		}
+		if offset := strings.Index(text, secret); offset >= 0 {
+			// The secret itself is never quoted: diagnostics must not
+			// become a second leak channel.
+			return fmt.Errorf("browser audit: %s:%s leaks build-known secret material", file.Path, offsetPosition(file.Bytes, offset))
+		}
+	}
+	return nil
 }

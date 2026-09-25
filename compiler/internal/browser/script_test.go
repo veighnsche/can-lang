@@ -177,6 +177,35 @@ func TestScanRequireShapes(t *testing.T) {
 	}
 }
 
+func TestScanClassMembers(t *testing.T) {
+	scan := scanSource(t, "export class Queue {\n"+
+		"  process(job) { return job; }\n"+
+		"  static require(name) { return name; }\n"+
+		"  async eval(code) { return code; }\n"+
+		"  Bun = 1;\n"+
+		"  *process() {}\n"+
+		"}\n")
+	if len(scan.Findings) != 0 {
+		t.Fatalf("class member findings: %+v", scan.Findings)
+	}
+	scan = scanSource(t, "export class Tool {\n"+
+		"  run() { return Bun.write(out, line); }\n"+
+		"  path = process.env.HOME;\n"+
+		"  static { globalThis.setup(require); }\n"+
+		"}\n")
+	if got := operations(scan); strings.Join(got, ",") != "Bun.write,process.env,require" {
+		t.Fatalf("class body operations = %v", got)
+	}
+	scan = scanSource(t, "export class C extends process {}\n")
+	if got := operations(scan); len(got) != 1 || got[0] != "process" {
+		t.Fatalf("extends operations = %v", got)
+	}
+	scan = scanSource(t, "export class C { [process]() {} }\n")
+	if got := operations(scan); len(got) != 1 || got[0] != "process" {
+		t.Fatalf("computed key operations = %v", got)
+	}
+}
+
 func TestScanEvalAndFunction(t *testing.T) {
 	scan := scanSource(t, "eval(\"1+1\");\nconst f = new Function(\"return 1\");\n")
 	if got := operations(scan); strings.Join(got, ",") != "eval,Function" {
