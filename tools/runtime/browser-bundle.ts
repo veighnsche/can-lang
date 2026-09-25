@@ -36,8 +36,12 @@ if (Bun.version !== input.expected.version || Bun.revision !== input.expected.re
 
 const sourceDir = resolve(input.sourceDir);
 const outDir = resolve(input.outDir);
-if (sourceDir === outDir || outDir.startsWith(sourceDir + sep))
-  throw new Error("bundle output must not overlap the staged tree");
+const outRel = relative(sourceDir, outDir);
+// The output directory lives inside the staged tree under a fixed name so
+// bundler-recorded relative paths never leak random temporary names.
+if (outRel === "" || outRel === ".." || outRel.startsWith(`..${sep}`))
+  throw new Error("bundle output must be inside the staged tree");
+const outPrefix = outRel.split(sep).join("/") + "/";
 
 // The staged tree must be exactly the audited inventory: no missing, extra,
 // or substituted bytes between the pre-bundle audit and the bundler.
@@ -60,12 +64,14 @@ const seen: string[] = [];
 const walk = (dir: string): void => {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name);
+    const rel = relative(sourceDir, full).split(sep).join("/");
+    if (rel === outRel.split(sep).join("/") || rel.startsWith(outPrefix)) continue;
     if (entry.isDirectory()) {
       walk(full);
       continue;
     }
     if (!entry.isFile()) throw new Error("staged tree holds a non-regular file");
-    seen.push(relative(sourceDir, full).split(sep).join("/"));
+    seen.push(rel);
   }
 };
 walk(sourceDir);
@@ -81,6 +87,10 @@ const entry = resolve(sourceDir, input.entry);
 if (!want.has(input.entry)) throw new Error("bundle entry is not staged");
 if (statSync(outDir, { throwIfNoEntry: false })?.isDirectory() !== true)
   throw new Error("bundle output directory is missing");
+// Bun records per-module banner paths relative to the process working
+// directory. Building from inside the staged tree keeps every recorded
+// path identical across builds; all tool IO uses absolute paths.
+process.chdir(sourceDir);
 
 const result = await Bun.build({
   entrypoints: [entry],

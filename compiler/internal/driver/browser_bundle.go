@@ -198,13 +198,22 @@ func (r *Runtime) invokeBrowserBundler(ctx context.Context, toolchain browserToo
 		return nil, nil, "", "", failed, err
 	}
 	cleanup := func() { os.RemoveAll(sourceDir) }
-	outDir, err := os.MkdirTemp("", "can-browser-bundle-")
-	if err != nil {
+	// The bundler records module paths relative to the output directory in
+	// banner comments, so the output lives inside the staged tree under a
+	// fixed name: every recorded path is then identical across builds.
+	outDir := filepath.Join(sourceDir, "can-bundle-out")
+	if err := os.MkdirAll(outDir, 0700); err != nil {
 		cleanup()
 		return nil, nil, "", "", failed, err
 	}
-	previous := cleanup
-	cleanup = func() { previous(); os.RemoveAll(outDir) }
+	// The bundler resolves symlinked temporary parents (notably /var and
+	// /tmp on macOS) when recording map sources. Canonicalize the root
+	// first so emitted sources resolve back into the staged tree.
+	if sourceDir, err = filepath.EvalSymlinks(sourceDir); err != nil {
+		cleanup()
+		return nil, nil, "", "", failed, err
+	}
+	outDir = filepath.Join(sourceDir, "can-bundle-out")
 	request := browserBundleRequest{SchemaVersion: 1, Kind: "can.browser-bundle-request", SourceDir: sourceDir, Entry: browser.BrowserEntry, OutDir: outDir}
 	request.Expected.Version = toolchain.Version
 	request.Expected.Revision = toolchain.Revision
@@ -293,7 +302,7 @@ func applyBrowserOverlay(modules map[string][]byte, inventories map[string][]str
 				continue
 			}
 			shipping := browser.OverlayShipping(resolved, runtimeFlags[resolved])
-			if shipping == resolved || modules[shipping] == nil {
+			if shipping == resolved || shipping == name || modules[shipping] == nil {
 				continue
 			}
 			fresh, err := relativeModuleSpecifier(path.Dir(name), shipping)
@@ -555,6 +564,9 @@ func resolveBundleSource(sourceDir, outDir, source string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if resolved, err := filepath.EvalSymlinks(absolute); err == nil {
+		absolute = resolved
+	}
 	root, err := filepath.Abs(sourceDir)
 	if err != nil {
 		return "", err
@@ -593,11 +605,13 @@ func sealBrowserDiagnosticTable(artifacts []ir.Artifact) ([]byte, error) {
 		SchemaVersion int    `json:"schemaVersion"`
 		Kind          string `json:"kind"`
 		Sources       []struct {
-			ID   string `json:"id"`
-			Path string `json:"path"`
+			ID    string                    `json:"id"`
+			Path  string                    `json:"path"`
+			Spans map[string]diagnosticSpan `json:"spans"`
 		} `json:"sources"`
 		Modules []struct {
-			Path string `json:"path"`
+			Path     string              `json:"path"`
+			Segments []diagnosticSegment `json:"segments"`
 		} `json:"modules"`
 	}
 	parser := json.NewDecoder(bytes.NewReader(index))

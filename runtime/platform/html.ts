@@ -34,6 +34,20 @@ function read<T>(map: WeakMap<object, T>, value: unknown): T {
 export function renderSafe(value: unknown): string {
   return read(safe, value);
 }
+// Portable HTML escaping, byte-identical to the native escaper on every
+// input: exactly &<>"' map to their entities and all other code units,
+// including astral pairs and lone surrogates, pass through untouched.
+// Both profiles share this one implementation.
+const htmlEscapes: Readonly<Record<string, string>> = Object.freeze({
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#x27;",
+});
+export function escapeHTML(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => htmlEscapes[char] ?? char);
+}
 export function isHTMLValue(kind: string | undefined, value: unknown): boolean {
   const map =
     kind === "node"
@@ -175,7 +189,7 @@ const attr = (name: string, value: string, kind: Attribute["kind"] = "htmx") =>
 const node = (html: string, tag = "", head = false, anchor = false, form = false) =>
   token(nodes, Object.freeze({ html, tag, head, anchor, form }));
 const children = (input: readonly unknown[]) => dataArray(input).map((v) => read(nodes, v));
-const serialize = (a: Attribute) => ` ${a.name}="${Bun.escapeHTML(a.value)}"`;
+const serialize = (a: Attribute) => ` ${a.name}="${escapeHTML(a.value)}"`;
 const selectorID = (value: string) => /^[A-Za-z_][A-Za-z0-9_-]*$/.test(string(value));
 type Contracts = Readonly<{ structure: string; url: string; target: string; interval: string }>;
 export function createHTML(
@@ -199,10 +213,10 @@ export function createHTML(
       return authorTags.has(name) ? success(token(tags, name)) : structure("tag");
     },
     async text(value: string, _context?: AssertionContext) {
-      return success(node(Bun.escapeHTML(string(value))));
+      return success(node(escapeHTML(string(value))));
     },
     async textFragment(value: string, _context?: AssertionContext) {
-      return success(token(safe, Bun.escapeHTML(string(value))));
+      return success(token(safe, escapeHTML(string(value))));
     },
     async parseURL(value: string, _context?: AssertionContext) {
       // oxlint-disable no-control-regex -- Reject ASCII controls, DEL, and backslash before URL parsing.
@@ -329,7 +343,7 @@ export function createHTML(
     async stylesheet(input: unknown, _context?: AssertionContext) {
       const url = read(urls, input);
       return success(
-        node(`<link rel="stylesheet" href="${Bun.escapeHTML(url.value)}">`, "link", true),
+        node(`<link rel="stylesheet" href="${escapeHTML(url.value)}">`, "link", true),
       );
     },
     async metaViewport(_context?: AssertionContext) {
@@ -349,7 +363,7 @@ export function createHTML(
       return success(
         token(
           safe,
-          `<!doctype html><html><head><title>${Bun.escapeHTML(string(title))}</title>${h.map((n) => n.html).join("")}</head><body>${b.map((n) => n.html).join("")}</body></html>`,
+          `<!doctype html><html><head><title>${escapeHTML(string(title))}</title>${h.map((n) => n.html).join("")}</head><body>${b.map((n) => n.html).join("")}</body></html>`,
         ),
       );
     },
@@ -412,7 +426,7 @@ export function createHTML(
       const config = JSON.stringify({ mode: "same-origin", noSwap });
       return success(
         node(
-          `<meta name="htmx-config" content="${Bun.escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script><script type="module" src="/__can/assets/htmx-guard.js" integrity="sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"></script>`,
+          `<meta name="htmx-config" content="${escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script><script type="module" src="/__can/assets/htmx-guard.js" integrity="sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"></script>`,
           "runtime",
           true,
         ),
