@@ -327,14 +327,13 @@ try {
     return `op ${sent.operation_id}; Enter prevented synchronously`;
   });
 
-  await check("keydown-ghost", async () => {
+  await check("keydown-eaten", async () => {
     // The runtime dispatches every keydown and the grid never gates
     // on e.key, so each keystroke runs the save handler and
-    // re-renders. On a clean state the guard blocks ("no changes to
-    // save") but the re-render still wipes the just-typed character
-    // from the DOM while the input fold ghosts it into state: DOM
-    // and state diverge until the next outcome render. Both parts
-    // pin the divergence instead of working around it.
+    // re-renders. The re-render wipes the just-typed character from
+    // the DOM, and the input fold loses the version race against the
+    // keydown fold, so the character is lost from state too: typing
+    // into the grid does nothing at all. Both parts pin the loss.
     const rev = await currentRev();
     const before = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
@@ -343,46 +342,35 @@ try {
     assert.equal(posts() - before, 0, "clean-guard keydown must not send");
     assert.equal(await page.locator("#qty\\:k1").inputValue(), "2", "the keystroke is eaten from the DOM");
     assert.equal(await statusText(), "no changes to save");
+    // The loss proof: the next save stays blocked ("a ghost would
+    // send"); the "5" is gone from state as well as the DOM.
+    await page.locator("#save").click();
+    await page.waitForTimeout(800);
+    assert.equal(posts() - before, 0, "the eaten keystroke must not ghost into a send");
+    assert.equal(await statusText(), "no changes to save");
     limit(
       "L-keystroke-eaten",
-      "every keydown runs the save handler and re-renders, wiping the typed character " +
-        "from the input; typing into a clean grid needs one save per character to converge."
-    );
-    // The ghost proof: the next save sends the eaten "5" although
-    // the DOM showed "2".
-    await saveAndWait(`saved revision ${rev + 1}`);
-    const ghost = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
-    assert.equal(ghost.quantity, "5", "state holds the eaten keystroke the DOM never showed");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "5", "the outcome render reveals the ghost");
-    limit(
-      "L-ghost-edit",
-      "input folds land in state while keystroke re-renders wipe the DOM, so state and " +
-        "DOM diverge until an outcome render; both engines diverge identically."
+      "every keydown runs the save handler and re-renders, wiping the typed character; " +
+        "the input fold loses the version race, so typing into the grid loses every character."
     );
     // On an unsaved state the same keystroke sends mid-edit: the
-    // dispatch carries the pre-keystroke draft and eats the char.
+    // dispatch carries the pre-keystroke draft and the char is lost.
     // (No End press: every keydown dispatches, so selecting with the
     // keyboard would send first. Triple-click selects mousely.)
     await fill("#qty\\:k1", "7");
     const mid = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("8");
-    await page.waitForFunction(
-      (r) => {
-        const text = document.querySelector("#status")?.textContent ?? "";
-        const head = document.querySelector("#grid h1")?.textContent ?? "";
-        return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
-      },
-      rev + 2,
-      { timeout: 15000 }
-    );
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+      timeout: 15000,
+    });
     const sent = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
     assert.equal(posts() - mid, 1, "one keydown must dispatch exactly one save");
     assert.equal(sent.quantity, "7", "mid-edit dispatch carries the pre-keystroke draft");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "8", "the eaten char ghosts into the folded draft");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "7", "the eaten char is lost, not ghosted");
     await fill("#qty\\:k1", "2");
-    await saveAndWait(`saved revision ${rev + 3}`);
-    return `clean ghost "5" and mid-edit ghost "8" pinned; restored at rev ${rev + 3}`;
+    await saveAndWait(`saved revision ${rev + 2}`);
+    return `keystroke loss pinned on clean and unsaved states; restored at rev ${rev + 2}`;
   });
 
   await check("slow-save-pending", async () => {
@@ -751,11 +739,25 @@ try {
       } finally {
         await context.unroute("**/api/tenants/1/invoices/7");
       }
+      // The reread lands on the empty boot draft, which differs from
+      // the snapshot, so the fold conservatively offers adopt-or-keep
+      // instead of loading outright; adopting converges.
       await denied.locator("#reread").click();
-      await denied.waitForFunction(() => document.querySelector("#status")?.textContent?.match(/loaded revision \d+/), null, {
-        timeout: 15000,
-      });
-      return "busy load retries into a clean load";
+      await denied.waitForFunction(
+        () => document.querySelector("#status")?.textContent?.match(/server has revision (\d+); your edits kept/),
+        null,
+        { timeout: 15000 }
+      );
+      const target = await denied.evaluate(
+        () => document.querySelector("#status")?.textContent?.match(/server has revision (\d+)/)?.[1]
+      );
+      await denied.locator("#adopt").click();
+      await denied.waitForFunction(
+        (want) => document.querySelector("#status")?.textContent?.includes(want),
+        `loaded revision ${target}`,
+        { timeout: 15000 }
+      );
+      return `busy load retries into adopt at rev ${target}`;
     } finally {
       await denied.close();
     }
@@ -781,6 +783,9 @@ try {
   });
 
   await check("reload-no-durability", async () => {
+    // The ghost leg leaves the "28.00" draft uncommitted; committing
+    // it first makes the reload target server truth.
+    await saveAndWait(/saved revision \d+/.source);
     const rev = await currentRev();
     const price = await page.locator("#price\\:k1").inputValue();
     const totals = await page.locator("#totals").textContent();
