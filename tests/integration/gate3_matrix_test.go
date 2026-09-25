@@ -1732,3 +1732,198 @@ func TestGate3RendererFault(t *testing.T) {
 	}
 	t.Logf("gate3 render: %d can assertions, post-commit renderer 500, JSON health, page recovery and form 503 fragment live with row evidence", assertions)
 }
+
+// gate3CallSites counts emitted call sites of one identifier across the
+// staged build directory, logging every matching line on mismatch.
+func gate3CallSites(t *testing.T, dir, identifier string, want int) {
+	t.Helper()
+	var matches []string
+	err := filepath.WalkDir(dir, func(path string, entry os.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || !strings.HasSuffix(path, ".ts") {
+			return err
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			if strings.Contains(line, identifier+"(") && !strings.Contains(strings.TrimSpace(line), "import ") {
+				matches = append(matches, path+": "+strings.TrimSpace(line))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) != want {
+		t.Fatalf("%s call sites: %d, want %d:\n%s", identifier, len(matches), want, strings.Join(matches, "\n"))
+	}
+	t.Logf("%s: %d call site", identifier, want)
+}
+
+// TestGate3Lifecycle proves one pool, startup refusal, clean
+// shutdown/drainage and request-token revocation: the staged server
+// bundle opens its pool at exactly one call site and closes it at
+// exactly one, missing databases and occupied ports fail closed,
+// SIGTERM drains and exits clean with the ledger intact across
+// restart, an in-flight trickled request converges to exactly one
+// effect however the shutdown landed, and the artifact's own
+// request-lifetime suite passes under the staged sidecar.
+func TestGate3Lifecycle(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-life")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3LifePort)
+	const savePath = "/api/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]}`
+	}
+
+	// One pool: exactly one open call site and one close call site in
+	// the emitted server bundle.
+	buildDir := filepath.Dir(entry)
+	gate3CallSites(t, buildDir, "sqlite_open_file", 1)
+	gate3CallSites(t, buildDir, "pool_close", 1)
+
+	// Startup refusal: a database path in a missing directory fails
+	// closed before serving.
+	expectInvoiceStartupFailure(t, ctx, bundle, home, entry, map[string]string{
+		"INVOICE_DB":    filepath.Join(home, "no-such-dir", "inv.sqlite"),
+		"PUBLIC_ORIGIN": origin,
+	}, gate3LifePort+10, "missing-db")
+	t.Log("startup refusal missing-db: nonzero exit before serving")
+
+	// Startup refusal: an occupied port fails closed. The first
+	// server also anchors the shutdown legs below.
+	snapshot := snapshotMap(t, home, "snapshot-gate3-life", map[string]string{"INVOICE_DB": db, "PUBLIC_ORIGIN": origin})
+	base, crash, stop := gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	expectInvoiceStartupFailure(t, ctx, bundle, home, entry, map[string]string{
+		"INVOICE_DB":    db,
+		"PUBLIC_ORIGIN": origin,
+	}, gate3LifePort, "occupied-port")
+	t.Log("startup refusal occupied-port: nonzero exit before serving")
+
+	// Clean shutdown: SIGTERM drains and exits zero; the ledger
+	// survives the restart; the pre-shutdown save replays its
+	// recorded bytes and a fresh save commits.
+	status, saved, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l1", 1))
+	if status != 200 {
+		crash()
+		t.Fatalf("shutdown setup save: %d %s", status, saved)
+	}
+	shutdownStart := time.Now()
+	stop()
+	t.Logf("SIGTERM drained in %dms with a clean exit", time.Since(shutdownStart).Milliseconds())
+	base, crash, stop = gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	status, replayed, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l1", 1))
+	if status != 200 || replayed != saved {
+		crash()
+		t.Fatalf("post-restart replay: %d, want identical 200 bytes", status)
+	}
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l2", 2))
+	if status != 200 {
+		crash()
+		t.Fatalf("post-restart save: %d %s", status, payload)
+	}
+	requireInvoice(t, inspectInvoice(t, ctx, bundle, home, driver, db), "7", "3", "2", "Acme <em>&\" 'coop'\"")
+
+	// In-flight drain: SIGTERM lands mid-body of a trickled save. The
+	// request either completes or aborts, the server still exits
+	// clean, and the identical retry converges to exactly one effect.
+	trickled := saveBody("op-l3", 3)
+	outcome := make(chan gate3RacePost, 1)
+	go func() {
+		request, err := http.NewRequest("POST", base+savePath, &gate4Trickle{body: []byte(trickled), chunk: 16, delay: 150 * time.Millisecond})
+		if err != nil {
+			outcome <- gate3RacePost{operation: "op-l3", status: -1, body: err.Error()}
+			return
+		}
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Origin", origin)
+		request.AddCookie(&http.Cookie{Name: "session", Value: "tok-alice"})
+		request.ContentLength = int64(len(trickled))
+		client := &http.Client{Timeout: 30 * time.Second}
+		response, err := client.Do(request)
+		if err != nil {
+			outcome <- gate3RacePost{operation: "op-l3", status: -1, body: err.Error()}
+			return
+		}
+		defer response.Body.Close()
+		payload, _ := io.ReadAll(response.Body)
+		outcome <- gate3RacePost{operation: "op-l3", status: response.StatusCode, body: string(payload)}
+	}()
+	time.Sleep(400 * time.Millisecond)
+	drainStart := time.Now()
+	stop()
+	t.Logf("SIGTERM with in-flight trickle drained in %dms with a clean exit", time.Since(drainStart).Milliseconds())
+	select {
+	case landed := <-outcome:
+		t.Logf("in-flight outcome %d %.200s (either landing converges below)", landed.status, landed.body)
+	case <-time.After(25 * time.Second):
+		t.Fatal("in-flight trickle never returned")
+	}
+	pre := 0
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-l3" {
+			pre++
+		}
+	}
+	if pre > 1 {
+		t.Fatalf("in-flight trickle committed %d effects", pre)
+	}
+	base, _, stop = gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	defer stop()
+	status, first, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", trickled)
+	if status != 200 {
+		t.Fatalf("drain converge save: %d %s", status, first)
+	}
+	status, second, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", trickled)
+	if status != 200 || second != first {
+		t.Fatalf("drain converge reread: %d, want identical 200 bytes", status)
+	}
+	value := gate3Case(t, "drain converge", first, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("drain converge value %+v", value)
+	}
+	effects := 0
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-l3" {
+			effects++
+		}
+	}
+	if effects != 1 {
+		t.Fatalf("drain converged to %d op-l3 effects, want 1", effects)
+	}
+
+	// Buffered/lazy token revocation: the artifact's own
+	// request-lifetime suite passes under the staged sidecar.
+	sidecar := filepath.Join(bundle, "runtime/bun")
+	clean, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.CommandContext(ctx, sidecar,
+		"--no-env-file", "--no-macros", "--no-install",
+		"--config="+filepath.Join(bundle, "tools/runtime/bunfig.toml"),
+		"test", filepath.Join(bundle, "runtime/test", "request-lifetime.test.ts"))
+	cmd.Dir = clean
+	cmd.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/usr/local/bin:/usr/bin:/bin"}
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("request-lifetime suite: %v\n%s", err, output)
+	}
+	t.Logf("request-lifetime suite: %d pass under the staged sidecar", gate4PassCount(t, string(output)))
+	t.Logf("gate3 lifecycle: %d can assertions, one pool, startup refusal, shutdown/drainage and revocation live with row evidence", assertions)
+}
