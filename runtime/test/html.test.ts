@@ -247,19 +247,36 @@ test("head-only nodes, native title escaping and pinned HTMX policy", async () =
     "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
   );
 });
-test("the emitted HTMX config swaps exactly 200-399 and 422", async () => {
+test("the emitted HTMX config quiets 204/304 and every 4xx/5xx", async () => {
   const output = renderSafe(
     value(await html.document("x", [value(await html.runtimeHead())], [await text("x")])),
   );
   const encoded = output.match(/<meta name="htmx-config" content="(.*?)">/)?.[1] ?? "";
   const config = JSON.parse(encoded.replaceAll("&quot;", '"')) as {
     mode: string;
-    noSwap: number[];
+    noSwap: (number | string)[];
   };
   expect(config.mode).toBe("same-origin");
-  const quiet = [204, 304];
-  for (let code = 400; code < 600; code++) if (code !== 422) quiet.push(code);
-  expect(config.noSwap).toEqual(quiet);
+  expect(config.noSwap).toEqual([204, 304, "4xx", "5xx"]);
+});
+test("the runtime head loads the pinned guard module after htmx", async () => {
+  const head = renderSafe(
+    value(await html.document("x", [value(await html.runtimeHead())], [await text("x")])),
+  );
+  const htmxTag =
+    '<script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script>';
+  const guardTag = head.match(
+    /<script type="module" src="\/__can\/assets\/htmx-guard\.js" integrity="(.*?)"><\/script>/,
+  );
+  expect(head).toContain(htmxTag);
+  expect(guardTag?.[1]).toBeString();
+  expect(head.indexOf(htmxTag)).toBeLessThan(head.indexOf(guardTag![0]));
+  const source = await Bun.file(new URL("../platform/htmx-guard.ts", import.meta.url)).text();
+  const served = new Bun.Transpiler({ loader: "ts" }).transformSync(source);
+  const digest = await crypto.subtle.digest("SHA-384", new TextEncoder().encode(served));
+  let binary = "";
+  for (const byte of new Uint8Array(digest)) binary += String.fromCharCode(byte);
+  expect(guardTag![1]).toBe("sha384-" + btoa(binary));
 });
 test("typed HTMX selectors and finite intervals cannot inject trigger code", async () => {
   for (const id of ["", "#id", "x y", "x,body", "x]", "1id", "x\n", "x:has(*)"]) {
