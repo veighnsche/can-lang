@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"path"
 	"sort"
 	"strings"
 
@@ -107,8 +106,11 @@ func ForbiddenReason(identity string) (string, bool) {
 // operation reachable from the entry through authored calls, callable
 // references and generic specializations must be browser-available, as must
 // every other emitted function, top-level initializer, native declaration
-// and checked specialization. Assertion roots are excluded: they execute
-// under Bun during the verified build and never ship in the browser asset.
+// and checked specialization. Server action bindings (serve_form_action
+// sites) are rejected with their canonical action metadata; browser JSON
+// fetch client sites stay available. Assertion roots are excluded: they
+// execute under Bun during the verified build and never ship in the
+// browser asset.
 func CheckProgram(program *check.Program) error {
 	if program == nil {
 		return fmt.Errorf("browser capability closure requires a checked program")
@@ -123,6 +125,12 @@ func CheckProgram(program *check.Program) error {
 	gate.functions = map[string]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
 		gate.functions[fn.Identity()] = fn
+	}
+	gate.actions = map[string]*check.ActionDeclaration{}
+	for _, action := range program.Actions {
+		if action != nil && action.Symbol != nil {
+			gate.actions[action.Symbol.ID] = action
+		}
 	}
 	if err := gate.structural(); err != nil {
 		return err
@@ -160,6 +168,7 @@ func CheckProgram(program *check.Program) error {
 type closureGate struct {
 	program   *check.Program
 	functions map[string]*check.ProgramFunction
+	actions   map[string]*check.ActionDeclaration
 	paths     map[string]string
 }
 
@@ -421,6 +430,11 @@ func (walker *regionWalker) step(step *ir.InvocationStep) error {
 	if step.SQL != nil {
 		return walker.locate(step.Span, fmt.Errorf("browser capability closure: SQL call site %s.%s is unavailable to --target browser", step.SQL.Owner, step.SQL.Name))
 	}
+	if step.FormAction != nil {
+		return walker.formSite(step)
+	}
+	// JSON fetch client sites are the browser projection of shared JSON
+	// actions and stay available; only serve bindings mount handlers.
 	if err := walker.operation(step.Identity, step.Span); err != nil {
 		return err
 	}
@@ -441,6 +455,21 @@ func (walker *regionWalker) step(step *ir.InvocationStep) error {
 		}
 	}
 	return nil
+}
+
+// formSite rejects a serve_form_action call site: mounting a handler plus
+// renderers into a server route is a server binding, even though the
+// shared action declaration itself is handler-free metadata. The
+// diagnostic resolves the site against the canonical action table (UP05
+// I-1) so the declaration identity, method and path travel with the span.
+func (walker *regionWalker) formSite(step *ir.InvocationStep) error {
+	site := step.FormAction
+	contract := site.Method + " " + site.Path
+	if action := walker.gate.actions[site.Action]; action != nil {
+		contract = action.Method + " " + action.Path
+	}
+	via := strings.Join(walker.chain, " -> ")
+	return walker.locate(step.Span, fmt.Errorf("browser capability closure: form action %s (%s) mounts a server handler and is unavailable to --target browser (reachable via %s)", site.Action, contract, via))
 }
 
 func (walker *regionWalker) coordination(coordination *ir.Coordination) error {
@@ -551,106 +580,8 @@ func ParseAsset(raw []byte) (Asset, error) {
 	return asset, nil
 }
 
-// forbiddenRuntimePaths are server-capability runtime modules no browser
-// module edge may reach. The generation-private runtime copy is the shared
-// pinned inventory, but the browser reference graph must never touch it.
-var forbiddenRuntimePaths = []string{
-	"/platform/sql/",
-	"/platform/process/",
-	"/platform/files/",
-	"/platform/env.ts",
-	"/platform/crypto/",
-	"/platform/s3.ts",
-	"/platform/s3/",
-	"/platform/server.ts",
-	"/platform/io.ts",
-	"/platform/websocket.ts",
-	"/platform/websocket/",
-	"/platform/stream",
-	"/environment.ts",
-	"/entry.ts",
-}
-
-// forbiddenMappingOperations are server-request source-map operations that
-// must never appear in browser output.
-var forbiddenMappingOperations = map[string]bool{
-	"fetch_request": true, "llm_request": true, "judge_request": true, "question_preparation": true,
-}
-
-// serverTokens are host-capability markers no compiler-emitted browser
-// module may contain. `import.meta.url` stays available for same-origin
-// asset resolution.
-var serverTokens = []string{"process.", "Bun.", "require(", "node:"}
-
-// AuditArtifacts verifies the emitted browser graph: the single browser
-// root replaces the Bun entry, every non-runtime module uses relative
-// edges that avoid server-capability runtime modules, no host token or
-// server-request mapping survives, and the asset manifest binds the
-// emitted bytes. Same-origin holds because every edge and asset path is
-// generation-relative: no absolute or remote specifier is admitted.
-func AuditArtifacts(artifacts []ir.Artifact) error {
-	byPath := map[string]ir.Artifact{}
-	for _, artifact := range artifacts {
-		byPath[artifact.Path] = artifact
-	}
-	entry, ok := byPath[BrowserEntry]
-	if !ok {
-		return fmt.Errorf("browser audit: missing %s root", BrowserEntry)
-	}
-	if _, forbidden := byPath[BunEntry]; forbidden {
-		return fmt.Errorf("browser audit: bun entry %s must be absent from a browser generation", BunEntry)
-	}
-	_ = entry
-	asset, ok := byPath[AssetPath]
-	if !ok {
-		return fmt.Errorf("browser audit: missing %s", AssetPath)
-	}
-	files := map[string]string{}
-	for _, artifact := range artifacts {
-		if artifact.Runtime || !strings.HasSuffix(artifact.Path, ".ts") {
-			continue
-		}
-		if len(artifact.NativeImports) != 0 {
-			return fmt.Errorf("browser audit: %s carries native imports", artifact.Path)
-		}
-		for _, edge := range artifact.Imports {
-			if !strings.HasPrefix(edge, "./") && !strings.HasPrefix(edge, "../") {
-				return fmt.Errorf("browser audit: %s has a non-relative edge %q", artifact.Path, edge)
-			}
-			if !strings.HasSuffix(edge, ".ts") || strings.ContainsAny(edge, "\\?#") {
-				return fmt.Errorf("browser audit: %s has a non-module edge %q", artifact.Path, edge)
-			}
-			resolved := path.Join(path.Dir(artifact.Path), edge)
-			for _, denied := range forbiddenRuntimePaths {
-				if strings.Contains("/"+resolved, denied) {
-					return fmt.Errorf("browser audit: %s reaches server-capability runtime module %s", artifact.Path, resolved)
-				}
-			}
-		}
-		for _, token := range serverTokens {
-			if strings.Contains(string(artifact.Bytes), token) {
-				return fmt.Errorf("browser audit: %s contains host token %q", artifact.Path, token)
-			}
-		}
-		for _, mapping := range artifact.Mappings {
-			if forbiddenMappingOperations[mapping.Operation] {
-				return fmt.Errorf("browser audit: %s carries server-request mapping %q", artifact.Path, mapping.Operation)
-			}
-		}
-		sum := sha256.Sum256(artifact.Bytes)
-		files[artifact.Path] = hex.EncodeToString(sum[:])
-	}
-	manifest, err := ParseAsset(asset.Bytes)
-	if err != nil {
-		return fmt.Errorf("browser audit: %w", err)
-	}
-	if len(manifest.Files) != len(files) {
-		return fmt.Errorf("browser audit: asset binds %d modules, generation holds %d", len(manifest.Files), len(files))
-	}
-	for name, digest := range files {
-		if manifest.Files[name] != digest {
-			return fmt.Errorf("browser audit: asset digest mismatch for %s", name)
-		}
-	}
-	return nil
-}
+// The pre-bundle graph audit (AuditArtifacts) and the post-bundle output
+// audit (AuditBundle) live in audit.go and bundle.go. Both resolve module
+// structure lexically: quoted host-operation text in strings, comments,
+// templates and regular expressions is data and never matches, while
+// executed references resolve with module, span, origin and chain evidence.

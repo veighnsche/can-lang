@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -622,6 +623,200 @@ fn void main
 	}
 }
 
+func TestBrowserRejectsFormActionBinding(t *testing.T) {
+	program := browserFixture(t, map[string]string{"src/main.can": `package web
+    provides []
+    uses [form, http, html, option]
+record line_wire
+    str sku
+    str[] tags
+    option::value<str> note
+record invoice_wire
+    str customer
+    form::rows<line_wire> lines
+record saved
+    str label
+record rejected
+    str reason
+variant save_outcome
+    saved
+    rejected
+fn save_outcome save_validated
+    emits []
+    given
+        invoice_wire body
+    asserts
+        sample: invoice_wire("c", form::rows<line_wire>([], [])) => ok saved("c")
+    ok saved(body.customer)
+action save_invoice
+    post "/invoices/save"
+    form invoice_wire limit 2048 rows_limit 64
+    returns save_outcome
+    body html
+    cases
+        saved status 200 swap inner
+        rejected status 422 swap inner
+fn html::safe render_outcome
+    emits []
+    given
+        save_outcome outcome
+    asserts
+        sample: saved("c") => ok
+    ok call html::text_fragment("done")
+fn html::safe render_rejected
+    emits []
+    given
+        form::rejected<invoice_wire> bad
+    asserts
+        sample: form::rejected<invoice_wire>([], []) => ok
+    ok call html::text_fragment("bad")
+fn http::router mounted
+    emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
+    asserts
+        sample: => ok
+    match chain
+        call http::serve_form_action<save_outcome, invoice_wire>("save_invoice", callable render_outcome, callable render_rejected) as http::route form
+        call http::make_router([form]) as http::router router
+        http::invalid_route
+        http::duplicate_route
+        http::ambiguous_route
+        ok => ok router
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
+`})
+	if len(program.Actions) != 1 {
+		t.Fatalf("expected one canonical action, got %d", len(program.Actions))
+	}
+	err := CheckProgram(program)
+	if err == nil {
+		t.Fatal("server form-action binding admitted")
+	}
+	for _, want := range []string{"save_invoice", "POST /invoices/save", "mounts a server handler", "unreachable from main"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Fatalf("diagnostic %q loses %q", err.Error(), want)
+		}
+	}
+	var located *source.LocatedError
+	if !errors.As(err, &located) {
+		t.Fatalf("diagnostic carries no span: %v", err)
+	}
+	if !strings.HasSuffix(located.File, filepath.Join("src", "main.can")) {
+		t.Fatalf("diagnostic file = %q", located.File)
+	}
+}
+
+func TestBrowserAdmitsJsonFetchClients(t *testing.T) {
+	program := browserFixture(t, map[string]string{"src/main.can": `package web
+    provides [save_invoice, load_line, line_key, invoice_wire, saved, rejected, stale, denied, busy, save_outcome, found, missing, unavailable, load_outcome]
+    uses [http, codec]
+record invoice_wire
+    str label
+    int seats
+record saved
+    str label
+record rejected
+    str reason
+record stale
+    int revision
+record denied
+    str reason
+record busy
+    str reason
+variant save_outcome
+    saved
+    rejected
+    stale
+    denied
+    busy
+record line_key
+    str invoice_id
+    int line
+action save_invoice
+    post "/invoices/save"
+    json invoice_wire limit 8192
+    returns save_outcome
+    body json
+    cases
+        saved status 200
+        rejected status 422
+        stale status 409
+        denied status 403
+        busy status 503
+record found
+    str label
+record missing
+    str reason
+record unavailable
+    str reason
+variant load_outcome
+    found
+    missing
+    unavailable
+action load_line
+    get "/invoices/:invoice_id/lines/:line"
+    captures line_key
+    input none
+    returns load_outcome
+    body json
+    cases
+        found status 200
+        missing status 403
+        unavailable status 503
+fn load_outcome reload_line
+    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    given
+        str invoice_id
+        int line
+    asserts
+        sample: "inv-1", 1 => ok found("inv-1")
+    match call http::fetch_json_get<load_outcome>("load_line", invoice_id, line)
+        http::transport_failed
+        http::invalid_request
+        http::status_error
+        codec::invalid_data
+        ok load_outcome got => ok got
+fn save_outcome store_invoice
+    emits [http::transport_failed, http::invalid_request, http::body_limit, http::status_error, codec::invalid_data]
+    given
+        invoice_wire body
+    asserts
+        sample: invoice_wire("inv-1", 2) => ok saved("inv-1")
+    match call http::fetch_json_post<save_outcome, invoice_wire>("save_invoice", body)
+        http::transport_failed
+        http::invalid_request
+        http::body_limit
+        http::status_error
+        codec::invalid_data
+        ok save_outcome done => ok done
+fn void main
+    emits [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data]
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    match call reload_line("inv-1", 1)
+        http::transport_failed
+        http::invalid_request
+        http::status_error
+        codec::invalid_data
+        ok load_outcome got => ok
+`})
+	if len(program.Actions) != 2 {
+		t.Fatalf("expected two canonical actions, got %d", len(program.Actions))
+	}
+	if len(program.Fetches) != 2 {
+		t.Fatalf("expected two JSON fetch client sites, got %d", len(program.Fetches))
+	}
+	if err := CheckProgram(program); err != nil {
+		t.Fatalf("JSON fetch clients rejected: %v", err)
+	}
+}
+
 func TestBrowserInheritsOwnerWireBoundary(t *testing.T) {
 	root := t.TempDir()
 	files := map[string]string{
@@ -694,8 +889,14 @@ func auditArtifacts(t *testing.T) []ir.Artifact {
 	artifacts := []ir.Artifact{runtimeModule}
 	files := map[string]string{}
 	for name, module := range modules {
-		artifacts = append(artifacts, ir.Artifact{Path: name, Bytes: []byte(module.body), Imports: module.imports})
-		sum := sha256.Sum256([]byte(module.body))
+		var body strings.Builder
+		for _, spec := range module.imports {
+			fmt.Fprintf(&body, "import %q;\n", spec)
+		}
+		body.WriteString(module.body)
+		text := body.String()
+		artifacts = append(artifacts, ir.Artifact{Path: name, Bytes: []byte(text), Imports: module.imports})
+		sum := sha256.Sum256([]byte(text))
 		files[name] = hex.EncodeToString(sum[:])
 	}
 	asset, err := AssetBytes(files)
@@ -724,48 +925,59 @@ func TestAuditRejectsBrowserViolations(t *testing.T) {
 		t.Fatalf("missing %s", path)
 		return nil
 	}
-	cases := map[string]func([]ir.Artifact){
-		"missing asset": func(artifacts []ir.Artifact) {
+	cases := map[string]func([]ir.Artifact) []ir.Artifact{
+		"missing asset": func(artifacts []ir.Artifact) []ir.Artifact {
 			for i := range artifacts {
 				if artifacts[i].Path == AssetPath {
 					artifacts[i].Path = "browser/other.json"
 				}
 			}
+			return artifacts
 		},
-		"native imports": func(artifacts []ir.Artifact) {
+		"native imports": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.NativeImports = []string{"node:fs"}
+			return artifacts
 		},
-		"absolute edge": func(artifacts []ir.Artifact) {
+		"absolute edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, BrowserEntry)
 			module.Imports = []string{"/etc/passwd.ts"}
+			module.Bytes = []byte("import \"/etc/passwd.ts\";\nexport async function $canBrowserMain(): Promise<void> {}\n")
+			return artifacts
 		},
-		"remote edge": func(artifacts []ir.Artifact) {
+		"remote edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, BrowserEntry)
 			module.Imports = []string{"https://example.invalid/app.ts"}
+			module.Bytes = []byte("import \"https://example.invalid/app.ts\";\nexport async function $canBrowserMain(): Promise<void> {}\n")
+			return artifacts
 		},
-		"forbidden runtime edge": func(artifacts []ir.Artifact) {
+		"forbidden runtime edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.Imports = []string{"../../" + runtime + "/platform/sql/pool.ts"}
+			module.Bytes = []byte("import \"../../" + runtime + "/platform/sql/pool.ts\";\nexport async function $canFunction0(): Promise<unknown> { return null; }\n")
+			return append(artifacts, ir.Artifact{Path: runtime + "/platform/sql/pool.ts", Bytes: []byte("export function pool(): void {}\n"), Runtime: true})
 		},
-		"host token": func(artifacts []ir.Artifact) {
+		"host token": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
-			module.Bytes = []byte("export const x = process.env.HOME;\n")
+			module.Bytes = []byte("import \"../../program/state.ts\";\nexport const x = process.env.HOME;\n")
+			return artifacts
 		},
-		"server mapping": func(artifacts []ir.Artifact) {
+		"server mapping": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.Mappings = []ir.Mapping{{Operation: "fetch_request"}}
+			return artifacts
 		},
-		"tampered bytes": func(artifacts []ir.Artifact) {
+		"tampered bytes": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
-			module.Bytes = []byte("export const x = 1;\n")
+			module.Bytes = []byte("import \"../../program/state.ts\";\nexport const x = 1;\n")
+			return artifacts
 		},
 	}
 	for name, mutate := range cases {
 		t.Run(name, func(t *testing.T) {
 			artifacts := make([]ir.Artifact, len(base))
 			copy(artifacts, base)
-			mutate(artifacts)
+			artifacts = mutate(artifacts)
 			if err := AuditArtifacts(artifacts); err == nil {
 				t.Fatalf("violation admitted: %s", name)
 			}
