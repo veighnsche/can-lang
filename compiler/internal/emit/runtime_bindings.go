@@ -100,6 +100,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		formOperationBindings(),
 		assembly.formSpecializationBindings(),
 		assembly.fetchSpecializationBindings(),
+		assembly.actionBindings(),
 		browserOperationBindings(),
 		assembly.browserSpecializationBindings(),
 		assembly.functionBindings(),

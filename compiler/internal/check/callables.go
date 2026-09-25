@@ -104,6 +104,9 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 	if routeOperation(binding.Identity) {
 		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("route construction requires a direct call with a static path"))
 	}
+	if actionOperation(binding.Identity) {
+		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("action consumers require a direct call with an action symbol"))
+	}
 	declaration, ok := c.context.Callables[binding.Identity]
 	if !ok {
 		return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("missing named callable declaration evidence"))

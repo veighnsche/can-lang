@@ -107,7 +107,8 @@
     "browser::missing_root",
     "browser::disposed",
     "browser::rejected",
-    "browser::stale_version"
+    "browser::stale_version",
+    "action::invalid_path"
   ],
   "retired": []
 }

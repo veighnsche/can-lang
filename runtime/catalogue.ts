@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "ebcdf98fa5f1d74320402ec79069d2372145fde04807d48fdbaabd4b5663f5fa";
+export const catalogueSHA256 = "7b8edb207ec030a9aec45d824e304b3d1dacaf7dbb5a0ac7ba34935df1f04fba";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -156,6 +156,10 @@ export const catalogue = freeze({
     {
       "name": "markdown",
       "identity": "can.std.markdown@1"
+    },
+    {
+      "name": "action",
+      "identity": "can.std.action@1"
     }
   ],
   "prelude": [
@@ -1851,6 +1855,16 @@ export const catalogue = freeze({
       "leaves": [],
       "projections": [],
       "constructible": true
+    },
+    {
+      "name": "action::declaration",
+      "identity": "can.std.action@1::declaration",
+      "kind": "opaque",
+      "parameters": [],
+      "fields": [],
+      "leaves": [],
+      "projections": [],
+      "constructible": false
     }
   ],
   "errors": [
@@ -3091,6 +3105,17 @@ export const catalogue = freeze({
         {
           "name": "actual",
           "type": "int"
+        }
+      ]
+    },
+    {
+      "name": "action::invalid_path",
+      "identity": "can.std.action@1::invalid_path",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "reason",
+          "type": "str"
         }
       ]
     }
@@ -13301,6 +13326,160 @@ export const catalogue = freeze({
       "refs": [
         "T22"
       ]
+    },
+    {
+      "name": "action::mount",
+      "identity": "can.std.action@1::mount",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "action::declaration"
+        }
+      ],
+      "staticInputs": [],
+      "result": "http::route",
+      "callbacks": [],
+      "emits": [
+        "http::invalid_route"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL",
+          "Request",
+          "Response"
+        ],
+        "adapter": "Bind one action symbol plus its exact checked callables into a mounted route: one request-first handler for JSON actions, plus the normal and structural-422 renderers for HTML actions; decode through the declared codec and map result leaves to case statuses.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "action::url",
+      "identity": "can.std.action@1::url",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "action::declaration"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "action::invalid_path"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "URL",
+          "encodeURIComponent"
+        ],
+        "adapter": "Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "action::request",
+      "identity": "can.std.action@1::request",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "action::declaration"
+        }
+      ],
+      "staticInputs": [],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
+    },
+    {
+      "name": "action::post",
+      "identity": "can.std.action@1::post",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "Result",
+          "constraint": "data"
+        },
+        {
+          "name": "Wire",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "action",
+          "type": "action::declaration"
+        }
+      ],
+      "staticInputs": [],
+      "result": "Result",
+      "callbacks": [],
+      "emits": [
+        "http::transport_failed",
+        "http::invalid_request",
+        "http::body_limit",
+        "http::status_error",
+        "codec::invalid_data"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "fetch",
+          "Request",
+          "Response",
+          "TextDecoder"
+        ],
+        "adapter": "Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, encode the exact wire body under the shared codec within the wire limit, POST through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound.",
+        "task": "I32"
+      },
+      "assertion": "real",
+      "refs": [
+        "P10"
+      ]
     }
   ],
   "nativeDeclarations": [
@@ -15516,6 +15695,14 @@ export const catalogueTypeShapes = freeze([
     "leaves": []
   },
   {
+    "name": "action::declaration",
+    "identity": "can.std.action@1::declaration",
+    "kind": "opaque",
+    "parameters": [],
+    "fields": [],
+    "leaves": []
+  },
+  {
     "name": "all_failed",
     "identity": "can.prelude@1::all_failed",
     "kind": "error",
@@ -17341,6 +17528,22 @@ export const catalogueTypeShapes = freeze([
         "name": "actual",
         "type": {
           "name": "int",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "action::invalid_path",
+    "identity": "can.std.action@1::invalid_path",
+    "kind": "error",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "reason",
+        "type": {
+          "name": "str",
           "arguments": null
         }
       }

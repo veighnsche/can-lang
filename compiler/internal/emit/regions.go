@@ -311,6 +311,20 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			callArgs = append(append([]string{}, args...), metadata)
 		}
+		if step.Action != nil {
+			// The frozen consumer contract joins the invocation only:
+			// fixture matching still compares the authored value
+			// operands, and the static symbol never lowers to a value.
+			// HTML mounts select the three-callable form entry.
+			metadata, err := actionMetadata(step.Action)
+			if err != nil {
+				return LoweredExpression{}, err
+			}
+			if step.Action.Operation == "can.std.action@1::mount" {
+				target = actionMountTarget(step.Action)
+			}
+			callArgs = append(append([]string{}, args...), metadata)
+		}
 		if step.Identity == "can.std.checks@1::require" {
 			// C9.2: the call-site span and invocation path travel as a
 			// hidden argument into private occurrence metadata. Fixture
