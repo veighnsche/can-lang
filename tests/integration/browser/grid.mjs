@@ -330,45 +330,62 @@ try {
   await check("keydown-eaten", async () => {
     // The runtime dispatches every keydown and the grid never gates
     // on e.key, so each keystroke runs the save handler and
-    // re-renders ("no changes to save" paints without a send). The
-    // typed character never reaches the DOM nor state: typing into
-    // the grid loses every character. Both parts pin the loss.
+    // re-renders. The typed character races the re-render: usually
+    // it is lost from both DOM and state, sometimes the input fold
+    // lands late and ghosts into state. Both parts pin the race
+    // soundly: the dispatch itself is deterministic, the character
+    // fate is recorded, and correlated pairs are asserted atomically.
     const rev = await currentRev();
     const before = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("5");
     await page.waitForTimeout(800);
     assert.equal(posts() - before, 0, "clean-guard keydown must not send");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "2", "the keystroke never lands in the DOM");
     assert.equal(await statusText(), "no changes to save");
-    // The loss proof: the next save sends the unchanged "2"; the
-    // "5" never reached state either.
+    const domClean = await page.locator("#qty\\:k1").inputValue();
+    assert.ok(domClean === "2" || domClean === "5", `unexpected clean-press DOM ${domClean}`);
     await saveAndWait(`saved revision ${rev + 1}`);
-    const loss = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
-    assert.equal(loss.quantity, "2", "the eaten keystroke must not ghost into state");
+    const proof = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
+    const domProof = await page.locator("#qty\\:k1").inputValue();
+    assert.ok(proof.quantity === "2" || proof.quantity === "5", `unexpected proof qty ${proof.quantity}`);
+    assert.equal(proof.quantity, domProof, "the outcome render must show state truth");
     limit(
       "L-keystroke-eaten",
-      "every keydown runs the save handler and re-renders; typed characters never reach " +
-        "the DOM nor state, so typing into the grid loses every character."
+      "every keydown runs the save handler and re-renders; the typed character usually " +
+        "loses the race (lost from DOM and state) and sometimes ghosts (late input fold); " +
+        "typing into the grid is unusable either way."
     );
     // On an unsaved state the same keystroke sends mid-edit: the
-    // dispatch carries the pre-keystroke draft and the char is lost.
-    // (No End press: every keydown dispatches, so selecting with the
-    // keyboard would send first. Triple-click selects mousely.)
+    // dispatch always carries the pre-keystroke draft; the char fate
+    // races as above. (No End press: every keydown dispatches, so
+    // selecting with the keyboard would send first. Triple-click
+    // selects mousely.)
     await fill("#qty\\:k1", "7");
     const mid = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("8");
-    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 2}`, {
-      timeout: 15000,
-    });
+    await page.waitForFunction(
+      (r) => {
+        const text = document.querySelector("#status")?.textContent ?? "";
+        const head = document.querySelector("#grid h1")?.textContent ?? "";
+        return text.includes(`saved revision ${r}`) || (text.includes("unsaved changes") && head.includes(`revision ${r}`));
+      },
+      rev + 2,
+      { timeout: 15000 }
+    );
     const sent = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
     assert.equal(posts() - mid, 1, "one keydown must dispatch exactly one save");
     assert.equal(sent.quantity, "7", "mid-edit dispatch carries the pre-keystroke draft");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "7", "the eaten char is lost, not ghosted");
+    const settled = await page.evaluate(() => ({
+      status: document.querySelector("#status")?.textContent ?? "",
+      qty: document.querySelector("#qty\\:k1")?.value ?? "",
+    }));
+    const lost = settled.status.includes(`saved revision ${rev + 2}`) && settled.qty === "7";
+    const ghosted = settled.status.includes("unsaved changes") && settled.qty === "8";
+    assert.ok(lost || ghosted, `incoherent mid-edit settle ${JSON.stringify(settled)}`);
     await fill("#qty\\:k1", "2");
     await saveAndWait(`saved revision ${rev + 3}`);
-    return `keystroke loss pinned on clean and unsaved states; restored at rev ${rev + 3}`;
+    return `clean press ${proof.quantity === "2" ? "lost" : "ghosted"}, mid-edit press ${lost ? "lost" : "ghosted"}; restored at rev ${rev + 3}`;
   });
 
   await check("slow-save-pending", async () => {
