@@ -7,14 +7,19 @@
 // real HTTP, SQLite and Chromium DOM observation. Check-level stale
 // diagnostics and the negative battery live in
 // compiler/internal/driver/invoice_grid_test.go; this file proves the
-// repaired live behavior, old-path 404/new-path 200 with handler-entry
-// evidence, pre-entry 400/413/415, manifest-mismatch rejection and that
-// importing the contract registers no route.
+// repaired live behavior, stale-path rejection/new-path success with
+// handler-entry evidence, pre-entry 400/413/415, manifest-mismatch
+// rejection and that importing the contract registers no route. The old
+// load spelling answers 405 (the path stays recognized by the kept POST
+// save) while genuinely unknown and unmounted paths answer 404.
 //
-// Run with a staged toolchain and the pinned harness:
+// Run with a staged toolchain and the pinned harness, in two parts so
+// each fits the 25m go timeout:
 //
 //	CAN_BUN_ARCHIVE=/private/tmp/bun-dl/bun-darwin-aarch64.zip \
-//	  go test ./tests/integration/ -run TestInvoiceContract -count=1 -timeout 25m
+//	  go test ./tests/integration/ -run 'TestInvoiceContract(Route|Capture|Field|Leaf|Status)' -count=1 -timeout 25m
+//	CAN_BUN_ARCHIVE=/private/tmp/bun-dl/bun-darwin-aarch64.zip \
+//	  go test ./tests/integration/ -run 'TestInvoiceContract(Limit|BodyMode|ManifestMismatch|NoRegistration)' -count=1 -timeout 25m
 package integration
 
 import (
