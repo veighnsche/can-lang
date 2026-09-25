@@ -1009,21 +1009,28 @@ func TestGate3AdapterMatrix(t *testing.T) {
 		t.Fatalf("encoded separator: %d %q, want 400 or 404", status, body)
 	}
 	requireNoEntry(t, "encoded separator", before, entries())
-	for _, path := range []string{"/api/tenants/1/invoices/7/../8", "/api/tenants/./1/invoices/7"} {
-		before := entries()
-		raw := "GET " + path + " HTTP/1.1\r\nHost: " + addr + "\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"
-		status, body, _ := gate3Raw(t, addr, raw)
-		// A normalizing layer may resolve the dots to a neighboring
-		// denied address; either way no success and no entry effect.
-		if status != 400 && status != 404 && status != 403 {
-			t.Fatalf("dot segment %s: %d %q, want 400, 404 or denied 403", path, status, body)
-		}
-		if status == 403 {
-			gate3Case(t, "dot segment "+path, body, "invoice_contract::grid_load_forbidden")
-		}
-		requireNoEntry(t, "dot segment "+path, before, entries())
-		t.Logf("dot segment %s: %d without entry effect", path, status)
+	// Dot segments resolve through native normalization, never into a
+	// handler as data: climbing to a neighbor answers the neighbor's
+	// denial, and a self-dot answers byte-identically to the direct
+	// address. Both leave the observable entries fixed.
+	before = entries()
+	raw := "GET /api/tenants/1/invoices/7/../8 HTTP/1.1\r\nHost: " + addr + "\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"
+	status, body, _ = gate3Raw(t, addr, raw)
+	if status != 400 && status != 404 && status != 403 {
+		t.Fatalf("dot climb: %d %q, want 400, 404 or denied 403", status, body)
 	}
+	if status == 403 {
+		gate3Case(t, "dot climb", body, "invoice_contract::grid_load_forbidden")
+	}
+	requireNoEntry(t, "dot climb", before, entries())
+	t.Logf("dot climb: %d without entry effect", status)
+	directStatus, directBody, _ := invoiceGet(t, base, savePath, "tok-alice")
+	self := "GET /api/tenants/./1/invoices/7 HTTP/1.1\r\nHost: " + addr + "\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"
+	status, body, _ = gate3Raw(t, addr, self)
+	if status != directStatus || body != directBody {
+		t.Fatalf("dot self: %d %.300s, want byte-identical %d", status, body, directStatus)
+	}
+	requireNoEntry(t, "dot self", before, entries())
 
 	// Media, syntax and budget failures stay pre-handler on both
 	// channels; the contract limits are 8192 JSON bytes and 2048 form
