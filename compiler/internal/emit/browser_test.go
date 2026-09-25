@@ -93,6 +93,9 @@ func TestBrowserModulesEmitDistinctRoot(t *testing.T) {
 	if !strings.Contains(body, "$canBrowserMain") || !strings.Contains(body, "$canInitialize()") {
 		t.Fatalf("entry lacks the browser main lifecycle:\n%s", body)
 	}
+	if !strings.Contains(body, "await $canVerifyErrorPlan($canErrorPlan);$canInitialize()") {
+		t.Fatalf("entry initializes before verifying the sealed error plan:\n%s", body)
+	}
 	for _, token := range []string{"process.", "Bun.", "require(", "node:"} {
 		if strings.Contains(body, token) {
 			t.Fatalf("entry contains host token %q", token)

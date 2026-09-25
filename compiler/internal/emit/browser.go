@@ -87,14 +87,15 @@ func emitBrowserEntry(assembly *programAssembly, runtime string) Module {
 		"export async function $canBrowserMain(): Promise<void> {\n" +
 		"if ($canStarted) return;\n" +
 		"$canStarted = true;\n" +
-		"await $canRunBrowserEntry({table: $canTable, main: async ($canCtx) => {$canInitialize();\n" +
+		"await $canRunBrowserEntry({table: $canTable, main: async ($canCtx) => {await $canVerifyErrorPlan($canErrorPlan);$canInitialize();\n" +
 		"return $canMain($canCtx);\n" +
 		"}});\n" +
 		"}\n" +
 		"void $canBrowserMain();\n"
 	return Module{Path: browser.BrowserEntry, Imports: []ModuleImport{
-		{Target: programStatePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}}},
+		{Target: programStatePath, Names: []ImportName{{"$canInitialize", "$canInitialize"}, {"$canErrorPlan", "$canErrorPlan"}}},
 		{Target: runtime + "/browser/entry.ts", Names: []ImportName{{"runBrowserEntry", "$canRunBrowserEntry"}}},
+		{Target: runtime + "/browser/domain.ts", Names: []ImportName{{"verifyErrorPlan", "$canVerifyErrorPlan"}}},
 		{Target: main.Symbol.Source.OutputPath, Names: []ImportName{{assembly.functions[main.Identity()], "$canMain"}}},
 	}, Body: body}
 }
