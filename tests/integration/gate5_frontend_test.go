@@ -203,7 +203,16 @@ func gate5Assert(t *testing.T, ctx context.Context, canlc, home, root, name stri
 	return len(report.Assertions), real
 }
 
-func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, extra ...string) (string, string) {
+type gate5BuildReport struct {
+	BuildID   string
+	Directory string
+	Roots     int
+}
+
+// gate5Build runs one toolchain build and verifies its assertion verdict:
+// browser-entry projects cannot run the standalone assert entry check, so
+// the build's own verified assertions carry the real-can bar.
+func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, extra ...string) gate5BuildReport {
 	t.Helper()
 	args := append([]string{"build"}, extra...)
 	args = append(args, root)
@@ -216,11 +225,30 @@ func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, ext
 		Directory string `json:"directory"`
 		Entry     string `json:"entry"`
 		Asset     string `json:"asset"`
+		Assert    *struct {
+			Roots    int      `json:"roots"`
+			Passed   int      `json:"passed"`
+			Failed   int      `json:"failed"`
+			Evidence []string `json:"evidence"`
+		} `json:"assertions"`
 	}
 	if err := json.Unmarshal([]byte(out), &report); err != nil || report.BuildID == "" || report.Directory == "" {
 		t.Fatalf("invalid build report %v %s", err, out)
 	}
-	return report.BuildID, report.Directory
+	if report.Assert == nil || report.Assert.Failed != 0 || report.Assert.Passed != report.Assert.Roots || report.Assert.Roots == 0 {
+		t.Fatalf("build assertions unverified: %+v", report.Assert)
+	}
+	real := false
+	for _, evidence := range report.Assert.Evidence {
+		if evidence == "real-can" {
+			real = true
+			break
+		}
+	}
+	if !real {
+		t.Fatalf("build asserts nothing real: %+v", report.Assert.Evidence)
+	}
+	return gate5BuildReport{BuildID: report.BuildID, Directory: report.Directory, Roots: report.Assert.Roots}
 }
 
 // gate5Pairing is one verified server/browser pairing: the server build
@@ -1094,42 +1122,41 @@ func TestGate5ServedMatrix(t *testing.T) {
 	matrix.serverHome = serverHome
 	serverAssertions, serverReal := gate5Assert(t, ctx, canlc, serverHome, serverRoot, "invoice")
 	gridRoot, gridHome := stageProject(t, sourceRoot, "examples/invoice-grid")
-	gridAssertions, gridReal := gate5Assert(t, ctx, canlc, gridHome, gridRoot, "grid")
 	fixtureRoot, fixtureHome := gate5StageFixture(t, sourceRoot)
-	fixtureAssertions, fixtureReal := gate5Assert(t, ctx, canlc, fixtureHome, fixtureRoot, "fixture")
 	emptyRoot, emptyHome := gate5StageEmpty(t)
-	emptyAssertions, emptyReal := gate5Assert(t, ctx, canlc, emptyHome, emptyRoot, "empty")
 
 	browserBuilds := map[string]string{}
+	browserRoots := map[string]int{}
 	browserDirs := map[string]string{}
 	for _, project := range []struct{ name, home, root string }{
 		{"grid", gridHome, gridRoot},
 		{"fixture", fixtureHome, fixtureRoot},
 		{"empty", emptyHome, emptyRoot},
 	} {
-		firstID, _ := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
-		secondID, dir := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
-		if firstID != secondID {
-			t.Fatalf("%s browser rebuild drifted: %s vs %s", project.name, firstID, secondID)
+		first := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
+		second := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
+		if first.BuildID != second.BuildID {
+			t.Fatalf("%s browser rebuild drifted: %s vs %s", project.name, first.BuildID, second.BuildID)
 		}
-		assertNoStrayEmit(t, project.root, dir)
-		gate5Asset(t, dir)
-		gate5ImportAudit(t, dir)
-		browserBuilds[project.name] = firstID
-		browserDirs[project.name] = dir
-		matrix.pairings[project.name] = gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(dir, "browser", "manifest.json"))
-		repeat := gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(dir, "browser", "manifest.json"))
+		assertNoStrayEmit(t, project.root, second.Directory)
+		gate5Asset(t, second.Directory)
+		gate5ImportAudit(t, second.Directory)
+		browserBuilds[project.name] = first.BuildID
+		browserRoots[project.name] = first.Roots
+		browserDirs[project.name] = second.Directory
+		matrix.pairings[project.name] = gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(second.Directory, "browser", "manifest.json"))
+		repeat := gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(second.Directory, "browser", "manifest.json"))
 		if repeat.BuildID != matrix.pairings[project.name].BuildID || repeat.Entry != matrix.pairings[project.name].Entry {
 			t.Fatalf("%s paired rebuild drifted: %s vs %s", project.name, repeat.BuildID, matrix.pairings[project.name].BuildID)
 		}
 	}
 	assertNoStrayEmit(t, serverRoot, matrix.pairings["grid"].Directory)
 	gate5NoDirectIO(t, browserDirs["grid"])
-	t.Logf("gate5 builds: server %d assertions (%d real-can); grid %d (%d) browser %s paired %s; fixture %d (%d) browser %s paired %s; empty %d (%d) browser %s paired %s",
+	t.Logf("gate5 builds: server %d assertions (%d real-can); grid %d roots browser %s paired %s; fixture %d roots browser %s paired %s; empty %d roots browser %s paired %s",
 		serverAssertions, serverReal,
-		gridAssertions, gridReal, browserBuilds["grid"][:12], matrix.pairings["grid"].BuildID[:12],
-		fixtureAssertions, fixtureReal, browserBuilds["fixture"][:12], matrix.pairings["fixture"].BuildID[:12],
-		emptyAssertions, emptyReal, browserBuilds["empty"][:12], matrix.pairings["empty"].BuildID[:12])
+		browserRoots["grid"], browserBuilds["grid"][:12], matrix.pairings["grid"].BuildID[:12],
+		browserRoots["fixture"], browserBuilds["fixture"][:12], matrix.pairings["fixture"].BuildID[:12],
+		browserRoots["empty"], browserBuilds["empty"][:12], matrix.pairings["empty"].BuildID[:12])
 
 	t.Run("grid", func(t *testing.T) {
 		matrix.gridLeg(t, "chromium", gate5PortGridChromium)
@@ -1151,9 +1178,9 @@ func TestGate5ServedMatrix(t *testing.T) {
 	finalReport, err := json.MarshalIndent(map[string]any{
 		"mode": mode, "host": host,
 		"server":  map[string]any{"assertions": serverAssertions, "real_can": serverReal},
-		"grid":    map[string]any{"assertions": gridAssertions, "real_can": gridReal, "browser": browserBuilds["grid"], "paired": matrix.pairings["grid"].BuildID, "entry": matrix.pairings["grid"].Entry},
-		"fixture": map[string]any{"assertions": fixtureAssertions, "real_can": fixtureReal, "browser": browserBuilds["fixture"], "paired": matrix.pairings["fixture"].BuildID, "entry": matrix.pairings["fixture"].Entry},
-		"empty":   map[string]any{"assertions": emptyAssertions, "real_can": emptyReal, "browser": browserBuilds["empty"], "paired": matrix.pairings["empty"].BuildID, "entry": matrix.pairings["empty"].Entry},
+		"grid":    map[string]any{"roots": browserRoots["grid"], "browser": browserBuilds["grid"], "paired": matrix.pairings["grid"].BuildID, "entry": matrix.pairings["grid"].Entry},
+		"fixture": map[string]any{"roots": browserRoots["fixture"], "browser": browserBuilds["fixture"], "paired": matrix.pairings["fixture"].BuildID, "entry": matrix.pairings["fixture"].Entry},
+		"empty":   map[string]any{"roots": browserRoots["empty"], "browser": browserBuilds["empty"], "paired": matrix.pairings["empty"].BuildID, "entry": matrix.pairings["empty"].Entry},
 		"matrix":  matrix.versions,
 		"limitations": []string{
 			"L-keystroke-eaten: every keydown runs the grid save handler and re-renders; typed characters usually lose the race and sometimes ghost",
