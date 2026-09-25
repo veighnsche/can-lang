@@ -1,5 +1,5 @@
 package model
-    provides [totals_text, minor_to_price, parse_price, parse_qty, parse_key, operation_id, to_input, from_snapshot, with_id, with_quantity, with_price, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, blocked_applied, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, id_edited, quantity_edited, price_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, invalid_applied, conflict_applied, forbidden_applied, unavailable_applied, save_failed, loaded_applied, load_forbidden_applied, load_unavailable_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state, row_focus_control]
+    provides [totals_text, minor_to_price, line_amount, parse_price, parse_qty, parse_key, operation_id, to_input, from_snapshot, with_id, with_quantity, with_price, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, blocked_applied, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, id_edited, quantity_edited, price_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, invalid_applied, conflict_applied, forbidden_applied, unavailable_applied, save_failed, loaded_applied, load_forbidden_applied, load_unavailable_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state, row_focus_control, rows_focused]
     uses [billing::invoice_contract as contract, records, number, option, text]
 
 /// Report whether one scalar is an ASCII digit.
@@ -148,7 +148,9 @@ fn option::value<int> parse_qty
 
 /// Parse one bootstrap query key into its id. The spelling must be
 /// canonical decimal (a from_int round trip) and the id positive;
-/// tenant and invoice ids share this one rule.
+/// tenant and invoice ids share this one rule. Values past int64
+/// still parse here; boot fails them closed through the checked
+/// action path builder before anything mounts or fetches.
 fn option::value<int> parse_key
     emits []
     given
@@ -162,13 +164,14 @@ fn option::value<int> parse_key
         bad_text: "many" => ok option::none()
         empty: "" => ok option::none()
         spaced: " 7" => ok option::none()
-        huge: "9999999999999999999999" => ok option::none()
+        huge: "9999999999999999999999" => ok option::some(9999999999999999999999)
     match call text::to_int(text)
         text::invalid_number => ok option::none()
         ok int id => match id < 1
-            false => match call text::from_int(id) is text
-                false => ok option::none()
-                true => ok option::some(id)
+            false => match call text::from_int(id)
+                ok str spelled => match spelled is text
+                    false => ok option::none()
+                    true => ok option::some(id)
             true => ok option::none()
 
 /// Render minor units back to canonical wire price: whole units, a
@@ -207,6 +210,18 @@ fn int total_minor
         false => match call total_minor(lines, index + 1, grown + lines[index].qty * lines[index].price_minor)
             ok int rest => ok rest
         true => ok grown
+
+/// One row amount: parsed count times parsed minor units, rendered
+/// canonical. Parsed values feed the math, so an unparsable edit
+/// keeps the last parsed amount on screen until it is fixed.
+fn str line_amount
+    emits []
+    given
+        records::draft_line line
+    asserts
+        sample: records::draft_line("k1", "a", "2", "5.00", 2, 500, true) => ok "10.00"
+        zero: records::draft_line("k1", "a", "1", "0.00", 1, 0, true) => ok "0.00"
+    ok call minor_to_price(line.qty * line.price_minor)
 
 /// Totals line for the grid chrome: line count and exact total.
 fn str totals_text
@@ -1485,3 +1500,26 @@ fn str row_focus_control
                 true => ok "price"
             true => ok "qty"
         true => ok "id"
+
+/// Report whether the focus intent names a control of one of the
+/// present rows. The render focuses the built row target only then;
+/// a stale intent (its row is gone) focuses nothing.
+fn bool rows_focused
+    emits []
+    given
+        records::draft_line[] lines
+        str focus
+        int index
+    asserts
+        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "qty:k1", 0 => ok true
+        second: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], "del:k2", 0 => ok true
+        stale: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "qty:k9", 0 => ok false
+        chrome: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "save", 0 => ok false
+        empty: [], "qty:k1", 0 => ok false
+    match index >= lines.length
+        false => match call row_focus_control(focus, lines[index].key)
+            ok str control => match control is ""
+                false => ok true
+                true => match call rows_focused(lines, focus, index + 1)
+                    ok bool rest => ok rest
+        true => ok false
