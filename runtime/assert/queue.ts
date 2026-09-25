@@ -3,7 +3,7 @@ import {
   invocationPath,
   type InvocationIdentity,
   type InvocationPath,
-} from "./identity.ts";
+} from "./lineage.ts";
 
 declare const queuesBrand: unique symbol;
 export type FixtureQueues = Readonly<{ [queuesBrand]: true }>;

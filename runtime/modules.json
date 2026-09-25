@@ -5,7 +5,7 @@
       "../failure.ts",
       "../diagnostics.ts",
       "./report.ts",
-      "./identity.ts",
+      "./lineage.ts",
       "./barrier.ts",
       "./queue.ts",
       "../completion.ts"
@@ -207,14 +207,16 @@
       "./assert/context.ts"
     ],
     "assert/identity.ts": [
-      "node:crypto"
+      "node:crypto",
+      "./lineage.ts"
     ],
+    "assert/lineage.ts": [],
     "assert/barrier.ts": [
       "../completion.ts",
-      "./identity.ts"
+      "./lineage.ts"
     ],
     "assert/queue.ts": [
-      "./identity.ts"
+      "./lineage.ts"
     ],
     "assert/report.ts": [],
     "collections/array.ts": [
@@ -723,6 +725,37 @@
       "../completion.ts",
       "./diagnostics.ts",
       "../failure.ts"
+    ],
+    "browser/formats.ts": [
+      "../codec/budget.ts",
+      "../codec/project.ts"
+    ],
+    "browser/cookies.ts": [
+      "../completion.ts",
+      "../domain-core.ts"
+    ],
+    "browser/csrf.ts": [
+      "../completion.ts",
+      "../domain-core.ts"
+    ],
+    "browser/clock.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../domain-core.ts"
+    ],
+    "browser/log.ts": [
+      "../assert/context.ts",
+      "../completion.ts",
+      "../data.ts",
+      "../domain-core.ts"
+    ],
+    "browser/markdown.ts": [
+      "../completion.ts",
+      "../domain-core.ts"
+    ],
+    "browser/assets.ts": [
+      "../platform/assets.ts"
     ],
     "platform/htmx-guard.ts": []
   }

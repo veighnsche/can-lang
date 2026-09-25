@@ -15,21 +15,48 @@ import (
 // generated modules to checked Can spans.
 const SourceIndexPath = "diagnostics/source-index.json"
 
-// browserOverlay is the UP07 sealed-profile substitution table, stated in
+// browserOverlay is the sealed-profile substitution table, stated in
 // runtime-relative module paths: at browser bundle time every edge to a
 // canonical module resolves to its alternate instead. The pre-bundle audit
 // applies the same rule while walking the reachable graph, so the bodies
 // inspected are the bodies that ship. A canonical module whose alternate
 // is absent from the generation is inspected as-is and fails closed on its
-// own host edges.
+// own host edges. UP07 sealed the owner-context core; UP15 extends the
+// table to the remaining profile-divergent modules (coordinator-flagged):
+// stub alternates for server-only capabilities plus native clock and log
+// alternates. The canonical HTML escaper is portable instead of overlaid.
 var browserOverlay = map[string]string{
-	"reflect.ts":      "browser/reflect.ts",
-	"domain.ts":       "browser/domain.ts",
-	"diagnostics.ts":  "browser/diagnostics.ts",
-	"owner.ts":        "browser/owner.ts",
-	"callable.ts":     "browser/callable.ts",
-	"coordination.ts": "browser/coordination.ts",
-	"entry.ts":        "browser/entry.ts",
+	"reflect.ts":           "browser/reflect.ts",
+	"domain.ts":            "browser/domain.ts",
+	"diagnostics.ts":       "browser/diagnostics.ts",
+	"owner.ts":             "browser/owner.ts",
+	"callable.ts":          "browser/callable.ts",
+	"coordination.ts":      "browser/coordination.ts",
+	"entry.ts":             "browser/entry.ts",
+	"codec/formats.ts":     "browser/formats.ts",
+	"platform/cookies.ts":  "browser/cookies.ts",
+	"platform/csrf.ts":     "browser/csrf.ts",
+	"platform/clock.ts":    "browser/clock.ts",
+	"platform/log.ts":      "browser/log.ts",
+	"platform/markdown.ts": "browser/markdown.ts",
+	"platform/assets.ts":   "browser/assets.ts",
+}
+
+// OverlayShipping maps a generation artifact path to the module that ships
+// in the browser profile: the sealed alternate when the runtime-relative
+// path names one, else the path itself. The bundler applies this exact
+// substitution so shipped bytes are the inspected bytes; callers confirm
+// the alternate exists in the generation exactly as the audit does.
+func OverlayShipping(artifactPath string, runtime bool) string {
+	rel, ok := runtimeRelativePath(artifactPath, runtime)
+	if !ok {
+		return artifactPath
+	}
+	alternate, ok := browserOverlay[rel]
+	if !ok {
+		return artifactPath
+	}
+	return artifactPath[:len(artifactPath)-len(rel)] + alternate
 }
 
 // forbiddenRuntimeDirs denies whole server-capability runtime domains at
@@ -233,21 +260,24 @@ func (audit *graphAudit) inspectAsset(artifact ir.Artifact) error {
 // module path: runtime/r-<id>/<rel> and the emit-test shape runtime/<rel>
 // both yield <rel>. Non-runtime paths yield ok=false.
 func runtimeRelative(artifact ir.Artifact) (rel string, ok bool) {
-	if !artifact.Runtime {
+	return runtimeRelativePath(artifact.Path, artifact.Runtime)
+}
+
+func runtimeRelativePath(name string, runtime bool) (rel string, ok bool) {
+	if !runtime {
 		return "", false
 	}
-	path := artifact.Path
 	start := -1
-	for index := 0; index+len("runtime/") <= len(path); index++ {
-		if (index == 0 || path[index-1] == '/') && strings.HasPrefix(path[index:], "runtime/") {
+	for index := 0; index+len("runtime/") <= len(name); index++ {
+		if (index == 0 || name[index-1] == '/') && strings.HasPrefix(name[index:], "runtime/") {
 			start = index + len("runtime/")
 			break
 		}
 	}
-	if start < 0 || start >= len(path) {
+	if start < 0 || start >= len(name) {
 		return "", false
 	}
-	rest := path[start:]
+	rest := name[start:]
 	if cut := strings.IndexByte(rest, '/'); cut >= 0 {
 		return rest[cut+1:], true
 	}
@@ -287,15 +317,10 @@ func hasSegmentPath(path, dir string) bool {
 // overlay resolves a runtime module through the sealed-profile substitution
 // table. It returns the shipping path and whether a substitution applied.
 func (audit *graphAudit) overlay(artifact ir.Artifact) (ir.Artifact, bool) {
-	rel, ok := runtimeRelative(artifact)
-	if !ok {
+	redirect := OverlayShipping(artifact.Path, artifact.Runtime)
+	if redirect == artifact.Path {
 		return artifact, false
 	}
-	alternate, ok := browserOverlay[rel]
-	if !ok {
-		return artifact, false
-	}
-	redirect := artifact.Path[:len(artifact.Path)-len(rel)] + alternate
 	if target, ok := audit.byPath[redirect]; ok {
 		return target, true
 	}

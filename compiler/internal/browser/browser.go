@@ -72,14 +72,30 @@ var forbiddenPrefixes = []struct{ prefix, reason string }{
 }
 
 // forbiddenExact denies server lifecycle operations. Pure HTTP request,
-// response and router constructors stay available.
+// response and router constructors stay available. UP15 extends the list
+// to profile-unavailable operations (coordinator-flagged): cookie jars,
+// CSRF secrets, TOML/YAML/JSON5 parsing and Markdown rendering have no
+// browser-native implementation, so checked browser programs fail here
+// with span evidence instead of trapping at runtime in a stub alternate.
 var forbiddenExact = map[string]string{
-	"can.std.http@1::server_start":       "the HTTP server lifecycle is server-only",
-	"can.std.http@1::server_start_tls":   "the HTTP server lifecycle is server-only",
-	"can.std.http@1::server_stop":        "the HTTP server lifecycle is server-only",
-	"can.std.http@1::server_wait":        "the HTTP server lifecycle is server-only",
-	"can.std.http@1::make_tls_config":    "TLS configuration is server-only",
-	"can.std.http@1::make_server_config": "the HTTP server lifecycle is server-only",
+	"can.std.http@1::server_start":         "the HTTP server lifecycle is server-only",
+	"can.std.http@1::server_start_tls":     "the HTTP server lifecycle is server-only",
+	"can.std.http@1::server_stop":          "the HTTP server lifecycle is server-only",
+	"can.std.http@1::server_wait":          "the HTTP server lifecycle is server-only",
+	"can.std.http@1::make_tls_config":      "TLS configuration is server-only",
+	"can.std.http@1::make_server_config":   "the HTTP server lifecycle is server-only",
+	"can.std.cookie@1::parse":              "cookie handling is server-only",
+	"can.std.cookie@1::get":                "cookie handling is server-only",
+	"can.std.cookie@1::make":               "cookie handling is server-only",
+	"can.std.cookie@1::serialize":          "cookie handling is server-only",
+	"can.std.cookie@1::expire":             "cookie handling is server-only",
+	"can.std.csrf@1::generate":             "CSRF tokens are server-only",
+	"can.std.csrf@1::verify":               "CSRF tokens are server-only",
+	"can.std.codec@1::decode_toml":         "TOML parsing is server-only",
+	"can.std.codec@1::decode_yaml":         "YAML parsing is server-only",
+	"can.std.codec@1::decode_json5":        "JSON5 parsing is server-only",
+	"can.std.markdown@1::render_text_html": "Markdown rendering is server-only",
+	"can.std.markdown@1::render_safe":      "Markdown rendering is server-only",
 }
 
 // ForbiddenReason reports whether an invocation or callable identity names a

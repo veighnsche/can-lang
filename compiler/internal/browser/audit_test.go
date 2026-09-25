@@ -229,6 +229,46 @@ func TestAuditAppliesProfileOverlay(t *testing.T) {
 	auditFails(t, missing, "native edge", "node:crypto")
 }
 
+func TestOverlayShippingCoversSealedProfile(t *testing.T) {
+	runtime := "runtime/r-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+	for canonical, alternate := range map[string]string{
+		"reflect.ts":           "browser/reflect.ts",
+		"domain.ts":            "browser/domain.ts",
+		"diagnostics.ts":       "browser/diagnostics.ts",
+		"owner.ts":             "browser/owner.ts",
+		"callable.ts":          "browser/callable.ts",
+		"coordination.ts":      "browser/coordination.ts",
+		"entry.ts":             "browser/entry.ts",
+		"codec/formats.ts":     "browser/formats.ts",
+		"platform/cookies.ts":  "browser/cookies.ts",
+		"platform/csrf.ts":     "browser/csrf.ts",
+		"platform/clock.ts":    "browser/clock.ts",
+		"platform/log.ts":      "browser/log.ts",
+		"platform/markdown.ts": "browser/markdown.ts",
+		"platform/assets.ts":   "browser/assets.ts",
+	} {
+		if got := OverlayShipping(runtime+"/"+canonical, true); got != runtime+"/"+alternate {
+			t.Fatalf("OverlayShipping(%s) = %s, want %s", canonical, got, alternate)
+		}
+	}
+	for _, untouched := range []struct {
+		path    string
+		runtime bool
+	}{
+		{"program/state.ts", false},
+		{BrowserEntry, false},
+		{runtime + "/completion.ts", true},
+		{runtime + "/platform/html.ts", true},
+		{runtime + "/assert/lineage.ts", true},
+		{"runtime/r-other/domain.ts", false},
+		{"", true},
+	} {
+		if got := OverlayShipping(untouched.path, untouched.runtime); got != untouched.path {
+			t.Fatalf("OverlayShipping(%q) = %q, want unchanged", untouched.path, got)
+		}
+	}
+}
+
 func TestAuditRejectsUnknownEdges(t *testing.T) {
 	t.Run("lexed but undeclared", func(t *testing.T) {
 		artifacts := sealGraph(t, []graphModule{
@@ -521,33 +561,45 @@ func TestAuditAcceptsSealedProfileFromDisk(t *testing.T) {
 func TestAuditRealLogModuleFails(t *testing.T) {
 	inventory := runtimeInventory(t)
 	runtime := "runtime/r-full0123456789abcdef0123456789abcdef0123456789abcdef01"
-	var names []string
-	for name := range inventory {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	var modules []graphModule
-	for _, name := range names {
-		body, err := os.ReadFile(filepath.Join("..", "..", "..", "runtime", filepath.FromSlash(name)))
-		if err != nil {
-			t.Fatal(err)
-		}
-		var imports, native []string
-		for _, spec := range inventory[name] {
-			if strings.HasPrefix(spec, "node:") || strings.HasPrefix(spec, "bun:") {
-				native = append(native, spec)
+	build := func(t *testing.T, without string) []ir.Artifact {
+		t.Helper()
+		var names []string
+		for name := range inventory {
+			if name == without {
 				continue
 			}
-			imports = append(imports, spec)
+			names = append(names, name)
 		}
-		modules = append(modules, graphModule{path: runtime + "/" + name, body: string(body), imports: imports, native: native, runtime: true})
+		sort.Strings(names)
+		var modules []graphModule
+		for _, name := range names {
+			body, err := os.ReadFile(filepath.Join("..", "..", "..", "runtime", filepath.FromSlash(name)))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var imports, native []string
+			for _, spec := range inventory[name] {
+				if strings.HasPrefix(spec, "node:") || strings.HasPrefix(spec, "bun:") {
+					native = append(native, spec)
+					continue
+				}
+				imports = append(imports, spec)
+			}
+			modules = append(modules, graphModule{path: runtime + "/" + name, body: string(body), imports: imports, native: native, runtime: true})
+		}
+		spec := "./" + runtime + "/platform/log.ts"
+		entry := graphModule{path: BrowserEntry, body: "import " + quoteJSON(spec) + ";\nexport async function $canBrowserMain(): Promise<void> {}\n", imports: []string{spec}}
+		modules = append([]graphModule{entry}, modules...)
+		return sealGraph(t, modules)
 	}
-	spec := "./" + runtime + "/platform/log.ts"
-	entry := graphModule{path: BrowserEntry, body: "import " + quoteJSON(spec) + ";\nexport async function $canBrowserMain(): Promise<void> {}\n", imports: []string{spec}}
-	modules = append([]graphModule{entry}, modules...)
-	// Real server-coupled runtime bytes fail honestly with module, span
-	// and chain evidence; the repair belongs to UP11/UP13 emission work.
-	auditFails(t, sealGraph(t, modules), runtime+"/platform/log.ts", "Bun.write", "reachable via browser.ts")
+	// The sealed overlay ships the native log alternate instead of the
+	// server-coupled canonical module.
+	if err := AuditArtifacts(build(t, "")); err != nil {
+		t.Fatalf("overlaid log module rejected: %v", err)
+	}
+	// Without its alternate the canonical module is inspected as-is and
+	// fails honestly with module, span and chain evidence.
+	auditFails(t, build(t, "browser/log.ts"), runtime+"/platform/log.ts", "Bun.write", "reachable via browser.ts")
 }
 
 func quoteJSON(value string) string {

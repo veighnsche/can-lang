@@ -355,6 +355,70 @@ func TestDevelopmentSidecar(t *testing.T) {
 	t.Logf("offline absolute sidecar and symlink execution passed; hostile config ignored; identity %s", distribution.PinnedTarget().TargetID)
 }
 
+func TestDistributionShipsBrowserBundleTool(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration")
+	}
+	if runtime.GOOS != "darwin" || runtime.GOARCH != "arm64" {
+		t.Fatal("admitted integration target is macOS arm64")
+	}
+	source, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	root, err := distribution.Build(ctx, source, t.TempDir(), archive, "integration")
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifestRaw, err := os.ReadFile(filepath.Join(root, "manifest.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		Files map[string]string `json:"files"`
+	}
+	if err := json.Unmarshal(manifestRaw, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	shipped := func(name string) []byte {
+		t.Helper()
+		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(name)))
+		if err != nil {
+			t.Fatalf("bundle omits %s: %v", name, err)
+		}
+		if digest, ok := manifest.Files[name]; !ok || digest != distribution.Hash(data) {
+			t.Fatalf("bundle manifest does not bind %s", name)
+		}
+		return data
+	}
+	tool := shipped("tools/runtime/browser-bundle.ts")
+	for _, required := range []string{"Bun.build", `target: "browser"`, "can.browser-bundle-request", "can.browser-bundle-report"} {
+		if !strings.Contains(string(tool), required) {
+			t.Fatalf("bundle tool lacks %q", required)
+		}
+	}
+	for _, banned := range []string{"onResolve", "onLoad", "plugins:", "plugin(", "alias:", "alias(", "external:"} {
+		if strings.Contains(string(tool), banned) {
+			t.Fatalf("bundle tool carries %q machinery", banned)
+		}
+	}
+	for _, name := range []string{
+		"runtime/browser/formats.ts",
+		"runtime/browser/cookies.ts",
+		"runtime/browser/csrf.ts",
+		"runtime/browser/clock.ts",
+		"runtime/browser/log.ts",
+		"runtime/browser/markdown.ts",
+		"runtime/browser/assets.ts",
+		"runtime/assert/lineage.ts",
+	} {
+		shipped(name)
+	}
+}
+
 func treeHashes(t *testing.T, root string, dirs []string) map[string]string {
 	t.Helper()
 	hashes := map[string]string{}
