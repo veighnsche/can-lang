@@ -17,6 +17,7 @@ import (
 )
 
 func TestDevelopmentSidecar(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration")
@@ -356,6 +357,7 @@ func TestDevelopmentSidecar(t *testing.T) {
 }
 
 func TestDistributionShipsBrowserBundleTool(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE to the pinned local archive to run offline distribution integration")

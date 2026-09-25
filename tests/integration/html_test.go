@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/veighnsche/can-lang/distribution"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -17,6 +16,7 @@ import (
 )
 
 func TestCurrentBundledHTML(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE")
@@ -24,7 +24,7 @@ func TestCurrentBundledHTML(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "html-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -15,8 +15,6 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 func canlcBrowser(t *testing.T, ctx context.Context, bundle, home string, args ...string) (int, string, string) {
@@ -39,6 +37,7 @@ func canlcBrowser(t *testing.T, ctx context.Context, bundle, home string, args .
 }
 
 func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged grid execution")
@@ -49,7 +48,7 @@ func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-grid")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,11 +89,9 @@ func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
 		}
 		return manifest.BuildID, manifest.Directory, summary.Roots
 	}
+	// One build: pristine grid determinism is proven once in
+	// TestStdlibMaintained; this test owns the build-report assertions.
 	firstID, firstDir, roots := build()
-	secondID, _, _ := build()
-	if firstID != secondID {
-		t.Fatalf("grid browser rebuild drifted: %s vs %s", firstID, secondID)
-	}
 	asset, err := os.ReadFile(filepath.Join(firstDir, "browser/asset.json"))
 	if err != nil {
 		t.Fatal(err)

@@ -16,8 +16,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 var expectedMaintained = []string{
@@ -162,6 +160,7 @@ func assertNoStrayEmit(t *testing.T, root, dir string) {
 }
 
 func TestStdlibMaintained(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged example execution")
@@ -173,63 +172,66 @@ func TestStdlibMaintained(t *testing.T) {
 	// which alone takes several minutes; budget the suite accordingly.
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "stdlib-maintained")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, rel := range projects {
-		root, home := stageProject(t, sourceRoot, rel)
-		status, out, diag := canlcOffline(t, ctx, bundle, home, "assert", root)
-		if status != 0 || diag != "" {
-			t.Fatalf("%s assert: %d %s %s", rel, status, out, diag)
-		}
-		var report struct {
-			Passed     bool `json:"passed"`
-			Assertions []struct {
-				Evidence []string `json:"evidence"`
-			} `json:"assertions"`
-		}
-		if err := json.Unmarshal([]byte(out), &report); err != nil || !report.Passed || len(report.Assertions) == 0 {
-			t.Fatalf("%s invalid assert report %v %s", rel, err, out)
-		}
-		real := 0
-		for _, assertion := range report.Assertions {
-			for _, evidence := range assertion.Evidence {
-				if evidence == "real-can" {
-					real++
-					break
+		t.Run(rel, func(t *testing.T) {
+			t.Parallel()
+			root, home := stageProject(t, sourceRoot, rel)
+			status, out, diag := canlcOffline(t, ctx, bundle, home, "assert", root)
+			if status != 0 || diag != "" {
+				t.Fatalf("%s assert: %d %s %s", rel, status, out, diag)
+			}
+			var report struct {
+				Passed     bool `json:"passed"`
+				Assertions []struct {
+					Evidence []string `json:"evidence"`
+				} `json:"assertions"`
+			}
+			if err := json.Unmarshal([]byte(out), &report); err != nil || !report.Passed || len(report.Assertions) == 0 {
+				t.Fatalf("%s invalid assert report %v %s", rel, err, out)
+			}
+			real := 0
+			for _, assertion := range report.Assertions {
+				for _, evidence := range assertion.Evidence {
+					if evidence == "real-can" {
+						real++
+						break
+					}
 				}
 			}
-		}
-		if real == 0 {
-			t.Fatalf("%s asserts nothing real", rel)
-		}
-		buildArgs := []string{"build"}
-		if rel == "examples/invoice-grid" {
-			// The grid ships a browser-shaped entry; build it
-			// through the browser profile like the gate5 suite.
-			buildArgs = []string{"build", "--target", "browser"}
-		}
-		firstID, firstDir := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
-		secondID, _ := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
-		if firstID != secondID {
-			t.Fatalf("%s rebuild drifted: %s vs %s", rel, firstID, secondID)
-		}
-		assertNoStrayEmit(t, root, firstDir)
-		if fresh := os.Getenv("CAN_FRESH_EMIT_DIR"); fresh != "" {
-			copyFreshEmit(t, firstDir, filepath.Join(fresh, strings.ReplaceAll(rel, "/", "-")))
-		}
-		ran := "server/cli run covered by applications suite"
-		if rel == "examples/invoice-grid" {
-			ran = "browser run covered by gate5 suite"
-		}
-		if strings.HasPrefix(rel, "std/") {
-			status, out, diag := canlcOffline(t, ctx, bundle, home, "run", root)
-			if status != 0 || diag != "" {
-				t.Fatalf("%s run: %d %s %s", rel, status, out, diag)
+			if real == 0 {
+				t.Fatalf("%s asserts nothing real", rel)
 			}
-			ran = "ran clean"
-		}
-		t.Logf("%s: %d assertions (%d real-can), build %s, %s", rel, len(report.Assertions), real, firstID[:12], ran)
+			buildArgs := []string{"build"}
+			if rel == "examples/invoice-grid" {
+				// The grid ships a browser-shaped entry; build it
+				// through the browser profile like the gate5 suite.
+				buildArgs = []string{"build", "--target", "browser"}
+			}
+			firstID, firstDir := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
+			secondID, _ := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
+			if firstID != secondID {
+				t.Fatalf("%s rebuild drifted: %s vs %s", rel, firstID, secondID)
+			}
+			assertNoStrayEmit(t, root, firstDir)
+			if fresh := os.Getenv("CAN_FRESH_EMIT_DIR"); fresh != "" {
+				copyFreshEmit(t, firstDir, filepath.Join(fresh, strings.ReplaceAll(rel, "/", "-")))
+			}
+			ran := "server/cli run covered by applications suite"
+			if rel == "examples/invoice-grid" {
+				ran = "browser run covered by gate5 suite"
+			}
+			if strings.HasPrefix(rel, "std/") {
+				status, out, diag := canlcOffline(t, ctx, bundle, home, "run", root)
+				if status != 0 || diag != "" {
+					t.Fatalf("%s run: %d %s %s", rel, status, out, diag)
+				}
+				ran = "ran clean"
+			}
+			t.Logf("%s: %d assertions (%d real-can), build %s, %s", rel, len(report.Assertions), real, firstID[:12], ran)
+		})
 	}
 }

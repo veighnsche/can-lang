@@ -11,8 +11,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const cryptoCommandsManifest = `{"source_root":"src","error_registry":"can.errors.json"}`
@@ -49,6 +47,7 @@ func writeCryptoCommandsText(t *testing.T, root, manifest, text string) {
 }
 
 func TestCurrentCryptoCommands(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged crypto execution")
@@ -57,7 +56,7 @@ func TestCurrentCryptoCommands(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "crypto-commands-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

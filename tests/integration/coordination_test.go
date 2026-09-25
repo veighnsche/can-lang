@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/veighnsche/can-lang/distribution"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -15,6 +14,7 @@ import (
 )
 
 func TestCurrentBundledCoordination(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for offline coordination execution")
@@ -22,7 +22,7 @@ func TestCurrentBundledCoordination(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "coordination-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,14 +116,14 @@ func TestCurrentBundledCoordination(t *testing.T) {
 // C9.1: one standard occurrence observed through an ordinary catch and
 // re-observed through an aggregate leaf retains identity and projections.
 func TestStandardSnapshotIdentity(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for offline snapshot execution")
 	}
-	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "snapshot-identity")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

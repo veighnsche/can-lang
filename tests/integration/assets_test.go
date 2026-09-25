@@ -20,6 +20,7 @@ import (
 )
 
 func TestCurrentBundledAssets(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged asset execution")
@@ -27,7 +28,7 @@ func TestCurrentBundledAssets(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "assets-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -347,6 +348,7 @@ console.log("compiled asset loopback passed");
 }
 
 func TestCurrentBrowserAssets(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged browser execution")
@@ -372,7 +374,7 @@ func TestCurrentBrowserAssets(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "browser-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -560,6 +562,7 @@ fn void main
 `
 
 func TestCurrentPairedAssets(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged pairing execution")
@@ -567,7 +570,7 @@ func TestCurrentPairedAssets(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "paired-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

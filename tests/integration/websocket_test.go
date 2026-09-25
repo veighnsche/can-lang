@@ -12,11 +12,10 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 func TestCurrentBundledWebSocket(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged websocket execution")
@@ -24,7 +23,7 @@ func TestCurrentBundledWebSocket(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "websocket-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

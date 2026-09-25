@@ -140,7 +140,7 @@ func gate4Build(t *testing.T, ctx context.Context, canlc, home, root string) (st
 func gate4Toolchain(t *testing.T, ctx context.Context, sourceRoot, archive string) (root, canlc, sidecar string, installed bool) {
 	t.Helper()
 	if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
-		bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate4-faults")
+		bundle, err := harnessBundle(t, ctx, archive)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -160,7 +160,7 @@ func gate4Toolchain(t *testing.T, ctx context.Context, sourceRoot, archive strin
 		root = filepath.Join(installRoot, "current")
 		return root, filepath.Join(root, "bin/canlc"), filepath.Join(root, "runtime/bun"), true
 	}
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate4-faults")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -259,6 +259,7 @@ func gate4PassCount(t *testing.T, output string) int {
 }
 
 func TestGate4FaultMatrix(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for gate 4 fault execution")
@@ -298,9 +299,14 @@ func TestGate4FaultMatrix(t *testing.T) {
 	root, home := stageApplication(t, ctx, toolchain, sourceRoot, "invoice")
 	assertions, real := gate4Assert(t, ctx, canlc, home, root, "invoice")
 	firstID, firstDir := gate4Build(t, ctx, canlc, home, root)
-	secondID, _ := gate4Build(t, ctx, canlc, home, root)
-	if firstID != secondID {
-		t.Fatalf("invoice rebuild drifted: %s vs %s", firstID, secondID)
+	// Staged determinism is proven once in TestStdlibMaintained; repeat
+	// the build only for the installed launcher, whose determinism is
+	// otherwise uncovered.
+	if installed {
+		secondID, _ := gate4Build(t, ctx, canlc, home, root)
+		if firstID != secondID {
+			t.Fatalf("invoice rebuild drifted: %s vs %s", firstID, secondID)
+		}
 	}
 	assertNoStrayEmit(t, root, firstDir)
 	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
@@ -374,9 +380,11 @@ func TestGate4FaultMatrix(t *testing.T) {
 	wroot, whome := stageApplication(t, ctx, toolchain, sourceRoot, "webhook")
 	wassertions, wreal := gate4Assert(t, ctx, canlc, whome, wroot, "webhook")
 	wfirstID, wfirstDir := gate4Build(t, ctx, canlc, whome, wroot)
-	wsecondID, _ := gate4Build(t, ctx, canlc, whome, wroot)
-	if wfirstID != wsecondID {
-		t.Fatalf("webhook rebuild drifted: %s vs %s", wfirstID, wsecondID)
+	if installed {
+		wsecondID, _ := gate4Build(t, ctx, canlc, whome, wroot)
+		if wfirstID != wsecondID {
+			t.Fatalf("webhook rebuild drifted: %s vs %s", wfirstID, wsecondID)
+		}
 	}
 	assertNoStrayEmit(t, wroot, wfirstDir)
 	wdriver := filepath.Join(sourceRoot, "tests/integration/testdata/webhook/driver.ts")

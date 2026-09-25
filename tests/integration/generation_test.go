@@ -16,11 +16,10 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 func TestCurrentBundledGeneration(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE")
@@ -28,7 +27,7 @@ func TestCurrentBundledGeneration(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	sourceRoot, _ := filepath.Abs("../..")
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "generation-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

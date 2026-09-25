@@ -16,11 +16,10 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 func TestCurrentBundledNoulJudge(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged Noul execution")
@@ -28,7 +27,7 @@ func TestCurrentBundledNoulJudge(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	sourceRoot, _ := filepath.Abs("../..")
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "judge-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

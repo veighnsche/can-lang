@@ -12,8 +12,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const sqlSQLiteManifest = `{"source_root":"src","error_registry":"can.errors.json","sql":{` +
@@ -43,6 +41,7 @@ func writeSQLiteProject(t *testing.T, root, manifest string) {
 }
 
 func TestCurrentSQLitePersistence(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged SQLite execution")
@@ -50,7 +49,7 @@ func TestCurrentSQLitePersistence(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "sql-sqlite-live")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

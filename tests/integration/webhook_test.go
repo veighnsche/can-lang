@@ -27,8 +27,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const webhookPort = 18494
@@ -326,6 +324,7 @@ func requireDelivery(t *testing.T, store webhookStore, body, event, subscription
 }
 
 func TestWebhookSliceLive(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged webhook execution")
@@ -333,7 +332,7 @@ func TestWebhookSliceLive(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "webhook-slice")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -363,11 +362,9 @@ func TestWebhookSliceLive(t *testing.T) {
 	if real == 0 {
 		t.Fatal("webhook asserts nothing real")
 	}
+	// One build: pristine webhook determinism is proven once in
+	// TestStdlibMaintained; this suite owns live delivery.
 	firstID, firstDir := applicationBuild(t, ctx, bundle, home, root)
-	secondID, _ := applicationBuild(t, ctx, bundle, home, root)
-	if firstID != secondID {
-		t.Fatalf("webhook rebuild drifted: %s vs %s", firstID, secondID)
-	}
 	assertNoStrayEmit(t, root, firstDir)
 
 	driver := filepath.Join(sourceRoot, "tests/integration/testdata/webhook/driver.ts")

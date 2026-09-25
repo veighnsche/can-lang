@@ -31,8 +31,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const (
@@ -521,6 +519,7 @@ func expectInvoiceStartupFailure(t *testing.T, ctx context.Context, bundle, home
 }
 
 func TestInvoiceFormLive(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -528,7 +527,7 @@ func TestInvoiceFormLive(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-live")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -976,6 +975,9 @@ func TestInvoiceFormLive(t *testing.T) {
 	t.Logf("invoice live: %d can assertions, form/json save/load/replay/retention/outage legs with row evidence", assertions)
 }
 
+// Serial by design: refusal legs bind invoiceLivePort+20 upward, which
+// overlaps the gate3 adapter port range, so this test must not run
+// alongside the parallel suite.
 func TestInvoiceStartupRefusal(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -984,7 +986,7 @@ func TestInvoiceStartupRefusal(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-startup")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1037,6 +1039,7 @@ func canlcBuildArgs(t *testing.T, ctx context.Context, bundle, home string, args
 // dependency-free empty fixture while UP20 migrates the grid, so this
 // proves wiring only, not grid behavior.
 func TestInvoiceGridPagePaired(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1044,7 +1047,7 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-paired")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1144,6 +1147,7 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 }
 
 func TestInvoiceBrowser(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1163,7 +1167,7 @@ func TestInvoiceBrowser(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-browser")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1220,6 +1224,7 @@ func TestInvoiceBrowser(t *testing.T) {
 // status answers its exact fragment bytes with an HTML content type.
 // DOM swap observation is UP23's leg (TestInvoiceBrowserGuardDOM).
 func TestInvoiceHTMLFragments(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1227,7 +1232,7 @@ func TestInvoiceHTMLFragments(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-fragments")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1405,6 +1410,7 @@ func TestInvoiceHTMLFragments(t *testing.T) {
 // partial-rejected, control-headers-rejected, remount-stable. Every
 // leg must read verdict "pass" with non-empty evidence.
 func TestInvoiceBrowserGuardDOM(t *testing.T) {
+	t.Parallel()
 	reportPath := os.Getenv("CAN_UP23_RESULTS")
 	if reportPath == "" {
 		t.Skip("UP23 browser DOM guard results not supplied (set CAN_UP23_RESULTS to the UP23 verdict file)")

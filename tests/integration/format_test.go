@@ -10,8 +10,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const formatMessy = `// order totals with tip
@@ -35,14 +33,14 @@ fn   int   tally
 // Formatting preserves runtime behavior: the same roots pass before and
 // after, the write is idempotent, and invalid source stays untouched.
 func TestFormatPreservesExecution(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged format execution")
 	}
-	source, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, source, t.TempDir(), archive, "format-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

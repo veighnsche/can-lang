@@ -145,7 +145,7 @@ func gate5Canlc(t *testing.T, ctx context.Context, canlc, home string, args ...s
 func gate5Toolchain(t *testing.T, ctx context.Context, sourceRoot, archive string) (root, canlc, sidecar string, installed bool) {
 	t.Helper()
 	if runtime.GOOS == "linux" && runtime.GOARCH == "amd64" {
-		bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate5-grid")
+		bundle, err := harnessBundle(t, ctx, archive)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -165,7 +165,7 @@ func gate5Toolchain(t *testing.T, ctx context.Context, sourceRoot, archive strin
 		root = filepath.Join(installRoot, "current")
 		return root, filepath.Join(root, "bin/canlc"), filepath.Join(root, "runtime/bun"), true
 	}
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate5-grid")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1082,6 +1082,7 @@ func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
 }
 
 func TestGate5ServedMatrix(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 5 execution")
@@ -1207,6 +1208,7 @@ func TestGate5ServedMatrix(t *testing.T) {
 // The shim parity, load-path liveness and contract-edit legs are gone with
 // the origin proxy; UP21 supplies the replacement edits.
 func TestGate5GridStatic(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 5 execution")

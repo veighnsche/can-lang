@@ -17,8 +17,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 // restageQuestionsConfidence rewrites the staged assess response with the
@@ -56,6 +54,7 @@ func restageQuestionsConfidence(t *testing.T, root, response string) []byte {
 }
 
 func TestCurrentBundledMixedQuestions(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged mixed questions execution")
@@ -63,7 +62,7 @@ func TestCurrentBundledMixedQuestions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	sourceRoot, _ := filepath.Abs("../..")
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "questions-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

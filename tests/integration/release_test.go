@@ -26,6 +26,7 @@ import (
 // version keeps serving. Every refusal below names its cause; nothing
 // downloads, uploads, signs, or bypasses Gatekeeper.
 func TestReleaseInstallUpdate(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE to the pinned local archive to run offline release integration")
@@ -377,6 +378,7 @@ func TestReleaseInstallUpdate(t *testing.T) {
 }
 
 func TestInstallRootRefusals(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("CAN_BUN_ARCHIVE") == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for root refusal checks")
 	}

@@ -60,8 +60,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const (
@@ -99,6 +97,7 @@ type gate3Edit struct {
 }
 
 func TestGate3ContractEdits(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -106,7 +105,7 @@ func TestGate3ContractEdits(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-edits")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -268,6 +267,7 @@ func gate3WriteLock(t *testing.T, root string) {
 // served edit page follows through its checked action URL, and the new
 // path answers 200 with row evidence while the old path answers 404.
 func TestGate3RouteRebuildLive(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -275,7 +275,7 @@ func TestGate3RouteRebuildLive(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-route")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -515,6 +515,7 @@ func gate3Case(t *testing.T, note, body, leaf string) map[string]any {
 }
 
 func TestGate3ServerMatrix(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -522,7 +523,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-matrix")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -905,6 +906,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 // drop-replay fault proves a truthful 503 with a recorded commit
 // verdict plus a safe identical retry after restore.
 func TestGate3AdapterMatrix(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -912,7 +914,7 @@ func TestGate3AdapterMatrix(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-adapter")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1227,6 +1229,7 @@ func gate3RaceSave(base, path, session, origin, body string) gate3RacePost {
 // only authorized commits while every landing keeps the revision and
 // ledger counts coherent.
 func TestGate3Concurrency(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -1234,7 +1237,7 @@ func TestGate3Concurrency(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-race")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1475,6 +1478,7 @@ func TestGate3Concurrency(t *testing.T) {
 // the exact at-boundary millisecond stays pinned by the
 // save_replay_at_edge model assertion (strict less-than keeps it live).
 func TestGate3ReplayExpiry(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -1482,7 +1486,7 @@ func TestGate3ReplayExpiry(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-replay")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1639,6 +1643,7 @@ func TestGate3ReplayExpiry(t *testing.T) {
 // page. A store outage likewise renders the 503 fragment into the
 // admitted shape instead of failing the swap contract.
 func TestGate3RendererFault(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -1646,7 +1651,7 @@ func TestGate3RendererFault(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-render")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1787,6 +1792,7 @@ func gate3CallSites(t *testing.T, dir, identifier string, want int) {
 // effect however the shutdown landed, and the artifact's own
 // request-lifetime suite passes under the staged sidecar.
 func TestGate3Lifecycle(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
@@ -1794,7 +1800,7 @@ func TestGate3Lifecycle(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-life")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

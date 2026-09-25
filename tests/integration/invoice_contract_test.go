@@ -13,13 +13,13 @@
 // load spelling answers 405 (the path stays recognized by the kept POST
 // save) while genuinely unknown and unmounted paths answer 404.
 //
-// Run with a staged toolchain and the pinned harness, in two parts so
-// each fits the 25m go timeout:
+// Run with a staged toolchain and the pinned harness. The rows run in
+// parallel (distinct ports, workspaces and SQLite files per row), so the
+// whole table fits one go invocation; on a thermally constrained host,
+// cap fan-out with -parallel:
 //
 //	CAN_BUN_ARCHIVE=/private/tmp/bun-dl/bun-darwin-aarch64.zip \
-//	  go test ./tests/integration/ -run 'TestInvoiceContract(Route|Capture|Field|Leaf|Status)' -count=1 -timeout 25m
-//	CAN_BUN_ARCHIVE=/private/tmp/bun-dl/bun-darwin-aarch64.zip \
-//	  go test ./tests/integration/ -run 'TestInvoiceContract(Limit|BodyMode|ManifestMismatch|NoRegistration)' -count=1 -timeout 25m
+//	  go test ./tests/integration/ -run 'TestInvoiceContract' -count=1 -parallel 4
 package integration
 
 import (
@@ -36,11 +36,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const (
@@ -443,31 +440,16 @@ func logContractLive(t *testing.T, rows []contractLiveEvidence) {
 	t.Logf("contract live evidence:\n%s", raw)
 }
 
-var (
-	contractBundleMu sync.Mutex
-	contractBundles  = map[string]string{}
-)
-
-// contractLiveBundle builds the staged toolchain once per archive and
-// shares it across the sequential contract tests; every test keeps its
-// own projects, homes, databases and ports. The shared directory is
-// intentionally not removed: it must outlive any single test's TempDir.
+// contractLiveBundle shares the suite-wide staged toolchain across the
+// sequential contract tests; every test keeps its own projects, homes,
+// databases and ports.
 func contractLiveBundle(t *testing.T, ctx context.Context, sourceRoot, archive, name string) string {
 	t.Helper()
-	contractBundleMu.Lock()
-	defer contractBundleMu.Unlock()
-	if bundle, ok := contractBundles[archive]; ok {
-		return bundle
-	}
-	dir, err := os.MkdirTemp("", "contract-bundle-")
+	_, _ = sourceRoot, name
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
-	bundle, err := distribution.Build(ctx, sourceRoot, dir, archive, name)
-	if err != nil {
-		t.Fatal(err)
-	}
-	contractBundles[archive] = bundle
 	return bundle
 }
 
@@ -497,6 +479,7 @@ func contractFormValues(seats, details, revision string) url.Values {
 }
 
 func TestInvoiceContractRoute(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -611,6 +594,7 @@ func TestInvoiceContractRoute(t *testing.T) {
 }
 
 func TestInvoiceContractCapture(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -701,6 +685,7 @@ func TestInvoiceContractCapture(t *testing.T) {
 }
 
 func TestInvoiceContractField(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -788,6 +773,7 @@ func TestInvoiceContractField(t *testing.T) {
 }
 
 func TestInvoiceContractLeaf(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -892,6 +878,7 @@ func TestInvoiceContractLeaf(t *testing.T) {
 }
 
 func TestInvoiceContractStatus(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -977,6 +964,7 @@ func TestInvoiceContractStatus(t *testing.T) {
 }
 
 func TestInvoiceContractLimit(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1057,6 +1045,7 @@ func TestInvoiceContractLimit(t *testing.T) {
 }
 
 func TestInvoiceContractBodyMode(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1150,6 +1139,7 @@ func TestInvoiceContractBodyMode(t *testing.T) {
 }
 
 func TestInvoiceContractManifestMismatch(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1211,6 +1201,7 @@ func TestInvoiceContractManifestMismatch(t *testing.T) {
 }
 
 func TestInvoiceContractNoRegistration(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")

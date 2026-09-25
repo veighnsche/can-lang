@@ -24,8 +24,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 func stageApplication(t *testing.T, ctx context.Context, bundle, sourceRoot, name string) (root, home string) {
@@ -256,6 +254,7 @@ func applicationSeed(t *testing.T, ctx context.Context, bundle, sourceRoot, home
 }
 
 func TestApplicationsStaged(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged application execution")
@@ -263,7 +262,7 @@ func TestApplicationsStaged(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 8*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "applications-staged")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -294,11 +293,9 @@ func TestApplicationsStaged(t *testing.T) {
 		if real == 0 {
 			t.Fatalf("%s asserts nothing real", name)
 		}
+		// One build: pristine determinism for these apps is proven once
+		// in TestStdlibMaintained; this suite owns staged execution.
 		firstID, firstDir := applicationBuild(t, ctx, bundle, home, root)
-		secondID, _ := applicationBuild(t, ctx, bundle, home, root)
-		if firstID != secondID {
-			t.Fatalf("%s rebuild drifted: %s vs %s", name, firstID, secondID)
-		}
 		entry := filepath.Join(firstDir, "entry.ts")
 		snapshot := snapshotCredential(t, home, "UNUSED", "postgres://127.0.0.1:1/nope")
 		file, err := os.Open(snapshot)
@@ -319,6 +316,7 @@ func TestApplicationsStaged(t *testing.T) {
 }
 
 func TestApplicationsStagedForms(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged application execution")
@@ -326,7 +324,7 @@ func TestApplicationsStagedForms(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "applications-forms")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -512,6 +510,7 @@ func runEntry(t *testing.T, ctx context.Context, bundle, home, entry, snapshot s
 }
 
 func TestApplicationsNativeAIStubbed(t *testing.T) {
+	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged application execution")
@@ -519,7 +518,7 @@ func TestApplicationsNativeAIStubbed(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "applications-native-stubbed")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -594,7 +593,7 @@ func TestApplicationsLive(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "applications-live")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -795,7 +794,7 @@ func TestApplicationsBrowser(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "applications-browser")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}

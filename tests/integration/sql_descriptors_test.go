@@ -11,8 +11,6 @@ import (
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/veighnsche/can-lang/distribution"
 )
 
 const sqlDescriptorsManifest = `{"source_root":"src","error_registry":"can.errors.json","sql":{` +
@@ -49,10 +47,9 @@ func TestCurrentSQLDescriptors(t *testing.T) {
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged SQL descriptor execution")
 	}
-	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "sql-descriptors-integration")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -207,7 +204,7 @@ func TestCurrentSQLDescriptorsLive(t *testing.T) {
 	sourceRoot, _ := filepath.Abs("../..")
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Minute)
 	defer cancel()
-	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "sql-descriptors-live")
+	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
 		t.Fatal(err)
 	}
