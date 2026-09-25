@@ -693,10 +693,16 @@ func TestInvoiceFormLive(t *testing.T) {
 		}
 		gate3Case(t, leg.note, body, "invoice_contract::grid_load_forbidden")
 	}
-	for _, path := range []string{"/api/tenants/01/invoices/7", "/api/tenants/x/invoices/7", "/api/tenants/1/invoices/7/extra"} {
-		if status, body, _ := invoiceGet(t, base, path, "tok-alice"); status != 404 {
-			t.Fatalf("load %s: %d %s, want 404", path, status, body)
+	// Malformed integer captures on an otherwise matching shape are
+	// bad requests: the route layer rejects non-canonical ints before
+	// any handler runs, so they never reach a protected entry as data.
+	for _, path := range []string{"/api/tenants/01/invoices/7", "/api/tenants/x/invoices/7"} {
+		if status, body, _ := invoiceGet(t, base, path, "tok-alice"); status != 400 {
+			t.Fatalf("load %s: %d %s, want 400", path, status, body)
 		}
+	}
+	if status, body, _ := invoiceGet(t, base, "/api/tenants/1/invoices/7/extra", "tok-alice"); status != 404 {
+		t.Fatalf("load extra segment: %d %s, want 404", status, body)
 	}
 
 	// Retention: an identical old request whose ledger row expired
