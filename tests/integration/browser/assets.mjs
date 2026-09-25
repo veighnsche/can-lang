@@ -53,22 +53,22 @@ try {
   await check("htmx-loaded", async () => {
     assert.equal(await page.evaluate(() => typeof window.htmx), "object");
   });
-  await check("single-pinned-script", async () => {
+  await check("pinned-scripts", async () => {
     const scripts = await page.locator("script").evaluateAll((nodes) =>
       nodes.map((node) => ({ src: node.getAttribute("src"), integrity: node.getAttribute("integrity") }))
     );
-    assert.equal(scripts.length, 1);
+    assert.equal(scripts.length, 2);
     assert.equal(scripts[0].src, "/__can/assets/htmx-4.0.0.min.js");
     assert.equal(scripts[0].integrity, "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc");
+    assert.equal(scripts[1].src, "/__can/assets/htmx-guard.js");
+    // Guard digest mirrors runtimeHead in runtime/platform/html.ts; re-pin together.
+    assert.equal(scripts[1].integrity, "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG");
   });
   await check("htmx-config", async () => {
     const content = await page.locator('meta[name="htmx-config"]').getAttribute("content");
     const config = JSON.parse(content ?? "");
     assert.equal(config.mode, "same-origin");
-    assert.ok(config.noSwap.includes(204) && config.noSwap.includes(304));
-    assert.ok(config.noSwap.includes(500) && config.noSwap.includes(503));
-    assert.ok(!config.noSwap.includes(422));
-    assert.ok(!config.noSwap.includes(200));
+    assert.deepEqual(config.noSwap, [204, 304, "4xx", "5xx"]);
   });
   await check("stylesheet-local", async () => {
     const href = await page.locator('link[rel="stylesheet"]').getAttribute("href");
@@ -81,12 +81,17 @@ try {
     assert.ok(policy.includes("script-src 'self'") && !policy.includes("unsafe-eval"));
     assert.ok(policy.includes("navigate-to 'self'") && policy.includes("form-action 'self'"));
   });
-  await check("form-422-swap", async () => {
+  await check("form-422-quiet", async () => {
+    // Plain (non-action) forms carry no hx-status exception, so the 422 stays
+    // quiet under the compiler-owned noSwap policy. Action-bound 422 feedback
+    // is covered by the pinned guard tests; Can-authored exception producers
+    // land with UP19's mounted form actions.
     await page.fill("#account_name", "");
     const answered = page.waitForResponse((r) => r.url().endsWith("/validate") && r.request().method() === "POST");
     await page.locator('#account_form button[type="submit"]').click();
     assert.equal((await answered).status(), 422);
-    await page.waitForFunction(() => document.querySelector("#account_results")?.textContent?.includes("Name is required."));
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator("#account_results").textContent(), "waiting");
   });
   await check("form-200-swap", async () => {
     await page.fill("#account_name", "Ann");
@@ -134,6 +139,7 @@ try {
       assert.ok(new URL(entry.url).hostname === "127.0.0.1", entry.url);
     }
     assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-4.0.0.min.js") && entry.status === 200));
+    assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-guard.js") && entry.status === 200));
   });
 
   await page.screenshot({ path: join(outdir, "screenshot.png"), fullPage: true });
