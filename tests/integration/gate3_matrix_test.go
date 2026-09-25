@@ -1,4 +1,5 @@
-// UP16 Gate 3 server product matrix. Sibling suites own the form/JSON
+// UP16 Gate 3 server product matrix, extended by UP22 into the live
+// server/database/lifecycle matrix. Sibling suites own the form/JSON
 // live lanes (TestInvoiceFormLive, TestInvoiceBrowser); this file owns
 // the rows those suites do not cover, all on real HTTP and database
 // surfaces against staged builds:
@@ -18,7 +19,22 @@
 //     current absence of per-element error admission, parsed from
 //     real served bytes;
 //   - uncertain commits: SIGKILL mid-flight and after commit converge
-//     to exactly one ledger effect under identical replay.
+//     to exactly one ledger effect under identical replay;
+//   - UP22 adapter matrix: 404/405/Allow/capture/separator/dot/media/
+//     budget rejections with protected-entry counting, abandoned
+//     ingress committing once, and drop-replay outage with a recorded
+//     commit verdict plus safe retry;
+//   - UP22 concurrency: distinct-operation revision races commit once,
+//     identical-operation races converge to one shared effect, and
+//     membership flaps admit only authorized coherent commits;
+//   - UP22 replay/expiry: revoked actors recover nothing, live replay
+//     holds its stamp, expired replay conflicts with the row gone,
+//     and expired IDs with a fresh base commit new revisions;
+//   - UP22 renderer fault: a post-commit unmintable row fails the page
+//     into a fixed 500 with rows intact, plus the 503 form fragment;
+//   - UP22 lifecycle: one pool open/close site, startup refusal,
+//     SIGTERM drain with in-flight convergence, and the
+//     request-lifetime revocation suite under the staged sidecar.
 //
 // The Gate 3 verdict combines this file's rows with the sibling rows
 // executed in the same run; see the test logs for the per-row report.

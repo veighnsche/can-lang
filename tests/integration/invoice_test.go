@@ -1,13 +1,19 @@
-// UP16 invoice slice over the shared invoice_contract package. The
-// compiled program serves every behavior itself against real SQLite:
-// setup and seed prepare the operator-owned file, HTTP legs drive the
-// three mounted contract actions, and inspect/touch-replay read back
-// rows the test asserts on. Live legs cover the form page, both save
-// channels, replay (same/changed/expired), validation, denials, the
-// exact-Origin table, retention cleanup, startup refusal, outage and
-// recovery; boundary-exact expiry and unit retention rules are pinned
-// by model assertions (save_replay_at_edge, save_no_window), and the
-// live legs prove the same code paths against real SQLite state.
+// UP16 invoice slice over the shared invoice_contract package, extended
+// by UP22 with the live server/database/lifecycle matrix. The compiled
+// program serves every behavior itself against real SQLite: setup and
+// seed prepare the operator-owned file, HTTP legs drive the three
+// mounted contract actions, and inspect/touch-replay/revoke/member/
+// line modes read back or mutate rows the test asserts on. Live legs
+// cover the form page, both save channels, replay
+// (same/changed/expired/revoked), validation, denials, the exact-Origin
+// table, retention cleanup, startup refusal, outage and recovery, HTML
+// fragment bytes, adapter failures, concurrent revision/membership,
+// expiry/revision invariants, lost acknowledgement, post-commit
+// renderer faults, pool/shutdown lifecycle and token revocation;
+// boundary-exact expiry and unit retention rules are pinned by model
+// assertions (save_replay_at_edge, save_no_window), and the live legs
+// prove the same code paths against real SQLite state. Browser DOM
+// guard verdicts arrive from UP23 through TestInvoiceBrowserGuardDOM.
 package integration
 
 import (
