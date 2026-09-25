@@ -217,7 +217,7 @@ func verifyBrowserManifest(manifestPath string, serverGraph *project.Graph) (*br
 		manifest:     manifest,
 		treeManifest: treeRaw,
 		byLogical:    byLogical,
-		inputs: BuildInputs{Source: decoded.Inputs.Source, Dependencies: decoded.Inputs.Dependencies, Catalogue: decoded.Inputs.Catalogue, Compiler: decoded.Inputs.Compiler, Runtime: decoded.Inputs.Runtime, Options: decoded.Inputs.Options},
+		inputs:       BuildInputs{Source: decoded.Inputs.Source, Dependencies: decoded.Inputs.Dependencies, Catalogue: decoded.Inputs.Catalogue, Compiler: decoded.Inputs.Compiler, Runtime: decoded.Inputs.Runtime, Options: decoded.Inputs.Options},
 	}
 	for _, file := range decoded.Files {
 		digest, ext, err := pairedRouteExtension(file.Route)

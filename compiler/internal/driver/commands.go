@@ -64,14 +64,14 @@ type BrowserLockedInstance struct {
 // verified from, the served entry and table routes, every served digest,
 // and the locked snapshot the pairing was bound against.
 type BrowserReport struct {
-	BrowserBuildID  string                `json:"browserBuildId"`
-	Generation      string                `json:"generation"`
-	ManifestSHA256  string                `json:"manifestSHA256"`
-	Lock            string                `json:"lock"`
+	BrowserBuildID  string                  `json:"browserBuildId"`
+	Generation      string                  `json:"generation"`
+	ManifestSHA256  string                  `json:"manifestSHA256"`
+	Lock            string                  `json:"lock"`
 	LockedInstances []BrowserLockedInstance `json:"lockedInstances"`
-	Entry           string                `json:"entry"`
-	Table           string                `json:"table"`
-	Files           []BrowserReportFile   `json:"files"`
+	Entry           string                  `json:"entry"`
+	Table           string                  `json:"table"`
+	Files           []BrowserReportFile     `json:"files"`
 }
 
 // verifiedBuild is the validation status carried by a successful build

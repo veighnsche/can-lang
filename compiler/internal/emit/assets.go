@@ -29,9 +29,9 @@ type browserAssetTable struct {
 }
 
 type assetTable struct {
-	HTMX    servedAsset       `json:"htmx"`
-	Guard   servedAsset       `json:"guard"`
-	Project []servedAsset     `json:"project"`
+	HTMX    servedAsset        `json:"htmx"`
+	Guard   servedAsset        `json:"guard"`
+	Project []servedAsset      `json:"project"`
 	Browser *browserAssetTable `json:"browser,omitempty"`
 }
 

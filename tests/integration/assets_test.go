@@ -621,10 +621,10 @@ func TestCurrentPairedAssets(t *testing.T) {
 		Directory string `json:"directory"`
 		Entry     string `json:"entry"`
 		Browser   *struct {
-			BrowserBuildID string `json:"browserBuildId"`
-			Generation     string `json:"generation"`
-			Entry          string `json:"entry"`
-			Table          string `json:"table"`
+			BrowserBuildID string        `json:"browserBuildId"`
+			Generation     string        `json:"generation"`
+			Entry          string        `json:"entry"`
+			Table          string        `json:"table"`
 			Files          []browserFile `json:"files"`
 		} `json:"browser"`
 	}
@@ -1012,14 +1012,14 @@ console.log("paired asset loopback passed");
 		t.Fatal(err)
 	}
 	var editable struct {
-		SchemaVersion int `json:"schemaVersion"`
+		SchemaVersion int    `json:"schemaVersion"`
 		Kind          string `json:"kind"`
-		Retained []struct {
+		Retained      []struct {
 			Digest     string `json:"digest"`
 			Route      string `json:"route"`
 			MediaType  string `json:"mediaType"`
 			File       string `json:"file"`
-			ReplacedAt int64 `json:"replacedAt"`
+			ReplacedAt int64  `json:"replacedAt"`
 		} `json:"retained"`
 	}
 	if err := json.Unmarshal(ledgerRaw, &editable); err != nil {

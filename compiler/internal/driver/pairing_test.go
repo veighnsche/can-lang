@@ -120,9 +120,9 @@ func TestVerifyBrowserManifest(t *testing.T) {
 		t.Fatal(err)
 	}
 	var record struct {
-		SchemaVersion int              `json:"schemaVersion"`
-		Kind          string           `json:"kind"`
-		Entry         string           `json:"entry"`
+		SchemaVersion int               `json:"schemaVersion"`
+		Kind          string            `json:"kind"`
+		Entry         string            `json:"entry"`
 		Files         []pairedAssetFile `json:"files"`
 	}
 	if err := json.Unmarshal(pairing.pairingJSON, &record); err != nil || record.Kind != "can.browser-pairing" || record.Entry != pairing.entry || len(record.Files) != 3 {

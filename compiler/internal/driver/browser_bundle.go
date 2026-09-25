@@ -706,7 +706,7 @@ type browserManifest struct {
 		Runtime      string `json:"runtime"`
 		Options      string `json:"options"`
 	} `json:"inputs"`
-	Lock            string `json:"lock"`
+	Lock            string                  `json:"lock"`
 	LockedInstances []browserLockedInstance `json:"lockedInstances"`
 }
 
