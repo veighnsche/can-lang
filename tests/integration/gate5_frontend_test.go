@@ -1208,10 +1208,10 @@ func TestGate5ServedMatrix(t *testing.T) {
 }
 
 // TestGate5GridStatic pins the browser-independent Gate 5 contracts without
-// a browser: server capability rejection of the browser target, and the
-// grid's timer-free leak surface. The shim parity, load-path liveness and
-// contract-edit legs are gone with the origin proxy; UP21 supplies the
-// replacement edits.
+// a browser: the server project's argv entry rejects the browser target at
+// the entry-shape gate, and the grid keeps its timer-free leak surface.
+// The shim parity, load-path liveness and contract-edit legs are gone with
+// the origin proxy; UP21 supplies the replacement edits.
 func TestGate5GridStatic(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -1225,8 +1225,8 @@ func TestGate5GridStatic(t *testing.T) {
 	serverRoot, serverHome := stageApplication(t, ctx, toolchain, sourceRoot, "invoice")
 	status, out, diag := gate5Canlc(t, ctx, canlc, serverHome, "build", "--target", "browser", serverRoot)
 	combined := out + "\n" + diag
-	if status == 0 || !strings.Contains(combined, "browser capability closure") || !strings.Contains(combined, "--target browser") {
-		t.Fatalf("server browser build: %d %.500s, want a capability-closure rejection", status, combined)
+	if status == 0 || !strings.Contains(combined, "browser entry must be") {
+		t.Fatalf("server browser build: %d %.500s, want an entry-shape rejection", status, combined)
 	}
 	t.Logf("gate5 capability: server project rejected for --target browser: %s", strings.TrimSpace(combined))
 
