@@ -62,6 +62,10 @@ type CompletionContext struct {
 	// action table and returns the spliced client contract plus the
 	// per-action call contract that drives capture and body checking.
 	FetchSite func(operation, key, name string) (ir.JSONFetchSite, *types.Type, error)
+	// ActionSite resolves one static action symbol against the checked
+	// action table and returns the spliced site plus the per-action call
+	// contract that drives the value-operand checks.
+	ActionSite func(operation string, scope *resolve.Scope, name syntax.QualifiedName, rest []syntax.Argument) (ir.ActionSite, *types.Type, error)
 	// Raw carries assertion-time native evidence for using-raw rows. It is
 	// set on file-owned root contexts and inherited by derived regions.
 	Raw *RawScope
@@ -637,7 +641,17 @@ func (c *regionChecker) invocation(n *syntax.CallExpr, scope bodyScope, expected
 			fetchSite = site
 			effective = ValueBinding{Identity: binding.Identity, Type: contract}
 		}
-		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: effective.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: effective.Type.Result(), Errors: effective.Type.Errors(), SuccessBinding: c.identity("call"), JSONFetch: fetchSite}
+		var actionSite *ir.ActionSite
+		if operation := actionSiteOperation(binding.Identity); operation != "" {
+			site, contract, rest, err := c.resolveActionSite(operation, scope, args, span)
+			if err != nil {
+				return err
+			}
+			actionSite = site
+			effective = ValueBinding{Identity: binding.Identity, Type: contract}
+			args = rest
+		}
+		step := ir.InvocationStep{Site: currentSite, Callee: callee, Contract: effective.Type, Receiver: receiver != nil, Identity: binding.Identity, Span: span, Result: effective.Type.Result(), Errors: effective.Type.Errors(), SuccessBinding: c.identity("call"), JSONFetch: fetchSite, Action: actionSite}
 		if binding.Identity == assetURL {
 			resolution, err := c.resolveAsset(args)
 			if err != nil {

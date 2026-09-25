@@ -159,6 +159,12 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 	if assembly.judges {
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{"$canAI", "$canAI"}}})
 	}
+	if assembly.program.ActionRoutes {
+		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{"$canActionRoutes", "$canActionRoutes"}}})
+	}
+	if assembly.program.ActionClient {
+		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{"$canActionClient", "$canActionClient"}}})
+	}
 	for _, id := range assembly.connectionIDs {
 		name := assembly.connectionNames[id]
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{name, name}}})

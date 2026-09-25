@@ -35,11 +35,17 @@ type Program struct {
 	Forms         map[string]*FormSpecialization
 	Fetches       map[string]*FetchSpecialization
 	Actions       []*ActionDeclaration
-	SQLs          map[string]*SQLSpecialization
-	Transactions  map[string]*TransactionSpecialization
-	Assertions    []*ir.Assertion
-	Assets        []project.Asset
-	SQL           []ir.SQLDescriptor
+	// ActionRoutes and ActionClient record symbol-based action consumer
+	// use: mount/url need the server route state object, request/post
+	// need the client fetch state object. The emitter initializes only
+	// the selected factories.
+	ActionRoutes bool
+	ActionClient bool
+	SQLs         map[string]*SQLSpecialization
+	Transactions map[string]*TransactionSpecialization
+	Assertions   []*ir.Assertion
+	Assets       []project.Asset
+	SQL          []ir.SQLDescriptor
 }
 type ProgramFunction struct {
 	Symbol        *resolve.Symbol
@@ -297,6 +303,12 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		}
 		if browserListenerOperation(op.Identity) {
 			if err = c.admitBrowserListener(p, builtinFile, op); err != nil {
+				return nil, err
+			}
+			continue
+		}
+		if actionOperation(op.Identity) {
+			if err = c.admitActionOperation(p, builtinFile, op); err != nil {
 				return nil, err
 			}
 			continue
@@ -681,6 +693,8 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 		return c.formSite(file, operation, key, name)
 	}, FetchSite: func(operation, key, name string) (ir.JSONFetchSite, *types.Type, error) {
 		return c.fetchSite(file, operation, key, name)
+	}, ActionSite: func(operation string, scope *resolve.Scope, name syntax.QualifiedName, rest []syntax.Argument) (ir.ActionSite, *types.Type, error) {
+		return c.actionSite(file, scope, operation, name, rest)
 	}}
 
 	context.IntrinsicIdentity = func(scope *resolve.Scope, name syntax.QualifiedName) string {

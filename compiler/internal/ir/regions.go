@@ -74,6 +74,7 @@ type InvocationStep struct {
 	SQL            *SQLCallSite
 	FormAction     *FormActionSite
 	JSONFetch      *JSONFetchSite
+	Action         *ActionSite
 }
 type CompletionKind string
 
