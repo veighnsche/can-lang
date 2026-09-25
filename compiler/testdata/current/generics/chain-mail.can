@@ -1,0 +1,19 @@
+package mail
+    provides [email, make_email, email_address]
+    uses []
+owner record email
+    str address
+fn email make_email
+    emits []
+    given
+        str address
+    asserts
+        sample: "a@b" => ok email("a@b")
+    ok email(address)
+fn str email_address
+    emits []
+    given
+        email mail
+    asserts
+        sample: email("a@b") => ok "a@b"
+    ok mail.address

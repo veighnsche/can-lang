@@ -1,0 +1,33 @@
+package helpers
+    provides [box, pass, wrap, nested, probe]
+    uses [core]
+record box<item>
+    item value
+fn item pass<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok 3
+    ok call core::identity<item>(value)
+fn box<item> wrap<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok box(3)
+    ok box(call pass<item>(value))
+fn box<item> nested<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok box(3)
+    ok call core::identity<box<item>>(box(value))
+fn int probe<item>
+    emits [core::denied]
+    given
+        item value
+    asserts
+        denied: 3 => core::denied("no")
+    relay call core::refuse<item>(value)
