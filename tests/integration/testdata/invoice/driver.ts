@@ -6,10 +6,13 @@
 // details/line-id text that must render escaped); "inspect" reports
 // invoice, line and replay rows as JSON with integers stringified;
 // "touch-replay" rewrites one ledger row's recorded stamp so retention
-// tests can place rows before, at or after the expiry boundary. The
+// tests can place rows before, at or after the expiry boundary;
+// "fault" drops one allowlisted table so outage legs can prove
+// truthful 503s and safe retries (setup restores the table). The
 // compiled program serves every HTTP behavior itself; this driver only
 // prepares the file the operator would prepare, adjusts its own seeded
-// ledger stamps, and reads back rows the test asserts on.
+// ledger stamps, injects the listed store faults, and reads back rows
+// the test asserts on.
 import { SQL } from "bun";
 
 function staticTemplate(text: string): TemplateStringsArray {
@@ -135,6 +138,16 @@ try {
       )) as Record<string, unknown>[];
       if (rows.length !== 1) throw new Error("touch-replay matched no ledger row");
       console.log(JSON.stringify({ recorded: text(rows[0]["recorded_ms"]) }));
+    } else if (mode === "fault") {
+      const fault = process.argv[4];
+      const allowed = new Map([
+        ["drop-lines", "DROP TABLE invoice_line"],
+        ["drop-replay", "DROP TABLE invoice_replay"],
+      ]);
+      const statement = allowed.get(fault ?? "");
+      if (statement === undefined) throw new Error(`unknown fault ${fault ?? ""}`);
+      await sql(staticTemplate(statement));
+      console.log(JSON.stringify({ fault }));
     } else {
       throw new Error(`unknown driver mode ${mode ?? ""}`);
     }
