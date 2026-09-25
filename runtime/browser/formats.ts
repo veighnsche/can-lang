@@ -14,7 +14,7 @@ export function decodeToml(
   _input: unknown,
   _bytes: number = standaloneBytes,
 ): unknown {
-  unavailable("TOML");
+  return unavailable("TOML");
 }
 
 export function decodeYaml(
@@ -22,7 +22,7 @@ export function decodeYaml(
   _input: unknown,
   _bytes: number = standaloneBytes,
 ): unknown {
-  unavailable("YAML");
+  return unavailable("YAML");
 }
 
 export function decodeJson5(
@@ -30,5 +30,5 @@ export function decodeJson5(
   _input: unknown,
   _bytes: number = standaloneBytes,
 ): unknown {
-  unavailable("JSON5");
+  return unavailable("JSON5");
 }

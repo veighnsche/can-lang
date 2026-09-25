@@ -30,9 +30,7 @@ if (
   throw new Error("invalid browser bundle request");
 
 if (Bun.version !== input.expected.version || Bun.revision !== input.expected.revision)
-  throw new Error(
-    `bundler toolchain mismatch: have bun ${Bun.version} ${Bun.revision}`,
-  );
+  throw new Error(`bundler toolchain mismatch: have bun ${Bun.version} ${Bun.revision}`);
 
 const sourceDir = resolve(input.sourceDir);
 const outDir = resolve(input.outDir);

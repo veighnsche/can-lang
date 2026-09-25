@@ -17,13 +17,10 @@ export function createMarkdown(_domain: DomainRuntime, _ids: Ids) {
       _source: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<string>> {
-      unavailable();
+      return unavailable();
     },
-    async renderSafe(
-      _source: unknown,
-      _context?: AssertionContext,
-    ): Promise<Completion<unknown>> {
-      unavailable();
+    async renderSafe(_source: unknown, _context?: AssertionContext): Promise<Completion<unknown>> {
+      return unavailable();
     },
   });
 }

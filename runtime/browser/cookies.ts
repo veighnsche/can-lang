@@ -30,14 +30,14 @@ const unavailable = (): never => {
 export function createCookies(_domain: DomainRuntime, _ids: Ids) {
   return Object.freeze({
     async parse(_header: unknown, _context?: AssertionContext): Promise<Completion<unknown>> {
-      unavailable();
+      return unavailable();
     },
     async get(
       _collection: unknown,
       _name: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<unknown>> {
-      unavailable();
+      return unavailable();
     },
     async make(
       _name: unknown,
@@ -45,13 +45,10 @@ export function createCookies(_domain: DomainRuntime, _ids: Ids) {
       _attributes: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<unknown>> {
-      unavailable();
+      return unavailable();
     },
-    async serialize(
-      _cookie: unknown,
-      _context?: AssertionContext,
-    ): Promise<Completion<string>> {
-      unavailable();
+    async serialize(_cookie: unknown, _context?: AssertionContext): Promise<Completion<string>> {
+      return unavailable();
     },
     async remove(
       _name: unknown,
@@ -59,7 +56,7 @@ export function createCookies(_domain: DomainRuntime, _ids: Ids) {
       _domainName: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<unknown>> {
-      unavailable();
+      return unavailable();
     },
   });
 }

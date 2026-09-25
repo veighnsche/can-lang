@@ -23,7 +23,9 @@ export function callableIdentity(
   // The digest identifies the creation path, not a serialization of private
   // receiver/near values. Frozen capture references stay in the private receipt.
   const key = createHash("sha256")
-    .update("can-callable-instance-v1\0" + JSON.stringify([reserved.path, site, reserved.occurrence]))
+    .update(
+      "can-callable-instance-v1\0" + JSON.stringify([reserved.path, site, reserved.occurrence]),
+    )
     .digest("hex");
   return registerCallableInstance(reserved.family, site, reserved.occurrence, key, captures);
 }

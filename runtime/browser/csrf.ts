@@ -17,7 +17,7 @@ export function createCSRF(_domain: DomainRuntime, _ids: Readonly<{ invalid: str
       _expiresInMs: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<string>> {
-      unavailable();
+      return unavailable();
     },
     async verify(
       _secret: unknown,
@@ -26,7 +26,7 @@ export function createCSRF(_domain: DomainRuntime, _ids: Readonly<{ invalid: str
       _maxAgeMs: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<boolean>> {
-      unavailable();
+      return unavailable();
     },
   });
 }

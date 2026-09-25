@@ -342,9 +342,7 @@ export function createHTML(
     },
     async stylesheet(input: unknown, _context?: AssertionContext) {
       const url = read(urls, input);
-      return success(
-        node(`<link rel="stylesheet" href="${escapeHTML(url.value)}">`, "link", true),
-      );
+      return success(node(`<link rel="stylesheet" href="${escapeHTML(url.value)}">`, "link", true));
     },
     async metaViewport(_context?: AssertionContext) {
       return success(
