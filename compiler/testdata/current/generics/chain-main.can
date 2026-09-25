@@ -1,0 +1,34 @@
+package app
+    provides [top]
+    uses [vendor::helpers as helpers, vendor::core as core, vendor::mail as mail]
+fn helpers::box<item> top<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok helpers::box(3)
+    ok call helpers::wrap<item>(value)
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    helpers::box<int> first = call helpers::nested(3)
+    helpers::box<int> second = call helpers::nested<int>(4)
+    helpers::box<int> third = call top(5)
+    helpers::box<int> direct = call core::identity(helpers::box(9))
+    mail::email held = call mail::make_email("a@b")
+    helpers::box<mail::email> cell = call helpers::wrap(held)
+    str addr = call mail::email_address(cell.value)
+    match call helpers::probe(6)
+        core::denied as got => do
+            bool valid = first.value is 3 and second.value is 4 and third.value is 5 and direct.value is 9 and addr is "a@b"
+            match valid
+                false => do
+                    int invalid = 1 / 0
+                    ok
+                true => ok
+        ok int value => do
+            int invalid = 1 / 0
+            ok
