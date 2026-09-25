@@ -1236,7 +1236,7 @@ fn sql::decision<records::write_outcome> decide_save
         save_form_stored: "tok-alice", "op-2", 1, 7, 1, 3, "x", 0, [records::line_draft("k1", "a", 2, 500)], "dx", 2000, 1000 => ok sql::commit<records::write_outcome>(records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000))
         save_replay_same: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d1", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
         save_replay_changed: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d2", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 2))
-        save_replay_expired: "tok-alice", "op-8", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d8", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_conflict(1, 7, 2))
+        save_replay_expired: "tok-alice", "op-8", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d8", 2000, 1000 => ok sql::commit<records::write_outcome>(records::write_conflict(1, 7, 2))
         save_replay_at_edge: "tok-alice", "op-9", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d9", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
         save_no_window: "tok-alice", "op-7", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d0", 2000, 0 => ok sql::rollback<records::write_outcome>(records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000))
         save_expire_down: "tok-alice", "op-8", 1, 7, 1, 0, "", 1, [records::line_draft("k1", "a", 2, 500)], "d8", 2000, 1000 => ok sql::rollback<records::write_outcome>(records::write_busy(1, 7))
@@ -1357,7 +1357,7 @@ fn sql::decision<records::write_outcome> decide_save
                                                 sql::query_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                                                 sql::constraint_failed => ok sql::rollback<records::write_outcome>(records::write_busy(tenant, invoice_id))
                                                 ok int cleared => match revision is stored.value.revision
-                                                    false => ok sql::rollback<records::write_outcome>(records::write_conflict(tenant, invoice_id, stored.value.revision))
+                                                    false => ok sql::commit<records::write_outcome>(records::write_conflict(tenant, invoice_id, stored.value.revision))
                                                     true => match call apply_save(invoice_guard(session.value.actor, stored.value.tenant, invoice_id, stored.value.revision, stored.value.seats, stored.value.details), seats, details, preserve_stored, drafts, digest, operation_id, now_ms, w_ms, tx)
                                                         ok sql::decision<records::write_outcome> applied => ok applied
                                         option::none => match revision is stored.value.revision
