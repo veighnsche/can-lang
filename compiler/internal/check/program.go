@@ -15,9 +15,24 @@ import (
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
 
+// Target selects the entry shape a checked program enforces. Bun keeps the
+// historical void main(str[] args); the browser profile requires an exported
+// non-generic void main with no arguments and emits []. The checker retains
+// full source checks for both targets; the emitter prunes production output
+// by reachability.
+type Target string
+
+const (
+	// TargetBun is the default server profile executed by Bun.
+	TargetBun Target = "bun"
+	// TargetBrowser is the main-thread browser profile.
+	TargetBrowser Target = "browser"
+)
+
 // Program contains only sealed types and checked bodies. Source files retain
 // their own import scopes even when they contribute to the same flat package.
 type Program struct {
+	Target        Target
 	Natives       []*NativeDeclaration
 	Connections   map[string]ConnectionPolicy
 	World         *resolve.World
@@ -271,9 +286,68 @@ func (c *programChecker) expressions(file *resolve.File, scope *resolve.Scope) *
 
 // CheckProgram connects project resolution, declaration checking, initialization
 // ordering and completion regions without using the superseded compiler passes.
-func CheckProgram(graph *project.Graph) (*Program, error)          { return checkProgram(graph, true) }
-func CheckAssertionProgram(graph *project.Graph) (*Program, error) { return checkProgram(graph, false) }
+func CheckProgram(graph *project.Graph) (*Program, error) { return checkProgram(graph, true) }
+func CheckAssertionProgram(graph *project.Graph) (*Program, error) {
+	return checkProgram(graph, false)
+}
+
+// CheckBrowserProgram checks the same source with the browser entry shape:
+// one exported non-generic void main with no arguments and emits []. Bun
+// main(str[] args) diagnoses here; browser zero-argument main diagnoses
+// under CheckProgram. Full source checks run for both targets.
+func CheckBrowserProgram(graph *project.Graph) (*Program, error) {
+	return checkProgramForTarget(graph, TargetBrowser, true)
+}
+
+// CheckBrowserAssertionProgram checks browser source without requiring an
+// entry, for assertion-only staging. Production browser builds use
+// CheckBrowserProgram.
+func CheckBrowserAssertionProgram(graph *project.Graph) (*Program, error) {
+	return checkProgramForTarget(graph, TargetBrowser, false)
+}
+
+// CheckProgramForTarget checks source for the named target. Unknown targets
+// fail closed.
+func CheckProgramForTarget(graph *project.Graph, target Target) (*Program, error) {
+	return checkProgramForTarget(graph, target, true)
+}
+
 func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
+	return checkProgramForTarget(graph, TargetBun, requireEntry)
+}
+
+// checkTargetEntry enforces the per-target main shape. Bun keeps the
+// historical single str[] input; the browser profile requires no inputs
+// and an empty emits bound. Both reject generics, receivers and variadics.
+// The diagnostic names the expected target shape so a Bun main fails the
+// browser check with the browser expectation and vice versa.
+func checkTargetEntry(target Target, d *syntax.FunctionDecl) error {
+	if target == TargetBrowser {
+		if len(d.Parameters) != 0 ||
+			d.Receiver != nil ||
+			len(d.Inputs) != 0 ||
+			syntax.FormatType(d.Result) != "void" ||
+			len(d.Errors.Types) != 0 {
+			return fmt.Errorf("browser entry must be an exported non-generic void main with no arguments and emits []")
+		}
+		return nil
+	}
+	if len(d.Parameters) != 0 ||
+		d.Receiver != nil ||
+		len(d.Inputs) != 1 ||
+		d.Inputs[0].Near ||
+		d.Inputs[0].Variadic ||
+		syntax.FormatType(d.Result) != "void" ||
+		syntax.FormatType(d.Inputs[0].Type) != "str[]" {
+		return fmt.Errorf("entry must be a non-generic void main(str[] args)")
+	}
+	return nil
+}
+
+func checkProgramForTarget(graph *project.Graph, target Target, requireEntry bool) (*Program, error) {
+	if target != TargetBun && target != TargetBrowser {
+		return nil, fmt.Errorf("unknown check target %q: expected %q or %q", string(target), string(TargetBun), string(TargetBrowser))
+	}
 	world, err := resolve.Build(graph)
 	if err != nil {
 		return nil, err
@@ -289,7 +363,7 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 	if err = c.builder.SeedDeclarations(); err != nil {
 		return nil, err
 	}
-	p := &Program{World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
+	p := &Program{Target: target, World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
 	// Resolve maintained contracts from the catalogue in a private canonical scope.
 	// Authored calls still require their declaring file's explicit imports.
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
@@ -408,8 +482,8 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 					if p.Entry != nil {
 						return nil, fmt.Errorf("multiple root main declarations")
 					}
-					if len(d.Parameters) != 0 || d.Receiver != nil || len(d.Inputs) != 1 || d.Inputs[0].Near || d.Inputs[0].Variadic || syntax.FormatType(d.Result) != "void" || syntax.FormatType(d.Inputs[0].Type) != "str[]" {
-						return nil, fmt.Errorf("entry must be a non-generic void main(str[] args)")
+					if err := checkTargetEntry(target, d); err != nil {
+						return nil, err
 					}
 					p.Entry = &ProgramFunction{Symbol: symbol}
 				}
@@ -488,6 +562,9 @@ func checkProgram(graph *project.Graph, requireEntry bool) (*Program, error) {
 		}
 	}
 	if requireEntry && p.Entry == nil {
+		if target == TargetBrowser {
+			return nil, fmt.Errorf("root project requires void main with no arguments and emits [] for target browser")
+		}
 		return nil, fmt.Errorf("root project requires void main(str[] args)")
 	}
 	p.Model, err = c.builder.Finish()

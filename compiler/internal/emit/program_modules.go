@@ -9,12 +9,16 @@ import (
 )
 
 // emitAuthoredModules lowers every checked function and native declaration
-// into its authored output module, grouped by output path.
+// into its authored output module, grouped by output path. Browser
+// production emits only the entry closure; Bun keeps every declaration.
 func emitAuthoredModules(assembly *programAssembly, runtime string) ([]Module, error) {
 	program := assembly.program
 	modules := []Module{}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
+		if assembly.browser && assembly.reachedFunctions != nil && !assembly.reachedFunctions[fn.Identity()] {
+			continue
+		}
 		path := fn.Symbol.Source.OutputPath
 		byPath[path] = append(byPath[path], fn)
 	}
@@ -80,13 +84,13 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	// Initializer references may name types absent from function signatures.
 	allTypes := append(program.Model.Types(), checkedTypes(regions, descriptors)...)
-	localTypes, err := NativeTypeDeclarations(allTypes)
+	localTypes, err := NativeTypeDeclarationsForTarget(allTypes, assembly.browser)
 	if err != nil {
 		return Module{}, err
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -142,10 +146,12 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 func authoredModuleImports(assembly *programAssembly, runtime, path string) []ModuleImport {
 	program := assembly.program
 	values := stateValueImportNames()
+	base := programImports(runtime)
 	if assembly.browser {
 		values = browserStateValueImportNames()
+		base = browserProgramImports(runtime)
 	}
-	imports := append(programImports(runtime), ModuleImport{Target: programStatePath, Names: values})
+	imports := append(base, ModuleImport{Target: programStatePath, Names: values})
 	if !assembly.browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/platform/crypto/primitives.ts", Names: []ImportName{{"sha256", "$canSHA256"}}})
 		imports = append(imports, ModuleImport{Target: runtime + "/ai/questions.ts", TypeOnly: true, Names: []ImportName{{"PreparedQuestion", "$canPreparedQuestion"}, {"Answer", "$canAnswer"}}})
@@ -194,6 +200,9 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.txNames[id], assembly.txNames[id]}}})
 	}
 	for _, fn := range program.Functions {
+		if assembly.browser && assembly.reachedFunctions != nil && !assembly.reachedFunctions[fn.Identity()] {
+			continue
+		}
 		target := fn.Symbol.Source.OutputPath
 		if target != path {
 			imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{assembly.functions[fn.Identity()], assembly.functions[fn.Identity()]}}})

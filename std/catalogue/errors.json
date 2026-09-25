@@ -108,6 +108,7 @@
     "browser::disposed",
     "browser::rejected",
     "browser::stale_version",
+    "browser::invalid_query",
     "action::invalid_path"
   ],
   "retired": []

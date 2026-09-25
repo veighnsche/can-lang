@@ -30,7 +30,11 @@ func (e *RegionEmitter) arrayInvocation(step ir.InvocationStep, args []string) (
 		}
 		args = append(args, "{none:"+quote(step.Array.None.Identity())+",some:"+quote(step.Array.Some.Identity())+"}")
 	}
-	args = append(args, "{site:"+quote(step.Site)+",origin:"+e.origin(step.Span)+",context:$canContext}")
+	if e.Browser {
+		args = append(args, "{site:"+quote(step.Site)+",origin:"+e.origin(step.Span)+",context:$canContext,owner:$canCtx}")
+	} else {
+		args = append(args, "{site:"+quote(step.Site)+",origin:"+e.origin(step.Span)+",context:$canContext}")
+	}
 	invocation := "$canArray" + name + "(" + strings.Join(args, ",") + ")"
 	if step.Array.Name == "find" {
 		// The runtime constructs the two sealed nominal identities supplied above;

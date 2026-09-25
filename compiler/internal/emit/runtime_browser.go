@@ -11,6 +11,8 @@ import (
 // browserOperationBindings maps the T22 bounded browser catalogue
 // operations to their state-module targets. State operations specialize
 // per concrete data type and bind through browserSpecializationBindings.
+// Query/cancel bindings are the UP11 concrete call interface consumed by
+// UP13's platform adapter; the method names below are the contract.
 func browserOperationBindings() bindingContribution {
 	functions := map[string]string{
 		"can.std.browser@1::mount":            "$canBrowser.mount",
@@ -28,6 +30,9 @@ func browserOperationBindings() bindingContribution {
 		"can.std.browser@1::focus":            "$canBrowser.focus",
 		"can.std.browser@1::on_event":         "$canBrowser.onEvent",
 		"can.std.browser@1::set_timeout":      "$canBrowser.setTimeout",
+		"can.std.browser@1::query_parameter":  "$canBrowser.queryParameter",
+		"can.std.browser@1::on_cancel_key":    "$canBrowser.onCancelKey",
+		"can.std.browser@1::on_cancel_event":  "$canBrowser.onCancelEvent",
 	}
 	return bindingContribution{domain: "browser", functions: functions}
 }
@@ -91,9 +96,11 @@ func (builder *stateBuilder) declareBrowserStateSpecializations() {
 // initializeBrowserState constructs the browser factory inside the shared
 // initializer, after the domain runtime exists. The factory resolves the
 // live document lazily, so Bun executions fail closed with missing_root
-// while browser bundles bind the real document.
+// while browser bundles bind the real document. The invalidQuery contract
+// is the UP11 addition for query_parameter; UP13 consumes it in the
+// platform adapter.
 func (builder *stateBuilder) initializeBrowserState() {
-	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]))
+	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s,invalidQuery:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]), quote(builder.numberIDs["can.std.browser@1::invalid_query"]))
 }
 
 // initializeBrowserStateSpecializations constructs the per-type browser

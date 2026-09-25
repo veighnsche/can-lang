@@ -221,8 +221,33 @@ func TestActionBindingsEmission(t *testing.T) {
 }
 
 func TestActionBindingsBrowserClientProjection(t *testing.T) {
+	contractWithoutMain := strings.Replace(actionContractEmitWeb, "fn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n", "", 1)
+	if contractWithoutMain == actionContractEmitWeb {
+		t.Fatal("contract fixture main not found for client-projection pruning fix")
+	}
+	clientWithMain := actionBindingsEmitClient + "fn void main\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        str[] arguments\n" +
+		"    asserts\n" +
+		"        empty: [] => ok\n" +
+		"    match call load_url(contract::invoice_key(1, 7))\n" +
+		"        action::invalid_path => ok\n" +
+		"        ok str built => match call fetch_load(contract::invoice_key(1, 7))\n" +
+		"            http::transport_failed => ok\n" +
+		"            http::invalid_request => ok\n" +
+		"            http::status_error => ok\n" +
+		"            codec::invalid_data => ok\n" +
+		"            ok contract::grid_load_outcome got => match call fetch_save(contract::invoice_key(1, 7), contract::grid_edit_input(\"op-1\", \"r1\"))\n" +
+		"                http::transport_failed => ok\n" +
+		"                http::invalid_request => ok\n" +
+		"                http::body_limit => ok\n" +
+		"                http::status_error => ok\n" +
+		"                codec::invalid_data => ok\n" +
+		"                ok contract::grid_edit_outcome done => ok\n"
 	program := actionBindingsEmitProgram(t, map[string]string{
-		"src/client/client.can": actionBindingsEmitClient,
+		"src/contract/contract.can": contractWithoutMain,
+		"src/client/client.can":     clientWithMain,
 	})
 	contractID := program.Actions[0].Symbol.Package.ID
 	artifacts, err := BrowserModules(program, "runtime", actionBindingsDependencies(t))

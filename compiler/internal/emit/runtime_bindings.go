@@ -72,6 +72,13 @@ type programAssembly struct {
 	connectionNames map[string]string
 	nativeIDs       []string
 	armHandlers     map[string]string
+
+	// reachedFunctions and reachedInitializers prune browser production to
+	// the entry closure. They are nil for Bun, which keeps every checked
+	// declaration. Specialization ID lists above are filtered in place for
+	// browser after assembly.
+	reachedFunctions    map[string]bool
+	reachedInitializers map[string]bool
 }
 
 // assembleProgramBindings computes the full operation map and every name table

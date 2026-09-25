@@ -138,12 +138,22 @@ func (builder *stateBuilder) prerequisites() error {
 		return err
 	}
 	builder.plan = plan
-	initial, err := initialization(program.Initializers, nil, builder.assembly.armHandlers, true)
+	initializers := program.Initializers
+	if builder.assembly.browser && builder.assembly.reachedInitializers != nil {
+		kept := make([]ir.Initializer, 0, len(initializers))
+		for _, value := range initializers {
+			if builder.assembly.reachedInitializers[value.Identity] {
+				kept = append(kept, value)
+			}
+		}
+		initializers = kept
+	}
+	initial, err := initialization(initializers, nil, builder.assembly.armHandlers, true)
 	if err != nil {
 		return err
 	}
 	builder.initial = initial
-	declarations, err := NativeTypeDeclarations(program.Model.Types())
+	declarations, err := NativeTypeDeclarationsForTarget(program.Model.Types(), builder.assembly.browser)
 	if err != nil {
 		return err
 	}
@@ -344,6 +354,9 @@ func (builder *stateBuilder) initializeCodecs() error {
 func (builder *stateBuilder) initializeValues() {
 	builder.out.WriteString(builder.initial.Code)
 	for _, value := range builder.assembly.program.Initializers {
+		if builder.assembly.browser && builder.assembly.reachedInitializers != nil && !builder.assembly.reachedInitializers[value.Identity] {
+			continue
+		}
 		fmt.Fprintf(&builder.out, "$canValues[%s] = %s;\n", quote(value.Identity), builder.initial.Bindings[value.Identity])
 	}
 	builder.out.WriteString("Object.freeze($canValues);\n}\n")
@@ -390,7 +403,11 @@ func (builder *stateBuilder) emitSpecializationConstants() error {
 // the fixed order the initializer depends on.
 func (builder *stateBuilder) stateImports(runtime string) []ModuleImport {
 	browser := builder.assembly.browser
-	imports := append(programImports(runtime), ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
+	base := programImports(runtime)
+	if browser {
+		base = browserProgramImports(runtime)
+	}
+	imports := append(base, ModuleImport{Target: runtime + "/domain.ts", Names: []ImportName{{"createDomainRuntime", "$canCreateDomain"}}})
 	if browser {
 		imports = append(imports, ModuleImport{Target: runtime + "/bytes.ts", Names: []ImportName{{"isBytes", "$canIsBytes"}, {"createBytes", "$canCreateBytes"}}})
 	} else {

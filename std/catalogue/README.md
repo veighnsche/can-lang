@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 7b8edb207ec030a9aec45d824e304b3d1dacaf7dbb5a0ac7ba34935df1f04fba.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -270,6 +270,7 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::disposed | can.std.browser@1::disposed |  |  |
 | browser::rejected | can.std.browser@1::rejected |  | str reason |
 | browser::stale_version | can.std.browser@1::stale_version |  | int expected, int actual |
+| browser::invalid_query | can.std.browser@1::invalid_query |  | str key, str reason |
 | action::invalid_path | can.std.action@1::invalid_path |  | str reason |
 
 ## Operations
@@ -563,6 +564,9 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | browser::create_state | T:data; browser::view view, T value → browser::state&lt;T&gt; | [browser::disposed] |  | Object.freeze | Mint a versioned cell at version 0 holding the immutable value; the cell belongs to its view scope. | real | T22 / T22 |
 | browser::read_state | T:data; browser::state&lt;T&gt; state → browser::snapshot&lt;T&gt; | [browser::disposed] |  | Object.freeze | Copy the live version and value atomically into an immutable snapshot record. | real | T22 / T22 |
 | browser::replace_state | T:data; browser::state&lt;T&gt; state, int expected, T value → int | [browser::disposed, browser::stale_version] |  | Object.is | Compare-and-swap the cell: matching versions install the value and return the next version, mismatches fail with browser::stale_version carrying expected and actual. | real | T22 / T22 |
+| browser::query_parameter | str key → option::value&lt;str&gt;; static key | [browser::invalid_query] |  | URLSearchParams, decodeURIComponent | Read one literal query key from location.search under strict budgets: scan every raw pair with decodeURIComponent after plus-to-space, reject malformed escapes, invalid UTF-8, oversized or duplicate values as browser::invalid_query, return none for zero and some for one. | real | T22 / T22 |
+| browser::on_cancel_key | browser::view view, browser::node node, str kind, str key, $callback callback → void | [browser::disposed, browser::rejected] | callback(browser::event) → void emits [] | EventTarget.addEventListener, AbortController | Register a cancel-policy key listener: admit only keydown or keyup with a nonempty exact key, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; mismatched or noncancelable events still dispatch once without cancellation. | real | T22 / T22 |
+| browser::on_cancel_event | browser::view view, browser::node node, str kind, $callback callback → void | [browser::disposed, browser::rejected] | callback(browser::event) → void emits [] | EventTarget.addEventListener, AbortController | Register a cancel-policy event listener: initially admit only submit, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; otherwise dispatch once without cancellation. | real | T22 / T22 |
 | action::mount | action::declaration action → http::route | [http::invalid_route] |  | URL, Request, Response | Bind one action symbol plus its exact checked callables into a mounted route: one request-first handler for JSON actions, plus the normal and structural-422 renderers for HTML actions; decode through the declared codec and map result leaves to case statuses. | real | I32 / P10 |
 | action::url | action::declaration action → str | [action::invalid_path] |  | URL, encodeURIComponent | Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path. | real | I32 / P10 |
 | action::request | Result:data; action::declaration action → Result | [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |
