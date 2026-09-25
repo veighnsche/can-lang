@@ -1,13 +1,19 @@
-// UP16 invoice slice over the shared invoice_contract package. The
-// compiled program serves every behavior itself against real SQLite:
-// setup and seed prepare the operator-owned file, HTTP legs drive the
-// three mounted contract actions, and inspect/touch-replay read back
-// rows the test asserts on. Live legs cover the form page, both save
-// channels, replay (same/changed/expired), validation, denials, the
-// exact-Origin table, retention cleanup, startup refusal, outage and
-// recovery; boundary-exact expiry and unit retention rules are pinned
-// by model assertions (save_replay_at_edge, save_no_window), and the
-// live legs prove the same code paths against real SQLite state.
+// UP16 invoice slice over the shared invoice_contract package, extended
+// by UP22 with the live server/database/lifecycle matrix. The compiled
+// program serves every behavior itself against real SQLite: setup and
+// seed prepare the operator-owned file, HTTP legs drive the three
+// mounted contract actions, and inspect/touch-replay/revoke/member/
+// line modes read back or mutate rows the test asserts on. Live legs
+// cover the form page, both save channels, replay
+// (same/changed/expired/revoked), validation, denials, the exact-Origin
+// table, retention cleanup, startup refusal, outage and recovery, HTML
+// fragment bytes, adapter failures, concurrent revision/membership,
+// expiry/revision invariants, lost acknowledgement, post-commit
+// renderer faults, pool/shutdown lifecycle and token revocation;
+// boundary-exact expiry and unit retention rules are pinned by model
+// assertions (save_replay_at_edge, save_no_window), and the live legs
+// prove the same code paths against real SQLite state. Browser DOM
+// guard verdicts arrive from UP23 through TestInvoiceBrowserGuardDOM.
 package integration
 
 import (
@@ -30,9 +36,10 @@ import (
 )
 
 const (
-	invoiceLivePort    = 18551
-	invoiceBrowserPort = 18552
-	invoicePairedPort  = 18553
+	invoiceLivePort     = 18551
+	invoiceBrowserPort  = 18552
+	invoicePairedPort   = 18553
+	invoiceFragmentPort = 18576
 )
 
 func invoiceGet(t *testing.T, base, path, session string) (int, string, http.Header) {
@@ -145,14 +152,24 @@ func stageInvoiceBundle(t *testing.T, ctx context.Context, bundle, sourceRoot st
 
 func invoiceDriver(t *testing.T, ctx context.Context, bundle, home, driver string, args ...string) []byte {
 	t.Helper()
+	out, err := invoiceDriverRaw(ctx, bundle, home, driver, args...)
+	if err != nil {
+		t.Fatalf("driver %v: %v %s", args, err, string(out))
+	}
+	return out
+}
+
+// invoiceDriverRaw runs one driver mode and reports its output, for
+// goroutines that cannot fail the test directly.
+func invoiceDriverRaw(ctx context.Context, bundle, home, driver string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), append([]string{driver}, args...)...)
 	cmd.Dir = home
 	cmd.Env = []string{"PATH=/nonexistent", "HOME=" + home}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("driver %v: %v %s", args, err, string(out))
+		return out, err
 	}
-	return out
+	return out, nil
 }
 
 func seedInvoiceDB(t *testing.T, ctx context.Context, bundle, home, driver, root string) string {
@@ -248,6 +265,22 @@ func inspectInvoice(t *testing.T, ctx context.Context, bundle, home, driver, db 
 	return store
 }
 
+// invoiceRevision reads one invoice revision without touching the
+// replay ledger, so mid-fault legs can prove no commit while the
+// ledger table itself is dropped.
+func invoiceRevision(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice string) string {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "revision", db, invoice)
+	var report struct {
+		Invoice  string `json:"invoice"`
+		Revision string `json:"revision"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Revision == "" {
+		t.Fatalf("invalid revision report %v %s", err, string(out))
+	}
+	return report.Revision
+}
+
 func touchReplay(t *testing.T, ctx context.Context, bundle, home, driver, db, actor, tenant, invoice, operation, recorded string) {
 	t.Helper()
 	out := invoiceDriver(t, ctx, bundle, home, driver, "touch-replay", db, actor, tenant, invoice, operation, recorded)
@@ -268,6 +301,108 @@ func faultInvoice(t *testing.T, ctx context.Context, bundle, home, driver, db, f
 	if err := json.Unmarshal(out, &report); err != nil || report.Fault != fault {
 		t.Fatalf("invalid fault report %v %s", err, string(out))
 	}
+}
+
+// revokeSession sets one session row's revoked stamp (0 restores it)
+// and requires the stored value back, for revoked-replay legs.
+func revokeSession(t *testing.T, ctx context.Context, bundle, home, driver, db, token, stamp string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "revoke", db, token, stamp)
+	var report struct {
+		Token   string `json:"token"`
+		Revoked string `json:"revoked"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Token != token || report.Revoked != stamp {
+		t.Fatalf("invalid revoke report %v %s", err, string(out))
+	}
+}
+
+// setMembership adds (present true) or removes (present false) one
+// membership row, for concurrent-membership legs.
+func setMembership(t *testing.T, ctx context.Context, bundle, home, driver, db, actor, tenant string, present bool) {
+	t.Helper()
+	mode := "unmember"
+	if present {
+		mode = "member"
+	}
+	out := invoiceDriver(t, ctx, bundle, home, driver, mode, db, actor, tenant)
+	var report struct {
+		Actor  string `json:"actor"`
+		Tenant string `json:"tenant"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Actor != actor || report.Tenant != tenant {
+		t.Fatalf("invalid %s report %v %s", mode, err, string(out))
+	}
+}
+
+// injectLine stores one line row exactly as given, including keys the
+// page renderer cannot mint, for renderer-fault legs.
+func injectLine(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice, key, id, quantity, price, position string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "inject-line", db, invoice, key, id, quantity, price, position)
+	var report struct {
+		Invoice string `json:"invoice"`
+		Key     string `json:"key"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Key != key {
+		t.Fatalf("invalid inject-line report %v %s", err, string(out))
+	}
+}
+
+// deleteLine removes one stored line row, restoring the renderer-fault
+// database to its servable shape.
+func deleteLine(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice, key string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "delete-line", db, invoice, key)
+	var report struct {
+		Invoice string `json:"invoice"`
+		Key     string `json:"key"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Key != key {
+		t.Fatalf("invalid delete-line report %v %s", err, string(out))
+	}
+}
+
+// protectedEntries snapshots the observable protected-handler entry
+// count: one invoice revision plus the replay ledger length. Adapter
+// rejections must leave both unchanged; each committed save advances
+// both by exactly one.
+type protectedEntries struct {
+	revision string
+	replays  int
+}
+
+func snapshotEntries(store invoiceStore, id string) protectedEntries {
+	revision := ""
+	for _, row := range store.Invoice {
+		if row.ID == id {
+			revision = row.Rev
+		}
+	}
+	return protectedEntries{revision: revision, replays: len(store.Replay)}
+}
+
+func requireNoEntry(t *testing.T, note string, before, after protectedEntries) {
+	t.Helper()
+	if before != after {
+		t.Fatalf("%s: protected entries moved from %+v to %+v, want no handler entry", note, before, after)
+	}
+}
+
+func requireOneEntry(t *testing.T, note, wantRev string, before, after protectedEntries) {
+	t.Helper()
+	if after.revision != wantRev || after.replays != before.replays+1 {
+		t.Fatalf("%s: protected entries moved from %+v to %+v, want revision %s and one ledger row", note, before, after, wantRev)
+	}
+}
+
+// recordFaultOutcome logs whether a fault leg committed a write, so
+// every injected fault carries its commit verdict in the test log.
+func recordFaultOutcome(t *testing.T, note string, before, after protectedEntries) bool {
+	t.Helper()
+	committed := before != after
+	t.Logf("fault %s: committed=%v (entries %+v -> %+v)", note, committed, before, after)
+	return committed
 }
 
 func requireInvoice(t *testing.T, store invoiceStore, id, revision, seats, details string) invoiceRow {
@@ -1076,5 +1211,230 @@ func TestInvoiceBrowser(t *testing.T) {
 	}
 	if !committed {
 		t.Fatalf("browser run committed nothing: %+v", store.Invoice)
+	}
+}
+
+// TestInvoiceHTMLFragments proves the server side of the HTML guard
+// contract: the served page carries the global noSwap policy plus the
+// checked per-status swap admissions, and every admitted form-save
+// status answers its exact fragment bytes with an HTML content type.
+// DOM swap observation is UP23's leg (TestInvoiceBrowserGuardDOM).
+func TestInvoiceHTMLFragments(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-fragments")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, invoiceFragmentPort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(invoiceFragmentPort)
+	const formPath = "/tenants/1/invoices/7"
+	formValues := func(seats, details, revision string) url.Values {
+		values := url.Values{}
+		values.Set("seats", seats)
+		values.Set("details", details)
+		values.Set("revision", revision)
+		values.Add("lines_order", "k1")
+		values.Set("lines[k1][id]", "a")
+		values.Set("lines[k1][quantity]", "2")
+		values.Set("lines[k1][price]", "5.00")
+		return values
+	}
+	html := func(note string, headers http.Header) {
+		t.Helper()
+		if content := headers.Get("Content-Type"); !strings.Contains(content, "text/html") {
+			t.Fatalf("%s content type %q, want text/html", note, content)
+		}
+	}
+
+	// Served policy: the global config keeps the quiet pair and every
+	// 4xx/5xx class out of swaps, and the form carries per-element
+	// admission for exactly the four declared error statuses.
+	status, page, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
+	if status != 200 {
+		t.Fatalf("fragment policy page: %d", status)
+	}
+	open := strings.Index(page, `<meta name="htmx-config" content="`)
+	if open < 0 {
+		t.Fatalf("fragment policy page lacks htmx-config in %.800s", page)
+	}
+	rest := page[open+len(`<meta name="htmx-config" content="`):]
+	encoded := rest[:strings.Index(rest, `">`)]
+	var config struct {
+		Mode   string `json:"mode"`
+		NoSwap []any  `json:"noSwap"`
+	}
+	if err := json.Unmarshal([]byte(strings.ReplaceAll(encoded, "&quot;", `"`)), &config); err != nil {
+		t.Fatalf("invalid served htmx-config %v %q", err, encoded)
+	}
+	want := []any{204.0, 304.0, "4xx", "5xx"}
+	if config.Mode != "same-origin" || len(config.NoSwap) != len(want) {
+		t.Fatalf("served htmx-config %+v, want same-origin with %d noSwap entries", config, len(want))
+	}
+	for i, code := range want {
+		if config.NoSwap[i] != code {
+			t.Fatalf("served htmx-config noSwap[%d]=%v, want %v", i, config.NoSwap[i], code)
+		}
+	}
+	for _, admission := range []string{"403", "409", "422", "503"} {
+		if !strings.Contains(page, `hx-status:`+admission+`="{&quot;swap&quot;:&quot;innerHTML&quot;}"`) {
+			t.Fatalf("fragment policy page lacks hx-status:%s admission in %.1200s", admission, page)
+		}
+	}
+	if strings.Contains(page, "hx-status:200") {
+		t.Fatalf("fragment policy page admits a redundant 2xx exception in %.1200s", page)
+	}
+
+	// 200 saved: a polite status fragment naming the revision.
+	status, body, headers := postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "1"))
+	if status != 200 || !strings.Contains(body, `<p class="save-saved" role="status">saved revision 2</p>`) {
+		t.Fatalf("saved fragment: %d %q", status, body)
+	}
+	html("saved fragment", headers)
+
+	// 422 invalid: an alert region with the heading, the fielded
+	// problems and the recovery hint.
+	status, body, headers = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("many", "", "2"))
+	if status != 422 {
+		t.Fatalf("invalid fragment: %d %s, want 422", status, body)
+	}
+	for _, want := range []string{`<div role="alert">`, "invoice invalid", "seats: bad seats", "Fix the form and save again."} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("invalid fragment lacks %q in %q", want, body)
+		}
+	}
+	html("invalid fragment", headers)
+
+	// 409 conflict: an alert region with the stale-revision message
+	// and the reread hint.
+	status, body, headers = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "", "1"))
+	if status != 409 {
+		t.Fatalf("conflict fragment: %d %s, want 409", status, body)
+	}
+	for _, want := range []string{`<div role="alert">`, `<p class="save-conflict">conflict: stale revision</p>`, "Reload the form to reread, then save again."} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("conflict fragment lacks %q in %q", want, body)
+		}
+	}
+	html("conflict fragment", headers)
+
+	// 403 forbidden: an alert region echoing nothing of the denied
+	// submission, so foreign and nonexistent targets disclose nothing.
+	status, body, headers = postInvoiceForm(t, base, formPath, "tok-ghost", origin, formValues("4", "Rush <em>order</em>", "2"))
+	if status != 403 {
+		t.Fatalf("forbidden fragment: %d %s, want 403", status, body)
+	}
+	for _, want := range []string{`<div role="alert">`, `<p class="save-denied">forbidden: request denied</p>`, "Sign in with an authorized account and try again."} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("forbidden fragment lacks %q in %q", want, body)
+		}
+	}
+	if strings.Contains(body, "Rush") {
+		t.Fatalf("forbidden fragment echoes the denied submission in %q", body)
+	}
+	html("forbidden fragment", headers)
+
+	// Structural 422: the heading plus retained raw entries and the
+	// issue list, with hostile input escaped.
+	hostile := formValues("4", "</li><script>bad()</script>", "2")
+	hostile.Del("seats")
+	status, body, headers = postInvoiceForm(t, base, formPath, "tok-alice", origin, hostile)
+	if status != 422 {
+		t.Fatalf("rejected fragment: %d %s, want 422", status, body)
+	}
+	for _, want := range []string{`<div role="alert">`, "invoice form rejected", `class="form-raw"`, `class="form-issues"`, "&lt;/li&gt;&lt;script&gt;"} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("rejected fragment lacks %q in %q", want, body)
+		}
+	}
+	if strings.Contains(body, "<script>") {
+		t.Fatalf("rejected fragment leaks hostile markup in %q", body)
+	}
+	html("rejected fragment", headers)
+
+	// 503 unavailable: an alert region with the busy message and the
+	// reread-before-retry hint; the identical save commits after
+	// restore.
+	faultInvoice(t, ctx, bundle, home, driver, db, "drop-lines")
+	status, body, headers = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "", "2"))
+	if status != 503 {
+		t.Fatalf("unavailable fragment: %d %s, want 503", status, body)
+	}
+	for _, want := range []string{`<div role="alert">`, `<p class="save-busy">unavailable: store unavailable</p>`, "The store is unavailable; reread before retrying."} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("unavailable fragment lacks %q in %q", want, body)
+		}
+	}
+	html("unavailable fragment", headers)
+	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid invoice restore report %v %s", err, string(setup))
+	}
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "", "2"))
+	if status != 200 || !strings.Contains(body, "saved revision 3") {
+		t.Fatalf("fragment recovery save: %d %s", status, body)
+	}
+	t.Logf("invoice fragments: %d can assertions, 200/422/409/403/503 fragment bytes plus served swap policy with row evidence", assertions)
+}
+
+// TestInvoiceBrowserGuardDOM gates on UP23's browser DOM guard verdicts.
+//
+// UP23 owns these legs: each admitted status swaps its fragment into
+// exactly its connected target, missing-target submission and
+// in-flight target loss report the finite failure, and OOB/partial
+// markup plus response-control headers mutate nothing. This test stays
+// skipped until UP23 writes its machine-readable verdict file and
+// points CAN_UP23_RESULTS at it; the schema is:
+//
+//	{"engine":"chromium 141","commit":"<server-commit>",
+//	 "legs":{"swap-200":{"verdict":"pass","evidence":"..."}, ...}}
+//
+// Required legs: swap-200, swap-403, swap-409, swap-422, swap-503,
+// missing-target-before, missing-target-during, oob-rejected,
+// partial-rejected, control-headers-rejected, remount-stable. Every
+// leg must read verdict "pass" with non-empty evidence.
+func TestInvoiceBrowserGuardDOM(t *testing.T) {
+	reportPath := os.Getenv("CAN_UP23_RESULTS")
+	if reportPath == "" {
+		t.Skip("UP23 browser DOM guard results not supplied (set CAN_UP23_RESULTS to the UP23 verdict file)")
+	}
+	raw, err := os.ReadFile(reportPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var report struct {
+		Engine string `json:"engine"`
+		Commit string `json:"commit"`
+		Legs   map[string]struct {
+			Verdict  string `json:"verdict"`
+			Evidence string `json:"evidence"`
+		} `json:"legs"`
+	}
+	if err := json.Unmarshal(raw, &report); err != nil || report.Engine == "" || report.Commit == "" {
+		t.Fatalf("invalid UP23 verdict file %v %.500s", err, string(raw))
+	}
+	required := []string{"swap-200", "swap-403", "swap-409", "swap-422", "swap-503", "missing-target-before", "missing-target-during", "oob-rejected", "partial-rejected", "control-headers-rejected", "remount-stable"}
+	for _, leg := range required {
+		t.Run(leg, func(t *testing.T) {
+			result, ok := report.Legs[leg]
+			if !ok {
+				t.Fatalf("UP23 verdicts lack leg %q (engine %s commit %s)", leg, report.Engine, report.Commit)
+			}
+			if result.Verdict != "pass" || result.Evidence == "" {
+				t.Fatalf("UP23 leg %q: verdict %q evidence %q", leg, result.Verdict, result.Evidence)
+			}
+			t.Logf("UP23 leg %s passed on %s: %s", leg, report.Engine, result.Evidence)
+		})
 	}
 }

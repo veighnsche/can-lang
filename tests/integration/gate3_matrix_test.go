@@ -1,4 +1,5 @@
-// UP16 Gate 3 server product matrix. Sibling suites own the form/JSON
+// UP16 Gate 3 server product matrix, extended by UP22 into the live
+// server/database/lifecycle matrix. Sibling suites own the form/JSON
 // live lanes (TestInvoiceFormLive, TestInvoiceBrowser); this file owns
 // the rows those suites do not cover, all on real HTTP and database
 // surfaces against staged builds:
@@ -18,7 +19,22 @@
 //     current absence of per-element error admission, parsed from
 //     real served bytes;
 //   - uncertain commits: SIGKILL mid-flight and after commit converge
-//     to exactly one ledger effect under identical replay.
+//     to exactly one ledger effect under identical replay;
+//   - UP22 adapter matrix: 404/405/Allow/capture/separator/dot/media/
+//     budget rejections with protected-entry counting, abandoned
+//     ingress committing once, and drop-replay outage with a recorded
+//     commit verdict plus safe retry;
+//   - UP22 concurrency: distinct-operation revision races commit once,
+//     identical-operation races converge to one shared effect, and
+//     membership flaps admit only authorized coherent commits;
+//   - UP22 replay/expiry: revoked actors recover nothing, live replay
+//     holds its stamp, expired replay conflicts with the row gone,
+//     and expired IDs with a fresh base commit new revisions;
+//   - UP22 renderer fault: a post-commit unmintable row fails the page
+//     into a fixed 500 with rows intact, plus the 503 form fragment;
+//   - UP22 lifecycle: one pool open/close site, startup refusal,
+//     SIGTERM drain with in-flight convergence, and the
+//     request-lifetime revocation suite under the staged sidecar.
 //
 // The Gate 3 verdict combines this file's rows with the sibling rows
 // executed in the same run; see the test logs for the per-row report.
@@ -30,7 +46,9 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -38,6 +56,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -46,8 +65,13 @@ import (
 )
 
 const (
-	gate3MatrixPort = 18561
-	gate3RoutePort  = 18562
+	gate3MatrixPort  = 18561
+	gate3RoutePort   = 18562
+	gate3AdapterPort = 18571
+	gate3RacePort    = 18572
+	gate3ReplayPort  = 18573
+	gate3RenderPort  = 18574
+	gate3LifePort    = 18575
 )
 
 // rewriteGate3File replaces exactly one occurrence of old with new in the
@@ -402,6 +426,53 @@ func gate3PostJSON(t *testing.T, base, path, session, media, body string) (int, 
 		t.Fatal(err)
 	}
 	return status, payload, headers
+}
+
+// gate3Raw exchanges one verbatim HTTP/1.1 request over TCP and splits
+// the status code from the body. Paths go out exactly as written: no
+// client normalization touches dot segments or encoded separators.
+func gate3Raw(t *testing.T, addr, request string) (int, string, string) {
+	t.Helper()
+	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	conn.SetDeadline(time.Now().Add(10 * time.Second))
+	if _, err := io.WriteString(conn, request); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := io.ReadAll(conn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	head, body, _ := strings.Cut(string(raw), "\r\n\r\n")
+	line, _, _ := strings.Cut(head, "\r\n")
+	parts := strings.SplitN(line, " ", 3)
+	if len(parts) < 2 {
+		t.Fatalf("malformed raw status line %q", line)
+	}
+	status, err := strconv.Atoi(parts[1])
+	if err != nil {
+		t.Fatalf("malformed raw status %q", line)
+	}
+	return status, body, head
+}
+
+// gate3Abandon writes one complete request and closes before reading,
+// modelling a client that disconnects after the server holds the full
+// bytes (lazy/abandoned ingress).
+func gate3Abandon(t *testing.T, addr, request string) {
+	t.Helper()
+	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := io.WriteString(conn, request); err != nil {
+		conn.Close()
+		t.Fatal(err)
+	}
+	conn.Close()
 }
 
 func gate3GetWithBody(t *testing.T, base, path, session, body string) (int, string) {
@@ -823,4 +894,1053 @@ func TestGate3ServerMatrix(t *testing.T) {
 
 	stop()
 	t.Logf("gate3 matrix: %d can assertions, json save/load/reorder/swap/uncertain legs live with row evidence", assertions)
+}
+
+// TestGate3AdapterMatrix proves every adapter rejection never enters a
+// protected handler: each leg snapshots the observable entry count
+// (invoice revision plus replay ledger length) and requires it
+// unchanged afterwards. A success control proves the counter observes
+// real entries. The disconnect leg proves abandoned (lazy) ingress
+// still commits exactly one effect under its owned lease, and the
+// drop-replay fault proves a truthful 503 with a recorded commit
+// verdict plus a safe identical retry after restore.
+func TestGate3AdapterMatrix(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-adapter")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3AdapterPort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3AdapterPort)
+	addr := "127.0.0.1:" + strconv.Itoa(gate3AdapterPort)
+	const savePath = "/api/tenants/1/invoices/7"
+	const formPath = "/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]}`
+	}
+	entries := func() protectedEntries {
+		t.Helper()
+		return snapshotEntries(inspectInvoice(t, ctx, bundle, home, driver, db), "7")
+	}
+	method := func(verb, path, session, media, body string) (int, string, http.Header) {
+		t.Helper()
+		client := &http.Client{Timeout: 10 * time.Second}
+		var reader io.Reader
+		if body != "" {
+			reader = strings.NewReader(body)
+		}
+		request, err := http.NewRequest(verb, base+path, reader)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if media != "" {
+			request.Header.Set("Content-Type", media)
+		}
+		if verb == "POST" {
+			request.Header.Set("Origin", origin)
+		}
+		if session != "" {
+			request.AddCookie(&http.Cookie{Name: "session", Value: session})
+		}
+		response, err := client.Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer response.Body.Close()
+		payload, _ := io.ReadAll(response.Body)
+		return response.StatusCode, string(payload), response.Header
+	}
+
+	// Missing routes answer 404 without handler entry.
+	for _, leg := range []struct {
+		note, verb, path string
+	}{
+		{"unknown GET", "GET", "/no-such-path"},
+		{"unknown POST", "POST", savePath + "/extra/deep"},
+		{"captured prefix without invoice", "GET", "/api/tenants/1/invoices"},
+		{"trailing slash", "GET", savePath + "/"},
+	} {
+		before := entries()
+		status, body, _ := method(leg.verb, leg.path, "tok-alice", "application/json", `{"operation_id":"op-404"}`)
+		if status != 404 || body != "Not Found" {
+			t.Fatalf("%s: %d %q, want 404 Not Found", leg.note, status, body)
+		}
+		requireNoEntry(t, leg.note, before, entries())
+	}
+
+	// Recognized paths with the wrong method answer 405 carrying the
+	// sorted Allow set, without handler entry.
+	for _, leg := range []struct {
+		note, verb, path, allow string
+	}{
+		{"api delete", "DELETE", savePath, "GET, POST"},
+		{"api put", "PUT", savePath, "GET, POST"},
+		{"form get", "GET", formPath, "POST"},
+		{"form delete", "DELETE", formPath, "POST"},
+		{"page post", "POST", "/invoices/form?tenant_id=1&invoice_id=7", "GET"},
+		{"grid put", "PUT", "/invoice-grid?tenant=1&invoice=7", "GET"},
+		{"health post", "POST", "/health", "GET"},
+	} {
+		before := entries()
+		status, body, headers := method(leg.verb, leg.path, "tok-alice", "application/json", `{"operation_id":"op-405"}`)
+		if status != 405 || body != "Method Not Allowed" {
+			t.Fatalf("%s: %d %q, want 405 Method Not Allowed", leg.note, status, body)
+		}
+		if headers.Get("Allow") != leg.allow {
+			t.Fatalf("%s: Allow %q, want %q", leg.note, headers.Get("Allow"), leg.allow)
+		}
+		requireNoEntry(t, leg.note, before, entries())
+	}
+
+	// Malformed captures fail before handler entry. Each leg uses an
+	// admitted method so capture validation, not method matching,
+	// decides the outcome.
+	for _, leg := range []struct{ verb, path string }{
+		{"GET", "/api/tenants/01/invoices/7"},
+		{"GET", "/api/tenants/x/invoices/7"},
+		{"POST", "/tenants/1/invoices/007"},
+		{"POST", "/tenants/1/invoices/7x"},
+	} {
+		before := entries()
+		status, body, _ := method(leg.verb, leg.path, "tok-alice", "application/json", `{"operation_id":"op-cap"}`)
+		if status != 400 || body != "Bad Request" {
+			t.Fatalf("capture %s %s: %d %q, want 400 Bad Request", leg.verb, leg.path, status, body)
+		}
+		requireNoEntry(t, "capture "+leg.path, before, entries())
+	}
+
+	// Encoded separators and dot segments never route into a handler
+	// as data: whatever the native layer admits, the observable
+	// entries stay fixed and no success carries stored content.
+	before := entries()
+	status, body, _ := method("GET", "/api/tenants/1%2F2/invoices/7", "tok-alice", "", "")
+	if status != 400 && status != 404 {
+		t.Fatalf("encoded separator: %d %q, want 400 or 404", status, body)
+	}
+	requireNoEntry(t, "encoded separator", before, entries())
+	// Dot segments resolve through native normalization, never into a
+	// handler as data: climbing to a neighbor answers the neighbor's
+	// denial, and a self-dot answers byte-identically to the direct
+	// address. Both leave the observable entries fixed.
+	before = entries()
+	raw := "GET /api/tenants/1/invoices/7/../8 HTTP/1.1\r\nHost: " + addr + "\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"
+	status, body, _ = gate3Raw(t, addr, raw)
+	if status != 400 && status != 404 && status != 403 {
+		t.Fatalf("dot climb: %d %q, want 400, 404 or denied 403", status, body)
+	}
+	if status == 403 {
+		gate3Case(t, "dot climb", body, "invoice_contract::grid_load_forbidden")
+	}
+	requireNoEntry(t, "dot climb", before, entries())
+	t.Logf("dot climb: %d without entry effect", status)
+	directStatus, directBody, _ := invoiceGet(t, base, savePath, "tok-alice")
+	self := "GET /api/tenants/./1/invoices/7 HTTP/1.1\r\nHost: " + addr + "\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"
+	status, body, _ = gate3Raw(t, addr, self)
+	if status != directStatus || body != directBody {
+		t.Fatalf("dot self: %d %.300s, want byte-identical %d", status, body, directStatus)
+	}
+	requireNoEntry(t, "dot self", before, entries())
+
+	// Media, syntax and budget failures stay pre-handler on both
+	// channels; the contract limits are 8192 JSON bytes and 2048 form
+	// bytes with 64 keyed rows.
+	transport := []struct {
+		note, path, media, body string
+		status                 int
+		text                   string
+	}{
+		{"json bad media", savePath, "text/plain", saveBody("op-t1", 1), 415, "Unsupported Media Type"},
+		{"json malformed", savePath, "application/json", "not json", 400, "Bad Request"},
+		{"json oversize", savePath, "application/json", `{"operation_id":"op-t2","revision":"1","lines":[{"key":"k1","id":"` + strings.Repeat("p", 9000) + `","quantity":"2","price":"5.00"}]}`, 413, "Payload Too Large"},
+		{"form bad media", formPath, "application/json", saveBody("op-t3", 1), 415, "Unsupported Media Type"},
+		{"form oversize", formPath, "application/x-www-form-urlencoded", "seats=2&details=" + strings.Repeat("d", 4096) + "&revision=1&lines_order=k1&lines[k1][id]=a&lines[k1][quantity]=2&lines[k1][price]=5.00", 413, "Payload Too Large"},
+	}
+	for _, leg := range transport {
+		before := entries()
+		status, body, _ := method("POST", leg.path, "tok-alice", leg.media, leg.body)
+		if status != leg.status || body != leg.text {
+			t.Fatalf("%s: %d %q, want %d %q", leg.note, status, body, leg.status, leg.text)
+		}
+		requireNoEntry(t, leg.note, before, entries())
+	}
+	// A missing content type is a media failure on both channels.
+	for _, path := range []string{savePath, formPath} {
+		before := entries()
+		status, body, _ := method("POST", path, "tok-alice", "", saveBody("op-t4", 1))
+		if status != 415 || body != "Unsupported Media Type" {
+			t.Fatalf("missing media %s: %d %q, want 415", path, status, body)
+		}
+		requireNoEntry(t, "missing media "+path, before, entries())
+	}
+	// Sixty-five keyed rows exceed the declared rows_limit and render
+	// the structural 422 fragment without handler entry.
+	many := url.Values{}
+	many.Set("seats", "2")
+	many.Set("details", "many")
+	many.Set("revision", "1")
+	for i := 0; i < 65; i++ {
+		many.Add("lines_order", "k"+strconv.Itoa(i))
+	}
+	before = entries()
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, many)
+	if status != 422 || !strings.Contains(body, "invoice form rejected") || !strings.Contains(body, `role="alert"`) || !strings.Contains(body, "row_limit") {
+		t.Fatalf("rows over limit: %d %.600s, want 422 row_limit alert", status, body)
+	}
+	requireNoEntry(t, "rows over limit", before, entries())
+
+	// Success control: one valid save advances revision and ledger by
+	// exactly one, proving the counter observes real entries.
+	before = entries()
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-a1", 1))
+	if status != 200 {
+		t.Fatalf("adapter control save: %d %s", status, payload)
+	}
+	requireOneEntry(t, "adapter control save", "2", before, entries())
+
+	// Disconnect: a fully written abandoned save still commits exactly
+	// one effect under its owned lease; the identical replay returns
+	// 200 and changed content conflicts.
+	abandoned := saveBody("op-a2", 2)
+	gate3Abandon(t, addr, "POST "+savePath+" HTTP/1.1\r\nHost: "+addr+"\r\nContent-Type: application/json\r\nContent-Length: "+strconv.Itoa(len(abandoned))+"\r\nOrigin: "+origin+"\r\nCookie: session=tok-alice\r\nConnection: close\r\n\r\n"+abandoned)
+	deadline := time.Now().Add(20 * time.Second)
+	for {
+		store := inspectInvoice(t, ctx, bundle, home, driver, db)
+		done := false
+		for _, row := range store.Replay {
+			if row.OperationID == "op-a2" {
+				done = true
+			}
+		}
+		if done {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("abandoned save never committed its replay row")
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	store := inspectInvoice(t, ctx, bundle, home, driver, db)
+	requireInvoice(t, store, "7", "3", "2", "Acme <em>&\" 'coop'\"")
+	requireReplay(t, store, "op-a2", "3")
+	before = entries()
+	status, first, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", abandoned)
+	if status != 200 {
+		t.Fatalf("abandoned replay: %d %s", status, first)
+	}
+	status, second, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", abandoned)
+	if status != 200 || second != first {
+		t.Fatalf("abandoned reread: %d, want identical 200 bytes", status)
+	}
+	changed := `{"operation_id":"op-a2","revision":"2","lines":[{"key":"k1","id":"changed","quantity":"2","price":"5.00"}]}`
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", changed)
+	if status != 409 {
+		t.Fatalf("abandoned changed: %d %s, want 409", status, payload)
+	}
+	requireNoEntry(t, "abandoned replays", before, entries())
+
+	// Drop-replay fault: the write fails truthfully at 503 without
+	// committing, and the identical retry commits after restore. The
+	// mid-fault revision read bypasses the dropped ledger table.
+	before = entries()
+	faultInvoice(t, ctx, bundle, home, driver, db, "drop-replay")
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-a3", 3))
+	if status != 503 {
+		t.Fatalf("replay outage save: %d %s, want 503", status, payload)
+	}
+	gate3Case(t, "replay outage save", payload, "invoice_contract::grid_unavailable")
+	if mid := invoiceRevision(t, ctx, bundle, home, driver, db, "7"); mid != before.revision {
+		t.Fatalf("drop-replay fault moved revision %s to %s", before.revision, mid)
+	}
+	t.Logf("fault drop-replay: committed=false (revision %s held, ledger table dropped)", before.revision)
+	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid invoice restore report %v %s", err, string(setup))
+	}
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-a3", 3))
+	if status != 200 {
+		t.Fatalf("replay recovery save: %d %s", status, payload)
+	}
+	value := gate3Case(t, "replay recovery save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("replay recovery save value %+v", value)
+	}
+	// The restore recreates an empty ledger, so the retry's commit
+	// verdict compares revisions, not ledger lengths.
+	after := entries()
+	if after.revision != "4" {
+		t.Fatalf("drop-replay retry left revision %s, want 4", after.revision)
+	}
+	requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-a3", "4")
+	t.Logf("fault drop-replay retry: committed=true (revision %s -> %s on a restored ledger)", before.revision, after.revision)
+	t.Logf("gate3 adapter: %d can assertions, 404/405/capture/separator/media/budget legs without entry, disconnect and replay-outage legs with row evidence", assertions)
+}
+
+// gate3RacePost fires one JSON save and reports its status with body.
+type gate3RacePost struct {
+	operation string
+	status    int
+	body      string
+}
+
+func gate3RaceSave(base, path, session, origin, body string) gate3RacePost {
+	operation := ""
+	if i := strings.Index(body, `"operation_id":"`); i >= 0 {
+		rest := body[i+len(`"operation_id":"`):]
+		operation, _, _ = strings.Cut(rest, `"`)
+	}
+	client := &http.Client{Timeout: 30 * time.Second}
+	request, err := http.NewRequest("POST", base+path, strings.NewReader(body))
+	if err != nil {
+		return gate3RacePost{operation: operation, status: -1, body: err.Error()}
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Origin", origin)
+	if session != "" {
+		request.AddCookie(&http.Cookie{Name: "session", Value: session})
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return gate3RacePost{operation: operation, status: -1, body: err.Error()}
+	}
+	defer response.Body.Close()
+	payload, _ := io.ReadAll(response.Body)
+	return gate3RacePost{operation: operation, status: response.StatusCode, body: string(payload)}
+}
+
+// TestGate3Concurrency proves a concurrent revision or membership change
+// blocks stale/unauthorized commit: distinct operations racing one base
+// revision commit exactly once, identical operations racing commit one
+// shared effect with byte-identical results, and membership flaps admit
+// only authorized commits while every landing keeps the revision and
+// ledger counts coherent.
+func TestGate3Concurrency(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-race")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3RacePort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3RacePort)
+	const savePath = "/api/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]}`
+	}
+	race := func(bodies []string) []gate3RacePost {
+		t.Helper()
+		start := make(chan struct{})
+		results := make([]gate3RacePost, len(bodies))
+		var group sync.WaitGroup
+		for i, body := range bodies {
+			group.Add(1)
+			go func() {
+				defer group.Done()
+				<-start
+				results[i] = gate3RaceSave(base, savePath, "tok-alice", origin, body)
+			}()
+		}
+		close(start)
+		group.Wait()
+		return results
+	}
+	revision := func() string {
+		t.Helper()
+		store := inspectInvoice(t, ctx, bundle, home, driver, db)
+		for _, row := range store.Invoice {
+			if row.ID == "7" {
+				return row.Rev
+			}
+		}
+		t.Fatal("invoice 7 missing")
+		return ""
+	}
+
+	// Distinct operations racing one base revision: exactly one save
+	// commits, every loser conflicts, and the ledger grows by one.
+	var bodies []string
+	for i := 0; i < 8; i++ {
+		bodies = append(bodies, saveBody("op-r"+strconv.Itoa(i), 1))
+	}
+	results := race(bodies)
+	winners, conflicts := 0, 0
+	var winner gate3RacePost
+	for _, result := range results {
+		switch result.status {
+		case 200:
+			winners++
+			winner = result
+		case 409:
+			conflicts++
+		default:
+			t.Fatalf("revision race %s: %d %s, want 200 once and 409 else", result.operation, result.status, result.body)
+		}
+	}
+	if winners != 1 || conflicts != 7 {
+		t.Fatalf("revision race: %d winners %d conflicts, want 1 and 7", winners, conflicts)
+	}
+	value := gate3Case(t, "revision race winner", winner.body, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if value["operation_id"] != winner.operation || acknowledged["revision"] != "2" {
+		t.Fatalf("revision race winner value %+v", value)
+	}
+	if revision() != "2" {
+		t.Fatalf("revision race left revision %s, want 2", revision())
+	}
+	store := inspectInvoice(t, ctx, bundle, home, driver, db)
+	requireReplay(t, store, winner.operation, "2")
+	if len(store.Replay) != 1 {
+		t.Fatalf("revision race ledger %+v, want one row", store.Replay)
+	}
+	t.Logf("revision race: %s committed revision 2, seven losers conflicted", winner.operation)
+
+	// Identical operations racing: every landing converges to one
+	// shared effect with byte-identical 200 results and one ledger
+	// row. A loser that slips past the lookup before the winner
+	// commits may answer 503 once; its identical retry replays.
+	var same []string
+	for i := 0; i < 6; i++ {
+		same = append(same, saveBody("op-same", 2))
+	}
+	results = race(same)
+	for _, result := range results {
+		if result.status != 200 && result.status != 503 {
+			t.Fatalf("identical race %s: %d %s, want 200 or one 503 retry", result.operation, result.status, result.body)
+		}
+	}
+	var converged []string
+	for range results {
+		status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-same", 2))
+		if status != 200 {
+			t.Fatalf("identical converge: %d %s, want 200", status, payload)
+		}
+		converged = append(converged, payload)
+	}
+	for _, payload := range converged[1:] {
+		if payload != converged[0] {
+			t.Fatal("identical race converged to differing bytes")
+		}
+	}
+	value = gate3Case(t, "identical race", converged[0], "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "3" {
+		t.Fatalf("identical race value %+v", value)
+	}
+	if revision() != "3" {
+		t.Fatalf("identical race left revision %s, want 3", revision())
+	}
+	store = inspectInvoice(t, ctx, bundle, home, driver, db)
+	requireReplay(t, store, "op-same", "3")
+	if len(store.Replay) != 2 {
+		t.Fatalf("identical race ledger %+v, want two rows", store.Replay)
+	}
+	t.Logf("identical race: one shared effect at revision 3 with byte-identical results")
+
+	// Deterministic membership gate: removing alice's row denies saves
+	// and loads without disclosure; restoring it admits saves again.
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", false)
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-u1", 3))
+	if status != 403 {
+		t.Fatalf("unmembered save: %d %s, want 403", status, payload)
+	}
+	value = gate3Case(t, "unmembered save", payload, "invoice_contract::grid_forbidden")
+	if value["operation_id"] != "op-u1" || len(value) != 2 {
+		t.Fatalf("unmembered save value %+v discloses or mismatches", value)
+	}
+	status, body, _ := invoiceGet(t, base, savePath, "tok-alice")
+	if status != 403 {
+		t.Fatalf("unmembered load: %d %s, want 403", status, body)
+	}
+	gate3Case(t, "unmembered load", body, "invoice_contract::grid_load_forbidden")
+	if revision() != "3" {
+		t.Fatalf("unmembered legs moved revision to %s", revision())
+	}
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", true)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-u2", 3))
+	if status != 200 {
+		t.Fatalf("restored save: %d %s, want 200", status, payload)
+	}
+	value = gate3Case(t, "restored save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("restored save value %+v", value)
+	}
+
+	// Membership flap racing saves: the flap runs while eight distinct
+	// saves race one base revision. Every landing keeps the counts
+	// coherent: each 200 advanced the revision by exactly one, every
+	// 200 operation owns its ledger row, and denials disclose nothing.
+	flapDone := make(chan error, 1)
+	go func() {
+		for i := 0; i < 4; i++ {
+			for _, mode := range []string{"unmember", "member"} {
+				if out, err := invoiceDriverRaw(ctx, bundle, home, driver, mode, db, "alice", "1"); err != nil {
+					flapDone <- errors.New(mode + ": " + string(out))
+					return
+				}
+			}
+		}
+		flapDone <- nil
+	}()
+	var flapBodies []string
+	for i := 0; i < 8; i++ {
+		flapBodies = append(flapBodies, saveBody("op-f"+strconv.Itoa(i), 4))
+	}
+	results = race(flapBodies)
+	if err := <-flapDone; err != nil {
+		t.Fatalf("membership flap: %v", err)
+	}
+	// Restore idempotently: the flap ends present, so remove-then-add
+	// converges regardless of the landing.
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", false)
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", true)
+	var committed []gate3RacePost
+	for _, result := range results {
+		switch result.status {
+		case 200:
+			committed = append(committed, result)
+		case 403:
+			value := gate3Case(t, "flap denial "+result.operation, result.body, "invoice_contract::grid_forbidden")
+			if value["operation_id"] != result.operation || len(value) != 2 {
+				t.Fatalf("flap denial value %+v discloses or mismatches", value)
+			}
+		case 409:
+			gate3Case(t, "flap conflict "+result.operation, result.body, "invoice_contract::grid_conflict")
+		default:
+			t.Fatalf("flap race %s: %d %s, want 200, 403 or 409", result.operation, result.status, result.body)
+		}
+	}
+	if len(committed) > 1 {
+		t.Fatalf("flap race committed %d saves on one base revision", len(committed))
+	}
+	final := revision()
+	if len(committed) == 1 {
+		value := gate3Case(t, "flap winner", committed[0].body, "invoice_contract::grid_saved")
+		acknowledged, _ := value["acknowledged"].(map[string]any)
+		if acknowledged["revision"] != "5" || final != "5" {
+			t.Fatalf("flap winner value %+v revision %s", value, final)
+		}
+		requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), committed[0].operation, "5")
+	} else if final != "4" {
+		t.Fatalf("flap race committed nothing but left revision %s", final)
+	}
+	store = inspectInvoice(t, ctx, bundle, home, driver, db)
+	wantRows := 3 + len(committed)
+	if len(store.Replay) != wantRows {
+		t.Fatalf("flap race ledger holds %d rows, want %d", len(store.Replay), wantRows)
+	}
+	t.Logf("membership flap: %d commit(s), revision %s, %d ledger rows, every landing coherent", len(committed), final, wantRows)
+
+	// Recovery control: membership present, a fresh operation on the
+	// current revision commits.
+	freshRev, _ := strconv.Atoi(final)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-fresh", freshRev))
+	if status != 200 {
+		t.Fatalf("post-flap save: %d %s, want 200", status, payload)
+	}
+	value = gate3Case(t, "post-flap save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != strconv.Itoa(freshRev+1) {
+		t.Fatalf("post-flap save value %+v", value)
+	}
+	t.Logf("gate3 concurrency: %d can assertions, revision/identical/membership races live with row evidence", assertions)
+}
+
+// TestGate3ReplayExpiry proves revoked actors cannot recover prior saved
+// results, live replay replays without sliding retention, expired replay
+// conflicts with the row gone, and expired operation IDs that return
+// with a fresh base commit new revisions instead of reusing recorded
+// ones. The server runs a five-minute retention window so the live legs
+// place rows a full minute on either side of the server-clock cutoff;
+// the exact at-boundary millisecond stays pinned by the
+// save_replay_at_edge model assertion (strict less-than keeps it live).
+func TestGate3ReplayExpiry(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-replay")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	const window = int64(300000)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3ReplayPort, strconv.FormatInt(window, 10))
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3ReplayPort)
+	const savePath = "/api/tenants/1/invoices/7"
+	lines := `[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]`
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":` + lines + `}`
+	}
+	entries := func() protectedEntries {
+		t.Helper()
+		return snapshotEntries(inspectInvoice(t, ctx, bundle, home, driver, db), "7")
+	}
+	revision := func() string { t.Helper(); return entries().revision }
+
+	// Baseline save whose result a revoked actor must not recover.
+	status, saved, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-v1", 1))
+	if status != 200 {
+		t.Fatalf("revoke setup save: %d %s", status, saved)
+	}
+	before := entries()
+	ledger := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-v1", "2")
+	revokeSession(t, ctx, bundle, home, driver, db, "tok-alice", strconv.FormatInt(time.Now().UnixMilli(), 10))
+
+	// Revoked replay: identical and changed retries share one
+	// nondisclosing 403 carrying only the caller-sent operation id,
+	// and the load denials match. Nothing leaks the recorded result.
+	for _, leg := range []struct {
+		note, body string
+	}{
+		{"revoked identical", saveBody("op-v1", 1)},
+		{"revoked changed", `{"operation_id":"op-v1","revision":"1","lines":[{"key":"k1","id":"changed","quantity":"2","price":"5.00"}]}`},
+		{"revoked fresh", saveBody("op-v2", 2)},
+	} {
+		status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", leg.body)
+		if status != 403 {
+			t.Fatalf("%s: %d %s, want 403", leg.note, status, payload)
+		}
+		value := gate3Case(t, leg.note, payload, "invoice_contract::grid_forbidden")
+		if value["operation_id"] != "op-v1" && value["operation_id"] != "op-v2" {
+			t.Fatalf("%s value %+v mismatches the caller-sent id", leg.note, value)
+		}
+		if len(value) != 2 || strings.Contains(payload, "grid_saved") || strings.Contains(payload, "Acme") {
+			t.Fatalf("%s value %+v discloses the recorded result", leg.note, value)
+		}
+	}
+	status, body, _ := invoiceGet(t, base, savePath, "tok-alice")
+	if status != 403 {
+		t.Fatalf("revoked load: %d %s, want 403", status, body)
+	}
+	gate3Case(t, "revoked load", body, "invoice_contract::grid_load_forbidden")
+	requireNoEntry(t, "revoked legs", before, entries())
+
+	// Unrevoking restores the recorded result byte-identically with
+	// its retention stamp unmoved.
+	revokeSession(t, ctx, bundle, home, driver, db, "tok-alice", "0")
+	status, replayed, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-v1", 1))
+	if status != 200 || replayed != saved {
+		t.Fatalf("unrevoked replay: %d, want identical 200 bytes", status)
+	}
+	again := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-v1", "2")
+	if again.Recorded != ledger.Recorded {
+		t.Fatalf("unrevoked replay slid retention %s to %s", ledger.Recorded, again.Recorded)
+	}
+	requireNoEntry(t, "unrevoked replay", before, entries())
+
+	// Live replay: a row a minute inside the cutoff replays
+	// byte-identically without sliding its stamp or touching the
+	// revision.
+	status, live, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 200 {
+		t.Fatalf("expiry setup save: %d %s", status, live)
+	}
+	liveStamp := strconv.FormatInt(time.Now().UnixMilli()-window+60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", liveStamp)
+	before = entries()
+	status, replayed, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 200 || replayed != live {
+		t.Fatalf("live replay: %d, want identical 200 bytes", status)
+	}
+	requireNoEntry(t, "live replay", before, entries())
+	if held := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-e1", "3"); held.Recorded != liveStamp {
+		t.Fatalf("live replay slid retention %s to %s", liveStamp, held.Recorded)
+	}
+
+	// Expired replay: a row a minute past the cutoff conflicts on its
+	// advanced revision and is gone afterwards; nothing reuses the
+	// recorded revision.
+	deadStamp := strconv.FormatInt(time.Now().UnixMilli()-window-60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", deadStamp)
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 409 {
+		t.Fatalf("expired replay: %d %s, want 409", status, payload)
+	}
+	gate3Case(t, "expired replay", payload, "invoice_contract::grid_conflict")
+	if revision() != "3" {
+		t.Fatalf("expired replay moved revision to %s", revision())
+	}
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-e1" {
+			t.Fatalf("expired replay kept %+v", row)
+		}
+	}
+
+	// The expired operation ID returning with a fresh base commits a
+	// new revision instead of reusing its recorded one.
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 3))
+	if status != 200 {
+		t.Fatalf("expired id fresh base: %d %s, want 200", status, payload)
+	}
+	value := gate3Case(t, "expired id fresh base", payload, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("expired id fresh base value %+v, want new revision 4", value)
+	}
+	requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-e1", "4")
+
+	// Cleanup keeps the near-boundary live row while the next commit
+	// expires an ancient one.
+	liveStamp = strconv.FormatInt(time.Now().UnixMilli()-window+60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", liveStamp)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e2", 4))
+	if status != 200 {
+		t.Fatalf("cleanup setup save: %d %s", status, payload)
+	}
+	deadStamp = strconv.FormatInt(time.Now().UnixMilli()-window-60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e2", deadStamp)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e3", 5))
+	if status != 200 {
+		t.Fatalf("cleanup commit save: %d %s", status, payload)
+	}
+	if revision() != "6" {
+		t.Fatalf("cleanup left revision %s, want 6", revision())
+	}
+	seen := map[string]bool{}
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		seen[row.OperationID] = true
+	}
+	if !seen["op-v1"] || !seen["op-e1"] || !seen["op-e3"] || seen["op-e2"] {
+		t.Fatalf("cleanup ledger keeps the live rows and drops only the ancient one: %+v", seen)
+	}
+	t.Logf("gate3 replay: %d can assertions, revoked/live/expired replay and revision invariants live with row evidence", assertions)
+}
+
+// TestGate3RendererFault proves a post-commit renderer fault fails closed:
+// a committed write whose stored row the HTML renderer cannot mint
+// answers 500 with a fixed body carrying no invoice content, the rows
+// stay intact and readable over JSON, and removing the row restores the
+// page. A store outage likewise renders the 503 fragment into the
+// admitted shape instead of failing the swap contract.
+func TestGate3RendererFault(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-render")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3RenderPort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3RenderPort)
+	const formPath = "/tenants/1/invoices/7"
+	const pagePath = "/invoices/form?tenant_id=1&invoice_id=7"
+	formValues := func(seats, details, revision string) url.Values {
+		values := url.Values{}
+		values.Set("seats", seats)
+		values.Set("details", details)
+		values.Set("revision", revision)
+		values.Add("lines_order", "k1")
+		values.Set("lines[k1][id]", "a")
+		values.Set("lines[k1][quantity]", "2")
+		values.Set("lines[k1][price]", "5.00")
+		return values
+	}
+	entries := func() protectedEntries {
+		t.Helper()
+		return snapshotEntries(inspectInvoice(t, ctx, bundle, home, driver, db), "7")
+	}
+
+	// Commit one form save with row evidence first.
+	status, body, _ := postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "1"))
+	if status != 200 || !strings.Contains(body, "saved revision 2") {
+		t.Fatalf("render setup save: %d %s", status, body)
+	}
+	requireInvoice(t, inspectInvoice(t, ctx, bundle, home, driver, db), "7", "2", "4", "Rush order")
+
+	// A stored row the renderer cannot mint fails the page into a
+	// fixed 500 carrying no invoice content and no entry effect.
+	injectLine(t, ctx, bundle, home, driver, db, "7", "k 1", "a", "2", "500", "2")
+	before := entries()
+	status, page, _ := invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 500 || page != "error" {
+		t.Fatalf("renderer fault page: %d %q, want 500 error", status, page)
+	}
+	requireNoEntry(t, "renderer fault", before, entries())
+	store := inspectInvoice(t, ctx, bundle, home, driver, db)
+	row := requireInvoice(t, store, "7", "2", "4", "Rush order")
+	if len(row.Lines) != 2 {
+		t.Fatalf("renderer fault lost committed rows %+v", row.Lines)
+	}
+
+	// The store itself is healthy: the JSON load still answers the
+	// current snapshot including the unmintable key.
+	status, loaded, _ := invoiceGet(t, base, "/api/tenants/1/invoices/7", "tok-alice")
+	if status != 200 {
+		t.Fatalf("renderer fault load: %d %s, want 200", status, loaded)
+	}
+	value := gate3Case(t, "renderer fault load", loaded, "invoice_contract::grid_loaded")
+	current, _ := value["current"].(map[string]any)
+	if current["revision"] != "2" {
+		t.Fatalf("renderer fault load value %+v", value)
+	}
+
+	// Removing the row restores the page with the committed content.
+	deleteLine(t, ctx, bundle, home, driver, db, "7", "k 1")
+	status, page, _ = invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 200 || !strings.Contains(page, "Rush order") || !strings.Contains(page, `value="2"`) {
+		t.Fatalf("renderer recovery page: %d %.500s, want 200 with committed content", status, page)
+	}
+
+	// A store outage renders the 503 fragment with its alert region
+	// and commits nothing; the page degrades to its 503 notice; the
+	// identical save commits after restore.
+	before = entries()
+	faultInvoice(t, ctx, bundle, home, driver, db, "drop-lines")
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "2"))
+	if status != 503 || !strings.Contains(body, "unavailable") || !strings.Contains(body, `role="alert"`) {
+		t.Fatalf("form outage save: %d %s, want 503 unavailable alert", status, body)
+	}
+	status, page, _ = invoiceGet(t, base, pagePath, "tok-alice")
+	if status != 503 || !strings.Contains(page, "Invoice unavailable") {
+		t.Fatalf("form outage page: %d %.300s, want 503 notice", status, page)
+	}
+	// The mid-fault revision read bypasses the dropped lines table.
+	if mid := invoiceRevision(t, ctx, bundle, home, driver, db, "7"); mid != before.revision {
+		t.Fatalf("drop-lines form fault moved revision %s to %s", before.revision, mid)
+	}
+	t.Logf("fault drop-lines form: committed=false (revision %s held, lines table dropped)", before.revision)
+	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid invoice restore report %v %s", err, string(setup))
+	}
+	status, body, _ = postInvoiceForm(t, base, formPath, "tok-alice", origin, formValues("4", "Rush order", "2"))
+	if status != 200 || !strings.Contains(body, "saved revision 3") {
+		t.Fatalf("form recovery save: %d %s, want 200 saved revision 3", status, body)
+	}
+	if !recordFaultOutcome(t, "drop-lines form retry", before, entries()) {
+		t.Fatal("drop-lines form retry committed nothing")
+	}
+	t.Logf("gate3 render: %d can assertions, post-commit renderer 500, JSON health, page recovery and form 503 fragment live with row evidence", assertions)
+}
+
+// gate3CallSites counts emitted call sites of one identifier across the
+// staged build directory, logging every matching line on mismatch.
+func gate3CallSites(t *testing.T, dir, identifier string, want int) {
+	t.Helper()
+	var matches []string
+	err := filepath.WalkDir(dir, func(path string, entry os.DirEntry, err error) error {
+		if err != nil || entry.IsDir() || !strings.HasSuffix(path, ".ts") {
+			return err
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		for _, line := range strings.Split(string(data), "\n") {
+			if strings.Contains(line, identifier+"(") && !strings.Contains(strings.TrimSpace(line), "import ") {
+				matches = append(matches, path+": "+strings.TrimSpace(line))
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(matches) != want {
+		t.Fatalf("%s call sites: %d, want %d:\n%s", identifier, len(matches), want, strings.Join(matches, "\n"))
+	}
+	t.Logf("%s: %d call site", identifier, want)
+}
+
+// TestGate3Lifecycle proves one pool, startup refusal, clean
+// shutdown/drainage and request-token revocation: the staged server
+// bundle opens its pool at exactly one call site and closes it at
+// exactly one, missing databases and occupied ports fail closed,
+// SIGTERM drains and exits clean with the ledger intact across
+// restart, an in-flight trickled request converges to exactly one
+// effect however the shutdown landed, and the artifact's own
+// request-lifetime suite passes under the staged sidecar.
+func TestGate3Lifecycle(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-life")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3LifePort)
+	const savePath = "/api/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]}`
+	}
+
+	// One pool: exactly one open call site and one close call site in
+	// the emitted server bundle, under the emitted pool-table
+	// spellings.
+	buildDir := filepath.Dir(entry)
+	gate3CallSites(t, buildDir, "$canSQLPools.sqliteOpenFile", 1)
+	gate3CallSites(t, buildDir, "$canSQLPools.close", 1)
+
+	// Startup refusal: a database path in a missing directory fails
+	// closed before serving.
+	expectInvoiceStartupFailure(t, ctx, bundle, home, entry, map[string]string{
+		"INVOICE_DB":    filepath.Join(home, "no-such-dir", "inv.sqlite"),
+		"PUBLIC_ORIGIN": origin,
+	}, gate3LifePort+10, "missing-db")
+	t.Log("startup refusal missing-db: nonzero exit before serving")
+
+	// Startup refusal: an occupied port fails closed. The first
+	// server also anchors the shutdown legs below.
+	snapshot := snapshotMap(t, home, "snapshot-gate3-life", map[string]string{"INVOICE_DB": db, "PUBLIC_ORIGIN": origin})
+	base, crash, stop := gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	expectInvoiceStartupFailure(t, ctx, bundle, home, entry, map[string]string{
+		"INVOICE_DB":    db,
+		"PUBLIC_ORIGIN": origin,
+	}, gate3LifePort, "occupied-port")
+	t.Log("startup refusal occupied-port: nonzero exit before serving")
+
+	// Clean shutdown: SIGTERM drains and exits zero; the ledger
+	// survives the restart; the pre-shutdown save replays its
+	// recorded bytes and a fresh save commits.
+	status, saved, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l1", 1))
+	if status != 200 {
+		crash()
+		t.Fatalf("shutdown setup save: %d %s", status, saved)
+	}
+	shutdownStart := time.Now()
+	stop()
+	t.Logf("SIGTERM drained in %dms with a clean exit", time.Since(shutdownStart).Milliseconds())
+	base, crash, stop = gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	status, replayed, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l1", 1))
+	if status != 200 || replayed != saved {
+		crash()
+		t.Fatalf("post-restart replay: %d, want identical 200 bytes", status)
+	}
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-l2", 2))
+	if status != 200 {
+		crash()
+		t.Fatalf("post-restart save: %d %s", status, payload)
+	}
+	requireInvoice(t, inspectInvoice(t, ctx, bundle, home, driver, db), "7", "3", "2", "Acme <em>&\" 'coop'\"")
+
+	// In-flight drain: SIGTERM lands mid-body of a trickled save. The
+	// request either completes or aborts, the server still exits
+	// clean, and the identical retry converges to exactly one effect.
+	trickled := saveBody("op-l3", 3)
+	outcome := make(chan gate3RacePost, 1)
+	go func() {
+		request, err := http.NewRequest("POST", base+savePath, &gate4Trickle{body: []byte(trickled), chunk: 16, delay: 150 * time.Millisecond})
+		if err != nil {
+			outcome <- gate3RacePost{operation: "op-l3", status: -1, body: err.Error()}
+			return
+		}
+		request.Header.Set("Content-Type", "application/json")
+		request.Header.Set("Origin", origin)
+		request.AddCookie(&http.Cookie{Name: "session", Value: "tok-alice"})
+		request.ContentLength = int64(len(trickled))
+		client := &http.Client{Timeout: 30 * time.Second}
+		response, err := client.Do(request)
+		if err != nil {
+			outcome <- gate3RacePost{operation: "op-l3", status: -1, body: err.Error()}
+			return
+		}
+		defer response.Body.Close()
+		payload, _ := io.ReadAll(response.Body)
+		outcome <- gate3RacePost{operation: "op-l3", status: response.StatusCode, body: string(payload)}
+	}()
+	time.Sleep(400 * time.Millisecond)
+	drainStart := time.Now()
+	stop()
+	t.Logf("SIGTERM with in-flight trickle drained in %dms with a clean exit", time.Since(drainStart).Milliseconds())
+	select {
+	case landed := <-outcome:
+		t.Logf("in-flight outcome %d %.200s (either landing converges below)", landed.status, landed.body)
+	case <-time.After(25 * time.Second):
+		t.Fatal("in-flight trickle never returned")
+	}
+	pre := 0
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-l3" {
+			pre++
+		}
+	}
+	if pre > 1 {
+		t.Fatalf("in-flight trickle committed %d effects", pre)
+	}
+	base, _, stop = gate3ServeInvoice(t, ctx, bundle, home, entry, snapshot, gate3LifePort)
+	defer stop()
+	status, first, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", trickled)
+	if status != 200 {
+		t.Fatalf("drain converge save: %d %s", status, first)
+	}
+	status, second, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", trickled)
+	if status != 200 || second != first {
+		t.Fatalf("drain converge reread: %d, want identical 200 bytes", status)
+	}
+	value := gate3Case(t, "drain converge", first, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("drain converge value %+v", value)
+	}
+	effects := 0
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-l3" {
+			effects++
+		}
+	}
+	if effects != 1 {
+		t.Fatalf("drain converged to %d op-l3 effects, want 1", effects)
+	}
+
+	// Buffered/lazy token revocation: the artifact's own
+	// request-lifetime suite passes under the staged sidecar.
+	sidecar := filepath.Join(bundle, "runtime/bun")
+	clean, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.CommandContext(ctx, sidecar,
+		"--no-env-file", "--no-macros", "--no-install",
+		"--config="+filepath.Join(bundle, "tools/runtime/bunfig.toml"),
+		"test", filepath.Join(bundle, "runtime/test", "request-lifetime.test.ts"))
+	cmd.Dir = clean
+	cmd.Env = []string{"HOME=" + clean, "XDG_CONFIG_HOME=" + clean, "PATH=/usr/local/bin:/usr/bin:/bin"}
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("request-lifetime suite: %v\n%s", err, output)
+	}
+	t.Logf("request-lifetime suite: %d pass under the staged sidecar", gate4PassCount(t, string(output)))
+	t.Logf("gate3 lifecycle: %d can assertions, one pool, startup refusal, shutdown/drainage and revocation live with row evidence", assertions)
 }

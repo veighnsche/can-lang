@@ -1,4 +1,5 @@
-// UP16 test-only setup/seeding/inspection harness for the invoice slice.
+// UP16 test-only setup/seeding/inspection harness for the invoice slice,
+// extended by UP22 with live-membership/session/line mutation modes.
 // Executed by tests/integration/invoice_test.go against a disposable SQLite
 // file database. Modes: "setup" applies the example schema.sql through
 // static templates; "seed" inserts the fixed session, membership, invoice
@@ -8,11 +9,14 @@
 // "touch-replay" rewrites one ledger row's recorded stamp so retention
 // tests can place rows before, at or after the expiry boundary;
 // "fault" drops one allowlisted table so outage legs can prove
-// truthful 503s and safe retries (setup restores the table). The
-// compiled program serves every HTTP behavior itself; this driver only
-// prepares the file the operator would prepare, adjusts its own seeded
-// ledger stamps, injects the listed store faults, and reads back rows
-// the test asserts on.
+// truthful 503s and safe retries (setup restores the table); "revoke"
+// sets one session's revoked stamp (0 restores it) for revoked-replay
+// legs; "member"/"unmember" add or remove one membership row for
+// concurrent-membership legs; "inject-line"/"delete-line" add or remove
+// one stored line row for renderer-fault legs. The compiled program
+// serves every HTTP behavior itself; this driver only prepares the file
+// the operator would prepare, mutates its own seeded rows, injects the
+// listed store faults, and reads back rows the test asserts on.
 import { SQL } from "bun";
 
 function staticTemplate(text: string): TemplateStringsArray {
@@ -148,6 +152,57 @@ try {
       if (statement === undefined) throw new Error(`unknown fault ${fault ?? ""}`);
       await sql(staticTemplate(statement));
       console.log(JSON.stringify({ fault }));
+    } else if (mode === "revision") {
+      const invoice = integerText(process.argv[4] ?? "", "invoice_id");
+      const rows = (await sql(
+        staticTemplate(`SELECT revision FROM invoice WHERE id = ${invoice}`),
+      )) as Record<string, unknown>[];
+      if (rows.length !== 1) throw new Error("revision matched no invoice row");
+      console.log(JSON.stringify({ invoice, revision: text(rows[0]["revision"]) }));
+    } else if (mode === "revoke") {
+      const token = process.argv[4];
+      const stamp = integerText(process.argv[5] ?? "", "revoked_ms");
+      if (typeof token !== "string" || token === "") throw new Error("revoke needs a session token argument");
+      await sql(staticTemplate(`UPDATE invoice_session SET revoked_ms = ${stamp} WHERE token = ${literal(token)}`));
+      const rows = (await sql(
+        staticTemplate(`SELECT revoked_ms FROM invoice_session WHERE token = ${literal(token)}`),
+      )) as Record<string, unknown>[];
+      if (rows.length !== 1) throw new Error("revoke matched no session row");
+      console.log(JSON.stringify({ token, revoked: text(rows[0]["revoked_ms"]) }));
+    } else if (mode === "member") {
+      const actor = process.argv[4];
+      const tenant = integerText(process.argv[5] ?? "", "tenant");
+      if (typeof actor !== "string" || actor === "") throw new Error("member needs an actor argument");
+      await sql(staticTemplate(`INSERT INTO invoice_membership (actor, tenant) VALUES (${literal(actor)}, ${tenant})`));
+      console.log(JSON.stringify({ actor, tenant }));
+    } else if (mode === "unmember") {
+      const actor = process.argv[4];
+      const tenant = integerText(process.argv[5] ?? "", "tenant");
+      if (typeof actor !== "string" || actor === "") throw new Error("unmember needs an actor argument");
+      await sql(staticTemplate(`DELETE FROM invoice_membership WHERE actor = ${literal(actor)} AND tenant = ${tenant}`));
+      console.log(JSON.stringify({ actor, tenant }));
+    } else if (mode === "inject-line") {
+      const invoice = integerText(process.argv[4] ?? "", "invoice_id");
+      const key = process.argv[5];
+      const id = process.argv[6];
+      const quantity = integerText(process.argv[7] ?? "", "quantity");
+      const price = integerText(process.argv[8] ?? "", "price_minor");
+      const position = integerText(process.argv[9] ?? "", "position");
+      if (typeof key !== "string" || typeof id !== "string" || key === "" || id === "") {
+        throw new Error("inject-line needs key and id arguments");
+      }
+      await sql(
+        staticTemplate(
+          `INSERT INTO invoice_line (invoice_id, line_key, id, quantity, price_minor, position) VALUES (${invoice}, ${literal(key)}, ${literal(id)}, ${quantity}, ${price}, ${position})`,
+        ),
+      );
+      console.log(JSON.stringify({ invoice, key }));
+    } else if (mode === "delete-line") {
+      const invoice = integerText(process.argv[4] ?? "", "invoice_id");
+      const key = process.argv[5];
+      if (typeof key !== "string" || key === "") throw new Error("delete-line needs a key argument");
+      await sql(staticTemplate(`DELETE FROM invoice_line WHERE invoice_id = ${invoice} AND line_key = ${literal(key)}`));
+      console.log(JSON.stringify({ invoice, key }));
     } else {
       throw new Error(`unknown driver mode ${mode ?? ""}`);
     }
