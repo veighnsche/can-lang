@@ -30,4 +30,8 @@ type JSONFetchSite struct {
 	Request  *types.CodecSchema
 	Response types.CodecSchema
 	Cases    []JSONFetchCase
+	// Limit is the declared JSON request budget in bytes. It is set for
+	// checked action request/post sites and zero for legacy fetch_json
+	// sites, which keep the default wire cap.
+	Limit int
 }

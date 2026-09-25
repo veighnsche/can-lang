@@ -1132,7 +1132,7 @@ func TestInvoiceContractBodyMode(t *testing.T) {
 	if status != 415 {
 		t.Fatalf("html to the json route: %d %s, want 415", status, payload)
 	}
-	status, payload, headers = postInvoiceJSON(t, pristineBase, "/api/tenants/1/invoices/7", "tok-alice", pristineOrigin, "application/json", `{"operation_id":"op-p1","revision":"1","lines":[]}`)
+	status, payload, headers = postInvoiceJSON(t, pristineBase, "/api/tenants/1/invoices/7", "tok-alice", pristineOrigin, "application/json", `{"operation_id":"op-p1","revision":"1","lines":`+contractJSONLines()+`}`)
 	if status != 200 || !strings.Contains(headers.Get("Content-Type"), "application/json") {
 		t.Fatalf("pristine json save: %d %q %s", status, headers.Get("Content-Type"), payload)
 	}
