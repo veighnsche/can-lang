@@ -1,6 +1,7 @@
 package emit
 
 import (
+	"regexp"
 	"strings"
 	"testing"
 
@@ -84,6 +85,13 @@ func TestBrowserSealsQueryOptionIdentities(t *testing.T) {
 	authored := browserUP11Authored(t, artifacts)
 	if !strings.Contains(authored, "$canBrowser.queryParameter(") {
 		t.Fatalf("browser authored lacks the query call:\n%s", authored)
+	}
+	// The UP11 call interface: key plus the trailing explicit owner
+	// context, with no spliced metadata. The adapter ignores the
+	// trailing context and reads the ambient location.
+	matched, err := regexp.MatchString(`\$canBrowser\.queryParameter\(\$can\w+, \$canCtx\)`, authored)
+	if err != nil || !matched {
+		t.Fatalf("browser query call breaks the (key, $canCtx) shape:\n%s", authored)
 	}
 }
 
