@@ -72,7 +72,7 @@ fn void main
 		t.Fatal(err)
 	}
 	var buildDiagnostics bytes.Buffer
-	if _, err = runtime.Build(ctx, root, os.Environ(), nil, &buildDiagnostics, DefaultAssertTimeoutMs); err != nil {
+	if _, err = runtime.Build(ctx, root, os.Environ(), nil, &buildDiagnostics, DefaultAssertTimeoutMs, ""); err != nil {
 		t.Fatal(err)
 	}
 	before, err := os.ReadFile(filepath.Join(root, "dist/current.json"))

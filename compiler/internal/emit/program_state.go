@@ -296,7 +296,7 @@ func (builder *stateBuilder) collectNumberIDs() {
 // initializeAssets creates the HTML factory and the asset bundle. It
 // returns the asset file artifacts emitted alongside the program.
 func (builder *stateBuilder) initializeAssets() ([]ir.Artifact, error) {
-	assetTable, assetURLs, assetFiles, err := assetBundle(builder.assembly.program)
+	assetTable, assetURLs, assetFiles, err := assetBundle(builder.assembly.program, builder.assembly.browserPairing)
 	if err != nil {
 		return nil, err
 	}

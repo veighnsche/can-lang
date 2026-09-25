@@ -113,7 +113,10 @@ test("markdown stubs fail closed without an engine", async () => {
 });
 
 test("asset stub serves no routes", async () => {
-  const assets = createAssets({ htmx: {} as never, project: [] }, new URL("file:///"));
+  const assets = createAssets(
+    { htmx: {} as never, guard: {} as never, project: [] },
+    new URL("file:///"),
+  );
   await expect(assets.serve(new Request("https://example.com/__can/"))).rejects.toThrow(
     "asset serving is unavailable in the browser profile",
   );

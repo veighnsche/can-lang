@@ -1,0 +1,110 @@
+{
+  "request_1": {
+    "page_binding": {
+      "type": "choice",
+      "choice": "inject_document",
+      "confidence": 0.94,
+      "probabilities": {
+        "serve_bytes_only": 0.03,
+        "extend_compiler_head": 0.01,
+        "inject_document": 0.96
+      }
+    },
+    "retention": {
+      "type": "choice",
+      "choice": "durable_ledger",
+      "confidence": 0.97,
+      "probabilities": {
+        "carry_forward": 0,
+        "pin_generations": 0.02,
+        "durable_ledger": 0.98
+      }
+    },
+    "verify_scope": {
+      "type": "choice",
+      "choice": "full_reaudit",
+      "confidence": 0.04,
+      "probabilities": {
+        "hashes_and_lock_only": 0.48,
+        "full_reaudit": 0.52
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1737,
+      "output_tokens": 129
+    }
+  },
+  "request_2": {
+    "page_binding": {
+      "type": "choice",
+      "choice": "inject_document",
+      "confidence": 0.76,
+      "probabilities": {
+        "extend_compiler_head": 0.01,
+        "inject_document": 0.84,
+        "serve_bytes_only": 0.15
+      }
+    },
+    "retention": {
+      "type": "choice",
+      "choice": "durable_ledger",
+      "confidence": 0.98,
+      "probabilities": {
+        "carry_forward": 0,
+        "durable_ledger": 0.99,
+        "pin_generations": 0.01
+      }
+    },
+    "verify_scope": {
+      "type": "choice",
+      "choice": "hashes_and_lock_only",
+      "confidence": 0.53,
+      "probabilities": {
+        "full_reaudit": 0.23,
+        "hashes_and_lock_only": 0.77
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1728,
+      "output_tokens": 131
+    }
+  },
+  "request_3": {
+    "page_binding": {
+      "type": "choice",
+      "choice": "inject_document",
+      "confidence": 0.89,
+      "probabilities": {
+        "inject_document": 0.93,
+        "serve_bytes_only": 0.06,
+        "extend_compiler_head": 0.01
+      }
+    },
+    "retention": {
+      "type": "choice",
+      "choice": "durable_ledger",
+      "confidence": 0.98,
+      "probabilities": {
+        "pin_generations": 0.01,
+        "carry_forward": 0,
+        "durable_ledger": 0.99
+      }
+    },
+    "verify_scope": {
+      "type": "choice",
+      "choice": "hashes_and_lock_only",
+      "confidence": 0.32,
+      "probabilities": {
+        "full_reaudit": 0.34,
+        "hashes_and_lock_only": 0.66
+      }
+    },
+    "model": "jev-1.13.0",
+    "usage": {
+      "input_tokens": 1709,
+      "output_tokens": 131
+    }
+  }
+}

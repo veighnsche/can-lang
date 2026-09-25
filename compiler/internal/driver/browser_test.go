@@ -11,7 +11,7 @@ import (
 
 func TestBuildTargetRejectsUnknownTarget(t *testing.T) {
 	runtime := &Runtime{}
-	if _, err := runtime.BuildTarget(context.Background(), t.TempDir(), nil, nil, nil, DefaultAssertTimeoutMs, browser.Target("worker")); err == nil {
+	if _, err := runtime.BuildTarget(context.Background(), t.TempDir(), nil, nil, nil, DefaultAssertTimeoutMs, browser.Target("worker"), ""); err == nil {
 		t.Fatal("worker target admitted")
 	}
 }

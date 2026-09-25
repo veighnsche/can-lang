@@ -31,10 +31,47 @@ type BuildReport struct {
 	Directory     string                `json:"directory"`
 	Entry         string                `json:"entry"`
 	Asset         string                `json:"asset,omitempty"`
+	Browser       *BrowserReport        `json:"browser,omitempty"`
 	Inputs        BuildInputs           `json:"inputs"`
 	Assertions    BuildAssertionSummary `json:"assertions"`
 	TimeoutMs     int                   `json:"timeoutMs"`
 	Validation    string                `json:"validation"`
+}
+
+// BrowserReportFile is one paired browser byte the server publication
+// serves: its browser-logical path, content digest, served route, media
+// type, and server-generation artifact path.
+type BrowserReportFile struct {
+	Path      string `json:"path"`
+	SHA256    string `json:"sha256"`
+	Route     string `json:"route"`
+	MediaType string `json:"mediaType"`
+	File      string `json:"file"`
+}
+
+// BrowserLockedInstance is one locked dependency instance the paired
+// browser manifest pins.
+type BrowserLockedInstance struct {
+	Instance       string `json:"instance"`
+	Lineage        string `json:"lineage"`
+	ManifestSHA256 string `json:"manifestSHA256"`
+	SourceSHA256   string `json:"sourceSHA256"`
+	FixturesSHA256 string `json:"fixturesSHA256"`
+}
+
+// BrowserReport records the exact verified browser build a paired server
+// build publishes: the browser build ID, the browser generation it was
+// verified from, the served entry and table routes, every served digest,
+// and the locked snapshot the pairing was bound against.
+type BrowserReport struct {
+	BrowserBuildID  string                  `json:"browserBuildId"`
+	Generation      string                  `json:"generation"`
+	ManifestSHA256  string                  `json:"manifestSHA256"`
+	Lock            string                  `json:"lock"`
+	LockedInstances []BrowserLockedInstance `json:"lockedInstances"`
+	Entry           string                  `json:"entry"`
+	Table           string                  `json:"table"`
+	Files           []BrowserReportFile     `json:"files"`
 }
 
 // verifiedBuild is the validation status carried by a successful build
@@ -43,12 +80,13 @@ type BuildReport struct {
 const verifiedBuild = "verified"
 
 // build runs the P15.1 verified pipeline on one captured snapshot: check,
-// private test staging, supervision of every required root in stable
-// order, production staging, validation, input revalidation and atomic
+// paired browser verification when --browser-manifest names one, private
+// test staging, supervision of every required root in stable order,
+// production staging, validation, input revalidation and atomic
 // publication. Any failure reports nonzero, discards its temporary
 // staging when possible and leaves production current unchanged. The
 // production entry point is never executed.
-func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int) (BuildReport, error) {
+func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, browserManifest string) (BuildReport, error) {
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
@@ -56,8 +94,16 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	if err != nil {
 		return BuildReport{}, err
 	}
+	var pairing *browserPairing
+	if browserManifest != "" {
+		pairing, err = verifyBrowserManifest(browserManifest, store.Graph)
+		if err != nil {
+			return BuildReport{}, err
+		}
+		program.Assets = append(program.Assets, pairing.assets...)
+	}
 	stableRootOrder(program.Assertions)
-	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs)
+	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs, pairing)
 	if err != nil {
 		return BuildReport{}, err
 	}
@@ -84,17 +130,37 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	if err != nil {
 		return BuildReport{}, err
 	}
-	prodID, prepared, err := r.stageProgram(ctx, store, program, false, timeoutMs)
+	prodID, prepared, err := r.stageProgram(ctx, store, program, false, timeoutMs, pairing)
 	if err != nil {
 		return BuildReport{}, err
 	}
-	directory, err := store.SelectCurrent(prodID)
+	if pairing != nil {
+		if err := pairing.reread(); err != nil {
+			_ = store.DiscardGeneration(prodID)
+			return BuildReport{}, err
+		}
+	}
+	prior, err := store.currentBuildID()
 	if err != nil {
 		_ = store.DiscardGeneration(prodID)
 		return BuildReport{}, err
 	}
+	directory, err := store.selectCurrentWithAssets(prior, prodID, pairingFiles(pairing))
+	if err != nil {
+		return BuildReport{}, err
+	}
 	discardTest = false
-	return BuildReport{SchemaVersion: 1, Kind: "can.build", Target: string(browser.TargetBun), BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts", Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
+	return BuildReport{SchemaVersion: 1, Kind: "can.build", Target: string(browser.TargetBun), BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts", Browser: pairing.pairedReport(), Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
+}
+
+// pairingFiles projects the verified pairing to its published file set for
+// the pending asset publication. Unpaired builds publish an empty set,
+// which retires any previously paired set into retention.
+func pairingFiles(pairing *browserPairing) []pairedAssetFile {
+	if pairing == nil {
+		return nil
+	}
+	return append([]pairedAssetFile{}, pairing.files...)
 }
 
 // summarizeBuildRoots requires every supervised root to pass. A single
@@ -162,17 +228,22 @@ func buildRootLabel(entry map[string]any) string {
 
 // stageProgram emits, validates, and privately stages checked modules. It
 // never selects production current; callers choose SelectCurrent (build)
-// or a generation lease (assert).
-func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool, timeoutMs int) (string, *PreparedOutput, error) {
+// or a generation lease (assert). A verified pairing binds the browser
+// build into the staged options and carries the served pairing record.
+func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program *check.Program, assertions bool, timeoutMs int, pairing *browserPairing) (string, *PreparedOutput, error) {
 	assets, err := r.PrivateArtifacts()
 	if err != nil {
 		return "", nil, err
 	}
+	var emitted *emit.BrowserPairing
+	if pairing != nil {
+		emitted = &emit.BrowserPairing{BuildID: pairing.buildID, Entry: pairing.entry, Table: pairing.table}
+	}
 	var artifacts []ir.Artifact
 	if assertions {
-		artifacts, err = emit.AssertionModules(program, assets.Directory, assets.Files)
+		artifacts, err = emit.AssertionModulesPaired(program, assets.Directory, assets.Files, emitted)
 	} else {
-		artifacts, err = emit.ProgramModules(program, assets.Directory, assets.Files)
+		artifacts, err = emit.ProgramModulesPaired(program, assets.Directory, assets.Files, emitted)
 	}
 	if err != nil {
 		return "", nil, err
@@ -180,6 +251,9 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 	artifacts, err = r.encodeSourceMaps(ctx, program, artifacts)
 	if err != nil {
 		return "", nil, err
+	}
+	if pairing != nil {
+		artifacts = append(artifacts, ir.Artifact{Path: "browser/pairing.json", Bytes: append([]byte(nil), pairing.pairingJSON...)})
 	}
 	launcher, err := regularFile(r.Root, "bin/canlc", true)
 	if err != nil {
@@ -196,7 +270,8 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 		Assertions bool
 		Roots      []ir.AssertionRoot
 		TimeoutMs  int
-	}{1, assertions, roots, timeoutMs})
+		Browser    *browserOptions
+	}{1, assertions, roots, timeoutMs, pairingOptions(pairing)})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
 	prepared, err := PrepareOutput(inputs, "entry.ts", artifacts)
 	if err != nil {
@@ -211,7 +286,22 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 	}
 	return buildID, prepared, nil
 }
-func (r *Runtime) Build(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int) (BuildReport, error) {
+
+// browserOptions binds the verified pairing into the staged build inputs:
+// the browser build ID plus the digest of the exact manifest bytes the
+// verification consumed. The manifest path itself never enters the inputs.
+type browserOptions struct {
+	BuildID  string `json:"buildId"`
+	Manifest string `json:"manifest"`
+}
+
+func pairingOptions(pairing *browserPairing) *browserOptions {
+	if pairing == nil {
+		return nil
+	}
+	return &browserOptions{BuildID: pairing.buildID, Manifest: pairing.manifestHash}
+}
+func (r *Runtime) Build(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, browserManifest string) (BuildReport, error) {
 	if r == nil {
 		return BuildReport{}, fmt.Errorf("build requires a bundled runtime")
 	}
@@ -220,5 +310,5 @@ func (r *Runtime) Build(ctx context.Context, projectDirectory string, environmen
 		return BuildReport{}, err
 	}
 	defer store.Close()
-	return r.build(ctx, store, environment, stdin, stderr, timeoutMs)
+	return r.build(ctx, store, environment, stdin, stderr, timeoutMs, browserManifest)
 }

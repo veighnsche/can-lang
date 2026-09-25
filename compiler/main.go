@@ -77,8 +77,9 @@ func run(argv []string) int {
 	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
 		timeoutMs := driver.DefaultAssertTimeoutMs
 		target := browser.TargetBun
+		browserManifest := ""
 		rest := argv[1:]
-		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
+		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] [--browser-manifest FILE] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
 		if argv[0] == "build" {
 			for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
 				if len(rest) < 3 {
@@ -102,11 +103,22 @@ func run(argv []string) int {
 						return 2
 					}
 					target = parsed
+				case "--browser-manifest":
+					if rest[1] == "" {
+						fmt.Fprintln(os.Stderr, buildUsage)
+						return 2
+					}
+					browserManifest = rest[1]
 				default:
 					fmt.Fprintln(os.Stderr, buildUsage)
 					return 2
 				}
 				rest = rest[2:]
+			}
+			if target == browser.TargetBrowser && browserManifest != "" {
+				fmt.Fprintln(os.Stderr, buildUsage)
+				fmt.Fprintln(os.Stderr, "browser builds do not pair a browser manifest")
+				return 2
 			}
 		}
 		if len(rest) < 1 || rest[0] == "" || (argv[0] == "build" && len(rest) != 1) || (argv[0] == "run" && len(rest) > 1 && rest[1] != "--") {
@@ -117,7 +129,7 @@ func run(argv []string) int {
 		if err == nil {
 			if argv[0] == "build" {
 				var report driver.BuildReport
-				report, err = sidecar.BuildTarget(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs, target)
+				report, err = sidecar.BuildTarget(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs, target, browserManifest)
 				if err == nil {
 					err = json.NewEncoder(os.Stdout).Encode(report)
 				}

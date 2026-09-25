@@ -18,6 +18,13 @@ import (
 //go:embed assets/htmx-4.0.0.min.js
 var HTMXScript []byte
 
+// GuardScript embeds the generated guard bytes. The file is derived from
+// runtime/platform/htmx-guard.ts by tools/runtime/guardgen.ts; do not edit
+// it by hand.
+//
+//go:embed assets/htmx-guard.js
+var GuardScript []byte
+
 //go:embed target.json
 var TargetJSON []byte
 
@@ -86,15 +93,15 @@ func VerifyHTMX(source string) error {
 	if err != nil {
 		return fmt.Errorf("htmx assets: %w", err)
 	}
-	if len(entries) != 2 {
-		return fmt.Errorf("htmx assets: closed inventory holds the script and its lock")
+	if len(entries) != 3 {
+		return fmt.Errorf("htmx assets: closed inventory holds the script, its lock, and the generated guard")
 	}
 	seen := map[string]bool{}
 	for _, entry := range entries {
 		seen[entry.Name()] = true
 	}
-	if !seen["htmx-4.0.0.min.js"] || !seen["htmx.lock.json"] {
-		return fmt.Errorf("htmx assets: closed inventory holds the script and its lock")
+	if !seen["htmx-4.0.0.min.js"] || !seen["htmx.lock.json"] || !seen["htmx-guard.js"] {
+		return fmt.Errorf("htmx assets: closed inventory holds the script, its lock, and the generated guard")
 	}
 	raw, err := os.ReadFile(filepath.Join(source, "distribution", "assets", "htmx.lock.json"))
 	if err != nil {
@@ -134,6 +141,16 @@ func VerifyHTMX(source string) error {
 	if lock.License.SPDX == "" || lock.License.Source == "" {
 		return fmt.Errorf("htmx license: provenance required")
 	}
+	guard, err := os.ReadFile(filepath.Join(source, "distribution", "assets", "htmx-guard.js"))
+	if err != nil {
+		return fmt.Errorf("guard script: %w", err)
+	}
+	if !bytes.Equal(guard, GuardScript) {
+		return fmt.Errorf("guard script: embeds stale bytes; run bun tools/runtime/guardgen.ts")
+	}
+	if _, err := GuardAsset(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -147,6 +164,23 @@ func HTMXAsset() ([]byte, error) {
 	sum := sha512.Sum384(script)
 	if "sha384-"+base64.StdEncoding.EncodeToString(sum[:]) != "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc" {
 		return nil, fmt.Errorf("htmx script: P11 digest mismatch")
+	}
+	return script, nil
+}
+
+// GuardAsset returns the embedded generated guard script after checking its
+// digests. The sha384 literal is the P11-style integrity pin shared with
+// runtimeHead in runtime/platform/html.ts; re-pin together after any guard
+// edit and regeneration. Callers serve these bytes; they do not
+// retranspile a replacement.
+func GuardAsset() ([]byte, error) {
+	script := append([]byte(nil), GuardScript...)
+	if Hash(script) != "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0" {
+		return nil, fmt.Errorf("guard script: SHA-256 mismatch")
+	}
+	sum := sha512.Sum384(script)
+	if "sha384-"+base64.StdEncoding.EncodeToString(sum[:]) != "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG" {
+		return nil, fmt.Errorf("guard script: P11 digest mismatch")
 	}
 	return script, nil
 }

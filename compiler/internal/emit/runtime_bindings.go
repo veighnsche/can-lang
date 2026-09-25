@@ -79,6 +79,11 @@ type programAssembly struct {
 	// browser after assembly.
 	reachedFunctions    map[string]bool
 	reachedInitializers map[string]bool
+
+	// browserPairing binds one verified browser build into the emitted
+	// server asset table. It is nil for unpaired builds and for the
+	// browser profile itself.
+	browserPairing *BrowserPairing
 }
 
 // assembleProgramBindings computes the full operation map and every name table
