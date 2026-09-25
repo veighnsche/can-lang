@@ -1,5 +1,5 @@
 package render
-    provides [edit_page, notice_page]
+    provides [edit_page, notice_page, grid_page]
     uses [billing::invoice_contract as contract, records, action, form, html, htmx, model, text]
 
 /// Render one stored line as an editable table row: the key as text
@@ -162,6 +162,30 @@ fn html::safe edit_page
             form::unknown_field
             form::invalid_name
             ok => ok document
+
+/// Render the invoice grid shell: a static public document with the
+/// mount point the browser application boots into. The shell carries
+/// no invoice data and echoes no query input, so the route serves it
+/// without parsing or authentication; the paired browser script tag is
+/// spliced by the server from the build report, never rendered here.
+/// The mount id matches the grid application's browser mount.
+fn html::safe grid_page
+    emits [html::invalid_structure]
+    asserts
+        sample: => ok
+    match chain
+        call html::text("Invoice grid") as html::node heading_text
+        call html::make_tag("h1") as html::tag heading_tag
+        call html::element(heading_tag, [], [heading_text]) as html::node heading
+        call html::text("Loading invoice grid…") as html::node waiting_text
+        call html::make_tag("p") as html::tag paragraph
+        call html::element(paragraph, [], [waiting_text]) as html::node waiting
+        call html::make_tag("div") as html::tag division
+        call html::text_attribute("id", "invoice-grid") as html::attribute mount_id
+        call html::element(division, [mount_id], [waiting]) as html::node mount
+        call html::document("Invoice grid", [], [heading, mount]) as html::safe document
+        html::invalid_structure
+        ok => ok document
 
 /// Render one full notice document for denied and unavailable page
 /// loads: the pinned runtime head plus a single escaped paragraph at
