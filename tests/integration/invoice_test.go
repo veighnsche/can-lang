@@ -1068,7 +1068,7 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	}
 	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
-	write("src/main.can", "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
+	write("src/main.can", "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    asserts\n        empty: => ok\n    ok\n")
 	status, out, diag := canlcBuildArgs(t, ctx, bundle, outside, "--target", "browser", browserRoot)
 	if status != 0 {
 		t.Fatalf("browser build: %d %s %s", status, out, diag)
