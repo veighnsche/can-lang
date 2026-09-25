@@ -7,7 +7,12 @@ import { decodeJSON, encodeJSON, type Schema } from "../codec/json.ts";
 import { graph } from "../codec/project.ts";
 import { jsonRequestMedia, responseMedia } from "../transport/media.ts";
 import { requestSnapshot, createResponses } from "./http.ts";
-import { compileActionRoutes, buildActionURL, ActionRouteIssue } from "./action-routes.ts";
+import {
+  compileActionRoutes,
+  buildActionURL,
+  actionTemplate,
+  ActionRouteIssue,
+} from "./action-routes.ts";
 import type { MountedCallback } from "./router.ts";
 
 const origin = Object.freeze({
@@ -505,7 +510,12 @@ export function createJsonActionFetch(
     let url: string;
     try {
       const table = compileActionRoutes([
-        { identity: site.action, method: site.method, path: site.path, captures: site.captures },
+        {
+          identity: site.action,
+          method: site.method,
+          path: actionTemplate(site.action, site.path),
+          captures: site.captures,
+        },
       ]);
       url = buildActionURL(table, site.action, captureValues);
     } catch (cause) {

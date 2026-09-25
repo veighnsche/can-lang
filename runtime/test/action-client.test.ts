@@ -325,6 +325,25 @@ test("request builds canonical capture URLs and GET carries no body", async () =
   }
 });
 
+test("request normalizes checked colon templates like mount sites", async () => {
+  const stub = stubServer(18517);
+  try {
+    seenRequests.length = 0;
+    const seen: string[] = [];
+    const colonSite: JsonFetchSite = { ...loadSite, path: "/invoices/:invoice_id/lines/:line" };
+    await withForwardingFetch(18517, seen, async () => {
+      const found = await api.request(key("a b", 3n), colonSite, undefined);
+      expect(found.kind).toBe("ok");
+      if (found.kind !== "ok") throw new Error("wrong outcome");
+      expect(dataProperty(found.value, "label")).toBe("a b");
+    });
+    expect(seen).toEqual(["/invoices/a%20b/lines/3"]);
+    expect(seenRequests.length).toBe(1);
+  } finally {
+    stub.stop();
+  }
+});
+
 test("request and post without captures take the short arity", async () => {
   const stub = stubServer(18517);
   try {

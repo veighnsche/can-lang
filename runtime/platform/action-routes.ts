@@ -710,15 +710,18 @@ function checkedMountSite(site: unknown, form: boolean): MountEntry {
   };
 }
 
-// Checked `:name` templates normalize to the table's `{name}` spelling.
-// Static segments keep the shared static-path contract; anything else
-// carrying capture punctuation is a template fault, never a silent static.
-function mountTemplate(identity: string, path: string): string {
+// Checked `:name` templates normalize to the table's `{name}` spelling, and
+// already-normalized whole `{name}` segments pass through unchanged so
+// mount, url and fetch share one normalization. Static segments keep the
+// shared static-path contract; anything else carrying capture punctuation
+// is a template fault, never a silent static.
+export function actionTemplate(identity: string, path: string): string {
   const segments = path.split("/");
   if (segments[0] !== "") throw invalid(`path ${JSON.stringify(path)}`);
   const out = segments.map((segment, i) => {
     if (i === 0) return "";
     if (/^:[a-z][a-z0-9_]*$/.test(segment)) return `{${segment.slice(1)}}`;
+    if (/^\{[a-z][a-z0-9_]*\}$/.test(segment)) return segment;
     if (segment.includes(":") || segment.includes("{") || segment.includes("}"))
       throw new ActionRouteIssue(
         "invalid-route",
@@ -950,7 +953,7 @@ export function createActionRoutes(
   ): Promise<Completion<unknown>> {
     let template: string;
     try {
-      template = mountTemplate(entry.identity, entry.path);
+      template = actionTemplate(entry.identity, entry.path);
       compileActionRoutes([
         {
           identity: entry.identity,
@@ -1022,7 +1025,7 @@ export function createActionRoutes(
       );
       let template: string;
       try {
-        template = mountTemplate(site.identity, site.path);
+        template = actionTemplate(site.identity, site.path);
       } catch (cause) {
         if (!(cause instanceof ActionRouteIssue)) throw cause;
         throw new TypeError(`action ${site.identity} carries a malformed route template`);
