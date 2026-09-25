@@ -21,6 +21,12 @@ const t26Guide = "docs/syntax-taste/t26-product-guide-2026-09-24.md"
 // each one must stay grounded in the implementation file that proves
 // it. A phrase that drifts from its anchor is a defect in the guide,
 // not in the anchor.
+//
+// Post-upgrade note: the selected behavior intentionally renames and
+// relocates the invoice actions into the shared handler-free contract
+// (load_invoice_grid, save_invoice_grid, save_invoice_html) and scopes
+// the replay key by tenant. The T26 guide stays the historical record;
+// the anchors below track the selected contracts, not the old spellings.
 func TestT26ProductGuideCoversContracts(t *testing.T) {
 	root := repoRoot(t)
 	guide, err := os.ReadFile(filepath.Join(root, t26Guide))
@@ -83,10 +89,10 @@ func TestT26ProductGuideCoversContracts(t *testing.T) {
 			"close_reader",
 			"never\n/// replaces the primary error",
 		},
-		"examples/invoice/src/web/web.can": {
-			"action save_invoice\n",
-			"action save_invoice_form\n",
-			"action load_invoice\n",
+		"examples/invoice/vendor/billing/src/invoice_contract/invoice_contract.can": {
+			"action load_invoice_grid\n",
+			"action save_invoice_grid\n",
+			"action save_invoice_html\n",
 		},
 		"runtime/platform/form.ts": {
 			"maxFormRows = 64",
@@ -97,7 +103,7 @@ func TestT26ProductGuideCoversContracts(t *testing.T) {
 		},
 		"examples/invoice/schema.sql": {
 			"invoice_replay",
-			"PRIMARY KEY (actor, invoice_id, operation_id)",
+			"PRIMARY KEY (actor, tenant, invoice_id, operation_id)",
 		},
 		"docs/implementation/shutdown.md": {
 			"exactly once",
