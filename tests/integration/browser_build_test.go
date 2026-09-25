@@ -415,6 +415,7 @@ fn void main
 	t.Run("failing assertions prevent browser publication", func(t *testing.T) {
 		root, write := newProject(t)
 		write("src/app/main.can", strings.Replace(browserPureMain, "ok point(1, 2)", "ok point(9, 9)", 1))
+		write("src/strings/join.can", browserHelperPackage)
 		code, _, diag := run("build", "--target", "browser", root)
 		if code == 0 || !strings.Contains(diag, "build verification failed") {
 			t.Fatalf("wrong assertion published: %d %s", code, diag)
