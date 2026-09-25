@@ -37,6 +37,7 @@ const declarations = catalogue.errors.filter((e) =>
     "browser::disposed",
     "browser::rejected",
     "browser::stale_version",
+    "browser::invalid_query",
   ].includes(e.name),
 );
 const errors = declarations.map((e) =>
@@ -55,6 +56,9 @@ const contracts = {
   disposed: errors[1]!.identity,
   rejected: errors[2]!.identity,
   event: "test-browser-event",
+  invalidQuery: errors[4]!.identity,
+  some: "test-browser-some",
+  none: "test-browser-none",
 };
 const stateContracts = {
   disposed: errors[1]!.identity,
@@ -95,6 +99,8 @@ test("elided handles fail closed as disposed across the browser surface", async 
     await browser.removeNode(scope),
     await browser.focus(scope),
     await browser.onEvent(scope, scope, "click", async () => {}),
+    await browser.onCancelKey(scope, scope, "keydown", "Enter", async () => {}),
+    await browser.onCancelEvent(scope, scope, "submit", async () => {}),
     await browser.setTimeout(scope, 0, async () => {}, context),
     await states.createState(scope, 1),
     await states.readState(scope),
@@ -115,4 +121,11 @@ test("mount stays live and mistyped values still fault", async () => {
   expect(failureName(await browser.mount("app"))).toBe("browser::missing_root");
   await expect(browser.root({})).rejects.toThrow();
   await expect(states.readState(scope === null ? null : {})).rejects.toThrow();
+});
+
+test("query_parameter takes no handle and stays live", async () => {
+  expect((globalThis as { location?: unknown }).location).toBeUndefined();
+  const browser = createBrowser(domain, contracts);
+  const result = await browser.queryParameter("invoice");
+  expect(result.kind).toBe("ok");
 });

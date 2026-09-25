@@ -41,6 +41,7 @@ const declarations = catalogue.errors.filter((e) =>
     "browser::disposed",
     "browser::rejected",
     "browser::stale_version",
+    "browser::invalid_query",
   ].includes(e.name),
 );
 const errors = declarations.map((e) =>
@@ -59,6 +60,9 @@ const contracts = {
   disposed: errors[1]!.identity,
   rejected: errors[2]!.identity,
   event: "test-browser-event",
+  invalidQuery: errors[4]!.identity,
+  some: "test-browser-some",
+  none: "test-browser-none",
 };
 const stateContracts = {
   disposed: errors[1]!.identity,
@@ -454,7 +458,7 @@ test("versioned state replaces atomically and reports staleness", async () => {
   expect(dataProperty(current, "value")).toBe("saved");
 });
 
-test("failed handler completions end one dispatch without breaking later events", async () => {
+test("failed handler completions report once without breaking later events", async () => {
   const { document, browser } = setup();
   const app = value(await browser.mount("app"));
   const view = value(await browser.openView(app));
@@ -471,11 +475,72 @@ test("failed handler completions end one dispatch without breaking later events"
       return success(undefined);
     }),
   );
-  inner.dispatchEvent(new Event("click"));
-  await flush();
-  inner.dispatchEvent(new Event("click"));
-  await flush();
+  const reports: unknown[] = [];
+  const original = console.error;
+  console.error = (...args: unknown[]) => {
+    reports.push(args.length === 1 ? args[0] : args);
+  };
+  try {
+    inner.dispatchEvent(new Event("click"));
+    await flush();
+    inner.dispatchEvent(new Event("click"));
+    await flush();
+  } finally {
+    console.error = original;
+  }
   expect(calls).toBe(2);
+  expect(reports.length).toBe(1);
+  const report = reports[0] as Record<string, unknown>;
+  expect(report["kind"]).toBe("can.runtime-diagnostic");
+  expect(report["phase"]).toBe("handler");
+  expect(typeof report["category"]).toBe("string");
+  expect(typeof report["occurrence"]).toBe("string");
+  expect(Object.keys(report).sort()).toEqual([
+    "category",
+    "column",
+    "file",
+    "kind",
+    "line",
+    "occurrence",
+    "phase",
+  ]);
+  expect(JSON.stringify(report)).not.toContain("boom");
+  value(await browser.disposeView(view));
+});
+
+test("failed timer completions report once without breaking later timers", async () => {
+  const { browser } = setup();
+  const app = value(await browser.mount("app"));
+  const view = value(await browser.openView(app));
+  let calls = 0;
+  value(
+    await browser.setTimeout(view, 5n, async () => {
+      calls++;
+      throw new Error("timer-boom");
+    }),
+  );
+  value(
+    await browser.setTimeout(view, 20n, async () => {
+      calls++;
+      return success(undefined);
+    }),
+  );
+  const reports: unknown[] = [];
+  const original = console.error;
+  console.error = (...args: unknown[]) => {
+    reports.push(args.length === 1 ? args[0] : args);
+  };
+  try {
+    await sleep(60);
+  } finally {
+    console.error = original;
+  }
+  expect(calls).toBe(2);
+  expect(reports.length).toBe(1);
+  const report = reports[0] as Record<string, unknown>;
+  expect(report["kind"]).toBe("can.runtime-diagnostic");
+  expect(report["phase"]).toBe("handler");
+  expect(JSON.stringify(report)).not.toContain("timer-boom");
   value(await browser.disposeView(view));
 });
 
@@ -486,6 +551,9 @@ test("shared admission corpus matches the checker", async () => {
     events: { accept: string[]; reject: string[] };
     urls: { accept: string[]; reject: string[] };
     delays: { accept: number[]; reject: number[] };
+    query_keys: { accept: string[]; reject: string[] };
+    cancel_key_events: { accept: string[]; reject: string[] };
+    cancel_events: { accept: string[]; reject: string[] };
   };
   expect(corpus.tags.accept.length).toBeGreaterThan(0);
   const { browser } = setup();
@@ -531,6 +599,32 @@ test("shared admission corpus matches the checker", async () => {
   }
   for (const delay of corpus.delays.reject) {
     expect(failureName(await browser.setTimeout(view, BigInt(delay), async () => {}))).toBe(
+      "browser::rejected",
+    );
+  }
+  expect(corpus.query_keys.accept.length).toBeGreaterThan(0);
+  for (const key of corpus.query_keys.accept) {
+    const result = await browser.queryParameter(key);
+    expect(result.kind).toBe("ok");
+  }
+  for (const key of corpus.query_keys.reject) {
+    expect(failureName(await browser.queryParameter(key))).toBe("browser::invalid_query");
+  }
+  for (const kind of corpus.cancel_key_events.accept) {
+    const result = await browser.onCancelKey(view, box, kind, "Enter", async () => {});
+    expect(result.kind).toBe("ok");
+  }
+  for (const kind of corpus.cancel_key_events.reject) {
+    expect(failureName(await browser.onCancelKey(view, box, kind, "Enter", async () => {}))).toBe(
+      "browser::rejected",
+    );
+  }
+  for (const kind of corpus.cancel_events.accept) {
+    const result = await browser.onCancelEvent(view, box, kind, async () => {});
+    expect(result.kind).toBe("ok");
+  }
+  for (const kind of corpus.cancel_events.reject) {
+    expect(failureName(await browser.onCancelEvent(view, box, kind, async () => {}))).toBe(
       "browser::rejected",
     );
   }

@@ -3,6 +3,7 @@ import { record } from "../data.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { resourceStateFailure } from "../failure.ts";
 import { isAssertScope } from "../assert/context.ts";
+import { reportBrowserDiagnostic } from "../browser/diagnostics.ts";
 import { authorTags, globals, applicability } from "./html.ts";
 // Bounded explicit browser catalogue (T22). Native DOM, Event and
 // AbortController operations do the work; there is no virtual DOM,
@@ -17,6 +18,11 @@ import { authorTags, globals, applicability } from "./html.ts";
 // of throwing a resource-state fault, so asserted handlers exercise
 // their disposal arms; disposals no-op. Can code cannot name a
 // handle-typed value, so only elided arguments ever meet this path.
+// Query bootstrap, cancel-policy listeners and handler reporting are
+// the UP13 surface: strict location.search budgets with
+// malformed/duplicate rejection, synchronous registration-time
+// cancellation with one immutable snapshot, and one sealed diagnostic
+// per failed event/timer callback through the browser reporter.
 const origin = Object.freeze({
   source: "can:browser",
   start: 0,
@@ -26,6 +32,11 @@ const origin = Object.freeze({
 // The native setTimeout range. Delays outside it fail instead of
 // silently clamping to the native overflow behavior.
 const maxDelayMs = 2147483647;
+// Strict query budgets: the entire raw location.search and each decoded
+// value, both in UTF-8 bytes. Literal keys are at most 64 ASCII bytes.
+const maxQueryBytes = 8192;
+const maxQueryValueBytes = 256;
+const maxQueryKeyBytes = 64;
 export type BrowserDomNode = {
   textContent: string | null;
   readonly parentNode: unknown;
@@ -49,6 +60,7 @@ export type BrowserDocument = {
   getElementById(id: string): BrowserElement | null;
   createElement(tag: string): BrowserElement;
   createTextNode(value: string): BrowserText;
+  readonly location?: { readonly search: string };
 };
 type App = {
   document: BrowserDocument;
@@ -147,6 +159,23 @@ function admitAttribute(name: string): boolean {
 function admitEvent(kind: string): boolean {
   return events.has(asciiLower(kind));
 }
+// Query keys mirror the checker literal rule: [a-z][a-z0-9_]*, at most
+// 64 bytes. Non-ASCII input always fails the charset, so the UTF-16
+// length check agrees with the byte bound on the admit path.
+function admitQueryKey(key: string): boolean {
+  if (key.length === 0 || key.length > maxQueryKeyBytes) return false;
+  const first = key.charCodeAt(0);
+  if (first < 97 || first > 122) return false;
+  for (let i = 1; i < key.length; i++) {
+    const code = key.charCodeAt(i);
+    if ((code >= 97 && code <= 122) || (code >= 48 && code <= 57) || code === 95) continue;
+    return false;
+  }
+  return true;
+}
+function utf8Bytes(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
 function admitURL(value: string): boolean {
   // oxlint-disable no-control-regex -- Reject C0 controls, space, DEL, and backslash before scheme checks.
   if (value === "" || !value.isWellFormed() || /[\x00-\x20\x7f\\]/.test(value)) return false;
@@ -166,6 +195,23 @@ function defaultDocument(): BrowserDocument | undefined {
   )
     return undefined;
   return host as BrowserDocument;
+}
+// The raw query string for query_parameter: the host document location
+// when one is bound, else the ambient location. A host without any
+// location carries no query string, so lookups read empty and return
+// none; only a non-string search (a broken host contract) throws.
+function querySearch(host: BrowserDocument | undefined): string {
+  const override = host?.location?.search;
+  if (override !== undefined) {
+    if (typeof override !== "string") throw new TypeError("invalid browser location");
+    return override;
+  }
+  const candidate = (globalThis as { location?: unknown }).location;
+  if (candidate === null || typeof candidate !== "object") return "";
+  const search = (candidate as { search?: unknown }).search;
+  if (search === undefined) return "";
+  if (typeof search !== "string") throw new TypeError("invalid browser location");
+  return search;
 }
 function stringField(holder: unknown, name: string): string {
   if (holder === null || (typeof holder !== "object" && typeof holder !== "function")) return "";
@@ -199,6 +245,9 @@ type Contracts = Readonly<{
   disposed: string;
   rejected: string;
   event: string;
+  invalidQuery: string;
+  some: string;
+  none: string;
 }>;
 export function createBrowser(
   domain: ReturnType<typeof createDomainRuntime>,
@@ -214,6 +263,17 @@ export function createBrowser(
   const denied = (reason: string): Completion<never> =>
     failure(
       domain.create(contracts.rejected, record(contracts.rejected, [["reason", reason]]), origin),
+    );
+  const invalid = (key: string, reason: string): Completion<never> =>
+    failure(
+      domain.create(
+        contracts.invalidQuery,
+        record(contracts.invalidQuery, [
+          ["key", key],
+          ["reason", reason],
+        ]),
+        origin,
+      ),
     );
   const live = (view: View): boolean => !view.disposed && !view.app.disposed;
   const liveNode = (found: NodeRecord): boolean => !found.disposed && live(found.view);
@@ -232,12 +292,22 @@ export function createBrowser(
     view.states.clear();
     view.app.views.delete(view);
   };
-  // Settle drops the handler completion once awaited: a failed handler
-  // ends that dispatch without affecting later events or timers. There is
-  // no reporting channel beyond the consumed event itself.
+  // Settle reports one failed handler completion through the sealed
+  // reporter and ends that dispatch: later events and timers still run,
+  // disposal still removes listeners and timers, and successful handlers
+  // report nothing. The record carries category, phase and Can
+  // file/line/column only; raw input, native causes and secrets never
+  // cross this boundary. Reporting itself never breaks dispatch.
   const settle = (call: () => Completion<unknown> | Promise<Completion<unknown>>): void => {
     void invoke(call, origin).then(
-      () => undefined,
+      (completion) => {
+        if (completion.kind === "ok") return;
+        try {
+          reportBrowserDiagnostic(completion, "handler");
+        } catch {
+          // Diagnostics never replace the original occurrence.
+        }
+      },
       () => undefined,
     );
   };
@@ -418,6 +488,68 @@ export function createBrowser(
       );
       return success(undefined);
     },
+    async onCancelKey(
+      view: unknown,
+      node: unknown,
+      kind: unknown,
+      key: unknown,
+      handler: unknown,
+      context?: AssertionContext,
+    ) {
+      if (isAssertScope(view) || isAssertScope(node)) return gone();
+      const scope = read(views, view);
+      const found = read(nodes, node);
+      if (!live(scope) || !liveNode(found)) return gone();
+      if (found.view !== scope && !(found.root && found.view.app === scope.app))
+        return denied("scope");
+      const name = asciiLower(string(kind));
+      if (name !== "keydown" && name !== "keyup") return denied("event");
+      const wanted = string(key);
+      if (wanted === "") return denied("key");
+      const callback = checkHandler(handler);
+      // Registration policy: the key match and cancelability decide
+      // synchronously inside native dispatch, before the one immutable
+      // snapshot dispatches. A different key or a noncancelable event
+      // still dispatches once without cancellation. A view disposed
+      // before dispatch can neither cancel nor dispatch.
+      found.dom.addEventListener(
+        name,
+        (event) => {
+          if (!live(scope)) return;
+          if (stringField(event, "key") === wanted && event.cancelable) event.preventDefault();
+          settle(() => callback(snapshot(event), context));
+        },
+        { signal: scope.controller.signal },
+      );
+      return success(undefined);
+    },
+    async onCancelEvent(
+      view: unknown,
+      node: unknown,
+      kind: unknown,
+      handler: unknown,
+      context?: AssertionContext,
+    ) {
+      if (isAssertScope(view) || isAssertScope(node)) return gone();
+      const scope = read(views, view);
+      const found = read(nodes, node);
+      if (!live(scope) || !liveNode(found)) return gone();
+      if (found.view !== scope && !(found.root && found.view.app === scope.app))
+        return denied("scope");
+      const name = asciiLower(string(kind));
+      if (name !== "submit") return denied("event");
+      const callback = checkHandler(handler);
+      found.dom.addEventListener(
+        name,
+        (event) => {
+          if (!live(scope)) return;
+          if (event.cancelable) event.preventDefault();
+          settle(() => callback(snapshot(event), context));
+        },
+        { signal: scope.controller.signal },
+      );
+      return success(undefined);
+    },
     async setTimeout(view: unknown, delay: unknown, handler: unknown, context?: AssertionContext) {
       if (isAssertScope(view)) return gone();
       const scope = read(views, view);
@@ -431,6 +563,45 @@ export function createBrowser(
       }, Number(wait));
       scope.timers.add(timer);
       return success(undefined);
+    },
+    async queryParameter(key: unknown, _context?: AssertionContext) {
+      const name = string(key);
+      if (!admitQueryKey(name)) return invalid(name, "key");
+      // Read-only bootstrap input: the literal key looks up one value in
+      // the raw location search. The strict precheck bounds the whole raw
+      // string and every decoded value, and rejects malformed escapes,
+      // invalid UTF-8 and ill-formed Unicode before native URLSearchParams
+      // supplies pair semantics and getAll duplicate detection, including
+      // encoded-key aliases. Zero occurrences return none, one returns
+      // some, and two or more fail; budgets and duplicates report the
+      // requested key, never raw query bytes.
+      const search = querySearch(host);
+      if (utf8Bytes(search) > maxQueryBytes) return invalid(name, "too_large");
+      if (!search.isWellFormed()) return invalid(name, "malformed");
+      const pairs = search.startsWith("?") ? search.slice(1) : search;
+      if (pairs !== "") {
+        for (const segment of pairs.split("&")) {
+          if (segment === "") continue;
+          const cut = segment.indexOf("=");
+          const rawKey = cut === -1 ? segment : segment.slice(0, cut);
+          const rawValue = cut === -1 ? "" : segment.slice(cut + 1);
+          let decodedKey: string;
+          let decodedValue: string;
+          try {
+            decodedKey = decodeURIComponent(rawKey.replace(/\+/g, " "));
+            decodedValue = decodeURIComponent(rawValue.replace(/\+/g, " "));
+          } catch {
+            return invalid(name, "malformed");
+          }
+          if (!decodedKey.isWellFormed() || !decodedValue.isWellFormed())
+            return invalid(name, "malformed");
+          if (utf8Bytes(decodedValue) > maxQueryValueBytes) return invalid(name, "too_large");
+        }
+      }
+      const values = new URLSearchParams(search).getAll(name);
+      if (values.length === 0) return success(record(contracts.none, []));
+      if (values.length > 1) return invalid(name, "duplicate");
+      return success(record(contracts.some, [["value", values[0]]]));
     },
   });
 }

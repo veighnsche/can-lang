@@ -274,6 +274,18 @@ func TestBrowserAdmissionCorpusMatchesRuntime(t *testing.T) {
 			Accept []int64 `json:"accept"`
 			Reject []int64 `json:"reject"`
 		} `json:"delays"`
+		QueryKeys struct {
+			Accept []string `json:"accept"`
+			Reject []string `json:"reject"`
+		} `json:"query_keys"`
+		CancelKeyEvents struct {
+			Accept []string `json:"accept"`
+			Reject []string `json:"reject"`
+		} `json:"cancel_key_events"`
+		CancelEvents struct {
+			Accept []string `json:"accept"`
+			Reject []string `json:"reject"`
+		} `json:"cancel_events"`
 	}
 	if err := json.Unmarshal(data, &corpus); err != nil {
 		t.Fatal(err)
@@ -354,5 +366,60 @@ func TestBrowserAdmissionCorpusMatchesRuntime(t *testing.T) {
 		if delay >= 0 && delay <= browserMaxDelayMs {
 			t.Fatalf("checker admits runtime-rejected delay %d", delay)
 		}
+	}
+	if len(corpus.QueryKeys.Accept) == 0 || len(corpus.QueryKeys.Reject) == 0 {
+		t.Fatal("empty shared query-key corpus")
+	}
+	for _, key := range corpus.QueryKeys.Accept {
+		if err := checkBrowserQueryKey(key); err != nil {
+			t.Fatalf("checker rejects runtime-accepted query key %q: %v", key, err)
+		}
+	}
+	for _, key := range corpus.QueryKeys.Reject {
+		if err := checkBrowserQueryKey(key); err == nil {
+			t.Fatalf("checker admits runtime-rejected query key %q", key)
+		}
+	}
+	for _, kind := range corpus.CancelKeyEvents.Accept {
+		if err := checkBrowserCancelKeyEvent(kind); err != nil {
+			t.Fatalf("checker rejects runtime-accepted cancel key event %q: %v", kind, err)
+		}
+	}
+	for _, kind := range corpus.CancelKeyEvents.Reject {
+		if err := checkBrowserCancelKeyEvent(kind); err == nil {
+			t.Fatalf("checker admits runtime-rejected cancel key event %q", kind)
+		}
+	}
+	for _, admitted := range []string{"keydown", "keyup"} {
+		found := false
+		for _, kind := range corpus.CancelKeyEvents.Accept {
+			if strings.ToLower(kind) == admitted {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("cancel key event %q escapes the shared corpus", admitted)
+		}
+	}
+	for _, kind := range corpus.CancelEvents.Accept {
+		if err := checkBrowserCancelEvent(kind); err != nil {
+			t.Fatalf("checker rejects runtime-accepted cancel event %q: %v", kind, err)
+		}
+	}
+	for _, kind := range corpus.CancelEvents.Reject {
+		if err := checkBrowserCancelEvent(kind); err == nil {
+			t.Fatalf("checker admits runtime-rejected cancel event %q", kind)
+		}
+	}
+	foundSubmit := false
+	for _, kind := range corpus.CancelEvents.Accept {
+		if strings.ToLower(kind) == "submit" {
+			foundSubmit = true
+			break
+		}
+	}
+	if !foundSubmit {
+		t.Fatal("cancel event submit escapes the shared corpus")
 	}
 }
