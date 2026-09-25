@@ -572,19 +572,23 @@ func TestInvoiceContractRoute(t *testing.T) {
 	requireReplay(t, store, "op-c1", "2")
 
 	report := contractLiveBrowser(t, ctx, sourceRoot, base, "save", "route")
+	loads, saves := 0, 0
 	for _, call := range report.Ledger {
-		if strings.Contains(call.URL, "/invoices/") && !strings.Contains(call.URL, "/api/v2/") {
-			t.Fatalf("browser used a stale path: %s %s", call.Method, call.URL)
-		}
-	}
-	saves := 0
-	for _, call := range report.Ledger {
-		if call.Method == "POST" {
+		switch call.Method {
+		case "GET":
+			loads++
+			if !strings.Contains(call.URL, "/api/v2/tenants/1/invoices/7") {
+				t.Fatalf("browser load used a stale path: %s", call.URL)
+			}
+		case "POST":
 			saves++
 			if call.Status != 200 || !strings.Contains(call.URL, "/api/tenants/1/invoices/7") {
 				t.Fatalf("browser save %+v", call)
 			}
 		}
+	}
+	if loads == 0 {
+		t.Fatal("browser sent no load through the edited path")
 	}
 	if saves != 1 || report.DOM.H1 != "Tenant 1 invoice 7 revision 3" || report.DOM.Status != "saved revision 3" {
 		t.Fatalf("browser save dom %+v saves %d", report.DOM, saves)
