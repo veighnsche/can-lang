@@ -330,28 +330,26 @@ try {
   await check("keydown-eaten", async () => {
     // The runtime dispatches every keydown and the grid never gates
     // on e.key, so each keystroke runs the save handler and
-    // re-renders. The re-render wipes the just-typed character from
-    // the DOM, and the input fold loses the version race against the
-    // keydown fold, so the character is lost from state too: typing
-    // into the grid does nothing at all. Both parts pin the loss.
+    // re-renders ("no changes to save" paints without a send). The
+    // typed character never reaches the DOM nor state: typing into
+    // the grid loses every character. Both parts pin the loss.
     const rev = await currentRev();
     const before = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("5");
     await page.waitForTimeout(800);
     assert.equal(posts() - before, 0, "clean-guard keydown must not send");
-    assert.equal(await page.locator("#qty\\:k1").inputValue(), "2", "the keystroke is eaten from the DOM");
+    assert.equal(await page.locator("#qty\\:k1").inputValue(), "2", "the keystroke never lands in the DOM");
     assert.equal(await statusText(), "no changes to save");
-    // The loss proof: the next save stays blocked ("a ghost would
-    // send"); the "5" is gone from state as well as the DOM.
-    await page.locator("#save").click();
-    await page.waitForTimeout(800);
-    assert.equal(posts() - before, 0, "the eaten keystroke must not ghost into a send");
-    assert.equal(await statusText(), "no changes to save");
+    // The loss proof: the next save sends the unchanged "2"; the
+    // "5" never reached state either.
+    await saveAndWait(`saved revision ${rev + 1}`);
+    const loss = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
+    assert.equal(loss.quantity, "2", "the eaten keystroke must not ghost into state");
     limit(
       "L-keystroke-eaten",
-      "every keydown runs the save handler and re-renders, wiping the typed character; " +
-        "the input fold loses the version race, so typing into the grid loses every character."
+      "every keydown runs the save handler and re-renders; typed characters never reach " +
+        "the DOM nor state, so typing into the grid loses every character."
     );
     // On an unsaved state the same keystroke sends mid-edit: the
     // dispatch carries the pre-keystroke draft and the char is lost.
@@ -361,7 +359,7 @@ try {
     const mid = posts();
     await page.locator("#qty\\:k1").click({ clickCount: 3 });
     await page.locator("#qty\\:k1").press("8");
-    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 1}`, {
+    await page.waitForFunction((want) => document.querySelector("#status")?.textContent?.includes(want), `saved revision ${rev + 2}`, {
       timeout: 15000,
     });
     const sent = bodies[bodies.length - 1].lines.find((line) => line.key === "k1");
@@ -369,8 +367,8 @@ try {
     assert.equal(sent.quantity, "7", "mid-edit dispatch carries the pre-keystroke draft");
     assert.equal(await page.locator("#qty\\:k1").inputValue(), "7", "the eaten char is lost, not ghosted");
     await fill("#qty\\:k1", "2");
-    await saveAndWait(`saved revision ${rev + 2}`);
-    return `keystroke loss pinned on clean and unsaved states; restored at rev ${rev + 2}`;
+    await saveAndWait(`saved revision ${rev + 3}`);
+    return `keystroke loss pinned on clean and unsaved states; restored at rev ${rev + 3}`;
   });
 
   await check("slow-save-pending", async () => {
