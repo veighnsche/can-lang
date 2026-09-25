@@ -1,0 +1,9 @@
+{
+  "compared_fields": 24,
+  "all_pairwise_different": true,
+  "request_hashes": {
+    "request-1": "035775a4a1758edb4c97fb7278f300bc3d975a5c73582f70978e5e015d60a5a4",
+    "request-2": "c6bbc8fa5ac52c4f593fc04320dff6d97cea45498b14745eacbe642830efe9bf",
+    "request-3": "cbdb1a6352aec8574ad1a2835037c204298739bbe9ccfedc17fd291d6a9448bf"
+  }
+}

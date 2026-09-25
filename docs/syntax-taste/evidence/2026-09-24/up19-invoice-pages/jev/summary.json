@@ -1,0 +1,127 @@
+{
+  "producer": {
+    "request-1": {
+      "type": "choice",
+      "choice": "element_derivation",
+      "confidence": 1.0,
+      "probabilities": {
+        "explicit_api": 0.0,
+        "element_derivation": 1.0,
+        "omit_producer": 0.0
+      }
+    },
+    "request-2": {
+      "type": "choice",
+      "choice": "element_derivation",
+      "confidence": 1.0,
+      "probabilities": {
+        "explicit_api": 0.0,
+        "element_derivation": 1.0,
+        "omit_producer": 0.0
+      }
+    },
+    "request-3": {
+      "type": "choice",
+      "choice": "element_derivation",
+      "confidence": 0.99,
+      "probabilities": {
+        "explicit_api": 0.0,
+        "element_derivation": 0.99,
+        "omit_producer": 0.01
+      }
+    }
+  },
+  "plumbing": {
+    "request-1": {
+      "type": "choice",
+      "choice": "createhtml_argument",
+      "confidence": 1.0,
+      "probabilities": {
+        "shared_registry": 0.0,
+        "createhtml_argument": 1.0,
+        "mount_registration": 0.0
+      }
+    },
+    "request-2": {
+      "type": "choice",
+      "choice": "createhtml_argument",
+      "confidence": 1.0,
+      "probabilities": {
+        "mount_registration": 0.0,
+        "shared_registry": 0.0,
+        "createhtml_argument": 1.0
+      }
+    },
+    "request-3": {
+      "type": "choice",
+      "choice": "createhtml_argument",
+      "confidence": 0.99,
+      "probabilities": {
+        "mount_registration": 0.0,
+        "shared_registry": 0.0,
+        "createhtml_argument": 1.0
+      }
+    }
+  },
+  "page_scope": {
+    "request-1": {
+      "type": "choice",
+      "choice": "keep_query_file_gap",
+      "confidence": 1.0,
+      "probabilities": {
+        "keep_query_file_gap": 1.0,
+        "static_hardcode": 0.0,
+        "unchecked_emitter_route": 0.0
+      }
+    },
+    "request-2": {
+      "type": "choice",
+      "choice": "keep_query_file_gap",
+      "confidence": 0.87,
+      "probabilities": {
+        "static_hardcode": 0.08,
+        "keep_query_file_gap": 0.91,
+        "unchecked_emitter_route": 0.01
+      }
+    },
+    "request-3": {
+      "type": "choice",
+      "choice": "keep_query_file_gap",
+      "confidence": 0.79,
+      "probabilities": {
+        "unchecked_emitter_route": 0.07,
+        "static_hardcode": 0.07,
+        "keep_query_file_gap": 0.86
+      }
+    }
+  },
+  "shell_auth": {
+    "request-1": {
+      "type": "choice",
+      "choice": "public_shell",
+      "confidence": 0.95,
+      "probabilities": {
+        "precheck_shell": 0.02,
+        "public_shell": 0.98
+      }
+    },
+    "request-2": {
+      "type": "choice",
+      "choice": "public_shell",
+      "confidence": 0.86,
+      "probabilities": {
+        "precheck_shell": 0.07,
+        "public_shell": 0.93
+      }
+    },
+    "request-3": {
+      "type": "choice",
+      "choice": "public_shell",
+      "confidence": 0.66,
+      "probabilities": {
+        "precheck_shell": 0.17,
+        "public_shell": 0.83
+      }
+    }
+  }
+}
