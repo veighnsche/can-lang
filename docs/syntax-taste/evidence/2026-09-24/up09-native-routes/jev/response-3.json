@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"up09_dispatch":{"type":"choice","choice":"router_carried_combined","confidence":1.0,"probabilities":{"router_carried_combined":1.0,"server_parallel_adapter":0.0,"eager_exact_expansion":0.0}}},"usage":{"input_tokens":752,"output_tokens":56}}

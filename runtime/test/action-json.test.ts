@@ -353,8 +353,8 @@ test("POST enforces the JSON media type and the 8192-byte limit", async () => {
         headers,
         body: JSON.stringify({ label: "inv-1", seats: 2 }),
       });
-      expect(response.status).toBe(400);
-      expect(await response.text()).toBe("Bad Request");
+      expect(response.status).toBe(415);
+      expect(await response.text()).toBe("Unsupported Media Type");
     }
     const utf8 = await fetch("http://127.0.0.1:18463/invoices/sealed", {
       method: "POST",

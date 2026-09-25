@@ -162,7 +162,8 @@ export function createJsonActions(
         inputs = [];
       } else {
         const media = snapshot.headers.find(([name]) => name === "content-type")?.[1];
-        if (media === undefined || !jsonRequestMedia(media)) return fixed(400, "Bad Request");
+        if (media === undefined || !jsonRequestMedia(media))
+          return fixed(415, "Unsupported Media Type");
         const length = byteLength(snapshot.body);
         if (length > BigInt(ACTION_JSON_BODY_LIMIT)) return fixed(413, "Payload Too Large");
         if (length === 0n) return fixed(400, "Bad Request");

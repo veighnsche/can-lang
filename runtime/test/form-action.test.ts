@@ -192,8 +192,8 @@ test("structural violations reach the 422 renderer with raw and issues", async (
 test("ingress failures stay compiler-owned", async () => {
   calls.length = 0;
   const media = await post("customer=ann", "application/json");
-  expect(media.status).toBe(400);
-  expect(await media.text()).toBe("Bad Request");
+  expect(media.status).toBe(415);
+  expect(await media.text()).toBe("Unsupported Media Type");
   const encoding = await post("customer=%");
   expect(encoding.status).toBe(400);
   expect(calls).toEqual([]);

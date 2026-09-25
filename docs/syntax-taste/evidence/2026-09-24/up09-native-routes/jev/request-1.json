@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "Can compiles action declarations with typed int/str path captures to TypeScript that runs on Bun 1.4.2. Checked mount metadata carries method, a :name route template, ordered captures, the input codec contract (none/json/form with byte and row limits), the JSON response schema or the HTML form schema with structural-422 identities, and an exhaustive leaf/status case table. Mounted handlers are request-first emits-[] callables plus distinct HTML renderers. A separate legacy exact-path router serves static routes without captures. Bun.serve offers native routes with lossy param decoding, so every native callback must re-validate captures strictly from the raw pathname before handler entry, and a metadata fallback must classify 400/404/405 with Allow. Required adapter statuses are fixed: malformed capture or JSON is 400, unmatched route 404, wrong method 405 with Allow, body over budget 413, wrong media 415, structural form rejection 422, unexpected fault 500, and declared finite leaves keep their statuses. The open architecture question is where captured dispatch lives: inside the shared router value assembled by make_router with combined exact-first dispatch, or in a server-side adapter channel beside the router, or by compiling captures away into exact legacy routes.",
+  "questions": {
+    "up09_dispatch": {
+      "type": "choice",
+      "instructions": "Which dispatch placement best satisfies the UP09 adapter contract with the least new machinery?",
+      "criteria": {
+        "router_carried_combined": "Mounts return http::route tokens that make_router assembles into one combined value holding the legacy exact table plus the compiled action table and per-action callbacks. Dispatch serves an exact legacy match first, then a strict captured action match, then combined 404/405 with union Allow; target-level malformed input is 400 before any route is consulted. Server start extracts native Bun route keys from the router value and registers one shared pipeline callback, so native matching is a fast path over identical canonical re-dispatch. Duplicate and ambiguous action shapes refuse at assembly with the existing failures.",
+        "server_parallel_adapter": "Keep the router value legacy-only and thread a parallel action adapter from the mounted routes to the server beside make_router, with the server consulting actions before legacy dispatch. Combined precedence, 405 union and native registration are reimplemented at the server layer rather than in one dispatch. This duplicates classification logic across two layers and leaves two sources of route truth.",
+        "eager_exact_expansion": "Compile each mount into one or more exact legacy route registrations at mount time, parsing captures inside callbacks with prefix or manual matching instead of a capture table. This reuses the exact router unchanged but abandons method-first capture matching, static priority across shapes, assembly-time ambiguity refusal and native route registration."
+      }
+    }
+  }
+}

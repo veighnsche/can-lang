@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "UP09 owns the server route, JSON, form, HTTP and server runtime modules and must connect complete Can to emitter to adapter fixtures to live HTTP handlers. Constraints: native Bun routes with strict one-pass capture validation; method selection with static precedence inside a method; duplicate and ambiguity refusal; reserved asset paths served ahead of callbacks; the UP06 request lifecycle; bounded native form/JSON decoding through shared codecs; exact checked callables; and the fixed 400/404/405/413/415/structural-422/500 versus finite-status vocabulary. Live tests must cover canonical int64 endpoints, malformed and encoded separator and dot cases from the guarded route probe, body budgets, callback-entry counts proving invalid input never enters a handler, and renderer faults. Three placements compete: a router-carried combined table with exact-first dispatch and native keys extracted at server start; a server-held parallel adapter that bypasses the router value; and eager expansion of mounts into exact legacy routes.",
+  "questions": {
+    "up09_dispatch": {
+      "type": "choice",
+      "instructions": "What routing assembly strategy should UP09 implement for captured action mounts?",
+      "criteria": {
+        "router_carried_combined": "Unify legacy and captured routes in the router: mount and mountForm validate checked sites and produce tokens, make_router builds the exact map plus the compiled capture table with callbacks, and dispatch orders exact legacy hits before strict action matches with target-level 400 first and a union 405. Server start pulls Bun native keys from the same value. One table, one classifier, one lifecycle; assembly refuses duplicates and ambiguity with existing failures.",
+        "server_parallel_adapter": "Split routing truth between a legacy router value and a separate server-side action adapter with its own precedence and classification path. This keeps mount tokens out of make_router but forks dispatch, complicates the 405 union and native registration, and cannot serve actions through direct dispatch.",
+        "eager_exact_expansion": "Avoid capture tables by expanding mounts to exact routes at bind time with manual capture extraction in each callback. This fits the legacy router without changes yet surrenders the checked capture contract: no shape-level collision refusal, no method-first static priority, no canonical raw validation, no native routes."
+      }
+    }
+  }
+}

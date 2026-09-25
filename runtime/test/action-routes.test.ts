@@ -450,6 +450,13 @@ test("types int captures as strict canonical int64", () => {
       kind: "bad-request",
     });
   }
+  // Canonical decimal text needs no escapes: an encoded digit is
+  // malformed, not an int, even though it decodes to valid text.
+  for (const line of ["%33", "%3 3", "3%32", "%2D3", "%2d3"]) {
+    expect(matchActionRoute(table, "GET", `/invoices/9/lines/${line}`)).toEqual({
+      kind: "bad-request",
+    });
+  }
 });
 
 test("rejects malformed targets before consulting routes", () => {
