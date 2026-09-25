@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -694,8 +695,14 @@ func auditArtifacts(t *testing.T) []ir.Artifact {
 	artifacts := []ir.Artifact{runtimeModule}
 	files := map[string]string{}
 	for name, module := range modules {
-		artifacts = append(artifacts, ir.Artifact{Path: name, Bytes: []byte(module.body), Imports: module.imports})
-		sum := sha256.Sum256([]byte(module.body))
+		var body strings.Builder
+		for _, spec := range module.imports {
+			fmt.Fprintf(&body, "import %q;\n", spec)
+		}
+		body.WriteString(module.body)
+		text := body.String()
+		artifacts = append(artifacts, ir.Artifact{Path: name, Bytes: []byte(text), Imports: module.imports})
+		sum := sha256.Sum256([]byte(text))
 		files[name] = hex.EncodeToString(sum[:])
 	}
 	asset, err := AssetBytes(files)
@@ -724,48 +731,59 @@ func TestAuditRejectsBrowserViolations(t *testing.T) {
 		t.Fatalf("missing %s", path)
 		return nil
 	}
-	cases := map[string]func([]ir.Artifact){
-		"missing asset": func(artifacts []ir.Artifact) {
+	cases := map[string]func([]ir.Artifact) []ir.Artifact{
+		"missing asset": func(artifacts []ir.Artifact) []ir.Artifact {
 			for i := range artifacts {
 				if artifacts[i].Path == AssetPath {
 					artifacts[i].Path = "browser/other.json"
 				}
 			}
+			return artifacts
 		},
-		"native imports": func(artifacts []ir.Artifact) {
+		"native imports": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.NativeImports = []string{"node:fs"}
+			return artifacts
 		},
-		"absolute edge": func(artifacts []ir.Artifact) {
+		"absolute edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, BrowserEntry)
 			module.Imports = []string{"/etc/passwd.ts"}
+			module.Bytes = []byte("import \"/etc/passwd.ts\";\nexport async function $canBrowserMain(): Promise<void> {}\n")
+			return artifacts
 		},
-		"remote edge": func(artifacts []ir.Artifact) {
+		"remote edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, BrowserEntry)
 			module.Imports = []string{"https://example.invalid/app.ts"}
+			module.Bytes = []byte("import \"https://example.invalid/app.ts\";\nexport async function $canBrowserMain(): Promise<void> {}\n")
+			return artifacts
 		},
-		"forbidden runtime edge": func(artifacts []ir.Artifact) {
+		"forbidden runtime edge": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.Imports = []string{"../../" + runtime + "/platform/sql/pool.ts"}
+			module.Bytes = []byte("import \"../../" + runtime + "/platform/sql/pool.ts\";\nexport async function $canFunction0(): Promise<unknown> { return null; }\n")
+			return append(artifacts, ir.Artifact{Path: runtime + "/platform/sql/pool.ts", Bytes: []byte("export function pool(): void {}\n"), Runtime: true})
 		},
-		"host token": func(artifacts []ir.Artifact) {
+		"host token": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
-			module.Bytes = []byte("export const x = process.env.HOME;\n")
+			module.Bytes = []byte("import \"../../program/state.ts\";\nexport const x = process.env.HOME;\n")
+			return artifacts
 		},
-		"server mapping": func(artifacts []ir.Artifact) {
+		"server mapping": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
 			module.Mappings = []ir.Mapping{{Operation: "fetch_request"}}
+			return artifacts
 		},
-		"tampered bytes": func(artifacts []ir.Artifact) {
+		"tampered bytes": func(artifacts []ir.Artifact) []ir.Artifact {
 			module := at(artifacts, "packages/p-0/s-0.ts")
-			module.Bytes = []byte("export const x = 1;\n")
+			module.Bytes = []byte("import \"../../program/state.ts\";\nexport const x = 1;\n")
+			return artifacts
 		},
 	}
 	for name, mutate := range cases {
 		t.Run(name, func(t *testing.T) {
 			artifacts := make([]ir.Artifact, len(base))
 			copy(artifacts, base)
-			mutate(artifacts)
+			artifacts = mutate(artifacts)
 			if err := AuditArtifacts(artifacts); err == nil {
 				t.Fatalf("violation admitted: %s", name)
 			}
