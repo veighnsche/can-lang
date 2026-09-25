@@ -268,13 +268,10 @@ export function createBrowser(
     failure(
       domain.create(
         contracts.invalidQuery,
-        record(
-          contracts.invalidQuery,
-          [
-            ["key", key],
-            ["reason", reason],
-          ],
-        ),
+        record(contracts.invalidQuery, [
+          ["key", key],
+          ["reason", reason],
+        ]),
         origin,
       ),
     );
@@ -519,8 +516,7 @@ export function createBrowser(
         name,
         (event) => {
           if (!live(scope)) return;
-          if (stringField(event, "key") === wanted && event.cancelable)
-            event.preventDefault();
+          if (stringField(event, "key") === wanted && event.cancelable) event.preventDefault();
           settle(() => callback(snapshot(event), context));
         },
         { signal: scope.controller.signal },

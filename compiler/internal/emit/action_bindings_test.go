@@ -126,13 +126,12 @@ func actionBindingsEmitProgram(t *testing.T, files map[string]string) *check.Pro
 	return actionEmitProgram(t, base)
 }
 
-// actionBindingsDependencies extends the walked runtime tree with the
-// pending browser client adapter module. UP13 authors the real
-// runtime/platform/action-client.ts; the linker only resolves module
-// paths, so the stub keeps consumer emission testable meanwhile.
+// actionBindingsDependencies walks the real runtime tree, which carries
+// the UP13 runtime/platform/action-client.ts adapter the client
+// projection imports. The linker resolves module paths only.
 func actionBindingsDependencies(t *testing.T) []ir.Artifact {
 	t.Helper()
-	return append(httpDependencies(t), ir.Artifact{Path: "runtime/platform/action-client.ts"})
+	return httpDependencies(t)
 }
 
 func actionBindingsBody(t *testing.T, program *check.Program) string {
