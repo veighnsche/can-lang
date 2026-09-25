@@ -57,7 +57,7 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
-	program, err := check.CheckProgram(store.Graph)
+	program, err := check.CheckBrowserProgram(store.Graph)
 	if err != nil {
 		return BuildReport{}, err
 	}
