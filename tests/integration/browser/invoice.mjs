@@ -76,7 +76,7 @@ try {
   // the new entries since its own start marker.
   await page.evaluate(() => {
     window.__occurrences = [];
-    document.body.addEventListener("can:action-occurrence", (event) => {
+    document.addEventListener("can:action-occurrence", (event) => {
       window.__occurrences.push(event.detail);
     });
   });
@@ -331,6 +331,13 @@ try {
       const response = await answered;
       assert.equal(response.status(), 200, "the flight must commit upstream");
       await page.waitForTimeout(600);
+      // Restore before asserting: later legs need the target even
+      // when this leg's occurrence shape changes.
+      await page.evaluate(() => {
+        if (document.getElementById("invoice_status") === null) {
+          document.body.appendChild(window.__up19status);
+        }
+      });
       const fresh = (await occurrences()).slice(seenBefore);
       assert.equal(fresh.length, 1, JSON.stringify(fresh));
       assert.equal(fresh[0].kind, "action::missing_target");
@@ -339,9 +346,6 @@ try {
       assert.ok(fresh[0].reason === "target_absent" || fresh[0].reason === "target_detached", fresh[0].reason);
       assert.equal(await page.locator("#invoice_details").inputValue(), "During Flight");
       assert.equal(pageerrors.length, 0, pageerrors.join("; "));
-      await page.evaluate(() => {
-        document.body.appendChild(window.__up19status);
-      });
       return `uncertain ${fresh[0].reason}; upstream committed`;
     } finally {
       await context.unroute("**/tenants/1/invoices/7");

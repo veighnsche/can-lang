@@ -1,78 +1,64 @@
-// Builds the browser-target wire-vector bundle with `Bun.build`. Run with bun:
-//   bun build-vectors.mjs <entry.ts> <outdir>
-// The exact runtime sources are bundled except two engine-only modules no
-// browser implements: `node:async_hooks` gets a synchronous
-// stack-disciplined AsyncLocalStorage stub, and `node:util` gets a `types`
-// object with a faithful same-realm isNativeError plus an isProxy that
-// reports false. Every vector is synchronous, proxy-free and never enters
-// an owner execution context, and the parity test additionally runs the same
-// bundle under bun, so any observable shim divergence fails the comparison
-// instead of hiding.
-import { basename, join } from "node:path";
+// Bundles the shared wire-codec vectors for browser loading with the
+// compiler's own sealed browser overlay and nothing else. Usage:
+//   bun build-vectors.mjs <entry.ts> <outdir> <runtime-dir>
+// Prints the bundle path. Every module the vector graph reaches
+// resolves to a committed runtime source: the fourteen overlay edges
+// below mirror compiler/internal/browser/audit.go browserOverlay
+// exactly (the same substitution the verified browser pipeline
+// stages), and any other node: import fails the build loudly. No
+// test-authored shim or semantic alias remains: the browsers execute
+// the shipped browser-profile modules.
+import { dirname, join, resolve } from "node:path";
 
 const entry = process.argv[2];
 const outdir = process.argv[3];
-if (!entry || !outdir) {
-  console.error("usage: bun build-vectors.mjs <entry.ts> <outdir>");
+const runtime = resolve(process.argv[4] ?? "");
+if (!entry || !outdir || !process.argv[4]) {
+  console.error("usage: bun build-vectors.mjs <entry.ts> <outdir> <runtime-dir>");
   process.exit(2);
 }
-const asyncHooksShim = `
-export class AsyncLocalStorage {
-  #store = undefined;
-  getStore() { return this.#store; }
-  run(store, fn) {
-    const prev = this.#store;
-    this.#store = store;
-    try { return fn(); } finally { this.#store = prev; }
-  }
-  enterWith(store) { this.#store = store; }
-  disable() { this.#store = undefined; }
-}
-`;
-const utilShim = `
-function isNativeError(value) {
-  if (value === null || (typeof value !== "object" && typeof value !== "function")) return false;
-  let proto = value;
-  while (proto !== null) {
-    if (proto === Error.prototype) return true;
-    proto = Object.getPrototypeOf(proto);
-  }
-  return false;
-}
-export const types = {
-  isNativeError,
-  isProxy: () => false,
+// Mirror of browserOverlay in compiler/internal/browser/audit.go. The
+// Go parity test asserts every edge still matches the committed
+// table before trusting a bundle built here.
+const overlay = {
+  "reflect.ts": "browser/reflect.ts",
+  "domain.ts": "browser/domain.ts",
+  "diagnostics.ts": "browser/diagnostics.ts",
+  "owner.ts": "browser/owner.ts",
+  "callable.ts": "browser/callable.ts",
+  "coordination.ts": "browser/coordination.ts",
+  "entry.ts": "browser/entry.ts",
+  "codec/formats.ts": "browser/formats.ts",
+  "platform/cookies.ts": "browser/cookies.ts",
+  "platform/csrf.ts": "browser/csrf.ts",
+  "platform/clock.ts": "browser/clock.ts",
+  "platform/log.ts": "browser/log.ts",
+  "platform/markdown.ts": "browser/markdown.ts",
+  "platform/assets.ts": "browser/assets.ts",
 };
-`;
+const canonical = new Map(
+  Object.entries(overlay).map(([from, to]) => [join(runtime, from), join(runtime, to)]),
+);
 const plugin = {
-  name: "t21-engine-shims",
+  name: "can-browser-overlay",
   setup(build) {
-    build.onResolve({ filter: /^node:async_hooks$/ }, (args) => ({
-      path: args.path,
-      namespace: "t21-als",
-    }));
-    build.onLoad({ filter: /.*/, namespace: "t21-als" }, () => ({
-      contents: asyncHooksShim,
-      loader: "js",
-    }));
-    build.onResolve({ filter: /^node:util$/ }, (args) => ({
-      path: args.path,
-      namespace: "t21-util",
-    }));
-    build.onLoad({ filter: /.*/, namespace: "t21-util" }, () => ({
-      contents: utilShim,
-      loader: "js",
-    }));
+    build.onResolve({ filter: /.*/ }, (args) => {
+      if (args.path.startsWith("node:")) {
+        throw new Error(`node builtin reached the vector graph: ${args.path} from ${args.importer}`);
+      }
+      if (args.path.startsWith(".") && args.importer) {
+        const resolved = join(dirname(args.importer), args.path);
+        const alternate = canonical.get(resolved) ?? canonical.get(`${resolved}.ts`);
+        if (alternate !== undefined) return { path: alternate };
+      }
+      return undefined;
+    });
   },
 };
-const result = await Bun.build({
-  entrypoints: [entry],
-  outdir,
-  target: "browser",
-  plugins: [plugin],
-});
+const result = await Bun.build({ entrypoints: [entry], outdir, target: "browser", plugins: [plugin] });
 if (!result.success) {
   for (const log of result.logs) console.error(log);
   process.exit(1);
 }
-console.log(join(outdir, `${basename(entry, ".ts")}.js`));
+const [{ path }] = result.outputs;
+console.log(path);
