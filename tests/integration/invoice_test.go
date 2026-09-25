@@ -270,6 +270,108 @@ func faultInvoice(t *testing.T, ctx context.Context, bundle, home, driver, db, f
 	}
 }
 
+// revokeSession sets one session row's revoked stamp (0 restores it)
+// and requires the stored value back, for revoked-replay legs.
+func revokeSession(t *testing.T, ctx context.Context, bundle, home, driver, db, token, stamp string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "revoke", db, token, stamp)
+	var report struct {
+		Token   string `json:"token"`
+		Revoked string `json:"revoked"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Token != token || report.Revoked != stamp {
+		t.Fatalf("invalid revoke report %v %s", err, string(out))
+	}
+}
+
+// setMembership adds (present true) or removes (present false) one
+// membership row, for concurrent-membership legs.
+func setMembership(t *testing.T, ctx context.Context, bundle, home, driver, db, actor, tenant string, present bool) {
+	t.Helper()
+	mode := "unmember"
+	if present {
+		mode = "member"
+	}
+	out := invoiceDriver(t, ctx, bundle, home, driver, mode, db, actor, tenant)
+	var report struct {
+		Actor  string `json:"actor"`
+		Tenant string `json:"tenant"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Actor != actor || report.Tenant != tenant {
+		t.Fatalf("invalid %s report %v %s", mode, err, string(out))
+	}
+}
+
+// injectLine stores one line row exactly as given, including keys the
+// page renderer cannot mint, for renderer-fault legs.
+func injectLine(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice, key, id, quantity, price, position string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "inject-line", db, invoice, key, id, quantity, price, position)
+	var report struct {
+		Invoice string `json:"invoice"`
+		Key     string `json:"key"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Key != key {
+		t.Fatalf("invalid inject-line report %v %s", err, string(out))
+	}
+}
+
+// deleteLine removes one stored line row, restoring the renderer-fault
+// database to its servable shape.
+func deleteLine(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice, key string) {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "delete-line", db, invoice, key)
+	var report struct {
+		Invoice string `json:"invoice"`
+		Key     string `json:"key"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Key != key {
+		t.Fatalf("invalid delete-line report %v %s", err, string(out))
+	}
+}
+
+// protectedEntries snapshots the observable protected-handler entry
+// count: one invoice revision plus the replay ledger length. Adapter
+// rejections must leave both unchanged; each committed save advances
+// both by exactly one.
+type protectedEntries struct {
+	revision string
+	replays  int
+}
+
+func snapshotEntries(store invoiceStore, id string) protectedEntries {
+	revision := ""
+	for _, row := range store.Invoice {
+		if row.ID == id {
+			revision = row.Rev
+		}
+	}
+	return protectedEntries{revision: revision, replays: len(store.Replay)}
+}
+
+func requireNoEntry(t *testing.T, note string, before, after protectedEntries) {
+	t.Helper()
+	if before != after {
+		t.Fatalf("%s: protected entries moved from %+v to %+v, want no handler entry", note, before, after)
+	}
+}
+
+func requireOneEntry(t *testing.T, note, wantRev string, before, after protectedEntries) {
+	t.Helper()
+	if after.revision != wantRev || after.replays != before.replays+1 {
+		t.Fatalf("%s: protected entries moved from %+v to %+v, want revision %s and one ledger row", note, before, after, wantRev)
+	}
+}
+
+// recordFaultOutcome logs whether a fault leg committed a write, so
+// every injected fault carries its commit verdict in the test log.
+func recordFaultOutcome(t *testing.T, note string, before, after protectedEntries) bool {
+	t.Helper()
+	committed := before != after
+	t.Logf("fault %s: committed=%v (entries %+v -> %+v)", note, before, after, committed)
+	return committed
+}
+
 func requireInvoice(t *testing.T, store invoiceStore, id, revision, seats, details string) invoiceRow {
 	t.Helper()
 	for _, row := range store.Invoice {
