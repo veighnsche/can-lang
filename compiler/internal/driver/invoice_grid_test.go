@@ -22,6 +22,11 @@ import (
 // and browser-target builds live in tests/integration.
 func gridProgram(t *testing.T, rel string) *check.Program {
 	t.Helper()
+	return gridProgramForTarget(t, rel, check.TargetBun)
+}
+
+func gridProgramForTarget(t *testing.T, rel string, target check.Target) *check.Program {
+	t.Helper()
 	root, err := filepath.Abs(filepath.Join("..", "..", "..", rel))
 	if err != nil {
 		t.Fatal(err)
@@ -30,7 +35,7 @@ func gridProgram(t *testing.T, rel string) *check.Program {
 	if err != nil {
 		t.Fatal(err)
 	}
-	program, err := check.CheckProgram(graph)
+	program, err := check.CheckProgramForTarget(graph, target)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -38,7 +43,7 @@ func gridProgram(t *testing.T, rel string) *check.Program {
 }
 
 func TestInvoiceGridChecks(t *testing.T) {
-	program := gridProgram(t, "examples/invoice-grid")
+	program := gridProgramForTarget(t, "examples/invoice-grid", check.TargetBrowser)
 	if len(program.Assertions) == 0 {
 		t.Fatal("expected grid assertions")
 	}
@@ -48,7 +53,7 @@ func TestInvoiceGridChecks(t *testing.T) {
 }
 
 func TestInvoiceGridBrowserClosure(t *testing.T) {
-	grid := gridProgram(t, "examples/invoice-grid")
+	grid := gridProgramForTarget(t, "examples/invoice-grid", check.TargetBrowser)
 	if err := browser.CheckProgram(grid); err != nil {
 		t.Fatalf("grid must pass browser capability closure: %v", err)
 	}
@@ -119,31 +124,39 @@ func normalizeSchema(schema types.CodecSchema) string {
 }
 
 func TestInvoiceGridCrossTargetContract(t *testing.T) {
-	grid := gridProgram(t, "examples/invoice-grid")
+	grid := gridProgramForTarget(t, "examples/invoice-grid", check.TargetBrowser)
 	server := gridProgram(t, "examples/invoice")
-	// Transitional gate (UP16 integrator repair): UP16 replaced the server
-	// actions with shared-contract names while the grid still declares legacy
-	// save/load_invoice until UP20 migrates it. The name-keyed pins below only
-	// hold when both sides agree; UP20/UP21 must re-pin them to the shared
-	// contract actions once the grid migrates.
-	hasLegacy := func(program *check.Program) bool {
+	// UP20 re-pin: both targets import the shared handler-free contract, so
+	// every action on either side resolves to the same canonical locked
+	// declaration identity. Neither side mirrors an action locally.
+	const sharedContract = "can.project.lineage/billing/invoice_contract::"
+	sharedIDs := func(program *check.Program, label string) map[string]bool {
+		t.Helper()
+		ids := map[string]bool{}
 		for _, action := range program.Actions {
-			if action.Symbol.Name == "save_invoice" {
-				return true
+			if !strings.HasPrefix(action.Symbol.ID, sharedContract) {
+				t.Fatalf("%s action %q escapes the shared contract: %q", label, action.Symbol.Name, action.Symbol.ID)
 			}
+			ids[action.Symbol.ID] = true
 		}
-		return false
+		return ids
 	}
-	gridLegacy, serverLegacy := hasLegacy(grid), hasLegacy(server)
-	switch {
-	case gridLegacy && serverLegacy:
-		// Pre-migration world: run the legacy pins below.
-	case !gridLegacy && !serverLegacy:
-		t.Fatal("both sides migrated off legacy actions; re-pin this test to the shared contract actions (UP20/UP21)")
-	default:
-		t.Skip("server/grid action names disagree across the UP16 migration; re-pin in UP20/UP21")
+	gridIDs, serverIDs := sharedIDs(grid, "grid"), sharedIDs(server, "server")
+	if len(gridIDs) != 3 || len(serverIDs) != 3 || len(gridIDs) != len(serverIDs) {
+		t.Fatalf("expected the 3 shared actions on both sides, grid %d server %d", len(gridIDs), len(serverIDs))
 	}
-	for _, name := range []string{"save_invoice", "load_invoice"} {
+	for id := range gridIDs {
+		if !serverIDs[id] {
+			t.Fatalf("server lacks shared action %s", id)
+		}
+	}
+	if !grid.ActionClient {
+		t.Fatal("expected grid checked action::request/post/url sites")
+	}
+	if len(grid.Fetches) != 0 {
+		t.Fatalf("grid must not use legacy string-named fetch sites, found %d", len(grid.Fetches))
+	}
+	for _, name := range []string{"save_invoice_grid", "load_invoice_grid"} {
 		wire, live := gridAction(t, grid, name), gridAction(t, server, name)
 		if wire.Method != live.Method || wire.Path != live.Path {
 			t.Fatalf("%s route drifted: grid %s %s vs server %s %s", name, wire.Method, wire.Path, live.Method, live.Path)
@@ -188,9 +201,6 @@ func TestInvoiceGridCrossTargetContract(t *testing.T) {
 			t.Fatalf("%s response codec drifted", name)
 		}
 	}
-	if len(grid.Fetches) == 0 {
-		t.Fatal("expected grid fetch sites")
-	}
 }
 
 func gridRuntimeDependencies(t *testing.T) []ir.Artifact {
@@ -224,7 +234,7 @@ func gridRuntimeDependencies(t *testing.T) []ir.Artifact {
 }
 
 func TestInvoiceGridBrowserEmission(t *testing.T) {
-	program := gridProgram(t, "examples/invoice-grid")
+	program := gridProgramForTarget(t, "examples/invoice-grid", check.TargetBrowser)
 	artifacts, err := emit.BrowserModules(program, "runtime", gridRuntimeDependencies(t))
 	if err != nil {
 		t.Fatal(err)
@@ -237,10 +247,20 @@ func TestInvoiceGridBrowserEmission(t *testing.T) {
 	for _, want := range []string{
 		"$canBrowserMain",
 		"$canCreateBrowser",
-		"$canCreateActionFetch",
+		"$canCreateActionClient",
+		"$canActionClient.request",
+		"$canActionClient.post",
 	} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("browser emission missing %s", want)
+		}
+	}
+	for _, banned := range []string{
+		"$canActionFetch.get",
+		"$canActionFetch.post",
+	} {
+		if strings.Contains(joined, banned) {
+			t.Fatalf("browser emission must not bind the legacy string-named fetch client %s", banned)
 		}
 	}
 	for _, banned := range []string{

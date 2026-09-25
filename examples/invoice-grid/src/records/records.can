@@ -1,98 +1,25 @@
 package records
-    provides [line_json_wire, invoice_json_wire, invoice_path, saved, rejected, stale, denied, busy, save_outcome, found_line, found, load_denied, load_busy, load_outcome, draft_line, draft, clean_state, unsaved_state, saving_state, failed_state, uncertain_state, denied_state, conflict_state, grid_status, grid_state]
-    uses []
+    provides [draft_line, draft, clean_state, unsaved_state, saving_state, failed_state, uncertain_state, denied_state, conflict_state, grid_status, grid_state]
+    uses [billing::invoice_contract as contract]
 
-/// One JSON save line: keyed identity, sku text and a validated count.
-/// Mirrors the invoice server wire field for field so the canonical
-/// codec tags and shapes agree across the two projects.
-record line_json_wire
-    str key
-    str sku
-    int qty
-/// JSON save wire. The grid sends an empty session token: the browser
-/// carries authentication in the same-origin session cookie and the
-/// server route overwrites the field from that authoritative cookie.
-/// The operation id is app-owned: it stays stable while the draft is
-/// unchanged so an explicit replay reuses the identical id, and a new
-/// edit sequence mints a new id for the new intent.
-record invoice_json_wire
-    str session_token
-    str operation_id
-    str invoice_id
-    int revision
-    str customer
-    line_json_wire[] lines
-/// Load path captures: the invoice id from the canonical path.
-record invoice_path
-    str invoice_id
-/// Stored save: the invoice id plus the committed new revision.
-record saved
-    str invoice_id
-    int revision
-/// Rejected save: one finite human-readable validation reason.
-record rejected
-    str reason
-/// Stale or conflicting save: the invoice id plus the current stored
-/// revision so the writer can reread and retry. Returned only to
-/// members, after membership is proven.
-record stale
-    str invoice_id
-    int revision
-/// Denied save: the requested id echoes back (the caller sent it, so
-/// it discloses nothing). Foreign, nonexistent and unauthenticated
-/// targets share this one nondisclosing shape.
-record denied
-    str invoice_id
-/// Unavailable store: the save may or may not have committed; the
-/// identical operation id replays safely.
-record busy
-    str invoice_id
-/// The five JSON save cases.
-variant save_outcome
-    saved
-    rejected
-    stale
-    denied
-    busy
-/// One loaded line in stored position order.
-record found_line
-    str key
-    str sku
-    int qty
-/// Loaded invoice: identity, current revision, customer and lines.
-record found
-    str invoice_id
-    int revision
-    str customer
-    found_line[] lines
-/// Denied load: same nondisclosing shape as a denied save.
-record load_denied
-    str invoice_id
-/// Unavailable store on a read: the GET retry is always safe.
-record load_busy
-    str invoice_id
-/// The three typed GET load cases.
-variant load_outcome
-    found
-    load_denied
-    load_busy
-/// One grid draft line. The raw quantity text stays beside the last
-/// parsed count so an unparsable edit keeps its text on screen while
-/// blocking the save with a bad-quantity notice; the JSON wire needs
-/// a typed int, so unparsable text can never be sent.
+/// One grid draft line. The raw edited id, quantity and price texts
+/// stay beside the last parsed count and minor-unit price so an
+/// unparsable edit keeps its text on screen while blocking the save
+/// with a bad-quantity/bad-price notice; only parsed lines feed the
+/// exact totals and the wire projection.
 record draft_line
     str key
-    str sku
-    str qty_text
+    str id
+    str quantity
+    str price
     int qty
+    int price_minor
     bool valid
-/// The editable draft. The base revision is the revision the draft
-/// was read from; the edit sequence counts local edits and lets the
-/// grid tell a same-content replay from a new intent.
+/// The editable draft. The base revision is the server revision the
+/// draft was read from; the edit sequence counts local edits and lets
+/// the grid tell a same-content replay from a new intent.
 record draft
-    str invoice_id
-    int base_revision
-    str customer
+    str base_revision
     draft_line[] lines
     int edit_seq
 /// Draft matches the server base: the notice names the revision.
@@ -105,7 +32,8 @@ record unsaved_state
 record saving_state
     str notice
 /// A finished failure that kept the draft: the notice carries the
-/// reason and the next step (edit, reread or retry).
+/// reason and the next step (edit, reread or retry). Blocked presses
+/// persist here too, so the feedback survives re-render.
 record failed_state
     str notice
 /// The save may or may not have committed (busy store, lost
@@ -117,12 +45,12 @@ record uncertain_state
 /// share one notice that discloses nothing. The in-view draft stays.
 record denied_state
     str notice
-/// The server moved under local edits. The held server copy waits
+/// The server moved under local edits. The held server snapshot waits
 /// for an explicit choice: adopt it or keep editing. Nothing is
 /// applied automatically, so newer edits are never clobbered.
 record conflict_state
     str notice
-    found server
+    contract::grid_snapshot server
 /// The seven grid statuses. Every leaf carries its own status-line
 /// notice so rendering is a pure function of state.
 variant grid_status
@@ -133,21 +61,26 @@ variant grid_status
     uncertain_state
     denied_state
     conflict_state
-/// The whole grid cell value: pure data, no browser handles. The
-/// attempt counts every issued request; the flight names the
-/// outstanding one (0 none, 1 save, 2 load) so late or reordered
-/// outcomes are ignored instead of clobbering newer state. The
-/// focus intent names where the next render puts keyboard focus:
+/// The whole grid cell value: pure data, no browser handles. The key
+/// names the invoice; the attempt counts every issued request; the
+/// flight names the outstanding one (0 none, 1 save, 2 load) so late
+/// or reordered outcomes are ignored instead of clobbering newer
+/// state. The submitted input is the attempt-owned pending draft with
+/// its operation id; the submit sequence tells same-content replays
+/// from new intents. The acknowledged snapshot is the last
+/// server-confirmed state, distinct from the editable current draft.
+/// The focus intent names where the next render puts keyboard focus:
 /// "", "status", "save", "reread", "replay", "add", "adopt",
-/// "keep", "customer", "sku:<key>", "qty:<key>", "up:<key>",
+/// "keep", "id:<key>", "qty:<key>", "price:<key>", "up:<key>",
 /// "down:<key>" or "del:<key>". The status notice feeds the one
 /// live region.
 record grid_state
+    contract::invoice_key key
     draft current
     int attempt
     int flight
-    str operation_id
-    int save_base
-    int save_seq
+    contract::grid_edit_input submitted
+    int submit_seq
+    contract::grid_snapshot acknowledged
     grid_status status
     str focus
