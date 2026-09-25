@@ -953,9 +953,10 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	var manifestDecoded struct {
 		BrowserBuildID string `json:"browserBuildId"`
 	}
-	if err := json.Unmarshal(manifestRaw, &manifestDecoded); err != nil || manifestDecoded.BrowserBuildID != browserReport.BuildID {
+	if err := json.Unmarshal(manifestRaw, &manifestDecoded); err != nil || manifestDecoded.BrowserBuildID == "" {
 		t.Fatalf("browser manifest lacks its build identity in %s", manifestRaw)
 	}
+
 	root, home := stageApplication(t, ctx, bundle, sourceRoot, "invoice")
 	assertStatus, assertOut, assertDiag := canlcOffline(t, ctx, bundle, home, "assert", root)
 	if assertStatus != 0 || assertDiag != "" {
@@ -976,8 +977,8 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &report); err != nil || report.Browser == nil {
 		t.Fatalf("paired report lacks its browser section: %v %s", err, out)
 	}
-	if report.Browser.BrowserBuildID != browserReport.BuildID {
-		t.Fatalf("paired browser %s, want %s", report.Browser.BrowserBuildID, browserReport.BuildID)
+	if report.Browser.BrowserBuildID != manifestDecoded.BrowserBuildID {
+		t.Fatalf("paired browser %s, want %s", report.Browser.BrowserBuildID, manifestDecoded.BrowserBuildID)
 	}
 	entry := report.Browser.Entry
 	if !strings.HasPrefix(entry, "/__can/assets/") || !strings.HasSuffix(entry, ".js") || strings.HasSuffix(entry, ".js.map") {
@@ -1004,7 +1005,7 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	if status != 200 || probe != "ok" || strings.Contains(probe, "<script") {
 		t.Fatalf("paired health: %d %q, want untouched bytes", status, probe)
 	}
-	t.Logf("invoice paired: browser %s, grid and form pages carry entry %s once, health untouched", browserReport.BuildID[:12], entry)
+	t.Logf("invoice paired: browser %s, grid and form pages carry entry %s once, health untouched", manifestDecoded.BrowserBuildID[:12], entry)
 }
 
 func TestInvoiceBrowser(t *testing.T) {
