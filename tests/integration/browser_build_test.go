@@ -838,7 +838,10 @@ func TestBrowserWireCodecParity(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, banned := range []string{"node:async_hooks", "node:util", "node:fs", "node:crypto", "node:path", "node:assert", "sha256-shim", "grid-boot"} {
+	// No module edge to a node builtin may survive: catalogue data may
+	// name host lowerings as strings, but no import or require edge
+	// may reach them, and no test-only shim text may ship.
+	for _, banned := range []string{`from "node:`, `from 'node:`, `require("node:`, `require('node:`, `import("node:`, `import('node:`, "sha256-shim", "grid-boot"} {
 		if strings.Contains(string(bundleBytes), banned) {
 			t.Fatalf("vector bundle carries test-only %s", banned)
 		}
