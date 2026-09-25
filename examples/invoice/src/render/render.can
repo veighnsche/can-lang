@@ -1,28 +1,33 @@
 package render
     provides [edit_page, notice_page]
-    uses [records, form, html, htmx, text]
+    uses [billing::invoice_contract as contract, records, action, form, html, htmx, model, text]
 
 /// Render one stored line as an editable table row: the key as text
-/// plus its order hidden input, then sku and quantity inputs. Names
-/// come from the checked form builders, so renaming a wire field or
-/// collection diagnoses this renderer; values escape at serialization.
+/// plus its order hidden input, then id, quantity and price inputs.
+/// Names come from the checked form builders, so renaming a wire
+/// field or collection diagnoses this renderer; values escape at
+/// serialization and money renders through the shared exact
+/// formatter.
 fn html::node line_row
     emits [html::invalid_structure, form::unknown_field, form::invalid_name]
     given
-        records::found_line line
+        records::line_draft line
     asserts
-        sample: records::found_line("k1", "sku-1", 2) => ok
-        hostile: records::found_line("k2", "</td><script>bad()</script>", 3) => ok
-        bad_key: records::found_line("k 1", "sku-1", 2) => form::invalid_name("k 1")
+        sample: records::line_draft("k1", "a", 2, 500) => ok
+        hostile: records::line_draft("k2", "</td><script>bad()</script>", 3, 199) => ok
+        bad_key: records::line_draft("k 1", "a", 2, 500) => form::invalid_name("k 1")
     match chain
-        call form::named_collection<records::invoice_form_wire>("lines") as form::collection coll
-        call form::named_field<records::line_form_wire>("sku") as form::field sku_field
-        call form::named_field<records::line_form_wire>("qty") as form::field qty_field
+        call form::named_collection<contract::invoice_form>("lines") as form::collection coll
+        call form::named_field<contract::line_wire>("id") as form::field id_field
+        call form::named_field<contract::line_wire>("quantity") as form::field qty_field
+        call form::named_field<contract::line_wire>("price") as form::field price_field
         call form::row_key(line.key) as form::row row
         call form::order_name(coll) as str order
-        call form::input_name(coll, row, sku_field) as str sku_name
+        call form::input_name(coll, row, id_field) as str id_name
         call form::input_name(coll, row, qty_field) as str qty_name
-        call text::from_int(line.qty) as str qty_text
+        call form::input_name(coll, row, price_field) as str price_name
+        call text::from_int(line.quantity) as str qty_text
+        call model::minor_to_price(line.price_minor) as str price_text
         call html::make_tag("tr") as html::tag row_tag
         call html::make_tag("td") as html::tag cell_tag
         call html::make_tag("input") as html::tag input_tag
@@ -32,136 +37,143 @@ fn html::node line_row
         call html::text_attribute("type", "hidden") as html::attribute hidden_type
         call html::element(input_tag, [order_name, order_value, hidden_type], []) as html::node order_field
         call html::element(cell_tag, [], [key_text, order_field]) as html::node key_cell
-        call html::text_attribute("name", sku_name) as html::attribute sku_name_attr
-        call html::text_attribute("value", line.sku) as html::attribute sku_value
-        call html::element(input_tag, [sku_name_attr, sku_value], []) as html::node sku_input
-        call html::element(cell_tag, [], [sku_input]) as html::node sku_cell
+        call html::text_attribute("name", id_name) as html::attribute id_name_attr
+        call html::text_attribute("value", line.id) as html::attribute id_value
+        call html::element(input_tag, [id_name_attr, id_value], []) as html::node id_input
+        call html::element(cell_tag, [], [id_input]) as html::node id_cell
         call html::text_attribute("name", qty_name) as html::attribute qty_name_attr
         call html::text_attribute("value", qty_text) as html::attribute qty_value
         call html::element(input_tag, [qty_name_attr, qty_value], []) as html::node qty_input
         call html::element(cell_tag, [], [qty_input]) as html::node qty_cell
-        call html::element(row_tag, [], [key_cell, sku_cell, qty_cell]) as html::node item
+        call html::text_attribute("name", price_name) as html::attribute price_name_attr
+        call html::text_attribute("value", price_text) as html::attribute price_value
+        call html::element(input_tag, [price_name_attr, price_value], []) as html::node price_input
+        call html::element(cell_tag, [], [price_input]) as html::node price_cell
+        call html::element(row_tag, [], [key_cell, id_cell, qty_cell, price_cell]) as html::node item
         html::invalid_structure
         form::unknown_field
         form::invalid_name
         ok => ok item
 
-/// Render the invoice edit page: hidden identity fields, the customer
-/// input, the keyed line table, and a save button posting through
-/// HTMX into the separate status region below the form. The region —
-/// never the form — receives swapped fragments, so validation feedback
-/// never destroys the draft or steals focus; the region starts with a
-/// plain waiting note and each swapped fragment carries its own role.
+/// Render the invoice edit page: the revision hidden input, seats
+/// and details inputs, the keyed line table, and a save button
+/// posting through HTMX into the separate status region below the
+/// form. The post URL comes from the shared HTML action and the
+/// typed capture key; session and addressing travel by cookie and
+/// route, never by hidden body fields. The region — never the form —
+/// receives swapped fragments, so validation feedback never destroys
+/// the draft or steals focus; the region starts with a plain waiting
+/// note and each swapped fragment carries its own role.
 fn html::safe edit_page
-    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, form::unknown_field, form::invalid_name]
+    emits [html::invalid_structure, html::invalid_url, htmx::invalid_target, form::unknown_field, form::invalid_name, action::invalid_path]
     given
-        records::found invoice
-        str session_token
-        str operation_id
+        contract::invoice_key key
+        records::read_found invoice
     asserts
-        sample: records::found("inv-1", 1, "Acme", [records::found_line("k1", "sku-1", 2)]), "tok-alice", "op-1" => ok
-        hostile: records::found("inv-1", 1, "</form><script>bad()</script>", [records::found_line("k1", "</td><script>bad()</script>", 2)]), "tok-alice", "op-1" => ok
-        bad_key: records::found("inv-1", 1, "Acme", [records::found_line("k 1", "sku-1", 2)]), "tok-alice", "op-1" => form::invalid_name("k 1")
-    match chain
-        call htmx::runtime_head() as html::node runtime
-        call html::parse_url("/invoices/save-form") as html::url save_url
-        call htmx::post(save_url) as html::attribute post
-        call htmx::target_id("invoice_status") as htmx::target status_target
-        call htmx::target_attribute(status_target) as html::attribute status_selector
-        call htmx::swap_inner() as html::attribute swap
-        call htmx::indicator_id("invoice_progress") as html::attribute progress
-        call form::named_field<records::invoice_form_wire>("session_token") as form::field session_field
-        call form::named_field<records::invoice_form_wire>("operation_id") as form::field operation_field
-        call form::named_field<records::invoice_form_wire>("invoice_id") as form::field identity_field
-        call form::named_field<records::invoice_form_wire>("revision") as form::field revision_field
-        call form::named_field<records::invoice_form_wire>("customer") as form::field customer_field
-        call form::field_name(session_field) as str session_name
-        call form::field_name(operation_field) as str operation_name
-        call form::field_name(identity_field) as str identity_name
-        call form::field_name(revision_field) as str revision_name
-        call form::field_name(customer_field) as str customer_name
-        call text::from_int(invoice.revision) as str revision_text
-        call html::make_tag("h1") as html::tag heading_tag
-        call html::make_tag("form") as html::tag form_tag
-        call html::make_tag("input") as html::tag input_tag
-        call html::make_tag("label") as html::tag label_tag
-        call html::make_tag("table") as html::tag table_tag
-        call html::make_tag("thead") as html::tag head_tag
-        call html::make_tag("tbody") as html::tag body_tag
-        call html::make_tag("tr") as html::tag row_tag
-        call html::make_tag("th") as html::tag header_tag
-        call html::make_tag("button") as html::tag button_tag
-        call html::make_tag("span") as html::tag span_tag
-        call html::make_tag("div") as html::tag division
-        call html::make_tag("p") as html::tag paragraph
-        call html::text("Invoice " + invoice.invoice_id) as html::node heading_text
-        call html::element(heading_tag, [], [heading_text]) as html::node heading
-        call html::text_attribute("type", "hidden") as html::attribute hidden_type
-        call html::text_attribute("name", session_name) as html::attribute session_name_attr
-        call html::text_attribute("value", session_token) as html::attribute session_value
-        call html::element(input_tag, [session_name_attr, session_value, hidden_type], []) as html::node session_hidden
-        call html::text_attribute("name", operation_name) as html::attribute operation_name_attr
-        call html::text_attribute("value", operation_id) as html::attribute operation_value
-        call html::element(input_tag, [operation_name_attr, operation_value, hidden_type], []) as html::node operation_hidden
-        call html::text_attribute("name", identity_name) as html::attribute identity_name_attr
-        call html::text_attribute("value", invoice.invoice_id) as html::attribute identity_value
-        call html::element(input_tag, [identity_name_attr, identity_value, hidden_type], []) as html::node identity_hidden
-        call html::text_attribute("name", revision_name) as html::attribute revision_name_attr
-        call html::text_attribute("value", revision_text) as html::attribute revision_value
-        call html::element(input_tag, [revision_name_attr, revision_value, hidden_type], []) as html::node revision_hidden
-        call html::text_attribute("for", "invoice_customer") as html::attribute customer_for
-        call html::text("Customer") as html::node customer_label_text
-        call html::element(label_tag, [customer_for], [customer_label_text]) as html::node customer_label
-        call html::text_attribute("name", customer_name) as html::attribute customer_name_attr
-        call html::text_attribute("id", "invoice_customer") as html::attribute customer_id
-        call html::text_attribute("value", invoice.customer) as html::attribute customer_value
-        call html::element(input_tag, [customer_name_attr, customer_id, customer_value], []) as html::node customer_input
-        call html::text_attribute("scope", "col") as html::attribute column_scope
-        call html::text("Key") as html::node key_title
-        call html::element(header_tag, [column_scope], [key_title]) as html::node key_header
-        call html::text("Sku") as html::node sku_title
-        call html::element(header_tag, [column_scope], [sku_title]) as html::node sku_header
-        call html::text("Quantity") as html::node qty_title
-        call html::element(header_tag, [column_scope], [qty_title]) as html::node qty_header
-        call html::element(row_tag, [], [key_header, sku_header, qty_header]) as html::node header_row
-        call html::element(head_tag, [], [header_row]) as html::node table_head
-        call invoice.lines.map(callable line_row) as html::node[] items
-        call html::element(body_tag, [], items) as html::node table_body
-        call html::element(table_tag, [], [table_head, table_body]) as html::node lines_table
-        call html::text_attribute("type", "submit") as html::attribute submit_type
-        call htmx::disable_this() as html::attribute disable
-        call html::text("Save invoice") as html::node submit_label
-        call html::element(button_tag, [submit_type, disable], [submit_label]) as html::node submit
-        call html::text_attribute("id", "invoice_progress") as html::attribute progress_id
-        call html::text_attribute("class", "htmx-indicator") as html::attribute progress_class
-        call html::text("…") as html::node progress_text
-        call html::element(span_tag, [progress_id, progress_class], [progress_text]) as html::node indicator
-        call html::text_attribute("id", "invoice_form") as html::attribute form_id
-        call html::text_attribute("method", "post") as html::attribute method
-        call html::element(form_tag, [form_id, method, post, status_selector, swap, progress], [session_hidden, operation_hidden, identity_hidden, revision_hidden, customer_label, customer_input, lines_table, submit, indicator]) as html::node form_node
-        call html::text_attribute("id", "invoice_status") as html::attribute status_id
-        call html::text("No save yet.") as html::node waiting_text
-        call html::element(paragraph, [], [waiting_text]) as html::node waiting
-        call html::element(division, [status_id], [waiting]) as html::node status
-        call html::document("Invoice " + invoice.invoice_id, [runtime], [heading, form_node, status]) as html::safe document
-        html::invalid_structure
-        html::invalid_url
-        htmx::invalid_target
-        form::unknown_field
-        form::invalid_name
-        ok => ok document
+        sample: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000) => ok
+        hostile: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "</form><script>bad()</script>", [records::line_draft("k1", "</td><script>bad()</script>", 2, 500)], 1000) => ok
+        bad_key: contract::invoice_key(1, 7), records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k 1", "a", 2, 500)], 1000) => form::invalid_name("k 1")
+    match call action::url(contract::save_invoice_html, key)
+        action::invalid_path
+        ok str post_target => match chain
+            call htmx::runtime_head() as html::node runtime
+            call html::parse_url(post_target) as html::url save_url
+            call htmx::post(save_url) as html::attribute post
+            call htmx::target_id("invoice_status") as htmx::target status_target
+            call htmx::target_attribute(status_target) as html::attribute status_selector
+            call htmx::swap_inner() as html::attribute swap
+            call htmx::indicator_id("invoice_progress") as html::attribute progress
+            call form::named_field<contract::invoice_form>("seats") as form::field seats_field
+            call form::named_field<contract::invoice_form>("details") as form::field details_field
+            call form::named_field<contract::invoice_form>("revision") as form::field revision_field
+            call form::field_name(seats_field) as str seats_name
+            call form::field_name(details_field) as str details_name
+            call form::field_name(revision_field) as str revision_name
+            call text::from_int(invoice.seats) as str seats_text
+            call text::from_int(invoice.revision) as str revision_text
+            call text::from_int(key.tenant_id) as str tenant_text
+            call text::from_int(key.invoice_id) as str invoice_text
+            call html::make_tag("h1") as html::tag heading_tag
+            call html::make_tag("form") as html::tag form_tag
+            call html::make_tag("input") as html::tag input_tag
+            call html::make_tag("label") as html::tag label_tag
+            call html::make_tag("table") as html::tag table_tag
+            call html::make_tag("thead") as html::tag head_tag
+            call html::make_tag("tbody") as html::tag body_tag
+            call html::make_tag("tr") as html::tag row_tag
+            call html::make_tag("th") as html::tag header_tag
+            call html::make_tag("button") as html::tag button_tag
+            call html::make_tag("span") as html::tag span_tag
+            call html::make_tag("p") as html::tag paragraph
+            call html::make_tag("div") as html::tag division
+            call html::text("Invoice " + tenant_text + "/" + invoice_text) as html::node heading_text
+            call html::element(heading_tag, [], [heading_text]) as html::node heading
+            call html::text_attribute("name", revision_name) as html::attribute revision_name_attr
+            call html::text_attribute("value", revision_text) as html::attribute revision_value
+            call html::text_attribute("type", "hidden") as html::attribute hidden_type
+            call html::element(input_tag, [revision_name_attr, revision_value, hidden_type], []) as html::node revision_hidden
+            call html::text_attribute("for", "invoice_seats") as html::attribute seats_for
+            call html::text("Seats") as html::node seats_label_text
+            call html::element(label_tag, [seats_for], [seats_label_text]) as html::node seats_label
+            call html::text_attribute("name", seats_name) as html::attribute seats_name_attr
+            call html::text_attribute("id", "invoice_seats") as html::attribute seats_id
+            call html::text_attribute("value", seats_text) as html::attribute seats_value
+            call html::element(input_tag, [seats_name_attr, seats_id, seats_value], []) as html::node seats_input
+            call html::text_attribute("for", "invoice_details") as html::attribute details_for
+            call html::text("Details") as html::node details_label_text
+            call html::element(label_tag, [details_for], [details_label_text]) as html::node details_label
+            call html::text_attribute("name", details_name) as html::attribute details_name_attr
+            call html::text_attribute("id", "invoice_details") as html::attribute details_id
+            call html::text_attribute("value", invoice.details) as html::attribute details_value
+            call html::element(input_tag, [details_name_attr, details_id, details_value], []) as html::node details_input
+            call html::text_attribute("scope", "col") as html::attribute column_scope
+            call html::text("Key") as html::node key_title
+            call html::element(header_tag, [column_scope], [key_title]) as html::node key_header
+            call html::text("Id") as html::node id_title
+            call html::element(header_tag, [column_scope], [id_title]) as html::node id_header
+            call html::text("Quantity") as html::node qty_title
+            call html::element(header_tag, [column_scope], [qty_title]) as html::node qty_header
+            call html::text("Price") as html::node price_title
+            call html::element(header_tag, [column_scope], [price_title]) as html::node price_header
+            call html::element(row_tag, [], [key_header, id_header, qty_header, price_header]) as html::node header_row
+            call html::element(head_tag, [], [header_row]) as html::node table_head
+            call invoice.lines.map(callable line_row) as html::node[] items
+            call html::element(body_tag, [], items) as html::node table_body
+            call html::element(table_tag, [], [table_head, table_body]) as html::node lines_table
+            call html::text_attribute("type", "submit") as html::attribute submit_type
+            call htmx::disable_this() as html::attribute disable
+            call html::text("Save invoice") as html::node submit_label
+            call html::element(button_tag, [submit_type, disable], [submit_label]) as html::node submit
+            call html::text_attribute("id", "invoice_progress") as html::attribute progress_id
+            call html::text_attribute("class", "htmx-indicator") as html::attribute progress_class
+            call html::text("…") as html::node progress_text
+            call html::element(span_tag, [progress_id, progress_class], [progress_text]) as html::node indicator
+            call html::text_attribute("id", "invoice_form") as html::attribute form_id
+            call html::text_attribute("method", "post") as html::attribute method
+            call html::element(form_tag, [form_id, method, post, status_selector, swap, progress], [revision_hidden, seats_label, seats_input, details_label, details_input, lines_table, submit, indicator]) as html::node form_node
+            call html::text_attribute("id", "invoice_status") as html::attribute status_id
+            call html::text("No save yet.") as html::node waiting_text
+            call html::element(paragraph, [], [waiting_text]) as html::node waiting
+            call html::element(division, [status_id], [waiting]) as html::node status
+            call html::document("Invoice " + tenant_text + "/" + invoice_text, [runtime], [heading, form_node, status]) as html::safe document
+            html::invalid_structure
+            html::invalid_url
+            htmx::invalid_target
+            form::unknown_field
+            form::invalid_name
+            ok => ok document
 
 /// Render one full notice document for denied and unavailable page
 /// loads: the pinned runtime head plus a single escaped paragraph at
 /// the route's truthful status. Notices carry no invoice content
-/// beyond the caller-sent id already present in the message.
+/// beyond the caller-sent key already present in the message.
 fn html::safe notice_page
     emits [html::invalid_structure]
     given
         str title
         str message
     asserts
-        sample: "Invoice denied", "denied inv-9" => ok
+        sample: "Invoice denied", "denied 1/9" => ok
         hostile: "Invoice denied", "denied </p><script>bad()</script>" => ok
     match chain
         call htmx::runtime_head() as html::node runtime

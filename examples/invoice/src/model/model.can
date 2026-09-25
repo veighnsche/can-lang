@@ -1,5 +1,5 @@
 package model
-    provides [find_header, session_of, exact_origin, valid_public_origin, valid_window, check_json_save, check_form_save, digest_of_grid, digest_of_form, decide_save, decide_load, load_authorized, save_authorized, save_html_authorized, reconcile_save, cleanup_expired]
+    provides [find_header, session_of, exact_origin, valid_public_origin, valid_window, minor_to_price, check_json_save, check_form_save, digest_of_grid, digest_of_form, decide_save, decide_load, load_authorized, save_authorized, save_html_authorized, reconcile_save, cleanup_expired]
     uses [billing::invoice_contract as contract, records, bytes, clock, codec, cookie, crypto, form, http, number, option, random, sql, text]
 
 /// Authority for one protected invoice write. Only this package can
@@ -1573,6 +1573,7 @@ fn contract::grid_load_outcome load_authorized
             int invoice_id = key.invoice_id
             match call sql::with_transaction<records::read_outcome>(pool, callable decide_load)
                 when
+                    lg_found: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                     load_ok: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                     load_route_denied: pool, callable decide_load => ok records::read_denied(1, 7)
                     load_tx_down: pool, callable decide_load => sql::transaction_failed("commit")
@@ -1608,6 +1609,7 @@ fn contract::grid_edit_outcome save_authorized
             records::flawed_save => ok contract::grid_invalid(body.operation_id, body, [contract::grid_problem(option::none(), checked.field, checked.reason)])
             records::checked_save => match call clock::wall_millis()
                 when
+                    sg_saved: => ok 2000
                     json_saved: => ok 2000
                     json_denied: => ok 2000
                     json_stale: => ok 2000
@@ -1629,6 +1631,7 @@ fn contract::grid_edit_outcome save_authorized
                     int w_ms = window
                     match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
                         when
+                            sg_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                             json_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                             json_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                             json_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
@@ -1667,6 +1670,7 @@ fn contract::edit_outcome save_html_authorized
             records::flawed_save => ok contract::invalid(option::some(form), [contract::field_error(checked.field, checked.reason)])
             records::checked_form => match call random::uuid_v4()
                 when
+                    sh_saved: => ok "op-9"
                     form_saved: => ok "op-9"
                     form_denied: => ok "op-9"
                     form_stale: => ok "op-9"
@@ -1675,6 +1679,7 @@ fn contract::edit_outcome save_html_authorized
                     form_uncertain: => ok "op-9"
                 ok str operation_id => match call clock::wall_millis()
                     when
+                        sh_saved: => ok 2000
                         form_saved: => ok 2000
                         form_denied: => ok 2000
                         form_stale: => ok 2000
@@ -1695,6 +1700,7 @@ fn contract::edit_outcome save_html_authorized
                         int w_ms = window
                         match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
                             when
+                                sh_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                                 form_saved: pool, callable decide_save => ok records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000)
                                 form_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                                 form_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
@@ -1841,6 +1847,7 @@ fn int cleanup_expired
         false => ok 0
         true => match call clock::wall_millis()
             when
+                serve: => ok 2000
                 clean_run: => ok 2000
                 clean_down: => ok 2000
                 clean_unknown: => ok 2000
@@ -1849,6 +1856,7 @@ fn int cleanup_expired
                 int w_ms = window
                 match call sql::with_transaction<int>(pool, callable decide_cleanup)
                     when
+                        serve: pool, callable decide_cleanup => ok 0
                         clean_run: pool, callable decide_cleanup => ok 2
                         clean_down: pool, callable decide_cleanup => sql::transaction_failed("commit")
                         clean_unknown: pool, callable decide_cleanup => sql::commit_unknown("tx-9")
