@@ -287,7 +287,13 @@ func (e *RegionEmitter) target(id string) (string, error) {
 	if name := e.expression.Bindings[id]; name != "" {
 		return name, nil
 	}
-	return "", fmt.Errorf("missing emitted callable %s", id)
+	// A call whose concrete target has no emitted function is a hard
+	// failure, never a silently rendered symbolic identity. The region
+	// and source below are the call-site evidence for the missing target.
+	if e.region != nil {
+		return "", fmt.Errorf("missing concrete target %s for call in region %s (%s)", id, e.region.ID, e.sourceID())
+	}
+	return "", fmt.Errorf("missing concrete target %s", id)
 }
 func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, error) {
 	if call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {

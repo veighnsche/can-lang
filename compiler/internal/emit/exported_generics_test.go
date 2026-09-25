@@ -152,6 +152,83 @@ func TestExportedGenericPublicIdentityEmitsModules(t *testing.T) {
 	}
 }
 
+// UP17: a generic call whose concrete target has no emitted function fails
+// with the target identity plus call-site evidence, instead of silently
+// rendering a symbolic identity.
+func TestGenericMissingConcreteTargetFailsClosed(t *testing.T) {
+	program := browserEmitProgram(t, map[string]string{
+		"src/core/core.can": `package core
+    provides [identity]
+    uses []
+fn item identity<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok 3
+    ok value
+`,
+		"src/helpers/helpers.can": `package helpers
+    provides [box, nested]
+    uses [core]
+record box<item>
+    item value
+fn box<item> nested<item>
+    emits []
+    given
+        item value
+    asserts
+        number: 3 => ok box(3)
+    ok call core::identity<box<item>>(box(value))
+`,
+		"src/app/main.can": `package app
+    provides []
+    uses [helpers]
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    helpers::box<int> first = call helpers::nested(3)
+    ok
+`,
+	})
+	var nested, boxed *check.ProgramFunction
+	for _, fn := range program.Functions {
+		switch {
+		case fn.Symbol.Name == "nested" && len(fn.TypeArguments) == 1 && fn.TypeArguments[0].Declaration() == "int":
+			nested = fn
+		case fn.Symbol.Name == "identity" && len(fn.TypeArguments) == 1 && strings.HasSuffix(fn.TypeArguments[0].Declaration(), "::box"):
+			boxed = fn
+		}
+	}
+	if nested == nil || boxed == nil {
+		t.Fatal("missing checked nested<int> or identity<box<int>> instance")
+	}
+	bound := map[string]string{}
+	for _, fn := range program.Functions {
+		bound[fn.Identity()] = "$emitted"
+	}
+	delete(bound, boxed.Identity())
+	emitter := &RegionEmitter{Functions: bound}
+	if _, err := emitter.Function("$nested", nested.Region); err == nil {
+		t.Fatal("missing concrete target admitted")
+	} else if !strings.Contains(err.Error(), "missing concrete target") || !strings.Contains(err.Error(), boxed.Instance) || !strings.Contains(err.Error(), nested.Region.ID) {
+		t.Fatalf("missing target lacks identity and call-site evidence: %v", err)
+	}
+	// Positive control: with the concrete target bound, the call lowers
+	// to the emitted function and no symbolic identity is rendered.
+	bound[boxed.Identity()] = "$boxed"
+	body, err := (&RegionEmitter{Functions: bound}).Function("$nested", nested.Region)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(body, "$boxed(") || strings.Contains(strings.ToLower(body), "symbolic") {
+		t.Fatalf("concrete call mislowered:\n%s", body)
+	}
+}
+
 // UP02: an opaque type that actually reaches a runtime boundary is still a
 // hard emission failure, diagnosed at the offending variable.
 func TestNativeTypeDeclarationsRejectsOpaqueParameter(t *testing.T) {
