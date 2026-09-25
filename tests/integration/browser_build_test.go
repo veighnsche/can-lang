@@ -46,6 +46,36 @@ fn void main
         ok point found => ok
 `
 
+// browserPureMainBrowser is the browser-entry variant of browserPureMain:
+// browser production builds check with CheckBrowserProgram, which requires
+// the zero-argument main, so browser legs use this while the bun leg keeps
+// the argv entry above.
+const browserPureMainBrowser = `package app
+    provides []
+    uses [text, codec, bytes, strings]
+record point
+    int x
+    int y
+fn point load
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "{\"x\":1,\"y\":2}" => ok point(1, 2)
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer raw
+        call codec::decode_json<point>(raw) as point found
+        codec::invalid_data
+        ok => ok found
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    match call load(call strings::join(["{\"x\":1", "\"y\":2}"], ","))
+        codec::invalid_data => ok
+        ok point found => ok
+`
+
 const browserHelperPackage = `package strings
     provides [join]
     uses [text]
@@ -120,7 +150,7 @@ func TestBrowserBuildTarget(t *testing.T) {
 
 	t.Run("pure multi-package project ships the browser root", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", browserPureMain)
+		write("src/app/main.can", browserPureMainBrowser)
 		write("src/strings/join.can", browserHelperPackage)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 0 {
@@ -249,7 +279,7 @@ func TestBrowserBuildTarget(t *testing.T) {
 
 	t.Run("combined flags", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", browserPureMain)
+		write("src/app/main.can", browserPureMainBrowser)
 		write("src/strings/join.can", browserHelperPackage)
 		code, out, diag := run("build", "--assert-timeout-ms", "60000", "--target", "browser", root)
 		if code != 0 {
@@ -270,26 +300,37 @@ func TestBrowserBuildTarget(t *testing.T) {
 
 	t.Run("server capability diagnosed", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/main.can", `package app
+		// Browser and bun entries have distinct shapes, so each leg gets
+		// its own entry while the capability use stays identical.
+		browserEntry := `package app
     provides []
     uses [env, http]
-fn void main
+fn str probe_home
     emits [env::invalid_name, http::credentials_missing]
-    given
-        str[] arguments
     asserts
-        empty: [] => ok
+        empty: => ok "fixture"
     match call env::required("HOME")
         when
             empty: "HOME" => ok "fixture"
         env::invalid_name
         http::credentials_missing
+        ok str value => ok value
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    match call probe_home()
+        env::invalid_name => ok
+        http::credentials_missing => ok
         ok str value => ok
-`)
+`
+		write("src/main.can", browserEntry)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 1 || out != "" || !strings.Contains(diag, "can.std.env@1::required") {
 			t.Fatalf("capability gate: %d %q %q", code, out, diag)
 		}
+		bunEntry := strings.Replace(browserEntry, "    asserts\n        empty: => ok\n", "    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n", 1)
+		write("src/main.can", bunEntry)
 		code, _, diag = run("build", root)
 		if code != 0 {
 			t.Fatalf("bun build of the same project: %d %s", code, diag)
@@ -303,10 +344,8 @@ fn void main
     uses []
 fn void main
     emits []
-    given
-        str[] arguments
     asserts
-        empty: [] => ok
+        empty: => ok
     ok
 `)
 		code, out, diag := run("build", "--target", "browser", root)
@@ -325,7 +364,7 @@ fn void main
 
 	t.Run("bundle publishes verified outputs", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", browserPureMain)
+		write("src/app/main.can", browserPureMainBrowser)
 		write("src/strings/join.can", browserHelperPackage)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 0 {
@@ -377,7 +416,7 @@ fn void main
 		build := func(t *testing.T) (string, string) {
 			t.Helper()
 			root, write := newProject(t)
-			write("src/app/main.can", browserPureMain)
+			write("src/app/main.can", browserPureMainBrowser)
 			write("src/strings/join.can", browserHelperPackage)
 			code, out, diag := run("build", "--target", "browser", root)
 			if code != 0 {
@@ -414,7 +453,7 @@ fn void main
 
 	t.Run("failing assertions prevent browser publication", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", strings.Replace(browserPureMain, "ok point(1, 2)", "ok point(9, 9)", 1))
+		write("src/app/main.can", strings.Replace(browserPureMainBrowser, "ok point(1, 2)", "ok point(9, 9)", 1))
 		write("src/strings/join.can", browserHelperPackage)
 		code, _, diag := run("build", "--target", "browser", root)
 		if code == 0 || !strings.Contains(diag, "build verification failed") {
@@ -427,7 +466,7 @@ fn void main
 
 	t.Run("tampered bundle prevents publication", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", browserPureMain)
+		write("src/app/main.can", browserPureMainBrowser)
 		write("src/strings/join.can", browserHelperPackage)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 0 {
@@ -466,7 +505,7 @@ fn void main
 
 	t.Run("missing map prevents publication", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/app/main.can", browserPureMain)
+		write("src/app/main.can", browserPureMainBrowser)
 		write("src/strings/join.can", browserHelperPackage)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 0 {
@@ -500,7 +539,9 @@ fn void main
 
 	t.Run("profile-unavailable operations diagnose", func(t *testing.T) {
 		root, write := newProject(t)
-		write("src/main.can", `package app
+		// Browser and bun entries have distinct shapes, so each leg gets
+		// its own entry while the capability use stays identical.
+		browserEntry := `package app
     provides []
     uses [cookie, option]
 fn option::value<str> session_id
@@ -514,13 +555,12 @@ fn option::value<str> session_id
             ok option::value<str> id => ok id
 fn void main
     emits []
-    given
-        str[] arguments
     asserts
-        empty: [] => ok
+        empty: => ok
     match call session_id("session=A")
         ok option::value<str> id => ok
-`)
+`
+		write("src/main.can", browserEntry)
 		code, out, diag := run("build", "--target", "browser", root)
 		if code != 1 || out != "" || !strings.Contains(diag, "can.std.cookie@1::parse") {
 			t.Fatalf("cookie gate: %d %q %q", code, out, diag)
@@ -528,6 +568,8 @@ fn void main
 		if _, err := os.Stat(filepath.Join(root, "dist/current.json")); !os.IsNotExist(err) {
 			t.Fatal("gated browser build selected production current")
 		}
+		bunEntry := strings.Replace(browserEntry, "    asserts\n        empty: => ok\n", "    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n", 1)
+		write("src/main.can", bunEntry)
 		code, _, diag = run("build", root)
 		if code != 0 {
 			t.Fatalf("bun build of the same project: %d %s", code, diag)
