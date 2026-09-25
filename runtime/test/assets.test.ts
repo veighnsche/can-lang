@@ -7,7 +7,13 @@ import { pathToFileURL } from "node:url";
 import { catalogue } from "../catalogue.ts";
 import { createDomainRuntime, domainFailureDiagnostics, type FailureShape } from "../domain.ts";
 import { createHTML, isHTMLValue, renderSafe } from "../platform/html.ts";
-import { createAssets, browserPolicy, type AssetTable } from "../platform/assets.ts";
+import {
+  createAssets,
+  browserPolicy,
+  assetRetained,
+  type AssetTable,
+  type ServedAsset,
+} from "../platform/assets.ts";
 import { createRouter } from "../platform/router.ts";
 import { createResponses } from "../platform/http.ts";
 import { value, type Completion } from "../completion.ts";
@@ -177,4 +183,242 @@ test("reserved routes and htmx navigation headers are not application-controlled
   expect(browserPolicy).not.toContain("unsafe-eval");
   expect(browserPolicy).toContain("navigate-to 'self'");
   expect(browserPolicy).toContain("form-action 'self'");
+});
+
+const retentionMs = 7 * 24 * 60 * 60 * 1000;
+
+test("retention keeps routes through the bound and drops them after", () => {
+  const now = 1790314240936;
+  expect(assetRetained(now, now - retentionMs + 1)).toBe(true);
+  expect(assetRetained(now, now - retentionMs)).toBe(true);
+  expect(assetRetained(now, now - retentionMs - 1)).toBe(false);
+});
+
+function pairedTree() {
+  const dist = mkdtempSync(join(tmpdir(), "can-paired-"));
+  const generation = join(dist, "builds", "current");
+  const entry = new TextEncoder().encode(
+    'console.log("paired");\n//# sourceMappingURL=browser.js.map\n',
+  );
+  const map = new TextEncoder().encode('{"version":3,"file":"browser.js"}\n');
+  const tableBytes = new TextEncoder().encode(
+    '{"schemaVersion":1,"kind":"can.diagnostic-table"}\n',
+  );
+  const entryDigest = digest(entry),
+    mapDigest = digest(map),
+    tableDigest = digest(tableBytes);
+  for (const [name, bytes] of [
+    ["htmx-4.0.0.min.js", script],
+    ["browser.js", entry],
+    ["browser.js.map", map],
+    ["table.json", tableBytes],
+  ] as const) {
+    const folder = name === "htmx-4.0.0.min.js" ? htmxDigest : digest(bytes);
+    mkdirSync(join(generation, "assets", folder), { recursive: true });
+    writeFileSync(join(generation, "assets", folder, name), bytes);
+  }
+  const entryRoute = `/__can/assets/${entryDigest}.js`;
+  const mapRoute = `/__can/assets/${mapDigest}.js.map`;
+  const tableRoute = `/__can/assets/${tableDigest}.json`;
+  const file = (
+    route: string,
+    content: Uint8Array,
+    mediaType: string,
+    name: string,
+  ): ServedAsset => ({
+    route,
+    digest: digest(content),
+    mediaType,
+    file: `assets/${digest(content)}/${name}`,
+    integrity: "",
+  });
+  const paired: AssetTable = {
+    htmx: {
+      route: "/__can/assets/htmx-4.0.0.min.js",
+      digest: htmxDigest,
+      mediaType: "text/javascript",
+      file: `assets/${htmxDigest}/htmx-4.0.0.min.js`,
+      integrity: "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
+    },
+    project: [],
+    browser: {
+      buildId: "b".repeat(64),
+      entry: entryRoute,
+      table: tableRoute,
+      files: [
+        file(entryRoute, entry, "text/javascript", "browser.js"),
+        file(mapRoute, map, "application/json", "browser.js.map"),
+        file(tableRoute, tableBytes, "application/json", "table.json"),
+      ],
+    },
+  };
+  return { dist, generation, paired, entry, map, tableBytes, entryRoute, mapRoute, tableRoute };
+}
+
+test("paired browser bytes serve exact JS, map, and table with the entry selected", async () => {
+  const { generation, paired, entry, map, tableBytes, entryRoute, mapRoute, tableRoute } =
+    pairedTree();
+  const server = createAssets(paired, pathToFileURL(generation + "/"));
+  expect(server.browserScript).toBe(entryRoute);
+  const served = await server.serve(new Request("http://127.0.0.1" + entryRoute));
+  expect(served?.status).toBe(200);
+  expect(served?.headers.get("content-type")).toBe("text/javascript");
+  expect(served?.headers.get("etag")).toBe(`"${digest(entry)}"`);
+  expect(served?.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+  expect(new Uint8Array(await served!.arrayBuffer())).toEqual(entry);
+  const servedMap = await server.serve(new Request("http://127.0.0.1" + mapRoute));
+  expect(servedMap?.status).toBe(200);
+  expect(servedMap?.headers.get("content-type")).toBe("application/json");
+  expect(new Uint8Array(await servedMap!.arrayBuffer())).toEqual(map);
+  const servedTable = await server.serve(new Request("http://127.0.0.1" + tableRoute));
+  expect(servedTable?.status).toBe(200);
+  expect(new Uint8Array(await servedTable!.arrayBuffer())).toEqual(tableBytes);
+});
+
+test("paired browser tables reject mismatched identity, routes, and files", async () => {
+  const { generation, paired, entryRoute } = pairedTree();
+  const root = pathToFileURL(generation + "/");
+  const browser = paired.browser!;
+  expect(() => createAssets({ ...paired, browser: undefined }, root)).not.toThrow();
+  expect(createAssets({ ...paired, browser: undefined }, root).browserScript).toBeUndefined();
+  for (const broken of [
+    { ...browser, buildId: "short" },
+    { ...browser, files: [] },
+    { ...browser, entry: browser.files[1]!.route },
+    { ...browser, entry: "/__can/assets/" + "c".repeat(64) + ".js" },
+    { ...browser, table: browser.entry },
+    {
+      ...browser,
+      files: browser.files.map((file) =>
+        file.route === entryRoute ? { ...file, digest: "c".repeat(64) } : file,
+      ),
+    },
+    {
+      ...browser,
+      files: browser.files.map((file) =>
+        file.route === entryRoute ? { ...file, mediaType: "application/json" } : file,
+      ),
+    },
+    {
+      ...browser,
+      files: browser.files.map((file) =>
+        file.route === entryRoute ? { ...file, file: "elsewhere.js" } : file,
+      ),
+    },
+    {
+      ...browser,
+      files: browser.files.map((file) =>
+        file.route === entryRoute ? { ...file, integrity: "sha384-x" } : file,
+      ),
+    },
+    { ...browser, files: [...browser.files, browser.files[0]!] },
+  ]) {
+    expect(() => createAssets({ ...paired, browser: broken }, root)).toThrow(TypeError);
+  }
+  // Tampered paired bytes fail closed on serve.
+  const tampered = join(
+    generation,
+    "assets",
+    digest(
+      new TextEncoder().encode('console.log("paired");\n//# sourceMappingURL=browser.js.map\n'),
+    ),
+    "browser.js",
+  );
+  writeFileSync(tampered, "tampered\n");
+  const server = createAssets(paired, root);
+  expect((await server.serve(new Request("http://127.0.0.1" + entryRoute)))?.status).toBe(404);
+});
+
+test("replaced digest URLs serve from the durable ledger until expiry", async () => {
+  const { dist, generation, paired, entry, entryRoute } = pairedTree();
+  const stale = new TextEncoder().encode(
+    'console.log("stale");\n//# sourceMappingURL=browser.js.map\n',
+  );
+  const staleDigest = digest(stale);
+  const staleRoute = `/__can/assets/${staleDigest}.js`;
+  mkdirSync(join(dist, "assets"), { recursive: true });
+  writeFileSync(join(dist, "assets", `${staleDigest}.js`), stale);
+  const server = createAssets(paired, pathToFileURL(generation + "/"));
+  const ask = (path: string, method = "GET") =>
+    server.serve(new Request("http://127.0.0.1" + path, { method }));
+  // No ledger yet: the unlisted route is unknown.
+  expect((await ask(staleRoute))?.status).toBe(404);
+  const ledger = (replacedAt: number) => ({
+    schemaVersion: 1,
+    kind: "can.asset-ledger",
+    retained: [
+      {
+        digest: staleDigest,
+        route: staleRoute,
+        mediaType: "text/javascript",
+        file: `assets/${staleDigest}.js`,
+        replacedAt,
+      },
+    ],
+  });
+  // Before the bound (with margin; the exact bound is covered by the
+  // retention predicate test since file IO would blur a 1ms margin).
+  writeFileSync(
+    join(dist, "assets.json"),
+    JSON.stringify(ledger(Date.now() - retentionMs + 60000)),
+  );
+  const served = await ask(staleRoute);
+  expect(served?.status).toBe(200);
+  expect(served?.headers.get("content-type")).toBe("text/javascript");
+  expect(served?.headers.get("etag")).toBe(`"${staleDigest}"`);
+  expect(new Uint8Array(await served!.arrayBuffer())).toEqual(stale);
+  expect((await ask(staleRoute, "POST"))?.status).toBe(405);
+  // Tampered durable bytes fail closed, then serve again once restored.
+  writeFileSync(join(dist, "assets", `${staleDigest}.js`), "tampered\n");
+  expect((await ask(staleRoute))?.status).toBe(404);
+  writeFileSync(join(dist, "assets", `${staleDigest}.js`), stale);
+  expect((await ask(staleRoute))?.status).toBe(200);
+  // A restarted server (a fresh asset layer over the same dist) still
+  // serves the retained route from disk, not memory.
+  const restarted = createAssets(paired, pathToFileURL(generation + "/"));
+  expect((await restarted.serve(new Request("http://127.0.0.1" + staleRoute)))?.status).toBe(200);
+  // Past the bound the route expires while the current entry still serves.
+  writeFileSync(
+    join(dist, "assets.json"),
+    JSON.stringify(ledger(Date.now() - retentionMs - 60000)),
+  );
+  expect((await ask(staleRoute))?.status).toBe(404);
+  expect((await ask(entryRoute))?.status).toBe(200);
+  expect(new Uint8Array(await (await ask(entryRoute))!.arrayBuffer())).toEqual(entry);
+});
+
+test("durable ledger mismatches fail closed", async () => {
+  const { dist, generation, paired } = pairedTree();
+  const stale = new TextEncoder().encode('console.log("stale");\n');
+  const staleDigest = digest(stale);
+  const staleRoute = `/__can/assets/${staleDigest}.js`;
+  mkdirSync(join(dist, "assets"), { recursive: true });
+  writeFileSync(join(dist, "assets", `${staleDigest}.js`), stale);
+  const server = createAssets(paired, pathToFileURL(generation + "/"));
+  const ask = (path: string) => server.serve(new Request("http://127.0.0.1" + path));
+  const good = {
+    digest: staleDigest,
+    route: staleRoute,
+    mediaType: "text/javascript",
+    file: `assets/${staleDigest}.js`,
+    replacedAt: Date.now(),
+  };
+  for (const retained of [
+    [{ ...good, mediaType: "text/css" }],
+    [{ ...good, file: `assets/${staleDigest}.json` }],
+    [{ ...good, route: `/__can/assets/${staleDigest}.json` }],
+    [{ ...good, digest: "c".repeat(64) }],
+    [{ ...good, replacedAt: Number.NaN }],
+    ["not-an-entry"],
+  ]) {
+    writeFileSync(
+      join(dist, "assets.json"),
+      JSON.stringify({ schemaVersion: 1, kind: "can.asset-ledger", retained }),
+    );
+    expect((await ask(staleRoute))?.status).toBe(404);
+  }
+  for (const ledger of ['{"schemaVersion":1,"kind":"wrong","retained":[]}', "not json", "[]"]) {
+    writeFileSync(join(dist, "assets.json"), ledger);
+    expect((await ask(staleRoute))?.status).toBe(404);
+  }
 });

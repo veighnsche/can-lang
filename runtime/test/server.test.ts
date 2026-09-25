@@ -13,6 +13,7 @@ import { runOwnedRoot, launchOwned, resourceStatus } from "../owner.ts";
 import { assertionContext } from "../assert/context.ts";
 import { ownBytes } from "../bytes.ts";
 import { createServer, isServerValue } from "../platform/server.ts";
+import { createHTML } from "../platform/html.ts";
 import { createRouter } from "../platform/router.ts";
 import { createRequests, createResponses } from "../platform/http.ts";
 import { createStreamReads } from "../transport/stream/readable.ts";
@@ -967,4 +968,113 @@ test("dropped connections abort live reads", async () => {
   expect(owned.cleanupFailed).toBe(false);
   expect(owned.completion.kind).toBe("ok");
   expect(observed).toBe('ab:failed:stream::read_failed:{"reason":"aborted"}');
+});
+
+const pairedScript = `/__can/assets/${"d".repeat(64)}.js`;
+const pairedFactory = createHTML(domain, {
+  structure: "unused",
+  url: "unused",
+  target: "unused",
+  interval: "unused",
+});
+function pairedServerFor(script: string | undefined) {
+  return createServer(
+    domain,
+    {
+      invalidConfig: id("can.std.http@1::invalid_server_config"),
+      bindFailed: id("can.std.http@1::bind_failed"),
+      shutdownFailed: id("can.std.http@1::shutdown_failed"),
+    },
+    {
+      serve: async () => undefined,
+      ...(script === undefined ? {} : { browserScript: script }),
+    },
+  );
+}
+async function documentResult(): Promise<Completion<unknown>> {
+  const text = value(await pairedFactory.text("hi"));
+  const safe = value(await pairedFactory.document("Paired", [], [text]));
+  return responses.html(value(await responses.ok()), value(await responses.emptyHeaders()), safe);
+}
+async function fragmentResult(): Promise<Completion<unknown>> {
+  const safe = value(await pairedFactory.textFragment("waiting"));
+  return responses.html(value(await responses.ok()), value(await responses.emptyHeaders()), safe);
+}
+
+test("paired servers deliver exactly one report-selected script to documents", async () => {
+  const paired = pairedServerFor(pairedScript);
+  const owned = await runOwnedRoot(async () => {
+    const config = value(await paired.makeConfig("127.0.0.1", 18370n, 1048576n, 5000n));
+    const route = value(await router.get("/x", async () => documentResult()));
+    const table = value(await router.make([route]));
+    const token = value(await paired.start(config, table));
+    const response = await fetch("http://127.0.0.1:18370/x");
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    const tag = `<script type="module" src="${pairedScript}"></script>`;
+    expect(body).toContain(`${tag}</body>`);
+    expect(body.split("<script").length - 1).toBe(1);
+    expect(body).not.toContain("unsafe-inline");
+    const policy = response.headers.get("content-security-policy") ?? "";
+    expect(policy).toContain("script-src 'self'");
+    expect(policy).not.toContain("unsafe-eval");
+    expect((await paired.stop(token)).kind).toBe("ok");
+    return success(undefined);
+  });
+  expect(owned.cleanupFailed).toBe(false);
+  expect(owned.completion.kind).toBe("ok");
+});
+
+test("unpaired servers, fragments, and plain text keep exact bytes", async () => {
+  const owned = await runOwnedRoot(async () => {
+    const config = value(await server.makeConfig("127.0.0.1", 18371n, 1048576n, 5000n));
+    const route = value(await router.get("/x", async () => documentResult()));
+    const table = value(await router.make([route]));
+    const token = value(await server.start(config, table));
+    const body = await (await fetch("http://127.0.0.1:18371/x")).text();
+    expect(body).not.toContain("<script");
+    expect(body).toContain("</body>");
+    expect((await server.stop(token)).kind).toBe("ok");
+    return success(undefined);
+  });
+  expect(owned.completion.kind).toBe("ok");
+  const paired = pairedServerFor(pairedScript);
+  const fragments = await runOwnedRoot(async () => {
+    const config = value(await paired.makeConfig("127.0.0.1", 18372n, 1048576n, 5000n));
+    const fragment = value(await router.get("/fragment", async () => fragmentResult()));
+    const plain = value(
+      await router.get("/plain", async () =>
+        responses.text(
+          value(await responses.ok()),
+          value(await responses.emptyHeaders()),
+          "x</body>y",
+        ),
+      ),
+    );
+    const table = value(await router.make([fragment, plain]));
+    const token = value(await paired.start(config, table));
+    expect(await (await fetch("http://127.0.0.1:18372/fragment")).text()).toBe("waiting");
+    expect(await (await fetch("http://127.0.0.1:18372/plain")).text()).toBe("x</body>y");
+    const head = await fetch("http://127.0.0.1:18372/fragment", { method: "HEAD" });
+    expect(head.status).toBe(405);
+    expect(await head.text()).toBe("");
+    expect((await paired.stop(token)).kind).toBe("ok");
+    return success(undefined);
+  });
+  expect(fragments.completion.kind).toBe("ok");
+});
+
+test("malformed paired script shapes never inject", async () => {
+  const hostile = pairedServerFor("https://evil.test/x.js");
+  const owned = await runOwnedRoot(async () => {
+    const config = value(await hostile.makeConfig("127.0.0.1", 18373n, 1048576n, 5000n));
+    const route = value(await router.get("/x", async () => documentResult()));
+    const table = value(await router.make([route]));
+    const token = value(await hostile.start(config, table));
+    const body = await (await fetch("http://127.0.0.1:18373/x")).text();
+    expect(body).not.toContain("<script");
+    expect((await hostile.stop(token)).kind).toBe("ok");
+    return success(undefined);
+  });
+  expect(owned.completion.kind).toBe("ok");
 });
