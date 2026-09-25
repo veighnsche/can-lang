@@ -14,8 +14,9 @@
 //     evidence for every finite case plus transport failures;
 //   - keyed-row reorder: swapped lines_order persists positions and
 //     renders in the new order; a malformed order answers 422;
-//   - swap-config regression: the served page swaps exactly 200-399
-//     and 422, parsed from real served bytes;
+//   - swap-config regression: the served global policy plus the
+//     current absence of per-element error admission, parsed from
+//     real served bytes;
 //   - uncertain commits: SIGKILL mid-flight and after commit converge
 //     to exactly one ledger effect under identical replay.
 //
@@ -702,9 +703,11 @@ func TestGate3ServerMatrix(t *testing.T) {
 		t.Fatalf("malformed order recorded %+v", store.Replay)
 	}
 
-	// Swap-config regression on served bytes: exactly 200-399 and 422
-	// swap into the status region; every other 4xx/5xx plus the quiet
-	// 204/304 stay unswapped.
+	// Swap-config regression on served bytes: the global policy keeps
+	// the quiet 204/304 and every 4xx/5xx class out of swaps, and the
+	// served form carries no per-element hx-status admission, so error
+	// fragments stay unswapped until UP12/UP19 generate admission from
+	// the checked case table. 2xx/3xx outside the quiet pair swap.
 	status, page, _ = invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("swap page: %d", status)
@@ -717,24 +720,22 @@ func TestGate3ServerMatrix(t *testing.T) {
 	encoded := rest[:strings.Index(rest, `">`)]
 	var config struct {
 		Mode   string `json:"mode"`
-		NoSwap []int  `json:"noSwap"`
+		NoSwap []any  `json:"noSwap"`
 	}
 	if err := json.Unmarshal([]byte(strings.ReplaceAll(encoded, "&quot;", `"`)), &config); err != nil {
 		t.Fatalf("invalid served htmx-config %v %q", err, encoded)
 	}
-	want := []int{204, 304}
-	for code := 400; code < 600; code++ {
-		if code != 422 {
-			want = append(want, code)
-		}
-	}
+	want := []any{204.0, 304.0, "4xx", "5xx"}
 	if config.Mode != "same-origin" || len(config.NoSwap) != len(want) {
-		t.Fatalf("served htmx-config %+v, want same-origin with %d noSwap codes", config, len(want))
+		t.Fatalf("served htmx-config %+v, want same-origin with %d noSwap entries", config, len(want))
 	}
 	for i, code := range want {
 		if config.NoSwap[i] != code {
-			t.Fatalf("served htmx-config noSwap[%d]=%d, want %d", i, config.NoSwap[i], code)
+			t.Fatalf("served htmx-config noSwap[%d]=%v, want %v", i, config.NoSwap[i], code)
 		}
+	}
+	if strings.Contains(page, "hx-status:") {
+		t.Fatalf("swap page admits error swaps in %.800s", page)
 	}
 
 	// Uncertain commit: SIGKILL mid-flight, then the identical replay
