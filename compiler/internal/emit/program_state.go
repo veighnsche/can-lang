@@ -308,8 +308,16 @@ func (builder *stateBuilder) initializeAssets() ([]ir.Artifact, error) {
 	if err != nil {
 		return nil, err
 	}
+	encodedSwaps := ""
+	if policies := swapPolicies(builder.assembly.program.Actions); len(policies) != 0 {
+		encoded, err := json.Marshal(policies)
+		if err != nil {
+			return nil, err
+		}
+		encodedSwaps = "," + string(encoded)
+	}
 	fmt.Fprintf(&builder.out, "const $canAssetTable:Parameters<typeof $canCreateAssets>[0]=%s;\n", encodedTable)
-	fmt.Fprintf(&builder.out, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s},%s);\n", quote(builder.numberIDs["can.std.html@1::invalid_structure"]), quote(builder.numberIDs["can.std.html@1::invalid_url"]), quote(builder.numberIDs["can.std.htmx@1::invalid_target"]), quote(builder.numberIDs["can.std.htmx@1::invalid_interval"]), encodedURLs)
+	fmt.Fprintf(&builder.out, "$canHTML=$canCreateHTML($canDomain,{structure:%s,url:%s,target:%s,interval:%s},%s%s);\n", quote(builder.numberIDs["can.std.html@1::invalid_structure"]), quote(builder.numberIDs["can.std.html@1::invalid_url"]), quote(builder.numberIDs["can.std.htmx@1::invalid_target"]), quote(builder.numberIDs["can.std.htmx@1::invalid_interval"]), encodedURLs, encodedSwaps)
 	fmt.Fprintf(&builder.out, "const $canAssets=$canCreateAssets($canAssetTable, new URL(\"../\", import.meta.url));\n")
 	return assetFiles, nil
 }
