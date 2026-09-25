@@ -120,6 +120,61 @@ func TestBrowserTargetRequiresEntry(t *testing.T) {
 	}
 }
 
+func assertionFixture(t *testing.T, files map[string]string, browser bool) (*Program, error) {
+	t.Helper()
+	root := t.TempDir()
+	files["can.project.json"] = `{"source_root":"src","error_registry":"can.errors.json"}`
+	files["can.errors.json"] = `{"active":[],"retired":[]}`
+	for name, text := range files {
+		path := filepath.Join(root, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	graph, err := project.Load(root)
+	if err != nil {
+		return nil, err
+	}
+	if browser {
+		return CheckBrowserAssertionProgram(graph)
+	}
+	return CheckAssertionProgram(graph)
+}
+
+func TestAssertionStagingAcceptsEitherEntryShape(t *testing.T) {
+	if _, err := assertionFixture(t, map[string]string{"src/main.can": browserZeroMain}, false); err != nil {
+		t.Fatalf("bun assertion staging rejected browser-shaped main: %v", err)
+	}
+	if _, err := assertionFixture(t, map[string]string{"src/main.can": bunArgsMain}, true); err != nil {
+		t.Fatalf("browser assertion staging rejected bun-shaped main: %v", err)
+	}
+}
+
+func TestAssertionStagingRejectsMalformedMain(t *testing.T) {
+	malformed := browserTargetHeader + `fn void main
+    emits []
+    given
+        str first
+        str second
+    asserts
+        empty: => ok
+    ok
+`
+	if _, err := assertionFixture(t, map[string]string{"src/main.can": malformed}, false); err == nil {
+		t.Fatal("bun assertion staging admitted a two-input main")
+	} else if !strings.Contains(err.Error(), "void main(str[] args)") {
+		t.Fatalf("bun assertion diagnostic omits bun expectation: %v", err)
+	}
+	if _, err := assertionFixture(t, map[string]string{"src/main.can": malformed}, true); err == nil {
+		t.Fatal("browser assertion staging admitted a two-input main")
+	} else if !strings.Contains(err.Error(), "browser entry must be") {
+		t.Fatalf("browser assertion diagnostic omits browser expectation: %v", err)
+	}
+}
+
 func TestCheckProgramForTargetRejectsUnknown(t *testing.T) {
 	root := t.TempDir()
 	for name, text := range map[string]string{

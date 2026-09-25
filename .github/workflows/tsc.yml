@@ -46,7 +46,7 @@ jobs:
         run: |
           set -o pipefail
           rm -rf "$CAN_FRESH_EMIT_DIR"
-          go test -count=1 -run 'TestStdlibMaintained' ./tests/integration
+          go test -timeout=20m -count=1 -run 'TestStdlibMaintained' ./tests/integration
       - name: Typecheck the fresh emit tree
         working-directory: tscheck
         run: |

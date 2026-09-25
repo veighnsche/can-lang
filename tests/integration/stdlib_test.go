@@ -168,7 +168,10 @@ func TestStdlibMaintained(t *testing.T) {
 	}
 	sourceRoot, _ := filepath.Abs("../..")
 	projects := discoverMaintained(t, sourceRoot)
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	// The grid builds through the browser profile (supervised assertion
+	// verification plus native bundling, twice for the drift check),
+	// which alone takes several minutes; budget the suite accordingly.
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
 	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "stdlib-maintained")
 	if err != nil {
@@ -201,8 +204,14 @@ func TestStdlibMaintained(t *testing.T) {
 		if real == 0 {
 			t.Fatalf("%s asserts nothing real", rel)
 		}
-		firstID, firstDir := applicationBuild(t, ctx, bundle, home, root)
-		secondID, _ := applicationBuild(t, ctx, bundle, home, root)
+		buildArgs := []string{"build"}
+		if rel == "examples/invoice-grid" {
+			// The grid ships a browser-shaped entry; build it
+			// through the browser profile like the gate5 suite.
+			buildArgs = []string{"build", "--target", "browser"}
+		}
+		firstID, firstDir := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
+		secondID, _ := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
 		if firstID != secondID {
 			t.Fatalf("%s rebuild drifted: %s vs %s", rel, firstID, secondID)
 		}
@@ -211,6 +220,9 @@ func TestStdlibMaintained(t *testing.T) {
 			copyFreshEmit(t, firstDir, filepath.Join(fresh, strings.ReplaceAll(rel, "/", "-")))
 		}
 		ran := "server/cli run covered by applications suite"
+		if rel == "examples/invoice-grid" {
+			ran = "browser run covered by gate5 suite"
+		}
 		if strings.HasPrefix(rel, "std/") {
 			status, out, diag := canlcOffline(t, ctx, bundle, home, "run", root)
 			if status != 0 || diag != "" {

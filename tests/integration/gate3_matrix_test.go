@@ -1055,8 +1055,8 @@ func TestGate3AdapterMatrix(t *testing.T) {
 	// bytes with 64 keyed rows.
 	transport := []struct {
 		note, path, media, body string
-		status                 int
-		text                   string
+		status                  int
+		text                    string
 	}{
 		{"json bad media", savePath, "text/plain", saveBody("op-t1", 1), 415, "Unsupported Media Type"},
 		{"json malformed", savePath, "application/json", "not json", 400, "Bad Request"},

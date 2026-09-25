@@ -224,7 +224,8 @@
       "../data.ts",
       "../failure.ts",
       "../assert/context.ts",
-      "../callable.ts"
+      "../callable.ts",
+      "../owner-core.ts"
     ],
     "number.ts": [
       "./completion.ts",
@@ -514,6 +515,7 @@
     "platform/assets.ts": [],
     "platform/browser.ts": [
       "../completion.ts",
+      "../owner-core.ts",
       "../data.ts",
       "../domain.ts",
       "../failure.ts",

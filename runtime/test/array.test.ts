@@ -8,6 +8,7 @@ import { createDomainRuntime } from "../domain.ts";
 import { runAssertion } from "../assert/runner.ts";
 import { withFixture } from "../assert/fixtures.ts";
 import { settle } from "../coordination.ts";
+import { runExplicitRoot, type OwnerContext } from "../owner-core.ts";
 const origin = { source: "test:array", start: 0, end: 0, invocation: [] };
 const trace = { origin, site: "p::array#0" };
 function deferred() {
@@ -423,4 +424,25 @@ test("collection adapters delegate mapping, filtering, reduction and sorting to 
     Array.prototype.toSorted = originals.toSorted;
   }
   expect(calls).toEqual({ mapping: 3, filtering: 1, reducing: 2, sorting: 1 });
+});
+
+test("map forwards an explicit owner context to browser-profile element callbacks", async () => {
+  const seen: unknown[] = [];
+  let owned: OwnerContext | undefined;
+  const root = await runExplicitRoot(async (owner) => {
+    owned = owner;
+    return arrays.map(
+      array([1n, 2n]),
+      async (item: bigint, ctx: OwnerContext) => {
+        seen.push(ctx);
+        return success(item * 2n);
+      },
+      { origin, site: "p::array#owner", owner },
+    );
+  });
+  expect(root.cleanupFailed).toBe(false);
+  expect(root.completion.kind).toBe("ok");
+  if (root.completion.kind === "ok") expect(value(root.completion)).toEqual(array([2n, 4n]));
+  expect(owned).toBeDefined();
+  expect(seen).toEqual([owned, owned]);
 });

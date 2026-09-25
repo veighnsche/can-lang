@@ -309,10 +309,19 @@ func CheckBrowserProgram(graph *project.Graph) (*Program, error) {
 }
 
 // CheckBrowserAssertionProgram checks browser source without requiring an
-// entry, for assertion-only staging. Production browser builds use
-// CheckBrowserProgram.
+// entry, for assertion-only staging. A present entry may use either valid
+// target shape; production browser builds use CheckBrowserProgram.
 func CheckBrowserAssertionProgram(graph *project.Graph) (*Program, error) {
 	return checkProgramForTarget(graph, TargetBrowser, false)
+}
+
+// otherCheckTarget names the alternate entry shape accepted during
+// assertion-only staging, when the staged entry never runs.
+func otherCheckTarget(target Target) Target {
+	if target == TargetBrowser {
+		return TargetBun
+	}
+	return TargetBrowser
 }
 
 // CheckProgramForTarget checks source for the named target. Unknown targets
@@ -492,7 +501,13 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 						return nil, fmt.Errorf("multiple root main declarations")
 					}
 					if err := checkTargetEntry(target, d); err != nil {
-						return nil, err
+						if !requireEntry && checkTargetEntry(otherCheckTarget(target), d) == nil {
+							// Assertion-only staging never runs the
+							// entry, so it accepts either valid target
+							// shape while still rejecting malformed mains.
+						} else {
+							return nil, err
+						}
 					}
 					p.Entry = &ProgramFunction{Symbol: symbol}
 				}

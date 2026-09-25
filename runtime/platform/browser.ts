@@ -1,4 +1,5 @@
 import { success, failure, invoke, type Completion, type AssertionContext } from "../completion.ts";
+import type { OwnerContext } from "../owner-core.ts";
 import { record } from "../data.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { resourceStateFailure } from "../failure.ts";
@@ -229,12 +230,17 @@ function covers(ancestor: BrowserDomNode, node: BrowserDomNode): boolean {
   }
   return false;
 }
+// Bun staging passes its assertion context in the trailing slot; browser
+// production passes the explicit owner context. Listener and timer
+// adapters forward the slot positionally into the handler's own trailing
+// context, so both shapes stay assignable here.
+type TrailingContext = OwnerContext | AssertionContext;
 type EventHandler = (
   event: unknown,
-  context: AssertionContext | undefined,
+  context: TrailingContext | undefined,
 ) => Completion<unknown> | Promise<Completion<unknown>>;
 type TimerHandler = (
-  context: AssertionContext | undefined,
+  context: TrailingContext | undefined,
 ) => Completion<unknown> | Promise<Completion<unknown>>;
 function checkHandler(value: unknown): EventHandler & TimerHandler {
   if (typeof value !== "function") throw new TypeError("invalid browser callback");
@@ -319,7 +325,7 @@ export function createBrowser(
       ["key", stringField(event, "key")],
     ]);
   return Object.freeze({
-    async mount(root: unknown, _context?: AssertionContext) {
+    async mount(root: unknown, _context?: TrailingContext) {
       const id = string(root);
       const document = host ?? defaultDocument();
       if (document === undefined) return missing(id);
@@ -346,7 +352,7 @@ export function createBrowser(
       };
       return success(token(apps, app));
     },
-    async root(app: unknown, _context?: AssertionContext) {
+    async root(app: unknown, _context?: TrailingContext) {
       if (isAssertScope(app)) return gone();
       const found = read(apps, app);
       if (found.disposed) return gone();
@@ -360,7 +366,7 @@ export function createBrowser(
         }),
       );
     },
-    async openView(app: unknown, _context?: AssertionContext) {
+    async openView(app: unknown, _context?: TrailingContext) {
       if (isAssertScope(app)) return gone();
       const found = read(apps, app);
       if (found.disposed) return gone();
@@ -375,12 +381,12 @@ export function createBrowser(
       found.views.add(view);
       return success(token(views, view));
     },
-    async disposeView(view: unknown, _context?: AssertionContext) {
+    async disposeView(view: unknown, _context?: TrailingContext) {
       if (isAssertScope(view)) return success(undefined);
       destroyView(read(views, view));
       return success(undefined);
     },
-    async disposeApp(app: unknown, _context?: AssertionContext) {
+    async disposeApp(app: unknown, _context?: TrailingContext) {
       if (isAssertScope(app)) return success(undefined);
       const found = read(apps, app);
       // destroyView deletes only the view under iteration, which Set iteration tolerates.
@@ -388,7 +394,7 @@ export function createBrowser(
       found.disposed = true;
       return success(undefined);
     },
-    async createElement(view: unknown, tag: unknown, _context?: AssertionContext) {
+    async createElement(view: unknown, tag: unknown, _context?: TrailingContext) {
       if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
@@ -399,7 +405,7 @@ export function createBrowser(
       scope.nodes.add(record);
       return success(token(nodes, record));
     },
-    async createText(view: unknown, value: unknown, _context?: AssertionContext) {
+    async createText(view: unknown, value: unknown, _context?: TrailingContext) {
       if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
@@ -408,14 +414,14 @@ export function createBrowser(
       scope.nodes.add(record);
       return success(token(nodes, record));
     },
-    async setText(node: unknown, value: unknown, _context?: AssertionContext) {
+    async setText(node: unknown, value: unknown, _context?: TrailingContext) {
       if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       found.dom.textContent = string(value);
       return success(undefined);
     },
-    async setAttribute(node: unknown, name: unknown, value: unknown, _context?: AssertionContext) {
+    async setAttribute(node: unknown, name: unknown, value: unknown, _context?: TrailingContext) {
       if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
@@ -427,7 +433,7 @@ export function createBrowser(
       (found.dom as BrowserElement).setAttribute(admitted, text);
       return success(undefined);
     },
-    async removeAttribute(node: unknown, name: unknown, _context?: AssertionContext) {
+    async removeAttribute(node: unknown, name: unknown, _context?: TrailingContext) {
       if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
@@ -437,7 +443,7 @@ export function createBrowser(
       (found.dom as BrowserElement).removeAttribute(admitted);
       return success(undefined);
     },
-    async appendChild(parent: unknown, child: unknown, _context?: AssertionContext) {
+    async appendChild(parent: unknown, child: unknown, _context?: TrailingContext) {
       if (isAssertScope(parent) || isAssertScope(child)) return gone();
       const into = read(nodes, parent);
       const next = read(nodes, child);
@@ -450,7 +456,7 @@ export function createBrowser(
       (into.dom as BrowserElement).appendChild(next.dom);
       return success(undefined);
     },
-    async removeNode(node: unknown, _context?: AssertionContext) {
+    async removeNode(node: unknown, _context?: TrailingContext) {
       if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
@@ -458,7 +464,7 @@ export function createBrowser(
       found.dom.remove();
       return success(undefined);
     },
-    async focus(node: unknown, _context?: AssertionContext) {
+    async focus(node: unknown, _context?: TrailingContext) {
       if (isAssertScope(node)) return gone();
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
@@ -470,7 +476,7 @@ export function createBrowser(
       node: unknown,
       kind: unknown,
       handler: unknown,
-      context?: AssertionContext,
+      context?: TrailingContext,
     ) {
       if (isAssertScope(view) || isAssertScope(node)) return gone();
       const scope = read(views, view);
@@ -494,7 +500,7 @@ export function createBrowser(
       kind: unknown,
       key: unknown,
       handler: unknown,
-      context?: AssertionContext,
+      context?: TrailingContext,
     ) {
       if (isAssertScope(view) || isAssertScope(node)) return gone();
       const scope = read(views, view);
@@ -528,7 +534,7 @@ export function createBrowser(
       node: unknown,
       kind: unknown,
       handler: unknown,
-      context?: AssertionContext,
+      context?: TrailingContext,
     ) {
       if (isAssertScope(view) || isAssertScope(node)) return gone();
       const scope = read(views, view);
@@ -550,7 +556,7 @@ export function createBrowser(
       );
       return success(undefined);
     },
-    async setTimeout(view: unknown, delay: unknown, handler: unknown, context?: AssertionContext) {
+    async setTimeout(view: unknown, delay: unknown, handler: unknown, context?: TrailingContext) {
       if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (!live(scope)) return gone();
@@ -564,7 +570,7 @@ export function createBrowser(
       scope.timers.add(timer);
       return success(undefined);
     },
-    async queryParameter(key: unknown, _context?: AssertionContext) {
+    async queryParameter(key: unknown, _context?: TrailingContext) {
       const name = string(key);
       if (!admitQueryKey(name)) return invalid(name, "key");
       // Read-only bootstrap input: the literal key looks up one value in
@@ -629,7 +635,7 @@ export function createBrowserState(
       ),
     );
   return Object.freeze({
-    async createState(view: unknown, value: unknown, _context?: AssertionContext) {
+    async createState(view: unknown, value: unknown, _context?: TrailingContext) {
       if (isAssertScope(view)) return gone();
       const scope = read(views, view);
       if (scope.disposed || scope.app.disposed) return gone();
@@ -643,7 +649,7 @@ export function createBrowserState(
       scope.states.add(record);
       return success(token(states, record));
     },
-    async readState(state: unknown, _context?: AssertionContext) {
+    async readState(state: unknown, _context?: TrailingContext) {
       if (isAssertScope(state)) return gone();
       const found = read(states, state);
       if (found.disposed || found.view.disposed || found.view.app.disposed) return gone();
@@ -658,7 +664,7 @@ export function createBrowserState(
       state: unknown,
       expected: unknown,
       value: unknown,
-      _context?: AssertionContext,
+      _context?: TrailingContext,
     ) {
       if (isAssertScope(state)) return gone();
       const found = read(states, state);

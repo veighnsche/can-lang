@@ -94,7 +94,14 @@ func copyDir(t *testing.T, src, dst string) {
 
 func canlcOffline(t *testing.T, ctx context.Context, bundle, home, command, root string) (int, string, string) {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), command, root)
+	return canlcOfflineArgs(t, ctx, bundle, home, root, command)
+}
+
+func canlcOfflineArgs(t *testing.T, ctx context.Context, bundle, home, root string, args ...string) (int, string, string) {
+	t.Helper()
+	argv := append([]string{"-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc")}, args...)
+	argv = append(argv, root)
+	cmd := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", argv...)
 	cmd.Dir = home
 	cmd.Env = []string{"PATH=/nonexistent", "HOME=" + home}
 	var out, diag bytes.Buffer
@@ -112,7 +119,12 @@ func canlcOffline(t *testing.T, ctx context.Context, bundle, home, command, root
 
 func applicationBuild(t *testing.T, ctx context.Context, bundle, home, root string) (string, string) {
 	t.Helper()
-	status, out, diag := canlcOffline(t, ctx, bundle, home, "build", root)
+	return applicationBuildArgs(t, ctx, bundle, home, root, "build")
+}
+
+func applicationBuildArgs(t *testing.T, ctx context.Context, bundle, home, root string, args ...string) (string, string) {
+	t.Helper()
+	status, out, diag := canlcOfflineArgs(t, ctx, bundle, home, root, args...)
 	if status != 0 {
 		t.Fatalf("build: %d %s %s", status, out, diag)
 	}

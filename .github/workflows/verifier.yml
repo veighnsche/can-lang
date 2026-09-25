@@ -1,11 +1,12 @@
 name: target qualification
 
-# Complete macOS release-candidate gates (I45). One macos-15 job
+# Complete macOS release-candidate gates (I45, UP24). One macos-15 job
 # operates every required service — pinned Bun archive, PostgreSQL
-# 17, Node 24 with pinned Playwright Chromium, pinned TypeScript —
-# and runs the unnarrowed suite: gofmt, vet, cataloguegen, modcheck,
-# gramcheck, go test ./..., and bun test runtime/test/. No release
-# upload, credentialed signing, or live provider call happens here.
+# 17, Node 24 with pinned Playwright Chromium and WebKit, pinned
+# TypeScript — and runs the unnarrowed suite: gofmt, vet,
+# cataloguegen, modcheck, gramcheck, go test ./..., and bun test
+# runtime/test/. No release upload, credentialed signing, or live
+# provider call happens here.
 
 on:
   push:
@@ -56,7 +57,7 @@ jobs:
         run: |
           set -euo pipefail
           bun ci
-          ./node_modules/.bin/playwright install chromium
+          ./node_modules/.bin/playwright install chromium webkit
       - name: Install the pinned TypeScript leg
         working-directory: tscheck
         run: |

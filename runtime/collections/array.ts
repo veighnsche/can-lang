@@ -11,24 +11,44 @@ import { array, record } from "../data.ts";
 import { nonfiniteSortKeyFailure, type FailureOrigin } from "../failure.ts";
 import { callContext, type AssertionContext } from "../assert/context.ts";
 import { callableInstance } from "../callable.ts";
+import type { OwnerContext } from "../owner-core.ts";
 
-export type Trace = Readonly<{ site: string; origin: FailureOrigin; context?: AssertionContext }>;
+export type Trace = Readonly<{
+  site: string;
+  origin: FailureOrigin;
+  context?: AssertionContext;
+  owner?: OwnerContext;
+}>;
 export type Callback<A extends unknown[], R> = (
   ...arguments_: [...A, AssertionContext?]
 ) => Completion<R> | Promise<Completion<R>>;
+// Browser-profile element callbacks thread the explicit owner context ahead
+// of the assertion context (absent in production). The collector forwards
+// trace.owner positionally, mirroring coordination settleWithContext.
+export type BrowserCallback<A extends unknown[], R> = (
+  ...arguments_: [...A, OwnerContext, AssertionContext?]
+) => Completion<R> | Promise<Completion<R>>;
+export type ElementCallback<A extends unknown[], R> = Callback<A, R> | BrowserCallback<A, R>;
 export type SortKey = bigint | number | string | boolean;
 // Callback payloads are never returned naked from an async function. The parent
 // collection frame remains active between visits and while native algorithms
 // settle, so fixture scheduling cannot mistake those gaps for quiescence.
 function callback<A extends unknown[], R>(
-  action: Callback<A, R>,
+  action: ElementCallback<A, R>,
   arguments_: A,
   trace: Trace,
 ): Promise<Completion<R>> {
+  const owner = trace.owner;
   return callContext(
     trace.context,
     trace.site,
-    (context) => invoke(() => action(...arguments_, context), trace.origin),
+    (context) =>
+      owner === undefined
+        ? invoke(() => (action as Callback<A, R>)(...arguments_, context), trace.origin)
+        : invoke(
+            () => (action as BrowserCallback<A, R>)(...arguments_, owner, context),
+            trace.origin,
+          ),
     callableInstance(action),
   );
 }
@@ -45,7 +65,7 @@ async function boundary<T>(
 }
 async function observations<T, U>(
   source: readonly T[],
-  action: Callback<[T], U>,
+  action: ElementCallback<[T], U>,
   trace: Trace,
 ): Promise<Completion<U>[]> {
   // Iterating elements would let Array.fromAsync await a data-valued `then`.
@@ -56,9 +76,22 @@ async function observations<T, U>(
     return result;
   });
 }
+// Element overloads admit the Bun and browser-profile callback shapes while
+// preserving parameter inference for unannotated callbacks; each
+// implementation forwards trace.owner when present.
 export function map<T, U>(
   source: readonly T[],
   action: Callback<[T], U>,
+  trace: Trace,
+): Promise<Completion<readonly U[]>>;
+export function map<T, U>(
+  source: readonly T[],
+  action: BrowserCallback<[T], U>,
+  trace: Trace,
+): Promise<Completion<readonly U[]>>;
+export function map<T, U>(
+  source: readonly T[],
+  action: ElementCallback<[T], U>,
   trace: Trace,
 ): Promise<Completion<readonly U[]>> {
   return boundary(
@@ -70,6 +103,16 @@ export function filter<T>(
   source: readonly T[],
   action: Callback<[T], boolean>,
   trace: Trace,
+): Promise<Completion<readonly T[]>>;
+export function filter<T>(
+  source: readonly T[],
+  action: BrowserCallback<[T], boolean>,
+  trace: Trace,
+): Promise<Completion<readonly T[]>>;
+export function filter<T>(
+  source: readonly T[],
+  action: ElementCallback<[T], boolean>,
+  trace: Trace,
 ): Promise<Completion<readonly T[]>> {
   return boundary(async () => {
     const decisions = (await observations(source, action, trace)).map(value);
@@ -80,6 +123,18 @@ export function fold<T, U>(
   source: readonly T[],
   initial: U,
   action: Callback<[U, T], U>,
+  trace: Trace,
+): Promise<Completion<U>>;
+export function fold<T, U>(
+  source: readonly T[],
+  initial: U,
+  action: BrowserCallback<[U, T], U>,
+  trace: Trace,
+): Promise<Completion<U>>;
+export function fold<T, U>(
+  source: readonly T[],
+  initial: U,
+  action: ElementCallback<[U, T], U>,
   trace: Trace,
 ): Promise<Completion<U>> {
   return boundary(
@@ -100,6 +155,16 @@ export function forEach<T>(
   source: readonly T[],
   action: Callback<[T], void>,
   trace: Trace,
+): Promise<Completion<void>>;
+export function forEach<T>(
+  source: readonly T[],
+  action: BrowserCallback<[T], void>,
+  trace: Trace,
+): Promise<Completion<void>>;
+export function forEach<T>(
+  source: readonly T[],
+  action: ElementCallback<[T], void>,
+  trace: Trace,
 ): Promise<Completion<void>> {
   return boundary(
     () =>
@@ -117,7 +182,7 @@ export function forEach<T>(
 }
 async function search<T>(
   source: readonly T[],
-  action: Callback<[T], boolean>,
+  action: ElementCallback<[T], boolean>,
   stop: boolean,
   trace: Trace,
 ): Promise<Completion<number>> {
@@ -136,6 +201,16 @@ export function some<T>(
   source: readonly T[],
   action: Callback<[T], boolean>,
   trace: Trace,
+): Promise<Completion<boolean>>;
+export function some<T>(
+  source: readonly T[],
+  action: BrowserCallback<[T], boolean>,
+  trace: Trace,
+): Promise<Completion<boolean>>;
+export function some<T>(
+  source: readonly T[],
+  action: ElementCallback<[T], boolean>,
+  trace: Trace,
 ): Promise<Completion<boolean>> {
   return boundary(async () => {
     const result = await search(source, action, true, trace);
@@ -146,6 +221,16 @@ export function every<T>(
   source: readonly T[],
   action: Callback<[T], boolean>,
   trace: Trace,
+): Promise<Completion<boolean>>;
+export function every<T>(
+  source: readonly T[],
+  action: BrowserCallback<[T], boolean>,
+  trace: Trace,
+): Promise<Completion<boolean>>;
+export function every<T>(
+  source: readonly T[],
+  action: ElementCallback<[T], boolean>,
+  trace: Trace,
 ): Promise<Completion<boolean>> {
   return boundary(async () => {
     const result = await search(source, action, false, trace);
@@ -155,6 +240,18 @@ export function every<T>(
 export function find<T>(
   source: readonly T[],
   action: Callback<[T], boolean>,
+  identities: Readonly<{ none: string; some: string }>,
+  trace: Trace,
+): Promise<Completion>;
+export function find<T>(
+  source: readonly T[],
+  action: BrowserCallback<[T], boolean>,
+  identities: Readonly<{ none: string; some: string }>,
+  trace: Trace,
+): Promise<Completion>;
+export function find<T>(
+  source: readonly T[],
+  action: ElementCallback<[T], boolean>,
   identities: Readonly<{ none: string; some: string }>,
   trace: Trace,
 ): Promise<Completion> {
@@ -171,6 +268,16 @@ export function find<T>(
 export function sortBy<T, K extends SortKey>(
   source: readonly T[],
   action: Callback<[T], K>,
+  trace: Trace,
+): Promise<Completion<readonly T[]>>;
+export function sortBy<T, K extends SortKey>(
+  source: readonly T[],
+  action: BrowserCallback<[T], K>,
+  trace: Trace,
+): Promise<Completion<readonly T[]>>;
+export function sortBy<T, K extends SortKey>(
+  source: readonly T[],
+  action: ElementCallback<[T], K>,
   trace: Trace,
 ): Promise<Completion<readonly T[]>> {
   return boundary(async () => {
