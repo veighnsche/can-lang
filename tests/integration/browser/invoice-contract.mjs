@@ -121,8 +121,18 @@ try {
   // Input events fold into grid state asynchronously; the status
   // line flips to "unsaved changes" once the edit has landed, and
   // the save press must wait for that or it reads the stale draft.
+  // Values are set with a synthetic input event rather than the
+  // keyboard: every real keydown on an input also dispatches the
+  // grid's Enter-to-save handler, which would press save mid-edit.
   const fill = async (selector, value) => {
-    await page.locator(selector).fill(value);
+    await page.locator(selector).evaluate(
+      (node, text) => {
+        node.focus();
+        node.value = text;
+        node.dispatchEvent(new Event("input", { bubbles: true }));
+      },
+      value
+    );
     await page.waitForFunction(() =>
       document.querySelector("#status")?.textContent?.includes("unsaved changes")
     );
