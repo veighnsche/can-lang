@@ -871,7 +871,10 @@ func TestInvoiceContractLeaf(t *testing.T) {
 	if !found {
 		t.Fatal("browser sent no invalid save")
 	}
-	if !strings.Contains(invalid.DOM.Status, "bad price") {
+	// The grid blocks unparsable numbers client-side, so the
+	// observer clears the id input instead: the draft still sends
+	// and the server rejects it with a rendered empty-id error.
+	if !strings.Contains(invalid.DOM.Status, "empty line id") {
 		t.Fatalf("browser dom %+v lacks the rendered error", invalid.DOM)
 	}
 	saved := contractLiveBrowser(t, ctx, sourceRoot, base, "save", "leaf")
@@ -1009,6 +1012,28 @@ func TestInvoiceContractLimit(t *testing.T) {
 	if len(store.Replay) != 0 {
 		t.Fatalf("over-limit save recorded %+v", store.Replay)
 	}
+	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "http", Detail: "over-limit 413 pre-entry"})
+
+	// The browser applies the same declared budget: the loaded
+	// two-line draft exceeds 64 bytes, so the save fails in the
+	// client with no request on the wire. This runs before the
+	// under-limit save below empties the invoice lines.
+	report := contractLiveBrowser(t, ctx, sourceRoot, base, "budget", "limit")
+	if report.DOM.Status != "save too large; remove lines and retry" {
+		t.Fatalf("browser budget dom %+v", report.DOM)
+	}
+	for _, call := range report.Ledger {
+		if call.Method == "POST" {
+			t.Fatalf("browser sent an over-budget save: %+v", call)
+		}
+	}
+	store = inspectInvoice(t, ctx, bundle, ws.home, driver, db)
+	requireInvoice(t, store, "7", "1", "2", "Acme <em>&\" 'coop'\"")
+	if len(store.Replay) != 0 {
+		t.Fatalf("budget save recorded %+v", store.Replay)
+	}
+	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "browser", Detail: report.DOM.Status + ", no POST"})
+
 	small := `{"operation_id":"op-small","revision":"1","lines":[]}`
 	if len(small) > 64 {
 		t.Fatalf("undersized fixture is %d bytes", len(small))
@@ -1020,26 +1045,7 @@ func TestInvoiceContractLimit(t *testing.T) {
 	store = inspectInvoice(t, ctx, bundle, ws.home, driver, db)
 	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	requireReplay(t, store, "op-small", "2")
-	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "http", Detail: "over-limit 413 pre-entry, under-limit 200"})
-
-	// The browser applies the same declared budget: the loaded
-	// two-line draft exceeds 64 bytes, so the save fails in the
-	// client with no request on the wire.
-	report := contractLiveBrowser(t, ctx, sourceRoot, base, "budget", "limit")
-	if report.DOM.Status != "save too large; remove lines and retry" {
-		t.Fatalf("browser budget dom %+v", report.DOM)
-	}
-	for _, call := range report.Ledger {
-		if call.Method == "POST" {
-			t.Fatalf("browser sent an over-budget save: %+v", call)
-		}
-	}
-	store = inspectInvoice(t, ctx, bundle, ws.home, driver, db)
-	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
-	if len(store.Replay) != 1 {
-		t.Fatalf("budget save recorded %+v", store.Replay)
-	}
-	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "browser", Detail: report.DOM.Status + ", no POST"})
+	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "http-under", Detail: "under-limit 200 rev 2"})
 	logContractLive(t, evidence)
 }
 
