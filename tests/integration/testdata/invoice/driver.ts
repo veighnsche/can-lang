@@ -152,6 +152,13 @@ try {
       if (statement === undefined) throw new Error(`unknown fault ${fault ?? ""}`);
       await sql(staticTemplate(statement));
       console.log(JSON.stringify({ fault }));
+    } else if (mode === "revision") {
+      const invoice = integerText(process.argv[4] ?? "", "invoice_id");
+      const rows = (await sql(
+        staticTemplate(`SELECT revision FROM invoice WHERE id = ${invoice}`),
+      )) as Record<string, unknown>[];
+      if (rows.length !== 1) throw new Error("revision matched no invoice row");
+      console.log(JSON.stringify({ invoice, revision: text(rows[0]["revision"]) }));
     } else if (mode === "revoke") {
       const token = process.argv[4];
       const stamp = integerText(process.argv[5] ?? "", "revoked_ms");

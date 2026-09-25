@@ -248,6 +248,22 @@ func inspectInvoice(t *testing.T, ctx context.Context, bundle, home, driver, db 
 	return store
 }
 
+// invoiceRevision reads one invoice revision without touching the
+// replay ledger, so mid-fault legs can prove no commit while the
+// ledger table itself is dropped.
+func invoiceRevision(t *testing.T, ctx context.Context, bundle, home, driver, db, invoice string) string {
+	t.Helper()
+	out := invoiceDriver(t, ctx, bundle, home, driver, "revision", db, invoice)
+	var report struct {
+		Invoice  string `json:"invoice"`
+		Revision string `json:"revision"`
+	}
+	if err := json.Unmarshal(out, &report); err != nil || report.Invoice != invoice || report.Revision == "" {
+		t.Fatalf("invalid revision report %v %s", err, string(out))
+	}
+	return report.Revision
+}
+
 func touchReplay(t *testing.T, ctx context.Context, bundle, home, driver, db, actor, tenant, invoice, operation, recorded string) {
 	t.Helper()
 	out := invoiceDriver(t, ctx, bundle, home, driver, "touch-replay", db, actor, tenant, invoice, operation, recorded)

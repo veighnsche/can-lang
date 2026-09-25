@@ -1130,7 +1130,8 @@ func TestGate3AdapterMatrix(t *testing.T) {
 	requireNoEntry(t, "abandoned replays", before, entries())
 
 	// Drop-replay fault: the write fails truthfully at 503 without
-	// committing, and the identical retry commits after restore.
+	// committing, and the identical retry commits after restore. The
+	// mid-fault revision read bypasses the dropped ledger table.
 	before = entries()
 	faultInvoice(t, ctx, bundle, home, driver, db, "drop-replay")
 	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-a3", 3))
@@ -1138,9 +1139,10 @@ func TestGate3AdapterMatrix(t *testing.T) {
 		t.Fatalf("replay outage save: %d %s, want 503", status, payload)
 	}
 	gate3Case(t, "replay outage save", payload, "invoice_contract::grid_unavailable")
-	if recordFaultOutcome(t, "drop-replay", before, entries()) {
-		t.Fatal("drop-replay fault committed a write")
+	if mid := invoiceRevision(t, ctx, bundle, home, driver, db, "7"); mid != before.revision {
+		t.Fatalf("drop-replay fault moved revision %s to %s", before.revision, mid)
 	}
+	t.Logf("fault drop-replay: committed=false (revision %s held, ledger table dropped)", before.revision)
 	setup := invoiceDriver(t, ctx, bundle, home, driver, "setup", db, filepath.Join(root, "schema.sql"))
 	var setupReport struct {
 		Tables int `json:"tables"`
@@ -1157,8 +1159,13 @@ func TestGate3AdapterMatrix(t *testing.T) {
 	if acknowledged["revision"] != "4" {
 		t.Fatalf("replay recovery save value %+v", value)
 	}
-	if !recordFaultOutcome(t, "drop-replay retry", before, entries()) {
-		t.Fatal("drop-replay retry committed nothing")
+	// The restore recreates an empty ledger, so the retry's commit
+	// verdict compares revisions, not ledger lengths.
+	after := entries()
+	if after.revision != "4" {
+		t.Fatalf("drop-replay retry left revision %s, want 4", after.revision)
 	}
+	requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-a3", "4")
+	t.Logf("fault drop-replay retry: committed=true (revision %s -> %s on a restored ledger)", before.revision, after.revision)
 	t.Logf("gate3 adapter: %d can assertions, 404/405/capture/separator/media/budget legs without entry, disconnect and replay-outage legs with row evidence", assertions)
 }
