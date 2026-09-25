@@ -117,3 +117,31 @@ func TestActionContractEmissionFreezesMetadata(t *testing.T) {
 		t.Fatalf("emitted %d html response modes, want 1", count)
 	}
 }
+
+func TestSwapPolicyTableReachesHTMLFactory(t *testing.T) {
+	program := actionEmitProgram(t, map[string]string{"src/contract/contract.can": actionContractEmitWeb})
+	joined := emittedBody(t, program)
+	want := `},[],[{"method":"POST","segments":["tenants","{}","invoices","{}"],"cases":[{"status":422,"swap":"inner"}]}]);`
+	if !strings.Contains(joined, "$canHTML=$canCreateHTML($canDomain,") || !strings.Contains(joined, want) {
+		t.Fatalf("HTML factory call lacks the swap table in %.600s", joined)
+	}
+	if strings.Count(joined, `"status":200,"swap":"inner"`) != 1 {
+		t.Fatal("2xx swap case leaked into the renderer table or left $canActions")
+	}
+}
+
+func TestSwapPolicyTableOmittedWithoutHTMLActions(t *testing.T) {
+	program := actionEmitProgram(t, map[string]string{"src/web/web.can": actionEmitWeb})
+	joined := emittedBody(t, program)
+	if !strings.Contains(joined, "$canActions") {
+		t.Fatal("JSON fixture emitted no action table")
+	}
+	for _, line := range strings.Split(joined, "\n") {
+		if !strings.Contains(line, "$canHTML=$canCreateHTML(") {
+			continue
+		}
+		if !strings.HasSuffix(strings.TrimSpace(line), "},[]);") {
+			t.Fatalf("HTML factory call gained a swap table without HTML actions: %s", line)
+		}
+	}
+}

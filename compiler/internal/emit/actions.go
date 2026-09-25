@@ -3,6 +3,10 @@ package emit
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/check"
 )
 
 // emittedActionCapture is one frozen path capture: a whole-segment name
@@ -49,6 +53,70 @@ type emittedAction struct {
 	Body           string                 `json:"body"`
 	Cases          []emittedActionCase    `json:"cases"`
 	ResponseSchema interface{}            `json:"responseSchema,omitempty"`
+}
+
+// emittedSwapCase is one declared non-2xx swap case the HTML renderer
+// re-admits through an exact hx-status attribute.
+type emittedSwapCase struct {
+	Status int    `json:"status"`
+	Swap   string `json:"swap"`
+}
+
+// emittedSwapPolicy is the renderer-visible projection of one HTML action:
+// its method, its path segments with captures normalized to "{}", and its
+// declared swap cases. The runtime matches htmx verb URLs structurally
+// against this table; 2xx cases are omitted because the global noSwap
+// policy already lets them through.
+type emittedSwapPolicy struct {
+	Method   string            `json:"method"`
+	Segments []string          `json:"segments"`
+	Cases    []emittedSwapCase `json:"cases"`
+}
+
+// swapPathSegments normalizes a checked action path for structural URL
+// matching: whole-segment captures become "{}", static segments decode
+// once, and an undecodable static stays raw (the checker already
+// validated the spelling, so this only affects policy matching).
+func swapPathSegments(path string) []string {
+	parts := strings.Split(path, "/")[1:]
+	segments := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if strings.HasPrefix(part, ":") {
+			segments = append(segments, "{}")
+			continue
+		}
+		if decoded, err := url.PathUnescape(part); err == nil {
+			segments = append(segments, decoded)
+			continue
+		}
+		segments = append(segments, part)
+	}
+	return segments
+}
+
+// swapPolicies derives the HTML swap-exception table from the checked
+// actions in declaration order. JSON actions and HTML actions without a
+// declared non-2xx swap case contribute nothing; an empty result keeps
+// the HTML factory call byte-identical.
+func swapPolicies(actions []*check.ActionDeclaration) []emittedSwapPolicy {
+	var policies []emittedSwapPolicy
+	for _, action := range actions {
+		if action.Body != "html" {
+			continue
+		}
+		var cases []emittedSwapCase
+		for _, kase := range action.Cases {
+			if kase.Swap == "" || (kase.Status >= 200 && kase.Status <= 299) {
+				continue
+			}
+			cases = append(cases, emittedSwapCase{Status: kase.Status, Swap: kase.Swap})
+		}
+		if len(cases) == 0 {
+			continue
+		}
+		policies = append(policies, emittedSwapPolicy{Method: action.Method, Segments: swapPathSegments(action.Path), Cases: cases})
+	}
+	return policies
 }
 
 // emitActionConstants freezes the checked action table after the shared

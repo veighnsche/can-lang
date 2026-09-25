@@ -373,8 +373,11 @@ fn http::server_response page_for_load
 /// integer tenant/invoice pair from its single query values, resolve
 /// the session cookie, then run the protected read and render its
 /// outcome. Every outcome keeps its truthful status; no failure
-/// rewrites into success. This query-addressed page is transitional:
-/// UP19 serves the acceptance pages on captured routes.
+/// rewrites into success. The page stays query-addressed: captured
+/// HTML pages are not expressible in the checked language (plain
+/// routes are static-only, GET actions answer JSON-only), so the
+/// captured /tenants/:tenant_id/invoices/:invoice_id/edit address is
+/// deferred to a checker-owning follow-up (see UP19 Jev findings).
 fn http::server_response form_route
     emits []
     given
@@ -437,6 +440,30 @@ fn http::server_response form_route
                                                 ok records::read_outcome outcome => match call page_for_load(outcome, contract::invoice_key(tenant, invoice))
                                                     ok http::server_response done => ok done
 
+/// Serve the invoice grid shell: reject any request body, then
+/// serve the static public shell. The shell carries no invoice data
+/// and echoes no query input, so the route parses nothing and checks
+/// no session; the browser application validates its own query keys
+/// and renders API denials itself.
+fn http::server_response grid_route
+    emits []
+    given
+        http::request req
+    asserts
+        grid_over_limit: => ok
+        grid_shell: => ok
+    match call http::request_body(req, 8192)
+        when
+            grid_over_limit: req, 8192 => http::body_limit(8192)
+            grid_shell: req, 8192 => ok call bytes::empty()
+        http::body_limit => ok call fixed_at(413, "Payload Too Large")
+        ok bytes::buffer raw => match call bytes::to_ints(raw)
+            ok int[] units => match units.length is 0
+                false => ok call fixed_at(400, "Bad Request")
+                true => match call render::grid_page()
+                    html::invalid_structure => ok call fixed_at(500, "error")
+                    ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+
 /// Answer readiness for the operator and the test harness.
 fn http::server_response health
     emits []
@@ -446,10 +473,11 @@ fn http::server_response health
         sample: => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "ok")
 
-/// Mount the three shared invoice actions plus the transitional edit
-/// page, capturing the serving pool, the validated public origin and
-/// the retention window. Importing the contract registers nothing;
-/// only these mounts enter the server route table.
+/// Mount the three shared invoice actions plus the query-addressed
+/// edit page and the public grid shell, capturing the serving pool,
+/// the validated public origin and the retention window. Importing
+/// the contract registers nothing; only these mounts enter the server
+/// route table.
 fn http::router invoice_routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
@@ -463,8 +491,9 @@ fn http::router invoice_routes
         call action::mount(contract::save_invoice_grid, callable save_grid) as http::route save
         call action::mount(contract::save_invoice_html, callable save_html, callable render_html, callable render_bad_form) as http::route form
         call http::route_get("/invoices/form", callable form_route) as http::route form_page
+        call http::route_get("/invoice-grid", callable grid_route) as http::route grid_page
         call http::route_get("/health", callable health) as http::route probe
-        call http::make_router([load, save, form, form_page, probe]) as http::router built
+        call http::make_router([load, save, form, form_page, grid_page, probe]) as http::router built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route

@@ -11,6 +11,15 @@ const origin = Object.freeze({
 type Node = Readonly<{ html: string; tag: string; head: boolean; anchor: boolean; form: boolean }>;
 type Attribute = Readonly<{ name: string; value: string; kind: "text" | "url" | "htmx" }>;
 type Address = Readonly<{ value: string; local: boolean }>;
+// One compiler-derived swap policy: an HTML action's method plus its path
+// segments ("{}" marks a capture) and the declared non-2xx swap cases.
+// The emitter supplies the per-program table; authors cannot forge it.
+export type SwapCase = Readonly<{ status: number; swap: "inner" | "outer" }>;
+export type SwapPolicy = Readonly<{
+  method: "GET" | "POST";
+  segments: readonly string[];
+  cases: readonly SwapCase[];
+}>;
 const nodes = new WeakMap<object, Node>(),
   safe = new WeakMap<object, string>(),
   tags = new WeakMap<object, string>(),
@@ -191,12 +200,105 @@ const node = (html: string, tag = "", head = false, anchor = false, form = false
 const children = (input: readonly unknown[]) => dataArray(input).map((v) => read(nodes, v));
 const serialize = (a: Attribute) => ` ${a.name}="${escapeHTML(a.value)}"`;
 const selectorID = (value: string) => /^[A-Za-z_][A-Za-z0-9_-]*$/.test(string(value));
+// Validate the emitter-supplied swap table once at factory time. Malformed
+// entries fail fast: only generated code provides this table.
+function readSwapTable(input: readonly unknown[]): readonly SwapPolicy[] {
+  if (!Array.isArray(input)) throw new TypeError("invalid swap policy table");
+  return Object.freeze(
+    input.map((entry) => {
+      if (typeof entry !== "object" || entry === null)
+        throw new TypeError("invalid swap policy entry");
+      const { method, segments, cases } = entry as Record<string, unknown>;
+      if (method !== "GET" && method !== "POST") throw new TypeError("invalid swap policy method");
+      if (
+        !Array.isArray(segments) ||
+        segments.length === 0 ||
+        segments.some(
+          (segment) => typeof segment !== "string" || segment === "" || segment.includes("/"),
+        )
+      )
+        throw new TypeError("invalid swap policy path");
+      if (!Array.isArray(cases)) throw new TypeError("invalid swap policy cases");
+      const frozen = cases.map((item) => {
+        if (typeof item !== "object" || item === null)
+          throw new TypeError("invalid swap policy case");
+        const { status, swap } = item as Record<string, unknown>;
+        if (typeof status !== "number" || !Number.isInteger(status) || status < 200 || status > 599)
+          throw new TypeError("invalid swap policy status");
+        if (swap !== "inner" && swap !== "outer") throw new TypeError("invalid swap policy style");
+        return Object.freeze({ status, swap });
+      });
+      return Object.freeze({
+        method,
+        segments: Object.freeze([...(segments as string[])]),
+        cases: Object.freeze(frozen),
+      });
+    }),
+  );
+}
+// Derive hx-status swap exceptions for htmx verbs bound to checked HTML
+// actions. Each hx-post/hx-get URL is matched structurally against the
+// compiler table (static segments byte-equal after decoding, captures match
+// any nonempty segment); matching entries union their declared non-2xx swap
+// cases, first style wins per status, and output sorts ascending so renders
+// are deterministic. 2xx cases swap under the global policy already, and
+// unmatched URLs serialize exactly as before.
+function deriveSwapAttributes(
+  policies: readonly SwapPolicy[],
+  attrs: readonly Attribute[],
+): Attribute[] {
+  if (policies.length === 0) return [];
+  const merged = new Map<number, "inner" | "outer">();
+  for (const attr of attrs) {
+    if (attr.kind !== "htmx" || (attr.name !== "hx-post" && attr.name !== "hx-get")) continue;
+    const verb = attr.name === "hx-post" ? "POST" : "GET";
+    const path = attr.value.split(/[?#]/)[0] ?? "";
+    if (!path.startsWith("/")) continue;
+    let decoded: string[];
+    try {
+      decoded = path
+        .split("/")
+        .slice(1)
+        .map((segment) => decodeURIComponent(segment));
+    } catch {
+      continue;
+    }
+    for (const policy of policies) {
+      if (policy.method !== verb || policy.segments.length !== decoded.length) continue;
+      let hit = true;
+      for (let index = 0; index < decoded.length; index++) {
+        const want = policy.segments[index] ?? "";
+        const got = decoded[index] ?? "";
+        if (want === "{}" ? got === "" : want !== got) {
+          hit = false;
+          break;
+        }
+      }
+      if (!hit) continue;
+      for (const item of policy.cases) {
+        if (item.status >= 200 && item.status <= 299) continue;
+        if (!merged.has(item.status)) merged.set(item.status, item.swap);
+      }
+    }
+  }
+  return [...merged.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([status, swap]) =>
+      Object.freeze({
+        name: `hx-status:${status}`,
+        value: `{"swap":"${swap === "outer" ? "outerHTML" : "innerHTML"}"}`,
+        kind: "htmx" as const,
+      }),
+    );
+}
 type Contracts = Readonly<{ structure: string; url: string; target: string; interval: string }>;
 export function createHTML(
   domain: ReturnType<typeof createDomainRuntime>,
   types: Contracts,
   declared: readonly string[] = [],
+  swaps: readonly unknown[] = [],
 ) {
+  const policies = readSwapTable(swaps);
   const bad = (identity: string, reason: string) =>
     failure(domain.create(identity, record(identity, [["reason", reason]]), origin));
   const structure = (reason: string) => bad(types.structure, reason);
@@ -322,7 +424,7 @@ export function createHTML(
       )
         return structure("nested_element");
       const output =
-        `<${name}${attrs.map(serialize).join("")}>` +
+        `<${name}${[...attrs, ...deriveSwapAttributes(policies, attrs)].map(serialize).join("")}>` +
         (voidTags.has(name) ? "" : kids.map((k) => k.html).join("") + `</${name}>`);
       return success(
         node(

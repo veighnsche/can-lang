@@ -11,8 +11,10 @@
 package integration
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -30,6 +32,7 @@ import (
 const (
 	invoiceLivePort    = 18551
 	invoiceBrowserPort = 18552
+	invoicePairedPort  = 18553
 )
 
 func invoiceGet(t *testing.T, base, path, session string) (int, string, http.Header) {
@@ -460,6 +463,23 @@ func TestInvoiceFormLive(t *testing.T) {
 			t.Fatalf("form page carries hidden %s in %.1500s", hidden, page)
 		}
 	}
+	// Swap admission: the served form carries per-element hx-status
+	// exceptions generated from the checked HTML action case table,
+	// so declared 403/409/422/503 fragments swap into the status
+	// region while 2xx needs no exception.
+	for _, admission := range []string{
+		`hx-status:403="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:409="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:422="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:503="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+	} {
+		if !strings.Contains(page, admission) {
+			t.Fatalf("form page lacks %s in %.1500s", admission, page)
+		}
+	}
+	if strings.Contains(page, "hx-status:200") {
+		t.Fatalf("form page admits a redundant 2xx exception in %.1500s", page)
+	}
 
 	// Form page denials: ghost, missing and anonymous readers share 403.
 	for _, leg := range []struct {
@@ -476,6 +496,44 @@ func TestInvoiceFormLive(t *testing.T) {
 	}
 	if status, body, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1x&invoice_id=7", "tok-alice"); status != 400 {
 		t.Fatalf("page bad tenant: %d %s, want 400", status, body)
+	}
+
+	// Grid shell: a static public document with the application mount
+	// point, served without parsing or authentication. Anonymous and
+	// garbage-keyed reads answer the identical bytes: the browser
+	// application validates its own keys and renders API denials
+	// itself. The unpaired build carries no script tag at all.
+	var shells []string
+	for _, leg := range []struct {
+		note, query, session string
+	}{
+		{"grid shell", "tenant=1&invoice=7", "tok-alice"},
+		{"grid anonymous", "tenant=1&invoice=7", ""},
+		{"grid garbage", "tenant=x&invoice=y", ""},
+	} {
+		status, shell, headers := invoiceGet(t, base, "/invoice-grid?"+leg.query, leg.session)
+		if status != 200 {
+			t.Fatalf("%s: %d, want 200", leg.note, status)
+		}
+		for _, want := range []string{
+			`<title>Invoice grid</title>`,
+			`id="invoice-grid"`,
+			`Loading invoice grid`,
+		} {
+			if !strings.Contains(shell, want) {
+				t.Fatalf("%s lacks %q in %.800s", leg.note, want, shell)
+			}
+		}
+		if strings.Contains(shell, "hx-post") || strings.Contains(shell, "<script") {
+			t.Fatalf("%s carries form or script content in %.800s", leg.note, shell)
+		}
+		if content := headers.Get("Content-Security-Policy"); !strings.Contains(content, "script-src 'self'") {
+			t.Fatalf("%s CSP %q lacks same-origin scripts", leg.note, content)
+		}
+		shells = append(shells, shell)
+	}
+	if shells[0] != shells[1] || shells[0] != shells[2] {
+		t.Fatal("grid shell varies by session or query keys")
 	}
 
 	// Form save through the shared protected write: revision 2 with
@@ -814,6 +872,140 @@ func TestInvoiceStartupRefusal(t *testing.T) {
 		expectInvoiceStartupFailure(t, ctx, bundle, home, entry, leg.values, port, leg.note)
 		t.Logf("startup refusal %s: nonzero exit before serving", leg.note)
 	}
+}
+
+// canlcBuildArgs runs one staged canlc build with explicit flags, for
+// browser-target and browser-manifest builds the fixed-arg helpers do
+// not cover.
+func canlcBuildArgs(t *testing.T, ctx context.Context, bundle, home string, args ...string) (int, string, string) {
+	t.Helper()
+	argv := append([]string{"-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), "build"}, args...)
+	cmd := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", argv...)
+	cmd.Dir = home
+	cmd.Env = []string{"PATH=/nonexistent", "HOME=" + home}
+	var out, diag bytes.Buffer
+	cmd.Stdout, cmd.Stderr = &out, &diag
+	if err := cmd.Run(); err != nil {
+		var status *exec.ExitError
+		if !errors.As(err, &status) {
+			t.Fatal(err)
+		}
+		return status.ExitCode(), out.String(), diag.String()
+	}
+	return 0, out.String(), diag.String()
+}
+
+// TestInvoiceGridPagePaired proves server publication wiring: the invoice
+// server built with a browser manifest serves the grid shell with exactly
+// the report-selected paired script tag, serves the script bytes, and
+// leaves non-HTML answers untouched. The paired browser input is a
+// dependency-free empty fixture while UP20 migrates the grid, so this
+// proves wiring only, not grid behavior.
+func TestInvoiceGridPagePaired(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "invoice-paired")
+	if err != nil {
+		t.Fatal(err)
+	}
+	outside, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	browserRoot, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(browserRoot, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	write("src/main.can", "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
+	status, out, diag := canlcBuildArgs(t, ctx, bundle, outside, "--target", "browser", browserRoot)
+	if status != 0 {
+		t.Fatalf("browser build: %d %s %s", status, out, diag)
+	}
+	var browserReport struct {
+		BuildID   string `json:"buildID"`
+		Directory string `json:"directory"`
+	}
+	if err := json.Unmarshal([]byte(out), &browserReport); err != nil || browserReport.BuildID == "" {
+		t.Fatalf("invalid browser report %v %s", err, out)
+	}
+	manifest := filepath.Join(browserReport.Directory, "browser", "manifest.json")
+	manifestRaw, err := os.ReadFile(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifestDecoded struct {
+		BrowserBuildID string `json:"browserBuildId"`
+	}
+	if err := json.Unmarshal(manifestRaw, &manifestDecoded); err != nil || manifestDecoded.BrowserBuildID == "" {
+		t.Fatalf("browser manifest lacks its build identity in %s", manifestRaw)
+	}
+
+	root, home := stageApplication(t, ctx, bundle, sourceRoot, "invoice")
+	assertStatus, assertOut, assertDiag := canlcOffline(t, ctx, bundle, home, "assert", root)
+	if assertStatus != 0 || assertDiag != "" {
+		t.Fatalf("invoice assert: %d %s %s", assertStatus, assertOut, assertDiag)
+	}
+	status, out, diag = canlcBuildArgs(t, ctx, bundle, home, "--browser-manifest", manifest, root)
+	if status != 0 {
+		t.Fatalf("paired build: %d %s %s", status, out, diag)
+	}
+	var report struct {
+		BuildID   string `json:"buildID"`
+		Directory string `json:"directory"`
+		Browser   *struct {
+			BrowserBuildID string `json:"browserBuildId"`
+			Entry          string `json:"entry"`
+		} `json:"browser"`
+	}
+	if err := json.Unmarshal([]byte(out), &report); err != nil || report.Browser == nil {
+		t.Fatalf("paired report lacks its browser section: %v %s", err, out)
+	}
+	if report.Browser.BrowserBuildID != manifestDecoded.BrowserBuildID {
+		t.Fatalf("paired browser %s, want %s", report.Browser.BrowserBuildID, manifestDecoded.BrowserBuildID)
+	}
+	entry := report.Browser.Entry
+	if !strings.HasPrefix(entry, "/__can/assets/") || !strings.HasSuffix(entry, ".js") || strings.HasSuffix(entry, ".js.map") {
+		t.Fatalf("paired entry %q is not a digest script route", entry)
+	}
+	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, filepath.Join(report.Directory, "entry.ts"), db, invoicePairedPort, "")
+	defer stop()
+	want := `<script type="module" src="` + entry + `"></script>`
+	status, shell, _ := invoiceGet(t, base, "/invoice-grid?tenant=1&invoice=7", "")
+	if status != 200 || strings.Count(shell, want) != 1 || !strings.Contains(shell, `id="invoice-grid"`) {
+		t.Fatalf("paired grid shell: %d %.800s, want exactly the report entry once", status, shell)
+	}
+	status, script, headers := invoiceGet(t, base, entry, "")
+	if status != 200 || script == "" || !strings.Contains(headers.Get("Content-Type"), "text/javascript") {
+		t.Fatalf("paired entry: %d %q %.200s", status, headers.Get("Content-Type"), script)
+	}
+	status, page, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
+	if status != 200 || strings.Count(page, want) != 1 {
+		t.Fatalf("paired form page: %d, want the same report entry once", status)
+	}
+	status, probe, _ := invoiceGet(t, base, "/health", "")
+	if status != 200 || probe != "ok" || strings.Contains(probe, "<script") {
+		t.Fatalf("paired health: %d %q, want untouched bytes", status, probe)
+	}
+	t.Logf("invoice paired: browser %s, grid and form pages carry entry %s once, health untouched", manifestDecoded.BrowserBuildID[:12], entry)
 }
 
 func TestInvoiceBrowser(t *testing.T) {
