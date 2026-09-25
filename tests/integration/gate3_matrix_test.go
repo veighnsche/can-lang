@@ -177,9 +177,9 @@ func gate3BundleGrep(t *testing.T, dir, s string) bool {
 }
 
 // gate3WriteLock recomputes the staged billing dependency lock from the
-// staged vendored bytes, mirroring the repository lineage/lock digest
+// staged vendored bytes, mirroring the current lineage/lock digest
 // format: the manifest digest covers the raw manifest bytes and the
-// source digest covers the path-tagged source tree.
+// source digest covers the length-prefixed path-tagged source tree.
 func gate3WriteLock(t *testing.T, root string) {
 	t.Helper()
 	manifest, err := os.ReadFile(filepath.Join(root, "vendor/billing/can.project.json"))
@@ -200,11 +200,13 @@ func gate3WriteLock(t *testing.T, root string) {
 	}
 	sourceSum := sha256.New()
 	sourceSum.Write([]byte("can-source-tree-v1\x00"))
-	var count [binary.MaxVarintLen64]byte
-	sourceSum.Write(count[:binary.PutUvarint(count[:], 1)])
+	var length [8]byte
 	path := "invoice_contract/invoice_contract.can"
-	sourceSum.Write([]byte(path + "\x00"))
-	sourceSum.Write(count[:binary.PutUvarint(count[:], uint64(len(source)))])
+	binary.BigEndian.PutUint64(length[:], uint64(len(path)))
+	sourceSum.Write(length[:])
+	sourceSum.Write([]byte(path))
+	binary.BigEndian.PutUint64(length[:], uint64(len(source)))
+	sourceSum.Write(length[:])
 	sourceSum.Write(source)
 	var registry any
 	if err := json.Unmarshal(registryBytes, &registry); err != nil {
@@ -486,7 +488,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 	}
 	rev, committed = 2, 1
 	store := inspectInvoice(t, ctx, bundle, home, driver, db)
-	row := requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" ''coop''\"")
+	row := requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	if len(row.Lines) != 2 || row.Lines[0].Price != "999" {
 		t.Fatalf("json save lines %+v", row.Lines)
 	}
@@ -504,7 +506,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 		t.Fatalf("json replay value %+v", value)
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" ''coop''\"")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	if len(store.Replay) != 1 {
 		t.Fatalf("json replay duplicated %+v", store.Replay)
 	}
@@ -526,7 +528,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 		t.Fatalf("json bad qty value %+v", value)
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" ''coop''\"")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	if len(store.Replay) != committed {
 		t.Fatalf("rejections recorded %+v", store.Replay)
 	}
@@ -555,7 +557,7 @@ func TestGate3ServerMatrix(t *testing.T) {
 		}
 	}
 	store = inspectInvoice(t, ctx, bundle, home, driver, db)
-	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" ''coop''\"")
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
 	requireInvoice(t, store, "8", "1", "1", "Globex")
 
 	// Transport failures never reach the protected entry: bad media
