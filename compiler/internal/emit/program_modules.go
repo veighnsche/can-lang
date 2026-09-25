@@ -9,12 +9,16 @@ import (
 )
 
 // emitAuthoredModules lowers every checked function and native declaration
-// into its authored output module, grouped by output path.
+// into its authored output module, grouped by output path. Browser
+// production emits only the entry closure; Bun keeps every declaration.
 func emitAuthoredModules(assembly *programAssembly, runtime string) ([]Module, error) {
 	program := assembly.program
 	modules := []Module{}
 	byPath := map[string][]*check.ProgramFunction{}
 	for _, fn := range program.Functions {
+		if assembly.browser && assembly.reachedFunctions != nil && !assembly.reachedFunctions[fn.Identity()] {
+			continue
+		}
 		path := fn.Symbol.Source.OutputPath
 		byPath[path] = append(byPath[path], fn)
 	}
@@ -196,6 +200,9 @@ func authoredModuleImports(assembly *programAssembly, runtime, path string) []Mo
 		imports = append(imports, ModuleImport{Target: programStatePath, Names: []ImportName{{assembly.txNames[id], assembly.txNames[id]}}})
 	}
 	for _, fn := range program.Functions {
+		if assembly.browser && assembly.reachedFunctions != nil && !assembly.reachedFunctions[fn.Identity()] {
+			continue
+		}
 		target := fn.Symbol.Source.OutputPath
 		if target != path {
 			imports = append(imports, ModuleImport{Target: target, Names: []ImportName{{assembly.functions[fn.Identity()], assembly.functions[fn.Identity()]}}})

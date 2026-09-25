@@ -21,7 +21,8 @@ func BrowserModules(program *check.Program, runtime string, dependencies []ir.Ar
 
 // browserModules mirrors programModules with the browser profile selected.
 // Assertion roots never ship in a browser generation: they execute under
-// Bun during the verified build.
+// Bun during the verified build. Production emission prunes to the entry
+// closure; the checker retains full source checks.
 func browserModules(program *check.Program, runtime string, dependencies []ir.Artifact) ([]ir.Artifact, error) {
 	if program == nil || program.Entry == nil || program.Entry.Region == nil {
 		return nil, fmt.Errorf("emission requires a checked entry")
@@ -31,6 +32,7 @@ func browserModules(program *check.Program, runtime string, dependencies []ir.Ar
 		return nil, err
 	}
 	assembly.browser = true
+	pruneBrowserAssembly(assembly, reachableBrowserNodes(program))
 	if err := assertBrowserAssembly(assembly); err != nil {
 		return nil, err
 	}

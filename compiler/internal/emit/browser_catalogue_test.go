@@ -64,7 +64,12 @@ fn void main
         str[] arguments
     asserts
         empty: [] => ok
-    ok
+    match call demo("app")
+        browser::missing_root => ok
+        browser::disposed => ok
+        browser::rejected => ok
+        browser::stale_version => ok
+        ok int next => ok
 `
 
 func browserCatalogueArtifacts(t *testing.T, browser bool) []ir.Artifact {

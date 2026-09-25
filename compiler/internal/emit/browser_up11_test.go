@@ -346,6 +346,135 @@ fn void main
 	}
 }
 
+func TestBrowserPrunesUnreachedDeclarations(t *testing.T) {
+	source := `package app
+    provides []
+    uses [codec, bytes]
+record point
+    int x
+record other
+    int y
+fn other load_unused
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "{\"y\":1}" => ok other(1)
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer raw
+        call codec::decode_json<other>(raw) as other found
+        codec::invalid_data
+        ok => ok found
+fn point load_used
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "{\"x\":1}" => ok point(1)
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer raw
+        call codec::decode_json<point>(raw) as point found
+        codec::invalid_data
+        ok => ok found
+int used_value = 41
+int unused_value = 99
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    match call load_used("{\"x\":1}")
+        codec::invalid_data => ok
+        ok point found => match used_value is 41
+            false => ok
+            true => ok
+`
+	program := browserUP11Program(t, map[string]string{"src/main.can": source})
+	if len(program.Functions) != 3 {
+		t.Fatalf("checker pruned source; functions = %d, want 3 (full checks retained)", len(program.Functions))
+	}
+	if len(program.Codecs) != 2 {
+		t.Fatalf("checker pruned specializations; codecs = %d, want 2 (full checks retained)", len(program.Codecs))
+	}
+	artifacts := browserUP11Artifacts(t, program)
+	authored := browserUP11Authored(t, artifacts)
+	state := stateText(t, artifacts)
+	joined := authored + "\n" + state
+	if strings.Contains(authored, "function $canFunction0") {
+		t.Fatalf("browser emission retains unreachable load_unused")
+	}
+	if !strings.Contains(authored, "function $canFunction1") || !strings.Contains(authored, "function $canFunction2") {
+		t.Fatalf("browser emission pruned reached functions")
+	}
+	if !strings.Contains(state, "$canCodec0 = $canCreateCodec") || strings.Contains(state, "$canCodec1") {
+		t.Fatalf("browser codec pruning wrong; want only $canCodec0, state:\n%s", state)
+	}
+	if strings.Contains(joined, "unused_value") {
+		t.Fatalf("browser emission retains unused initializer:\n%s", state)
+	}
+	if !strings.Contains(joined, "used_value") {
+		t.Fatalf("browser emission pruned used initializer")
+	}
+	bunRoot := t.TempDir()
+	bunFiles := map[string]string{
+		"can.project.json": `{"source_root":"src","error_registry":"can.errors.json"}`,
+		"can.errors.json":  `{"active":[],"retired":[]}`,
+		"src/main.can": `package app
+    provides []
+    uses [codec, bytes]
+record point
+    int x
+fn point load_unused
+    emits [codec::invalid_data]
+    given
+        str text
+    asserts
+        sample: "{\"x\":1}" => ok point(1)
+    match chain
+        call bytes::from_utf8(text) as bytes::buffer raw
+        call codec::decode_json<point>(raw) as point found
+        codec::invalid_data
+        ok => ok found
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok
+`,
+	}
+	for name, text := range bunFiles {
+		p := filepath.Join(bunRoot, name)
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	graph, err := project.Load(bunRoot)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bunProgram, err := check.CheckProgram(graph)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bunArtifacts, err := ProgramModules(bunProgram, "runtime", httpDependencies(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var bunBodies []string
+	for _, artifact := range bunArtifacts {
+		if strings.HasSuffix(artifact.Path, ".ts") && !artifact.Runtime {
+			bunBodies = append(bunBodies, string(artifact.Bytes))
+		}
+	}
+	if !strings.Contains(strings.Join(bunBodies, "\n"), "$canFunction0") || !strings.Contains(strings.Join(bunBodies, "\n"), "$canFunction1") {
+		t.Fatalf("bun emission pruned unreachable function; bun keeps all")
+	}
+}
+
 func TestBunEmissionKeepsAssertionContext(t *testing.T) {
 	program := browserEmitProgram(t, map[string]string{"src/main.can": browserPureSource})
 	artifacts, err := ProgramModules(program, "runtime", httpDependencies(t))
