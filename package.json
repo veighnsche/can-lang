@@ -16,6 +16,7 @@
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
     "oxlint-tsgolint": "7.0.2002",
+    "playwright": "1.55.1",
     "typescript": "7.0.2"
   }
 }

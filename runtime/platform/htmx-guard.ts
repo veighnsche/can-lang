@@ -265,9 +265,16 @@ export function checkResponseHeaders(ctx: unknown): GuardVerdict {
       ),
     };
   }
+  // The pinned asset wraps the fetch response as { raw, status,
+  // headers }; the followed-redirect flag lives on the raw response.
+  // Either shape carrying it rejects the landing content.
+  const raw = isObject(context.response)
+    ? (context.response as GuardResponse & { raw?: unknown }).raw
+    : undefined;
   if (
-    isObject(context.response) &&
-    (context.response as GuardResponse).redirected === true
+    (isObject(context.response) &&
+      (context.response as GuardResponse).redirected === true) ||
+    (isObject(raw) && (raw as { redirected?: unknown }).redirected === true)
   ) {
     return {
       admit: false,
