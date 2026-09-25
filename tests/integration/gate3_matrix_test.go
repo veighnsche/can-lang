@@ -30,6 +30,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -39,6 +40,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"testing"
 	"time"
@@ -1168,4 +1170,282 @@ func TestGate3AdapterMatrix(t *testing.T) {
 	requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-a3", "4")
 	t.Logf("fault drop-replay retry: committed=true (revision %s -> %s on a restored ledger)", before.revision, after.revision)
 	t.Logf("gate3 adapter: %d can assertions, 404/405/capture/separator/media/budget legs without entry, disconnect and replay-outage legs with row evidence", assertions)
+}
+
+// gate3RacePost fires one JSON save and reports its status with body.
+type gate3RacePost struct {
+	operation string
+	status    int
+	body      string
+}
+
+func gate3RaceSave(base, path, session, origin, body string) gate3RacePost {
+	operation := ""
+	if i := strings.Index(body, `"operation_id":"`); i >= 0 {
+		rest := body[i+len(`"operation_id":"`):]
+		operation, _, _ = strings.Cut(rest, `"`)
+	}
+	client := &http.Client{Timeout: 30 * time.Second}
+	request, err := http.NewRequest("POST", base+path, strings.NewReader(body))
+	if err != nil {
+		return gate3RacePost{operation: operation, status: -1, body: err.Error()}
+	}
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Origin", origin)
+	if session != "" {
+		request.AddCookie(&http.Cookie{Name: "session", Value: session})
+	}
+	response, err := client.Do(request)
+	if err != nil {
+		return gate3RacePost{operation: operation, status: -1, body: err.Error()}
+	}
+	defer response.Body.Close()
+	payload, _ := io.ReadAll(response.Body)
+	return gate3RacePost{operation: operation, status: response.StatusCode, body: string(payload)}
+}
+
+// TestGate3Concurrency proves a concurrent revision or membership change
+// blocks stale/unauthorized commit: distinct operations racing one base
+// revision commit exactly once, identical operations racing commit one
+// shared effect with byte-identical results, and membership flaps admit
+// only authorized commits while every landing keeps the revision and
+// ledger counts coherent.
+func TestGate3Concurrency(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-race")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3RacePort, "")
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3RacePort)
+	const savePath = "/api/tenants/1/invoices/7"
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]}`
+	}
+	race := func(bodies []string) []gate3RacePost {
+		t.Helper()
+		start := make(chan struct{})
+		results := make([]gate3RacePost, len(bodies))
+		var group sync.WaitGroup
+		for i, body := range bodies {
+			group.Add(1)
+			go func() {
+				defer group.Done()
+				<-start
+				results[i] = gate3RaceSave(base, savePath, "tok-alice", origin, body)
+			}()
+		}
+		close(start)
+		group.Wait()
+		return results
+	}
+	revision := func() string {
+		t.Helper()
+		store := inspectInvoice(t, ctx, bundle, home, driver, db)
+		for _, row := range store.Invoice {
+			if row.ID == "7" {
+				return row.Rev
+			}
+		}
+		t.Fatal("invoice 7 missing")
+		return ""
+	}
+
+	// Distinct operations racing one base revision: exactly one save
+	// commits, every loser conflicts, and the ledger grows by one.
+	var bodies []string
+	for i := 0; i < 8; i++ {
+		bodies = append(bodies, saveBody("op-r"+strconv.Itoa(i), 1))
+	}
+	results := race(bodies)
+	winners, conflicts := 0, 0
+	var winner gate3RacePost
+	for _, result := range results {
+		switch result.status {
+		case 200:
+			winners++
+			winner = result
+		case 409:
+			conflicts++
+		default:
+			t.Fatalf("revision race %s: %d %s, want 200 once and 409 else", result.operation, result.status, result.body)
+		}
+	}
+	if winners != 1 || conflicts != 7 {
+		t.Fatalf("revision race: %d winners %d conflicts, want 1 and 7", winners, conflicts)
+	}
+	value := gate3Case(t, "revision race winner", winner.body, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if value["operation_id"] != winner.operation || acknowledged["revision"] != "2" {
+		t.Fatalf("revision race winner value %+v", value)
+	}
+	if revision() != "2" {
+		t.Fatalf("revision race left revision %s, want 2", revision())
+	}
+	store := inspectInvoice(t, ctx, bundle, home, driver, db)
+	requireReplay(t, store, winner.operation, "2")
+	if len(store.Replay) != 1 {
+		t.Fatalf("revision race ledger %+v, want one row", store.Replay)
+	}
+	t.Logf("revision race: %s committed revision 2, seven losers conflicted", winner.operation)
+
+	// Identical operations racing: every landing converges to one
+	// shared effect with byte-identical 200 results and one ledger
+	// row. A loser that slips past the lookup before the winner
+	// commits may answer 503 once; its identical retry replays.
+	var same []string
+	for i := 0; i < 6; i++ {
+		same = append(same, saveBody("op-same", 2))
+	}
+	results = race(same)
+	for _, result := range results {
+		if result.status != 200 && result.status != 503 {
+			t.Fatalf("identical race %s: %d %s, want 200 or one 503 retry", result.operation, result.status, result.body)
+		}
+	}
+	var converged []string
+	for range results {
+		status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-same", 2))
+		if status != 200 {
+			t.Fatalf("identical converge: %d %s, want 200", status, payload)
+		}
+		converged = append(converged, payload)
+	}
+	for _, payload := range converged[1:] {
+		if payload != converged[0] {
+			t.Fatal("identical race converged to differing bytes")
+		}
+	}
+	value = gate3Case(t, "identical race", converged[0], "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "3" {
+		t.Fatalf("identical race value %+v", value)
+	}
+	if revision() != "3" {
+		t.Fatalf("identical race left revision %s, want 3", revision())
+	}
+	store = inspectInvoice(t, ctx, bundle, home, driver, db)
+	requireReplay(t, store, "op-same", "3")
+	if len(store.Replay) != 2 {
+		t.Fatalf("identical race ledger %+v, want two rows", store.Replay)
+	}
+	t.Logf("identical race: one shared effect at revision 3 with byte-identical results")
+
+	// Deterministic membership gate: removing alice's row denies saves
+	// and loads without disclosure; restoring it admits saves again.
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", false)
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-u1", 3))
+	if status != 403 {
+		t.Fatalf("unmembered save: %d %s, want 403", status, payload)
+	}
+	value = gate3Case(t, "unmembered save", payload, "invoice_contract::grid_forbidden")
+	if value["operation_id"] != "op-u1" || len(value) != 2 {
+		t.Fatalf("unmembered save value %+v discloses or mismatches", value)
+	}
+	status, body, _ := invoiceGet(t, base, savePath, "tok-alice")
+	if status != 403 {
+		t.Fatalf("unmembered load: %d %s, want 403", status, body)
+	}
+	gate3Case(t, "unmembered load", body, "invoice_contract::grid_load_forbidden")
+	if revision() != "3" {
+		t.Fatalf("unmembered legs moved revision to %s", revision())
+	}
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", true)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-u2", 3))
+	if status != 200 {
+		t.Fatalf("restored save: %d %s, want 200", status, payload)
+	}
+	value = gate3Case(t, "restored save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("restored save value %+v", value)
+	}
+
+	// Membership flap racing saves: the flap runs while eight distinct
+	// saves race one base revision. Every landing keeps the counts
+	// coherent: each 200 advanced the revision by exactly one, every
+	// 200 operation owns its ledger row, and denials disclose nothing.
+	flapDone := make(chan error, 1)
+	go func() {
+		for i := 0; i < 4; i++ {
+			for _, mode := range []string{"unmember", "member"} {
+				if out, err := invoiceDriverRaw(ctx, bundle, home, driver, mode, db, "alice", "1"); err != nil {
+					flapDone <- errors.New(mode + ": " + string(out))
+					return
+				}
+			}
+		}
+		flapDone <- nil
+	}()
+	var flapBodies []string
+	for i := 0; i < 8; i++ {
+		flapBodies = append(flapBodies, saveBody("op-f"+strconv.Itoa(i), 4))
+	}
+	results = race(flapBodies)
+	if err := <-flapDone; err != nil {
+		t.Fatalf("membership flap: %v", err)
+	}
+	// Restore idempotently: the flap ends present, so remove-then-add
+	// converges regardless of the landing.
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", false)
+	setMembership(t, ctx, bundle, home, driver, db, "alice", "1", true)
+	var committed []gate3RacePost
+	for _, result := range results {
+		switch result.status {
+		case 200:
+			committed = append(committed, result)
+		case 403:
+			value := gate3Case(t, "flap denial "+result.operation, result.body, "invoice_contract::grid_forbidden")
+			if value["operation_id"] != result.operation || len(value) != 2 {
+				t.Fatalf("flap denial value %+v discloses or mismatches", value)
+			}
+		case 409:
+			gate3Case(t, "flap conflict "+result.operation, result.body, "invoice_contract::grid_conflict")
+		default:
+			t.Fatalf("flap race %s: %d %s, want 200, 403 or 409", result.operation, result.status, result.body)
+		}
+	}
+	if len(committed) > 1 {
+		t.Fatalf("flap race committed %d saves on one base revision", len(committed))
+	}
+	final := revision()
+	if len(committed) == 1 {
+		value := gate3Case(t, "flap winner", committed[0].body, "invoice_contract::grid_saved")
+		acknowledged, _ := value["acknowledged"].(map[string]any)
+		if acknowledged["revision"] != "5" || final != "5" {
+			t.Fatalf("flap winner value %+v revision %s", value, final)
+		}
+		requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), committed[0].operation, "5")
+	} else if final != "4" {
+		t.Fatalf("flap race committed nothing but left revision %s", final)
+	}
+	store = inspectInvoice(t, ctx, bundle, home, driver, db)
+	wantRows := 3 + len(committed)
+	if len(store.Replay) != wantRows {
+		t.Fatalf("flap race ledger holds %d rows, want %d", len(store.Replay), wantRows)
+	}
+	t.Logf("membership flap: %d commit(s), revision %s, %d ledger rows, every landing coherent", len(committed), final, wantRows)
+
+	// Recovery control: membership present, a fresh operation on the
+	// current revision commits.
+	freshRev, _ := strconv.Atoi(final)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-fresh", freshRev))
+	if status != 200 {
+		t.Fatalf("post-flap save: %d %s, want 200", status, payload)
+	}
+	value = gate3Case(t, "post-flap save", payload, "invoice_contract::grid_saved")
+	acknowledged, _ = value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != strconv.Itoa(freshRev+1) {
+		t.Fatalf("post-flap save value %+v", value)
+	}
+	t.Logf("gate3 concurrency: %d can assertions, revision/identical/membership races live with row evidence", assertions)
 }

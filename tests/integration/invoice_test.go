@@ -145,14 +145,24 @@ func stageInvoiceBundle(t *testing.T, ctx context.Context, bundle, sourceRoot st
 
 func invoiceDriver(t *testing.T, ctx context.Context, bundle, home, driver string, args ...string) []byte {
 	t.Helper()
+	out, err := invoiceDriverRaw(ctx, bundle, home, driver, args...)
+	if err != nil {
+		t.Fatalf("driver %v: %v %s", args, err, string(out))
+	}
+	return out
+}
+
+// invoiceDriverRaw runs one driver mode and reports its output, for
+// goroutines that cannot fail the test directly.
+func invoiceDriverRaw(ctx context.Context, bundle, home, driver string, args ...string) ([]byte, error) {
 	cmd := exec.CommandContext(ctx, filepath.Join(bundle, "runtime/bun"), append([]string{driver}, args...)...)
 	cmd.Dir = home
 	cmd.Env = []string{"PATH=/nonexistent", "HOME=" + home}
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		t.Fatalf("driver %v: %v %s", args, err, string(out))
+		return out, err
 	}
-	return out
+	return out, nil
 }
 
 func seedInvoiceDB(t *testing.T, ctx context.Context, bundle, home, driver, root string) string {
