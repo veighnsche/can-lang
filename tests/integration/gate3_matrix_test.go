@@ -1791,10 +1791,11 @@ func TestGate3Lifecycle(t *testing.T) {
 	}
 
 	// One pool: exactly one open call site and one close call site in
-	// the emitted server bundle.
+	// the emitted server bundle, under the emitted pool-table
+	// spellings.
 	buildDir := filepath.Dir(entry)
-	gate3CallSites(t, buildDir, "sqlite_open_file", 1)
-	gate3CallSites(t, buildDir, "pool_close", 1)
+	gate3CallSites(t, buildDir, "$canSQLPools.sqliteOpenFile", 1)
+	gate3CallSites(t, buildDir, "$canSQLPools.close", 1)
 
 	// Startup refusal: a database path in a missing directory fails
 	// closed before serving.
