@@ -571,6 +571,9 @@ func resolveBundleSource(sourceDir, outDir, source string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if resolved, err := filepath.EvalSymlinks(root); err == nil {
+		root = resolved
+	}
 	rel, err := filepath.Rel(root, absolute)
 	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return "", fmt.Errorf("map source escapes the staged tree")
