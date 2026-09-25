@@ -1,20 +1,28 @@
 // Pinned browser evidence for I34: drives the staged Can asset page with
 // upstream HTMX only. Aborts every non-localhost request, so a passing run
 // proves the page never needs a CDN, authored script, or client runtime.
-// Usage: node assets.mjs <base> <outdir>
+// Usage: node assets.mjs <base> <outdir> [engine]
+// UP23: the engine is an optional trailing parameter (default
+// chromium) so the same twelve pinned checks can run under any
+// named browser; the two-argument form keeps its legacy meaning.
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { chromium } from "playwright";
 
-const [base, outdir] = process.argv.slice(2);
+const [base, outdir, engineArg] = process.argv.slice(2);
 if (!base || !outdir) {
-  console.error("usage: node assets.mjs <base> <outdir>");
+  console.error("usage: node assets.mjs <base> <outdir> [engine]");
+  process.exit(2);
+}
+const engine = engineArg ?? "chromium";
+if (engine !== "chromium" && engine !== "webkit") {
+  console.error(`unsupported engine ${engine}`);
   process.exit(2);
 }
 mkdirSync(outdir, { recursive: true });
 
-const browser = await chromium.launch();
+const playwright = await import("playwright");
+const browser = await playwright[engine].launch({ timeout: 120000 });
 const checks = [];
 const requests = [];
 const aborted = [];
@@ -151,8 +159,8 @@ try {
 const passed = checks.every((entry) => entry.passed);
 writeFileSync(
   join(outdir, "report.json"),
-  JSON.stringify({ browser: "chromium", version: browser.version(), base, passed, checks, aborted, requests }, null, 2) + "\n"
+  JSON.stringify({ browser: engine, version: browser.version(), base, passed, checks, aborted, requests }, null, 2) + "\n"
 );
 for (const entry of checks) console.log(`${entry.passed ? "PASS" : "FAIL"} ${entry.name}${entry.detail ? ` ${entry.detail}` : ""}`);
 if (!passed) process.exit(1);
-console.log("browser asset evidence passed");
+console.log(`browser asset evidence passed on ${engine}`);

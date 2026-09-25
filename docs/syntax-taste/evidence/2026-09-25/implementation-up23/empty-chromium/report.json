@@ -1,0 +1,61 @@
+{
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+  "base": "http://127.0.0.1:18645",
+  "passed": true,
+  "checks": [
+    {
+      "name": "served-shell",
+      "passed": true,
+      "detail": "shell intact, single paired script"
+    },
+    {
+      "name": "paired-startup-clean",
+      "passed": true,
+      "detail": "module executed, no faults, DOM untouched"
+    },
+    {
+      "name": "served-map-table",
+      "passed": true,
+      "detail": "map 55 sources, sealed table"
+    },
+    {
+      "name": "network-ledger-clean",
+      "passed": true,
+      "detail": "5 loopback requests"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18645/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18645/__can/assets/da58c0c3ee36a3cacd148fa048d0fc10411862c748043bbbb532f9f95a6307f3.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18645/__can/assets/da58c0c3ee36a3cacd148fa048d0fc10411862c748043bbbb532f9f95a6307f3.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18645/__can/assets/4b640ca01f2c4b02a1d82ac2c13050e8f4d54e1691cabdf8c370fa85a31f72c9.js.map",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18645/__can/assets/cca92ca6e47f5285e549d55ae6ac3f635c6a4610193368814da93976967ab3c0.json",
+      "status": 200
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'."
+  ]
+}

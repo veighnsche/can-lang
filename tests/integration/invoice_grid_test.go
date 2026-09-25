@@ -1,7 +1,8 @@
-// T24 staged invoice grid coverage: bundled assert plus deterministic
-// browser-target builds of the Can-authored editable grid. Check-level
-// coverage (browser closure, cross-target contract, emission) lives in
-// compiler/internal/driver.
+// T24 staged invoice grid coverage: build-report assertions plus
+// deterministic browser-target builds of the Can-authored editable grid.
+// Standalone `canlc assert` is bun-target only; browser-project assertions
+// ride the browser build report. Check-level coverage (browser closure,
+// cross-target contract, emission) lives in compiler/internal/driver.
 package integration
 
 import (
@@ -53,50 +54,44 @@ func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
 		t.Fatal(err)
 	}
 	root, home := stageProject(t, sourceRoot, "examples/invoice-grid")
-	status, out, diag := canlcOffline(t, ctx, bundle, home, "assert", root)
-	if status != 0 || diag != "" {
-		t.Fatalf("grid assert: %d %s %s", status, out, diag)
-	}
-	var report struct {
-		Passed     bool `json:"passed"`
-		Assertions []struct {
-			Evidence []string `json:"evidence"`
-		} `json:"assertions"`
-	}
-	if err := json.Unmarshal([]byte(out), &report); err != nil || !report.Passed || len(report.Assertions) == 0 {
-		t.Fatalf("invalid grid assert report %v %s", err, out)
-	}
-	real := 0
-	for _, assertion := range report.Assertions {
-		for _, evidence := range assertion.Evidence {
-			if evidence == "real-can" {
-				real++
-				break
-			}
-		}
-	}
-	if real == 0 {
-		t.Fatal("grid asserts nothing real")
-	}
-	build := func() (string, string) {
+	build := func() (string, string, int) {
 		t.Helper()
 		status, out, diag := canlcBrowser(t, ctx, bundle, home, "build", "--target", "browser", root)
 		if status != 0 || diag != "" {
 			t.Fatalf("grid browser build: %d %s %s", status, out, diag)
 		}
 		var manifest struct {
-			BuildID   string `json:"buildID"`
-			Directory string `json:"directory"`
-			Entry     string `json:"entry"`
-			Asset     string `json:"asset"`
+			BuildID    string `json:"buildID"`
+			Directory  string `json:"directory"`
+			Entry      string `json:"entry"`
+			Asset      string `json:"asset"`
+			Assertions struct {
+				Roots    int      `json:"roots"`
+				Passed   int      `json:"passed"`
+				Failed   int      `json:"failed"`
+				Evidence []string `json:"evidence"`
+			} `json:"assertions"`
 		}
 		if err := json.Unmarshal([]byte(out), &manifest); err != nil || manifest.BuildID == "" || manifest.Directory == "" {
 			t.Fatalf("invalid grid build manifest %v %s", err, out)
 		}
-		return manifest.BuildID, manifest.Directory
+		summary := manifest.Assertions
+		if summary.Failed != 0 || summary.Passed == 0 || summary.Passed != summary.Roots {
+			t.Fatalf("grid build assertions not all passing: %+v", summary)
+		}
+		real := 0
+		for _, evidence := range summary.Evidence {
+			if evidence == "real-can" {
+				real++
+			}
+		}
+		if real == 0 {
+			t.Fatal("grid asserts nothing real")
+		}
+		return manifest.BuildID, manifest.Directory, summary.Roots
 	}
-	firstID, firstDir := build()
-	secondID, _ := build()
+	firstID, firstDir, roots := build()
+	secondID, _, _ := build()
 	if firstID != secondID {
 		t.Fatalf("grid browser rebuild drifted: %s vs %s", firstID, secondID)
 	}
@@ -116,5 +111,5 @@ func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
 		t.Fatalf("invalid grid browser asset %s", asset)
 	}
 	assertNoStrayEmit(t, root, firstDir)
-	t.Logf("grid: %d assertions (%d real-can), browser build %s", len(report.Assertions), real, firstID[:12])
+	t.Logf("grid: %d assertion roots (real-can evidence), browser build %s", roots, firstID[:12])
 }

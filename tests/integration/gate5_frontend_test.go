@@ -1,42 +1,36 @@
-// T25 Gate 5 broad Can-authored frontend qualification. The staged live grid
-// (the T24 Can-authored invoice grid, `canlc build --target browser`, bundled
-// for real browsers) runs against the installed-or-staged invoice server on a
-// same-origin test origin with a disposable database per browser, and the
-// committed Playwright harness (tests/integration/browser/grid.mjs) drives it
-// through boot, edits, rows, every save outcome, offline/slow/reconnect,
-// truncated and garbage responses after commit, identical-id replay, conflict
-// adopt-or-keep, leak/disposal/navigation and denied loads. The Go test owns
-// the toolchain, builds, bundle, origin, fault injection and database
-// cross-checks; the harness owns DOM, focus, announcements and network bytes.
+// UP23 served browser/runtime and invoice matrix. Three compiler-built
+// browser programs (the Can-authored invoice grid, the query-selected
+// browser-conformance fixture, and the minimal empty app) each pair with
+// the real invoice server through --browser-manifest, and the committed
+// Playwright harnesses drive the application-served pages and
+// content-addressed assets (/invoice-grid, /invoices/form,
+// /__can/assets/...) in the two required named browsers, Chromium and
+// WebKit, with a disposable database per leg. The Go test owns the
+// toolchain, builds, pairing, origin bytes and database cross-checks;
+// the harnesses own DOM, focus, announcements and network bytes.
 //
-// Known divergences pinned here rather than hidden (see the per-leg asserts
-// and the report's limitations, mirroring the T17 known-limitation pattern):
+// No test-authored page, bundle, boot entry or engine shim stands on any
+// claimed path: the server splices the exact report-selected paired
+// script tag, serves every asset byte, and owns the CSP. The obsolete
+// Gate 5 origin proxy (captured-load rewrite, after-commit response
+// faults) and the static contract-edit legs are gone; UP21 supplies the
+// replacement edits. After-commit truncation/garbage now travel through
+// harness route interception that forwards first, so the server still
+// commits before the browser reads corrupt bytes.
 //
-//   - the grid fetches the declared captured load path GET /invoices/{id},
-//     while the server serves /invoices/load?invoice_id= (its own comment:
-//     "until the action adapter mounts JSON bodies and captured paths with
-//     request context"). The origin rewrites exactly that one shape and the
-//     test proves the rewrite is load-bearing (direct captured GET 404s) and
-//     records every rewrite;
-//   - row-level focus intents invoke focus() before the grid attaches, so
-//     add/move focus never lands (remove-to-add lands; typing never disturbs
-//     focus). The harness records the invocation proof as L-focus-row;
-//   - the blocked-save guard notice is wiped by the immediate re-render
-//     (L-notice; nothing is ever sent) and presses show no mid-flight
-//     "saving..." indication (L-flight; the single-flight guard holds).
+// Known divergences pinned here rather than hidden (see the per-leg
+// asserts and the reports' limitations):
 //
-// Engine shims (tests/integration/browser/build-grid.mjs): node:async_hooks,
-// node:util, node:fs (real source spans, zero module maps) and node:crypto
-// (synchronous SHA-256, machine-checked against Go crypto/sha256 below). No
-// other harness-authored client code exists: the boot entry is three fixed
-// lines invoking the emitted $canBrowserMain, asserted byte-for-byte.
-//
-// Toolchain selection mirrors Gate 4: on linux/amd64 the test builds,
-// releases and installs the distribution and drives the installed launcher
-// and sidecar; elsewhere the same legs run against a staged bundle. Without
-// CAN_BUN_ARCHIVE the tests skip by design, as do browser legs whose
-// Playwright launcher cannot start (chromium is required; firefox and webkit
-// are best-effort and the report names the exact qualified matrix).
+//   - every keydown runs the grid save handler and re-renders, so typed
+//     characters usually lose the race and sometimes ghost
+//     (L-keystroke-eaten; the dispatch itself is deterministic);
+//   - no mid-flight "saving..." indication ever paints
+//     (L-flight; the single-flight guard holds);
+//   - an ignored mid-flight press plus the outcome render leaks a second
+//     grid tree (L-double-render, pinned on a throwaway page);
+//   - no same-origin 302 is producible under WebKit interception, so the
+//     invoice redirect leg records L-redirect-webkit while Chromium
+//     qualifies the engine-independent guard branch end to end.
 package integration
 
 import (
@@ -46,21 +40,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
-	"net"
-	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -68,28 +54,27 @@ import (
 )
 
 const (
-	gate5APIChromium    = 18641
-	gate5OriginChromium = 18642
-	gate5APIFirefox     = 18643
-	gate5OriginFirefox  = 18644
-	gate5APIWebkit      = 18645
-	gate5OriginWebkit   = 18646
-	gate5APIStatic      = 18647
+	gate5PortGridChromium  = 18641
+	gate5PortGridWebkit    = 18642
+	gate5PortConfChromium  = 18643
+	gate5PortConfWebkit    = 18644
+	gate5PortEmptyChromium = 18645
+	gate5PortEmptyWebkit   = 18646
+	gate5PortInvChromium   = 18647
+	gate5PortInvWebkit     = 18648
 
-	gate5HostPage = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Invoice grid</title>
-</head>
-<body>
-<div id="invoice-grid"></div>
-<script type="module" src="/grid/boot.js"></script>
-</body>
-</html>
+	gate5SeedDetails = `Acme <em>&" 'coop'"`
+	gate5SeedSeats   = "2"
+
+	gate5EmptyMain = `package app
+    provides []
+    uses []
+fn void main
+    emits []
+    asserts
+        empty: => ok
+    ok
 `
-	gate5CSP = "default-src 'none'; script-src 'self'; connect-src 'self'; base-uri 'none'"
 )
 
 var gate5ServerModules = []string{
@@ -218,7 +203,16 @@ func gate5Assert(t *testing.T, ctx context.Context, canlc, home, root, name stri
 	return len(report.Assertions), real
 }
 
-func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, extra ...string) (string, string) {
+type gate5BuildReport struct {
+	BuildID   string
+	Directory string
+	Roots     int
+}
+
+// gate5Build runs one toolchain build and verifies its assertion verdict:
+// browser-entry projects cannot run the standalone assert entry check, so
+// the build's own verified assertions carry the real-can bar.
+func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, extra ...string) gate5BuildReport {
 	t.Helper()
 	args := append([]string{"build"}, extra...)
 	args = append(args, root)
@@ -231,11 +225,101 @@ func gate5Build(t *testing.T, ctx context.Context, canlc, home, root string, ext
 		Directory string `json:"directory"`
 		Entry     string `json:"entry"`
 		Asset     string `json:"asset"`
+		Assert    *struct {
+			Roots    int      `json:"roots"`
+			Passed   int      `json:"passed"`
+			Failed   int      `json:"failed"`
+			Evidence []string `json:"evidence"`
+		} `json:"assertions"`
 	}
 	if err := json.Unmarshal([]byte(out), &report); err != nil || report.BuildID == "" || report.Directory == "" {
 		t.Fatalf("invalid build report %v %s", err, out)
 	}
-	return report.BuildID, report.Directory
+	if report.Assert == nil || report.Assert.Failed != 0 || report.Assert.Passed != report.Assert.Roots || report.Assert.Roots == 0 {
+		t.Fatalf("build assertions unverified: %+v", report.Assert)
+	}
+	real := false
+	for _, evidence := range report.Assert.Evidence {
+		if evidence == "real-can" {
+			real = true
+			break
+		}
+	}
+	if !real {
+		t.Fatalf("build asserts nothing real: %+v", report.Assert.Evidence)
+	}
+	return gate5BuildReport{BuildID: report.BuildID, Directory: report.Directory, Roots: report.Assert.Roots}
+}
+
+// gate5Pairing is one verified server/browser pairing: the server build
+// identity plus the browser section of its build report.
+type gate5Pairing struct {
+	BuildID        string
+	Directory      string
+	BrowserBuildID string
+	Entry          string
+	Table          string
+	Files          map[string]string
+}
+
+// gate5PairBuild builds the server project against one browser manifest and
+// verifies the pairing report selects the manifest's browser build.
+func gate5PairBuild(t *testing.T, ctx context.Context, canlc, home, root, manifest string) gate5Pairing {
+	t.Helper()
+	manifestRaw, err := os.ReadFile(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifestDecoded struct {
+		BrowserBuildID string `json:"browserBuildId"`
+	}
+	if err := json.Unmarshal(manifestRaw, &manifestDecoded); err != nil || manifestDecoded.BrowserBuildID == "" {
+		t.Fatalf("browser manifest lacks its build identity in %s", manifestRaw)
+	}
+	status, out, diag := gate5Canlc(t, ctx, canlc, home, "build", "--browser-manifest", manifest, root)
+	if status != 0 {
+		t.Fatalf("paired build: %d %s %s", status, out, diag)
+	}
+	var report struct {
+		BuildID   string `json:"buildID"`
+		Directory string `json:"directory"`
+		Browser   *struct {
+			BrowserBuildID string `json:"browserBuildId"`
+			Entry          string `json:"entry"`
+			Table          string `json:"table"`
+			Files          []struct {
+				Path  string `json:"path"`
+				Route string `json:"route"`
+			} `json:"files"`
+		} `json:"browser"`
+	}
+	if err := json.Unmarshal([]byte(out), &report); err != nil || report.Browser == nil {
+		t.Fatalf("paired report lacks its browser section: %v %s", err, out)
+	}
+	if report.Browser.BrowserBuildID != manifestDecoded.BrowserBuildID {
+		t.Fatalf("paired browser %s, want %s", report.Browser.BrowserBuildID, manifestDecoded.BrowserBuildID)
+	}
+	if !strings.HasPrefix(report.Browser.Entry, "/__can/assets/") || !strings.HasSuffix(report.Browser.Entry, ".js") || strings.HasSuffix(report.Browser.Entry, ".js.map") {
+		t.Fatalf("paired entry %q is not a digest script route", report.Browser.Entry)
+	}
+	if !strings.HasPrefix(report.Browser.Table, "/__can/assets/") || !strings.HasSuffix(report.Browser.Table, ".json") {
+		t.Fatalf("paired table %q is not a digest route", report.Browser.Table)
+	}
+	files := map[string]string{}
+	for _, file := range report.Browser.Files {
+		if !strings.HasPrefix(file.Route, "/__can/assets/") {
+			t.Fatalf("paired file %s route %q is not content addressed", file.Path, file.Route)
+		}
+		files[file.Path] = file.Route
+	}
+	return gate5Pairing{
+		BuildID:        report.BuildID,
+		Directory:      report.Directory,
+		BrowserBuildID: report.Browser.BrowserBuildID,
+		Entry:          report.Browser.Entry,
+		Table:          report.Browser.Table,
+		Files:          files,
+	}
 }
 
 // gate5Asset verifies the content-addressed browser asset manifest: identity,
@@ -320,50 +404,6 @@ func gate5ImportAudit(t *testing.T, dir string) {
 	}
 }
 
-// gate5Bundle runs the committed grid bundler under the toolchain bun and
-// returns the bundle bytes. The generated boot entry must equal the fixed
-// three-line template: the only harness-authored client code.
-func gate5Bundle(t *testing.T, ctx context.Context, bun, browserTs, outdir string) []byte {
-	t.Helper()
-	cmd := exec.CommandContext(ctx, bun, filepath.Join("tests/integration/browser", "build-grid.mjs"), browserTs, outdir)
-	cmd.Dir = mustSourceRoot(t)
-	cmd.Env = []string{"PATH=/usr/bin:/bin", "HOME=" + t.TempDir()}
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Fatalf("grid bundle: %v %s", err, out)
-	}
-	bundlePath := strings.TrimSpace(string(out))
-	content, err := os.ReadFile(bundlePath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	boot, err := os.ReadFile(filepath.Join(outdir, "grid-boot.ts"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := fmt.Sprintf("import { $canBrowserMain } from %s;\nconst invoice = new URLSearchParams(location.search).get(\"invoice\") ?? \"inv-1\";\nglobalThis.__canGridBoot = $canBrowserMain([invoice]);\n", quoteJS(browserTs))
-	if string(boot) != want {
-		t.Fatalf("boot entry drifted:\n%s\nwant:\n%s", boot, want)
-	}
-	return content
-}
-
-func quoteJS(path string) string {
-	var out strings.Builder
-	out.WriteByte('"')
-	for _, r := range path {
-		switch r {
-		case '"', '\\':
-			out.WriteByte('\\')
-			out.WriteRune(r)
-		default:
-			out.WriteRune(r)
-		}
-	}
-	out.WriteByte('"')
-	return out.String()
-}
-
 func mustSourceRoot(t *testing.T) string {
 	t.Helper()
 	root, err := filepath.Abs("../..")
@@ -373,186 +413,73 @@ func mustSourceRoot(t *testing.T) string {
 	return root
 }
 
-// gate5Origin is the same-origin test host: it serves the grid host page and
-// browser bundle, reverse-proxies the invoice API, rewrites the one divergent
-// load shape, and injects one-shot after-commit response faults.
-type gate5Origin struct {
-	api            string
-	bundle         []byte
-	mu             sync.Mutex
-	fault          string
-	faultsConsumed map[string]int
-	faultUpstream  map[string]int
-	rewrites       []string
-	pageHits       int
-	bundleHits     int
-}
-
-func newGate5Origin(api string, bundle []byte) *gate5Origin {
-	if _, err := url.Parse(api); err != nil {
-		panic(err)
-	}
-	return &gate5Origin{
-		api:            api,
-		bundle:         bundle,
-		faultsConsumed: map[string]int{},
-		faultUpstream:  map[string]int{},
-	}
-}
-
-var gate5CapturedLoad = regexp.MustCompile(`^/invoices/([^/]+)$`)
-
-func (o *gate5Origin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	switch {
-	case r.URL.Path == "/grid" && r.Method == "GET":
-		o.mu.Lock()
-		o.pageHits++
-		o.mu.Unlock()
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Header().Set("Content-Security-Policy", gate5CSP)
-		_, _ = io.WriteString(w, gate5HostPage)
-		return
-	case r.URL.Path == "/grid/boot.js" && r.Method == "GET":
-		o.mu.Lock()
-		o.bundleHits++
-		o.mu.Unlock()
-		w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
-		w.Header().Set("Content-Length", strconv.Itoa(len(o.bundle)))
-		_, _ = w.Write(o.bundle)
-		return
-	case r.URL.Path == "/t25/fault" && r.Method == "POST":
-		body, _ := io.ReadAll(io.LimitReader(r.Body, 32))
-		mode := strings.TrimSpace(string(body))
-		if mode != "truncate" && mode != "garbage" {
-			http.Error(w, "unknown fault", http.StatusBadRequest)
-			return
-		}
-		o.mu.Lock()
-		o.fault = mode
-		o.mu.Unlock()
-		_, _ = io.WriteString(w, "armed:"+mode)
-		return
-	}
-	if r.URL.Path != "/health" && !strings.HasPrefix(r.URL.Path, "/invoices/") {
-		http.NotFound(w, r)
-		return
-	}
-	upstream := r.URL.Path
-	if r.Method == "GET" {
-		if match := gate5CapturedLoad.FindStringSubmatch(r.URL.Path); match != nil {
-			// Known divergence L-route: the grid fetches the declared
-			// captured load path; the server serves the query spelling.
-			// The rewrite is pinned and ledgered, never silent.
-			upstream = "/invoices/load?invoice_id=" + url.QueryEscape(match[1])
-			o.mu.Lock()
-			o.rewrites = append(o.rewrites, r.Method+" "+r.URL.Path+" -> "+upstream)
-			o.mu.Unlock()
-		}
-	}
-	o.mu.Lock()
-	fault := ""
-	if r.Method == "POST" && r.URL.Path == "/invoices/save" {
-		fault, o.fault = o.fault, ""
-	}
-	o.mu.Unlock()
-	if fault == "" {
-		(&httputil.ReverseProxy{
-			Director: func(out *http.Request) {
-				target, _ := url.Parse(o.api + upstream)
-				out.URL = target
-				out.Host = target.Host
-			},
-		}).ServeHTTP(w, r)
-		return
-	}
-	// After-commit fault: forward first so the server commits, then corrupt
-	// only the response the browser reads.
-	forward, err := http.NewRequest(r.Method, o.api+upstream, r.Body)
-	if err != nil {
-		http.Error(w, "fault setup", http.StatusInternalServerError)
-		return
-	}
-	forward.Header = r.Header.Clone()
-	upstreamRes, err := http.DefaultClient.Do(forward)
-	if err != nil {
-		http.Error(w, "fault upstream", http.StatusBadGateway)
-		return
-	}
-	defer upstreamRes.Body.Close()
-	full, err := io.ReadAll(io.LimitReader(upstreamRes.Body, 1<<20))
-	if err != nil {
-		http.Error(w, "fault drain", http.StatusBadGateway)
-		return
-	}
-	o.mu.Lock()
-	o.faultsConsumed[fault]++
-	o.faultUpstream[fault] = upstreamRes.StatusCode
-	o.mu.Unlock()
-	if upstreamRes.StatusCode != 200 {
-		t := upstreamRes.StatusCode
-		http.Error(w, "fault leg expected an upstream commit", t)
-		return
-	}
-	if fault == "garbage" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
-		_, _ = io.WriteString(w, `{"case":`)
-		return
-	}
-	hijacker, ok := w.(http.Hijacker)
-	if !ok {
-		http.Error(w, "truncate needs a hijackable conn", http.StatusInternalServerError)
-		return
-	}
-	conn, writer, err := hijacker.Hijack()
-	if err != nil {
-		http.Error(w, "truncate hijack", http.StatusInternalServerError)
-		return
-	}
-	defer conn.Close()
-	cut := full
-	if len(cut) > 10 {
-		cut = cut[:10]
-	}
-	_, _ = fmt.Fprintf(writer, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n", len(full))
-	_, _ = writer.Write(cut)
-	_ = writer.Flush()
-}
-
-// serveGate5Origin starts the origin on a loopback port and returns its base
-// URL with a stopper.
-func serveGate5Origin(t *testing.T, origin *gate5Origin, port int) (string, func()) {
+func mustReadFile(t *testing.T, path string) []byte {
 	t.Helper()
-	server := &http.Server{Addr: "127.0.0.1:" + strconv.Itoa(port), Handler: origin}
-	listener, err := net.Listen("tcp", server.Addr)
+	raw, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	go func() { _ = server.Serve(listener) }()
-	base := "http://127.0.0.1:" + strconv.Itoa(port)
-	deadline := time.Now().Add(10 * time.Second)
-	for {
-		response, err := http.Get(base + "/grid")
-		if err == nil {
-			_ = response.Body.Close()
-			if response.StatusCode == 200 {
-				break
-			}
-		}
-		if time.Now().After(deadline) {
-			t.Fatalf("gate5 origin never ready on %s", base)
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	return base, func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		_ = server.Shutdown(ctx)
-	}
+	return raw
 }
 
-func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, name string) (string, bool) {
+// gate5StageFixture copies the committed browser-conformance fixture to a
+// disposable root the browser build can emit into.
+func gate5StageFixture(t *testing.T, sourceRoot string) (root, home string) {
+	t.Helper()
+	var err error
+	root, err = filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	from := filepath.Join(sourceRoot, "tests/integration/testdata/browser-conformance")
+	for _, name := range []string{"can.project.json", "can.errors.json"} {
+		data, err := os.ReadFile(filepath.Join(from, name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(root, name), data, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	copyDir(t, filepath.Join(from, "src"), filepath.Join(root, "src"))
+	home, err = filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root, home
+}
+
+// gate5StageEmpty writes the minimal generated browser program: a
+// dependency-free zero-argument main proving the degenerate program boots
+// from served bytes.
+func gate5StageEmpty(t *testing.T) (root, home string) {
+	t.Helper()
+	var err error
+	root, err = filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		p := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	write("src/main.can", gate5EmptyMain)
+	home, err = filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return root, home
+}
+
+func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, name string) string {
 	t.Helper()
 	probeCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
@@ -568,44 +495,596 @@ func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, 
 		if len(first) > 300 {
 			first = first[:300]
 		}
-		t.Logf("gate5 %s unavailable: %s", name, first)
-		return "", false
+		t.Fatalf("required browser %s did not launch: %s", name, first)
 	}
-	return strings.TrimSpace(string(result)), true
+	version := strings.TrimSpace(string(result))
+	if version == "" {
+		t.Fatalf("required browser %s reported no version", name)
+	}
+	return version
 }
 
+type gate5Check struct {
+	Name   string `json:"name"`
+	Passed bool   `json:"passed"`
+	Detail string `json:"detail"`
+}
+
+type gate5Limitation struct {
+	ID     string `json:"id"`
+	Detail string `json:"detail"`
+}
+
+type gate5Request struct {
+	Method string `json:"method"`
+	URL    string `json:"url"`
+	Status int    `json:"status"`
+}
+
+type gate5LedgerEntry struct {
+	Method       string `json:"method"`
+	URL          string `json:"url"`
+	Status       int    `json:"status"`
+	RequestBody  string `json:"requestBody"`
+	ResponseBody string `json:"responseBody"`
+}
+
+type gate5Occurrence struct {
+	Kind   string `json:"kind"`
+	Phase  string `json:"phase"`
+	Effect string `json:"effect"`
+	Reason string `json:"reason"`
+	Header string `json:"header"`
+}
+
+// gate5Report decodes every UP23 harness report: absent sections stay empty.
 type gate5Report struct {
-	Browser   string `json:"browser"`
-	Version   string `json:"version"`
-	UserAgent string `json:"userAgent"`
-	Passed    bool   `json:"passed"`
-	Checks    []struct {
-		Name   string `json:"name"`
-		Passed bool   `json:"passed"`
-		Detail string `json:"detail"`
-	} `json:"checks"`
-	Limitations []struct {
-		ID     string `json:"id"`
-		Detail string `json:"detail"`
-	} `json:"limitations"`
-	Requests []struct {
-		Method string `json:"method"`
-		URL    string `json:"url"`
-		Status int    `json:"status"`
-	} `json:"requests"`
-	Ledger []struct {
-		Method       string `json:"method"`
-		URL          string `json:"url"`
-		Status       int    `json:"status"`
-		RequestBody  string `json:"requestBody"`
-		ResponseBody string `json:"responseBody"`
-	} `json:"ledger"`
-	Aborted       []string `json:"aborted"`
-	PageErrors    []string `json:"pageerrors"`
-	ConsoleErrors []string `json:"consoleErrors"`
+	Browser       string             `json:"browser"`
+	Version       string             `json:"version"`
+	UserAgent     string             `json:"userAgent"`
+	Base          string             `json:"base"`
+	Passed        bool               `json:"passed"`
+	Checks        []gate5Check       `json:"checks"`
+	Limitations   []gate5Limitation  `json:"limitations"`
+	Requests      []gate5Request     `json:"requests"`
+	Ledger        []gate5LedgerEntry `json:"ledger"`
+	Aborted       []string           `json:"aborted"`
+	PageErrors    []string           `json:"pageerrors"`
+	ConsoleErrors []string           `json:"consoleErrors"`
+	Occurrences   []gate5Occurrence  `json:"occurrences"`
 }
 
-func TestGate5GridMatrix(t *testing.T) {
+// gate5ReadReport parses one harness report and asserts the shared
+// identities: the named engine, every check green, no page fault, and no
+// request anywhere but loopback.
+func gate5ReadReport(t *testing.T, suite, engine string, raw []byte, wantChecks int, wantUA bool) gate5Report {
+	t.Helper()
+	var report gate5Report
+	if err := json.Unmarshal(raw, &report); err != nil || !report.Passed || len(report.Checks) != wantChecks {
+		t.Fatalf("%s %s invalid report %v %s", suite, engine, err, raw)
+	}
+	for _, entry := range report.Checks {
+		if !entry.Passed {
+			t.Fatalf("%s %s check %s failed: %s", suite, engine, entry.Name, entry.Detail)
+		}
+	}
+	if report.Browser != engine || report.Version == "" || (wantUA && report.UserAgent == "") {
+		t.Fatalf("%s %s report identity %+v", suite, engine, report)
+	}
+	if len(report.Aborted) != 0 || len(report.PageErrors) != 0 {
+		t.Fatalf("%s %s aborted=%v pageerrors=%v", suite, engine, report.Aborted, report.PageErrors)
+	}
+	for _, entry := range report.Requests {
+		parsed, parseErr := url.Parse(entry.URL)
+		if parseErr != nil || (parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "localhost") {
+			t.Fatalf("%s %s left loopback: %s", suite, engine, entry.URL)
+		}
+	}
+	return report
+}
+
+// gate5RunHarness executes one committed Playwright harness; argv is the full
+// command line with the output directory already spliced in.
+func gate5RunHarness(t *testing.T, ctx context.Context, nodePath, browserDir, suite, engine string, argv ...string) {
+	t.Helper()
+	cmd := exec.CommandContext(ctx, nodePath, argv...)
+	cmd.Dir = browserDir
+	cmd.Env = []string{"PATH=" + filepath.Dir(nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
+	result, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("%s %s harness: %v %s", suite, engine, err, result)
+	}
+}
+
+// gate5Evidence archives one leg's machine-readable report and screenshot
+// for UP24/25 when CAN_BROWSER_EVIDENCE_DIR points at an evidence root.
+func gate5Evidence(t *testing.T, outdir, name string) {
+	t.Helper()
+	evidence := os.Getenv("CAN_BROWSER_EVIDENCE_DIR")
+	if evidence == "" {
+		return
+	}
+	dest := filepath.Join(evidence, name)
+	if err := os.MkdirAll(dest, 0700); err != nil {
+		t.Fatal(err)
+	}
+	copyEvidenceFile(t, filepath.Join(outdir, "report.json"), filepath.Join(dest, "report.json"))
+	copyEvidenceFile(t, filepath.Join(outdir, "screenshot.png"), filepath.Join(dest, "screenshot.png"))
+}
+
+// gate5Screenshot requires the leg's proof screenshot to exist and be
+// non-empty.
+func gate5Screenshot(t *testing.T, suite, engine, outdir string) {
+	t.Helper()
+	shot, err := os.Stat(filepath.Join(outdir, "screenshot.png"))
+	if err != nil || shot.Size() == 0 {
+		t.Fatalf("%s %s missing browser screenshot", suite, engine)
+	}
+}
+
+// gate5ServedPairing inspects the application's own served bytes for one
+// pairing: the page carries exactly the report-selected paired script tag,
+// the script, map and diagnostic table routes serve verified bytes, the
+// served CSP scopes scripts and connections to self, and non-HTML answers
+// stay untouched.
+func gate5ServedPairing(t *testing.T, suite, base, shellPath, session string, pairing gate5Pairing) {
+	t.Helper()
+	mapRoute := pairing.Files["browser/browser.js.map"]
+	if mapRoute == "" || !strings.HasSuffix(mapRoute, ".js.map") {
+		t.Fatalf("%s pairing lacks its map route in %+v", suite, pairing.Files)
+	}
+	status, shell, headers := invoiceGet(t, base, shellPath, session)
+	if status != 200 {
+		t.Fatalf("%s shell %s: %d, want 200", suite, shellPath, status)
+	}
+	csp := headers.Get("Content-Security-Policy")
+	if !strings.Contains(csp, "script-src 'self'") || !strings.Contains(csp, "connect-src 'self'") {
+		t.Fatalf("%s shell CSP %q scopes beyond self", suite, csp)
+	}
+	want := `<script type="module" src="` + pairing.Entry + `"></script>`
+	if strings.Count(shell, want) != 1 {
+		t.Fatalf("%s shell carries the paired entry %d times, want exactly once: %.500s", suite, strings.Count(shell, want), shell)
+	}
+	status, script, headers := invoiceGet(t, base, pairing.Entry, "")
+	if status != 200 || !strings.Contains(headers.Get("Content-Type"), "text/javascript") {
+		t.Fatalf("%s paired entry: %d %q", suite, status, headers.Get("Content-Type"))
+	}
+	if !strings.Contains(script, "$canBrowserMain") {
+		t.Fatal("paired entry lacks the Can browser entry")
+	}
+	for _, banned := range gate5ServerModules {
+		if strings.Contains(script, banned) {
+			t.Fatalf("served script reaches server-only %s", banned)
+		}
+	}
+	status, mapBody, _ := invoiceGet(t, base, mapRoute, "")
+	if status != 200 {
+		t.Fatalf("%s paired map: %d", suite, status)
+	}
+	var parsedMap struct {
+		Version int      `json:"version"`
+		Sources []string `json:"sources"`
+	}
+	if err := json.Unmarshal([]byte(mapBody), &parsedMap); err != nil || parsedMap.Version != 3 || len(parsedMap.Sources) == 0 {
+		t.Fatalf("%s paired map invalid: %.200s", suite, mapBody)
+	}
+	status, tableBody, _ := invoiceGet(t, base, pairing.Table, "")
+	if status != 200 {
+		t.Fatalf("%s paired table: %d", suite, status)
+	}
+	var table struct {
+		SchemaVersion int    `json:"schemaVersion"`
+		Kind          string `json:"kind"`
+	}
+	if err := json.Unmarshal([]byte(tableBody), &table); err != nil || table.SchemaVersion != 1 || table.Kind != "can.diagnostic-table" {
+		t.Fatalf("%s paired table invalid: %.200s", suite, tableBody)
+	}
+	status, probe, _ := invoiceGet(t, base, "/health", "")
+	if status != 200 || probe != "ok" || strings.Contains(probe, "<script") {
+		t.Fatalf("%s health: %d %q, want untouched bytes", suite, status, probe)
+	}
+	t.Logf("%s pairing: shell carries %s once, script %d bytes, map %d sources, sealed table, health untouched",
+		suite, pairing.Entry, len(script), len(parsedMap.Sources))
+}
+
+// gate5SeedDB provisions one disposable seeded database for a browser leg.
+func gate5SeedDB(t *testing.T, ctx context.Context, toolchain, home, driver, serverRoot string) string {
+	t.Helper()
+	db, err := filepath.EvalSymlinks(filepath.Join(home, "leg.sqlite"))
+	if err != nil {
+		resolved, resolveErr := filepath.EvalSymlinks(home)
+		if resolveErr != nil {
+			t.Fatal(resolveErr)
+		}
+		db = filepath.Join(resolved, "leg.sqlite")
+	}
+	setup := invoiceDriver(t, ctx, toolchain, home, driver, "setup", db, filepath.Join(serverRoot, "schema.sql"))
+	var setupReport struct {
+		Tables int `json:"tables"`
+	}
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
+		t.Fatalf("invalid setup report %v %s", err, string(setup))
+	}
+	seed := invoiceDriver(t, ctx, toolchain, home, driver, "seed", db)
+	var seedReport struct {
+		Sessions int `json:"sessions"`
+		Invoices int `json:"invoices"`
+		Lines    int `json:"lines"`
+	}
+	if err := json.Unmarshal(seed, &seedReport); err != nil || seedReport.Sessions != 3 || seedReport.Invoices != 2 || seedReport.Lines != 2 {
+		t.Fatalf("invalid seed report %v %s", err, string(seed))
+	}
+	return db
+}
+
+// gate5RequireSeedLines asserts the invoice keeps exactly its two hostile
+// seeded lines, escaped at rest and unmodified.
+func gate5RequireSeedLines(t *testing.T, suite, engine string, row invoiceRow) {
+	t.Helper()
+	if len(row.Lines) != 2 {
+		t.Fatalf("%s %s lines %+v, want the two seeded lines", suite, engine, row.Lines)
+	}
+	first, second := row.Lines[0], row.Lines[1]
+	if first.Key != "k1" || first.ID != "sku-1 <b>" || first.Quantity != "2" || first.Price != "1999" || first.Position != "0" {
+		t.Fatalf("%s %s first line %+v", suite, engine, first)
+	}
+	if second.Key != "k2" || second.ID != "plain" || second.Quantity != "1" || second.Price != "500" || second.Position != "1" {
+		t.Fatalf("%s %s second line %+v", suite, engine, second)
+	}
+}
+
+// gate5RequireReplay asserts the replay ledger holds exactly the committed
+// revisions with well-formed rows.
+func gate5RequireReplay(t *testing.T, suite, engine string, store invoiceStore, wantRevs ...string) map[string]bool {
+	t.Helper()
+	if len(store.Replay) != len(wantRevs) {
+		t.Fatalf("%s %s replay rows %+v, want %d", suite, engine, store.Replay, len(wantRevs))
+	}
+	ops := map[string]bool{}
+	seen := map[string]bool{}
+	for _, row := range store.Replay {
+		if len(row.Digest) != 64 || row.Result == "" || row.Tenant != "1" || row.InvoiceID != "7" {
+			t.Fatalf("%s %s replay row %+v", suite, engine, row)
+		}
+		if ops[row.OperationID] {
+			t.Fatalf("%s %s duplicated replay for %s", suite, engine, row.OperationID)
+		}
+		ops[row.OperationID] = true
+		seen[row.Revision] = true
+	}
+	for _, rev := range wantRevs {
+		if !seen[rev] {
+			t.Fatalf("%s %s replay lacks revision %s in %+v", suite, engine, rev, store.Replay)
+		}
+	}
+	return ops
+}
+
+// gate5GridCrossCheck proves exactly-once effects for the grid run: every
+// wire operation classified by its response cases, the committed ops
+// matching the replay rows exactly, and the rejected, stale, denied,
+// busy and corrupted attempts leaving no row.
+func gate5GridCrossCheck(t *testing.T, engine string, report gate5Report, store invoiceStore) {
+	t.Helper()
+	const api = "/api/tenants/1/invoices/7"
+	gets := map[string]int{}
+	deniedLoads := 0
+	opCases := map[string]map[string]bool{}
+	opSavedReal := map[string]bool{}
+	opSavedSynthetic := map[string]bool{}
+	unreadable := 0
+	for _, call := range report.Ledger {
+		if !strings.HasPrefix(call.URL, report.Base) {
+			t.Fatalf("grid %s ledger holds a non-origin call %s", engine, call.URL)
+		}
+		invoice := strings.TrimPrefix(call.URL, report.Base)
+		if invoice != api && invoice != "/api/tenants/2/invoices/8" {
+			t.Fatalf("grid %s ledger holds a non-invoice call %s", engine, call.URL)
+		}
+		if call.Method == "GET" {
+			var outcome struct {
+				Case string `json:"case"`
+			}
+			if err := json.Unmarshal([]byte(call.ResponseBody), &outcome); err != nil || outcome.Case == "" {
+				t.Fatalf("grid %s ledger holds an unreadable load body %q", engine, call.ResponseBody)
+			}
+			if invoice != api {
+				if outcome.Case != "invoice_contract::grid_load_forbidden" {
+					t.Fatalf("grid %s foreign-invoice load case %s, want the denial", engine, outcome.Case)
+				}
+				deniedLoads++
+				continue
+			}
+			gets[outcome.Case]++
+			continue
+		}
+		if invoice != api {
+			t.Fatalf("grid %s ledger holds a foreign-invoice %s", engine, call.URL)
+		}
+		if call.Method != "POST" {
+			t.Fatalf("grid %s ledger holds a %s call", engine, call.Method)
+		}
+		var body struct {
+			OperationID string `json:"operation_id"`
+		}
+		if err := json.Unmarshal([]byte(call.RequestBody), &body); err != nil || body.OperationID == "" {
+			t.Fatalf("grid %s ledger holds an unreadable save body %q", engine, call.RequestBody)
+		}
+		if opCases[body.OperationID] == nil {
+			opCases[body.OperationID] = map[string]bool{}
+		}
+		var outcome struct {
+			Case string `json:"case"`
+		}
+		if err := json.Unmarshal([]byte(call.ResponseBody), &outcome); err != nil || outcome.Case == "" {
+			unreadable++
+			continue
+		}
+		opCases[body.OperationID][outcome.Case] = true
+		if outcome.Case == "invoice_contract::grid_saved" {
+			if strings.Contains(call.ResponseBody, `"revision":"99"`) {
+				opSavedSynthetic[body.OperationID] = true
+			} else {
+				opSavedReal[body.OperationID] = true
+			}
+		}
+	}
+	if gets["invoice_contract::grid_loaded"] != 8 || gets["invoice_contract::grid_load_unavailable"] != 1 || deniedLoads != 1 || len(report.Ledger) != 32 {
+		t.Fatalf("grid %s loads %+v with %d foreign denials over %d calls, want 8 loaded, 1 unavailable, 1 denial, 32 calls", engine, gets, deniedLoads, len(report.Ledger))
+	}
+	terminal := map[string]int{}
+	for _, cases := range opCases {
+		for _, leaf := range []string{"invoice_contract::grid_invalid", "invoice_contract::grid_conflict", "invoice_contract::grid_forbidden", "invoice_contract::grid_unavailable"} {
+			if cases[leaf] {
+				terminal[leaf]++
+			}
+		}
+	}
+	for _, leaf := range []string{"invoice_contract::grid_invalid", "invoice_contract::grid_conflict", "invoice_contract::grid_forbidden", "invoice_contract::grid_unavailable"} {
+		if terminal[leaf] != 1 {
+			t.Fatalf("grid %s terminal case %s seen %d times, want 1", engine, leaf, terminal[leaf])
+		}
+	}
+	if unreadable != 2 {
+		t.Fatalf("grid %s unreadable saves = %d, want the truncate and garbage attempts", engine, unreadable)
+	}
+	if len(opSavedSynthetic) != 1 {
+		t.Fatalf("grid %s synthetic saves = %d, want the one rev-99 probe fulfill", engine, len(opSavedSynthetic))
+	}
+	replayOps := gate5RequireReplay(t, "grid", engine, store, "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16")
+	if !replayOps["op-up23-race"] {
+		t.Fatalf("grid %s replay lacks the racing commit", engine)
+	}
+	for op := range opSavedReal {
+		if !replayOps[op] {
+			t.Fatalf("grid %s saved op %s left no replay row", engine, op)
+		}
+	}
+	for op, cases := range opCases {
+		if opSavedReal[op] {
+			continue
+		}
+		if replayOps[op] {
+			t.Fatalf("grid %s unsaved op %s left a replay row (cases %v)", engine, op, cases)
+		}
+	}
+	if len(opSavedReal) != 15 || len(replayOps) != 15 {
+		t.Fatalf("grid %s saved ops = %d, replay rows = %d, want 15 and 15", engine, len(opSavedReal), len(replayOps))
+	}
+	row := requireInvoice(t, store, "7", "16", gate5SeedSeats, gate5SeedDetails)
+	if len(row.Lines) != 1 {
+		t.Fatalf("grid %s lines %+v, want the single adopted line", engine, row.Lines)
+	}
+	line := row.Lines[0]
+	if line.Key != "k1" || line.ID != "sku-1" || line.Quantity != "2" || line.Price != "2800" || line.Position != "0" {
+		t.Fatalf("grid %s final line %+v", engine, line)
+	}
+	requireInvoice(t, store, "8", "1", "1", "Globex")
+}
+
+// gate5OccurrenceTuple is the pinned guard-evidence shape per occurrence.
+type gate5OccurrenceTuple struct {
+	Kind   string
+	Phase  string
+	Effect string
+	Reason string
+	Header string
+}
+
+// gate5InvoiceOccurrences asserts the exact guard-occurrence sequence: the
+// missing-target request/response pair, the control-header and OOB
+// rejections, and the redirect rejection on Chromium.
+func gate5InvoiceOccurrences(t *testing.T, engine string, report gate5Report) {
+	t.Helper()
+	want := []gate5OccurrenceTuple{
+		{"action::missing_target", "request", "none", "target_absent", ""},
+		{"action::missing_target", "response", "uncertain", "", ""},
+		{"action::protocol", "response", "uncertain", "control_header", "redirect"},
+		{"action::protocol", "swap", "uncertain", "task_shape", ""},
+	}
+	if engine == "chromium" {
+		want = append(want, gate5OccurrenceTuple{"action::protocol", "response", "uncertain", "redirect", ""})
+	}
+	if len(report.Occurrences) != len(want) {
+		t.Fatalf("invoice %s occurrences %+v, want %d", engine, report.Occurrences, len(want))
+	}
+	for i, tuple := range want {
+		got := report.Occurrences[i]
+		if got.Kind != tuple.Kind || got.Phase != tuple.Phase || got.Effect != tuple.Effect || got.Header != tuple.Header {
+			t.Fatalf("invoice %s occurrence %d = %+v, want %+v", engine, i, got, tuple)
+		}
+		if i == 1 {
+			if got.Reason != "target_absent" && got.Reason != "target_detached" {
+				t.Fatalf("invoice %s occurrence %d reason %q, want target_absent or target_detached", engine, i, got.Reason)
+			}
+			continue
+		}
+		if got.Reason != tuple.Reason {
+			t.Fatalf("invoice %s occurrence %d = %+v, want %+v", engine, i, got, tuple)
+		}
+	}
+	if engine == "webkit" {
+		if len(report.Limitations) != 1 || report.Limitations[0].ID != "L-redirect-webkit" {
+			t.Fatalf("invoice webkit limitations %+v, want exactly L-redirect-webkit", report.Limitations)
+		}
+	} else if len(report.Limitations) != 0 {
+		t.Fatalf("invoice chromium limitations %+v, want none", report.Limitations)
+	}
+}
+
+// gate5Matrix shares one toolchain, staged projects and verified pairings
+// across the four served suites.
+type gate5Matrix struct {
+	ctx        context.Context
+	toolchain  string
+	canlc      string
+	nodePath   string
+	sourceRoot string
+	browserDir string
+	driver     string
+	serverRoot string
+	serverHome string
+	pairings   map[string]gate5Pairing
+	versions   map[string]string
+}
+
+func (m *gate5Matrix) serve(t *testing.T, pairing gate5Pairing, port int) (base string, db string, stop func()) {
+	t.Helper()
+	home := t.TempDir()
+	db = gate5SeedDB(t, m.ctx, m.toolchain, home, m.driver, m.serverRoot)
+	base, stop = serveInvoice(t, m.ctx, m.toolchain, home, filepath.Join(pairing.Directory, "entry.ts"), db, port, "")
+	return base, db, stop
+}
+
+func (m *gate5Matrix) gridLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	pairing := m.pairings["grid"]
+	base, db, stop := m.serve(t, pairing, port)
+	gate5ServedPairing(t, "grid", base, "/invoice-grid?tenant=1&invoice=7", "", pairing)
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "grid", engine,
+		"grid.mjs", engine, base, outdir, db, pairing.Entry)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "grid", engine, raw, 32, true)
+	if len(report.Limitations) != 3 || report.Limitations[0].ID != "L-keystroke-eaten" ||
+		report.Limitations[1].ID != "L-flight" || report.Limitations[2].ID != "L-double-render" {
+		t.Fatalf("grid %s limitations %+v, want the three pinned limits", engine, report.Limitations)
+	}
+	gate5Screenshot(t, "grid", engine, outdir)
+	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
+	gate5GridCrossCheck(t, engine, report, store)
+	gate5Evidence(t, outdir, "grid-"+engine)
+	t.Logf("gate5 grid %s %s: 32 checks, %d loopback requests, %d invoice calls, rev 16 committed with 15 replay rows",
+		engine, report.Version, len(report.Requests), len(report.Ledger))
+}
+
+func (m *gate5Matrix) conformanceLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	pairing := m.pairings["fixture"]
+	base, db, stop := m.serve(t, pairing, port)
+	gate5ServedPairing(t, "conformance", base, "/invoice-grid?scenario=equality", "", pairing)
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "conformance", engine,
+		"conformance.mjs", engine, base, outdir, pairing.Entry)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "conformance", engine, raw, 17, true)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("conformance %s limitations %+v, want none", engine, report.Limitations)
+	}
+	for _, entry := range report.Requests {
+		if strings.Contains(entry.URL, "/api/") {
+			t.Fatalf("conformance %s fixture called an API: %s", engine, entry.URL)
+		}
+	}
+	gate5Screenshot(t, "conformance", engine, outdir)
+	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
+	row := requireInvoice(t, store, "7", "1", gate5SeedSeats, gate5SeedDetails)
+	gate5RequireSeedLines(t, "conformance", engine, row)
+	if len(store.Replay) != 0 {
+		t.Fatalf("conformance %s replay rows %+v, want none", engine, store.Replay)
+	}
+	gate5Evidence(t, outdir, "conformance-"+engine)
+	t.Logf("gate5 conformance %s %s: 17 checks, %d loopback requests, database untouched",
+		engine, report.Version, len(report.Requests))
+}
+
+func (m *gate5Matrix) emptyLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	pairing := m.pairings["empty"]
+	base, db, stop := m.serve(t, pairing, port)
+	gate5ServedPairing(t, "empty", base, "/invoice-grid?tenant=1&invoice=7", "", pairing)
+	mapRoute := pairing.Files["browser/browser.js.map"]
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "empty", engine,
+		"empty.mjs", engine, base, outdir, pairing.Entry, mapRoute, pairing.Table)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "empty", engine, raw, 4, true)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("empty %s limitations %+v, want none", engine, report.Limitations)
+	}
+	for _, entry := range report.Requests {
+		if strings.Contains(entry.URL, "/api/") || strings.Contains(entry.URL, "/tenants/") {
+			t.Fatalf("empty %s called an API: %s", engine, entry.URL)
+		}
+	}
+	gate5Screenshot(t, "empty", engine, outdir)
+	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
+	row := requireInvoice(t, store, "7", "1", gate5SeedSeats, gate5SeedDetails)
+	gate5RequireSeedLines(t, "empty", engine, row)
+	if len(store.Replay) != 0 {
+		t.Fatalf("empty %s replay rows %+v, want none", engine, store.Replay)
+	}
+	gate5Evidence(t, outdir, "empty-"+engine)
+	t.Logf("gate5 empty %s %s: 4 checks, degenerate program booted from served bytes",
+		engine, report.Version)
+}
+
+func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	pairing := m.pairings["grid"]
+	base, db, stop := m.serve(t, pairing, port)
+	status, form, _ := invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
+	if status != 200 {
+		t.Fatalf("invoice %s form page: %d, want 200", engine, status)
+	}
+	want := `<script type="module" src="` + pairing.Entry + `"></script>`
+	if strings.Count(form, want) != 1 {
+		t.Fatalf("invoice %s form carries the paired entry %d times, want exactly once", engine, strings.Count(form, want))
+	}
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "invoice", engine,
+		"invoice.mjs", base, outdir, db, engine, pairing.Entry)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "invoice", engine, raw, 19, false)
+	gate5InvoiceOccurrences(t, engine, report)
+	gate5Screenshot(t, "invoice", engine, outdir)
+	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
+	row := requireInvoice(t, store, "7", "5", gate5SeedSeats, "Guard Final")
+	gate5RequireSeedLines(t, "invoice", engine, row)
+	gate5RequireReplay(t, "invoice", engine, store, "2", "3", "4", "5")
+	requireInvoice(t, store, "8", "1", "1", "Globex")
+	gate5Evidence(t, outdir, "invoice-"+engine)
+	t.Logf("gate5 invoice %s %s: 19 checks, %d guard occurrences, rev 5 committed with 4 replay rows",
+		engine, report.Version, len(report.Occurrences))
+}
+
+func TestGate5ServedMatrix(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 5 execution")
@@ -619,9 +1098,20 @@ func TestGate5GridMatrix(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(browserDir, "node_modules/playwright/package.json")); err != nil {
 		t.Skip("run bun ci in tests/integration/browser for the pinned harness")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Minute)
 	defer cancel()
-	toolchain, canlc, sidecar, installed := gate5Toolchain(t, ctx, sourceRoot, archive)
+	matrix := &gate5Matrix{
+		ctx:        ctx,
+		sourceRoot: sourceRoot,
+		browserDir: browserDir,
+		pairings:   map[string]gate5Pairing{},
+		versions:   map[string]string{},
+	}
+	toolchain, canlc, _, installed := gate5Toolchain(t, ctx, sourceRoot, archive)
+	matrix.toolchain = toolchain
+	matrix.canlc = canlc
+	matrix.nodePath = nodePath
+	matrix.driver = filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
 	mode := "staged bundle"
 	if installed {
 		mode = "installed release"
@@ -632,247 +1122,83 @@ func TestGate5GridMatrix(t *testing.T) {
 	t.Logf("gate5 host bound: %s on %s/%s bun %s rev %s (archive sha256 %s)",
 		mode, host["platform"], host["architecture"], host["bun"], host["revision"][:12], hex.EncodeToString(archiveDigest[:])[:12])
 
+	// Both named engines are required: probe before building so a
+	// missing engine fails fast instead of after a long build.
+	for _, engine := range []string{"chromium", "webkit"} {
+		matrix.versions[engine] = gate5BrowserProbe(t, ctx, nodePath, browserDir, engine)
+		t.Logf("gate5 required browser %s at %s", engine, matrix.versions[engine])
+	}
+
 	serverRoot, serverHome := stageApplication(t, ctx, toolchain, sourceRoot, "invoice")
+	matrix.serverRoot = serverRoot
+	matrix.serverHome = serverHome
 	serverAssertions, serverReal := gate5Assert(t, ctx, canlc, serverHome, serverRoot, "invoice")
-	serverFirst, _ := gate5Build(t, ctx, canlc, serverHome, serverRoot)
-	serverSecond, serverDir := gate5Build(t, ctx, canlc, serverHome, serverRoot)
-	if serverFirst != serverSecond {
-		t.Fatalf("server rebuild drifted: %s vs %s", serverFirst, serverSecond)
-	}
-	assertNoStrayEmit(t, serverRoot, serverDir)
-
 	gridRoot, gridHome := stageProject(t, sourceRoot, "examples/invoice-grid")
-	gridAssertions, gridReal := gate5Assert(t, ctx, canlc, gridHome, gridRoot, "grid")
-	gridFirst, _ := gate5Build(t, ctx, canlc, gridHome, gridRoot, "--target", "browser")
-	gridSecond, gridDir := gate5Build(t, ctx, canlc, gridHome, gridRoot, "--target", "browser")
-	if gridFirst != gridSecond {
-		t.Fatalf("grid rebuild drifted: %s vs %s", gridFirst, gridSecond)
-	}
-	assertNoStrayEmit(t, gridRoot, gridDir)
-	gate5Asset(t, gridDir)
-	gate5ImportAudit(t, gridDir)
-	gate5NoDirectIO(t, gridDir)
+	fixtureRoot, fixtureHome := gate5StageFixture(t, sourceRoot)
+	emptyRoot, emptyHome := gate5StageEmpty(t)
 
-	browserTs := filepath.Join(gridDir, "browser.ts")
-	bundleDir := t.TempDir()
-	firstBundle := gate5Bundle(t, ctx, sidecar, browserTs, bundleDir)
-	secondBundle := gate5Bundle(t, ctx, sidecar, browserTs, bundleDir)
-	if !bytes.Equal(firstBundle, secondBundle) {
-		t.Fatal("grid bundle is not deterministic")
-	}
-	for _, want := range []string{"$canBrowserMain", "platform/browser.ts", "expectedIOFailure", "/invoices/save", "/invoices/:invoice_id"} {
-		if !bytes.Contains(firstBundle, []byte(want)) {
-			t.Fatalf("bundle lacks %q", want)
+	browserBuilds := map[string]string{}
+	browserRoots := map[string]int{}
+	browserDirs := map[string]string{}
+	for _, project := range []struct{ name, home, root string }{
+		{"grid", gridHome, gridRoot},
+		{"fixture", fixtureHome, fixtureRoot},
+		{"empty", emptyHome, emptyRoot},
+	} {
+		first := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
+		second := gate5Build(t, ctx, canlc, project.home, project.root, "--target", "browser")
+		if first.BuildID != second.BuildID {
+			t.Fatalf("%s browser rebuild drifted: %s vs %s", project.name, first.BuildID, second.BuildID)
+		}
+		assertNoStrayEmit(t, project.root, second.Directory)
+		gate5Asset(t, second.Directory)
+		gate5ImportAudit(t, second.Directory)
+		browserBuilds[project.name] = first.BuildID
+		browserRoots[project.name] = first.Roots
+		browserDirs[project.name] = second.Directory
+		matrix.pairings[project.name] = gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(second.Directory, "browser", "manifest.json"))
+		repeat := gate5PairBuild(t, ctx, canlc, serverHome, serverRoot, filepath.Join(second.Directory, "browser", "manifest.json"))
+		if repeat.BuildID != matrix.pairings[project.name].BuildID || repeat.Entry != matrix.pairings[project.name].Entry {
+			t.Fatalf("%s paired rebuild drifted: %s vs %s", project.name, repeat.BuildID, matrix.pairings[project.name].BuildID)
 		}
 	}
-	for _, banned := range gate5ServerModules {
-		if bytes.Contains(firstBundle, []byte(banned)) {
-			t.Fatalf("bundle reaches server-only %s", banned)
-		}
-	}
-	t.Logf("gate5 builds: server %d assertions (%d real-can) build %s; grid %d assertions (%d real-can) browser build %s, bundle %d bytes deterministic",
-		serverAssertions, serverReal, serverFirst[:12], gridAssertions, gridReal, gridFirst[:12], len(firstBundle))
+	assertNoStrayEmit(t, serverRoot, matrix.pairings["grid"].Directory)
+	gate5NoDirectIO(t, browserDirs["grid"])
+	t.Logf("gate5 builds: server %d assertions (%d real-can); grid %d roots browser %s paired %s; fixture %d roots browser %s paired %s; empty %d roots browser %s paired %s",
+		serverAssertions, serverReal,
+		browserRoots["grid"], browserBuilds["grid"][:12], matrix.pairings["grid"].BuildID[:12],
+		browserRoots["fixture"], browserBuilds["fixture"][:12], matrix.pairings["fixture"].BuildID[:12],
+		browserRoots["empty"], browserBuilds["empty"][:12], matrix.pairings["empty"].BuildID[:12])
 
-	browsers := []struct {
-		name        string
-		api, origin int
-		required    bool
-	}{
-		{"chromium", gate5APIChromium, gate5OriginChromium, true},
-		{"firefox", gate5APIFirefox, gate5OriginFirefox, false},
-		{"webkit", gate5APIWebkit, gate5OriginWebkit, false},
-	}
-	qualified := map[string]string{}
-	unavailable := []string{}
-	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
-	entry := filepath.Join(serverDir, "entry.ts")
-	for _, candidate := range browsers {
-		version, ok := gate5BrowserProbe(t, ctx, nodePath, browserDir, candidate.name)
-		if !ok {
-			if candidate.required {
-				t.Fatalf("required browser %s did not launch", candidate.name)
-			}
-			unavailable = append(unavailable, candidate.name)
-			continue
-		}
-		qualified[candidate.name] = version
-		bhome := t.TempDir()
-		db, err := filepath.EvalSymlinks(filepath.Join(bhome, "grid.sqlite"))
-		if err != nil {
-			resolved, resolveErr := filepath.EvalSymlinks(bhome)
-			if resolveErr != nil {
-				t.Fatal(resolveErr)
-			}
-			db = filepath.Join(resolved, "grid.sqlite")
-		}
-		setup := invoiceDriver(t, ctx, toolchain, bhome, driver, "setup", db, filepath.Join(serverRoot, "schema.sql"))
-		var setupReport struct {
-			Tables int `json:"tables"`
-		}
-		if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
-			t.Fatalf("invalid grid setup report %v %s", err, string(setup))
-		}
-		invoiceDriver(t, ctx, toolchain, bhome, driver, "seed", db)
-		snapshot := snapshotCredential(t, bhome, "INVOICE_DB", db)
-		_, stopAPI := serveApplication(t, ctx, toolchain, bhome, entry, snapshot, candidate.api, "/health")
-		origin := newGate5Origin("http://127.0.0.1:"+strconv.Itoa(candidate.api), firstBundle)
-		originBase, stopOrigin := serveGate5Origin(t, origin, candidate.origin)
+	t.Run("grid", func(t *testing.T) {
+		matrix.gridLeg(t, "chromium", gate5PortGridChromium)
+		matrix.gridLeg(t, "webkit", gate5PortGridWebkit)
+	})
+	t.Run("conformance", func(t *testing.T) {
+		matrix.conformanceLeg(t, "chromium", gate5PortConfChromium)
+		matrix.conformanceLeg(t, "webkit", gate5PortConfWebkit)
+	})
+	t.Run("empty", func(t *testing.T) {
+		matrix.emptyLeg(t, "chromium", gate5PortEmptyChromium)
+		matrix.emptyLeg(t, "webkit", gate5PortEmptyWebkit)
+	})
+	t.Run("invoice", func(t *testing.T) {
+		matrix.invoiceLeg(t, "chromium", gate5PortInvChromium)
+		matrix.invoiceLeg(t, "webkit", gate5PortInvWebkit)
+	})
 
-		outdir := t.TempDir()
-		harness := exec.CommandContext(ctx, nodePath, "grid.mjs", candidate.name, originBase, outdir, db)
-		harness.Dir = browserDir
-		harness.Env = []string{"PATH=" + filepath.Dir(nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
-		result, err := harness.CombinedOutput()
-		stopOrigin()
-		stopAPI()
-		if err != nil {
-			t.Fatalf("%s harness: %v %s", candidate.name, err, result)
-		}
-		raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
-		if err != nil {
-			t.Fatal(err)
-		}
-		var report gate5Report
-		if err := json.Unmarshal(raw, &report); err != nil || !report.Passed || len(report.Checks) != 27 {
-			t.Fatalf("%s invalid grid report %v %s", candidate.name, err, raw)
-		}
-		for _, entry := range report.Checks {
-			if !entry.Passed {
-				t.Fatalf("%s check %s failed: %s", candidate.name, entry.Name, entry.Detail)
-			}
-		}
-		if report.Browser != candidate.name || report.Version == "" || report.UserAgent == "" {
-			t.Fatalf("%s report identity %+v", candidate.name, report)
-		}
-		if len(report.Aborted) != 0 || len(report.PageErrors) != 0 {
-			t.Fatalf("%s aborted=%v pageerrors=%v", candidate.name, report.Aborted, report.PageErrors)
-		}
-		for _, entry := range report.Requests {
-			parsed, parseErr := url.Parse(entry.URL)
-			if parseErr != nil || (parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "localhost") {
-				t.Fatalf("%s grid left loopback: %s", candidate.name, entry.URL)
-			}
-		}
-		shot, err := os.Stat(filepath.Join(outdir, "screenshot.png"))
-		if err != nil || shot.Size() == 0 {
-			t.Fatalf("%s missing browser screenshot", candidate.name)
-		}
-
-		origin.mu.Lock()
-		rewrites, consumed, upstream, pageHits, bundleHits := origin.rewrites, origin.faultsConsumed, origin.faultUpstream, origin.pageHits, origin.bundleHits
-		origin.mu.Unlock()
-		if pageHits == 0 || bundleHits == 0 {
-			t.Fatalf("%s origin served page=%d bundle=%d", candidate.name, pageHits, bundleHits)
-		}
-		if len(rewrites) == 0 {
-			t.Fatalf("%s origin rewrote no captured loads", candidate.name)
-		}
-		for _, rewrite := range rewrites {
-			if !strings.HasPrefix(rewrite, "GET /invoices/") || !strings.Contains(rewrite, " -> /invoices/load?invoice_id=") {
-				t.Fatalf("%s unexpected rewrite %q", candidate.name, rewrite)
-			}
-		}
-		if consumed["truncate"] != 1 || consumed["garbage"] != 1 || upstream["truncate"] != 200 || upstream["garbage"] != 200 {
-			t.Fatalf("%s faults consumed=%v upstream=%v", candidate.name, consumed, upstream)
-		}
-
-		// Database cross-check: final committed state plus exactly-once
-		// replay evidence for every operation id the harness sent.
-		store := inspectInvoice(t, ctx, toolchain, bhome, driver, db)
-		requireInvoiceRevision(t, store, "inv-1", "9", "Racer")
-		requireInvoiceRevision(t, store, "inv-2", "1", "Globex")
-		if len(store.Lines) != 1 || store.Lines[0].LineKey != "k1" || store.Lines[0].SKU != "sku-1" || store.Lines[0].Qty != "2" || store.Lines[0].Position != "0" {
-			t.Fatalf("%s lines %+v", candidate.name, store.Lines)
-		}
-		// Every wire op classified by its response cases: the 8 saved ops
-		// must match the 8 replay rows exactly (attempt and replay share
-		// one id and one effect), while the rejected, stale and denied
-		// attempts must have crossed the wire and left no row.
-		opCases := map[string]map[string]bool{}
-		for _, call := range report.Ledger {
-			if call.Method != "POST" || !strings.HasSuffix(call.URL, "/invoices/save") {
-				continue
-			}
-			var body struct {
-				OperationID string `json:"operation_id"`
-			}
-			if err := json.Unmarshal([]byte(call.RequestBody), &body); err != nil || body.OperationID == "" {
-				t.Fatalf("%s ledger holds an unreadable save body %q", candidate.name, call.RequestBody)
-			}
-			if opCases[body.OperationID] == nil {
-				opCases[body.OperationID] = map[string]bool{}
-			}
-			var outcome struct {
-				Case string `json:"case"`
-			}
-			if err := json.Unmarshal([]byte(call.ResponseBody), &outcome); err == nil && outcome.Case != "" {
-				opCases[body.OperationID][outcome.Case] = true
-			}
-		}
-		if len(store.Replay) != 8 {
-			t.Fatalf("%s replay rows %+v, want 8", candidate.name, store.Replay)
-		}
-		replayOps := map[string]bool{}
-		for _, row := range store.Replay {
-			if len(row.Digest) != 64 || row.InvoiceID != "inv-1" {
-				t.Fatalf("%s replay row %+v", candidate.name, row)
-			}
-			if replayOps[row.OperationID] {
-				t.Fatalf("%s duplicated replay for %s", candidate.name, row.OperationID)
-			}
-			replayOps[row.OperationID] = true
-		}
-		saved, terminal := 0, map[string]int{}
-		for op, cases := range opCases {
-			switch {
-			case cases["records::saved"]:
-				saved++
-				if !replayOps[op] {
-					t.Fatalf("%s saved op %s left no replay row", candidate.name, op)
-				}
-			default:
-				for _, leaf := range []string{"records::rejected", "records::stale", "records::denied"} {
-					if cases[leaf] {
-						terminal[leaf]++
-					}
-				}
-				if replayOps[op] {
-					t.Fatalf("%s unsaved op %s left a replay row", candidate.name, op)
-				}
-			}
-		}
-		if saved != 8 || len(replayOps) != 8 {
-			t.Fatalf("%s saved ops = %d, replay rows = %d, want 8 and 8", candidate.name, saved, len(replayOps))
-		}
-		for _, leaf := range []string{"records::rejected", "records::stale", "records::denied"} {
-			if terminal[leaf] != 1 {
-				t.Fatalf("%s terminal case %s seen %d times, want 1", candidate.name, leaf, terminal[leaf])
-			}
-		}
-		if evidence := os.Getenv("CAN_BROWSER_EVIDENCE_DIR"); evidence != "" {
-			dest := filepath.Join(evidence, "grid-"+candidate.name)
-			if err := os.MkdirAll(dest, 0700); err != nil {
-				t.Fatal(err)
-			}
-			copyEvidenceFile(t, filepath.Join(outdir, "report.json"), filepath.Join(dest, "report.json"))
-			copyEvidenceFile(t, filepath.Join(outdir, "screenshot.png"), filepath.Join(dest, "screenshot.png"))
-		}
-		t.Logf("gate5 %s %s: 27 checks, %d loopback requests, %d invoice calls, rev 9 Racer committed with 8 replay rows",
-			candidate.name, report.Version, len(report.Requests), len(report.Ledger))
-	}
 	finalReport, err := json.MarshalIndent(map[string]any{
 		"mode": mode, "host": host,
-		"server": map[string]any{"assertions": serverAssertions, "real_can": serverReal, "build": serverFirst},
-		"grid":   map[string]any{"assertions": gridAssertions, "real_can": gridReal, "build": gridFirst, "bundle_bytes": len(firstBundle)},
-		"matrix": qualified, "unavailable": unavailable,
+		"server":  map[string]any{"assertions": serverAssertions, "real_can": serverReal},
+		"grid":    map[string]any{"roots": browserRoots["grid"], "browser": browserBuilds["grid"], "paired": matrix.pairings["grid"].BuildID, "entry": matrix.pairings["grid"].Entry},
+		"fixture": map[string]any{"roots": browserRoots["fixture"], "browser": browserBuilds["fixture"], "paired": matrix.pairings["fixture"].BuildID, "entry": matrix.pairings["fixture"].Entry},
+		"empty":   map[string]any{"roots": browserRoots["empty"], "browser": browserBuilds["empty"], "paired": matrix.pairings["empty"].BuildID, "entry": matrix.pairings["empty"].Entry},
+		"matrix":  matrix.versions,
 		"limitations": []string{
-			"L-route: origin rewrites GET /invoices/{id} to /invoices/load?invoice_id=; the server serves the query spelling until the action adapter mounts captured paths",
-			"L-focus-row: add/move focus() runs pre-attach and never lands; remove-to-add lands and typing never disturbs focus",
-			"L-notice: blocked-save guard notice is wiped by the re-render; nothing is ever sent",
-			"L-flight: no mid-flight saving indication; the single-flight guard holds",
-			"L-wire: grid wire-field renames pass grid-only assert (positional construction); wire agreement is owned by the cross-target driver test",
-			"L-unlink: server action renames pass with the served spelling untouched; declarations are not linked to served routes",
-			"engine shims: node:async_hooks/node:util/node:fs(node:fs serves the real source index, zero module maps)/node:crypto(SHA-256, parity-checked)",
+			"L-keystroke-eaten: every keydown runs the grid save handler and re-renders; typed characters usually lose the race and sometimes ghost",
+			"L-flight: no mid-flight saving indication paints; the single-flight guard holds",
+			"L-double-render: an ignored mid-flight press plus the outcome render leaks a second grid tree",
+			"L-redirect-webkit: no same-origin 302 is producible under WebKit interception; the redirect guard branch is qualified on Chromium",
 		},
 	}, "", "  ")
 	if err != nil {
@@ -881,23 +1207,11 @@ func TestGate5GridMatrix(t *testing.T) {
 	t.Logf("gate5 report:\n%s", finalReport)
 }
 
-func mustReadFile(t *testing.T, path string) []byte {
-	t.Helper()
-	raw, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return raw
-}
-
-// TestGate5GridStatic pins the browser-independent Gate 5 contracts without a
-// browser: the SHA-256 shim's digest parity against Go crypto/sha256, server
-// capability rejection of the browser target, the grid's timer-free leak
-// surface, the liveness of the load-path divergence (the captured GET 404s on
-// the API directly, so the origin rewrite is load-bearing), and four
-// contract-edit legs (grid route edits reach fetch bytes; grid draft renames
-// diagnose stale uses; grid wire renames pass positionally, pinning L-wire;
-// server action renames pass unlinked, pinning L-unlink).
+// TestGate5GridStatic pins the browser-independent Gate 5 contracts without
+// a browser: the server project's argv entry rejects the browser target at
+// the entry-shape gate, and the grid keeps its timer-free leak surface.
+// The shim parity, load-path liveness and contract-edit legs are gone with
+// the origin proxy; UP21 supplies the replacement edits.
 func TestGate5GridStatic(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
@@ -906,52 +1220,19 @@ func TestGate5GridStatic(t *testing.T) {
 	sourceRoot := mustSourceRoot(t)
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	toolchain, canlc, sidecar, _ := gate5Toolchain(t, ctx, sourceRoot, archive)
-
-	vectors := []string{
-		"",
-		"abc",
-		"can-callable-instance-v1\x00" + `[[{"root":{"package":"p","declaration":"d","name":"n"},"segments":[]}],"site#3",7]`,
-		strings.Repeat("x", 1000),
-		"héllo wörld ✓",
-	}
-	runner := "import { createHash } from " + strconv.Quote(filepath.Join(sourceRoot, "tests/integration/browser/sha256-shim.mjs")) + ";\n" +
-		"const vectors = " + mustMarshalJSON(t, vectors) + ";\n" +
-		"for (const v of vectors) console.log(createHash(\"sha256\").update(v).digest(\"hex\"));\n"
-	script := filepath.Join(t.TempDir(), "vectors.mjs")
-	if err := os.WriteFile(script, []byte(runner), 0600); err != nil {
-		t.Fatal(err)
-	}
-	cmd := exec.CommandContext(ctx, sidecar, script)
-	cmd.Dir = t.TempDir()
-	cmd.Env = []string{"PATH=/nonexistent", "HOME=" + t.TempDir()}
-	vectorOut, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Fatalf("shim vectors: %v %s", err, vectorOut)
-	}
-	digests := strings.Split(strings.TrimSpace(string(vectorOut)), "\n")
-	if len(digests) != len(vectors) {
-		t.Fatalf("shim vectors = %d, want %d: %s", len(digests), len(vectors), vectorOut)
-	}
-	for i, vector := range vectors {
-		sum := sha256.Sum256([]byte(vector))
-		if digests[i] != hex.EncodeToString(sum[:]) {
-			t.Fatalf("shim vector %d: %s, want %s", i, digests[i], hex.EncodeToString(sum[:]))
-		}
-	}
-	t.Logf("gate5 shim: %d SHA-256 vectors agree with Go crypto/sha256", len(vectors))
+	toolchain, canlc, _, _ := gate5Toolchain(t, ctx, sourceRoot, archive)
 
 	serverRoot, serverHome := stageApplication(t, ctx, toolchain, sourceRoot, "invoice")
 	status, out, diag := gate5Canlc(t, ctx, canlc, serverHome, "build", "--target", "browser", serverRoot)
 	combined := out + "\n" + diag
-	if status == 0 || !strings.Contains(combined, "browser capability closure") || !strings.Contains(combined, "--target browser") {
-		t.Fatalf("server browser build: %d %.500s, want a capability-closure rejection", status, combined)
+	if status == 0 || !strings.Contains(combined, "browser entry must be") {
+		t.Fatalf("server browser build: %d %.500s, want an entry-shape rejection", status, combined)
 	}
 	t.Logf("gate5 capability: server project rejected for --target browser: %s", strings.TrimSpace(combined))
 
 	gridSources := filepath.Join(sourceRoot, "examples/invoice-grid/src")
 	var timerUses []string
-	err = filepath.WalkDir(gridSources, func(path string, entry os.DirEntry, err error) error {
+	err := filepath.WalkDir(gridSources, func(path string, entry os.DirEntry, err error) error {
 		if err != nil || entry.IsDir() || !strings.HasSuffix(path, ".can") {
 			return err
 		}
@@ -972,107 +1253,5 @@ func TestGate5GridStatic(t *testing.T) {
 	if len(timerUses) != 0 {
 		t.Fatalf("grid sets timers, widening the leak surface: %v", timerUses)
 	}
-
-	// The divergence is live: the API serves the query spelling and 404s the
-	// captured spelling the grid fetches, so the origin rewrite does real work.
-	_, _ = gate5Assert(t, ctx, canlc, serverHome, serverRoot, "invoice")
-	firstID, firstDir := gate5Build(t, ctx, canlc, serverHome, serverRoot)
-	secondID, _ := gate5Build(t, ctx, canlc, serverHome, serverRoot)
-	if firstID != secondID {
-		t.Fatalf("static server rebuild drifted: %s vs %s", firstID, secondID)
-	}
-	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
-	db := seedInvoiceDB(t, ctx, toolchain, serverHome, driver, serverRoot)
-	snapshot := snapshotCredential(t, serverHome, "INVOICE_DB", db)
-	apiBase, stopAPI := serveApplication(t, ctx, toolchain, serverHome, filepath.Join(firstDir, "entry.ts"), snapshot, gate5APIStatic, "/health")
-	defer stopAPI()
-	if status, body, _ := invoiceGet(t, apiBase, "/invoices/inv-1", "tok-alice"); status != 404 || body != "Not Found" {
-		t.Fatalf("captured load on the API: %d %q, want direct 404", status, body)
-	}
-	if status, body, _ := invoiceGet(t, apiBase, "/invoices/load?invoice_id=inv-1", "tok-alice"); status != 200 || !strings.Contains(body, `"records::found"`) {
-		t.Fatalf("query load on the API: %d %.200s, want the served spelling", status, body)
-	}
-
-	// Grid route edits reach fetch bytes without touching the server: the
-	// declaration moves, the browser build passes, and the bundle carries the
-	// new path and no trace of the old one.
-	editRoot, editHome := stageProject(t, sourceRoot, "examples/invoice-grid")
-	rewriteGate3File(t, editRoot, "src/web/web.can", "action save_invoice\n    post \"/invoices/save\"", "action save_invoice\n    post \"/invoices/save-v2\"")
-	if status, out, diag := gate5Canlc(t, ctx, canlc, editHome, "assert", editRoot); status != 0 || diag != "" {
-		t.Fatalf("edited grid assert: %d %s %s", status, out, diag)
-	}
-	_, editDir := gate5Build(t, ctx, canlc, editHome, editRoot, "--target", "browser")
-	edited := gate5Bundle(t, ctx, sidecar, filepath.Join(editDir, "browser.ts"), t.TempDir())
-	if !bytes.Contains(edited, []byte("/invoices/save-v2")) || bytes.Contains(edited, []byte("/invoices/save\"")) {
-		t.Fatal("edited bundle does not carry exactly the new save path")
-	}
-
-	// Grid draft-field renames diagnose their stale uses inside the grid.
-	wireRoot, wireHome := stageProject(t, sourceRoot, "examples/invoice-grid")
-	rewriteGate3File(t, wireRoot, "src/records/records.can", "record draft\n    str invoice_id\n    int base_revision\n    str customer\n", "record draft\n    str invoice_id\n    int base_revision\n    str customer_name\n")
-	status, out, diag = gate5Canlc(t, ctx, canlc, wireHome, "assert", wireRoot)
-	combined = out + "\n" + diag
-	if status == 0 || !strings.Contains(combined, "customer") {
-		t.Fatalf("draft rename assert: %d %.800s, want a diagnostic naming customer", status, combined)
-	}
-
-	// Grid wire-field renames pass grid-only assert: every construction site
-	// is positional, so no stale use names the field. This pins L-wire (the
-	// cross-target driver test owns wire agreement; grid assert alone does not
-	// catch wire drift) so a future checked wire linkage must update this leg.
-	posRoot, posHome := stageProject(t, sourceRoot, "examples/invoice-grid")
-	rewriteGate3File(t, posRoot, "src/records/records.can", "record invoice_json_wire\n    str session_token\n    str operation_id\n    str invoice_id\n    int revision\n    str customer\n", "record invoice_json_wire\n    str session_token\n    str operation_id\n    str invoice_id\n    int revision\n    str customer_name\n")
-	if status, out, diag := gate5Canlc(t, ctx, canlc, posHome, "assert", posRoot); status != 0 || diag != "" {
-		t.Fatalf("wire rename assert: %d %s %s, want the positional pass-through (L-wire)", status, out, diag)
-	}
-
-	// Server action renames pass unlinked: the declaration is the only
-	// reference, the served spelling keeps answering, and the build stays
-	// green. This pins L-unlink (declaration-to-serve gap) so the future
-	// checked linkage must update this leg.
-	linkRoot, linkHome := stageApplication(t, ctx, toolchain, sourceRoot, "invoice")
-	rewriteGate3File(t, linkRoot, "src/web/web.can", "provides [save_invoice, save_invoice_form,", "provides [save_invoice_v2, save_invoice_form,")
-	rewriteGate3File(t, linkRoot, "src/web/web.can", "action save_invoice\n", "action save_invoice_v2\n")
-	if status, out, diag := gate5Canlc(t, ctx, canlc, linkHome, "assert", linkRoot); status != 0 || diag != "" {
-		t.Fatalf("renamed server assert: %d %s %s", status, out, diag)
-	}
-	_, linkDir := gate5Build(t, ctx, canlc, linkHome, linkRoot)
-	linkDB := filepath.Join(linkHome, "link.sqlite")
-	setup := invoiceDriver(t, ctx, toolchain, linkHome, driver, "setup", linkDB, filepath.Join(linkRoot, "schema.sql"))
-	var setupReport struct {
-		Tables int `json:"tables"`
-	}
-	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
-		t.Fatalf("invalid link setup report %v %s", err, string(setup))
-	}
-	invoiceDriver(t, ctx, toolchain, linkHome, driver, "seed", linkDB)
-	linkSnapshot := snapshotCredential(t, linkHome, "INVOICE_DB", linkDB)
-	linkBase, stopLink := serveApplication(t, ctx, toolchain, linkHome, filepath.Join(linkDir, "entry.ts"), linkSnapshot, gate5APIStatic+2, "/health")
-	defer stopLink()
-	client := &http.Client{Timeout: 10 * time.Second}
-	request, err := http.NewRequest("POST", linkBase+"/invoices/save", strings.NewReader("not json"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	request.Header.Set("Content-Type", "application/json")
-	request.AddCookie(&http.Cookie{Name: "session", Value: "tok-alice"})
-	response, err := client.Do(request)
-	if err != nil {
-		t.Fatal(err)
-	}
-	payload, _ := io.ReadAll(response.Body)
-	response.Body.Close()
-	if response.StatusCode != 400 || string(payload) != "Bad Request" {
-		t.Fatalf("renamed server save route: %d %q, want the served spelling alive", response.StatusCode, payload)
-	}
-	t.Log("gate5 static: L-route live on the API, grid route edit rebundles, draft rename diagnoses, wire rename passes (L-wire), server rename passes unlinked (L-unlink)")
-}
-
-func mustMarshalJSON(t *testing.T, value any) string {
-	t.Helper()
-	raw, err := json.Marshal(value)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(raw)
+	t.Log("gate5 static: capability closure rejects the server browser build, grid sets no timers")
 }

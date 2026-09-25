@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"testing"
@@ -754,6 +755,34 @@ func parseWireVectors(t *testing.T, raw []byte) []wireVectorResult {
 	return results
 }
 
+// browserOverlayEdges parses one sealed-overlay table: the quoted
+// canonical-to-alternate pairs between the given markers.
+func browserOverlayEdges(t *testing.T, path, start, end string) map[string]string {
+	t.Helper()
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(raw)
+	lo := strings.Index(text, start)
+	if lo < 0 {
+		t.Fatalf("%s lacks the overlay table", path)
+	}
+	rest := text[lo+len(start):]
+	hi := strings.Index(rest, end)
+	if hi < 0 {
+		t.Fatalf("%s overlay table never closes", path)
+	}
+	edges := map[string]string{}
+	for _, match := range regexp.MustCompile(`"([^"]+)":\s*"([^"]+)"`).FindAllStringSubmatch(rest[:hi], -1) {
+		edges[match[1]] = match[2]
+	}
+	if len(edges) == 0 {
+		t.Fatalf("%s overlay table holds no edges", path)
+	}
+	return edges
+}
+
 func TestBrowserWireCodecParity(t *testing.T) {
 	bunPath, err := exec.LookPath("bun")
 	if err != nil {
@@ -770,29 +799,53 @@ func TestBrowserWireCodecParity(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Minute)
 	defer cancel()
-	probeCtx, probeCancel := context.WithTimeout(context.Background(), time.Minute)
-	defer probeCancel()
-	probe := exec.CommandContext(probeCtx, nodePath, "--input-type=module", "-e", `import("playwright").then(async ({chromium}) => { const browser = await chromium.launch(); console.log(browser.version()); await browser.close(); })`)
-	probe.Dir = browserDir
-	if result, err := probe.CombinedOutput(); err != nil {
-		if strings.Contains(string(result), "Executable doesn't exist") {
-			t.Skip("install the pinned playwright chromium for browser evidence")
-		}
-		t.Fatalf("browser probe: %v %s", err, result)
+	for _, engine := range []string{"chromium", "webkit"} {
+		version := gate5BrowserProbe(t, ctx, nodePath, browserDir, engine)
+		t.Logf("codec parity required browser %s at %s", engine, version)
 	}
 	vectorsModule := filepath.Join(sourceRoot, "runtime/test/browser-wire-vectors.ts")
 
 	reference := runWireVectors(t, ctx, bunPath, "-e",
 		`import { runBrowserWireVectors } from "`+vectorsModule+`"; console.log(JSON.stringify(runBrowserWireVectors()))`)
 
+	// The vector bundler resolves the vector graph through the
+	// compiler's sealed browser overlay and nothing else: every edge
+	// must still match the committed table in
+	// compiler/internal/browser/audit.go, and any other node: import
+	// fails the build loudly.
+	committed := browserOverlayEdges(t, filepath.Join(sourceRoot, "compiler/internal/browser/audit.go"),
+		"var browserOverlay = map[string]string{", "\n}")
+	bundler := browserOverlayEdges(t, filepath.Join(browserDir, "build-vectors.mjs"),
+		"const overlay = {", "};")
+	if len(committed) != 14 || len(bundler) != len(committed) {
+		t.Fatalf("overlay edges = %d committed, %d bundler, want 14 and 14", len(committed), len(bundler))
+	}
+	for from, to := range committed {
+		if bundler[from] != to {
+			t.Fatalf("overlay drift for %s: bundler %q, committed %q", from, bundler[from], to)
+		}
+	}
+
 	outdir := t.TempDir()
 	build := exec.CommandContext(ctx, bunPath, filepath.Join(browserDir, "build-vectors.mjs"),
-		filepath.Join(browserDir, "codec-vectors-entry.ts"), outdir)
+		filepath.Join(browserDir, "codec-vectors-entry.ts"), outdir, filepath.Join(sourceRoot, "runtime"))
 	build.Dir = browserDir
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("vector bundle: %v %s", err, out)
 	}
 	bundle := filepath.Join(outdir, "codec-vectors-entry.js")
+	bundleBytes, err := os.ReadFile(bundle)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// No module edge to a node builtin may survive: catalogue data may
+	// name host lowerings as strings, but no import or require edge
+	// may reach them, and no test-only shim text may ship.
+	for _, banned := range []string{`from "node:`, `from 'node:`, `require("node:`, `require('node:`, `import("node:`, `import('node:`, "sha256-shim", "grid-boot"} {
+		if strings.Contains(string(bundleBytes), banned) {
+			t.Fatalf("vector bundle carries test-only %s", banned)
+		}
+	}
 
 	bundled := runWireVectors(t, ctx, bunPath, "-e",
 		`await import("`+bundle+`"); console.log(JSON.stringify(globalThis.__canWireResults))`)
@@ -832,6 +885,16 @@ func TestBrowserWireCodecParity(t *testing.T) {
 		if err := json.Unmarshal(out, &observed); err != nil {
 			t.Fatalf("%s: invalid harness JSON: %v %.200q", name, err, string(out))
 		}
+		if evidence := os.Getenv("CAN_BROWSER_EVIDENCE_DIR"); evidence != "" {
+			dest := filepath.Join(evidence, "codec-"+name)
+			if err := os.MkdirAll(dest, 0700); err != nil {
+				t.Fatal(err)
+			}
+			copyEvidenceFile(t, bundle, filepath.Join(dest, "vectors.js"))
+			if err := os.WriteFile(filepath.Join(dest, "parity.json"), out, 0600); err != nil {
+				t.Fatal(err)
+			}
+		}
 		t.Logf("%s %s rawJSON=%v %s", observed.Browser, observed.Version, observed.RawJSON, observed.UserAgent)
 		if !observed.RawJSON {
 			t.Logf("%s lacks JSON.rawJSON, skipping", name)
@@ -855,6 +918,6 @@ func TestBrowserWireCodecParity(t *testing.T) {
 	}
 
 	t.Run("chromium", func(t *testing.T) { attempt(t, "chromium", true) })
-	t.Run("webkit", func(t *testing.T) { attempt(t, "webkit", false) })
+	t.Run("webkit", func(t *testing.T) { attempt(t, "webkit", true) })
 	t.Run("firefox", func(t *testing.T) { attempt(t, "firefox", false) })
 }

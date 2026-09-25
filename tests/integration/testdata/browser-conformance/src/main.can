@@ -1,0 +1,540 @@
+/// Browser conformance fixture (UP23). A minimal browser-target Can
+/// application exercising the runtime operations the invoice grid
+/// never touches: query edge verdicts per key, timer fire/order/
+/// disposal silence, view-disposal resource release, submit/Enter
+/// sync cancellation with key gating, post-attach focus landing,
+/// and exact equality/codec verdicts. The scenario comes from the
+/// `scenario` query key; every scenario renders verdict lines plus
+/// `p#done` (except the boot notices, which render `p#status`
+/// instead). Assertion rows cover the assert-scope path with real
+/// pure execution; both named browsers qualify the live paths.
+package app
+    provides []
+    uses [browser, option, text]
+
+/// Render one verdict word.
+fn str yesno
+    emits []
+    given
+        bool verdict
+    asserts
+        yes: true => ok "true"
+        no: false => ok "false"
+    match verdict
+        false => ok "false"
+        true => ok "true"
+
+/// Verdict for one int parse: the canonical spelling or invalid.
+fn str int_verdict
+    emits []
+    given
+        str input
+    asserts
+        zero: "0" => ok "to-int:0=0"
+        whole: "42" => ok "to-int:42=42"
+        negative: "-7" => ok "to-int:-7=-7"
+        padded: "007" => ok "to-int:007=invalid"
+        empty: "" => ok "to-int:=invalid"
+        spaced: " 5" => ok "to-int: 5=invalid"
+    match call text::to_int(input)
+        text::invalid_number => ok "to-int:" + input + "=invalid"
+        ok int found => ok "to-int:" + input + "=" + call text::from_int(found)
+
+/// Append one verdict line under the parent.
+fn void emit_line
+    emits []
+    given
+        browser::view view
+        browser::node parent
+        str line_id
+        str words
+    asserts
+        sample: "v-0", "hello" => ok
+    match chain
+        call browser::create_element(view, "p") as browser::node line
+        call browser::set_attribute(line, "id", line_id)
+        call browser::create_text(view, words) as browser::node text
+        call browser::append_child(line, text)
+        call browser::append_child(parent, line)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Show one boot notice on an otherwise empty root.
+fn void show_notice
+    emits []
+    given
+        str notice
+    asserts
+        sample: "no scenario" => ok
+    match call browser::mount("invoice-grid")
+        browser::missing_root => ok
+        ok browser::app app => match call browser::root(app)
+            browser::disposed => match call browser::dispose_app(app)
+                ok => ok
+            ok browser::node anchor => match call browser::open_view(app)
+                browser::disposed => match call browser::dispose_app(app)
+                    ok => ok
+                ok browser::view view => match chain
+                    call browser::create_element(view, "p") as browser::node status
+                    call browser::set_attribute(status, "id", "status")
+                    call browser::set_attribute(status, "role", "status")
+                    call browser::set_attribute(status, "aria-live", "polite")
+                    call browser::create_text(view, notice) as browser::node text
+                    call browser::append_child(status, text)
+                    call browser::append_child(anchor, status)
+                    browser::disposed => ok
+                    browser::rejected => ok
+                    ok => ok
+
+/// Render one looked-up query value: some carries the value,
+/// none names the absence.
+fn void emit_found
+    emits []
+    given
+        browser::view view
+        browser::node parent
+        str line_id
+        str key
+        option::value<str> found
+    asserts
+        some: "v-probe", "probe", option::some("hello") => ok
+        none: "v-absent", "absent", option::none() => ok
+    match found
+        option::none => match call emit_line(view, parent, line_id, key + "=none")
+            ok => ok
+        option::some => match call emit_line(view, parent, line_id, key + "=some:" + found.value)
+            ok => ok
+
+/// Query edge verdicts: four literal keys read in order with one
+/// verdict each, then done. Invalid outcomes name the failure; the
+/// reason is attributed by the harness URL, never by failure
+/// fields: match arms cannot bind them.
+fn void run_query
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match call browser::query_parameter("probe")
+        browser::invalid_query => match call emit_line(view, parent, "v-probe", "probe=invalid")
+            ok => match call read_absent(view, parent)
+                ok => ok
+        ok option::value<str> probe => match call emit_found(view, parent, "v-probe", "probe", probe)
+            ok => match call read_absent(view, parent)
+                ok => ok
+
+/// Read the absent key, then continue to the duplicate key.
+fn void read_absent
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match call browser::query_parameter("absent")
+        browser::invalid_query => match call emit_line(view, parent, "v-absent", "absent=invalid")
+            ok => match call read_dup(view, parent)
+                ok => ok
+        ok option::value<str> found => match call emit_found(view, parent, "v-absent", "absent", found)
+            ok => match call read_dup(view, parent)
+                ok => ok
+
+/// Read the duplicate-probe key, then continue to the huge key.
+fn void read_dup
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match call browser::query_parameter("dup")
+        browser::invalid_query => match call emit_line(view, parent, "v-dup", "dup=invalid")
+            ok => match call read_huge(view, parent)
+                ok => ok
+        ok option::value<str> found => match call emit_found(view, parent, "v-dup", "dup", found)
+            ok => match call read_huge(view, parent)
+                ok => ok
+
+/// Read the huge-value key, then mark the scenario done.
+fn void read_huge
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match call browser::query_parameter("huge")
+        browser::invalid_query => match call emit_line(view, parent, "v-huge", "huge=invalid")
+            ok => match call emit_line(view, parent, "done", "done")
+                ok => ok
+        ok option::value<str> found => match call emit_found(view, parent, "v-huge", "huge", found)
+            ok => match call emit_line(view, parent, "done", "done")
+                ok => ok
+
+/// First timer mark: the zero-delay callback appends its tick.
+fn void on_first_tick
+    emits []
+    given
+        near browser::view view
+        near browser::node ticks
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "li") as browser::node mark
+        call browser::create_text(view, "tick-0") as browser::node words
+        call browser::append_child(mark, words)
+        call browser::append_child(ticks, mark)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Second timer mark: the five-millisecond callback appends its
+/// tick, then marks the scenario done.
+fn void on_second_tick
+    emits []
+    given
+        near browser::view view
+        near browser::node ticks
+        near browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "li") as browser::node mark
+        call browser::create_text(view, "tick-5") as browser::node words
+        call browser::append_child(mark, words)
+        call browser::append_child(ticks, mark)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call emit_line(view, parent, "done", "done")
+            ok => ok
+
+/// Timer fire and order: arm a zero and a five-millisecond timer
+/// against one list. The done marker lands only from the second
+/// callback, so the harness wait proves both timers fired.
+fn void run_timers
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "ul") as browser::node ticks
+        call browser::set_attribute(ticks, "id", "ticks")
+        call browser::append_child(parent, ticks)
+        call browser::set_timeout(view, 0, callable on_first_tick)
+        call browser::set_timeout(view, 5, callable on_second_tick)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Disposal probe input: appends one marker per input event while
+/// the view lives.
+fn void on_probe_input
+    emits []
+    given
+        browser::event e
+        near browser::view view
+        near browser::node marks
+    asserts
+        sample: browser::event("input", "probe", "x", "") => ok
+    match chain
+        call browser::create_element(view, "li") as browser::node mark
+        call browser::create_text(view, "saw-input") as browser::node words
+        call browser::append_child(mark, words)
+        call browser::append_child(marks, mark)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Disposal probe timer: appends one marker when the long timer
+/// fires. Disposal clears it first, so the marker must never land.
+fn void on_probe_tick
+    emits []
+    given
+        near browser::view view
+        near browser::node marks
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "li") as browser::node mark
+        call browser::create_text(view, "saw-tick") as browser::node words
+        call browser::append_child(mark, words)
+        call browser::append_child(marks, mark)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Disposal press: dispose the arming view (detaching its input
+/// listener, clearing its long timer and removing its nodes), then
+/// open the verdict view and report.
+fn void on_dispose_click
+    emits []
+    given
+        browser::event e
+        near browser::view view
+        near browser::app app
+        near browser::node parent
+    asserts
+        sample: browser::event("click", "dispose", "", "") => ok
+    match call browser::dispose_view(view)
+        ok => match call browser::open_view(app)
+            browser::disposed => ok
+            ok browser::view verdict => match call emit_line(verdict, parent, "v-disposed", "disposed")
+                ok => match call emit_line(verdict, parent, "done", "done")
+                    ok => ok
+
+/// Disposal arming: one input with a listener, one thirty-second
+/// timer, one dispose button and one marker list. The armed line
+/// renders only when every registration succeeds, so the harness
+/// knows the disposal press actually releases live resources.
+fn void run_dispose
+    emits []
+    given
+        browser::app app
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "input") as browser::node probe
+        call browser::set_attribute(probe, "id", "probe")
+        call browser::set_attribute(probe, "type", "text")
+        call browser::append_child(parent, probe)
+        call browser::create_element(view, "button") as browser::node dispose
+        call browser::set_attribute(dispose, "id", "dispose")
+        call browser::create_text(view, "Dispose") as browser::node label
+        call browser::append_child(dispose, label)
+        call browser::append_child(parent, dispose)
+        call browser::create_element(view, "ul") as browser::node marks
+        call browser::set_attribute(marks, "id", "marks")
+        call browser::append_child(parent, marks)
+        call browser::on_event(view, probe, "input", callable on_probe_input)
+        call browser::set_timeout(view, 30000, callable on_probe_tick)
+        call browser::on_event(view, dispose, "click", callable on_dispose_click)
+        call browser::create_element(view, "p") as browser::node armed
+        call browser::set_attribute(armed, "id", "armed")
+        call browser::create_text(view, "armed") as browser::node armed_text
+        call browser::append_child(armed, armed_text)
+        call browser::append_child(parent, armed)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Equality verdicts: int, int64-boundary and str equality render
+/// one line each. Record equality lowers to a Bun-only host
+/// operation, so the browser profile cannot express it.
+fn void run_equality
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call emit_line(view, parent, "v-eq-int", "int-eq=" + call yesno(1 is 1))
+        call emit_line(view, parent, "v-eq-int-no", "int-neq=" + call yesno(1 is 2))
+        call emit_line(view, parent, "v-eq-max", "max-eq=" + call yesno(9223372036854775807 is 9223372036854775807))
+        call emit_line(view, parent, "v-eq-bounds", "bounds-eq=" + call yesno(9223372036854775807 is 0 - 9223372036854775808))
+        call emit_line(view, parent, "v-eq-str", "str-eq=" + call yesno("abc" is "abc"))
+        call emit_line(view, parent, "v-eq-str-no", "str-neq=" + call yesno("abc" is "abd"))
+        call emit_line(view, parent, "done", "done")
+        ok => ok
+
+/// Exact codec verdicts: int64-boundary formatting and strict int
+/// parsing render one line each.
+fn void run_codecs
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call emit_line(view, parent, "v-max", "max=" + call text::from_int(9223372036854775807))
+        call emit_line(view, parent, "v-min", "min=" + call text::from_int(0 - 9223372036854775808))
+        call emit_line(view, parent, "v-zero", "zero=" + call text::from_int(0))
+        call emit_line(view, parent, "v-neg", "neg=" + call text::from_int(0 - 42))
+        call emit_line(view, parent, "v-parse-whole", call int_verdict("42"))
+        call emit_line(view, parent, "v-parse-negative", call int_verdict("-7"))
+        call emit_line(view, parent, "v-parse-padded", call int_verdict("007"))
+        call emit_line(view, parent, "v-parse-empty", call int_verdict(""))
+        call emit_line(view, parent, "v-parse-max", call int_verdict("9223372036854775807"))
+        call emit_line(view, parent, "done", "done")
+        ok => ok
+
+/// Submit cancellation mark: the prevented submit appends one line.
+fn void on_form_submit
+    emits []
+    given
+        browser::event e
+        near browser::view view
+        near browser::node marks
+    asserts
+        sample: browser::event("submit", "cf", "", "") => ok
+    match chain
+        call browser::create_element(view, "li") as browser::node mark
+        call browser::create_text(view, "submitted") as browser::node words
+        call browser::append_child(mark, words)
+        call browser::append_child(marks, mark)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Enter-key mark: Enter appends the save marker, any other
+/// dispatched key appends its own marker. Registration cancels
+/// only the Enter default; dispatch itself is ungated, so the
+/// callback gates on the snapshot key.
+fn void on_key_save
+    emits []
+    given
+        browser::event e
+        near browser::view view
+        near browser::node marks
+    asserts
+        enter: browser::event("keydown", "key", "", "Enter") => ok
+        other: browser::event("keydown", "key", "", "a") => ok
+    match e.key is "Enter"
+        false => match chain
+            call browser::create_element(view, "li") as browser::node mark
+            call browser::create_text(view, "key:" + e.key) as browser::node words
+            call browser::append_child(mark, words)
+            call browser::append_child(marks, mark)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => ok
+        true => match chain
+            call browser::create_element(view, "li") as browser::node mark
+            call browser::create_text(view, "saved") as browser::node words
+            call browser::append_child(mark, words)
+            call browser::append_child(marks, mark)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => ok
+
+/// Sync cancellation arming: one form with a submit cancel, one
+/// key input with an Enter cancel, one marker list. The armed
+/// line renders only when both registrations succeed.
+fn void run_cancel
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "form") as browser::node form
+        call browser::set_attribute(form, "id", "cf")
+        call browser::set_attribute(form, "method", "post")
+        call browser::append_child(parent, form)
+        call browser::create_element(view, "input") as browser::node name
+        call browser::set_attribute(name, "id", "name")
+        call browser::set_attribute(name, "type", "text")
+        call browser::set_attribute(name, "name", "name")
+        call browser::append_child(form, name)
+        call browser::create_element(view, "button") as browser::node go
+        call browser::set_attribute(go, "id", "go")
+        call browser::set_attribute(go, "type", "submit")
+        call browser::create_text(view, "Go") as browser::node go_label
+        call browser::append_child(go, go_label)
+        call browser::append_child(form, go)
+        call browser::create_element(view, "input") as browser::node key
+        call browser::set_attribute(key, "id", "key")
+        call browser::set_attribute(key, "type", "text")
+        call browser::append_child(parent, key)
+        call browser::create_element(view, "ul") as browser::node marks
+        call browser::set_attribute(marks, "id", "marks")
+        call browser::append_child(parent, marks)
+        call browser::on_cancel_event(view, form, "submit", callable on_form_submit)
+        call browser::on_cancel_key(view, key, "keydown", "Enter", callable on_key_save)
+        call emit_line(view, parent, "armed", "armed")
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
+
+/// Post-attach focus: build the input, attach it, then focus it.
+/// The harness asserts the landed active element, never the call.
+fn void run_focus
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample: => ok
+    match chain
+        call browser::create_element(view, "input") as browser::node target
+        call browser::set_attribute(target, "id", "target")
+        call browser::set_attribute(target, "type", "text")
+        call browser::append_child(parent, target)
+        call browser::focus(target)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call emit_line(view, parent, "done", "done")
+            ok => ok
+
+/// Dispatch one selected scenario into the mounted view.
+fn void run_selected
+    emits []
+    given
+        browser::app app
+        browser::view view
+        browser::node parent
+        str scenario
+    asserts
+        query: "query" => ok
+        timers: "timers" => ok
+        dispose: "dispose" => ok
+        equality: "equality" => ok
+        codecs: "codecs" => ok
+        cancel: "cancel" => ok
+        focus: "focus" => ok
+        unknown: "nope" => ok
+    match scenario is "query"
+        false => match scenario is "timers"
+            false => match scenario is "dispose"
+                false => match scenario is "equality"
+                    false => match scenario is "codecs"
+                        false => match scenario is "cancel"
+                            false => match scenario is "focus"
+                                false => match call show_notice("unknown scenario")
+                                    ok => ok
+                                true => match call run_focus(view, parent)
+                                    ok => ok
+                            true => match call run_cancel(view, parent)
+                                ok => ok
+                        true => match call run_codecs(view, parent)
+                            ok => ok
+                    true => match call run_equality(view, parent)
+                        ok => ok
+                true => match call run_dispose(app, view, parent)
+                    ok => ok
+            true => match call run_timers(view, parent)
+                ok => ok
+        true => match call run_query(view, parent)
+            ok => ok
+
+/// Fixture entry: mount the served grid shell, read the scenario
+/// key, and run the selected scenario. A missing key, an invalid
+/// search, or an unknown name shows a boot notice instead.
+fn void main
+    emits []
+    asserts
+        no_location: => ok
+    match call browser::mount("invoice-grid")
+        browser::missing_root => ok
+        ok browser::app app => match call browser::root(app)
+            browser::disposed => match call browser::dispose_app(app)
+                ok => ok
+            ok browser::node anchor => match call browser::open_view(app)
+                browser::disposed => match call browser::dispose_app(app)
+                    ok => ok
+                ok browser::view view => match call browser::query_parameter("scenario")
+                    browser::invalid_query => match call show_notice("bad link")
+                        ok => ok
+                    ok option::value<str> selected => match selected
+                        option::none => match call show_notice("no scenario")
+                            ok => ok
+                        option::some => match call run_selected(app, view, anchor, selected.value)
+                            ok => ok

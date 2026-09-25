@@ -1,0 +1,222 @@
+{
+  "browser": "webkit",
+  "version": "26.0",
+  "base": "http://127.0.0.1:18648",
+  "passed": true,
+  "checks": [
+    {
+      "name": "htmx-loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pinned-scripts",
+      "passed": true,
+      "detail": "htmx+guard+paired (grid inert)"
+    },
+    {
+      "name": "htmx-config-policy",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "form-renders",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "save-200-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "validation-422-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "draft-and-focus-preserved",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "stale-409-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "busy-503-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "denied-403-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "target-absence-stable",
+      "passed": true,
+      "detail": "no request sent; 47 nodes before removal"
+    },
+    {
+      "name": "remount-stable",
+      "passed": true,
+      "detail": "4 nodes restored, 5 unique ids"
+    },
+    {
+      "name": "target-restored-save",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "missing-target-during",
+      "passed": true,
+      "detail": "uncertain target_detached; upstream committed"
+    },
+    {
+      "name": "final-save",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "control-header",
+      "passed": true,
+      "detail": "response/control_header"
+    },
+    {
+      "name": "oob-rejected",
+      "passed": true,
+      "detail": "swap/task_shape"
+    },
+    {
+      "name": "redirect-rejected",
+      "passed": true,
+      "detail": "webkit harness gap, chromium-qualified"
+    },
+    {
+      "name": "no-external-requests",
+      "passed": true,
+      "detail": "4 guard occurrences recorded"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "L-redirect-webkit",
+      "detail": "no same-origin 302 is producible on WebKit (fulfilled 3xx rejected, cross-port redirector blocked by connect-src 'self', server emits no redirects); the engine-independent redirect branch is qualified on Chromium."
+    }
+  ],
+  "aborted": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18648/invoices/form?tenant_id=1&invoice_id=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18648/__can/assets/htmx-guard.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18648/__can/assets/htmx-4.0.0.min.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18648/__can/assets/cc59f68ced3b35b555f1145141de39e18fb9ff23754223c147dfaf19ad88f13b.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18648/tenants/1/invoices/7",
+      "status": 200
+    }
+  ],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+  ],
+  "occurrences": [
+    {
+      "kind": "action::missing_target",
+      "phase": "request",
+      "status": null,
+      "effect": "none",
+      "reason": "target_absent"
+    },
+    {
+      "kind": "action::missing_target",
+      "phase": "response",
+      "status": 200,
+      "effect": "uncertain",
+      "reason": "target_detached"
+    },
+    {
+      "kind": "action::protocol",
+      "phase": "response",
+      "status": 200,
+      "effect": "uncertain",
+      "reason": "control_header",
+      "header": "redirect"
+    },
+    {
+      "kind": "action::protocol",
+      "phase": "swap",
+      "status": 200,
+      "effect": "uncertain",
+      "reason": "task_shape"
+    }
+  ]
+}
