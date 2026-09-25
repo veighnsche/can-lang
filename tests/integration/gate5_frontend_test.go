@@ -768,6 +768,7 @@ func gate5GridCrossCheck(t *testing.T, engine string, report gate5Report, store 
 	t.Helper()
 	const api = "/api/tenants/1/invoices/7"
 	gets := map[string]int{}
+	deniedLoads := 0
 	opCases := map[string]map[string]bool{}
 	opSavedReal := map[string]bool{}
 	opSavedSynthetic := map[string]bool{}
@@ -776,7 +777,8 @@ func gate5GridCrossCheck(t *testing.T, engine string, report gate5Report, store 
 		if !strings.HasPrefix(call.URL, report.Base) {
 			t.Fatalf("grid %s ledger holds a non-origin call %s", engine, call.URL)
 		}
-		if !strings.HasSuffix(call.URL, api) {
+		invoice := strings.TrimPrefix(call.URL, report.Base)
+		if invoice != api && invoice != "/api/tenants/2/invoices/8" {
 			t.Fatalf("grid %s ledger holds a non-invoice call %s", engine, call.URL)
 		}
 		if call.Method == "GET" {
@@ -786,8 +788,18 @@ func gate5GridCrossCheck(t *testing.T, engine string, report gate5Report, store 
 			if err := json.Unmarshal([]byte(call.ResponseBody), &outcome); err != nil || outcome.Case == "" {
 				t.Fatalf("grid %s ledger holds an unreadable load body %q", engine, call.ResponseBody)
 			}
+			if invoice != api {
+				if outcome.Case != "invoice_contract::grid_load_forbidden" {
+					t.Fatalf("grid %s foreign-invoice load case %s, want the denial", engine, outcome.Case)
+				}
+				deniedLoads++
+				continue
+			}
 			gets[outcome.Case]++
 			continue
+		}
+		if invoice != api {
+			t.Fatalf("grid %s ledger holds a foreign-invoice %s", engine, call.URL)
 		}
 		if call.Method != "POST" {
 			t.Fatalf("grid %s ledger holds a %s call", engine, call.Method)
@@ -817,8 +829,8 @@ func gate5GridCrossCheck(t *testing.T, engine string, report gate5Report, store 
 			}
 		}
 	}
-	if gets["invoice_contract::grid_loaded"] != 8 || gets["invoice_contract::grid_load_forbidden"] != 1 || gets["invoice_contract::grid_load_unavailable"] != 1 || len(report.Ledger) != 32 {
-		t.Fatalf("grid %s loads %+v over %d calls, want 8 loaded, 1 forbidden, 1 unavailable, 32 calls", engine, gets, len(report.Ledger))
+	if gets["invoice_contract::grid_loaded"] != 8 || gets["invoice_contract::grid_load_unavailable"] != 1 || deniedLoads != 1 || len(report.Ledger) != 32 {
+		t.Fatalf("grid %s loads %+v with %d foreign denials over %d calls, want 8 loaded, 1 unavailable, 1 denial, 32 calls", engine, gets, deniedLoads, len(report.Ledger))
 	}
 	terminal := map[string]int{}
 	for _, cases := range opCases {
