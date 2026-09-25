@@ -29,7 +29,7 @@ func TestCurrentBundledArrays(t *testing.T) {
 	qualified := exec.CommandContext(ctx, "/usr/bin/sandbox-exec", "-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "runtime/bun"), "--no-env-file", "--no-macros", "--no-install", "--config="+filepath.Join(bundle, "tools/runtime/bunfig.toml"), "test", filepath.Join(bundle, "runtime/test/array.test.ts"))
 	qualified.Dir = t.TempDir()
 	qualified.Env = []string{"PATH=/nonexistent", "HOME=" + qualified.Dir, "XDG_CONFIG_HOME=" + qualified.Dir}
-	if output, err := qualified.CombinedOutput(); err != nil || !strings.Contains(string(output), "9 pass") || !strings.Contains(string(output), "0 fail") {
+	if output, err := qualified.CombinedOutput(); err != nil || !strings.Contains(string(output), "10 pass") || !strings.Contains(string(output), "0 fail") {
 		t.Fatalf("offline arrays traces: %v\n%s", err, output)
 	}
 	root, err := filepath.EvalSymlinks(t.TempDir())

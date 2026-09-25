@@ -39,7 +39,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -208,15 +207,15 @@ func gate4RuntimeIdentity(t *testing.T, ctx context.Context, canlc, home string)
 // closes the connection without reading the response, modelling a
 // client that disconnects after the server already holds the full
 // request bytes.
-func gate4PostAndAbandon(t *testing.T, addr, path, body string) {
+func gate4PostAndAbandon(t *testing.T, addr, path, media, headers, body string) {
 	t.Helper()
 	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
 	if err != nil {
 		t.Fatal(err)
 	}
 	request := "POST " + path + " HTTP/1.1\r\nHost: " + addr +
-		"\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: " + strconv.Itoa(len(body)) +
-		"\r\nConnection: close\r\n\r\n" + body
+		"\r\nContent-Type: " + media + "\r\nContent-Length: " + strconv.Itoa(len(body)) +
+		"\r\n" + headers + "Connection: close\r\n\r\n" + body
 	if _, err := io.WriteString(conn, request); err != nil {
 		conn.Close()
 		t.Fatal(err)
@@ -306,25 +305,13 @@ func TestGate4FaultMatrix(t *testing.T) {
 	assertNoStrayEmit(t, root, firstDir)
 	driver := filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
 	db := seedInvoiceDB(t, ctx, toolchain, home, driver, root)
-	snapshot := snapshotCredential(t, home, "INVOICE_DB", db)
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate4InvoicePort)
+	snapshot := snapshotMap(t, home, "snapshot-gate4-invoice", map[string]string{"INVOICE_DB": db, "PUBLIC_ORIGIN": origin})
 	base, stop := serveApplication(t, ctx, toolchain, home, filepath.Join(firstDir, "entry.ts"), snapshot, gate4InvoicePort, "/health")
 
-	valid := func(operation, revision, customer string) url.Values {
-		values := url.Values{}
-		values.Set("session_token", "tok-alice")
-		values.Set("operation_id", operation)
-		values.Set("invoice_id", "inv-1")
-		values.Set("revision", revision)
-		values.Set("customer", customer)
-		values.Add("lines_order", "k1")
-		values.Add("lines_order", "k2")
-		values.Set("lines[k1][sku]", "sku-9")
-		values.Set("lines[k1][qty]", "4")
-		values.Set("lines[k2][sku]", "sku-2")
-		values.Set("lines[k2][qty]", "1")
-		return values
-	}
-	gate4PostAndAbandon(t, "127.0.0.1:"+strconv.Itoa(gate4InvoicePort), "/invoices/save-form", valid("op-gate4-disc", "1", "Acme Disc").Encode())
+	savePath := "/api/tenants/1/invoices/7"
+	saveBody := `{"operation_id":"op-gate4-disc","revision":"1","lines":[{"key":"k1","id":"sku-9","quantity":"4","price":"9.99"}]}`
+	gate4PostAndAbandon(t, "127.0.0.1:"+strconv.Itoa(gate4InvoicePort), savePath, "application/json", "Cookie: session=tok-alice\r\nOrigin: "+origin+"\r\n", saveBody)
 	deadline := time.Now().Add(20 * time.Second)
 	for {
 		store := inspectInvoice(t, ctx, toolchain, home, driver, db)
@@ -343,15 +330,29 @@ func TestGate4FaultMatrix(t *testing.T) {
 		time.Sleep(250 * time.Millisecond)
 	}
 	store := inspectInvoice(t, ctx, toolchain, home, driver, db)
-	requireInvoiceRevision(t, store, "inv-1", "2", "Acme Disc")
-	if len(store.Replay) != 1 || store.Replay[0].OperationID != "op-gate4-disc" || len(store.Replay[0].Digest) != 64 {
+	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
+	ledger := requireReplay(t, store, "op-gate4-disc", "2")
+	if ledger.Actor != "alice" || ledger.Tenant != "1" || ledger.InvoiceID != "7" {
+		t.Fatalf("abandoned save replay scope %+v", ledger)
+	}
+	if len(store.Replay) != 1 {
 		t.Fatalf("abandoned save recorded %+v", store.Replay)
 	}
-	if status, body, _ := invoicePostForm(t, base, "/invoices/save-form", valid("op-gate4-disc", "1", "Acme Disc")); status != 200 || !strings.Contains(body, "saved inv-1 revision 2") {
-		t.Fatalf("disconnect replay: %d %s", status, body)
+	status, payload, _ := gate3PostJSON(t, base, savePath, "tok-alice", "application/json", saveBody)
+	if status != 200 {
+		t.Fatalf("disconnect replay: %d %s", status, payload)
 	}
-	if status, body, _ := invoicePostForm(t, base, "/invoices/save-form", valid("op-gate4-disc", "1", "Acme Changed")); status != 409 || !strings.Contains(body, "stale inv-1 revision 2") {
-		t.Fatalf("disconnect conflict: %d %s", status, body)
+	replayed := gate3Case(t, "disconnect replay", payload, "invoice_contract::grid_saved")
+	if acknowledged, _ := replayed["acknowledged"].(map[string]any); acknowledged["revision"] != "2" {
+		t.Fatalf("disconnect replay value %+v", replayed)
+	}
+	changed := `{"operation_id":"op-gate4-disc","revision":"1","lines":[{"key":"k1","id":"changed","quantity":"4","price":"9.99"}]}`
+	status, payload, _ = gate3PostJSON(t, base, savePath, "tok-alice", "application/json", changed)
+	if status != 409 {
+		t.Fatalf("disconnect conflict: %d %s", status, payload)
+	}
+	if conflicted := gate3Case(t, "disconnect conflict", payload, "invoice_contract::grid_conflict"); conflicted["message"] != "stale revision" {
+		t.Fatalf("disconnect conflict value %+v", conflicted)
 	}
 	store = inspectInvoice(t, ctx, toolchain, home, driver, db)
 	if len(store.Replay) != 1 {
@@ -403,10 +404,10 @@ func TestGate4FaultMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	payload, _ := io.ReadAll(response.Body)
+	slowBody, _ := io.ReadAll(response.Body)
 	response.Body.Close()
-	if response.StatusCode != 200 || string(payload) != `{"status":"accepted"}` {
-		t.Fatalf("slow delivery: %d %s", response.StatusCode, payload)
+	if response.StatusCode != 200 || string(slowBody) != `{"status":"accepted"}` {
+		t.Fatalf("slow delivery: %d %s", response.StatusCode, slowBody)
 	}
 	wstore := inspectWebhook(t, ctx, toolchain, whome, wdriver, wdb)
 	requireDelivery(t, wstore, slow, "invoice.paid", "sub-9")

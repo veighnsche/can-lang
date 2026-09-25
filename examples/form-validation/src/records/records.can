@@ -1,5 +1,5 @@
 package records
-    provides [signup_form, signup_view]
+    provides [signup_form, signup_view, signup_accepted, signup_rejected, signup_outcome]
     uses [option]
 
 /// The signup form body: one name, repeated tags, an optional note.
@@ -14,3 +14,10 @@ record signup_view
     str name
     int tag_count
     str message
+record signup_accepted
+    signup_view view
+record signup_rejected
+    str message
+variant signup_outcome
+    signup_accepted
+    signup_rejected

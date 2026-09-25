@@ -1,5 +1,5 @@
 package records
-    provides [search_parameters, account_row, search_view, account_form]
+    provides [search_parameters, account_row, search_view, account_form, account_accepted, account_rejected, account_outcome]
     uses []
 
 /// Parameters for the manifest search descriptor.
@@ -20,3 +20,10 @@ record search_view
 /// The account validation form body.
 record account_form
     str name
+record account_accepted
+    str name
+record account_rejected
+    str message
+variant account_outcome
+    account_accepted
+    account_rejected

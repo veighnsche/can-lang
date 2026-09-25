@@ -1,6 +1,6 @@
 package web
     provides [show_accounts, search_accounts, validate_account, dashboard_summary, search_routes, boot, main]
-    uses [records, model, render, http, html, htmx, sql, clock, text, codec, bytes, io]
+    uses [records, model, render, action, form, http, html, htmx, sql, clock, text, codec, bytes, io]
 
 /// Serve the accounts page.
 fn http::server_response show_accounts
@@ -56,35 +56,56 @@ fn http::server_response search_accounts
             true => match call render::feedback("Enter a search term.")
                 html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
                 ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+/// Validate one account name submission: the checked HTML policy admits the
+/// 422 feedback swap for blank names.
+action account_validation
+    post "/accounts/validate"
+    form records::account_form limit 2048
+    returns records::account_outcome
+    body html
+    cases
+        records::account_accepted status 200 swap inner
+        records::account_rejected status 422 swap inner
+
 /// Validate one submitted account name.
-fn http::server_response validate_account
+fn records::account_outcome validate_account
     emits []
     given
         http::request req
+        records::account_form form
     asserts
-        blank: => ok
-        named: => ok
-    match call http::request_form<records::account_form>(req, 2048)
-        when
-            blank: req, 2048 => ok records::account_form("")
-            named: req, 2048 => ok records::account_form("Ann")
-        http::body_limit => match call render::feedback("Name is required.")
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-        http::invalid_request => match call render::feedback("Name is required.")
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
-        codec::invalid_data => match call render::feedback("Name is required.")
-            html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-            ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+        blank: records::account_form("") => ok records::account_rejected("Name is required.")
+        named: records::account_form("Ann") => ok records::account_accepted("Ann")
+    match form.name is ""
+        false => ok records::account_accepted(form.name)
+        true => ok records::account_rejected("Name is required.")
 
-        ok records::account_form form => match form.name is ""
-            false => match call render::feedback(form.name)
-                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-                ok html::safe fragment => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), fragment)
-            true => match call render::feedback("Name is required.")
-                html::invalid_structure => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-                ok html::safe fragment => ok call http::response_html(call http::status_unprocessable(), call http::empty_server_headers(), fragment)
+/// Render one account outcome as the swapped validation fragment.
+fn html::safe render_account_outcome
+    emits []
+    given
+        records::account_outcome outcome
+    asserts
+        accepted: records::account_accepted("Ann") => ok
+        rejected: records::account_rejected("Name is required.") => ok
+    match outcome
+        records::account_accepted => match call render::feedback(outcome.name)
+            html::invalid_structure => ok call html::text_fragment("account accepted")
+            ok html::safe fragment => ok fragment
+        records::account_rejected => match call render::feedback(outcome.message)
+            html::invalid_structure => ok call html::text_fragment("account rejected")
+            ok html::safe fragment => ok fragment
+
+/// Render one structurally rejected account form as guidance.
+fn html::safe render_account_rejected
+    emits []
+    given
+        form::rejected<records::account_form> bad
+    asserts
+        sample: form::rejected<records::account_form>([form::raw_entry("name", "")], [form::issue("name", "form_missing")]) => ok
+    match call render::feedback("Name is required.")
+        html::invalid_structure => ok call html::text_fragment("account rejected")
+        ok html::safe fragment => ok fragment
 /// Summarize the dashboard clock reading.
 fn http::server_response dashboard_summary
     emits []
@@ -110,7 +131,7 @@ fn http::router search_routes
     match chain
         call http::route_get("/accounts", callable show_accounts) as http::route home
         call http::route_get("/accounts/search", callable search_accounts) as http::route search
-        call http::route_post("/accounts/validate", callable validate_account) as http::route submit
+        call action::mount(account_validation, callable validate_account, callable render_account_outcome, callable render_account_rejected) as http::route submit
         call http::route_get("/dashboard/summary", callable dashboard_summary) as http::route summary
         call http::make_router([home, search, submit, summary]) as http::router built
         http::invalid_route

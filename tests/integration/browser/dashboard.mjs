@@ -45,13 +45,15 @@ try {
   await check("htmx-loaded", async () => {
     assert.equal(await page.evaluate(() => typeof window.htmx), "object");
   });
-  await check("single-pinned-script", async () => {
+  await check("pinned-scripts", async () => {
     const scripts = await page.locator("script").evaluateAll((nodes) =>
       nodes.map((node) => ({ src: node.getAttribute("src"), integrity: node.getAttribute("integrity") }))
     );
-    assert.equal(scripts.length, 1);
+    assert.equal(scripts.length, 2);
     assert.equal(scripts[0].src, "/__can/assets/htmx-4.0.0.min.js");
     assert.equal(scripts[0].integrity, "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc");
+    assert.equal(scripts[1].src, "/__can/assets/htmx-guard.js");
+    assert.equal(scripts[1].integrity, "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG");
   });
   await check("dashboard-poll-swap", async () => {
     await page.waitForFunction(() => document.querySelector("#dashboard")?.textContent !== "dashboard-before", undefined, {

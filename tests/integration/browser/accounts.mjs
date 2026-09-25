@@ -45,13 +45,15 @@ try {
   await check("htmx-loaded", async () => {
     assert.equal(await page.evaluate(() => typeof window.htmx), "object");
   });
-  await check("single-pinned-script", async () => {
+  await check("pinned-scripts", async () => {
     const scripts = await page.locator("script").evaluateAll((nodes) =>
       nodes.map((node) => ({ src: node.getAttribute("src"), integrity: node.getAttribute("integrity") }))
     );
-    assert.equal(scripts.length, 1);
+    assert.equal(scripts.length, 2);
     assert.equal(scripts[0].src, "/__can/assets/htmx-4.0.0.min.js");
     assert.equal(scripts[0].integrity, "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc");
+    assert.equal(scripts[1].src, "/__can/assets/htmx-guard.js");
+    assert.equal(scripts[1].integrity, "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG");
   });
   const search = async (value) => {
     await page.locator("#account_query").fill(value);
@@ -67,12 +69,17 @@ try {
     await page.waitForFunction(() => document.querySelector("#account_results")?.textContent?.includes("Ann"));
     assert.ok((await page.locator("#account_results li").count()) >= 1);
   });
-  await check("search-422-swap", async () => {
+  await check("search-422-quiet", async () => {
+    // The raw GET search route is not action-bound (GET actions answer
+    // JSON, so no HTML swap policy exists for it), so its 422 carries no
+    // hx-status exception and stays quiet under the compiler-owned noSwap
+    // policy; the previous 200 results stand untouched.
     const answered = await search("");
     assert.equal(answered.status(), 422);
-    await page.waitForFunction(() =>
-      document.querySelector("#account_results")?.textContent?.includes("Enter a search term.")
-    );
+    await page.waitForTimeout(300);
+    const results = await page.locator("#account_results").textContent();
+    assert.ok(!results?.includes("Enter a search term."));
+    assert.ok((await page.locator("#account_results li").count()) >= 1);
   });
   await check("search-hostile-escaped", async () => {
     const answered = await search("<em>");
