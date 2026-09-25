@@ -394,7 +394,7 @@ func requireOneEntry(t *testing.T, note, wantRev string, before, after protected
 func recordFaultOutcome(t *testing.T, note string, before, after protectedEntries) bool {
 	t.Helper()
 	committed := before != after
-	t.Logf("fault %s: committed=%v (entries %+v -> %+v)", note, before, after, committed)
+	t.Logf("fault %s: committed=%v (entries %+v -> %+v)", note, committed, before, after)
 	return committed
 }
 
