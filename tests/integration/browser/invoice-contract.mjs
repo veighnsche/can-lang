@@ -118,9 +118,19 @@ try {
   const bodySnippet = () =>
     page.evaluate(() => document.body?.innerHTML?.slice(0, 2000) ?? "").catch(() => "");
 
+  // Input events fold into grid state asynchronously; the status
+  // line flips to "unsaved changes" once the edit has landed, and
+  // the save press must wait for that or it reads the stale draft.
+  const fill = async (selector, value) => {
+    await page.locator(selector).fill(value);
+    await page.waitForFunction(() =>
+      document.querySelector("#status")?.textContent?.includes("unsaved changes")
+    );
+  };
+
   if (scenario === "save") {
     await check("contract-save", async () => {
-      await page.locator("#qty\\:k1").fill("3");
+      await fill("#qty\\:k1", "3");
       await page.locator("#save").click();
       await page.waitForFunction(() =>
         document.querySelector("#status")?.textContent?.match(/saved revision \d+/)
@@ -134,7 +144,7 @@ try {
     // The grid blocks unparsable numbers client-side, so clear the id
     // input instead: the draft still sends and the server rejects it.
     await check("contract-invalid", async () => {
-      await page.locator("#id\\:k1").fill("");
+      await fill("#id\\:k1", "");
       await page.locator("#save").click();
       await page.waitForResponse(
         (response) => response.request().method() === "POST" && response.status() === 422,
@@ -147,7 +157,7 @@ try {
     });
   } else {
     await check("contract-budget", async () => {
-      await page.locator("#qty\\:k1").fill("3");
+      await fill("#qty\\:k1", "3");
       await page.locator("#save").click();
       await page.waitForFunction(() =>
         document.querySelector("#status")?.textContent?.includes("save too large; remove lines and retry")

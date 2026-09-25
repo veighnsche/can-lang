@@ -585,6 +585,9 @@ func TestInvoiceContractRoute(t *testing.T) {
 			if call.Status != 200 || !strings.Contains(call.URL, "/api/tenants/1/invoices/7") {
 				t.Fatalf("browser save %+v", call)
 			}
+			if !strings.Contains(call.RequestBody, `"quantity":"3"`) {
+				t.Fatalf("browser save missed the folded edit in %s", call.RequestBody)
+			}
 		}
 	}
 	if loads == 0 {
