@@ -1,13 +1,28 @@
 package check
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
+	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
 )
+
+// callSite carries a generic instantiation request: the human-readable
+// request record plus the source location for call-site evidence.
+type callSite struct {
+	text string
+	file *resolve.File
+	span source.Span
+}
+
+func makeCallSite(file *resolve.File, span source.Span) callSite {
+	return callSite{text: applicationSite(file, span.Start), file: file, span: span}
+}
 
 func (c *programChecker) parameters() map[string]*types.Type {
 	if c.current != nil {
@@ -82,25 +97,20 @@ func (c *programChecker) specialize(file *resolve.File, scope *resolve.Scope, na
 			return ValueBinding{}, err
 		}
 	}
-	return c.instantiateFunction(symbol, declaration, arguments, applicationSite(file, name.Span.Start), args)
+	return c.instantiateFunction(symbol, declaration, arguments, makeCallSite(file, name.Span), args)
 }
 
-func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request string, substitutions ...[]syntax.TypeNode) (ValueBinding, error) {
+func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request callSite, substitutions ...[]syntax.TypeNode) (ValueBinding, error) {
 	if opaque := opaqueArgument(arguments); opaque != "" {
-		// Opaque variables only arise while an exported generic declaration
-		// checks symbolically. Same-declaration recursion with identical
-		// variables reuses the symbolic contract, exactly like the concrete
-		// same-instance cache; any other generic instantiation would need
-		// the callee template to be parametric, which the declaration
-		// check cannot assume.
+		// Opaque variables only arise while an exported generic
+		// declaration checks symbolically. Same-declaration recursion
+		// with identical variables reuses the symbolic contract,
+		// exactly like the concrete same-instance cache; every other
+		// opaque call resolves as a symbolic proof edge.
 		if c.current != nil && c.current.Symbol.ID == symbol.ID && identicalParameters(c.current, symbol, arguments) {
 			return ValueBinding{Identity: c.current.Instance, Type: c.bindings[c.current.Instance]}, nil
 		}
-		caller := "an exported generic declaration"
-		if c.current != nil {
-			caller = "exported generic declaration " + c.current.Symbol.ID
-		}
-		return ValueBinding{}, fmt.Errorf("generic function %s cannot be instantiated with opaque type parameter %s from %s: pass the value through a non-generic contract or an explicit callable input", symbol.ID, opaque, caller)
+		return c.symbolicCall(symbol, declaration, arguments, request)
 	}
 	key, err := types.SpecializationKey(symbol.ID, arguments)
 	if err != nil {
@@ -110,8 +120,8 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 		return ValueBinding{}, fmt.Errorf("expanding polymorphic recursion from %s to %s", c.current.Identity(), key)
 	}
 	if existing := c.instances[key]; existing != nil {
-		if !containsString(existing.Requests, request) {
-			existing.Requests = append(existing.Requests, request)
+		if !containsString(existing.Requests, request.text) {
+			existing.Requests = append(existing.Requests, request.text)
 		}
 		return ValueBinding{Identity: key, Type: c.bindings[key]}, nil
 	}
@@ -140,10 +150,157 @@ func (c *programChecker) instantiateFunction(symbol *resolve.Symbol, declaration
 	for i, field := range fields {
 		c.bindings[key+"/input/"+field.Name.Text] = contract.Inputs()[i]
 	}
-	fn := &ProgramFunction{Requests: []string{request}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters}
+	fn := &ProgramFunction{Requests: []string{request.text}, Symbol: symbol, Instance: key, TypeArguments: append([]*types.Type(nil), arguments...), Parameters: parameters}
 	c.instances[key] = fn
 	c.program.Functions = append(c.program.Functions, fn)
 	return ValueBinding{Identity: key, Type: contract}, nil
+}
+
+// symbolicCall resolves a generic call whose type arguments mention the
+// caller's opaque type variables. The callee must be a public generic with
+// a committed symbolic proof, or a member of the caller's own provisional
+// component. The caller's symbolic type expressions are substituted into
+// the callee's checked signature; the callee body is never rechecked under
+// the caller's variables. The substituted contract is published under a
+// call-site-local proof identity. No SpecializationKey is allocated, no
+// instance is cached and no emitted function is created.
+func (c *programChecker) symbolicCall(symbol *resolve.Symbol, declaration *syntax.FunctionDecl, arguments []*types.Type, request callSite) (ValueBinding, error) {
+	caller := c.current
+	if caller == nil || caller.Symbol == nil || !strings.HasSuffix(caller.Instance, "/symbolic") {
+		name := "an exported generic declaration"
+		if caller != nil && caller.Symbol != nil {
+			name = "exported generic declaration " + caller.Symbol.ID
+		}
+		return ValueBinding{}, fmt.Errorf("generic function %s cannot be instantiated with opaque type parameter %s from %s: pass the value through a non-generic contract or an explicit callable input", symbol.ID, opaqueArgument(arguments), name)
+	}
+	fail := func(err error) (ValueBinding, error) {
+		if request.file != nil && request.file.Source != nil && request.file.Source.Syntax != nil {
+			err = source.LocateCode(request.file.Source.Syntax.Source.Name(), request.span, "CAN-CHECK-EXPORTED-GENERIC", err)
+		}
+		if calleeFile := c.world.Files[symbol.Source]; calleeFile != nil && calleeFile.Source != nil {
+			err = source.Relate(calleeFile.Source.Syntax.Source.Name(), declaration.DeclSpan(), "symbolic callee declared here", err)
+		}
+		return ValueBinding{}, err
+	}
+	if !symbol.Public {
+		return fail(fmt.Errorf("generic function %s cannot be called with opaque type parameter %s from exported generic declaration %s: %s is private and has only concrete-template evidence, so it cannot be a symbolic callee", symbol.ID, opaqueArgument(arguments), caller.Symbol.ID, symbol.ID))
+	}
+	callerComponent, callerKnown := c.symbolicComponent[caller.Symbol.ID]
+	calleeComponent, calleeKnown := c.symbolicComponent[symbol.ID]
+	switch {
+	case c.symbolicProofs[symbol.ID]:
+		// Committed proof: acyclic reuse, including nested G<box<T>>.
+	case callerKnown && calleeKnown && callerComponent == calleeComponent:
+		// Provisional internal edge: only bare caller formals or fully
+		// closed types keep the component's instance set finite.
+		if index, name := growingSymbolicEdge(caller, arguments); index >= 0 {
+			return fail(fmt.Errorf("expanding symbolic cycle rejected: %s; type argument %d applies a constructor to opaque type parameter %s on an internal component edge, so the instance set cannot stay finite", c.symbolicChain(caller.Symbol.ID, symbol.ID, request.text), index+1, name))
+		}
+	default:
+		return fail(fmt.Errorf("generic function %s cannot be called with opaque type parameter %s from exported generic declaration %s: no committed symbolic proof for %s is visible to this declaration; a failed component publishes no proof and an unvalidated callee cannot be reused", symbol.ID, opaqueArgument(arguments), caller.Symbol.ID, symbol.ID))
+	}
+	calleeFile := c.world.Files[symbol.Source]
+	if calleeFile == nil {
+		return fail(fmt.Errorf("generic function %s has no declaring file", symbol.ID))
+	}
+	signature, descriptor, fields, err := genericSignature(declaration)
+	if err != nil {
+		return fail(err)
+	}
+	parameters := map[string]*types.Type{}
+	for i, name := range symbol.Parameters {
+		parameters[name] = arguments[i]
+	}
+	contract, err := c.specializer.Resolve(calleeFile, signature, parameters, true)
+	if err != nil {
+		return fail(fmt.Errorf("symbolic call %s to %s: %w", caller.Symbol.ID, symbol.ID, err))
+	}
+	descriptor.Contract = contract
+	identity := symbolicCallIdentity(caller.Symbol.ID, symbol.ID, arguments)
+	c.callables[identity] = descriptor
+	c.bindings[identity] = contract
+	for i, field := range fields {
+		c.bindings[identity+"/input/"+field.Name.Text] = contract.Inputs()[i]
+	}
+	if len(declaration.Inputs) > 0 && declaration.Inputs[len(declaration.Inputs)-1].Variadic {
+		c.variadic[identity] = true
+	}
+	return ValueBinding{Identity: identity, Type: contract}, nil
+}
+
+// symbolicCallIdentity derives a deterministic call-site-local proof
+// identity from the caller, the callee and the substituted argument
+// identities. Identical substitutions share one proof entry.
+func symbolicCallIdentity(caller, callee string, arguments []*types.Type) string {
+	parts := []string{"can-symbolic-call-v1", caller, callee}
+	for _, argument := range arguments {
+		parts = append(parts, argument.Identity())
+	}
+	digest := sha256.Sum256([]byte(strings.Join(parts, "\x00")))
+	return callee + "/symbolic-call/" + hex.EncodeToString(digest[:8])
+}
+
+// growingSymbolicEdge reports the first type argument that is neither a
+// bare caller formal nor a fully closed type, or -1 when every argument
+// keeps the component's instance set finite.
+func growingSymbolicEdge(caller *ProgramFunction, arguments []*types.Type) (int, string) {
+	for i, argument := range arguments {
+		bare := false
+		for _, name := range caller.Symbol.Parameters {
+			if types.Equal(argument, caller.Parameters[name]) {
+				bare = true
+				break
+			}
+		}
+		if bare || !types.MentionsParameter(argument) {
+			continue
+		}
+		return i, types.OpaqueParameterName(argument)
+	}
+	return -1, ""
+}
+
+// symbolicChain renders the call chain through the caller's component from
+// the callee back to the caller, for expanding-cycle diagnostics. The
+// syntactic scan edges carry the return path; the failing edge itself
+// closes the cycle at the current request site.
+func (c *programChecker) symbolicChain(caller, callee, site string) string {
+	if caller == callee {
+		return fmt.Sprintf("%s calls itself at %s", caller, site)
+	}
+	within := map[string][]symbolicScanEdge{}
+	for _, edge := range c.symbolicScan {
+		if from, ok := c.symbolicComponent[edge.caller]; ok {
+			if to, ok := c.symbolicComponent[edge.callee]; ok && from == to {
+				within[edge.caller] = append(within[edge.caller], edge)
+			}
+		}
+	}
+	previous := map[string]symbolicScanEdge{callee: {}}
+	queue := []string{callee}
+	for len(queue) > 0 && previous[caller].caller == "" {
+		head := queue[0]
+		queue = queue[1:]
+		// Deterministic return path: first scan edge order wins.
+		for _, edge := range within[head] {
+			if _, seen := previous[edge.callee]; seen {
+				continue
+			}
+			previous[edge.callee] = edge
+			queue = append(queue, edge.callee)
+		}
+	}
+	if previous[caller].caller == "" {
+		return fmt.Sprintf("%s calls %s at %s", caller, callee, site)
+	}
+	var links []string
+	for at := caller; at != callee; {
+		edge := previous[at]
+		links = append([]string{fmt.Sprintf("%s calls %s at %s", edge.caller, edge.callee, edge.site)}, links...)
+		at = edge.caller
+	}
+	links = append([]string{fmt.Sprintf("%s calls %s at %s", caller, callee, site)}, links...)
+	return strings.Join(links, ", then ")
 }
 
 // genericSignature builds the callable signature, declaration descriptor and

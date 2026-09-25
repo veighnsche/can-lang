@@ -68,7 +68,7 @@ func (c *programChecker) inferCallback(file *resolve.File, scope *resolve.Scope,
 	if err != nil {
 		return ValueBinding{}, true, err
 	}
-	return c.inferDeclaredReference(symbol, d, nil, e, applicationSite(file, name.Span.Start), seeds...)
+	return c.inferDeclaredReference(symbol, d, nil, e, makeCallSite(file, name.Span), seeds...)
 }
 
 var catalogueIdentifier = regexp.MustCompile(`[A-Za-z_][A-Za-z_0-9]*`)
