@@ -188,7 +188,12 @@ type Analysis = Readonly<{
 }>;
 // Single-pass structural analysis shared by the throwing decoder and the
 // action adapter. A null value means issues is non-empty.
-function analyzeForm(schema: FormSchema, classified: Classified, budget: Budget): Analysis {
+function analyzeForm(
+  schema: FormSchema,
+  classified: Classified,
+  budget: Budget,
+  rowsLimit: number,
+): Analysis {
   const issues: [string, FormIssueReason][] = [];
   for (const name of classified.unknown) issues.push([name, "type"]);
   const fields: [string, unknown][] = [];
@@ -205,7 +210,10 @@ function analyzeForm(schema: FormSchema, classified: Classified, budget: Budget)
         !Array.isArray(rows.fields)
       )
         throw new TypeError("invalid compiler form schema");
-      fields.push([field.name, analyzeRows(field.name, rows, classified, budget, issues)]);
+      fields.push([
+        field.name,
+        analyzeRows(field.name, rows, classified, budget, issues, rowsLimit),
+      ]);
       continue;
     }
     budget.visit(field.kind === "str" ? 1 : 2, path);
@@ -246,6 +254,7 @@ function analyzeRows(
   classified: Classified,
   budget: Budget,
   issues: [string, FormIssueReason][],
+  rowsLimit: number,
 ): unknown {
   const path = childPath("", coll);
   budget.visit(2, path);
@@ -277,15 +286,15 @@ function analyzeRows(
     fields.set(entry.field, list);
   }
   // The bound counts distinct keys in merged document order and admits the
-  // first 64 to exactness and field checks; excess rows keep only the
-  // limit issue plus their retained raw pairs.
+  // first rowsLimit to exactness and field checks; excess rows keep only
+  // the limit issue plus their retained raw pairs.
   const distinct = classified.keysInOrder.get(coll) ?? [];
   let limited = false;
-  if (distinct.length > maxFormRows) {
-    issues.push([rowAddress(coll, distinct[maxFormRows]!), "row_limit"]);
+  if (distinct.length > rowsLimit) {
+    issues.push([rowAddress(coll, distinct[rowsLimit]!), "row_limit"]);
     limited = true;
   }
-  const admitted = new Set(distinct.slice(0, maxFormRows));
+  const admitted = new Set(distinct.slice(0, rowsLimit));
   for (const key of ordered) {
     if (!byKey.has(key)) issues.push([rowAddress(coll, key), "form_missing"]);
   }
@@ -345,7 +354,7 @@ function analyzeRows(
 }
 export function decodeForm(schema: FormSchema, input: unknown, limit: number): unknown {
   const { params, budget } = formParams(input, limit);
-  const analysis = analyzeForm(schema, classifyForm(params, schema), budget);
+  const analysis = analyzeForm(schema, classifyForm(params, schema), budget, maxFormRows);
   if (analysis.value === null) {
     const [name, reason] = analysis.issues[0]!;
     if (reason === "form_missing" || reason === "form_repeated") throw new FormIssue(reason);
@@ -360,19 +369,23 @@ export type ActionFormResult = Readonly<
 // Adapter decode: one native FormData parse over the strictly gated pairs,
 // then structural analysis. Success yields the wire record; any duplicate,
 // unknown, partial, order or limit violation yields a rejected value that
-// retains every known raw pair in document order.
+// retains every known raw pair in document order. The row bound defaults
+// to the shared cap; mounts pass their declared rows_limit.
 export function decodeActionForm(
   schema: FormSchema,
   input: unknown,
   limit: number,
   ids: ActionFormIdentities,
+  rowsLimit: number = maxFormRows,
 ): ActionFormResult {
   if (!ids.rejected || !ids.rawEntry || !ids.issue)
     throw new TypeError("invalid compiler form action");
+  if (!Number.isInteger(rowsLimit) || rowsLimit < 1 || rowsLimit > maxFormRows)
+    throw new TypeError("invalid compiler form rows limit");
   const { params, budget } = formParams(input, limit);
   const data = new FormData();
   for (const [name, value] of params) data.append(name, value);
-  const analysis = analyzeForm(schema, classifyForm(data.entries(), schema), budget);
+  const analysis = analyzeForm(schema, classifyForm(data.entries(), schema), budget, rowsLimit);
   if (analysis.value === null)
     return {
       kind: "rejected",

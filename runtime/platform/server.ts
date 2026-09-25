@@ -17,6 +17,7 @@ import {
   snapshotRequest,
   snapshotRequestLazy,
   normalizedPath,
+  requestSnapshot,
   abandonRequest,
   revokeRequest,
   nativeResponse,
@@ -31,7 +32,7 @@ import {
   type ActionRouteTable,
   type ActionRouteCapture,
 } from "./action-routes.ts";
-import { dispatch, isRouterValue, routeKind } from "./router.ts";
+import { dispatch, isRouterValue, routeKind, routerActionKeys } from "./router.ts";
 import {
   serverSocketOpen,
   serverSocketMessage,
@@ -189,31 +190,39 @@ export function createServer(
       // Canonical action dispatch runs after ingress on the raw pathname, so
       // method-first/static-within-method matching and 400/404/405
       // classification see the escapes the decoded snapshot already resolved.
-      // Anything actions do not claim falls through to the legacy router.
+      // Anything the explicit table does not claim falls through to the
+      // combined router dispatch, which serves router-carried mounts.
       async function serveSnapshot(
         native: Request,
         snapshot: unknown,
       ): Promise<Completion<Response>> {
         if (actions !== undefined) {
-          const match = matchActionRoute(
-            actions.table,
-            native.method,
-            new URL(native.url).pathname,
-          );
-          if (match.kind === "match") {
-            try {
-              const completed = await invoke(
-                () => actions.invoke(match.identity, match.captures, snapshot, context),
-                origin,
-              );
-              if (completed.kind !== "ok") return completed;
-              return success(nativeResponse(completed.value));
-            } finally {
-              await abandonRequest(snapshot);
+          // Static precedence: an exact legacy match wins over the
+          // explicit action table before canonical dispatch is consulted.
+          // Router-carried mounts dispatch through the combined table below.
+          const claimed =
+            routeKind(router, native.method, requestSnapshot(snapshot).path) !== undefined;
+          if (!claimed) {
+            const match = matchActionRoute(
+              actions.table,
+              native.method,
+              new URL(native.url).pathname,
+            );
+            if (match.kind === "match") {
+              try {
+                const completed = await invoke(
+                  () => actions.invoke(match.identity, match.captures, snapshot, context),
+                  origin,
+                );
+                if (completed.kind !== "ok") return completed;
+                return success(nativeResponse(completed.value));
+              } finally {
+                await abandonRequest(snapshot);
+              }
             }
+            if (match.kind === "bad-request") return success(actionReject(400));
+            if (match.kind === "method-not-allowed") return success(actionReject(405, match.allow));
           }
-          if (match.kind === "bad-request") return success(actionReject(400));
-          if (match.kind === "method-not-allowed") return success(actionReject(405, match.allow));
         }
         return dispatch(router, snapshot, context);
       }
@@ -277,11 +286,14 @@ export function createServer(
           hostname: host,
           port: Number(port),
           ...(tls === undefined ? {} : { tls: { cert: tls.cert, key: tls.key } }),
-          ...(actions === undefined
+          ...(actions === undefined && routerActionKeys(router).length === 0
             ? {}
             : {
                 routes: Object.fromEntries(
-                  bunRouteKeys(actions.table).map((key) => [key, actionCallback]),
+                  [
+                    ...(actions === undefined ? [] : bunRouteKeys(actions.table)),
+                    ...routerActionKeys(router),
+                  ].map((key) => [key, actionCallback]),
                 ),
               }),
           websocket: {

@@ -28,6 +28,11 @@ const origin = Object.freeze({
 type Snapshot = Readonly<{
   method: string;
   path: string;
+  // Verbatim pathname for strict capture dispatch: decoded whole-path
+  // matching cannot tell an encoded separator from a real one, so action
+  // dispatch revalidates this raw text per segment. Handlers observe only
+  // typed captures, never the raw target.
+  rawPath: string;
   query: readonly (readonly [string, string])[];
   queryInvalid: boolean;
   headers: readonly (readonly [string, string])[];
@@ -118,6 +123,7 @@ export function normalizedPath(url: URL): string {
 type Head = Readonly<{
   method: string;
   path: string;
+  rawPath: string;
   query: readonly (readonly [string, string])[];
   queryInvalid: boolean;
   headers: readonly (readonly [string, string])[];
@@ -146,7 +152,10 @@ function snapshotHead(
   const headers = Object.freeze(
     Array.from(request.headers.entries(), (entry) => Object.freeze(entry)),
   );
-  return { kind: "head", value: { method: request.method, path, query, queryInvalid, headers } };
+  return {
+    kind: "head",
+    value: { method: request.method, path, rawPath: url.pathname, query, queryInvalid, headers },
+  };
 }
 async function drainBody(
   body: ReadableStream<Uint8Array> | null,
@@ -321,6 +330,18 @@ function buildResponse(
       ]),
       body,
     }),
+  );
+}
+// Compiler-owned complete JSON response for action outcomes: fixed headers
+// plus shared-codec bytes under the declared finite status.
+export function ownedJsonResponse(status: number, body: Bytes): unknown {
+  if (!Number.isInteger(status) || status < 200 || status > 599)
+    throw new TypeError("invalid compiler action status");
+  return buildResponse(
+    opaque(bodyStatuses, status),
+    opaque(serverHeaders, Object.freeze([])),
+    body,
+    "application/json; charset=utf-8",
   );
 }
 // Compiler-owned complete response for adapter ingress failures and action

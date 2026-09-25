@@ -461,7 +461,21 @@
       "../data.ts",
       "../domain.ts"
     ],
-    "platform/action-routes.ts": [],
+    "platform/action-routes.ts": [
+      "../completion.ts",
+      "../assert/context.ts",
+      "../data.ts",
+      "../bytes.ts",
+      "../domain-core.ts",
+      "../domain.ts",
+      "../codec/budget.ts",
+      "../codec/json.ts",
+      "../codec/project.ts",
+      "../transport/media.ts",
+      "./http.ts",
+      "./form.ts",
+      "./html.ts"
+    ],
     "platform/action-json.ts": [
       "../completion.ts",
       "../data.ts",
@@ -486,7 +500,8 @@
       "../codec/budget.ts",
       "../transport/media.ts",
       "./form.ts",
-      "./html.ts"
+      "./html.ts",
+      "./action-routes.ts"
     ],
     "platform/assets.ts": [],
     "platform/browser.ts": [
