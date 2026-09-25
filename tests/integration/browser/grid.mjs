@@ -435,7 +435,7 @@ try {
         await route.fulfill({
           status: 200,
           contentType: "application/json",
-          body: '{"case":"invoice_contract::grid_saved","value":{"current":{"revision":"99","lines":[{"key":"k1","id":"sku-9","quantity":"9","price":"20.00"}],"total_minor_units":18000}}}',
+          body: '{"case":"invoice_contract::grid_saved","value":{"operation_id":"synthetic-probe-op","acknowledged":{"revision":"99","lines":[{"key":"k1","id":"sku-9","quantity":"9","price":"20.00"}],"total_minor_units":18000}}}',
         });
       });
       try {
