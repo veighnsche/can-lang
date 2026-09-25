@@ -63,7 +63,8 @@ package emit
 //   - Browser production emits only the entry closure (functions, callbacks,
 //     concrete specializations, required initializers). Bun keeps all.
 //   - $canActions metadata still lists all declared actions (no edges);
-//     mounts require $canActionRoutes, which browser never imports.
+//     browser imports $canActionRoutes only for client url() building, never
+//     for mount()/mountForm() (server-only, rejected by the capability gate).
 const (
 	// BrowserProfileMarker is the BROWSER_PROFILE export value.
 	BrowserProfileMarker = "browser-main"

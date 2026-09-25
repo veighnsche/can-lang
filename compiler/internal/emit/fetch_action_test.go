@@ -97,7 +97,18 @@ const fetchActionEmitWeb = "package web\n" +
 	"        str[] arguments\n" +
 	"    asserts\n" +
 	"        empty: [] => ok\n" +
-	"    ok\n"
+	"    match call reload_line(\"inv-1\", 1)\n" +
+	"        http::transport_failed => ok\n" +
+	"        http::invalid_request => ok\n" +
+	"        http::status_error => ok\n" +
+	"        codec::invalid_data => ok\n" +
+	"        ok load_outcome got => match call store_invoice(invoice_wire(\"inv-1\", 2))\n" +
+	"            http::transport_failed => ok\n" +
+	"            http::invalid_request => ok\n" +
+	"            http::body_limit => ok\n" +
+	"            http::status_error => ok\n" +
+	"            codec::invalid_data => ok\n" +
+	"            ok save_outcome done => ok\n"
 
 func fetchEmitProgram(t *testing.T) *check.Program {
 	t.Helper()

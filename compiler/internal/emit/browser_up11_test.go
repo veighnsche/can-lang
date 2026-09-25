@@ -328,7 +328,11 @@ fn void main
     emits []
     asserts
         empty: => ok
-    ok
+    match call demo("app")
+        browser::missing_root => ok
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => ok
 `})
 	artifacts2 := browserUP11Artifacts(t, program2)
 	authored2 := browserUP11Authored(t, artifacts2)
