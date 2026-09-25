@@ -489,6 +489,12 @@
       "./action-routes.ts",
       "./router.ts"
     ],
+    "platform/action-client.ts": [
+      "../completion.ts",
+      "../data.ts",
+      "../domain.ts",
+      "./action-json.ts"
+    ],
     "platform/router.ts": [
       "../completion.ts",
       "../data.ts",
@@ -510,6 +516,7 @@
       "../domain.ts",
       "../failure.ts",
       "../assert/context.ts",
+      "../browser/diagnostics.ts",
       "./html.ts"
     ],
     "platform/server.ts": [
