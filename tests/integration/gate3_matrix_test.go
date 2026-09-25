@@ -705,9 +705,10 @@ func TestGate3ServerMatrix(t *testing.T) {
 
 	// Swap-config regression on served bytes: the global policy keeps
 	// the quiet 204/304 and every 4xx/5xx class out of swaps, and the
-	// served form carries no per-element hx-status admission, so error
-	// fragments stay unswapped until UP12/UP19 generate admission from
-	// the checked case table. 2xx/3xx outside the quiet pair swap.
+	// served form carries per-element hx-status admission generated
+	// from the checked HTML action case table, so declared error
+	// fragments swap into their connected target. 2xx/3xx outside the
+	// quiet pair swap without needing an exception.
 	status, page, _ = invoiceGet(t, base, "/invoices/form?tenant_id=1&invoice_id=7", "tok-alice")
 	if status != 200 {
 		t.Fatalf("swap page: %d", status)
@@ -734,8 +735,18 @@ func TestGate3ServerMatrix(t *testing.T) {
 			t.Fatalf("served htmx-config noSwap[%d]=%v, want %v", i, config.NoSwap[i], code)
 		}
 	}
-	if strings.Contains(page, "hx-status:") {
-		t.Fatalf("swap page admits error swaps in %.800s", page)
+	for _, admission := range []string{
+		`hx-status:403="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:409="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:422="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+		`hx-status:503="{&quot;swap&quot;:&quot;innerHTML&quot;}"`,
+	} {
+		if !strings.Contains(page, admission) {
+			t.Fatalf("swap page lacks %s in %.800s", admission, page)
+		}
+	}
+	if strings.Contains(page, "hx-status:200") {
+		t.Fatalf("swap page admits a redundant 2xx exception in %.800s", page)
 	}
 
 	// Uncertain commit: SIGKILL mid-flight, then the identical replay
