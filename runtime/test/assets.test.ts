@@ -58,13 +58,26 @@ const root = mkdtempSync(join(tmpdir(), "can-assets-"));
 const script = await Bun.file(
   new URL("../../distribution/assets/htmx-4.0.0.min.js", import.meta.url),
 ).bytes();
+const guard = await Bun.file(
+  new URL("../../distribution/assets/htmx-guard.js", import.meta.url),
+).bytes();
 const css = new TextEncoder().encode("body{color:black}\n");
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 const htmxDigest = digest(script),
+  guardDigest = digest(guard),
   cssDigest = digest(css);
+const guardEntry: ServedAsset = {
+  route: "/__can/assets/htmx-guard.js",
+  digest: guardDigest,
+  mediaType: "text/javascript",
+  file: `assets/${guardDigest}/htmx-guard.js`,
+  integrity: "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG",
+};
 mkdirSync(join(root, "assets", htmxDigest), { recursive: true });
+mkdirSync(join(root, "assets", guardDigest), { recursive: true });
 mkdirSync(join(root, "assets", cssDigest), { recursive: true });
 writeFileSync(join(root, "assets", htmxDigest, "htmx-4.0.0.min.js"), script);
+writeFileSync(join(root, "assets", guardDigest, "htmx-guard.js"), guard);
 writeFileSync(join(root, "assets", cssDigest, "site.css"), css);
 const cssRoute = `/__can/project/${cssDigest}/site.css`;
 const table: AssetTable = {
@@ -75,6 +88,7 @@ const table: AssetTable = {
     file: `assets/${htmxDigest}/htmx-4.0.0.min.js`,
     integrity: "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
   },
+  guard: guardEntry,
   project: [
     {
       route: cssRoute,
@@ -126,6 +140,48 @@ test("path escapes, unknown routes, wrong bytes and foreign methods are refused"
   writeFileSync(join(root, "assets", cssDigest, "site.css"), "tampered\n");
   expect((await ask(cssRoute))?.status).toBe(404);
   writeFileSync(join(root, "assets", cssDigest, "site.css"), css);
+});
+
+test("pinned guard serves exact bytes while guard-ish routes and tables fail closed", async () => {
+  const served = await ask("/__can/assets/htmx-guard.js");
+  expect(served?.status).toBe(200);
+  expect(served?.headers.get("content-type")).toBe("text/javascript");
+  expect(served?.headers.get("etag")).toBe(`"${guardDigest}"`);
+  expect(served?.headers.get("cache-control")).toBe("public, max-age=31536000, immutable");
+  expect(served?.headers.get("x-content-type-options")).toBe("nosniff");
+  expect(new Uint8Array(await served!.arrayBuffer())).toEqual(guard);
+  const cached = await ask("/__can/assets/htmx-guard.js", {
+    "if-none-match": `"${guardDigest}"`,
+  });
+  expect(cached?.status).toBe(304);
+  for (const path of [
+    "/__can/assets/htmx-guard.js.map",
+    "/__can/assets/htmx-guard2.js",
+    "/__can/assets/htmx-guard",
+    `/__can/assets/${guardDigest}.js`,
+  ]) {
+    expect((await ask(path))?.status).toBe(404);
+  }
+  expect((await ask("/__can/assets/htmx-guard.js", undefined, "POST"))?.status).toBe(405);
+  writeFileSync(join(root, "assets", guardDigest, "htmx-guard.js"), "tampered\n");
+  expect((await ask("/__can/assets/htmx-guard.js"))?.status).toBe(404);
+  writeFileSync(join(root, "assets", guardDigest, "htmx-guard.js"), guard);
+  expect((await ask("/__can/assets/htmx-guard.js"))?.status).toBe(200);
+  const base = pathToFileURL(root + "/");
+  for (const broken of [
+    { ...guardEntry, route: "/__can/assets/other-guard.js" },
+    {
+      ...guardEntry,
+      integrity:
+        "sha384-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    },
+    { ...guardEntry, integrity: "" },
+    { ...guardEntry, mediaType: "application/json" },
+    { ...guardEntry, file: `assets/${guardDigest}/renamed.js` },
+    { ...guardEntry, digest: "c".repeat(64) },
+  ]) {
+    expect(() => createAssets({ ...table, guard: broken }, base)).toThrow(TypeError);
+  }
 });
 
 test("declared asset urls mint html provenance and foreign names stay reasons", async () => {
@@ -209,11 +265,17 @@ function pairedTree() {
     tableDigest = digest(tableBytes);
   for (const [name, bytes] of [
     ["htmx-4.0.0.min.js", script],
+    ["htmx-guard.js", guard],
     ["browser.js", entry],
     ["browser.js.map", map],
     ["table.json", tableBytes],
   ] as const) {
-    const folder = name === "htmx-4.0.0.min.js" ? htmxDigest : digest(bytes);
+    const folder =
+      name === "htmx-4.0.0.min.js"
+        ? htmxDigest
+        : name === "htmx-guard.js"
+          ? guardDigest
+          : digest(bytes);
     mkdirSync(join(generation, "assets", folder), { recursive: true });
     writeFileSync(join(generation, "assets", folder, name), bytes);
   }
@@ -240,6 +302,7 @@ function pairedTree() {
       file: `assets/${htmxDigest}/htmx-4.0.0.min.js`,
       integrity: "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
     },
+    guard: guardEntry,
     project: [],
     browser: {
       buildId: "b".repeat(64),

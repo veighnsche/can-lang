@@ -30,6 +30,7 @@ type browserAssetTable struct {
 
 type assetTable struct {
 	HTMX    servedAsset       `json:"htmx"`
+	Guard   servedAsset       `json:"guard"`
 	Project []servedAsset     `json:"project"`
 	Browser *browserAssetTable `json:"browser,omitempty"`
 }
@@ -50,11 +51,23 @@ func assetBundle(program *check.Program, pairing *BrowserPairing) (assetTable, [
 	}
 	sum := sha256.Sum256(script)
 	digest := hex.EncodeToString(sum[:])
+	guard, err := distribution.GuardAsset()
+	if err != nil {
+		return assetTable{}, nil, nil, err
+	}
+	guardSum := sha256.Sum256(guard)
+	guardDigest := hex.EncodeToString(guardSum[:])
 	table := assetTable{Project: []servedAsset{}, HTMX: servedAsset{
 		Route: "/__can/assets/htmx-4.0.0.min.js", Digest: digest, MediaType: "text/javascript",
 		File: "assets/" + digest + "/htmx-4.0.0.min.js", Integrity: "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc",
+	}, Guard: servedAsset{
+		// The guard integrity pins the Bun-transpiled bytes of
+		// runtime/platform/htmx-guard.ts; re-pin together with
+		// runtimeHead after any guard edit and regeneration.
+		Route: "/__can/assets/htmx-guard.js", Digest: guardDigest, MediaType: "text/javascript",
+		File: "assets/" + guardDigest + "/htmx-guard.js", Integrity: "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG",
 	}}
-	files := map[string][]byte{table.HTMX.File: script}
+	files := map[string][]byte{table.HTMX.File: script, table.Guard.File: guard}
 	urls := []string{}
 	var browser []servedAsset
 	for _, asset := range program.Assets {

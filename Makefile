@@ -34,3 +34,10 @@ catalogue:
 
 catalogue-check:
 	go run ./compiler/internal/catalogue/cmd/cataloguegen --check
+
+.PHONY: guard guard-check
+guard:
+	bun tools/runtime/guardgen.ts
+
+guard-check:
+	bun tools/runtime/guardgen.ts --check

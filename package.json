@@ -7,6 +7,8 @@
     "lint:fix:runtime": "oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --fix",
     "format:runtime": "oxfmt \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"",
     "format:check:runtime": "oxfmt --check \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"",
+    "guard": "bun tools/runtime/guardgen.ts",
+    "guard:check": "bun tools/runtime/guardgen.ts --check",
     "typecheck:runtime": "tsc -p tsconfig.runtime.json",
     "check:runtime": "bun run lint:runtime && bun run format:check:runtime && bun run typecheck:runtime"
   },

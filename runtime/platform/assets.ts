@@ -21,6 +21,7 @@ export type BrowserTable = Readonly<{
 }>;
 export type AssetTable = Readonly<{
   htmx: ServedAsset;
+  guard: ServedAsset;
   project: readonly ServedAsset[];
   browser?: BrowserTable;
 }>;
@@ -37,6 +38,11 @@ type LedgerEntry = Readonly<{
 }>;
 const htmxRoute = "/__can/assets/htmx-4.0.0.min.js";
 const htmxIntegrity = "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc";
+const guardRoute = "/__can/assets/htmx-guard.js";
+// The guard integrity pins the Bun-transpiled bytes of
+// runtime/platform/htmx-guard.ts; re-pin together with runtimeHead after
+// any guard edit and regeneration.
+const guardIntegrity = "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG";
 
 function hex(bytes: ArrayBuffer): string {
   let out = "";
@@ -113,7 +119,18 @@ export function createAssets(table: AssetTable, root: URL): AssetServer {
   ) {
     throw new TypeError("invalid pinned htmx asset");
   }
-  const routes = new Map<string, ServedAsset>([[table.htmx.route, table.htmx]]);
+  if (
+    table.guard.route !== guardRoute ||
+    table.guard.integrity !== guardIntegrity ||
+    table.guard.mediaType !== "text/javascript" ||
+    !safeFile(table.guard.file, table.guard.digest, "htmx-guard.js")
+  ) {
+    throw new TypeError("invalid pinned guard asset");
+  }
+  const routes = new Map<string, ServedAsset>([
+    [table.htmx.route, table.htmx],
+    [table.guard.route, table.guard],
+  ]);
   for (const asset of table.project) {
     const name = asset.route.slice(asset.route.lastIndexOf("/") + 1);
     if (
