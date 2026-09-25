@@ -127,6 +127,20 @@ func (s *OutputStore) selectCurrentWithAssets(prior, id string, files []pairedAs
 		_ = s.DiscardGeneration(id)
 		return "", err
 	}
+	// Pre-flight the retention inputs before selection moves: a tampered
+	// prior generation or ledger must fail here, with production current
+	// untouched, rather than after the switch when restore may no longer
+	// validate. The apply re-reads both under the same lock.
+	if _, _, err := s.priorPairedSet(prior); err != nil {
+		s.abandonPendingAssets()
+		_ = s.DiscardGeneration(id)
+		return "", err
+	}
+	if _, _, err := s.readAssetLedger(); err != nil {
+		s.abandonPendingAssets()
+		_ = s.DiscardGeneration(id)
+		return "", err
+	}
 	directory, err := s.SelectCurrent(id)
 	if err != nil {
 		s.abandonPendingAssets()
@@ -196,7 +210,7 @@ func (s *OutputStore) applyPendingAssets() error {
 		if err := validateLedgerEntry(entry); err != nil {
 			return err
 		}
-		if currentDigests[entry.Digest] || now-entry.ReplacedAt > assetRetentionMs {
+		if currentDigests[entry.Digest] || !assetRetained(now, entry.ReplacedAt) {
 			continue
 		}
 		retained = append(retained, entry)
@@ -318,8 +332,11 @@ func (s *OutputStore) priorPairedSet(prior string) ([]pairedAssetFile, map[strin
 	if err := decodeOutput(encoded, &pairing); err != nil || pairing.SchemaVersion != 1 || pairing.Kind != "can.browser-pairing" {
 		return nil, nil, fmt.Errorf("prior pairing record is invalid")
 	}
-	if pairing.Generation != prior || len(pairing.Files) == 0 {
-		return nil, nil, fmt.Errorf("prior pairing record does not match its generation")
+	// The record is already bound to this generation by the manifest digest
+	// check above; its Generation names the browser generation it was
+	// verified from, which only needs to be a well-formed identity.
+	if !digestPattern.MatchString(pairing.Generation) || !digestPattern.MatchString(pairing.BrowserBuild) || len(pairing.Files) == 0 {
+		return nil, nil, fmt.Errorf("prior pairing record is incomplete")
 	}
 	routes := map[string]bool{}
 	bytes := map[string][]byte{}
@@ -351,6 +368,13 @@ func (s *OutputStore) priorPairedSet(prior string) ([]pairedAssetFile, map[strin
 		return nil, nil, fmt.Errorf("prior pairing record lacks its entry or table route")
 	}
 	return pairing.Files, bytes, nil
+}
+
+// assetRetained is the retention rule shared by build-time collection and
+// serve-time expiry: a replaced route serves while it is at most seven
+// days past replacement, with the bound itself still serving.
+func assetRetained(now, replacedAt int64) bool {
+	return now-replacedAt <= assetRetentionMs
 }
 
 func (s *OutputStore) readAssetLedger() (assetLedger, bool, error) {

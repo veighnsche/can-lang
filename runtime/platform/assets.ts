@@ -3,6 +3,9 @@ export const browserPolicy =
 // Replaced digest URLs stay servable for at least seven days past
 // replacement. A route exactly at the bound still serves.
 const assetRetentionMs = 7 * 24 * 60 * 60 * 1000;
+export function assetRetained(now: number, replacedAt: number): boolean {
+  return now - replacedAt <= assetRetentionMs;
+}
 export type ServedAsset = Readonly<{
   route: string;
   digest: string;
@@ -219,7 +222,7 @@ export function createAssets(table: AssetTable, root: URL): AssetServer {
       const entry = await retained(path);
       if (entry === undefined) return text(404);
       if (request.method !== "GET" && request.method !== "HEAD") return text(405);
-      if (Date.now() - entry.replacedAt > assetRetentionMs) return text(404);
+      if (!assetRetained(Date.now(), entry.replacedAt)) return text(404);
       let bytes: Uint8Array<ArrayBuffer>;
       try {
         bytes = new Uint8Array(await Bun.file(new URL(entry.file, durable)).bytes());
