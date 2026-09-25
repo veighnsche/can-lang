@@ -954,6 +954,9 @@ fn bool insert_lines
                 save_lost_race: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 save_conflict_race: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 apply_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                apply_form: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                commit_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
+                writes_ok: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 apply_lines_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => sql::query_failed("line_insert", "SQLITE_IOERR")
                 apply_replay_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
                 apply_cleanup_down: tx, "line_insert", records::line_insert(7, "k1", "a", 2, 500, 0) => ok 1
@@ -1573,7 +1576,6 @@ fn contract::grid_load_outcome load_authorized
             int invoice_id = key.invoice_id
             match call sql::with_transaction<records::read_outcome>(pool, callable decide_load)
                 when
-                    lg_found: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                     load_ok: pool, callable decide_load => ok records::read_found(1, 7, 1, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                     load_route_denied: pool, callable decide_load => ok records::read_denied(1, 7)
                     load_tx_down: pool, callable decide_load => sql::transaction_failed("commit")
@@ -1609,7 +1611,6 @@ fn contract::grid_edit_outcome save_authorized
             records::flawed_save => ok contract::grid_invalid(body.operation_id, body, [contract::grid_problem(option::none(), checked.field, checked.reason)])
             records::checked_save => match call clock::wall_millis()
                 when
-                    sg_saved: => ok 2000
                     json_saved: => ok 2000
                     json_denied: => ok 2000
                     json_stale: => ok 2000
@@ -1631,7 +1632,6 @@ fn contract::grid_edit_outcome save_authorized
                     int w_ms = window
                     match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
                         when
-                            sg_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                             json_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                             json_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                             json_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
@@ -1658,7 +1658,7 @@ fn contract::edit_outcome save_html_authorized
         contract::invoice_form form
         int window
     asserts
-        form_saved: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::saved(contract::invoice_form("2", option::some("rush"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])))
+        form_saved: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::saved(contract::invoice_form("3", option::some("x"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])))
         form_invalid: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))])), 1000 => ok contract::invalid(option::some(contract::invoice_form("2", option::none(), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "many", "5.00"))]))), [contract::field_error("quantity", "bad quantity")])
         form_denied: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::forbidden("request denied")
         form_stale: "tok-alice", contract::invoice_key(1, 7), contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), 1000 => ok contract::conflict(contract::invoice_form("2", option::some("rush"), "1", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])), "stale revision")
@@ -1670,7 +1670,6 @@ fn contract::edit_outcome save_html_authorized
             records::flawed_save => ok contract::invalid(option::some(form), [contract::field_error(checked.field, checked.reason)])
             records::checked_form => match call random::uuid_v4()
                 when
-                    sh_saved: => ok "op-9"
                     form_saved: => ok "op-9"
                     form_denied: => ok "op-9"
                     form_stale: => ok "op-9"
@@ -1679,7 +1678,6 @@ fn contract::edit_outcome save_html_authorized
                     form_uncertain: => ok "op-9"
                 ok str operation_id => match call clock::wall_millis()
                     when
-                        sh_saved: => ok 2000
                         form_saved: => ok 2000
                         form_denied: => ok 2000
                         form_stale: => ok 2000
@@ -1700,7 +1698,6 @@ fn contract::edit_outcome save_html_authorized
                         int w_ms = window
                         match call sql::with_transaction<records::write_outcome>(pool, callable decide_save)
                             when
-                                sh_saved: pool, callable decide_save => ok records::written(1, 7, 2, 2, "rush", [records::line_draft("k1", "a", 2, 500)], 1000)
                                 form_saved: pool, callable decide_save => ok records::written(1, 7, 2, 3, "x", [records::line_draft("k1", "a", 2, 500)], 1000)
                                 form_denied: pool, callable decide_save => ok records::write_denied(1, 7)
                                 form_stale: pool, callable decide_save => ok records::write_conflict(1, 7, 2)
@@ -1847,7 +1844,6 @@ fn int cleanup_expired
         false => ok 0
         true => match call clock::wall_millis()
             when
-                serve: => ok 2000
                 clean_run: => ok 2000
                 clean_down: => ok 2000
                 clean_unknown: => ok 2000
@@ -1856,7 +1852,6 @@ fn int cleanup_expired
                 int w_ms = window
                 match call sql::with_transaction<int>(pool, callable decide_cleanup)
                     when
-                        serve: pool, callable decide_cleanup => ok 0
                         clean_run: pool, callable decide_cleanup => ok 2
                         clean_down: pool, callable decide_cleanup => sql::transaction_failed("commit")
                         clean_unknown: pool, callable decide_cleanup => sql::commit_unknown("tx-9")

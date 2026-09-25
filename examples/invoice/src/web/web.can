@@ -22,6 +22,8 @@ fn contract::grid_load_outcome load_grid
             ok option::value<str> session => match session
                 option::none => ok contract::grid_load_forbidden("request denied")
                 option::some => match call model::load_authorized(pool, session.value, key)
+                    when
+                        lg_found: pool, "tok-alice", contract::invoice_key(1, 7) => ok contract::grid_loaded(contract::grid_snapshot("1", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
                     ok contract::grid_load_outcome result => ok result
 
 /// Serve one JSON save: authenticate from the session cookie, then
@@ -52,6 +54,8 @@ fn contract::grid_edit_outcome save_grid
                     ok bool admitted => match admitted
                         false => ok contract::grid_forbidden(body.operation_id, "request denied")
                         true => match call model::save_authorized(pool, session.value, key, body, window)
+                            when
+                                sg_saved: pool, "tok-alice", contract::invoice_key(1, 7), body, 1000 => ok contract::grid_saved("op-1", contract::grid_snapshot("2", [contract::grid_line_wire("k1", "a", "2", "5.00")], 1000))
                             ok contract::grid_edit_outcome result => ok result
 
 /// Serve one form save through the same protected write as the JSON
@@ -83,6 +87,8 @@ fn contract::edit_outcome save_html
                     ok bool admitted => match admitted
                         false => ok contract::forbidden("request denied")
                         true => match call model::save_html_authorized(pool, session.value, key, form, window)
+                            when
+                                sh_saved: pool, "tok-alice", key, form, 1000 => ok contract::saved(contract::invoice_form("2", option::some("rush"), "2", form::rows<contract::line_wire>(["k1"], [form::row_item<contract::line_wire>("k1", contract::line_wire("a", "2", "5.00"))])))
                             ok contract::edit_outcome result => ok result
 
 /// Render one field error as a list item naming the wire field and
@@ -475,6 +481,7 @@ fn void reject_startup
     match call env::required("")
         when
             sample: "" => env::invalid_name("")
+            malformed: "" => env::invalid_name("")
             negative: "" => env::invalid_name("")
             bad_origin: "" => env::invalid_name("")
         env::invalid_name
@@ -484,13 +491,14 @@ fn void reject_startup
 /// Read the retention window: explicit positive
 /// INVOICE_REPLAY_WINDOW_MS, else the seven-day default. A missing
 /// variable reads the default; an unparsable or non-positive value
-/// fails closed before serving.
+/// fails closed through the same startup rejection as a malformed
+/// origin, so every window problem shares one failure signal.
 fn int startup_window
-    emits [env::invalid_name, http::credentials_missing, codec::invalid_data]
+    emits [env::invalid_name, http::credentials_missing]
     asserts
         default: => ok 604800000
         explicit: => ok 1000
-        malformed: => codec::invalid_data("/", "window")
+        malformed: => env::invalid_name("")
         negative: => env::invalid_name("")
     match call env::optional("INVOICE_REPLAY_WINDOW_MS")
         when
@@ -503,9 +511,15 @@ fn int startup_window
         ok option::value<str> found => match found
             option::none => ok 604800000
             option::some => match call bytes::from_utf8(found.value)
-                codec::invalid_data
+                codec::invalid_data => match call reject_startup()
+                    env::invalid_name
+                    http::credentials_missing
+                    ok => ok 0 - 1
                 ok bytes::buffer raw => match call codec::decode_json<int>(raw)
-                    codec::invalid_data
+                    codec::invalid_data => match call reject_startup()
+                        env::invalid_name
+                        http::credentials_missing
+                        ok => ok 0 - 1
                     ok int window => match call model::valid_window(window)
                         ok bool positive => match positive
                             false => match call reject_startup()
@@ -563,12 +577,13 @@ fn void main
                                         bad_window: => env::invalid_name("")
                                     env::invalid_name
                                     http::credentials_missing
-                                    codec::invalid_data
                                     ok int window => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
                                         when
                                             serve: "/tmp/inv.sqlite", sql::sqlite_file_options("rw", 5000) => ok
                                         sql::connection_failed
                                         ok sql::pool pool => match call model::cleanup_expired(pool, window)
+                                            when
+                                                serve: pool, 604800000 => ok 0
                                             ok int expired => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
                                                 http::invalid_server_config
                                                 ok http::server_config config => match call invoice_routes(pool, origin, window)
