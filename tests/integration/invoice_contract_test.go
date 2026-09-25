@@ -982,7 +982,7 @@ func TestInvoiceContractLimit(t *testing.T) {
 	bundle := contractLiveBundle(t, ctx, sourceRoot, archive, "contract-limit")
 	ws := contractLiveStage(t, sourceRoot)
 	var evidence []contractLiveEvidence
-	digest := contractLiveEditShared(t, ws, [][2]string{{"json grid_edit_input limit 8192", "json grid_edit_input limit 64"}})
+	digest := contractLiveEditShared(t, ws, [][2]string{{"json grid_edit_input limit 8192", "json grid_edit_input limit 128"}})
 	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "relock", Detail: digest[:12]})
 	gridID, _, manifest := contractLiveBuildGrid(t, ctx, bundle, ws)
 	serverID, _, entry, paired := contractLiveBuildServer(t, ctx, bundle, ws, manifest)
@@ -999,7 +999,7 @@ func TestInvoiceContractLimit(t *testing.T) {
 	// Over-limit raw HTTP is 413 before handler entry: no revision
 	// moves and no replay row is minted.
 	big := `{"operation_id":"op-big","revision":"1","lines":` + contractJSONLines() + `}`
-	if len(big) <= 64 {
+	if len(big) <= 128 {
 		t.Fatalf("oversized fixture is %d bytes", len(big))
 	}
 	status, payload, _ := postInvoiceJSON(t, base, "/api/tenants/1/invoices/7", "tok-alice", origin, "application/json", big)
@@ -1014,9 +1014,9 @@ func TestInvoiceContractLimit(t *testing.T) {
 	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "http", Detail: "over-limit 413 pre-entry"})
 
 	// The browser applies the same declared budget: the loaded
-	// two-line draft exceeds 64 bytes, so the save fails in the
+	// two-line draft exceeds 128 bytes, so the save fails in the
 	// client with no request on the wire. This runs before the
-	// under-limit save below empties the invoice lines.
+	// under-limit save below shrinks the invoice to one line.
 	report := contractLiveBrowser(t, ctx, sourceRoot, base, "budget", "limit")
 	if report.DOM.Status != "save too large; remove lines and retry" {
 		t.Fatalf("browser budget dom %+v", report.DOM)
@@ -1033,8 +1033,8 @@ func TestInvoiceContractLimit(t *testing.T) {
 	}
 	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "browser", Detail: report.DOM.Status + ", no POST"})
 
-	small := `{"operation_id":"op-small","revision":"1","lines":[]}`
-	if len(small) > 64 {
+	small := `{"operation_id":"op-small","revision":"1","lines":[{"key":"k1","id":"a","quantity":"1","price":"1.00"}]}`
+	if len(small) > 128 {
 		t.Fatalf("undersized fixture is %d bytes", len(small))
 	}
 	status, payload, _ = postInvoiceJSON(t, base, "/api/tenants/1/invoices/7", "tok-alice", origin, "application/json", small)
@@ -1042,7 +1042,10 @@ func TestInvoiceContractLimit(t *testing.T) {
 		t.Fatalf("under-limit save: %d %s", status, payload)
 	}
 	store = inspectInvoice(t, ctx, bundle, ws.home, driver, db)
-	requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
+	row := requireInvoice(t, store, "7", "2", "2", "Acme <em>&\" 'coop'\"")
+	if len(row.Lines) != 1 || row.Lines[0].Key != "k1" || row.Lines[0].ID != "a" {
+		t.Fatalf("under-limit save lines %+v, want the single shrunk line", row.Lines)
+	}
 	requireReplay(t, store, "op-small", "2")
 	evidence = append(evidence, contractLiveEvidence{Edit: "limit", Phase: "http-under", Detail: "under-limit 200 rev 2"})
 	logContractLive(t, evidence)

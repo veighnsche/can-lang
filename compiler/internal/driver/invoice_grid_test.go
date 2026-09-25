@@ -1097,13 +1097,13 @@ func TestContractEditStatus(t *testing.T) {
 func TestContractEditLimit(t *testing.T) {
 	ws := contractWorkspaceFor(t)
 	var evidence []contractEvidence
-	digest := ws.rewriteSharedContract(t, [][2]string{{"json grid_edit_input limit 8192", "json grid_edit_input limit 64"}})
+	digest := ws.rewriteSharedContract(t, [][2]string{{"json grid_edit_input limit 8192", "json grid_edit_input limit 128"}})
 	evidence = append(evidence, contractEvidence{Edit: "limit", Phase: "relock", Target: "both", Result: "pass", Detail: digest[:12]})
 	grid := mustCheckContractTree(t, ws.grid, check.TargetBrowser)
 	server := mustCheckContractTree(t, ws.server, check.TargetBun)
 	for _, program := range []*check.Program{grid, server} {
 		save := contractAction(t, program, "save_invoice_grid")
-		if save.Input.Mode != "json" || save.Input.Limit != 64 {
+		if save.Input.Mode != "json" || save.Input.Limit != 128 {
 			t.Fatalf("save input = %+v", save.Input)
 		}
 	}
