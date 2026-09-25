@@ -1449,3 +1449,169 @@ func TestGate3Concurrency(t *testing.T) {
 	}
 	t.Logf("gate3 concurrency: %d can assertions, revision/identical/membership races live with row evidence", assertions)
 }
+
+// TestGate3ReplayExpiry proves revoked actors cannot recover prior saved
+// results, live replay replays without sliding retention, expired replay
+// conflicts with the row gone, and expired operation IDs that return
+// with a fresh base commit new revisions instead of reusing recorded
+// ones. The server runs a five-minute retention window so the live legs
+// place rows a full minute on either side of the server-clock cutoff;
+// the exact at-boundary millisecond stays pinned by the
+// save_replay_at_edge model assertion (strict less-than keeps it live).
+func TestGate3ReplayExpiry(t *testing.T) {
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged gate 3 execution")
+	}
+	sourceRoot, _ := filepath.Abs("../..")
+	ctx, cancel := context.WithTimeout(context.Background(), 14*time.Minute)
+	defer cancel()
+	bundle, err := distribution.Build(ctx, sourceRoot, t.TempDir(), archive, "gate3-replay")
+	if err != nil {
+		t.Fatal(err)
+	}
+	root, home, driver, entry, assertions := stageInvoiceBundle(t, ctx, bundle, sourceRoot)
+	db := seedInvoiceDB(t, ctx, bundle, home, driver, root)
+	const window = int64(300000)
+	base, stop := serveInvoice(t, ctx, bundle, home, entry, db, gate3ReplayPort, strconv.FormatInt(window, 10))
+	defer stop()
+	origin := "http://127.0.0.1:" + strconv.Itoa(gate3ReplayPort)
+	const savePath = "/api/tenants/1/invoices/7"
+	lines := `[{"key":"k1","id":"a","quantity":"2","price":"5.00"}]`
+	saveBody := func(op string, baseRev int) string {
+		return `{"operation_id":"` + op + `","revision":"` + strconv.Itoa(baseRev) + `","lines":` + lines + `}`
+	}
+	entries := func() protectedEntries {
+		t.Helper()
+		return snapshotEntries(inspectInvoice(t, ctx, bundle, home, driver, db), "7")
+	}
+	revision := func() string { t.Helper(); return entries().revision }
+
+	// Baseline save whose result a revoked actor must not recover.
+	status, saved, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-v1", 1))
+	if status != 200 {
+		t.Fatalf("revoke setup save: %d %s", status, saved)
+	}
+	before := entries()
+	ledger := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-v1", "2")
+	revokeSession(t, ctx, bundle, home, driver, db, "tok-alice", strconv.FormatInt(time.Now().UnixMilli(), 10))
+
+	// Revoked replay: identical and changed retries share one
+	// nondisclosing 403 carrying only the caller-sent operation id,
+	// and the load denials match. Nothing leaks the recorded result.
+	for _, leg := range []struct {
+		note, body string
+	}{
+		{"revoked identical", saveBody("op-v1", 1)},
+		{"revoked changed", `{"operation_id":"op-v1","revision":"1","lines":[{"key":"k1","id":"changed","quantity":"2","price":"5.00"}]}`},
+		{"revoked fresh", saveBody("op-v2", 2)},
+	} {
+		status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", leg.body)
+		if status != 403 {
+			t.Fatalf("%s: %d %s, want 403", leg.note, status, payload)
+		}
+		value := gate3Case(t, leg.note, payload, "invoice_contract::grid_forbidden")
+		if value["operation_id"] != "op-v1" && value["operation_id"] != "op-v2" {
+			t.Fatalf("%s value %+v mismatches the caller-sent id", leg.note, value)
+		}
+		if len(value) != 2 || strings.Contains(payload, "grid_saved") || strings.Contains(payload, "Acme") {
+			t.Fatalf("%s value %+v discloses the recorded result", leg.note, value)
+		}
+	}
+	status, body, _ := invoiceGet(t, base, savePath, "tok-alice")
+	if status != 403 {
+		t.Fatalf("revoked load: %d %s, want 403", status, body)
+	}
+	gate3Case(t, "revoked load", body, "invoice_contract::grid_load_forbidden")
+	requireNoEntry(t, "revoked legs", before, entries())
+
+	// Unrevoking restores the recorded result byte-identically with
+	// its retention stamp unmoved.
+	revokeSession(t, ctx, bundle, home, driver, db, "tok-alice", "0")
+	status, replayed, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-v1", 1))
+	if status != 200 || replayed != saved {
+		t.Fatalf("unrevoked replay: %d, want identical 200 bytes", status)
+	}
+	again := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-v1", "2")
+	if again.Recorded != ledger.Recorded {
+		t.Fatalf("unrevoked replay slid retention %s to %s", ledger.Recorded, again.Recorded)
+	}
+	requireNoEntry(t, "unrevoked replay", before, entries())
+
+	// Live replay: a row a minute inside the cutoff replays
+	// byte-identically without sliding its stamp or touching the
+	// revision.
+	status, live, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 200 {
+		t.Fatalf("expiry setup save: %d %s", status, live)
+	}
+	liveStamp := strconv.FormatInt(time.Now().UnixMilli()-window+60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", liveStamp)
+	before = entries()
+	status, replayed, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 200 || replayed != live {
+		t.Fatalf("live replay: %d, want identical 200 bytes", status)
+	}
+	requireNoEntry(t, "live replay", before, entries())
+	if held := requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-e1", "3"); held.Recorded != liveStamp {
+		t.Fatalf("live replay slid retention %s to %s", liveStamp, held.Recorded)
+	}
+
+	// Expired replay: a row a minute past the cutoff conflicts on its
+	// advanced revision and is gone afterwards; nothing reuses the
+	// recorded revision.
+	deadStamp := strconv.FormatInt(time.Now().UnixMilli()-window-60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", deadStamp)
+	status, payload, _ := postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 2))
+	if status != 409 {
+		t.Fatalf("expired replay: %d %s, want 409", status, payload)
+	}
+	gate3Case(t, "expired replay", payload, "invoice_contract::grid_conflict")
+	if revision() != "3" {
+		t.Fatalf("expired replay moved revision to %s", revision())
+	}
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		if row.OperationID == "op-e1" {
+			t.Fatalf("expired replay kept %+v", row)
+		}
+	}
+
+	// The expired operation ID returning with a fresh base commits a
+	// new revision instead of reusing its recorded one.
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e1", 3))
+	if status != 200 {
+		t.Fatalf("expired id fresh base: %d %s, want 200", status, payload)
+	}
+	value := gate3Case(t, "expired id fresh base", payload, "invoice_contract::grid_saved")
+	acknowledged, _ := value["acknowledged"].(map[string]any)
+	if acknowledged["revision"] != "4" {
+		t.Fatalf("expired id fresh base value %+v, want new revision 4", value)
+	}
+	requireReplay(t, inspectInvoice(t, ctx, bundle, home, driver, db), "op-e1", "4")
+
+	// Cleanup keeps the near-boundary live row while the next commit
+	// expires an ancient one.
+	liveStamp = strconv.FormatInt(time.Now().UnixMilli()-window+60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e1", liveStamp)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e2", 4))
+	if status != 200 {
+		t.Fatalf("cleanup setup save: %d %s", status, payload)
+	}
+	deadStamp = strconv.FormatInt(time.Now().UnixMilli()-window-60000, 10)
+	touchReplay(t, ctx, bundle, home, driver, db, "alice", "1", "7", "op-e2", deadStamp)
+	status, payload, _ = postInvoiceJSON(t, base, savePath, "tok-alice", origin, "application/json", saveBody("op-e3", 5))
+	if status != 200 {
+		t.Fatalf("cleanup commit save: %d %s", status, payload)
+	}
+	if revision() != "6" {
+		t.Fatalf("cleanup left revision %s, want 6", revision())
+	}
+	seen := map[string]bool{}
+	for _, row := range inspectInvoice(t, ctx, bundle, home, driver, db).Replay {
+		seen[row.OperationID] = true
+	}
+	if !seen["op-v1"] || !seen["op-e1"] || !seen["op-e3"] || seen["op-e2"] {
+		t.Fatalf("cleanup ledger keeps the live rows and drops only the ancient one: %+v", seen)
+	}
+	t.Logf("gate3 replay: %d can assertions, revoked/live/expired replay and revision invariants live with row evidence", assertions)
+}
