@@ -1,0 +1,15 @@
+{
+  "model": "jev-latest",
+  "state": "The Can server adapter must bind checked mount callables for JSON GET/POST and HTML form POST actions whose routes carry typed captures. The emitter splices one frozen site per mount: identity, method, :name template, captures, input mode with declared limits, returns, body mode, cases with statuses, the shared response schema for JSON, and rejected/rawEntry/issue identities for HTML. The runtime already ships an exact-path legacy router, a pure capture route table with method-first matching and static priority inside a method, duplicate/ambiguity refusal, and a server with native Bun route registration plus request lifecycle (body budget, owner drainage, revocation). Native params decode lossily, so dispatch must re-check the raw target in one pass and never let invalid input enter a protected handler. Candidate placements are: mount tokens join the router value so one combined dispatch serves exact legacy routes first and captured actions second with a union 405; the router stays legacy-only while server_start extracts a parallel action adapter; or each mount eagerly expands into exact legacy registrations with callback-side capture parsing.",
+  "questions": {
+    "up09_dispatch": {
+      "type": "choice",
+      "instructions": "Select the server dispatch architecture that preserves every stated UP09 guarantee.",
+      "criteria": {
+        "router_carried_combined": "Carry captured actions inside the router value: each mount validates its site and template and yields a route token, and make_router compiles all action entries into the guarded table while keeping exact legacy routes. One dispatch applies exact-first static priority, strict one-pass capture checks, combined 405 Allow and the fixed status vocabulary. The server reads native keys from the router value for Bun.serve routes while every callback re-enters the same canonical pipeline, preserving lifecycle, assets and budgets.",
+        "server_parallel_adapter": "Hold captured actions outside the router in a server-side structure assembled separately from make_router, consulted ahead of legacy dispatch inside the server. Precedence between exact and captured routes, unified 405 Allow and native key extraction each need bespoke cross-layer code, and direct router dispatch without a server cannot serve actions.",
+        "eager_exact_expansion": "Lower mounts to exact static registrations immediately and handle captures with ad-hoc callback parsing. Static priority, duplicate and ambiguity detection across capture shapes, canonical int64 raw-text checks and native dispatch are lost or reimplemented per callback, contradicting the strict table contract."
+      }
+    }
+  }
+}
