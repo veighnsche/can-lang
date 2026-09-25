@@ -51,8 +51,10 @@ package emit
 //
 // Factory contracts (emit/runtime_browser.go, consumed by UP13):
 //   - $canCreateBrowser($canDomain, {missingRoot, disposed, rejected, event,
-//     invalidQuery}) with build-sealed identities. invalidQuery is the UP11
-//     addition for query_parameter; UP13 threads it into the adapter.
+//     invalidQuery, some, none}) with build-sealed identities. invalidQuery
+//     is the UP11 addition for query_parameter; UP13 threads it into the
+//     adapter together with the UP13 some/none option leaves sealed from
+//     the query_parameter intrinsic result (option::value<str>).
 //   - Method names are queryParameter, onCancelKey, onCancelEvent (camelCase
 //     of the catalogue operations). Cancel methods preventDefault
 //     synchronously for matching cancelable events before dispatching one

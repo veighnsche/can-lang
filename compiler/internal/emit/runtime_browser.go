@@ -93,14 +93,36 @@ func (builder *stateBuilder) declareBrowserStateSpecializations() {
 	}
 }
 
+// browserQueryOptionIDs seals the option::value<str> leaf identities the
+// query_parameter adapter brands its some/none results with. Like the
+// env/cookies adapters, the compiler resolves the concrete identities
+// from the operation's own checked result; the none leaf takes no type
+// arguments but still carries a digest identity.
+func browserQueryOptionIDs(builder *stateBuilder) (some, none string) {
+	intrinsic := builder.assembly.program.Intrinsics["can.std.browser@1::query_parameter"]
+	if intrinsic == nil {
+		return "", ""
+	}
+	for _, leaf := range intrinsic.Result().Leaves() {
+		switch leaf.Declaration() {
+		case "can.std.option@1::some":
+			some = leaf.Identity()
+		case "can.std.option@1::none":
+			none = leaf.Identity()
+		}
+	}
+	return some, none
+}
+
 // initializeBrowserState constructs the browser factory inside the shared
 // initializer, after the domain runtime exists. The factory resolves the
 // live document lazily, so Bun executions fail closed with missing_root
 // while browser bundles bind the real document. The invalidQuery contract
 // is the UP11 addition for query_parameter; UP13 consumes it in the
-// platform adapter.
+// platform adapter together with the sealed some/none option leaves.
 func (builder *stateBuilder) initializeBrowserState() {
-	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s,invalidQuery:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]), quote(builder.numberIDs["can.std.browser@1::invalid_query"]))
+	some, none := browserQueryOptionIDs(builder)
+	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s,invalidQuery:%s,some:%s,none:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]), quote(builder.numberIDs["can.std.browser@1::invalid_query"]), quote(some), quote(none))
 }
 
 // initializeBrowserStateSpecializations constructs the per-type browser
