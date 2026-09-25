@@ -17,14 +17,19 @@ import (
 )
 
 // BuildTarget builds one project for the named profile. The default Bun
-// profile keeps its exact behavior; the browser profile verifies the same
+// profile keeps its exact behavior, pairing one verified browser manifest
+// when browserManifest names it; the browser profile verifies the same
 // assertion roots under Bun, then ships the distinct browser root with its
-// content-addressed asset instead of the Bun entry.
-func (r *Runtime) BuildTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, target browser.Target) (BuildReport, error) {
+// content-addressed asset instead of the Bun entry. Browser builds never
+// pair: they publish an empty asset set, retiring any prior paired set.
+func (r *Runtime) BuildTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, target browser.Target, browserManifest string) (BuildReport, error) {
 	switch target {
 	case browser.TargetBun:
-		return r.Build(ctx, projectDirectory, environment, stdin, stderr, timeoutMs)
+		return r.Build(ctx, projectDirectory, environment, stdin, stderr, timeoutMs, browserManifest)
 	case browser.TargetBrowser:
+		if browserManifest != "" {
+			return BuildReport{}, fmt.Errorf("browser builds do not pair a browser manifest")
+		}
 		return r.buildBrowserTarget(ctx, projectDirectory, environment, stdin, stderr, timeoutMs)
 	default:
 		return BuildReport{}, fmt.Errorf("unknown build target %q", string(target))
@@ -60,7 +65,7 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 		return BuildReport{}, err
 	}
 	stableRootOrder(program.Assertions)
-	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs)
+	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs, nil)
 	if err != nil {
 		return BuildReport{}, err
 	}
@@ -91,9 +96,13 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	if err != nil {
 		return BuildReport{}, err
 	}
-	directory, err := store.SelectCurrent(prodID)
+	prior, err := store.currentBuildID()
 	if err != nil {
 		_ = store.DiscardGeneration(prodID)
+		return BuildReport{}, err
+	}
+	directory, err := store.selectCurrentWithAssets(prior, prodID, nil)
+	if err != nil {
 		return BuildReport{}, err
 	}
 	discardTest = false

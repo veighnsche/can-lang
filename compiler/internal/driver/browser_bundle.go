@@ -668,6 +668,16 @@ type browserManifestFile struct {
 	Route  string `json:"route"`
 }
 
+// browserLockedInstance is one locked dependency instance pinned by the
+// browser manifest. UP18 binds the instances shared with the server graph.
+type browserLockedInstance struct {
+	Instance       string `json:"instance"`
+	Lineage        string `json:"lineage"`
+	ManifestSHA256 string `json:"manifestSHA256"`
+	SourceSHA256   string `json:"sourceSHA256"`
+	FixturesSHA256 string `json:"fixturesSHA256"`
+}
+
 // browserManifest is the I-6 verified browser manifest: the bundle
 // identity, every published byte with its digest and route, the toolchain,
 // source, and catalogue inputs, and the locked dependency instances. The
@@ -697,26 +707,14 @@ type browserManifest struct {
 		Options      string `json:"options"`
 	} `json:"inputs"`
 	Lock            string `json:"lock"`
-	LockedInstances []struct {
-		Instance       string `json:"instance"`
-		Lineage        string `json:"lineage"`
-		ManifestSHA256 string `json:"manifestSHA256"`
-		SourceSHA256   string `json:"sourceSHA256"`
-		FixturesSHA256 string `json:"fixturesSHA256"`
-	} `json:"lockedInstances"`
+	LockedInstances []browserLockedInstance `json:"lockedInstances"`
 }
 
 func browserManifestBytes(graph *project.Graph, inputs BuildInputs, toolchain browserToolchain, bundle browserBundleOutputs) ([]byte, error) {
 	if graph == nil {
 		return nil, fmt.Errorf("browser manifest requires the project graph")
 	}
-	manifest := browserManifest{SchemaVersion: 1, Kind: "can.browser-manifest", Entry: bundle.entry, Table: browserBundleTable, Files: []browserManifestFile{}, LockedInstances: []struct {
-		Instance       string `json:"instance"`
-		Lineage        string `json:"lineage"`
-		ManifestSHA256 string `json:"manifestSHA256"`
-		SourceSHA256   string `json:"sourceSHA256"`
-		FixturesSHA256 string `json:"fixturesSHA256"`
-	}{}}
+	manifest := browserManifest{SchemaVersion: 1, Kind: "can.browser-manifest", Entry: bundle.entry, Table: browserBundleTable, Files: []browserManifestFile{}, LockedInstances: []browserLockedInstance{}}
 	for _, name := range sortedOutputKeys(bundle.files) {
 		digest := hashBytes(bundle.files[name])
 		manifest.Files = append(manifest.Files, browserManifestFile{name, digest, browserAssetRoute(name, digest)})
@@ -741,13 +739,7 @@ func browserManifestBytes(graph *project.Graph, inputs BuildInputs, toolchain br
 	manifest.Lock = graph.LockSHA256
 	for _, instance := range sortedOutputKeys(graph.Lock.Projects) {
 		entry := graph.Lock.Projects[instance]
-		manifest.LockedInstances = append(manifest.LockedInstances, struct {
-			Instance       string `json:"instance"`
-			Lineage        string `json:"lineage"`
-			ManifestSHA256 string `json:"manifestSHA256"`
-			SourceSHA256   string `json:"sourceSHA256"`
-			FixturesSHA256 string `json:"fixturesSHA256"`
-		}{instance, entry.Lineage, entry.ManifestSHA256, entry.SourceSHA256, entry.FixturesSHA256})
+		manifest.LockedInstances = append(manifest.LockedInstances, browserLockedInstance{instance, entry.Lineage, entry.ManifestSHA256, entry.SourceSHA256, entry.FixturesSHA256})
 	}
 	encoded, err := json.Marshal(manifest)
 	if err != nil {

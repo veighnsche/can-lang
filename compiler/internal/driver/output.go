@@ -344,11 +344,11 @@ func (s *OutputStore) checkLayout() error {
 	}
 	for _, e := range entries {
 		switch e.Name() {
-		case "builds":
+		case "builds", "assets":
 			if !e.IsDir() {
-				return fmt.Errorf("invalid builds directory")
+				return fmt.Errorf("invalid %s directory", e.Name())
 			}
-		case ".can-owner.json", "current.json", "pending.json", ".current.tmp", ".pending.tmp":
+		case ".can-owner.json", "current.json", "pending.json", "assets.json", "pending-assets.json", ".current.tmp", ".pending.tmp", ".assets.tmp", ".pending-assets.tmp":
 			if !e.Type().IsRegular() {
 				return fmt.Errorf("output metadata is not regular")
 			}
@@ -712,7 +712,7 @@ func (s *OutputStore) Recover() error {
 	}
 	// These fixed metadata temporaries are explicitly owned by the owner schema.
 	// They are never followed and never promoted after an interrupted write.
-	for _, name := range []string{".current.tmp", ".pending.tmp"} {
+	for _, name := range []string{".current.tmp", ".pending.tmp", ".assets.tmp", ".pending-assets.tmp"} {
 		if _, err = readOutputRegular(s.dist, name); err == nil {
 			if err = s.dist.Remove(name); err != nil {
 				return err
@@ -720,6 +720,9 @@ func (s *OutputStore) Recover() error {
 		} else if !os.IsNotExist(err) {
 			return err
 		}
+	}
+	if err = s.recoverPendingAssets(); err != nil {
+		return err
 	}
 	return syncOutputDir(s.dist, ".")
 }
@@ -860,6 +863,28 @@ func (s *OutputStore) prune(clean bool) error {
 	if clean && currentID != "" {
 		if err = s.dist.Remove("current.json"); err != nil {
 			return err
+		}
+		if err = syncOutputDir(s.dist, "."); err != nil {
+			return err
+		}
+	}
+	// Clean resets retention with everything else: without a served set the
+	// ledger and durable store are meaningless. Prune preserves both.
+	if clean {
+		if err = s.sweepAssetStore(nil); err != nil {
+			return err
+		}
+		if _, err = s.dist.Lstat(assetStoreDir); err == nil {
+			if err = s.dist.Remove(assetStoreDir); err != nil {
+				return err
+			}
+		} else if !os.IsNotExist(err) {
+			return err
+		}
+		for _, name := range []string{assetLedgerName, pendingAssetsName} {
+			if err = s.dist.Remove(name); err != nil && !os.IsNotExist(err) {
+				return err
+			}
 		}
 		if err = syncOutputDir(s.dist, "."); err != nil {
 			return err

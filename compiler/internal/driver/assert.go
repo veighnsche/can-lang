@@ -74,7 +74,7 @@ func (r *Runtime) Assert(ctx context.Context, directory string, selector, enviro
 		scope = "partial"
 	}
 	stableRootOrder(program.Assertions)
-	buildID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs)
+	buildID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs, nil)
 	if err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@ func (r *Runtime) Run(ctx context.Context, projectDirectory string, args, enviro
 	defer store.Close()
 	// Run verifies like build under the default P15.1 budget; only build
 	// and assert accept a configured timeout.
-	if _, err = r.build(ctx, store, environment, stdin, stderr, DefaultAssertTimeoutMs); err != nil {
+	if _, err = r.build(ctx, store, environment, stdin, stderr, DefaultAssertTimeoutMs, ""); err != nil {
 		return err
 	}
 	lease, err := store.AcquireCurrent()

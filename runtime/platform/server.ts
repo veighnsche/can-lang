@@ -121,6 +121,39 @@ const idle: AssetServer = {
     return undefined;
   },
 };
+const pairedScriptPattern = /^\/__can\/assets\/[0-9a-f]{64}\.js$/;
+// pairDocument delivers the report-selected paired browser script to served
+// pages. A paired build splices exactly one src-only module tag ahead of
+// </body> in text/html documents; fragments without a body marker, other
+// media types, HEAD responses, and every unpaired build keep exact bytes.
+async function pairDocument(
+  request: Request,
+  response: Response,
+  script: string | undefined,
+): Promise<Response> {
+  if (script === undefined || !pairedScriptPattern.test(script) || request.method === "HEAD")
+    return response;
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.startsWith("text/html")) return response;
+  const body = await response.text();
+  const marker = "</body>";
+  const index = body.lastIndexOf(marker);
+  const headers = new Headers(response.headers);
+  if (index < 0)
+    return new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  headers.delete("content-length");
+  const paired =
+    body.slice(0, index) + `<script type="module" src="${script}"></script>` + body.slice(index);
+  return new Response(paired, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 function withPolicy(response: Response): Response {
   const headers = new Headers(response.headers);
   headers.set("content-security-policy", browserPolicy);
@@ -273,7 +306,8 @@ export function createServer(
             const completed = await guardedFetch(native);
             if (completed.kind === "ok" && isUpgradedResponse(completed.value))
               return undefined as unknown as Response;
-            return withPolicy(completed.kind === "ok" ? completed.value : fixed(500));
+            const answered = completed.kind === "ok" ? completed.value : fixed(500);
+            return withPolicy(await pairDocument(native, answered, assets.browserScript));
           } catch {
             return withPolicy(fixed(500));
           }
