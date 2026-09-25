@@ -131,17 +131,19 @@ try {
       assert.equal(saves.length, 1, `saves: ${JSON.stringify(saves.map((s) => s.url))}`);
     });
   } else if (scenario === "invalid") {
+    // The grid blocks unparsable numbers client-side, so clear the id
+    // input instead: the draft still sends and the server rejects it.
     await check("contract-invalid", async () => {
-      await page.locator("#price\\:k1").fill("five");
+      await page.locator("#id\\:k1").fill("");
       await page.locator("#save").click();
       await page.waitForResponse(
         (response) => response.request().method() === "POST" && response.status() === 422,
         { timeout: 15000 }
       );
       await page.waitForFunction(() =>
-        document.querySelector("#status")?.textContent?.match(/bad price/)
+        document.querySelector("#status")?.textContent?.match(/empty line id/)
       );
-      assert.equal(await page.locator("#price\\:k1").inputValue(), "five");
+      assert.equal(await page.locator("#id\\:k1").inputValue(), "");
     });
   } else {
     await check("contract-budget", async () => {
