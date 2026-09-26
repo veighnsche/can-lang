@@ -60,7 +60,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 unconsumed (no-addition feedback; C02 still blocked on C01) |
 | C05 | inactive (X-R02-1) | — (gate eval) | — | C04 | root-only rule stands | — | no inexpressible shape; trip conditions in x-r02-1.md |
 | F05 | done | lane-f-f05 (`31`) | isolated | F01, E01, C03, A04 | auth/protocol→F06/H | 5 worker→`b9930b47` | 183 asserts, live pair, DOC-webhook |
-| B05 | blocked (emitter) | lane-b-b05 (`32`) done; lane-a-emitfix (`37`) | isolated | B01, B02, B03✗, B04✗ | W3 verdict→H11 | `b4cc1e6d,7a0e2311`→`804d650a` | 5 pass/6 blocked; W3 rerun after fix |
+| B05 | done | lane-b-b05 (`32`) + lane-a-emitfix (`37`) | isolated | B01, B02, B03✗, B04✗ | W3 verdict→H11 | report→`804d650a`, fix→`b636674d` | W3 rerun green; M1 3/3; emit green |
 | D01 | done | lane-d-d01 (`33`) | isolated | C04, C05✗, F01 | tiers→D02/H | 7 worker→`b837f710` | 54/54 + admission; A/B→T2, C→T3 |
 | E05 | in progress (wave 14) | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | — | — |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
