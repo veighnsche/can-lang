@@ -1,0 +1,26 @@
+package handler
+    provides [tier_view, handle_tier]
+    uses [ids]
+/// The rendered membership tier.
+record tier_view
+    str name
+    bool priority
+/// Before extraction: tier mapping sits inline behind the constructor.
+/// Callers see the constructor failure in the handler bound.
+fn tier_view handle_tier
+    emits [ids::invalid]
+    given
+        int raw
+    asserts
+        gold: 90 => ok tier_view("gold", true)
+        silver: 50 => ok tier_view("silver", false)
+        bronze: 10 => ok tier_view("bronze", false)
+        bad: 0 => ids::invalid(0)
+    match call ids::parse(raw)
+        ids::invalid
+        ok ids::user_id id => match call ids::value(id)
+            ok int score => match score > 80
+                false => match score > 40
+                    false => ok tier_view("bronze", false)
+                    true => ok tier_view("silver", false)
+                true => ok tier_view("gold", true)
