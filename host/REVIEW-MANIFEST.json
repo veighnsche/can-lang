@@ -5,6 +5,7 @@
   "deliverables": [
     { "path": "adapters/storage.ts", "tier": "T2", "class": "Op A storage", "status": "pending-review" },
     { "path": "adapters/clipboard.ts", "tier": "T2", "class": "Op B clipboard", "status": "pending-review" },
-    { "path": "companions/chart.ts", "tier": "T3", "class": "Widget C chart", "status": "pending-review" }
+    { "path": "companions/chart.ts", "tier": "T3", "class": "Widget C chart", "status": "pending-review" },
+    { "path": "companions/chart-vendor-b.ts", "tier": "T3", "class": "Widget C chart vendor B", "status": "pending-review" }
   ]
 }

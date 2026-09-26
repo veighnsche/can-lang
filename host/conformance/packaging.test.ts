@@ -9,6 +9,7 @@ const ENTRIES = [
   "host/adapters/storage.ts",
   "host/adapters/clipboard.ts",
   "host/companions/chart.ts",
+  "host/companions/chart-vendor-b.ts",
 ];
 
 async function bundle(entry: string): Promise<Uint8Array> {
@@ -36,5 +37,6 @@ test("delivered bundle sizes are pinned", async () => {
     "host/adapters/storage.ts": 5618,
     "host/adapters/clipboard.ts": 4381,
     "host/companions/chart.ts": 20838,
+    "host/companions/chart-vendor-b.ts": 12160,
   });
 }, 30000);
