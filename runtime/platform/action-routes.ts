@@ -603,8 +603,11 @@ function mountLimit(identity: string, slot: string, value: unknown): number {
 
 // Checked mount-site validation. Malformed metadata is a compiler bug and
 // throws; the route template itself compiles separately so template faults
-// surface as the declared invalid_route failure.
-function checkedMountSite(site: unknown, form: boolean): MountEntry {
+// surface as the declared invalid_route failure. Each mount entry serves
+// exactly one site shape: JSON mounts serve bodyless GET and JSON POST
+// actions, form mounts serve HTML POST fragments, document mounts serve
+// bodyless HTML GET full-page reads.
+function checkedMountSite(site: unknown, entry: "json" | "form" | "document"): MountEntry {
   if (!isSiteRecord(site) || typeof site.action !== "string" || site.action === "")
     throw new TypeError("action mount site carries no action identity");
   const identity = site.action;
@@ -668,12 +671,31 @@ function checkedMountSite(site: unknown, form: boolean): MountEntry {
     throw new TypeError(`action ${identity} carries no returns type`);
   if (site.body !== "json" && site.body !== "html")
     throw new TypeError(`action ${identity} names an unknown body mode`);
-  if ((mode === "form") !== (site.body === "html"))
-    throw new TypeError(`action ${identity} disagrees on its body mode`);
-  if (form !== (site.body === "html"))
-    throw new TypeError(`action ${identity} reached the wrong mount entry`);
+  const shape =
+    site.body === "json" && mode !== "form"
+      ? "json"
+      : site.body === "html" && mode === "form"
+        ? "form"
+        : site.body === "html" && mode === "none" && site.method === "GET"
+          ? "document"
+          : undefined;
+  if (shape !== entry) throw new TypeError(`action ${identity} reached the wrong mount entry`);
   const cases = mountCases(identity, site.cases);
-  if (!form) {
+  // Document reads carry neither a JSON response schema (HTML actions omit
+  // it) nor the form structural identities (no form decode, no 422 path).
+  if (entry === "document") {
+    return {
+      identity,
+      method: site.method,
+      path: site.path,
+      body: site.body,
+      captures,
+      capturesType,
+      input,
+      cases,
+    };
+  }
+  if (entry === "json") {
     return {
       identity,
       method: site.method,
@@ -775,11 +797,13 @@ function formRequestMedia(value: string): boolean {
 }
 
 // createActionRoutes binds the exact checked mount callables: one
-// request-first handler for JSON actions, plus the distinct normal and
-// structural renderers for HTML form actions. Mount returns an http::route
-// token for make_router; url builds canonical paths from captures records.
-// Template faults fail as invalid_route, unbuildable captures as
-// invalid_path; malformed sites and non-callables are compiler bugs.
+// request-first handler for JSON actions, the handler plus the distinct
+// normal and structural renderers for HTML form fragments, and the
+// handler plus one document renderer for HTML GET full-page reads. Mount
+// returns an http::route token for make_router; url builds canonical
+// paths from captures records. Template faults fail as invalid_route,
+// unbuildable captures as invalid_path; malformed sites and non-callables
+// are compiler bugs.
 export function createActionRoutes(
   domain: ReturnType<typeof createDomainRuntime>,
   types: Readonly<{ invalidRoute: string; invalidPath: string }>,
@@ -947,6 +971,61 @@ export function createActionRoutes(
       return success(ownedResponse(kase.status, renderSafe(rendered.value), true));
     };
   }
+  // Document reads are captured GET actions with body html: the handler
+  // runs bodyless like a JSON GET load, then the single document renderer
+  // turns the outcome record into a full page. Every declared case renders
+  // a body under its finite status; the adapter sets no hx-* response
+  // headers, so the HTML guard policy applies to documents and fragments
+  // alike. Ownership is request-scoped like every other mount.
+  function buildDocumentCallback(
+    entry: MountEntry,
+    handler: MountedHandler,
+    document: MountedHandler,
+  ): ActionDispatchCallback {
+    const input = entry.input;
+    if (input.mode !== "none") throw new TypeError("invalid compiler action input");
+    return async (request, captures, context) => {
+      denyLiveBoundary(context, adapterOrigin);
+      // GET-load is bodyless: any actual body bytes are a client
+      // violation, even though standard clients cannot easily send them.
+      const probe = await snapshotBodyBytes(request);
+      if (probe.kind === "limited") return success(ownedResponse(413, "Payload Too Large", false));
+      if (probe.kind !== "bytes" || byteLength(probe.value) !== 0n)
+        return success(ownedResponse(400, "Bad Request", false));
+      const values: unknown[] = [request];
+      if (entry.capturesIdentity !== undefined)
+        values.push(
+          record(
+            entry.capturesIdentity,
+            entry.captures.map((capture) => [
+              capture.name,
+              captures.find((row) => row.name === capture.name)!.value,
+            ]),
+          ),
+        );
+      const handled = await invoke(
+        () => (handler as (...args: unknown[]) => Promise<Completion<unknown>>)(...values, context),
+        adapterOrigin,
+      );
+      if (handled.kind !== "ok") return success(ownedResponse(500, "Internal Server Error", false));
+      const leaf = recordIdentity(handled.value);
+      const kase = entry.cases.find((row) => row.leaf === leaf);
+      if (leaf === undefined || kase === undefined)
+        return success(ownedResponse(500, "Internal Server Error", false));
+      const rendered = await invoke(
+        () =>
+          (document as (...args: unknown[]) => Promise<Completion<unknown>>)(
+            handled.value,
+            context,
+          ),
+        adapterOrigin,
+      );
+      // Renderer faults return as-is: the server maps them to an uncertain
+      // 500 while the fault detail stays observable to direct dispatch.
+      if (rendered.kind !== "ok") return rendered;
+      return success(ownedResponse(kase.status, renderSafe(rendered.value), true));
+    };
+  }
   async function mountRoute(
     entry: MountEntry,
     callback: ActionDispatchCallback,
@@ -994,7 +1073,7 @@ export function createActionRoutes(
       site: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<unknown>> {
-      const entry = checkedMountSite(site, false);
+      const entry = checkedMountSite(site, "json");
       const run = checkedCallable(entry.identity, "handler", handler);
       const bound = await boundEntry(entry);
       return mountRoute(bound, buildJsonCallback(bound, run));
@@ -1006,12 +1085,24 @@ export function createActionRoutes(
       site: unknown,
       _context?: AssertionContext,
     ): Promise<Completion<unknown>> {
-      const entry = checkedMountSite(site, true);
+      const entry = checkedMountSite(site, "form");
       const run = checkedCallable(entry.identity, "handler", handler);
       const renderOutcome = checkedCallable(entry.identity, "normal renderer", outcome);
       const renderStructural = checkedCallable(entry.identity, "structural renderer", structural);
       const bound = await boundEntry(entry);
       return mountRoute(bound, buildFormCallback(bound, run, renderOutcome, renderStructural));
+    },
+    async mountDocument(
+      handler: unknown,
+      document: unknown,
+      site: unknown,
+      _context?: AssertionContext,
+    ): Promise<Completion<unknown>> {
+      const entry = checkedMountSite(site, "document");
+      const run = checkedCallable(entry.identity, "handler", handler);
+      const renderDocument = checkedCallable(entry.identity, "document renderer", document);
+      const bound = await boundEntry(entry);
+      return mountRoute(bound, buildDocumentCallback(bound, run, renderDocument));
     },
     async url(...args: unknown[]): Promise<Completion<unknown>> {
       if (args.length !== 2 && args.length !== 3)
