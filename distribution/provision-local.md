@@ -63,32 +63,43 @@ Support/Firefox` (any case; even root; even a fresh user). Chromium and
 WebKit stay native; only Firefox runs in a container.
 
 - Service: Playwright 1.55.1 `firefox.launchServer` serving one Firefox
-  141.0 (build v1490) over a tokened websocket.
+  141.0 (build v1490) over a tokened websocket, plus a loopback
+  forwarder relaying container `127.0.0.1` to the Mac leg servers.
 - Image (digest-pinned):
   `mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29…03ad1c`,
   native `linux/arm64`, container `can-ff`, loopback
-  `ws://127.0.0.1:18783/<token>`.
+  `ws://127.0.0.1:18783/<token>`; forwarders on the firefox leg ports
+  18651–18654.
 - Credential env: `CAN_FIREFOX_WS` (full ws endpoint including the
   per-start token; process env only — re-eval `browser exports` after
   every `browser up`, since each server start mints a fresh token).
-- Optional env: `CAN_FIREFOX_HOST_ALIAS` (container-to-Mac loopback
-  alias the firefox legs use; default `host.docker.internal`).
 - Mechanics: the container's main process is `sleep infinity`; `browser
   up` starts the container, installs the pinned `playwright@1.55.1`
-  client plus the launchServer entry into the persisted `can-ff-srv`
-  volume exactly once, then ensures the ws server is running and
-  reachable from the host. `--restart unless-stopped` keeps the
-  container across reboots; re-running `up` after a `down` restarts the
-  server (fresh token) and resumes service.
+  client into the persisted `can-ff-srv` volume exactly once, rewrites
+  the static server entries, then ensures the ws server and the
+  loopback forwarders are running and reachable. `--restart
+  unless-stopped` keeps the container across reboots; re-running `up`
+  after a `down` restarts both servers (fresh ws token) and resumes
+  service.
 - Consumers: gate5 firefox legs (`grid`, `conformance`, `empty`,
   `invoice` on ports 18651–18654) connect via `CAN_FIREFOX_WS` when set
   and launch natively otherwise (CI macos-15 path). Each leg opens a
   fresh browser context, so legs stay isolated on the shared server.
+- Why forwarders, not a host alias (C01 evidence 2026-09-26): the
+  first wiring rewrote the leg base to `host.docker.internal` and every
+  firefox leg failed by design — the alias origin is not a secure
+  context (`crypto.randomUUID`/`crypto.subtle` undefined), so the Can
+  browser bundle dies in a startup fault before rendering; and the
+  invoice app's per-request `exact_origin` gate 403s every mutating
+  call whose `Origin` differs from `PUBLIC_ORIGIN`. Forwarding keeps
+  the exact `http://127.0.0.1:<port>` origin, so firefox legs assert
+  byte-identical loopback evidence to the native legs.
 - Validation (2026-09-26): `browser up` idempotent + `down`/`up`
   restart resumes with a fresh token; ws connect reports Firefox 141.0;
-  container Firefox loads a 127.0.0.1-bound Mac server through the host
-  alias with 200 + title. Gate5 matrix legs land with the C01 harness
-  wiring (see evidence index).
+  forwarders listen on all four leg ports; container Firefox boots the
+  real grid leg server on its loopback origin with a secure context.
+  Gate5 matrix legs land with the C01 harness wiring (see evidence
+  index).
 
 ## Operator runbook
 

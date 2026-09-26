@@ -32,12 +32,43 @@ MYSQL_PORT=3307
 S3_PORT=9000
 S3_BUCKET_DEFAULT=can-b1-10
 FF_PORT=18783
+# The gate5 firefox leg ports (mirrors gate5Port*Firefox in
+# tests/integration/gate5_frontend_test.go): container Firefox reaches
+# each Mac leg server through its own 127.0.0.1, so every firefox leg
+# keeps the exact loopback origin the suite asserts — secure context
+# (crypto.*) plus the app's exact-origin gate both hold, byte-identical
+# to the native legs. A host alias cannot work: it is neither a secure
+# context nor the exact origin.
+FF_FW_PORTS="18651 18652 18653 18654"
 # Pinned launchServer entry: serves one Firefox 141 over ws on argv[2] and
 # prints its tokened endpoint. Static text; the port arrives as an argument.
 FF_SERVER_JS='import { firefox } from "playwright";
 const port = Number(process.argv[2]);
 const server = await firefox.launchServer({ port, timeout: 120000 });
 console.log("WS=" + server.wsEndpoint());
+await new Promise(() => {});
+'
+# Pinned loopback forwarder: listens on container 127.0.0.1 for every
+# argv port and relays each connection to the same port on the Mac.
+FF_FW_JS='import net from "node:net";
+const upstream = "host.docker.internal";
+for (const arg of process.argv.slice(2)) {
+  const port = Number(arg);
+  net
+    .createServer((local) => {
+      const remote = net.connect(port, upstream, () => {
+        local.pipe(remote);
+        remote.pipe(local);
+      });
+      const fail = () => {
+        local.destroy();
+        remote.destroy();
+      };
+      local.on("error", fail);
+      remote.on("error", fail);
+    })
+    .listen(port, "127.0.0.1", () => console.log("forward 127.0.0.1:" + port + " -> " + upstream + ":" + port));
+}
 await new Promise(() => {});
 '
 
@@ -185,17 +216,26 @@ s3_exports() {
 
 s3_down() { docker stop "$MINIO_CONTAINER" >/dev/null 2>&1 || true; echo "s3 stopped"; }
 
-# browser_setup installs the pinned playwright client and the launchServer
-# entry into the persisted /srv volume exactly once (marker-guarded).
+# browser_setup installs the pinned playwright client into the persisted
+# /srv volume exactly once (marker-guarded) and rewrites the static
+# server entries on every up (cheap and self-healing).
 browser_setup() {
-  if docker exec "$FF_CONTAINER" test -f /srv/.can-ff-ready >/dev/null 2>&1; then return 0; fi
-  docker exec "$FF_CONTAINER" sh -c 'mkdir -p /srv && cd /srv && npm init -y >/dev/null 2>&1 && npm i --save-exact playwright@1.55.1 >/dev/null 2>&1'
+  if ! docker exec "$FF_CONTAINER" test -f /srv/.can-ff-ready >/dev/null 2>&1; then
+    docker exec "$FF_CONTAINER" sh -c 'mkdir -p /srv && cd /srv && npm init -y >/dev/null 2>&1 && npm i --save-exact playwright@1.55.1 >/dev/null 2>&1'
+    docker exec "$FF_CONTAINER" sh -c 'touch /srv/.can-ff-ready'
+  fi
   printf '%s\n' "$FF_SERVER_JS" | docker exec -i "$FF_CONTAINER" sh -c 'cat > /srv/pw-server.mjs'
-  docker exec "$FF_CONTAINER" sh -c 'node --check /srv/pw-server.mjs && touch /srv/.can-ff-ready'
+  printf '%s\n' "$FF_FW_JS" | docker exec -i "$FF_CONTAINER" sh -c 'cat > /srv/fw.mjs'
+  docker exec "$FF_CONTAINER" sh -c 'node --check /srv/pw-server.mjs && node --check /srv/fw.mjs'
 }
 
 browser_server_running() {
   docker exec "$FF_CONTAINER" sh -c 'ps -eo args 2>/dev/null | grep -q "[p]w-server.mjs"' >/dev/null 2>&1
+}
+
+browser_fw_listening() {
+  # shellcheck disable=SC2086
+  docker exec "$FF_CONTAINER" node -e 'const net=require("node:net");(async()=>{for(const p of process.argv.slice(1)){await new Promise((ok,no)=>{const s=net.connect(Number(p),"127.0.0.1",()=>{s.end();ok()});s.on("error",no)})}})().then(()=>process.exit(0),()=>process.exit(1))' $FF_FW_PORTS >/dev/null 2>&1
 }
 
 browser_up() {
@@ -225,7 +265,19 @@ browser_up() {
     || { echo "firefox server did not publish its endpoint" >&2; return 1; }
   node -e 'const s=require("node:net").connect(Number(process.argv[1]),"127.0.0.1",()=>{s.end();process.exit(0)});s.on("error",()=>process.exit(1));setTimeout(()=>process.exit(1),10000).unref()' "$FF_PORT" \
     || { echo "firefox ws port unreachable from the host" >&2; return 1; }
-  echo "browser up: firefox ws 127.0.0.1:$FF_PORT (eval exports for CAN_FIREFOX_WS)"
+  # Loopback forwarders relay container 127.0.0.1 to the Mac leg
+  # servers, preserving the exact loopback origin every leg asserts.
+  if ! browser_fw_listening; then
+    docker exec "$FF_CONTAINER" sh -c 'pkill -f "[f]w.mjs" || true' >/dev/null 2>&1 || true
+    # shellcheck disable=SC2086
+    docker exec -d "$FF_CONTAINER" sh -c "node /srv/fw.mjs $FF_FW_PORTS > /srv/fw.log 2>&1"
+    for _ in $(seq 1 12); do
+      if browser_fw_listening; then break; fi
+      sleep 5
+    done
+    browser_fw_listening || { echo "firefox loopback forwarders did not listen" >&2; return 1; }
+  fi
+  echo "browser up: firefox ws 127.0.0.1:$FF_PORT + loopback forwarders (eval exports for CAN_FIREFOX_WS)"
 }
 
 browser_exports() {
@@ -233,7 +285,6 @@ browser_exports() {
   ws="$(docker exec "$FF_CONTAINER" cat /srv/server.log 2>/dev/null | grep '^WS=' | tail -n 1 | sed 's/^WS=//; s#://[^:/]*:#://127.0.0.1:#')"
   if [ -z "$ws" ]; then echo "firefox runner not up (run: provision-local.sh browser up)" >&2; exit 1; fi
   echo "export CAN_FIREFOX_WS=\"$ws\""
-  echo "# Optional host alias for firefox legs (default when unset): CAN_FIREFOX_HOST_ALIAS=host.docker.internal"
 }
 
 browser_down() { docker stop "$FF_CONTAINER" >/dev/null 2>&1 || true; echo "browser stopped"; }
