@@ -25,7 +25,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A04 | done | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | worker `23ebcade` → main `78668ec7` | go test check+emit ok |
 | A06 | inactive (Q6) | — (gate eval) | — | A04 | surface→A07/G04 or inactive | — | all required W4 shapes covered; A07 confirms |
 | A05 | done | lane-a-a01-a05 (`6`) + E merge | isolated + main | none | bulk APIs→A07 | `42cf5253`→`94eb71c5` + merge `e7982fa` | bun 8/8, go check+emit ok, catalogue 290 |
-| A07 | in progress (wave 10) | lane-a-a07 (`25`) | isolated | A04, A05, A06 | W4 evidence→F06/H10/H11 | — | — |
+| A07 | done | lane-a-a07 (`25`) | isolated | A04, A05, A06 | W4 evidence→F06/H10/H11 | `41996b95,0ac01bab,d8fa6025`→`c63e6497` | W4.1/2/4/5 pass, A05 routed, sums ok |
 | A08 | done | lane-a-a08 (`28`) | isolated | A01, A02 | comparisons→H14 | `7f301098`→`e88ebf01`, `f1a5dc46`→`74256811` | 3 records + neutral/adverse, held-out sealed, handoff filed |
 | B01 | done | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | 3 commits → main (last `50dc8d3c`) | 11/11 legs; Q5 inactive w/ trip conditions |
 | B03 | inactive (Q5) | — (gate eval) | — | B01 | gate→B05/IC1 | — | parity tables; no adapter-extent finding |
@@ -46,18 +46,19 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | F01 | done | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | `16a7a68d`..`beaaa32c` → `82750826`..`ee928ee1` | 38/38, check green |
 | H07 | done | lane-h-h07 (`20`) | isolated | F01 | budget→H08 | worker `73dd42a8` → main `92f93263` | 36/36, check green, no secrets |
 | E02 | done | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | worker `a1b4e8e0` → main `2bf35a4c` | 11/11 live, check green; X-R04-1 NEG, X-R04-3 POS |
-| E04 | in progress, slices 1-3 integrated | lane-e-e04-retry (`23`; `19` failed clean) | isolated | E01, E02 | adapters→F/C06; contract→E09 | `3bd4f69f`→`8318712b`, `06e3e00e`→`4b10d46b`, `fed699f6`→`d0a2b06a` (partial) | 43 pass, check green; server legs pending |
+| E04 | done | lane-e-e04-retry (`23`; `19` failed clean) | isolated | E01, E02 | adapters→F/C06; contract→E09 | 5 slices→`ea043250` | 74/74 live, check green; checker patch→C06 |
 | F02 | done | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | worker `ccfb1b22` → main `d3e51ded` | live PG+MySQL legs pass |
 | F03 | done | lane-f-f03 (`24`) | isolated | F02 | C-F contracts→F04/E | worker `4e500d8` → main `bf83f0aa` | sql pkg + live PG/MySQL pass |
-| F04 | in progress (wave 11) | lane-f-f04 (`29`) | isolated | F01, F03 | backend qual→H08 | — | — |
+| F04 | done | lane-f-f04 (`29`) | isolated | F01, F03 (+E04* unexercised) | PG/MySQL evidence→IC2/H; backend→H08 | `b8c52ca3,bea2a8a4,53ef28f9`→`217654f8` | 47/47 live, 59/59 regress, inventory ok |
 | E07 | done | lane-e-e07 (`18`) | isolated | H03, E01 | branch verdicts→E08 | worker `3bcf458e` → main `bef41a2d` | 21/21 live; both branches NEG |
-| E08 | in progress (wave 12) | lane-e-e08 (`30`) | isolated | E07 | remedy→E09 | — | — |
+| E08 | done | lane-e-e08 (`30`) + coord compiler slice | isolated | E07 | remedy→E09; W5-blocked→H | 4 worker→`0688c1eb` | 45/45 live, check/emit green, pin 290 |
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
 | G02 | done | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | worker `e8b10707` → main `0d23fada` | go test compiler+driver ok |
 | G03 | done | lane-g-g03 (`27`) | isolated | G02, A02 | refs→G04/G05 | `8268bb5b`→main | 13 TestG03 pass, compiler suite green |
 | E06 | done | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | worker `c5499411` → main `e3a4148c` | 17/17, check green |
 | C03 | done | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | worker `8f61b1b` → main `9a2ea7b7` | go test check ok |
-| C04 | in progress (wave 10) | lane-c-c04 (`26`) | isolated | C03 | C-D→E09; X-R02-1→C05 | — | — |
+| C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 unconsumed (no-addition feedback; C02 still blocked on C01) |
+| C05 | inactive (X-R02-1) | — (gate eval) | — | C04 | root-only rule stands | — | no inexpressible shape; trip conditions in x-r02-1.md |
 | F05 | in progress (wave 13) | lane-f-f05 (`31`) | isolated | F01, E01, C03, A04 | auth/protocol→F06/H | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
