@@ -62,7 +62,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | F05 | done | lane-f-f05 (`31`) | isolated | F01, E01, C03, A04 | auth/protocol→F06/H | 5 worker→`b9930b47` | 183 asserts, live pair, DOC-webhook |
 | B05 | done | lane-b-b05 (`32`) + lane-a-emitfix (`37`) | isolated | B01, B02, B03✗, B04✗ | W3 verdict→H11 | report→`804d650a`, fix→`b636674d` | W3 rerun green; M1 3/3; emit green |
 | D01 | done | lane-d-d01 (`33`) | isolated | C04, C05✗, F01 | tiers→D02/H | 7 worker→`b837f710` | 54/54 + admission; A/B→T2, C→T3 |
-| E05 | in progress (wave 14) | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | — | — |
+| E05 | in progress, slices 1-5 integrated | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | 6 worker→`94e3fae8` (partial) | 15/15 hedge legs; verdict pending |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | in progress (wave 15) | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | — | — |
 | H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
