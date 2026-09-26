@@ -40,7 +40,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H04 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | worker `f9a0acdf` → main `2d784b31` | exact creds + spend-cap ask recorded; gate stays blocked |
 | H05 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | x86→H12 | worker `494be3de` → main `21991bb3` | exact machine + window ask recorded; UP25 stays blocked |
 | F01 | in progress (wave 3) | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | — | — |
-| E02 | in progress (wave 4) | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | — | — |
+| E02 | done | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | worker `a1b4e8e0` → main `2bf35a4c` | 11/11 live, check green; X-R04-1 NEG, X-R04-3 POS |
+| E04 | in progress (wave 6) | lane-e-e04 (`19`) | isolated | E01, E02 | adapters→F/C06; contract→E09 | — | — |
 | F02 | in progress (wave 4) | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | — | — |
 | E07 | in progress (wave 5) | lane-e-e07 (`18`) | isolated | H03, E01 | branch verdicts→E08 | — | — |
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |

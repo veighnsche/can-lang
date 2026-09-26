@@ -21,6 +21,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | A03 | done (document grammar/emission) | main `dd3f3674` (worker `258a8299`) | macOS, go1.27.1 | gofmt clean; `go test` emit/syntax/check all ok (45s/0.3s/454s); per-case document mode, fragment-only swap table, JSON byte-identical; checker agreement handed to C03 | pass |
 | C01 | open (blocked provision) | wiring `c37c40fc`+`a3c4a11f` pending in retained worktree, NOT on main | macOS 27, Playwright 1.55.1 | Firefox 141.0/v1490 installs, launch times out (worker + coordinator repro); Chromium 140.0.7339.186 + WebKit 26.0 launch OK; gate5 probe fail-fasts so wiring held back to keep suite green | blocked |
 | G01 | done (AU-LSP-format, AU-Q2-LSP) | main `94795946` (worker `31f0e66a`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok (16s/71s); formatSource+overlay validation, warning-severity publishDiagnostics, CLI parity | pass |
+| E02 | done (X-R04-1 NEG, X-R04-3 POS) | main `2bf35a4c` (worker `a1b4e8e0`) | macOS, bun 1.4.2, live PG 17.11/MySQL 8.4.11 | 11/11 pass live (25s); `check:runtime` green; cancel()=client-flag-only all dialects, backends run to completion; Request.signal aborts on disconnect | pass |
 
 ## Conditional branches
 
