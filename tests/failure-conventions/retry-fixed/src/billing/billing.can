@@ -1,0 +1,50 @@
+package billing
+    provides [total, over_limit, quote, retry_quote]
+    uses [bytes, codec]
+/// A quoted charge: minor-unit amount plus its line count.
+record total
+    int amount_minor
+    int lines
+/// The decoded amount exceeds the quotable bound.
+error over_limit(int amount_minor)
+/// Decode a JSON minor-unit amount and bound it.
+fn total quote
+    emits [over_limit, codec::invalid_data]
+    given
+        str blob
+    asserts
+        sample: "99" => ok total(99, 1)
+        big: "99999" => over_limit(99999)
+        corrupt: "xx" => codec::invalid_data("", "invalid_json")
+    match call bytes::from_utf8(blob)
+        codec::invalid_data
+        ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+            codec::invalid_data
+            ok int parsed => match parsed > 1000
+                false => ok total(parsed, 1)
+                true => over_limit(parsed)
+/// Fixed-bound retry: same attempt logic as retry_load, rewritten for
+/// this domain's unrelated bound (catalogue error included).
+fn total retry_quote
+    emits [over_limit, codec::invalid_data]
+    given
+        str blob
+        int remaining
+    asserts
+        flaky: "99", 2 => ok total(99, 1)
+        down: "xx", 2 => codec::invalid_data("", "invalid_json")
+        first_try: "99", 2 => ok total(99, 1)
+    match call quote(blob)
+        when
+            flaky: "99" => codec::invalid_data("", "invalid_json")
+            flaky: "99" => ok total(99, 1)
+            down: "xx" => codec::invalid_data("", "invalid_json")
+            down: "xx" => codec::invalid_data("", "invalid_json")
+            first_try: "99" => ok total(99, 1)
+        over_limit as failure => match remaining > 1
+            false => over_limit(failure.amount_minor)
+            true => relay call retry_quote(blob, remaining - 1)
+        codec::invalid_data as failure => match remaining > 1
+            false => codec::invalid_data(failure.path, failure.reason)
+            true => relay call retry_quote(blob, remaining - 1)
+        ok total found => ok found

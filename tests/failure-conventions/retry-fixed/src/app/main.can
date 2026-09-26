@@ -1,0 +1,10 @@
+package app
+    provides []
+    uses []
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

@@ -1,0 +1,88 @@
+package billing
+    provides [total, over_limit, bill_failure, quote, quote_outcome, fetch_quote, read_quote]
+    uses [bytes, codec, retry]
+/// A quoted charge: minor-unit amount plus its line count.
+record total
+    int amount_minor
+    int lines
+/// The decoded amount exceeds the quotable bound.
+error over_limit(int amount_minor)
+/// The heterogeneous failure set: one authored error plus one catalogue
+/// error, both preserved exactly through capture and re-raise.
+variant bill_failure
+    over_limit
+    codec::invalid_data
+/// Decode a JSON minor-unit amount and bound it. Real catalogue calls on
+/// the success path; oracle roots substitute per-attempt outcomes.
+fn total quote
+    emits [over_limit, codec::invalid_data]
+    given
+        str blob
+    asserts
+        sample: "99" => ok total(99, 1)
+        big: "99999" => over_limit(99999)
+        corrupt: "xx" => codec::invalid_data("", "invalid_json")
+    match call bytes::from_utf8(blob)
+        codec::invalid_data
+        ok bytes::buffer raw => match call codec::decode_json<int>(raw)
+            codec::invalid_data
+            ok int parsed => match parsed > 1000
+                false => ok total(parsed, 1)
+                true => over_limit(parsed)
+/// Boundary adapter over the heterogeneous set: same two-arm shape as the
+/// profiles adapter, unrelated error identities.
+fn retry::outcome<total, bill_failure> quote_outcome
+    emits []
+    given
+        str blob
+    asserts
+        decoded: "99" => ok retry::completed(total(99, 1))
+        too_big: "99999" => ok retry::rejected<bill_failure>(over_limit(99999))
+        bad_blob: "xx" => ok retry::rejected<bill_failure>(codec::invalid_data("", "invalid_json"))
+    match call quote(blob)
+        when
+            decoded: "99" => ok total(99, 1)
+            too_big: "99999" => over_limit(99999)
+            bad_blob: "xx" => codec::invalid_data("", "invalid_json")
+            flaky: "99" => codec::invalid_data("", "invalid_json")
+            flaky: "99" => ok total(99, 1)
+            down: "xx" => codec::invalid_data("", "invalid_json")
+            down: "xx" => codec::invalid_data("", "invalid_json")
+            first_try: "99" => ok total(99, 1)
+            steady: "99" => ok total(99, 1)
+            refused: "xx" => codec::invalid_data("", "invalid_json")
+            refused: "xx" => codec::invalid_data("", "invalid_json")
+        over_limit as failure => do
+            bill_failure leaf = over_limit(failure.amount_minor)
+            ok retry::rejected(leaf)
+        codec::invalid_data as failure => do
+            bill_failure leaf = codec::invalid_data(failure.path, failure.reason)
+            ok retry::rejected(leaf)
+        ok total found => ok retry::completed(found)
+/// Retry consumer: the same shared helper over this domain's set,
+/// including a catalogue error in the attempt sequence.
+fn retry::outcome<total, bill_failure> fetch_quote
+    emits []
+    given
+        str blob
+    asserts
+        flaky: "99" => ok retry::completed(total(99, 1))
+        down: "xx" => ok retry::rejected<bill_failure>(codec::invalid_data("", "invalid_json"))
+        first_try: "99" => ok retry::completed(total(99, 1))
+    relay call retry::retry(callable quote_outcome, blob, 2)
+/// Re-raise consumer: the catalogue error round-trips exactly too.
+fn total read_quote
+    emits [over_limit, codec::invalid_data]
+    given
+        str blob
+    asserts
+        steady: "99" => ok total(99, 1)
+        refused: "xx" => codec::invalid_data("", "invalid_json")
+    match call fetch_quote(blob)
+        ok retry::outcome<total, bill_failure> out => match out
+            retry::completed<total> => ok out.value
+            retry::rejected<bill_failure> => do
+                bill_failure cause = out.reason
+                match cause
+                    over_limit => over_limit(cause.amount_minor)
+                    codec::invalid_data => codec::invalid_data(cause.path, cause.reason)

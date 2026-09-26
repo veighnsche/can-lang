@@ -284,18 +284,26 @@ func stageProject(t *testing.T, name string) string {
 
 func copyTree(t *testing.T, src, dst string) {
 	t.Helper()
+	copyTreeExcept(t, src, dst, "")
+}
+
+func copyTreeExcept(t *testing.T, src, dst, skip string) {
+	t.Helper()
 	entries, err := os.ReadDir(src)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, entry := range entries {
+		if entry.Name() == skip {
+			continue
+		}
 		from := filepath.Join(src, entry.Name())
 		to := filepath.Join(dst, entry.Name())
 		if entry.IsDir() {
 			if err := os.MkdirAll(to, 0700); err != nil {
 				t.Fatal(err)
 			}
-			copyTree(t, from, to)
+			copyTreeExcept(t, from, to, skip)
 			continue
 		}
 		data, err := os.ReadFile(from)
@@ -384,6 +392,22 @@ func rootNames(report *assertReport) []string {
 	}
 	sort.Strings(names)
 	return names
+}
+
+// dumpSurgery copies a post-surgery staged project to
+// $CONV_DUMP_SURGERY/<name> for measurement. Unset by default.
+func dumpSurgery(t *testing.T, project, name string) {
+	t.Helper()
+	root := os.Getenv("CONV_DUMP_SURGERY")
+	if root == "" {
+		return
+	}
+	dst := filepath.Join(root, name)
+	os.RemoveAll(dst)
+	if err := os.MkdirAll(dst, 0700); err != nil {
+		t.Fatal(err)
+	}
+	copyTreeExcept(t, project, dst, "dist")
 }
 
 // replaceOnce rewrites one exact substring in a staged file; the edit

@@ -1,0 +1,66 @@
+package profiles
+    provides [profile, unavailable, forbidden, load, retry_load, read_via_service]
+    uses []
+/// A directory profile.
+record profile
+    int id
+    str name
+/// The directory answered but has no such key.
+error unavailable(str key)
+/// The directory refused the lookup.
+error forbidden(str key)
+/// Deterministic loader stub: real logic (key dispatch), no live calls.
+fn profile load
+    emits [unavailable, forbidden]
+    given
+        str key
+    asserts
+        hit: "ann" => ok profile(7, "Ann")
+        gone: "bob" => unavailable("bob")
+        shut: "root" => forbidden("root")
+    match key is "ann"
+        false => match key is "root"
+            false => unavailable(key)
+            true => forbidden(key)
+        true => ok profile(7, "Ann")
+/// Fixed-bound retry: the whole attempt logic is rewritten per domain
+/// because the emits bound cannot abstract over the error set.
+fn profile retry_load
+    emits [unavailable, forbidden]
+    given
+        str key
+        int remaining
+    asserts
+        flaky: "ann", 2 => ok profile(7, "Ann")
+        down: "bob", 2 => unavailable("bob")
+        first_try: "ann", 2 => ok profile(7, "Ann")
+    match call load(key)
+        when
+            flaky: "ann" => unavailable("ann")
+            flaky: "ann" => ok profile(7, "Ann")
+            down: "bob" => unavailable("bob")
+            down: "bob" => unavailable("bob")
+            first_try: "ann" => ok profile(7, "Ann")
+            steady: "ann" => ok profile(7, "Ann")
+            locked: "root" => forbidden("root")
+            locked: "root" => forbidden("root")
+        unavailable as failure => match remaining > 1
+            false => unavailable(failure.key)
+            true => relay call retry_load(key, remaining - 1)
+        forbidden as failure => match remaining > 1
+            false => forbidden(failure.key)
+            true => relay call retry_load(key, remaining - 1)
+        ok profile found => ok found
+/// Layered fixed-bound consumer: the store bound is repeated verbatim in
+/// this signature and forwarded arm by arm (the fixed-style wrapper cost).
+fn profile read_via_service
+    emits [unavailable, forbidden]
+    given
+        str key
+    asserts
+        steady: "ann" => ok profile(7, "Ann")
+        locked: "root" => forbidden("root")
+    match call retry_load(key, 2)
+        unavailable
+        forbidden
+        ok profile found => ok found

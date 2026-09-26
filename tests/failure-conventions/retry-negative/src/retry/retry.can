@@ -35,9 +35,7 @@ fn outcome<item, failure> retry<item, failure, arg>
     match call operation(input)
         ok outcome<item, failure> first => match first
             completed<item> => ok first
-            rejected<failure> => match remaining > 1
-                false => ok first
-                true => relay call retry(operation, input, remaining - 1)
+            rejected<failure> => ok first
 /// Canned operation for the helper's own rows: deterministic outcomes
 /// without fixtures (one function, two modes).
 fn outcome<int, str> canned
