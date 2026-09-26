@@ -1,4 +1,4 @@
-import { success, type AssertionContext } from "../completion.ts";
+import { success, type AssertionContext, type Completion } from "../completion.ts";
 import { resourceStateFailure } from "../failure.ts";
 export type Key = bigint | boolean | string;
 export type KeyKind = "int" | "bool" | "str";
@@ -31,6 +31,25 @@ export function createSet<K extends Key>(identity: string, keyKind: KeyKind) {
   return Object.freeze({
     async empty(_context?: AssertionContext) {
       return success(own(new Set()));
+    },
+    // Bulk construction from values: one native Set, single immutable
+    // publication, no point-insert history copying.
+    // Collision: duplicates dedupe silently like add, keeping the first
+    // occurrence. Order: first-occurrence insertion order.
+    // Per-element failure: keys validate in order and the first invalid
+    // key throws before publication. Ownership: the builder Set is
+    // function-local and moves into the published token; it never
+    // escapes and the input array is only read.
+    async build_set(
+      values: ReadonlyArray<K>,
+      _context?: AssertionContext,
+    ): Promise<Completion<ImmutableSet<K>>> {
+      const seen = new Set<Key>();
+      for (const key of values) {
+        checkKey(keyKind, key);
+        seen.add(key);
+      }
+      return success(own(seen));
     },
     async contains(set: unknown, key: K, _context?: AssertionContext) {
       const source = backing(set);

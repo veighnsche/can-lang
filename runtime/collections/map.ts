@@ -39,6 +39,26 @@ export function createMap<K extends Key, V>(
     async empty(_context?: AssertionContext) {
       return success(own(new Map()));
     },
+    // Bulk construction from entry records: one native Map, single
+    // immutable publication, no point-insert history copying.
+    // Collision: the first duplicate key fails the whole build with
+    // key_exists; no partial map escapes. Order: first-occurrence
+    // insertion order. Per-element failure: keys validate in order and
+    // the first invalid key throws before publication. Ownership: the
+    // builder Map is function-local and moves into the published token;
+    // it never escapes and the input array is only read.
+    async build_map(
+      entries: ReadonlyArray<Readonly<{ key: K; value: V }>>,
+      _context?: AssertionContext,
+    ): Promise<Completion<ImmutableMap<K, V>>> {
+      const values = new Map<Key, unknown>();
+      for (const entry of entries) {
+        checkKey(keyKind, entry.key);
+        if (values.has(entry.key)) return error(identities.exists);
+        values.set(entry.key, entry.value);
+      }
+      return success(own(values));
+    },
     async get(map: unknown, key: K, _context?: AssertionContext): Promise<Completion<V>> {
       const source = backing(map);
       checkKey(keyKind, key);

@@ -184,3 +184,76 @@ test("scalar key families retain native equality and matching factories share pr
     await expect(createSet<any>("different", kind).contains(set, keys[0])).rejects.toBeDefined();
   }
 });
+test("bulk map construction publishes once with first-occurrence order", async () => {
+  const a = Object.freeze({ value: 1 }),
+    b = Object.freeze({ value: 2 });
+  const empty = value(await maps.build_map([]));
+  expect(value(await maps.entries(empty))).toEqual([]);
+  expect(Object.isFrozen(empty)).toBe(true);
+  const built = value(
+    await maps.build_map([
+      { key: 3n, value: a },
+      { key: 2n, value: b },
+    ]),
+  );
+  expect(value(await maps.get(built, 3n))).toBe(a);
+  expect(value(await maps.get(built, 2n))).toBe(b);
+  const entries = value(await maps.entries(built));
+  expect(entries.map((e) => e.key)).toEqual([3n, 2n]);
+  expect(Object.isFrozen(built)).toBe(true);
+});
+test("bulk map construction fails atomically on the first duplicate key", async () => {
+  const a = Object.freeze({ value: 1 }),
+    b = Object.freeze({ value: 2 });
+  invalid(
+    await maps.build_map([
+      { key: 3n, value: a },
+      { key: 2n, value: b },
+      { key: 3n, value: b },
+    ]),
+    "collections::key_exists",
+  );
+  for (const key of [1, NaN, {}, "1", true])
+    await expect(maps.build_map([{ key: key as any, value: a }])).rejects.toBeDefined();
+});
+test("bulk set construction dedupes in first-occurrence order", async () => {
+  const sets = createSet<bigint>("set-int", "int");
+  async function order(set: ImmutableSet<bigint>) {
+    const original = Set.prototype.union;
+    let observed: bigint[] = [];
+    Set.prototype.union = function (this: Set<bigint>, other: any) {
+      observed = Array.from(this) as bigint[];
+      return original.call(this, other);
+    } as any;
+    try {
+      await sets.union(set, value(await sets.empty()));
+      return observed;
+    } finally {
+      Set.prototype.union = original;
+    }
+  }
+  const empty = value(await sets.build_set([]));
+  expect(await order(empty)).toEqual([]);
+  expect(Object.isFrozen(empty)).toBe(true);
+  const built = value(await sets.build_set([3n, 2n, 3n, 1n]));
+  expect(await order(built)).toEqual([3n, 2n, 1n]);
+  expect(value(await sets.contains(built, 2n))).toBe(true);
+  expect(value(await sets.contains(built, 4n))).toBe(false);
+  for (const key of [1, NaN, {}, "1", true])
+    await expect(sets.build_set([key as any])).rejects.toBeDefined();
+});
+test("bulk construction stays linear without point-insert history copying", async () => {
+  const size = 20000;
+  const entries = Array.from({ length: size }, (_, index) => ({
+    key: BigInt(index),
+    value: Object.freeze({ index }),
+  }));
+  const started = performance.now();
+  const built = value(await maps.build_map(entries));
+  const elapsed = performance.now() - started;
+  expect(value(await maps.get(built, BigInt(size - 1)))).toBe(entries[size - 1].value);
+  // Quadratic point-insert history copying would take minutes here; the
+  // single-pass builder finishes in milliseconds. The bound is a
+  // regression tripwire with two orders of magnitude of headroom.
+  expect(elapsed).toBeLessThan(15000);
+});

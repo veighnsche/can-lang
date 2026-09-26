@@ -51,6 +51,26 @@ func (c *programChecker) collectionSignature(op *catalogue.Operation) (*resolve.
 	}
 	return file, names, signature, nil
 }
+
+// collectionKind selects the map or set factory for an operation. Map
+// inputs select maps; otherwise the result selects, so bulk builders
+// and empty constructors without a collection input still resolve.
+func collectionKind(op *catalogue.Operation) string {
+	kind := "collections::set<K>"
+	for _, input := range op.Inputs {
+		if strings.HasPrefix(input.Type, "collections::map<") {
+			kind = "collections::map<K,V>"
+		}
+	}
+	if strings.HasPrefix(op.Result, "collections::map<") {
+		kind = "collections::map<K,V>"
+	}
+	if op.Name == "collections::empty_map" {
+		kind = "collections::map<K,V>"
+	}
+	return kind
+}
+
 func (c *programChecker) instantiateCollection(op *catalogue.Operation, args []*types.Type) (ValueBinding, error) {
 	if len(args) != len(op.Parameters) {
 		return ValueBinding{}, fmt.Errorf("collection type argument count mismatch")
@@ -59,15 +79,7 @@ func (c *programChecker) instantiateCollection(op *catalogue.Operation, args []*
 	for i, p := range op.Parameters {
 		parameters[p.Name] = args[i]
 	}
-	kind := "collections::set<K>"
-	for _, input := range op.Inputs {
-		if strings.HasPrefix(input.Type, "collections::map<") {
-			kind = "collections::map<K,V>"
-		}
-	}
-	if op.Name == "collections::empty_map" {
-		kind = "collections::map<K,V>"
-	}
+	kind := collectionKind(op)
 	collection, err := c.catalogueType(kind, parameters)
 	if err != nil {
 		return ValueBinding{}, err
