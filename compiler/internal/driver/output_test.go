@@ -205,7 +205,11 @@ func TestOutputPreservesUnexpectedGenerationContents(t *testing.T) {
 			case "unknown directory":
 				os.Mkdir(target, 0700)
 			case "modified file":
-				os.WriteFile(filepath.Join(dir, "entry.ts"), []byte("keep"), 0600)
+				// Staged content is read-only and inode-shared: break the
+				// link first so the tamper lands on a private inode.
+				target := filepath.Join(dir, "entry.ts")
+				os.Remove(target)
+				os.WriteFile(target, []byte("keep"), 0600)
 			case "symlink":
 				os.Symlink(filepath.Join(root, "src"), target)
 			}
@@ -550,7 +554,13 @@ func TestAcquireGenerationRejectsMalformed(t *testing.T) {
 	if _, err = s.AcquireGeneration("../current"); err == nil {
 		t.Fatal("generation escape acquired")
 	}
-	if err = os.WriteFile(filepath.Join(directory, "packages", "p-a", "a.ts"), []byte("tampered"), 0600); err != nil {
+	tampered := filepath.Join(directory, "packages", "p-a", "a.ts")
+	// Staged content is read-only and inode-shared: break the link first
+	// so the tamper lands on a private inode.
+	if err = os.Remove(tampered); err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile(tampered, []byte("tampered"), 0600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = s.AcquireGeneration(id); err == nil {

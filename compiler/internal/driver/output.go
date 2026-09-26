@@ -344,7 +344,7 @@ func (s *OutputStore) checkLayout() error {
 	}
 	for _, e := range entries {
 		switch e.Name() {
-		case "builds", "assets":
+		case "builds", "assets", "cas":
 			if !e.IsDir() {
 				return fmt.Errorf("invalid %s directory", e.Name())
 			}
@@ -442,7 +442,12 @@ func (s *OutputStore) Stage(prepared *PreparedOutput) (string, string, error) {
 			if err = s.dist.MkdirAll(path.Dir(stage+"/"+name), 0700); err != nil {
 				return "", "", err
 			}
-			if err = writeOutputNew(s.dist, stage+"/"+name, prepared.files[name]); err != nil {
+			data := prepared.files[name]
+			digest := hashBytes(data)
+			if want := prepared.manifest.Files[name]; want != "" && want != digest {
+				return "", "", fmt.Errorf("staged file %s does not match its manifest digest", name)
+			}
+			if err = s.stageContentFile(stage, name, digest, data); err != nil {
 				return "", "", err
 			}
 			if err = s.hook("file:" + name); err != nil {
@@ -895,7 +900,17 @@ func (s *OutputStore) prune(clean bool) error {
 			return err
 		}
 	}
-	return syncOutputDir(s.dist, "builds")
+	if err = syncOutputDir(s.dist, "builds"); err != nil {
+		return err
+	}
+	// Collect content-store entries no generation, pending publication, or
+	// ledger row references. Clean drops every generation first, so the same
+	// sweep empties the store; the directory itself stays for the next build.
+	roots, err := s.collectCASRoots()
+	if err != nil {
+		return err
+	}
+	return s.sweepCAS(roots)
 }
 
 func (s *OutputStore) ensureFresh() error {

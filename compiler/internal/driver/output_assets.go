@@ -3,6 +3,7 @@ package driver
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -423,7 +424,8 @@ func (s *OutputStore) ensureAssetStore() error {
 
 // storeDurableBytes installs one content-addressed durable copy. An
 // existing copy is re-verified and only rewritten when tampered, so a
-// repeated apply after a crash converges on identical bytes.
+// repeated apply after a crash converges on identical bytes. The durable
+// path links into the content store instead of duplicating bytes.
 func (s *OutputStore) storeDurableBytes(name string, data []byte, digest string) error {
 	if hashBytes(data) != digest {
 		return fmt.Errorf("durable asset bytes failed hash verification")
@@ -436,8 +438,16 @@ func (s *OutputStore) storeDurableBytes(name string, data []byte, digest string)
 	} else if !os.IsNotExist(err) {
 		return err
 	}
+	entry, err := s.ensureCAS(digest, data)
+	if err != nil {
+		return err
+	}
 	temp := assetStoreDir + "/.tmp-" + digest
 	_ = s.dist.Remove(temp)
+	absTemp := filepath.Join(s.Graph.Root.Root, "dist", filepath.FromSlash(temp))
+	if err := os.Link(entry, absTemp); err == nil {
+		return s.dist.Rename(temp, name)
+	}
 	if err := writeOutputNew(s.dist, temp, data); err != nil {
 		return err
 	}

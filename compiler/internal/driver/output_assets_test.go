@@ -213,6 +213,11 @@ func TestAssetPublicationRestoresPriorOnFailure(t *testing.T) {
 	// Tamper with the prior generation after publication: retention must
 	// fail closed and the prior set must stay selected.
 	full := filepath.Join(root, "dist", "builds", firstID, filepath.FromSlash(first[0].File))
+	// Staged content is read-only and inode-shared: honest tampering
+	// replaces the path instead of mutating shared bytes in place.
+	if err := os.Remove(full); err != nil {
+		t.Fatal(err)
+	}
 	if err := os.WriteFile(full, []byte("tampered"), 0600); err != nil {
 		t.Fatal(err)
 	}

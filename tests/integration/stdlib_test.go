@@ -134,7 +134,39 @@ func copyFreshEmit(t *testing.T, dir, dst string) {
 	if err := os.MkdirAll(dst, 0700); err != nil {
 		t.Fatal(err)
 	}
-	copyDir(t, dir, dst)
+	// The tsc mirror is read-only: link files instead of duplicating bytes,
+	// falling back to full copies across devices. Never use this for mutable
+	// workspaces (see stageProject/copyDir).
+	copyLinkTree(t, dir, dst)
+}
+
+func copyLinkTree(t *testing.T, src, dst string) {
+	t.Helper()
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(dst, 0700); err != nil {
+		t.Fatal(err)
+	}
+	for _, entry := range entries {
+		from := filepath.Join(src, entry.Name())
+		to := filepath.Join(dst, entry.Name())
+		if entry.IsDir() {
+			copyLinkTree(t, from, to)
+			continue
+		}
+		if err := os.Link(from, to); err == nil {
+			continue
+		}
+		data, err := os.ReadFile(from)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(to, data, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 func assertNoStrayEmit(t *testing.T, root, dir string) {
