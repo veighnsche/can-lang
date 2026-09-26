@@ -31,6 +31,11 @@ import {
   requestContext,
 } from "../transport/request-report.ts";
 import {
+  createRequestScope,
+  runWithRequestScope,
+  type RequestScope,
+} from "../transport/request-scope.ts";
+import {
   matchActionRoute,
   actionReject,
   bunRouteKeys,
@@ -62,6 +67,7 @@ type Native = Readonly<{
   shutdownMs: number;
   settled: Promise<Completion<void>>;
   settle: (completion: Completion<void>) => void;
+  expireScopes: (reason: "shutdown") => void;
 }>;
 const configs = new WeakMap<object, Config>(),
   material = new WeakMap<object, TlsMaterial>(),
@@ -111,13 +117,19 @@ function pemText(input: unknown): string | undefined {
     return undefined;
   }
 }
-function fixed(status: 400 | 413 | 500): Response {
+function fixed(status: 400 | 408 | 413 | 500): Response {
   const headers = new Headers({
     "content-type": "text/plain; charset=utf-8",
     "x-content-type-options": "nosniff",
   });
   return new Response(
-    status === 400 ? "Bad Request" : status === 413 ? "Payload Too Large" : "Internal Server Error",
+    status === 400
+      ? "Bad Request"
+      : status === 408
+        ? "Request Timeout"
+        : status === 413
+          ? "Payload Too Large"
+          : "Internal Server Error",
     { status, headers },
   );
 }
@@ -213,6 +225,10 @@ export function createServer(
     const lifetime = new Promise<void>((resolve) => {
       release = resolve;
     });
+    // Live per-request operation scopes. Stop and signal entries expire
+    // every scope so in-flight budgeted work returns boundedly while
+    // staying owned until settlement; disconnect expires its own scope.
+    const liveScopes = new Set<RequestScope>();
     // The live server resource belongs to the caller's scope so stop and wait
     // validate from user code; only fetch tasks live in the drainable child.
     let token!: Resource;
@@ -271,33 +287,57 @@ export function createServer(
         (peek: boolean) =>
         async (native: Request): Promise<Completion<Response>> => {
           return useResource(token, "server", async () => {
-            // Stream-marked routes skip the eager pre-read; anything the peek
-            // cannot prove keeps buffered ingress with its pre-dispatch 413.
-            // Native action callbacks always buffer: actions never stream.
-            let lazy = false;
-            if (peek) {
-              try {
-                lazy =
-                  routeKind(router, native.method, normalizedPath(new URL(native.url))) ===
-                  "stream";
-              } catch {
-                lazy = false;
-              }
-            }
-            const snapshot = lazy
-              ? await snapshotRequestLazy(native, bodyLimit)
-              : await snapshotRequest(native, bodyLimit);
-            if (snapshot.kind === "rejected") return success(fixed(snapshot.status));
-            bindRequestServer(snapshot.value, server);
-            // Body readers live and die in this per-request scope; dispatch
-            // abandons an unread live body before the scope drains, and the
-            // outer boundary revokes the token only after drainage, before
-            // the response returns. Handler faults and rejected routes pass
-            // through the same finally, so no path leaks a usable token.
+            // One operation scope per request: budgeted adapters resolve
+            // it implicitly, so disconnect and shutdown expire each
+            // in-flight operation with its own unknown-write outcome.
+            // Unbounded-until-expired: no time bound is invented here.
+            const scope = createRequestScope();
+            liveScopes.add(scope);
+            // Disconnect observation (X-R04-3, qualified): the serve-side
+            // signal aborts promptly on peer disconnect but stops nothing
+            // by itself. Expiring the scope propagates the disconnect
+            // into ingress and every budgeted operation as a budget
+            // outcome; owned work still runs to settlement.
+            const nativeSignal = (native as unknown as { signal?: AbortSignal }).signal;
+            const onDisconnect = (): void => {
+              scope.expire("disconnect");
+            };
+            if (nativeSignal?.aborted) scope.expire("disconnect");
+            else nativeSignal?.addEventListener("abort", onDisconnect, { once: true });
             try {
-              return await withScope(async () => serveSnapshot(native, snapshot.value));
+              return await runWithRequestScope(scope, async () => {
+                // Stream-marked routes skip the eager pre-read; anything the peek
+                // cannot prove keeps buffered ingress with its pre-dispatch 413.
+                // Native action callbacks always buffer: actions never stream.
+                let lazy = false;
+                if (peek) {
+                  try {
+                    lazy =
+                      routeKind(router, native.method, normalizedPath(new URL(native.url))) ===
+                      "stream";
+                  } catch {
+                    lazy = false;
+                  }
+                }
+                const snapshot = lazy
+                  ? await snapshotRequestLazy(native, bodyLimit, scope.signal)
+                  : await snapshotRequest(native, bodyLimit, scope.signal);
+                if (snapshot.kind === "rejected") return success(fixed(snapshot.status));
+                bindRequestServer(snapshot.value, server);
+                // Body readers live and die in this per-request scope; dispatch
+                // abandons an unread live body before the scope drains, and the
+                // outer boundary revokes the token only after drainage, before
+                // the response returns. Handler faults and rejected routes pass
+                // through the same finally, so no path leaks a usable token.
+                try {
+                  return await withScope(async () => serveSnapshot(native, snapshot.value));
+                } finally {
+                  revokeRequest(snapshot.value);
+                }
+              });
             } finally {
-              revokeRequest(snapshot.value);
+              nativeSignal?.removeEventListener("abort", onDisconnect);
+              liveScopes.delete(scope);
             }
           });
         };
@@ -332,6 +372,11 @@ export function createServer(
         const server = Bun.serve<unknown>({
           hostname: host,
           port: Number(port),
+          // Pinned Bun request bound (E04 probes): full stalls and drips
+          // abort at ~10s with AbortError, mapped to 408 by ingress.
+          // Header stalls never dispatch (no Can hook); that Bun-owned
+          // limitation is documented, not worked around.
+          idleTimeout: 10,
           ...(tls === undefined ? {} : { tls: { cert: tls.cert, key: tls.key } }),
           ...(actions === undefined && routerActionKeys(router).length === 0
             ? {}
@@ -385,6 +430,9 @@ export function createServer(
       shutdownMs,
       settled,
       settle,
+      expireScopes: (reason) => {
+        for (const scope of liveScopes) scope.expire(reason);
+      },
     });
     token = registerResource(
       "server",
@@ -491,6 +539,9 @@ export function createServer(
     async stop(server: unknown, context?: AssertionContext): Promise<Completion<undefined>> {
       denyLiveBoundary(context, origin);
       const native = readServer(server);
+      // Shutdown expires every live request scope first, so in-flight
+      // budgeted work returns boundedly before the close drains it.
+      native.expireScopes("shutdown");
       closeServerSessions(native.server);
       const completion = await closeResource(server, "server", {
         milliseconds: native.shutdownMs,
@@ -501,22 +552,53 @@ export function createServer(
     async wait(server: unknown, context?: AssertionContext): Promise<Completion<undefined>> {
       denyLiveBoundary(context, origin);
       const native = readServer(server);
+      let signalled!: () => void;
+      const signalArrived = new Promise<void>((resolve) => {
+        signalled = resolve;
+      });
       // Signal delivery is context-free, so each firing re-enters ownership
       // through the server scope; a closed scope means the close already ran.
       const onSignal = () => {
         try {
+          native.expireScopes("shutdown");
           closeServerSessions(native.server);
-          const initiate = guardCallback(native.scope, async () => closeResource(server, "server"));
+          const initiate = guardCallback(native.scope, async () =>
+            closeResource(server, "server", {
+              milliseconds: native.shutdownMs,
+              failure: () => shutdown("deadline"),
+            }),
+          );
           void initiate().then(
             () => {},
             () => {},
           );
+          signalled();
         } catch {}
       };
       process.on("SIGINT", onSignal);
       process.on("SIGTERM", onSignal);
       try {
-        const completion = await native.settled;
+        // E04 republication of shutdownMs: an unsignalled wait pends
+        // (stop settles it through the close), but once a signal
+        // arrives, shutdownMs bounds the remaining drain. Past it the
+        // wait reports the deadline while the close stays owned for
+        // the external supervisor to bound — never revoked, never
+        // force-closed.
+        const bounded = signalArrived.then(async (): Promise<Completion<void>> => {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          try {
+            const outcome = await Promise.race([
+              native.settled,
+              new Promise<"deadline">((resolve) => {
+                timer = setTimeout(() => resolve("deadline"), native.shutdownMs);
+              }),
+            ]);
+            return outcome === "deadline" ? shutdown("deadline") : outcome;
+          } finally {
+            if (timer !== undefined) clearTimeout(timer);
+          }
+        });
+        const completion = await Promise.race([native.settled, bounded]);
         return completion.kind === "ok" ? success(undefined) : completion;
       } finally {
         process.off("SIGINT", onSignal);

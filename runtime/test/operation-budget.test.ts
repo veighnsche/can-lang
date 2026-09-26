@@ -152,11 +152,10 @@ describe("raceBoundary", () => {
 
   test("scope expiry propagates its reason as the cause", async () => {
     for (const reason of ["disconnect", "shutdown"] as const) {
-      const collected = createCollectorSink();
-      const scope = createRequestScope({ sink: collected.sink });
+      const scope = createRequestScope();
       let op!: Promise<string>;
       const raced = raceBoundary(
-        { source: "sql", boundMs: 5000, scopeSignal: scope.signal, sink: collected.sink },
+        { source: "sql", boundMs: 5000, scopeSignal: scope.signal, sink: scope.sink },
         () => (op = Bun.sleep(60).then(() => "late-rows")),
       );
       await Bun.sleep(10);
@@ -170,12 +169,11 @@ describe("raceBoundary", () => {
   });
 
   test("pre-expired scope returns without starting", async () => {
-    const collected = createCollectorSink();
-    const scope = createRequestScope({ sink: collected.sink });
+    const scope = createRequestScope();
     scope.expire("disconnect");
     let started = false;
     const outcome = await raceBoundary(
-      { source: "sql", scopeSignal: scope.signal, sink: collected.sink },
+      { source: "sql", scopeSignal: scope.signal, sink: scope.sink },
       async () => {
         started = true;
         return "never";
@@ -354,8 +352,7 @@ describe("request-scope", () => {
   });
 
   test("an explicit collector sink observes scope races", async () => {
-    const collected = createCollectorSink();
-    const scope = createRequestScope({ sink: collected.sink });
+    const scope = createRequestScope();
     const outcome = await runWithRequestScope(scope, () =>
       raceBoundary(
         {
@@ -369,6 +366,6 @@ describe("request-scope", () => {
       ),
     );
     expect(outcome.kind).toBe("unknown");
-    expect(collected.escalations).toHaveLength(1);
+    expect(scope.collected.escalations).toHaveLength(1);
   });
 });

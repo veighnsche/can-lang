@@ -6,7 +6,12 @@
 // module imports node:async_hooks and stays server-side: browser action
 // clients take explicit bounds only and never import it.
 import { AsyncLocalStorage } from "node:async_hooks";
-import { createCollectorSink, type EscalationSink } from "./operation-budget.ts";
+import {
+  createCollectorSink,
+  type EscalationRecord,
+  type EscalationSink,
+  type LateRecord,
+} from "./operation-budget.ts";
 import { createRequestBudget, type RequestBudget } from "./request-budget.ts";
 
 // ScopeAbortReason is the complete vocabulary for request-scope expiry:
@@ -26,17 +31,21 @@ export type RequestScope = Readonly<{
   // Idempotent: the first reason wins and later calls are silent no-ops.
   expire(reason: ScopeAbortReason): void;
   expired(): boolean;
-  // Collector the owner drains; dispatch hands it to the E06 reporter.
+  // The scope-owned collector every scoped race files through.
   sink: EscalationSink;
+  // Live record arrays behind the sink: dispatch hands them to the E06
+  // reporter, and handlers/tests observe late settlement through them.
+  collected: Readonly<{
+    escalations: readonly EscalationRecord[];
+    lates: readonly LateRecord[];
+  }>;
 }>;
 
 const scopes = new AsyncLocalStorage<RequestScope>();
 
-export function createRequestScope(options?: {
-  totalMs?: number;
-  sink?: EscalationSink;
-}): RequestScope {
+export function createRequestScope(options?: { totalMs?: number }): RequestScope {
   const controller = new AbortController();
+  const collector = createCollectorSink();
   let expired = false;
   return Object.freeze({
     budget: options?.totalMs === undefined ? undefined : createRequestBudget(options.totalMs),
@@ -51,7 +60,11 @@ export function createRequestScope(options?: {
     expired(): boolean {
       return expired;
     },
-    sink: options?.sink ?? createCollectorSink().sink,
+    sink: collector.sink,
+    collected: Object.freeze({
+      escalations: collector.escalations,
+      lates: collector.lates,
+    }),
   });
 }
 

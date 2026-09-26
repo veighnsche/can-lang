@@ -15,7 +15,6 @@ import { createSQLDescriptors, type SQLDescriptorEntry } from "../platform/sql/d
 import { createSQLPools } from "../platform/sql/pool.ts";
 import { createSQLTransactions } from "../platform/sql/transaction.ts";
 import type { SQLPlan } from "../platform/sql/values.ts";
-import { createCollectorSink } from "../transport/operation-budget.ts";
 import { createRequestBudget } from "../transport/request-budget.ts";
 import { createRequestScope, runWithRequestScope } from "../transport/request-scope.ts";
 
@@ -515,8 +514,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const started = Date.now();
           const outcome = await runWithRequestScope(scope, () =>
             pools.queryRows(
@@ -551,11 +549,11 @@ describe("sql budgets: postgresql (live)", () => {
           );
           expect(overlap.kind).toBe("ok");
           // Escalation filed automatically at the boundary return.
-          expect(collected.escalations).toHaveLength(1);
-          expect(collected.escalations[0]).toMatchObject({ cause: "budget" });
+          expect(scope.collected.escalations).toHaveLength(1);
+          expect(scope.collected.escalations[0]).toMatchObject({ cause: "budget" });
           // Late settlement lands under ownership, then the lease drops.
-          await waitFor("late pg settlement", () => collected.lates.length === 1, 8000);
-          expect(collected.lates[0]).toMatchObject({ settled: "resolved" });
+          await waitFor("late pg settlement", () => scope.collected.lates.length === 1, 8000);
+          expect(scope.collected.lates[0]).toMatchObject({ settled: "resolved" });
           expect(resourceStatus(token).leases).toBe(0);
           expect(await pgSleepers(RUN_DB)).toBe(0);
           value(await pools.close(token, 5000n));
@@ -574,8 +572,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const outcome = await runWithRequestScope(scope, () =>
             pools.execute(
               descriptors.declareDescriptor("pg", "slow_insert"),
@@ -590,7 +587,7 @@ describe("sql budgets: postgresql (live)", () => {
             operation: "execute",
             code: "budget",
           });
-          await waitFor("late pg write settlement", () => collected.lates.length === 1, 8000);
+          await waitFor("late pg write settlement", () => scope.collected.lates.length === 1, 8000);
           // The write landed late: the budget code never claimed rollback.
           const reread = value(
             await pools.queryOne(
@@ -617,8 +614,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const started = Date.now();
           const outcome = await runWithRequestScope(scope, () =>
             transactions.withTransaction(
@@ -651,9 +647,9 @@ describe("sql budgets: postgresql (live)", () => {
           expect(typeof payload.transaction_id).toBe("string");
           expect((payload.transaction_id as string).length).toBeGreaterThan(0);
           expect(resourceStatus(token).leases).toBe(1);
-          expect(collected.escalations).toHaveLength(1);
-          await waitFor("late pg commit", () => collected.lates.length === 1, 10000);
-          expect(collected.lates[0]).toMatchObject({ settled: "resolved" });
+          expect(scope.collected.escalations).toHaveLength(1);
+          await waitFor("late pg commit", () => scope.collected.lates.length === 1, 10000);
+          expect(scope.collected.lates[0]).toMatchObject({ settled: "resolved" });
           expect(resourceStatus(token).leases).toBe(0);
           // The commit landed late; reread reconciles the unknown outcome.
           const reread = await pools.queryOne(
@@ -679,8 +675,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ totalMs: 150, sink: collected.sink });
+          const scope = createRequestScope({ totalMs: 150 });
           const started = Date.now();
           // No explicit bounds: the remaining request budget still caps
           // the visible layer.
@@ -698,7 +693,11 @@ describe("sql budgets: postgresql (live)", () => {
             operation: "query_rows",
             code: "budget",
           });
-          await waitFor("ambient-budget late settlement", () => collected.lates.length === 1, 8000);
+          await waitFor(
+            "ambient-budget late settlement",
+            () => scope.collected.lates.length === 1,
+            8000,
+          );
           value(await pools.close(token, 5000n));
         } catch (cause) {
           value(await pools.close(token, 15000n));
@@ -715,8 +714,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const raced = runWithRequestScope(scope, () =>
             pools.queryRows(
               descriptors.declareDescriptor("pg", "sleep_mark"),
@@ -735,10 +733,14 @@ describe("sql budgets: postgresql (live)", () => {
             operation: "query_rows",
             code: "budget",
           });
-          expect(collected.escalations).toHaveLength(1);
-          expect(collected.escalations[0]).toMatchObject({ cause: "disconnect" });
+          expect(scope.collected.escalations).toHaveLength(1);
+          expect(scope.collected.escalations[0]).toMatchObject({ cause: "disconnect" });
           expect(resourceStatus(token).leases).toBe(1);
-          await waitFor("disconnect-leg late settlement", () => collected.lates.length === 1, 8000);
+          await waitFor(
+            "disconnect-leg late settlement",
+            () => scope.collected.lates.length === 1,
+            8000,
+          );
           expect(resourceStatus(token).leases).toBe(0);
           value(await pools.close(token, 5000n));
         } catch (cause) {
@@ -756,8 +758,7 @@ describe("sql budgets: postgresql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 2n), "pg");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const [short, long] = await runWithRequestScope(scope, () =>
             Promise.all([
               pools.queryRows(
@@ -789,8 +790,8 @@ describe("sql budgets: postgresql (live)", () => {
           const marks = dataArray(value(long)).map((row) => dataProperty(row, "mark"));
           expect(marks).toEqual(["slept"]);
           // The short call's late settlement still arrives owned.
-          await waitFor("overlap late settlement", () => collected.lates.length === 1, 8000);
-          expect(collected.lates[0]).toMatchObject({ settled: "resolved" });
+          await waitFor("overlap late settlement", () => scope.collected.lates.length === 1, 8000);
+          expect(scope.collected.lates[0]).toMatchObject({ settled: "resolved" });
           value(await pools.close(token, 5000n));
         } catch (cause) {
           value(await pools.close(token, 15000n));
@@ -806,8 +807,7 @@ describe("sql budgets: postgresql (live)", () => {
     async () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
-        const collected = createCollectorSink();
-        const scope = createRequestScope({ sink: collected.sink });
+        const scope = createRequestScope();
         const outcome = await runWithRequestScope(scope, () =>
           pools.queryRows(
             descriptors.declareDescriptor("pg", "sleep_mark"),
@@ -826,7 +826,7 @@ describe("sql budgets: postgresql (live)", () => {
         // The close waits for the still-owned query instead of revoking
         // it, then completes normally.
         value(await pools.close(token, 15000n));
-        expect(collected.lates).toHaveLength(1);
+        expect(scope.collected.lates).toHaveLength(1);
       });
     },
     30000,
@@ -839,8 +839,7 @@ describe("sql budgets: postgresql (live)", () => {
       // later finishes: assert that contract instead of the helper's.
       const result = await runOwnedRoot(async () => {
         const token = await setupSchema(() => pools.open("CAN_E04_PG", 5n), "pg");
-        const collected = createCollectorSink();
-        const scope = createRequestScope({ sink: collected.sink });
+        const scope = createRequestScope();
         const outcome = await runWithRequestScope(scope, () =>
           pools.queryRows(
             descriptors.declareDescriptor("pg", "sleep_mark"),
@@ -865,7 +864,7 @@ describe("sql budgets: postgresql (live)", () => {
           () => resourceStatus(token).state === "closed",
           10000,
         );
-        expect(collected.lates).toHaveLength(1);
+        expect(scope.collected.lates).toHaveLength(1);
         await expect(
           pools.queryOne(
             descriptors.declareDescriptor("pg", "probe_note"),
@@ -890,8 +889,7 @@ describe("sql budgets: mysql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.mysqlOpen("CAN_E04_MY", 5n), "my");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const started = Date.now();
           const outcome = await runWithRequestScope(scope, () =>
             pools.queryRows(
@@ -911,9 +909,9 @@ describe("sql budgets: mysql (live)", () => {
           });
           expect(resourceStatus(token).leases).toBe(1);
           expect(await mysqlSleepers(RUN_DB)).toBe(1);
-          expect(collected.escalations).toHaveLength(1);
-          await waitFor("late mysql settlement", () => collected.lates.length === 1, 8000);
-          expect(collected.lates[0]).toMatchObject({ settled: "resolved" });
+          expect(scope.collected.escalations).toHaveLength(1);
+          await waitFor("late mysql settlement", () => scope.collected.lates.length === 1, 8000);
+          expect(scope.collected.lates[0]).toMatchObject({ settled: "resolved" });
           expect(resourceStatus(token).leases).toBe(0);
           expect(await mysqlSleepers(RUN_DB)).toBe(0);
           value(await pools.close(token, 5000n));
@@ -932,8 +930,7 @@ describe("sql budgets: mysql (live)", () => {
       await owned(async () => {
         const token = await setupSchema(() => pools.mysqlOpen("CAN_E04_MY", 5n), "my");
         try {
-          const collected = createCollectorSink();
-          const scope = createRequestScope({ sink: collected.sink });
+          const scope = createRequestScope();
           const started = Date.now();
           const outcome = await runWithRequestScope(scope, () =>
             transactions.withTransaction(
@@ -964,7 +961,7 @@ describe("sql budgets: mysql (live)", () => {
           expect(Date.now() - started).toBeLessThan(1500);
           const payload = domainOutcome(outcome, "sql::commit_unknown");
           expect(typeof payload.transaction_id).toBe("string");
-          await waitFor("late mysql commit", () => collected.lates.length === 1, 10000);
+          await waitFor("late mysql commit", () => scope.collected.lates.length === 1, 10000);
           const reread = await pools.queryOne(
             descriptors.declareDescriptor("my", "probe_note"),
             notePlan,

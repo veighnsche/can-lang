@@ -45,6 +45,9 @@ type BodyCell =
       native: Request;
       limit: number;
       reader: boolean;
+      // Request-scope expiry races the first live read exactly like
+      // buffered ingress: disconnect/shutdown abandon the drain.
+      signal?: AbortSignal;
       buffered?: Bytes;
       cell?: ReaderCell;
     };
@@ -119,7 +122,7 @@ function bodyCell(value: unknown): BodyCell {
   return bodies.get(value)!;
 }
 export type SnapshotResult = Readonly<
-  { kind: "request"; value: unknown } | { kind: "rejected"; status: 400 | 413 }
+  { kind: "request"; value: unknown } | { kind: "rejected"; status: 400 | 408 | 413 }
 >;
 export function normalizedPath(url: URL): string {
   const path = decodeURIComponent(url.pathname);
@@ -188,23 +191,54 @@ function snapshotHead(
     },
   };
 }
+function isAbortError(cause: unknown): boolean {
+  return (
+    typeof cause === "object" &&
+    cause !== null &&
+    (cause as { name?: unknown }).name === "AbortError"
+  );
+}
+
+// drainBody reads the wire stream to completion under the byte limit,
+// racing the request-scope signal when one is present. Scope expiry
+// (disconnect/shutdown) cancels the reader and abandons the drain;
+// Bun-side stream aborts (its ~10s request bound, pinned by E04
+// probes) surface as AbortError and are classified the same way.
+// Either way the honest status is 408: the full request never
+// arrived in time. Corrupt reads stay 400, over-limit stays 413, and
+// an abandoned drain never poses as a complete (possibly empty) body.
 async function drainBody(
   body: ReadableStream<Uint8Array> | null,
   limit: number,
-): Promise<Readonly<{ kind: "bytes"; value: Bytes } | { kind: "rejected"; status: 400 | 413 }>> {
+  signal?: AbortSignal,
+): Promise<
+  Readonly<{ kind: "bytes"; value: Bytes } | { kind: "rejected"; status: 400 | 408 | 413 }>
+> {
   const chunks: Uint8Array[] = [];
   let size = 0;
   if (body) {
     const reader = body.getReader();
     let complete = false;
+    let expired = signal?.aborted ?? false;
+    const onAbort = (): void => {
+      expired = true;
+      try {
+        void reader.cancel();
+      } catch {}
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
     try {
       for (;;) {
+        if (expired) return { kind: "rejected", status: 408 };
         let next: Awaited<ReturnType<typeof reader.read>>;
         try {
           next = await reader.read();
-        } catch {
-          return { kind: "rejected", status: 400 };
+        } catch (cause) {
+          return { kind: "rejected", status: isAbortError(cause) ? 408 : 400 };
         }
+        // Our own cancel resolves the pending read as done: treat it
+        // as abandonment, never as a complete body.
+        if (expired) return { kind: "rejected", status: 408 };
         if (next.done) {
           complete = true;
           break;
@@ -214,6 +248,7 @@ async function drainBody(
         if (next.value.byteLength !== 0) chunks.push(new Uint8Array(next.value));
       }
     } finally {
+      signal?.removeEventListener("abort", onAbort);
       if (!complete)
         try {
           await reader.cancel();
@@ -231,12 +266,16 @@ async function drainBody(
 }
 // Private server ingress. Can receives only a detached immutable snapshot;
 // native Request/Headers/stream objects never enter source-level values.
-export async function snapshotRequest(request: Request, limit: number): Promise<SnapshotResult> {
+export async function snapshotRequest(
+  request: Request,
+  limit: number,
+  signal?: AbortSignal,
+): Promise<SnapshotResult> {
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 67108864)
     throw new TypeError("invalid server body budget");
   const head = snapshotHead(request);
   if (head.kind === "rejected") return head;
-  const drained = await drainBody(request.body, limit);
+  const drained = await drainBody(request.body, limit, signal);
   if (drained.kind === "rejected") return drained;
   const token = Object.freeze(Object.create(null));
   requests.set(token, Object.freeze({ ...head.value, body: drained.value }));
@@ -249,6 +288,7 @@ export async function snapshotRequest(request: Request, limit: number): Promise<
 export async function snapshotRequestLazy(
   request: Request,
   limit: number,
+  signal?: AbortSignal,
 ): Promise<SnapshotResult> {
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 67108864)
     throw new TypeError("invalid server body budget");
@@ -256,7 +296,7 @@ export async function snapshotRequestLazy(
   if (head.kind === "rejected") return head;
   const token = Object.freeze(Object.create(null));
   requests.set(token, Object.freeze({ ...head.value, body: ownBytes(new Uint8Array(0)) }));
-  bodies.set(token, { kind: "live", native: request, limit, reader: false });
+  bodies.set(token, { kind: "live", native: request, limit, reader: false, signal });
   return { kind: "request", value: token };
 }
 // Lifetime revocation is separate from body abandonment: abandonRequest only
@@ -398,7 +438,7 @@ export async function snapshotBodyBytes(token: unknown): Promise<SnapshotBody> {
   if (cell.kind === "live") {
     if (cell.buffered !== undefined) return { kind: "bytes", value: cell.buffered };
     if (cell.reader) return { kind: "consumed" };
-    const drained = await drainBody(cell.native.body, cell.limit);
+    const drained = await drainBody(cell.native.body, cell.limit, cell.signal);
     if (drained.kind === "rejected")
       return drained.status === 413 ? { kind: "limited" } : { kind: "failed" };
     cell.buffered = drained.value;

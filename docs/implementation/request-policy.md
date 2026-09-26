@@ -68,48 +68,76 @@ visible boundary returns before the native operation settles:
 Consumers: E04 adapter wiring, F companion protocol (cancel/unknown
 outcomes mirror Can-side honesty), S3 contracts (C-C).
 
-## 5. Owned remaining work (contract published; wiring in E04)
+## 5. Owned remaining work (E04 implemented)
 
 Cancel-absent branch: the request boundary still returns at budget
 expiry while the native operation stays owned until settlement,
 reporting the §4 outcome with supervisor escalation — bounded and
 honest at the user-visible layer without pretending to abort the
-unabortable. E01 proves the shape with a generic boundary race in
-`request-budget.test.ts`; E04 wires it into SQL/fetch/action paths.
+unabortable. `runtime/transport/operation-budget.ts` (`raceBoundary`)
+is the boundary; SQL adapters race it (`SQLBounds`, no cancel input);
+leases stay held past the visible return; late settlement is observed
+through the sink without rewriting the marker.
 
-## 6. Supervisor escalation (contract published; mechanism in E04/E06)
+## 6. Supervisor escalation (E04 mechanism; E06 reporting)
 
 Waiting deadlines leave work owned. The supervisor bounds nonsettling
 work (SIGKILL as the final bound); escalation is automatic, not
-caller-invoked. The `escalation: "supervisor"` marker field is the
-handoff token E04/E06 mechanisms consume.
+caller-invoked. Every unknown-write return files an
+`EscalationRecord` through the request-scope collector
+(`scope.collected`) or the module ring fallback
+(`drainBudgetEscalations`); late settlement files a linked
+`LateRecord`. E06's reporter drains these collections; E04 files but
+never prints.
 
-## 7. Per-adapter interruption contracts (conditioned, not implemented)
+## 7. Per-adapter interruption contracts (E04 wired; operands in C)
 
 No caller deadline/cancel operand ships without a verified native
-meaning. Each line below is conditioned on its probe; E01 adds no
-operands and changes no adapter behavior.
+meaning. Runtime inputs are wired; authored operands thread through
+them in C-owned checker/emitter slices.
 
-- SQL cancel semantics: conditioned on X-R04-1 (E02 qualifies per
-  dialect; SQLite vs live PG/MySQL recorded separately).
-- Ingress disconnect projection: conditioned on X-R04-3 (E02; pinned
-  Bun behavior tested separately from SQL cancel).
-- S3/stream behavior: conditioned on X-R15-* (R15 O1/O2 branches).
-- Fetch abort: wired in E04 against the qualified native contract only.
+- SQL cancel semantics: X-R04-1 NEGATIVE on all dialects — no cancel
+  input exists on any SQL path (`raceBoundary` rejects one
+  structurally). Caller bounds race the shared budget; expiry reports
+  `query_failed` code `budget` / `transaction_failed` phase `budget`
+  / `commit_unknown`, all already in the emits unions.
+- Ingress disconnect projection: X-R04-3 POSITIVE — the serve-side
+  signal expires the request scope; in-flight budgeted work returns
+  its unknown-write outcome (cause `disconnect`).
+- S3/stream behavior: conditioned on X-R15-* (R15 O1/O2 branches);
+  still not wired.
+- Fetch abort: cancel-present branch — expiry aborts the wire
+  natively and reports `http::timeout` (server client, naming the
+  bound that fired) or `transport_failed` phase `timeout` (action
+  client); caller cancel reports `cancelled`. No commit knowledge
+  either way.
 - Hedged-loss supervision (O2): designed only if X-R04-2 shows O1
   insufficient; no O2 policy work before the measurement.
+- Ingress stalls (E04 probes): header stalls never dispatch
+  (Bun-owned, no Can hook — documented, not worked around); body
+  stalls and drips abort at Bun's ~10s request bound (pinned
+  `idleTimeout: 10`), mapped to fixed 408; corrupt reads stay 400.
 
-## 8. Disconnect/SIGTERM propagation (E04)
+## 8. Disconnect/SIGTERM propagation (E04 implemented)
 
-E04 propagates ingress disconnect and SIGTERM through the budget and
-ownership layers per §§1–6. E01 publishes the layers; no propagation
-behavior is claimed now.
+Dispatch installs one `RequestScope` per handler run (unbounded
+until expired — no invented default total); budgeted SQL/fetch
+adapters resolve it implicitly. Disconnect expires the scope with
+cause `disconnect`; `stop()` and signal entries expire all live
+scopes with cause `shutdown` before the close drains. Scope expiry
+abandons ingress drains (408) and returns in-flight operations at
+their boundaries; owned work runs to settlement with escalation
+filed automatically.
 
-## 9. Shutdown escalation (E04/E06)
+## 9. Shutdown escalation (E04 republication; E06 reporting)
 
 Service shutdown composes §2 drain with §6 escalation: bounded wait,
-then supervisor bounds. Server `shutdownMs` close deadlines keep their
-current meaning until E04 republishes them against this spec.
+then supervisor bounds. E04 republication: `stop()` expires scopes,
+then closes with the `shutdownMs` deadline as before; the signal
+path now does the same (previously no deadline at all), and
+`wait()` bounds the post-signal drain by `shutdownMs`, reporting
+`shutdown_failed` phase `deadline` past it while the close stays
+owned for the external supervisor (SIGKILL) to bound.
 
 ## 10. Identity plug (C-G, owned by F)
 
@@ -117,12 +145,14 @@ Budget/correlation identity vocabulary is owned by lane F (C-G). This
 policy consumes it; neither owner invents the other's vocabulary. F01
 picks up the §4 vocabulary from this publication.
 
-## Conditioned-claim ledger (E01 done-state)
+## Conditioned-claim ledger (E04 done-state)
 
-E01 claims exactly: §§1–4 implemented and tested; §§5–6 contracts
-published with markers but no adapter wiring; §§7–9 explicitly not
-implemented. Any native interruption, operand, propagation, or
-escalation-mechanism claim before E02/E04/E06 lands is out of contract.
+E04 claims: §§1–6 and §8 implemented and tested; §7 wired except
+S3/stream (X-R15-*) and O2 (X-R04-2); §9 republished with the
+signal-path bound; §10 unchanged (F-owned). Authored caller operands
+(checker/emitter threading) and the E06 reporter are explicitly not
+in E04. Any native-interruption, operand, or reporting claim beyond
+this ledger is out of contract.
 
 ## E02 qualification outcome (X-R04-1 / X-R04-3)
 

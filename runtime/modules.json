@@ -590,7 +590,8 @@
       "./router.ts",
       "./websocket.ts",
       "./action-routes.ts",
-      "../transport/request-report.ts"
+      "../transport/request-report.ts",
+      "../transport/request-scope.ts"
     ],
     "platform/websocket.ts": [
       "../completion.ts",
