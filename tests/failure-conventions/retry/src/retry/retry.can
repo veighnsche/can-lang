@@ -1,0 +1,39 @@
+package retry
+    provides [completed, rejected, outcome, retry]
+    uses []
+record completed<item>
+    item value
+record rejected<failure>
+    failure reason
+variant outcome<item, failure>
+    completed<item>
+    rejected<failure>
+fn outcome<item, failure> retry<item, failure, arg>
+    emits []
+    given
+        callable outcome<item, failure> (arg) emits [] operation
+        arg input
+        int remaining
+    asserts
+        direct: callable always_ok, "x", 2 => ok call always_ok("x")
+        single: callable always_bad, "x", 1 => ok call always_bad("x")
+    match call operation(input)
+        ok outcome<item, failure> first => match first
+            completed<item> => ok first
+            rejected<failure> => match remaining > 1
+                false => ok first
+                true => relay call retry(operation, input, remaining - 1)
+fn outcome<int, str> always_ok
+    emits []
+    given
+        str ignored
+    asserts
+        unit: "x" => ok completed(7)
+    ok completed(7)
+fn outcome<int, str> always_bad
+    emits []
+    given
+        str ignored
+    asserts
+        unit: "x" => ok rejected("down")
+    ok rejected("down")

@@ -1,0 +1,51 @@
+package profiles
+    provides [profile, unavailable, forbidden, load, load_outcome, fetch_profile]
+    uses [retry]
+record profile
+    int id
+    str name
+error unavailable(str key)
+error forbidden(str key)
+fn profile load
+    emits [unavailable, forbidden]
+    given
+        str key
+    asserts
+        hit: "ann" => ok profile(7, "Ann")
+        gone: "bob" => unavailable("bob")
+        shut: "root" => forbidden("root")
+    match key is "ann"
+        false => match key is "root"
+            false => unavailable(key)
+            true => forbidden(key)
+        true => ok profile(7, "Ann")
+fn retry::outcome<profile, str> load_outcome
+    emits []
+    given
+        str key
+    asserts
+        hit: "ann" => ok retry::completed(profile(7, "Ann"))
+        gone: "bob" => ok retry::rejected("bob")
+        shut: "root" => ok retry::rejected("root")
+    match call load(key)
+        when
+            hit: "ann" => ok profile(7, "Ann")
+            gone: "bob" => unavailable("bob")
+            shut: "root" => forbidden("root")
+            flaky: "ann" => unavailable("ann")
+            flaky: "ann" => ok profile(7, "Ann")
+            down: "bob" => unavailable("bob")
+            down: "bob" => unavailable("bob")
+            first_try: "ann" => ok profile(7, "Ann")
+        unavailable as failure => ok retry::rejected(failure.key)
+        forbidden as failure => ok retry::rejected(failure.key)
+        ok profile found => ok retry::completed(found)
+fn retry::outcome<profile, str> fetch_profile
+    emits []
+    given
+        str key
+    asserts
+        flaky: "ann" => ok retry::completed(profile(7, "Ann"))
+        down: "bob" => ok retry::rejected("bob")
+        first_try: "ann" => ok retry::completed(profile(7, "Ann"))
+    relay call retry::retry(callable load_outcome, key, 2)
