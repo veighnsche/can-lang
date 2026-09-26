@@ -332,6 +332,7 @@ func TestGate3RouteRebuildLive(t *testing.T) {
 // URL with a SIGKILL crash handle and a clean SIGTERM stopper.
 func gate3ServeInvoice(t *testing.T, ctx context.Context, bundle, home, entry, snapshot string, port int) (string, func(), func()) {
 	t.Helper()
+	requirePortFree(t, port)
 	file, err := os.Open(snapshot)
 	if err != nil {
 		t.Fatal(err)

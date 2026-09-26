@@ -203,6 +203,7 @@ func (s *downstreamStub) count(deliveryID string) int {
 // the base URL with a SIGKILL crash handle and a clean SIGTERM stopper.
 func serveWebhook(t *testing.T, ctx context.Context, bundle, home, entry, snapshot string, port int, db string) (string, func(), func()) {
 	t.Helper()
+	requirePortFree(t, port)
 	file, err := os.Open(snapshot)
 	if err != nil {
 		t.Fatal(err)

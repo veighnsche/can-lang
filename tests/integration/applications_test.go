@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -157,8 +158,24 @@ func snapshotMap(t *testing.T, home, name string, values map[string]string) stri
 // serveApplication runs a staged entry.ts main with a port argument and
 // one fd-3 credential snapshot, waits for a 200 on readyPath, and
 // returns a stopper asserting clean SIGTERM shutdown.
+// requirePortFree fails fast when a stale server from an earlier run
+// still holds the port. Without it the ready check below would observe
+// the stranger's 200 and the test would silently cross-talk against
+// foreign state (a timed-out run orphans its bun children, whose
+// deferred stops never run).
+func requirePortFree(t *testing.T, port int) {
+	t.Helper()
+	addr := "127.0.0.1:" + strconv.Itoa(port)
+	conn, err := net.DialTimeout("tcp", addr, 500*time.Millisecond)
+	if err == nil {
+		conn.Close()
+		t.Fatalf("port %d already serves; kill the stale server from an earlier run, refusing to cross-talk", port)
+	}
+}
+
 func serveApplication(t *testing.T, ctx context.Context, bundle, home, entry string, snapshot string, port int, readyPath string, extraEnv ...string) (string, func()) {
 	t.Helper()
+	requirePortFree(t, port)
 	file, err := os.Open(snapshot)
 	if err != nil {
 		t.Fatal(err)

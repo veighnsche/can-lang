@@ -1071,7 +1071,9 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 	}
 	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
-	write("src/main.can", "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n")
+	// Zero-argument main per the UP11 browser-entry contract; reuse the
+	// canonical degenerate program so the shape cannot drift again.
+	write("src/main.can", gate5EmptyMain)
 	status, out, diag := canlcBuildArgs(t, ctx, bundle, outside, "--target", "browser", browserRoot)
 	if status != 0 {
 		t.Fatalf("browser build: %d %s %s", status, out, diag)
