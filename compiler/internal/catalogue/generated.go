@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea"
+const GeneratedSourceSHA256 = "6ab6feb7984b24f5219a5da087fd8cf2d914ffb95c1e8c1c82c841bbf15247bf"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -372,6 +372,8 @@ const OpTextCompileRegex = "text::compile_regex"
 const OpTextMatches = "text::matches"
 const OpCollectionsEmptyMap = "collections::empty_map"
 const OpCollectionsEmptySet = "collections::empty_set"
+const OpCollectionsBuildMap = "collections::build_map"
+const OpCollectionsBuildSet = "collections::build_set"
 const OpCollectionsGet = "collections::get"
 const OpCollectionsInsert = "collections::insert"
 const OpCollectionsReplace = "collections::replace"

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 6ab6feb7984b24f5219a5da087fd8cf2d914ffb95c1e8c1c82c841bbf15247bf.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -329,6 +329,8 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | text::matches | text::regex regex, str text, int limit → text::regex_match[] | [text::invalid_limit] |  | RegExp | Scan with a fresh global pass per call (no shared lastIndex), UTF-16 offsets, empty-match advancement, absent captures as empty; execute in ordinary assertions. | real | B1-13 / B1-13 |
 | collections::empty_map | K:map_key, V:data;  → collections::map&lt;K,V&gt; | [] |  | Map | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
 | collections::empty_set | K:map_key;  → collections::set&lt;K&gt; | [] |  | Set | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
+| collections::build_map | K:map_key, V:data; collections::entry&lt;K,V&gt;[] entries → collections::map&lt;K,V&gt; | [collections::key_exists] |  | Map | Bulk construction: validate keys in order; the first duplicate key fails the whole build; single immutable publication in first-occurrence order. | real | A05 / C7 |
+| collections::build_set | K:map_key; K[] values → collections::set&lt;K&gt; | [] |  | Set | Bulk construction: validate keys in order and dedupe; single immutable publication in first-occurrence order. | real | A05 / C7 |
 | collections::get | K:map_key, V:data; collections::map&lt;K,V&gt; map, K key → V | [collections::key_absent] |  | Map.prototype.has, Map.prototype.get | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
 | collections::insert | K:map_key, V:data; collections::map&lt;K,V&gt; map, K key, V value → collections::map&lt;K,V&gt; | [collections::key_exists] |  | Map, Map.prototype.set | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |
 | collections::replace | K:map_key, V:data; collections::map&lt;K,V&gt; map, K key, V value → collections::map&lt;K,V&gt; | [collections::key_absent] |  | Map, Map.prototype.set | Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order. | real | I25 / C7 |

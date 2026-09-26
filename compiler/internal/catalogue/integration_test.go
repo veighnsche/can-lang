@@ -229,7 +229,7 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 		if task == "" {
 			continue
 		}
-		if isTTask(task) {
+		if isTTask(task) || isLaneTask(task) {
 			if err := checkTTaskEvidence(sourceRoot, task, ops); err != nil {
 				t.Error(err)
 			}
@@ -249,6 +249,16 @@ func TestCatalogueInclusionInventory(t *testing.T) {
 // docs/syntax-taste/can-implementation-task-list-2026-09-24.md.
 func isTTask(task string) bool {
 	if len(task) != 3 || task[0] != 'T' {
+		return false
+	}
+	return task[1] >= '0' && task[1] <= '9' && task[2] >= '0' && task[2] <= '9'
+}
+
+// isLaneTask reports whether task is a lane task (A01-H14) from
+// docs/syntax-taste/can-implementation-task-list-2026-09-26.md. Lane tasks
+// record acceptance in maintained tests, like T-list tasks.
+func isLaneTask(task string) bool {
+	if len(task) != 3 || task[0] < 'A' || task[0] > 'H' {
 		return false
 	}
 	return task[1] >= '0' && task[1] <= '9' && task[2] >= '0' && task[2] <= '9'

@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "fb6b6b45a1430d3dea8a39d19bd85fc2914eaefc185f8da81c5f48fc85c340ea";
+export const catalogueSHA256 = "6ab6feb7984b24f5219a5da087fd8cf2d914ffb95c1e8c1c82c841bbf15247bf";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -4702,6 +4702,80 @@ export const catalogue = freeze({
         ],
         "adapter": "Validate opaque provenance and key kind; return owned immutable copies and preserve insertion order.",
         "task": "I25"
+      },
+      "assertion": "real",
+      "refs": [
+        "C7"
+      ]
+    },
+    {
+      "name": "collections::build_map",
+      "identity": "can.std.collections@1::build_map",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "K",
+          "constraint": "map_key"
+        },
+        {
+          "name": "V",
+          "constraint": "data"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "entries",
+          "type": "collections::entry<K,V>[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "collections::map<K,V>",
+      "callbacks": [],
+      "emits": [
+        "collections::key_exists"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Map"
+        ],
+        "adapter": "Bulk construction: validate keys in order; the first duplicate key fails the whole build; single immutable publication in first-occurrence order.",
+        "task": "A05"
+      },
+      "assertion": "real",
+      "refs": [
+        "C7"
+      ]
+    },
+    {
+      "name": "collections::build_set",
+      "identity": "can.std.collections@1::build_set",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [
+        {
+          "name": "K",
+          "constraint": "map_key"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "values",
+          "type": "K[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "collections::set<K>",
+      "callbacks": [],
+      "emits": [],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Set"
+        ],
+        "adapter": "Bulk construction: validate keys in order and dedupe; single immutable publication in first-occurrence order.",
+        "task": "A05"
       },
       "assertion": "real",
       "refs": [

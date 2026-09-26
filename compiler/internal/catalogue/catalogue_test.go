@@ -12,7 +12,7 @@ import (
 func TestCompleteInventoryAndMirrors(t *testing.T) {
 	c := Builtin()
 	inv := c.Inventory()
-	if len(inv.Packages) != 37 || len(inv.Types) != 102 || len(inv.Errors) != 110 || len(inv.Operations) != 288 || len(inv.NativeDeclarations) != 10 {
+	if len(inv.Packages) != 37 || len(inv.Types) != 102 || len(inv.Errors) != 110 || len(inv.Operations) != 290 || len(inv.NativeDeclarations) != 10 {
 		t.Fatalf("inventory coverage changed: packages=%d types=%d errors=%d operations=%d modes=%d", len(inv.Packages), len(inv.Types), len(inv.Errors), len(inv.Operations), len(inv.NativeDeclarations))
 	}
 	if !reflect.DeepEqual(inv.StandardFailures, []string{"arithmetic", "bounds", "resource_state", "assertion", "native_exception", "cleanup"}) {
@@ -282,6 +282,19 @@ func TestCallbackUnionRejectsConflictingKinds(t *testing.T) {
 	right := ErrorIdentity{Name: "shipping::missing", Identity: "project.billing::declined", TypeArguments: []string{}}
 	if _, err := c.union([]ErrorIdentity{left, right}); err == nil {
 		t.Fatal("accepted conflicting kind for one error identity")
+	}
+}
+
+func TestTaskIDAdmitsProgramLanes(t *testing.T) {
+	for _, id := range []string{"I25", "LF01", "B1-13", "T22", "A05", "B01", "C03", "D01", "E01", "F01", "G01", "H14"} {
+		if !taskID.MatchString(id) {
+			t.Errorf("taskID rejects admitted task %s", id)
+		}
+	}
+	for _, id := range []string{"", "A5", "a05", "A053", "I5", "UP11", "T2", "Z01", "A0B"} {
+		if taskID.MatchString(id) {
+			t.Errorf("taskID admits %q", id)
+		}
 	}
 }
 
