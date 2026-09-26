@@ -86,6 +86,13 @@ requiring implementation are specified here, not claimed as passed.
   retained assets, old-browser-open scenario.
 - AI: tenant budgets/correlation enforced + measured; model-change eval
   protocol executed for one in-scope feature; quality/cost/latency reported.
+  The [R14 supplement](blocker-resolution/README.md) fixes combined token
+  counting and immediate pre-dispatch typed rejection. Qualify complete-request
+  bounds, parallel atomic admission, durable unknown holds, idempotent/late
+  settlement, fixed-epoch transitions, direct-call guard coverage and safe
+  context/failure reporting. X-R14-1 must qualify at least one real profile for
+  the registered support-ticket-triage feature; all-profiles-unqualified blocks
+  W6-AI despite correct unavailable-profile rejection tests.
 
 ## Authoring/tooling acceptance (R08/R09)
 
@@ -99,6 +106,10 @@ requiring implementation are specified here, not claimed as passed.
 - LSP: format/hover/references/completion/rename each demonstrated on the
   acceptance flow (extract/rename callback, change shared record, inspect
   contract, repair callers).
+- Local references/rename (user 1A): all uses of a function-local binding are
+  found/renamed; shadowed bindings and same-spelled names in different scopes
+  remain untouched. Include captured references to that binding where they
+  resolve to it; retain selected `with` parameter behavior and validated edits.
 
 ## Docs/examples (R16)
 

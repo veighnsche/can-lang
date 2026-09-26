@@ -52,6 +52,7 @@ endpoint unprovisioned). Each entry states what it can and cannot establish.
 | X-R01-1 | Third-party widget: adapter vs companion | X-R02-1 done | Discrimination data for the host decision | — |
 | X-R10-1 | Locking-read descriptor probe | Live PG | Whether claim-via-locking-read is expressible | Claim policy itself |
 | X-R11-1 | Two-worker claim + crash recovery | Live PG + 2 workers | SUPERSEDED under companion scope (P09-m3): reframed as companion claim/lease + crash-redelivery qualification per the B3 contract | Carrier choice (user scope S1, decided: companion) |
+| X-R14-1 | Qualify complete-call token bound and durable native metering | Published R14 supplement, H/F/E implementation, live provider and DB access | Eligibility of a real metered profile plus admission/settlement behavior for support-ticket triage | Universal bounds for unqualified providers or model versions; rejection-only fixtures cannot pass W6-AI |
 
 No option becomes accepted merely because a prototype exists. X-items that
 need only Can authoring (X-R06-1, X-R07-1, X-R08-*) can run during

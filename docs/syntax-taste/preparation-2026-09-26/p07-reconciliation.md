@@ -61,6 +61,12 @@ vocabulary, assertion/fixture story for tenant-supplied URLs. Consumers:
 companion delivery (F), AI budget enforcement (H consumes the identity via
 an explicit F→H handoff), any adapter making network calls (D consumes).
 Single identity vocabulary for tenant/correlation across HTTP and AI.
+The [R14 supplement](blocker-resolution/README.md) adds F-owned durable
+reserve/fence/settle/reconcile services and configured tenant/pool/epoch policy.
+H consumes this service at native dispatch; E integrates invocation context.
+User 2A/3A fixes token counting with immediate typed rejection. Profile
+qualification, conservative unknown holds and schedule transitions follow the
+supplement; identity/ledger publication does not wait on H enforcement.
 (P09-B2: single owner resolves the F/H planning cycle; M7: identity-
 affecting budget parts are decided with F first.)
 
@@ -84,6 +90,8 @@ old app logic against a new server is a defined error, not interop.
 Owner: surface policy. Interface: Q1 canonical form (false-first) +
 formatter rule; Q2 lint shape + keep-source formatting; Q3 `with` grammar +
 checking + rename references; hover/completion/rename query semantics.
+User blocker answer 1A includes function-local variables in references and
+safe rename, with scope identity distinguishing shadowed/same-spelled names.
 Consumers: checker, formatter, LSP, all example sources (migrated by
 the formatter — no compatibility obligation).
 (P09-B1: advisory vehicle = warning severity in the check pipeline,

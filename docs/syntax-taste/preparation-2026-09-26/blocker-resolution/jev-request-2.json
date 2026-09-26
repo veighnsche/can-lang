@@ -1,0 +1,57 @@
+{
+  "state": {
+    "goal": "User answers fix two product rules for Can: tenants receive token allowances covering AI input/output, and attempts exceeding allowance fail immediately through a typed error. Neither currency budgeting nor quota-wait queues is selected. Judge only the remaining technical mechanism.",
+    "repo": "Can serves zero outside users and need not retain old interfaces. Its lowering should employ native JS/Bun and minimal semantic adapters. Only specifications will change now, with no replacement of native AI forms. Lane F supplies tenant/correlation identities, H implements AI controls, and E integrates transport/runtime. SQLite, PostgreSQL, MySQL remain supported.",
+    "observed": "Inspection found Responses supplies max_output_tokens while ignoring usage on decode. The SystemOne body contains model, state, questions without an output cap, and parsing drops usage and the validated response-model string. No present adapter has durable call IDs, token estimation, shared tenant accounting or atomic admission holds. Transport byte caps establish no token ceiling.",
+    "provider": "Live TypeSafe reference material exposes usage.input_tokens plus usage.output_tokens after completion and does not list an output-token request limit. In the repository only Responses bounds output. Neither provider path yet has evidence for a total-call upper bound. It is legitimate to specify a prerequisite for metered-profile qualification, not to pretend that evidence exists.",
+    "failures": "Provider work may precede a disconnect, timeout, HTTP error, refusal, truncation, bad payload or host death. HTTP error bodies never reach current decoding. Absent counters therefore cannot be charged as zero; each retried network attempt needs accounting. Concurrent processes must consume the same tenant balance, and a provider wait must occur outside the short ledger transaction.",
+    "criteria": "We need transparent rejection before dispatch, conservative treatment of uncertainty, shared atomic admission, recovery after restart, finite declared errors and manageable scope. Only a demonstrated whole-call bound justifies a strict consumption ceiling; predicted usage does not. Use trusted server tenant/correlation data. Require configured quota and interval values instead of inventing a default period or amount."
+  },
+  "model": "jev-latest",
+  "questions": {
+    "admission": {
+      "type": "choice",
+      "instructions": "Given the user's cap choice and the missing native bounds, which preflight accounting approach fits best?",
+      "criteria": {
+        "qualified_bound": "Hold a proven maximum covering complete input/output atomically before dispatch, rejecting a provider profile without proof; replace the hold with validated measured usage later. Limits initial eligibility but supports strict bounds.",
+        "estimated_debt": "Hold predicted input and an output budget, reconcile actual usage after return, and forbid later requests when debt appears. Supports more profiles while admitting possible overrun of the soft cap.",
+        "post_debit": "Allow requests based on already-debited totals and record their cost after responses, leaving concurrent calls unreserved. Less machinery but races can overspend."
+      }
+    },
+    "enforcement": {
+      "type": "choice",
+      "instructions": "Select the placement of multi-process tenant accounting that best suits this repository's contracts.",
+      "criteria": {
+        "durable_native": "Use a server-native dispatch guard connected to durable ledger callbacks and authenticated tenant identity; persist per-attempt keys, reserve atomically, execute outside transactions and settle idempotently.",
+        "local_native": "Keep the guard native but store balances solely in process memory. Startup loss and separate servers split what should be shared accounting.",
+        "authored_wrapper": "Require authored Can helper calls to perform durable admission around native operations that remain callable without the guard. Coverage depends on application wrapper discipline."
+      }
+    },
+    "window": {
+      "type": "choice",
+      "instructions": "Which epoch scheme avoids an arbitrary commercial reset policy while providing a concrete accounting contract?",
+      "criteria": {
+        "configured_fixed": "Demand configured interval duration plus a UTC epoch anchor, account in half-open fixed buckets, and leave late settlements in their original admission bucket; do not queue for refill.",
+        "calendar_month": "Select a universal UTC monthly allowance, charging late responses to the calendar month in which they were admitted.",
+        "rolling": "Track an exact moving interval of configurable length, including outstanding holds; decline calls instead of waiting for capacity."
+      }
+    },
+    "unknown": {
+      "type": "choice",
+      "instructions": "Choose reservation treatment when a send may have reached the provider but actual token use is unavailable.",
+      "criteria": {
+        "retain": "Keep the entire reservation durable and unresolved against the admission epoch; reconcile once with authoritative counters or confirmed no-send evidence. Timeout/restart alone grants no refund.",
+        "refund": "Restore reserved capacity following timeout/cancel or restart, despite possible provider-side execution.",
+        "charge_ceiling": "Turn all reserved tokens into a final debit immediately when usage is unknown; never revise that debit based on later evidence."
+      }
+    },
+    "counting": {
+      "type": "choice",
+      "instructions": "Which numerical meaning should be assigned to the chosen input/output token allowance?",
+      "criteria": {
+        "sum": "Debit a single shared allowance using top-level input_tokens and output_tokens added once; do not also sum nested cached/reasoning categories. Preserve provider/model/profile provenance.",
+        "separate": "Make input allowance and output allowance two required independent limits, with separate balances and admission checks."
+      }
+    }
+  }
+}

@@ -182,11 +182,16 @@ recovery beyond idempotency.
 
 Format (wire `textDocument/formatting` to `formatSource` + overlay
 validation; whole-document), hover (type-at-offset over `World`), references
-(project index; body-local inclusion decided in the packet), completion
+(project index including body-local variables, selected by the user's 1A
+blocker answer), completion
 (scope-aware with keyword/near/arity precision rules), rename (references +
 `--write`-discipline validation; `with` bindings as near-parameter
 references). Snapshots stay inert; diagnostics identical to CLI; definition
-keeps declining rather than guessing.
+keeps declining rather than guessing. Find References and safe rename resolve
+local bindings by scope identity: shadowed or identically named bindings in
+other scopes are not references to the selected variable. Existing `with`
+callee-parameter references remain included. This closes BLK-02 without
+changing definition lookup or introducing syntax.
 
 ## R13 deployment + R14 AI + R16 docs — interfaces C-H, C-G
 
@@ -194,9 +199,17 @@ R13: UP25 qualification on x86 (packaging/install/smoke + PG roundtrip),
 lifecycle recipe (service unit, health, rollout/rollback, credential
 provisioning), old-browser acceptance (fail-closed generation handshake per
 C-H — H qualifies against the policy, it does not define it). R14:
-budget/correlation design (identity from C-G owner F via F→H handoff, then
-enforcement point + excess failure) + model-change eval protocol; streaming
-stays out. R16: the three stated corrections (R16-01 owned by C, R16-03 by F
+the [blocker-resolution contract](blocker-resolution/README.md) now specifies
+tenant input-plus-output token allowances, immediate typed rejection, configured
+fixed epochs, durable native admission reservations, authoritative settlement
+and conservative unknown-use holds. F owns C-G identity and ledger service;
+H owns native AI enforcement/usage/profile qualification; E owns shared context
+and transport integration. The ordinary catalogue scope operation uses existing
+call syntax, preserving native AI grammar. A complete-request bound must be
+qualified before budgeted dispatch; unqualified profiles fail closed and cannot
+count as successful W6-AI qualification. Model-change evaluation uses the
+registered support-ticket-triage feature; streaming stays out. R16: the three
+stated corrections (R16-01 owned by C, R16-03 by F
 rewritten to describe the auth envelope, R16-02/R16-04 by H) + supported-
 story doc after boundaries land; the story states the rich-client boundary
 explicitly (which browser subsystems are supported; history/WebSocket/

@@ -2,6 +2,13 @@
 
 ## Readiness status: READY
 
+**Task-writer follow-up:** its two subsequently found gaps are now resolved.
+User 1A includes local references/rename; 2A/3A selects tenant token allowances
+with immediate typed rejection. The [technical supplement](blocker-resolution/README.md)
+fixes accounting after three fresh Jev consultations. The current
+[57-task plan](../can-implementation-task-list-2026-09-26.md) incorporates this
+authority. No implementation is complete by this statement.
+
 Independent audit ([report](p09-audit-report.md)) delivered NOT READY with
 9 blockers + 9 majors + 6 minors; all resolved with recheck in the
 [readiness record](p09-readiness.md). Implementation tasks can now be
@@ -78,8 +85,11 @@ Unavailable live evidence is not a pass.
 
 ## Remaining blockers
 
-None in preparation. Implementation-time provisions above are the complete
-blocker list and each has an owner + gate.
+None in preparation after the [blocker resolution](blocker-resolution/README.md).
+The implementation-time provisions above remain gates. X-R14-1 additionally
+must qualify a real complete-request token bound/profile for budgeted AI;
+neither existing adapter is already qualified. If no profile qualifies, W6-AI
+is blocked rather than silently weakened to estimated accounting.
 
 ## Next deliverable (P10.3/P10.4 structure)
 

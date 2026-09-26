@@ -11,8 +11,18 @@ re-decide anything.
 
 ## 1. Context
 
-- Repository: `/Users/vince/Projects/can-lang`, revision `2cb1bc35435ab5075d51f9f945adfb0e1f9dfe64`
-  (preparation baseline = reviewed revision, zero drift).
+- Latest authority: `preparation-2026-09-26/blocker-resolution/README.md`
+  and the final section of `p06-answers.md`. User 1A includes local references
+  and rename; 2A/3A chooses tenant token allowances with immediate typed
+  rejection. The supplement resolves fixed epochs, durable native reservations,
+  unknown usage and typed failures after three fresh Jev consultations. Both
+  task-writer blockers are closed for design; X-R14-1 still gates successful
+  native metering qualification. Preserve the existing 57-task plan's updated
+  F01/F04/G03/G05/H07/H08 scopes and dependencies; do not re-ask these choices.
+
+- Repository: `/Users/vince/Projects/can-lang`, revision `d92d7180`
+  (was `2cb1bc35` when preparation ran; see the baseline delta in §2bis).
+  Preparation baseline = reviewed revision with zero drift at that time.
 - Preparation records: `/Users/vince/Projects/can-lang/docs/syntax-taste/preparation-2026-09-26/`
   (start at `README.md`, then `handoff.md`).
 - Checklist (all 45 boxes checked):
@@ -52,6 +62,35 @@ re-decide anything.
   P19 migrations, P10 history/WS, P09 reload drafts, P16 multiline, P17
   cleanup, P21 equality, O01–O03, component syntax, Can-worker. Do not smuggle
   these into tasks.
+
+## 2bis. Baseline delta since preparation (committed as `d92d7180`)
+
+Two commits landed after preparation; both are settled baseline, not proposals:
+
+- `dfd1f6e1` — the preparation records themselves + gitignore guards. No code.
+- `d92d7180` — "Stage generations through a per-dist content store with
+  hardlinks" (`compiler/internal/driver/output_cas.go` + wiring). Each distinct
+  byte string is stored once under `dist/cas/<sha256>`; generations link to it.
+  Layouts, bytes, hashes, and manifests are bit-identical to preparation time.
+
+Constraints this imposes on your task list:
+
+- Staged generation content is READ-ONLY (0400). Any task writing negative /
+  tamper tests against staged trees must break the link first (remove +
+  recreate) — never mutate staged bytes in place. Manifests/metadata stay
+  unique 0600 writes.
+- `dist/cas/` is owned by the staging lane's file table (same owner as the
+  generation writer); unreferenced entries are collected on prune. Tasks
+  touching staging, pairing, retention, or pruning must preserve the
+  CAS + GC contracts; do not reintroduce full-copy staging.
+- The read-only fresh-emit test mirror links instead of copying; mutable
+  workspace copies stay full copies. Do not merge the two helpers.
+- Preparation evidence gathered at `2cb1bc35` remains valid: the delta changes
+  only inode sharing, and the driver/browser/project/check/emit/distribution
+  suites plus new `output_cas_test.go` pass on the new HEAD.
+- Housekeeping already done: regenerable `out/`, `dist/`, `tscheck/.fresh-emit/`,
+  `examples/*/dist`, `bin/` wiped (~500 MB); review-evidence blobs replaced by
+  `core-probes/emitted-asset-hashes.json`. Do not write tasks for any of this.
 
 ## 3. Your deliverable
 

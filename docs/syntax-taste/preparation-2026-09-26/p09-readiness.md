@@ -1,5 +1,28 @@
 # P09 readiness record — READY (after finding resolution)
 
+## Subsequent task-writer blocker resolution
+
+The task writer found two gaps beyond the original audit below. Both are now
+closed for design by [user 1A/2A/3A](p06-answers.md) and the
+[R09/R14 supplement](blocker-resolution/README.md): include local references
+and safe rename by binding identity; use tenant token allowances with immediate
+typed rejection, configured fixed epochs, durable native admission and
+conservative unknown-use accounting. Three fresh Jev consultations and their
+window-policy disagreement are preserved in the supplement.
+
+A bounded independent review checked the new contract against source facts and
+the selected user behavior. Its two corrections were applied: authoritative
+usage can settle any outcome, and period/anchor changes activate only at an
+old-schedule epoch boundary. Static recheck verified 57 task IDs, all required
+fields, no dependency cycles, matching Mermaid edges, and valid local links.
+Native total-token bound qualification is explicitly unperformed and
+required by X-R14-1/W6-AI; unavailable-profile rejection is not live success.
+
+The original audit history follows; it does not itself prove the later AI
+contract or its implementation.
+
+## Original readiness audit
+
 Independent audit: [p09-audit-report.md](p09-audit-report.md) (verdict at
 delivery: NOT READY, 9 blockers + 9 majors + 6 minors, all small recorded
 decisions). Coordinator scenario walk:

@@ -81,3 +81,28 @@ choices not reopened here need no repeat confirmation.
 - Q4–Q6 conditional: no grammar selected; conditions + gates recorded above.
 - Q7: bounded grammar/checker delta specified in P07; stays within the
   approved direction.
+
+## Task-writer blocker answers (1A / 2A / 3A)
+
+The user answered the three blocker questions with `1A`, `2A`, `3A`.
+
+- **1A — Include locals.** Find References and safe rename cover variables
+  defined inside functions as well as project declarations and the selected
+  `with` parameter references. Bindings are distinguished by their actual
+  scope, including identical names in different scopes. This closes BLK-02;
+  it does not change the separately selected definition-lookup behavior.
+- **2A — Tenant token allowance.** Each tenant has a configurable input/output
+  token allowance. Money-based or combined money/token product budgets were
+  not selected. Live evaluation spend caps remain a separate operational rule.
+- **3A — Immediate rejection.** A new AI call that would exceed its allowance
+  is rejected immediately with a typed budget-exceeded failure for the
+  application to handle. No allowance-waiting queue or selectable queue mode
+  is selected.
+
+The user choices do not themselves choose the accounting/reset window,
+concurrent-call reservations, settlement/unknown-usage policy, enforcement
+point or exact failure contract. Those technical details are now selected in
+the [R14 follow-up contract](blocker-resolution/README.md), after three fresh
+Jev consultations and disagreement investigation. BLK-01 is closed for design;
+native profile qualification and implementation remain required. These user
+answers select no new grammar.

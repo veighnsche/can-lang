@@ -19,6 +19,13 @@ Nothing else serializes.
 
 ## P08.2 shared foundations
 
+Task-writer follow-up: the [R14 supplement](blocker-resolution/README.md)
+adds F-owned durable reserve/fence/settle/reconcile services to C-G; H's native
+guard consumes them, and E integrates shared context/transport. F04 qualifies
+the backend ledger, so H08 consumes F04 evidence. G03/G05 now include local
+bindings by user 1A. These are slices of the same eight lanes and retain the
+shared-file owners below; no new ownership cycle is introduced.
+
 Foundations (build once, depend many): request-policy spec + C-C vocabulary
 (E), failure conventions (B), `with` grammar + formatter (A), paired-build
 identity (exists; H extends). Everything else is lane-local until

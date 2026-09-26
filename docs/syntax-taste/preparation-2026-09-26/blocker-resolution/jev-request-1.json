@@ -1,0 +1,57 @@
+{
+  "state": {
+    "goal": "The Can owner selected a per-tenant allowance measured in input/output tokens and immediate typed rejection of an over-budget new AI call; no waiting queue or money-based product limit. Resolve engineering details only, without changing these choices.",
+    "repo": "No external users or compatibility obligation. Use native JavaScript/Bun with only contract adapters. This is documentation-only work. Existing native AI grammar remains. F owns outbound tenant/correlation identity; H owns AI enforcement; E owns shared runtime/transport integration. Supported SQL backends are SQLite, PostgreSQL and MySQL.",
+    "observed": "Current Responses requests set max_output_tokens, but their decoder discards all usage. SystemOne requests send only model/state/questions, with no output-token cap; its decoder discards response usage and model after basic model-text validation. Native adapters have no tenant ledger, atomic reservations, input estimator or durable invocation ID. Byte limits are not verified token upper bounds.",
+    "provider": "The current public TypeSafe API documents usage.input_tokens and usage.output_tokens in completed responses, but no request max-output-token field. Local Responses code has an output cap only. No complete-request token upper bound is currently qualified for either adapter. A technical contract can require qualification before enabling a metered profile, but cannot assert such qualification already passed.",
+    "failures": "Fetch timeout/cancel, non-2xx, refusal, truncation, malformed response and process crash can occur after provider consumption. Non-2xx is rejected before body decoding. Missing usage cannot mean zero. Retries require separate dispatch accounting. Multiple server processes and overlapping calls share a tenant allowance; no provider I/O should hold a database transaction open.",
+    "criteria": "Prefer auditable immediate admission, honest unknown usage, no concurrency oversubscription, durable restart behavior, explicit finite failures and bounded implementation. A hard consumption bound requires a verified bound for the entire request; estimation alone cannot prove it. Tenant/correlation identity is server-authenticated. Limit and period values can be required deployment configuration rather than arbitrary language defaults."
+  },
+  "model": "jev-latest",
+  "questions": {
+    "admission": {
+      "type": "choice",
+      "instructions": "Which admission rule best honors the selected token allowance and observed provider limitations?",
+      "criteria": {
+        "qualified_bound": "Atomically reserve a qualified upper bound for all request tokens before sending; refuse profiles lacking that bound, and settle to validated actual counters afterward. Strong guarantee, possibly fewer initially usable providers.",
+        "estimated_debt": "Reserve estimated input plus an output allowance; charge actual totals later and block subsequent sends on any excess. Broader coverage, but explicitly a soft consumption cap that can be exceeded.",
+        "post_debit": "Check current spent tokens before sending and debit only on completion without an atomic reservation. Simple, with potential concurrent overspend."
+      }
+    },
+    "enforcement": {
+      "type": "choice",
+      "instructions": "Where should quota admission and settlement run for a tenant allowance shared by several server processes?",
+      "criteria": {
+        "durable_native": "At the native server provider-dispatch boundary using a configured durable ledger service and trusted tenant context; short atomic transactions bracket network I/O, with invocation IDs and idempotent settlement.",
+        "local_native": "At the native dispatch boundary using each process's memory balance; simple local hooks, but restart and parallel processes do not share the same durable quota.",
+        "authored_wrapper": "In ordinary Can application wrappers around otherwise unguarded native AI calls, backed by a durable ledger. The app must ensure every relevant call passes the wrapper."
+      }
+    },
+    "window": {
+      "type": "choice",
+      "instructions": "What reset-window contract should be fixed without inventing a business-specific period?",
+      "criteria": {
+        "configured_fixed": "Require trusted configuration of fixed interval length and UTC anchor; assign each admitted attempt to its original half-open epoch, and settle late usage there. No allowance-wait queue.",
+        "calendar_month": "Make every tenant quota reset at UTC calendar-month boundaries, with late accounting assigned to its admission month.",
+        "rolling": "Maintain exact rolling-window consumption and in-flight reservations per tenant, with configurable duration and no queued admission."
+      }
+    },
+    "unknown": {
+      "type": "choice",
+      "instructions": "After possible dispatch with no trustworthy final usage, what should happen to the admission reservation?",
+      "criteria": {
+        "retain": "Persist the full hold as unresolved in its original epoch; only authoritative usage or proof of no dispatch can settle/refund it, idempotently. Process exit and timeout never release it by themselves.",
+        "refund": "Refund the hold on timeout, cancellation or process recovery even though provider consumption may already have happened.",
+        "charge_ceiling": "Immediately finalize the entire reserved ceiling as spent on any unknown outcome, with no later usage reconciliation or refund."
+      }
+    },
+    "counting": {
+      "type": "choice",
+      "instructions": "How should input and output usage map to the selected tenant token allowance?",
+      "criteria": {
+        "sum": "One unweighted pool debited by validated top-level input_tokens + output_tokens, without adding nested cached/reasoning subtotals again; provider/model identity and profile validity remain recorded.",
+        "separate": "Require distinct mandatory input and output quotas, enforcing both independently with separate remaining balances."
+      }
+    }
+  }
+}

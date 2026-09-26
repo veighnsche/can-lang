@@ -1,0 +1,57 @@
+{
+  "state": {
+    "goal": "For Can, the accepted product behavior is a token-denominated AI allowance per tenant, counting input and output, with immediate typed failure when another call would exceed it. The user did not select monetary quotas or waiting for quota refill. Advise on implementation contracts within that decision.",
+    "repo": "There are no external Can consumers requiring compatibility. Native JavaScript/Bun behavior plus necessary adapters is the architecture. This consultation produces design documents, not source changes or alternative AI syntax. Identity belongs to F, AI budget enforcement to H, and common transport/runtime to E. All three databases—SQLite, PostgreSQL, MySQL—are targets.",
+    "observed": "The repository's Responses encoder includes max_output_tokens, yet decoding throws away token counters. SystemOne serializes model/state/questions only; it lacks an output limit and discards usage and response model after checking that model is nonempty text. Current plumbing lacks persistent invocation keys, input counting, reserve/debit ledger operations and tenant balances. A byte budget is not proven to bound tokens.",
+    "provider": "TypeSafe's public HTTP documentation supplies usage.input_tokens and usage.output_tokens on completed evaluations, without documenting a request output ceiling. The local Responses profile limits output, not the full token cost. Neither adapter has a qualified maximum for total request consumption. A chosen design may deny an unqualified metered profile until evidence is produced; qualification cannot be assumed.",
+    "failures": "Cancellation, timeouts, non-success HTTP, refusal, truncated output, invalid decoding or a crashed server do not establish that a provider spent nothing. Current transport discards error bodies before AI parsing. Unknown counters must stay unknown, and retry sends need distinct accounting records. Tenant calls may overlap across processes. Ledger transactions cannot encompass provider network execution.",
+    "criteria": "Choose a finite, testable policy with truthful uncertainty, atomic shared quota checks, durable recovery and immediate refusal of disallowed sends. Enforcing a strict token ceiling needs a qualified bound on input plus output; an estimate is insufficient evidence. Context identities come from authenticated server state. Configuration can mandate the allowance and reset interval without choosing product-specific numbers here."
+  },
+  "model": "jev-latest",
+  "questions": {
+    "admission": {
+      "type": "choice",
+      "instructions": "Which dispatch admission policy should the engineering contract use under these facts?",
+      "criteria": {
+        "qualified_bound": "First commit an atomic hold equal to an evidenced input-plus-output maximum; an unqualified provider cannot enter the budgeted path. Later validated usage replaces that hold. This may constrain initial model availability.",
+        "estimated_debt": "First hold a prediction plus output allocation, then apply returned counts and deny future work if those counts exceed the allowance. This permits a soft-limit overrun and must say so.",
+        "post_debit": "Launch after checking the recorded completed-use balance, then debit on return without reserving for active calls. Concurrent consumption can exceed the allowance."
+      }
+    },
+    "enforcement": {
+      "type": "choice",
+      "instructions": "For shared tenant limits surviving multiple instances and restarts, which enforcement location is preferable?",
+      "criteria": {
+        "durable_native": "Put the gate at native server-side AI send/settle with a durable injected ledger and trusted context; use brief atomic writes, unique attempts, no network in transactions and replay-safe settlement.",
+        "local_native": "Enforce inside the native adapter with RAM-only counters for each server instance; durable recovery and common cross-instance balances are absent.",
+        "authored_wrapper": "Keep enforcement in Can-authored wrappers using shared durable storage, leaving ordinary native sends outside that protection; authors must route all budgeted work through the wrappers."
+      }
+    },
+    "window": {
+      "type": "choice",
+      "instructions": "Pick the time-bucket model for a reusable quota system whose business-specific interval is not yet configured.",
+      "criteria": {
+        "configured_fixed": "Specify required fixed-duration and UTC-anchor settings; buckets are half-open, and each attempt's late debit stays with its admission bucket. Calls never wait for the next bucket.",
+        "calendar_month": "Hardwire UTC calendar months for every allowance and settle a late attempt into its starting month.",
+        "rolling": "Use exact configurable rolling windows with outstanding reservations included and immediate denial on exhaustion."
+      }
+    },
+    "unknown": {
+      "type": "choice",
+      "instructions": "What conservative accounting transition fits a dispatched-or-possibly-dispatched attempt with missing trustworthy counters?",
+      "criteria": {
+        "retain": "Leave its full hold unresolved and persistent in the original bucket until validated usage or definitive no-dispatch evidence permits one settlement/refund; neither process death nor elapsed time releases it.",
+        "refund": "Drop its hold on cancellation, timeout or process restart, even if provider tokens may already be consumed.",
+        "charge_ceiling": "Irrevocably debit the entire reserved amount when the outcome is unknown, without accepting later reconciliation."
+      }
+    },
+    "counting": {
+      "type": "choice",
+      "instructions": "Choose the token-count contract consistent with the user's selected allowance.",
+      "criteria": {
+        "sum": "Use one quota for the unweighted sum of validated input_tokens and output_tokens, counting each top-level amount once rather than readding cache/reasoning breakdowns; retain provider and model profile identity.",
+        "separate": "Introduce two compulsory quotas, one for input and one for output, each with its own remaining capacity and enforcement."
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "prepared_before_first_send": true,
+  "prose_fields_per_request": 25,
+  "identical_corresponding_prose_fields": [],
+  "semantic_review": "All three preserve user tenant-token/immediate-rejection decisions, no compatibility/native lowering constraints, same adapter gaps, completed TypeSafe counters/no documented output cap, no qualified whole-request bound, uncertain usage/failures, cross-process durable accounting, lane ownership and no arbitrary configured amounts. Five question sets keep identical alternatives: qualified bound versus estimate/debt versus post-debit; durable-native versus local-native versus authored-wrapper; configured fixed versus calendar-month versus rolling; retain/refund/final-ceiling unknown; one total versus separate input/output quotas. Technical identifiers, schema keys and option keys stay stable. No response was seen while preparing these requests.",
+  "role": "Jev classifications advise engineering selection; no majority vote proves correctness.",
+  "independent_preflight": "Source/semantic/wording audit passed; request 3 retry-charges wording changed to retry accounting records before send.",
+  "postflight_usage": {
+    "input_tokens": 4361,
+    "output_tokens": 593
+  },
+  "corresponding_explanatory_fields_unchanged": []
+}

@@ -73,7 +73,7 @@ govern below.
 
 | ID | Disp | Reason |
 |---|---|---|
-| F-R09-01/02/03 | CHANGE | Full LSP sequence format → hover → references → completion → rename (Q8); rename follows the Q3 packet. |
+| F-R09-01/02/03 | CHANGE | Full LSP sequence format → hover → references → completion → rename (Q8); rename follows the Q3 packet. User blocker answer 1A includes body-local references and safe rename by scope identity. |
 
 ## R10 relational
 
@@ -115,7 +115,7 @@ govern below.
 
 | ID | Disp | Reason |
 |---|---|---|
-| F-R14-01/02 | CHANGE | Quality/cost/latency validation for in-scope SaaS features; tenant budget/correlation design + model-change eval protocol. "Token budget" scoping (cap vs spend vs rate vs per-key) is decided in the design packet. |
+| F-R14-01/02 | CHANGE | User 2A/3A select tenant token allowance with immediate typed rejection. The [follow-up contract](blocker-resolution/README.md) fixes combined counting, configured fixed epochs, durable native reservations, conservative unknown usage and qualification before dispatch; support-ticket-triage model-change evaluation remains live W6 evidence. No money product cap or queue. |
 | F-R14-03 | RETAIN | Narrow non-streaming adapter stays unless an accepted requirement expands it. |
 
 ## R15 S3 (defects — must close one way)

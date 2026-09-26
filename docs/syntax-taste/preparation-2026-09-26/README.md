@@ -21,3 +21,10 @@ at `2cb1bc3` (= HEAD, zero drift). No production changes were made.
 `evidence/` holds future bounded experiment outputs (X-register probes run
 at implementation time). `research/` and `alternatives/` carry the per-topic
 packets. Start at the [handoff](handoff.md).
+
+The [task-writer blocker resolution](blocker-resolution/README.md) records
+subsequent user 1A/2A/3A choices, the completed technical AI accounting contract
+and three fresh Jev consultations. It is incorporated into the
+[57-task implementation plan](../can-implementation-task-list-2026-09-26.md).
+Preparation blockers are closed; implementation/native profile qualification
+has not run.
