@@ -499,23 +499,14 @@ fn http::router invoice_routes
         http::ambiguous_route
         ok => ok built
 
-/// Reject a malformed startup value: Can failures originate only
-/// from catalogue calls, so a poison environment read with an empty
-/// name fails closed with env::invalid_name. The ok arm is
-/// unreachable; the empty name never denotes a variable.
+/// Reject a malformed startup value with an authored
+/// env::invalid_name failure, so every startup problem shares one
+/// failure signal.
 fn void reject_startup
     emits [env::invalid_name, http::credentials_missing]
     asserts
         sample: => env::invalid_name("")
-    match call env::required("")
-        when
-            sample: "" => env::invalid_name("")
-            malformed: "" => env::invalid_name("")
-            negative: "" => env::invalid_name("")
-            bad_origin: "" => env::invalid_name("")
-        env::invalid_name
-        http::credentials_missing
-        ok str poisoned => ok
+    env::invalid_name("")
 
 /// Read the retention window: explicit positive
 /// INVOICE_REPLAY_WINDOW_MS, else the seven-day default. A missing
