@@ -36,28 +36,44 @@ var bundleManifestSHA256 string
 func run(argv []string) int {
 	if len(argv) > 0 && argv[0] == "assert" {
 		timeoutMs := driver.DefaultAssertTimeoutMs
+		jobs := driver.DefaultAssertJobs()
 		rest := argv[1:]
-		if len(rest) >= 1 && rest[0] == "--assert-timeout-ms" {
+		assertUsage := "usage: canlc assert [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] PROJECT [PACKAGE [DECLARATION] ASSERTION]"
+		for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
 			if len(rest) < 3 {
-				fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+				fmt.Fprintln(os.Stderr, assertUsage)
 				return 2
 			}
-			parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
-			if parseErr != nil {
-				fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
-				fmt.Fprintln(os.Stderr, parseErr)
+			switch rest[0] {
+			case "--assert-timeout-ms":
+				parsed, parseErr := driver.ParseAssertTimeoutMs(rest[1])
+				if parseErr != nil {
+					fmt.Fprintln(os.Stderr, assertUsage)
+					fmt.Fprintln(os.Stderr, parseErr)
+					return 2
+				}
+				timeoutMs = parsed
+			case "--assert-jobs":
+				parsed, parseErr := driver.ParseAssertJobs(rest[1])
+				if parseErr != nil {
+					fmt.Fprintln(os.Stderr, assertUsage)
+					fmt.Fprintln(os.Stderr, parseErr)
+					return 2
+				}
+				jobs = parsed
+			default:
+				fmt.Fprintln(os.Stderr, assertUsage)
 				return 2
 			}
-			timeoutMs = parsed
 			rest = rest[2:]
 		}
 		if len(rest) != 1 && len(rest) != 3 && len(rest) != 4 {
-			fmt.Fprintln(os.Stderr, "usage: canlc assert [--assert-timeout-ms 1..600000] PROJECT [PACKAGE [DECLARATION] ASSERTION]")
+			fmt.Fprintln(os.Stderr, assertUsage)
 			return 2
 		}
 		sidecar, err := driver.Resolve(bundleManifestSHA256)
 		if err == nil {
-			err = sidecar.Assert(context.Background(), rest[0], rest[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr, timeoutMs)
+			err = sidecar.Assert(context.Background(), rest[0], rest[1:], os.Environ(), os.Stdin, os.Stdout, os.Stderr, timeoutMs, jobs)
 		}
 		if err != nil {
 			if exit, ok := err.(*exec.ExitError); ok {
@@ -76,10 +92,11 @@ func run(argv []string) int {
 	}
 	if len(argv) > 0 && (argv[0] == "build" || argv[0] == "run") {
 		timeoutMs := driver.DefaultAssertTimeoutMs
+		jobs := driver.DefaultAssertJobs()
 		target := browser.TargetBun
 		browserManifest := ""
 		rest := argv[1:]
-		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] [--browser-manifest FILE] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
+		buildUsage := "usage: canlc build [--target bun|browser] [--assert-timeout-ms 1..600000] [--assert-jobs 1..64] [--browser-manifest FILE] PROJECT_DIRECTORY | canlc run PROJECT_DIRECTORY [-- APPLICATION_ARGS...]"
 		if argv[0] == "build" {
 			for len(rest) >= 1 && strings.HasPrefix(rest[0], "--") {
 				if len(rest) < 3 {
@@ -95,6 +112,14 @@ func run(argv []string) int {
 						return 2
 					}
 					timeoutMs = parsed
+				case "--assert-jobs":
+					parsed, parseErr := driver.ParseAssertJobs(rest[1])
+					if parseErr != nil {
+						fmt.Fprintln(os.Stderr, buildUsage)
+						fmt.Fprintln(os.Stderr, parseErr)
+						return 2
+					}
+					jobs = parsed
 				case "--target":
 					parsed, parseErr := browser.ParseTarget(rest[1])
 					if parseErr != nil {
@@ -129,7 +154,7 @@ func run(argv []string) int {
 		if err == nil {
 			if argv[0] == "build" {
 				var report driver.BuildReport
-				report, err = sidecar.BuildTarget(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs, target, browserManifest)
+				report, err = sidecar.BuildTarget(context.Background(), rest[0], os.Environ(), os.Stdin, os.Stderr, timeoutMs, jobs, target, browserManifest)
 				if err == nil {
 					err = json.NewEncoder(os.Stdout).Encode(report)
 				}

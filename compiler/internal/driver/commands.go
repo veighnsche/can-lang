@@ -86,7 +86,7 @@ const verifiedBuild = "verified"
 // publication. Any failure reports nonzero, discards its temporary
 // staging when possible and leaves production current unchanged. The
 // production entry point is never executed.
-func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, browserManifest string) (BuildReport, error) {
+func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs, jobs int, browserManifest string) (BuildReport, error) {
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
@@ -121,7 +121,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	for _, test := range program.Assertions {
 		roots = append(roots, test.Root)
 	}
-	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr)
+	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr, jobs)
 	lease.Close()
 	if err != nil {
 		return BuildReport{}, fmt.Errorf("build verification failed: %w", err)
@@ -301,7 +301,7 @@ func pairingOptions(pairing *browserPairing) *browserOptions {
 	}
 	return &browserOptions{BuildID: pairing.buildID, Manifest: pairing.manifestHash}
 }
-func (r *Runtime) Build(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, browserManifest string) (BuildReport, error) {
+func (r *Runtime) Build(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs, jobs int, browserManifest string) (BuildReport, error) {
 	if r == nil {
 		return BuildReport{}, fmt.Errorf("build requires a bundled runtime")
 	}
@@ -310,5 +310,5 @@ func (r *Runtime) Build(ctx context.Context, projectDirectory string, environmen
 		return BuildReport{}, err
 	}
 	defer store.Close()
-	return r.build(ctx, store, environment, stdin, stderr, timeoutMs, browserManifest)
+	return r.build(ctx, store, environment, stdin, stderr, timeoutMs, jobs, browserManifest)
 }

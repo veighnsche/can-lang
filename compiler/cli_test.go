@@ -41,6 +41,11 @@ func TestRunUsageCodes(t *testing.T) {
 		{"assert", "--assert-timeout-ms", "-5", "proj"},
 		{"assert", "--assert-timeout-ms", "abc", "proj"},
 		{"assert", "--assert-timeout-ms", "600001", "proj"},
+		{"assert", "--assert-jobs"},
+		{"assert", "--assert-jobs", "5000"},
+		{"assert", "--assert-jobs", "0", "proj"},
+		{"assert", "--assert-jobs", "abc", "proj"},
+		{"assert", "--assert-jobs", "65", "proj"},
 		{"assert", "proj", "only-package"},
 		{"build"},
 		{"build", "--assert-timeout-ms"},
@@ -48,6 +53,10 @@ func TestRunUsageCodes(t *testing.T) {
 		{"build", "--assert-timeout-ms", "0", "proj"},
 		{"build", "--assert-timeout-ms", "abc", "proj"},
 		{"build", "--assert-timeout-ms", "600001", "proj"},
+		{"build", "--assert-jobs"},
+		{"build", "--assert-jobs", "0", "proj"},
+		{"build", "--assert-jobs", "abc", "proj"},
+		{"build", "--assert-jobs", "65", "proj"},
 		{"build", "proj", "extra"},
 	} {
 		if code := run(argv); code != 2 {

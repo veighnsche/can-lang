@@ -8,8 +8,10 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
@@ -29,7 +31,23 @@ const (
 	progressPrefix = "CAN-PROGRESS "
 	// workerDiagnosticLimit caps forwarded worker diagnostics per root.
 	workerDiagnosticLimit = 65536
+	// MinAssertJobs and MaxAssertJobs bound the supervised worker fan-out.
+	// Each worker is a full bun process, so memory scales with jobs; 64
+	// caps a large CI box while leaving the default to the host.
+	MinAssertJobs = 1
+	MaxAssertJobs = 64
 )
+
+// DefaultAssertJobs reports the host-sized worker fan-out.
+func DefaultAssertJobs() int {
+	if n := runtime.NumCPU(); n >= 1 {
+		if n > MaxAssertJobs {
+			return MaxAssertJobs
+		}
+		return n
+	}
+	return 1
+}
 
 // ErrAssertionsFailed reports a delivered suite whose roots did not all
 // pass. The CLI maps it to a silent nonzero exit; the suite report on
@@ -55,6 +73,24 @@ func CheckAssertTimeoutMs(value int) (int, error) {
 	return value, nil
 }
 
+// ParseAssertJobs validates a CLI worker fan-out: a decimal integer in
+// 1..64. No zero, negative, noninteger, or excessive value is accepted.
+func ParseAssertJobs(text string) (int, error) {
+	value, err := strconv.Atoi(text)
+	if err != nil || text == "" {
+		return 0, fmt.Errorf("invalid --assert-jobs %q: want a decimal integer in %d..%d", text, MinAssertJobs, MaxAssertJobs)
+	}
+	return CheckAssertJobs(value)
+}
+
+// CheckAssertJobs validates an already parsed fan-out.
+func CheckAssertJobs(value int) (int, error) {
+	if value < MinAssertJobs || value > MaxAssertJobs {
+		return 0, fmt.Errorf("invalid --assert-jobs %d: want a decimal integer in %d..%d", value, MinAssertJobs, MaxAssertJobs)
+	}
+	return value, nil
+}
+
 // supervisedRoot is one worker outcome. Entry is the suite-report element;
 // delivered reports reuse the worker's assertion payload verbatim.
 type supervisedRoot struct {
@@ -62,14 +98,20 @@ type supervisedRoot struct {
 	diagnostic string
 }
 
-// RunSupervised executes one staged assertion generation root by root, each
-// in its own worker with a fresh harness and an external wall-time budget.
-// Roots run sequentially in the given stable order. The supervisor's own
-// monotonic clock decides every outcome; timeout wins at equality, so a
-// worker cannot pass after its budget elapsed. It returns the ordered suite
-// entries; isolation failures stop the suite with an error instead.
-func (r *Runtime) RunSupervised(ctx context.Context, lease *OutputLease, roots []ir.AssertionRoot, environment []string, stdin io.Reader, timeoutMs int, stderr io.Writer) ([]map[string]any, error) {
+// RunSupervised executes one staged assertion generation with at most jobs
+// workers, each root in its own worker with a fresh harness and an
+// external wall-time budget. The supervisor's own monotonic clock decides
+// every outcome; timeout wins at equality, so a worker cannot pass after
+// its budget elapsed. It returns the suite entries in the given stable
+// order with diagnostics forwarded in the same order; isolation failures
+// stop the suite with an error instead. On error the entries hold the
+// completed roots in stable order, which may skip roots that never ran.
+// Workers never consume stdin, so sharing it across workers is safe.
+func (r *Runtime) RunSupervised(ctx context.Context, lease *OutputLease, roots []ir.AssertionRoot, environment []string, stdin io.Reader, timeoutMs int, stderr io.Writer, jobs int) ([]map[string]any, error) {
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
+		return nil, err
+	}
+	if _, err := CheckAssertJobs(jobs); err != nil {
 		return nil, err
 	}
 	entry, err := r.validateLease(lease)
@@ -78,21 +120,82 @@ func (r *Runtime) RunSupervised(ctx context.Context, lease *OutputLease, roots [
 	}
 	defer lease.Close()
 	budget := time.Duration(timeoutMs) * time.Millisecond
+	run := func(wctx context.Context, index int, root ir.AssertionRoot) (supervisedRoot, error) {
+		return r.superviseRoot(wctx, lease, entry, environment, stdin, index, root, budget)
+	}
+	outcomes, errs, firstErr := runRootsOrdered(ctx, roots, jobs, run)
 	entries := []map[string]any{}
-	for index, root := range roots {
-		if err := ctx.Err(); err != nil {
-			return entries, fmt.Errorf("assertion supervision interrupted: %w", err)
-		}
-		outcome, err := r.superviseRoot(ctx, lease, entry, environment, stdin, index, root, budget)
-		if err != nil {
-			return entries, err
+	for index, outcome := range outcomes {
+		if errs[index] != nil || outcome.entry == nil {
+			continue
 		}
 		entries = append(entries, outcome.entry)
 		if outcome.diagnostic != "" && stderr != nil {
 			fmt.Fprintln(stderr, outcome.diagnostic)
 		}
 	}
-	return entries, nil
+	return entries, firstErr
+}
+
+// runRootsOrdered executes roots with at most jobs workers and returns the
+// per-root outcomes and errors indexed by root. A hard worker error cancels
+// the remaining roots; errors caused by that cancellation are dropped, so
+// the returned error is the first genuine failure. Roots that never start
+// keep zero values. Jobs below 1 behave as 1.
+func runRootsOrdered(ctx context.Context, roots []ir.AssertionRoot, jobs int, run func(context.Context, int, ir.AssertionRoot) (supervisedRoot, error)) ([]supervisedRoot, []error, error) {
+	outcomes := make([]supervisedRoot, len(roots))
+	errs := make([]error, len(roots))
+	if jobs < 1 {
+		jobs = 1
+	}
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	var mu sync.Mutex
+	cancelled := false
+	var firstErr error
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, jobs)
+launch:
+	for index, root := range roots {
+		// Check first: when both the context and the semaphore are
+		// ready, select would choose randomly and could launch a
+		// root into a cancelled run.
+		if ctx.Err() != nil {
+			break
+		}
+		select {
+		case <-ctx.Done():
+			break launch
+		case sem <- struct{}{}:
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			defer func() { <-sem }()
+			outcome, err := run(ctx, index, root)
+			mu.Lock()
+			defer mu.Unlock()
+			if err != nil {
+				// Only the first genuine failure counts; later
+				// errors are caused by its cancellation.
+				if !cancelled {
+					cancelled = true
+					errs[index] = err
+					firstErr = err
+					cancel()
+				}
+				return
+			}
+			// A success racing the cancellation still counts: the
+			// worker finished within its own budget.
+			outcomes[index] = outcome
+		}()
+	}
+	wg.Wait()
+	if firstErr == nil && ctx.Err() != nil {
+		firstErr = fmt.Errorf("assertion supervision interrupted: %w", ctx.Err())
+	}
+	return outcomes, errs, firstErr
 }
 
 // validateLease repeats RunOutput's generation checks without executing.

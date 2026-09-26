@@ -2,8 +2,11 @@ package driver
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"os/exec"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -163,5 +166,130 @@ func TestWorkerDiagnosticFiltersProgress(t *testing.T) {
 	long := workerDiagnostic(supervisorRoot, bytes.NewBufferString(strings.Repeat("x", workerDiagnosticLimit+10)))
 	if !strings.Contains(long, "[truncated]") {
 		t.Fatal("diagnostic unbounded")
+	}
+}
+
+func TestParseAssertJobs(t *testing.T) {
+	for _, valid := range []string{"1", "8", "64"} {
+		if _, err := ParseAssertJobs(valid); err != nil {
+			t.Fatalf("valid fan-out %q rejected: %v", valid, err)
+		}
+	}
+	for _, invalid := range []string{"", "0", "-1", "65", "1.5", "8x", "unlimited", " 8", "8 ", "0x10", "1e3"} {
+		if _, err := ParseAssertJobs(invalid); err == nil {
+			t.Fatalf("invalid fan-out %q accepted", invalid)
+		}
+	}
+	if value, err := ParseAssertJobs("8"); err != nil || value != 8 {
+		t.Fatalf("fan-out misparsed: %d %v", value, err)
+	}
+	if DefaultAssertJobs() < MinAssertJobs || DefaultAssertJobs() > MaxAssertJobs {
+		t.Fatalf("default fan-out %d outside %d..%d", DefaultAssertJobs(), MinAssertJobs, MaxAssertJobs)
+	}
+}
+
+func fakeRoots(n int) []ir.AssertionRoot {
+	roots := make([]ir.AssertionRoot, n)
+	for i := range roots {
+		roots[i] = ir.AssertionRoot{Package: "p", Declaration: "d", Name: strings.Repeat("n", i+1)}
+	}
+	return roots
+}
+
+// Outcomes land in stable order even when later roots finish first.
+func TestRunRootsOrderedPreservesOrder(t *testing.T) {
+	roots := fakeRoots(8)
+	run := func(ctx context.Context, index int, root ir.AssertionRoot) (supervisedRoot, error) {
+		time.Sleep(time.Duration(8-index) * 5 * time.Millisecond)
+		return supervisedRoot{entry: map[string]any{"i": index}}, nil
+	}
+	outcomes, errs, err := runRootsOrdered(context.Background(), roots, 4, run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range roots {
+		if errs[i] != nil {
+			t.Fatalf("root %d errored: %v", i, errs[i])
+		}
+		if outcomes[i].entry["i"] != i {
+			t.Fatalf("root %d outcome misplaced: %+v", i, outcomes[i].entry)
+		}
+	}
+}
+
+// The first genuine failure wins and the roots behind it never start;
+// errors caused by its cancellation are dropped, not reported.
+func TestRunRootsOrderedFirstErrorCancels(t *testing.T) {
+	roots := fakeRoots(8)
+	var mu sync.Mutex
+	started := map[int]bool{}
+	boom := errors.New("worker 1 exploded")
+	run := func(ctx context.Context, index int, root ir.AssertionRoot) (supervisedRoot, error) {
+		mu.Lock()
+		started[index] = true
+		mu.Unlock()
+		if index == 1 {
+			time.Sleep(10 * time.Millisecond)
+			return supervisedRoot{}, boom
+		}
+		select {
+		case <-time.After(5 * time.Second):
+			return supervisedRoot{entry: map[string]any{"i": index}}, nil
+		case <-ctx.Done():
+			return supervisedRoot{}, ctx.Err()
+		}
+	}
+	outcomes, errs, err := runRootsOrdered(context.Background(), roots, 2, run)
+	if err != boom {
+		t.Fatalf("reported %v, want the first genuine failure", err)
+	}
+	if errs[1] != boom {
+		t.Fatalf("root 1 error %+v, want boom", errs[1])
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	for i := 2; i < 8; i++ {
+		if started[i] {
+			t.Fatalf("root %d started after the cancellation", i)
+		}
+		if outcomes[i].entry != nil || errs[i] != nil {
+			t.Fatalf("root %d has an outcome without starting", i)
+		}
+	}
+}
+
+// A fan-out below 1 behaves as 1: strictly serial, all roots run.
+func TestRunRootsOrderedJobsFloor(t *testing.T) {
+	roots := fakeRoots(3)
+	run := func(ctx context.Context, index int, root ir.AssertionRoot) (supervisedRoot, error) {
+		return supervisedRoot{entry: map[string]any{"i": index}}, nil
+	}
+	outcomes, errs, err := runRootsOrdered(context.Background(), roots, 0, run)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range roots {
+		if errs[i] != nil || outcomes[i].entry["i"] != i {
+			t.Fatalf("root %d mishandled: %+v %v", i, outcomes[i].entry, errs[i])
+		}
+	}
+}
+
+// A cancelled parent reports interruption without running anything.
+func TestRunRootsOrderedInterrupted(t *testing.T) {
+	roots := fakeRoots(3)
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	ran := false
+	run := func(ctx context.Context, index int, root ir.AssertionRoot) (supervisedRoot, error) {
+		ran = true
+		return supervisedRoot{}, nil
+	}
+	_, _, err := runRootsOrdered(ctx, roots, 4, run)
+	if err == nil || !strings.Contains(err.Error(), "interrupted") {
+		t.Fatalf("cancelled run reports %v, want interruption", err)
+	}
+	if ran {
+		t.Fatal("cancelled run started a root")
 	}
 }
