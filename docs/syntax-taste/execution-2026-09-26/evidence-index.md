@@ -30,12 +30,14 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | B04 | inactive (Q4 gate) | — (no code; correct outcome) | n/a | 9 lines/factory, 1 arm/error, zero helper churn, fail-closed; LD29 stays closed; trip conditions recorded | inactive |
 | G02 | done (AU-LSP-hover) | main `0d23fada` (worker `e8b10707`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok; type-at-offset, declines where definition declines | pass |
 | F02 | done (X-R10-1 admitted, RETURNING qualified need) | main `d3e51ded` (worker `ccfb1b22`) | macOS, live PG 17.11/MySQL 8.4.11 | probe + live legs pass (PG 17.11 + MySQL 8.4.11 observed); locking expressible w/o syntax change; RETURNING need only for keyless generated-identity shapes; MySQL rejects RETURNING (needs per-dialect mapping in F03) | pass |
+| A04 | done (self-tail lowering + Q6 proof) | main `78668ec7` (worker `23ebcade`) | macOS, go1.27.1, bun 1.4.2 | gofmt clean; `go test` check+emit ok (278s/24s); hazard-free self relays → native while, exactly-once ordered temps, step diagnostics, NOT-LOWERED notes; 100k probe ok ~1ms vs overflow | pass |
+| A06 | inactive (Q6 gate) | — (no code; correct outcome) | n/a | state machine + relay aggregation covered; callable-fold excluded with non-syntax refinement path (capture analysis) if A07 ever needs it; worker batch F06-owned; no needed W4 shape excluded | inactive |
 
 ## Conditional branches
 
 | Gate | Experiment | State | Evidence |
 | --- | --- | --- | --- |
-| A06 (Q6) | A04 | pending | — |
+| A06 (Q6) | A04 | INACTIVE | self_tail_coverage.md: no needed W4 shape excluded; callable refinement path recorded |
 | B03 (Q5) | B01 | INACTIVE | x-r06-1.md parity tables + trip conditions |
 | B04 (Q4) | B02 | INACTIVE | x-r07-1.md burden measures + trip conditions |
 | C05 (X-R02-1) | C04 | pending | — |

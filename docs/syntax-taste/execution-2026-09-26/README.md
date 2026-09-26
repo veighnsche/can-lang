@@ -23,7 +23,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A02 | done | lane-a-a01-a05 (`6`) | isolated | none | bindings→G03/G05 | worker `5bcae240` → main `1365d0a6` | go test 4 pkgs ok, gofmt clean |
 | A08 | ready (A01+A02 done) | — | — | A01, A02 | comparisons→H14 | — | — |
 | A03 | done | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | worker `258a8299` → main `dd3f3674` | go test emit/syntax/check ok |
-| A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
+| A04 | done | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | worker `23ebcade` → main `78668ec7` | go test check+emit ok |
+| A06 | inactive (Q6) | — (gate eval) | — | A04 | surface→A07/G04 or inactive | — | all required W4 shapes covered; A07 confirms |
 | A05 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bulk APIs→A07 | — | — |
 | B01 | done | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | 3 commits → main (last `50dc8d3c`) | 11/11 legs; Q5 inactive w/ trip conditions |
 | B03 | inactive (Q5) | — (gate eval) | — | B01 | gate→B05/IC1 | — | parity tables; no adapter-extent finding |
