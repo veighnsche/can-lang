@@ -1,0 +1,81 @@
+{
+  "policies": {
+    "strict": {
+      "version": "2026-09-26.1",
+      "rules": [
+        {
+          "scheme": "https",
+          "host": "hooks.example.com",
+          "pathPrefix": "/tenant/",
+          "credential": "TENANT_HOOKS_TOKEN"
+        },
+        { "scheme": "https", "host": "*.partner.example", "port": 8443 },
+        { "scheme": "any", "host": "status.example.net" }
+      ],
+      "redirect": "allowlisted",
+      "maxRedirectHops": 2
+    },
+    "closed": {
+      "version": "2026-09-26.1",
+      "rules": [{ "scheme": "https", "host": "hooks.example.com" }],
+      "redirect": "deny",
+      "maxRedirectHops": 0
+    },
+    "sameOrigin": {
+      "version": "2026-09-26.1",
+      "rules": [{ "scheme": "https", "host": "hooks.example.com" }],
+      "redirect": "same-origin",
+      "maxRedirectHops": 3
+    },
+    "loopbackTest": {
+      "version": "2026-09-26.1",
+      "rules": [{ "scheme": "any", "host": "127.0.0.1" }],
+      "redirect": "allowlisted",
+      "maxRedirectHops": 1,
+      "loopback": "allow",
+      "privateNetworks": "allow"
+    }
+  },
+  "destinations": [
+    { "policy": "strict", "url": "https://hooks.example.com/tenant/acme", "decision": "allowed", "rule": 0, "credential": "TENANT_HOOKS_TOKEN" },
+    { "policy": "strict", "url": "https://hooks.example.com/tenant/", "decision": "allowed", "rule": 0, "credential": "TENANT_HOOKS_TOKEN" },
+    { "policy": "strict", "url": "https://HOOKS.EXAMPLE.COM/tenant/a", "decision": "allowed", "rule": 0, "credential": "TENANT_HOOKS_TOKEN" },
+    { "policy": "strict", "url": "https://hooks.example.com/other/acme", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "http://hooks.example.com/tenant/acme", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "https://api.partner.example:8443/hook", "decision": "allowed", "rule": 1 },
+    { "policy": "strict", "url": "https://deep.api.partner.example:8443/x", "decision": "allowed", "rule": 1 },
+    { "policy": "strict", "url": "https://partner.example:8443/hook", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "https://api.partner.example/hook", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "http://status.example.net/any", "decision": "allowed", "rule": 2 },
+    { "policy": "strict", "url": "https://status.example.net:443/deep/path?q=1", "decision": "allowed", "rule": 2 },
+    { "policy": "strict", "url": "https://status.example.net:8443/x", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "ftp://status.example.net/x", "decision": "denied", "reason": "unsupported-scheme" },
+    { "policy": "strict", "url": "https://user@status.example.net/", "decision": "denied", "reason": "userinfo-forbidden" },
+    { "policy": "strict", "url": "https://status.example.net/x#frag", "decision": "denied", "reason": "fragment-forbidden" },
+    { "policy": "strict", "url": ":::not a url", "decision": "denied", "reason": "invalid-url" },
+    { "policy": "strict", "url": "http://127.0.0.1/health", "decision": "denied", "reason": "loopback-denied" },
+    { "policy": "strict", "url": "http://10.0.0.5/x", "decision": "denied", "reason": "private-network-denied" },
+    { "policy": "strict", "url": "http://192.168.1.1:8080/x", "decision": "denied", "reason": "private-network-denied" },
+    { "policy": "strict", "url": "http://localhost/health", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "strict", "url": "https://evil.com/hook", "decision": "denied", "reason": "no-matching-rule" },
+    { "policy": "loopbackTest", "url": "http://127.0.0.1/health", "decision": "allowed", "rule": 0 },
+    { "policy": "closed", "url": "https://hooks.example.com/tenant/a", "decision": "allowed", "rule": 0 }
+  ],
+  "redirects": [
+    { "policy": "closed", "request": "https://hooks.example.com/a", "location": "https://hooks.example.com/b", "hops": 0, "decision": "denied", "reason": "deny" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "/tenant/b", "hops": 0, "decision": "allowed", "target": "https://hooks.example.com/tenant/b" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "https://hooks.example.com/tenant/c?x=1", "hops": 1, "decision": "allowed", "target": "https://hooks.example.com/tenant/c?x=1" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "https://other.example/x", "hops": 0, "decision": "denied", "reason": "cross-origin" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "http://hooks.example.com/tenant/b", "hops": 0, "decision": "denied", "reason": "cross-origin" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "//evil.com/x", "hops": 0, "decision": "denied", "reason": "cross-origin" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "https://spy@hooks.example.com/tenant/b", "hops": 0, "decision": "denied", "reason": "userinfo-forbidden" },
+    { "policy": "sameOrigin", "request": "https://hooks.example.com/tenant/a", "location": "/tenant/d", "hops": 3, "decision": "denied", "reason": "max-hops" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "https://status.example.net/ping", "hops": 0, "decision": "allowed", "target": "https://status.example.net/ping" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "/relative", "hops": 0, "decision": "denied", "reason": "target-no-matching-rule" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "https://evil.com/", "hops": 0, "decision": "denied", "reason": "target-no-matching-rule" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "http://127.0.0.1/", "hops": 0, "decision": "denied", "reason": "target-loopback-denied" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "https://status.example.net/ok", "hops": 2, "decision": "denied", "reason": "max-hops" },
+    { "policy": "strict", "request": "https://hooks.example.com/tenant/a", "location": "http://[999.999.999.999]/", "hops": 0, "decision": "denied", "reason": "invalid-location" },
+    { "policy": "loopbackTest", "request": "http://127.0.0.1/a", "location": "/b", "hops": 0, "decision": "allowed", "target": "http://127.0.0.1/b" }
+  ]
+}

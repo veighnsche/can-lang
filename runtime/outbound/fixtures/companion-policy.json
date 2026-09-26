@@ -1,0 +1,21 @@
+{
+  "version": "2026-09-26.1",
+  "rules": [
+    {
+      "scheme": "https",
+      "host": "hooks.example.com",
+      "pathPrefix": "/tenant/",
+      "credential": "TENANT_HOOKS_TOKEN"
+    },
+    {
+      "scheme": "https",
+      "host": "*.partner.example",
+      "port": 8443,
+      "credential": "PARTNER_HOOKS_TOKEN"
+    }
+  ],
+  "redirect": "allowlisted",
+  "maxRedirectHops": 2,
+  "loopback": "deny",
+  "privateNetworks": "deny"
+}
