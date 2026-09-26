@@ -36,6 +36,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | C03 | done (C-E action wire) | main `9a2ea7b7` (worker `8f61b1b`) | macOS, go1.27.1 | gofmt clean; `go test` check ok; GET/document + POST/swap-inner rules, no per-case mixing, plain routes untouched | pass |
 | H07 | done (R14 budget guard) | main `92f93263` (worker `73dd42a8`) | macOS, bun 1.4.2 | 36/36 pass; `check:runtime` green; secret scan clean; within-scope reserve/fence/settle, usage decoding, redaction, no bypass | pass |
 | E06 | done (redacted reporting) | main `e3a4148c` (worker `c5499411`) | macOS, bun 1.4.2 | 17/17 pass; `check:runtime` green; boundary reporting, shared claim, fixed 500, no native leakage | pass |
+| E04 | partial slice 1 (task open) | main `8318712b` (worker `3bd4f69f`) | macOS, bun 1.4.2 | 23/23 pass; `check:runtime` green; Jev 3-fresh (wording audit, weak-0.30 investigated); ambient scope + query_failed/budget + 408; disconnect/SIGTERM + full legs pending | partial |
 
 ## Conditional branches
 
