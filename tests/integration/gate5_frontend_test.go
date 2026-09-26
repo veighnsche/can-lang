@@ -4,8 +4,8 @@
 // the real invoice server through --browser-manifest, and the committed
 // Playwright harnesses drive the application-served pages and
 // content-addressed assets (/invoice-grid, /invoices/form,
-// /__can/assets/...) in the two required named browsers, Chromium and
-// WebKit, with a disposable database per leg. The Go test owns the
+// /__can/assets/...) in the three required named browsers, Chromium,
+// WebKit and Firefox, with a disposable database per leg. The Go test owns the
 // toolchain, builds, pairing, origin bytes and database cross-checks;
 // the harnesses own DOM, focus, announcements and network bytes.
 //
@@ -23,7 +23,8 @@
 //
 //   - no same-origin 302 is producible under WebKit interception, so the
 //     invoice redirect leg records L-redirect-webkit while Chromium
-//     qualifies the engine-independent guard branch end to end.
+//     and Firefox qualify the engine-independent guard branch end to
+//     end.
 //
 // The grid qualifies with no limitations: only Enter dispatches its
 // save handler, the pending "saving..." indication paints mid-flight,
@@ -60,6 +61,10 @@ const (
 	gate5PortEmptyWebkit   = 18646
 	gate5PortInvChromium   = 18647
 	gate5PortInvWebkit     = 18648
+	gate5PortGridFirefox   = 18651
+	gate5PortConfFirefox   = 18652
+	gate5PortEmptyFirefox  = 18653
+	gate5PortInvFirefox    = 18654
 
 	gate5SeedDetails = `Acme <em>&" 'coop'"`
 	gate5SeedSeats   = "2"
@@ -477,12 +482,44 @@ func gate5StageEmpty(t *testing.T) (root, home string) {
 	return root, home
 }
 
+// gate5FirefoxHostAlias is the container-to-Mac loopback alias the
+// firefox legs use in connect mode: the container's own 127.0.0.1 is
+// not the Mac's loopback.
+func gate5FirefoxHostAlias() string {
+	if alias := os.Getenv("CAN_FIREFOX_HOST_ALIAS"); alias != "" {
+		return alias
+	}
+	return "host.docker.internal"
+}
+
+// gate5LoopbackOK is the shared loopback guard: loopback always passes,
+// and the container host alias passes only for firefox legs in connect
+// mode. Native legs stay exactly as strict as before.
+func gate5LoopbackOK(engine, host string) bool {
+	if host == "127.0.0.1" || host == "localhost" {
+		return true
+	}
+	return engine == "firefox" && os.Getenv("CAN_FIREFOX_WS") != "" && host == gate5FirefoxHostAlias()
+}
+
 func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, name string) string {
 	t.Helper()
 	probeCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	probe := exec.CommandContext(probeCtx, nodePath, "--input-type=module", "-e",
-		`import("playwright").then(async (pw) => { const browser = await pw["`+name+`"].launch({ timeout: 90000 }); console.log(browser.version()); await browser.close(); })`)
+	script := `import("playwright").then(async (pw) => { const browser = await pw["` + name + `"].launch({ timeout: 90000 }); console.log(browser.version()); await browser.close(); })`
+	verb := "did not launch"
+	if name == "firefox" {
+		if os.Getenv("CAN_FIREFOX_WS") != "" {
+			// Connect mode: prove the container runner answers
+			// without closing the shared server browser the
+			// harness legs connect to after this probe.
+			script = `import("playwright").then(async (pw) => { const browser = await pw.firefox.connect(process.env.CAN_FIREFOX_WS); console.log(browser.version()); process.exit(0); })`
+			verb = "did not connect via CAN_FIREFOX_WS (is the container runner up? run distribution/provision-local.sh browser up and eval its exports)"
+		} else {
+			verb = "did not launch natively (on macOS 27 use the container runner via CAN_FIREFOX_WS instead)"
+		}
+	}
+	probe := exec.CommandContext(probeCtx, nodePath, "--input-type=module", "-e", script)
 	probe.Dir = browserDir
 	result, err := probe.CombinedOutput()
 	if err != nil {
@@ -493,7 +530,7 @@ func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, 
 		if len(first) > 300 {
 			first = first[:300]
 		}
-		t.Fatalf("required browser %s did not launch: %s", name, first)
+		t.Fatalf("required browser %s %s: %s", name, verb, first)
 	}
 	version := strings.TrimSpace(string(result))
 	if version == "" {
@@ -574,7 +611,7 @@ func gate5ReadReport(t *testing.T, suite, engine string, raw []byte, wantChecks 
 	}
 	for _, entry := range report.Requests {
 		parsed, parseErr := url.Parse(entry.URL)
-		if parseErr != nil || (parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "localhost") {
+		if parseErr != nil || !gate5LoopbackOK(engine, parsed.Hostname()) {
 			t.Fatalf("%s %s left loopback: %s", suite, engine, entry.URL)
 		}
 	}
@@ -587,7 +624,15 @@ func gate5RunHarness(t *testing.T, ctx context.Context, nodePath, browserDir, su
 	t.Helper()
 	cmd := exec.CommandContext(ctx, nodePath, argv...)
 	cmd.Dir = browserDir
-	cmd.Env = []string{"PATH=" + filepath.Dir(nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
+	env := []string{"PATH=" + filepath.Dir(nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
+	// Firefox connect mode needs the container endpoint and host alias;
+	// every other leg ignores them.
+	for _, key := range []string{"CAN_FIREFOX_WS", "CAN_FIREFOX_HOST_ALIAS"} {
+		if value, ok := os.LookupEnv(key); ok {
+			env = append(env, key+"="+value)
+		}
+	}
+	cmd.Env = env
 	result, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("%s %s harness: %v %s", suite, engine, err, result)
@@ -891,7 +936,7 @@ type gate5OccurrenceTuple struct {
 
 // gate5InvoiceOccurrences asserts the exact guard-occurrence sequence: the
 // missing-target request/response pair, the control-header, OOB and
-// partial rejections, and the redirect rejection on Chromium.
+// partial rejections, and the redirect rejection on Chromium and Firefox.
 func gate5InvoiceOccurrences(t *testing.T, engine string, report gate5Report) {
 	t.Helper()
 	want := []gate5OccurrenceTuple{
@@ -901,7 +946,10 @@ func gate5InvoiceOccurrences(t *testing.T, engine string, report gate5Report) {
 		{"action::protocol", "swap", "uncertain", "task_shape", ""},
 		{"action::protocol", "swap", "uncertain", "task_shape", ""},
 	}
-	if engine == "chromium" {
+	// Firefox follows a fulfilled 302 like Chromium (Playwright
+	// docs: only WebKit rejects fulfilled 3xx), so it runs the same
+	// redirect leg and records the same occurrence.
+	if engine == "chromium" || engine == "firefox" {
 		want = append(want, gate5OccurrenceTuple{"action::protocol", "response", "uncertain", "redirect", ""})
 	}
 	if len(report.Occurrences) != len(want) {
@@ -927,7 +975,7 @@ func gate5InvoiceOccurrences(t *testing.T, engine string, report gate5Report) {
 			t.Fatalf("invoice webkit limitations %+v, want exactly L-redirect-webkit", report.Limitations)
 		}
 	} else if len(report.Limitations) != 0 {
-		t.Fatalf("invoice chromium limitations %+v, want none", report.Limitations)
+		t.Fatalf("invoice %s limitations %+v, want none", engine, report.Limitations)
 	}
 }
 
@@ -1122,9 +1170,9 @@ func TestGate5ServedMatrix(t *testing.T) {
 	t.Logf("gate5 host bound: %s on %s/%s bun %s rev %s (archive sha256 %s)",
 		mode, host["platform"], host["architecture"], host["bun"], host["revision"][:12], hex.EncodeToString(archiveDigest[:])[:12])
 
-	// Both named engines are required: probe before building so a
+	// All three named engines are required: probe before building so a
 	// missing engine fails fast instead of after a long build.
-	for _, engine := range []string{"chromium", "webkit"} {
+	for _, engine := range []string{"chromium", "webkit", "firefox"} {
 		matrix.versions[engine] = gate5BrowserProbe(t, ctx, nodePath, browserDir, engine)
 		t.Logf("gate5 required browser %s at %s", engine, matrix.versions[engine])
 	}
@@ -1173,18 +1221,22 @@ func TestGate5ServedMatrix(t *testing.T) {
 	t.Run("grid", func(t *testing.T) {
 		matrix.gridLeg(t, "chromium", gate5PortGridChromium)
 		matrix.gridLeg(t, "webkit", gate5PortGridWebkit)
+		matrix.gridLeg(t, "firefox", gate5PortGridFirefox)
 	})
 	t.Run("conformance", func(t *testing.T) {
 		matrix.conformanceLeg(t, "chromium", gate5PortConfChromium)
 		matrix.conformanceLeg(t, "webkit", gate5PortConfWebkit)
+		matrix.conformanceLeg(t, "firefox", gate5PortConfFirefox)
 	})
 	t.Run("empty", func(t *testing.T) {
 		matrix.emptyLeg(t, "chromium", gate5PortEmptyChromium)
 		matrix.emptyLeg(t, "webkit", gate5PortEmptyWebkit)
+		matrix.emptyLeg(t, "firefox", gate5PortEmptyFirefox)
 	})
 	t.Run("invoice", func(t *testing.T) {
 		matrix.invoiceLeg(t, "chromium", gate5PortInvChromium)
 		matrix.invoiceLeg(t, "webkit", gate5PortInvWebkit)
+		matrix.invoiceLeg(t, "firefox", gate5PortInvFirefox)
 	})
 
 	finalReport, err := json.MarshalIndent(map[string]any{
