@@ -186,6 +186,11 @@ func assertNoStrayEmit(t *testing.T, root, dir string) {
 		if path == owned || strings.HasPrefix(path, owned+string(filepath.Separator)) {
 			return nil
 		}
+		// Authored companion sources ship beside the Can example they
+		// pair with; the compiler never emits there, only under dist.
+		if rel, err := filepath.Rel(root, path); err == nil && (rel == "companion" || strings.HasPrefix(rel, "companion"+string(filepath.Separator))) {
+			return nil
+		}
 		t.Fatalf("stray emit beside sources: %s", path)
 		return nil
 	})

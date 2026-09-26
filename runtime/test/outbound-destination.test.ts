@@ -5,6 +5,7 @@ import {
   envName,
   evaluateDestination,
   evaluateRedirect,
+  isLoopbackAddressLiteral,
   isPrivateAddressLiteral,
   policyReport,
   redactUrl,
@@ -137,6 +138,15 @@ test("private-literal scopes cover v4, v6, loopback, and link-local", () => {
   }
   // Public literals still need a rule; the scope is not an admission.
   expect(evaluateDestination(policies.strict, "http://8.8.8.8/").reason).toBe("no-matching-rule");
+});
+
+test("loopback literals face the loopback scope on the send path", () => {
+  for (const literal of ["127.0.0.1", "127.9.9.9", "::1", "0:0:0:0:0:0:0:1"]) {
+    expect(isLoopbackAddressLiteral(literal)).toBe(true);
+  }
+  for (const literal of ["128.0.0.1", "10.0.0.1", "8.8.8.8", "fe80::1", "2001:db8::1"]) {
+    expect(isLoopbackAddressLiteral(literal)).toBe(false);
+  }
 });
 
 test("the shipped companion policy parses and enforces its bindings", () => {

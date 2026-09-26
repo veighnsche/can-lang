@@ -215,6 +215,9 @@ function isPrivateLiteral(host: string): boolean {
 // resolve to private addresses after the allowlist check, so the
 // companion re-checks the resolved literal before connecting.
 export { isPrivateLiteral as isPrivateAddressLiteral };
+// isLoopbackLiteral rides the same send path: a resolved loopback
+// literal faces the loopback scope exactly like a direct one.
+export { isLoopbackLiteral as isLoopbackAddressLiteral };
 
 function hostMatches(rule: string, host: string): boolean {
   if (rule.startsWith("*.")) {

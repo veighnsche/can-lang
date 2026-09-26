@@ -1,17 +1,21 @@
-// Live qualification for the T16 signed provider webhook slice. The
-// test stages examples/webhook, asserts and builds it twice with
-// identical IDs, seeds a disposable SQLite file, and serves the built
-// entry over loopback HTTP. A Go provider fixture signs exact delivery
-// bytes with HMAC-SHA-256; a stub downstream records carrier posts;
+// Live qualification for the F05 authenticated webhook/companion pair.
+// The test stages examples/webhook, asserts and builds it, seeds a
+// disposable SQLite file, and serves the built entry over loopback
+// HTTP. A Go provider fixture signs exact delivery bytes with
+// HMAC-SHA-256; an authenticated Go carrier speaks protocol v1
+// (version header, exact-byte signature, timestamp plus single-use
+// nonce in the signed body); a stub downstream records delivery posts;
 // a bun driver applies the schema and inspects rows. Crash legs kill
 // the server with SIGKILL and restart it on the same file to prove
-// one business effect per delivery under replay.
+// one business effect per delivery under replay, and lease expiry
+// redelivers rows the crashed worker never acked.
 package integration
 
 import (
 	"bytes"
 	"context"
 	"crypto/hmac"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -41,14 +45,33 @@ type webhookRow struct {
 	State        string `json:"state"`
 	Attempts     string `json:"attempts"`
 	UpdatedMs    string `json:"updated_ms"`
+	WorkerID     string `json:"worker_id"`
+	LeaseUntilMs string `json:"lease_until_ms"`
+	Version      string `json:"version"`
 	ID           string `json:"id"`
 	AtMs         string `json:"at_ms"`
 }
 
+type webhookDeadRow struct {
+	DeliveryID   string `json:"delivery_id"`
+	Event        string `json:"event"`
+	Subscription string `json:"subscription"`
+	Reason       string `json:"reason"`
+	Attempts     string `json:"attempts"`
+	DeadMs       string `json:"dead_ms"`
+}
+
+type webhookNonceRow struct {
+	Nonce  string `json:"nonce"`
+	SeenMs string `json:"seen_ms"`
+}
+
 type webhookStore struct {
-	Ledger   []webhookRow `json:"ledger"`
-	Outbox   []webhookRow `json:"outbox"`
-	Attempts []webhookRow `json:"attempts"`
+	Ledger   []webhookRow      `json:"ledger"`
+	Outbox   []webhookRow      `json:"outbox"`
+	Attempts []webhookRow      `json:"attempts"`
+	Dead     []webhookDeadRow  `json:"dead"`
+	Nonces   []webhookNonceRow `json:"nonces"`
 }
 
 type webhookProvider struct {
@@ -101,49 +124,155 @@ func (p *webhookProvider) send(body string) (int, string) {
 type webhookCarrier struct {
 	t      *testing.T
 	base   string
+	secret []byte
 	client *http.Client
 }
 
-type pendingItem struct {
+type claimRequest struct {
+	WorkerID    string `json:"worker_id"`
+	LeaseMs     int64  `json:"lease_ms"`
+	TimestampMs int64  `json:"timestamp_ms"`
+	Nonce       string `json:"nonce"`
+}
+
+type heartbeatRequest struct {
+	WorkerID    string `json:"worker_id"`
+	DeliveryID  string `json:"delivery_id"`
+	Version     int    `json:"version"`
+	LeaseMs     int64  `json:"lease_ms"`
+	TimestampMs int64  `json:"timestamp_ms"`
+	Nonce       string `json:"nonce"`
+}
+
+type ackRequest struct {
+	DeliveryID  string `json:"delivery_id"`
+	Settled     bool   `json:"settled"`
+	TimestampMs int64  `json:"timestamp_ms"`
+	Nonce       string `json:"nonce"`
+}
+
+type deadRequest struct {
+	DeliveryID  string `json:"delivery_id"`
+	WorkerID    string `json:"worker_id"`
+	Reason      string `json:"reason"`
+	TimestampMs int64  `json:"timestamp_ms"`
+	Nonce       string `json:"nonce"`
+}
+
+type claimItem struct {
 	DeliveryID   string `json:"delivery_id"`
 	Event        string `json:"event"`
 	Subscription string `json:"subscription"`
 	Attempts     int    `json:"attempts"`
+	LeaseUntilMs int64  `json:"lease_until_ms"`
+	Version      int    `json:"version"`
 }
 
-func (c *webhookCarrier) pending() []pendingItem {
+type claimPage struct {
+	Status string      `json:"status"`
+	Items  []claimItem `json:"items"`
+}
+
+func (c *webhookCarrier) sign(body string) string {
 	c.t.Helper()
-	response, err := c.client.Get(c.base + "/outbox/pending")
+	tag := hmac.New(sha256.New, c.secret)
+	if _, err := tag.Write([]byte(body)); err != nil {
+		c.t.Fatal(err)
+	}
+	return hex.EncodeToString(tag.Sum(nil))
+}
+
+func (c *webhookCarrier) nonce() string {
+	c.t.Helper()
+	raw := make([]byte, 16)
+	if _, err := rand.Read(raw); err != nil {
+		c.t.Fatal(err)
+	}
+	return hex.EncodeToString(raw)
+}
+
+func (c *webhookCarrier) now() int64 {
+	return time.Now().UnixMilli()
+}
+
+// postRaw sends one carrier call with explicit headers for the
+// negative legs. Empty protocol omits the version header; nil
+// signature omits the signature header.
+func (c *webhookCarrier) postRaw(path, body, protocol string, signature *string) (int, string) {
+	c.t.Helper()
+	request, err := http.NewRequest("POST", c.base+path, strings.NewReader(body))
 	if err != nil {
 		c.t.Fatal(err)
 	}
-	defer response.Body.Close()
-	payload, _ := io.ReadAll(response.Body)
-	if response.StatusCode != 200 {
-		c.t.Fatalf("pending: %d %s", response.StatusCode, payload)
+	request.Header.Set("Content-Type", "application/json")
+	if protocol != "" {
+		request.Header.Set("X-Carrier-Protocol", protocol)
 	}
-	var page struct {
-		Items []pendingItem `json:"items"`
+	if signature != nil {
+		request.Header.Set("X-Carrier-Signature", *signature)
 	}
-	if err := json.Unmarshal(payload, &page); err != nil {
-		c.t.Fatalf("invalid pending page %v %s", err, payload)
-	}
-	if page.Items == nil {
-		c.t.Fatal("pending page holds no items array")
-	}
-	return page.Items
-}
-
-func (c *webhookCarrier) ack(deliveryID string, settled bool) (int, string) {
-	c.t.Helper()
-	body, _ := json.Marshal(map[string]any{"delivery_id": deliveryID, "settled": settled})
-	response, err := c.client.Post(c.base+"/outbox/ack", "application/json", bytes.NewReader(body))
+	response, err := c.client.Do(request)
 	if err != nil {
 		c.t.Fatal(err)
 	}
 	defer response.Body.Close()
 	payload, _ := io.ReadAll(response.Body)
 	return response.StatusCode, string(payload)
+}
+
+// call signs one carrier body and posts it with the v1 envelope. It
+// returns the status, payload, and exact bytes sent so the replay leg
+// can resend them verbatim.
+func (c *webhookCarrier) call(path string, fields any) (int, string, string) {
+	c.t.Helper()
+	body, err := json.Marshal(fields)
+	if err != nil {
+		c.t.Fatal(err)
+	}
+	signature := c.sign(string(body))
+	status, payload := c.postRaw(path, string(body), "1", &signature)
+	return status, payload, string(body)
+}
+
+func (c *webhookCarrier) claim(workerID string, leaseMs int64) (int, claimPage) {
+	c.t.Helper()
+	status, payload, _ := c.call("/outbox/claim", claimRequest{
+		WorkerID: workerID, LeaseMs: leaseMs, TimestampMs: c.now(), Nonce: c.nonce(),
+	})
+	var page claimPage
+	if err := json.Unmarshal([]byte(payload), &page); err != nil {
+		c.t.Fatalf("invalid claim page %d %v %s", status, err, payload)
+	}
+	if page.Items == nil {
+		c.t.Fatal("claim page holds no items array")
+	}
+	return status, page
+}
+
+func (c *webhookCarrier) heartbeat(workerID, deliveryID string, version int, leaseMs int64) (int, string) {
+	c.t.Helper()
+	status, payload, _ := c.call("/outbox/heartbeat", heartbeatRequest{
+		WorkerID: workerID, DeliveryID: deliveryID, Version: version,
+		LeaseMs: leaseMs, TimestampMs: c.now(), Nonce: c.nonce(),
+	})
+	return status, payload
+}
+
+func (c *webhookCarrier) ack(deliveryID string, settled bool) (int, string) {
+	c.t.Helper()
+	status, payload, _ := c.call("/outbox/ack", ackRequest{
+		DeliveryID: deliveryID, Settled: settled, TimestampMs: c.now(), Nonce: c.nonce(),
+	})
+	return status, payload
+}
+
+func (c *webhookCarrier) deadLetter(deliveryID, workerID, reason string) (int, string) {
+	c.t.Helper()
+	status, payload, _ := c.call("/outbox/dead_letter", deadRequest{
+		DeliveryID: deliveryID, WorkerID: workerID, Reason: reason,
+		TimestampMs: c.now(), Nonce: c.nonce(),
+	})
+	return status, payload
 }
 
 type downstreamStub struct {
@@ -324,6 +453,20 @@ func requireDelivery(t *testing.T, store webhookStore, body, event, subscription
 	}
 }
 
+func requireOutbox(t *testing.T, store webhookStore, deliveryID, state, attempts, workerID, version string) {
+	t.Helper()
+	for _, row := range store.Outbox {
+		if row.DeliveryID != deliveryID {
+			continue
+		}
+		if row.State != state || row.Attempts != attempts || row.WorkerID != workerID || row.Version != version {
+			t.Fatalf("bad outbox row %+v", row)
+		}
+		return
+	}
+	t.Fatalf("no outbox row for %s in %+v", deliveryID, store.Outbox)
+}
+
 func TestWebhookSliceLive(t *testing.T) {
 	t.Parallel()
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
@@ -374,16 +517,19 @@ func TestWebhookSliceLive(t *testing.T) {
 	var setupReport struct {
 		Tables int `json:"tables"`
 	}
-	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 3 {
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
 		t.Fatalf("invalid webhook setup report %v %s", err, string(setup))
 	}
 
 	secret := "whsec-live-0123456789abcdef"
-	snapshot := snapshotCredential(t, home, "WEBHOOK_SECRET", secret)
+	carrierSecret := "carrier-live-0123456789abcdef"
+	snapshot := snapshotMap(t, home, "snapshot-webhook", map[string]string{
+		"WEBHOOK_SECRET": secret, "CARRIER_SECRET": carrierSecret,
+	})
 	entry := filepath.Join(firstDir, "entry.ts")
 	base, crash, stop := serveWebhook(t, ctx, bundle, home, entry, snapshot, webhookPort, db)
 	provider := &webhookProvider{t: t, base: base, secret: []byte(secret), client: &http.Client{Timeout: 10 * time.Second}}
-	carrier := &webhookCarrier{t: t, base: base, client: &http.Client{Timeout: 10 * time.Second}}
+	carrier := &webhookCarrier{t: t, base: base, secret: []byte(carrierSecret), client: &http.Client{Timeout: 10 * time.Second}}
 	stub := newDownstreamStub(t)
 
 	check := func(wantStatus int, body, note string) string {
@@ -401,12 +547,10 @@ func TestWebhookSliceLive(t *testing.T) {
 	}
 	store := inspectWebhook(t, ctx, bundle, home, driver, db)
 	requireDelivery(t, store, first, "invoice.paid", "sub-9")
-	if len(store.Ledger) != 1 || len(store.Outbox) != 1 || len(store.Attempts) != 0 {
+	if len(store.Ledger) != 1 || len(store.Outbox) != 1 || len(store.Attempts) != 0 || len(store.Dead) != 0 {
 		t.Fatalf("accept store %+v", store)
 	}
-	if store.Outbox[0].State != "pending" || store.Outbox[0].Attempts != "0" {
-		t.Fatalf("accept outbox %+v", store.Outbox[0])
-	}
+	requireOutbox(t, store, "del-1", "pending", "0", "", "0")
 	if payload := check(200, first, "replay"); payload != `{"status":"duplicate"}` {
 		t.Fatalf("replay body %s", payload)
 	}
@@ -435,16 +579,108 @@ func TestWebhookSliceLive(t *testing.T) {
 		t.Fatalf("rejections changed the store %+v", store)
 	}
 
-	items := carrier.pending()
-	if len(items) != 1 || items[0].DeliveryID != "del-1" || items[0].Event != "invoice.paid" || items[0].Subscription != "sub-9" || items[0].Attempts != 0 {
-		t.Fatalf("pending %+v", items)
+	// Carrier auth matrix: every unauthenticated, replayed, stale,
+	// or malformed carrier request rejects before touching the store.
+	claimBody := func(fields claimRequest) string {
+		t.Helper()
+		body, err := json.Marshal(fields)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(body)
+	}
+	validClaim := claimBody(claimRequest{WorkerID: "worker-A", LeaseMs: 60000, TimestampMs: carrier.now(), Nonce: carrier.nonce()})
+	if status, payload := carrier.postRaw("/outbox/claim", validClaim, "", nil); status != 400 || payload != `{"status":"unsupported_protocol","items":[]}` {
+		t.Fatalf("missing protocol: %d %s", status, payload)
+	}
+	signature := carrier.sign(validClaim)
+	if status, payload := carrier.postRaw("/outbox/claim", validClaim, "2", &signature); status != 400 || payload != `{"status":"unsupported_protocol","items":[]}` {
+		t.Fatalf("wrong protocol: %d %s", status, payload)
+	}
+	if status, payload := carrier.postRaw("/outbox/claim", validClaim, "1", nil); status != 401 || payload != `{"status":"unauthorized","items":[]}` {
+		t.Fatalf("missing carrier signature: %d %s", status, payload)
+	}
+	wrong := strings.Repeat("00", 32)
+	if status, payload := carrier.postRaw("/outbox/claim", validClaim, "1", &wrong); status != 401 || payload != `{"status":"unauthorized","items":[]}` {
+		t.Fatalf("wrong carrier signature: %d %s", status, payload)
+	}
+	staleBody := claimBody(claimRequest{WorkerID: "worker-A", LeaseMs: 60000, TimestampMs: carrier.now() - 600000, Nonce: carrier.nonce()})
+	staleSig := carrier.sign(staleBody)
+	if status, payload := carrier.postRaw("/outbox/claim", staleBody, "1", &staleSig); status != 401 || payload != `{"status":"stale","items":[]}` {
+		t.Fatalf("stale carrier timestamp: %d %s", status, payload)
+	}
+	futureBody := claimBody(claimRequest{WorkerID: "worker-A", LeaseMs: 60000, TimestampMs: carrier.now() + 600000, Nonce: carrier.nonce()})
+	futureSig := carrier.sign(futureBody)
+	if status, payload := carrier.postRaw("/outbox/claim", futureBody, "1", &futureSig); status != 401 || payload != `{"status":"stale","items":[]}` {
+		t.Fatalf("future carrier timestamp: %d %s", status, payload)
+	}
+	badShape := claimBody(claimRequest{WorkerID: "worker-A", LeaseMs: 999, TimestampMs: carrier.now(), Nonce: carrier.nonce()})
+	badShapeSig := carrier.sign(badShape)
+	if status, payload := carrier.postRaw("/outbox/claim", badShape, "1", &badShapeSig); status != 400 || payload != `{"status":"invalid_shape","items":[]}` {
+		t.Fatalf("bad claim shape: %d %s", status, payload)
+	}
+	huge := claimBody(claimRequest{WorkerID: strings.Repeat("w", 2000), LeaseMs: 60000, TimestampMs: carrier.now(), Nonce: carrier.nonce()})
+	hugeSig := carrier.sign(huge)
+	if status, payload := carrier.postRaw("/outbox/claim", huge, "1", &hugeSig); status != 413 || payload != `{"status":"body_too_large","items":[]}` {
+		t.Fatalf("oversize carrier body: %d %s", status, payload)
+	}
+	// Unknown ids roll back without consuming the nonce, so an
+	// identical retry answers 404 again instead of 401: only
+	// committed outcomes pin their nonce. The replay rejection below
+	// rides a committed claim instead.
+	replayFields := heartbeatRequest{WorkerID: "worker-A", DeliveryID: "del-9", Version: 0, LeaseMs: 60000, TimestampMs: carrier.now(), Nonce: carrier.nonce()}
+	replayBody, err := json.Marshal(replayFields)
+	if err != nil {
+		t.Fatal(err)
+	}
+	replaySig := carrier.sign(string(replayBody))
+	if status, payload := carrier.postRaw("/outbox/heartbeat", string(replayBody), "1", &replaySig); status != 404 || payload != `{"status":"unknown","lease_until_ms":0,"version":0,"attempts":0}` {
+		t.Fatalf("heartbeat unknown: %d %s", status, payload)
+	}
+	if status, payload := carrier.postRaw("/outbox/heartbeat", string(replayBody), "1", &replaySig); status != 404 || payload != `{"status":"unknown","lease_until_ms":0,"version":0,"attempts":0}` {
+		t.Fatalf("heartbeat unknown retry: %d %s", status, payload)
+	}
+	store = inspectWebhook(t, ctx, bundle, home, driver, db)
+	requireOutbox(t, store, "del-1", "pending", "0", "", "0")
+
+	// Claim, deliver, ack: worker-A takes del-1, the stub sees one
+	// post, and the ack retires the row. Resending the committed
+	// claim bytes verbatim answers 401 replay: the nonce pinned.
+	claimFields := claimRequest{WorkerID: "worker-A", LeaseMs: 60000, TimestampMs: carrier.now(), Nonce: carrier.nonce()}
+	firstClaim, err := json.Marshal(claimFields)
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstClaimSig := carrier.sign(string(firstClaim))
+	status, payload := carrier.postRaw("/outbox/claim", string(firstClaim), "1", &firstClaimSig)
+	var page claimPage
+	if err := json.Unmarshal([]byte(payload), &page); err != nil {
+		t.Fatalf("invalid claim page %d %v %s", status, err, payload)
+	}
+	if status != 200 || page.Status != "claimed" || len(page.Items) != 1 {
+		t.Fatalf("claim: %d %+v", status, page)
+	}
+	if status, payload := carrier.postRaw("/outbox/claim", string(firstClaim), "1", &firstClaimSig); status != 401 || payload != `{"status":"replay","items":[]}` {
+		t.Fatalf("claim replay: %d %s", status, payload)
+	}
+	got := page.Items[0]
+	if got.DeliveryID != "del-1" || got.Event != "invoice.paid" || got.Subscription != "sub-9" || got.Attempts != 0 || got.Version != 1 {
+		t.Fatalf("claim item %+v", got)
+	}
+	if got.LeaseUntilMs <= carrier.now() || got.LeaseUntilMs > carrier.now()+60000 {
+		t.Fatalf("claim lease %d not within the ask", got.LeaseUntilMs)
+	}
+	store = inspectWebhook(t, ctx, bundle, home, driver, db)
+	requireOutbox(t, store, "del-1", "pending", "0", "worker-A", "1")
+	if status, page := carrier.claim("worker-B", 60000); status != 200 || page.Status != "empty" || len(page.Items) != 0 {
+		t.Fatalf("rival claim while held: %d %+v", status, page)
 	}
 	stub.post(first)
 	if status, payload := carrier.ack("del-1", true); status != 200 || payload != `{"status":"done","attempts":1}` {
 		t.Fatalf("ack: %d %s", status, payload)
 	}
-	if items := carrier.pending(); len(items) != 0 {
-		t.Fatalf("pending after ack %+v", items)
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "empty" {
+		t.Fatalf("claim after ack: %d %+v", status, page)
 	}
 	if status, payload := carrier.ack("del-1", true); status != 200 || payload != `{"status":"done","attempts":1}` {
 		t.Fatalf("duplicate ack: %d %s", status, payload)
@@ -457,18 +693,88 @@ func TestWebhookSliceLive(t *testing.T) {
 		t.Fatalf("unknown ack: %d %s", status, payload)
 	}
 
+	// Failed ack plus lease expiry: the row stays leased to worker-A
+	// until expiry, then worker-B reclaims it at version 2.
 	second := `{"delivery_id":"del-2","event":"invoice.paid","subscription":"sub-9"}`
 	check(200, second, "accept second")
+	if status, page := carrier.claim("worker-A", 1000); status != 200 || page.Status != "claimed" {
+		t.Fatalf("claim second: %d %+v", status, page)
+	}
 	if status, payload := carrier.ack("del-2", false); status != 200 || payload != `{"status":"pending","attempts":1}` {
 		t.Fatalf("failed ack: %d %s", status, payload)
 	}
-	items = carrier.pending()
-	if len(items) != 1 || items[0].DeliveryID != "del-2" || items[0].Attempts != 1 {
-		t.Fatalf("pending after failed ack %+v", items)
+	if status, page := carrier.claim("worker-B", 60000); status != 200 || page.Status != "empty" {
+		t.Fatalf("reclaim while leased: %d %+v", status, page)
+	}
+	time.Sleep(1200 * time.Millisecond)
+	status, page = carrier.claim("worker-B", 60000)
+	if status != 200 || page.Status != "claimed" || len(page.Items) != 1 || page.Items[0].DeliveryID != "del-2" || page.Items[0].Attempts != 1 || page.Items[0].Version != 2 {
+		t.Fatalf("reclaim after expiry: %d %+v", status, page)
 	}
 	stub.post(second)
 	if status, payload := carrier.ack("del-2", true); status != 200 || payload != `{"status":"done","attempts":2}` {
 		t.Fatalf("retry ack: %d %s", status, payload)
+	}
+
+	// Heartbeat: the holder extends at the current version; stale and
+	// foreign holders lose; terminal rows replay their state.
+	third := `{"delivery_id":"del-3","event":"invoice.paid","subscription":"sub-9"}`
+	check(200, third, "accept third")
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "claimed" || page.Items[0].Version != 1 {
+		t.Fatalf("claim third: %d %+v", status, page)
+	}
+	if status, payload := carrier.heartbeat("worker-A", "del-3", 1, 60000); status != 200 || !strings.HasPrefix(payload, `{"status":"extended","lease_until_ms":`) || !strings.HasSuffix(payload, `,"version":2,"attempts":0}`) {
+		t.Fatalf("heartbeat extend: %d %s", status, payload)
+	}
+	if status, payload := carrier.heartbeat("worker-A", "del-3", 1, 60000); status != 409 || payload != `{"status":"lease_lost","lease_until_ms":0,"version":0,"attempts":0}` {
+		t.Fatalf("stale heartbeat: %d %s", status, payload)
+	}
+	if status, payload := carrier.heartbeat("worker-B", "del-3", 2, 60000); status != 409 {
+		t.Fatalf("foreign heartbeat: %d %s", status, payload)
+	}
+	stub.post(third)
+	if status, payload := carrier.ack("del-3", true); status != 200 || payload != `{"status":"done","attempts":1}` {
+		t.Fatalf("ack third: %d %s", status, payload)
+	}
+	if status, payload := carrier.heartbeat("worker-A", "del-3", 2, 60000); status != 200 || !strings.HasPrefix(payload, `{"status":"done",`) {
+		t.Fatalf("heartbeat after done: %d %s", status, payload)
+	}
+
+	// Poison and dead letter: five failures mark the row, the holder
+	// buries it, and every replay converges on dead.
+	fourth := `{"delivery_id":"del-4","event":"invoice.paid","subscription":"sub-9"}`
+	check(200, fourth, "accept fourth")
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "claimed" {
+		t.Fatalf("claim fourth: %d %+v", status, page)
+	}
+	for attempt := 1; attempt <= 5; attempt++ {
+		want := `{"status":"pending","attempts":` + strconv.Itoa(attempt) + `}`
+		if status, payload := carrier.ack("del-4", false); status != 200 || payload != want {
+			t.Fatalf("poison ack %d: %d %s", attempt, status, payload)
+		}
+	}
+	if status, payload := carrier.deadLetter("del-4", "worker-A", "poison"); status != 200 || payload != `{"status":"dead","attempts":5}` {
+		t.Fatalf("dead letter: %d %s", status, payload)
+	}
+	if status, payload := carrier.ack("del-4", false); status != 200 || payload != `{"status":"dead","attempts":5}` {
+		t.Fatalf("ack after dead: %d %s", status, payload)
+	}
+	if status, payload := carrier.deadLetter("del-4", "worker-A", "poison"); status != 200 || payload != `{"status":"dead","attempts":5}` {
+		t.Fatalf("dead replay: %d %s", status, payload)
+	}
+	if status, payload := carrier.deadLetter("del-1", "worker-A", "poison"); status != 409 || payload != `{"status":"already_done","attempts":1}` {
+		t.Fatalf("dead on done: %d %s", status, payload)
+	}
+	if status, payload := carrier.deadLetter("del-9", "worker-A", "poison"); status != 404 || payload != `{"status":"unknown","attempts":0}` {
+		t.Fatalf("dead unknown: %d %s", status, payload)
+	}
+	store = inspectWebhook(t, ctx, bundle, home, driver, db)
+	requireOutbox(t, store, "del-4", "dead", "5", "worker-A", "1")
+	if len(store.Dead) != 1 || store.Dead[0].DeliveryID != "del-4" || store.Dead[0].Reason != "poison" || store.Dead[0].Attempts != "5" {
+		t.Fatalf("dead table %+v", store.Dead)
+	}
+	if len(store.Nonces) == 0 {
+		t.Fatal("nonce table holds no consumed nonces")
 	}
 
 	// Crash between deliveries: the committed ledger and outbox
@@ -480,65 +786,68 @@ func TestWebhookSliceLive(t *testing.T) {
 		t.Fatalf("replay after crash body %s", payload)
 	}
 	store = inspectWebhook(t, ctx, bundle, home, driver, db)
-	if len(store.Ledger) != 2 || len(store.Outbox) != 2 {
+	if len(store.Ledger) != 4 || len(store.Outbox) != 4 {
 		t.Fatalf("crash store %+v", store)
 	}
 	requireDelivery(t, store, second, "invoice.paid", "sub-9")
 
 	// Crash after external success but before outbox acknowledgement:
-	// the carrier redelivers, the stub sees two receipts, and the
-	// ledger still holds one effect with one recorded attempt.
-	third := `{"delivery_id":"del-3","event":"invoice.paid","subscription":"sub-9"}`
-	check(200, third, "accept third")
-	items = carrier.pending()
-	if len(items) != 1 || items[0].DeliveryID != "del-3" {
-		t.Fatalf("pending third %+v", items)
+	// the short lease expires, the carrier reclaims, the stub sees
+	// two receipts, and the ledger still holds one effect with one
+	// recorded attempt.
+	fifth := `{"delivery_id":"del-5","event":"invoice.paid","subscription":"sub-9"}`
+	check(200, fifth, "accept fifth")
+	if status, page := carrier.claim("worker-A", 1000); status != 200 || page.Status != "claimed" {
+		t.Fatalf("claim fifth: %d %+v", status, page)
 	}
-	stub.post(third)
+	stub.post(fifth)
 	crash()
 	base, crash, stop = serveWebhook(t, ctx, bundle, home, entry, snapshot, webhookPort, db)
 	provider.base, carrier.base = base, base
-	items = carrier.pending()
-	if len(items) != 1 || items[0].DeliveryID != "del-3" {
-		t.Fatalf("pending after ack-window crash %+v", items)
+	if status, page := carrier.claim("worker-B", 60000); status != 200 || page.Status != "empty" {
+		t.Fatalf("reclaim before expiry: %d %+v", status, page)
 	}
-	stub.post(third)
-	if status, payload := carrier.ack("del-3", true); status != 200 || payload != `{"status":"done","attempts":1}` {
+	time.Sleep(1200 * time.Millisecond)
+	if status, page := carrier.claim("worker-B", 60000); status != 200 || page.Status != "claimed" || page.Items[0].DeliveryID != "del-5" || page.Items[0].Version != 2 {
+		t.Fatalf("redeliver after expiry: %d %+v", status, page)
+	}
+	stub.post(fifth)
+	if status, payload := carrier.ack("del-5", true); status != 200 || payload != `{"status":"done","attempts":1}` {
 		t.Fatalf("ack after crash: %d %s", status, payload)
 	}
-	if got := stub.count("del-3"); got != 2 {
-		t.Fatalf("stub saw del-3 %d times, want 2", got)
+	if got := stub.count("del-5"); got != 2 {
+		t.Fatalf("stub saw del-5 %d times, want 2", got)
 	}
 	store = inspectWebhook(t, ctx, bundle, home, driver, db)
 	deliveries := 0
 	for _, row := range store.Ledger {
-		if row.DeliveryID == "del-3" {
+		if row.DeliveryID == "del-5" {
 			deliveries++
 		}
 	}
 	if deliveries != 1 {
-		t.Fatalf("del-3 ledger rows %d, want 1", deliveries)
+		t.Fatalf("del-5 ledger rows %d, want 1", deliveries)
 	}
 	delivered := 0
 	for _, row := range store.Attempts {
-		if row.DeliveryID == "del-3" {
+		if row.DeliveryID == "del-5" {
 			delivered++
 			if row.Outcome != "delivered" {
-				t.Fatalf("del-3 attempt %+v", row)
+				t.Fatalf("del-5 attempt %+v", row)
 			}
 		}
 	}
 	if delivered != 1 {
-		t.Fatalf("del-3 attempts %d, want 1", delivered)
+		t.Fatalf("del-5 attempts %d, want 1", delivered)
 	}
 
 	// Crash during an in-flight delivery: the replay converges to one
 	// ledger row and one outbox row however the race landed.
-	fourth := `{"delivery_id":"del-4","event":"invoice.paid","subscription":"sub-9"}`
+	sixth := `{"delivery_id":"del-6","event":"invoice.paid","subscription":"sub-9"}`
 	inflight := make(chan string, 1)
-	signature := provider.sign(fourth)
+	signature = provider.sign(sixth)
 	go func() {
-		status, payload, err := provider.deliverRaw(fourth, signature, true)
+		status, payload, err := provider.deliverRaw(sixth, signature, true)
 		if err != nil {
 			inflight <- "transport: " + err.Error()
 			return
@@ -557,7 +866,7 @@ func TestWebhookSliceLive(t *testing.T) {
 	}
 	seen := ""
 	for i := 0; i < 3; i++ {
-		status, payload := provider.send(fourth)
+		status, payload := provider.send(sixth)
 		if status != 200 {
 			t.Fatalf("converge replay %d: %d %s", i, status, payload)
 		}
@@ -573,27 +882,58 @@ func TestWebhookSliceLive(t *testing.T) {
 		t.Fatal("in-flight delivery never converged to duplicate")
 	}
 	store = inspectWebhook(t, ctx, bundle, home, driver, db)
-	if len(store.Ledger) != 4 {
+	if len(store.Ledger) != 6 {
 		t.Fatalf("converged ledger %+v", store.Ledger)
 	}
 	outbox := 0
 	for _, row := range store.Outbox {
-		if row.DeliveryID == "del-4" {
+		if row.DeliveryID == "del-6" {
 			outbox++
 		}
 	}
 	if outbox != 1 {
-		t.Fatalf("del-4 outbox rows %d, want 1", outbox)
+		t.Fatalf("del-6 outbox rows %d, want 1", outbox)
 	}
-	stub.post(fourth)
-	if status, payload := carrier.ack("del-4", true); status != 200 {
-		t.Fatalf("ack fourth: %d %s", status, payload)
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "claimed" || page.Items[0].DeliveryID != "del-6" {
+		t.Fatalf("claim sixth: %d %+v", status, page)
+	}
+	stub.post(sixth)
+	if status, payload := carrier.ack("del-6", true); status != 200 {
+		t.Fatalf("ack sixth: %d %s", status, payload)
+	}
+
+	// Batch pair: two simultaneously pending rows both claim in turn
+	// instead of faulting the candidate read.
+	seventh := `{"delivery_id":"del-A","event":"invoice.paid","subscription":"sub-9"}`
+	eighth := `{"delivery_id":"del-B","event":"invoice.paid","subscription":"sub-9"}`
+	check(200, seventh, "accept seventh")
+	check(200, eighth, "accept eighth")
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "claimed" || page.Items[0].DeliveryID != "del-A" {
+		t.Fatalf("claim seventh: %d %+v", status, page)
+	}
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "claimed" || page.Items[0].DeliveryID != "del-B" {
+		t.Fatalf("claim eighth: %d %+v", status, page)
+	}
+	if status, page := carrier.claim("worker-A", 60000); status != 200 || page.Status != "empty" {
+		t.Fatalf("claim drained: %d %+v", status, page)
+	}
+	stub.post(seventh)
+	stub.post(eighth)
+	if status, payload := carrier.ack("del-A", true); status != 200 {
+		t.Fatalf("ack seventh: %d %s", status, payload)
+	}
+	if status, payload := carrier.ack("del-B", true); status != 200 {
+		t.Fatalf("ack eighth: %d %s", status, payload)
+	}
+	store = inspectWebhook(t, ctx, bundle, home, driver, db)
+	if len(store.Ledger) != 8 || len(store.Outbox) != 8 {
+		t.Fatalf("batch store %+v", store)
 	}
 
 	stop()
 	if got := stub.count("del-1"); got != 1 {
 		t.Fatalf("stub saw del-1 %d times, want 1", got)
 	}
-	t.Logf("webhook slice: %d assertions (%d real-can), build %s, stub receipts del-1=%d del-2=%d del-3=%d del-4=%d",
-		len(report.Assertions), real, firstID[:12], stub.count("del-1"), stub.count("del-2"), stub.count("del-3"), stub.count("del-4"))
+	t.Logf("webhook pair: %d assertions (%d real-can), build %s, stub receipts del-1=%d del-2=%d del-3=%d del-5=%d del-6=%d",
+		len(report.Assertions), real, firstID[:12], stub.count("del-1"), stub.count("del-2"), stub.count("del-3"), stub.count("del-5"), stub.count("del-6"))
 }

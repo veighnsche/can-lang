@@ -1,5 +1,5 @@
 package web
-    provides [receive, outbox_pending, receive_ack, health, webhook_routes, boot, main]
+    provides [receive, receive_claim, receive_heartbeat, receive_ack, receive_dead, health, webhook_routes, boot, main]
     uses [records, model, bytes, clock, codec, env, http, io, option, sql]
 
 /// Answer a receipt at an explicit status. The status and JSON bodies
@@ -34,18 +34,48 @@ fn http::server_response ack_at
             codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
             ok http::server_response done => ok done
 
-/// Answer one pending page at an explicit status.
-fn http::server_response page_at
+/// Answer one claim page at an explicit status.
+fn http::server_response claim_at
     emits []
     given
         int code
-        records::outbox_page value
+        records::claim_page value
     asserts
-        sample: 200, records::outbox_page([records::pending_item("del-1", "invoice.paid", "sub-9", 0)]) => ok
-        bad_status: 99, records::outbox_page([]) => ok
+        sample: 200, records::claim_page("claimed", [records::claim_item("del-1", "invoice.paid", "sub-9", 0, 1005000, 1)]) => ok
+        bad_status: 99, records::claim_page("empty", []) => ok
     match call http::make_body_status(code)
         http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
-        ok http::body_status status => match call http::response_json<records::outbox_page>(status, call http::empty_server_headers(), value)
+        ok http::body_status status => match call http::response_json<records::claim_page>(status, call http::empty_server_headers(), value)
+            codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok http::server_response done => ok done
+
+/// Answer one heartbeat outcome at an explicit status.
+fn http::server_response heartbeat_at
+    emits []
+    given
+        int code
+        records::heartbeat_result value
+    asserts
+        sample: 200, records::heartbeat_result("extended", 1005000, 2, 0) => ok
+        bad_status: 99, records::heartbeat_result("unknown", 0, 0, 0) => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => match call http::response_json<records::heartbeat_result>(status, call http::empty_server_headers(), value)
+            codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+            ok http::server_response done => ok done
+
+/// Answer one dead-letter outcome at an explicit status.
+fn http::server_response dead_at
+    emits []
+    given
+        int code
+        records::dead_result value
+    asserts
+        sample: 200, records::dead_result("dead", 5) => ok
+        bad_status: 99, records::dead_result("unknown", 0) => ok
+    match call http::make_body_status(code)
+        http::invalid_request => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
+        ok http::body_status status => match call http::response_json<records::dead_result>(status, call http::empty_server_headers(), value)
             codec::invalid_data => ok call http::response_text(call http::status_internal(), call http::empty_server_headers(), "error")
             ok http::server_response done => ok done
 
@@ -178,34 +208,273 @@ fn http::server_response receive
                                             ok int now => ok call apply_receive(envelope.delivery_id, call model::digest_of(text), envelope.event, envelope.subscription, now, pool)
                                         true => ok call receipt_at(400, records::receipt("invalid_body"))
 
-/// List the oldest pending outbox rows for the carrier, at most
-/// sixteen per call. The carrier delivers each payload downstream
-/// and acknowledges it; listing never mutates the ledger.
-fn http::server_response outbox_pending
+/// Apply one claim outcome: claimed and empty replay 200 (an empty
+/// page is the normal end of paging), a duplicate nonce answers 401,
+/// and every store failure answers 503.
+fn http::server_response apply_claim_page
+    emits []
+    given
+        records::claim_page outcome
+    asserts
+        claimed: records::claim_page("claimed", [records::claim_item("del-1", "invoice.paid", "sub-9", 0, 1005000, 1)]) => ok
+        empty: records::claim_page("empty", []) => ok
+        replay: records::claim_page("replay", []) => ok
+        store_down: records::claim_page("store_unavailable", []) => ok
+    match outcome.status
+        "claimed" => ok call claim_at(200, outcome)
+        "empty" => ok call claim_at(200, outcome)
+        "replay" => ok call claim_at(401, outcome)
+        _ => ok call claim_at(503, outcome)
+
+/// Claim one row for a worker in a single nonce-plus-lease
+/// transaction. Shape and freshness reject before any store touch; an
+/// uncertain commit answers 503 without a reread because the claimed
+/// id is unknowable outside the lost transaction. If the claim landed,
+/// the row stays leased to this worker until expiry and redelivers
+/// afterwards; downstream deduplication absorbs any double send.
+fn http::server_response apply_claim
+    emits []
+    given
+        str worker_id
+        int lease_ms
+        int timestamp_ms
+        str nonce
+        int now_ms
+        sql::pool pool
+    asserts
+        bad_shape: "", 5000, 1000000, "n-1", 1000000 => ok
+        stale: "worker-1", 5000, 100000, "n-1", 1000000 => ok
+        claimed: "worker-1", 5000, 1000000, "n-1", 1000000 => ok
+        empty: "worker-1", 5000, 1000000, "n-2", 1000000 => ok
+        replay: "worker-1", 5000, 1000000, "n-1", 1000000 => ok
+        tx_failed: "worker-1", 5000, 1000000, "n-3", 1000000 => ok
+        uncertain: "worker-1", 5000, 1000000, "n-4", 1000000 => ok
+    match call model::claim_shape_valid(worker_id, lease_ms)
+        ok bool shaped => match shaped
+            false => ok call claim_at(400, records::claim_page("invalid_shape", []))
+            true => match call model::fresh_timestamp(now_ms, timestamp_ms)
+                ok bool fresh => match fresh
+                    false => ok call claim_at(401, records::claim_page("stale", []))
+                    true => match call sql::with_transaction<records::claim_page>(pool, callable model::decide_claim)
+                        when
+                            claimed: pool, callable model::decide_claim => ok records::claim_page("claimed", [records::claim_item("del-1", "invoice.paid", "sub-9", 0, 1005000, 1)])
+                            empty: pool, callable model::decide_claim => ok records::claim_page("empty", [])
+                            replay: pool, callable model::decide_claim => ok records::claim_page("replay", [])
+                            tx_failed: pool, callable model::decide_claim => sql::transaction_failed("commit")
+                            uncertain: pool, callable model::decide_claim => sql::commit_unknown("tx-1")
+                        sql::connection_failed => ok call claim_at(503, records::claim_page("store_unavailable", []))
+                        sql::transaction_failed => ok call claim_at(503, records::claim_page("store_unavailable", []))
+                        sql::commit_unknown => ok call claim_at(503, records::claim_page("uncertain", []))
+                        ok records::claim_page outcome => ok call apply_claim_page(outcome)
+
+/// Receive one carrier claim: bound the body, require protocol v1 and
+/// the exact-byte signature, decode the request, then claim through
+/// the lease transaction above. Assertion cases pin every pre-store
+/// arm; the store arms live on apply_claim because only an empty body
+/// can be expressed as a fixed byte fixture.
+fn http::server_response receive_claim
     emits []
     given
         http::request req
         near sql::pool pool
+        near str carrier_secret
     asserts
-        items:  => ok
-        empty:  => ok
-        store_down:  => ok
-    match call sql::query_rows<records::outbox_state, records::pending_item>(pool, "outbox_pending", records::outbox_state("pending"), 16)
+        over_limit: "carrier-test-0123456789abcdef" => ok
+        no_protocol: "carrier-test-0123456789abcdef" => ok
+        no_signature: "carrier-test-0123456789abcdef" => ok
+        bad_signature: "carrier-test-0123456789abcdef" => ok
+        invalid_body: "carrier-test-0123456789abcdef" => ok
+    match call http::request_body(req, 1024)
         when
-            items: pool, "outbox_pending", records::outbox_state("pending"), 16 => ok [records::pending_item("del-1", "invoice.paid", "sub-9", 0)]
-            empty: pool, "outbox_pending", records::outbox_state("pending"), 16 => ok []
-            store_down: pool, "outbox_pending", records::outbox_state("pending"), 16 => sql::query_failed("outbox_pending", "SQLITE_IOERR")
-        sql::unsupported_value => ok call receipt_at(503, records::receipt("store_unavailable"))
-        sql::connection_failed => ok call receipt_at(503, records::receipt("store_unavailable"))
-        sql::query_failed => ok call receipt_at(503, records::receipt("store_unavailable"))
-        sql::constraint_failed => ok call receipt_at(503, records::receipt("store_unavailable"))
-        sql::row_limit => ok call receipt_at(503, records::receipt("store_unavailable"))
-        sql::schema_mismatch => ok call receipt_at(503, records::receipt("store_unavailable"))
-        ok records::pending_item[] rows => ok call page_at(200, records::outbox_page(rows))
+            over_limit: req, 1024 => http::body_limit(1024)
+            no_protocol: req, 1024 => ok call bytes::empty()
+            no_signature: req, 1024 => ok call bytes::empty()
+            bad_signature: req, 1024 => ok call bytes::empty()
+            invalid_body: req, 1024 => ok call bytes::empty()
+        http::body_limit => ok call claim_at(413, records::claim_page("body_too_large", []))
+        ok bytes::buffer raw => match call http::request_headers(req)
+            when
+                no_protocol: req => ok []
+                no_signature: req => ok [http::header("x-carrier-protocol", "1")]
+                bad_signature: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "00")]
+                invalid_body: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "98c60f84cfa004a6a0d3d1cc76e28c2e5102c03efe0d9bfba3839b9ac3ef85b8")]
+            ok http::header[] headers => match call model::find_header(headers, "x-carrier-protocol")
+                ok option::value<str> versioned => match versioned
+                    option::none => ok call claim_at(400, records::claim_page("unsupported_protocol", []))
+                    option::some => match call model::protocol_valid(versioned.value)
+                        ok bool admitted => match admitted
+                            false => ok call claim_at(400, records::claim_page("unsupported_protocol", []))
+                            true => match call model::find_header(headers, "x-carrier-signature")
+                                ok option::value<str> signed => match signed
+                                    option::none => ok call claim_at(401, records::claim_page("unauthorized", []))
+                                    option::some => match call bytes::to_utf8(raw)
+                                        codec::invalid_data => ok call claim_at(400, records::claim_page("invalid_body", []))
+                                        ok str text => match call model::signature_valid(carrier_secret, text, signed.value)
+                                            ok bool valid => match valid
+                                                false => ok call claim_at(401, records::claim_page("unauthorized", []))
+                                                true => match call codec::decode_json<records::claim_request>(raw)
+                                                    codec::invalid_data => ok call claim_at(400, records::claim_page("invalid_body", []))
+                                                    ok records::claim_request asked => match call clock::wall_millis()
+                                                        ok int now => ok call apply_claim(asked.worker_id, asked.lease_ms, asked.timestamp_ms, asked.nonce, now, pool)
 
-/// Apply one acknowledgement outcome: done and pending replay 200, an
-/// unknown id answers 404, and every store failure answers 503 so the
-/// carrier retry stays safe.
+/// Apply one heartbeat outcome: extended, done and dead replay 200, an
+/// unknown id answers 404, a foreign or stale holder answers 409, a
+/// duplicate nonce answers 401, and every store failure answers 503.
+fn http::server_response apply_heartbeat_outcome
+    emits []
+    given
+        records::heartbeat_result outcome
+    asserts
+        extended: records::heartbeat_result("extended", 1005000, 2, 0) => ok
+        done: records::heartbeat_result("done", 1005000, 2, 1) => ok
+        dead: records::heartbeat_result("dead", 1005000, 2, 5) => ok
+        unknown: records::heartbeat_result("unknown", 0, 0, 0) => ok
+        lease_lost: records::heartbeat_result("lease_lost", 0, 0, 0) => ok
+        replay: records::heartbeat_result("replay", 0, 0, 0) => ok
+        store_down: records::heartbeat_result("store_unavailable", 0, 0, 0) => ok
+    match outcome.status
+        "extended" => ok call heartbeat_at(200, outcome)
+        "done" => ok call heartbeat_at(200, outcome)
+        "dead" => ok call heartbeat_at(200, outcome)
+        "unknown" => ok call heartbeat_at(404, outcome)
+        "lease_lost" => ok call heartbeat_at(409, outcome)
+        "replay" => ok call heartbeat_at(401, outcome)
+        _ => ok call heartbeat_at(503, outcome)
+
+/// Reconcile one uncertain heartbeat commit by rereading the outbox
+/// row: a row held by this worker one version past the request proves
+/// the extension landed and replays the stored lease; done and dead
+/// rows replay their state; anything else answers 503 uncertain so the
+/// worker retries the extension with a fresh nonce.
+fn http::server_response reconcile_heartbeat
+    emits []
+    given
+        str delivery_id
+        str worker_id
+        int version
+        sql::pool pool
+    asserts
+        uncertain_found: "del-1", "worker-1", 1 => ok
+        uncertain_held: "del-1", "worker-1", 2 => ok
+        uncertain_missing: "del-9", "worker-1", 0 => ok
+        moved_on: "del-1", "worker-2", 1 => ok
+        lookup_failed: "del-1", "worker-1", 1 => ok
+    match call sql::query_optional<records::outbox_key, records::outbox_row>(pool, "outbox_by_id", records::outbox_key(delivery_id))
+        when
+            uncertain_found: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000000, "worker-1", 1005000, 2))
+            uncertain_held: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000000, "worker-1", 1002000, 2))
+            uncertain_missing: pool, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+            moved_on: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000000, "worker-1", 1005000, 2))
+            lookup_failed: pool, "outbox_by_id", records::outbox_key("del-1") => sql::query_failed("outbox_by_id", "SQLITE_IOERR")
+        sql::unsupported_value => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::connection_failed => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::query_failed => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::constraint_failed => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::row_count => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::schema_mismatch => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+        ok option::value<records::outbox_row> found => match found
+            option::none => ok call heartbeat_at(503, records::heartbeat_result("uncertain", 0, 0, 0))
+            option::some => match found.value.state
+                "done" => ok call heartbeat_at(200, records::heartbeat_result("done", found.value.lease_until_ms, found.value.version, found.value.attempts))
+                "dead" => ok call heartbeat_at(200, records::heartbeat_result("dead", found.value.lease_until_ms, found.value.version, found.value.attempts))
+                _ => match found.value.worker_id is worker_id
+                    false => ok call heartbeat_at(503, records::heartbeat_result("uncertain", 0, 0, 0))
+                    true => match found.value.version is version + 1
+                        false => ok call heartbeat_at(503, records::heartbeat_result("uncertain", 0, 0, 0))
+                        true => ok call heartbeat_at(200, records::heartbeat_result("extended", found.value.lease_until_ms, found.value.version, found.value.attempts))
+
+/// Extend one held lease in a single nonce-plus-lease transaction,
+/// reconciling an uncertain commit through the outbox lookup above.
+fn http::server_response apply_heartbeat
+    emits []
+    given
+        str worker_id
+        str delivery_id
+        int version
+        int lease_ms
+        int timestamp_ms
+        str nonce
+        int now_ms
+        sql::pool pool
+    asserts
+        bad_shape: "", "del-1", 1, 5000, 1000000, "n-1", 1000000 => ok
+        stale: "worker-1", "del-1", 1, 5000, 100000, "n-1", 1000000 => ok
+        extended: "worker-1", "del-1", 1, 5000, 1000000, "n-1", 1000000 => ok
+        unknown: "worker-1", "del-9", 0, 5000, 1000000, "n-2", 1000000 => ok
+        tx_failed: "worker-1", "del-1", 1, 5000, 1000000, "n-3", 1000000 => ok
+        uncertain_found: "worker-1", "del-1", 1, 5000, 1000000, "n-4", 1000000 => ok
+        uncertain_missing: "worker-1", "del-9", 0, 5000, 1000000, "n-5", 1000000 => ok
+    match call model::heartbeat_shape_valid(worker_id, version, lease_ms)
+        ok bool shaped => match shaped
+            false => ok call heartbeat_at(400, records::heartbeat_result("invalid_shape", 0, 0, 0))
+            true => match call model::fresh_timestamp(now_ms, timestamp_ms)
+                ok bool fresh => match fresh
+                    false => ok call heartbeat_at(401, records::heartbeat_result("stale", 0, 0, 0))
+                    true => match call sql::with_transaction<records::heartbeat_result>(pool, callable model::decide_heartbeat)
+                        when
+                            extended: pool, callable model::decide_heartbeat => ok records::heartbeat_result("extended", 1005000, 2, 0)
+                            unknown: pool, callable model::decide_heartbeat => ok records::heartbeat_result("unknown", 0, 0, 0)
+                            tx_failed: pool, callable model::decide_heartbeat => sql::transaction_failed("commit")
+                            uncertain_found: pool, callable model::decide_heartbeat => sql::commit_unknown("tx-1")
+                            uncertain_missing: pool, callable model::decide_heartbeat => sql::commit_unknown("tx-2")
+                        sql::connection_failed => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+                        sql::transaction_failed => ok call heartbeat_at(503, records::heartbeat_result("store_unavailable", 0, 0, 0))
+                        sql::commit_unknown => ok call reconcile_heartbeat(delivery_id, worker_id, version, pool)
+                        ok records::heartbeat_result outcome => ok call apply_heartbeat_outcome(outcome)
+
+/// Receive one carrier heartbeat: bound the body, require protocol v1
+/// and the exact-byte signature, decode the request, then extend
+/// through the lease transaction above. Assertion cases pin every
+/// pre-store arm; the store arms live on apply_heartbeat because only
+/// an empty body can be expressed as a fixed byte fixture.
+fn http::server_response receive_heartbeat
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+        near str carrier_secret
+    asserts
+        over_limit: "carrier-test-0123456789abcdef" => ok
+        no_protocol: "carrier-test-0123456789abcdef" => ok
+        no_signature: "carrier-test-0123456789abcdef" => ok
+        bad_signature: "carrier-test-0123456789abcdef" => ok
+        invalid_body: "carrier-test-0123456789abcdef" => ok
+    match call http::request_body(req, 1024)
+        when
+            over_limit: req, 1024 => http::body_limit(1024)
+            no_protocol: req, 1024 => ok call bytes::empty()
+            no_signature: req, 1024 => ok call bytes::empty()
+            bad_signature: req, 1024 => ok call bytes::empty()
+            invalid_body: req, 1024 => ok call bytes::empty()
+        http::body_limit => ok call heartbeat_at(413, records::heartbeat_result("body_too_large", 0, 0, 0))
+        ok bytes::buffer raw => match call http::request_headers(req)
+            when
+                no_protocol: req => ok []
+                no_signature: req => ok [http::header("x-carrier-protocol", "1")]
+                bad_signature: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "00")]
+                invalid_body: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "98c60f84cfa004a6a0d3d1cc76e28c2e5102c03efe0d9bfba3839b9ac3ef85b8")]
+            ok http::header[] headers => match call model::find_header(headers, "x-carrier-protocol")
+                ok option::value<str> versioned => match versioned
+                    option::none => ok call heartbeat_at(400, records::heartbeat_result("unsupported_protocol", 0, 0, 0))
+                    option::some => match call model::protocol_valid(versioned.value)
+                        ok bool admitted => match admitted
+                            false => ok call heartbeat_at(400, records::heartbeat_result("unsupported_protocol", 0, 0, 0))
+                            true => match call model::find_header(headers, "x-carrier-signature")
+                                ok option::value<str> signed => match signed
+                                    option::none => ok call heartbeat_at(401, records::heartbeat_result("unauthorized", 0, 0, 0))
+                                    option::some => match call bytes::to_utf8(raw)
+                                        codec::invalid_data => ok call heartbeat_at(400, records::heartbeat_result("invalid_body", 0, 0, 0))
+                                        ok str text => match call model::signature_valid(carrier_secret, text, signed.value)
+                                            ok bool valid => match valid
+                                                false => ok call heartbeat_at(401, records::heartbeat_result("unauthorized", 0, 0, 0))
+                                                true => match call codec::decode_json<records::heartbeat_request>(raw)
+                                                    codec::invalid_data => ok call heartbeat_at(400, records::heartbeat_result("invalid_body", 0, 0, 0))
+                                                    ok records::heartbeat_request asked => match call clock::wall_millis()
+                                                        ok int now => ok call apply_heartbeat(asked.worker_id, asked.delivery_id, asked.version, asked.lease_ms, asked.timestamp_ms, asked.nonce, now, pool)
+
+/// Apply one acknowledgement outcome: done, pending and dead replay
+/// 200, an unknown id answers 404, a duplicate nonce answers 401, and
+/// every store failure answers 503 so the carrier retry stays safe.
 fn http::server_response apply_ack_outcome
     emits []
     given
@@ -213,12 +482,16 @@ fn http::server_response apply_ack_outcome
     asserts
         delivered: records::ack_result("done", 1) => ok
         failed: records::ack_result("pending", 2) => ok
+        dead: records::ack_result("dead", 5) => ok
         unknown: records::ack_result("unknown", 0) => ok
+        replay: records::ack_result("replay", 0) => ok
         store_down: records::ack_result("store_unavailable", 0) => ok
     match outcome.status
         "done" => ok call ack_at(200, outcome)
         "pending" => ok call ack_at(200, outcome)
+        "dead" => ok call ack_at(200, outcome)
         "unknown" => ok call ack_at(404, outcome)
+        "replay" => ok call ack_at(401, outcome)
         _ => ok call ack_at(503, outcome)
 
 /// Reconcile one uncertain acknowledgement commit by rereading the
@@ -232,11 +505,13 @@ fn http::server_response reconcile_ack
         sql::pool pool
     asserts
         uncertain_found: "del-1" => ok
+        dead_found: "del-1" => ok
         uncertain_missing: "del-9" => ok
         lookup_failed: "del-1" => ok
     match call sql::query_optional<records::outbox_key, records::outbox_row>(pool, "outbox_by_id", records::outbox_key(delivery_id))
         when
-            uncertain_found: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 2000))
+            uncertain_found: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 2000, "worker-1", 9000, 2))
+            dead_found: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "dead", 5, 2000, "worker-1", 9000, 2))
             uncertain_missing: pool, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
             lookup_failed: pool, "outbox_by_id", records::outbox_key("del-1") => sql::query_failed("outbox_by_id", "SQLITE_IOERR")
         sql::unsupported_value => ok call ack_at(503, records::ack_result("store_unavailable", 0))
@@ -249,61 +524,242 @@ fn http::server_response reconcile_ack
             option::none => ok call ack_at(503, records::ack_result("uncertain", 0))
             option::some => match found.value.state
                 "done" => ok call ack_at(200, records::ack_result("done", found.value.attempts))
+                "dead" => ok call ack_at(200, records::ack_result("dead", found.value.attempts))
                 _ => ok call ack_at(200, records::ack_result("pending", found.value.attempts))
 
-/// Record one carrier acknowledgement in a single attempt-plus-outbox
+/// Record one carrier acknowledgement in a single nonce-plus-attempt
 /// transaction, reconciling an uncertain commit through the outbox
-/// lookup above.
+/// lookup above. Stale timestamps reject before any store touch; an
+/// empty delivery id simply misses the lookup and answers 404.
 fn http::server_response apply_ack
     emits []
     given
         str delivery_id
         bool settled
+        int timestamp_ms
+        str nonce
         int now_ms
         sql::pool pool
     asserts
-        delivered: "del-1", true, 2000 => ok
-        failed: "del-1", false, 2000 => ok
-        unknown: "del-9", true, 2000 => ok
-        tx_failed: "del-1", true, 2000 => ok
-        uncertain_found: "del-1", true, 2000 => ok
-        uncertain_missing: "del-9", true, 2000 => ok
-    match call sql::with_transaction<records::ack_result>(pool, callable model::decide_ack)
-        when
-            delivered: pool, callable model::decide_ack => ok records::ack_result("done", 1)
-            failed: pool, callable model::decide_ack => ok records::ack_result("pending", 2)
-            unknown: pool, callable model::decide_ack => ok records::ack_result("unknown", 0)
-            tx_failed: pool, callable model::decide_ack => sql::transaction_failed("commit")
-            uncertain_found: pool, callable model::decide_ack => sql::commit_unknown("tx-1")
-            uncertain_missing: pool, callable model::decide_ack => sql::commit_unknown("tx-2")
-        sql::connection_failed => ok call ack_at(503, records::ack_result("store_unavailable", 0))
-        sql::transaction_failed => ok call ack_at(503, records::ack_result("store_unavailable", 0))
-        sql::commit_unknown => ok call reconcile_ack(delivery_id, pool)
-        ok records::ack_result outcome => ok call apply_ack_outcome(outcome)
+        stale: "del-1", true, 100000, "n-1", 1000000 => ok
+        delivered: "del-1", true, 1000000, "n-1", 1000000 => ok
+        failed: "del-1", false, 1000000, "n-2", 1000000 => ok
+        unknown: "del-9", true, 1000000, "n-3", 1000000 => ok
+        tx_failed: "del-1", true, 1000000, "n-4", 1000000 => ok
+        uncertain_found: "del-1", true, 1000000, "n-5", 1000000 => ok
+        uncertain_missing: "del-9", true, 1000000, "n-6", 1000000 => ok
+    match call model::fresh_timestamp(now_ms, timestamp_ms)
+        ok bool fresh => match fresh
+            false => ok call ack_at(401, records::ack_result("stale", 0))
+            true => match call sql::with_transaction<records::ack_result>(pool, callable model::decide_ack)
+                when
+                    delivered: pool, callable model::decide_ack => ok records::ack_result("done", 1)
+                    failed: pool, callable model::decide_ack => ok records::ack_result("pending", 2)
+                    unknown: pool, callable model::decide_ack => ok records::ack_result("unknown", 0)
+                    tx_failed: pool, callable model::decide_ack => sql::transaction_failed("commit")
+                    uncertain_found: pool, callable model::decide_ack => sql::commit_unknown("tx-1")
+                    uncertain_missing: pool, callable model::decide_ack => sql::commit_unknown("tx-2")
+                sql::connection_failed => ok call ack_at(503, records::ack_result("store_unavailable", 0))
+                sql::transaction_failed => ok call ack_at(503, records::ack_result("store_unavailable", 0))
+                sql::commit_unknown => ok call reconcile_ack(delivery_id, pool)
+                ok records::ack_result outcome => ok call apply_ack_outcome(outcome)
 
-/// Receive one carrier acknowledgement: bound the body, decode the
-/// ack, then record it through the idempotent transaction above.
-/// Assertion cases pin the pre-store arms; the store arms live on
-/// apply_ack for the same fixed-byte reason as receive.
+/// Receive one carrier acknowledgement: bound the body, require
+/// protocol v1 and the exact-byte signature, decode the ack, then
+/// record it through the idempotent transaction above. Assertion cases
+/// pin the pre-store arms; the store arms live on apply_ack for the
+/// same fixed-byte reason as receive.
 fn http::server_response receive_ack
     emits []
     given
         http::request req
         near sql::pool pool
+        near str carrier_secret
     asserts
-        over_limit:  => ok
-        invalid_body:  => ok
+        over_limit: "carrier-test-0123456789abcdef" => ok
+        no_protocol: "carrier-test-0123456789abcdef" => ok
+        no_signature: "carrier-test-0123456789abcdef" => ok
+        bad_signature: "carrier-test-0123456789abcdef" => ok
+        invalid_body: "carrier-test-0123456789abcdef" => ok
     match call http::request_body(req, 1024)
         when
             over_limit: req, 1024 => http::body_limit(1024)
+            no_protocol: req, 1024 => ok call bytes::empty()
+            no_signature: req, 1024 => ok call bytes::empty()
+            bad_signature: req, 1024 => ok call bytes::empty()
             invalid_body: req, 1024 => ok call bytes::empty()
         http::body_limit => ok call receipt_at(413, records::receipt("body_too_large"))
-        ok bytes::buffer raw => match call bytes::to_utf8(raw)
-            codec::invalid_data => ok call receipt_at(400, records::receipt("invalid_body"))
-            ok str text => match call codec::decode_json<records::ack>(raw)
-                codec::invalid_data => ok call receipt_at(400, records::receipt("invalid_body"))
-                ok records::ack report => match call clock::wall_millis()
-                    ok int now => ok call apply_ack(report.delivery_id, report.settled, now, pool)
+        ok bytes::buffer raw => match call http::request_headers(req)
+            when
+                no_protocol: req => ok []
+                no_signature: req => ok [http::header("x-carrier-protocol", "1")]
+                bad_signature: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "00")]
+                invalid_body: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "98c60f84cfa004a6a0d3d1cc76e28c2e5102c03efe0d9bfba3839b9ac3ef85b8")]
+            ok http::header[] headers => match call model::find_header(headers, "x-carrier-protocol")
+                ok option::value<str> versioned => match versioned
+                    option::none => ok call receipt_at(400, records::receipt("unsupported_protocol"))
+                    option::some => match call model::protocol_valid(versioned.value)
+                        ok bool admitted => match admitted
+                            false => ok call receipt_at(400, records::receipt("unsupported_protocol"))
+                            true => match call model::find_header(headers, "x-carrier-signature")
+                                ok option::value<str> signed => match signed
+                                    option::none => ok call receipt_at(401, records::receipt("unauthorized"))
+                                    option::some => match call bytes::to_utf8(raw)
+                                        codec::invalid_data => ok call receipt_at(400, records::receipt("invalid_body"))
+                                        ok str text => match call model::signature_valid(carrier_secret, text, signed.value)
+                                            ok bool valid => match valid
+                                                false => ok call receipt_at(401, records::receipt("unauthorized"))
+                                                true => match call codec::decode_json<records::ack>(raw)
+                                                    codec::invalid_data => ok call receipt_at(400, records::receipt("invalid_body"))
+                                                    ok records::ack report => match call clock::wall_millis()
+                                                        ok int now => ok call apply_ack(report.delivery_id, report.settled, report.timestamp_ms, report.nonce, now, pool)
+
+/// Apply one dead-letter outcome: dead replays 200, an unknown id
+/// answers 404, an already delivered row and a foreign holder answer
+/// 409, a duplicate nonce answers 401, and every store failure
+/// answers 503.
+fn http::server_response apply_dead_outcome
+    emits []
+    given
+        records::dead_result outcome
+    asserts
+        marked: records::dead_result("dead", 5) => ok
+        unknown: records::dead_result("unknown", 0) => ok
+        already_done: records::dead_result("already_done", 1) => ok
+        lease_lost: records::dead_result("lease_lost", 5) => ok
+        replay: records::dead_result("replay", 0) => ok
+        store_down: records::dead_result("store_unavailable", 0) => ok
+    match outcome.status
+        "dead" => ok call dead_at(200, outcome)
+        "unknown" => ok call dead_at(404, outcome)
+        "already_done" => ok call dead_at(409, outcome)
+        "lease_lost" => ok call dead_at(409, outcome)
+        "replay" => ok call dead_at(401, outcome)
+        _ => ok call dead_at(503, outcome)
+
+/// Reconcile one uncertain dead-letter commit by rereading the outbox
+/// row: a dead row replays dead, a done row proves the mark never
+/// landed and replays already_done, and anything else answers 503
+/// uncertain so the worker retries with a fresh nonce.
+fn http::server_response reconcile_dead
+    emits []
+    given
+        str delivery_id
+        sql::pool pool
+    asserts
+        uncertain_dead: "del-1" => ok
+        already_done: "del-1" => ok
+        uncertain_pending: "del-1" => ok
+        uncertain_missing: "del-9" => ok
+        lookup_failed: "del-1" => ok
+    match call sql::query_optional<records::outbox_key, records::outbox_row>(pool, "outbox_by_id", records::outbox_key(delivery_id))
+        when
+            uncertain_dead: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "dead", 5, 2000, "worker-1", 9000, 2))
+            already_done: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 2000, "worker-1", 9000, 2))
+            uncertain_pending: pool, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 5, 2000, "worker-1", 9000, 2))
+            uncertain_missing: pool, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+            lookup_failed: pool, "outbox_by_id", records::outbox_key("del-1") => sql::query_failed("outbox_by_id", "SQLITE_IOERR")
+        sql::unsupported_value => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        sql::connection_failed => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        sql::query_failed => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        sql::constraint_failed => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        sql::row_count => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        sql::schema_mismatch => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+        ok option::value<records::outbox_row> found => match found
+            option::none => ok call dead_at(503, records::dead_result("uncertain", 0))
+            option::some => match found.value.state
+                "dead" => ok call dead_at(200, records::dead_result("dead", found.value.attempts))
+                "done" => ok call dead_at(409, records::dead_result("already_done", found.value.attempts))
+                _ => ok call dead_at(503, records::dead_result("uncertain", 0))
+
+/// Mark one poison row terminal in a single nonce-plus-dead-letter
+/// transaction, reconciling an uncertain commit through the outbox
+/// lookup above.
+fn http::server_response apply_dead
+    emits []
+    given
+        str delivery_id
+        str worker_id
+        str reason
+        int timestamp_ms
+        str nonce
+        int now_ms
+        sql::pool pool
+    asserts
+        bad_shape: "del-1", "", "poison", 1000000, "n-1", 1000000 => ok
+        stale: "del-1", "worker-1", "poison", 100000, "n-1", 1000000 => ok
+        marked: "del-1", "worker-1", "poison", 1000000, "n-1", 1000000 => ok
+        unknown: "del-9", "worker-1", "poison", 1000000, "n-2", 1000000 => ok
+        tx_failed: "del-1", "worker-1", "poison", 1000000, "n-3", 1000000 => ok
+        uncertain_dead: "del-1", "worker-1", "poison", 1000000, "n-4", 1000000 => ok
+        uncertain_missing: "del-9", "worker-1", "poison", 1000000, "n-5", 1000000 => ok
+    match call model::dead_shape_valid(worker_id, reason)
+        ok bool shaped => match shaped
+            false => ok call dead_at(400, records::dead_result("invalid_shape", 0))
+            true => match call model::fresh_timestamp(now_ms, timestamp_ms)
+                ok bool fresh => match fresh
+                    false => ok call dead_at(401, records::dead_result("stale", 0))
+                    true => match call sql::with_transaction<records::dead_result>(pool, callable model::decide_dead)
+                        when
+                            marked: pool, callable model::decide_dead => ok records::dead_result("dead", 5)
+                            unknown: pool, callable model::decide_dead => ok records::dead_result("unknown", 0)
+                            tx_failed: pool, callable model::decide_dead => sql::transaction_failed("commit")
+                            uncertain_dead: pool, callable model::decide_dead => sql::commit_unknown("tx-1")
+                            uncertain_missing: pool, callable model::decide_dead => sql::commit_unknown("tx-2")
+                        sql::connection_failed => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+                        sql::transaction_failed => ok call dead_at(503, records::dead_result("store_unavailable", 0))
+                        sql::commit_unknown => ok call reconcile_dead(delivery_id, pool)
+                        ok records::dead_result outcome => ok call apply_dead_outcome(outcome)
+
+/// Receive one carrier dead-letter report: bound the body, require
+/// protocol v1 and the exact-byte signature, decode the report, then
+/// mark through the terminal transaction above. Assertion cases pin
+/// every pre-store arm; the store arms live on apply_dead for the
+/// same fixed-byte reason as receive.
+fn http::server_response receive_dead
+    emits []
+    given
+        http::request req
+        near sql::pool pool
+        near str carrier_secret
+    asserts
+        over_limit: "carrier-test-0123456789abcdef" => ok
+        no_protocol: "carrier-test-0123456789abcdef" => ok
+        no_signature: "carrier-test-0123456789abcdef" => ok
+        bad_signature: "carrier-test-0123456789abcdef" => ok
+        invalid_body: "carrier-test-0123456789abcdef" => ok
+    match call http::request_body(req, 1024)
+        when
+            over_limit: req, 1024 => http::body_limit(1024)
+            no_protocol: req, 1024 => ok call bytes::empty()
+            no_signature: req, 1024 => ok call bytes::empty()
+            bad_signature: req, 1024 => ok call bytes::empty()
+            invalid_body: req, 1024 => ok call bytes::empty()
+        http::body_limit => ok call dead_at(413, records::dead_result("body_too_large", 0))
+        ok bytes::buffer raw => match call http::request_headers(req)
+            when
+                no_protocol: req => ok []
+                no_signature: req => ok [http::header("x-carrier-protocol", "1")]
+                bad_signature: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "00")]
+                invalid_body: req => ok [http::header("x-carrier-protocol", "1"), http::header("x-carrier-signature", "98c60f84cfa004a6a0d3d1cc76e28c2e5102c03efe0d9bfba3839b9ac3ef85b8")]
+            ok http::header[] headers => match call model::find_header(headers, "x-carrier-protocol")
+                ok option::value<str> versioned => match versioned
+                    option::none => ok call dead_at(400, records::dead_result("unsupported_protocol", 0))
+                    option::some => match call model::protocol_valid(versioned.value)
+                        ok bool admitted => match admitted
+                            false => ok call dead_at(400, records::dead_result("unsupported_protocol", 0))
+                            true => match call model::find_header(headers, "x-carrier-signature")
+                                ok option::value<str> signed => match signed
+                                    option::none => ok call dead_at(401, records::dead_result("unauthorized", 0))
+                                    option::some => match call bytes::to_utf8(raw)
+                                        codec::invalid_data => ok call dead_at(400, records::dead_result("invalid_body", 0))
+                                        ok str text => match call model::signature_valid(carrier_secret, text, signed.value)
+                                            ok bool valid => match valid
+                                                false => ok call dead_at(401, records::dead_result("unauthorized", 0))
+                                                true => match call codec::decode_json<records::dead_request>(raw)
+                                                    codec::invalid_data => ok call dead_at(400, records::dead_result("invalid_body", 0))
+                                                    ok records::dead_request asked => match call clock::wall_millis()
+                                                        ok int now => ok call apply_dead(asked.delivery_id, asked.worker_id, asked.reason, asked.timestamp_ms, asked.nonce, now, pool)
 
 /// Answer readiness for the operator and the test harness.
 fn http::server_response health
@@ -314,20 +770,23 @@ fn http::server_response health
         sample:  => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "ok")
 
-/// Mount the webhook callbacks, capturing the open pool and secret.
+/// Mount the webhook callbacks, capturing the open pool and secrets.
 fn http::router webhook_routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
         near sql::pool pool
         near str secret
+        near str carrier_secret
     asserts
-        sample: "whsec-test-0123456789abcdef" => ok
+        sample: "whsec-test-0123456789abcdef", "carrier-test-0123456789abcdef" => ok
     match chain
         call http::route_post("/webhooks/provider", callable receive) as http::route incoming
-        call http::route_get("/outbox/pending", callable outbox_pending) as http::route pending
+        call http::route_post("/outbox/claim", callable receive_claim) as http::route claiming
+        call http::route_post("/outbox/heartbeat", callable receive_heartbeat) as http::route beating
         call http::route_post("/outbox/ack", callable receive_ack) as http::route acknowledge
+        call http::route_post("/outbox/dead_letter", callable receive_dead) as http::route burying
         call http::route_get("/health", callable health) as http::route probe
-        call http::make_router([incoming, pending, acknowledge, probe]) as http::router built
+        call http::make_router([incoming, claiming, beating, acknowledge, burying, probe]) as http::router built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
@@ -340,15 +799,16 @@ fn http::server boot
         int port
         str db_path
         str secret
+        str carrier_secret
     asserts
-        sample: 0, "hook.sqlite", "whsec-test-0123456789abcdef" => ok
+        sample: 0, "hook.sqlite", "whsec-test-0123456789abcdef", "carrier-test-0123456789abcdef" => ok
     match call sql::sqlite_open_file(db_path, sql::sqlite_file_options("rwc", 5000))
         when
             sample: "hook.sqlite", sql::sqlite_file_options("rwc", 5000) => ok
         sql::connection_failed
         ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
             http::invalid_server_config
-            ok http::server_config config => match call webhook_routes(pool, secret)
+            ok http::server_config config => match call webhook_routes(pool, secret, carrier_secret)
                 http::invalid_route
                 http::duplicate_route
                 http::ambiguous_route
@@ -385,26 +845,31 @@ fn void main
                         serve: "WEBHOOK_SECRET" => ok "whsec-test-0123456789abcdef"
                     env::invalid_name
                     http::credentials_missing
-                    ok str secret => match call sql::sqlite_open_file(args[1], sql::sqlite_file_options("rwc", 5000))
+                    ok str secret => match call env::required("CARRIER_SECRET")
                         when
-                            serve: "hook.sqlite", sql::sqlite_file_options("rwc", 5000) => ok
-                        sql::connection_failed
-                        ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
-                            http::invalid_server_config
-                            ok http::server_config config => match call webhook_routes(pool, secret)
-                                http::invalid_route
-                                http::duplicate_route
-                                http::ambiguous_route
-                                ok http::router built => match call http::server_start(config, built)
-                                    when
-                                        serve: config, built => ok
-                                    http::bind_failed
-                                    ok http::server sturdy => match call http::server_wait(sturdy)
+                            serve: "CARRIER_SECRET" => ok "carrier-test-0123456789abcdef"
+                        env::invalid_name
+                        http::credentials_missing
+                        ok str carrier_secret => match call sql::sqlite_open_file(args[1], sql::sqlite_file_options("rwc", 5000))
+                            when
+                                serve: "hook.sqlite", sql::sqlite_file_options("rwc", 5000) => ok
+                            sql::connection_failed
+                            ok sql::pool pool => match call http::make_server_config("127.0.0.1", port, 65536, 5000)
+                                http::invalid_server_config
+                                ok http::server_config config => match call webhook_routes(pool, secret, carrier_secret)
+                                    http::invalid_route
+                                    http::duplicate_route
+                                    http::ambiguous_route
+                                    ok http::router built => match call http::server_start(config, built)
                                         when
-                                            serve: sturdy => ok
-                                        http::shutdown_failed
-                                        ok => match call sql::pool_close(pool, 1000)
+                                            serve: config, built => ok
+                                        http::bind_failed
+                                        ok http::server sturdy => match call http::server_wait(sturdy)
                                             when
-                                                serve: pool, 1000 => ok
-                                            sql::close_failed
-                                            ok => ok
+                                                serve: sturdy => ok
+                                            http::shutdown_failed
+                                            ok => match call sql::pool_close(pool, 1000)
+                                                when
+                                                    serve: pool, 1000 => ok
+                                                sql::close_failed
+                                                ok => ok

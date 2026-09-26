@@ -393,11 +393,13 @@ func TestGate4FaultMatrix(t *testing.T) {
 	var setupReport struct {
 		Tables int `json:"tables"`
 	}
-	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 3 {
+	if err := json.Unmarshal(setup, &setupReport); err != nil || setupReport.Tables != 5 {
 		t.Fatalf("invalid webhook setup report %v %s", err, string(setup))
 	}
 	secret := "whsec-gate4-fault-matrix"
-	wsnapshot := snapshotCredential(t, whome, "WEBHOOK_SECRET", secret)
+	wsnapshot := snapshotMap(t, whome, "snapshot-webhook", map[string]string{
+		"WEBHOOK_SECRET": secret, "CARRIER_SECRET": "carrier-gate4-fault-matrix",
+	})
 	wentry := filepath.Join(wfirstDir, "entry.ts")
 	wbase, wcrash, wstop := serveWebhook(t, ctx, toolchain, whome, wentry, wsnapshot, gate4WebhookPort, wdb)
 	provider := &webhookProvider{t: t, base: wbase, secret: []byte(secret), client: &http.Client{Timeout: 30 * time.Second}}

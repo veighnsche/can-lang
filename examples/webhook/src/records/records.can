@@ -1,5 +1,5 @@
 package records
-    provides [delivery, receipt, pending_item, outbox_page, ack, ack_result, ledger_row, ledger_key, ledger_insert, outbox_row, outbox_key, outbox_insert, outbox_update, outbox_state, attempt_insert]
+    provides [delivery, receipt, claim_request, claim_item, claim_page, claim_scan, claim_lease, heartbeat_request, heartbeat_result, heartbeat_lease, ack, ack_result, dead_request, dead_result, dead_insert, outbox_dead, nonce_insert, nonce_cutoff, ledger_row, ledger_key, ledger_insert, outbox_row, outbox_key, outbox_insert, outbox_update, attempt_insert]
     uses []
 
 /// One provider delivery envelope, decoded from the signed bytes.
@@ -10,23 +10,105 @@ record delivery
 /// JSON outcome body answered for every webhook and ack call.
 record receipt
     str status
-/// One pending outbox row handed to the carrier.
-record pending_item
+/// Authenticated claim request: the worker takes at most one row per
+/// call and pages until empty. timestamp_ms and nonce ride inside the
+/// signed bytes so the signature binds every acted-on field.
+record claim_request
+    str worker_id
+    int lease_ms
+    int timestamp_ms
+    str nonce
+/// One claimed outbox row handed to the carrier with its lease.
+record claim_item
     str delivery_id
     str event
     str subscription
     int attempts
-/// Bounded pending page answered to the carrier.
-record outbox_page
-    pending_item[] items
-/// Carrier acknowledgement for one delivered outbox row.
+    int lease_until_ms
+    int version
+/// Bounded claim page: zero or one item under protocol v1.
+record claim_page
+    str status
+    claim_item[] items
+/// Candidate scan key: pending rows whose lease has expired.
+record claim_scan
+    str state
+    int now_ms
+/// Claim lease parameters in statement order.
+record claim_lease
+    str worker_id
+    int lease_until_ms
+    int version
+    int updated_ms
+    str delivery_id
+    int version_was
+/// Authenticated heartbeat: only the holding worker at the current
+/// version may extend the lease.
+record heartbeat_request
+    str worker_id
+    str delivery_id
+    int version
+    int lease_ms
+    int timestamp_ms
+    str nonce
+/// JSON outcome body for one heartbeat.
+record heartbeat_result
+    str status
+    int lease_until_ms
+    int version
+    int attempts
+/// Heartbeat lease parameters in statement order.
+record heartbeat_lease
+    int lease_until_ms
+    int version
+    int updated_ms
+    str delivery_id
+    str worker_id
+    int version_was
+/// Carrier acknowledgement for one delivered outbox row. The ack is
+/// idempotent by delivery_id and ownership-free: any authenticated
+/// carrier may report the downstream outcome.
 record ack
     str delivery_id
     bool settled
+    int timestamp_ms
+    str nonce
 /// JSON outcome body for one acknowledgement.
 record ack_result
     str status
     int attempts
+/// Authenticated dead-letter report: the holding worker marks a poison
+/// row terminal after N protocol-versioned attempts.
+record dead_request
+    str delivery_id
+    str worker_id
+    str reason
+    int timestamp_ms
+    str nonce
+/// JSON outcome body for one dead-letter report.
+record dead_result
+    str status
+    int attempts
+/// Dead-letter insert parameters in statement order.
+record dead_insert
+    str delivery_id
+    str event
+    str subscription
+    str reason
+    int attempts
+    int dead_ms
+/// Outbox terminal-mark parameters in statement order.
+record outbox_dead
+    str state
+    int updated_ms
+    str delivery_id
+/// Nonce insert parameters in statement order.
+record nonce_insert
+    str nonce
+    int seen_ms
+/// Nonce prune cutoff: rows older than this are dropped.
+record nonce_cutoff
+    int seen_ms
 /// One idempotency ledger row.
 record ledger_row
     str delivery_id
@@ -46,7 +128,9 @@ record ledger_insert
     str subscription
     str outcome
     int received_ms
-/// One outbox row.
+/// One outbox row with its B3 lease: worker_id names the holder (''
+/// when free), lease_until_ms is the ms-epoch expiry (0 when free),
+/// and version guards each lease mutation against lost updates.
 record outbox_row
     str delivery_id
     str event
@@ -54,10 +138,14 @@ record outbox_row
     str state
     int attempts
     int updated_ms
+    str worker_id
+    int lease_until_ms
+    int version
 /// Outbox lookup key.
 record outbox_key
     str delivery_id
-/// Outbox insert parameters in statement order.
+/// Outbox insert parameters in statement order. The lease columns keep
+/// their defaults (free row) on insert.
 record outbox_insert
     str delivery_id
     str event
@@ -71,9 +159,6 @@ record outbox_update
     int attempts
     int updated_ms
     str delivery_id
-/// Outbox state scan key.
-record outbox_state
-    str state
 /// Attempt insert parameters in statement order.
 record attempt_insert
     str delivery_id

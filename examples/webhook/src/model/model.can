@@ -1,5 +1,5 @@
 package model
-    provides [find_header, signature_valid, digest_of, decide_receive, decide_ack]
+    provides [find_header, signature_valid, digest_of, protocol_valid, fresh_timestamp, claim_shape_valid, heartbeat_shape_valid, dead_shape_valid, decide_receive, decide_claim, decide_heartbeat, decide_ack, decide_dead]
     uses [records, bytes, codec, crypto, http, option, sql]
 
 /// Scan request headers for the first field with the given name. Header
@@ -26,6 +26,8 @@ fn option::value<str> find_header
 /// HMAC-SHA-256 under the shared secret, submitted as lowercase hex; any
 /// other spelling, an empty secret, or unencodable input reads false
 /// instead of failing, so every rejection answers 401 through one arm.
+/// The carrier envelope reuses this primitive over the exact carrier
+/// body bytes under the carrier secret.
 fn bool signature_valid
     emits []
     given
@@ -58,6 +60,95 @@ fn str digest_of
     match call bytes::from_utf8(body)
         codec::invalid_data => ok ""
         ok bytes::buffer raw => ok call bytes::encode_hex(call crypto::sha256(raw))
+
+/// Check the carrier protocol version header. Protocol v1 is the only
+/// admitted version; anything else answers 400 unsupported_protocol
+/// before any signature or store work.
+fn bool protocol_valid
+    emits []
+    given
+        str supplied
+    asserts
+        v1: "1" => ok true
+        v2: "2" => ok false
+        empty: "" => ok false
+    match supplied is "1"
+        false => ok false
+        true => ok true
+
+/// Check carrier timestamp freshness against the skew window. The
+/// timestamp rides inside the signed body, so a captured request stays
+/// valid only inside +-300000ms around now; anything older or further
+/// ahead answers 401 stale before any store touch.
+fn bool fresh_timestamp
+    emits []
+    given
+        int now_ms
+        int ts
+    asserts
+        fresh: 1000000, 999999 => ok true
+        old: 1000000, 100000 => ok false
+        future: 1000000, 2000000 => ok false
+        edge_past: 1000000, 700000 => ok true
+        edge_future: 1000000, 1300000 => ok true
+    match ts >= now_ms - 300000 and ts <= now_ms + 300000
+        false => ok false
+        true => ok true
+
+/// Check claim request shape: a 1..128 character worker identity and a
+/// 1000..600000ms lease ask. Malformed claims answer 400 before any
+/// signature or store work.
+fn bool claim_shape_valid
+    emits []
+    given
+        str worker_id
+        int lease_ms
+    asserts
+        valid: "worker-1", 5000 => ok true
+        empty_worker: "", 5000 => ok false
+        lease_low: "worker-1", 999 => ok false
+        lease_high: "worker-1", 600001 => ok false
+    match worker_id.length >= 1 and worker_id.length <= 128 and lease_ms >= 1000 and lease_ms <= 600000
+        false => ok false
+        true => ok true
+
+/// Check heartbeat request shape: a 1..128 character worker identity, a
+/// nonnegative version, and a 1000..600000ms lease ask.
+fn bool heartbeat_shape_valid
+    emits []
+    given
+        str worker_id
+        int version
+        int lease_ms
+    asserts
+        valid: "worker-1", 3, 5000 => ok true
+        bad_worker: "", 3, 5000 => ok false
+        bad_version: "worker-1", -1, 5000 => ok false
+        bad_lease: "worker-1", 3, 999 => ok false
+    match worker_id.length >= 1 and worker_id.length <= 128 and version >= 0 and lease_ms >= 1000 and lease_ms <= 600000
+        false => ok false
+        true => ok true
+
+/// Check dead-letter request shape: a 1..128 character worker identity
+/// and one of the three protocol-versioned terminal reasons.
+fn bool dead_shape_valid
+    emits []
+    given
+        str worker_id
+        str reason
+    asserts
+        poison: "worker-1", "poison" => ok true
+        denied: "worker-1", "destination_denied" => ok true
+        gone: "worker-1", "no_destination" => ok true
+        bad_worker: "", "poison" => ok false
+        bad_reason: "worker-1", "tired" => ok false
+    match worker_id.length >= 1 and worker_id.length <= 128
+        false => ok false
+        true => match reason
+            "poison" => ok true
+            "destination_denied" => ok true
+            "no_destination" => ok true
+            _ => ok false
 
 /// Record one verified delivery: insert the ledger row first, then the
 /// outbox row, and commit only when this delivery wrote both. A lost
@@ -111,64 +202,293 @@ fn sql::decision<records::receipt> decide_receive
             sql::constraint_failed => ok sql::rollback<records::receipt>(records::receipt("store_unavailable"))
             ok int queued => ok sql::commit<records::receipt>(records::receipt("accepted"))
 
-/// Apply one carrier acknowledgement: append the durable attempt row and
-/// move the outbox row to done or back to pending in the same
-/// transaction. Unknown ids replay unknown without writing, and an
-/// already done row replays done so a duplicate ack never appends a
-/// second attempt for one delivery.
+/// Claim one pending row for a worker: consume the single-use nonce,
+/// prune stale nonces, read the oldest claimable row lookup-first, and
+/// take its lease with a version-guarded conditional write. The
+/// candidate read is a scalar subquery under cardinality optional, so
+/// any number of pending rows coexists with single-row claims (a
+/// bounded rows read would fault past its bound). A duplicate nonce
+/// replays 401 without touching the outbox; a lost lease race answers
+/// empty so the loser retries honestly; every store failure rolls
+/// back to store_unavailable.
+fn sql::decision<records::claim_page> decide_claim
+    emits []
+    given
+        near str worker_id
+        near int lease_ms
+        near str nonce
+        near int now_ms
+        sql::transaction tx
+    asserts
+        claimed: "worker-1", 5000, "n-1", 1000000 => ok sql::commit<records::claim_page>(records::claim_page("claimed", [records::claim_item("del-1", "invoice.paid", "sub-9", 0, 1005000, 1)]))
+        empty: "worker-1", 5000, "n-2", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("empty", []))
+        replay: "worker-1", 5000, "n-1", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("replay", []))
+        lost_race: "worker-1", 5000, "n-3", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("empty", []))
+        candidate_down: "worker-1", 5000, "n-4", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+        update_down: "worker-1", 5000, "n-5", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+        store_down: "worker-1", 5000, "n-6", 1000000 => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+    match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
+        when
+            claimed: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => ok 1
+            empty: tx, "nonce_insert", records::nonce_insert("n-2", 1000000) => ok 1
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            lost_race: tx, "nonce_insert", records::nonce_insert("n-3", 1000000) => ok 1
+            candidate_down: tx, "nonce_insert", records::nonce_insert("n-4", 1000000) => ok 1
+            update_down: tx, "nonce_insert", records::nonce_insert("n-5", 1000000) => ok 1
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 1000000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+        sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+        sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("replay", []))
+        ok int seen => match call sql::transaction_execute<records::nonce_cutoff>(tx, "nonce_prune", records::nonce_cutoff(now_ms - 600000))
+            when
+                claimed: tx, "nonce_prune", records::nonce_cutoff(400000) => ok 0
+                empty: tx, "nonce_prune", records::nonce_cutoff(400000) => ok 0
+                lost_race: tx, "nonce_prune", records::nonce_cutoff(400000) => ok 0
+                candidate_down: tx, "nonce_prune", records::nonce_cutoff(400000) => ok 0
+                update_down: tx, "nonce_prune", records::nonce_cutoff(400000) => ok 0
+            sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+            sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+            sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+            ok int pruned => match call sql::transaction_query_optional<records::claim_scan, records::outbox_row>(tx, "claim_candidate", records::claim_scan("pending", now_ms))
+                when
+                    claimed: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
+                    empty: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::none()
+                    lost_race: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
+                    candidate_down: tx, "claim_candidate", records::claim_scan("pending", 1000000) => sql::query_failed("claim_candidate", "SQLITE_IOERR")
+                    update_down: tx, "claim_candidate", records::claim_scan("pending", 1000000) => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "", 0, 0))
+                sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                sql::row_count => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                sql::schema_mismatch => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                ok option::value<records::outbox_row> found => match found
+                    option::none => ok sql::rollback<records::claim_page>(records::claim_page("empty", []))
+                    option::some => match call sql::transaction_execute<records::claim_lease>(tx, "claim_update", records::claim_lease(worker_id, now_ms + lease_ms, found.value.version + 1, now_ms, found.value.delivery_id, found.value.version))
+                        when
+                            claimed: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => ok 1
+                            lost_race: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => ok 0
+                            update_down: tx, "claim_update", records::claim_lease("worker-1", 1005000, 1, 1000000, "del-1", 0) => sql::query_failed("claim_update", "SQLITE_IOERR")
+                        sql::unsupported_value => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                        sql::query_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                        sql::constraint_failed => ok sql::rollback<records::claim_page>(records::claim_page("store_unavailable", []))
+                        ok int moved => match moved is 0
+                            true => ok sql::rollback<records::claim_page>(records::claim_page("empty", []))
+                            false => ok sql::commit<records::claim_page>(records::claim_page("claimed", [records::claim_item(found.value.delivery_id, found.value.event, found.value.subscription, found.value.attempts, now_ms + lease_ms, found.value.version + 1)]))
+
+/// Extend one held lease: consume the single-use nonce, reread the row,
+/// and rewrite the lease only for the holding worker at the current
+/// version. Done and dead rows replay their state without writing; a
+/// foreign or stale holder answers lease_lost; a duplicate nonce
+/// replays 401.
+fn sql::decision<records::heartbeat_result> decide_heartbeat
+    emits []
+    given
+        near str worker_id
+        near str delivery_id
+        near int version
+        near int lease_ms
+        near str nonce
+        near int now_ms
+        sql::transaction tx
+    asserts
+        extended: "worker-1", "del-1", 1, 5000, "n-1", 1000000 => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("extended", 1005000, 2, 0))
+        replay: "worker-1", "del-1", 1, 5000, "n-1", 1000000 => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("replay", 0, 0, 0))
+        unknown: "worker-1", "del-9", 0, 5000, "n-2", 1000000 => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("unknown", 0, 0, 0))
+        lease_lost: "worker-2", "del-1", 1, 5000, "n-3", 1000000 => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("lease_lost", 0, 0, 0))
+        stale_version: "worker-1", "del-1", 0, 5000, "n-4", 1000000 => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("lease_lost", 0, 0, 0))
+        done: "worker-1", "del-1", 1, 5000, "n-5", 1000000 => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("done", 1005000, 2, 1))
+        dead: "worker-1", "del-1", 1, 5000, "n-6", 1000000 => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("dead", 1005000, 2, 5))
+        store_down: "worker-1", "del-1", 1, 5000, "n-7", 1000000 => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+    match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
+        when
+            extended: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => ok 1
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 1000000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            unknown: tx, "nonce_insert", records::nonce_insert("n-2", 1000000) => ok 1
+            lease_lost: tx, "nonce_insert", records::nonce_insert("n-3", 1000000) => ok 1
+            stale_version: tx, "nonce_insert", records::nonce_insert("n-4", 1000000) => ok 1
+            done: tx, "nonce_insert", records::nonce_insert("n-5", 1000000) => ok 1
+            dead: tx, "nonce_insert", records::nonce_insert("n-6", 1000000) => ok 1
+            store_down: tx, "nonce_insert", records::nonce_insert("n-7", 1000000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::query_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+        sql::constraint_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("replay", 0, 0, 0))
+        ok int seen => match call sql::transaction_query_optional<records::outbox_key, records::outbox_row>(tx, "outbox_by_id", records::outbox_key(delivery_id))
+            when
+                extended: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "worker-1", 1002000, 1))
+                unknown: tx, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+                lease_lost: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "worker-1", 1002000, 1))
+                stale_version: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 900000, "worker-1", 1002000, 1))
+                done: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 950000, "worker-1", 1005000, 2))
+                dead: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "dead", 5, 950000, "worker-1", 1005000, 2))
+            sql::unsupported_value => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+            sql::query_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+            sql::constraint_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+            sql::row_count => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+            sql::schema_mismatch => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+            ok option::value<records::outbox_row> found => match found
+                option::none => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("unknown", 0, 0, 0))
+                option::some => match found.value.state
+                    "done" => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("done", found.value.lease_until_ms, found.value.version, found.value.attempts))
+                    "dead" => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("dead", found.value.lease_until_ms, found.value.version, found.value.attempts))
+                    _ => match found.value.worker_id is worker_id
+                        false => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("lease_lost", 0, 0, 0))
+                        true => match found.value.version is version
+                            false => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("lease_lost", 0, 0, 0))
+                            true => match call sql::transaction_execute<records::heartbeat_lease>(tx, "heartbeat_update", records::heartbeat_lease(now_ms + lease_ms, version + 1, now_ms, delivery_id, worker_id, version))
+                                when
+                                    extended: tx, "heartbeat_update", records::heartbeat_lease(1005000, 2, 1000000, "del-1", "worker-1", 1) => ok 1
+                                sql::unsupported_value => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+                                sql::query_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+                                sql::constraint_failed => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("store_unavailable", 0, 0, 0))
+                                ok int moved => match moved is 0
+                                    true => ok sql::rollback<records::heartbeat_result>(records::heartbeat_result("lease_lost", 0, 0, 0))
+                                    false => ok sql::commit<records::heartbeat_result>(records::heartbeat_result("extended", now_ms + lease_ms, version + 1, found.value.attempts))
+
+/// Apply one carrier acknowledgement: consume the single-use nonce,
+/// append the durable attempt row and move the outbox row to done or
+/// back to pending in the same transaction. The ack is ownership-free:
+/// any authenticated carrier may report the downstream outcome, and
+/// downstream receivers deduplicate by delivery_id. Unknown ids replay
+/// unknown without writing, done and dead rows replay their state
+/// without appending a second attempt, and a duplicate nonce replays
+/// 401.
 fn sql::decision<records::ack_result> decide_ack
     emits []
     given
         near str delivery_id
         near bool settled
         near int now_ms
+        near str nonce
         sql::transaction tx
     asserts
-        delivered: "del-1", true, 2000 => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
-        failed: "del-1", false, 2000 => ok sql::commit<records::ack_result>(records::ack_result("pending", 2))
-        unknown: "del-9", true, 2000 => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
-        already_done: "del-1", true, 2000 => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
-        store_down: "del-1", true, 2000 => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-    match call sql::transaction_query_optional<records::outbox_key, records::outbox_row>(tx, "outbox_by_id", records::outbox_key(delivery_id))
+        delivered: "del-1", true, 2000, "n-1" => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
+        failed: "del-1", false, 2000, "n-2" => ok sql::commit<records::ack_result>(records::ack_result("pending", 2))
+        unknown: "del-9", true, 2000, "n-3" => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
+        already_done: "del-1", true, 2000, "n-4" => ok sql::commit<records::ack_result>(records::ack_result("done", 1))
+        dead_acked: "del-1", false, 2000, "n-5" => ok sql::commit<records::ack_result>(records::ack_result("dead", 5))
+        replay: "del-1", true, 2000, "n-1" => ok sql::rollback<records::ack_result>(records::ack_result("replay", 0))
+        store_down: "del-1", true, 2000, "n-6" => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+    match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
         when
-            delivered: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000))
-            failed: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 1, 1000))
-            unknown: tx, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
-            already_done: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 1500))
-            store_down: tx, "outbox_by_id", records::outbox_key("del-1") => sql::query_failed("outbox_by_id", "SQLITE_IOERR")
+            delivered: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => ok 1
+            failed: tx, "nonce_insert", records::nonce_insert("n-2", 2000) => ok 1
+            unknown: tx, "nonce_insert", records::nonce_insert("n-3", 2000) => ok 1
+            already_done: tx, "nonce_insert", records::nonce_insert("n-4", 2000) => ok 1
+            dead_acked: tx, "nonce_insert", records::nonce_insert("n-5", 2000) => ok 1
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
         sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
         sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-        sql::row_count => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-        sql::schema_mismatch => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-        ok option::value<records::outbox_row> found => match found
-            option::none => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
-            option::some => match found.value.state is "done"
-                false => match settled
-                    false => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "failed", now_ms))
-                        when
-                            failed: tx, "attempt_insert", records::attempt_insert("del-1", "failed", 2000) => ok 1
-                        sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("pending", found.value.attempts + 1, now_ms, delivery_id))
+        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("replay", 0))
+        ok int seen => match call sql::transaction_query_optional<records::outbox_key, records::outbox_row>(tx, "outbox_by_id", records::outbox_key(delivery_id))
+            when
+                delivered: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 0, 1000, "worker-1", 9000, 2))
+                failed: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 1, 1000, "worker-1", 9000, 2))
+                unknown: tx, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+                already_done: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 1500, "worker-1", 9000, 2))
+                dead_acked: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "dead", 5, 1500, "worker-1", 9000, 2))
+            sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+            sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+            sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+            sql::row_count => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+            sql::schema_mismatch => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+            ok option::value<records::outbox_row> found => match found
+                option::none => ok sql::rollback<records::ack_result>(records::ack_result("unknown", 0))
+                option::some => match found.value.state
+                    "done" => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts))
+                    "dead" => ok sql::commit<records::ack_result>(records::ack_result("dead", found.value.attempts))
+                    _ => match settled
+                        false => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "failed", now_ms))
                             when
-                                failed: tx, "outbox_update", records::outbox_update("pending", 2, 2000, "del-1") => ok 1
+                                failed: tx, "attempt_insert", records::attempt_insert("del-1", "failed", 2000) => ok 1
                             sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
                             sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
                             sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                            ok int moved => ok sql::commit<records::ack_result>(records::ack_result("pending", found.value.attempts + 1))
-                    true => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "delivered", now_ms))
-                        when
-                            delivered: tx, "attempt_insert", records::attempt_insert("del-1", "delivered", 2000) => ok 1
-                        sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                        ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("done", found.value.attempts + 1, now_ms, delivery_id))
+                            ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("pending", found.value.attempts + 1, now_ms, delivery_id))
+                                when
+                                    failed: tx, "outbox_update", records::outbox_update("pending", 2, 2000, "del-1") => ok 1
+                                sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                ok int moved => ok sql::commit<records::ack_result>(records::ack_result("pending", found.value.attempts + 1))
+                        true => match call sql::transaction_execute<records::attempt_insert>(tx, "attempt_insert", records::attempt_insert(delivery_id, "delivered", now_ms))
                             when
-                                delivered: tx, "outbox_update", records::outbox_update("done", 1, 2000, "del-1") => ok 1
+                                delivered: tx, "attempt_insert", records::attempt_insert("del-1", "delivered", 2000) => ok 1
                             sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
                             sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
                             sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
-                            ok int moved => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts + 1))
-                true => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts))
+                            ok int logged => match call sql::transaction_execute<records::outbox_update>(tx, "outbox_update", records::outbox_update("done", found.value.attempts + 1, now_ms, delivery_id))
+                                when
+                                    delivered: tx, "outbox_update", records::outbox_update("done", 1, 2000, "del-1") => ok 1
+                                sql::unsupported_value => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                sql::query_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                sql::constraint_failed => ok sql::rollback<records::ack_result>(records::ack_result("store_unavailable", 0))
+                                ok int moved => ok sql::commit<records::ack_result>(records::ack_result("done", found.value.attempts + 1))
+
+/// Mark one poison row terminal: consume the single-use nonce, reread
+/// the row, and move it to the dead-letter table plus the dead outbox
+/// state in the same transaction. Only the holding worker may mark its
+/// row, and only from pending: done rows answer already_done, dead rows
+/// replay dead, unknown ids answer unknown, and a duplicate nonce
+/// replays 401.
+fn sql::decision<records::dead_result> decide_dead
+    emits []
+    given
+        near str delivery_id
+        near str worker_id
+        near str reason
+        near str nonce
+        near int now_ms
+        sql::transaction tx
+    asserts
+        marked: "del-1", "worker-1", "poison", "n-1", 2000 => ok sql::commit<records::dead_result>(records::dead_result("dead", 5))
+        replay: "del-1", "worker-1", "poison", "n-1", 2000 => ok sql::rollback<records::dead_result>(records::dead_result("replay", 0))
+        unknown: "del-9", "worker-1", "poison", "n-2", 2000 => ok sql::rollback<records::dead_result>(records::dead_result("unknown", 0))
+        already_done: "del-1", "worker-1", "poison", "n-3", 2000 => ok sql::rollback<records::dead_result>(records::dead_result("already_done", 1))
+        already_dead: "del-1", "worker-1", "poison", "n-4", 2000 => ok sql::commit<records::dead_result>(records::dead_result("dead", 5))
+        lease_lost: "del-1", "worker-2", "poison", "n-5", 2000 => ok sql::rollback<records::dead_result>(records::dead_result("lease_lost", 5))
+        store_down: "del-1", "worker-1", "poison", "n-6", 2000 => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+    match call sql::transaction_execute<records::nonce_insert>(tx, "nonce_insert", records::nonce_insert(nonce, now_ms))
+        when
+            marked: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => ok 1
+            replay: tx, "nonce_insert", records::nonce_insert("n-1", 2000) => sql::constraint_failed("webhook_carrier_nonce_pkey")
+            unknown: tx, "nonce_insert", records::nonce_insert("n-2", 2000) => ok 1
+            already_done: tx, "nonce_insert", records::nonce_insert("n-3", 2000) => ok 1
+            already_dead: tx, "nonce_insert", records::nonce_insert("n-4", 2000) => ok 1
+            lease_lost: tx, "nonce_insert", records::nonce_insert("n-5", 2000) => ok 1
+            store_down: tx, "nonce_insert", records::nonce_insert("n-6", 2000) => sql::query_failed("nonce_insert", "SQLITE_IOERR")
+        sql::unsupported_value => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+        sql::query_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+        sql::constraint_failed => ok sql::rollback<records::dead_result>(records::dead_result("replay", 0))
+        ok int seen => match call sql::transaction_query_optional<records::outbox_key, records::outbox_row>(tx, "outbox_by_id", records::outbox_key(delivery_id))
+            when
+                marked: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 5, 1000, "worker-1", 9000, 2))
+                unknown: tx, "outbox_by_id", records::outbox_key("del-9") => ok option::none()
+                already_done: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "done", 1, 1500, "worker-1", 9000, 2))
+                already_dead: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "dead", 5, 1500, "worker-1", 9000, 2))
+                lease_lost: tx, "outbox_by_id", records::outbox_key("del-1") => ok option::some(records::outbox_row("del-1", "invoice.paid", "sub-9", "pending", 5, 1000, "worker-1", 9000, 2))
+            sql::unsupported_value => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+            sql::query_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+            sql::constraint_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+            sql::row_count => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+            sql::schema_mismatch => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+            ok option::value<records::outbox_row> found => match found
+                option::none => ok sql::rollback<records::dead_result>(records::dead_result("unknown", 0))
+                option::some => match found.value.state
+                    "done" => ok sql::rollback<records::dead_result>(records::dead_result("already_done", found.value.attempts))
+                    "dead" => ok sql::commit<records::dead_result>(records::dead_result("dead", found.value.attempts))
+                    _ => match found.value.worker_id is worker_id
+                        false => ok sql::rollback<records::dead_result>(records::dead_result("lease_lost", found.value.attempts))
+                        true => match call sql::transaction_execute<records::dead_insert>(tx, "dead_insert", records::dead_insert(delivery_id, found.value.event, found.value.subscription, reason, found.value.attempts, now_ms))
+                            when
+                                marked: tx, "dead_insert", records::dead_insert("del-1", "invoice.paid", "sub-9", "poison", 5, 2000) => ok 1
+                            sql::unsupported_value => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                            sql::query_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                            sql::constraint_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                            ok int filed => match call sql::transaction_execute<records::outbox_dead>(tx, "outbox_dead", records::outbox_dead("dead", now_ms, delivery_id))
+                                when
+                                    marked: tx, "outbox_dead", records::outbox_dead("dead", 2000, "del-1") => ok 1
+                                sql::unsupported_value => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                                sql::query_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                                sql::constraint_failed => ok sql::rollback<records::dead_result>(records::dead_result("store_unavailable", 0))
+                                ok int marked_row => ok sql::commit<records::dead_result>(records::dead_result("dead", found.value.attempts))
