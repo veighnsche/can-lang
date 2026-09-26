@@ -27,7 +27,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A06 | inactive (Q6) | — (gate eval) | — | A04 | surface→A07/G04 or inactive | — | all required W4 shapes covered; A07 confirms |
 | A05 | done | lane-a-a01-a05 (`6`) + E merge | isolated + main | none | bulk APIs→A07 | `42cf5253`→`94eb71c5` + merge `e7982fa` | bun 8/8, go check+emit ok, catalogue 290 |
 | A07 | in progress (wave 10) | lane-a-a07 (`25`) | isolated | A04, A05, A06 | W4 evidence→F06/H10/H11 | — | — |
-| A08 | in progress (wave 10) | lane-a-a08 (`28`) | isolated | A01, A02 | comparisons→H14 | — | — |
+| A08 | in progress, slice 1 integrated | lane-a-a08 (`28`) | isolated | A01, A02 | comparisons→H14 | `7f301098`→`e88ebf01` (partial) | registry frozen, JSON ok; comparisons pending |
 | B01 | done | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | 3 commits → main (last `50dc8d3c`) | 11/11 legs; Q5 inactive w/ trip conditions |
 | B03 | inactive (Q5) | — (gate eval) | — | B01 | gate→B05/IC1 | — | parity tables; no adapter-extent finding |
 | B04 | inactive (Q4) | — (gate eval) | — | B02 | gate→B05/IC1 | — | 9 lines/factory; nothing excessive |

@@ -39,6 +39,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | E04 | partial slices 1-2 (task open) | main `8318712b`+`4b10d46b` | macOS, bun 1.4.2, live PG/MySQL | 23/23 + 15/15 pass; `check:runtime` green; SQL pool/tx bounds; fetch/action/server/disconnect legs pending | partial |
 | F03 | done (RETURNING slice + contracts) | main `bf83f0aa` (worker `4e500d8`) | macOS, live PG 17.11/MySQL 8.4.11 | sql pkg ok; live relational slice pass (incl. MySQL mapping leg); integration gap found+fixed: `can_f03` lane DB minted PG+MySQL and recorded in register | pass |
 | E07 | done (X-R15-1 NEG, X-R15-3 NEG) | main `bef41a2d` (worker `3bcf458e`) | macOS, live MinIO S3-protocol | 21/21 pass live (60s); `check:runtime` green; end(Error) completes w/o abort, destructive cancel proven, pin/release mapped, cleanup-await injection recorded | pass |
+| A08 | partial slice 1 (task open) | main `e88ebf01` (worker `7f301098`) | n/a (docs/fixtures) | registry + 3 frozen repair comparisons (prompts, sealed variants, hidden checks); all JSON valid; agent slots empty (0 attempts, no model access) | partial |
 
 ## Conditional branches
 
