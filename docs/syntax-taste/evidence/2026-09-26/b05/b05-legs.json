@@ -1,0 +1,125 @@
+{
+ "task": "B05",
+ "workload": "W3 reusable infrastructure (W3.1/W3.2/W3.3/W3.4)",
+ "verdict": "BLOCKED (lane-A emitter defect; not a conventions failure)",
+ "base": "b283d2abf87ca5aaab0048a7a41dbd2f7e3a0e5d",
+ "env": "macOS darwin-arm64, go1.27.1, pinned bun 1.4.2 archive (sha256 90987a3a16d7db556d886ac3d551e7b6d3edf0a1cf43acaed622e8676be1d12f, verified)",
+ "command": "CAN_BUN_ARCHIVE=/tmp/bun-darwin-aarch64.zip go test ./tests/failure-conventions/ -v -count=1",
+ "harness": "tests/failure-conventions (harness_test.go, retry_test.go, owner_test.go; black-box canlc assert, 11 legs)",
+ "conventions": "final (B01/B02 unchanged; B03/Q5 and B04/Q4 recorded INACTIVE, no follow-up surface)",
+ "legs": [
+  {
+   "name": "TestOwnerSetupGreen",
+   "status": "blocked",
+   "w3": "W3.3",
+   "note": "B02 extraction end-state, 14 roots incl. 8 retained pre-extraction roots"
+  },
+  {
+   "name": "TestOwnerNegativeFailsClosed",
+   "status": "blocked",
+   "w3": "W3.4",
+   "note": "tainted suite produces no report (status=1, empty stdout); containment unobservable until build succeeds"
+  },
+  {
+   "name": "TestOwnerForgeRejected",
+   "status": "pass",
+   "w3": "W3.4",
+   "note": "foreign owner construction rejected at check"
+  },
+  {
+   "name": "TestFactoryPrivateToPackage",
+   "status": "pass",
+   "w3": "W3.3",
+   "note": "foreign factory call rejected: handler::fixture_id is private"
+  },
+  {
+   "name": "TestFactoryRepairGuided",
+   "status": "blocked",
+   "w3": "W3.3",
+   "detail": "guided half passes (missing completion arm for ids::retired); repair-green half (16 roots) blocked"
+  },
+  {
+   "name": "TestRetryConventionGreen",
+   "status": "blocked",
+   "w3": "W3.1",
+   "note": "one helper over two unrelated sets, 35 roots, oracle + round-trips + trace shells"
+  },
+  {
+   "name": "TestRetryFixedGreen",
+   "status": "pass",
+   "w3": "comparison-input (not a W3 leg)",
+   "detail": "15 roots green"
+  },
+  {
+   "name": "TestRetryNoRetryMutantFails",
+   "status": "pass",
+   "w3": "W3.1",
+   "detail": "11 oracle roots fail unused-fixture, other 24 green"
+  },
+  {
+   "name": "TestRetryOverAttemptFails",
+   "status": "blocked",
+   "w3": "W3.1",
+   "note": "surgery run produces no report (status=1, empty stdout); upward sensitivity unobservable until build succeeds"
+  },
+  {
+   "name": "TestAddErrorIsolationResultData",
+   "status": "blocked",
+   "w3": "W3.2",
+   "note": "add profiles::suspended, 40 roots expected, unrelated files byte-identical"
+  },
+  {
+   "name": "TestAddErrorIsolationFixed",
+   "status": "pass",
+   "w3": "W3.2",
+   "detail": "18 roots green, unrelated files identical"
+  }
+ ],
+ "w3": {
+  "W3.1": "blocked: oracle upward leg and 35-root helper leg fail at build; downward mutant leg still passes",
+  "W3.2": "blocked: result-data add-error leg fails at build; fixed-style comparison leg passes",
+  "W3.3": "blocked: extraction-green and repair-green legs fail at build; privacy + guided-check halves pass",
+  "W3.4": "blocked: fail-closed negative fails at build; forge-rejection (check-time) passes"
+ },
+ "costsAndLimits": {
+  "carriedFrom": [
+   "tests/failure-conventions/x-r06-1.md",
+   "tests/failure-conventions/x-r07-1.md"
+  ],
+  "conversionPremiumLinesPerDomain": 12,
+  "factoryLinesPerInputShape": 9,
+  "perLayerRepair": "3-line capture arm + 1-line re-raise arm, at parity in both styles",
+  "repairLocality": "constructor evolution touches factory (+1 arm) and handler contract only; extracted helper byte-identical",
+  "limitations": [
+   "generic-constructor inference never injects member values into variants (R4/R8 annotated workarounds)",
+   "single-error domains skip the variant; only multi-error sets pay R4",
+   "loader stubs are pure and total; live-adapter conversion is qualified by lanes E/F",
+   "trap line reads poorly; a catalogue-level failure primitive (not grammar) could address it",
+   "one owner shape exercised (user_id over int); second constructor error measured, fifth not"
+  ]
+ },
+ "blocker": {
+  "owner": "A surface owner (emitter: compiler/internal/emit while-lowering mapping marks; validator: tools/runtime/source-map-validation.ts)",
+  "signature": "canlc assert exits 1, empty stdout, stderr `source map encoding failed: exit status 1`; no assertion report is produced",
+  "firstSeen": "W3 legs passed at B01/B02 time (dbafd204/7834c66f, before A04 78668ec7); fail at B05 base b283d2ab which includes A04 self-tail lowering",
+  "mechanism": "lowered while-loop emission places two mapping marks for one relay argument at one generated coordinate; tools/runtime/source-map-validation.ts requires strictly increasing same-line columns and throws 'invalid mapping segment', so canlc exits 1 with no assertion report",
+  "duplicateMark": "binding:1707:1716 (the `operation` argument binding at the self-relay site in retry/src/retry/retry.can), emitted twice at the same generated (line, col 0)",
+  "suspect": "A04 self-tail lowering emission (compiler/internal/emit/regions.go while template): relay-argument rebinding marks",
+  "whyA07StayedGreen": "compiler/internal/emit/w4_a07_test.go emits via RegionEmitter directly and never runs encodeSourceMaps, so invalid lowered mappings are invisible on that path",
+  "bisection": [
+   "retry/ vs retry-negative/ differ ONLY by the self-relay lines in src/retry/retry.can (diff-verified): relay present fails, relay absent passes",
+   "retry-fixed/ self-relays carry `when` fixture tables, so A04 declines lowering (CAN-CHECK-NOT-LOWERED: fixture table) and the suite passes on the old emission path",
+   "relay-free control project M0 passes; minimal self-relay countdown M1 fails with the same signature on the pristine bundle",
+   "owner-setup/ fails via the self-relay in fixture_id (relay call fixture_id(1 / 0)); its cross-function relays are not implicated"
+  ],
+  "reproCommand": "canlc assert <m1-dir>  # expect: source map encoding failed: exit status 1",
+  "note": "stage under a real (non-symlinked) directory; `canlc assert <dir>` reproduces. Relay-free M0 (same scaffold, `true => ok n + n`) passes.",
+  "minimalRepro": {
+   "can.project.json": "{\"source_root\":\"src\",\"error_registry\":\"can.errors.json\"}",
+   "can.errors.json": "{\"active\": [], \"retired\": []}",
+   "src/app/main.can": "package app\n    provides []\n    uses []\nfn void main\n    emits []\n    given\n        str[] arguments\n    asserts\n        empty: [] => ok\n    ok\n",
+   "src/m/m.can": "package m\n    provides [countdown]\n    uses []\nfn int countdown\n    emits []\n    given\n        int n\n    asserts\n        zero: 0 => ok 0\n        two: 2 => ok 0\n    match n > 0\n        false => ok 0\n        true => relay call countdown(n - 1)\n"
+  }
+ },
+ "handoffH11": "no W3 pass to aggregate yet; W3.1-W3.4 stay open behind the lane-A emitter fix, then rerun the command above"
+}
