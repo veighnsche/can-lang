@@ -73,8 +73,14 @@ the row when evidence lands. No IDs are recorded yet.
 
 ## BROWSERS — Chromium, WebKit, Firefox
 
-- Status: **PARTIAL** — Chromium and WebKit pinned; Firefox runner
-  **BLOCKED** pending lane-C provisioning.
+- Status: **PARTIAL** — Chromium and WebKit pinned and launching;
+  Firefox runner **BLOCKED (environmental)**.
+- C01 evidence (2026-09-26): Firefox 141.0 (build v1490) installs via
+  Playwright 1.55.1 but launch times out on macOS 27 (coordinator
+  reproduced; Chromium 140.0.7339.186 + WebKit 26.0 launch as controls).
+  Gate5/CI wiring commits exist but are NOT integrated: the probe
+  fail-fasts, which would red the suite on this Mac. Re-integrate when
+  Firefox launches (fixed env, x86 window, or CI macos-15).
 - Owner: C executes browser provisioning (task C01); H retains this
   register row.
 - Consumers: C02–C07 gate legs, H12 paired-deploy qualification.

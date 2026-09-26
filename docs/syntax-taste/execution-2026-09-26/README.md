@@ -22,7 +22,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A01 | done | lane-a-a01-a05 (`6`) | isolated | none | formatter→C, warnings→G01 | worker `adf94696` → main `19e45019` | go test 4 pkgs ok, gofmt clean |
 | A02 | done | lane-a-a01-a05 (`6`) | isolated | none | bindings→G03/G05 | worker `5bcae240` → main `1365d0a6` | go test 4 pkgs ok, gofmt clean |
 | A08 | ready (A01+A02 done) | — | — | A01, A02 | comparisons→H14 | — | — |
-| A03 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | — | — |
+| A03 | done | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | worker `258a8299` → main `dd3f3674` | go test emit/syntax/check ok |
 | A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
 | A05 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bulk APIs→A07 | — | — |
 | B01 | in progress, slice 1 integrated | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | worker `5f6e6545` → main `c691a127` (partial) | 14 roots green; needs 2-domain + wrapper² + concision + Q5 |
@@ -33,7 +33,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H01 | done | lane-h-h01-h09 (`10`) | isolated | none | gates→H02/H03/H04/H05/C01 | worker `f197c925` → main `3c672e77` | register reviewed, env-names-only |
 | H09 | done | lane-h-h01-h09 (`10`) | isolated | none | docs→H14 | worker `d69be330` → main `58060191` | link targets verified present |
 
-| C01 | in progress (wave 2) | lane-c-c01 (`11`) | isolated | H01 | runners→C02/C06/H13 | — | — |
+| C01 | open (blocked provision) | lane-c-c01 (`11`, finished) | isolated | H01 | runners→C02/C06/H13 | wiring `c37c40fc`+`a3c4a11f` PENDING (not integrated) | Firefox installed, launch timeout macOS 27 |
+| C03 | ready (A03+E03 done) | — | — | A03, E03 | C-E wire→C04/F05/H06 | — | — |
 | H02 | done | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | worker `9482ff01` → main `2a880eee` | PG 17.11 + DBs verified; mysql 12/12+5/5 |
 | H03 | done | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | worker `9482ff01` → main `2a880eee` | MinIO live verified; s3.test 19/19 (S3-protocol scope) |
 | H04 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | worker `f9a0acdf` → main `2d784b31` | exact creds + spend-cap ask recorded; gate stays blocked |
@@ -42,7 +43,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E02 | in progress (wave 4) | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | — | — |
 | F02 | in progress (wave 4) | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | — | — |
 | E07 | ready (H03+E01 done) | — | — | H03, E01 | branch verdicts→E08 | — | — |
-| G01 | in progress (wave 4) | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | — | — |
+| G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
+| G02 | ready (G01 done) | — | — | G01 | hover→G03 | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 

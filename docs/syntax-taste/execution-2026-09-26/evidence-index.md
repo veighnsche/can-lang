@@ -18,6 +18,9 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | H05 | done (blocked, ask recorded) | main `21991bb3` (worker `494be3de`) | n/a (docs) | `distribution/x86-window.md`: machine designation + exclusive-window ask; UP25 stays blocked until user grants | blocked |
 | A02 | done (AU-Q3-core) | main `1365d0a6` (worker `5bcae240`) | macOS, go1.27.1 | gofmt clean; `go test` check/syntax/project/driver all ok; explicit near bindings with located CAN-CHECK-CAPTURE negatives, order preserved, direct calls positional | pass |
 | B01 | partial slice 1 (task open) | main `c691a127` (worker `5f6e6545`) | macOS, prebuilt bun 1.4.2 bundle | `TestRetryConventionGreen`: 14 roots green (3s); skips without CONV_BUNDLE/CAN_BUN_ARCHIVE; single-domain v1 only — two-domain, wrapper-around-wrapper, concision, Q5 evidence still pending | partial |
+| A03 | done (document grammar/emission) | main `dd3f3674` (worker `258a8299`) | macOS, go1.27.1 | gofmt clean; `go test` emit/syntax/check all ok (45s/0.3s/454s); per-case document mode, fragment-only swap table, JSON byte-identical; checker agreement handed to C03 | pass |
+| C01 | open (blocked provision) | wiring `c37c40fc`+`a3c4a11f` pending in retained worktree, NOT on main | macOS 27, Playwright 1.55.1 | Firefox 141.0/v1490 installs, launch times out (worker + coordinator repro); Chromium 140.0.7339.186 + WebKit 26.0 launch OK; gate5 probe fail-fasts so wiring held back to keep suite green | blocked |
+| G01 | done (AU-LSP-format, AU-Q2-LSP) | main `94795946` (worker `31f0e66a`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok (16s/71s); formatSource+overlay validation, warning-severity publishDiagnostics, CLI parity | pass |
 
 ## Conditional branches
 
