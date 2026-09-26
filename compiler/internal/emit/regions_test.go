@@ -192,6 +192,8 @@ func TestCompletionRegionContracts(t *testing.T) {
 		{"    match items\n        [] => ok 0\n        [bind head, ...tail] => ok head + tail.length\n", "int", nil},
 		{"    match choice\n        left => ok choice.value\n        right(bind value) => ok value.length\n", "int", nil},
 		{"    match tree\n        node([]) => ok 0\n        node([bind head, ...tail]) => ok head.children.length + tail.length\n", "int", nil},
+		// Q2: the C8 final-local shape checks with an advisory warning.
+		{"    int result = 1 + 2\n    ok result\n", "int", nil},
 	}
 	for i, tc := range good {
 		for _, kind := range []ir.RegionKind{ir.FunctionRegion, ir.HandlerRegion} {
@@ -243,7 +245,6 @@ func TestCompletionRegionContracts(t *testing.T) {
 		"    match number\n        0..10 => ok 1\n        1..5 => ok 2\n        _ => ok 3\n",
 		"    match items\n        [bind head] => ok head\n",
 		"    int result = match flag\n        false => 2\n        true => ok 1\n    ok result\n",
-		"    int result = 1 + 2\n    ok result\n",
 	}
 	for i, body := range bad {
 		t.Run(fmt.Sprintf("bad%d", i), func(t *testing.T) {
@@ -267,17 +268,13 @@ func TestOrdinaryBooleanMatchArmOrder(t *testing.T) {
 		"    match flag\n        false => ok 0\n        true => ok 1\n",
 		"    int selected = match flag\n        false => 0\n        true => 1\n    ok selected\n",
 		"    match flag, flag\n        true, true => ok 1\n        true, false => ok 2\n        false, _ => ok 0\n",
-	} {
-		if _, err := f.region(t, body, "int", nil, ir.FunctionRegion); err != nil {
-			t.Fatal(err)
-		}
-	}
-	for _, body := range []string{
+		// Q1: true-first single-scrutinee Boolean matches check; the
+		// formatter canonicalizes them to false-first instead.
 		"    match flag\n        true => ok 1\n        false => ok 0\n",
 		"    int selected = match flag\n        true => 1\n        false => 0\n    ok selected\n",
 	} {
-		if _, err := f.region(t, body, "int", nil, ir.FunctionRegion); err == nil || !strings.Contains(err.Error(), "false before true") {
-			t.Fatalf("expected Boolean arm-order diagnostic, got %v", err)
+		if _, err := f.region(t, body, "int", nil, ir.FunctionRegion); err != nil {
+			t.Fatal(err)
 		}
 	}
 }

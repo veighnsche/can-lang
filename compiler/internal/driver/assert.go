@@ -53,6 +53,7 @@ func (r *Runtime) Assert(ctx context.Context, directory string, selector, enviro
 	if err != nil {
 		return err
 	}
+	reportWarnings(stderr, program.Warnings)
 	scope := "full"
 	if len(selector) != 0 {
 		if len(selector) != 2 && len(selector) != 3 {

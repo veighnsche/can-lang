@@ -61,6 +61,10 @@ type Program struct {
 	Assertions   []*ir.Assertion
 	Assets       []project.Asset
 	SQL          []ir.SQLDescriptor
+	// Warnings carries advisory findings in deterministic order. It never
+	// fails checking, emission, build or assert; drivers print it and
+	// editor bridges map it to warning severity.
+	Warnings []Warning
 }
 type ProgramFunction struct {
 	Symbol        *resolve.Symbol
@@ -106,6 +110,14 @@ type programChecker struct {
 	symbolicComponent map[string]int
 	symbolicProofs    map[string]bool
 	symbolicScan      []symbolicScanEdge
+	warnings          []Warning
+}
+
+// warn collects one advisory finding into the program report. Regions
+// checked more than once (symbolic bodies, provisional inference) report
+// duplicates that collapse on identity.
+func (c *programChecker) warn(warning Warning) {
+	c.warnings = collectWarnings(c.warnings, warning)
 }
 
 func (c *programChecker) gather(file *resolve.File, node syntax.TypeNode) (*types.Type, error) {
@@ -762,6 +774,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	if err = CheckSQLCallSites(p.SQLs, c.sqlSites, p.SQL); err != nil {
 		return nil, err
 	}
+	p.Warnings = c.warnings
 	return p, nil
 }
 
@@ -823,6 +836,7 @@ func (c *programChecker) functionContext(fn *ProgramFunction) (CompletionContext
 	context.InferCall = func(scope *resolve.Scope, name syntax.QualifiedName, args []syntax.Argument, expected *types.Type, e *Expressions) (ValueBinding, bool, error) {
 		return c.inferCall(file, scope, name, args, expected, e)
 	}
+	context.Warn = c.warn
 	context.Type = func(node syntax.TypeNode, allowVoid bool) (*types.Type, error) {
 		return c.annotation(file, node, allowVoid)
 	}

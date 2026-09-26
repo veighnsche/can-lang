@@ -1,6 +1,7 @@
 package check
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -81,6 +82,9 @@ type CompletionContext struct {
 	// into checked rows under the row selector. It closes over the use
 	// file and program templates; nil where expansion cannot appear.
 	Expand func(scope *resolve.Scope, row syntax.Assertion) ([]ir.FixtureRow, *Template, error)
+	// Warn collects advisory findings such as the demoted C8 shape.
+	// A nil callback drops findings; warnings never fail checking.
+	Warn func(Warning)
 }
 
 // InheritContext resolves one wrapper key's predecessor rule. Region names
@@ -318,8 +322,16 @@ func (c *regionChecker) block(block syntax.Block, parent bodyScope) (*ir.Block, 
 		return nil, err
 	}
 	if last != nil && !(c.aggregate != nil && c.aggregate.discovery) {
+		// Q2: the C8 shape is advisory. The detector still runs so the
+		// warning fires on exactly the old error's four-clause shape, but
+		// only internal context failures keep failing the check.
 		if err = CheckLocalForwarding(LocalForwarding{File: c.context.File, Block: block, Binding: ValueBinding{last.Identity, last.Type}, Uses: c.uses, Checker: lastChecker, Expected: c.region.Result}); err != nil {
-			return nil, err
+			var diagnostic *UnnecessaryLocal
+			if errors.As(err, &diagnostic) {
+				c.unnecessaryLocalWarning(diagnostic)
+			} else {
+				return nil, err
+			}
 		}
 	}
 	return out, nil

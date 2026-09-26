@@ -95,6 +95,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	if err != nil {
 		return BuildReport{}, err
 	}
+	reportWarnings(stderr, program.Warnings)
 	stopCheck()
 	var pairing *browserPairing
 	if browserManifest != "" {

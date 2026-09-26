@@ -129,6 +129,11 @@ type formatter struct {
 	// verbatim from source.
 	trivia bool
 	staged []stagedLine
+	// pin anchors reordered lines to one source offset so trivia
+	// attachment keeps its monotonic anchor order. Only the outermost
+	// reorder pins; nested lines share the pin.
+	pin    int
+	pinned bool
 }
 
 // stagedLine is one canonical line plus its indent level and source offset.
@@ -142,6 +147,9 @@ type stagedLine struct {
 }
 
 func (f *formatter) line(level int, text string, offset int) {
+	if f.pinned {
+		offset = f.pin
+	}
 	if f.trivia {
 		f.staged = append(f.staged, stagedLine{level: level, text: text, offset: offset})
 	} else {
@@ -553,7 +561,19 @@ func (f *formatter) match(level int, prefix string, m Match) {
 			f.assertion(level+2, a)
 		}
 	}
-	for _, arm := range m.Arms {
+	// Q1: canonicalize ordinary single-scrutinee true-first Boolean pairs
+	// to false-first. Only the exact complementary literal pair reorders,
+	// so wildcards, alternatives and multi-arm matches keep their
+	// semantics and positions; reordered lines share one anchor.
+	arms := m.Arms
+	if m.Kind == ValueMatch && len(m.Values) == 1 && len(arms) == 2 && booleanLiteralArm(arms[0], "true") && booleanLiteralArm(arms[1], "false") {
+		arms = []MatchArm{arms[1], arms[0]}
+		if !f.pinned {
+			f.pin, f.pinned = m.Arms[0].Span.Start, true
+			defer func() { f.pinned = false }()
+		}
+	}
+	for _, arm := range arms {
 		text := ""
 		if arm.Outcome != nil {
 			o := arm.Outcome
@@ -588,6 +608,17 @@ func (f *formatter) match(level int, prefix string, m Match) {
 		}
 	}
 }
+
+// booleanLiteralArm reports whether the arm is one bare true/false literal
+// data pattern: the only shape the Q1 canonicalization reorders.
+func booleanLiteralArm(arm MatchArm, text string) bool {
+	if arm.Outcome != nil || arm.Forward || len(arm.Patterns) != 1 {
+		return false
+	}
+	literal, ok := arm.Patterns[0].(*LiteralPattern)
+	return ok && !literal.Negative && literal.Literal.Text == text
+}
+
 func formatPattern(pattern PatternNode) string {
 	switch n := pattern.(type) {
 	case *WildcardPattern:
