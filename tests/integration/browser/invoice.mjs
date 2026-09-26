@@ -16,21 +16,23 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { launchWanted, remoteBase, originAllowed, firefoxEndpoint, firefoxHostAlias } from "./firefox-remote.mjs";
 
-const [base, outdir, dbpath, wantedArg, scriptArg] = process.argv.slice(2);
-if (!base || !outdir || !dbpath) {
+const [baseArg, outdir, dbpath, wantedArg, scriptArg] = process.argv.slice(2);
+if (!baseArg || !outdir || !dbpath) {
   console.error("usage: node invoice.mjs <base> <outdir> <dbpath> [browser] [script-url]");
   process.exit(2);
 }
 const wanted = wantedArg ?? "chromium";
-if (wanted !== "chromium" && wanted !== "webkit") {
+if (wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") {
   console.error(`unknown browser ${wanted}`);
   process.exit(2);
 }
+const base = remoteBase(wanted, baseArg);
 mkdirSync(outdir, { recursive: true });
 
 const playwright = await import("playwright");
-const browser = await playwright[wanted].launch({ timeout: 120000 });
+const { browser, remote } = await launchWanted(playwright, wanted);
 const checks = [];
 const requests = [];
 const limitations = [];
@@ -49,7 +51,7 @@ try {
   const context = await browser.newContext();
   await context.route("**/*", (route) => {
     const url = new URL(route.request().url());
-    if (url.hostname === "127.0.0.1" || url.hostname === "localhost") return route.continue();
+    if (originAllowed(wanted, url.hostname)) return route.continue();
     aborted.push(route.request().url());
     return route.abort("blockedbyclient");
   });
@@ -423,14 +425,14 @@ try {
   );
   await check("redirect-rejected", async () => {
     // A followed redirect needs a same-origin 3xx. The server
-    // correctly emits none, and only Chromium's interception can
-    // fulfill one; on WebKit a harness redirector would have to live
-    // cross-port (a second listener), which the served connect-src
-    // 'self' policy blocks before any fetch runs. The guard's
-    // redirect branch is engine-independent shipped JS (pinned
-    // integrity, unit-covered), qualified end to end on Chromium;
-    // WebKit records the harness gap as a limit instead of a silent
-    // skip.
+    // correctly emits none, and only Chromium's and Firefox's
+    // interception can fulfill one; on WebKit a harness redirector
+    // would have to live cross-port (a second listener), which the
+    // served connect-src 'self' policy blocks before any fetch runs.
+    // The guard's redirect branch is engine-independent shipped JS
+    // (pinned integrity, unit-covered), qualified end to end on
+    // Chromium and Firefox; WebKit records the harness gap as a
+    // limit instead of a silent skip.
     if (wanted === "webkit") {
       limit(
         "L-redirect-webkit",
@@ -473,7 +475,8 @@ try {
   await check("no-external-requests", async () => {
     assert.equal(aborted.length, 0);
     for (const entry of requests) {
-      assert.ok(new URL(entry.url).hostname === "127.0.0.1", entry.url);
+      const host = new URL(entry.url).hostname;
+      assert.ok(host === "127.0.0.1" || (!!firefoxEndpoint(wanted) && host === firefoxHostAlias()), entry.url);
     }
     assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-4.0.0.min.js") && entry.status === 200));
     assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-guard.js") && entry.status === 200));
@@ -496,7 +499,7 @@ try {
   finalOccurrences = await occurrences();
   await context.close();
 } finally {
-  await browser.close();
+  if (!remote) await browser.close();
 }
 
 const passed = checks.every((entry) => entry.passed);

@@ -5,7 +5,7 @@
 // timer fire/order, view disposal, equality, exact codecs, sync
 // cancellation and post-attach focus — and records DOM verdicts,
 // network bytes and console/page faults. Usage:
-//   node conformance.mjs <chromium|webkit> <base> <outdir> <script-url>
+//   node conformance.mjs <chromium|firefox|webkit> <base> <outdir> <script-url>
 // Aborts every non-loopback request, so a passing run proves the
 // fixture never needs a CDN, authored script, or foreign client
 // runtime: the single served script must equal the report-selected
@@ -14,21 +14,23 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { launchWanted, remoteBase, originAllowed } from "./firefox-remote.mjs";
 
-const [wanted, base, outdir, scriptUrl] = process.argv.slice(2);
+const [wanted, baseArg, outdir, scriptUrl] = process.argv.slice(2);
 if (
-  (wanted !== "chromium" && wanted !== "webkit") ||
-  !base ||
+  (wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") ||
+  !baseArg ||
   !outdir ||
   !scriptUrl?.startsWith("/__can/assets/")
 ) {
-  console.error("usage: node conformance.mjs <chromium|webkit> <base> <outdir> <script-url>");
+  console.error("usage: node conformance.mjs <chromium|firefox|webkit> <base> <outdir> <script-url>");
   process.exit(2);
 }
+const base = remoteBase(wanted, baseArg);
 mkdirSync(outdir, { recursive: true });
 
 const playwright = await import("playwright");
-const browser = await playwright[wanted].launch({ timeout: 120000 });
+const { browser, remote } = await launchWanted(playwright, wanted);
 let userAgent = "";
 const checks = [];
 const requests = [];
@@ -46,7 +48,7 @@ try {
   await context.route("**/*", (route) => {
     const url = new URL(route.request().url());
     if (url.protocol !== "http:" && url.protocol !== "https:") return route.continue();
-    if (url.hostname === "127.0.0.1" || url.hostname === "localhost") return route.continue();
+    if (originAllowed(wanted, url.hostname)) return route.continue();
     aborted.push(route.request().url());
     return route.abort("blockedbyclient");
   });
@@ -362,7 +364,7 @@ try {
     assert.equal(aborted.length, 0, `non-loopback requests: ${aborted.join(", ")}`);
     for (const entry of requests) {
       const host = new URL(entry.url).hostname;
-      assert.ok(host === "127.0.0.1" || host === "localhost", `left loopback: ${entry.url}`);
+      assert.ok(originAllowed(wanted, host), `left loopback: ${entry.url}`);
       assert.ok(!entry.url.includes("/api/"), `fixture must not call APIs: ${entry.url}`);
     }
     assert.equal(pageerrors.length, 0, pageerrors.join("; "));
@@ -382,7 +384,7 @@ try {
 
   await context.close();
 } finally {
-  await browser.close();
+  if (!remote) await browser.close();
 }
 
 const passed = checks.every((entry) => entry.passed);

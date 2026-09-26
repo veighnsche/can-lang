@@ -4,29 +4,31 @@
 // the degenerate program starts cleanly from served bytes — page,
 // exact paired script, source map and diagnostic table — with no
 // page faults and the shell untouched. Usage:
-//   node empty.mjs <chromium|webkit> <base> <outdir> <script-url> <map-url> <table-url>
+//   node empty.mjs <chromium|firefox|webkit> <base> <outdir> <script-url> <map-url> <table-url>
 // Aborts every non-loopback request. Writes report.json and
 // screenshot.png into outdir.
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { launchWanted, remoteBase, originAllowed } from "./firefox-remote.mjs";
 
-const [wanted, base, outdir, scriptUrl, mapUrl, tableUrl] = process.argv.slice(2);
+const [wanted, baseArg, outdir, scriptUrl, mapUrl, tableUrl] = process.argv.slice(2);
 if (
-  (wanted !== "chromium" && wanted !== "webkit") ||
-  !base ||
+  (wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") ||
+  !baseArg ||
   !outdir ||
   !scriptUrl?.startsWith("/__can/assets/") ||
   !mapUrl?.startsWith("/__can/assets/") ||
   !tableUrl?.startsWith("/__can/assets/")
 ) {
-  console.error("usage: node empty.mjs <chromium|webkit> <base> <outdir> <script-url> <map-url> <table-url>");
+  console.error("usage: node empty.mjs <chromium|firefox|webkit> <base> <outdir> <script-url> <map-url> <table-url>");
   process.exit(2);
 }
+const base = remoteBase(wanted, baseArg);
 mkdirSync(outdir, { recursive: true });
 
 const playwright = await import("playwright");
-const browser = await playwright[wanted].launch({ timeout: 120000 });
+const { browser, remote } = await launchWanted(playwright, wanted);
 const checks = [];
 const requests = [];
 const aborted = [];
@@ -43,7 +45,7 @@ try {
   await context.route("**/*", (route) => {
     const url = new URL(route.request().url());
     if (url.protocol !== "http:" && url.protocol !== "https:") return route.continue();
-    if (url.hostname === "127.0.0.1" || url.hostname === "localhost") return route.continue();
+    if (originAllowed(wanted, url.hostname)) return route.continue();
     aborted.push(route.request().url());
     return route.abort("blockedbyclient");
   });
@@ -103,7 +105,7 @@ try {
     assert.equal(aborted.length, 0, `non-loopback requests: ${aborted.join(", ")}`);
     for (const entry of requests) {
       const host = new URL(entry.url).hostname;
-      assert.ok(host === "127.0.0.1" || host === "localhost", `left loopback: ${entry.url}`);
+      assert.ok(originAllowed(wanted, host), `left loopback: ${entry.url}`);
     }
     assert.equal(pageerrors.length, 0, pageerrors.join("; "));
     const pinned = new Set([
@@ -132,5 +134,5 @@ try {
   if (!passed) process.exit(1);
   console.log(`browser empty-app evidence passed on ${wanted}`);
 } finally {
-  await browser.close();
+  if (!remote) await browser.close();
 }
