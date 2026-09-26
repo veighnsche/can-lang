@@ -92,10 +92,50 @@ func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snaps
 		return snapshot, nil
 	}
 	snapshot.World = world
-	if _, err := check.CheckAssertionProgram(graph); err != nil {
+	program, err := check.CheckAssertionProgram(graph)
+	if err != nil {
 		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
+		return snapshot, nil
 	}
+	snapshot.Diagnostics = warningDiagnostics(graph, program.Warnings)
 	return snapshot, nil
+}
+
+// warningDiagnostics converts advisory check-pipeline findings to editor
+// diagnostics with warning severity: the same findings the CLI prints,
+// positioned through the same loaded bytes the errors use. A finding
+// whose span cannot be resolved keeps its file with an explicit
+// unavailable marker instead of silently becoming another file's line 1.
+// The slice is empty (never nil-shaped into errors) when the pipeline
+// reports nothing.
+func warningDiagnostics(graph *project.Graph, warnings []check.Warning) []Diagnostic {
+	out := make([]Diagnostic, 0, len(warnings))
+	for _, warning := range warnings {
+		diagnostic := Diagnostic{File: warning.File, Code: warning.Code, Message: warning.Message, Severity: "warning"}
+		text, ok := fileText(graph, warning.File)
+		if !ok {
+			diagnostic.Code = unavailableCode(warning.Code)
+			out = append(out, diagnostic)
+			continue
+		}
+		file, fileErr := source.New(warning.File, text)
+		if fileErr != nil {
+			diagnostic.Code = unavailableCode(warning.Code)
+			out = append(out, diagnostic)
+			continue
+		}
+		start, startErr := file.UTF16Position(warning.Span.Start)
+		end, endErr := file.UTF16Position(warning.Span.End)
+		if startErr != nil || endErr != nil {
+			diagnostic.Code = unavailableCode(warning.Code)
+			out = append(out, diagnostic)
+			continue
+		}
+		diagnostic.Line, diagnostic.Start = start.Line, start.Character
+		diagnostic.EndLine, diagnostic.End = end.Line, end.Character
+		out = append(out, diagnostic)
+	}
+	return out
 }
 
 // semanticDiagnostic converts a structured resolver or checker failure to

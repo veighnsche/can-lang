@@ -153,7 +153,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		}
 		switch msg.Method {
 		case "initialize":
-			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true}})
+			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true}})
 		case "initialized", "$/cancelRequest":
 		case "textDocument/didOpen":
 			var p struct {
@@ -206,6 +206,19 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 			}
 			if msg.ID != nil {
 				respond(msg.ID, server.definition(p.TextDocument.URI, p.Position.Line, p.Position.Character))
+			}
+		case "textDocument/formatting":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+			}
+			if json.Unmarshal(msg.Params, &p) != nil {
+				if msg.ID != nil {
+					respondErr(msg.ID, -32602, "invalid formatting params")
+				}
+				continue
+			}
+			if msg.ID != nil {
+				respond(msg.ID, server.formatting(p.TextDocument.URI))
 			}
 		case "shutdown":
 			respond(msg.ID, nil)
@@ -303,6 +316,81 @@ func (s *lspServer) diagnose(out *bufio.Writer, uri string) {
 	}
 }
 
+// formatting renders the open buffer through formatSource and validates
+// the candidate like --write before returning any edit: the live overlay
+// snapshot must be error-free and the formatted text must check clean
+// through a copied overlay carrying every other open buffer. Anything
+// unformattable or failing validation yields null so the editor applies
+// nothing; an already-canonical buffer yields an empty edit list.
+// Warnings never block formatting, matching the CLI's warnings-only
+// exit 0.
+func (s *lspServer) formatting(uri string) any {
+	doc, ok := s.docs[uri]
+	if !ok || doc.path == "" {
+		return nil
+	}
+	formatted, err := formatSource(doc.path, doc.text)
+	if err != nil {
+		return nil
+	}
+	if formatted == doc.text {
+		return []any{}
+	}
+	root := discoverRoot(doc.path)
+	original, err := driver.CheckSnapshot(root, doc.path, s.overlay)
+	if err != nil || snapshotHasErrors(original) {
+		return nil
+	}
+	candidate := project.NewOverlay()
+	for path, entry := range s.overlay.Snapshot() {
+		if err := candidate.Set(path, entry.Version, entry.Text); err != nil {
+			return nil
+		}
+	}
+	if err := candidate.Set(doc.path, doc.version, formatted); err != nil {
+		return nil
+	}
+	proposed, err := driver.CheckSnapshot(root, doc.path, candidate)
+	if err != nil || snapshotHasErrors(proposed) {
+		return nil
+	}
+	return []any{map[string]any{"range": fullDocumentRange(doc.text), "newText": formatted}}
+}
+
+// snapshotHasErrors reports whether a diagnosis carries anything above
+// advisory findings. Warning-severity entries never count: they ride
+// along with successful checks on both the CLI and the editor streams.
+func snapshotHasErrors(snapshot *driver.Snapshot) bool {
+	if snapshot == nil {
+		return true
+	}
+	for _, diagnostic := range snapshot.Diagnostics {
+		if diagnostic.Severity != "warning" {
+			return true
+		}
+	}
+	return false
+}
+
+// fullDocumentRange spans the whole buffer in editor coordinates: the
+// formatter rewrites the document, so the edit replaces it entirely.
+func fullDocumentRange(text string) map[string]any {
+	lines := strings.Split(text, "\n")
+	last := strings.TrimSuffix(lines[len(lines)-1], "\r")
+	width := 0
+	for _, r := range last {
+		if r > 0xFFFF {
+			width += 2
+		} else {
+			width++
+		}
+	}
+	return map[string]any{
+		"start": map[string]any{"line": 0, "character": 0},
+		"end":   map[string]any{"line": len(lines) - 1, "character": width},
+	}
+}
+
 func (s *lspServer) definition(uri string, line, character int) any {
 	doc, ok := s.docs[uri]
 	if !ok || doc.path == "" {
@@ -371,12 +459,16 @@ func publishBridgeDiagnostics(out *bufio.Writer, uri string, version *int64, dia
 		if end < 0 {
 			end = 0
 		}
+		severity := 1
+		if d.Severity == "warning" {
+			severity = 2
+		}
 		item := map[string]any{
 			"range": map[string]any{
 				"start": map[string]any{"line": line, "character": start},
 				"end":   map[string]any{"line": endLine, "character": end},
 			},
-			"severity": 1,
+			"severity": severity,
 			"source":   "canlc",
 			"message":  d.Message,
 		}
