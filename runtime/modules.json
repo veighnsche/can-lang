@@ -173,8 +173,15 @@
     ],
     "outbound/ledger-schema.ts": [],
     "outbound/ledger.ts": [
+      "node:crypto",
       "./epoch.ts",
       "./identity.ts"
+    ],
+    "outbound/sql-ledger.ts": [
+      "./epoch.ts",
+      "./identity.ts",
+      "./ledger.ts",
+      "./ledger-schema.ts"
     ],
     "codec/document.ts": [
       "../bytes.ts",

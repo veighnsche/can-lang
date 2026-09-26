@@ -17,6 +17,7 @@
 // state-dependent failure is a typed unavailable outcome H maps to
 // ai_budget::exceeded / ai_budget::unavailable. Ledger records and
 // reports never carry credentials, endpoints, or prompt text.
+import { createHash } from "node:crypto";
 import { epochContaining, epochSchedule, transitionSchedule, type EpochSchedule } from "./epoch.ts";
 import {
   correlationId,
@@ -56,8 +57,19 @@ export function profileId(profile: MeteringProfile): string {
   return `${profile.provider}/${profile.model}/${profile.version}`;
 }
 
-function profileKey(profile: MeteringProfile): string {
-  return JSON.stringify([profile.provider, profile.model, profile.version]);
+// profileKey is the quarantine membership key for a metering
+// profile. Shared with the SQL backend (sql-ledger.ts), which pairs
+// stored digest keys with display identities on write.
+export function profileKey(profile: MeteringProfile): string {
+  // Fixed 64-hex-char digest, never the raw JSON tuple: metering
+  // provider/model/version names run to 256 chars each, which would
+  // overflow MySQL's 191-char utf8mb4 key prefix in the quarantine
+  // table while fitting PG/SQLite TEXT. The digest keeps the
+  // quarantine key inside every dialect's key budget. Display and
+  // reporting use profileIdentity, never this key.
+  return createHash("sha256")
+    .update(JSON.stringify([profile.provider, profile.model, profile.version]), "utf8")
+    .digest("hex");
 }
 
 export type Usage = Readonly<{ inputTokens: number; outputTokens: number }>;
@@ -129,7 +141,9 @@ export function emptyLedgerState(): LedgerState {
   return Object.freeze({ version: 0, schedules: {}, epochs: {}, invocations: {}, quarantined: {} });
 }
 
-function epochRowKey(tenant: TenantId, pool: PoolId, start: number): string {
+// epochRowKey is shared with the SQL backend (sql-ledger.ts), which
+// rebuilds the epoch map from rows: the derivation must stay identical.
+export function epochRowKey(tenant: TenantId, pool: PoolId, start: number): string {
   return `${tenant as string}\n${pool as string}\n${start}`;
 }
 

@@ -15,7 +15,13 @@
 // - MySQL 8.0.16+: CHECK constraints enforced from 8.0.16 (older
 //   servers parse and ignore them — do not qualify below 8.0.16).
 //   TEXT cannot key an index, so key columns are VARCHAR(191),
-//   which fits the 767-byte utf8mb4 prefix limit.
+//   which fits the 767-byte utf8mb4 prefix limit. Non-key columns
+//   with identity values above the key budget (metering
+//   provider/model/version at 256 chars each, quarantine display
+//   identity) are TEXT: VARCHAR(191) there would reject
+//   contract-valid names under strict mode (error 1406) while
+//   PG/SQLite accept them. The quarantine key itself is a fixed
+//   64-hex-char digest (see profileKey), so it fits VARCHAR(191).
 //
 // Atomic-op mapping (short native transactions, never held across
 // provider I/O): each reserve/fence/settle/release runs as one
@@ -166,9 +172,9 @@ const MYSQL_STATEMENTS: readonly string[] = Object.freeze([
     epoch_end BIGINT NOT NULL,
     token_limit BIGINT NOT NULL,
     schedule_version VARCHAR(191) NOT NULL,
-    provider VARCHAR(191) NOT NULL,
-    model VARCHAR(191) NOT NULL,
-    profile_version VARCHAR(191) NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    profile_version TEXT NOT NULL,
     upper_bound BIGINT NOT NULL CHECK (upper_bound > 0),
     state VARCHAR(16) NOT NULL CHECK (state IN ('held', 'fenced', 'settled', 'released')),
     fenced INTEGER NOT NULL CHECK (fenced IN (0, 1)),
@@ -178,7 +184,7 @@ const MYSQL_STATEMENTS: readonly string[] = Object.freeze([
   )`,
   `CREATE TABLE ai_budget_quarantine (
     profile_key VARCHAR(191) PRIMARY KEY,
-    profile_identity VARCHAR(191) NOT NULL
+    profile_identity TEXT NOT NULL
   )`,
   `CREATE INDEX ai_budget_invocations_epoch
     ON ai_budget_invocations (tenant, pool, epoch_start, state)`,
