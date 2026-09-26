@@ -161,3 +161,93 @@ func TestSelfTailExcludedKeepsNestedCall(t *testing.T) {
 		}
 	}
 }
+
+// A lowered self relay must emit source-map marks the validator accepts:
+// tools/runtime/source-map-validation.ts requires strictly increasing
+// same-line columns, so two marks stacked at one generated coordinate fail
+// `canlc assert`/`build` with `invalid mapping segment`. RegionEmitter-direct
+// tests never set SourceID and cannot catch this class, so this leg runs the
+// real assert emission path (AssertionModules, including mapping extraction).
+func TestSelfTailRelayMappingsIncrease(t *testing.T) {
+	text := "package app\n" +
+		"    provides []\n" +
+		"    uses []\n" +
+		"fn int countdown\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        int n\n" +
+		"    asserts\n" +
+		"        zero: 0 => ok 0\n" +
+		"        two: 2 => ok 0\n" +
+		"    match n > 0\n" +
+		"        false => ok 0\n" +
+		"        true => relay call countdown(n - 1)\n" +
+		"fn int swap\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        int a\n" +
+		"        int b\n" +
+		"    asserts\n" +
+		"        sample: 2, 5 => ok 5\n" +
+		"    match a\n" +
+		"        0 => ok b\n" +
+		"        _ => relay call swap(b, a - 1)\n" +
+		"fn void main\n" +
+		"    emits []\n" +
+		"    given\n" +
+		"        str[] arguments\n" +
+		"    asserts\n" +
+		"        empty: [] => ok\n" +
+		"    ok\n"
+	program := actionEmitProgram(t, map[string]string{"src/main.can": text})
+	for _, name := range []string{"countdown", "swap"} {
+		found := false
+		for _, fn := range program.Functions {
+			if fn.Symbol.Name != name {
+				continue
+			}
+			found = true
+			if fn.Region.TailExclusion != "" {
+				t.Fatalf("%s excluded from lowering: %s", name, fn.Region.TailExclusion)
+			}
+			if !regionHasSelfTail(fn.Region) {
+				t.Fatalf("%s relay did not prove self-tail", name)
+			}
+		}
+		if !found {
+			t.Fatalf("missing concrete %s region", name)
+		}
+	}
+	artifacts, err := AssertionModules(program, "runtime", httpDependencies(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	seenCall := false
+	for _, artifact := range artifacts {
+		if artifact.Runtime || !strings.HasSuffix(artifact.Path, ".ts") {
+			continue
+		}
+		if strings.Contains(string(artifact.Bytes), "while (true) {") {
+			seenCall = seenCall || mappingsContain(artifact.Mappings, "call")
+		}
+		line, column := 0, -1
+		for _, segment := range artifact.Mappings {
+			if segment.Line < 1 || segment.Column < 0 || segment.Line < line || (segment.Line == line && segment.Column <= column) {
+				t.Fatalf("%s stacks two marks at %d:%d", artifact.Path, segment.Line, segment.Column)
+			}
+			line, column = segment.Line, segment.Column
+		}
+	}
+	if !seenCall {
+		t.Fatalf("lowered relay lost its call mapping")
+	}
+}
+
+func mappingsContain(mappings []ir.Mapping, operation string) bool {
+	for _, mapping := range mappings {
+		if mapping.Operation == operation {
+			return true
+		}
+	}
+	return false
+}

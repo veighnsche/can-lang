@@ -776,7 +776,6 @@ func (e *RegionEmitter) selfTailContinue(node *ir.Completion) (string, error) {
 		return "", fmt.Errorf("self-tail relay arguments do not match region inputs")
 	}
 	var out strings.Builder
-	out.WriteString(e.mark(step.Span, "call"))
 	for _, prepared := range step.Prepare {
 		value, err := e.expression.Lower(prepared.Value)
 		if err != nil {
@@ -798,6 +797,12 @@ func (e *RegionEmitter) selfTailContinue(node *ir.Completion) (string, error) {
 		fmt.Fprintf(&out, "const %s = %s;\n", name, lowered.Value)
 		temps[i] = name
 	}
+	// The relay-step mark trails argument evaluation: a mapping mark ends
+	// with its token, and lowered arguments begin with one, so leading with
+	// the mark would stack two marks at one generated coordinate, which the
+	// source-map validator rejects. The origin still names the relay step
+	// when the loop continues.
+	out.WriteString(e.mark(step.Span, "call"))
 	for i, input := range e.region.Inputs {
 		param := e.expression.Bindings[input.Identity]
 		if param == "" {
