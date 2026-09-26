@@ -42,7 +42,7 @@ test("transport deadline bounds a stalled body and cancels its stream", async ()
     );
     throw new Error("accepted stalled body");
   } catch (cause) {
-    expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+    expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 20 });
   } finally {
     deadline.dispose();
   }
@@ -56,7 +56,7 @@ test("transport monotonic deadline rejects synchronous late validation", () => {
     deadline.check();
     throw new Error("accepted late validation");
   } catch (cause) {
-    expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+    expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 2 });
   } finally {
     deadline.dispose();
   }
@@ -82,7 +82,7 @@ test("deadline expiry takes precedence over an earlier owner cancellation", () =
     deadline.check();
     throw new Error("accepted cancellation");
   } catch (cause) {
-    expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+    expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 2 });
   } finally {
     deadline.dispose();
   }

@@ -54,7 +54,9 @@ export function createTransport(
               break;
             case "timeout":
               identity = types.timeout;
-              fields = [["timeout_ms", BigInt(connection.timeoutMilliseconds)]];
+              fields = [
+                ["timeout_ms", BigInt(problem.milliseconds ?? connection.timeoutMilliseconds)],
+              ];
               break;
             case "limit":
               identity = types.limit;

@@ -51,7 +51,7 @@ test("late decoder defect is reported while timeout remains selected", async () 
           );
           throw new Error("did not time out");
         } catch (cause) {
-          expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+          expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 2000 });
         }
         timed.resolve();
         return success(undefined);
@@ -106,7 +106,7 @@ test("native continuation retains captured resource after parent timeout", async
                 deadline,
               );
             } catch (cause) {
-              expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+              expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 10 });
             } finally {
               deadline.dispose();
             }
@@ -151,7 +151,7 @@ test("late classified transport failure does not produce a standard diagnostic",
           deadline,
         );
       } catch (cause) {
-        expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+        expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 5 });
       } finally {
         deadline.dispose();
       }
@@ -184,7 +184,7 @@ test("synchronous late standard failure preserves timeout and reports its occurr
           deadline,
         );
       } catch (cause) {
-        expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+        expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 2 });
       } finally {
         deadline.dispose();
       }
@@ -223,7 +223,7 @@ test("late boxed standard decoder completion remains visible to ownership", asyn
           deadline,
         );
       } catch (cause) {
-        expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+        expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 5 });
       } finally {
         deadline.dispose();
       }

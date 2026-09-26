@@ -13,7 +13,10 @@ export type RequestReason =
   | "content_type"
   | "instructions";
 export type TransportProblem =
-  | Readonly<{ kind: "timeout" }>
+  // milliseconds names the bound that fired (the connection timeout
+  // capped by the remaining request budget, when one applies). Fixture
+  // replays omit it; adapters fall back to the connection timeout.
+  | Readonly<{ kind: "timeout"; milliseconds?: number }>
   | Readonly<{ kind: "transport"; phase: "connect" | "body" | "protocol" | "cancelled" }>
   | Readonly<{ kind: "limit"; limit: number }>
   | Readonly<{ kind: "invalid"; reason: RequestReason }>
@@ -43,11 +46,15 @@ export class Deadline {
   private readonly start = performance.now();
   private readonly timer: ReturnType<typeof setTimeout>;
   private readonly expired: Promise<never>;
+  private readonly expiries: AbortSignal[] = [];
   private cancelled = false;
   private readonly cancel = () => {
     this.cancelled = true;
     this.controller.abort();
     this.reject(transportFault({ kind: "transport", phase: "cancelled" }));
+  };
+  private readonly expireLinked = () => {
+    this.expire();
   };
   private reject!: (reason: unknown) => void;
   constructor(
@@ -68,9 +75,22 @@ export class Deadline {
     else ownerSignal?.addEventListener("abort", this.cancel, { once: true });
   }
   private expire(): never | void {
-    const cause = transportFault({ kind: "timeout" });
+    const cause = transportFault({ kind: "timeout", milliseconds: this.milliseconds });
     this.controller.abort();
     this.reject(cause);
+  }
+  // expireOn links an external expiry (request-scope disconnect or
+  // shutdown propagation) to the timeout path: the signal aborts the
+  // native operation exactly like timer expiry, and outcomes report
+  // timeout — never cancelled. Caller cancel keeps arriving through
+  // the constructor ownerSignal only.
+  expireOn(signal: AbortSignal): void {
+    if (signal.aborted) {
+      this.expire();
+      return;
+    }
+    this.expiries.push(signal);
+    signal.addEventListener("abort", this.expireLinked, { once: true });
   }
   check(): void {
     if (
@@ -78,7 +98,7 @@ export class Deadline {
       (this.signal.aborted && !this.cancelled)
     ) {
       this.expire();
-      throw transportFault({ kind: "timeout" });
+      throw transportFault({ kind: "timeout", milliseconds: this.milliseconds });
     }
     if (this.cancelled) throw transportFault({ kind: "transport", phase: "cancelled" });
   }
@@ -93,5 +113,7 @@ export class Deadline {
   dispose(): void {
     clearTimeout(this.timer);
     this.ownerSignal?.removeEventListener("abort", this.cancel);
+    for (const signal of this.expiries) signal.removeEventListener("abort", this.expireLinked);
+    this.expiries.length = 0;
   }
 }

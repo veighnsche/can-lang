@@ -25,7 +25,7 @@ test("deadline returns before native settlement but root retains the actual work
       await nativeOperation(() => native.promise, [], deadline);
       throw new Error("unexpected settlement");
     } catch (cause) {
-      expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+      expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 10 });
     } finally {
       deadline.dispose();
     }

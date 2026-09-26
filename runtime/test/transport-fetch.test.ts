@@ -141,7 +141,7 @@ test("stalled native response times out, aborts body, and never enters decode", 
         );
         throw new Error("accepted stall");
       } catch (cause) {
-        expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+        expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 30 });
       }
       return undefined;
     });
@@ -175,7 +175,7 @@ test("response decode past the total deadline cannot enter the handler", async (
         );
         handled = true;
       } catch (cause) {
-        expect(transportProblem(cause)).toEqual({ kind: "timeout" });
+        expect(transportProblem(cause)).toEqual({ kind: "timeout", milliseconds: 30 });
       }
       return undefined;
     });

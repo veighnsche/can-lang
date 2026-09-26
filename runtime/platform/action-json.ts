@@ -13,6 +13,8 @@ import { CodecIssue } from "../codec/budget.ts";
 import { decodeJSON, encodeJSON, type Schema } from "../codec/json.ts";
 import { graph } from "../codec/project.ts";
 import { jsonRequestMedia, responseMedia } from "../transport/media.ts";
+import { checkOperationBound } from "../transport/operation-budget.ts";
+import type { RequestBudget } from "../transport/request-budget.ts";
 import { requestSnapshot, requestNativeRequest, createResponses } from "./http.ts";
 import {
   noteRequestSource,
@@ -270,13 +272,14 @@ export function createJsonActions(
 }
 
 // ActionFetchResult is the fetch consumer's outcome vocabulary. Transport,
-// abort, codec and unexpected-status failures stay distinct from finite
-// domain cases; createJsonActionFetch lowers these names into the checked
-// per-action failure bound.
+// abort, timeout, codec and unexpected-status failures stay distinct from
+// finite domain cases; createJsonActionFetch lowers these names into the
+// checked per-action failure bound.
 export type ActionFetchResult =
   | Readonly<{ kind: "ok"; status: number; leaf: string; value: unknown }>
   | Readonly<{ kind: "transport"; phase: "connect" | "body" | "protocol" }>
   | Readonly<{ kind: "aborted" }>
+  | Readonly<{ kind: "timeout" }>
   | Readonly<{ kind: "codec"; path: string; reason: string }>
   | Readonly<{ kind: "unexpected_status"; status: number }>;
 
@@ -288,6 +291,12 @@ export type ActionFetchInput = Readonly<{
   response: Schema;
   cases: readonly ActionJsonCase[];
   signal?: AbortSignal;
+  // Caller bound in milliseconds, capped by the remaining shared
+  // budget when one is present. Native fetch abort is qualified, so
+  // expiry aborts the wire request (cancel-present branch): the
+  // outcome is timeout, distinct from caller-cancelled abort.
+  timeoutMs?: number;
+  budget?: RequestBudget;
   requestLimit?: number;
   responseLimit?: number;
 }>;
@@ -345,6 +354,46 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
     if (input.request !== undefined)
       throw new TypeError("action fetch GET carries no request schema");
   }
+  // Validation runs before the race; only the wire call is bounded.
+  if (input.timeoutMs !== undefined) checkOperationBound(input.timeoutMs);
+  if (input.signal?.aborted) return { kind: "aborted" };
+  const remaining = input.budget?.remainingMilliseconds() ?? Number.POSITIVE_INFINITY;
+  const effective = Math.max(0, Math.min(input.timeoutMs ?? Number.POSITIVE_INFINITY, remaining));
+  if (effective <= 0) return { kind: "timeout" };
+  // One internal controller serves both expiry paths: the bound timer
+  // and the forwarded caller signal. timedOut tells them apart, so a
+  // bound expiry reports timeout while a caller cancel reports aborted.
+  const controller = new AbortController();
+  let timedOut = false;
+  const timer =
+    effective === Number.POSITIVE_INFINITY
+      ? undefined
+      : setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+        }, effective);
+  const onCallerAbort = (): void => {
+    controller.abort();
+  };
+  input.signal?.addEventListener("abort", onCallerAbort, { once: true });
+  try {
+    return await fetchBound(input, cases, response, limit, encoded, controller, () => timedOut);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+    input.signal?.removeEventListener("abort", onCallerAbort);
+  }
+}
+
+async function fetchBound(
+  input: ActionFetchInput,
+  cases: readonly ActionJsonCase[],
+  response: Schema,
+  limit: number,
+  encoded: Uint8Array<ArrayBuffer> | undefined,
+  controller: AbortController,
+  timedOut: () => boolean,
+): Promise<ActionFetchResult> {
+  const aborted = (cause: unknown): boolean => fetchAborted(cause, controller.signal);
   let received: Response;
   try {
     received = await fetch(input.url, {
@@ -358,10 +407,11 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
       // serving origin, and protected actions authenticate through the
       // session cookie. Cross-origin requests still omit credentials.
       credentials: "same-origin",
-      signal: input.signal,
+      signal: controller.signal,
     });
   } catch (cause) {
-    if (fetchAborted(cause, input.signal)) return { kind: "aborted" };
+    if (timedOut()) return { kind: "timeout" };
+    if (aborted(cause)) return { kind: "aborted" };
     if (fetchFailed(cause)) return { kind: "transport", phase: "connect" };
     throw cause;
   }
@@ -387,7 +437,8 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
         try {
           next = await reader.read();
         } catch (cause) {
-          if (fetchAborted(cause, input.signal)) return { kind: "aborted" };
+          if (timedOut()) return { kind: "timeout" };
+          if (aborted(cause)) return { kind: "aborted" };
           if (fetchFailed(cause)) return { kind: "transport", phase: "body" };
           throw cause;
         }
@@ -448,6 +499,10 @@ export type JsonFetchSite = Readonly<{
   response: unknown;
   cases: readonly ActionJsonCase[];
   limit?: unknown;
+  // Static caller bound in milliseconds, spliced by the compiler like
+  // limit. Dynamic bounds and budgets thread through fetchJsonAction
+  // directly once the checker patch lands (C-owned).
+  timeoutMs?: unknown;
 }>;
 
 export type JsonFetchTypes = Readonly<{
@@ -470,6 +525,9 @@ type CheckedFetchSite = Readonly<{
   // Declared JSON request budget in bytes, or null when the site
   // carries none and the default wire cap applies.
   limit: number | null;
+  // Static caller bound in milliseconds, or null when the site
+  // carries none and the call runs unbounded.
+  timeoutMs: number | null;
 }>;
 
 function checkedFetchSite(site: unknown): CheckedFetchSite {
@@ -500,6 +558,18 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
       throw new TypeError(`fetch site ${action} carries a malformed request budget`);
     limit = site.limit as number;
   }
+  // The bound is capped at 2^31-1: a larger setTimeout delay overflows
+  // and fires immediately, which would fake a timeout.
+  let timeoutMs: number | null = null;
+  if (site.timeoutMs !== undefined && site.timeoutMs !== null) {
+    if (
+      !Number.isSafeInteger(site.timeoutMs) ||
+      (site.timeoutMs as number) < 1 ||
+      (site.timeoutMs as number) > 2147483647
+    )
+      throw new TypeError(`fetch site ${action} carries a malformed caller bound`);
+    timeoutMs = site.timeoutMs as number;
+  }
   if (site.method === "GET") {
     if (site.request !== undefined && site.request !== null)
       throw new TypeError(`fetch site ${action} is a bodyless GET site with a request contract`);
@@ -512,6 +582,7 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
       response,
       cases,
       limit,
+      timeoutMs,
     };
   }
   if (site.request === undefined || site.request === null)
@@ -526,6 +597,7 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
     response,
     cases,
     limit,
+    timeoutMs,
   };
 }
 
@@ -534,7 +606,7 @@ function checkedFetchSite(site: unknown): CheckedFetchSite {
 // (action name, captures in path order, POST body), then the spliced site,
 // then the assertion context; the context travels positionally and is
 // otherwise unused. Method, operation identity, codecs, sizes and the
-// actual status all validate here: transport, abort, codec and
+// actual status all validate here: transport, abort, timeout, codec and
 // unexpected-status outcomes map into the declared failure bound and never
 // surface as domain cases.
 export function createJsonActionFetch(
@@ -618,6 +690,7 @@ export function createJsonActionFetch(
       response: site.response,
       cases: site.cases,
       requestLimit: site.limit ?? undefined,
+      timeoutMs: site.timeoutMs ?? undefined,
     });
     switch (outcome.kind) {
       case "ok":
@@ -629,6 +702,11 @@ export function createJsonActionFetch(
         // transport failure, never a domain case, and must not be read
         // as server rollback. Reconciliation rereads instead of assuming.
         return fail(types.transport, [["phase", "cancelled"]], site.action);
+      case "timeout":
+        // A bound expiry aborts the wire request natively, but the
+        // server may still have acted: same no-commit-knowledge rule
+        // as cancelled, under its own phase.
+        return fail(types.transport, [["phase", "timeout"]], site.action);
       case "codec":
         return fail(
           types.invalidData,
