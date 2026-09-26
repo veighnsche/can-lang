@@ -249,9 +249,9 @@ func TestStdlibMaintained(t *testing.T) {
 				t.Fatalf("%s asserts nothing real", rel)
 			}
 			buildArgs := []string{"build"}
-			if rel == "examples/invoice-grid" {
-				// The grid ships a browser-shaped entry; build it
-				// through the browser profile like the gate5 suite.
+			if rel == "examples/invoice-grid" || rel == "examples/invoice-compare" {
+				// Browser-shaped entries build through the browser
+				// profile like the gate5 suite.
 				buildArgs = []string{"build", "--target", "browser"}
 			}
 			firstID, firstDir := applicationBuildArgs(t, ctx, bundle, home, root, buildArgs...)
@@ -264,7 +264,7 @@ func TestStdlibMaintained(t *testing.T) {
 				copyFreshEmit(t, firstDir, filepath.Join(fresh, strings.ReplaceAll(rel, "/", "-")))
 			}
 			ran := "server/cli run covered by applications suite"
-			if rel == "examples/invoice-grid" {
+			if rel == "examples/invoice-grid" || rel == "examples/invoice-compare" {
 				ran = "browser run covered by gate5 suite"
 			}
 			if strings.HasPrefix(rel, "std/") {
