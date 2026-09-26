@@ -482,26 +482,6 @@ func gate5StageEmpty(t *testing.T) (root, home string) {
 	return root, home
 }
 
-// gate5FirefoxHostAlias is the container-to-Mac loopback alias the
-// firefox legs use in connect mode: the container's own 127.0.0.1 is
-// not the Mac's loopback.
-func gate5FirefoxHostAlias() string {
-	if alias := os.Getenv("CAN_FIREFOX_HOST_ALIAS"); alias != "" {
-		return alias
-	}
-	return "host.docker.internal"
-}
-
-// gate5LoopbackOK is the shared loopback guard: loopback always passes,
-// and the container host alias passes only for firefox legs in connect
-// mode. Native legs stay exactly as strict as before.
-func gate5LoopbackOK(engine, host string) bool {
-	if host == "127.0.0.1" || host == "localhost" {
-		return true
-	}
-	return engine == "firefox" && os.Getenv("CAN_FIREFOX_WS") != "" && host == gate5FirefoxHostAlias()
-}
-
 func gate5BrowserProbe(t *testing.T, ctx context.Context, nodePath, browserDir, name string) string {
 	t.Helper()
 	probeCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
@@ -611,7 +591,7 @@ func gate5ReadReport(t *testing.T, suite, engine string, raw []byte, wantChecks 
 	}
 	for _, entry := range report.Requests {
 		parsed, parseErr := url.Parse(entry.URL)
-		if parseErr != nil || !gate5LoopbackOK(engine, parsed.Hostname()) {
+		if parseErr != nil || (parsed.Hostname() != "127.0.0.1" && parsed.Hostname() != "localhost") {
 			t.Fatalf("%s %s left loopback: %s", suite, engine, entry.URL)
 		}
 	}
@@ -625,12 +605,10 @@ func gate5RunHarness(t *testing.T, ctx context.Context, nodePath, browserDir, su
 	cmd := exec.CommandContext(ctx, nodePath, argv...)
 	cmd.Dir = browserDir
 	env := []string{"PATH=" + filepath.Dir(nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
-	// Firefox connect mode needs the container endpoint and host alias;
-	// every other leg ignores them.
-	for _, key := range []string{"CAN_FIREFOX_WS", "CAN_FIREFOX_HOST_ALIAS"} {
-		if value, ok := os.LookupEnv(key); ok {
-			env = append(env, key+"="+value)
-		}
+	// Firefox connect mode needs the container endpoint; every other
+	// leg ignores it.
+	if value, ok := os.LookupEnv("CAN_FIREFOX_WS"); ok {
+		env = append(env, "CAN_FIREFOX_WS="+value)
 	}
 	cmd.Env = env
 	result, err := cmd.CombinedOutput()

@@ -14,12 +14,12 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { launchWanted, remoteBase, originAllowed } from "./firefox-remote.mjs";
+import { launchWanted } from "./firefox-remote.mjs";
 
-const [wanted, baseArg, outdir, dbpath, scriptUrl] = process.argv.slice(2);
+const [wanted, base, outdir, dbpath, scriptUrl] = process.argv.slice(2);
 if (
   (wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") ||
-  !baseArg ||
+  !base ||
   !outdir ||
   !dbpath ||
   !scriptUrl?.startsWith("/__can/assets/")
@@ -27,7 +27,6 @@ if (
   console.error("usage: node grid.mjs <chromium|firefox|webkit> <base> <outdir> <dbpath> <script-url>");
   process.exit(2);
 }
-const base = remoteBase(wanted, baseArg);
 mkdirSync(outdir, { recursive: true });
 
 const playwright = await import("playwright");
@@ -49,7 +48,7 @@ try {
   await context.route("**/*", (route) => {
     const url = new URL(route.request().url());
     if (url.protocol !== "http:" && url.protocol !== "https:") return route.continue();
-    if (originAllowed(wanted, url.hostname)) return route.continue();
+    if (url.hostname === "127.0.0.1" || url.hostname === "localhost") return route.continue();
     aborted.push(route.request().url());
     return route.abort("blockedbyclient");
   });
@@ -837,7 +836,7 @@ try {
     assert.equal(aborted.length, 0, `non-loopback requests: ${aborted.join(", ")}`);
     for (const entry of requests) {
       const host = new URL(entry.url).hostname;
-      assert.ok(originAllowed(wanted, host), `grid left loopback: ${entry.url}`);
+      assert.ok(host === "127.0.0.1" || host === "localhost", `grid left loopback: ${entry.url}`);
     }
     assert.equal(pageerrors.length, 0, pageerrors.join("; "));
     // Offline legs fail resource loads by design; the served CSP's

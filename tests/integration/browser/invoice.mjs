@@ -16,10 +16,10 @@
 import { strict as assert } from "node:assert";
 import { mkdirSync, writeFileSync, chmodSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { launchWanted, remoteBase, originAllowed, firefoxEndpoint, firefoxHostAlias } from "./firefox-remote.mjs";
+import { launchWanted } from "./firefox-remote.mjs";
 
-const [baseArg, outdir, dbpath, wantedArg, scriptArg] = process.argv.slice(2);
-if (!baseArg || !outdir || !dbpath) {
+const [base, outdir, dbpath, wantedArg, scriptArg] = process.argv.slice(2);
+if (!base || !outdir || !dbpath) {
   console.error("usage: node invoice.mjs <base> <outdir> <dbpath> [browser] [script-url]");
   process.exit(2);
 }
@@ -28,7 +28,6 @@ if (wanted !== "chromium" && wanted !== "firefox" && wanted !== "webkit") {
   console.error(`unknown browser ${wanted}`);
   process.exit(2);
 }
-const base = remoteBase(wanted, baseArg);
 mkdirSync(outdir, { recursive: true });
 
 const playwright = await import("playwright");
@@ -51,7 +50,7 @@ try {
   const context = await browser.newContext();
   await context.route("**/*", (route) => {
     const url = new URL(route.request().url());
-    if (originAllowed(wanted, url.hostname)) return route.continue();
+    if (url.hostname === "127.0.0.1" || url.hostname === "localhost") return route.continue();
     aborted.push(route.request().url());
     return route.abort("blockedbyclient");
   });
@@ -475,8 +474,7 @@ try {
   await check("no-external-requests", async () => {
     assert.equal(aborted.length, 0);
     for (const entry of requests) {
-      const host = new URL(entry.url).hostname;
-      assert.ok(host === "127.0.0.1" || (!!firefoxEndpoint(wanted) && host === firefoxHostAlias()), entry.url);
+      assert.ok(new URL(entry.url).hostname === "127.0.0.1", entry.url);
     }
     assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-4.0.0.min.js") && entry.status === 200));
     assert.ok(requests.some((entry) => entry.url.endsWith("/__can/assets/htmx-guard.js") && entry.status === 200));
