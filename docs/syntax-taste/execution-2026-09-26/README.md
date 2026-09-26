@@ -68,6 +68,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | D02 | done (live debt) | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` | 40/40 + Go gates; debt D02-LIVE-1..4 until C01 unblocks |
 | F06 | in progress, slice 1 integrated | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | `358a0c07`→`e68a62d0` (partial) | 40/40 companion; live qual pending |
 | H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
+| D03 | in progress, slice 1 integrated | lane-d-d03 (`41`) | isolated | D02 | W2→H11 | `3c1475b7`→`d5e4ae5f` (partial) | 51/51 + Go; Vendor B via unchanged D02 client |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
