@@ -509,3 +509,4 @@ for (const entry of checks) console.log(`${entry.passed ? "PASS" : "FAIL"} ${ent
 for (const entry of limitations) console.log(`LIMIT ${entry.id} ${entry.detail}`);
 if (!passed) process.exit(1);
 console.log(`browser invoice evidence passed on ${wanted}`);
+if (remote) process.exit(0); // the shared ws outlives a passed leg; release the process

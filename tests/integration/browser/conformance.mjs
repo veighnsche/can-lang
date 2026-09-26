@@ -398,3 +398,4 @@ writeFileSync(
 for (const entry of checks) console.log(`${entry.passed ? "PASS" : "FAIL"} ${entry.name}${entry.detail ? ` ${entry.detail}` : ""}`);
 if (!passed) process.exit(1);
 console.log(`browser conformance evidence passed on ${wanted}`);
+if (remote) process.exit(0); // the shared ws outlives a passed leg; release the process
