@@ -37,7 +37,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H01 | done | lane-h-h01-h09 (`10`) | isolated | none | gates→H02/H03/H04/H05/C01 | worker `f197c925` → main `3c672e77` | register reviewed, env-names-only |
 | H09 | done | lane-h-h01-h09 (`10`) | isolated | none | docs→H14 | worker `d69be330` → main `58060191` | link targets verified present |
 
-| C01 | in progress (container path validated) | lane-c-c01-retry (new) | isolated | H01 | runners→C02/C06/H13 | wiring `c37c40fc`+`a3c4a11f` PENDING (adapt to connect) | macOS 27: FF141 native hangs (GFX/sandbox), FF155 dead (kernel-denies `~/Library/Application Support/Firefox` for all incl root, fresh user too); coord validated FF141 in pinned arm64 `playwright:v1.55.1-noble` launchServer (connect+page OK); harness needs CAN_FIREFOX_WS connect + base host-alias legs |
+| C01 | in progress, slice 1 integrated | lane-c-c01-retry (`42`) | isolated | H01 | runners→C02/C06/H13 | wiring `c37c40fc`+`a3c4a11f` PENDING (adapt to connect); `eb7650b0`→`764f9a0a` (provision) | macOS 27: FF141 native hangs (GFX/sandbox), FF155 dead (kernel-denies `~/Library/Application Support/Firefox` for all incl root, fresh user too); coord validated FF141 in pinned arm64 `playwright:v1.55.1-noble` launchServer (connect+page OK); harness needs CAN_FIREFOX_WS connect + base host-alias legs |
 | C03 | ready (A03+E03 done) | — | — | A03, E03 | C-E wire→C04/F05/H06 | — | — |
 | H02 | done | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | worker `9482ff01` → main `2a880eee` | PG 17.11 + DBs verified; mysql 12/12+5/5 |
 | H03 | done | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | worker `9482ff01` → main `2a880eee` | MinIO live verified; s3.test 19/19 (S3-protocol scope) |
