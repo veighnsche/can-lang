@@ -1,0 +1,49 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "caret_projection": {
+      "type": "choice",
+      "choice": "symmetric_calls",
+      "confidence": 0.67,
+      "probabilities": {
+        "symmetric_calls": 0.78,
+        "snapshot_only": 0.03,
+        "live_only": 0.19
+      }
+    },
+    "composition_signal": {
+      "type": "choice",
+      "choice": "new_kinds",
+      "confidence": 0.34,
+      "probabilities": {
+        "flag_plus_end": 0.12,
+        "new_kinds": 0.56,
+        "flag_only": 0.32
+      }
+    },
+    "file_projection": {
+      "type": "choice",
+      "choice": "metadata_records",
+      "confidence": 0.9,
+      "probabilities": {
+        "opaque_handles": 0.03,
+        "names_only": 0.04,
+        "metadata_records": 0.93
+      }
+    },
+    "modifier_shape": {
+      "type": "choice",
+      "choice": "nested_record",
+      "confidence": 0.36,
+      "probabilities": {
+        "flat_bools": 0.39,
+        "nested_record": 0.57,
+        "chord_string": 0.04
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1619,
+    "output_tokens": 172
+  }
+}

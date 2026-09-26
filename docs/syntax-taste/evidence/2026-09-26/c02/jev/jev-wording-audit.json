@@ -1,0 +1,605 @@
+{
+  "structural": {
+    "model": [
+      "jev-latest",
+      "jev-latest",
+      "jev-latest"
+    ],
+    "state_keys": [
+      "boundary",
+      "contract",
+      "evidence",
+      "fixed",
+      "workflows"
+    ],
+    "question_keys": [
+      "caret_projection",
+      "composition_signal",
+      "file_projection",
+      "modifier_shape"
+    ],
+    "caret_projection": {
+      "type": "choice",
+      "options": [
+        "live_only",
+        "snapshot_only",
+        "symmetric_calls"
+      ]
+    },
+    "composition_signal": {
+      "type": "choice",
+      "options": [
+        "flag_only",
+        "flag_plus_end",
+        "new_kinds"
+      ]
+    },
+    "file_projection": {
+      "type": "choice",
+      "options": [
+        "metadata_records",
+        "names_only",
+        "opaque_handles"
+      ]
+    },
+    "modifier_shape": {
+      "type": "choice",
+      "options": [
+        "chord_string",
+        "flat_bools",
+        "nested_record"
+      ]
+    }
+  },
+  "fields": {
+    "state.boundary": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.089,
+        "lengths": [
+          527,
+          534
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.083,
+        "lengths": [
+          527,
+          551
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.149,
+        "lengths": [
+          534,
+          551
+        ]
+      }
+    },
+    "state.contract": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.167,
+        "lengths": [
+          617,
+          625
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.246,
+        "lengths": [
+          617,
+          628
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.042,
+        "lengths": [
+          625,
+          628
+        ]
+      }
+    },
+    "state.evidence": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.58,
+        "lengths": [
+          289,
+          294
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.573,
+        "lengths": [
+          289,
+          280
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.544,
+        "lengths": [
+          294,
+          280
+        ]
+      }
+    },
+    "state.fixed": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.161,
+        "lengths": [
+          359,
+          360
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.53,
+        "lengths": [
+          359,
+          365
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.154,
+        "lengths": [
+          360,
+          365
+        ]
+      }
+    },
+    "state.workflows": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.13,
+        "lengths": [
+          437,
+          472
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.164,
+        "lengths": [
+          437,
+          490
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.139,
+        "lengths": [
+          472,
+          490
+        ]
+      }
+    },
+    "questions.caret_projection.instructions": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.761,
+        "lengths": [
+          115,
+          103
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.633,
+        "lengths": [
+          115,
+          84
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.663,
+        "lengths": [
+          103,
+          84
+        ]
+      }
+    },
+    "questions.caret_projection.criteria.live_only": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.404,
+        "lengths": [
+          338,
+          276
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.013,
+        "lengths": [
+          338,
+          267
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.081,
+        "lengths": [
+          276,
+          267
+        ]
+      }
+    },
+    "questions.caret_projection.criteria.snapshot_only": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.035,
+        "lengths": [
+          316,
+          309
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.025,
+        "lengths": [
+          316,
+          322
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.013,
+        "lengths": [
+          309,
+          322
+        ]
+      }
+    },
+    "questions.caret_projection.criteria.symmetric_calls": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.127,
+        "lengths": [
+          300,
+          281
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.119,
+        "lengths": [
+          300,
+          307
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.371,
+        "lengths": [
+          281,
+          307
+        ]
+      }
+    },
+    "questions.composition_signal.instructions": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.652,
+        "lengths": [
+          58,
+          80
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.689,
+        "lengths": [
+          58,
+          64
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.514,
+        "lengths": [
+          80,
+          64
+        ]
+      }
+    },
+    "questions.composition_signal.criteria.flag_only": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.223,
+        "lengths": [
+          240,
+          217
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.185,
+        "lengths": [
+          240,
+          235
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.102,
+        "lengths": [
+          217,
+          235
+        ]
+      }
+    },
+    "questions.composition_signal.criteria.flag_plus_end": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.217,
+        "lengths": [
+          209,
+          205
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.313,
+        "lengths": [
+          209,
+          200
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.237,
+        "lengths": [
+          205,
+          200
+        ]
+      }
+    },
+    "questions.composition_signal.criteria.new_kinds": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.312,
+        "lengths": [
+          263,
+          231
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.254,
+        "lengths": [
+          263,
+          234
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.323,
+        "lengths": [
+          231,
+          234
+        ]
+      }
+    },
+    "questions.file_projection.instructions": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.857,
+        "lengths": [
+          76,
+          71
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.689,
+        "lengths": [
+          76,
+          75
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.644,
+        "lengths": [
+          71,
+          75
+        ]
+      }
+    },
+    "questions.file_projection.criteria.metadata_records": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.262,
+        "lengths": [
+          286,
+          234
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.232,
+        "lengths": [
+          286,
+          248
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.232,
+        "lengths": [
+          234,
+          248
+        ]
+      }
+    },
+    "questions.file_projection.criteria.names_only": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.495,
+        "lengths": [
+          218,
+          174
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.49,
+        "lengths": [
+          218,
+          182
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.663,
+        "lengths": [
+          174,
+          182
+        ]
+      }
+    },
+    "questions.file_projection.criteria.opaque_handles": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.306,
+        "lengths": [
+          234,
+          204
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.188,
+        "lengths": [
+          234,
+          203
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.364,
+        "lengths": [
+          204,
+          203
+        ]
+      }
+    },
+    "questions.modifier_shape.instructions": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.611,
+        "lengths": [
+          71,
+          73
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.814,
+        "lengths": [
+          71,
+          69
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.465,
+        "lengths": [
+          73,
+          69
+        ]
+      }
+    },
+    "questions.modifier_shape.criteria.chord_string": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.389,
+        "lengths": [
+          220,
+          233
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.246,
+        "lengths": [
+          220,
+          219
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.221,
+        "lengths": [
+          233,
+          219
+        ]
+      }
+    },
+    "questions.modifier_shape.criteria.flat_bools": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.619,
+        "lengths": [
+          154,
+          169
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.679,
+        "lengths": [
+          154,
+          176
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.614,
+        "lengths": [
+          169,
+          176
+        ]
+      }
+    },
+    "questions.modifier_shape.criteria.nested_record": {
+      "1v2": {
+        "identical": false,
+        "similarity": 0.476,
+        "lengths": [
+          187,
+          204
+        ]
+      },
+      "1v3": {
+        "identical": false,
+        "similarity": 0.338,
+        "lengths": [
+          187,
+          203
+        ]
+      },
+      "2v3": {
+        "identical": false,
+        "similarity": 0.246,
+        "lengths": [
+          204,
+          203
+        ]
+      }
+    }
+  },
+  "ok": true,
+  "field_count": 21,
+  "semantic_equivalence_note": "Manual review at draft time: each triple preserves the same facts, constraints, questions, and alternatives; only explanatory phrasing varies. Exact identifiers (27338b09, Chromium 140.0.7339.186, WebKit 26.0, Firefox 141.0, 9 event kinds, 4 snapshot fields, 128-file cap) and all option keys are stable."
+}
