@@ -1,0 +1,69 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "host_extension": {
+      "type": "choice",
+      "choice": "catalogue",
+      "confidence": 0.51,
+      "probabilities": {
+        "reviewed_adapters": 0.31,
+        "catalogue": 0.67,
+        "companion": 0.02
+      }
+    },
+    "failure_abstraction": {
+      "type": "choice",
+      "choice": "result_data",
+      "confidence": 0.28,
+      "probabilities": {
+        "error_rows": 0.15,
+        "result_data": 0.52,
+        "fixed_bounds": 0.33
+      }
+    },
+    "assertion_setup": {
+      "type": "choice",
+      "choice": "factory_pattern",
+      "confidence": 0.75,
+      "probabilities": {
+        "scenario_coverage": 0.01,
+        "factory_pattern": 0.83,
+        "setup_region": 0.16
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "choice": "iteration_primitive",
+      "confidence": 0.04,
+      "probabilities": {
+        "iteration_primitive": 0.36,
+        "self_tail": 0.32,
+        "bounded_policy": 0.32
+      }
+    },
+    "request_lifetime": {
+      "type": "choice",
+      "choice": "operation_deadlines",
+      "confidence": 0.86,
+      "probabilities": {
+        "deployment_limits": 0.06,
+        "scope_policy": 0.03,
+        "operation_deadlines": 0.91
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "choice": "library",
+      "confidence": 0.72,
+      "probabilities": {
+        "library": 0.8200000000000001,
+        "interop_ui": 0.0,
+        "syntax": 0.18
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1704,
+    "output_tokens": 264
+  }
+}

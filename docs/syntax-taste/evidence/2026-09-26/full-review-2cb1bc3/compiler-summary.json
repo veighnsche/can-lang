@@ -1,0 +1,100 @@
+{
+  "package_results": [
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/catalogue/cmd/cataloguegen",
+      "action": "skip",
+      "seconds": 0
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/ir",
+      "action": "skip",
+      "seconds": 0
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/catalogue",
+      "action": "pass",
+      "seconds": 0.393
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/sql/sqlite",
+      "action": "pass",
+      "seconds": 0.165
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/source",
+      "action": "pass",
+      "seconds": 0.173
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/sql",
+      "action": "pass",
+      "seconds": 0.398
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/syntax",
+      "action": "pass",
+      "seconds": 0.347
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/resolve",
+      "action": "pass",
+      "seconds": 0.748
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/types",
+      "action": "pass",
+      "seconds": 0.62
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/project",
+      "action": "pass",
+      "seconds": 0.854
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/browser",
+      "action": "pass",
+      "seconds": 8.600999999999999
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/emit",
+      "action": "pass",
+      "seconds": 22.187
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/driver",
+      "action": "pass",
+      "seconds": 58.327
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/check",
+      "action": "pass",
+      "seconds": 250.014
+    }
+  ],
+  "test_events": {
+    "pass": 2298,
+    "skip": 5
+  },
+  "skipped_tests": [
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/catalogue",
+      "test": "TestPackagedCatalogueBoundary"
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/sql",
+      "test": "TestMySQLDifferential"
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/syntax",
+      "test": "TestFormatTriviaTestdataRoundTrip/lexer/core.can"
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/driver",
+      "test": "TestPackagedOutputValidationAndExecution"
+    },
+    {
+      "package": "github.com/veighnsche/can-lang/compiler/internal/driver",
+      "test": "TestPackagedSourceMaps"
+    }
+  ]
+}

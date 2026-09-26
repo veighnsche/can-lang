@@ -1,0 +1,69 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Judge Can's suitability as the preferred implementation language across SaaS frontend and backend. No existing external user constrains a redesign. Retain explicit error contracts, immutable values and safe resource lifetimes; implement them through JavaScript/Bun primitives plus necessary semantic adaptation. This exercise chooses review advice only.",
+    "progress": "Current source at 2cb1bc3 already joins client and server through common actions without embedded handlers, supplies server-side actor/service context, produces structurally audited browser bundles with explicit ownership, and checks compositions of exported generics symbolically. Do not classify those accomplishments as outstanding features.",
+    "host_boundary": "A fixed catalogue owned by the compiler controls native access, so an authored package has no facility to wrap a new npm/JavaScript library. Event records report kind, target, value, key; checked/file/modifier/IME data is unavailable. Native setAttribute underlies set_attribute and updating a value attribute leaves an already edited input's current value potentially unchanged. Storage, history and browser WebSockets have no exposed operations. Literal connection origins also prevent runtime HTTP destinations outside that origin. The controlled surface both preserves restrictions and blocks certain interactive widgets and per-tenant outbound webhook URLs.",
+    "library_errors": "Checked public generics support composition over values, yet authored failure lists are concrete and offer no variable for a set of errors. Array built-ins have callback-dependent propagation that authored wrappers cannot express in the same form. Nominal outcome records and application-specific fixed bounds remain usable. The comparison task is one reusable trace/retry wrapper with two unrelated callback failure sets, keeping the caller's precise alternatives.",
+    "assertions": "The testing rule attaches assertion rows to every function. When a parameter is a foreign owner record, its consumer cannot invoke the record constructor directly. Using an approved but fallible constructor as a row input also fails: expression-only inputs lack domain-completion handling and assertion syntax has no setup body. Authors may add unwrapping helpers or consume total sample factories. Improve lawful test preparation without opening an owner-construction bypass or weakening mandatory checking.",
+    "iteration": "The current emitter's synchronous tail-recursive countdown was checked anew: 100 steps succeed, whereas 20000 exhaust the local Bun 1.4.2 stack. Tail-call optimization was never guaranteed. Array folds already use native bounded-stack traversal. Unbounded-by-input continuation in pagers or state machines still deserves a selected model. Preserve argument evaluation semantics, error-completion identities, fixture call paths and manageable diagnostics in any proposed lowering.",
+    "lifetime": "An observed runtime race delivers its selected value before the owning root can exit; remaining participants delay scope closure. HTTP responses wait at that request-scope closure. SQL query/transaction awaits have no caller-supplied deadline, although SQLite busy limits and administrator database settings are available, and server-side declared HTTP operations enforce deadlines; the browser action API lacks an authored time budget or cancellation argument. A lease cannot be revoked safely while in use. Cancellation gives no reversal of side effects or certainty of rollback; unknown commit outcomes already have their own representation.",
+    "ui": "Invoice-grid is implemented in Can, including snapshot/CAS state, stale-response protection, scoped views and DOM painting. Repeated field callbacks and explicit redraw/focus repair make composition costly. Ordinary functions plus generic callables are available for abstraction. Native input coverage must improve for either library or syntax solutions. No experiment yet proves a new declarative component construct is required."
+  },
+  "questions": {
+    "host_extension": {
+      "type": "choice",
+      "instructions": "Select the most useful immediate host-integration policy for recommending Can across SaaS use cases without losing its contracts.",
+      "criteria": {
+        "catalogue": "Maintain closed host access while extending built-ins for proven application needs.",
+        "reviewed_adapters": "Permit reviewed host bindings through packages whose schemas, completions, platform admission, lifetimes and validation are explicit.",
+        "companion": "Scope Can to its present APIs and formalize interoperation through separately implemented components or services."
+      }
+    },
+    "failure_abstraction": {
+      "type": "choice",
+      "instructions": "Which authoring model deserves the first comparison for reusable wrappers retaining precise callback errors?",
+      "criteria": {
+        "error_rows": "Explore a narrow quantified error-set facility with authored public bounds.",
+        "result_data": "Try ordinary typed success/failure values, translating to domain completions at application edges, before adding language machinery.",
+        "fixed_bounds": "Recommend distinct wrappers with fixed declared failures for each application family."
+      }
+    },
+    "assertion_setup": {
+      "type": "choice",
+      "instructions": "What is the best first response to assertion inputs that require handling a validating constructor's failure?",
+      "criteria": {
+        "setup_region": "Evaluate test-local setup bodies that build values through the same checked APIs and handle their outcomes.",
+        "factory_pattern": "Use present language forms to establish test-value helper conventions with deliberate failure behavior.",
+        "scenario_coverage": "Permit explicit scenario-based coverage of some private functions in place of separate attached examples."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "For pagination and state-machine continuation, which execution design should receive the next experiment?",
+      "criteria": {
+        "self_tail": "Study elimination of direct tail recursion into native iteration while retaining observable identities.",
+        "iteration_primitive": "Evaluate a small typed iteration operation for immutable state, emitted as ordinary host looping.",
+        "bounded_policy": "Keep current recursion/fold behavior and make finite workload limits part of the recommendation."
+      }
+    },
+    "request_lifetime": {
+      "type": "choice",
+      "instructions": "Select the next operational design experiment balancing latency guarantees with live resources and uncertain side effects.",
+      "criteria": {
+        "operation_deadlines": "Prioritize native cancellation/deadline support on individual operations under unchanged ownership completion.",
+        "scope_policy": "Explore a request-level model with cooperative abort and explicitly supervised remaining participants.",
+        "deployment_limits": "Specify deployment-enforced bounds and retain current operation and scope contracts."
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "instructions": "Once the required DOM observations exist, which approach should first reduce repeated UI wiring?",
+      "criteria": {
+        "library": "Develop library-level controls and keyed collections that preserve input composition, focus and asynchronous disposal behavior.",
+        "syntax": "Design a new component form with specified state updates and lifecycle semantics.",
+        "interop_ui": "Delegate interactive presentation to an existing UI ecosystem via a checked interface."
+      }
+    }
+  }
+}

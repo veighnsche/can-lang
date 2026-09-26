@@ -1,0 +1,50 @@
+[
+  {
+    "path": "recurse-large/assert/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "recurse-large/assert/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  },
+  {
+    "path": "recurse-large/prod/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "recurse-large/prod/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  },
+  {
+    "path": "recurse-small/assert/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "recurse-small/assert/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  },
+  {
+    "path": "recurse-small/prod/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "recurse-small/prod/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  },
+  {
+    "path": "result-data-generic/assert/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "result-data-generic/assert/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  },
+  {
+    "path": "result-data-generic/prod/assets/4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0/htmx-guard.js",
+    "sha256": "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0"
+  },
+  {
+    "path": "result-data-generic/prod/assets/e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f/htmx-4.0.0.min.js",
+    "sha256": "e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f"
+  }
+]

@@ -1,0 +1,10 @@
+bun test v1.4.2 (744846f84)
+
+runtime/test/owner-explicit-browser.test.ts:
+(pass) explicit owner probe passes natively [11.55ms]
+(pass) chromium pins the sync ALS failure and passes the explicit adapter [757.88ms]
+
+ 2 pass
+ 0 fail
+ 58 expect() calls
+Ran 2 tests across 1 file. [825.00ms]

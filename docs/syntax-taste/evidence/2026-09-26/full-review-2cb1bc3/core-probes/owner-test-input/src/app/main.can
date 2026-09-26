@@ -1,0 +1,17 @@
+package app
+    provides []
+    uses [ids]
+fn int describe
+    emits []
+    given
+        ids::user_id id
+    asserts
+        sample: call ids::parse(1) => ok 1
+    ok call ids::value(id)
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

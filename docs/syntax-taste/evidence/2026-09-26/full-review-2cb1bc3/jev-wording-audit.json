@@ -1,0 +1,11 @@
+{
+  "all_requests_prepared_before_consultation": true,
+  "prose_fields_per_request": 32,
+  "all_corresponding_prose_rewritten": true,
+  "manual_semantic_review": "Same observed facts, constraints, conditional premises, questions and alternatives in all three forms. Technical identifiers retained where useful. No earlier review or classifier verdict included.",
+  "sources": [
+    "https://docs.typesafe.ai/llms.txt",
+    "https://docs.typesafe.ai/api.md",
+    "https://docs.typesafe.ai/primitives/choice.md"
+  ]
+}

@@ -1,0 +1,13 @@
+1 | // Startup controls never reach Bun. Approved env/auth adapters read the caller
+2 | // snapshot instead of process.env, whose HOME/config values belong to the driver.
+3 | import { readFileSync, closeSync } from "node:fs";
+4 | const source = JSON.parse(readFileSync(3, "utf8"));
+                              ^
+ENXIO: no such device or address, read
+ syscall: "read",
+   errno: -6,
+    code: "ENXIO"
+
+      at /private/tmp/can-review-core-20260926/recurse-small/prod/runtime/environment.ts:4:27
+
+Bun v1.4.2 (macOS arm64)

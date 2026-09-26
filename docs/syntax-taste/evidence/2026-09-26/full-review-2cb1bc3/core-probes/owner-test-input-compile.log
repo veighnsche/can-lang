@@ -1,0 +1,6 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:11: source folder /private/tmp/can-review-core-20260926/owner-test-input/src contains different package names
+--- FAIL: TestFreshCoreProbe (0.00s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.223s
+FAIL

@@ -1,0 +1,6 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:12: assertion sample arguments: /private/tmp/can-review-core-20260926/owner-test-input/src/app/main.can region can.project.root/app::describe/assert/sample/actual: expression at byte 134: domain-fallible call requires explicit completion handling
+--- FAIL: TestFreshCoreProbe (0.28s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.478s
+FAIL

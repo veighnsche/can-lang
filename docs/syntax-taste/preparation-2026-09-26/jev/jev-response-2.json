@@ -1,0 +1,79 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "assertion_setup": {
+      "type": "choice",
+      "choice": "factory_pattern",
+      "confidence": 0.94,
+      "probabilities": {
+        "scenario_coverage": 0.0,
+        "factory_pattern": 0.96,
+        "setup_region": 0.04
+      }
+    },
+    "failure_abstraction": {
+      "type": "choice",
+      "choice": "error_rows",
+      "confidence": 0.25,
+      "probabilities": {
+        "error_rows": 0.5,
+        "fixed_bounds": 0.14,
+        "result_data": 0.36
+      }
+    },
+    "failure_hook": {
+      "type": "choice",
+      "choice": "builtin_auto",
+      "confidence": 0.9,
+      "probabilities": {
+        "author_callback": 0.03,
+        "builtin_auto": 0.93,
+        "manual_only": 0.04
+      }
+    },
+    "host_extension": {
+      "type": "choice",
+      "choice": "reviewed_adapters",
+      "confidence": 0.39,
+      "probabilities": {
+        "reviewed_adapters": 0.6,
+        "catalogue": 0.36,
+        "companion": 0.04
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "choice": "iteration_primitive",
+      "confidence": 0.63,
+      "probabilities": {
+        "iteration_primitive": 0.76,
+        "self_tail": 0.04,
+        "bounded_policy": 0.2
+      }
+    },
+    "request_lifetime": {
+      "type": "choice",
+      "choice": "operation_deadlines",
+      "confidence": 0.48,
+      "probabilities": {
+        "operation_deadlines": 0.66,
+        "deployment_limits": 0.11,
+        "scope_policy": 0.23
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "choice": "library",
+      "confidence": 0.87,
+      "probabilities": {
+        "library": 0.91,
+        "syntax": 0.06,
+        "interop_ui": 0.03
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1860,
+    "output_tokens": 306
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "revision": "2cb1bc35435ab5075d51f9f945adfb0e1f9dfe64",
+  "files": [
+    {
+      "path": "examples/account-search/src/model/model.can",
+      "lines": 52,
+      "sha256": "24d41fc4b80438fef15efaf9023a9632a53e8fa669fd15084ab9abcb43533be0"
+    },
+    {
+      "path": "examples/account-search/src/records/records.can",
+      "lines": 29,
+      "sha256": "d2a56aae821e887aa32e17b5b6ff3d8ee41e280751be6818001c1944413ae7d0"
+    },
+    {
+      "path": "examples/account-search/src/render/render.can",
+      "lines": 111,
+      "sha256": "e448665bc8e8943734e49812b19117e0c3aff6645355c3a29f6396325dd7f8cc"
+    },
+    {
+      "path": "examples/account-search/src/web/web.can",
+      "lines": 209,
+      "sha256": "56b607839e25b61f94134399889e27d91709d932c725b8bded35cbff97a2a991"
+    },
+    {
+      "path": "examples/cookies/src/main.can",
+      "lines": 187,
+      "sha256": "efaa18083604f69801f3ad3552928a7fbd419eccc6106af9cc9ef61beb8ccaf0"
+    },
+    {
+      "path": "examples/crypto/src/main.can",
+      "lines": 101,
+      "sha256": "76100458bee2fa2e2ca7ccb5f3949e19857b114ccfa8bcf193a602f60f299f9a"
+    },
+    {
+      "path": "examples/dashboard/src/model/model.can",
+      "lines": 70,
+      "sha256": "e0b28c27d21dc82f385c337ce18c8cb169351fdb7718696c596b5e0fd7ea13c0"
+    },
+    {
+      "path": "examples/dashboard/src/records/records.can",
+      "lines": 33,
+      "sha256": "87b379470572f9d0c301806f62f97a083516efa92083d49a3fc327e82966e497"
+    },
+    {
+      "path": "examples/dashboard/src/render/render.can",
+      "lines": 62,
+      "sha256": "86da2fb127ce6e28884e6a3aa93aa1c61b0f928385eb2dabf21c3e4a2f1f5ed4"
+    },
+    {
+      "path": "examples/dashboard/src/web/web.can",
+      "lines": 128,
+      "sha256": "13361147f00ac8c0c791eb909fff7468d59f1de8bb12cac4ec318641e8234b90"
+    },
+    {
+      "path": "examples/files/src/main.can",
+      "lines": 79,
+      "sha256": "04f2ba3b9b1141d517ec4e0f19b51a204e3920aa44d503550b014f95df481040"
+    },
+    {
+      "path": "examples/form-validation/src/model/model.can",
+      "lines": 16,
+      "sha256": "4467411955823963a33595a6b610dc0da4530b7562cf2e36074ece18e99945ca"
+    },
+    {
+      "path": "examples/form-validation/src/records/records.can",
+      "lines": 23,
+      "sha256": "0bc008994999269ba04201a8641ee6e88188bb3f7ac3a1408a42278eeebb7948"
+    },
+    {
+      "path": "examples/form-validation/src/render/render.can",
+      "lines": 82,
+      "sha256": "6f5af1ca5769469b0fac2785436821ed6104eed9b1b65d11b948ec15069bea9c"
+    },
+    {
+      "path": "examples/form-validation/src/web/web.can",
+      "lines": 136,
+      "sha256": "174a1e0720b952241fc7a172f0dea7e297e4b943a743204c1f56fe2a7fbdba47"
+    },
+    {
+      "path": "examples/gallery/src/01-hello-world.can",
+      "lines": 10,
+      "sha256": "be47e5d79c28962eba091fa6369ed3d2a51c24c5f40cc30d5f66ce7bbacb5f3b"
+    },
+    {
+      "path": "examples/gallery/src/02-cli-argument.can",
+      "lines": 15,
+      "sha256": "10a69e4e016b9fa5da27383dfe670fd6d7c900796f6529e232b0e4ad9af9a102"
+    },
+    {
+      "path": "examples/gallery/src/03-arithmetic.can",
+      "lines": 13,
+      "sha256": "c2009816988bc152d3e0ed2860d40f117de30135a49e9e68dee097c6bdc2e6c7"
+    },
+    {
+      "path": "examples/gallery/src/04-temperature.can",
+      "lines": 13,
+      "sha256": "f6f439e0a8519e4344ba86c5273878960ceb82563cc0e53f7bacda8ad2e4534b"
+    },
+    {
+      "path": "examples/gallery/src/05-leap-year.can",
+      "lines": 17,
+      "sha256": "02af27d4bae51968f936c023839bbc67d577be91dd3bbfc786cffd63d8c68086"
+    },
+    {
+      "path": "examples/gallery/src/06-fizzbuzz.can",
+      "lines": 21,
+      "sha256": "82edc084e8110b683920fafac5737f0797fc52419e11cb5e028c730df3c809ca"
+    },
+    {
+      "path": "examples/gallery/src/07-fibonacci.can",
+      "lines": 16,
+      "sha256": "718fe613a550257378d7113fb820e28bdc2c7555952a9ed6badd97a163b4d247"
+    },
+    {
+      "path": "examples/gallery/src/08-factorial.can",
+      "lines": 15,
+      "sha256": "50e5961a9b80c93de434e14e2a65cbe5d80e72429dbeb29ed28fa66bbe1a230f"
+    },
+    {
+      "path": "examples/gallery/src/09-gcd.can",
+      "lines": 16,
+      "sha256": "079aa760f904c87c3c65417869c42189ebcaa966d84d248c9603ad7214a4c4e4"
+    },
+    {
+      "path": "examples/gallery/src/10-prime-check.can",
+      "lines": 30,
+      "sha256": "440684be764db954c41f1e26e845b3bf8476fdfa455c01cc87bc311015c3f3c0"
+    },
+    {
+      "path": "examples/gallery/src/11-palindrome.can",
+      "lines": 18,
+      "sha256": "57c9b50a7a67120590e2253f7c71a439f912100b3cb2d52b6aac54777fecc339"
+    },
+    {
+      "path": "examples/gallery/src/12-word-character-count.can",
+      "lines": 30,
+      "sha256": "26e6314bf40760c2b1786d74b0a4bd13747fd00de9e060760333e514d1121131"
+    },
+    {
+      "path": "examples/gallery/src/13-boolean-match.can",
+      "lines": 15,
+      "sha256": "a34a3b1580a7b351683987b4025153322949a0b68da2d3960b6a2d807950ea05"
+    },
+    {
+      "path": "examples/gallery/src/14-record-variant-match.can",
+      "lines": 23,
+      "sha256": "8b5ff0c5120fd79961a930f1bdc9cab06cf0b0a5151e63197f01db5e8cde7a1f"
+    },
+    {
+      "path": "examples/gallery/src/15-exhaustive-match.can",
+      "lines": 22,
+      "sha256": "c5e9d2a959eae6ff13cb232f008b80569945cfe9ece2ef08f9e63acf00153fde"
+    },
+    {
+      "path": "examples/gallery/src/16-optional-values.can",
+      "lines": 15,
+      "sha256": "594aa3cd390195bd02dc156946d6ba78bc846b0b65e4b8fa030c3550f6bc0384"
+    },
+    {
+      "path": "examples/gallery/src/17-named-error-recovery.can",
+      "lines": 15,
+      "sha256": "9fdfb059579119f441f49fc5b7ed3398677ace265d031d83d741e6f47eb663ee"
+    },
+    {
+      "path": "examples/gallery/src/18-relay.can",
+      "lines": 13,
+      "sha256": "1c00ef8cb75e2d92592c2811ecf617fa4cfff3d0a8d8c9a6c994500dd2e6e165"
+    },
+    {
+      "path": "examples/gallery/src/19-immutable-record-update.can",
+      "lines": 14,
+      "sha256": "e0eb7bff93c8eed32a634519b5ec509aad8e7639a4503d4a3328379a853c0a42"
+    },
+    {
+      "path": "examples/gallery/src/20-array-map.can",
+      "lines": 20,
+      "sha256": "41df65dd3525e621d93e2f40f0a7f8dc18245e33ab2fd6f2b42d73ca14e632da"
+    },
+    {
+      "path": "examples/gallery/src/21-array-filter.can",
+      "lines": 20,
+      "sha256": "3b34779577855206f56cdb3ed698ee3e33579ec522a47ec7562cf967e0f45efc"
+    },
+    {
+      "path": "examples/gallery/src/22-array-fold.can",
+      "lines": 21,
+      "sha256": "97480702a13cdcf417cee3eaea3ec68321478ad1463bcd0deede5007fb990740"
+    },
+    {
+      "path": "examples/gallery/src/23-array-sort.can",
+      "lines": 19,
+      "sha256": "2772b74dc60e47f5640629e8ba5668fd00ec2ff7ef07082cb731c59111b28d5b"
+    },
+    {
+      "path": "examples/gallery/src/24-map-word-frequencies.can",
+      "lines": 30,
+      "sha256": "97bbfd8ab458ae36aa67f1a8a491296c38050cb50800b0941603966262c93a39"
+    },
+    {
+      "path": "examples/gallery/src/25-generic-function.can",
+      "lines": 13,
+      "sha256": "1ea6a76841bd62fde207fbce928c5e8cffd1cc8ee1ea3c6076df848fa087c956"
+    },
+    {
+      "path": "examples/gallery/src/26-callable-argument.can",
+      "lines": 20,
+      "sha256": "84f1e3252f8d81e33ba1e5cc5b7df85e1443fbf7335b37589629d54b600611be"
+    },
+    {
+      "path": "examples/gallery/src/27-recursion-vs-collection.can",
+      "lines": 31,
+      "sha256": "502a417e6473019b387d16a3fe3f9261a93787532d1a545585216bc6a0dc87b3"
+    },
+    {
+      "path": "examples/gallery/src/28-attached-assertions.can",
+      "lines": 14,
+      "sha256": "48b6113007c036ddc0b24277ad82978c1f1d6f60e8403f101d5aecd5fc0899c6"
+    },
+    {
+      "path": "examples/gallery/src/main.can",
+      "lines": 20,
+      "sha256": "b3c3ada5d67aec414db4b1c6f1ef2836669b6fb6b0a1f46350ce01ec86c1aecf"
+    },
+    {
+      "path": "examples/invoice/src/model/model.can",
+      "lines": 1861,
+      "sha256": "5b700a38bcd44f745ab5401c4b6f6fdc73128cf2927c39df99e0a55f1b997f92"
+    },
+    {
+      "path": "examples/invoice/src/records/records.can",
+      "lines": 195,
+      "sha256": "94faa6566c9391d8c1da02daf02dd24d0aa03545f06e0c91ca359a42d18ac003"
+    },
+    {
+      "path": "examples/invoice/src/render/render.can",
+      "lines": 209,
+      "sha256": "d80e55ec810a4d8b8d45116ede702551b32c423794a8710df447fd0505d2d6ec"
+    },
+    {
+      "path": "examples/invoice/src/web/web.can",
+      "lines": 634,
+      "sha256": "c23a7397c0071ed91ec8f303d2f8879ffa5ca0c9c2799fd5bf8b4d7b66f65248"
+    },
+    {
+      "path": "examples/invoice/vendor/billing/src/invoice_contract/invoice_contract.can",
+      "lines": 133,
+      "sha256": "f6909d4a9230d3be76473f5960cc230153f069b34990240977d9d43a6273a27e"
+    },
+    {
+      "path": "examples/invoice-grid/src/model/model.can",
+      "lines": 1525,
+      "sha256": "1518f98e02a525b20dbfe57fbae3ecf9c87bcb387f800d825373cbb8d25b575b"
+    },
+    {
+      "path": "examples/invoice-grid/src/records/records.can",
+      "lines": 86,
+      "sha256": "a6a0d768ee789ee262b40ad58a6296cb882f56047242d0c89ac6dbcae7d1ccec"
+    },
+    {
+      "path": "examples/invoice-grid/src/web/web.can",
+      "lines": 1186,
+      "sha256": "1025cbbd60c78fbe6d1d623b8e4b34fb8f70d8b7296b038f61202d2d81b5aec7"
+    },
+    {
+      "path": "examples/invoice-grid/vendor/billing/src/invoice_contract/invoice_contract.can",
+      "lines": 133,
+      "sha256": "f6909d4a9230d3be76473f5960cc230153f069b34990240977d9d43a6273a27e"
+    },
+    {
+      "path": "examples/language-site/src/site.can",
+      "lines": 222,
+      "sha256": "6799a4dbb615570a944343b6f1ae9b400ae8ce4e0b0d3af5b9c601c547983e97"
+    },
+    {
+      "path": "examples/markdown/src/main.can",
+      "lines": 82,
+      "sha256": "3f9cb773b217fc098943e5df8fb8972ebf02f16ba14c7cce30c7de47b50d3c53"
+    },
+    {
+      "path": "examples/mysql/src/main.can",
+      "lines": 110,
+      "sha256": "3034d6119ebcce9c5dd9e81e5de1b741b22b3731eb064efc7be44852b814701b"
+    },
+    {
+      "path": "examples/native-ai/src/app/main.can",
+      "lines": 94,
+      "sha256": "847e6a8fc5a20696ddb460240f0abb562ebe78d920ead0975f21fbe0f61d0298"
+    },
+    {
+      "path": "examples/native-ai/src/model/model.can",
+      "lines": 85,
+      "sha256": "dc9a1b422f75a4ef852ac7ea056fe960a5691a82d84240d8af646a0ed59d4681"
+    },
+    {
+      "path": "examples/native-ai/src/oracles/oracles.can",
+      "lines": 122,
+      "sha256": "8a7c8d301b870d0c41c7ef730f500b6629e4127c0bf05f5ddb862c8fad9dd48b"
+    },
+    {
+      "path": "examples/native-ai/src/records/records.can",
+      "lines": 48,
+      "sha256": "a0711951450dc3d2e90a19e41a01686d092bb280d43e95479d90f6b3e765175a"
+    },
+    {
+      "path": "examples/process/src/main.can",
+      "lines": 72,
+      "sha256": "b50adb084463599601b3e38289f657f05f37f81ce18687f7d019d8074f991cf4"
+    },
+    {
+      "path": "examples/sqlite/src/main.can",
+      "lines": 109,
+      "sha256": "a082740145185205f30c5c96dd85c487f4d94cd1f7f902ac087f5321c4f19ca6"
+    },
+    {
+      "path": "examples/stream/src/main.can",
+      "lines": 93,
+      "sha256": "c85cf677a4e8457d717e04884c57909948ea8cf6f1faf414d3fa66cd85795169"
+    },
+    {
+      "path": "examples/utilities/src/main.can",
+      "lines": 101,
+      "sha256": "b71e0fc1ffe0bbc040ff9ee997dfee610ac27cc29195e7776588c4eef5ea650e"
+    },
+    {
+      "path": "examples/webhook/src/model/model.can",
+      "lines": 174,
+      "sha256": "bac3f6d32d9c1d21acc4522fa33a7129344fe1734a31badbf6220a0daf7d1c83"
+    },
+    {
+      "path": "examples/webhook/src/records/records.can",
+      "lines": 81,
+      "sha256": "7fc6d0648c2552eb224cbea7839ac7de1b02357560ba6b21baad2ceb784f9043"
+    },
+    {
+      "path": "examples/webhook/src/web/web.can",
+      "lines": 410,
+      "sha256": "cbd997b8d227dd628c5e6ffd96acff4342f985ab2706512031e439b39b7a1e49"
+    },
+    {
+      "path": "examples/websocket/src/main.can",
+      "lines": 236,
+      "sha256": "e43a03a6834193ab663fa4bbaf26515899f225fbcd7f58b26e53aac782dbd776"
+    },
+    {
+      "path": "std/map/current/src/main.can",
+      "lines": 156,
+      "sha256": "b378c8de57b0f3f5f9a3ee107a9cf1976dfea250f0f3a3849771a771d1cad33e"
+    },
+    {
+      "path": "std/ratio/current/src/main.can",
+      "lines": 100,
+      "sha256": "d65e2fcc6d5868f358aec30aae82b12360c5af4b38b071779a8189be47a0d81f"
+    },
+    {
+      "path": "std/scalars/current/src/main.can",
+      "lines": 175,
+      "sha256": "a546cc9e697d766d91e5fccd883f8042632c417d36616c12e7218b0e873bafb5"
+    },
+    {
+      "path": "std/text/current/src/main.can",
+      "lines": 253,
+      "sha256": "c1662b662daa9c1eba0a030258b3cc06bddd8f53bcdceae6c279c6000b664bcf"
+    },
+    {
+      "path": "shared/invoice-contract/src/invoice_contract/invoice_contract.can",
+      "lines": 133,
+      "sha256": "f6909d4a9230d3be76473f5960cc230153f069b34990240977d9d43a6273a27e"
+    }
+  ]
+}

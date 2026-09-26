@@ -1,0 +1,9 @@
+import { runAssertionRoot as $canRunAssertionRoot } from "./runtime/assert/runner.ts";
+import { $canInitialize as $canInitialize } from "./program/state.ts";
+import { configureDiagnostics as $canConfigureDiagnostics } from "./runtime/diagnostics.ts";
+import { $canCase as $canCase0 } from "./assertions/59490d931176ec139344b43da4cf247975d7e1f71e2eb9c1e5c4abf7c8618c16.ts";
+import { $canCase as $canCase1 } from "./assertions/9614204106add623af43da4346d82e154c6857d1240cbf0e8bf78042373be38f.ts";
+import { $canCase as $canCase2 } from "./assertions/43ac650e3d962aa984fd3341f3a3bf3b56b84d7b62ccb51076a778fe23b169e2.ts";
+import { $canCase as $canCase3 } from "./assertions/41d8447840ae0347ba1de53a9bf9bc2e8b9185b275ea00c02294f100718761bc.ts";
+import { $canCase as $canCase4 } from "./assertions/436b2b5b2e09b8d954ce598c8ed41ee25dc26ae6c95010e13259f35dc257b121.ts";
+process.exitCode = await $canRunAssertionRoot([$canCase0,$canCase1,$canCase2,$canCase3,$canCase4], () => {$canConfigureDiagnostics(import.meta.url); $canInitialize();}, process.argv.slice(2));

@@ -1,0 +1,21 @@
+package app
+    provides []
+    uses [checks]
+fn int count
+    emits []
+    given
+        int remaining
+        int total
+    asserts
+        base: 0, 0 => ok 0
+        small: 3, 0 => ok 3
+    match remaining is 0
+        false => relay call count(remaining - 1, total + 1)
+        true => ok total
+fn void main
+    emits [checks::failed]
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    relay call checks::require(call count(20000, 0) is 20000, "count wrong")

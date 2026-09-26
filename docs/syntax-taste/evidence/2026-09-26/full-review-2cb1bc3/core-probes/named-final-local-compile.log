@@ -1,0 +1,6 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:12: concrete function can.project.root/app::subtotal: /private/tmp/can-review-core-20260926/named-final-local/src/main.can region can.project.root/app::subtotal: unnecessary local subtotal at byte 162; replace with ok price * quantity
+--- FAIL: TestFreshCoreProbe (0.34s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.558s
+FAIL

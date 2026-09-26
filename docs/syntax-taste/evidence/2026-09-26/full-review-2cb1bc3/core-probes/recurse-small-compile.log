@@ -1,0 +1,6 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:12: concrete function can.project.root/app::count: /private/tmp/can-review-core-20260926/recurse-small/src/main.can region can.project.root/app::count: ordinary Boolean match requires false before true
+--- FAIL: TestFreshCoreProbe (0.28s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.626s
+FAIL

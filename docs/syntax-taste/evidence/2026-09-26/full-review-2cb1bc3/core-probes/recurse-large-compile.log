@@ -1,0 +1,4 @@
+# ./compiler/internal/emit
+open /Users/vince/Library/Caches/go-build/70/7058b9c189f67829b2057b20dbbee097de70287a3308140ee7dacf2f322ba812-d: operation not permitted
+FAIL	./compiler/internal/emit [setup failed]
+FAIL

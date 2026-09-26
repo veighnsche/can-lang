@@ -1,0 +1,5 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:23: checked and emitted /tmp/can-review-core-20260926/recurse-large
+--- PASS: TestFreshCoreProbe (0.70s)
+PASS
+ok  	github.com/veighnsche/can-lang/compiler/internal/emit	0.929s

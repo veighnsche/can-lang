@@ -1,0 +1,2 @@
+{"phase":"winner selected","rootDone":false,"events":["selected one"]}
+{"phase":"loser released","rootDone":true,"kind":"ok","cleanupFailed":false,"events":["selected one","loser completed"]}

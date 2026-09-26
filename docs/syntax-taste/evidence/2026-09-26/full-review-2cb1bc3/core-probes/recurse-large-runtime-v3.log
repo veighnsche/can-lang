@@ -1,0 +1,19 @@
+standard native_exception 431 | $canOrigin = {source:"can.project.root/app/main.can",start:248,end:261,invocation:["can.project.root/app::count"]};
+432 | const $canExpr10 = ($canRegion4) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+433 | $canOrigin = {source:"can.project.root/app/main.can",start:263,end:272,invocation:["can.project.root/app::count"]};
+434 | const $canExpr11 = ($canRegion5) as unknown as $canType9353abd7132d355d7bfdef4cbb5d174ed0ecc613e3f7f32c4f8937c9bc76de71;
+435 | $canOrigin = {source:"can.project.root/app/main.can",start:242,end:273,invocation:["can.project.root/app::count"]};
+436 | $canRegion1 = await $canInvoke(() => $canCallContext($canContext,"can.project.root/app::count#0",($canContext) => $canFunction0($canExpr10, $canExpr11, $canContext),$canCallableInstance($canFunction0)), {source:"can.project.root/app/main.can",start:242,end:273,invocation:["can.project.root/app::count"]});
+                          ^
+RangeError: Maximum call stack size exceeded.
+      at $canFunction0 (/private/tmp/can-review-core-20260926/recurse-large/prod/packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts:436:21)
+      at invoke (/private/tmp/can-review-core-20260926/recurse-large/prod/runtime/completion.ts:95:21)
+      at $canFunction0 (/private/tmp/can-review-core-20260926/recurse-large/prod/packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts:436:21)
+      at invoke (/private/tmp/can-review-core-20260926/recurse-large/prod/runtime/completion.ts:95:21)
+      at $canFunction0 (/private/tmp/can-review-core-20260926/recurse-large/prod/packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts:436:21)
+      at invoke (/private/tmp/can-review-core-20260926/recurse-large/prod/runtime/completion.ts:95:21)
+      at $canFunction0 (/private/tmp/can-review-core-20260926/recurse-large/prod/packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts:436:21)
+      at invoke (/private/tmp/can-review-core-20260926/recurse-large/prod/runtime/completion.ts:95:21)
+      at $canFunction0 (/private/tmp/can-review-core-20260926/recurse-large/prod/packages/p-df46aedee861e25239c787824bf1a5dd52302eaef1c965db358166e0dae5b4f1/s-a38a111be501eff38638f21703b1642f7a5cdd7f8c4da52c8d4620aa7473e881.ts:436:21)
+      at invoke (/private/tmp/can-review-core-20260926/recurse-large/prod/runtime/completion.ts:95:21)
+

@@ -1,0 +1,38 @@
+package app
+    provides [retry, completed, rejected, outcome]
+    uses []
+record completed<item>
+    item value
+record rejected<failure>
+    failure reason
+variant outcome<item, failure>
+    completed<item>
+    rejected<failure>
+fn outcome<item, failure> retry<item, failure>
+    emits []
+    given
+        callable outcome<item, failure> () emits [] operation
+    asserts
+        pass: callable succeed => ok call succeed()
+        fail: callable fail => ok call fail()
+    match call operation()
+        ok outcome<item, failure> first => match first
+            completed<item> => ok first
+            rejected<failure> => relay call operation()
+fn outcome<int, str> succeed
+    emits []
+    asserts
+        unit: => ok completed(3)
+    ok completed(3)
+fn outcome<int, str> fail
+    emits []
+    asserts
+        unit: => ok rejected("down")
+    ok rejected("down")
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

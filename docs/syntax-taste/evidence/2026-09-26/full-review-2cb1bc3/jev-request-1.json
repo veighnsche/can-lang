@@ -1,0 +1,69 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "objective": "Review Can as a possible default language for SaaS servers and browser clients. There are zero external users, so compatibility is not required. Preserve immutable data, explicit domain failures and resource ownership. Lower operations to native JavaScript/Bun with only contract-preserving adapters. This is a design review, not permission to implement changes.",
+    "progress": "At revision 2cb1bc3, real shared handler-free actions bind request identity and startup services on the server. Browser builds now ship audited JavaScript with an explicit ownership runtime. Exported generics compose through symbolic checking. These are implemented strengths, not missing proposals.",
+    "host_boundary": "Host operations form a closed compiler-owned catalogue; ordinary Can packages cannot add JavaScript/npm integrations. DOM events expose kind, target, value and key, but no checked state, files, modifiers or composition data. set_attribute uses native setAttribute: after a user edits an input, setting its value attribute need not change its current value. Browser storage/history and browser WebSocket are absent. Connection endpoints are literal and HTTP paths stay at that origin. This protects capabilities but limits rich widgets and tenant-selected webhook destinations.",
+    "library_errors": "Public generic value composition now works. Authored emits lists still enumerate concrete error types, with no error-set parameter; native arrays can preserve callback-specific bounds. Fixed application bounds and nominal result data are available alternatives. The unresolved use case is a reusable retry/tracing helper serving two unrelated callback error sets without widening or losing their distinctions.",
+    "assertions": "Every authored function requires assertion rows. An external owner record cannot be directly constructed by a consumer. Calling its fallible smart constructor inside an assertion input is rejected because input expressions cannot handle domain failures; rows have no setup region. Extra helpers or owner-provided total samples can work. The issue is composing legitimate setup without permitting fabricated owner values or skipping verification.",
+    "iteration": "A freshly checked and emitted synchronous tail-recursive countdown passes at 100 steps and overflows the native stack at 20000 on local Bun 1.4.2. This is not a claimed tail-call guarantee violation. Existing arrays have native stack-safe folds. Dynamically continuing pagination and state machines need an intentional contract. Changes must retain evaluation order, completion identity, fixture invocation identity and useful diagnostic bounds.",
+    "lifetime": "Race selects a winner while ownership retains losing work until scope drain. A current-runtime probe verifies root exit waits for a loser. HTTP request scope drains before returning the response. SQL awaits Bun.SQL without caller query or transaction deadlines; SQLite has a busy timeout and external database settings can help. Declared server HTTP clients already have deadlines, while shared browser action requests expose no authored deadline or cancellation operand. Closing resources early would be unsafe, and cancellation cannot undo writes or prove rollback. Commit uncertainty is explicit.",
+    "ui": "The invoice grid really implements state snapshots, compare-and-swap, late-result protection, view disposal and DOM rendering in Can. It repeats field handlers and manual rebuilding/focus restoration. Named functions and generic callables can compose libraries. Missing native input information must be supplied whichever UI abstraction is chosen. There is no evidence yet that a declarative component syntax is necessary."
+  },
+  "questions": {
+    "host_extension": {
+      "type": "choice",
+      "instructions": "Which next host-access strategy most improves broad SaaS suitability while retaining capability guarantees?",
+      "criteria": {
+        "catalogue": "Expand the central catalogue for demonstrated use cases and retain compiler-only host admission.",
+        "reviewed_adapters": "Design an explicitly trusted adapter package boundary with declared types, failures, target capabilities, ownership and conformance checks.",
+        "companion": "Keep the language surface fixed and support a documented companion JavaScript/service boundary for unsupported features."
+      }
+    },
+    "failure_abstraction": {
+      "type": "choice",
+      "instructions": "What should be evaluated first for reusable helpers that preserve unrelated callback failures?",
+      "criteria": {
+        "error_rows": "Prototype a small explicit finite error-set parameter in callable and function contracts.",
+        "result_data": "Build the helpers with nominal result data and explicit adaptation at completion boundaries before changing syntax.",
+        "fixed_bounds": "Retain concrete application-specific bounds and accept separate helpers for different error families."
+      }
+    },
+    "assertion_setup": {
+      "type": "choice",
+      "instructions": "How should lawful owner-value preparation in mandatory assertions improve first?",
+      "criteria": {
+        "setup_region": "Prototype an assertion setup region that runs ordinary checked construction and completion handling.",
+        "factory_pattern": "Keep row syntax and standardize reusable test factories or helper functions with explicit failure policy.",
+        "scenario_coverage": "Allow selected private helpers to satisfy testing obligations through explicit linked consumer scenarios instead of local rows."
+      }
+    },
+    "iteration": {
+      "type": "choice",
+      "instructions": "Which stack-safety approach should be investigated first for dynamically continuing work?",
+      "criteria": {
+        "self_tail": "Lower provably self-tail relay calls to native loops, preserving observable call/test behavior.",
+        "iteration_primitive": "Prototype an explicit immutable-state iteration primitive that lowers to a native loop.",
+        "bounded_policy": "Retain recursion limits and folds, recommending only bounded workloads until demand justifies new machinery."
+      }
+    },
+    "request_lifetime": {
+      "type": "choice",
+      "instructions": "Which next execution contract best addresses request and shutdown latency without abandoning resource safety?",
+      "criteria": {
+        "operation_deadlines": "Add effective native SQL/connection deadlines and compose operation budgets within the existing drain policy first.",
+        "scope_policy": "Design explicit cooperative cancellation and supervised loser ownership at request/scope boundaries.",
+        "deployment_limits": "Keep semantics and rely on database/proxy/process limits, with a documented external latency boundary."
+      }
+    },
+    "ui_composition": {
+      "type": "choice",
+      "instructions": "After supplying missing native input capabilities, what should be the first UI composition investment?",
+      "criteria": {
+        "library": "Build reusable Can field, keyed-row and lifecycle libraries, testing focus, IME, disposal and late responses.",
+        "syntax": "Prototype a declarative component syntax with an explicit state and lifetime model.",
+        "interop_ui": "Prefer a mature external UI implementation connected to Can through a typed boundary."
+      }
+    }
+  }
+}

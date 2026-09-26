@@ -1,0 +1,22 @@
+package app
+    provides [retry]
+    uses []
+fn item retry<item, failure>
+    emits [failure]
+    given
+        callable item () emits [failure] operation
+    asserts
+        sample: callable sample => ok 3
+    relay call operation()
+fn int sample
+    emits []
+    asserts
+        unit: => ok 3
+    ok 3
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

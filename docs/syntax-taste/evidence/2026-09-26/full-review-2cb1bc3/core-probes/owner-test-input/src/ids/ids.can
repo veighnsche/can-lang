@@ -1,0 +1,23 @@
+package ids
+    provides [user_id, invalid, parse, value]
+    uses []
+owner record user_id
+    int raw
+error invalid()
+fn user_id parse
+    emits [invalid]
+    given
+        int raw
+    asserts
+        good: 1 => ok user_id(1)
+        bad: 0 => invalid()
+    match raw > 0
+        false => invalid()
+        true => ok user_id(raw)
+fn int value
+    emits []
+    given
+        user_id id
+    asserts
+        good: user_id(1) => ok 1
+    ok id.raw

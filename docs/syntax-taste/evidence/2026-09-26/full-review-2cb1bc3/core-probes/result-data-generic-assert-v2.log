@@ -1,0 +1,24 @@
+root=0 exit=0
+{"schemaVersion":1,"kind":"can.assertion-root-report","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"pass"},"passed":true,"assertion":{"root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"pass"},"frames":[],"violations":[],"evidence":["real-can"],"fixturePaths":[],"passed":true}}
+CAN-PROGRESS {"version":1,"phase":"started","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"pass"}}
+CAN-PROGRESS {"version":1,"phase":"finished","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"pass"},"passed":true}
+
+root=1 exit=0
+{"schemaVersion":1,"kind":"can.assertion-root-report","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"fail"},"passed":true,"assertion":{"root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"fail"},"frames":[],"violations":[],"evidence":["real-can"],"fixturePaths":[],"passed":true}}
+CAN-PROGRESS {"version":1,"phase":"started","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"fail"}}
+CAN-PROGRESS {"version":1,"phase":"finished","root":{"package":"can.project.root/app","declaration":"can.project.root/app::retry","name":"fail"},"passed":true}
+
+root=2 exit=0
+{"schemaVersion":1,"kind":"can.assertion-root-report","root":{"package":"can.project.root/app","declaration":"can.project.root/app::succeed","name":"unit"},"passed":true,"assertion":{"root":{"package":"can.project.root/app","declaration":"can.project.root/app::succeed","name":"unit"},"frames":[],"violations":[],"evidence":["real-can"],"fixturePaths":[],"passed":true}}
+CAN-PROGRESS {"version":1,"phase":"started","root":{"package":"can.project.root/app","declaration":"can.project.root/app::succeed","name":"unit"}}
+CAN-PROGRESS {"version":1,"phase":"finished","root":{"package":"can.project.root/app","declaration":"can.project.root/app::succeed","name":"unit"},"passed":true}
+
+root=3 exit=0
+{"schemaVersion":1,"kind":"can.assertion-root-report","root":{"package":"can.project.root/app","declaration":"can.project.root/app::fail","name":"unit"},"passed":true,"assertion":{"root":{"package":"can.project.root/app","declaration":"can.project.root/app::fail","name":"unit"},"frames":[],"violations":[],"evidence":["real-can"],"fixturePaths":[],"passed":true}}
+CAN-PROGRESS {"version":1,"phase":"started","root":{"package":"can.project.root/app","declaration":"can.project.root/app::fail","name":"unit"}}
+CAN-PROGRESS {"version":1,"phase":"finished","root":{"package":"can.project.root/app","declaration":"can.project.root/app::fail","name":"unit"},"passed":true}
+
+root=4 exit=0
+{"schemaVersion":1,"kind":"can.assertion-root-report","root":{"package":"can.project.root/app","declaration":"can.project.root/app::main","name":"empty"},"passed":true,"assertion":{"root":{"package":"can.project.root/app","declaration":"can.project.root/app::main","name":"empty"},"frames":[],"violations":[],"evidence":["real-can"],"fixturePaths":[],"passed":true}}
+CAN-PROGRESS {"version":1,"phase":"started","root":{"package":"can.project.root/app","declaration":"can.project.root/app::main","name":"empty"}}
+CAN-PROGRESS {"version":1,"phase":"finished","root":{"package":"can.project.root/app","declaration":"can.project.root/app::main","name":"empty"},"passed":true}

@@ -1,0 +1,20 @@
+{
+  "valueResult": {
+    "attribute": "normalized",
+    "actual": "user edit"
+  },
+  "checkboxSnapshots": [
+    {
+      "kind": "change",
+      "target": "check",
+      "value": "on",
+      "key": ""
+    },
+    {
+      "kind": "change",
+      "target": "check",
+      "value": "on",
+      "key": ""
+    }
+  ]
+}

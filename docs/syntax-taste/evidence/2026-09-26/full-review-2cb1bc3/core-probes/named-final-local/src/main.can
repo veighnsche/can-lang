@@ -1,0 +1,19 @@
+package app
+    provides []
+    uses []
+fn int subtotal
+    emits []
+    given
+        int price
+        int quantity
+    asserts
+        unit: 3, 4 => ok 12
+    int subtotal = price * quantity
+    ok subtotal
+fn void main
+    emits []
+    given
+        str[] arguments
+    asserts
+        empty: [] => ok
+    ok

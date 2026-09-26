@@ -15,5 +15,19 @@ out/
 *.test
 tscheck/.fresh-emit/
 
+# Python (consult/audit helper scripts)
+__pycache__/
+*.py[cod]
+
+# credentials — env-provided only, never commit
+.env
+.env.*
+
+# test / coverage artifacts
+coverage/
+*.coverprofile
+playwright-report/
+test-results/
+
 # linked git worktrees nested under .agents (see git worktree list)
 /.agents/worktrees/

@@ -1,0 +1,6 @@
+=== RUN   TestFreshCoreProbe
+    zz_fresh_review_test.go:12: generic assertion pass in can.project.root/app::retry: inference shape mismatch: want variant, got record
+--- FAIL: TestFreshCoreProbe (0.38s)
+FAIL
+FAIL	github.com/veighnsche/can-lang/compiler/internal/emit	0.584s
+FAIL
