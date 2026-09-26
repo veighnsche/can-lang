@@ -11,8 +11,9 @@
 //
 // W2.1 path record (P09-M1): the conditional generic-catalogue path was NOT
 // taken. X-R01-1 assigned Widget C to T3 companion, not catalogue-only, so
-// no catalogue addition was needed or made; this file names no `can.std.*`
-// operation and the catalogue legs pin every hypothetical capability absent.
+// no catalogue addition was needed or made; this file names no catalogue
+// operation identity and the catalogue legs pin every hypothetical
+// capability absent.
 // Serving/auth/release recipe: `chart-vendor-b-recipe.md`; the D02 recipe
 // (`chart-recipe.md`) still governs Vendor A.
 import {

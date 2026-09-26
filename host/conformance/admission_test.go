@@ -25,6 +25,11 @@ var hypotheticalPackages = []string{
 	"can.std.storage@",
 	"can.std.clipboard@",
 	"can.std.chart@",
+	// D03: the vendor-specific catalogue identities W2 would have
+	// introduced on a vendor-patch path. None may exist either: W2
+	// runs behind the assigned T3 boundary with no catalogue change.
+	"can.std.chart_vendor_b@",
+	"can.std.vendor_b@",
 }
 
 func TestDeliveredCapabilitiesUnadmitted(t *testing.T) {
@@ -70,6 +75,13 @@ var deliverableMarkers = []string{
 	"d02.chart/1",
 	"D02_CHART_COMPANION_TOKEN",
 	"CHART_SELECT_ROUNDTRIP_BUDGET_MS",
+	// D03: Vendor B markers. A hit in any owned tree means the second
+	// vendor leaked a vendor-specific patch into a build, a catalogue,
+	// or a checked-in example outside distribution review.
+	"chart-vendor-b",
+	"companion-b.example",
+	"D03_CHART_VENDOR_B_TOKEN",
+	"2026-09-26.d03-chart-vendor-b",
 }
 
 // TestDeliverablesUnreferenced walks every tree another lane owns and
