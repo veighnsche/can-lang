@@ -14,6 +14,23 @@ import type { Connection } from "../transport/request.ts";
 export type ResponseFormat = Readonly<{ name: string; schema: string; codec: Schema }>;
 export type ResponseTypes = HTTPTypes &
   Readonly<{ invalidData: string; refused: string; truncated: string; invalidResponse: string }>;
+// BudgetBinding mirrors the server-native GuardedConnection from
+// ./budget.ts structurally so this shipped module gains no new import
+// edge. The binding carries one guarded provider connection: every
+// call on a bound factory reserves through the R14 ledger before
+// sending, and calls without scope context fail closed.
+export type BudgetContextInput = Readonly<{ tenant: string; pool: string; correlation: string }>;
+export type BudgetBinding = Readonly<{
+  dispatch: <T>(
+    attempt: Readonly<{
+      context: BudgetContextInput | undefined;
+      where: FailureOrigin;
+      operation: string;
+      maxBodyBytes: number;
+      send: () => Promise<Readonly<{ completion: Completion<T>; body: Uint8Array | undefined }>>;
+    }>,
+  ) => Promise<Completion<T>>;
+}>;
 export class ResponseIssue extends Error {
   constructor(
     readonly kind: "invalid" | "refused" | "truncated" | "instructions",
@@ -177,6 +194,7 @@ export function createResponses(
   domain: ReturnType<typeof createDomainRuntime>,
   types: ResponseTypes,
   readEnvironment: (name: string) => string | undefined,
+  budget?: BudgetBinding,
 ) {
   const transport = createTransport(domain, types, readEnvironment);
   function issue(
@@ -226,6 +244,7 @@ export function createResponses(
       where: FailureOrigin,
       operation: string,
       context?: AssertionContext,
+      budgetContext?: BudgetContextInput,
     ): Promise<Completion<T>> {
       return invoke(async () => {
         let body: Uint8Array;
@@ -247,30 +266,69 @@ export function createResponses(
         }
         const exchange = providerHTTP(context, where, operation, connection.maxBodyBytes);
         if (exchange === undefined) denyLiveBoundary(context, where);
-        return transport.request(
-          connection,
-          {
-            path: "",
-            method: "POST",
-            query: [],
-            headers: [
-              { name: "content_type", value: "application/json" },
-              { name: "accept", value: "application/json" },
-            ],
-            body,
-            exchange,
-          },
-          (bytes) => {
-            try {
-              return success(decodeResponse(ownBytes(bytes), format, connection.maxBodyBytes) as T);
-            } catch (cause) {
-              return issue(cause, where, operation);
-            }
-          },
+        const respond = (bytes: Uint8Array): Completion<T> => {
+          try {
+            return success(decodeResponse(ownBytes(bytes), format, connection.maxBodyBytes) as T);
+          } catch (cause) {
+            return issue(cause, where, operation);
+          }
+        };
+        const readEnv = rawEnvironment(context, operation) ?? readEnvironment;
+        if (budget === undefined)
+          return transport.request(
+            connection,
+            {
+              path: "",
+              method: "POST",
+              query: [],
+              headers: [
+                { name: "content_type", value: "application/json" },
+                { name: "accept", value: "application/json" },
+              ],
+              body,
+              exchange,
+            },
+            respond,
+            where,
+            operation,
+            readEnv,
+          );
+        // Guarded connections reserve before sending and settle
+        // authoritative usage after; the raw body copy lets the guard
+        // decode usage even when the result itself fails to decode.
+        // Encoding and fixture admission above stay pre-admission: no
+        // reservation exists for a call that cannot run.
+        let responseBody: Uint8Array | undefined;
+        return budget.dispatch({
+          context: budgetContext,
           where,
           operation,
-          rawEnvironment(context, operation) ?? readEnvironment,
-        );
+          maxBodyBytes: connection.maxBodyBytes,
+          send: async () => ({
+            completion: await transport.request(
+              connection,
+              {
+                path: "",
+                method: "POST",
+                query: [],
+                headers: [
+                  { name: "content_type", value: "application/json" },
+                  { name: "accept", value: "application/json" },
+                ],
+                body,
+                exchange,
+              },
+              (bytes) => {
+                responseBody = bytes.slice();
+                return respond(bytes);
+              },
+              where,
+              operation,
+              readEnv,
+            ),
+            body: responseBody,
+          }),
+        });
       }, where);
     },
   });

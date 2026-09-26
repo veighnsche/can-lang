@@ -45,3 +45,28 @@ shipped verdict rests on a live provider call.
   `unavailable` instead of a report.
 - Native, SQL, codec, and IO failures propagate with their stable
   error names and a nonzero exit.
+
+## Token budgets (R14)
+
+Tenant token accounting is enforced by the server-native guard in
+`runtime/ai/budget.ts` over the F01 durable ledger
+(`runtime/outbound/`): a qualified metering profile pins a
+conservative complete-call upper bound U, the guard atomically
+reserves U before provider dispatch, and settles authoritative
+`input_tokens + output_tokens` usage after. One allowance counts
+unweighted input plus output tokens per (tenant, pool, epoch) row
+under configured fixed epochs — an allowance per period, not a
+rolling rate limit. Calls that do not fit reject immediately with
+`ai_budget::exceeded` before any provider I/O; unqualified profiles,
+missing scope context, and metering failures reject with typed
+`ai_budget::unavailable` reasons. Unknown usage keeps the full hold
+unresolved and durable; it never auto-refunds.
+
+The guarded adapters (`createResponses`/`createTypeSafe` with a
+budget binding) send byte-identical nonstreaming requests and reject
+context-free calls with no bypass. Wiring this example's connections
+through `ai_budget::within` scopes arrives with the catalogue scope
+operation and emitted-context integration (lanes E/A); until then
+this example stays unmetered and `canlc assert` covers the
+unbudgeted pipeline only. No profile here is qualified yet, so
+budgeted dispatch rejects by design — H08 owns live qualification.
