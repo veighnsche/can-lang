@@ -29,6 +29,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | B03 | inactive (Q5 gate) | — (no code; correct outcome) | n/a | per-layer parity 17/17, helper-once, wrapper only-in-style, +12/domain premium not removable by syntax; trip conditions recorded | inactive |
 | B04 | inactive (Q4 gate) | — (no code; correct outcome) | n/a | 9 lines/factory, 1 arm/error, zero helper churn, fail-closed; LD29 stays closed; trip conditions recorded | inactive |
 | G02 | done (AU-LSP-hover) | main `0d23fada` (worker `e8b10707`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok; type-at-offset, declines where definition declines | pass |
+| F02 | done (X-R10-1 admitted, RETURNING qualified need) | main `d3e51ded` (worker `ccfb1b22`) | macOS, live PG 17.11/MySQL 8.4.11 | probe + live legs pass (PG 17.11 + MySQL 8.4.11 observed); locking expressible w/o syntax change; RETURNING need only for keyless generated-identity shapes; MySQL rejects RETURNING (needs per-dialect mapping in F03) | pass |
 
 ## Conditional branches
 
