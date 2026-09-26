@@ -205,9 +205,14 @@ window are all documented in `README.md` and hold for v1.
 
 - `canlc assert examples/webhook` — 183 roots pin every
   auth/shape/lease/ack/dead-letter/reconcile arm.
-- `bun test examples/webhook/companion/` — 34 unit tests of the
-  protocol client, worker, and supervisor against a verifying
-  stub Can.
+- `bun test examples/webhook/companion/` — 40 unit tests of the
+  protocol client, worker, supervisor, and CLI parser against a
+  verifying stub Can.
 - `TestWebhookSliceLive` — the staged live pair: provider legs,
   carrier auth matrix, replay, lease/heartbeat, poison, crash
   and redelivery legs, in-flight convergence, batch pair.
+- `TestCompanionPairLiveF06` — two real companions against Can:
+  disjoint leases/claims, bounded concurrency, backoff/idle,
+  poison, crash redelivery, idempotent ack, auth, destination
+  and credential legs, plus the measured W4.3 batch drain. Tuning
+  flags above pace the fast legs; see the F06 evidence record.
