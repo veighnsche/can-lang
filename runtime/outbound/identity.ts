@@ -24,6 +24,24 @@ function checkIdentity(kind: string, value: unknown): string {
   return value;
 }
 
+// identityValue validates free-form pinned names (metering provider,
+// model, version) that travel in ledger records and reports. The
+// charset is wider than tenant/pool/correlation: 1..256 well-formed
+// characters without NUL, so real provider spellings fit while record
+// keys stay unambiguous. Callers pass names and versions only — never
+// endpoints, credential values, or prompt text.
+export function identityValue(kind: string, value: unknown): string {
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.length > 256 ||
+    !value.isWellFormed() ||
+    value.includes("\0")
+  )
+    throw new TypeError(`invalid ${kind}`);
+  return value;
+}
+
 export function tenantId(value: unknown): TenantId {
   return checkIdentity("tenant", value) as TenantId;
 }
