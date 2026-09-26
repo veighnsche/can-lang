@@ -32,6 +32,10 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | F02 | done (X-R10-1 admitted, RETURNING qualified need) | main `d3e51ded` (worker `ccfb1b22`) | macOS, live PG 17.11/MySQL 8.4.11 | probe + live legs pass (PG 17.11 + MySQL 8.4.11 observed); locking expressible w/o syntax change; RETURNING need only for keyless generated-identity shapes; MySQL rejects RETURNING (needs per-dialect mapping in F03) | pass |
 | A04 | done (self-tail lowering + Q6 proof) | main `78668ec7` (worker `23ebcade`) | macOS, go1.27.1, bun 1.4.2 | gofmt clean; `go test` check+emit ok (278s/24s); hazard-free self relays → native while, exactly-once ordered temps, step diagnostics, NOT-LOWERED notes; 100k probe ok ~1ms vs overflow | pass |
 | A06 | inactive (Q6 gate) | — (no code; correct outcome) | n/a | state machine + relay aggregation covered; callable-fold excluded with non-syntax refinement path (capture analysis) if A07 ever needs it; worker batch F06-owned; no needed W4 shape excluded | inactive |
+| A05 | done (bulk map/set + catalogue) | main `94eb71c5` + E merge `e7982fa` | macOS, go1.27.1/bun 1.4.2 | bun 8/8; `go test` check+emit ok; taskID extended to lane IDs (+focused test); catalogue 288→290; cataloguegen --check ok; ops resolve | pass |
+| C03 | done (C-E action wire) | main `9a2ea7b7` (worker `8f61b1b`) | macOS, go1.27.1 | gofmt clean; `go test` check ok; GET/document + POST/swap-inner rules, no per-case mixing, plain routes untouched | pass |
+| H07 | done (R14 budget guard) | main `92f93263` (worker `73dd42a8`) | macOS, bun 1.4.2 | 36/36 pass; `check:runtime` green; secret scan clean; within-scope reserve/fence/settle, usage decoding, redaction, no bypass | pass |
+| E06 | done (redacted reporting) | main `e3a4148c` (worker `c5499411`) | macOS, bun 1.4.2 | 17/17 pass; `check:runtime` green; boundary reporting, shared claim, fixed 500, no native leakage | pass |
 
 ## Conditional branches
 
