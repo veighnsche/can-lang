@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "6ab6feb7984b24f5219a5da087fd8cf2d914ffb95c1e8c1c82c841bbf15247bf";
+export const catalogueSHA256 = "664630d671f03866dcc40c0cae628091f160c88700ff13e8e698998de8c295aa";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -12112,12 +12112,13 @@ export const catalogue = freeze({
           "S3Client",
           "S3File"
         ],
-        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; reader failure cancels the upload and propagates.",
+        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline binds only between awaits, never a hung await; reader failure discards the upload destructively and propagates.",
         "task": "B1-10"
       },
       "assertion": "supplied",
       "refs": [
-        "B1-10"
+        "B1-10",
+        "E08"
       ]
     },
     {
@@ -12416,12 +12417,13 @@ export const catalogue = freeze({
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or cancel fails upload_closed.",
+        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed.",
         "task": "B1-10"
       },
       "assertion": "supplied",
       "refs": [
-        "B1-10"
+        "B1-10",
+        "E08"
       ]
     },
     {
@@ -12458,8 +12460,8 @@ export const catalogue = freeze({
       ]
     },
     {
-      "name": "s3::cancel_upload",
-      "identity": "can.std.s3@1::cancel_upload",
+      "name": "s3::discard_upload",
+      "identity": "can.std.s3@1::discard_upload",
       "kind": "function",
       "receiver": "",
       "parameters": [],
@@ -12473,19 +12475,22 @@ export const catalogue = freeze({
       "result": "void",
       "callbacks": [],
       "emits": [
-        "s3::upload_closed"
+        "s3::upload_closed",
+        "s3::access_denied",
+        "s3::service_error"
       ],
       "callbackErrors": [],
       "lowering": {
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Retire the handle and release the sink without completing, so the key never materializes; never deletes the key.",
+        "adapter": "Destructively retire an open handle: complete the pending upload (transiently visible to concurrent readers; overwrites any pre-existing key) then delete the key; failed cleanup awaits surface as service errors, and a failed completion may strand multipart state for the operator abort recipe.",
         "task": "B1-10"
       },
       "assertion": "supplied",
       "refs": [
-        "B1-10"
+        "B1-10",
+        "E08"
       ]
     },
     {

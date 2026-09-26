@@ -12,22 +12,22 @@ import (
 // opaque; metadata, entries, pages and presigned info cross as records.
 func s3OperationBindings() bindingContribution {
 	functions := map[string]string{
-		"can.std.s3@1::client_open":   "$canS3.clientOpen",
-		"can.std.s3@1::read_bytes":    "$canS3.readBytes",
-		"can.std.s3@1::read_range":    "$canS3.readRange",
-		"can.std.s3@1::read_stream":   "$canS3.readStream",
-		"can.std.s3@1::write_bytes":   "$canS3.writeBytes",
-		"can.std.s3@1::write_stream":  "$canS3.writeStream",
-		"can.std.s3@1::stat":          "$canS3.stat",
-		"can.std.s3@1::exists":        "$canS3.exists",
-		"can.std.s3@1::delete":        "$canS3.remove",
-		"can.std.s3@1::list":          "$canS3.list",
-		"can.std.s3@1::presign":       "$canS3.presign",
-		"can.std.s3@1::describe":      "$canS3.describe",
-		"can.std.s3@1::begin_upload":  "$canS3.beginUpload",
-		"can.std.s3@1::upload_write":  "$canS3.uploadWrite",
-		"can.std.s3@1::upload_finish": "$canS3.uploadFinish",
-		"can.std.s3@1::cancel_upload": "$canS3.cancelUpload",
+		"can.std.s3@1::client_open":    "$canS3.clientOpen",
+		"can.std.s3@1::read_bytes":     "$canS3.readBytes",
+		"can.std.s3@1::read_range":     "$canS3.readRange",
+		"can.std.s3@1::read_stream":    "$canS3.readStream",
+		"can.std.s3@1::write_bytes":    "$canS3.writeBytes",
+		"can.std.s3@1::write_stream":   "$canS3.writeStream",
+		"can.std.s3@1::stat":           "$canS3.stat",
+		"can.std.s3@1::exists":         "$canS3.exists",
+		"can.std.s3@1::delete":         "$canS3.remove",
+		"can.std.s3@1::list":           "$canS3.list",
+		"can.std.s3@1::presign":        "$canS3.presign",
+		"can.std.s3@1::describe":       "$canS3.describe",
+		"can.std.s3@1::begin_upload":   "$canS3.beginUpload",
+		"can.std.s3@1::upload_write":   "$canS3.uploadWrite",
+		"can.std.s3@1::upload_finish":  "$canS3.uploadFinish",
+		"can.std.s3@1::discard_upload": "$canS3.discardUpload",
 	}
 	return bindingContribution{domain: "s3", functions: functions}
 }

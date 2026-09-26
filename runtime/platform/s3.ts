@@ -3,7 +3,7 @@
 // data (slash is not traversal). Reads are bounded (whole, ranged or
 // streamed through B1-05 byte readers); writes land singly or through
 // a budgeted reader pump; multipart uploads are stateful handles with
-// explicit finish and cancel; presigned URLs mint locally and stay
+// explicit finish and destructive discard; presigned URLs mint locally and stay
 // inside opaque handles until described. Credentials and signed URLs
 // never enter diagnostics. Native S3 codes map to missing_key,
 // access_denied and service_error; required presign headers have no
@@ -41,7 +41,7 @@ type UploadBox = {
   type: string | undefined;
   partSize: number | undefined;
   sink: NativeSink | undefined;
-  state: "open" | "finished" | "cancelled";
+  state: "open" | "finished" | "discarded";
 };
 type PresignedBox = Readonly<{
   url: string;
@@ -200,35 +200,45 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
     client: NativeClient,
     key: string,
     sink: NativeSink | undefined,
-  ): Promise<void> => {
-    // Cancel cleanup converges here. The native writer has no abort:
-    // an un-ended sink pins the Bun event loop forever (unref and GC
-    // do not release it) and close() completes asynchronously, which
+    operation: string,
+  ): Promise<Completion<never> | undefined> => {
+    // Destructive cleanup converges here (E08; the X-R15-1 cancel
+    // branch is negative). The native writer has no abort: an
+    // un-ended sink pins the Bun event loop forever (unref and GC do
+    // not release it) and close() completes asynchronously, which
     // races a delete. So cleanup completes synchronously with end()
-    // and then deletes the key; cancel awaits both, so the transient
-    // key is never observable afterwards. Best effort and never
-    // throws: the cancel contract admits no service error. A
-    // pre-existing key under the same name is removed rather than
-    // preserved once the first byte was written; completion is the
-    // only sink release the pinned API offers.
-    if (sink === undefined) return;
+    // and then deletes the key. Consequences, all measured live
+    // (E07): the completion transiently overwrites any pre-existing
+    // key and is visible to concurrent readers; a failed completion
+    // strands multipart state the client never aborts; a failed
+    // delete leaves the transient completion in place permanently.
+    // The delete still runs after a failed end: on the part-failure
+    // path it carries the delete-coupled abort that prevents the
+    // orphan. The first failed await is returned so discard_upload
+    // reports honestly. One blind spot the adapter cannot see: when
+    // the delete-coupled abort faults but the delete lands (E07 F7),
+    // the MPU orphans with no in-band signal — detection needs the
+    // operator list/abort/re-list recipe.
+    if (sink === undefined) return undefined;
+    let failed: Completion<never> | undefined;
     try {
       await sink.end();
-    } catch {
-      /* the upload is dead either way */
+    } catch (cause) {
+      failed = wire(operation, key, cause);
     }
     try {
       await client.file(key).delete();
-    } catch {
-      /* settled absence on a live service */
+    } catch (cause) {
+      failed ??= wire(operation, key, cause);
     }
+    return failed;
   };
-  const retire = async (box: UploadBox): Promise<void> => {
-    if (box.state !== "open") return;
-    box.state = "cancelled";
+  const retire = async (box: UploadBox): Promise<Completion<never> | undefined> => {
+    if (box.state !== "open") return undefined;
+    box.state = "discarded";
     const sink = box.sink;
     box.sink = undefined;
-    await scrub(box.client, box.key, sink);
+    return scrub(box.client, box.key, sink, "discard_upload");
   };
   return Object.freeze({
     async clientOpen(
@@ -402,11 +412,15 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       if (typeof deadlineMs !== "bigint" || deadlineMs < 1n || deadlineMs > DEADLINE_CAP)
         return invalid("deadline");
       // The sink is created lazily on the first chunk: a pump that
-      // fails before any byte never touches the service. Every abort
-      // after the first write scrubs through the shared cleanup: an
-      // un-ended sink pins the Bun event loop, so the pump completes
-      // synchronously with end() and deletes the key instead of
-      // abandoning the writer.
+      // fails before any byte never touches the service. Every pump
+      // failure after the first write scrubs through the shared
+      // destructive cleanup: an un-ended sink pins the Bun event
+      // loop, so the pump completes synchronously with end() and
+      // deletes the key instead of abandoning the writer. The
+      // deadline below binds only between awaits (E08; X-R15-3
+      // negative): it fires at the top of each pump iteration, never
+      // inside a hung read, write, flush, end, or stat — those awaits
+      // admit no client-side bound and stay hung past the deadline.
       let sink: NativeSink | undefined;
       const pump = () =>
         (sink ??= client.file(checked).writer(type === undefined ? undefined : { type }));
@@ -471,7 +485,9 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         } finally {
           const doomed = sink;
           sink = undefined;
-          if (!completed) await scrub(client, checked, doomed);
+          // Best-effort: the pump's own outcome above is the reported
+          // one; a failed scrub here cannot change it.
+          if (!completed) await scrub(client, checked, doomed, "write_stream");
         }
       });
     },
@@ -669,8 +685,11 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       const token = registerResource(
         UPLOAD_RESOURCE_KIND,
         box,
-        async () => {
-          await retire(box);
+        async (): Promise<Completion<void>> => {
+          // Abandoned open uploads discard destructively at scope
+          // drain; a failed scrub surfaces through cleanupFailed.
+          const failed = await retire(box);
+          if (failed !== undefined) return failed;
           return success(undefined);
         },
         { scopeManaged: true },
@@ -710,15 +729,16 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         return success(await statOf(box.client, box.key));
       } catch (cause) {
         // A failed completion leaves the handle open: the caller may
-        // retry the finish or cancel explicitly.
+        // retry the finish or discard explicitly.
         return wire("upload_finish", box.key, cause);
       }
     },
-    async cancelUpload(token: unknown, context?: AssertionContext): Promise<Completion<void>> {
+    async discardUpload(token: unknown, context?: AssertionContext): Promise<Completion<void>> {
       denyLiveBoundary(context, origin);
       const box = projectUpload(token);
-      if (box.state !== "open") return closed("cancel_upload", box.state);
-      await retire(box);
+      if (box.state !== "open") return closed("discard_upload", box.state);
+      const failed = await retire(box);
+      if (failed !== undefined) return failed;
       return success(undefined);
     },
   });

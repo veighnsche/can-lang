@@ -13,6 +13,12 @@
 // Legs pin the QUALIFIED behavior: if a future Bun changes the
 // native surface, the legs fail loudly and E07 must be re-qualified
 // before E08 maps any contract onto it.
+//
+// E08 rebase: both branches went negative, so the adapter legs now
+// call discard_upload (cancel_upload is removed from the catalogue)
+// and F1/F2/F4/F5 assert the honest cleanup-failure posture
+// (service_error) instead of silent resolve. Wire observations and
+// `leg:` tags are unchanged from the E07 record.
 import { test, expect } from "bun:test";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -282,7 +288,7 @@ const countOp = (tap: Tap, op: string, verdict?: string): number =>
 // --- Cancel branch (X-R15-1) ---
 
 live(
-  "X-R15-1 C0-small: cancel_upload after first byte deletes a pre-existing key",
+  "X-R15-1 C0-small: discard_upload after first byte deletes a pre-existing key",
   async () => {
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     try {
@@ -297,7 +303,7 @@ live(
         ) as object;
         expect(value(await s3.uploadWrite(upload, buf("replacement")))).toBe(11n);
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        expect(value(await s3.discardUpload(upload))).toBe(undefined);
         expect(tap.desyncs()).toBe(0);
         console.log(JSON.stringify({ leg: "C0-small", ops: opTriples(tap) }));
         // The scrub completes the replacement, then deletes the key:
@@ -318,7 +324,7 @@ live(
 );
 
 live(
-  "X-R15-1 C0-multipart: cancel_upload after parts deletes a pre-existing key",
+  "X-R15-1 C0-multipart: discard_upload after parts deletes a pre-existing key",
   async () => {
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     try {
@@ -333,7 +339,7 @@ live(
           BigInt(6 * 1024 * 1024),
         );
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        expect(value(await s3.discardUpload(upload))).toBe(undefined);
         expect(tap.desyncs()).toBe(0);
         console.log(JSON.stringify({ leg: "C0-multipart", ops: opTriples(tap) }));
         expect(opTriples(tap)).toEqual([
@@ -453,7 +459,7 @@ live(
 );
 
 live(
-  "X-R15-1 C4: observer never sees partial bytes during cancel-while-replacing",
+  "X-R15-1 C4: observer never sees partial bytes during discard-while-replacing",
   async () => {
     await owned(async () => {
       const client = await openLive();
@@ -483,7 +489,7 @@ live(
             await s3.beginUpload(client, key, uploadOpts(none(), none())),
           ) as object;
           expect(value(await s3.uploadWrite(upload, buf("replacement")))).toBe(11n);
-          expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+          expect(value(await s3.discardUpload(upload))).toBe(undefined);
         } finally {
           stop = true;
           await poller;
@@ -536,14 +542,14 @@ live(
 );
 
 live(
-  "X-R15-1 C6: loopback latency samples for end, cancel and stat",
+  "X-R15-1 C6: loopback latency samples for end, discard and stat",
   async () => {
     const direct = native(ENDPOINT!);
     await owned(async () => {
       const client = await openLive();
       const samples: Record<string, number[]> = {
         writeBytes: [],
-        cancelUpload: [],
+        discardUpload: [],
         nativeEndError: [],
         stat: [],
       };
@@ -557,8 +563,8 @@ live(
         ) as object;
         await s3.uploadWrite(upload, buf("sample-bytes"));
         started = Date.now();
-        await s3.cancelUpload(upload);
-        samples["cancelUpload"]!.push(Date.now() - started);
+        await s3.discardUpload(upload);
+        samples["discardUpload"]!.push(Date.now() - started);
         const writer = direct.file(`${PREFIX}c6e-${i}.bin`).writer();
         await writer.write(new TextEncoder().encode("sample-bytes"));
         started = Date.now();
@@ -591,7 +597,7 @@ async function metaOf(meta: unknown): Promise<{ size: bigint; etag: string }> {
 // --- Cleanup-await failure injection (one leg per scrub await) ---
 
 live(
-  "X-R15-1 F1: injected complete-mpu failure during cancel still settles",
+  "X-R15-1 F1: injected complete-mpu failure during discard fails honestly",
   async () => {
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     tap.setRules([{ action: "fault500", match: (op) => op === "complete-mpu" }]);
@@ -606,9 +612,13 @@ live(
           BigInt(6 * 1024 * 1024),
         );
         tap.clearOps();
-        // The scrub suppresses the failed completion and deletes: the
-        // key never materializes and cancel still resolves.
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        // E08: the failed completion surfaces (first failed await)
+        // and the scrub still deletes: the key never materializes
+        // but discard reports the cleanup failure.
+        check(await s3.discardUpload(upload), "s3::service_error", {
+          code: "InternalError",
+          operation: "discard_upload",
+        });
         expect(tap.desyncs()).toBe(0);
         const orphans = (await listUploads(ident())).filter((upload) => upload.key === key);
         console.log(
@@ -658,9 +668,13 @@ live(
           ) as object;
           expect(value(await s3.uploadWrite(upload, buf("replacement")))).toBe(11n);
           tap.clearOps();
-          // Cancel still resolves: the suppressed delete leaves the
-          // transient completion in place permanently.
-          expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+          // E08: the failed delete surfaces: the transient
+          // completion stays in place permanently and discard
+          // reports the cleanup failure.
+          check(await s3.discardUpload(upload), "s3::service_error", {
+            code: "InternalError",
+            operation: "discard_upload",
+          });
           expect(tap.desyncs()).toBe(0);
           console.log(JSON.stringify({ leg: "F2", ops: opTriples(tap) }));
           expect(opTriples(tap)).toEqual([
@@ -688,7 +702,7 @@ live(
 );
 
 live(
-  "X-R15-1 F3: injected upload-part failure surfaces then cancels",
+  "X-R15-1 F3: injected upload-part failure surfaces then discards",
   async () => {
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     tap.setRules([{ action: "fault500", match: (op) => op === "upload-part" }]);
@@ -705,7 +719,7 @@ live(
         // 1 initial + 3 retries, each on a fresh connection.
         expect(countOp(tap, "upload-part")).toBe(4);
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        expect(value(await s3.discardUpload(upload))).toBe(undefined);
         expect(tap.desyncs()).toBe(0);
         const orphans = (await listUploads(ident())).filter((upload) => upload.key === key);
         console.log(
@@ -753,7 +767,12 @@ live(
           BigInt(6 * 1024 * 1024),
         );
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        // E08: the failed completion surfaces like F1; the
+        // abort-fault rule still never triggers.
+        check(await s3.discardUpload(upload), "s3::service_error", {
+          code: "InternalError",
+          operation: "discard_upload",
+        });
         expect(tap.desyncs()).toBe(0);
         const orphans = (await listUploads(ident())).filter((upload) => upload.key === key);
         console.log(
@@ -767,7 +786,7 @@ live(
         // A failed completion accumulates server-side: the client
         // attempts no abort (the abort-fault rule below never
         // triggers), so parts — and their cost — survive the
-        // settled cancel until an out-of-band abort lands.
+        // failed discard until an out-of-band abort lands.
         expect(countOp(tap, "abort-mpu")).toBe(0);
         expect(orphans.length).toBe(1);
         const held = await listParts(ident(), key, orphans[0]!.uploadId);
@@ -791,7 +810,7 @@ live(
 );
 
 live(
-  "X-R15-1 F5: injected put-object failure during small cancel settles absent",
+  "X-R15-1 F5: injected put-object failure during small discard fails absent",
   async () => {
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     tap.setRules([{ action: "fault500", match: (op) => op === "put-object" }]);
@@ -804,7 +823,13 @@ live(
         ) as object;
         expect(value(await s3.uploadWrite(upload, buf("replacement")))).toBe(11n);
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        // E08: the failed end surfaces even though the follow-up
+        // delete settles the key absent — the caller learns the
+        // cleanup did not complete cleanly.
+        check(await s3.discardUpload(upload), "s3::service_error", {
+          code: "InternalError",
+          operation: "discard_upload",
+        });
         expect(tap.desyncs()).toBe(0);
         console.log(JSON.stringify({ leg: "F5", ops: opTriples(tap) }));
         expect(countOp(tap, "put-object")).toBe(4);
@@ -879,7 +904,11 @@ live(
           { code: "InternalError", operation: "upload_write" },
         );
         tap.clearOps();
-        expect(value(await s3.cancelUpload(upload))).toBe(undefined);
+        // E08 blind spot, retained: the native delete swallows its
+        // faulted coupled abort and resolves, so discard resolves
+        // while the MPU orphans. No in-band signal exists; the E08
+        // operator recipe (list/abort/re-list) is the only detection.
+        expect(value(await s3.discardUpload(upload))).toBe(undefined);
         expect(tap.desyncs()).toBe(0);
         const orphans = (await listUploads(ident())).filter((upload) => upload.key === key);
         console.log(

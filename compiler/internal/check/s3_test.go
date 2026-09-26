@@ -124,10 +124,10 @@ func TestS3FixtureAdmitsOperationContracts(t *testing.T) {
 			result: s3Metadata,
 			errors: []string{"can.std.s3@1::upload_closed", "can.std.s3@1::access_denied", "can.std.s3@1::service_error"},
 		},
-		"can.std.s3@1::cancel_upload": {
+		"can.std.s3@1::discard_upload": {
 			inputs: []string{s3Upload},
 			result: "void",
-			errors: []string{"can.std.s3@1::upload_closed"},
+			errors: []string{"can.std.s3@1::upload_closed", "can.std.s3@1::access_denied", "can.std.s3@1::service_error"},
 		},
 	}
 	for identity, want := range contracts {

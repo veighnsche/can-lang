@@ -43,7 +43,7 @@ var selfTailHazards = map[string]string{
 	"can.std.s3@1::begin_upload":      "drain-owned value (s3 upload)",
 	"can.std.s3@1::upload_write":      "drain-owned value (s3 upload)",
 	"can.std.s3@1::upload_finish":     "drain-owned value (s3 upload)",
-	"can.std.s3@1::cancel_upload":     "drain-owned value (s3 upload)",
+	"can.std.s3@1::discard_upload":    "drain-owned value (s3 upload)",
 	// Deferred completions bound to later requests.
 	"can.std.action@1::mount": "deferred completion (action mount)",
 }

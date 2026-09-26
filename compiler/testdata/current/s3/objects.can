@@ -425,9 +425,11 @@ fn str copy_object
                     stream::read_failed
                     stream::cancelled
                     ok s3::metadata meta => ok call text::from_int(meta.size)
-/// Open an upload and cancel it before anything materializes.
+/// Open an upload and discard it. Destructive: discard completes the
+/// upload and then deletes the key, so a pre-existing key is briefly
+/// overwritten and visible before removal.
 fn str abort_upload
-    emits [s3::invalid_config, s3::upload_closed]
+    emits [s3::invalid_config, s3::upload_closed, s3::access_denied, s3::service_error]
     given
         str endpoint
         str region
@@ -443,10 +445,12 @@ fn str abort_upload
             when
                 sample: handle, "big.bin", s3::upload_options(option::none(), option::none()) => ok
             s3::invalid_config
-            ok s3::upload upload => match call s3::cancel_upload(upload)
+            ok s3::upload upload => match call s3::discard_upload(upload)
                 when
                     sample: upload => ok
                 s3::upload_closed
+                s3::access_denied
+                s3::service_error
                 ok => ok "cancelled"
 /// Print one line of text. Command arms share this so usage and
 /// results funnel through one supplied boundary.
@@ -727,6 +731,8 @@ fn void main
                                     true => match call abort_upload(endpoint, region, bucket, access, secret, args[1])
                                         s3::invalid_config
                                         s3::upload_closed
+                                        s3::access_denied
+                                        s3::service_error
                                         ok str text => match call emit(text)
                                             codec::invalid_data
                                             io::write_failed

@@ -1,7 +1,7 @@
 // Code generated from catalogue.json; DO NOT EDIT.
 package catalogue
 
-const GeneratedSourceSHA256 = "6ab6feb7984b24f5219a5da087fd8cf2d914ffb95c1e8c1c82c841bbf15247bf"
+const GeneratedSourceSHA256 = "664630d671f03866dcc40c0cae628091f160c88700ff13e8e698998de8c295aa"
 const GeneratedRevision = 1
 const GeneratedTargetID = "bun-1.4.2-darwin-arm64-v1"
 const TypeChoiceOption = "choice_option"
@@ -583,7 +583,7 @@ const OpS3Describe = "s3::describe"
 const OpS3BeginUpload = "s3::begin_upload"
 const OpS3UploadWrite = "s3::upload_write"
 const OpS3UploadFinish = "s3::upload_finish"
-const OpS3CancelUpload = "s3::cancel_upload"
+const OpS3DiscardUpload = "s3::discard_upload"
 const OpCodecDecodeToml = "codec::decode_toml"
 const OpCodecDecodeYaml = "codec::decode_yaml"
 const OpCodecDecodeJson5 = "codec::decode_json5"

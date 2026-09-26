@@ -151,7 +151,7 @@ const listOpts = (prefix: string, limit: bigint, delimiter: unknown, continuatio
     ["continuation", continuation],
   ]);
 const settled = async () => {
-  // Absence after cancel must settle: cleanup completes the native
+  // Absence after discard must settle: cleanup completes the native
   // upload synchronously and deletes the key, so only a settled
   // check catches a completion leak.
   try {
@@ -420,18 +420,18 @@ test("upload terminal states reject reuse without wire calls", async () => {
     ) as object;
     const upload = value(await s3.beginUpload(client, "k", uploadOpts(none(), none()))) as object;
     expect(isS3Value(S3_UPLOAD_KIND, upload)).toBe(true);
-    value(await s3.cancelUpload(upload));
+    value(await s3.discardUpload(upload));
     check(await s3.uploadWrite(upload, buf("x")), "s3::upload_closed", {
       operation: "upload_write",
-      state: "cancelled",
+      state: "discarded",
     });
     check(await s3.uploadFinish(upload), "s3::upload_closed", {
       operation: "upload_finish",
-      state: "cancelled",
+      state: "discarded",
     });
-    check(await s3.cancelUpload(upload), "s3::upload_closed", {
-      operation: "cancel_upload",
-      state: "cancelled",
+    check(await s3.discardUpload(upload), "s3::upload_closed", {
+      operation: "discard_upload",
+      state: "discarded",
     });
     let thrown: unknown;
     try {
@@ -512,7 +512,7 @@ test("supplied operations deny the live assertion boundary", async () => {
         () => s3.list(client, listOpts("", 10n, none(), none()), context),
         () => s3.presign(client, record(METHOD_GET, []), "k", 60n, none(), context),
         () => s3.beginUpload(client, "k", uploadOpts(none(), none()), context),
-        () => s3.cancelUpload(Object.freeze(Object.create(null)), context),
+        () => s3.discardUpload(Object.freeze(Object.create(null)), context),
       ]) {
         let thrown: unknown;
         try {
@@ -658,7 +658,7 @@ live("write_stream pumps readers under byte budgets", async () => {
     expect(value(await s3.exists(client, overKey))).toBe(false);
   });
 });
-live("write_stream cancels the upload when the reader fails", async () => {
+live("write_stream discards the upload when the reader fails", async () => {
   await liveOwned(async (keys) => {
     const client = await openLive();
     const key = PREFIX + "pump-fail.bin";
@@ -719,7 +719,7 @@ live("write_stream fails timeout past the deadline", async () => {
     expect(value(await s3.exists(client, key))).toBe(false);
   });
 });
-live("multipart upload finishes, guards terminals and abandons cleanly", async () => {
+live("multipart upload finishes, guards terminals and discards cleanly", async () => {
   await liveOwned(async (keys) => {
     const client = await openLive();
     const key = PREFIX + "multi.bin";
@@ -746,8 +746,8 @@ live("multipart upload finishes, guards terminals and abandons cleanly", async (
       operation: "upload_finish",
       state: "finished",
     });
-    check(await s3.cancelUpload(upload), "s3::upload_closed", {
-      operation: "cancel_upload",
+    check(await s3.discardUpload(upload), "s3::upload_closed", {
+      operation: "discard_upload",
       state: "finished",
     });
     const emptyKey = PREFIX + "multi-empty.bin";
@@ -766,7 +766,7 @@ live("multipart upload finishes, guards terminals and abandons cleanly", async (
       await s3.beginUpload(client, dropKey, uploadOpts(none(), none())),
     ) as object;
     value(await s3.uploadWrite(dropped, ownBytes(new Uint8Array([7]))));
-    value(await s3.cancelUpload(dropped));
+    value(await s3.discardUpload(dropped));
     await settled();
     expect(value(await s3.exists(client, dropKey))).toBe(false);
   });
@@ -777,7 +777,7 @@ live("abandoned uploads never materialize their key", async () => {
   await owned(async () => {
     const upload = value(await s3.beginUpload(client, key, uploadOpts(none(), none()))) as object;
     value(await s3.uploadWrite(upload, ownBytes(new Uint8Array([7]))));
-    // No finish or cancel: scope drain retires the handle.
+    // No finish or discard: scope drain discards the handle destructively.
   });
   await owned(async () => {
     await settled();
