@@ -1,6 +1,7 @@
 #!/bin/sh
-# Local live-dependency provisioning for H02 (databases) and H03 (object storage).
-# Idempotent: safe to re-run; existing containers, volumes, and secrets are reused.
+# Local live-dependency provisioning for H02 (databases), H03 (object storage),
+# and C01 (container Firefox runner). Idempotent: safe to re-run; existing
+# containers, volumes, and secrets are reused.
 # Secrets live ONLY in $PROVISION_DIR (default $HOME/.can-provision, mode 700/600)
 # and in process env. Nothing here prints or stores a credential value in the repo.
 #
@@ -12,19 +13,33 @@
 #   provision-local.sh s3 up        # start MinIO, ensure bucket
 #   provision-local.sh s3 exports   # print export lines (eval in operator shell)
 #   provision-local.sh s3 down      # stop container (data volume kept)
+#   provision-local.sh browser up   # start the container Firefox ws server
+#   provision-local.sh browser exports  # print export lines (eval in operator shell)
+#   provision-local.sh browser down # stop container (data volume kept)
 set -eu
 
 PROVISION_DIR="${CAN_PROVISION_DIR:-$HOME/.can-provision}"
 PG_CONTAINER=can-pg17
 MYSQL_CONTAINER=can-mysql84
 MINIO_CONTAINER=can-minio
+FF_CONTAINER=can-ff
 PG_IMAGE='postgres:17@sha256:f4c66b820c6f974249089d3d16d86a3698eae11e8746eb6644b2271031e91232'
 MYSQL_IMAGE='mysql:8.4@sha256:0744ee5ef89ce6ccfa13de3e579fe6b9e27f93dd70da9c06d2c908b1b193fb8d'
 MINIO_IMAGE='quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e'
+FF_IMAGE='mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29369043d81d6d69a815ceb80760f55e85f5020371ad06a4d996f18503ad1c'
 PG_PORT=55433
 MYSQL_PORT=3307
 S3_PORT=9000
 S3_BUCKET_DEFAULT=can-b1-10
+FF_PORT=18783
+# Pinned launchServer entry: serves one Firefox 141 over ws on argv[2] and
+# prints its tokened endpoint. Static text; the port arrives as an argument.
+FF_SERVER_JS='import { firefox } from "playwright";
+const port = Number(process.argv[2]);
+const server = await firefox.launchServer({ port, timeout: 120000 });
+console.log("WS=" + server.wsEndpoint());
+await new Promise(() => {});
+'
 
 need() { command -v "$1" >/dev/null 2>&1 || { echo "missing: $1" >&2; exit 1; }; }
 
@@ -170,7 +185,60 @@ s3_exports() {
 
 s3_down() { docker stop "$MINIO_CONTAINER" >/dev/null 2>&1 || true; echo "s3 stopped"; }
 
-cmd="${1:-}"; sub="${2:-}"; shift 2 2>/dev/null || { echo "usage: $0 {db|s3} {up|down|exports|mkdb}" >&2; exit 1; }
+# browser_setup installs the pinned playwright client and the launchServer
+# entry into the persisted /srv volume exactly once (marker-guarded).
+browser_setup() {
+  if docker exec "$FF_CONTAINER" test -f /srv/.can-ff-ready >/dev/null 2>&1; then return 0; fi
+  docker exec "$FF_CONTAINER" sh -c 'mkdir -p /srv && cd /srv && npm init -y >/dev/null 2>&1 && npm i --save-exact playwright@1.55.1 >/dev/null 2>&1'
+  printf '%s\n' "$FF_SERVER_JS" | docker exec -i "$FF_CONTAINER" sh -c 'cat > /srv/pw-server.mjs'
+  docker exec "$FF_CONTAINER" sh -c 'node --check /srv/pw-server.mjs && touch /srv/.can-ff-ready'
+}
+
+browser_server_running() {
+  docker exec "$FF_CONTAINER" sh -c 'ps -eo args 2>/dev/null | grep -q "[p]w-server.mjs"' >/dev/null 2>&1
+}
+
+browser_up() {
+  need docker; need node
+  CMD_ARGS='sleep infinity'
+  container_up "$FF_CONTAINER" "$FF_IMAGE" "-p 127.0.0.1:${FF_PORT}:${FF_PORT}" \
+    -v can-ff-srv:/srv --restart unless-stopped
+  unset CMD_ARGS
+  browser_setup
+  # The container's main process is sleep; the ws server runs beside it
+  # and needs an explicit (re)start after every fresh container start.
+  if ! browser_server_running; then
+    # shellcheck disable=SC2086
+    docker exec -d "$FF_CONTAINER" sh -c "cd /srv && node pw-server.mjs $FF_PORT > /srv/server.log 2>&1"
+    sleep 2
+  fi
+  for _ in $(seq 1 24); do
+    if docker exec "$FF_CONTAINER" cat /srv/server.log 2>/dev/null | grep -q '^WS=ws://'; then break; fi
+    if ! browser_server_running; then
+      echo "firefox server died; log:" >&2
+      docker exec "$FF_CONTAINER" cat /srv/server.log >&2 || true
+      return 1
+    fi
+    sleep 5
+  done
+  docker exec "$FF_CONTAINER" cat /srv/server.log 2>/dev/null | grep -q '^WS=ws://' \
+    || { echo "firefox server did not publish its endpoint" >&2; return 1; }
+  node -e 'const s=require("node:net").connect(Number(process.argv[1]),"127.0.0.1",()=>{s.end();process.exit(0)});s.on("error",()=>process.exit(1));setTimeout(()=>process.exit(1),10000).unref()' "$FF_PORT" \
+    || { echo "firefox ws port unreachable from the host" >&2; return 1; }
+  echo "browser up: firefox ws 127.0.0.1:$FF_PORT (eval exports for CAN_FIREFOX_WS)"
+}
+
+browser_exports() {
+  need docker
+  ws="$(docker exec "$FF_CONTAINER" cat /srv/server.log 2>/dev/null | grep '^WS=' | tail -n 1 | sed 's/^WS=//; s#://[^:/]*:#://127.0.0.1:#')"
+  if [ -z "$ws" ]; then echo "firefox runner not up (run: provision-local.sh browser up)" >&2; exit 1; fi
+  echo "export CAN_FIREFOX_WS=\"$ws\""
+  echo "# Optional host alias for firefox legs (default when unset): CAN_FIREFOX_HOST_ALIAS=host.docker.internal"
+}
+
+browser_down() { docker stop "$FF_CONTAINER" >/dev/null 2>&1 || true; echo "browser stopped"; }
+
+cmd="${1:-}"; sub="${2:-}"; shift 2 2>/dev/null || { echo "usage: $0 {db|s3|browser} {up|down|exports|mkdb}" >&2; exit 1; }
 case "$cmd/$sub" in
   db/up) db_up ;;
   db/exports) db_exports ;;
@@ -179,5 +247,8 @@ case "$cmd/$sub" in
   s3/up) s3_up ;;
   s3/exports) s3_exports ;;
   s3/down) s3_down ;;
-  *) echo "usage: $0 {db|s3} {up|down|exports|mkdb}" >&2; exit 1 ;;
+  browser/up) browser_up ;;
+  browser/exports) browser_exports ;;
+  browser/down) browser_down ;;
+  *) echo "usage: $0 {db|s3|browser} {up|down|exports|mkdb}" >&2; exit 1 ;;
 esac

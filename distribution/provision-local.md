@@ -1,4 +1,4 @@
-# Local live provisioning (H02 databases, H03 object storage)
+# Local live provisioning (H02 databases, H03 object storage, C01 browser runner)
 
 Operator record for the loopback-bound disposable services on this MacBook Air.
 Credential values never appear here — env names only. Runtime secrets live in
@@ -52,17 +52,58 @@ Notes:
   `bun test runtime/test/s3.test.ts` 19/19 live, including multipart,
   abandon-never-materializes, cancel-on-reader-fail, and timeout legs.
 
+## C01 — container Firefox runner (READY)
+
+Native Firefox is impossible on this macOS 27 box: Firefox 141 launches
+but its juggler pipe never connects (sandbox-extension EPERM plus
+RenderCompositorSWGL framebuffer failure, unaffected by sandbox flags,
+TMPDIR, or headed mode), and Firefox 155 dies instantly because the
+kernel denies creation of exactly `~/Library/Application
+Support/Firefox` (any case; even root; even a fresh user). Chromium and
+WebKit stay native; only Firefox runs in a container.
+
+- Service: Playwright 1.55.1 `firefox.launchServer` serving one Firefox
+  141.0 (build v1490) over a tokened websocket.
+- Image (digest-pinned):
+  `mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29…03ad1c`,
+  native `linux/arm64`, container `can-ff`, loopback
+  `ws://127.0.0.1:18783/<token>`.
+- Credential env: `CAN_FIREFOX_WS` (full ws endpoint including the
+  per-start token; process env only — re-eval `browser exports` after
+  every `browser up`, since each server start mints a fresh token).
+- Optional env: `CAN_FIREFOX_HOST_ALIAS` (container-to-Mac loopback
+  alias the firefox legs use; default `host.docker.internal`).
+- Mechanics: the container's main process is `sleep infinity`; `browser
+  up` starts the container, installs the pinned `playwright@1.55.1`
+  client plus the launchServer entry into the persisted `can-ff-srv`
+  volume exactly once, then ensures the ws server is running and
+  reachable from the host. `--restart unless-stopped` keeps the
+  container across reboots; re-running `up` after a `down` restarts the
+  server (fresh token) and resumes service.
+- Consumers: gate5 firefox legs (`grid`, `conformance`, `empty`,
+  `invoice` on ports 18651–18654) connect via `CAN_FIREFOX_WS` when set
+  and launch natively otherwise (CI macos-15 path). Each leg opens a
+  fresh browser context, so legs stay isolated on the shared server.
+- Validation (2026-09-26): `browser up` idempotent + `down`/`up`
+  restart resumes with a fresh token; ws connect reports Firefox 141.0;
+  container Firefox loads a 127.0.0.1-bound Mac server through the host
+  alias with 200 + title. Gate5 matrix legs land with the C01 harness
+  wiring (see evidence index).
+
 ## Operator runbook
 
 ```sh
 distribution/provision-local.sh db up   # start PG + MySQL, ensure DBs/users
 distribution/provision-local.sh s3 up   # start MinIO, ensure bucket
+distribution/provision-local.sh browser up  # start the container Firefox ws server
 eval "$(distribution/provision-local.sh db exports)"  # operator shell only
 eval "$(distribution/provision-local.sh s3 exports)"  # operator shell only
+eval "$(distribution/provision-local.sh browser exports)"  # operator shell only
 distribution/provision-local.sh db mkdb can_f02_run7        # per-run isolation
 distribution/provision-local.sh db mkdb can_e02_run3 pg     # pg only
 distribution/provision-local.sh db down # stop (volumes kept)
 distribution/provision-local.sh s3 down # stop (volume kept)
+distribution/provision-local.sh browser down # stop (volume kept)
 ```
 
 Containers use `--restart unless-stopped` and named volumes, so provisioned
