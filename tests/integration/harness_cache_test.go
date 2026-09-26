@@ -156,6 +156,9 @@ func TestHeavySlotsBounded(t *testing.T) {
 }
 
 func TestHeavySlotCap(t *testing.T) {
+	// Isolate the default from the ambient environment: a host-tuned
+	// CAN_TEST_HEAVY_SLOTS must not fail the suite that honors it.
+	t.Setenv("CAN_TEST_HEAVY_SLOTS", "")
 	if got := heavySlotCap(); got != 3 {
 		t.Fatalf("default heavy cap %d, want 3", got)
 	}
