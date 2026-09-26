@@ -35,8 +35,8 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | Gate | Experiment | State | Evidence |
 | --- | --- | --- | --- |
 | A06 (Q6) | A04 | pending | — |
-| B03 (Q5) | B01 | pending | — |
-| B04 (Q4) | B02 | pending | — |
+| B03 (Q5) | B01 | INACTIVE | x-r06-1.md parity tables + trip conditions |
+| B04 (Q4) | B02 | INACTIVE | x-r07-1.md burden measures + trip conditions |
 | C05 (X-R02-1) | C04 | pending | — |
 | O2 (X-R04-2) | E05 | pending | — |
 | S3 cancel vs discard (X-R15-1) | E07 | pending | — |
