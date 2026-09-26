@@ -140,7 +140,11 @@ function mapBackedShape(store: Map<string, string>): NativeStorageShape & { deta
 test("native binding: absent storage reads unavailable with no host contact", () => {
   for (const scope of [{}, { localStorage: null }, { localStorage: undefined }, null, 42, "x"]) {
     const adapter = createStorageAdapter(createNativeStorageHost(scope));
-    for (const result of [adapter.localGet("k"), adapter.localSet("k", "v"), adapter.localRemove("k")]) {
+    for (const result of [
+      adapter.localGet("k"),
+      adapter.localSet("k", "v"),
+      adapter.localRemove("k"),
+    ]) {
       expect(result.ok).toBe(false);
       if (!result.ok) expect(result.failure.code).toBe("storage::unavailable");
     }
@@ -165,7 +169,9 @@ test("native binding: throwing scope access fails closed", () => {
 });
 
 test("native binding: partial native shape fails closed", () => {
-  const adapter = createStorageAdapter(createNativeStorageHost({ localStorage: { getItem: () => null } }));
+  const adapter = createStorageAdapter(
+    createNativeStorageHost({ localStorage: { getItem: () => null } }),
+  );
   const got = adapter.localSet("k", "v");
   expect(got.ok).toBe(false);
   if (!got.ok) expect(got.failure.code).toBe("storage::unavailable");
@@ -181,7 +187,9 @@ test("native binding: probe failure fails closed", () => {
 });
 
 test("native binding: well-formed shape roundtrips with receiver preserved", () => {
-  const adapter = createStorageAdapter(createNativeStorageHost({ localStorage: mapBackedShape(new Map()) }));
+  const adapter = createStorageAdapter(
+    createNativeStorageHost({ localStorage: mapBackedShape(new Map()) }),
+  );
   expect(adapter.localSet("theme", "dark")).toEqual({ ok: true, value: null });
   expect(adapter.localGet("theme")).toEqual({ ok: true, value: "dark" });
   expect(adapter.localRemove("theme")).toEqual({ ok: true, value: null });

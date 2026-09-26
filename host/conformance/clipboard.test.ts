@@ -132,7 +132,7 @@ function cellBackedShape(cell: { text: string | null }): NativeClipboardShape {
   };
 }
 
-function nativeScope(shape: unknown, secure: unknown = undefined): unknown {
+function nativeScope(shape: unknown, secure?: unknown): unknown {
   const scope: Record<string, unknown> = { navigator: { clipboard: shape } };
   if (secure !== undefined) scope["isSecureContext"] = secure;
   return scope;
@@ -186,7 +186,9 @@ test("native binding: well-formed shape roundtrips; pre-gate reports prompt", as
 });
 
 test("native binding: empty resolution normalizes to the empty leaf", async () => {
-  const adapter = createClipboardAdapter(createNativeClipboardHost(nativeScope(cellBackedShape({ text: null }))));
+  const adapter = createClipboardAdapter(
+    createNativeClipboardHost(nativeScope(cellBackedShape({ text: null }))),
+  );
   const got = await adapter.readText();
   expect(got.ok).toBe(false);
   if (!got.ok) expect(got.failure.code).toBe("clipboard::empty");

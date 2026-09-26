@@ -212,7 +212,11 @@ export function createNativeStorageHost(scope: unknown): StorageHost {
         : undefined;
     if (candidate === null || candidate === undefined) return closedNativeHost();
     const shape = candidate as Partial<NativeStorageShape>;
-    if (typeof shape.getItem !== "function" || typeof shape.setItem !== "function" || typeof shape.removeItem !== "function") {
+    if (
+      typeof shape.getItem !== "function" ||
+      typeof shape.setItem !== "function" ||
+      typeof shape.removeItem !== "function"
+    ) {
       return closedNativeHost();
     }
     // Probe once: a storage area that throws on contact (revoked access)

@@ -16,8 +16,9 @@
 // D02 deltas: the protocol is `d02.chart/1` (the delivered contract,
 // distinct from the unreviewed `d01.chart/1` prototype wire), the
 // transport is async so the conformance suite proves the boundary over
-// real HTTP, and the select-roundtrip budget below pins the X-R01-1
-// trip wire. Serving/auth/release recipe: `chart-recipe.md`.
+// real HTTP, the select-roundtrip budget below pins the X-R01-1 trip
+// wire, and the client discriminates responses on the `ok` flag (see
+// the roundtrip note). Serving/auth/release recipe: `chart-recipe.md`.
 import {
   credentialValue,
   destinationPolicy,
@@ -250,7 +251,15 @@ export function createChartCompanionClient(init: Readonly<{
       return fail("companion::transport_failed", "companion unreachable");
     }
     const decoded = decodeChartResponse(raw);
-    if ("code" in decoded) return fail(decoded.code as CompanionChartFailureCode, decoded.detail);
+    // D02 delta: discriminate on the envelope flag, not on `code`.
+    // The prototype's `"code" in decoded` check also caught ok:false
+    // envelopes (which carry a code), stranding the sanitizing switch
+    // below as dead, untypeable code and passing unknown server codes
+    // through a blind cast. Codec failures (no `ok` flag at all) fail
+    // directly; ok:false envelopes run through the switch, which maps
+    // every specified server code identically and sanitizes unknown
+    // codes to protocol_error.
+    if (!("ok" in decoded)) return fail(decoded.code, decoded.detail);
     if (decoded.correlation !== init.context.correlation) return fail("companion::protocol_error", "response correlation mismatch");
     if (!decoded.ok) {
       const code = ((): CompanionChartFailureCode => {

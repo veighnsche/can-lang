@@ -93,7 +93,12 @@ test("invalid specs reject client-side without sending", async () => {
       },
     },
   });
-  for (const [title, points] of [["", POINTS], ["t", []], ["t", [{ label: "x", value: NaN }]], [null, POINTS]] as const) {
+  for (const [title, points] of [
+    ["", POINTS],
+    ["t", []],
+    ["t", [{ label: "x", value: NaN }]],
+    [null, POINTS],
+  ] as const) {
     const got = await client.render(title, points);
     expect(got.ok).toBe(false);
     if (!got.ok) expect(got.failure.code).toBe("chart::invalid_spec");
@@ -160,7 +165,8 @@ test("denied destination, bad credential, and offline fail closed", async () => 
     credentialEnv: envName("D02_CHART_COMPANION_TOKEN"),
     readEnvironment: () => "WRONG-VALUE",
     transport: {
-      send: async (url: string, authorization: string, body: Uint8Array) => strict.handle(authorization, body),
+      send: async (url: string, authorization: string, body: Uint8Array) =>
+        strict.handle(authorization, body),
     },
   });
   const wrongResult = await wrong.render("t", POINTS);
@@ -187,8 +193,39 @@ test("denied destination, bad credential, and offline fail closed", async () => 
   }
 });
 
+test("unknown server codes sanitize to protocol_error; known codes pass through", async () => {
+  const readEnvironment = (key: string): string | undefined =>
+    key === "D02_CHART_COMPANION_TOKEN" ? SECRET : undefined;
+  const clientFor = (code: string) =>
+    createChartCompanionClient({
+      policy: chartCompanionPolicy(),
+      endpoint: ENDPOINT,
+      context: chartCompanionContext("corr-2009"),
+      credentialEnv: envName("D02_CHART_COMPANION_TOKEN"),
+      readEnvironment,
+      transport: {
+        send: async () =>
+          encodeChartResponse({
+            v: CHART_PROTOCOL,
+            correlation: "corr-2009",
+            ok: false,
+            code,
+            detail: "server says",
+          }),
+      },
+    });
+  const bogus = await clientFor("chart::bogus").render("t", POINTS);
+  expect(bogus.ok).toBe(false);
+  if (!bogus.ok) expect(bogus.failure.code).toBe("companion::protocol_error");
+  const known = await clientFor("chart::expired").render("t", POINTS);
+  expect(known.ok).toBe(false);
+  if (!known.ok) expect(known.failure.code).toBe("chart::expired");
+});
+
 test("version mismatch fails closed both directions", () => {
-  const request = decodeChartRequest(new TextEncoder().encode(JSON.stringify({ v: "d02.chart/0", op: "render" })));
+  const request = decodeChartRequest(
+    new TextEncoder().encode(JSON.stringify({ v: "d02.chart/0", op: "render" })),
+  );
   expect("code" in request && request.code).toBe("companion::version_mismatch");
   const response = decodeChartResponse(
     new TextEncoder().encode(JSON.stringify({ v: "d02.chart/0", correlation: "c", ok: true })),
@@ -238,7 +275,9 @@ test("envelope bytes are deterministic and measured", () => {
 // the wire legs below. The loopback-allow policy is conformance-only:
 // production serves the pinned https destination with loopback
 // denied (see chart-recipe.md).
-async function serveLoopback(server: ChartCompanionServer): Promise<{ url: string; close(): void }> {
+async function serveLoopback(
+  server: ChartCompanionServer,
+): Promise<{ url: string; close(): void }> {
   const listener = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
@@ -246,7 +285,10 @@ async function serveLoopback(server: ChartCompanionServer): Promise<{ url: strin
       if (request.method !== "POST") return new Response("method not allowed", { status: 405 });
       const body = new Uint8Array(await request.arrayBuffer());
       const out = server.handle(request.headers.get("authorization") ?? undefined, body);
-      return new Response(out as BodyInit, { status: 200, headers: { "content-type": "application/json" } });
+      return new Response(out as BodyInit, {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
     },
   });
   return {
@@ -257,11 +299,23 @@ async function serveLoopback(server: ChartCompanionServer): Promise<{ url: strin
   };
 }
 
-function loopbackClient(url: string, correlation: string, readEnvironment: (key: string) => string | undefined) {
+function loopbackClient(
+  url: string,
+  correlation: string,
+  readEnvironment: (key: string) => string | undefined,
+) {
   const port = Number(new URL(url).port);
   const policy = destinationPolicy({
     version: "2026-09-26.d02-chart-loopback",
-    rules: [{ scheme: "http", host: "127.0.0.1", port, pathPrefix: "/v1/", credential: "D02_CHART_COMPANION_TOKEN" }],
+    rules: [
+      {
+        scheme: "http",
+        host: "127.0.0.1",
+        port,
+        pathPrefix: "/v1/",
+        credential: "D02_CHART_COMPANION_TOKEN",
+      },
+    ],
     redirect: "deny",
     maxRedirectHops: 0,
     loopback: "allow",
@@ -324,7 +378,13 @@ test("loopback HTTP: wrong credential and wrong version fail closed over the wir
     const raw = await fetch(loop.url, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${SECRET}` },
-      body: JSON.stringify({ v: "d02.chart/0", op: "render", tenant: "tenant-acme", pool: "pool-default", correlation: "corr-2103" }),
+      body: JSON.stringify({
+        v: "d02.chart/0",
+        op: "render",
+        tenant: "tenant-acme",
+        pool: "pool-default",
+        correlation: "corr-2103",
+      }),
     });
     expect(raw.status).toBe(200);
     const decoded = decodeChartResponse(new Uint8Array(await raw.arrayBuffer()));
