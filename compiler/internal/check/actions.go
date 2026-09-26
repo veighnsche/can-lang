@@ -34,7 +34,8 @@ type ActionInput struct {
 }
 
 // ActionCase maps one returns leaf declaration to its wire status plus the
-// HTML-only visible swap policy ("inner", or "" for JSON cases).
+// HTML-only visible response mode: "inner" for POST fragment swaps,
+// "document" for GET full-page renders, or "" for JSON cases.
 type ActionCase struct {
 	Leaf   string
 	Status int
@@ -168,7 +169,7 @@ func (c *programChecker) checkAction(file *resolve.File, d *syntax.ActionDecl) (
 	if err != nil {
 		return nil, "", err
 	}
-	if err := checkActionBodyAgreement(d, input.Mode, fail); err != nil {
+	if err := checkActionBodyAgreement(d, input.Mode, len(captures) > 0, fail); err != nil {
 		return nil, "", err
 	}
 	returns, err := c.annotation(file, d.Returns, false)
@@ -182,7 +183,7 @@ func (c *programChecker) checkAction(file *resolve.File, d *syntax.ActionDecl) (
 	if len(leaves) == 0 {
 		return nil, "", fail(d.Returns.TypeSpan(), fmt.Errorf("action returns %s has no finite leaves", types.CanonicalName(returns)))
 	}
-	cases, err := c.checkActionCases(file, d, returns, leaves, fail)
+	cases, err := c.checkActionCases(file, d, method, returns, leaves, fail)
 	if err != nil {
 		return nil, "", err
 	}
@@ -313,14 +314,19 @@ func (c *programChecker) checkActionInput(file *resolve.File, d *syntax.ActionDe
 }
 
 // checkActionBodyAgreement ties each input mode to its response body mode:
-// bodyless GET and JSON POST answer JSON, form POST answers HTML. GET with
-// a wire input is already rejected by the grammar.
-func checkActionBodyAgreement(d *syntax.ActionDecl, mode string, fail func(source.Span, error) error) error {
+// JSON POST answers JSON, form POST answers HTML, and bodyless GET answers
+// JSON or, for a captured read, HTML. GET with a wire input is already
+// rejected by the grammar. Static pages stay on plain routes, so a
+// captureless GET keeps body json.
+func checkActionBodyAgreement(d *syntax.ActionDecl, mode string, captured bool, fail func(source.Span, error) error) error {
 	body := d.Response.Text
 	switch mode {
 	case "none":
-		if body != "json" {
-			return fail(d.Response.Span, fmt.Errorf("GET actions use body json"))
+		if body == "html" && !captured {
+			return fail(d.Response.Span, fmt.Errorf("body html on a GET action requires path captures"))
+		}
+		if body != "json" && body != "html" {
+			return fail(d.Response.Span, fmt.Errorf("unknown action body mode %s", body))
 		}
 	case "json":
 		if body != "json" {
@@ -334,7 +340,7 @@ func checkActionBodyAgreement(d *syntax.ActionDecl, mode string, fail func(sourc
 	return nil
 }
 
-func (c *programChecker) checkActionCases(file *resolve.File, d *syntax.ActionDecl, returns *types.Type, leaves []*types.Type, fail func(source.Span, error) error) ([]ActionCase, error) {
+func (c *programChecker) checkActionCases(file *resolve.File, d *syntax.ActionDecl, method string, returns *types.Type, leaves []*types.Type, fail func(source.Span, error) error) ([]ActionCase, error) {
 	admitted := map[string]bool{}
 	for _, leaf := range leaves {
 		admitted[leaf.Identity()] = true
@@ -365,12 +371,27 @@ func (c *programChecker) checkActionCases(file *resolve.File, d *syntax.ActionDe
 			return nil, fail(kase.Status.Span, fmt.Errorf("action status %d carries no representation; every action case renders a body", status))
 		}
 		swap := ""
-		if kase.Swap != nil {
-			if d.Response.Text != "html" {
+		html := d.Response.Text == "html"
+		switch {
+		case kase.Swap != nil:
+			if !html {
 				return nil, fail(kase.Swap.Span, fmt.Errorf("swap applies to html actions only"))
 			}
+			if method != "POST" {
+				return nil, fail(kase.Swap.Span, fmt.Errorf("swap applies to POST actions only"))
+			}
 			swap = "inner"
-		} else if d.Response.Text == "html" {
+		case kase.Document != nil:
+			if !html {
+				return nil, fail(kase.Document.Span, fmt.Errorf("document applies to html actions only"))
+			}
+			if method != "GET" {
+				return nil, fail(kase.Document.Span, fmt.Errorf("document applies to GET actions only"))
+			}
+			swap = "document"
+		case html && method == "GET":
+			return nil, fail(kase.Span, fmt.Errorf("html action cases require document"))
+		case html:
 			return nil, fail(kase.Span, fmt.Errorf("html action cases require swap inner"))
 		}
 		cases = append(cases, ActionCase{Leaf: typ.Declaration(), Status: status, Swap: swap})

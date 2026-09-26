@@ -149,13 +149,16 @@ func actionShape(action *ActionDeclaration) string {
 		mode = "JSON POST"
 	case action.Method == "POST" && action.Input.Mode == "form":
 		mode = "HTML POST"
+	case action.Method == "GET" && action.Body == "html":
+		mode = "HTML GET"
 	}
 	return mode
 }
 
 // actionMountSite derives the server binding contract: one request-first
 // handler for JSON actions, plus the normal outcome renderer and the
-// structural-rejection renderer for HTML actions. All bound callables are
+// structural-rejection renderer for HTML form actions, or the single
+// document renderer for HTML GET reads. All bound callables are
 // non-generic, non-variadic and emits []; the application maps fallible
 // work into declared leaves. Named callable operands are validated
 // against their exact required shape here so arity, request position,
@@ -167,11 +170,18 @@ func (c *programChecker) actionMountSite(file *resolve.File, scope *resolve.Scop
 		return ir.ActionSite{}, nil, err
 	}
 	html := action.Body == "html"
+	document := html && action.Method == "GET"
 	want := 1
-	if html {
+	switch {
+	case document:
+		want = 2
+	case html:
 		want = 3
 	}
 	if len(rest) != want {
+		if document {
+			return ir.ActionSite{}, nil, &actionOperandError{Index: -1, Err: fmt.Errorf("action::mount for HTML GET action %q takes its handler plus the document renderer", spelling)}
+		}
 		if html {
 			return ir.ActionSite{}, nil, &actionOperandError{Index: -1, Err: fmt.Errorf("action::mount for HTML action %q takes its handler plus the normal and structural renderers", spelling)}
 		}
@@ -197,7 +207,20 @@ func (c *programChecker) actionMountSite(file *resolve.File, scope *resolve.Scop
 		return ir.ActionSite{}, nil, err
 	}
 	contracts := []*types.Type{handler}
-	if html {
+	if document {
+		safe, err := c.catalogueType("html::safe", map[string]*types.Type{})
+		if err != nil {
+			return ir.ActionSite{}, nil, err
+		}
+		render, err := types.CallableOfChecked(safe, []*types.Type{action.Returns}, nil)
+		if err != nil {
+			return ir.ActionSite{}, nil, err
+		}
+		if err := c.checkMountCallable(file, scope, action, spelling, "document renderer", rest[1], render, 2); err != nil {
+			return ir.ActionSite{}, nil, err
+		}
+		contracts = append(contracts, render)
+	} else if html {
 		safe, err := c.catalogueType("html::safe", map[string]*types.Type{})
 		if err != nil {
 			return ir.ActionSite{}, nil, err
@@ -375,7 +398,7 @@ func (c *programChecker) actionURLSite(action *ActionDeclaration, spelling strin
 // action symbol plus its captures record. POST, form and HTML actions
 // are rejected; a GET construction takes no body.
 func (c *programChecker) actionRequestSite(action *ActionDeclaration, spelling string, rest []syntax.Argument) (ir.ActionSite, *types.Type, error) {
-	if action.Method != "GET" || action.Input.Mode != "none" {
+	if action.Method != "GET" || action.Input.Mode != "none" || action.Body != "json" {
 		return ir.ActionSite{}, nil, &actionOperandError{Index: 0, Err: fmt.Errorf("action::request requires a bodyless JSON GET action, but %q is %s", spelling, actionShape(action))}
 	}
 	site, err := c.actionSiteBase(actionRequest, action)

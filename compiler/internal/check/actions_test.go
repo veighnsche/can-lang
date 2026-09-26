@@ -516,13 +516,97 @@ func TestActionRejects(t *testing.T) {
 			strings.Replace(web, "    json invoice_wire limit 8192\n    returns save_outcome\n    body json\n", "    json invoice_wire limit 8192\n    returns save_outcome\n    body html\n", 1),
 			"json input requires body json",
 		},
-		"get html body": {
-			strings.Replace(web, "    input none\n    returns load_outcome\n    body json\n", "    input none\n    returns load_outcome\n    body html\n", 1),
-			"GET actions use body json",
+		"captureless get html body": {
+			actionWebFile("action list_lines\n" +
+				"    get \"/invoices/lines\"\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        found status 200 document\n" +
+				"        missing status 403 document\n" +
+				"        unavailable status 503 document\n"),
+			"body html on a GET action requires path captures",
+		},
+		"get html missing document": {
+			actionWebFile("action read_line\n" +
+				"    get \"/invoices/:invoice_id/lines/:line/page\"\n" +
+				"    captures line_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        found status 200\n" +
+				"        missing status 404 document\n" +
+				"        unavailable status 503 document\n"),
+			"html action cases require document",
+		},
+		"swap on get html": {
+			actionWebFile("action read_line\n" +
+				"    get \"/invoices/:invoice_id/lines/:line/page\"\n" +
+				"    captures line_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        found status 200 document\n" +
+				"        missing status 404 swap inner\n" +
+				"        unavailable status 503 document\n"),
+			"swap applies to POST actions only",
+		},
+		"document on post html": {
+			actionWebFile("record invoice_key\n" +
+				"    str invoice_id\n" +
+				"record line_wire\n" +
+				"    str name\n" +
+				"    str amount\n" +
+				"action append_line\n" +
+				"    post \"/invoices/:invoice_id/lines\"\n" +
+				"    captures invoice_key\n" +
+				"    form line_wire limit 2048\n" +
+				"    returns save_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        saved status 200 swap inner\n" +
+				"        rejected status 422 document\n" +
+				"        stale status 409 swap inner\n" +
+				"        denied status 403 swap inner\n" +
+				"        busy status 503 swap inner\n"),
+			"document applies to GET actions only",
+		},
+		"duplicate document route": {
+			actionWebFile("action read_line\n" +
+				"    get \"/invoices/:invoice_id/lines/:line\"\n" +
+				"    captures line_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        found status 200 document\n" +
+				"        missing status 404 document\n" +
+				"        unavailable status 503 document\n"),
+			"duplicates the GET /invoices/{}/lines/{} route",
+		},
+		"bodiless document status": {
+			actionWebFile("action read_line\n" +
+				"    get \"/invoices/:invoice_id/lines/:line/page\"\n" +
+				"    captures line_key\n" +
+				"    input none\n" +
+				"    returns load_outcome\n" +
+				"    body html\n" +
+				"    cases\n" +
+				"        found status 204 document\n" +
+				"        missing status 404 document\n" +
+				"        unavailable status 503 document\n"),
+			"carries no representation",
 		},
 		"swap on json": {
 			strings.Replace(web, "        saved status 200\n", "        saved status 200 swap inner\n", 1),
 			"swap applies to html actions only",
+		},
+		"document on json": {
+			strings.Replace(web, "        saved status 200\n", "        saved status 200 document\n", 1),
+			"document applies to html actions only",
 		},
 		"returns not a variant": {
 			strings.Replace(web, "    returns save_outcome\n", "    returns saved\n", 1),
