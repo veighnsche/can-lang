@@ -134,6 +134,7 @@ func CheckRegion(context CompletionContext, block syntax.Block) (*ir.Region, err
 	if err != nil {
 		return nil, fmt.Errorf("%s region %s: %w", r.Source, r.ID, err)
 	}
+	proveSelfTail(r)
 	return r, nil
 }
 func (c *regionChecker) identity(name string) string {

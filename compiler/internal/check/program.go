@@ -774,6 +774,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	if err = CheckSQLCallSites(p.SQLs, c.sqlSites, p.SQL); err != nil {
 		return nil, err
 	}
+	noteCyclicRelays(p, c.warn)
 	p.Warnings = c.warnings
 	return p, nil
 }

@@ -24,6 +24,11 @@ type Region struct {
 	Escapes            []*types.Type
 	Inputs             []Local
 	Body               *Block
+	// TailExclusion names the first hazard that kept the region's
+	// self-relays from lowering: a live lease, drain-owned value,
+	// pending timer, deferred completion or fixture table. Empty when
+	// the region lowers or holds no self-relay.
+	TailExclusion string
 }
 type Local struct {
 	Identity string
@@ -99,6 +104,11 @@ type Completion struct {
 	// completion. Empty selects the origin default: forward the already
 	// normalized failure for native keys, forward unchanged for emitted.
 	Inherit string
+	// SelfTail marks a proven self-tail relay: the emitter lowers it to a
+	// loop iteration instead of a nested call. Only the self-tail proof
+	// sets it, and only when the enclosing frame holds no live lease,
+	// drain-owned value, pending timer or deferred completion.
+	SelfTail bool
 }
 type Match struct {
 	Span   source.Span

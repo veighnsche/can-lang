@@ -13,18 +13,27 @@ import (
 // normally, and CLI exit codes stay 0 for warnings-only runs.
 const codeUnnecessaryLocal = "CAN-CHECK-UNNECESSARY-LOCAL"
 
+// Warning severities: advisory lint findings are warnings, lowering and
+// information notes are notes. Both print on the CLI stream and never
+// fail a build; editor bridges map the severity.
+const (
+	SeverityWarning = "warning"
+	SeverityNote    = "note"
+)
+
 // Warning is one advisory check-pipeline finding: a canonical file, 1-based
 // line/column, the pipeline's own code and a short message. Warnings never
-// fail a build; drivers print them and editor bridges map them to warning
-// severity. Positions are resolved at collection time so consumers never
-// need the source bytes.
+// fail a build; drivers print them and editor bridges map the severity.
+// Positions are resolved at collection time so consumers never need the
+// source bytes.
 type Warning struct {
-	Code    string
-	File    string
-	Line    int
-	Column  int
-	Span    source.Span
-	Message string
+	Severity string
+	Code     string
+	File     string
+	Line     int
+	Column   int
+	Span     source.Span
+	Message  string
 }
 
 // Format renders the CLI-identical diagnostic line:
@@ -50,7 +59,7 @@ func (c *regionChecker) unnecessaryLocalWarning(diagnostic *UnnecessaryLocal) {
 	if c.context.File != nil {
 		file = c.context.File.Name()
 	}
-	c.context.Warn(Warning{Code: codeUnnecessaryLocal, File: file, Line: line, Column: column, Span: diagnostic.Span, Message: fmt.Sprintf("accidental alias %s — consider inlining", diagnostic.Name)})
+	c.context.Warn(Warning{Severity: SeverityWarning, Code: codeUnnecessaryLocal, File: file, Line: line, Column: column, Span: diagnostic.Span, Message: fmt.Sprintf("accidental alias %s — consider inlining", diagnostic.Name)})
 }
 
 // collectWarnings appends uniquely and sorts for deterministic reports:

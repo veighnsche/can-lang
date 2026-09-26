@@ -169,11 +169,18 @@ type RegionEmitter struct {
 	expression ExpressionEmitter
 	region     *ir.Region
 	serial     int
+	// loopStep names the iteration counter while a proven self-tail
+	// region lowers; empty selects ordinary origins without a step.
+	loopStep string
 }
 
 func (e *RegionEmitter) temp() string { e.serial++; return fmt.Sprintf("$canRegion%d", e.serial) }
 func (e *RegionEmitter) origin(span source.Span) string {
-	return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.sourceID()), span.Start, span.End, quote(e.region.ID))
+	invocation := quote(e.region.ID)
+	if e.loopStep != "" {
+		invocation += `,"step:"+` + e.loopStep
+	}
+	return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.sourceID()), span.Start, span.End, invocation)
 }
 func (e *RegionEmitter) sourceID() string {
 	if e.SourceID != "" {
@@ -201,7 +208,11 @@ func (e *RegionEmitter) markNode(node *ir.Expression, operation string) string {
 	if node.Source != "" {
 		source = node.Source
 	}
-	origin := fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(source), node.Span.Start, node.Span.End, quote(e.region.ID))
+	invocation := quote(e.region.ID)
+	if e.loopStep != "" {
+		invocation += `,"step:"+` + e.loopStep
+	}
+	origin := fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(source), node.Span.Start, node.Span.End, invocation)
 	return mappingMark(source, node.Span, operation) + "$canOrigin = " + origin + ";\n" + mappingMark(source, node.Span, operation)
 }
 func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error) {
@@ -211,6 +222,14 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	args, err := e.configure(region)
 	if err != nil {
 		return "", err
+	}
+	// Proven self-tail regions lower to a native loop: the step counter
+	// is declared before every origin so failure metadata can name the
+	// iteration, and self relays continue instead of nesting calls.
+	lowered := regionHasSelfTail(region)
+	if lowered {
+		e.loopStep = e.temp()
+		defer func() { e.loopStep = "" }()
 	}
 	body, err := e.block(region.Body)
 	if err != nil {
@@ -222,7 +241,134 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 		prefix = mappingMark(e.SourceID, region.Span, "function") + "let $canOrigin = " + origin + ";\n"
 		origin = "$canOrigin"
 	}
-	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
+	if !lowered {
+		return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
+	}
+	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\nlet %s = 0;\n%stry {\nwhile (true) {\n%s}\n} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), e.loopStep, prefix, body, origin), nil
+}
+
+// regionHasSelfTail reports whether the proof marked any relay in the
+// region tree for loop lowering.
+func regionHasSelfTail(region *ir.Region) bool {
+	found := false
+	var expression func(node *ir.Expression)
+	var invocation func(call *ir.Invocation)
+	var completion func(node *ir.Completion)
+	var match func(node *ir.Match)
+	var coordination func(node *ir.Coordination)
+	expression = func(node *ir.Expression) {
+		if node == nil || found {
+			return
+		}
+		for _, input := range node.Inputs {
+			expression(input)
+		}
+		invocation(node.Invocation)
+		match(node.Match)
+		coordination(node.Coordination)
+	}
+	invocation = func(call *ir.Invocation) {
+		if call == nil || found {
+			return
+		}
+		for i := range call.Steps {
+			step := &call.Steps[i]
+			expression(step.Callee)
+			for _, prepared := range step.Prepare {
+				expression(prepared.Value)
+			}
+			expression(step.Native)
+			for _, argument := range step.Arguments {
+				expression(argument)
+			}
+			if step.Fixtures != nil {
+				for j := range step.Fixtures.Rows {
+					row := &step.Fixtures.Rows[j]
+					for _, prepared := range row.Prepare {
+						expression(prepared.Value)
+					}
+					for _, argument := range row.Arguments {
+						expression(argument)
+					}
+					completion(row.Expected)
+				}
+			}
+		}
+	}
+	completion = func(node *ir.Completion) {
+		if node == nil || found {
+			return
+		}
+		if node.SelfTail {
+			found = true
+			return
+		}
+		expression(node.Value)
+		invocation(node.Call)
+		if node.Block != nil {
+			for _, statement := range node.Block.Steps {
+				expression(statement.Value)
+				invocation(statement.Call)
+				coordination(statement.Coordination)
+			}
+			completion(node.Block.Terminal)
+		}
+		match(node.Match)
+	}
+	match = func(node *ir.Match) {
+		if node == nil || found {
+			return
+		}
+		for _, value := range node.Values {
+			expression(value)
+		}
+		invocation(node.Call)
+		for _, arm := range node.Arms {
+			completion(arm.Body)
+			expression(arm.Value)
+		}
+	}
+	coordination = func(node *ir.Coordination) {
+		if node == nil || found {
+			return
+		}
+		handler := func(outcome *ir.OutcomeHandler) {
+			if outcome == nil {
+				return
+			}
+			for _, arm := range outcome.Arms {
+				completion(arm.Body)
+				expression(arm.Value)
+			}
+			if outcome.Region != nil {
+				if outcome.Region.Body != nil {
+					for _, statement := range outcome.Region.Body.Steps {
+						expression(statement.Value)
+						invocation(statement.Call)
+						coordination(statement.Coordination)
+					}
+					completion(outcome.Region.Body.Terminal)
+				}
+			}
+		}
+		for i := range node.Entries {
+			entry := &node.Entries[i]
+			invocation(entry.Call)
+			expression(entry.Spread)
+			handler(entry.Handler)
+		}
+		handler(node.Aggregate)
+		handler(node.Shared)
+	}
+	if region != nil && region.Body != nil {
+		for _, statement := range region.Body.Steps {
+			expression(statement.Value)
+			invocation(statement.Call)
+			coordination(statement.Coordination)
+		}
+		completion(region.Body.Terminal)
+	}
+	return found
 }
 func (e *RegionEmitter) configure(region *ir.Region) ([]string, error) {
 	e.region = region
@@ -582,6 +728,9 @@ func (e *RegionEmitter) completion(node *ir.Completion) (string, error) {
 		}
 		return value.Statements + e.mark(node.Span, "domain") + "return $canFailure(" + e.DomainRuntime + ".create(" + quote(node.Value.Type.Identity()) + ", " + value.Value + ", " + e.origin(node.Span) + "));\n", nil
 	case ir.RelayCompletion:
+		if node.SelfTail && e.loopStep != "" {
+			return e.selfTailContinue(node)
+		}
 		call, err := e.invocation(node.Call)
 		if err != nil {
 			return "", err
@@ -613,6 +762,53 @@ func (e *RegionEmitter) completion(node *ir.Completion) (string, error) {
 		return "", fmt.Errorf("unknown completion kind")
 	}
 }
+
+// selfTailContinue lowers one proven self relay to a loop iteration:
+// prepared values and arguments evaluate exactly once in order, every
+// parameter moves after all evaluation so swaps see iteration values,
+// and the step counter advances before continuing.
+func (e *RegionEmitter) selfTailContinue(node *ir.Completion) (string, error) {
+	if node.Call == nil || len(node.Call.Steps) != 1 {
+		return "", fmt.Errorf("self-tail relay lost its single call step")
+	}
+	step := node.Call.Steps[0]
+	if len(step.Arguments) != len(e.region.Inputs) {
+		return "", fmt.Errorf("self-tail relay arguments do not match region inputs")
+	}
+	var out strings.Builder
+	out.WriteString(e.mark(step.Span, "call"))
+	for _, prepared := range step.Prepare {
+		value, err := e.expression.Lower(prepared.Value)
+		if err != nil {
+			return "", err
+		}
+		out.WriteString(value.Statements)
+		name := e.temp()
+		e.expression.Bindings[prepared.Local.Identity] = name
+		fmt.Fprintf(&out, "const %s = %s;\n", name, value.Value)
+	}
+	temps := make([]string, len(step.Arguments))
+	for i, argument := range step.Arguments {
+		lowered, err := e.expression.Lower(argument)
+		if err != nil {
+			return "", err
+		}
+		out.WriteString(lowered.Statements)
+		name := e.temp()
+		fmt.Fprintf(&out, "const %s = %s;\n", name, lowered.Value)
+		temps[i] = name
+	}
+	for i, input := range e.region.Inputs {
+		param := e.expression.Bindings[input.Identity]
+		if param == "" {
+			return "", fmt.Errorf("missing self-tail parameter %s", input.Identity)
+		}
+		fmt.Fprintf(&out, "%s = %s;\n", param, temps[i])
+	}
+	fmt.Fprintf(&out, "%s++;\ncontinue;\n", e.loopStep)
+	return out.String(), nil
+}
+
 func (e *RegionEmitter) valueMatch(match *ir.Match) (LoweredExpression, error) {
 	if match == nil || match.ValueResult == nil || match.Call != nil {
 		return LoweredExpression{}, fmt.Errorf("not an ordinary value match")
