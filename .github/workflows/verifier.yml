@@ -77,9 +77,17 @@ jobs:
           go run ./compiler/internal/catalogue/cmd/cataloguegen --check
           go run ./tools/modcheck
           go run ./tools/gramcheck
+      - name: Produce the UP23 browser-guard verdict
+        env:
+          CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+          CAN_UP23_OUT: ${{ runner.temp }}/up23-verdict.json
+        run: |
+          set -o pipefail
+          go test ./tests/integration -run TestUP23WriteVerdict -count=1 -timeout 25m -v
       - name: Test everything with all services operated
         env:
           CAN_BUN_ARCHIVE: ${{ runner.temp }}/bun.zip
+          CAN_UP23_RESULTS: ${{ runner.temp }}/up23-verdict.json
         run: |
           set -o pipefail
           go test -timeout=60m -count=1 -v ./... 2>&1 | tee "$RUNNER_TEMP/development-sidecar-v1.txt"

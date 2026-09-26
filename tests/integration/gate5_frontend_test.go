@@ -890,14 +890,15 @@ type gate5OccurrenceTuple struct {
 }
 
 // gate5InvoiceOccurrences asserts the exact guard-occurrence sequence: the
-// missing-target request/response pair, the control-header and OOB
-// rejections, and the redirect rejection on Chromium.
+// missing-target request/response pair, the control-header, OOB and
+// partial rejections, and the redirect rejection on Chromium.
 func gate5InvoiceOccurrences(t *testing.T, engine string, report gate5Report) {
 	t.Helper()
 	want := []gate5OccurrenceTuple{
 		{"action::missing_target", "request", "none", "target_absent", ""},
 		{"action::missing_target", "response", "uncertain", "", ""},
 		{"action::protocol", "response", "uncertain", "control_header", "redirect"},
+		{"action::protocol", "swap", "uncertain", "task_shape", ""},
 		{"action::protocol", "swap", "uncertain", "task_shape", ""},
 	}
 	if engine == "chromium" {
@@ -1068,7 +1069,7 @@ func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	report := gate5ReadReport(t, "invoice", engine, raw, 19, false)
+	report := gate5ReadReport(t, "invoice", engine, raw, 20, false)
 	gate5InvoiceOccurrences(t, engine, report)
 	gate5Screenshot(t, "invoice", engine, outdir)
 	store := inspectInvoice(t, m.ctx, m.toolchain, t.TempDir(), m.driver, db)
@@ -1077,7 +1078,7 @@ func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
 	gate5RequireReplay(t, "invoice", engine, store, "2", "3", "4", "5")
 	requireInvoice(t, store, "8", "1", "1", "Globex")
 	gate5Evidence(t, outdir, "invoice-"+engine)
-	t.Logf("gate5 invoice %s %s: 19 checks, %d guard occurrences, rev 5 committed with 4 replay rows",
+	t.Logf("gate5 invoice %s %s: 20 checks, %d guard occurrences, rev 5 committed with 4 replay rows",
 		engine, report.Version, len(report.Occurrences))
 }
 

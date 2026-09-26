@@ -411,6 +411,16 @@ try {
       }),
     { kind: "action::protocol", phase: "swap", effect: "uncertain", reason: "task_shape" }
   );
+  await guardFulfill(
+    "partial-rejected",
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "text/html; charset=utf-8",
+        body: '<p>Saved revision 99</p><template hx type="partial" hx-target="#other"><p>partial intruder</p></template>',
+      }),
+    { kind: "action::protocol", phase: "swap", effect: "uncertain", reason: "task_shape" }
+  );
   await check("redirect-rejected", async () => {
     // A followed redirect needs a same-origin 3xx. The server
     // correctly emits none, and only Chromium's interception can
