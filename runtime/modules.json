@@ -141,7 +141,9 @@
       "./body.ts",
       "./owned.ts",
       "./request.ts",
-      "../assert/provider.ts"
+      "../assert/provider.ts",
+      "./request-scope.ts",
+      "./request-budget.ts"
     ],
     "transport/http.ts": [
       "../completion.ts",
@@ -160,6 +162,20 @@
       "../outbound/identity.ts"
     ],
     "outbound/identity.ts": [],
+    "outbound/destination-policy.ts": [],
+    "outbound/epoch.ts": [
+      "./identity.ts"
+    ],
+    "outbound/file-ledger.ts": [
+      "node:fs/promises",
+      "node:path",
+      "./ledger.ts"
+    ],
+    "outbound/ledger-schema.ts": [],
+    "outbound/ledger.ts": [
+      "./epoch.ts",
+      "./identity.ts"
+    ],
     "codec/document.ts": [
       "../bytes.ts",
       "./budget.ts",
@@ -281,6 +297,15 @@
       "../data.ts",
       "../domain.ts"
     ],
+    "transport/operation-budget.ts": [
+      "./request-budget.ts"
+    ],
+    "transport/request-budget.ts": [],
+    "transport/request-scope.ts": [
+      "node:async_hooks",
+      "./operation-budget.ts",
+      "./request-budget.ts"
+    ],
     "ai/questions.ts": [
       "../completion.ts",
       "../data.ts",
@@ -301,6 +326,16 @@
       "../assert/provider.ts",
       "../transport/http.ts",
       "../transport/request.ts"
+    ],
+    "ai/budget.ts": [
+      "../data.ts",
+      "../bytes.ts",
+      "../codec/document.ts",
+      "../completion.ts",
+      "../domain.ts",
+      "../failure.ts",
+      "../outbound/identity.ts",
+      "../outbound/ledger.ts"
     ],
     "platform/io.ts": [
       "node:util",
@@ -499,7 +534,9 @@
       "./http.ts",
       "./action-routes.ts",
       "./router.ts",
-      "../transport/request-report.ts"
+      "../transport/request-report.ts",
+      "../transport/operation-budget.ts",
+      "../transport/request-budget.ts"
     ],
     "platform/action-client.ts": [
       "../completion.ts",
@@ -585,7 +622,10 @@
       "./postgres.ts",
       "./sqlite.ts",
       "./config.ts",
-      "./mysql.ts"
+      "./mysql.ts",
+      "../../transport/operation-budget.ts",
+      "../../transport/request-scope.ts",
+      "../../transport/request-budget.ts"
     ],
     "platform/sql/mysql.ts": [
       "../../completion.ts",
@@ -609,7 +649,9 @@
       "./postgres.ts",
       "./sqlite.ts",
       "./values.ts",
-      "./mysql.ts"
+      "./mysql.ts",
+      "../../transport/operation-budget.ts",
+      "../../transport/request-scope.ts"
     ],
     "platform/sql/values.ts": [
       "../../completion.ts",
