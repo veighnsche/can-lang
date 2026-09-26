@@ -9,13 +9,17 @@
 // --policy is a C-G destination policy (see runtime/outbound/
 // destination-policy.ts and the shipped companion-policy.json
 // fixture). --once runs a single batch and exits; otherwise the
-// supervised worker loops until SIGTERM/SIGINT.
+// supervised worker loops until SIGTERM/SIGINT. Tuning flags
+// (--lease-ms/--concurrency/--max-batch/--backoff-base-ms/
+// --backoff-max-ms/--idle-ms/--timeout-ms) override the worker
+// defaults; see args.ts.
 //
 // Secrets arrive via environment only: CARRIER_SECRET authenticates
 // the Can side, and per-rule downstream credentials resolve from
 // their bound variables at send time. Nothing secret is logged:
 // batch reports print as JSON lines on stdout, diagnostics on stderr.
 import { destinationPolicy } from "../../../runtime/outbound/destination-policy.ts";
+import { parseCompanionArgs, usage, type CompanionArgs } from "./args.ts";
 import { CarrierHttp, CarrierTransportError, type CarrierTransport } from "./protocol.ts";
 import {
   defaultWorkerOptions,
@@ -25,16 +29,6 @@ import {
   type WorkerOptions,
 } from "./worker.ts";
 import { defaultSupervisorOptions, runSupervised } from "./supervisor.ts";
-
-function usage(): string {
-  return "usage: main.ts --base <url> --worker <id> --config <path> --policy <path> [--once]";
-}
-
-function flag(args: readonly string[], name: string): string | undefined {
-  const index = args.indexOf(name);
-  if (index < 0 || index + 1 >= args.length) return undefined;
-  return args[index + 1];
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -82,17 +76,11 @@ function httpTransport(baseUrl: string): CarrierTransport {
 }
 
 async function main(args: readonly string[]): Promise<number> {
-  const baseUrl = flag(args, "--base");
-  const workerId = flag(args, "--worker");
-  const configPath = flag(args, "--config");
-  const policyPath = flag(args, "--policy");
-  const once = args.includes("--once");
-  if (
-    baseUrl === undefined ||
-    workerId === undefined ||
-    configPath === undefined ||
-    policyPath === undefined
-  ) {
+  let parsed: CompanionArgs;
+  try {
+    parsed = parseCompanionArgs(args);
+  } catch (cause) {
+    console.error(`main.ts: ${cause instanceof Error ? cause.message : String(cause)}`);
     console.error(usage());
     return 2;
   }
@@ -104,27 +92,13 @@ async function main(args: readonly string[]): Promise<number> {
   let deliveries: Record<string, string>;
   let policy: ReturnType<typeof destinationPolicy>;
   try {
-    deliveries = await loadDeliveries(configPath);
-    policy = destinationPolicy(JSON.parse(await Bun.file(policyPath).text()));
+    deliveries = await loadDeliveries(parsed.configPath);
+    policy = destinationPolicy(JSON.parse(await Bun.file(parsed.policyPath).text()));
   } catch (cause) {
     console.error(`main.ts: ${cause instanceof Error ? cause.message : String(cause)}`);
     return 2;
   }
-  if (workerId.length < 1 || workerId.length > 128) {
-    console.error("main.ts: worker id must be 1..128 characters");
-    return 2;
-  }
-  let base: URL;
-  try {
-    base = new URL(baseUrl);
-  } catch {
-    console.error("main.ts: base is not a URL");
-    return 2;
-  }
-  if (base.protocol !== "http:" && base.protocol !== "https:") {
-    console.error("main.ts: base must be http(s)");
-    return 2;
-  }
+  const base = new URL(parsed.baseUrl);
   const controller = new AbortController();
   const stop = (): void => controller.abort();
   process.on("SIGTERM", stop);
@@ -132,8 +106,15 @@ async function main(args: readonly string[]): Promise<number> {
   const report = (seen: BatchReport): void => console.log(JSON.stringify(seen));
   const options: WorkerOptions = defaultWorkerOptions({
     baseUrl: base.href,
-    workerId,
+    workerId: parsed.workerId,
     secret,
+    leaseMs: parsed.leaseMs,
+    concurrency: parsed.concurrency,
+    maxBatch: parsed.maxBatch,
+    backoffBaseMs: parsed.backoffBaseMs,
+    backoffMaxMs: parsed.backoffMaxMs,
+    idleMs: parsed.idleMs,
+    downstreamTimeoutMs: parsed.downstreamTimeoutMs,
     deliveries,
     policy,
     readEnvironment: (key: string) => process.env[key],
@@ -162,7 +143,7 @@ async function main(args: readonly string[]): Promise<number> {
     },
   });
   try {
-    if (once) {
+    if (parsed.once) {
       report(await runBatch(options));
       return 0;
     }

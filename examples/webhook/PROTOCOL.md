@@ -140,6 +140,10 @@ sit beside the carrier endpoints; see `README.md`.
   container restart policy): unacked rows expire and redeliver
   with no Can-side recovery beyond idempotency. SIGTERM/SIGINT
   drains between batches and exits 0.
+- Tuning: `--lease-ms`/`--concurrency`/`--max-batch`/
+  `--backoff-base-ms`/`--backoff-max-ms`/`--idle-ms`/`--timeout-ms`
+  override the defaults above (lease stays inside 1000..600000);
+  `--once` runs one batch. Unknown flags exit 2 before any I/O.
 
 Config files (operator-owned, secrets never inside):
 

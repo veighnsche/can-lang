@@ -60,6 +60,11 @@ CARRIER_SECRET='...' bun examples/webhook/companion/main.ts \
   --config deliveries.json --policy policy.json
 ```
 
+Tuning flags (`--lease-ms`, `--concurrency`, `--max-batch`,
+`--backoff-base-ms`, `--backoff-max-ms`, `--idle-ms`, `--timeout-ms`,
+plus `--once` for a single batch) override the worker defaults
+without editing code; unknown flags exit 2. See `companion/args.ts`.
+
 `bun test examples/webhook/companion/` runs the companion unit suite
 (34 tests against a verifying stub Can).
 
