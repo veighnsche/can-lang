@@ -121,3 +121,18 @@ E01 claims exactly: §§1–4 implemented and tested; §§5–6 contracts
 published with markers but no adapter wiring; §§7–9 explicitly not
 implemented. Any native interruption, operand, propagation, or
 escalation-mechanism claim before E02/E04/E06 lands is out of contract.
+
+## E02 qualification outcome (X-R04-1 / X-R04-3)
+
+Evidence: `evidence/2026-09-26/e02-x-r04-1-3.md`; probes
+`runtime/test/sql-cancel.test.ts`, `runtime/test/ingress-disconnect.test.ts`.
+
+- SQL cancel (§7 line 1): NEGATIVE on all dialects. Pinned
+  `Query.cancel()` flips a client flag only — live PG/MySQL backends
+  keep executing to completion, SQLite is synchronous, and cancelling
+  before execution leaves the await unsettled. No caller operand maps
+  to it; SQL takes the cancel-absent branch (§5) in E04/E09.
+- Ingress disconnect (§7 line 2): POSITIVE. Pinned `Bun.serve`
+  projects peer disconnect as serve-side `Request.signal` abort for
+  buffered and streaming handlers alike; the handler itself is not
+  terminated. E04 may map observation-only disconnect response to it.
