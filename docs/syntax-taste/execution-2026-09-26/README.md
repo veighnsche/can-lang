@@ -73,8 +73,9 @@ All other tasks: blocked on prerequisites per the task-list graph.
 - 2026-09-26 ~19:47: lane-c-c04 wrote outside its isolated worktree,
   creating untracked `shared/grid-controls/` (controls scaffold) in the
   main checkout. Worker messaged to stop, justify-or-abandon, and confirm
-  no other out-of-tree writes. Dir left untouched pending reply; it is
-  NOT part of any integration until resolved.
+  no other out-of-tree writes. ~20:05: worker self-removed the dir
+  (tree verified clean, no other strays); C04 stays in progress in
+  isolation.
 
 ## Rules in force
 
