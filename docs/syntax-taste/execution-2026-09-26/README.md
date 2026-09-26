@@ -49,7 +49,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E02 | done | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | worker `a1b4e8e0` → main `2bf35a4c` | 11/11 live, check green; X-R04-1 NEG, X-R04-3 POS |
 | E04 | in progress, slice 1 integrated | lane-e-e04-retry (`23`; `19` failed clean) | isolated | E01, E02 | adapters→F/C06; contract→E09 | `3bd4f69f`→`8318712b` (partial) | 23/23, check green; Jev 3x exemplary |
 | F02 | done | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | worker `ccfb1b22` → main `d3e51ded` | live PG+MySQL legs pass |
-| F03 | in progress (wave 9) | lane-f-f03 (`24`) | isolated | F02 | C-F contracts→F04/E | — | — |
+| F03 | done | lane-f-f03 (`24`) | isolated | F02 | C-F contracts→F04/E | worker `4e500d8` → main `bf83f0aa` | sql pkg + live PG/MySQL pass |
+| F04 | in progress (wave 11) | lane-f-f04 (`29`) | isolated | F01, F03 | backend qual→H08 | — | — |
 | E07 | in progress (wave 5) | lane-e-e07 (`18`) | isolated | H03, E01 | branch verdicts→E08 | — | — |
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
 | G02 | done | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | worker `e8b10707` → main `0d23fada` | go test compiler+driver ok |

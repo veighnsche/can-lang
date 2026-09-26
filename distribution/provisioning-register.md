@@ -27,7 +27,9 @@ the row when evidence lands. No IDs are recorded yet.
   Native `linux/arm64`, loopback `127.0.0.1:55433`, container `can-pg17`.
 - Credential env names: `CAN_TEST_POSTGRES_URL` (per-database URL).
 - Assigned resources: one server; databases `can_e02`, `can_f02`,
-  `can_f04`, `can_f06` plus per-run `can_<lane>_run<k>` via `db mkdb`.
+  `can_f03` (added by coordinator 2026-09-26: F03's documented lane DB,
+  missed in H02's initial set), `can_f04`, `can_f06` plus per-run
+  `can_<lane>_run<k>` via `db mkdb`.
 - Evidence IDs: `EV-H02-001` (psql version-pin + isolation roundtrip).
 - Capacity: one server, separate databases per lane/run.
 
