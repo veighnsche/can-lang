@@ -16,7 +16,7 @@ type CollectionSpecialization struct {
 
 func collectionOperation(identity string) *catalogue.Operation {
 	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Identity == identity && op.Lowering.Task == "I25" {
+		if op.Identity == identity && (op.Lowering.Task == "I25" || op.Lowering.Task == "A05") {
 			return &op
 		}
 	}

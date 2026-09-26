@@ -58,6 +58,58 @@ func TestCollectionKindSelectsBulkBuilders(t *testing.T) {
 	}
 }
 
+// A07: the A05 bulk builders resolve from Can source with explicit type
+// arguments and specialize to collection contracts carrying the declared
+// result and failure types.
+func TestBulkBuildersResolveFromSource(t *testing.T) {
+	text := strings.Replace(programHeader, "uses []", "uses [collections]", 1) + `fn collections::entry<int,str>[] built
+    emits [collections::key_exists]
+    asserts
+        sample: => ok [collections::entry<int,str>(1, "a")]
+    collections::entry<int,str>[] rows = [collections::entry<int,str>(1, "a")]
+    match call collections::build_map<int,str>(rows)
+        collections::key_exists
+        ok collections::map<int,str> made => ok call collections::entries(made)
+fn bool grouped
+    emits []
+    asserts
+        sample: => ok true
+    match call collections::build_set<int>([3, 2, 3])
+        ok collections::set<int> made => ok call collections::contains(made, 2)
+` + programMain + "    ok\n"
+	program, err := programFixture(t, map[string]string{"src/main.can": text})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := map[string]bool{}
+	for _, special := range program.Collections {
+		seen[special.Operation] = true
+		switch special.Operation {
+		case "can.std.collections@1::build_map":
+			args := special.Collection.Arguments()
+			if special.Collection.Declaration() != "can.std.collections@1::map" || len(args) != 2 || args[0].Declaration() != "int" || args[1].Declaration() != "str" {
+				t.Fatalf("build_map collection: %s %+v", special.Collection.Declaration(), args)
+			}
+			if len(special.Contract.Errors()) != 1 || special.Contract.Errors()[0].Declaration() != "can.std.collections@1::key_exists" {
+				t.Fatalf("build_map errors: %+v", special.Contract.Errors())
+			}
+		case "can.std.collections@1::build_set":
+			args := special.Collection.Arguments()
+			if special.Collection.Declaration() != "can.std.collections@1::set" || len(args) != 1 || args[0].Declaration() != "int" {
+				t.Fatalf("build_set collection: %s %+v", special.Collection.Declaration(), args)
+			}
+			if len(special.Contract.Errors()) != 0 {
+				t.Fatalf("build_set errors: %+v", special.Contract.Errors())
+			}
+		}
+	}
+	for _, want := range []string{"can.std.collections@1::build_map", "can.std.collections@1::build_set"} {
+		if !seen[want] {
+			t.Fatalf("missing specialization %s in %+v", want, program.Collections)
+		}
+	}
+}
+
 func TestCollectionsRejectInvalidContracts(t *testing.T) {
 	source, err := os.ReadFile("../../../std/map/current/src/main.can")
 	if err != nil {
