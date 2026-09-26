@@ -17,45 +17,57 @@ the row when evidence lands. No IDs are recorded yet.
 
 ## DB-PG — live PostgreSQL
 
-- Status: **BLOCKED** — no live instance provisioned for this program yet.
+- Status: **READY** (H02, 2026-09-26; operator record
+  [provision-local.md](provision-local.md)).
 - Owner: H (provisioning task H02).
 - Consumers: E02, F02, F04, F06 (each uses an isolated database; no
   shared mutable tables).
-- Pins: PostgreSQL 17 (observed pin `17.11 (Debian 17.11-1.pgdg13+2)`;
-  H02 re-pins the provisioned instance).
+- Pins: `postgres:17@sha256:f4c66b…91232`, observed `17.11
+  (Debian 17.11-1.pgdg13+2)` aarch64 — exact match.
+  Native `linux/arm64`, loopback `127.0.0.1:55433`, container `can-pg17`.
 - Credential env names: `CAN_TEST_POSTGRES_URL` (per-database URL).
-- Assigned resources: none yet. H02 assigns one server plus a unique
-  database per consumer run.
-- Evidence IDs: none recorded.
+- Assigned resources: one server; databases `can_e02`, `can_f02`,
+  `can_f04`, `can_f06` plus per-run `can_<lane>_run<k>` via `db mkdb`.
+- Evidence IDs: `EV-H02-001` (psql version-pin + isolation roundtrip).
 - Capacity: one server, separate databases per lane/run.
 
 ## DB-MySQL — live MySQL
 
-- Status: **BLOCKED** — no live instance provisioned for this program yet.
+- Status: **READY** (H02, 2026-09-26; operator record
+  [provision-local.md](provision-local.md)).
 - Owner: H (provisioning task H02).
 - Consumers: F02, F04, F06 (MySQL parity legs).
-- Pins: MySQL 8.4 service (errno map observed; H02 re-pins the
-  provisioned instance). SQLite remains included and needs no
-  provisioning.
-- Credential env names: `CAN_TEST_MYSQL_URL` (per-database URL).
-- Assigned resources: none yet. H02 assigns an instance plus isolated
-  namespaces per consumer run.
-- Evidence IDs: none recorded.
+- Pins: `mysql:8.4@sha256:0744…93fb8d`, observed `8.4.11`.
+  Native `linux/arm64`, loopback `127.0.0.1:3307`, container `can-mysql84`.
+  SQLite remains included and needs no provisioning.
+- Credential env names: `CAN_TEST_MYSQL_URL` (per-database URL);
+  `CAN_TEST_MYSQL_CONTAINER` (kill/restart legs).
+- Assigned resources: one service; namespaces `can_b1_03` (fixed live
+  harness shape), `can_f02`, `can_f04`, `can_f06`, plus per-run via
+  `db mkdb`.
+- Evidence IDs: `EV-H02-002` (`mysql.test.ts` 12/12, `mysql-tx.test.ts`
+  5/5 incl. kill/restart leg).
 - Capacity: one service, isolated namespaces per lane/run.
 
 ## S3 — disposable object storage
 
-- Status: **BLOCKED** — no bucket or credentials provisioned yet.
+- Status: **READY, S3-protocol scope** (H03, 2026-09-26; operator
+  record [provision-local.md](provision-local.md)).
 - Owner: H (provisioning task H03).
 - Consumers: E07, E09 (exclusive owners of run keys and the
   qualification harness).
-- Pins: S3-compatible service; H03 records the selected endpoint.
+- Pins: MinIO `RELEASE.2025-09-07T16-13-09Z`
+  (`quay.io/minio/minio@sha256:14ce…bd8936e`), container `can-minio`,
+  endpoint `http://127.0.0.1:9000`, region `us-east-1`. Real
+  S3-wire-protocol server, not AWS S3: qualification covers S3-protocol
+  behavior; an AWS-real leg would need a user-supplied bucket (no
+  standing ask: none specified).
 - Credential env names: `CAN_TEST_S3_ENDPOINT`, `CAN_TEST_S3_REGION`,
   `CAN_TEST_S3_BUCKET`, `CAN_TEST_S3_ACCESS_KEY`,
   `CAN_TEST_S3_SECRET_KEY`.
-- Assigned resources: none yet. H03 assigns one isolated bucket plus a
-  unique key prefix per run; never the same key across concurrent runs.
-- Evidence IDs: none recorded.
+- Assigned resources: isolated bucket `can-b1-10`; per-run prefixes
+  owned by the E harness; never the same key across concurrent runs.
+- Evidence IDs: `EV-H03-001` (SigV4 roundtrip; `s3.test.ts` 19/19 live).
 - Capacity: one bucket; per-run prefixes. Local fakes cannot close the
   S3 gate.
 
@@ -78,6 +90,7 @@ the row when evidence lands. No IDs are recorded yet.
 ## AI-CAP — capped AI evaluation access
 
 - Status: **BLOCKED** — no provider credentials and no spend approval yet.
+  Exact ask recorded in [ai-eval-access.md](ai-eval-access.md).
 - Owner: H (provisioning task H04).
 - Consumers: H08 (live evaluation gate; H04 spend caps stay separate
   from the H07 tenant token budget).
@@ -93,6 +106,7 @@ the row when evidence lands. No IDs are recorded yet.
 ## X86-WINDOW — native x86 UP25 access
 
 - Status: **BLOCKED** — no machine access or exclusive window arranged yet.
+  Exact ask recorded in [x86-window.md](x86-window.md).
 - Owner: H (provisioning task H05).
 - Consumers: H12 (native x86 UP25 qualification).
 - Pins: Debian 13+ amd64/glibc host; target
@@ -113,9 +127,9 @@ the row when evidence lands. No IDs are recorded yet.
 
 | Provision | Status  | Unblocking task |
 |-----------|---------|-----------------|
-| DB-PG     | BLOCKED | H02             |
-| DB-MySQL  | BLOCKED | H02             |
-| S3        | BLOCKED | H03             |
+| DB-PG     | READY   | H02 (done)      |
+| DB-MySQL  | READY   | H02 (done)      |
+| S3        | READY*  | H03 (done; S3-protocol scope) |
 | BROWSERS  | PARTIAL | C01 (Firefox)   |
 | AI-CAP    | BLOCKED | H04             |
 | X86-WINDOW| BLOCKED | H05             |

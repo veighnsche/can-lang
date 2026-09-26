@@ -19,7 +19,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 
 | Task | State | Agent | Worktree/branch | Prereqs | Handoff | Commits | Checks |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| A01 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | formatter→C, warnings→G01 | — | — |
+| A01 | done | lane-a-a01-a05 (`6`) | isolated | none | formatter→C, warnings→G01 | worker `adf94696` → main `19e45019` | go test 4 pkgs ok, gofmt clean |
 | A02 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bindings→G03/G05 | — | — |
 | A03 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | — | — |
 | A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
@@ -28,16 +28,20 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | B02 | in progress (wave 1) | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | — | — |
 | C07 | done | lane-c-c07 (`8`) | isolated | none | evidence→H14 | worker `e0474712` → main `6fe2bc46` | canlc assert 344/344, exit 0 |
 | E01 | done | lane-e-e01-e03 (`9`) | isolated | none | C-C→F01/F05/C; hooks→E02/E04/E06 | worker `6e9914f6` → main `2224e1b4` | bun test 6/6, check:runtime green |
-| E03 | in progress (wave 1) | lane-e-e01-e03 (`9`) | isolated | none | runtime→C03 | — | — |
+| E03 | done | lane-e-e01-e03 (`9`) | isolated | none | runtime→C03 | worker `5c51a96d` → main `db6d42b1` | bun test 44/44 (4 files), check green |
 | H01 | done | lane-h-h01-h09 (`10`) | isolated | none | gates→H02/H03/H04/H05/C01 | worker `f197c925` → main `3c672e77` | register reviewed, env-names-only |
 | H09 | done | lane-h-h01-h09 (`10`) | isolated | none | docs→H14 | worker `d69be330` → main `58060191` | link targets verified present |
 
 | C01 | in progress (wave 2) | lane-c-c01 (`11`) | isolated | H01 | runners→C02/C06/H13 | — | — |
-| H02 | in progress (wave 2) | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | — | — |
-| H03 | in progress (wave 2) | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | — | — |
-| H04 | in progress (wave 2) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | — | — |
-| H05 | in progress (wave 2) | lane-h-h02-h05 (`12`) | isolated | H01 | x86→H12 | — | — |
+| H02 | done | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | worker `9482ff01` → main `2a880eee` | PG 17.11 + DBs verified; mysql 12/12+5/5 |
+| H03 | done | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | worker `9482ff01` → main `2a880eee` | MinIO live verified; s3.test 19/19 (S3-protocol scope) |
+| H04 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | worker `f9a0acdf` → main `2d784b31` | exact creds + spend-cap ask recorded; gate stays blocked |
+| H05 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | x86→H12 | worker `494be3de` → main `21991bb3` | exact machine + window ask recorded; UP25 stays blocked |
 | F01 | in progress (wave 3) | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | — | — |
+| E02 | ready (H02 done) | — | — | H02 | verdicts→E04/F02/W5 | — | — |
+| F02 | ready (H02 done) | — | — | H02 | locking/RETURNING→F03 | — | — |
+| E07 | ready (H03+E01 done) | — | — | H03, E01 | branch verdicts→E08 | — | — |
+| G01 | ready (A01 done) | — | — | A01 | formatting→G02/authors | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
