@@ -1,0 +1,36 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "propagation": {
+      "type": "choice",
+      "choice": "ambient_scope",
+      "confidence": 1.0,
+      "probabilities": {
+        "outer_race": 0.0,
+        "ambient_scope": 1.0
+      }
+    },
+    "sql_failure": {
+      "type": "choice",
+      "choice": "reuse_query_failed",
+      "confidence": 0.75,
+      "probabilities": {
+        "reuse_query_failed": 0.88,
+        "new_failure": 0.12
+      }
+    },
+    "stall_status": {
+      "type": "choice",
+      "choice": "status_408",
+      "confidence": 0.87,
+      "probabilities": {
+        "status_400": 0.06,
+        "status_408": 0.94
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1095,
+    "output_tokens": 112
+  }
+}
