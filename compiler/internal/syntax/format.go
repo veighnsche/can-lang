@@ -98,7 +98,15 @@ func FormatExpression(expression Expr) string {
 		}
 		return out
 	case *ReferenceExpr:
-		return "callable " + FormatExpression(n.Callee) + formatTypeArguments(n.Types)
+		out := "callable " + FormatExpression(n.Callee) + formatTypeArguments(n.Types)
+		if len(n.Bindings) != 0 {
+			pairs := make([]string, len(n.Bindings))
+			for i, binding := range n.Bindings {
+				pairs[i] = binding.Name.Text + " = " + FormatExpression(binding.Value)
+			}
+			out += " with " + strings.Join(pairs, ", ")
+		}
+		return out
 	case *ScopeExpr:
 		return "scope"
 	case *UpdateExpr:

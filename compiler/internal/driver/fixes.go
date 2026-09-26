@@ -343,6 +343,9 @@ func collectExprRows(text string, expr syntax.Expr, out *[]string) {
 		}
 	case *syntax.ReferenceExpr:
 		collectExprRows(text, e.Callee, out)
+		for _, pinned := range e.Bindings {
+			collectExprRows(text, pinned.Value, out)
+		}
 	case *syntax.UpdateExpr:
 		collectExprRows(text, e.Receiver, out)
 		for _, field := range e.Fields {
@@ -500,7 +503,12 @@ func ownershipExpr(expr syntax.Expr) (relay, inherit int) {
 			}
 		}
 	case *syntax.ReferenceExpr:
-		return ownershipExpr(e.Callee)
+		relay, inherit := ownershipExpr(e.Callee)
+		for _, pinned := range e.Bindings {
+			r, h := ownershipExpr(pinned.Value)
+			relay, inherit = relay+r, inherit+h
+		}
+		return relay, inherit
 	case *syntax.UpdateExpr:
 		r, h := ownershipExpr(e.Receiver)
 		relay, inherit = r, h

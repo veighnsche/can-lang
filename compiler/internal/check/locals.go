@@ -266,6 +266,9 @@ func countLocalUses(block syntax.Block, evidence LocalUses, target string) (int,
 				}
 			}
 			children = []syntax.Expr{n.Callee}
+			for _, pinned := range n.Bindings {
+				children = append(children, pinned.Value)
+			}
 		case *syntax.MatchExpr:
 			return match(n.Match)
 		case *syntax.CoordinationExpr:

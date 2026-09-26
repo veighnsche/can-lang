@@ -331,6 +331,9 @@ func (c *regionChecker) arrayContract(name, site string, receiver *types.Type, a
 }
 
 func (c *regionChecker) arrayReference(n *syntax.ReferenceExpr, name string, receiver *ir.Expression, expected *types.Type, hints []callbackHint) (*ir.Expression, error) {
+	if len(n.Bindings) != 0 {
+		return nil, c.locateCode(n.Bindings[0].Name.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("array operation %s declares no near inputs for with bindings", name))
+	}
 	var inputs []*types.Type
 	if expected != nil && expected.Kind() == types.Callable {
 		inputs = expected.Inputs()

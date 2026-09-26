@@ -121,6 +121,40 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 	if err != nil {
 		return nil, err
 	}
+	// Q3: explicit with bindings pin listed near-inputs by callee parameter
+	// name. Unknown names, duplicates, non-near names and mistyped values
+	// are located CAN-CHECK-CAPTURE errors; unlisted near-inputs keep the
+	// existing name lookup below.
+	explicit := map[int]*ir.Expression{}
+	if len(n.Bindings) != 0 {
+		slot := map[string]int{}
+		for i, name := range declaration.Names {
+			slot[name] = i
+		}
+		seen := map[string]bool{}
+		for _, pinned := range n.Bindings {
+			if seen[pinned.Name.Text] {
+				return nil, c.locateCode(pinned.Name.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("duplicate with binding %s of %s", pinned.Name.Text, binding.Identity))
+			}
+			seen[pinned.Name.Text] = true
+			i, ok := slot[pinned.Name.Text]
+			if !ok {
+				return nil, c.locateCode(pinned.Name.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("unknown with binding %s of %s", pinned.Name.Text, binding.Identity))
+			}
+			if !declaration.Near[i] {
+				return nil, c.locateCode(pinned.Name.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("with binding %s of %s is not a near input", pinned.Name.Text, binding.Identity))
+			}
+			checked, err := e.Check(pinned.Value, binding.Type.Inputs()[i])
+			if err != nil {
+				err = stampCode(err, "CAN-CHECK-CAPTURE")
+				return nil, c.locateCode(pinned.Value.ExprSpan(), "CAN-CHECK-CAPTURE", fmt.Errorf("with binding %s of %s: %w", pinned.Name.Text, binding.Identity, err))
+			}
+			if !types.Equal(checked.Type, binding.Type.Inputs()[i]) {
+				return nil, c.locateCode(pinned.Value.ExprSpan(), "CAN-CHECK-CAPTURE", fmt.Errorf("with binding %s of %s requires exact declared type %s", pinned.Name.Text, binding.Identity, displayType(binding.Type.Inputs()[i], false)))
+			}
+			explicit[i] = checked
+		}
+	}
 	out := &ir.Expression{Kind: ir.CallableValue, Span: n.Span, Callable: &ir.Callable{Site: site, Target: binding.Identity, Contract: binding.Type}}
 	var inputs []*types.Type
 	captures := []string{}
@@ -129,12 +163,16 @@ func (c *regionChecker) reference(n *syntax.ReferenceExpr, scope bodyScope, expe
 		if declaration.Receiver && i == 0 {
 			captured = receiver
 		} else if declaration.Near[i] {
-			captured, err = e.Check(&syntax.NameExpr{ExpressionLocation: syntax.ExpressionLocation{Span: n.Span}, Name: syntax.QualifiedName{Name: declaration.Names[i]}}, nil)
-			if err != nil {
-				err = stampCode(err, "CAN-CHECK-CAPTURE")
-				return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("near capture %s of %s: %w", declaration.Names[i], binding.Identity, err))
+			if pinned, ok := explicit[i]; ok {
+				captured = pinned
+			} else {
+				captured, err = e.Check(&syntax.NameExpr{ExpressionLocation: syntax.ExpressionLocation{Span: n.Span}, Name: syntax.QualifiedName{Name: declaration.Names[i]}}, nil)
+				if err != nil {
+					err = stampCode(err, "CAN-CHECK-CAPTURE")
+					return nil, c.locateCode(n.Span, "CAN-CHECK-CAPTURE", fmt.Errorf("near capture %s of %s: %w", declaration.Names[i], binding.Identity, err))
+				}
+				captures = append(captures, captured.Text)
 			}
-			captures = append(captures, captured.Text)
 		}
 		if captured != nil {
 			if !types.Equal(captured.Type, typ) {

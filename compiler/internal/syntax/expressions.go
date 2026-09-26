@@ -54,7 +54,7 @@ func (p *parser) expression(minimum int) Expr {
 		p.take()
 		callee := p.callee()
 		types := p.typeArguments()
-		left = &ReferenceExpr{ExpressionLocation: p.location(start), Callee: callee, Types: types}
+		left = &ReferenceExpr{ExpressionLocation: p.location(start), Callee: callee, Types: types, Bindings: p.withBindings()}
 	} else {
 		left = p.primary(true)
 	}
@@ -313,6 +313,55 @@ func (p *parser) postfix(left Expr) Expr {
 }
 
 func (p *parser) callee() Expr { return p.postfix(p.primary(false)) }
+
+// lookahead returns the token offset positions past the current one,
+// counting a pending angle fragment as position zero.
+func (p *parser) lookahead(offset int) (Token, bool) {
+	if p.pending != nil {
+		if offset == 0 {
+			return *p.pending, true
+		}
+		offset--
+	}
+	if p.index+offset >= len(p.tokens) {
+		return Token{}, false
+	}
+	return p.tokens[p.index+offset], true
+}
+
+// withBindings parses Q3 explicit near pins: `with param = expr` pairs in
+// listed order. Only `with Name =` takes this path; a parenthesized tail
+// stays record-update syntax for the expression tail to parse. A comma
+// continues the bindings only when `Name =` follows it, so a pinned
+// callable stays a valid element of an outer comma list.
+func (p *parser) withBindings() []WithBinding {
+	if !p.word("with") {
+		return nil
+	}
+	name, ok := p.lookahead(1)
+	equals, ok2 := p.lookahead(2)
+	if !ok || !ok2 || name.Kind != Name || equals.Kind != "=" {
+		return nil
+	}
+	p.take()
+	var bindings []WithBinding
+	for {
+		start := p.peek().Span.Start
+		param := p.expect(Name)
+		p.expect("=")
+		value := p.expression(2)
+		bindings = append(bindings, WithBinding{Span: p.span(start), Name: param, Value: value})
+		if !p.at(",") {
+			return bindings
+		}
+		name, ok := p.lookahead(1)
+		equals, ok2 := p.lookahead(2)
+		if !ok || !ok2 || name.Kind != Name || equals.Kind != "=" {
+			return bindings
+		}
+		p.take()
+	}
+}
 
 func (p *parser) callExpression() Expr {
 	start := p.expectWord("call").Span.Start

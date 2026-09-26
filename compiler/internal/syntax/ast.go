@@ -131,6 +131,18 @@ type ReferenceExpr struct {
 	ExpressionLocation
 	Callee Expr
 	Types  []TypeNode
+	// Bindings holds explicit Q3 near-input pins: `with param = expr`
+	// pairs in listed order. Empty keeps pure name-based capture.
+	Bindings []WithBinding
+}
+
+// WithBinding pins one near-input by callee parameter name. The name is a
+// rename-reference to the callee parameter; the value checks against the
+// declared input type in the creation scope.
+type WithBinding struct {
+	Span  source.Span
+	Name  Token
+	Value Expr
 }
 type UpdateExpr struct {
 	ExpressionLocation

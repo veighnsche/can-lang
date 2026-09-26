@@ -581,7 +581,15 @@ func (w *rawWalker) expr(node syntax.Expr) error {
 	case *syntax.CallExpr:
 		return w.call(n)
 	case *syntax.ReferenceExpr:
-		return w.expr(n.Callee)
+		if err := w.expr(n.Callee); err != nil {
+			return err
+		}
+		for _, pinned := range n.Bindings {
+			if err := w.expr(pinned.Value); err != nil {
+				return err
+			}
+		}
+		return nil
 	case *syntax.UpdateExpr:
 		if err := w.expr(n.Receiver); err != nil {
 			return err
