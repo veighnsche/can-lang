@@ -1,0 +1,111 @@
+{
+ "abstainConfidenceFloor": 0.5,
+ "boundStatus": {
+  "detail": "No complete-call upper bound U has been qualified for any profile. Live budgeted dispatch is mechanically impossible until a bound qualifies in the H07 registry; see h08-x-r14-1.md.",
+  "status": "unqualified"
+ },
+ "caseSets": {
+  "heldout": {
+   "count": 6,
+   "file": "heldout-cases.json",
+   "sha256": "a4e29ba1d4659878eabc3b5b205f8fd8164592f62ac55624673d4db8badc0b98"
+  },
+  "representative": {
+   "count": 12,
+   "file": "representative-cases.json",
+   "sha256": "e9cb714ee9210abce3c9f01864e353d8ef17958569b08cde33b71d1f895fcb4c"
+  }
+ },
+ "categories": [
+  {
+   "description": "Login, password, MFA, permissions, or workspace-access problems.",
+   "key": "account_access"
+  },
+  {
+   "description": "Questions about charges, invoices, refunds, payment methods, or subscription billing records.",
+   "key": "billing"
+  },
+  {
+   "description": "Anything that fits none of the other categories.",
+   "key": "general"
+  },
+  {
+   "description": "Delivery status, tracking, delays, lost parcels, or wrong-item shipments.",
+   "key": "shipping"
+  },
+  {
+   "description": "Product malfunction, error messages, or how-to-use failures.",
+   "key": "technical"
+  }
+ ],
+ "execution": {
+  "correlation": "the ai_budget::within scope mints one correlation id per case attempt; the runner verifies every accounting report carries that case correlation, and runs group by run id in the report",
+  "liveGate": {
+   "credentialEnv": "TYPESAFE_API_KEY",
+   "priceTable": "required: pinned per-token USD prices; absent (see priceTable)",
+   "spendCapEnv": "CAN_EVAL_SPEND_CAP_USD"
+  },
+  "mode": "strictly serial: one provider call at a time, no concurrent provider legs"
+ },
+ "experiment": "X-R14-1",
+ "feature": "Server-side support-ticket triage: classify one ticket (subject + body) into exactly one finite category via a single SystemOne choice question.",
+ "instructions": "Triage the customer support ticket into exactly one category. Read the subject and body, then select the single best-fitting category key.",
+ "ledgerPolicy": {
+  "alternates": "file backend (single machine) or SQLite file where PG is unavailable; both F04-qualified",
+  "default": "PostgreSQL (F04 ranked default)",
+  "refused": "memory and sqlite-memory backends: process-local, non-durable; the harness refuses them for metered runs"
+ },
+ "measures": [
+  "verdict per case: correct | incorrect | abstain | invalid-output | rejected (with typed reason)",
+  "accuracy = correct / (correct + incorrect); abstains excluded from accuracy, counted separately",
+  "abstain count, invalid-output count, rejected count",
+  "tokens per case and summed: input_tokens + output_tokens, unweighted; breakdown fields never double-counted",
+  "latency per case in ms (wall clock around guarded dispatch) plus run max; reported only, no SLO",
+  "cost in tokens; USD only when a price table is pinned (none pinned: USD unknown)",
+  "budget/correlation checks: every settled actual <= U; ledger committed == sum of settled usage; every accounting report carries its case correlation"
+ ],
+ "modelChange": {
+  "candidate": "any provider/model/version differing from pinned baseline",
+  "comparison": "same frozen case sets, serial execution, same request bytes except the model field; report per-case flip table plus accuracy/cost/latency deltas",
+  "requalification": "a model change invalidates bound qualification; the candidate profile must re-qualify its own U before budgeted sends",
+  "reserved": "held-out set carries no pass/fail threshold; it exists for model-change comparison"
+ },
+ "pinned": {
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "maxBodyBytes": 65536,
+  "model": "jev",
+  "protocol": "typesafe_systemone_v1",
+  "provider": "typesafe",
+  "timeoutMs": 30000,
+  "version": "1.13.0"
+ },
+ "priceTable": null,
+ "priceTableNote": "No per-token USD price table is pinned: TypeSafe publishes no usable price in-repo and no operator price sheet was supplied. Token counts are reported; USD cost is unknown. Live runs stay blocked until prices pin (the H04 USD spend cap cannot be enforced against unknown USD cost).",
+ "protocolVersion": "2",
+ "questionKind": "choice",
+ "registeredAt": "2026-09-26",
+ "registeredBy": "H08 slice 1, before any H08 live evaluation result",
+ "stateCaps": {
+  "bodyChars": 2000,
+  "subjectChars": 200
+ },
+ "task": "H08",
+ "thresholds": {
+  "appliesTo": "representative set only; held-out is reported with no pass/fail",
+  "pass": {
+   "abstainMax": 1,
+   "correctMin": 10,
+   "invalidOutputMax": 0,
+   "of": 12,
+   "rejectedMax": 0
+  }
+ },
+ "workload": "W6-AI",
+ "amendments": [
+  {
+   "version": "2",
+   "date": "2026-09-26",
+   "change": "Correlation rule corrected during slice-2 smoke test (still before any live result): v1 assumed one run-wide correlation, but the H07 within scope mints one correlation per attempt per the selected contract (\"correlation may group attempts\"). Case files, labels, thresholds, and measures otherwise unchanged."
+  }
+ ]
+}

@@ -1,0 +1,291 @@
+{
+  "task": "H08",
+  "experiment": "X-R14-1",
+  "workload": "W6-AI",
+  "protocolVersion": "2",
+  "provenance": "stub",
+  "evidence": false,
+  "generatedAt": "2026-09-26T19:44:52.119Z",
+  "runId": "h08-representative-1790451891611",
+  "setName": "representative",
+  "caseSetSha256": "e9cb714ee9210abce3c9f01864e353d8ef17958569b08cde33b71d1f895fcb4c",
+  "model": {
+    "provider": "typesafe",
+    "model": "jev",
+    "version": "1.13.0"
+  },
+  "ledgerBackend": "postgres",
+  "tenant": "h08-eval",
+  "pool": "default",
+  "testUpperBound": 5000,
+  "quality": {
+    "evidence": false,
+    "note": "Stub-scripted answers: pipeline plumbing only, not a quality claim.",
+    "correct": 9,
+    "incorrect": 1,
+    "abstain": 1,
+    "invalidOutput": 1,
+    "rejected": 0,
+    "accuracy": null,
+    "pass": false
+  },
+  "cost": {
+    "tokensIn": 1156,
+    "tokensOut": 276,
+    "usd": null,
+    "usdNote": "No price table pinned: USD cost unknown."
+  },
+  "latency": {
+    "maxMs": 50,
+    "note": "Wall clock around guarded dispatch per case; reported only, no SLO."
+  },
+  "budget": {
+    "ledgerCommitted": 1432,
+    "ledgerExpected": 1432,
+    "ledgerMatch": true,
+    "held": 5000,
+    "unresolved": 1,
+    "correlationOk": true
+  },
+  "records": [
+    {
+      "caseId": "rep-01",
+      "label": "billing",
+      "verdict": "correct",
+      "choice": "billing",
+      "confidence": 0.92,
+      "latencyMs": 50,
+      "scopeCorrelation": "8522de01-5def-4da1-a632-94675683e1c8",
+      "correlationOk": true,
+      "inputTokens": 100,
+      "outputTokens": 20,
+      "reports": [
+        {
+          "invocation": "5aa6a240-35e6-4458-9210-67538b47d317",
+          "outcome": "settled",
+          "actual": 120,
+          "released": 4880
+        }
+      ]
+    },
+    {
+      "caseId": "rep-02",
+      "label": "billing",
+      "verdict": "correct",
+      "choice": "billing",
+      "confidence": 0.92,
+      "latencyMs": 40,
+      "scopeCorrelation": "a197f70b-22b1-47f5-8751-b58333731a29",
+      "correlationOk": true,
+      "inputTokens": 101,
+      "outputTokens": 21,
+      "reports": [
+        {
+          "invocation": "33e63612-25e3-4d7f-89ff-33589481464f",
+          "outcome": "settled",
+          "actual": 122,
+          "released": 4878
+        }
+      ]
+    },
+    {
+      "caseId": "rep-03",
+      "label": "technical",
+      "verdict": "correct",
+      "choice": "technical",
+      "confidence": 0.92,
+      "latencyMs": 35,
+      "scopeCorrelation": "7da1eb6a-812c-4f96-8032-e5923d3be757",
+      "correlationOk": true,
+      "inputTokens": 102,
+      "outputTokens": 22,
+      "reports": [
+        {
+          "invocation": "f1d43ef7-89ab-4eb0-92ac-dc89ff1dd189",
+          "outcome": "settled",
+          "actual": 124,
+          "released": 4876
+        }
+      ]
+    },
+    {
+      "caseId": "rep-04",
+      "label": "technical",
+      "verdict": "correct",
+      "choice": "technical",
+      "confidence": 0.92,
+      "latencyMs": 37,
+      "scopeCorrelation": "7e64bfdb-71af-4a58-9f2c-0ae1d8afa48e",
+      "correlationOk": true,
+      "inputTokens": 103,
+      "outputTokens": 23,
+      "reports": [
+        {
+          "invocation": "941d1a11-72a4-4cc3-b940-70557af0e462",
+          "outcome": "settled",
+          "actual": 126,
+          "released": 4874
+        }
+      ]
+    },
+    {
+      "caseId": "rep-05",
+      "label": "account_access",
+      "verdict": "correct",
+      "choice": "account_access",
+      "confidence": 0.92,
+      "latencyMs": 37,
+      "scopeCorrelation": "80fc9010-83f8-4174-9644-e8d8775e6e33",
+      "correlationOk": true,
+      "inputTokens": 104,
+      "outputTokens": 24,
+      "reports": [
+        {
+          "invocation": "0edfafcd-90c9-473b-a712-6232b3057f22",
+          "outcome": "settled",
+          "actual": 128,
+          "released": 4872
+        }
+      ]
+    },
+    {
+      "caseId": "rep-06",
+      "label": "account_access",
+      "verdict": "correct",
+      "choice": "account_access",
+      "confidence": 0.92,
+      "latencyMs": 27,
+      "scopeCorrelation": "e31d780f-2413-4ff8-a9db-76cf102167f2",
+      "correlationOk": true,
+      "inputTokens": 105,
+      "outputTokens": 25,
+      "reports": [
+        {
+          "invocation": "88609cbf-a3cc-4ba1-ba9e-3613e1becc0c",
+          "outcome": "settled",
+          "actual": 130,
+          "released": 4870
+        }
+      ]
+    },
+    {
+      "caseId": "rep-07",
+      "label": "shipping",
+      "verdict": "incorrect",
+      "choice": "account_access",
+      "confidence": 0.91,
+      "latencyMs": 27,
+      "scopeCorrelation": "2eb7d2c4-0609-48b4-bf9c-513946de7e7e",
+      "correlationOk": true,
+      "inputTokens": 106,
+      "outputTokens": 26,
+      "reports": [
+        {
+          "invocation": "df756ed0-eaa2-424f-b1f9-b42a4617d62f",
+          "outcome": "settled",
+          "actual": 132,
+          "released": 4868
+        }
+      ]
+    },
+    {
+      "caseId": "rep-08",
+      "label": "shipping",
+      "verdict": "correct",
+      "choice": "shipping",
+      "confidence": 0.92,
+      "latencyMs": 36,
+      "scopeCorrelation": "99bf104f-efef-4d55-9628-2412dc94ba78",
+      "correlationOk": true,
+      "inputTokens": 107,
+      "outputTokens": 27,
+      "reports": [
+        {
+          "invocation": "7b9f3b0a-1f63-42cd-8200-2e100ca5cfd0",
+          "outcome": "settled",
+          "actual": 134,
+          "released": 4866
+        }
+      ]
+    },
+    {
+      "caseId": "rep-09",
+      "label": "general",
+      "verdict": "abstain",
+      "choice": "general",
+      "confidence": 0.3,
+      "latencyMs": 37,
+      "scopeCorrelation": "7639a816-e365-4da3-9431-a57b78c62553",
+      "correlationOk": true,
+      "inputTokens": 108,
+      "outputTokens": 28,
+      "reports": [
+        {
+          "invocation": "062fe0eb-380c-4153-b9b8-d2f83ae6c476",
+          "outcome": "settled",
+          "actual": 136,
+          "released": 4864
+        }
+      ]
+    },
+    {
+      "caseId": "rep-10",
+      "label": "billing",
+      "verdict": "invalid-output",
+      "reason": "missing_value",
+      "latencyMs": 37,
+      "scopeCorrelation": "76b4c989-ef15-420e-a310-053c805414c0",
+      "correlationOk": true,
+      "inputTokens": 109,
+      "outputTokens": 29,
+      "reports": [
+        {
+          "invocation": "900904c8-2783-431f-838e-ecdade32d686",
+          "outcome": "settled",
+          "actual": 138,
+          "released": 4862
+        }
+      ]
+    },
+    {
+      "caseId": "rep-11",
+      "label": "general",
+      "verdict": "correct",
+      "choice": "general",
+      "confidence": 0.88,
+      "latencyMs": 16,
+      "scopeCorrelation": "78ef413e-1488-4fc8-b9ee-9fa8ee844ab7",
+      "correlationOk": true,
+      "reports": [
+        {
+          "invocation": "2f98f9e9-053b-497d-9e3c-21d6ed30ba86",
+          "outcome": "unresolved"
+        }
+      ]
+    },
+    {
+      "caseId": "rep-12",
+      "label": "billing",
+      "verdict": "correct",
+      "choice": "billing",
+      "confidence": 0.87,
+      "latencyMs": 36,
+      "scopeCorrelation": "9f223ef4-2b18-4bcc-8bbf-4d1f2d81d9d0",
+      "correlationOk": true,
+      "inputTokens": 111,
+      "outputTokens": 31,
+      "reports": [
+        {
+          "invocation": "91687b3b-35a6-45e8-910c-684eb5981bb3",
+          "outcome": "settled",
+          "actual": 142,
+          "released": 4858
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Stubbed provider: quality/cost/latency figures are plumbing checks, not evidence.",
+    "Test upper bound is not a qualified metering bound."
+  ]
+}
