@@ -65,7 +65,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E05 | in progress (wave 14) | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | — | — |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | in progress (wave 15) | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | — | — |
-| H08 | in progress (wave 14) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | — | *live may block |
+| H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
