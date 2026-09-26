@@ -33,20 +33,22 @@ const (
 	workerDiagnosticLimit = 65536
 	// MinAssertJobs and MaxAssertJobs bound the supervised worker fan-out.
 	// Each worker is a full bun process, so memory scales with jobs; 64
-	// caps a large CI box while leaving the default to the host.
+	// lets a cooled CI box opt up explicitly via --assert-jobs.
 	MinAssertJobs = 1
 	MaxAssertJobs = 64
+	// DefaultAssertJobsCount caps the default fan-out. Workers are ~20%
+	// of a build, so fan-out past 4 buys single seconds while multiplying
+	// heat and memory; measured on a 10-core fanless host, 4 workers beat
+	// 10 (thermal throttling). Pass --assert-jobs to tune for the host.
+	DefaultAssertJobsCount = 4
 )
 
-// DefaultAssertJobs reports the host-sized worker fan-out.
+// DefaultAssertJobs reports the default worker fan-out.
 func DefaultAssertJobs() int {
-	if n := runtime.NumCPU(); n >= 1 {
-		if n > MaxAssertJobs {
-			return MaxAssertJobs
-		}
+	if n := runtime.NumCPU(); n >= 1 && n < DefaultAssertJobsCount {
 		return n
 	}
-	return 1
+	return DefaultAssertJobsCount
 }
 
 // ErrAssertionsFailed reports a delivered suite whose roots did not all
