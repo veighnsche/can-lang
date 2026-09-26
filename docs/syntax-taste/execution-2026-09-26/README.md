@@ -26,7 +26,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
 | A05 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bulk APIs→A07 | — | — |
 | B01 | in progress, slices 1-2 integrated | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | `5f6e6545`→`c691a127`, `ec4bd92d`→`dbafd204` (partial) | 35+15 roots, negatives, isolation green; needs concision + Q5 |
-| B02 | in progress (wave 1) | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | — | — |
+| B02 | in progress, slice 1 integrated | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | `f41fba6b`→`c743cb77` (partial) | baseline 8/8 green; extraction + Q4 pending |
 | C07 | done | lane-c-c07 (`8`) | isolated | none | evidence→H14 | worker `e0474712` → main `6fe2bc46` | canlc assert 344/344, exit 0 |
 | E01 | done | lane-e-e01-e03 (`9`) | isolated | none | C-C→F01/F05/C; hooks→E02/E04/E06 | worker `6e9914f6` → main `2224e1b4` | bun test 6/6, check:runtime green |
 | E03 | done | lane-e-e01-e03 (`9`) | isolated | none | runtime→C03 | worker `5c51a96d` → main `db6d42b1` | bun test 44/44 (4 files), check green |
