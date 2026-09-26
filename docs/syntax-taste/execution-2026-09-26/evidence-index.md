@@ -16,6 +16,8 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | H03 | done (S3 gate ready, protocol scope) | main `2a880eee` (worker `9482ff01`) | macOS docker arm64 | MinIO live verified; worker: SigV4 roundtrip + `s3.test.ts` 19/19; scope note: S3-protocol, not AWS-real | pass |
 | H04 | done (blocked, ask recorded) | main `2d784b31` (worker `f9a0acdf`) | n/a (docs) | `distribution/ai-eval-access.md`: TYPESAFE_API_KEY + spend-cap ask; gate stays blocked until user grants | blocked |
 | H05 | done (blocked, ask recorded) | main `21991bb3` (worker `494be3de`) | n/a (docs) | `distribution/x86-window.md`: machine designation + exclusive-window ask; UP25 stays blocked until user grants | blocked |
+| A02 | done (AU-Q3-core) | main `1365d0a6` (worker `5bcae240`) | macOS, go1.27.1 | gofmt clean; `go test` check/syntax/project/driver all ok; explicit near bindings with located CAN-CHECK-CAPTURE negatives, order preserved, direct calls positional | pass |
+| B01 | partial slice 1 (task open) | main `c691a127` (worker `5f6e6545`) | macOS, prebuilt bun 1.4.2 bundle | `TestRetryConventionGreen`: 14 roots green (3s); skips without CONV_BUNDLE/CAN_BUN_ARCHIVE; single-domain v1 only — two-domain, wrapper-around-wrapper, concision, Q5 evidence still pending | partial |
 
 ## Conditional branches
 

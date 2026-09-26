@@ -20,11 +20,12 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | Task | State | Agent | Worktree/branch | Prereqs | Handoff | Commits | Checks |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | A01 | done | lane-a-a01-a05 (`6`) | isolated | none | formatter→C, warnings→G01 | worker `adf94696` → main `19e45019` | go test 4 pkgs ok, gofmt clean |
-| A02 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bindings→G03/G05 | — | — |
+| A02 | done | lane-a-a01-a05 (`6`) | isolated | none | bindings→G03/G05 | worker `5bcae240` → main `1365d0a6` | go test 4 pkgs ok, gofmt clean |
+| A08 | ready (A01+A02 done) | — | — | A01, A02 | comparisons→H14 | — | — |
 | A03 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | — | — |
 | A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
 | A05 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bulk APIs→A07 | — | — |
-| B01 | in progress (wave 1) | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | — | — |
+| B01 | in progress, slice 1 integrated | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | worker `5f6e6545` → main `c691a127` (partial) | 14 roots green; needs 2-domain + wrapper² + concision + Q5 |
 | B02 | in progress (wave 1) | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | — | — |
 | C07 | done | lane-c-c07 (`8`) | isolated | none | evidence→H14 | worker `e0474712` → main `6fe2bc46` | canlc assert 344/344, exit 0 |
 | E01 | done | lane-e-e01-e03 (`9`) | isolated | none | C-C→F01/F05/C; hooks→E02/E04/E06 | worker `6e9914f6` → main `2224e1b4` | bun test 6/6, check:runtime green |
@@ -38,10 +39,10 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H04 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | worker `f9a0acdf` → main `2d784b31` | exact creds + spend-cap ask recorded; gate stays blocked |
 | H05 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | x86→H12 | worker `494be3de` → main `21991bb3` | exact machine + window ask recorded; UP25 stays blocked |
 | F01 | in progress (wave 3) | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | — | — |
-| E02 | ready (H02 done) | — | — | H02 | verdicts→E04/F02/W5 | — | — |
-| F02 | ready (H02 done) | — | — | H02 | locking/RETURNING→F03 | — | — |
+| E02 | in progress (wave 4) | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | — | — |
+| F02 | in progress (wave 4) | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | — | — |
 | E07 | ready (H03+E01 done) | — | — | H03, E01 | branch verdicts→E08 | — | — |
-| G01 | ready (A01 done) | — | — | A01 | formatting→G02/authors | — | — |
+| G01 | in progress (wave 4) | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
