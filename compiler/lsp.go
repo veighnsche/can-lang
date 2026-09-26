@@ -153,7 +153,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		}
 		switch msg.Method {
 		case "initialize":
-			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true}})
+			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true}})
 		case "initialized", "$/cancelRequest":
 		case "textDocument/didOpen":
 			var p struct {
@@ -206,6 +206,23 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 			}
 			if msg.ID != nil {
 				respond(msg.ID, server.definition(p.TextDocument.URI, p.Position.Line, p.Position.Character))
+			}
+		case "textDocument/hover":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+				Position     struct {
+					Line      int `json:"line"`
+					Character int `json:"character"`
+				} `json:"position"`
+			}
+			if json.Unmarshal(msg.Params, &p) != nil {
+				if msg.ID != nil {
+					respondErr(msg.ID, -32602, "invalid hover params")
+				}
+				continue
+			}
+			if msg.ID != nil {
+				respond(msg.ID, server.hover(p.TextDocument.URI, p.Position.Line, p.Position.Character))
 			}
 		case "textDocument/formatting":
 			var p struct {
@@ -388,6 +405,33 @@ func fullDocumentRange(text string) map[string]any {
 	return map[string]any{
 		"start": map[string]any{"line": 0, "character": 0},
 		"end":   map[string]any{"line": len(lines) - 1, "character": width},
+	}
+}
+
+// hover answers type-at-offset over the checked snapshot of the open
+// buffer: the resolved contract rendered as Markdown plus the hovered
+// token range. Like definition it reads an inert overlay snapshot and
+// declines to null wherever the name does not resolve, so unresolved
+// source never receives a guessed type.
+func (s *lspServer) hover(uri string, line, character int) any {
+	doc, ok := s.docs[uri]
+	if !ok || doc.path == "" {
+		return nil
+	}
+	snapshot, err := driver.CheckSnapshot(discoverRoot(doc.path), doc.path, s.overlay)
+	if err != nil || snapshot.World == nil {
+		return nil
+	}
+	result, ok, err := driver.HoverAt(snapshot, doc.path, line, character)
+	if err != nil || !ok {
+		return nil
+	}
+	return map[string]any{
+		"contents": map[string]any{"kind": "markdown", "value": result.Contents},
+		"range": map[string]any{
+			"start": map[string]any{"line": result.Line, "character": result.Start},
+			"end":   map[string]any{"line": result.Line, "character": result.End},
+		},
 	}
 }
 

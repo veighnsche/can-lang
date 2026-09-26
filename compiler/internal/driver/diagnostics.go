@@ -821,7 +821,7 @@ func findInExpr(expr syntax.Expr, offset int) reference {
 		for i := range node.Methods {
 			method := &node.Methods[i]
 			if contains(method.Name.Span, offset) {
-				return reference{receiver: node.Invocation.Callee, member: method.Name.Text, method: true}
+				return reference{receiver: node.Invocation.Callee, member: method.Name.Text, method: true, span: method.Name.Span}
 			}
 			for _, typ := range method.Types {
 				if found := findInType(typ, compileresolve.TypeUse, offset); !found.empty() {
@@ -848,7 +848,7 @@ func findInExpr(expr syntax.Expr, offset int) reference {
 		}
 	case *syntax.FieldExpr:
 		if contains(node.Field.Span, offset) {
-			return reference{receiver: node.Receiver, member: node.Field.Text}
+			return reference{receiver: node.Receiver, member: node.Field.Text, span: node.Field.Span}
 		}
 		return findInExpr(node.Receiver, offset)
 	case *syntax.GroupExpr:
