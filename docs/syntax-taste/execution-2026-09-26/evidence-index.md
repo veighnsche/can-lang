@@ -23,6 +23,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | G01 | done (AU-LSP-format, AU-Q2-LSP) | main `94795946` (worker `31f0e66a`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok (16s/71s); formatSource+overlay validation, warning-severity publishDiagnostics, CLI parity | pass |
 | E02 | done (X-R04-1 NEG, X-R04-3 POS) | main `2bf35a4c` (worker `a1b4e8e0`) | macOS, bun 1.4.2, live PG 17.11/MySQL 8.4.11 | 11/11 pass live (25s); `check:runtime` green; cancel()=client-flag-only all dialects, backends run to completion; Request.signal aborts on disconnect | pass |
 | B02 | partial slice 1 (task open) | main `c743cb77` (worker `f41fba6b`) | macOS, prebuilt bun 1.4.2 bundle | `canlc assert owner-setup`: 8/8 pass, exit 0; pre-extraction leaky-handler baseline only — extraction, repair comparison, Q4 assessment pending | partial |
+| F01 | done (C-G + R14 ledger) | main `82750826`..`ee928ee1` (worker 4 slices) | macOS, bun 1.4.2 | 38/38 pass across 4 outbound test files; `check:runtime` green; additive only (13 new files); fixtures env-names-only | pass |
 
 ## Conditional branches
 
