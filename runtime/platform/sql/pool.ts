@@ -13,6 +13,9 @@ import { record, array } from "../../data.ts";
 import { createDomainRuntime } from "../../domain.ts";
 import { resourceStateFailure } from "../../failure.ts";
 import { registerResource, useResource, closeResource } from "../../owner.ts";
+import { raceBoundary } from "../../transport/operation-budget.ts";
+import { scopeRaceInput } from "../../transport/request-scope.ts";
+import type { RequestBudget } from "../../transport/request-budget.ts";
 import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLCoreContracts, type SQLPoolContracts } from "./errors.ts";
 import {
@@ -56,6 +59,21 @@ export function poolDialect(token: unknown): SQLDialect | undefined {
 }
 const variableName = /^[A-Z_][A-Z0-9_]*$/;
 
+// SQLBounds carries the cancel-absent operation bounds (E04): the
+// caller bound and the shared request budget race as min(bound,
+// remaining), and the ambient request scope (when active) propagates
+// disconnect/shutdown expiry into the race. There is deliberately no
+// cancel signal: X-R04-1 admits no cancel operand on any SQL path, so
+// the boundary returns query_failed(code budget) at expiry while the
+// native query stays owned until settlement, with supervisor escalation
+// filed automatically. An absent bounds input adds no caller bound: the
+// ambient scope budget and signal still apply when a scope is active,
+// and outside any scope the call runs unbounded as before.
+export type SQLBounds = Readonly<{
+  boundMs?: number;
+  budget?: RequestBudget;
+}>;
+
 // createSQLOperations owns the query behavior shared by pools and scoped
 // transactions: dialect agreement, pre-launch validation, native
 // classification, and immutable decoding. The token kind selects which
@@ -94,6 +112,7 @@ export function createSQLOperations(
     params: unknown,
     limit: unknown,
     context?: AssertionContext,
+    bounds?: SQLBounds,
   ): Promise<Launched> {
     denyLiveBoundary(context, origin);
     const pool = dialectOf(token, kind);
@@ -104,21 +123,33 @@ export function createSQLOperations(
     const encoded = profile.codec.encodeParams(plan, params);
     if (!encoded.ok) return { kind: "failed", completion: encoded.failure };
     const template = descriptors.template(descriptor, [...encoded.values, limit]);
-    const outcome = await useResource(
-      token,
-      kind,
-      async (native: unknown): Promise<Completion<readonly unknown[]>> => {
-        const client = native as Native;
-        let result: unknown;
-        try {
-          result = await client(template.strings, ...template.values);
-        } catch (cause) {
-          return profile.classify(operation, cause, failures, contracts);
-        }
-        if (!Array.isArray(result)) return failures.queryFailed(operation, "bad_result");
-        return success(result);
-      },
+    // Validation runs before the race; only native execution is bounded.
+    // At expiry the lease stays held until the native query settles.
+    const raced = await raceBoundary(
+      { source: "sql", boundMs: bounds?.boundMs, ...scopeRaceInput(bounds?.budget) },
+      () =>
+        useResource(
+          token,
+          kind,
+          async (native: unknown): Promise<Completion<readonly unknown[]>> => {
+            const client = native as Native;
+            let result: unknown;
+            try {
+              result = await client(template.strings, ...template.values);
+            } catch (cause) {
+              return profile.classify(operation, cause, failures, contracts);
+            }
+            if (!Array.isArray(result)) return failures.queryFailed(operation, "bad_result");
+            return success(result);
+          },
+        ),
     );
+    // The cancel-absent outcome: the visible layer reports the bound
+    // while the native query stays owned until settlement. A budget
+    // code never claims rollback; reread to reconcile a write.
+    if (raced.kind === "unknown")
+      return { kind: "failed", completion: failures.queryFailed(operation, "budget") };
+    const outcome = raced.value;
     if (outcome.kind !== "ok") return { kind: "failed", completion: outcome };
     return { kind: "rows", rows: outcome.value, profile };
   }
@@ -130,9 +161,20 @@ export function createSQLOperations(
       kind: "sql-pool" | "sql-tx",
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
       if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
-      const outcome = await launch("query_one", descriptor, plan, token, kind, params, 2, context);
+      const outcome = await launch(
+        "query_one",
+        descriptor,
+        plan,
+        token,
+        kind,
+        params,
+        2,
+        context,
+        bounds,
+      );
       if (outcome.kind === "failed") return outcome.completion;
       const rows = outcome.rows;
       if (rows.length === 0) return fail(contracts.rowMissing, [["query", descriptor.name]]);
@@ -151,6 +193,7 @@ export function createSQLOperations(
       kind: "sql-pool" | "sql-tx",
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
       if (plan.rows === undefined || plan.some === undefined || plan.none === undefined)
         throw new TypeError("invalid compiler sql plan");
@@ -163,6 +206,7 @@ export function createSQLOperations(
         params,
         2,
         context,
+        bounds,
       );
       if (outcome.kind === "failed") return outcome.completion;
       const rows = outcome.rows;
@@ -184,6 +228,7 @@ export function createSQLOperations(
       params: unknown,
       maxRows: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
       if (plan.rows === undefined) throw new TypeError("invalid compiler sql plan");
       if (typeof maxRows !== "bigint") throw new TypeError("invalid compiler sql bound");
@@ -200,6 +245,7 @@ export function createSQLOperations(
         params,
         maxRows + 1n,
         context,
+        bounds,
       );
       if (outcome.kind === "failed") return outcome.completion;
       const rows = outcome.rows;
@@ -219,6 +265,7 @@ export function createSQLOperations(
       kind: "sql-pool" | "sql-tx",
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const pool = dialectOf(token, kind);
@@ -229,21 +276,24 @@ export function createSQLOperations(
       const encoded = profile.codec.encodeParams(plan, params);
       if (!encoded.ok) return encoded.failure;
       const template = descriptors.template(descriptor, encoded.values);
-      const outcome = await useResource(
-        token,
-        kind,
-        async (native: unknown): Promise<Completion<unknown>> => {
-          const client = native as Native;
-          let result: unknown;
-          try {
-            result = await client(template.strings, ...template.values);
-          } catch (cause) {
-            return profile.classify("execute", cause, failures, contracts);
-          }
-          return profile.affectedRows("execute", result, failures);
-        },
+      const raced = await raceBoundary(
+        { source: "sql", boundMs: bounds?.boundMs, ...scopeRaceInput(bounds?.budget) },
+        () =>
+          useResource(token, kind, async (native: unknown): Promise<Completion<unknown>> => {
+            const client = native as Native;
+            let result: unknown;
+            try {
+              result = await client(template.strings, ...template.values);
+            } catch (cause) {
+              return profile.classify("execute", cause, failures, contracts);
+            }
+            return profile.affectedRows("execute", result, failures);
+          }),
       );
-      return outcome;
+      // A budgeted write that outlasts the boundary may have landed;
+      // the code reports the bound, never a rollback.
+      if (raced.kind === "unknown") return failures.queryFailed("execute", "budget");
+      return raced.value;
     },
   });
 }
@@ -366,8 +416,9 @@ export function createSQLPools(
       pool: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryOne(descriptor, plan, pool, "sql-pool", params, context);
+      return core.queryOne(descriptor, plan, pool, "sql-pool", params, context, bounds);
     },
     async queryOptional(
       descriptor: SQLDescriptor,
@@ -375,8 +426,9 @@ export function createSQLPools(
       pool: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryOptional(descriptor, plan, pool, "sql-pool", params, context);
+      return core.queryOptional(descriptor, plan, pool, "sql-pool", params, context, bounds);
     },
     async queryRows(
       descriptor: SQLDescriptor,
@@ -385,8 +437,9 @@ export function createSQLPools(
       params: unknown,
       maxRows: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryRows(descriptor, plan, pool, "sql-pool", params, maxRows, context);
+      return core.queryRows(descriptor, plan, pool, "sql-pool", params, maxRows, context, bounds);
     },
     async execute(
       descriptor: SQLDescriptor,
@@ -394,8 +447,9 @@ export function createSQLPools(
       pool: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.execute(descriptor, plan, pool, "sql-pool", params, context);
+      return core.execute(descriptor, plan, pool, "sql-pool", params, context, bounds);
     },
   });
 }

@@ -62,3 +62,20 @@ export function runWithRequestScope<T>(scope: RequestScope, body: () => T): T {
 export function currentRequestScope(): RequestScope | undefined {
   return scopes.getStore();
 }
+
+// scopeRaceInput resolves the budget half of a boundary race: an
+// explicit budget wins over the ambient scope budget for time
+// accounting, while the ambient scope signal (disconnect/shutdown
+// liveness) and sink always apply when a scope is active.
+export function scopeRaceInput(explicit?: RequestBudget): Readonly<{
+  budget: RequestBudget | undefined;
+  scopeSignal: AbortSignal | undefined;
+  sink: EscalationSink | undefined;
+}> {
+  const scope = currentRequestScope();
+  return {
+    budget: explicit ?? scope?.budget,
+    scopeSignal: scope?.signal,
+    sink: scope?.sink,
+  };
+}

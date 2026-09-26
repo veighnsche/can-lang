@@ -21,7 +21,15 @@ import {
   guardCallback,
   resourceStatus,
 } from "../../owner.ts";
-import { createSQLOperations, poolDialect, type SQLNative, type SQLDialect } from "./pool.ts";
+import { raceBoundary } from "../../transport/operation-budget.ts";
+import { scopeRaceInput } from "../../transport/request-scope.ts";
+import {
+  createSQLOperations,
+  poolDialect,
+  type SQLBounds,
+  type SQLNative,
+  type SQLDialect,
+} from "./pool.ts";
 import { createSQLDescriptors, type SQLDescriptor } from "./descriptor.ts";
 import { createSQLFailures, type SQLTxContracts } from "./errors.ts";
 import { isPostgresFailure } from "./postgres.ts";
@@ -127,8 +135,9 @@ export function createSQLTransactions(
       handle: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryOne(descriptor, plan, handle, "sql-tx", params, context);
+      return core.queryOne(descriptor, plan, handle, "sql-tx", params, context, bounds);
     },
     async queryOptional(
       descriptor: SQLDescriptor,
@@ -136,8 +145,9 @@ export function createSQLTransactions(
       handle: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryOptional(descriptor, plan, handle, "sql-tx", params, context);
+      return core.queryOptional(descriptor, plan, handle, "sql-tx", params, context, bounds);
     },
     async queryRows(
       descriptor: SQLDescriptor,
@@ -146,8 +156,9 @@ export function createSQLTransactions(
       params: unknown,
       maxRows: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.queryRows(descriptor, plan, handle, "sql-tx", params, maxRows, context);
+      return core.queryRows(descriptor, plan, handle, "sql-tx", params, maxRows, context, bounds);
     },
     async execute(
       descriptor: SQLDescriptor,
@@ -155,14 +166,16 @@ export function createSQLTransactions(
       handle: unknown,
       params: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
-      return core.execute(descriptor, plan, handle, "sql-tx", params, context);
+      return core.execute(descriptor, plan, handle, "sql-tx", params, context, bounds);
     },
     async withTransaction(
       pool: unknown,
       callback: unknown,
       leaves: unknown,
       context?: AssertionContext,
+      bounds?: SQLBounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       if (typeof callback !== "function") throw new TypeError("invalid compiler sql callback");
@@ -180,86 +193,96 @@ export function createSQLTransactions(
       // Nested entry is rejected through the scope contract: one live
       // transaction per dynamic extent, whatever pool it names.
       if (nesting.getStore() !== undefined) throw resourceStateFailure(undefined, origin);
-      return useResource(
-        pool,
-        "sql-pool",
-        async (native: unknown): Promise<Completion<unknown>> => {
-          const client = native as SQLNative;
-          const attempt = (object(pool) ? (attempts.get(pool) ?? 0) : 0) + 1;
-          if (object(pool)) attempts.set(pool, attempt);
-          // Structured and safe: the pool resource id plus a per-pool attempt
-          // counter. No driver payload, URL, or credential ever enters the ID.
-          const id = `${resourceStatus(pool).id}-${attempt}`;
-          return nesting.run({ id }, async (): Promise<Completion<unknown>> => {
-            let began = false;
-            let enteredCommit = false;
-            try {
-              // The native callback stays pending through scope drain: commit
-              // returns normally only after registered owners settle.
-              const value = await client.begin(async (tx: unknown) => {
-                began = true;
-                const outcome = await withScope(async (scope): Promise<Completion<unknown>> => {
-                  // The handle is scope-managed: drain closes it without a cleanup
-                  // mark, and any later use fails the scope check.
-                  const handle = registerResource("sql-tx", tx, async () => success(undefined), {
-                    scopeManaged: true,
+      const attempt = (object(pool) ? (attempts.get(pool) ?? 0) : 0) + 1;
+      if (object(pool)) attempts.set(pool, attempt);
+      // Structured and safe: the pool resource id plus a per-pool attempt
+      // counter. No driver payload, URL, or credential ever enters the ID.
+      // Hoisted ahead of the race so a boundary-expiry outcome names it.
+      const id = `${resourceStatus(pool).id}-${attempt}`;
+      const raced = await raceBoundary(
+        { source: "sql", boundMs: bounds?.boundMs, ...scopeRaceInput(bounds?.budget) },
+        () =>
+          useResource(pool, "sql-pool", async (native: unknown): Promise<Completion<unknown>> => {
+            const client = native as SQLNative;
+            return nesting.run({ id }, async (): Promise<Completion<unknown>> => {
+              let began = false;
+              let enteredCommit = false;
+              try {
+                // The native callback stays pending through scope drain: commit
+                // returns normally only after registered owners settle.
+                const value = await client.begin(async (tx: unknown) => {
+                  began = true;
+                  const outcome = await withScope(async (scope): Promise<Completion<unknown>> => {
+                    // The handle is scope-managed: drain closes it without a cleanup
+                    // mark, and any later use fails the scope check.
+                    const handle = registerResource("sql-tx", tx, async () => success(undefined), {
+                      scopeManaged: true,
+                    });
+                    handles.set(handle, { pool, id });
+                    const guarded = guardCallback(scope, callback as TxCallable);
+                    const completed = await invoke(() => guarded(handle, undefined), origin);
+                    if (completed.kind !== "ok") return completed;
+                    const identity = recordIdentity(completed.value);
+                    if (identity === commit)
+                      return success({
+                        commit: true as const,
+                        value: dataProperty(completed.value, "value"),
+                      });
+                    if (identity === rollback)
+                      return success({
+                        commit: false as const,
+                        value: dataProperty(completed.value, "value"),
+                      });
+                    throw new TypeError("invalid compiler sql decision");
                   });
-                  handles.set(handle, { pool, id });
-                  const guarded = guardCallback(scope, callback as TxCallable);
-                  const completed = await invoke(() => guarded(handle, undefined), origin);
-                  if (completed.kind !== "ok") return completed;
-                  const identity = recordIdentity(completed.value);
-                  if (identity === commit)
-                    return success({
-                      commit: true as const,
-                      value: dataProperty(completed.value, "value"),
-                    });
-                  if (identity === rollback)
-                    return success({
-                      commit: false as const,
-                      value: dataProperty(completed.value, "value"),
-                    });
-                  throw new TypeError("invalid compiler sql decision");
+                  if (outcome.kind !== "ok") throw new TxPrimary(outcome as Completion<never>);
+                  const boxed = outcome.value as { commit: boolean; value: unknown };
+                  if (!boxed.commit) throw new TxRollback(boxed.value);
+                  enteredCommit = true;
+                  return boxed.value;
                 });
-                if (outcome.kind !== "ok") throw new TxPrimary(outcome as Completion<never>);
-                const boxed = outcome.value as { commit: boolean; value: unknown };
-                if (!boxed.commit) throw new TxRollback(boxed.value);
-                enteredCommit = true;
-                return boxed.value;
-              });
-              return success(value);
-            } catch (cause) {
-              if (cause instanceof TxRollback) return success(cause.value);
-              if (cause instanceof TxPrimary) return cause.completion;
-              // A native rejection after a commit decision is genuinely
-              // unknown: the commit may have landed. Report it once, with the
-              // safe attempt ID, and never retry.
-              if (enteredCommit) {
-                // SQLite leaves a failed COMMIT's transaction open: the
-                // violating row stays readable until ROLLBACK, which would
-                // poison the pool for every later operation. PostgreSQL
-                // and MySQL abort a failed COMMIT on their own, so only
-                // SQLite pays for this cleanup.
-                // It runs under the held pool lease; a dead connection
-                // rejects here too, and the outcome stays commit-unknown.
-                if (isSQLiteFailure(cause)) {
-                  try {
-                    await client(rollbackStrings);
-                  } catch {
-                    /* already reported below */
+                return success(value);
+              } catch (cause) {
+                if (cause instanceof TxRollback) return success(cause.value);
+                if (cause instanceof TxPrimary) return cause.completion;
+                // A native rejection after a commit decision is genuinely
+                // unknown: the commit may have landed. Report it once, with the
+                // safe attempt ID, and never retry.
+                if (enteredCommit) {
+                  // SQLite leaves a failed COMMIT's transaction open: the
+                  // violating row stays readable until ROLLBACK, which would
+                  // poison the pool for every later operation. PostgreSQL
+                  // and MySQL abort a failed COMMIT on their own, so only
+                  // SQLite pays for this cleanup.
+                  // It runs under the held pool lease; a dead connection
+                  // rejects here too, and the outcome stays commit-unknown.
+                  if (isSQLiteFailure(cause)) {
+                    try {
+                      await client(rollbackStrings);
+                    } catch {
+                      /* already reported below */
+                    }
                   }
+                  return fail(contracts.commitUnknown, [["transaction_id", id]]);
                 }
-                return fail(contracts.commitUnknown, [["transaction_id", id]]);
+                return classifyBegin(
+                  began ? "callback" : "begin",
+                  cause,
+                  poolDialect(pool) ?? "postgresql",
+                );
               }
-              return classifyBegin(
-                began ? "callback" : "begin",
-                cause,
-                poolDialect(pool) ?? "postgresql",
-              );
-            }
-          });
-        },
+            });
+          }),
       );
+      // An expiry before the start ran nothing, so it reports the phase,
+      // not commit uncertainty. An expiry after the start may have
+      // committed: the transaction stays owned until settlement and the
+      // outcome names the attempt for reconciliation. Never retry.
+      if (raced.kind === "unknown") {
+        if (raced.escalation.effectiveMs <= 0) return transactionFailed("budget");
+        return fail(contracts.commitUnknown, [["transaction_id", id]]);
+      }
+      return raced.value;
     },
   });
 }
