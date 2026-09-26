@@ -68,6 +68,14 @@ All other tasks: blocked on prerequisites per the task-list graph.
 - IC2 (H11): blocked — needs H10 plus workload owners.
 - IC3 (H13): blocked — needs H11 plus matrix/live legs.
 
+## Incidents
+
+- 2026-09-26 ~19:47: lane-c-c04 wrote outside its isolated worktree,
+  creating untracked `shared/grid-controls/` (controls scaffold) in the
+  main checkout. Worker messaged to stop, justify-or-abandon, and confirm
+  no other out-of-tree writes. Dir left untouched pending reply; it is
+  NOT part of any integration until resolved.
+
 ## Rules in force
 
 - BLK-01/BLK-02 resolved; do not reopen. R14 supplement governs accounting.
