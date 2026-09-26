@@ -1,0 +1,39 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "chart_tier": {
+      "type": "choice",
+      "choice": "reviewed_adapter",
+      "confidence": 0.37,
+      "probabilities": {
+        "companion": 0.06,
+        "reviewed_adapter": 0.58,
+        "catalogue": 0.36
+      }
+    },
+    "clipboard_tier": {
+      "type": "choice",
+      "choice": "reviewed_adapter",
+      "confidence": 0.88,
+      "probabilities": {
+        "companion": 0.0,
+        "reviewed_adapter": 0.92,
+        "catalogue": 0.08
+      }
+    },
+    "storage_tier": {
+      "type": "choice",
+      "choice": "reviewed_adapter",
+      "confidence": 0.56,
+      "probabilities": {
+        "companion": 0.03,
+        "reviewed_adapter": 0.71,
+        "catalogue": 0.26
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1567,
+    "output_tokens": 141
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "version": "2026-09-26.0-d01",
+  "status": "UNREVIEWED-PROTOTYPE",
+  "note": "X-R01-1 discrimination prototypes. No file listed here is admitted to any build profile; admission requires distribution review in D02/H packaging. Statuses: unreviewed (prototype only), reviewed (unused until D02).",
+  "prototypes": [
+    { "path": "adapters/storage.ts", "status": "unreviewed" },
+    { "path": "companions/storage.ts", "status": "unreviewed" },
+    { "path": "adapters/clipboard.ts", "status": "unreviewed" },
+    { "path": "companions/clipboard.ts", "status": "unreviewed" },
+    { "path": "adapters/chart-widget.ts", "status": "unreviewed" },
+    { "path": "companions/chart-widget.ts", "status": "unreviewed" }
+  ]
+}

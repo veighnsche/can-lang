@@ -1,0 +1,97 @@
+{
+  "fields": {
+    "assignment_rule": {
+      "1v2": 0.072,
+      "1v3": 0.048,
+      "2v3": 0.027
+    },
+    "class_chart": {
+      "1v2": 0.391,
+      "1v3": 0.361,
+      "2v3": 0.25
+    },
+    "class_clipboard": {
+      "1v2": 0.418,
+      "1v3": 0.292,
+      "2v3": 0.232
+    },
+    "class_storage": {
+      "1v2": 0.377,
+      "1v3": 0.354,
+      "2v3": 0.38
+    },
+    "constraints": {
+      "1v2": 0.099,
+      "1v3": 0.019,
+      "2v3": 0.026
+    },
+    "experiment": {
+      "1v2": 0.335,
+      "1v3": 0.272,
+      "2v3": 0.271
+    },
+    "chart_tier.instructions": {
+      "1v2": 0.5,
+      "1v3": 0.754,
+      "2v3": 0.55
+    },
+    "chart_tier.criteria.catalogue": {
+      "1v2": 0.56,
+      "1v3": 0.672,
+      "2v3": 0.514
+    },
+    "chart_tier.criteria.companion": {
+      "1v2": 0.491,
+      "1v3": 0.5,
+      "2v3": 0.5
+    },
+    "chart_tier.criteria.reviewed_adapter": {
+      "1v2": 0.54,
+      "1v3": 0.506,
+      "2v3": 0.624
+    },
+    "clipboard_tier.instructions": {
+      "1v2": 0.45,
+      "1v3": 0.727,
+      "2v3": 0.5
+    },
+    "clipboard_tier.criteria.catalogue": {
+      "1v2": 0.702,
+      "1v3": 0.603,
+      "2v3": 0.638
+    },
+    "clipboard_tier.criteria.companion": {
+      "1v2": 0.766,
+      "1v3": 0.685,
+      "2v3": 0.725
+    },
+    "clipboard_tier.criteria.reviewed_adapter": {
+      "1v2": 0.725,
+      "1v3": 0.657,
+      "2v3": 0.67
+    },
+    "storage_tier.instructions": {
+      "1v2": 0.535,
+      "1v3": 0.773,
+      "2v3": 0.585
+    },
+    "storage_tier.criteria.catalogue": {
+      "1v2": 0.705,
+      "1v3": 0.541,
+      "2v3": 0.638
+    },
+    "storage_tier.criteria.companion": {
+      "1v2": 0.75,
+      "1v3": 0.655,
+      "2v3": 0.531
+    },
+    "storage_tier.criteria.reviewed_adapter": {
+      "1v2": 0.684,
+      "1v3": 0.67,
+      "2v3": 0.656
+    }
+  },
+  "max_similarity": 0.773,
+  "identical_pairs": [],
+  "semantic_equivalence": "Manual review: the three requests carry identical facts (all pinned counts, byte sizes, leaf names, tier shapes, constraints, and the assignment rule) and identical option keys; only explanatory phrasing varies. State fields compress the x-r01-1.md measurements without adding or dropping claims."
+}
