@@ -37,7 +37,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H01 | done | lane-h-h01-h09 (`10`) | isolated | none | gates→H02/H03/H04/H05/C01 | worker `f197c925` → main `3c672e77` | register reviewed, env-names-only |
 | H09 | done | lane-h-h01-h09 (`10`) | isolated | none | docs→H14 | worker `d69be330` → main `58060191` | link targets verified present |
 
-| C01 | open (blocked provision) | lane-c-c01 (`11`, finished) | isolated | H01 | runners→C02/C06/H13 | wiring `c37c40fc`+`a3c4a11f` PENDING (not integrated) | Firefox installed, launch timeout macOS 27 |
+| C01 | open (blocked provision) | lane-c-c01 (`11`, finished) | isolated | H01 | runners→C02/C06/H13 | wiring `c37c40fc`+`a3c4a11f` PENDING (not integrated) | Firefox installed, launch timeout macOS 27; coord re-probe 21:5x: still timeout (pid spawns, no pipe) |
 | C03 | ready (A03+E03 done) | — | — | A03, E03 | C-E wire→C04/F05/H06 | — | — |
 | H02 | done | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | worker `9482ff01` → main `2a880eee` | PG 17.11 + DBs verified; mysql 12/12+5/5 |
 | H03 | done | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | worker `9482ff01` → main `2a880eee` | MinIO live verified; s3.test 19/19 (S3-protocol scope) |
@@ -65,6 +65,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E05 | in progress, slices 1-5 integrated | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | 6 worker→`94e3fae8` (partial) | 15/15 hedge legs; verdict pending |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | in progress, slices 1-3 integrated | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | 3 worker→`9bccd6ad` (partial) | 37/37 conformance; artifact pending |
+| F06 | in progress (wave 15) | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | — | — |
 | H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
 
 All other tasks: blocked on prerequisites per the task-list graph.
