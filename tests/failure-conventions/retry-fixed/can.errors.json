@@ -1,8 +1,1 @@
-{
-  "active": [
-    "billing::over_limit",
-    "profiles::forbidden",
-    "profiles::unavailable"
-  ],
-  "retired": []
-}
+{"active": ["billing::over_limit", "profiles::forbidden", "profiles::unavailable"], "retired": []}

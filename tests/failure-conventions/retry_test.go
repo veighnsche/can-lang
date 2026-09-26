@@ -131,9 +131,8 @@ func TestRetryOverAttemptFails(t *testing.T) {
 func addSuspendedToResultData(t *testing.T, ctx context.Context, bundle, project string) *assertReport {
 	t.Helper()
 	replaceOnce(t, project, "can.errors.json",
-		`"profiles::forbidden",`,
-		`"profiles::forbidden",
-    "profiles::suspended",`)
+		`"profiles::forbidden", "profiles::unavailable"`,
+		`"profiles::forbidden", "profiles::suspended", "profiles::unavailable"`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		"provides [profile, unavailable, forbidden, load_failure, load, load_outcome, fetch_profile, read_profile, fetch_traced, read_traced, blast_kind]",
 		"provides [profile, unavailable, forbidden, suspended, load_failure, load, load_outcome, fetch_profile, read_profile, fetch_traced, read_traced, blast_kind]")
@@ -310,9 +309,8 @@ func TestAddErrorIsolationResultData(t *testing.T) {
 func addSuspendedToFixed(t *testing.T, ctx context.Context, bundle, project string) *assertReport {
 	t.Helper()
 	replaceOnce(t, project, "can.errors.json",
-		`"profiles::forbidden",`,
-		`"profiles::forbidden",
-    "profiles::suspended",`)
+		`"profiles::forbidden", "profiles::unavailable"`,
+		`"profiles::forbidden", "profiles::suspended", "profiles::unavailable"`)
 	replaceOnce(t, project, "src/profiles/profiles.can",
 		"provides [profile, unavailable, forbidden, load, retry_load, read_via_service]",
 		"provides [profile, unavailable, forbidden, suspended, load, retry_load, read_via_service]")

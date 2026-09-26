@@ -1,0 +1,27 @@
+package ids
+    provides [user_id, invalid, parse, value]
+    uses []
+/// A validated member score. Only this package constructs or reads it.
+owner record user_id
+    int raw
+/// The presented raw score is not a member score.
+error invalid(int raw)
+/// Smart constructor: positive raws become member scores.
+fn user_id parse
+    emits [invalid]
+    given
+        int raw
+    asserts
+        good: 1 => ok user_id(1)
+        bad: 0 => invalid(0)
+    match raw > 0
+        false => invalid(raw)
+        true => ok user_id(raw)
+/// Owner projection: the validated score.
+fn int value
+    emits []
+    given
+        user_id id
+    asserts
+        good: user_id(1) => ok 1
+    ok id.raw

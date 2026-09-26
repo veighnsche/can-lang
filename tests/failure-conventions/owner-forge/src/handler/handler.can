@@ -15,6 +15,7 @@ fn tier_view tier_for
         gold: call fixture_id(90) => ok tier_view("gold", true)
         silver: call fixture_id(50) => ok tier_view("silver", false)
         bronze: call fixture_id(10) => ok tier_view("bronze", false)
+        forged: ids::user_id(7) => ok tier_view("bronze", false)
     match call ids::value(id)
         ok int score => match score > 80
             false => match score > 40
