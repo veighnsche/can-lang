@@ -56,6 +56,9 @@ const contracts = {
   invalidQuery: errors[3]!.identity,
   some: "test-browser-some",
   none: "test-browser-none",
+  modifiers: "test-browser-modifiers",
+  selection: "test-browser-selection",
+  file: "test-browser-file",
 };
 const setup = (search: string) => {
   const host = { location: { search } } as unknown as BrowserDocument;

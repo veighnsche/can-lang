@@ -1,6 +1,6 @@
 import { success, failure, invoke, type Completion, type AssertionContext } from "../completion.ts";
 import type { OwnerContext } from "../owner-core.ts";
-import { record } from "../data.ts";
+import { array, record } from "../data.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { resourceStateFailure } from "../failure.ts";
 import { isAssertScope } from "../assert/context.ts";
@@ -38,6 +38,11 @@ const maxDelayMs = 2147483647;
 const maxQueryBytes = 8192;
 const maxQueryValueBytes = 256;
 const maxQueryKeyBytes = 64;
+// C02 file bound: snapshots and live reads project at most the first
+// maxSnapshotFiles entries of a file selection, in selection order. The
+// user picks files through native UI, so the list is action-bounded but
+// not Can-bounded; the cap keeps one change event cheap.
+const maxSnapshotFiles = 128;
 export type BrowserDomNode = {
   textContent: string | null;
   readonly parentNode: unknown;
@@ -219,6 +224,132 @@ function stringField(holder: unknown, name: string): string {
   const value = (holder as Record<string, unknown>)[name];
   return typeof value === "string" ? value : "";
 }
+// C02 boolean projection: only a native true survives; absent or
+// mistyped fields read false. Snapshots interpret in control context:
+// checked=false on a text input and on an unchecked checkbox coincide.
+function boolField(holder: unknown, name: string): boolean {
+  if (holder === null || (typeof holder !== "object" && typeof holder !== "function")) return false;
+  return (holder as Record<string, unknown>)[name] === true;
+}
+// C02 select options: only SELECT elements project; every other target
+// reads no options. Length and indexed entries are validated so a broken
+// host shape degrades to empty instead of trapping dispatch.
+function optionList(target: unknown): ArrayLike<unknown> | undefined {
+  if (target === null || (typeof target !== "object" && typeof target !== "function"))
+    return undefined;
+  const tag = (target as { tagName?: unknown }).tagName;
+  if (typeof tag !== "string" || asciiLower(tag) !== "select") return undefined;
+  if (!("options" in target)) return undefined;
+  const options = (target as { options?: unknown }).options;
+  if (options === null || (typeof options !== "object" && typeof options !== "function"))
+    return undefined;
+  const length = (options as { length?: unknown }).length;
+  if (typeof length !== "number" || !Number.isInteger(length) || length < 0) return undefined;
+  return options as ArrayLike<unknown>;
+}
+// C02 multiselect projection: values of the selected options, in tree
+// order. Non-select targets read empty; malformed options are skipped.
+function selectedValues(target: unknown): string[] {
+  const options = optionList(target);
+  if (options === undefined) return [];
+  const out: string[] = [];
+  for (let index = 0; index < options.length; index++) {
+    const option = options[index];
+    if (option === null || (typeof option !== "object" && typeof option !== "function")) continue;
+    const fields = option as Record<string, unknown>;
+    if (fields["selected"] === true && typeof fields["value"] === "string")
+      out.push(fields["value"]);
+  }
+  return out;
+}
+type SnapshotFile = { name: string; size: bigint; mime: string };
+// C02 file projection: name/size/mime metadata only; bytes never cross.
+// Non-file targets read empty, and the list stops at maxSnapshotFiles.
+// Malformed entries are skipped so one broken host item cannot trap the
+// whole change event.
+function snapshotFiles(target: unknown): SnapshotFile[] {
+  if (target === null || (typeof target !== "object" && typeof target !== "function")) return [];
+  if (!("files" in target)) return [];
+  const files = (target as { files?: unknown }).files;
+  if (files === null || (typeof files !== "object" && typeof files !== "function")) return [];
+  const length = (files as { length?: unknown }).length;
+  if (typeof length !== "number" || !Number.isInteger(length) || length < 0) return [];
+  const list = files as ArrayLike<unknown>;
+  const out: SnapshotFile[] = [];
+  for (let index = 0; index < length && out.length < maxSnapshotFiles; index++) {
+    const entry = list[index];
+    if (entry === null || (typeof entry !== "object" && typeof entry !== "function")) continue;
+    const fields = entry as Record<string, unknown>;
+    if (
+      typeof fields["name"] !== "string" ||
+      typeof fields["size"] !== "number" ||
+      !Number.isInteger(fields["size"]) ||
+      (fields["size"] as number) < 0 ||
+      typeof fields["type"] !== "string"
+    )
+      continue;
+    out.push({
+      name: fields["name"] as string,
+      size: BigInt(fields["size"] as number),
+      mime: fields["type"] as string,
+    });
+  }
+  return out;
+}
+type CaretSnapshot = { start: bigint; end: bigint; direction: string };
+// C02 caret projection, shared by snapshots and read_selection: live
+// selectionStart/End/Direction for text controls, else the neutral
+// -1/-1/"none" record. Native selection getters throw on some control
+// kinds (checkbox, file), so any throw or mistyped shape degrades to
+// neutral instead of trapping dispatch. Real selections are always at
+// offsets >= 0, so the neutral record is unambiguous without context.
+function caretSnapshot(target: unknown): CaretSnapshot {
+  const neutral = { start: -1n, end: -1n, direction: "none" };
+  if (target === null || (typeof target !== "object" && typeof target !== "function"))
+    return neutral;
+  let start: unknown;
+  let end: unknown;
+  let direction: unknown;
+  try {
+    const holder = target as Record<string, unknown>;
+    start = holder["selectionStart"];
+    end = holder["selectionEnd"];
+    direction = holder["selectionDirection"];
+  } catch {
+    return neutral;
+  }
+  if (
+    typeof start !== "number" ||
+    typeof end !== "number" ||
+    !Number.isInteger(start) ||
+    !Number.isInteger(end) ||
+    start < 0 ||
+    end < 0 ||
+    (direction !== "forward" && direction !== "backward" && direction !== "none")
+  )
+    return neutral;
+  return { start: BigInt(start), end: BigInt(end), direction };
+}
+// C02 live string value: the element's string value IDL, or undefined
+// when the element carries none (li carries a numeric value IDL, divs
+// carry none at all). Reads and writes deny those controls honestly
+// instead of coercing or growing expando properties.
+function liveStringValue(element: BrowserDomNode): string | undefined {
+  if (!("value" in element)) return undefined;
+  const current = (element as unknown as Record<string, unknown>)["value"];
+  return typeof current === "string" ? current : undefined;
+}
+// C02 live checked state: the boolean checked IDL, or undefined when
+// the element carries none.
+function liveChecked(element: BrowserDomNode): boolean | undefined {
+  if (!("checked" in element)) return undefined;
+  const current = (element as unknown as Record<string, unknown>)["checked"];
+  return typeof current === "boolean" ? current : undefined;
+}
+function boolean(value: unknown): boolean {
+  if (typeof value !== "boolean") throw new TypeError("invalid browser boolean");
+  return value;
+}
 // covers reports whether ancestor is node itself or one of its parents.
 // Appending an ancestor into its own subtree would throw natively, so the
 // factory rejects the cycle as a Can failure instead.
@@ -254,6 +385,9 @@ type Contracts = Readonly<{
   invalidQuery: string;
   some: string;
   none: string;
+  modifiers: string;
+  selection: string;
+  file: string;
 }>;
 export function createBrowser(
   domain: ReturnType<typeof createDomainRuntime>,
@@ -317,13 +451,52 @@ export function createBrowser(
       () => undefined,
     );
   };
-  const snapshot = (event: Event): unknown =>
-    record(contracts.event, [
+  // C02 extended snapshot: kind/target/value/key keep their exact
+  // meaning; checked/selected/files/modifiers/composing/selection are
+  // additive. Every collection is a fresh frozen copy per dispatch, so
+  // no mutable alias escapes into Can.
+  const snapshot = (event: Event): unknown => {
+    const target = (event as { target?: unknown }).target;
+    const caret = caretSnapshot(target);
+    return record(contracts.event, [
       ["kind", event.type],
-      ["target", stringField((event as { target?: unknown }).target, "id")],
-      ["value", stringField((event as { target?: unknown }).target, "value")],
+      ["target", stringField(target, "id")],
+      ["value", stringField(target, "value")],
       ["key", stringField(event, "key")],
+      ["checked", boolField(target, "checked")],
+      ["selected", array(selectedValues(target))],
+      [
+        "files",
+        array(
+          snapshotFiles(target).map((file) =>
+            record(contracts.file, [
+              ["name", file.name],
+              ["size", file.size],
+              ["mime", file.mime],
+            ]),
+          ),
+        ),
+      ],
+      [
+        "modifiers",
+        record(contracts.modifiers, [
+          ["alt", boolField(event, "altKey")],
+          ["ctrl", boolField(event, "ctrlKey")],
+          ["meta", boolField(event, "metaKey")],
+          ["shift", boolField(event, "shiftKey")],
+        ]),
+      ],
+      ["composing", boolField(event, "isComposing")],
+      [
+        "selection",
+        record(contracts.selection, [
+          ["start", caret.start],
+          ["end", caret.end],
+          ["direction", caret.direction],
+        ]),
+      ],
     ]);
+  };
   return Object.freeze({
     async mount(root: unknown, _context?: TrailingContext) {
       const id = string(root);
@@ -470,6 +643,163 @@ export function createBrowser(
       if (!liveNode(found)) return gone();
       if (!found.text) (found.dom as BrowserElement).focus();
       return success(undefined);
+    },
+    // C02 live value write: assigns the string value IDL natively, so
+    // dirty controls (where set_attribute would only move the default)
+    // normalize and reset. Text nodes and elements without a string
+    // value IDL are denied; no event is dispatched.
+    async setValue(node: unknown, value: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      if (liveStringValue(found.dom) === undefined) return denied("property");
+      (found.dom as unknown as Record<string, unknown>)["value"] = string(value);
+      return success(undefined);
+    },
+    // C02 live checked write: assigns the boolean checked IDL natively.
+    // Elements without a checked IDL are denied; no event is dispatched.
+    async setChecked(node: unknown, checked: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      if (liveChecked(found.dom) === undefined) return denied("property");
+      (found.dom as unknown as Record<string, unknown>)["checked"] = boolean(checked);
+      return success(undefined);
+    },
+    // C02 multiselect write: marks selected exactly the options whose
+    // value appears in values, in tree order. Unknown values match
+    // nothing; on single-select controls the last match wins natively.
+    // Non-select elements are denied; no event is dispatched.
+    async setSelected(node: unknown, values: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      const options = optionList(found.dom);
+      if (options === undefined) return denied("property");
+      if (!Array.isArray(values)) throw new TypeError("invalid browser string array");
+      const wanted = new Set<string>();
+      for (const entry of values) wanted.add(string(entry));
+      for (let index = 0; index < options.length; index++) {
+        const option = options[index];
+        if (option === null || (typeof option !== "object" && typeof option !== "function"))
+          continue;
+        const fields = option as Record<string, unknown>;
+        if (typeof fields["value"] !== "string") continue;
+        fields["selected"] = wanted.has(fields["value"]);
+      }
+      return success(undefined);
+    },
+    // C02 caret write: setSelectionRange natively with an explicit
+    // direction (forward/backward/none, ASCII case-insensitive). Bounds
+    // reject instead of clamping: 0 <= start <= end <= value length.
+    // Controls without a string value IDL or selection API are denied,
+    // as are native throws (control kinds that cannot take a selection).
+    async setSelection(
+      node: unknown,
+      start: unknown,
+      end: unknown,
+      direction: unknown,
+      _context?: TrailingContext,
+    ) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      const way = asciiLower(string(direction));
+      if (way !== "forward" && way !== "backward" && way !== "none") return denied("direction");
+      const current = liveStringValue(found.dom);
+      if (current === undefined) return denied("property");
+      const setter = (found.dom as unknown as Record<string, unknown>)["setSelectionRange"];
+      if (typeof setter !== "function") return denied("property");
+      const from = integer(start);
+      const to = integer(end);
+      if (from < 0n || to < from || to > BigInt(current.length)) return denied("selection");
+      try {
+        (setter as (from: number, to: number, way: string) => void).call(
+          found.dom,
+          Number(from),
+          Number(to),
+          way,
+        );
+      } catch {
+        return denied("selection");
+      }
+      return success(undefined);
+    },
+    // C02 live value read: the current string value IDL, covering
+    // save-time reads outside input events and autofilled content.
+    async readValue(node: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      const current = liveStringValue(found.dom);
+      if (current === undefined) return denied("property");
+      return success(current);
+    },
+    // C02 live checked read: the current boolean checked IDL.
+    async readChecked(node: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      const current = liveChecked(found.dom);
+      if (current === undefined) return denied("property");
+      return success(current);
+    },
+    // C02 live multiselect read: selected option values in tree order.
+    // A fresh frozen array per call, so no mutable alias escapes.
+    async readSelected(node: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      if (optionList(found.dom) === undefined) return denied("property");
+      return success(array(selectedValues(found.dom)));
+    },
+    // C02 live caret read: the shared caret projection, total like the
+    // snapshot — controls without a text selection read -1/-1/"none".
+    async readSelection(node: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      const caret = caretSnapshot(found.dom);
+      return success(
+        record(contracts.selection, [
+          ["start", caret.start],
+          ["end", caret.end],
+          ["direction", caret.direction],
+        ]),
+      );
+    },
+    // C02 live file read: name/size/mime metadata up to
+    // maxSnapshotFiles, fresh frozen records per call. Bytes never cross.
+    async readFiles(node: unknown, _context?: TrailingContext) {
+      if (isAssertScope(node)) return gone();
+      const found = read(nodes, node);
+      if (!liveNode(found)) return gone();
+      if (found.text) return denied("text_node");
+      if (!("files" in found.dom)) return denied("property");
+      const files = (found.dom as unknown as { files?: unknown }).files;
+      if (files === null || (typeof files !== "object" && typeof files !== "function"))
+        return denied("property");
+      const length = (files as { length?: unknown }).length;
+      if (typeof length !== "number" || !Number.isInteger(length) || length < 0)
+        return denied("property");
+      return success(
+        array(
+          snapshotFiles(found.dom).map((file) =>
+            record(contracts.file, [
+              ["name", file.name],
+              ["size", file.size],
+              ["mime", file.mime],
+            ]),
+          ),
+        ),
+      );
     },
     async onEvent(
       view: unknown,

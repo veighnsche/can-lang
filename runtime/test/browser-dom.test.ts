@@ -63,6 +63,9 @@ const contracts = {
   invalidQuery: errors[4]!.identity,
   some: "test-browser-some",
   none: "test-browser-none",
+  modifiers: "test-browser-modifiers",
+  selection: "test-browser-selection",
+  file: "test-browser-file",
 };
 const stateContracts = {
   disposed: errors[1]!.identity,
