@@ -103,6 +103,14 @@ export function requestSnapshot(value: unknown): Snapshot {
   if (!object(value) || !requests.has(value)) throw resourceStateFailure(undefined, origin);
   return requests.get(value)!;
 }
+// Private native handle for the request reporter: dispatch layers resolve
+// the per-request correlation through it. Unknown, forged, or revoked
+// tokens yield undefined instead of a failure so reporting paths stay
+// total; the reporter falls back to a fresh correlation.
+export function requestNativeRequest(value: unknown): Request | undefined {
+  const cell = object(value) && bodies.has(value) ? bodies.get(value)! : undefined;
+  return cell === undefined ? undefined : cell.native;
+}
 export function isRequest(value: unknown): boolean {
   return object(value) && requests.has(value);
 }

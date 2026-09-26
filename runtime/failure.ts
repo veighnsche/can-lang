@@ -37,6 +37,18 @@ let nextOccurrence = 1n;
 export function allocateOccurrenceID(): bigint {
   return nextOccurrence++;
 }
+// Exactly-once-per-occurrence discipline shared by the main, late-owner,
+// browser, and request reporters (R12). Each reporter claims before it
+// delivers; a lost claim means exactly one delivery was attempted. The
+// terminal main reporter always delivers and only marks: the other three
+// skip claimed occurrences.
+const reported = new WeakSet<object>();
+export function claimFailureReport(occurrence: object): boolean {
+  if (!objectLike(occurrence)) throw new TypeError("invalid failure occurrence");
+  if (reported.has(occurrence)) return false;
+  reported.add(occurrence);
+  return true;
+}
 const objectLike = (value: unknown): value is object =>
   value !== null && (typeof value === "object" || typeof value === "function");
 function freezeOrigin(origin: FailureOrigin): FailureOrigin {

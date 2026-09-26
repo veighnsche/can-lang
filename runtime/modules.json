@@ -152,6 +152,14 @@
       "./fetch.ts",
       "./request.ts"
     ],
+    "transport/request-report.ts": [
+      "../completion.ts",
+      "../diagnostics-core.ts",
+      "../domain-core.ts",
+      "../failure.ts",
+      "../outbound/identity.ts"
+    ],
+    "outbound/identity.ts": [],
     "codec/document.ts": [
       "../bytes.ts",
       "./budget.ts",
@@ -490,7 +498,8 @@
       "../transport/media.ts",
       "./http.ts",
       "./action-routes.ts",
-      "./router.ts"
+      "./router.ts",
+      "../transport/request-report.ts"
     ],
     "platform/action-client.ts": [
       "../completion.ts",
@@ -510,7 +519,8 @@
       "../transport/media.ts",
       "./form.ts",
       "./html.ts",
-      "./action-routes.ts"
+      "./action-routes.ts",
+      "../transport/request-report.ts"
     ],
     "platform/assets.ts": [],
     "platform/browser.ts": [
@@ -535,7 +545,8 @@
       "./http.ts",
       "./router.ts",
       "./websocket.ts",
-      "./action-routes.ts"
+      "./action-routes.ts",
+      "../transport/request-report.ts"
     ],
     "platform/websocket.ts": [
       "../completion.ts",

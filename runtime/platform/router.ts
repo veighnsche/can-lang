@@ -9,6 +9,7 @@ import { mediaType } from "../transport/media.ts";
 import {
   normalizedPath,
   requestSnapshot,
+  requestNativeRequest,
   abandonRequest,
   revokeRequest,
   nativeResponse,
@@ -17,6 +18,7 @@ import {
   isUpgraded,
   UPGRADED_RESPONSE,
 } from "./http.ts";
+import { noteRequestSource } from "../transport/request-report.ts";
 import { decodeActionForm, FormIssue, type FormSchema } from "./form.ts";
 import { renderSafe } from "./html.ts";
 import {
@@ -110,6 +112,9 @@ export async function dispatch(
   // Static precedence: an exact legacy match wins over any captured action
   // before strict target validation can rule the raw spelling out.
   if (route !== undefined) {
+    // Authored mount metadata only: the route method and static source
+    // come from the validated mount, never the request line.
+    noteRequestSource(requestNativeRequest(request), `route:${route.method} ${route.source}`);
     try {
       const completed = await invoke(() => route.callback(request, context), origin);
       if (completed.kind !== "ok") return completed;
@@ -134,6 +139,7 @@ export async function dispatch(
   if (match.kind === "match") {
     const callback = actions.callbacks.get(match.identity);
     if (callback === undefined) throw new TypeError("invalid compiler action route");
+    noteRequestSource(requestNativeRequest(request), "action:" + match.identity);
     try {
       const completed = await invoke(() => callback(request, match.captures, context), origin);
       if (completed.kind !== "ok") return completed;

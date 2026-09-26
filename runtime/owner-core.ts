@@ -5,6 +5,7 @@ import { invoke, checkedCompletion, success, failure, type Completion } from "./
 import { dataArray, dataKeys, dataProperty, recordIdentity, opaqueContents } from "./data.ts";
 import {
   cleanupFailure,
+  claimFailureReport,
   resourceStateFailure,
   standardFailureDiagnostics,
   type FailureOrigin,
@@ -129,6 +130,9 @@ function changed(root: Root): Promise<void> {
 function emit(root: Root, failure: StandardFailure, phase: "late" | "cleanup"): void {
   if (root.reported.has(failure)) return;
   root.reported.add(failure);
+  // The shared occurrence claim runs second: an occurrence already
+  // delivered by the main, browser, or request reporter stays single.
+  if (!claimFailureReport(failure)) return;
   const details = standardFailureDiagnostics(failure);
   const diagnostic = Object.freeze({
     kind: "can.runtime-diagnostic" as const,

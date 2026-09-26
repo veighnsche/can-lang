@@ -6,7 +6,7 @@
 import { checkedCompletion, type Completion } from "../completion.ts";
 import { configureFromData, locateOrigin } from "../diagnostics-core.ts";
 import { domainFailureDiagnostics, isDomainFailure } from "../domain-core.ts";
-import { isStandardFailure, standardFailureDiagnostics } from "../failure.ts";
+import { claimFailureReport, isStandardFailure, standardFailureDiagnostics } from "../failure.ts";
 
 export type {
   DiagnosticFrame,
@@ -59,6 +59,9 @@ export function reportBrowserDiagnostic(
   const occurrence = completion.value as object;
   if (reported.has(occurrence)) return undefined;
   reported.add(occurrence);
+  // The shared occurrence claim runs second: an occurrence already
+  // delivered by the main, late-owner, or request reporter stays single.
+  if (!claimFailureReport(occurrence)) return undefined;
   let category: string;
   let identity: string;
   let file = "";

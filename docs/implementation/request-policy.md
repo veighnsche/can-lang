@@ -3,7 +3,9 @@
 Source: R04; F-R04-01/04/06; C-C. Task E01 publishes the base policy and
 vocabulary; E02/E04/E06 implement the conditioned native and escalation
 mechanisms. Nothing in this spec claims a native interruption meaning
-until its probe qualifies it (P07.5).
+until its probe qualifies it (P07.5). Request failure reporting
+(R12/E06) is specified in
+[request-failure-reporting.md](request-failure-reporting.md).
 
 ## 1. Shared request budget (implemented, E01)
 

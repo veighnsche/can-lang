@@ -26,6 +26,11 @@ import {
   type UpgradeServer,
 } from "./http.ts";
 import {
+  noteRequestSource,
+  reportRequestFailure,
+  requestContext,
+} from "../transport/request-report.ts";
+import {
   matchActionRoute,
   actionReject,
   bunRouteKeys,
@@ -242,6 +247,9 @@ export function createServer(
               requestSnapshot(snapshot).rawPath,
             );
             if (match.kind === "match") {
+              // The boundary report names the checked action identity; the
+              // failure itself propagates to serveOuter for the single report.
+              noteRequestSource(native, "action:" + match.identity);
               try {
                 const completed = await invoke(
                   () => actions.invoke(match.identity, match.captures, snapshot, context),
@@ -300,15 +308,20 @@ export function createServer(
       const serveOuter =
         (guardedFetch: (native: Request) => Promise<Completion<Response>>) =>
         async (native: Request): Promise<Response> => {
+          // The report context resolves lazily: dispatch notes the source
+          // during guardedFetch, after this boundary is entered.
           try {
             const reserved = await assets.serve(native);
             if (reserved) return withPolicy(reserved);
             const completed = await guardedFetch(native);
             if (completed.kind === "ok" && isUpgradedResponse(completed.value))
               return undefined as unknown as Response;
+            if (completed.kind !== "ok")
+              await reportRequestFailure(completed, requestContext(native));
             const answered = completed.kind === "ok" ? completed.value : fixed(500);
             return withPolicy(await pairDocument(native, answered, assets.browserScript));
-          } catch {
+          } catch (cause) {
+            await reportRequestFailure(cause, requestContext(native));
             return withPolicy(fixed(500));
           }
         };

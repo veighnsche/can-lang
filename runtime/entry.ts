@@ -4,7 +4,7 @@ import { runOwnedRoot } from "./owner.ts";
 import { invoke, success, type Completion } from "./completion.ts";
 import { array } from "./data.ts";
 import { domainFailureDiagnostics } from "./domain.ts";
-import { standardFailureDiagnostics, type FailureOrigin } from "./failure.ts";
+import { claimFailureReport, standardFailureDiagnostics, type FailureOrigin } from "./failure.ts";
 
 import { diagnosticFrames } from "./diagnostics.ts";
 
@@ -88,6 +88,10 @@ export async function runEntry(
   );
   const completion = owned.completion;
   if (completion.kind === "ok") return owned.cleanupFailed ? 1 : 0;
+  // The terminal report always delivers, including for a repeated
+  // occurrence; the shared claim still marks it observed so the
+  // late-owner, browser, and request reporters stay single after main.
+  claimFailureReport(completion.value as object);
   try {
     await report(diagnostic(completion, phase));
   } catch {

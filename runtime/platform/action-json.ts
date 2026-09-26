@@ -1,4 +1,11 @@
-import { invoke, success, failure, type Completion, type AssertionContext } from "../completion.ts";
+import {
+  invoke,
+  success,
+  failure,
+  caught,
+  type Completion,
+  type AssertionContext,
+} from "../completion.ts";
 import { array, record, recordIdentity } from "../data.ts";
 import { ownBytes, copyBytes, byteLength } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
@@ -6,7 +13,12 @@ import { CodecIssue } from "../codec/budget.ts";
 import { decodeJSON, encodeJSON, type Schema } from "../codec/json.ts";
 import { graph } from "../codec/project.ts";
 import { jsonRequestMedia, responseMedia } from "../transport/media.ts";
-import { requestSnapshot, createResponses } from "./http.ts";
+import { requestSnapshot, requestNativeRequest, createResponses } from "./http.ts";
+import {
+  noteRequestSource,
+  reportRequestFailure,
+  requestContext,
+} from "../transport/request-report.ts";
 import {
   compileActionRoutes,
   buildActionURL,
@@ -159,6 +171,11 @@ export function createJsonActions(
   function buildCallback(entry: CheckedEntry, handler: ActionJsonHandler): MountedCallback {
     return async (request: unknown, context?: AssertionContext): Promise<Completion<unknown>> => {
       const snapshot = requestSnapshot(request);
+      // The adapter converts unexpected failures to fixed 500s, so it
+      // reports them here: the boundary only sees a successful response.
+      // Expected client rejections below stay silent by policy.
+      noteRequestSource(requestNativeRequest(request), "action:" + entry.identity);
+      const report = requestContext(requestNativeRequest(request));
       let inputs: readonly unknown[];
       if (entry.method === "GET") {
         // GET-load is bodyless: any actual body bytes are a client violation,
@@ -182,23 +199,43 @@ export function createJsonActions(
         }
       }
       const completed = await invoke(() => handler(inputs, context), origin);
-      if (completed.kind !== "ok") return fixed(500, "Internal Server Error");
+      if (completed.kind !== "ok") {
+        await reportRequestFailure(completed, report);
+        return fixed(500, "Internal Server Error");
+      }
       const leaf = recordIdentity(completed.value);
       const kase = entry.cases.find((row) => row.leaf === leaf);
-      if (leaf === undefined || kase === undefined) return fixed(500, "Internal Server Error");
+      if (leaf === undefined || kase === undefined) {
+        // An undeclared leaf is an internal contract violation with no
+        // occurrence of its own; the fixed text boxes a fresh redacted one.
+        await reportRequestFailure(
+          caught(new TypeError("action response leaf outside declared cases"), origin),
+          report,
+        );
+        return fixed(500, "Internal Server Error");
+      }
       // Every domain outcome renders its declared finite status with a JSON
       // representation; the adapter never invents a status or serves HTML.
       const code = await responses.makeBodyStatus(BigInt(kase.status));
-      if (code.kind !== "ok") return fixed(500, "Internal Server Error");
+      if (code.kind !== "ok") {
+        await reportRequestFailure(code, report);
+        return fixed(500, "Internal Server Error");
+      }
       const headers = await responses.emptyHeaders();
-      if (headers.kind !== "ok") return fixed(500, "Internal Server Error");
+      if (headers.kind !== "ok") {
+        await reportRequestFailure(headers, report);
+        return fixed(500, "Internal Server Error");
+      }
       const rendered = await responses.json(
         entry.response,
         code.value,
         headers.value,
         completed.value,
       );
-      if (rendered.kind !== "ok") return fixed(500, "Internal Server Error");
+      if (rendered.kind !== "ok") {
+        await reportRequestFailure(rendered, report);
+        return fixed(500, "Internal Server Error");
+      }
       return rendered;
     };
   }
