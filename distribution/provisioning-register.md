@@ -75,25 +75,43 @@ the row when evidence lands. No IDs are recorded yet.
 
 ## BROWSERS — Chromium, WebKit, Firefox
 
-- Status: **PARTIAL** — Chromium and WebKit pinned and launching;
-  Firefox runner **BLOCKED (environmental)**.
-- C01 evidence (2026-09-26): Firefox 141.0 (build v1490) installs via
-  Playwright 1.55.1 but launch times out on macOS 27 (coordinator
-  reproduced; Chromium 140.0.7339.186 + WebKit 26.0 launch as controls).
-  Gate5/CI wiring commits exist but are NOT integrated: the probe
-  fail-fasts, which would red the suite on this Mac. Re-integrate when
-  Firefox launches (fixed env, x86 window, or CI macos-15).
+- Status: **READY** — Chromium and WebKit native; Firefox via the
+  pinned container runner (native impossible on macOS 27).
+- C01 evidence (2026-09-26): Firefox 141.0 (build v1490) cannot launch
+  natively on macOS 27 (juggler pipe never connects: sandbox-extension
+  EPERM + RenderCompositorSWGL framebuffer failure; Firefox 155 worse:
+  the kernel denies its vendor dir even for root), so Firefox 141 runs
+  in the pinned native-arm64 container
+  `mcr.microsoft.com/playwright:v1.55.1-noble@sha256:2f29…03ad1c`
+  (`firefox.launchServer`, ws on loopback `127.0.0.1:18783`) with
+  loopback forwarders (container `127.0.0.1:18651–18654` → Mac leg
+  servers) preserving the exact loopback origin every leg asserts. A
+  host alias was tried and rejected by evidence: the alias origin is
+  insecure (`crypto.*` undefined → bundle startup fault) and fails the
+  app's per-request `exact_origin` gate (403s). Controls: Chromium
+  140.0.7339.186 + WebKit 26.0 launch natively. Platform skew is
+  pinned, not hidden: Firefox legs run on linux/arm64 (aarch64
+  verified, no emulation) while Chromium/WebKit run on macOS — same
+  pinned Playwright 1.55.1 + Firefox 141 everywhere, and the CI
+  macos-15 native-launch path stays intact. Operator record
+  [provision-local.md](provision-local.md).
 - Owner: C executes browser provisioning (task C01); H retains this
   register row.
 - Consumers: C02–C07 gate legs, H12 paired-deploy qualification.
-- Pins: Playwright 1.55.1 (`tests/integration/browser/bun.lock`);
-  Chromium 140.0.7339.186; WebKit 26.0; Firefox pin assigned by C01
-  (accepted by `invoice-contract.mjs`, absent from the gate5 matrix).
-- Credential env names: none (no secrets; runners are local).
-- Assigned resources: separate Playwright profiles/ports per parallel
-  run (C01 records the Firefox runner when provisioned).
-- Evidence IDs: none recorded.
-- Capacity: parallel-safe via separate profiles/ports.
+- Pins: Playwright 1.55.1 (`tests/integration/browser/bun.lock`,
+  container client exact); Chromium 140.0.7339.186; WebKit 26.0;
+  Firefox 141.0 (build v1490) via the container runner (native
+  `launch()` on CI macos-15).
+- Credential env names: `CAN_FIREFOX_WS` (container ws endpoint incl.
+  per-start token; process env only).
+- Assigned resources: container `can-ff` + volume `can-ff-srv`, ws port
+  18783; gate5 firefox legs on ports 18651–18654; fresh browser context
+  per leg on the shared server (isolated profiles).
+- Evidence IDs: `EV-C01-001` (runner provision: versions, ports,
+  availability); `EV-C01-002` (gate5 12-leg matrix green incl. every
+  firefox leg).
+- Capacity: parallel-safe via separate profiles/ports; one shared
+  Firefox server with isolated contexts per leg.
 
 ## AI-CAP — capped AI evaluation access
 
