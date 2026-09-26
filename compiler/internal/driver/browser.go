@@ -57,6 +57,7 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
+	stopCheck := phaseTimer("browser.check")
 	program, err := check.CheckBrowserProgram(store.Graph)
 	if err != nil {
 		return BuildReport{}, err
@@ -64,7 +65,9 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	if err := browser.CheckProgram(program); err != nil {
 		return BuildReport{}, err
 	}
+	stopCheck()
 	stableRootOrder(program.Assertions)
+	stopTestStage := phaseTimer("browser.test-stage")
 	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs, nil)
 	if err != nil {
 		return BuildReport{}, err
@@ -79,23 +82,29 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopTestStage()
 	roots := make([]ir.AssertionRoot, 0, len(program.Assertions))
 	for _, test := range program.Assertions {
 		roots = append(roots, test.Root)
 	}
+	stopSupervised := phaseTimer("browser.supervised")
 	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr, jobs)
 	lease.Close()
 	if err != nil {
 		return BuildReport{}, fmt.Errorf("build verification failed: %w", err)
 	}
+	stopSupervised()
 	summary, err := summarizeBuildRoots(entries)
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopProdStage := phaseTimer("browser.prod-stage")
 	prodID, prepared, err := r.stageBrowserProgram(ctx, store, program, timeoutMs)
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopProdStage()
+	stopPublish := phaseTimer("browser.publish")
 	prior, err := store.currentBuildID()
 	if err != nil {
 		_ = store.DiscardGeneration(prodID)
@@ -106,6 +115,7 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 		return BuildReport{}, err
 	}
 	discardTest = false
+	stopPublish()
 	return BuildReport{SchemaVersion: 1, Kind: "can.build", Target: string(browser.TargetBrowser), BuildID: prepared.BuildID(), Directory: directory, Entry: browser.BrowserEntry, Asset: browser.AssetPath, Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
 }
 
@@ -119,14 +129,19 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 	if err != nil {
 		return "", nil, err
 	}
+	stopEmit := phaseTimer("browser-prod.emit")
 	artifacts, err := emit.BrowserModules(program, assets.Directory, assets.Files)
 	if err != nil {
 		return "", nil, err
 	}
+	stopEmit()
+	stopMaps := phaseTimer("browser-prod.source-maps")
 	artifacts, err = r.encodeSourceMaps(ctx, program, artifacts)
 	if err != nil {
 		return "", nil, err
 	}
+	stopMaps()
+	stopSeal := phaseTimer("browser-prod.seal")
 	table, err := sealBrowserDiagnosticTable(artifacts)
 	if err != nil {
 		return "", nil, err
@@ -135,10 +150,14 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 	if err != nil {
 		return "", nil, err
 	}
+	stopSeal()
+	stopAsset := phaseTimer("browser-prod.asset")
 	artifacts, err = appendBrowserAsset(artifacts)
 	if err != nil {
 		return "", nil, err
 	}
+	stopAsset()
+	stopAudit := phaseTimer("browser-prod.audit")
 	if err := browser.AuditArtifacts(artifacts); err != nil {
 		return "", nil, err
 	}
@@ -164,22 +183,31 @@ func (r *Runtime) stageBrowserProgram(ctx context.Context, store *OutputStore, p
 		Minify    bool
 	}{"browser", "external", false}, roots, timeoutMs})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
+	stopAudit()
+	stopBundle := phaseTimer("browser-prod.bundle")
 	bundled, err := r.buildBrowserBundle(ctx, store.Graph, inputs, browserBundlerToolchain(inputs.Compiler, inputs.Runtime), artifacts, table)
 	if err != nil {
 		return "", nil, err
 	}
 	artifacts = append(artifacts, bundled...)
+	stopBundle()
+	stopPrepare := phaseTimer("browser-prod.prepare")
 	prepared, err := PrepareOutput(inputs, browser.BrowserEntry, artifacts)
 	if err != nil {
 		return "", nil, err
 	}
+	stopPrepare()
+	stopValidate := phaseTimer("browser-prod.validate")
 	if err = r.ValidateOutput(ctx, prepared); err != nil {
 		return "", nil, err
 	}
+	stopValidate()
+	stopStage := phaseTimer("browser-prod.stage")
 	buildID, _, err := store.Stage(prepared)
 	if err != nil {
 		return "", nil, err
 	}
+	stopStage()
 	return buildID, prepared, nil
 }
 

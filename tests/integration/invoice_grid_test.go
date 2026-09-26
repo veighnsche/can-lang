@@ -38,6 +38,7 @@ func canlcBrowser(t *testing.T, ctx context.Context, bundle, home string, args .
 
 func TestInvoiceGridStagedBrowserBuild(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged grid execution")

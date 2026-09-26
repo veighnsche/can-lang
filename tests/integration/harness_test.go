@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -55,7 +56,38 @@ var (
 	// harnessBuilds counts real cache fills in this process. Tests use it
 	// to prove sharing; it is not a limit.
 	harnessBuilds atomic.Int64
+
+	// heavySlots bounds concurrently running heavyweight tests (browser
+	// + servers + builds, ~2GB each). Four of them coincide on a 16GB
+	// host and the suite collapses into swap with multi-10s stalls;
+	// light tests run free within the go -parallel budget.
+	heavySlots = make(chan struct{}, heavySlotCap())
 )
+
+// heavySlotCap sizes the heavyweight-test semaphore: 3 by default,
+// CAN_TEST_HEAVY_SLOTS to tune for the host. Minimum 1.
+func heavySlotCap() int {
+	if raw := os.Getenv("CAN_TEST_HEAVY_SLOTS"); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil && n >= 1 {
+			return n
+		}
+	}
+	return 3
+}
+
+// acquireHeavy takes a heavyweight slot, released at test end. Call it
+// right after t.Parallel: acquiring before the pause would deadlock the
+// sequential phase, and Cleanup releases on pass, fail, or skip.
+func acquireHeavy(t *testing.T) {
+	t.Helper()
+	acquireFrom(t, heavySlots)
+}
+
+func acquireFrom(t *testing.T, slots chan struct{}) {
+	t.Helper()
+	slots <- struct{}{}
+	t.Cleanup(func() { <-slots })
+}
 
 // harnessBundle returns the shared staged toolchain bundle for the given
 // upstream archive, building it once on cache miss. Callers keep using
@@ -69,16 +101,19 @@ func harnessBundle(t *testing.T, ctx context.Context, archive string) (string, e
 	key := harnessKey(t, sourceRoot, archive)
 	root := harnessRoot()
 	entry := filepath.Join(root, "bundle-"+key)
+	// Memos are per cache root: the same content key in two roots
+	// names two different entries.
+	memo := root + "\x00" + key
 
 	harnessMu.Lock()
-	if path, ok := harnessPaths[key]; ok {
+	if path, ok := harnessPaths[memo]; ok {
 		harnessMu.Unlock()
 		// A contaminated memo falls through to fill, which rebuilds.
 		if harnessEntryComplete(path, key) && harnessVerify(path) == nil {
 			return path, nil
 		}
 		harnessMu.Lock()
-		delete(harnessPaths, key)
+		delete(harnessPaths, memo)
 		harnessMu.Unlock()
 	} else {
 		harnessMu.Unlock()
@@ -89,7 +124,7 @@ func harnessBundle(t *testing.T, ctx context.Context, archive string) (string, e
 		return "", err
 	}
 	harnessMu.Lock()
-	harnessPaths[key] = path
+	harnessPaths[memo] = path
 	harnessMu.Unlock()
 	return path, nil
 }

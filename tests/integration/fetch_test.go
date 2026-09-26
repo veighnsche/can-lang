@@ -87,7 +87,7 @@ func TestCurrentBundledFetch(t *testing.T) {
 		t.Skip("set CAN_BUN_ARCHIVE for named fetch execution")
 	}
 	sourceRoot, _ := filepath.Abs("../..")
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {

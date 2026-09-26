@@ -165,9 +165,11 @@ try {
     await check("contract-invalid", async () => {
       await fill("#id\\:k1", "");
       await page.locator("#save").click();
+      // 45s: the 422 arrives after server-side validation, which can queue
+      // behind sibling suites on a loaded parallel runner.
       await page.waitForResponse(
         (response) => response.request().method() === "POST" && response.status() === 422,
-        { timeout: 15000 }
+        { timeout: 45000 }
       );
       await page.waitForFunction(() =>
         document.querySelector("#status")?.textContent?.match(/empty line id/)

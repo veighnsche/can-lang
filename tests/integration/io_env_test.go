@@ -19,7 +19,9 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 		t.Skip("set CAN_BUN_ARCHIVE")
 	}
 	sourceRoot, _ := filepath.Abs("../..")
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	// Subtests share one staged root, so they stay serial; budget for a
+	// loaded parallel suite instead of an idle machine.
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {
@@ -42,7 +44,7 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json"}`)
 	write("can.errors.json", `{"active":[],"retired":[]}`)
 	// Empty PATH and a hostile startup option also verify original-environment lookup.
-	run := func(command string, input []byte, args ...string) (int, []byte, string) {
+	run := func(t *testing.T, command string, input []byte, args ...string) (int, []byte, string) {
 		t.Helper()
 		argv := []string{"-p", "(version 1)(allow default)(deny network*)", filepath.Join(bundle, "bin/canlc"), command, root}
 		if len(args) > 0 {
@@ -71,17 +73,17 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 				t.Fatal(err)
 			}
 			write("src/main.can", string(source))
-			if code, out, diag := run("assert", []byte("must not be read")); code != 0 || diag != "" || !strings.Contains(string(out), "supplied-completion") {
+			if code, out, diag := run(t, "assert", []byte("must not be read")); code != 0 || diag != "" || !strings.Contains(string(out), "supplied-completion") {
 				t.Fatalf("boundary fixtures: %d %s %s", code, out, diag)
 			}
 			if name == "environment" {
 				for _, tc := range []struct{ name, want string }{{"VALUE", "hé😀"}, {"EMPTY", ""}, {"BUN_OPTIONS", "--preload=/must-not-execute.ts"}} {
-					if code, out, diag := run("run", nil, tc.name); code != 0 || string(out) != tc.want || diag != "" {
+					if code, out, diag := run(t, "run", nil, tc.name); code != 0 || string(out) != tc.want || diag != "" {
 						t.Fatalf("environment %s: %d %q %s", tc.name, code, out, diag)
 					}
 				}
 				for _, tc := range []struct{ name, want string }{{"MISSING", `"error":"http::credentials_missing"`}, {"lower", `"error":"env::invalid_name"`}, {"A=B", `"error":"env::invalid_name"`}, {"", `"error":"env::invalid_name"`}} {
-					if code, out, diag := run("run", nil, tc.name); code != 1 || len(out) != 0 || !strings.Contains(diag, tc.want) {
+					if code, out, diag := run(t, "run", nil, tc.name); code != 1 || len(out) != 0 || !strings.Contains(diag, tc.want) {
 						t.Fatalf("environment error %s: %d %q %s", tc.name, code, out, diag)
 					}
 				}
@@ -91,7 +93,7 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 					samples = append(samples, []byte{0, 255, 128, 10})
 				}
 				for _, sample := range samples {
-					code, out, diag := run("run", sample)
+					code, out, diag := run(t, "run", sample)
 					wantDiag := ""
 					if name == "input" {
 						wantDiag = string(sample)
@@ -100,30 +102,30 @@ func TestCurrentBundledInputEnvironment(t *testing.T) {
 						t.Fatalf("input roundtrip: %d %q %q", code, out, diag)
 					}
 				}
-				if code, out, diag := run("run", bytes.Repeat([]byte{'x'}, 17)); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
+				if code, out, diag := run(t, "run", bytes.Repeat([]byte{'x'}, 17)); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
 					t.Fatalf("overflow: %d %q %s", code, out, diag)
 				}
 				if name == "input-text" {
-					if code, out, diag := run("run", []byte{255}); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"codec::invalid_data"`) {
+					if code, out, diag := run(t, "run", []byte{255}); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"codec::invalid_data"`) {
 						t.Fatalf("UTF-8: %d %q %s", code, out, diag)
 					}
 				}
 				// Run verifies first, so limit mutations must stay consistent
 				// with their fixture rows; the live path still enforces them.
 				write("src/main.can", strings.ReplaceAll(strings.ReplaceAll(string(source), "(16)", "(-1)"), "sample: 16 =>", "sample: -1 =>"))
-				if code, out, diag := run("run", nil); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
+				if code, out, diag := run(t, "run", nil); code != 1 || len(out) != 0 || !strings.Contains(diag, `"error":"io::limit_exceeded"`) {
 					t.Fatalf("negative limit: %d %q %s", code, out, diag)
 				}
 				if name == "input" {
 					large := bytes.Repeat([]byte{'x'}, 1048576)
 					write("src/main.can", strings.ReplaceAll(strings.ReplaceAll(string(source), "(16)", "(1048576)"), "sample: 16 =>", "sample: 1048576 =>"))
-					if code, out, diag := run("run", large); code != 0 || !bytes.Equal(out, large) || diag != string(large) {
+					if code, out, diag := run(t, "run", large); code != 0 || !bytes.Equal(out, large) || diag != string(large) {
 						t.Fatalf("awaited output drain: %d %d %d", code, len(out), len(diag))
 					}
 				}
 				write("src/main.can", string(source))
 			}
-			code, out, diag := run("build", nil)
+			code, out, diag := run(t, "build", nil)
 			if code != 0 {
 				t.Fatalf("build: %d %s %s", code, out, diag)
 			}

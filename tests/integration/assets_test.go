@@ -349,6 +349,7 @@ console.log("compiled asset loopback passed");
 
 func TestCurrentBrowserAssets(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged browser execution")

@@ -90,10 +90,12 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
+	stopCheck := phaseTimer("build.check")
 	program, err := check.CheckProgram(store.Graph)
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopCheck()
 	var pairing *browserPairing
 	if browserManifest != "" {
 		pairing, err = verifyBrowserManifest(browserManifest, store.Graph)
@@ -103,6 +105,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 		program.Assets = append(program.Assets, pairing.assets...)
 	}
 	stableRootOrder(program.Assertions)
+	stopTestStage := phaseTimer("build.test-stage")
 	testID, _, err := r.stageProgram(ctx, store, program, true, timeoutMs, pairing)
 	if err != nil {
 		return BuildReport{}, err
@@ -117,19 +120,23 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopTestStage()
 	roots := make([]ir.AssertionRoot, 0, len(program.Assertions))
 	for _, test := range program.Assertions {
 		roots = append(roots, test.Root)
 	}
+	stopSupervised := phaseTimer("build.supervised")
 	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr, jobs)
 	lease.Close()
 	if err != nil {
 		return BuildReport{}, fmt.Errorf("build verification failed: %w", err)
 	}
+	stopSupervised()
 	summary, err := summarizeBuildRoots(entries)
 	if err != nil {
 		return BuildReport{}, err
 	}
+	stopProdStage := phaseTimer("build.prod-stage")
 	prodID, prepared, err := r.stageProgram(ctx, store, program, false, timeoutMs, pairing)
 	if err != nil {
 		return BuildReport{}, err
@@ -140,6 +147,8 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 			return BuildReport{}, err
 		}
 	}
+	stopProdStage()
+	stopPublish := phaseTimer("build.publish")
 	prior, err := store.currentBuildID()
 	if err != nil {
 		_ = store.DiscardGeneration(prodID)
@@ -150,6 +159,7 @@ func (r *Runtime) build(ctx context.Context, store *OutputStore, environment []s
 		return BuildReport{}, err
 	}
 	discardTest = false
+	stopPublish()
 	return BuildReport{SchemaVersion: 1, Kind: "can.build", Target: string(browser.TargetBun), BuildID: prepared.BuildID(), Directory: directory, Entry: "entry.ts", Browser: pairing.pairedReport(), Inputs: prepared.manifest.Inputs, Assertions: summary, TimeoutMs: timeoutMs, Validation: verifiedBuild}, nil
 }
 
@@ -239,6 +249,7 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 	if pairing != nil {
 		emitted = &emit.BrowserPairing{BuildID: pairing.buildID, Entry: pairing.entry, Table: pairing.table}
 	}
+	stopEmit := phaseTimer("stage.emit")
 	var artifacts []ir.Artifact
 	if assertions {
 		artifacts, err = emit.AssertionModulesPaired(program, assets.Directory, assets.Files, emitted)
@@ -248,6 +259,8 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 	if err != nil {
 		return "", nil, err
 	}
+	stopEmit()
+	stopMaps := phaseTimer("stage.source-maps")
 	artifacts, err = r.encodeSourceMaps(ctx, program, artifacts)
 	if err != nil {
 		return "", nil, err
@@ -255,6 +268,7 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 	if pairing != nil {
 		artifacts = append(artifacts, ir.Artifact{Path: "browser/pairing.json", Bytes: append([]byte(nil), pairing.pairingJSON...)})
 	}
+	stopMaps()
 	launcher, err := regularFile(r.Root, "bin/canlc", true)
 	if err != nil {
 		return "", nil, err
@@ -273,17 +287,23 @@ func (r *Runtime) stageProgram(ctx context.Context, store *OutputStore, program 
 		Browser    *browserOptions
 	}{1, assertions, roots, timeoutMs, pairingOptions(pairing)})
 	inputs := store.BuildInputs(hashBytes(launcher), catalogue.SourceHash(), assets.Identity, hashBytes(options))
+	stopPrepare := phaseTimer("stage.prepare")
 	prepared, err := PrepareOutput(inputs, "entry.ts", artifacts)
 	if err != nil {
 		return "", nil, err
 	}
+	stopPrepare()
+	stopValidate := phaseTimer("stage.validate")
 	if err = r.ValidateOutput(ctx, prepared); err != nil {
 		return "", nil, err
 	}
+	stopValidate()
+	stopStage := phaseTimer("stage.stage")
 	buildID, _, err := store.Stage(prepared)
 	if err != nil {
 		return "", nil, err
 	}
+	stopStage()
 	return buildID, prepared, nil
 }
 

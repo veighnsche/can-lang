@@ -167,18 +167,24 @@ func TestStdlibMaintained(t *testing.T) {
 	}
 	sourceRoot, _ := filepath.Abs("../..")
 	projects := discoverMaintained(t, sourceRoot)
-	// The grid builds through the browser profile (supervised assertion
-	// verification plus native bundling, twice for the drift check),
-	// which alone takes several minutes; budget the suite accordingly.
-	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
-	defer cancel()
-	bundle, err := harnessBundle(t, ctx, archive)
+	bundleCtx, cancelBundle := context.WithTimeout(context.Background(), 10*time.Minute)
+	bundle, err := harnessBundle(t, bundleCtx, archive)
+	cancelBundle()
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, rel := range projects {
 		t.Run(rel, func(t *testing.T) {
 			t.Parallel()
+			// Each project owns its context: parallel subtests run
+			// after the parent function returns, so a parent-scoped
+			// context would already be cancelled. The grid builds
+			// through the browser profile (supervised assertion
+			// verification plus native bundling, twice for the drift
+			// check), which alone takes several minutes; budget each
+			// project accordingly.
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
+			defer cancel()
 			root, home := stageProject(t, sourceRoot, rel)
 			status, out, diag := canlcOffline(t, ctx, bundle, home, "assert", root)
 			if status != 0 || diag != "" {

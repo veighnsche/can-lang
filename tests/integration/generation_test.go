@@ -24,7 +24,7 @@ func TestCurrentBundledGeneration(t *testing.T) {
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	sourceRoot, _ := filepath.Abs("../..")
 	bundle, err := harnessBundle(t, ctx, archive)

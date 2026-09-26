@@ -520,6 +520,7 @@ func expectInvoiceStartupFailure(t *testing.T, ctx context.Context, bundle, home
 
 func TestInvoiceFormLive(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1040,6 +1041,7 @@ func canlcBuildArgs(t *testing.T, ctx context.Context, bundle, home string, args
 // proves wiring only, not grid behavior.
 func TestInvoiceGridPagePaired(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1150,6 +1152,7 @@ func TestInvoiceGridPagePaired(t *testing.T) {
 
 func TestInvoiceBrowser(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")
@@ -1227,6 +1230,7 @@ func TestInvoiceBrowser(t *testing.T) {
 // DOM swap observation is UP23's leg (TestInvoiceBrowserGuardDOM).
 func TestInvoiceHTMLFragments(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged invoice execution")

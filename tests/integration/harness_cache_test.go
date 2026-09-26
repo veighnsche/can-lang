@@ -124,6 +124,51 @@ func TestHarnessEntryComplete(t *testing.T) {
 	}
 }
 
+// The heavyweight semaphore admits up to its cap and parks the rest;
+// a release unparks exactly one waiter. Uses an isolated channel so the
+// test never interferes with the suite's own semaphore.
+func TestHeavySlotsBounded(t *testing.T) {
+	slots := make(chan struct{}, 2)
+	acquireFrom(t, slots)
+	acquireFrom(t, slots)
+	proceeded := make(chan struct{})
+	waiting := make(chan struct{})
+	go func() {
+		close(waiting)
+		// No Cleanup here: the waiter must not consume a suite slot,
+		// and this goroutine is not a test.
+		slots <- struct{}{}
+		close(proceeded)
+	}()
+	<-waiting
+	select {
+	case <-proceeded:
+		t.Fatal("third acquisition proceeded past a cap-2 semaphore")
+	case <-time.After(100 * time.Millisecond):
+	}
+	<-slots
+	select {
+	case <-proceeded:
+	case <-time.After(5 * time.Second):
+		t.Fatal("release did not unpark the waiter")
+	}
+	// The two acquireFrom Cleanups drain the remaining sends at test end.
+}
+
+func TestHeavySlotCap(t *testing.T) {
+	if got := heavySlotCap(); got != 3 {
+		t.Fatalf("default heavy cap %d, want 3", got)
+	}
+	t.Setenv("CAN_TEST_HEAVY_SLOTS", "7")
+	if got := heavySlotCap(); got != 7 {
+		t.Fatalf("override heavy cap %d, want 7", got)
+	}
+	t.Setenv("CAN_TEST_HEAVY_SLOTS", "0")
+	if got := heavySlotCap(); got != 3 {
+		t.Fatalf("invalid heavy cap %d, want default 3", got)
+	}
+}
+
 // End-to-end sharing proof: two calls, at most one real fill, same path.
 // Runs only with the pinned archive, like every other staged test.
 func TestHarnessSharedEndToEnd(t *testing.T) {

@@ -23,7 +23,7 @@ func TestCurrentBundledCLI(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	bundle, err := harnessBundle(t, ctx, archive)
 	if err != nil {

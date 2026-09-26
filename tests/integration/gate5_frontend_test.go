@@ -1083,6 +1083,7 @@ func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
 
 func TestGate5ServedMatrix(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged gate 5 execution")

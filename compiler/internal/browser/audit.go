@@ -1,6 +1,7 @@
 package browser
 
 import (
+	"bytes"
 	"fmt"
 	"path"
 	"sort"
@@ -519,12 +520,11 @@ func scanCanaries(name string, data []byte, chain []string) error {
 }
 
 func scanCanaryList(name string, data []byte, chain []string, canaries []string) error {
-	text := string(data)
 	for _, canary := range canaries {
 		if canary == "" {
 			continue
 		}
-		if offset := strings.Index(text, canary); offset >= 0 {
+		if offset := bytes.Index(data, []byte(canary)); offset >= 0 {
 			pos := offsetPosition(data, offset)
 			via := ""
 			if len(chain) != 0 {

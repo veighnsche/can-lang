@@ -88,19 +88,26 @@ func (r *Runtime) buildBrowserBundle(ctx context.Context, graph *project.Graph, 
 	if len(table) == 0 {
 		return nil, fmt.Errorf("browser bundling requires the sealed diagnostic table")
 	}
+	stopInvoke := phaseTimer("bundle.invoke")
 	raw, staged, sourceDir, outDir, cleanup, err := r.invokeBrowserBundler(ctx, toolchain, artifacts)
 	if err != nil {
 		return nil, err
 	}
 	defer cleanup()
+	stopInvoke()
+	stopNormalize := phaseTimer("bundle.normalize")
 	bundle, err := normalizeBrowserBundle(sourceDir, outDir, staged, raw)
 	if err != nil {
 		return nil, err
 	}
 	bundle.files[browserBundleTable] = append([]byte(nil), table...)
+	stopNormalize()
+	stopAudit := phaseTimer("bundle.audit")
 	if err := auditBrowserBundle(bundle); err != nil {
 		return nil, err
 	}
+	stopAudit()
+	stopManifest := phaseTimer("bundle.manifest")
 	manifest, err := browserManifestBytes(graph, inputs, toolchain, bundle)
 	if err != nil {
 		return nil, err
@@ -110,6 +117,7 @@ func (r *Runtime) buildBrowserBundle(ctx context.Context, graph *project.Graph, 
 	for _, name := range ordered {
 		assembled = append(assembled, ir.Artifact{Path: name, Bytes: bundle.files[name]})
 	}
+	stopManifest()
 	return append(assembled, ir.Artifact{Path: browserBundleManifest, Bytes: manifest}), nil
 }
 

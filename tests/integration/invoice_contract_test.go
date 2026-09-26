@@ -480,6 +480,7 @@ func contractFormValues(seats, details, revision string) url.Values {
 
 func TestInvoiceContractRoute(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -595,6 +596,7 @@ func TestInvoiceContractRoute(t *testing.T) {
 
 func TestInvoiceContractCapture(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -686,6 +688,7 @@ func TestInvoiceContractCapture(t *testing.T) {
 
 func TestInvoiceContractField(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -774,6 +777,7 @@ func TestInvoiceContractField(t *testing.T) {
 
 func TestInvoiceContractLeaf(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -879,6 +883,7 @@ func TestInvoiceContractLeaf(t *testing.T) {
 
 func TestInvoiceContractStatus(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -965,6 +970,7 @@ func TestInvoiceContractStatus(t *testing.T) {
 
 func TestInvoiceContractLimit(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1046,6 +1052,7 @@ func TestInvoiceContractLimit(t *testing.T) {
 
 func TestInvoiceContractBodyMode(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1140,6 +1147,7 @@ func TestInvoiceContractBodyMode(t *testing.T) {
 
 func TestInvoiceContractManifestMismatch(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")
@@ -1202,6 +1210,7 @@ func TestInvoiceContractManifestMismatch(t *testing.T) {
 
 func TestInvoiceContractNoRegistration(t *testing.T) {
 	t.Parallel()
+	acquireHeavy(t)
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for staged contract execution")

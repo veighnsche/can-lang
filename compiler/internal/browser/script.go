@@ -148,8 +148,18 @@ func (lexer *scriptLexer) peek() byte {
 	return lexer.src[lexer.offset]
 }
 
+// at reports whether the upcoming bytes equal text. It compares in place:
+// copying the remaining source per probe turned the lexer quadratic.
 func (lexer *scriptLexer) at(text string) bool {
-	return strings.HasPrefix(string(lexer.src[lexer.offset:]), text)
+	if len(lexer.src)-lexer.offset < len(text) {
+		return false
+	}
+	for i := 0; i < len(text); i++ {
+		if lexer.src[lexer.offset+i] != text[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // advance consumes one rune, tracking line and column. Columns count UTF-16
@@ -565,10 +575,10 @@ var punctuators = []string{
 }
 
 func (lexer *scriptLexer) punct(start Position) error {
-	rest := string(lexer.src[lexer.offset:])
+	remaining := len(lexer.src) - lexer.offset
 	for _, punct := range punctuators {
 		if punct == "?." {
-			if strings.HasPrefix(rest, "?.") && (len(rest) < 3 || !isDigit(rest[2])) {
+			if lexer.at("?.") && (remaining < 3 || !isDigit(lexer.src[lexer.offset+2])) {
 				lexer.emit(tokPunct, punct, start)
 				lexer.offset += 2
 				lexer.column += 2
@@ -576,7 +586,7 @@ func (lexer *scriptLexer) punct(start Position) error {
 			}
 			continue
 		}
-		if strings.HasPrefix(rest, punct) {
+		if lexer.at(punct) {
 			lexer.emit(tokPunct, punct, start)
 			for range punct {
 				lexer.column++
@@ -585,7 +595,8 @@ func (lexer *scriptLexer) punct(start Position) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("unexpected character %q at %s", rest[:1], start)
+	// Punct runs only with input remaining, so one byte is always there.
+	return fmt.Errorf("unexpected character %q at %s", string(lexer.src[lexer.offset:lexer.offset+1]), start)
 }
 
 // staticEdge matches import/export declarations at index: side-effect

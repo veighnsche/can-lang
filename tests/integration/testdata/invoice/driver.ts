@@ -43,6 +43,10 @@ try {
   const dbPath = process.argv[3];
   if (typeof dbPath !== "string" || dbPath === "") throw new Error("missing database path argument");
   const sql = new SQL({ adapter: "sqlite", filename: dbPath, safeIntegers: true });
+  // Contended writers (concurrency legs race this driver against the
+  // served app) must wait out each other's locks instead of failing
+  // instantly with SQLITE_BUSY; mirrors runtime/platform/sql/sqlite.ts.
+  await sql(staticTemplate("PRAGMA busy_timeout = 30000"));
   try {
     if (mode === "setup") {
       const schemaPath = process.argv[4];
