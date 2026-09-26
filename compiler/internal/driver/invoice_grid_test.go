@@ -1301,8 +1301,8 @@ action load_invoice_grid_local
 		ws := contractWorkspaceFor(t)
 		name := filepath.Join(ws.grid, "src/web/web.can")
 		contractReplaceOnce(t, name,
-			"uses [billing::invoice_contract as contract, records, model, action, browser, codec, http, option, text]",
-			"uses [billing::invoice_contract as contract, records, model, action, browser, codec, env, http, option, text]")
+			"uses [billing::invoice_contract as contract, controls::fields as fields, controls::keyed as keyed, records, model, action, browser, codec, http, option, text]",
+			"uses [billing::invoice_contract as contract, controls::fields as fields, controls::keyed as keyed, records, model, action, browser, codec, env, http, option, text]")
 		contractReplaceOnce(t, name,
 			"                ok browser::view view => match chain\n                    call browser::create_element(view, \"p\") as browser::node status",
 			"                ok browser::view view => match chain\n                    call env::required(\"contract_probe\") as str probe\n                    call browser::create_element(view, \"p\") as browser::node status")
