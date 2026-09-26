@@ -66,7 +66,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E09 | done | lane-e-e09 (`40`) | isolated | E04, E05, E06, E08, H02, H03 | W5→IC2/H | `2137f1f3`→`784b2c2b`, `4e441420`→`fa812d4a` | coord live rerun 16/16 (L3/S5b BLOCKED-evidence passes), check:runtime green |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | done (live debt) | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` | 40/40 + Go gates; debt D02-LIVE-1..4 until C01 unblocks |
-| F06 | in progress, slice 1 integrated | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | `358a0c07`→`e68a62d0` (partial) | 40/40 companion; live qual pending |
+| F06 | in progress, slices 1-2 integrated | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | `358a0c07`→`e68a62d0`, `e1ca3e55`→`7e8d2842` (partial) | 40/40 companion; coord live rerun PASS A–I 146s |
 | H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
 | D03 | done (live debt) | lane-d-d03 (`41`) | isolated | D02 | W2→H11 | 3 worker→`4d7efdbd` | 51/51 + Go 9+2skip; Vendor B via unchanged D02 client; debt D03-LIVE-1..4 until C01 unblocks |
 
