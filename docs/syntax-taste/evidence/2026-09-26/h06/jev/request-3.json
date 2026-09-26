@@ -1,0 +1,37 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "program": "This choice concerns a language built for AI coding agents, where dependable behavior outranks every other goal and the token cost of a task is a secondary measure. The project has no outside adopters, so keeping prior syntax, interfaces, spellings, generated file shapes, or goldens carries no weight. H06 (sourced from R13/R02/R03 through interface C-H, release-engineering owned) ships the cross-generation handshake with safe pairing: browsers attach their paired server generation to actions, servers respond to disagreement with a typed error, and applications answer that error with a blocking refresh. The lane split is settled: H keeps driver staging, pairing, pruning, and distribution; E takes transport plus server mismatch work; C takes the prompt; A takes emission only if required. C06, H10, and H12 receive the completed C-H contract and the immutable candidates from H. Between generations there is no interop promise: aged app logic meeting a newer server produces a defined failure rather than muted misbehavior. Make each call from the evidence given here, without further questions.",
+    "mechanism": "The pipeline builds the client bundle ahead of the service. Browser compilation produces `browser/manifest.json` carrying a `can-browser-bundle-v1` digest over published outputs as the browser build ID. Service compilation attaches that manifest via `--browser-manifest`; `verifyBrowserManifest` then validates bundle identity, digest-locked routes, entry and table presence, script-to-map completeness, the tie to the browser generation, the overlapping lockfile pins with `bindSharedLock`, and the final bundle audit. Its `can.browser-pairing` record is stored at `browser/pairing.json` as part of the server generation and sealed by that generation manifest hash, hence it can never state the server `buildID` \u2014 the identifier is a `can-output-generation-v1` digest of the staged tree and would reference its own hash. Instead the `can.output-generation` manifest holds the `buildID`, identical to the generation directory label. Shared staged bytes arrive as 0400 hardlinks from `dist/cas`; manifests and metadata stay single-owner 0600 writes; `selectCurrentWithAssets` promotes with crash-safe pending state; replaced digest routes remain reachable seven days through the `dist/assets.json` ledger and `dist/assets` storage; `Prune` drops every generation beside current and collects unreferenced content. A rebuild from the same inputs prints an unchanged build ID.",
+    "limits": "Expect no research from this consultation: the system returns a chosen option with a probability spread, not explanations or discoveries. Those numbers advise the design and certify no behavior; nothing here executes Can programs or measures domain accuracy. E wire and service changes, C prompt work, and A emission (if any) are pending handoffs, so the judgment covers the H-side build shape and the interface those lanes must honor, not finished code. Each of the three rounds is self-contained; later requests contain no trace of earlier outcomes. Answer only from the context handed to this call."
+  },
+  "questions": {
+    "acquisition": {
+      "type": "choice",
+      "instructions": "Decide where the browser obtains the server generation it attaches to actions. Favor the path that keeps an old page honestly old without added round trips or freshness races.",
+      "criteria": {
+        "page_embedded": "Rendering writes the renderer identity \u2014 the serving generation `buildID` \u2014 into an agreed machine-readable field of the page itself. The browser lifts that field from the current document for every action it issues. After promotion past the rendering generation, the stored value disagrees, the service emits the typed mismatch, and the application blocks behind its refresh prompt. Because the value ships inside the artifact whose behavior it labels, there is no separate fetch to cache or mistime, and age is always visible.",
+        "metadata_route": "The serving generation is discovered through a dedicated metadata fetch rather than the page. The lookup adds latency and a second freshness timeline; skew between the two timelines either blames fresh pages or excuses stale ones.",
+        "browser_build_echo": "Echo the browser build ID from the bundle and check it against the pairing record browser entry. The wire then carries a client-build label instead of the required server generation, losing the distinction between consecutive services that share a client bundle."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "Decide how the service verifies the attached generation and what it returns on mismatch. Prefer loud typed refusal from a stable identity, identical forward and backward.",
+      "criteria": {
+        "manifest_startup_typed": "Startup pins the expected value from the serving generation manifest `buildID`; every action compares its attached generation to that pin. Omitted, corrupt, or non-equal inputs yield the typed mismatch before any handler runs. Content-hash IDs admit no ordering, so inequality refuses symmetrically \u2014 a step back fails as loudly as a step forward. Old digest URLs survive under retention, yet old logic facing a new server meets the defined error instead of muted misbehavior.",
+        "current_per_request": "Look up the current-selection file per action and treat its value as truth. The lookup repeats needlessly, confuses the mutable selector with fixed serving identity, and lets promotion timing rewrite the verdict under running requests.",
+        "log_and_serve": "Tolerate the mismatch with a log entry while running the handler normally. Stale clients operate against fresh services unnoticed, defeating the handshake entirely."
+      }
+    },
+    "rollback": {
+      "type": "choice",
+      "instructions": "Decide what operators do to revert to an earlier paired build. Favor the path that restores true prior behavior without hoarding stale generations.",
+      "criteria": {
+        "rebuild_stable": "To revert, rebuild from the previous inputs and promote the outcome normally: identifier stability recreates the exact generation, and retention serves replaced digests regardless of direction. The prune rule stands untouched, stale generations never pile up, and the content-store sweep keeps its current root set.",
+        "retain_prior": "Never delete recent generations; revert by reselecting one. Outdated logic piles up locally, the sweep inherits a larger live set, prune semantics complicate, and stale builds remain one misstep from production.",
+        "assets_only_rollback": "Roll back assets alone, leaving the serving generation in place. Old resources meeting new code are the defined mismatch, and so actions keep failing; the operation restores nothing real while tangling retention with recovery."
+      }
+    }
+  }
+}

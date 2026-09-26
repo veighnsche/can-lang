@@ -1,0 +1,15 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 3 state fields, 3 instructions and 9 option descriptions has a distinct complete phrasing (30 fields). Task IDs (H06/C06/H10/H12), requirement IDs (R13/R02/R03), interface C-H, file paths, kind strings, function names, 0400/0600 modes, the seven-day bound and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "Can agent language; zero external users; no compat for syntax/ABI/spellings/TS layouts/goldens; H06 handshake + CAS pairing under R13/R02/R03 C-H, release-engineering owned; browser sends paired server generation, server typed mismatch, app blocking refresh; lane split H staging/pairing/pruning/distribution, E transport/server, C prompt, A emission; handoff to C06/H10/H12; no cross-generation compat, fail-closed defined error",
+    "Browser built first (canlc build --target browser, browser/manifest.json, can-browser-bundle-v1 ID); server pairs via --browser-manifest; verifyBrowserManifest checks identity/routes/entry/table/maps/generation binding/bindSharedLock/audit; can.browser-pairing at browser/pairing.json hash-bound by server manifest so it cannot quote server buildID (can-output-generation-v1 circularity); can.output-generation manifest carries buildID equal to dir name; dist/cas 0400 hardlinks, metadata unique 0600; selectCurrentWithAssets crash-safe selection; dist/assets.json + dist/assets seven-day retention; Prune deletes non-current + sweeps CAS; rebuilds stable",
+    "Limits: Jev classifies, no research; advisory only, no acceptance proof; no Can code runs, no calibration; E/C/A slices are pending handoffs, judge H-side mechanism + contract; rounds independent, no prior answer leaks; decide from supplied state"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "fb53ba64c24486dcd6fa190704c6882ff53615f8a76d39b5a61bb914a67f7c66",
+    "request-2.json": "9749189cbe68e42f88801e58180588ad01fd27f337c373b1bcc5ddc3b9bbaea1",
+    "request-3.json": "3861e58c76afa4e4d09afe5f6a86cc16f9aa7d95defcf87c7461ead0d4c9ee54"
+  }
+}

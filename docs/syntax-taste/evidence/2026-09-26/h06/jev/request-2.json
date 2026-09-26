@@ -1,0 +1,37 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "program": "Judge a mechanism for Can, a programming language whose consumers are coding agents rather than people. Nobody outside the project uses it, which removes any duty to preserve earlier grammars, binary interfaces, source spellings, emitted TypeScript arrangements, or recorded goldens. Work item H06, drawn from R13/R02/R03 under the C-H interface and held by release engineering, delivers the handshake between browser and server generations together with content-addressed pairing: the client transmits the server generation it was paired with, the service replies with a typed mismatch failure, and the application blocks on a refresh prompt. Ownership splits are frozen: staging, pairing, pruning, and distribution stay with H; wire and service mismatch edits belong to E; the prompt belongs to C; emission belongs to A when needed. H passes the finished C-H surface and unchangeable candidate builds onward to C06/H10/H12. Generations promise each other nothing: stale client behavior against a fresh service is a specified fault, not quiet cooperation. Reach every selection below from this material alone, posing no question to the user.",
+    "mechanism": "Construction order is browser before server. A browser target build writes `browser/manifest.json`, identifying the bundle with a `can-browser-bundle-v1` digest computed across its file list. Server compilation consumes that file with `--browser-manifest`, and `verifyBrowserManifest` confirms the bundle identity, the digest-derived routes, the entry and table members, every script owning its map, the binding to the browser generation, agreement of the common dependency snapshot through `bindSharedLock`, and the assembled-bundle audit. The resulting `can.browser-pairing` document lands at `browser/pairing.json` within the server generation and is pinned by the server manifest digest, which forbids it from quoting the server `buildID`: that value is a `can-output-generation-v1` digest across staged bytes, so quoting it there would hash itself. The `can.output-generation` manifest records that same `buildID`, matching its generation folder name. Identical staged bytes are hardlinked read-only (0400) out of `dist/cas`; manifests with metadata remain private 0600 files; promotion uses `selectCurrentWithAssets` with a pending record plus ledger replay after crashes; superseded digest URLs keep serving for seven days via the `dist/assets.json` roster and `dist/assets` bytes; `Prune` removes generations that are not current and garbage-collects orphaned store records. Rebuilding unchanged sources yields the same build ID.",
+    "limits": "The model here classifies rather than investigates: answers are typed selections plus distributions, without rationale text or fresh evidence. Such scores guide engineering judgment but prove nothing; this round runs no compiler, no runtime, and no qualification. Transport and server mismatch edits (E), the prompt (C), and any emission (A) exist only as handed-off slices, so evaluate the build-side design and the obligations those slices inherit rather than reviewing implementation. Rounds stand alone with no earlier verdict leaking into later state. Ground each answer strictly in the material provided."
+  },
+  "questions": {
+    "acquisition": {
+      "type": "choice",
+      "instructions": "Choose the channel that teaches the browser its paired server generation. Weigh silent-staleness hazards, extra requests, and consistency with browser-before-server construction.",
+      "criteria": {
+        "page_embedded": "Each document the server renders stamps the generation that rendered it \u2014 that generation `buildID` \u2014 into a single stable machine-readable location. Client logic copies the stamp out of the displayed page onto all outgoing actions. When service N+1 replaces N, the earlier document still carries N, the comparison fails, the typed error returns, and the blocking refresh appears. Generation knowledge rides alongside the markup it describes, adding zero round trips and zero freshness windows, while a stale page stays detectably stale.",
+        "metadata_route": "Client code queries a live metadata endpoint for the serving generation before acting. Besides the added round trip, the read can disagree in both directions with the acting page: cached data manufactures a mismatch on a current page, and current data hides the age of an outdated one.",
+        "browser_build_echo": "Send the bundle-owned browser build identifier \u2014 fixed at browser build time \u2014 and match it server-side to the paired ID inside `browser/pairing.json`. That replaces the mandated server-generation value with a different identity and goes blind whenever one browser build pairs with successive server generations."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "Choose the server-side check and its failure answer. Weigh quiet-misbehavior risk, what counts as the expected value, and symmetry between promoting and reverting.",
+      "criteria": {
+        "manifest_startup_typed": "At boot the service loads the `buildID` from the `manifest.json` of the generation it runs from, then matches that value against each incoming action attached generation. Absent, ill-formed, or differing values produce the typed mismatch failure with no domain logic executed. Because generation IDs are unordered content digests, any inequality refuses in either direction: reverting trips the same loud fault as advancing. Superseded digest routes remain reachable inside their retention window, while stale behavior against a newer service stays a specified fault rather than silent cooperation.",
+        "current_per_request": "Each request reloads the `dist/current.json` selection and compares to that moving target. Beyond the repeated reads, the pointer answers which build is selected, not which bytes are serving, so a mid-flight promotion misjudges in-flight work.",
+        "log_and_serve": "Note the disagreement internally but serve the request regardless. The application never learns its generation is stale, so cross-generation behavior proceeds quietly in violation of the defined-error rule."
+      }
+    },
+    "rollback": {
+      "type": "choice",
+      "instructions": "Choose the rollback story under a prune that keeps only the current generation. Weigh retained bytes, collector complexity, and honest restoration of prior logic.",
+      "criteria": {
+        "rebuild_stable": "Reverting recompiles the earlier sources, whose stable identifiers regenerate the identical bytes, then selects the result through the ordinary atomic promotion. The seven-day asset roster covers replaced routes in both directions. Nothing about pruning changes, no outdated service tree accumulates, and garbage collection tracks no extra references.",
+        "retain_prior": "Hold several superseded generations beside current for instant reselection. The disk keeps outdated services and their bundles, collectors must trace them all, pruning rules grow exceptions, and operating or testing the wrong generation becomes possible.",
+        "assets_only_rollback": "Revert the bytes but keep the current service: retained assets return while handlers stay new. Since aged artifacts against fresh logic are the specified fault, every action still refuses \u2014 an apparent revert that changes no behavior and misuses retention."
+      }
+    }
+  }
+}

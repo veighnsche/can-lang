@@ -1,0 +1,37 @@
+{
+  "model": "jev-latest",
+  "state": {
+    "program": "Can is an agent-oriented programming language with zero external users, so no backwards compatibility is owed to old syntax, ABI, spellings, generated TypeScript layouts, or goldens. Task H06 (requirements R13/R02/R03, shared interface C-H, owned by release engineering) implements the generation handshake and CAS-safe pairing: the browser sends its paired server generation on action transport, the server answers a typed generation-mismatch error, and the app presents a blocking refresh prompt. Lane boundaries are fixed: H owns driver staging, pairing, pruning, and distribution; E owns transport and server mismatch patches; C owns the app prompt; A owns generated emission if required. H hands the implemented C-H interface plus immutable candidate builds to C06, H10, and H12. No compatibility is owed across generations: old app logic against a new server is a defined error, never silent interop. Decide from the supplied facts without asking the user.",
+    "mechanism": "Today the browser is built first: `canlc build --target browser` emits `browser/manifest.json`, whose browser build ID is a `can-browser-bundle-v1` hash over the published files. The server build pairs it through `--browser-manifest`: `verifyBrowserManifest` checks build identity, digest-bound routes, entry, table, script/source-map pairing, generation binding, the shared locked snapshot via `bindSharedLock`, and the post-bundle audit. The pairing record (`can.browser-pairing`) is staged at `browser/pairing.json` inside the server generation and hash-bound by the server manifest, so it cannot name the server `buildID` (that would be circular: the ID is a `can-output-generation-v1` hash over staged content). The server manifest (`can.output-generation`) carries its own `buildID`, equal to the generation directory name. Staging links identical bytes from `dist/cas` as read-only 0400 hardlinks while manifests and metadata stay unique 0600 writes; selection runs through `selectCurrentWithAssets` with pending-ledger crash safety; replaced digest URLs stay servable for seven days through the `dist/assets.json` ledger plus the `dist/assets` store; `Prune` deletes non-current generations and sweeps unreferenced store entries. Rebuilding identical inputs reports a stable build ID.",
+    "limits": "Jev is a classifier, not a researcher: it supplies typed choices with probabilities, never prose reasons or new facts. Its distributions are advisory only, never acceptance proof; these calls execute no Can code and calibrate nothing. The E, C, and A slices of the handshake (transport/server mismatch, app prompt, emission) are specified as handoffs and are not yet implemented; judge the H-side mechanism and the contract they must satisfy, not their code. Treat each round independently: no request carries any prior answer. Decide every question below from the supplied state alone."
+  },
+  "questions": {
+    "acquisition": {
+      "type": "choice",
+      "instructions": "How should the browser bundle learn the paired server generation it must send on action transport? Judge fail-closed behavior, staleness races, and fit with the one-way build order.",
+      "criteria": {
+        "page_embedded": "The served page embeds its own serving generation \u2014 the server generation `buildID` \u2014 in one fixed machine-readable slot. Browser logic reads that slot from the live document and sends the value on every action request. A page rendered by generation N keeps sending N after a rollout to N+1, so the new server answers the typed mismatch and the app shows the blocking refresh. The identity travels with the document that defines the app logic: no extra request, no cache race, and an old page can never claim to be new.",
+        "metadata_route": "The browser fetches a served pairing-metadata route (dist metadata outside staged content) to learn the current server generation, then attaches it to actions. This costs an extra request per page or action window and opens staleness races: a cached metadata read can reintroduce the mismatch it was meant to prevent, while a fresh read can dress an old page in a new generation.",
+        "browser_build_echo": "The browser bakes its own browser build ID (known when the browser bundle is built) into the bundle and sends that value; the server compares it against the paired browser build ID in `browser/pairing.json`. This contradicts the H06 scope sentence, which requires the paired *server* generation on the wire, and it cannot distinguish two server generations paired with one browser build."
+      }
+    },
+    "comparison": {
+      "type": "choice",
+      "instructions": "How should the server establish the expected generation and answer disagreement? Judge fail-closed strength, identity soundness, and behavior in both rollout and rollback directions.",
+      "criteria": {
+        "manifest_startup_typed": "The server reads its own generation `manifest.json` `buildID` once at startup and compares it with the generation attached to every action request. Missing, malformed, or unequal values fail closed with the typed generation-mismatch error before any action logic runs. Generations are content hashes with no ordering, so the check is symmetric string inequality: rollback mismatches refuse exactly like rollout mismatches. Replaced digest asset URLs keep serving through retention, but aged logic against a fresh server is the defined error, never quiet interop.",
+        "current_per_request": "The server re-reads `dist/current.json` on every request and judges the attached generation against the live selection pointer. This adds per-request IO, mistakes the mutable promotion pointer for the serving generation identity, and races selection moves: files from one generation can be judged against a pointer that already advanced.",
+        "log_and_serve": "The server records the mismatch in a log and executes the action anyway. Old logic then runs against a new server with no signal to the app, which is exactly the silent wrong behavior the fail-closed policy forbids."
+      }
+    },
+    "rollback": {
+      "type": "choice",
+      "instructions": "Given that prune deletes non-current generations, how should rollback to a prior paired build be provided? Judge disk cost, GC surface, and whether the rolled-back state is genuinely the old behavior.",
+      "criteria": {
+        "rebuild_stable": "Rollback rebuilds the prior source: stable build IDs reproduce the byte-identical generation, which promotes through the same atomic selection path as any rollout. Replaced assets stay servable under the seven-day ledger either way. Prune keeps its contract, no stale logic lingers on disk, and the collector gains no new roots.",
+        "retain_prior": "Prune keeps the last N generations so rollback reselects without rebuilding. Stale server logic and paired bytes accumulate on disk, every retained tree widens the GC roots, the prune contract changes, and a stale generation can be served or qualified by mistake.",
+        "assets_only_rollback": "Rollback restores only retained asset bytes while server logic stays current. Old bytes under new logic are precisely the defined-error case, so this rollback still fails every old action; it reverts nothing observable and corrupts the retention story it borrows from."
+      }
+    }
+  }
+}
