@@ -22,21 +22,21 @@ import (
 // assertion roots under Bun, then ships the distinct browser root with its
 // content-addressed asset instead of the Bun entry. Browser builds never
 // pair: they publish an empty asset set, retiring any prior paired set.
-func (r *Runtime) BuildTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int, target browser.Target, browserManifest string) (BuildReport, error) {
+func (r *Runtime) BuildTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs, jobs int, target browser.Target, browserManifest string) (BuildReport, error) {
 	switch target {
 	case browser.TargetBun:
-		return r.Build(ctx, projectDirectory, environment, stdin, stderr, timeoutMs, browserManifest)
+		return r.Build(ctx, projectDirectory, environment, stdin, stderr, timeoutMs, jobs, browserManifest)
 	case browser.TargetBrowser:
 		if browserManifest != "" {
 			return BuildReport{}, fmt.Errorf("browser builds do not pair a browser manifest")
 		}
-		return r.buildBrowserTarget(ctx, projectDirectory, environment, stdin, stderr, timeoutMs)
+		return r.buildBrowserTarget(ctx, projectDirectory, environment, stdin, stderr, timeoutMs, jobs)
 	default:
 		return BuildReport{}, fmt.Errorf("unknown build target %q", string(target))
 	}
 }
 
-func (r *Runtime) buildBrowserTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int) (BuildReport, error) {
+func (r *Runtime) buildBrowserTarget(ctx context.Context, projectDirectory string, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs, jobs int) (BuildReport, error) {
 	if r == nil {
 		return BuildReport{}, fmt.Errorf("build requires a bundled runtime")
 	}
@@ -45,7 +45,7 @@ func (r *Runtime) buildBrowserTarget(ctx context.Context, projectDirectory strin
 		return BuildReport{}, err
 	}
 	defer store.Close()
-	return r.buildBrowser(ctx, store, environment, stdin, stderr, timeoutMs)
+	return r.buildBrowser(ctx, store, environment, stdin, stderr, timeoutMs, jobs)
 }
 
 // buildBrowser mirrors the verified pipeline for the browser profile. The
@@ -53,7 +53,7 @@ func (r *Runtime) buildBrowserTarget(ctx context.Context, projectDirectory strin
 // assertion roots still execute supervised under Bun (they never ship in
 // the browser asset), and only the audited browser generation is selected
 // as production current.
-func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs int) (BuildReport, error) {
+func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environment []string, stdin io.Reader, stderr io.Writer, timeoutMs, jobs int) (BuildReport, error) {
 	if _, err := CheckAssertTimeoutMs(timeoutMs); err != nil {
 		return BuildReport{}, err
 	}
@@ -83,7 +83,7 @@ func (r *Runtime) buildBrowser(ctx context.Context, store *OutputStore, environm
 	for _, test := range program.Assertions {
 		roots = append(roots, test.Root)
 	}
-	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr)
+	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr, jobs)
 	lease.Close()
 	if err != nil {
 		return BuildReport{}, fmt.Errorf("build verification failed: %w", err)

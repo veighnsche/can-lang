@@ -33,10 +33,11 @@ func stableRootOrder(tests []*ir.Assertion) {
 
 // Assert checks all declarations before applying the requested root selector.
 // Selectors are empty (all), package/name, or package/declaration/name.
-// Roots run sequentially in stable identity order, each in its own worker
-// under the timeoutMs wall-time budget. A selected run reports its partial
-// scope; assertion execution never publishes production output.
-func (r *Runtime) Assert(ctx context.Context, directory string, selector, environment []string, stdin io.Reader, stdout, stderr io.Writer, timeoutMs int) error {
+// Roots run in stable identity order across at most jobs workers, each in
+// its own worker under the timeoutMs wall-time budget. A selected run
+// reports its partial scope; assertion execution never publishes
+// production output.
+func (r *Runtime) Assert(ctx context.Context, directory string, selector, environment []string, stdin io.Reader, stdout, stderr io.Writer, timeoutMs, jobs int) error {
 	if r == nil {
 		return fmt.Errorf("assertions require a bundled runtime")
 	}
@@ -90,7 +91,7 @@ func (r *Runtime) Assert(ctx context.Context, directory string, selector, enviro
 	for _, test := range program.Assertions {
 		roots = append(roots, test.Root)
 	}
-	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr)
+	entries, err := r.RunSupervised(ctx, lease, roots, environment, stdin, timeoutMs, stderr, jobs)
 	complete := err == nil
 	passed := complete && len(entries) == len(roots)
 	for _, entry := range entries {
