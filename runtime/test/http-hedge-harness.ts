@@ -14,10 +14,15 @@
 // expired replica's commit is honestly unknown, and a known failure
 // elsewhere never resolves that uncertainty (C-C honesty rules).
 //
-// Replica shape contract (measured, not enforced): replicas must be
-// side-effect-free or idempotent reads. The harness starts both replicas
-// whenever the primary does not win before the delay, so hedged writes
-// would double-apply. Abort policy: when abortLosers is set, the hedge
+// Replica effect contract (E05 Jev 3/3 idempotent_writes, advice taken
+// with mandatory per-shape qualification): replicas are reads, or writes
+// proven idempotent for their exact shape with reread reconciliation. The
+// harness starts both replicas whenever the primary does not win before
+// the delay, so a hedged write applies twice unless its shape absorbs
+// duplication. Zero hedged-write shapes are qualified: like caller
+// operands without a verified native meaning, no hedged write ships
+// without its own qualification (idempotency proof plus H4/H5-style
+// effects accounting). Abort policy: when abortLosers is set, the hedge
 // aborts each still-pending cancelable loser's controller at the win.
 // Cancel-present replicas (fetch) wire that signal into their native
 // abort; cancel-absent replicas (SQL) set cancelable false and run to

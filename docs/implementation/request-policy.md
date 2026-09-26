@@ -111,8 +111,18 @@ them in C-owned checker/emitter slices.
   bound that fired) or `transport_failed` phase `timeout` (action
   client); caller cancel reports `cancelled`. No commit knowledge
   either way.
-- Hedged-loss supervision (O2): designed only if X-R04-2 shows O1
-  insufficient; no O2 policy work before the measurement.
+- Hedged-loss supervision (O2): X-R04-2 measured O1 sufficient
+  (E05, `evidence/2026-09-26/e05-x-r04-2.md`) — O2 is inactive.
+  Selected O1 hedge shapes: S1 let-settle for cancel-absent
+  replicas (SQL/bare work: pool leases, never request-scope
+  groups, response never waits); S2 abort-loser for cancel-present
+  replicas (fetch: qualified native abort at the win, drain
+  releases). Loser observation stays owner-held (hedge fates plus
+  genuine boundary expiries in the sink); terminal precedence is
+  expired over rejected; replicas are reads or per-shape-proven
+  idempotent writes (zero write shapes qualified). O2 trip
+  conditions are recorded in the E05 evidence; absent those, no
+  supervised-loser policy work exists.
 - Ingress stalls (E04 probes): header stalls never dispatch
   (Bun-owned, no Can hook — documented, not worked around); body
   stalls and drips abort at Bun's ~10s request bound (pinned
@@ -153,6 +163,12 @@ signal-path bound; §10 unchanged (F-owned). Authored caller operands
 (checker/emitter threading) and the E06 reporter are explicitly not
 in E04. Any native-interruption, operand, or reporting claim beyond
 this ledger is out of contract.
+
+E05 adds: X-R04-2 resolves the §7 hedge line — O1 sufficient, O2
+inactive, no policy code. The two selected hedge sub-shapes (S1
+let-settle, S2 abort-loser) are measured in
+`runtime/test/http-hedge.test.ts` (H0–H12) over the E04 vocabulary;
+S3/stream hedge stays unmeasured and unclaimed.
 
 ## E02 qualification outcome (X-R04-1 / X-R04-3)
 

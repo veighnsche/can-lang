@@ -401,6 +401,36 @@ describe("hedge contract (unit)", () => {
     ).rejects.toThrow(TypeError);
   });
 
+  test("H0d: expiry dominates rejection when nothing settles", async () => {
+    const outcome = await hedge<string>({ boundMs: 150, hedgeDelayMs: 0, abortLosers: false }, [
+      {
+        source: "worker",
+        cancelable: false,
+        start: async () => {
+          await Bun.sleep(2000);
+          return "late";
+        },
+      },
+      {
+        source: "worker",
+        cancelable: false,
+        start: async () => {
+          await Bun.sleep(10);
+          throw new Error("early-boom");
+        },
+      },
+    ]);
+    // The rejection lands first, yet the hedge reports unknown: the
+    // expired replica may have committed, and no known failure
+    // resolves that commit uncertainty.
+    expect(outcome.kind).toBe("unknown");
+    if (outcome.kind !== "unknown") throw new Error("wrong outcome");
+    expect(outcome.marker).toMatchObject({ kind: "unknown-write", commit: "unknown" });
+    expect(outcome.escalation.cause).toBe("budget");
+    const fates = await outcome.settledAll;
+    expect(fates.map((fate) => fate.fate).sort()).toEqual(["expired", "rejected"]);
+  });
+
   test("H0c: zero delay starts both replicas before the first await", async () => {
     let started = 0;
     const pending = hedge<string>(
