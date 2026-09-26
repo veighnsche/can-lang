@@ -1,0 +1,10 @@
+{
+  "version": "2026-09-26.0-d02",
+  "status": "PENDING-REVIEW",
+  "note": "D02 delivered integration paths for the X-R01-1 assigned tiers. No file listed here is admitted to any build profile or catalogue; admission requires distribution review in H packaging. Statuses: pending-review (delivered, awaiting review), reviewed (set only by distribution review, never by Lane D).",
+  "deliverables": [
+    { "path": "adapters/storage.ts", "tier": "T2", "class": "Op A storage", "status": "pending-review" },
+    { "path": "adapters/clipboard.ts", "tier": "T2", "class": "Op B clipboard", "status": "pending-review" },
+    { "path": "companions/chart.ts", "tier": "T3", "class": "Widget C chart", "status": "pending-review" }
+  ]
+}
