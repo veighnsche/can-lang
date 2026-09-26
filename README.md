@@ -96,7 +96,11 @@ Implementation is complete: all fifty ledger tasks are checked
 with evidence, the predecessor toolchain is deleted, and the
 release candidate passes the mandatory macOS gates. Open gates
 are publisher signature, notarization, and release upload, which
-require authorized credentials. No Linux support is claimed, no
-provider quality is claimed, and no proof/termination/effect
+require authorized credentials. The Linux target is implemented
+for Debian 13+ amd64
+([target](distribution/target-linux-amd64.json),
+[lane](distribution/linux/README.md)) with release qualification
+still pending (UP25); no provider quality is claimed, and no
+proof/termination/effect
 inference is offered — behavior is checked assertions plus
 explicit contracts.

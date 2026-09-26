@@ -192,8 +192,11 @@ gate. No release upload occurs merely because this documentation exists.
 
 Candidate: `can-b5026cc-darwin-arm64-v1` lineage (versions derive
 from `git describe`; no tags exist yet, so installer versions read
-`can-<sha>-darwin-arm64-v1`). Admitted target only:
-darwin-arm64. No Linux support is claimed.
+`can-<sha>-darwin-arm64-v1`). Admitted qualified target:
+darwin-arm64. The Linux target is implemented (Debian 13+ amd64,
+[target-linux-amd64.json](target-linux-amd64.json),
+[Linux lane](linux/README.md)); release qualification is deferred
+(UP25).
 
 Shipped: Go launcher (`canlc`) with parse/resolve/check/emit plus
 stdio LSP; the exact pinned Bun 1.4.2 sidecar
