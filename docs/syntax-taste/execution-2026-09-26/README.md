@@ -42,9 +42,9 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | F01 | in progress (wave 3) | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | — | — |
 | E02 | in progress (wave 4) | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | — | — |
 | F02 | in progress (wave 4) | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | — | — |
-| E07 | ready (H03+E01 done) | — | — | H03, E01 | branch verdicts→E08 | — | — |
+| E07 | in progress (wave 5) | lane-e-e07 (`18`) | isolated | H03, E01 | branch verdicts→E08 | — | — |
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
-| G02 | ready (G01 done) | — | — | G01 | hover→G03 | — | — |
+| G02 | in progress (wave 5) | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
