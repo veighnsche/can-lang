@@ -58,6 +58,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E06 | done | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | worker `c5499411` → main `e3a4148c` | 17/17, check green |
 | C03 | done | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | worker `8f61b1b` → main `9a2ea7b7` | go test check ok |
 | C04 | in progress (wave 10) | lane-c-c04 (`26`) | isolated | C03 | C-D→E09; X-R02-1→C05 | — | — |
+| F05 | in progress (wave 13) | lane-f-f05 (`31`) | isolated | F01, E01, C03, A04 | auth/protocol→F06/H | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
