@@ -78,7 +78,11 @@ func actionMountMetadata(site *ir.ActionSite) (string, error) {
 		return "", fmt.Errorf("unknown mount input mode %s", site.InputMode)
 	}
 	for _, kase := range site.Cases {
-		emitted.Cases = append(emitted.Cases, emittedActionCase{Leaf: kase.Leaf, Status: kase.Status, Swap: kase.Swap})
+		frozen, err := actionCaseMetadata(kase.Leaf, kase.Status, kase.Swap)
+		if err != nil {
+			return "", err
+		}
+		emitted.Cases = append(emitted.Cases, frozen)
 	}
 	if site.Body == "json" {
 		if site.Response == nil {

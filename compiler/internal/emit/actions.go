@@ -29,11 +29,13 @@ type emittedActionInput struct {
 }
 
 // emittedActionCase maps one returns leaf identity to its wire status plus
-// the HTML-only visible swap policy.
+// the HTML-only visible response mode: swap for fragment cases, document
+// for full-page cases. JSON cases carry neither.
 type emittedActionCase struct {
-	Leaf   string `json:"leaf"`
-	Status int    `json:"status"`
-	Swap   string `json:"swap,omitempty"`
+	Leaf     string `json:"leaf"`
+	Status   int    `json:"status"`
+	Swap     string `json:"swap,omitempty"`
+	Document bool   `json:"document,omitempty"`
 }
 
 // emittedAction is the frozen contract one handler-free action declaration
@@ -94,6 +96,23 @@ func swapPathSegments(path string) []string {
 	return segments
 }
 
+// actionCaseMetadata freezes one checked case: fragment swaps keep the
+// swap policy, document cases set the document mode, JSON cases carry
+// neither. Both the action table and mount sites share this mapping.
+func actionCaseMetadata(leaf string, status int, mode string) (emittedActionCase, error) {
+	emitted := emittedActionCase{Leaf: leaf, Status: status}
+	switch mode {
+	case "":
+	case "inner":
+		emitted.Swap = mode
+	case "document":
+		emitted.Document = true
+	default:
+		return emittedActionCase{}, fmt.Errorf("unknown action case mode %s", mode)
+	}
+	return emitted, nil
+}
+
 // swapPolicies derives the HTML swap-exception table from the checked
 // actions in declaration order. JSON actions and HTML actions without a
 // declared non-2xx swap case contribute nothing; an empty result keeps
@@ -106,7 +125,9 @@ func swapPolicies(actions []*check.ActionDeclaration) []emittedSwapPolicy {
 		}
 		var cases []emittedSwapCase
 		for _, kase := range action.Cases {
-			if kase.Swap == "" || (kase.Status >= 200 && kase.Status <= 299) {
+			// Only fragment cases reach the htmx guard table; document
+			// cases render full pages and 2xx cases swap globally.
+			if kase.Swap != "inner" || (kase.Status >= 200 && kase.Status <= 299) {
 				continue
 			}
 			cases = append(cases, emittedSwapCase{Status: kase.Status, Swap: kase.Swap})
@@ -158,7 +179,11 @@ func (builder *stateBuilder) emitActionConstants() error {
 			return fmt.Errorf("unknown action input mode %s", action.Input.Mode)
 		}
 		for _, kase := range action.Cases {
-			entry.Cases = append(entry.Cases, emittedActionCase{Leaf: kase.Leaf, Status: kase.Status, Swap: kase.Swap})
+			emitted, err := actionCaseMetadata(kase.Leaf, kase.Status, kase.Swap)
+			if err != nil {
+				return err
+			}
+			entry.Cases = append(entry.Cases, emitted)
 		}
 		if action.Body == "json" {
 			if action.ResponseSchema == nil {

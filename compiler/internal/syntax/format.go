@@ -360,6 +360,8 @@ func (f *formatter) render(file *File) {
 				row := formatName(kase.Leaf) + " status " + kase.Status.Text
 				if kase.Swap != nil {
 					row += " swap inner"
+				} else if kase.Document != nil {
+					row += " document"
 				}
 				f.line(2, row, kase.Span.Start)
 			}

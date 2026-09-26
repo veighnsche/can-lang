@@ -108,12 +108,14 @@ type ActionInput struct {
 }
 
 // ActionCase maps one returns-variant leaf to its wire status plus the
-// HTML-only visible swap policy.
+// HTML-only visible response mode: `swap inner` for fragments, `document`
+// for full-page renders. Both are nil for JSON cases.
 type ActionCase struct {
-	Span   source.Span
-	Leaf   QualifiedName
-	Status Token
-	Swap   *Token // the swap keyword; nil for JSON cases
+	Span     source.Span
+	Leaf     QualifiedName
+	Status   Token
+	Swap     *Token // the swap keyword; nil unless the case swaps a fragment
+	Document *Token // the document keyword; nil unless the case renders a document
 }
 
 // WrapDecl is an A3.2 operation wrapper: `from` names exactly one fetch,
@@ -484,7 +486,7 @@ func (p *parser) actionCase() ActionCase {
 	leaf := p.qualified()
 	p.expectWord("status")
 	status := p.expect(Integer)
-	var swap *Token
+	var swap, document *Token
 	if p.word("swap") {
 		policy := p.take()
 		if !p.word("inner") {
@@ -492,9 +494,12 @@ func (p *parser) actionCase() ActionCase {
 		}
 		p.take()
 		swap = &policy
+	} else if p.word("document") {
+		mode := p.take()
+		document = &mode
 	}
 	p.expect(Newline)
-	return ActionCase{Span: p.span(start), Leaf: leaf, Status: status, Swap: swap}
+	return ActionCase{Span: p.span(start), Leaf: leaf, Status: status, Swap: swap, Document: document}
 }
 
 func (p *parser) fixtureCase() FixtureCase {

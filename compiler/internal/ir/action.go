@@ -10,9 +10,10 @@ type ActionCapture struct {
 }
 
 // ActionCase is one frozen result leaf runtime identity plus its wire
-// status and the HTML-only visible swap policy ("inner", or "" for JSON
-// cases). The mount site carries the full per-case table so the server
-// adapter and the HTML guard share one checked policy.
+// status and the HTML-only visible response mode ("inner" for fragment
+// swaps, "document" for full-page renders, or "" for JSON cases). The
+// mount site carries the full per-case table so the server adapter and
+// the HTML guard share one checked policy.
 type ActionCase struct {
 	Leaf   string
 	Status int
