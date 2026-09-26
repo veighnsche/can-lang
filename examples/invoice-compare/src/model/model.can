@@ -1,0 +1,398 @@
+/// Compare model (C04/X-R02-1). The second browser app's
+/// app-owned folds over its own dock rows: it consumes the shared
+/// field, keyed-table and error controls unmodified and projects
+/// its own row storage onto key vectors at the boundary, exactly
+/// like the invoice grid.
+package model
+    provides [seed_panel, row_keys, row_key, make_row, with_count, with_sku, row_added, row_removed, row_moved, panel_blocked, blocked_notice, total_qty, totals_text, bad_problems, review_notice, outcome_notice, with_notice]
+    uses [controls::fields as fields, controls::keyed as keyed, controls::notices as notices, records, option, text]
+
+/// Seed one panel with two demo rows under a tag.
+fn records::panel seed_panel
+    emits []
+    given
+        str tag
+    asserts
+        left: "left" => ok records::panel("left", [records::dock_line("k1", "sku-1", "2", 2, true), records::dock_line("k2", "sku-2", "1", 1, true)], 0, "", "")
+        right: "right" => ok records::panel("right", [records::dock_line("k1", "sku-1", "2", 2, true), records::dock_line("k2", "sku-2", "1", 1, true)], 0, "", "")
+    ok records::panel(tag, [call make_row("k1", "sku-1", "2"), call make_row("k2", "sku-2", "1")], 0, "", "")
+
+/// Project dock rows onto their key vector for the shared keyed
+/// controller. Row storage stays app-owned; the library only ever
+/// sees keys.
+fn str[] row_keys
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+        str[] grown
+    asserts
+        sample: [records::dock_line("k1", "a", "2", 2, true), records::dock_line("k2", "b", "1", 1, true)], 0, [] => ok ["k1", "k2"]
+        empty: [], 0, [] => ok []
+    match index >= rows.length
+        false => match call row_keys(rows, index + 1, call append<str>(grown, rows[index].key))
+            ok str[] rest => ok rest
+        true => ok grown
+
+/// Read the key of the row at a known position. Callers only
+/// pass positions below the length.
+fn str row_key
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+    asserts
+        sample: [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 1 => ok "k2"
+    ok rows[index].key
+
+/// Build one dock row from texts. The count parses through the
+/// shared quantity grammar; a miss keeps the text with a zero
+/// count and blocks review until fixed.
+fn records::dock_line make_row
+    emits []
+    given
+        str key
+        str sku
+        str count
+    asserts
+        sample: "k1", "a", "2" => ok records::dock_line("k1", "a", "2", 2, true)
+        bad: "k1", "a", "many" => ok records::dock_line("k1", "a", "many", 0, false)
+    match call fields::parse_qty(count)
+        ok option::value<int> qty => match qty
+            option::none => ok records::dock_line(key, sku, count, 0, false)
+            option::some => ok records::dock_line(key, sku, count, qty.value, true)
+
+/// Rewrite the count text of the named row front to back. The raw
+/// text is always kept on screen; the parsed count only moves on a
+/// valid parse, and the flag records whether the row can be
+/// reviewed.
+fn records::dock_line[] count_rows
+    emits []
+    given
+        records::dock_line[] rows
+        str key
+        str count
+        int index
+        records::dock_line[] grown
+    asserts
+        valid: [records::dock_line("k1", "a", "1", 1, true)], "k1", "4", 0, [] => ok [records::dock_line("k1", "a", "4", 4, true)]
+        bad_text: [records::dock_line("k1", "a", "1", 1, true)], "k1", "many", 0, [] => ok [records::dock_line("k1", "a", "many", 1, false)]
+        miss: [records::dock_line("k1", "a", "1", 1, true)], "k9", "4", 0, [] => ok [records::dock_line("k1", "a", "1", 1, true)]
+    match index >= rows.length
+        false => match rows[index].key is key
+            false => match call count_rows(rows, key, count, index + 1, call append<records::dock_line>(grown, rows[index]))
+                ok records::dock_line[] rest => ok rest
+            true => match call fields::parse_qty(count)
+                ok option::value<int> qty => match qty
+                    option::none => match call count_rows(rows, key, count, index + 1, call append<records::dock_line>(grown, records::dock_line(rows[index].key, rows[index].sku, count, rows[index].qty, false)))
+                        ok records::dock_line[] rest => ok rest
+                    option::some => match call count_rows(rows, key, count, index + 1, call append<records::dock_line>(grown, records::dock_line(rows[index].key, rows[index].sku, count, qty.value, true)))
+                        ok records::dock_line[] rest => ok rest
+        true => ok grown
+
+/// Rewrite the sku of the named row front to back, copying the
+/// rest untouched. An unknown key copies every row unchanged.
+fn records::dock_line[] sku_rows
+    emits []
+    given
+        records::dock_line[] rows
+        str key
+        str sku
+        int index
+        records::dock_line[] grown
+    asserts
+        hit: [records::dock_line("k1", "a", "1", 1, true)], "k1", "b", 0, [] => ok [records::dock_line("k1", "b", "1", 1, true)]
+        miss: [records::dock_line("k1", "a", "1", 1, true)], "k9", "b", 0, [] => ok [records::dock_line("k1", "a", "1", 1, true)]
+    match index >= rows.length
+        false => match rows[index].key is key
+            false => match call sku_rows(rows, key, sku, index + 1, call append<records::dock_line>(grown, rows[index]))
+                ok records::dock_line[] rest => ok rest
+            true => match call sku_rows(rows, key, sku, index + 1, call append<records::dock_line>(grown, records::dock_line(rows[index].key, sku, rows[index].count, rows[index].qty, rows[index].valid)))
+                ok records::dock_line[] rest => ok rest
+        true => ok grown
+
+/// Read the current count text of a known key; unknown keys read "".
+fn str current_count
+    emits []
+    given
+        records::dock_line[] rows
+        str key
+        int index
+    asserts
+        hit: [records::dock_line("k1", "a", "7", 7, true)], "k1", 0 => ok "7"
+        miss: [records::dock_line("k1", "a", "7", 7, true)], "k9", 0 => ok ""
+    match index >= rows.length
+        false => match rows[index].key is key
+            false => match call current_count(rows, key, index + 1)
+                ok str rest => ok rest
+            true => ok rows[index].count
+        true => ok ""
+
+/// Read the current sku of a known key; unknown keys read "".
+fn str current_sku
+    emits []
+    given
+        records::dock_line[] rows
+        str key
+        int index
+    asserts
+        hit: [records::dock_line("k1", "a", "7", 7, true)], "k1", 0 => ok "a"
+        miss: [records::dock_line("k1", "a", "7", 7, true)], "k9", 0 => ok ""
+    match index >= rows.length
+        false => match rows[index].key is key
+            false => match call current_sku(rows, key, index + 1)
+                ok str rest => ok rest
+            true => ok rows[index].sku
+        true => ok ""
+
+/// Retarget one row count text by key and revalidate the panel
+/// notice. Unknown keys and unchanged text leave the sequence
+/// alone; a text change always counts as an edit even when it does
+/// not parse, because the screen content changed.
+fn records::panel with_count
+    emits []
+    given
+        records::panel panel
+        str key
+        str count
+    asserts
+        changed: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k1", "4" => ok records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "")
+        invalid: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k1", "many" => ok records::panel("left", [records::dock_line("k1", "a", "many", 1, false)], 3, "line k1: bad count", "")
+        same: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k1", "1" => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "")
+        unknown: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k9", "4" => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "")
+    match (call keyed::key_index(call row_keys(panel.rows, 0, []), key, 0)) >= panel.rows.length
+        false => match (call current_count(panel.rows, key, 0)) is count
+            false => match call blocked_notice(records::panel(panel.tag, call count_rows(panel.rows, key, count, 0, []), panel.edit_seq + 1, "", panel.focus))
+                ok str notice => ok records::panel(panel.tag, call count_rows(panel.rows, key, count, 0, []), panel.edit_seq + 1, notice, panel.focus)
+            true => ok panel
+        true => ok panel
+
+/// Retarget one row sku by key. Unknown keys and unchanged values
+/// leave the sequence alone.
+fn records::panel with_sku
+    emits []
+    given
+        records::panel panel
+        str key
+        str sku
+    asserts
+        changed: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k1", "b" => ok records::panel("left", [records::dock_line("k1", "b", "1", 1, true)], 3, "", "")
+        unknown: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k9", "b" => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "")
+    match (call keyed::key_index(call row_keys(panel.rows, 0, []), key, 0)) >= panel.rows.length
+        false => match (call current_sku(panel.rows, key, 0)) is sku
+            false => ok records::panel(panel.tag, call sku_rows(panel.rows, key, sku, 0, []), panel.edit_seq + 1, panel.notice, panel.focus)
+            true => ok panel
+        true => ok panel
+
+/// Append one blank row under the first free key.
+fn records::panel row_added
+    emits []
+    given
+        records::panel panel
+    asserts
+        sample: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "") => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "", "1", 1, true)], 3, "", "id:k2")
+    ok records::panel(panel.tag, call append<records::dock_line>(panel.rows, call make_row(call keyed::free_key(call row_keys(panel.rows, 0, []), 1), "", "1")), panel.edit_seq + 1, panel.notice, "id:" + call keyed::free_key(call row_keys(panel.rows, 0, []), 1))
+
+/// Drop one row by key. Unknown keys leave the sequence alone.
+fn records::panel row_removed
+    emits []
+    given
+        records::panel panel
+        str key
+    asserts
+        hit: records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 2, "", ""), "k1" => ok records::panel("left", [records::dock_line("k2", "b", "1", 1, true)], 3, "", "")
+        miss: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k9" => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "")
+    match call keyed::key_index(call row_keys(panel.rows, 0, []), key, 0)
+        ok int at => match at >= panel.rows.length
+            false => ok records::panel(panel.tag, call keyed::cut_at<records::dock_line>(panel.rows, at, 0, []), panel.edit_seq + 1, panel.notice, "")
+            true => ok panel
+
+/// Keyed row reorder: move the named row one step up (0) or down
+/// (1). Unknown keys, edges and other directions are no-ops that
+/// leave the sequence alone.
+fn records::panel row_moved
+    emits []
+    given
+        records::panel panel
+        str key
+        int dir
+    asserts
+        up: records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 2, "", ""), "k2", 0 => ok records::panel("left", [records::dock_line("k2", "b", "1", 1, true), records::dock_line("k1", "a", "1", 1, true)], 3, "", "up:k2")
+        down: records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 2, "", ""), "k1", 1 => ok records::panel("left", [records::dock_line("k2", "b", "1", 1, true), records::dock_line("k1", "a", "1", 1, true)], 3, "", "down:k1")
+        top: records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 2, "", ""), "k1", 0 => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "1", 1, true)], 2, "", "")
+        unknown: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""), "k9", 1 => ok records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", "")
+    match call keyed::key_index(call row_keys(panel.rows, 0, []), key, 0)
+        ok int at => match at >= panel.rows.length
+            false => match call keyed::step_index(panel.rows.length, at, dir)
+                ok int target => match target is at
+                    false => match dir is 0
+                        false => ok records::panel(panel.tag, call keyed::insert_at<records::dock_line>(call keyed::cut_at<records::dock_line>(panel.rows, at, 0, []), target, panel.rows[at], 0, []), panel.edit_seq + 1, panel.notice, "down:" + key)
+                        true => ok records::panel(panel.tag, call keyed::insert_at<records::dock_line>(call keyed::cut_at<records::dock_line>(panel.rows, at, 0, []), target, panel.rows[at], 0, []), panel.edit_seq + 1, panel.notice, "up:" + key)
+                    true => ok panel
+            true => ok panel
+
+/// Report whether any row is unparsable and so blocks review.
+fn bool panel_blocked
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+    asserts
+        clean: [records::dock_line("k1", "a", "1", 1, true)], 0 => ok false
+        invalid: [records::dock_line("k1", "a", "many", 1, false)], 0 => ok true
+        empty: [], 0 => ok false
+    match index >= rows.length
+        false => match rows[index].valid
+            false => ok true
+            true => match call panel_blocked(rows, index + 1)
+                ok bool rest => ok rest
+        true => ok false
+
+/// First invalid row key, or "" when every row parses.
+fn str blocked_key
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+    asserts
+        first: [records::dock_line("k1", "a", "many", 1, false), records::dock_line("k2", "b", "xx", 1, false)], 0 => ok "k1"
+        clean: [records::dock_line("k1", "a", "1", 1, true)], 0 => ok ""
+    match index >= rows.length
+        false => match rows[index].valid
+            false => ok rows[index].key
+            true => match call blocked_key(rows, index + 1)
+                ok str rest => ok rest
+        true => ok ""
+
+/// Review-block notice: "" when reviewable, else the first bad row
+/// and field through the shared vocabulary.
+fn str blocked_notice
+    emits []
+    given
+        records::panel panel
+    asserts
+        clean: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "", "") => ok ""
+        blocked: records::panel("left", [records::dock_line("k1", "a", "many", 1, false)], 1, "", "") => ok "line k1: bad count"
+    match call panel_blocked(panel.rows, 0)
+        ok bool blocked => match blocked
+            false => ok ""
+            true => match call notices::blocked_line_notice(call blocked_key(panel.rows, 0), "count")
+                ok str notice => ok notice
+
+/// Exact total count across the rows in order. Only parsed values
+/// feed the sum.
+fn int total_qty
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+        int grown
+    asserts
+        empty: [], 0, 0 => ok 0
+        one: [records::dock_line("k1", "a", "2", 2, true)], 0, 0 => ok 2
+        two: [records::dock_line("k1", "a", "2", 2, true), records::dock_line("k2", "b", "1", 1, true)], 0, 0 => ok 3
+    match index >= rows.length
+        false => match call total_qty(rows, index + 1, grown + rows[index].qty)
+            ok int rest => ok rest
+        true => ok grown
+
+/// Totals line for one panel: row count and exact total.
+fn str totals_text
+    emits []
+    given
+        records::panel panel
+    asserts
+        empty: records::panel("left", [], 0, "", "") => ok "0 rows, 0 units"
+        two: records::panel("left", [records::dock_line("k1", "a", "2", 2, true), records::dock_line("k2", "b", "1", 1, true)], 0, "", "") => ok "2 rows, 3 units"
+    ok call text::from_int(panel.rows.length) + " rows, " + call text::from_int(call total_qty(panel.rows, 0, 0)) + " units"
+
+/// Collect one shared problem per invalid row front to back. The
+/// compare app constructs the library problem shape natively: no
+/// contract adapter sits between the rows and the review notice.
+fn notices::field_problem[] bad_problems
+    emits []
+    given
+        records::dock_line[] rows
+        int index
+        notices::field_problem[] grown
+    asserts
+        clean: [records::dock_line("k1", "a", "1", 1, true)], 0, [] => ok []
+        one: [records::dock_line("k1", "a", "many", 1, false)], 0, [] => ok [notices::field_problem(option::some("k1"), "count", "bad count")]
+        second: [records::dock_line("k1", "a", "1", 1, true), records::dock_line("k2", "b", "xx", 1, false)], 0, [] => ok [notices::field_problem(option::some("k2"), "count", "bad count")]
+    match index >= rows.length
+        false => match rows[index].valid
+            false => match call bad_problems(rows, index + 1, call append<notices::field_problem>(grown, notices::field_problem(option::some(rows[index].key), "count", "bad count")))
+                ok notices::field_problem[] rest => ok rest
+            true => match call bad_problems(rows, index + 1, grown)
+                ok notices::field_problem[] rest => ok rest
+        true => ok grown
+
+/// Render one panel review as its status notice: a clean panel
+/// reports its app-owned all-clear, while any invalid row renders
+/// through the shared 422 vocabulary with the first problem
+/// winning.
+fn str review_notice
+    emits []
+    given
+        records::panel panel
+    asserts
+        clean: records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "", "") => ok "ready to review"
+        blocked: records::panel("left", [records::dock_line("k1", "a", "many", 1, false)], 1, "", "") => ok "line k1 count: bad count"
+    match call panel_blocked(panel.rows, 0)
+        ok bool blocked => match blocked
+            false => ok "ready to review"
+            true => match call notices::invalid_notice(call bad_problems(panel.rows, 0, []))
+                ok str notice => ok notice
+
+/// Project one outcome kind onto the shared notice vocabulary, so
+/// the second app renders byte-identical denied, uncertain, busy,
+/// conflict, saved, loaded and held notices to the invoice grid.
+/// The detail carries the revision or server message where the
+/// shape takes one; unknown kinds read the empty-rejection notice.
+fn str outcome_notice
+    emits []
+    given
+        str kind
+        str detail
+    asserts
+        denied: "denied", "" => ok "access denied; draft kept"
+        unknown: "unknown", "" => ok "save may have committed; replay or reread"
+        busy: "busy", "" => ok "server busy; retry reread"
+        conflict: "conflict", "stale revision" => ok "stale revision; reread to compare"
+        saved: "saved", "2" => ok "saved revision 2"
+        loaded: "loaded", "2" => ok "loaded revision 2"
+        held: "held", "2" => ok "server has revision 2; your edits kept"
+        other: "bogus", "" => ok "rejected by server; edit and retry"
+    match kind is "denied"
+        false => match kind is "unknown"
+            false => match kind is "busy"
+                false => match kind is "conflict"
+                    false => match kind is "saved"
+                        false => match kind is "loaded"
+                            false => match kind is "held"
+                                false => ok call notices::rejected_notice()
+                                true => match call notices::held_notice(detail)
+                                    ok str notice => ok notice
+                            true => match call notices::loaded_notice(detail)
+                                ok str notice => ok notice
+                        true => match call notices::saved_notice(detail)
+                            ok str notice => ok notice
+                    true => match call notices::conflict_notice(detail)
+                        ok str notice => ok notice
+                true => match call notices::load_busy_notice()
+                    ok str notice => ok notice
+            true => match call notices::save_unknown_notice()
+                ok str notice => ok notice
+        true => match call notices::denied_notice()
+            ok str notice => ok notice
+
+/// Swap the notice inside a panel, keeping everything else
+/// untouched.
+fn records::panel with_notice
+    emits []
+    given
+        records::panel panel
+        str notice
+    asserts
+        sample: records::panel("left", [], 0, "", ""), "ready to review" => ok records::panel("left", [], 0, "ready to review", "")
+    ok records::panel(panel.tag, panel.rows, panel.edit_seq, notice, panel.focus)

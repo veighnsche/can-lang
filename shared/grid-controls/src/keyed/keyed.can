@@ -1,0 +1,191 @@
+/// Shared keyed-table controls (C04/X-R02-1). Ordinary Can row
+/// controller over key vectors plus generic positional splice
+/// helpers: apps project their row keys once and delegate lookup,
+/// free-key minting, reorder targets, removal and focus matching.
+/// Row storage stays app-owned, so every app keeps its own row
+/// record while sharing the controller unmodified.
+package keyed
+    provides [key_index, key_taken, free_key, cut_at, insert_at, step_index, row_focus_control, any_row_focused]
+    uses [text]
+
+/// Locate a key index; an unknown key reads past the end.
+fn int key_index
+    emits []
+    given
+        str[] keys
+        str key
+        int index
+    asserts
+        head: ["k1"], "k1", 0 => ok 0
+        tail: ["k1", "k2"], "k2", 0 => ok 1
+        miss: ["k1"], "k9", 0 => ok 1
+        empty: [], "k1", 0 => ok 0
+    match index >= keys.length
+        false => match keys[index] is key
+            false => match call key_index(keys, key, index + 1)
+                ok int rest => ok rest
+            true => ok index
+        true => ok keys.length
+
+/// Report whether a key is already taken.
+fn bool key_taken
+    emits []
+    given
+        str[] keys
+        str key
+        int index
+    asserts
+        taken: ["k1"], "k1", 0 => ok true
+        free: ["k1"], "k2", 0 => ok false
+        empty: [], "k1", 0 => ok false
+    match index >= keys.length
+        false => match keys[index] is key
+            false => match call key_taken(keys, key, index + 1)
+                ok bool rest => ok rest
+            true => ok true
+        true => ok false
+
+/// First free k<n> key at or after n, so added rows never clash
+/// with kept or removed keys.
+fn str free_key
+    emits []
+    given
+        str[] keys
+        int n
+    asserts
+        first: [], 1 => ok "k1"
+        gap: ["k1"], 1 => ok "k2"
+        hole: ["k2"], 1 => ok "k1"
+    match call key_taken(keys, "k" + call text::from_int(n), 0)
+        ok bool taken => match taken
+            false => ok "k" + call text::from_int(n)
+            true => match call free_key(keys, n + 1)
+                ok str rest => ok rest
+
+/// Copy every row except the index, front to back. Callers only
+/// pass positions below the length.
+fn item[] cut_at<item>
+    emits []
+    given
+        item[] rows
+        int at
+        int index
+        item[] grown
+    asserts
+        head: ["k1", "k2"], 0, 0, [] => ok ["k2"]
+        tail: ["k1", "k2"], 1, 0, [] => ok ["k1"]
+        ints: [1, 2, 3], 1, 0, [] => ok [1, 3]
+    match index >= rows.length
+        false => match index is at
+            false => match call cut_at<item>(rows, at, index + 1, call append<item>(grown, rows[index]))
+                ok item[] rest => ok rest
+            true => match call cut_at<item>(rows, at, index + 1, grown)
+                ok item[] rest => ok rest
+        true => ok grown
+
+/// Copy rows front to back, splicing the carried row at the target
+/// position. Callers only pass positions at or below the length.
+fn item[] insert_at<item>
+    emits []
+    given
+        item[] rows
+        int at
+        item line
+        int index
+        item[] grown
+    asserts
+        head: ["k2"], 0, "k1", 0, [] => ok ["k1", "k2"]
+        tail: ["k1"], 1, "k2", 0, [] => ok ["k1", "k2"]
+        ints: [1, 3], 1, 2, 0, [] => ok [1, 2, 3]
+        empty: [], 0, "k1", 0, [] => ok ["k1"]
+    match index >= rows.length
+        false => match index is at
+            false => match call insert_at<item>(rows, at, line, index + 1, call append<item>(grown, rows[index]))
+                ok item[] rest => ok rest
+            true => match call insert_at<item>(rows, at, line, index + 1, call append<item>(call append<item>(grown, line), rows[index]))
+                ok item[] rest => ok rest
+        true => match index is at
+            false => ok grown
+            true => ok call append<item>(grown, line)
+
+/// Keyed row reorder target: one step up (0) or down (1) from a
+/// known position. Edges and other directions read back the same
+/// position, so callers treat "target is position" as the no-op.
+fn int step_index
+    emits []
+    given
+        int count
+        int at
+        int dir
+    asserts
+        up: 2, 1, 0 => ok 0
+        down: 2, 0, 1 => ok 1
+        top: 2, 0, 0 => ok 0
+        bottom: 2, 1, 1 => ok 1
+        other_dir: 2, 0, 7 => ok 0
+        single: 1, 0, 1 => ok 0
+    match dir is 0
+        false => match dir is 1
+            false => ok at
+            true => match at + 1 >= count
+                false => ok at + 1
+                true => ok at
+        true => match at is 0
+            false => ok at - 1
+            true => ok at
+
+/// Resolve one row focus intent against one stable row key: the
+/// control name ("id", "qty", "price", "up", "down" or "del") when
+/// the intent names this row's control, else "". Chrome intents
+/// ("save", "status", ...) never match a row.
+fn str row_focus_control
+    emits []
+    given
+        str focus
+        str row
+    asserts
+        id: "id:k1", "k1" => ok "id"
+        qty: "qty:k1", "k1" => ok "qty"
+        price: "price:k1", "k1" => ok "price"
+        up: "up:k1", "k1" => ok "up"
+        down: "down:k1", "k1" => ok "down"
+        del: "del:k1", "k1" => ok "del"
+        other_row: "qty:k2", "k1" => ok ""
+        chrome: "save", "k1" => ok ""
+        empty: "", "k1" => ok ""
+    match focus is "id:" + row
+        false => match focus is "qty:" + row
+            false => match focus is "price:" + row
+                false => match focus is "up:" + row
+                    false => match focus is "down:" + row
+                        false => match focus is "del:" + row
+                            false => ok ""
+                            true => ok "del"
+                        true => ok "down"
+                    true => ok "up"
+                true => ok "price"
+            true => ok "qty"
+        true => ok "id"
+
+/// Report whether the focus intent names a control of one of the
+/// present keys. The render focuses the built row target only then;
+/// a stale intent (its row is gone) focuses nothing.
+fn bool any_row_focused
+    emits []
+    given
+        str[] keys
+        str focus
+        int index
+    asserts
+        hit: ["k1"], "qty:k1", 0 => ok true
+        second: ["k1", "k2"], "del:k2", 0 => ok true
+        stale: ["k1"], "qty:k9", 0 => ok false
+        chrome: ["k1"], "save", 0 => ok false
+        empty: [], "qty:k1", 0 => ok false
+    match index >= keys.length
+        false => match call row_focus_control(focus, keys[index])
+            ok str control => match control is ""
+                false => ok true
+                true => match call any_row_focused(keys, focus, index + 1)
+                    ok bool rest => ok rest
+        true => ok false

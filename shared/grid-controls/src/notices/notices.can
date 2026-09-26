@@ -1,0 +1,192 @@
+/// Shared error controls (C04/X-R02-1). The one finite status
+/// vocabulary every invoice browser app projects: 422 problem
+/// rendering plus the aligned load/save outcome and transport
+/// failure notices. Apps adapt their contract problems onto
+/// field_problem at the boundary and delegate every notice here,
+/// so both apps stay byte-identical on every shared shape.
+package notices
+    provides [field_problem, problem_notice, invalid_notice, rejected_notice, blocked_line_notice, denied_notice, save_unknown_notice, load_busy_notice, conflict_notice, saved_notice, loaded_notice, held_notice, save_failure_notice, save_failure_uncertain, load_failure_notice]
+    uses [option]
+
+/// One reportable field problem: an optional row key plus the wire
+/// field name and its finite validation reason.
+record field_problem
+    option::value<str> row
+    str field
+    str message
+
+/// Render one problem as its status notice. Row problems name the
+/// line; draft-wide problems name the field only.
+fn str problem_notice
+    emits []
+    given
+        option::value<str> row
+        str field
+        str message
+    asserts
+        row: option::some("k1"), "quantity", "bad quantity" => ok "line k1 quantity: bad quantity"
+        draft: option::none(), "revision", "stale revision" => ok "revision: stale revision"
+    match row
+        option::none => ok field + ": " + message
+        option::some => ok "line " + row.value + " " + field + ": " + message
+
+/// The empty-rejection notice: the server refused the draft without
+/// naming a problem, so the notice points at editing and retrying.
+fn str rejected_notice
+    emits []
+    asserts
+        sample:  => ok "rejected by server; edit and retry"
+    ok "rejected by server; edit and retry"
+
+/// Render the 422 errors as one status notice: the first problem
+/// wins, since the status line holds a single notice.
+fn str invalid_notice
+    emits []
+    given
+        field_problem[] errors
+    asserts
+        one: [field_problem(option::some("k1"), "id", "empty line id")] => ok "line k1 id: empty line id"
+        first: [field_problem(option::some("k1"), "id", "empty line id"), field_problem(option::some("k2"), "quantity", "bad quantity")] => ok "line k1 id: empty line id"
+        empty: [] => ok "rejected by server; edit and retry"
+    match errors.length is 0
+        false => match call problem_notice(errors[0].row, errors[0].field, errors[0].message)
+            ok str notice => ok notice
+        true => ok call rejected_notice()
+
+/// Save-block notice for one bad line and field.
+fn str blocked_line_notice
+    emits []
+    given
+        str key
+        str field
+    asserts
+        qty: "k1", "quantity" => ok "line k1: bad quantity"
+        price: "k2", "price" => ok "line k2: bad price"
+    ok "line " + key + ": bad " + field
+
+/// The nondisclosing denial notice: foreign, nonexistent and
+/// unauthenticated targets share it, and the in-view draft stays.
+fn str denied_notice
+    emits []
+    asserts
+        sample:  => ok "access denied; draft kept"
+    ok "access denied; draft kept"
+
+/// The uncertain-save notice: the save may or may not have
+/// committed, so the identical operation id stays available for
+/// explicit replay or reread.
+fn str save_unknown_notice
+    emits []
+    asserts
+        sample:  => ok "save may have committed; replay or reread"
+    ok "save may have committed; replay or reread"
+
+/// The busy-store load notice: a read never commits, so the retry
+/// is always safe and the state stays a plain failure.
+fn str load_busy_notice
+    emits []
+    asserts
+        sample:  => ok "server busy; retry reread"
+    ok "server busy; retry reread"
+
+/// The conflict notice: another writer moved the stored revision,
+/// so the notice points at reread instead of retry.
+fn str conflict_notice
+    emits []
+    given
+        str message
+    asserts
+        sample: "stale revision" => ok "stale revision; reread to compare"
+    ok message + "; reread to compare"
+
+/// The saved notice names the acknowledged revision.
+fn str saved_notice
+    emits []
+    given
+        str revision
+    asserts
+        sample: "2" => ok "saved revision 2"
+    ok "saved revision " + revision
+
+/// The loaded notice names the adopted revision.
+fn str loaded_notice
+    emits []
+    given
+        str revision
+    asserts
+        sample: "2" => ok "loaded revision 2"
+    ok "loaded revision " + revision
+
+/// The held-snapshot notice names the waiting revision and promises
+/// the kept edits.
+fn str held_notice
+    emits []
+    given
+        str revision
+    asserts
+        sample: "2" => ok "server has revision 2; your edits kept"
+    ok "server has revision " + revision + "; your edits kept"
+
+/// One save transport failure notice. A lost response, an unexpected
+/// status or an undecodable answer all leave the commit unknown; a
+/// request that never left (over the wire limit, or locally
+/// invalid) is a plain failure instead.
+fn str save_failure_notice
+    emits []
+    given
+        str kind
+    asserts
+        transport: "transport" => ok "connection lost; save may have committed"
+        status: "status" => ok "unexpected response; save may have committed"
+        codec: "codec" => ok "unreadable response; save may have committed"
+        limit: "limit" => ok "save too large; remove lines and retry"
+        request: "request" => ok "request invalid; reread and retry"
+    match kind is "transport"
+        false => match kind is "status"
+            false => match kind is "codec"
+                false => match kind is "limit"
+                    false => ok "request invalid; reread and retry"
+                    true => ok "save too large; remove lines and retry"
+                true => ok "unreadable response; save may have committed"
+            true => ok "unexpected response; save may have committed"
+        true => ok "connection lost; save may have committed"
+
+/// Report whether one save failure kind leaves the commit unknown.
+/// Transport, status and codec failures turn uncertain with the
+/// replay id intact; limit and request failures fail plainly.
+fn bool save_failure_uncertain
+    emits []
+    given
+        str kind
+    asserts
+        transport: "transport" => ok true
+        status: "status" => ok true
+        codec: "codec" => ok true
+        limit: "limit" => ok false
+        request: "request" => ok false
+    match kind is "transport"
+        false => match kind is "status"
+            false => match kind is "codec"
+                false => ok false
+                true => ok true
+            true => ok true
+        true => ok true
+
+/// One load transport failure notice. Reads never commit, so every
+/// load failure is a plain retryable failure, never uncertainty.
+fn str load_failure_notice
+    emits []
+    given
+        str kind
+    asserts
+        transport: "transport" => ok "connection lost; retry reread"
+        status: "status" => ok "unexpected response; retry reread"
+        codec: "codec" => ok "unreadable response; retry reread"
+        request: "request" => ok "request invalid; retry reread"
+    match kind is "transport"
+        false => match kind is "status"
+            false => match kind is "codec"
+                false => ok "request invalid; retry reread"
+                true => ok "unreadable response; retry reread"
+            true => ok "unexpected response; retry reread"
+        true => ok "connection lost; retry reread"

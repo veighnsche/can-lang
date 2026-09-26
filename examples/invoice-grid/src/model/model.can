@@ -1,197 +1,6 @@
 package model
-    provides [totals_text, minor_to_price, line_amount, parse_price, parse_qty, parse_key, operation_id, to_input, from_snapshot, with_id, with_quantity, with_price, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, blocked_applied, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, id_edited, quantity_edited, price_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, invalid_applied, conflict_applied, forbidden_applied, unavailable_applied, save_failed, loaded_applied, load_forbidden_applied, load_unavailable_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state, row_focus_control, rows_focused]
-    uses [billing::invoice_contract as contract, records, number, option, text]
-
-/// Report whether one scalar is an ASCII digit.
-fn bool digit_ok
-    emits []
-    given
-        int scalar
-    asserts
-        zero: 48 => ok true
-        nine: 57 => ok true
-        dot: 46 => ok false
-        letter: 97 => ok false
-    match scalar >= 48 and scalar <= 57
-        false => ok false
-        true => ok true
-
-/// A leading zero integer part is padded only when another digit
-/// follows it: "0" and "0.5" stay canonical while "05" fails.
-fn bool leading_zero_bad
-    emits []
-    given
-        int[] units
-        int index
-        int int_digits
-    asserts
-        padded: [48, 53], 0, 0 => ok true
-        lone: [48], 0, 0 => ok false
-        dotted: [48, 46, 53], 0, 0 => ok false
-        later: [53, 48], 1, 1 => ok false
-    match int_digits is 0 and units[index] is 48
-        false => ok false
-        true => match index + 1 >= units.length
-            false => match call digit_ok(units[(index + 1)])
-                ok bool digit => ok digit
-            true => ok false
-
-/// Scan price scalars into minor units: a canonical integer part
-/// (0 or no leading zero), an optional dot, then one or two fraction
-/// digits. Anything else reads none; values above one million major
-/// units read none. The accumulator never nears int64 range: the
-/// integer part fails fast past one hundred million minor units.
-fn option::value<int> price_scan
-    emits []
-    given
-        int[] units
-        int index
-        int int_value
-        int int_digits
-        int frac_value
-        int frac_digits
-        int dotted
-    asserts
-        whole: [53], 0, 0, 0, 0, 0, 0 => ok option::some(500)
-        cents: [53, 46, 48, 53], 0, 0, 0, 0, 0, 0 => ok option::some(505)
-        dime: [53, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::some(550)
-        zero: [48], 0, 0, 0, 0, 0, 0 => ok option::some(0)
-        padded: [48, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
-        trailing_dot: [53, 46], 0, 0, 0, 0, 0, 0 => ok option::none()
-        leading_dot: [46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
-        three_dp: [53, 46, 48, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
-        double_dot: [53, 46, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
-        letter: [53, 120], 0, 0, 0, 0, 0, 0 => ok option::none()
-        empty: [], 0, 0, 0, 0, 0, 0 => ok option::none()
-        cap: [49, 48, 48, 48, 48, 48, 48, 46, 48, 48], 0, 0, 0, 0, 0, 0 => ok option::some(100000000)
-        over: [49, 48, 48, 48, 48, 48, 48, 46, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
-    match index >= units.length
-        false => match call digit_ok(units[index])
-            ok bool digit => match digit
-                false => match units[index] is 46 and dotted is 0 and int_digits >= 1
-                    false => ok option::none()
-                    true => match call price_scan(units, index + 1, int_value, int_digits, frac_value, frac_digits, 1)
-                        ok option::value<int> rest => ok rest
-                true => match dotted is 1
-                    false => match call leading_zero_bad(units, index, int_digits)
-                        ok bool padded => match padded
-                            false => match int_value > 100000000
-                                false => match call price_scan(units, index + 1, int_value * 10 + units[index] - 48, int_digits + 1, frac_value, frac_digits, dotted)
-                                    ok option::value<int> rest => ok rest
-                                true => ok option::none()
-                            true => ok option::none()
-                    true => match frac_digits >= 2
-                        false => match call price_scan(units, index + 1, int_value, int_digits, frac_value * 10 + units[index] - 48, frac_digits + 1, dotted)
-                            ok option::value<int> rest => ok rest
-                        true => ok option::none()
-        true => match int_digits is 0
-            false => match dotted is 1 and frac_digits is 0
-                false => match frac_digits is 1
-                    false => match int_value * 100 + frac_value > 100000000
-                        false => ok option::some(int_value * 100 + frac_value)
-                        true => ok option::none()
-                    true => match int_value * 100 + frac_value * 10 > 100000000
-                        false => ok option::some(int_value * 100 + frac_value * 10)
-                        true => ok option::none()
-                true => ok option::none()
-            true => ok option::none()
-
-/// Parse one price text into minor units. The grid accepts exactly
-/// the server wire shape: major units with at most two fraction
-/// digits ("19.99", "5", "0.50"). Money is always integer minor
-/// units past this point, so totals are exact by construction.
-fn option::value<int> parse_price
-    emits []
-    given
-        str text
-    asserts
-        whole: "5" => ok option::some(500)
-        cents: "19.99" => ok option::some(1999)
-        dime: "0.5" => ok option::some(50)
-        zero: "0" => ok option::some(0)
-        cap: "1000000.00" => ok option::some(100000000)
-        over: "1000000.01" => ok option::none()
-        empty: "" => ok option::none()
-        padded: "05" => ok option::none()
-        trailing_dot: "5." => ok option::none()
-        leading_dot: ".5" => ok option::none()
-        three_dp: "5.001" => ok option::none()
-        negative: "-1" => ok option::none()
-        spaced: " 5" => ok option::none()
-    match call text::scalars(text)
-        text::invalid_unicode => ok option::none()
-        ok int[] units => match call price_scan(units, 0, 0, 0, 0, 0, 0)
-            ok option::value<int> minor => ok minor
-
-/// Parse one quantity text into its count. The strict integer grammar
-/// rejects blanks, signs and leading zeros, and the count must fit
-/// 1..1000000 like the server bound.
-fn option::value<int> parse_qty
-    emits []
-    given
-        str text
-    asserts
-        sample: "2" => ok option::some(2)
-        one: "1" => ok option::some(1)
-        cap: "1000000" => ok option::some(1000000)
-        zero: "0" => ok option::none()
-        over: "1000001" => ok option::none()
-        bad_text: "many" => ok option::none()
-        empty: "" => ok option::none()
-        padded: "02" => ok option::none()
-        negative: "-1" => ok option::none()
-    match call text::to_int(text)
-        text::invalid_number => ok option::none()
-        ok int qty => match qty < 1 or qty > 1000000
-            false => ok option::some(qty)
-            true => ok option::none()
-
-/// Parse one bootstrap query key into its id. The spelling must be
-/// canonical decimal (a from_int round trip) and the id positive;
-/// tenant and invoice ids share this one rule. Values past int64
-/// still parse here; boot fails them closed through the checked
-/// action path builder before anything mounts or fetches.
-fn option::value<int> parse_key
-    emits []
-    given
-        str text
-    asserts
-        sample: "7" => ok option::some(7)
-        one: "1" => ok option::some(1)
-        zero: "0" => ok option::none()
-        negative: "-1" => ok option::none()
-        padded: "07" => ok option::none()
-        bad_text: "many" => ok option::none()
-        empty: "" => ok option::none()
-        spaced: " 7" => ok option::none()
-        huge: "9999999999999999999999" => ok option::some(9999999999999999999999)
-    match call text::to_int(text)
-        text::invalid_number => ok option::none()
-        ok int id => match id < 1
-            false => match call text::from_int(id)
-                ok str spelled => match spelled is text
-                    false => ok option::none()
-                    true => ok option::some(id)
-            true => ok option::none()
-
-/// Render minor units back to canonical wire price: whole units, a
-/// dot, and exactly two fraction digits. Totals are never negative.
-fn str minor_to_price
-    emits []
-    given
-        int minor
-    asserts
-        zero: 0 => ok "0.00"
-        cents: 5 => ok "0.05"
-        dime: 50 => ok "0.50"
-        whole: 500 => ok "5.00"
-        mixed: 1999 => ok "19.99"
-        cap: 100000000 => ok "1000000.00"
-    match call number::divmod(minor, 100)
-        number::zero_divisor => ok ""
-        ok number::division split => match split.remainder < 10
-            false => ok call text::from_int(split.quotient) + "." + call text::from_int(split.remainder)
-            true => ok call text::from_int(split.quotient) + ".0" + call text::from_int(split.remainder)
+    provides [totals_text, line_amount, operation_id, to_input, from_snapshot, with_id, with_quantity, with_price, added_line, removed_line, moved_line, line_key, line_at, save_blocked, blocked_notice, save_notice, blocked_applied, save_marked, load_marked, marked_unsaved, status_of, status_notice, with_current, refocused, id_edited, quantity_edited, price_edited, line_added, line_removed, line_moved, save_outcome_applied, load_outcome_applied, saved_applied, invalid_applied, conflict_applied, forbidden_applied, unavailable_applied, save_failed, loaded_applied, load_forbidden_applied, load_unavailable_applied, load_failed, replay_ready, adopted_server, dismissed_held, boot_state, rows_focused]
+    uses [billing::invoice_contract as contract, controls::fields as fields, controls::keyed as keyed, controls::notices as notices, records, option, text]
 
 /// Exact total minor units across the draft lines in order. Integer
 /// arithmetic only: no float ever touches a total, so totals are
@@ -221,7 +30,7 @@ fn str line_amount
     asserts
         sample: records::draft_line("k1", "a", "2", "5.00", 2, 500, true) => ok "10.00"
         zero: records::draft_line("k1", "a", "1", "0.00", 1, 0, true) => ok "0.00"
-    ok call minor_to_price(line.qty * line.price_minor)
+    ok call fields::minor_to_price(line.qty * line.price_minor)
 
 /// Totals line for the grid chrome: line count and exact total.
 fn str totals_text
@@ -232,7 +41,7 @@ fn str totals_text
         empty: records::draft("1", [], 0) => ok "0 lines, 0.00 total"
         one: records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true)], 1) => ok "1 lines, 10.00 total"
         two: records::draft("1", [records::draft_line("k1", "a", "2", "5.00", 2, 500, true), records::draft_line("k2", "b", "1", "0.50", 1, 50, true)], 2) => ok "2 lines, 10.50 total"
-    ok call text::from_int(draft.lines.length) + " lines, " + call minor_to_price(call total_minor(draft.lines, 0, 0)) + " total"
+    ok call text::from_int(draft.lines.length) + " lines, " + call fields::minor_to_price(call total_minor(draft.lines, 0, 0)) + " total"
 
 /// App-owned operation id: tenant, invoice, base revision and edit
 /// sequence. Same content retries reuse the identical id (the sequence
@@ -293,8 +102,8 @@ fn records::draft_line from_wire_line
         sample: contract::grid_line_wire("k1", "a", "2", "5.00") => ok records::draft_line("k1", "a", "2", "5.00", 2, 500, true)
         bad_qty: contract::grid_line_wire("k1", "a", "many", "5.00") => ok records::draft_line("k1", "a", "many", "5.00", 0, 500, false)
         bad_price: contract::grid_line_wire("k1", "a", "2", "five") => ok records::draft_line("k1", "a", "2", "five", 2, 0, false)
-    match call parse_qty(line.quantity)
-        ok option::value<int> qty => match call parse_price(line.price)
+    match call fields::parse_qty(line.quantity)
+        ok option::value<int> qty => match call fields::parse_price(line.price)
             ok option::value<int> minor => match qty
                 option::none => match minor
                     option::none => ok records::draft_line(line.key, line.id, line.quantity, line.price, 0, 0, false)
@@ -349,7 +158,7 @@ fn records::draft with_id
     asserts
         changed: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "b" => ok records::draft("1", [records::draft_line("k1", "b", "1", "1.00", 1, 100, true)], 3)
         unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "b" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
-    match (call key_at(draft.lines, key, 0)) >= draft.lines.length
+    match (call keyed::key_index(call line_keys(draft.lines, 0, []), key, 0)) >= draft.lines.length
         false => match (call current_id(draft.lines, key, 0)) is id
             false => ok records::draft(draft.base_revision, call id_lines(draft.lines, key, id, 0, []), draft.edit_seq + 1)
             true => ok draft
@@ -377,23 +186,33 @@ fn records::draft_line line_at
         sample: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1 => ok records::draft_line("k2", "b", "1", "1.00", 1, 100, true)
     ok lines[index]
 
-/// Locate a line index by key; an unknown key reads past the end.
-fn int key_at
+/// Project draft lines onto their key vector for the shared keyed
+/// controller. Row storage stays app-owned; the library only ever
+/// sees keys.
+fn str[] line_keys
     emits []
     given
         records::draft_line[] lines
-        str key
         int index
+        str[] grown
     asserts
-        head: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok 0
-        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], "k2", 0 => ok 1
-        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0 => ok 1
+        sample: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0, [] => ok ["k1", "k2"]
+        empty: [], 0, [] => ok []
     match index >= lines.length
-        false => match lines[index].key is key
-            false => match call key_at(lines, key, index + 1)
-                ok int rest => ok rest
-            true => ok index
-        true => ok lines.length
+        false => match call line_keys(lines, index + 1, call append<str>(grown, lines[index].key))
+            ok str[] rest => ok rest
+        true => ok grown
+
+/// Adapt one contract problem onto the shared error control at the
+/// boundary. The notice vocabulary lives in the library; this
+/// adapter only re-wraps the wire shape.
+fn notices::field_problem to_problem
+    emits []
+    given
+        contract::grid_problem problem
+    asserts
+        sample: contract::grid_problem(option::some("k1"), "quantity", "bad quantity") => ok notices::field_problem(option::some("k1"), "quantity", "bad quantity")
+    ok notices::field_problem(problem.row_key, problem.field, problem.message)
 
 /// Read the current id of a known key; unknown keys read "".
 fn str current_id
@@ -436,8 +255,8 @@ fn records::draft_line[] quantity_lines
         false => match lines[index].key is key
             false => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, lines[index]))
                 ok records::draft_line[] rest => ok rest
-            true => match call parse_qty(quantity)
-                ok option::value<int> qty => match call parse_price(lines[index].price)
+            true => match call fields::parse_qty(quantity)
+                ok option::value<int> qty => match call fields::parse_price(lines[index].price)
                     ok option::value<int> minor => match qty
                         option::none => match minor
                             option::none => match call quantity_lines(lines, key, quantity, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, quantity, lines[index].price, lines[index].qty, lines[index].price_minor, false)))
@@ -466,7 +285,7 @@ fn records::draft with_quantity
         invalid: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "many" => ok records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 3)
         same: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "1" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
         unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "4" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
-    match (call key_at(draft.lines, key, 0)) >= draft.lines.length
+    match (call keyed::key_index(call line_keys(draft.lines, 0, []), key, 0)) >= draft.lines.length
         false => match (call current_quantity(draft.lines, key, 0)) is quantity
             false => ok records::draft(draft.base_revision, call quantity_lines(draft.lines, key, quantity, 0, []), draft.edit_seq + 1)
             true => ok draft
@@ -512,8 +331,8 @@ fn records::draft_line[] price_lines
         false => match lines[index].key is key
             false => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, lines[index]))
                 ok records::draft_line[] rest => ok rest
-            true => match call parse_qty(lines[index].quantity)
-                ok option::value<int> qty => match call parse_price(price)
+            true => match call fields::parse_qty(lines[index].quantity)
+                ok option::value<int> qty => match call fields::parse_price(price)
                     ok option::value<int> minor => match qty
                         option::none => match minor
                             option::none => match call price_lines(lines, key, price, index + 1, call append<records::draft_line>(grown, records::draft_line(lines[index].key, lines[index].id, lines[index].quantity, price, lines[index].qty, lines[index].price_minor, false)))
@@ -540,7 +359,7 @@ fn records::draft with_price
         invalid: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "five" => ok records::draft("1", [records::draft_line("k1", "a", "1", "five", 1, 100, false)], 3)
         same: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k1", "1.00" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
         unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", "2.50" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
-    match (call key_at(draft.lines, key, 0)) >= draft.lines.length
+    match (call keyed::key_index(call line_keys(draft.lines, 0, []), key, 0)) >= draft.lines.length
         false => match (call current_price(draft.lines, key, 0)) is price
             false => ok records::draft(draft.base_revision, call price_lines(draft.lines, key, price, 0, []), draft.edit_seq + 1)
             true => ok draft
@@ -563,40 +382,6 @@ fn str current_price
             true => ok lines[index].price
         true => ok ""
 
-/// Report whether a line key is already taken.
-fn bool key_taken
-    emits []
-    given
-        records::draft_line[] lines
-        str key
-        int index
-    asserts
-        taken: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k1", 0 => ok true
-        free: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k2", 0 => ok false
-    match index >= lines.length
-        false => match lines[index].key is key
-            false => match call key_taken(lines, key, index + 1)
-                ok bool rest => ok rest
-            true => ok true
-        true => ok false
-
-/// First free k<n> key at or after n, so added lines never clash
-/// with kept or removed keys.
-fn str free_key
-    emits []
-    given
-        records::draft_line[] lines
-        int n
-    asserts
-        first: [], 1 => ok "k1"
-        gap: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1 => ok "k2"
-        hole: [records::draft_line("k2", "a", "1", "1.00", 1, 100, true)], 1 => ok "k1"
-    match call key_taken(lines, "k" + call text::from_int(n), 0)
-        ok bool taken => match taken
-            false => ok "k" + call text::from_int(n)
-            true => match call free_key(lines, n + 1)
-                ok str rest => ok rest
-
 /// Append one blank line under the first free key. The new line
 /// starts with quantity 1 and price 0.00; its empty id stays editable
 /// and the server validates it on save.
@@ -606,26 +391,7 @@ fn records::draft added_line
         records::draft draft
     asserts
         sample: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2) => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "", "1", "0.00", 1, 0, true)], 3)
-    ok records::draft(draft.base_revision, call append<records::draft_line>(draft.lines, records::draft_line(call free_key(draft.lines, 1), "", "1", "0.00", 1, 0, true)), draft.edit_seq + 1)
-
-/// Copy every line except the named key front to back.
-fn records::draft_line[] removed_lines
-    emits []
-    given
-        records::draft_line[] lines
-        str key
-        int index
-        records::draft_line[] grown
-    asserts
-        hit: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], "k1", 0, [] => ok [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
-        miss: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "k9", 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
-    match index >= lines.length
-        false => match lines[index].key is key
-            false => match call removed_lines(lines, key, index + 1, call append<records::draft_line>(grown, lines[index]))
-                ok records::draft_line[] rest => ok rest
-            true => match call removed_lines(lines, key, index + 1, grown)
-                ok records::draft_line[] rest => ok rest
-        true => ok grown
+    ok records::draft(draft.base_revision, call append<records::draft_line>(draft.lines, records::draft_line(call keyed::free_key(call line_keys(draft.lines, 0, []), 1), "", "1", "0.00", 1, 0, true)), draft.edit_seq + 1)
 
 /// Drop one line by key. Unknown keys leave the sequence alone.
 fn records::draft removed_line
@@ -636,51 +402,10 @@ fn records::draft removed_line
     asserts
         hit: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1" => ok records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 3)
         miss: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9" => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
-    match (call key_at(draft.lines, key, 0)) >= draft.lines.length
-        false => ok records::draft(draft.base_revision, call removed_lines(draft.lines, key, 0, []), draft.edit_seq + 1)
-        true => ok draft
-
-/// Copy every line except the index, front to back.
-fn records::draft_line[] cut_at
-    emits []
-    given
-        records::draft_line[] lines
-        int at
-        int index
-        records::draft_line[] grown
-    asserts
-        head: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0, 0, [] => ok [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
-        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 1, 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)]
-    match index >= lines.length
-        false => match index is at
-            false => match call cut_at(lines, at, index + 1, call append<records::draft_line>(grown, lines[index]))
-                ok records::draft_line[] rest => ok rest
-            true => match call cut_at(lines, at, index + 1, grown)
-                ok records::draft_line[] rest => ok rest
-        true => ok grown
-
-/// Copy lines front to back, splicing the carried line at the
-/// target position.
-fn records::draft_line[] insert_at
-    emits []
-    given
-        records::draft_line[] lines
-        int at
-        records::draft_line line
-        int index
-        records::draft_line[] grown
-    asserts
-        head: [records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 0, records::draft_line("k1", "a", "1", "1.00", 1, 100, true), 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
-        tail: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 1, records::draft_line("k2", "b", "1", "1.00", 1, 100, true), 0, [] => ok [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)]
-    match index >= lines.length
-        false => match index is at
-            false => match call insert_at(lines, at, line, index + 1, call append<records::draft_line>(grown, lines[index]))
-                ok records::draft_line[] rest => ok rest
-            true => match call insert_at(lines, at, line, index + 1, call append<records::draft_line>(call append<records::draft_line>(grown, line), lines[index]))
-                ok records::draft_line[] rest => ok rest
-        true => match index is at
-            false => ok grown
-            true => ok call append<records::draft_line>(grown, line)
+    match call keyed::key_index(call line_keys(draft.lines, 0, []), key, 0)
+        ok int at => match at >= draft.lines.length
+            false => ok records::draft(draft.base_revision, call keyed::cut_at<records::draft_line>(draft.lines, at, 0, []), draft.edit_seq + 1)
+            true => ok draft
 
 /// Keyed row reorder: move the named line one step up (0) or down
 /// (1). Unknown keys, edges and other directions are no-ops that
@@ -696,16 +421,11 @@ fn records::draft moved_line
         down: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1", 1 => ok records::draft("1", [records::draft_line("k2", "b", "1", "1.00", 1, 100, true), records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 3)
         top: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2), "k1", 0 => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "b", "1", "1.00", 1, 100, true)], 2)
         unknown: records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2), "k9", 1 => ok records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 2)
-    match call key_at(draft.lines, key, 0)
+    match call keyed::key_index(call line_keys(draft.lines, 0, []), key, 0)
         ok int at => match at >= draft.lines.length
-            false => match dir is 0
-                false => match dir is 1
-                    false => ok draft
-                    true => match at + 1 >= draft.lines.length
-                        false => ok records::draft(draft.base_revision, call insert_at(call cut_at(draft.lines, at, 0, []), at + 1, draft.lines[at], 0, []), draft.edit_seq + 1)
-                        true => ok draft
-                true => match at is 0
-                    false => ok records::draft(draft.base_revision, call insert_at(call cut_at(draft.lines, at, 0, []), at - 1, draft.lines[at], 0, []), draft.edit_seq + 1)
+            false => match call keyed::step_index(draft.lines.length, at, dir)
+                ok int target => match target is at
+                    false => ok records::draft(draft.base_revision, call keyed::insert_at<records::draft_line>(call keyed::cut_at<records::draft_line>(draft.lines, at, 0, []), target, draft.lines[at], 0, []), draft.edit_seq + 1)
                     true => ok draft
             true => ok draft
 
@@ -753,7 +473,7 @@ fn str bad_field
         quantity: records::draft_line("k1", "a", "many", "1.00", 1, 100, false) => ok "quantity"
         price: records::draft_line("k1", "a", "1", "five", 1, 100, false) => ok "price"
         both: records::draft_line("k1", "a", "many", "five", 1, 100, false) => ok "quantity"
-    match call parse_qty(line.quantity)
+    match call fields::parse_qty(line.quantity)
         ok option::value<int> qty => match qty
             option::none => ok "quantity"
             option::some => ok "price"
@@ -788,7 +508,8 @@ fn str blocked_notice
     match call save_blocked(draft.lines, 0)
         ok bool blocked => match blocked
             false => ok ""
-            true => ok "line " + call blocked_key(draft.lines, 0) + ": bad " + call blocked_field(draft.lines, 0)
+            true => match call notices::blocked_line_notice(call blocked_key(draft.lines, 0), call blocked_field(draft.lines, 0))
+                ok str notice => ok notice
 
 /// Mark one save press: the flight carries the attempt, the current
 /// draft projects onto the attempt-owned pending input for replay
@@ -931,46 +652,8 @@ fn records::grid_state saved_applied
             false => ok state
             true => match state.current.edit_seq is state.submit_seq
                 false => ok records::grid_state(state.key, records::draft(outcome.acknowledged.revision, state.current.lines, state.current.edit_seq), state.attempt, 0, state.submitted, state.submit_seq, outcome.acknowledged, records::unsaved_state("unsaved changes"), "")
-                true => ok records::grid_state(state.key, records::draft(outcome.acknowledged.revision, state.current.lines, state.current.edit_seq), state.attempt, 0, state.submitted, state.submit_seq, outcome.acknowledged, records::clean_state("saved revision " + outcome.acknowledged.revision), "")
-
-/// Render one 422 problem as its status notice. Row problems name
-/// the line; draft-wide problems name the field only.
-fn str problem_notice
-    emits []
-    given
-        contract::grid_problem problem
-    asserts
-        row: contract::grid_problem(option::some("k1"), "quantity", "bad quantity") => ok "line k1 quantity: bad quantity"
-        draft: contract::grid_problem(option::none(), "revision", "stale revision") => ok "revision: stale revision"
-    match call problem_row(problem)
-        ok option::value<str> row => match row
-            option::none => ok problem.field + ": " + problem.message
-            option::some => ok "line " + row.value + " " + problem.field + ": " + problem.message
-
-/// Read the row key out of one problem. Callers match the bound
-/// result: arm-local narrowing only follows resolved bindings.
-fn option::value<str> problem_row
-    emits []
-    given
-        contract::grid_problem problem
-    asserts
-        sample: contract::grid_problem(option::some("k1"), "quantity", "bad quantity") => ok option::some("k1")
-    ok problem.row_key
-
-/// Render the 422 errors as one status notice: the first problem
-/// wins, since the status line holds a single notice.
-fn str invalid_notice
-    emits []
-    given
-        contract::grid_problem[] errors
-    asserts
-        one: [contract::grid_problem(option::some("k1"), "id", "empty line id")] => ok "line k1 id: empty line id"
-        first: [contract::grid_problem(option::some("k1"), "id", "empty line id"), contract::grid_problem(option::some("k2"), "quantity", "bad quantity")] => ok "line k1 id: empty line id"
-        empty: [] => ok "rejected by server; edit and retry"
-    match errors.length is 0
-        false => match call problem_notice(errors[0])
-            ok str notice => ok notice
-        true => ok "rejected by server; edit and retry"
+                true => match call notices::saved_notice(outcome.acknowledged.revision)
+                    ok str notice => ok records::grid_state(state.key, records::draft(outcome.acknowledged.revision, state.current.lines, state.current.edit_seq), state.attempt, 0, state.submitted, state.submit_seq, outcome.acknowledged, records::clean_state(notice), "")
 
 /// Apply one invalid (422) outcome: the draft stays editable and
 /// the first server problem names the fix.
@@ -987,7 +670,7 @@ fn records::grid_state invalid_applied
         false => ok state
         true => match state.flight is 1
             false => ok state
-            true => match call invalid_notice(outcome.errors)
+            true => match call notices::invalid_notice(call outcome.errors.map(callable to_problem))
                 ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
 
 /// Apply one conflict (409) outcome: another writer moved the stored
@@ -1005,7 +688,8 @@ fn records::grid_state conflict_applied
         false => ok state
         true => match state.flight is 1
             false => ok state
-            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(outcome.message + "; reread to compare"), "status")
+            true => match call notices::conflict_notice(outcome.message)
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
 
 /// Apply one forbidden (403) outcome: foreign, nonexistent and
 /// unauthenticated targets share the nondisclosing notice and the
@@ -1023,7 +707,8 @@ fn records::grid_state forbidden_applied
         false => ok state
         true => match state.flight is 1
             false => ok state
-            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state("access denied; draft kept"), "status")
+            true => match call notices::denied_notice()
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state(notice), "status")
 
 /// Apply one unavailable (503) outcome: the save may or may not have
 /// committed, so the state turns uncertain and keeps the identical
@@ -1041,7 +726,8 @@ fn records::grid_state unavailable_applied
         false => ok state
         true => match state.flight is 1
             false => ok state
-            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("save may have committed; replay or reread"), "status")
+            true => match call notices::save_unknown_notice()
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state(notice), "status")
 
 /// Apply one save transport failure. A lost response, an unexpected
 /// status or an undecodable answer all leave the commit unknown, so
@@ -1065,15 +751,11 @@ fn records::grid_state save_failed
         false => ok state
         true => match state.flight is 1
             false => ok state
-            true => match kind is "transport"
-                false => match kind is "status"
-                    false => match kind is "codec"
-                        false => match kind is "limit"
-                            false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("request invalid; reread and retry"), "status")
-                            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("save too large; remove lines and retry"), "status")
-                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("unreadable response; save may have committed"), "status")
-                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("unexpected response; save may have committed"), "status")
-                true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state("connection lost; save may have committed"), "status")
+            true => match call notices::save_failure_notice(kind)
+                ok str notice => match call notices::save_failure_uncertain(kind)
+                    ok bool unknown => match unknown
+                        false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state(notice), "status")
 
 /// Dispatch one save outcome onto the matching applier: the
 /// fetch client returns the whole variant, and each leaf lands in
@@ -1145,7 +827,8 @@ fn records::grid_state adopt_snapshot
         contract::grid_snapshot loaded
     asserts
         sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), contract::grid_snapshot("2", [], 0) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "")
-    ok records::grid_state(state.key, call from_snapshot(loaded), state.attempt, 0, state.submitted, 0, loaded, records::clean_state("loaded revision " + loaded.revision), "")
+    match call notices::loaded_notice(loaded.revision)
+        ok str notice => ok records::grid_state(state.key, call from_snapshot(loaded), state.attempt, 0, state.submitted, 0, loaded, records::clean_state(notice), "")
 
 /// Hold a loaded snapshot beside the draft for an explicit choice.
 /// The draft, the acknowledged snapshot, the pending attempt record
@@ -1157,7 +840,8 @@ fn records::grid_state hold_snapshot
         contract::grid_snapshot loaded
     asserts
         sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), contract::grid_snapshot("2", [], 0) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
-    ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::conflict_state("server has revision " + loaded.revision + "; your edits kept", loaded), "status")
+    match call notices::held_notice(loaded.revision)
+        ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::conflict_state(notice, loaded), "status")
 
 /// Apply one forbidden load: the draft stays put behind the
 /// nondisclosing notice.
@@ -1174,7 +858,8 @@ fn records::grid_state load_forbidden_applied
         false => ok state
         true => match state.flight is 2
             false => ok state
-            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state("access denied; draft kept"), "status")
+            true => match call notices::denied_notice()
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::denied_state(notice), "status")
 
 /// Apply one unavailable load: a read never commits, so the retry is
 /// always safe and the state stays a plain failure.
@@ -1191,7 +876,8 @@ fn records::grid_state load_unavailable_applied
         false => ok state
         true => match state.flight is 2
             false => ok state
-            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("server busy; retry reread"), "status")
+            true => match call notices::load_busy_notice()
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
 
 /// Dispatch one load outcome onto the matching applier.
 fn records::grid_state load_outcome_applied
@@ -1229,13 +915,8 @@ fn records::grid_state load_failed
         false => ok state
         true => match state.flight is 2
             false => ok state
-            true => match kind is "transport"
-                false => match kind is "status"
-                    false => match kind is "codec"
-                        false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("request invalid; retry reread"), "status")
-                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("unreadable response; retry reread"), "status")
-                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("unexpected response; retry reread"), "status")
-                true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state("connection lost; retry reread"), "status")
+            true => match call notices::load_failure_notice(kind)
+                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
 
 /// Explicit identical-id replay is available only while the last
 /// save is uncertain, nothing newer is in flight, the draft still
@@ -1422,7 +1103,7 @@ fn records::grid_state line_added
         records::grid_state state
     asserts
         sample: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], 0), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("loaded revision 1"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "1", "1.00", 1, 100, true), records::draft_line("k2", "", "1", "0.00", 1, 0, true)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "id:k2")
-    match call free_key(state.current.lines, 1)
+    match call keyed::free_key(call line_keys(state.current.lines, 0, []), 1)
         ok str key => match call marked_unsaved(call with_current(state, call added_line(state.current)))
             ok records::grid_state marked => match call refocused(marked, "id:" + key)
                 ok records::grid_state moved => ok moved
@@ -1468,39 +1149,6 @@ fn records::grid_state line_moved
                         ok records::grid_state moved => ok moved
             true => ok state
 
-/// Resolve one row focus intent against one stable row key: the
-/// control name ("id", "qty", "price", "up", "down" or "del") when
-/// the intent names this row's control, else "". Chrome intents
-/// ("save", "status", ...) never match a row.
-fn str row_focus_control
-    emits []
-    given
-        str focus
-        str row
-    asserts
-        id: "id:k1", "k1" => ok "id"
-        qty: "qty:k1", "k1" => ok "qty"
-        price: "price:k1", "k1" => ok "price"
-        up: "up:k1", "k1" => ok "up"
-        down: "down:k1", "k1" => ok "down"
-        del: "del:k1", "k1" => ok "del"
-        other_row: "qty:k2", "k1" => ok ""
-        chrome: "save", "k1" => ok ""
-        empty: "", "k1" => ok ""
-    match focus is "id:" + row
-        false => match focus is "qty:" + row
-            false => match focus is "price:" + row
-                false => match focus is "up:" + row
-                    false => match focus is "down:" + row
-                        false => match focus is "del:" + row
-                            false => ok ""
-                            true => ok "del"
-                        true => ok "down"
-                    true => ok "up"
-                true => ok "price"
-            true => ok "qty"
-        true => ok "id"
-
 /// Report whether the focus intent names a control of one of the
 /// present rows. The render focuses the built row target only then;
 /// a stale intent (its row is gone) focuses nothing.
@@ -1517,7 +1165,7 @@ fn bool rows_focused
         chrome: [records::draft_line("k1", "a", "1", "1.00", 1, 100, true)], "save", 0 => ok false
         empty: [], "qty:k1", 0 => ok false
     match index >= lines.length
-        false => match call row_focus_control(focus, lines[index].key)
+        false => match call keyed::row_focus_control(focus, lines[index].key)
             ok str control => match control is ""
                 false => ok true
                 true => match call rows_focused(lines, focus, index + 1)

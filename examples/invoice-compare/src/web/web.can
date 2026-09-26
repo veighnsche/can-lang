@@ -1,0 +1,696 @@
+/// Compare view (C04/X-R02-1). The second browser app: two
+/// independent keyed-table instances ("left"/"right") in one
+/// render, each with its own state view and cell. Both instances
+/// consume the shared field, keyed-table and error controls
+/// unmodified; dropping the left instance disposes only its view
+/// while the right instance keeps working.
+package web
+    provides [boot, main]
+    uses [controls::keyed as keyed, records, model, browser, option]
+
+/// Fold one count edit into a panel cell: re-read fresh, apply the
+/// edit, and compare-and-swap it in. Returns none when the panel
+/// is gone or the swap loses, so late folds after disposal mutate
+/// nothing.
+fn option::value<records::panel> finish_edit
+    emits []
+    given
+        browser::state<records::panel> cell
+        str key
+        str count
+    asserts
+        applied: "k1", "4" => ok option::some<records::panel>(records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", ""))
+        gone: "k1", "4" => ok option::none()
+        stale: "k1", "4" => ok option::none()
+    match call browser::read_state(cell)
+        when
+            applied: cell => ok browser::snapshot<records::panel>(3, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""))
+            gone: cell => browser::disposed()
+            stale: cell => ok browser::snapshot<records::panel>(3, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 2, "", ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::panel> snap => match call model::with_count(snap.value, key, count)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                when
+                    applied: cell, 3, records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "") => ok 4
+                    stale: cell, 3, records::panel("left", [records::dock_line("k1", "a", "4", 4, true)], 3, "", "") => browser::stale_version(3, 4)
+                browser::disposed => ok option::none()
+                browser::stale_version => ok option::none()
+                ok int version => ok option::some<records::panel>(next)
+
+/// Mirror one panel notice across instances: read the source
+/// panel, then compare-and-swap its notice into the target panel.
+/// Either side gone or a lost swap returns none, so a
+/// cross-instance fold never mutates a disposed panel and never
+/// touches the source.
+fn option::value<records::panel> mirror_notice
+    emits []
+    given
+        browser::state<records::panel> source
+        browser::state<records::panel> target
+    asserts
+        mirrored:  => ok option::some<records::panel>(records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
+        source_gone:  => ok option::none()
+        target_gone:  => ok option::none()
+        target_stale:  => ok option::none()
+    match call browser::read_state(source)
+        when
+            mirrored: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
+            source_gone: source => browser::disposed()
+            target_gone: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
+            target_stale: source => ok browser::snapshot<records::panel>(2, records::panel("left", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", ""))
+        browser::disposed => ok option::none()
+        ok browser::snapshot<records::panel> from => match call browser::read_state(target)
+            when
+                mirrored: target => ok browser::snapshot<records::panel>(5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "", ""))
+                target_gone: target => browser::disposed()
+                target_stale: target => ok browser::snapshot<records::panel>(5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "", ""))
+            browser::disposed => ok option::none()
+            ok browser::snapshot<records::panel> snap => match call model::with_notice(snap.value, from.value.notice)
+                ok records::panel next => match call browser::replace_state(target, snap.version, next)
+                    when
+                        mirrored: target, 5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", "") => ok 6
+                        target_stale: target, 5, records::panel("right", [records::dock_line("k1", "a", "1", 1, true)], 1, "ready to review", "") => browser::stale_version(5, 6)
+                    browser::disposed => ok option::none()
+                    browser::stale_version => ok option::none()
+                    ok int version => ok option::some<records::panel>(next)
+
+/// Select one row control handle by the resolved control name. The
+/// name comes from the shared focus matcher, so "" never arrives;
+/// it selects the last control to keep the function total.
+fn browser::node focus_node
+    emits []
+    given
+        str control
+        browser::node sku_in
+        browser::node count_in
+        browser::node up_btn
+        browser::node down_btn
+        browser::node del_btn
+    asserts
+        id: "id" => ok
+        qty: "qty" => ok
+        up: "up" => ok
+        down: "down" => ok
+        del: "del" => ok
+        other: "" => ok
+    match control is "id"
+        false => match control is "qty"
+            false => match control is "up"
+                false => match control is "down"
+                    false => ok del_btn
+                    true => ok down_btn
+                true => ok up_btn
+            true => ok count_in
+        true => ok sku_in
+
+/// Build one panel keyed row list front to back into the table
+/// body. Each row carries its key in its control ids and in the
+/// near captures of its listeners, so edits, reorder and removal
+/// always land on the intended row of the intended instance. The
+/// row matching the focus intent resolves to its control; nothing
+/// focuses during construction.
+fn browser::node build_rows
+    emits []
+    given
+        browser::view view
+        browser::node tbody
+        browser::app app
+        browser::view left_view
+        browser::state<records::panel> left_cell
+        browser::view right_view
+        browser::state<records::panel> right_cell
+        browser::state<records::panel> cell
+        browser::node status_line
+        browser::node totals_line
+        str tag
+        records::dock_line[] rows
+        int index
+        str focus
+    asserts
+        empty: "left", [], 0, "" => ok
+        one: "left", [records::dock_line("k1", "a", "2", 2, true)], 0, "" => ok
+        focus_hit: "left", [records::dock_line("k1", "a", "2", 2, true)], 0, "qty:k1" => ok
+        focus_miss: "left", [records::dock_line("k1", "a", "2", 2, true)], 0, "save" => ok
+    match index >= rows.length
+        false => match call model::row_key(rows, index)
+            ok str row => match call keyed::row_focus_control(focus, row)
+                ok str control => match chain
+                    call browser::create_element(view, "tr") as browser::node tr
+                    call browser::create_element(view, "th") as browser::node key_cell
+                    call browser::set_attribute(key_cell, "scope", "row")
+                    call browser::create_text(view, row) as browser::node key_text
+                    call browser::append_child(key_cell, key_text)
+                    call browser::append_child(tr, key_cell)
+                    call browser::create_element(view, "td") as browser::node sku_wrap
+                    call browser::create_element(view, "input") as browser::node sku_in
+                    call browser::set_attribute(sku_in, "id", tag + "-id:" + row)
+                    call browser::set_attribute(sku_in, "type", "text")
+                    call browser::set_attribute(sku_in, "value", rows[index].sku)
+                    call browser::set_attribute(sku_in, "aria-label", tag + " sku " + row)
+                    call browser::append_child(sku_wrap, sku_in)
+                    call browser::append_child(tr, sku_wrap)
+                    call browser::on_event(view, sku_in, "input", callable on_sku_input)
+                    call browser::create_element(view, "td") as browser::node count_wrap
+                    call browser::create_element(view, "input") as browser::node count_in
+                    call browser::set_attribute(count_in, "id", tag + "-qty:" + row)
+                    call browser::set_attribute(count_in, "type", "text")
+                    call browser::set_attribute(count_in, "value", rows[index].count)
+                    call browser::set_attribute(count_in, "aria-label", tag + " count " + row)
+                    call browser::append_child(count_wrap, count_in)
+                    call browser::append_child(tr, count_wrap)
+                    call browser::on_event(view, count_in, "input", callable on_count_input)
+                    call browser::create_element(view, "td") as browser::node actions_wrap
+                    call browser::create_element(view, "button") as browser::node up_btn
+                    call browser::create_text(view, "Up") as browser::node up_label
+                    call browser::append_child(up_btn, up_label)
+                    call browser::set_attribute(up_btn, "id", tag + "-up:" + row)
+                    call browser::set_attribute(up_btn, "type", "button")
+                    call browser::set_attribute(up_btn, "aria-label", "move " + tag + " row " + row + " up")
+                    call browser::append_child(actions_wrap, up_btn)
+                    call browser::on_event(view, up_btn, "click", callable on_move_up)
+                    call browser::create_element(view, "button") as browser::node down_btn
+                    call browser::create_text(view, "Down") as browser::node down_label
+                    call browser::append_child(down_btn, down_label)
+                    call browser::set_attribute(down_btn, "id", tag + "-down:" + row)
+                    call browser::set_attribute(down_btn, "type", "button")
+                    call browser::set_attribute(down_btn, "aria-label", "move " + tag + " row " + row + " down")
+                    call browser::append_child(actions_wrap, down_btn)
+                    call browser::on_event(view, down_btn, "click", callable on_move_down)
+                    call browser::create_element(view, "button") as browser::node del_btn
+                    call browser::create_text(view, "Remove") as browser::node del_label
+                    call browser::append_child(del_btn, del_label)
+                    call browser::set_attribute(del_btn, "id", tag + "-del:" + row)
+                    call browser::set_attribute(del_btn, "type", "button")
+                    call browser::set_attribute(del_btn, "aria-label", "remove " + tag + " row " + row)
+                    call browser::append_child(actions_wrap, del_btn)
+                    call browser::on_event(view, del_btn, "click", callable on_remove_row)
+                    call browser::append_child(tr, actions_wrap)
+                    call browser::append_child(tbody, tr)
+                    browser::disposed => ok tbody
+                    browser::rejected => ok tbody
+                    ok => match call build_rows(view, tbody, app, left_view, left_cell, right_view, right_cell, cell, status_line, totals_line, tag, rows, index + 1, focus)
+                        ok browser::node rest => match control is ""
+                            false => match call focus_node(control, sku_in, count_in, up_btn, down_btn, del_btn)
+                                ok browser::node target => ok target
+                            true => ok rest
+        true => ok tbody
+
+/// Build one panel section: title, live status line, keyed row
+/// table, exact totals and the add/review buttons. Every listener
+/// captures the handles it needs from this scope; nothing is
+/// queried back afterwards. Returns the resolved row focus target.
+fn browser::node build_panel
+    emits []
+    given
+        browser::view view
+        browser::node parent
+        browser::app app
+        browser::view left_view
+        browser::state<records::panel> left_cell
+        browser::view right_view
+        browser::state<records::panel> right_cell
+        browser::state<records::panel> cell
+        records::panel snap
+    asserts
+        left: records::panel("left", [records::dock_line("k1", "a", "2", 2, true)], 1, "", "") => ok
+        right: records::panel("right", [], 0, "", "") => ok
+    match chain
+        call browser::create_element(view, "section") as browser::node section
+        call browser::create_element(view, "h2") as browser::node title
+        call browser::create_text(view, snap.tag + " panel") as browser::node title_text
+        call browser::append_child(title, title_text)
+        call browser::append_child(section, title)
+        call browser::create_element(view, "p") as browser::node status_line
+        call browser::set_attribute(status_line, "id", snap.tag + "-status")
+        call browser::set_attribute(status_line, "role", "status")
+        call browser::set_attribute(status_line, "aria-live", "polite")
+        call browser::create_text(view, snap.notice) as browser::node status_text
+        call browser::append_child(status_line, status_text)
+        call browser::append_child(section, status_line)
+        call browser::create_element(view, "table") as browser::node table
+        call browser::create_element(view, "thead") as browser::node head
+        call browser::create_element(view, "tr") as browser::node head_row
+        call browser::create_element(view, "th") as browser::node head_row_cell
+        call browser::set_attribute(head_row_cell, "scope", "col")
+        call browser::create_text(view, "Row") as browser::node head_row_text
+        call browser::append_child(head_row_cell, head_row_text)
+        call browser::append_child(head_row, head_row_cell)
+        call browser::create_element(view, "th") as browser::node head_sku
+        call browser::set_attribute(head_sku, "scope", "col")
+        call browser::create_text(view, "SKU") as browser::node head_sku_text
+        call browser::append_child(head_sku, head_sku_text)
+        call browser::append_child(head_row, head_sku)
+        call browser::create_element(view, "th") as browser::node head_count
+        call browser::set_attribute(head_count, "scope", "col")
+        call browser::create_text(view, "Count") as browser::node head_count_text
+        call browser::append_child(head_count, head_count_text)
+        call browser::append_child(head_row, head_count)
+        call browser::create_element(view, "th") as browser::node head_actions
+        call browser::set_attribute(head_actions, "scope", "col")
+        call browser::create_text(view, "Actions") as browser::node head_actions_text
+        call browser::append_child(head_actions, head_actions_text)
+        call browser::append_child(head_row, head_actions)
+        call browser::append_child(head, head_row)
+        call browser::append_child(table, head)
+        call browser::create_element(view, "tbody") as browser::node rows
+        call browser::append_child(table, rows)
+        call browser::append_child(section, table)
+        call browser::create_element(view, "p") as browser::node totals_line
+        call browser::set_attribute(totals_line, "id", snap.tag + "-totals")
+        call model::totals_text(snap) as str totals
+        call browser::create_text(view, totals) as browser::node totals_text
+        call browser::append_child(totals_line, totals_text)
+        call browser::append_child(section, totals_line)
+        call browser::create_element(view, "button") as browser::node add_btn
+        call browser::create_text(view, "Add row") as browser::node add_label
+        call browser::append_child(add_btn, add_label)
+        call browser::set_attribute(add_btn, "id", snap.tag + "-add")
+        call browser::set_attribute(add_btn, "type", "button")
+        call browser::append_child(section, add_btn)
+        call browser::on_event(view, add_btn, "click", callable on_add_row)
+        call browser::create_element(view, "button") as browser::node review_btn
+        call browser::create_text(view, "Review") as browser::node review_label
+        call browser::append_child(review_btn, review_label)
+        call browser::set_attribute(review_btn, "id", snap.tag + "-review")
+        call browser::set_attribute(review_btn, "type", "button")
+        call browser::append_child(section, review_btn)
+        call browser::on_event(view, review_btn, "click", callable on_review_click)
+        call build_rows(view, rows, app, left_view, left_cell, right_view, right_cell, cell, status_line, totals_line, snap.tag, snap.rows, 0, snap.focus) as browser::node target
+        call browser::append_child(parent, section)
+        browser::disposed => ok parent
+        browser::rejected => ok parent
+        ok => ok target
+
+/// Build one render view from the open panels: the left and right
+/// sections plus the mirror and drop-left chrome. Closed panels
+/// build nothing: dropping the left instance leaves a right-only
+/// render. The complete tree attaches before any focus runs.
+fn void build_view
+    emits []
+    given
+        browser::app app
+        browser::view left_view
+        browser::state<records::panel> left_cell
+        browser::view right_view
+        browser::state<records::panel> right_cell
+        option::value<records::panel> left
+        option::value<records::panel> right
+    asserts
+        both: option::some(records::panel("left", [], 0, "", "")), option::some(records::panel("right", [], 0, "", "")) => ok
+        left_only: option::some(records::panel("left", [], 0, "", "")), option::none() => ok
+        right_only: option::none(), option::some(records::panel("right", [], 0, "", "")) => ok
+        neither: option::none(), option::none() => ok
+    match left
+        option::none => match right
+            option::none => match chain
+                call browser::root(app) as browser::node anchor
+                call browser::open_view(app) as browser::view view
+                call browser::create_element(view, "p") as browser::node note
+                call browser::create_text(view, "Both panels are closed.") as browser::node note_text
+                call browser::append_child(note, note_text)
+                call browser::append_child(anchor, note)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => ok
+            option::some => match chain
+                call browser::root(app) as browser::node anchor
+                call browser::open_view(app) as browser::view view
+                call browser::create_element(view, "div") as browser::node board
+                call build_panel(view, board, app, left_view, left_cell, right_view, right_cell, right_cell, right.value) as browser::node right_target
+                call browser::append_child(anchor, board)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => match call model::row_keys(right.value.rows, 0, [])
+                    ok str[] keys => match call keyed::any_row_focused(keys, right.value.focus, 0)
+                        ok bool hit => match hit
+                            false => ok
+                            true => match call browser::focus(right_target)
+                                browser::disposed => ok
+                                ok => ok
+        option::some => match right
+            option::none => match chain
+                call browser::root(app) as browser::node anchor
+                call browser::open_view(app) as browser::view view
+                call browser::create_element(view, "div") as browser::node board
+                call build_panel(view, board, app, left_view, left_cell, right_view, right_cell, left_cell, left.value) as browser::node left_target
+                call browser::append_child(anchor, board)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => match call model::row_keys(left.value.rows, 0, [])
+                    ok str[] keys => match call keyed::any_row_focused(keys, left.value.focus, 0)
+                        ok bool hit => match hit
+                            false => ok
+                            true => match call browser::focus(left_target)
+                                browser::disposed => ok
+                                ok => ok
+            option::some => match chain
+                call browser::root(app) as browser::node anchor
+                call browser::open_view(app) as browser::view view
+                call browser::create_element(view, "div") as browser::node board
+                call build_panel(view, board, app, left_view, left_cell, right_view, right_cell, left_cell, left.value) as browser::node left_target
+                call build_panel(view, board, app, left_view, left_cell, right_view, right_cell, right_cell, right.value) as browser::node right_target
+                call browser::create_element(view, "button") as browser::node mirror_btn
+                call browser::create_text(view, "Mirror left notice") as browser::node mirror_label
+                call browser::append_child(mirror_btn, mirror_label)
+                call browser::set_attribute(mirror_btn, "id", "mirror")
+                call browser::set_attribute(mirror_btn, "type", "button")
+                call browser::append_child(board, mirror_btn)
+                call browser::on_event(view, mirror_btn, "click", callable on_mirror_click)
+                call browser::create_element(view, "button") as browser::node drop_btn
+                call browser::create_text(view, "Drop left") as browser::node drop_label
+                call browser::append_child(drop_btn, drop_label)
+                call browser::set_attribute(drop_btn, "id", "drop-left")
+                call browser::set_attribute(drop_btn, "type", "button")
+                call browser::append_child(board, drop_btn)
+                call browser::on_event(view, drop_btn, "click", callable on_dispose_left)
+                call browser::append_child(anchor, board)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => match call model::row_keys(left.value.rows, 0, [])
+                    ok str[] left_keys => match call keyed::any_row_focused(left_keys, left.value.focus, 0)
+                        ok bool left_hit => match left_hit
+                            false => match call model::row_keys(right.value.rows, 0, [])
+                                ok str[] right_keys => match call keyed::any_row_focused(right_keys, right.value.focus, 0)
+                                    ok bool right_hit => match right_hit
+                                        false => ok
+                                        true => match call browser::focus(right_target)
+                                            browser::disposed => ok
+                                            ok => ok
+                            true => match call browser::focus(left_target)
+                                browser::disposed => ok
+                                ok => ok
+
+/// Re-render through a view swap: dispose the previous render
+/// view first (so duplicate ids never coexist and dead listeners
+/// abort), then build fresh from the latest open panels. Closed
+/// panels build nothing; their instances stay disposed.
+fn void render_replace
+    emits []
+    given
+        browser::app app
+        browser::view left_view
+        browser::state<records::panel> left_cell
+        browser::view right_view
+        browser::state<records::panel> right_cell
+        browser::view view
+    asserts
+        both:  => ok
+        closed:  => ok
+    match call browser::dispose_view(view)
+        ok => match call browser::read_state(left_cell)
+            when
+                both: left_cell => ok browser::snapshot<records::panel>(2, records::panel("left", [], 0, "", ""))
+                closed: left_cell => browser::disposed()
+            browser::disposed => match call browser::read_state(right_cell)
+                when
+                    closed: right_cell => ok browser::snapshot<records::panel>(2, records::panel("right", [], 0, "", ""))
+                browser::disposed => match call build_view(app, left_view, left_cell, right_view, right_cell, option::none(), option::none())
+                    ok => ok
+                ok browser::snapshot<records::panel> snap_r => match call build_view(app, left_view, left_cell, right_view, right_cell, option::none(), option::some(snap_r.value))
+                    when
+                        closed: app, left_view, left_cell, right_view, right_cell, option::none(), option::some(records::panel("right", [], 0, "", "")) => ok
+                    ok => ok
+            ok browser::snapshot<records::panel> snap_l => match call browser::read_state(right_cell)
+                when
+                    both: right_cell => ok browser::snapshot<records::panel>(2, records::panel("right", [], 0, "", ""))
+                browser::disposed => match call build_view(app, left_view, left_cell, right_view, right_cell, option::some(snap_l.value), option::none())
+                    ok => ok
+                ok browser::snapshot<records::panel> snap_r => match call build_view(app, left_view, left_cell, right_view, right_cell, option::some(snap_l.value), option::some(snap_r.value))
+                    when
+                        both: app, left_view, left_cell, right_view, right_cell, option::some(records::panel("left", [], 0, "", "")), option::some(records::panel("right", [], 0, "", "")) => ok
+                    ok => ok
+
+/// Render the first view from the latest open panels.
+fn void render_fresh
+    emits []
+    given
+        browser::app app
+        browser::view left_view
+        browser::state<records::panel> left_cell
+        browser::view right_view
+        browser::state<records::panel> right_cell
+    asserts
+        fresh:  => ok
+        closed:  => ok
+    match call browser::read_state(left_cell)
+        when
+            fresh: left_cell => ok browser::snapshot<records::panel>(1, records::panel("left", [], 0, "", ""))
+            closed: left_cell => browser::disposed()
+        browser::disposed => match call browser::read_state(right_cell)
+            when
+                closed: right_cell => ok browser::snapshot<records::panel>(1, records::panel("right", [], 0, "", ""))
+            browser::disposed => match call build_view(app, left_view, left_cell, right_view, right_cell, option::none(), option::none())
+                ok => ok
+            ok browser::snapshot<records::panel> snap_r => match call build_view(app, left_view, left_cell, right_view, right_cell, option::none(), option::some(snap_r.value))
+                when
+                    closed: app, left_view, left_cell, right_view, right_cell, option::none(), option::some(records::panel("right", [], 0, "", "")) => ok
+                ok => ok
+        ok browser::snapshot<records::panel> snap_l => match call browser::read_state(right_cell)
+            when
+                fresh: right_cell => ok browser::snapshot<records::panel>(1, records::panel("right", [], 0, "", ""))
+            browser::disposed => match call build_view(app, left_view, left_cell, right_view, right_cell, option::some(snap_l.value), option::none())
+                ok => ok
+            ok browser::snapshot<records::panel> snap_r => match call build_view(app, left_view, left_cell, right_view, right_cell, option::some(snap_l.value), option::some(snap_r.value))
+                when
+                    fresh: app, left_view, left_cell, right_view, right_cell, option::some(records::panel("left", [], 0, "", "")), option::some(records::panel("right", [], 0, "", "")) => ok
+                ok => ok
+
+/// Count edit on one keyed row: fold the typed value into the
+/// panel and refresh the status line and the exact totals in
+/// place, without re-rendering, so the caret never jumps while
+/// typing.
+fn void on_count_input
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near str row
+        near browser::node status_line
+        near browser::node totals_line
+    asserts
+        sample: browser::event("input", "qty:k1", "4", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::with_count(snap.value, row, e.value)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call browser::set_text(status_line, next.notice)
+                    browser::disposed => ok
+                    ok => match call model::totals_text(next)
+                        ok str totals => match call browser::set_text(totals_line, totals)
+                            browser::disposed => ok
+                            ok => ok
+
+/// Sku edit on one keyed row: fold the typed value into the panel
+/// and refresh the status line in place, without re-rendering.
+fn void on_sku_input
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near str row
+        near browser::node status_line
+    asserts
+        sample: browser::event("input", "id:k1", "b", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::with_sku(snap.value, row, e.value)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call browser::set_text(status_line, next.notice)
+                    browser::disposed => ok
+                    ok => ok
+
+/// Add-row press on one panel: append a blank row, then re-render.
+fn void on_add_row
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+    asserts
+        sample: browser::event("click", "left-add", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::row_added(snap.value)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                    ok => ok
+
+/// Remove-row press on one panel row, then re-render.
+fn void on_remove_row
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+        near str row
+    asserts
+        sample: browser::event("click", "left-del:k1", "", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::row_removed(snap.value, row)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                    ok => ok
+
+/// Move-up press on one panel row, then re-render.
+fn void on_move_up
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+        near str row
+    asserts
+        sample: browser::event("click", "left-up:k1", "", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::row_moved(snap.value, row, 0)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                    ok => ok
+
+/// Move-down press on one panel row, then re-render.
+fn void on_move_down
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+        near str row
+    asserts
+        sample: browser::event("click", "left-down:k1", "", ""), "k1" => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::row_moved(snap.value, row, 1)
+            ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                browser::disposed => ok
+                browser::stale_version => ok
+                ok int version => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                    ok => ok
+
+/// Review press on one panel: post the shared-vocabulary review
+/// notice, then re-render.
+fn void on_review_click
+    emits []
+    given
+        browser::event e
+        near browser::state<records::panel> cell
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+    asserts
+        sample: browser::event("click", "left-review", "", "") => ok
+    match call browser::read_state(cell)
+        browser::disposed => ok
+        ok browser::snapshot<records::panel> snap => match call model::review_notice(snap.value)
+            ok str notice => match call model::with_notice(snap.value, notice)
+                ok records::panel next => match call browser::replace_state(cell, snap.version, next)
+                    browser::disposed => ok
+                    browser::stale_version => ok
+                    ok int version => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                        ok => ok
+
+/// Mirror press: fold the left panel notice into the right panel,
+/// then re-render on success. A closed left panel mirrors nothing.
+fn void on_mirror_click
+    emits []
+    given
+        browser::event e
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+    asserts
+        sample: browser::event("click", "mirror", "", "") => ok
+    match call mirror_notice(left_cell, right_cell)
+        ok option::value<records::panel> done => match done
+            option::some => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+                ok => ok
+            option::none => ok
+
+/// Drop-left press: dispose the left state view, then re-render
+/// right-only. The right instance keeps its own cell and view and
+/// is unaffected.
+fn void on_dispose_left
+    emits []
+    given
+        browser::event e
+        near browser::app app
+        near browser::view view
+        near browser::view left_view
+        near browser::state<records::panel> left_cell
+        near browser::view right_view
+        near browser::state<records::panel> right_cell
+    asserts
+        sample: browser::event("click", "drop-left", "", "") => ok
+    match call browser::dispose_view(left_view)
+        ok => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
+            ok => ok
+
+/// Boot both panels: mount the host root, open one state view per
+/// instance, mint both cells from seeds, then render. A failed
+/// mount or view disposes the app; nothing renders half-built.
+fn void boot
+    emits []
+    asserts
+        ready:  => ok
+    match call browser::mount("invoice-compare")
+        browser::missing_root => ok
+        ok browser::app app => match call browser::open_view(app)
+            browser::disposed => match call browser::dispose_app(app)
+                ok => ok
+            ok browser::view left_view => match call browser::create_state<records::panel>(left_view, call model::seed_panel("left"))
+                browser::disposed => match call browser::dispose_app(app)
+                    ok => ok
+                ok browser::state<records::panel> left_cell => match call browser::open_view(app)
+                    browser::disposed => match call browser::dispose_app(app)
+                        ok => ok
+                    ok browser::view right_view => match call browser::create_state<records::panel>(right_view, call model::seed_panel("right"))
+                        browser::disposed => match call browser::dispose_app(app)
+                            ok => ok
+                        ok browser::state<records::panel> right_cell => match call render_fresh(app, left_view, left_cell, right_view, right_cell)
+                            ok => ok
+
+/// Compare entry: the compiler-owned zero-argument main runs once
+/// after DOM readiness and boots both seeded panels.
+fn void main
+    emits []
+    asserts
+        ready:  => ok
+    match call boot()
+        ok => ok

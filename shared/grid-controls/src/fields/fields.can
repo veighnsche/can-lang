@@ -1,0 +1,199 @@
+/// Shared field controls (C04/X-R02-1). Ordinary Can parsing and
+/// rendering helpers for keyed-table field texts: wire price and
+/// quantity grammars plus canonical bootstrap key parsing. Extracted
+/// verbatim from the invoice grid model; consumed unmodified by the
+/// grid and the compare app.
+package fields
+    provides [parse_price, parse_qty, parse_key, minor_to_price]
+    uses [number, option, text]
+
+/// Report whether one scalar is an ASCII digit.
+fn bool digit_ok
+    emits []
+    given
+        int scalar
+    asserts
+        zero: 48 => ok true
+        nine: 57 => ok true
+        dot: 46 => ok false
+        letter: 97 => ok false
+    match scalar >= 48 and scalar <= 57
+        false => ok false
+        true => ok true
+
+/// A leading zero integer part is padded only when another digit
+/// follows it: "0" and "0.5" stay canonical while "05" fails.
+fn bool leading_zero_bad
+    emits []
+    given
+        int[] units
+        int index
+        int int_digits
+    asserts
+        padded: [48, 53], 0, 0 => ok true
+        lone: [48], 0, 0 => ok false
+        dotted: [48, 46, 53], 0, 0 => ok false
+        later: [53, 48], 1, 1 => ok false
+    match int_digits is 0 and units[index] is 48
+        false => ok false
+        true => match index + 1 >= units.length
+            false => match call digit_ok(units[(index + 1)])
+                ok bool digit => ok digit
+            true => ok false
+
+/// Scan price scalars into minor units: a canonical integer part
+/// (0 or no leading zero), an optional dot, then one or two fraction
+/// digits. Anything else reads none; values above one million major
+/// units read none. The accumulator never nears int64 range: the
+/// integer part fails fast past one hundred million minor units.
+fn option::value<int> price_scan
+    emits []
+    given
+        int[] units
+        int index
+        int int_value
+        int int_digits
+        int frac_value
+        int frac_digits
+        int dotted
+    asserts
+        whole: [53], 0, 0, 0, 0, 0, 0 => ok option::some(500)
+        cents: [53, 46, 48, 53], 0, 0, 0, 0, 0, 0 => ok option::some(505)
+        dime: [53, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::some(550)
+        zero: [48], 0, 0, 0, 0, 0, 0 => ok option::some(0)
+        padded: [48, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        trailing_dot: [53, 46], 0, 0, 0, 0, 0, 0 => ok option::none()
+        leading_dot: [46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        three_dp: [53, 46, 48, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+        double_dot: [53, 46, 46, 53], 0, 0, 0, 0, 0, 0 => ok option::none()
+        letter: [53, 120], 0, 0, 0, 0, 0, 0 => ok option::none()
+        empty: [], 0, 0, 0, 0, 0, 0 => ok option::none()
+        cap: [49, 48, 48, 48, 48, 48, 48, 46, 48, 48], 0, 0, 0, 0, 0, 0 => ok option::some(100000000)
+        over: [49, 48, 48, 48, 48, 48, 48, 46, 48, 49], 0, 0, 0, 0, 0, 0 => ok option::none()
+    match index >= units.length
+        false => match call digit_ok(units[index])
+            ok bool digit => match digit
+                false => match units[index] is 46 and dotted is 0 and int_digits >= 1
+                    false => ok option::none()
+                    true => match call price_scan(units, index + 1, int_value, int_digits, frac_value, frac_digits, 1)
+                        ok option::value<int> rest => ok rest
+                true => match dotted is 1
+                    false => match call leading_zero_bad(units, index, int_digits)
+                        ok bool padded => match padded
+                            false => match int_value > 100000000
+                                false => match call price_scan(units, index + 1, int_value * 10 + units[index] - 48, int_digits + 1, frac_value, frac_digits, dotted)
+                                    ok option::value<int> rest => ok rest
+                                true => ok option::none()
+                            true => ok option::none()
+                    true => match frac_digits >= 2
+                        false => match call price_scan(units, index + 1, int_value, int_digits, frac_value * 10 + units[index] - 48, frac_digits + 1, dotted)
+                            ok option::value<int> rest => ok rest
+                        true => ok option::none()
+        true => match int_digits is 0
+            false => match dotted is 1 and frac_digits is 0
+                false => match frac_digits is 1
+                    false => match int_value * 100 + frac_value > 100000000
+                        false => ok option::some(int_value * 100 + frac_value)
+                        true => ok option::none()
+                    true => match int_value * 100 + frac_value * 10 > 100000000
+                        false => ok option::some(int_value * 100 + frac_value * 10)
+                        true => ok option::none()
+                true => ok option::none()
+            true => ok option::none()
+
+/// Parse one price text into minor units. Exactly the server wire
+/// shape: major units with at most two fraction digits ("19.99",
+/// "5", "0.50"). Money is always integer minor units past this
+/// point, so totals are exact by construction.
+fn option::value<int> parse_price
+    emits []
+    given
+        str text
+    asserts
+        whole: "5" => ok option::some(500)
+        cents: "19.99" => ok option::some(1999)
+        dime: "0.5" => ok option::some(50)
+        zero: "0" => ok option::some(0)
+        cap: "1000000.00" => ok option::some(100000000)
+        over: "1000000.01" => ok option::none()
+        empty: "" => ok option::none()
+        padded: "05" => ok option::none()
+        trailing_dot: "5." => ok option::none()
+        leading_dot: ".5" => ok option::none()
+        three_dp: "5.001" => ok option::none()
+        negative: "-1" => ok option::none()
+        spaced: " 5" => ok option::none()
+    match call text::scalars(text)
+        text::invalid_unicode => ok option::none()
+        ok int[] units => match call price_scan(units, 0, 0, 0, 0, 0, 0)
+            ok option::value<int> minor => ok minor
+
+/// Parse one quantity text into its count. The strict integer grammar
+/// rejects blanks, signs and leading zeros, and the count must fit
+/// 1..1000000 like the server bound.
+fn option::value<int> parse_qty
+    emits []
+    given
+        str text
+    asserts
+        sample: "2" => ok option::some(2)
+        one: "1" => ok option::some(1)
+        cap: "1000000" => ok option::some(1000000)
+        zero: "0" => ok option::none()
+        over: "1000001" => ok option::none()
+        bad_text: "many" => ok option::none()
+        empty: "" => ok option::none()
+        padded: "02" => ok option::none()
+        negative: "-1" => ok option::none()
+    match call text::to_int(text)
+        text::invalid_number => ok option::none()
+        ok int qty => match qty < 1 or qty > 1000000
+            false => ok option::some(qty)
+            true => ok option::none()
+
+/// Parse one bootstrap query key into its id. The spelling must be
+/// canonical decimal (a from_int round trip) and the id positive;
+/// tenant and invoice ids share this one rule. Values past int64
+/// still parse here; boot fails them closed through the checked
+/// action path builder before anything mounts or fetches.
+fn option::value<int> parse_key
+    emits []
+    given
+        str text
+    asserts
+        sample: "7" => ok option::some(7)
+        one: "1" => ok option::some(1)
+        zero: "0" => ok option::none()
+        negative: "-1" => ok option::none()
+        padded: "07" => ok option::none()
+        bad_text: "many" => ok option::none()
+        empty: "" => ok option::none()
+        spaced: " 7" => ok option::none()
+        huge: "9999999999999999999999" => ok option::some(9999999999999999999999)
+    match call text::to_int(text)
+        text::invalid_number => ok option::none()
+        ok int id => match id < 1
+            false => match call text::from_int(id)
+                ok str spelled => match spelled is text
+                    false => ok option::none()
+                    true => ok option::some(id)
+            true => ok option::none()
+
+/// Render minor units back to canonical wire price: whole units, a
+/// dot, and exactly two fraction digits. Totals are never negative.
+fn str minor_to_price
+    emits []
+    given
+        int minor
+    asserts
+        zero: 0 => ok "0.00"
+        cents: 5 => ok "0.05"
+        dime: 50 => ok "0.50"
+        whole: 500 => ok "5.00"
+        mixed: 1999 => ok "19.99"
+        cap: 100000000 => ok "1000000.00"
+    match call number::divmod(minor, 100)
+        number::zero_divisor => ok ""
+        ok number::division split => match split.remainder < 10
+            false => ok call text::from_int(split.quotient) + "." + call text::from_int(split.remainder)
+            true => ok call text::from_int(split.quotient) + ".0" + call text::from_int(split.remainder)

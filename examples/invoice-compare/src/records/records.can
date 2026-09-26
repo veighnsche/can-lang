@@ -1,0 +1,23 @@
+package records
+    provides [dock_line, panel]
+    uses []
+
+/// One receiving-dock row: the raw count text stays beside the last
+/// parsed count so an unparsable edit keeps its text on screen while
+/// blocking review with a bad-count notice.
+record dock_line
+    str key
+    str sku
+    str count
+    int qty
+    bool valid
+/// One independent table instance: its tag ("left"/"right"), its
+/// keyed rows, its edit sequence, its live notice and its focus
+/// intent. Pure data, no browser handles: each instance lives in
+/// its own state view cell and disposes independently.
+record panel
+    str tag
+    dock_line[] rows
+    int edit_seq
+    str notice
+    str focus

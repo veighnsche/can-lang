@@ -1,6 +1,6 @@
 package web
     provides [boot, main]
-    uses [billing::invoice_contract as contract, records, model, action, browser, codec, http, option, text]
+    uses [billing::invoice_contract as contract, controls::fields as fields, controls::keyed as keyed, records, model, action, browser, codec, http, option, text]
 
 /// Typed authorized GET load over the shared contract: the canonical
 /// captured path, the same-origin session cookie for authentication,
@@ -177,7 +177,7 @@ fn void paint_pending
     given
         browser::node status_line
     asserts
-        sample: => ok
+        sample:  => ok
     match call browser::set_text(status_line, "saving...")
         browser::disposed => ok
         ok => ok
@@ -527,7 +527,7 @@ fn browser::node build_rows
     match index >= lines.length
         false => match call model::line_key(lines, index)
             ok str row => match call model::line_at(lines, index)
-                ok records::draft_line line => match call model::row_focus_control(focus, row)
+                ok records::draft_line line => match call keyed::row_focus_control(focus, row)
                     ok str control => match chain
                         call browser::create_element(view, "tr") as browser::node tr
                         call browser::create_element(view, "th") as browser::node key_cell
@@ -1128,13 +1128,13 @@ fn void boot
 fn void main
     emits []
     asserts
-        no_tenant: => ok
-        bad_tenant: => ok
-        no_invoice: => ok
-        bad_invoice: => ok
-        tenant_invalid: => ok
-        invoice_invalid: => ok
-        ready: => ok
+        no_tenant:  => ok
+        bad_tenant:  => ok
+        no_invoice:  => ok
+        bad_invoice:  => ok
+        tenant_invalid:  => ok
+        invoice_invalid:  => ok
+        ready:  => ok
     match call browser::query_parameter("tenant")
         when
             no_tenant: "tenant" => ok option::none()
@@ -1168,13 +1168,13 @@ fn void main
                         when
                             no_invoice: "Choose an invoice" => ok
                         ok => ok
-                    option::some => match call model::parse_key(tenant.value)
+                    option::some => match call fields::parse_key(tenant.value)
                         ok option::value<int> t => match t
                             option::none => match call show_boot_notice("Invalid invoice link")
                                 when
                                     bad_tenant: "Invalid invoice link" => ok
                                 ok => ok
-                            option::some => match call model::parse_key(invoice.value)
+                            option::some => match call fields::parse_key(invoice.value)
                                 ok option::value<int> i => match i
                                     option::none => match call show_boot_notice("Invalid invoice link")
                                         when

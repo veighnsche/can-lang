@@ -1,1 +1,1 @@
-{"dependencies": {"billing": "vendor/billing"}, "error_registry": "can.errors.json", "source_root": "src"}
+{"dependencies": {"billing": "vendor/billing", "controls": "vendor/controls"}, "error_registry": "can.errors.json", "source_root": "src"}
