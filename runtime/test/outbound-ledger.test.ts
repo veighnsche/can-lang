@@ -418,6 +418,32 @@ test("epoch transitions keep live rows pinned and govern future epochs", async (
   ).toEqual(expect.objectContaining({ outcome: "exceeded", remaining: 0 }));
 });
 
+test("tenant rows isolate allowances under one shared pool schedule", async () => {
+  const store = createMemoryLedgerStore();
+  await configured(store, 100);
+  // Each tenant holds its own row against the same pool schedule: one
+  // tenant's full allowance never spends another's.
+  expect(await reserve(store, input({ tenant: "acme", nowMs: 5 }))).toEqual(
+    expect.objectContaining({ outcome: "admitted" }),
+  );
+  expect(await reserve(store, input({ tenant: "acme", correlation: "req-2", nowMs: 6 }))).toEqual(
+    expect.objectContaining({ outcome: "exceeded", remaining: 0 }),
+  );
+  expect(await reserve(store, input({ tenant: "globex", correlation: "req-3", nowMs: 6 }))).toEqual(
+    expect.objectContaining({ outcome: "admitted" }),
+  );
+  expect(await epochStatus(store, "acme", "default", 0)).toEqual(
+    expect.objectContaining({ row: expect.objectContaining({ held: 100 }), unresolved: 1 }),
+  );
+  expect(await epochStatus(store, "globex", "default", 0)).toEqual(
+    expect.objectContaining({ row: expect.objectContaining({ held: 100 }), unresolved: 1 }),
+  );
+  const health = await ledgerHealth(store);
+  expect(health).toEqual(
+    expect.objectContaining({ status: "ok", epochs: 2, held: 200, unresolved: 2 }),
+  );
+});
+
 test("pre-anchor transitions replace a schedule before it governs", async () => {
   const store = createMemoryLedgerStore();
   await configurePool(store, schedule(200, HOUR, 10 * HOUR, "1"));

@@ -183,7 +183,9 @@ late settlement, epoch transitions, fail-closed storage).
   ownership; no generated hand edits.
 - `missing-context` is reserved for H's guard (absent scope
   context at dispatch); the ledger itself reports the other
-  reasons.
+  reasons. H also validates that the context pool is the guarded
+  connection's configured permitted pool — an arbitrary pool name
+  never creates fresh allowance.
 
 ## 6. Handoffs
 
