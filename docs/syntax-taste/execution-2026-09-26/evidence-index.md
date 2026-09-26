@@ -24,6 +24,11 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | E02 | done (X-R04-1 NEG, X-R04-3 POS) | main `2bf35a4c` (worker `a1b4e8e0`) | macOS, bun 1.4.2, live PG 17.11/MySQL 8.4.11 | 11/11 pass live (25s); `check:runtime` green; cancel()=client-flag-only all dialects, backends run to completion; Request.signal aborts on disconnect | pass |
 | B02 | partial slice 1 (task open) | main `c743cb77` (worker `f41fba6b`) | macOS, prebuilt bun 1.4.2 bundle | `canlc assert owner-setup`: 8/8 pass, exit 0; pre-extraction leaky-handler baseline only — extraction, repair comparison, Q4 assessment pending | partial |
 | F01 | done (C-G + R14 ledger) | main `82750826`..`ee928ee1` (worker 4 slices) | macOS, bun 1.4.2 | 38/38 pass across 4 outbound test files; `check:runtime` green; additive only (13 new files); fixtures env-names-only | pass |
+| B01 | done (W3-helper) | main `c691a127`+`dbafd204`+`50dc8d3c` | macOS, prebuilt bun 1.4.2 bundle | 11/11 legs: two-domain, wrapper², oracle both directions, add-error isolation, negatives; simplification ledger + parity tables; Q5 → inactive | pass |
+| B02 | done (W3-owner) | main `c743cb77`+`7834c66f`+`50dc8d3c` | macOS, prebuilt bundle | factory extraction, 14 roots (8 retained), trap probes, fail-closed negatives, guided repair byte-identical helper; Q4 → inactive | pass |
+| B03 | inactive (Q5 gate) | — (no code; correct outcome) | n/a | per-layer parity 17/17, helper-once, wrapper only-in-style, +12/domain premium not removable by syntax; trip conditions recorded | inactive |
+| B04 | inactive (Q4 gate) | — (no code; correct outcome) | n/a | 9 lines/factory, 1 arm/error, zero helper churn, fail-closed; LD29 stays closed; trip conditions recorded | inactive |
+| G02 | done (AU-LSP-hover) | main `0d23fada` (worker `e8b10707`) | macOS, go1.27.1 | gofmt clean; `go test` compiler + driver ok; type-at-offset, declines where definition declines | pass |
 
 ## Conditional branches
 

@@ -25,8 +25,10 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | A03 | done | lane-a-a01-a05 (`6`) | isolated | none | grammar→C03, metadata→E03 | worker `258a8299` → main `dd3f3674` | go test emit/syntax/check ok |
 | A04 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | proof→A06/A07/F05/G04 | — | — |
 | A05 | in progress (wave 1) | lane-a-a01-a05 (`6`) | isolated | none | bulk APIs→A07 | — | — |
-| B01 | in progress, slices 1-2 integrated | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | `5f6e6545`→`c691a127`, `ec4bd92d`→`dbafd204` (partial) | 35+15 roots, negatives, isolation green; needs concision + Q5 |
-| B02 | in progress, slice 1 integrated | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | `f41fba6b`→`c743cb77` (partial) | baseline 8/8 green; extraction + Q4 pending |
+| B01 | done | lane-b-b01-b02 (`7`) | isolated | none | C-B→E06/authors, Q5→B03 | 3 commits → main (last `50dc8d3c`) | 11/11 legs; Q5 inactive w/ trip conditions |
+| B03 | inactive (Q5) | — (gate eval) | — | B01 | gate→B05/IC1 | — | parity tables; no adapter-extent finding |
+| B04 | inactive (Q4) | — (gate eval) | — | B02 | gate→B05/IC1 | — | 9 lines/factory; nothing excessive |
+| B02 | done | lane-b-b01-b02 (`7`) | isolated | none | factory→authors, Q4→B04 | 3 commits → main (last `50dc8d3c`) | 14 roots, fail-closed, guided repair; Q4 inactive |
 | C07 | done | lane-c-c07 (`8`) | isolated | none | evidence→H14 | worker `e0474712` → main `6fe2bc46` | canlc assert 344/344, exit 0 |
 | E01 | done | lane-e-e01-e03 (`9`) | isolated | none | C-C→F01/F05/C; hooks→E02/E04/E06 | worker `6e9914f6` → main `2224e1b4` | bun test 6/6, check:runtime green |
 | E03 | done | lane-e-e01-e03 (`9`) | isolated | none | runtime→C03 | worker `5c51a96d` → main `db6d42b1` | bun test 44/44 (4 files), check green |
@@ -42,11 +44,14 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | F01 | done | lane-f-f01 (`13`) | isolated | E01 | C-G+ledger→H07/E; net rules→D01/F05 | `16a7a68d`..`beaaa32c` → `82750826`..`ee928ee1` | 38/38, check green |
 | H07 | in progress (wave 7) | lane-h-h07 (`20`) | isolated | F01 | budget→H08 | — | — |
 | E02 | done | lane-e-e02 (`15`) | isolated | H02 | verdicts→E04/F02/W5 | worker `a1b4e8e0` → main `2bf35a4c` | 11/11 live, check green; X-R04-1 NEG, X-R04-3 POS |
-| E04 | in progress (wave 6) | lane-e-e04 (`19`) | isolated | E01, E02 | adapters→F/C06; contract→E09 | — | — |
+| E04 | in progress (wave 8 retry) | lane-e-e04-retry (`23`; `19` failed clean) | isolated | E01, E02 | adapters→F/C06; contract→E09 | — | — |
 | F02 | in progress (wave 4) | lane-f-f02 (`16`) | isolated | H02 | locking/RETURNING→F03 | — | — |
 | E07 | in progress (wave 5) | lane-e-e07 (`18`) | isolated | H03, E01 | branch verdicts→E08 | — | — |
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
-| G02 | in progress (wave 5) | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | — | — |
+| G02 | done | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | worker `e8b10707` → main `0d23fada` | go test compiler+driver ok |
+| G03 | ready (G02+A02 done) | — | — | G02, A02 | refs→G04/G05 | — | — |
+| E06 | in progress (wave 8) | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | — | — |
+| C03 | in progress (wave 8) | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | — | — |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
