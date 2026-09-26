@@ -1,0 +1,27 @@
+package app
+    provides []
+    uses []
+fn int combine
+    emits []
+    given
+        near int prefix
+        int value
+        near int suffix
+    asserts
+        sample: 3, 4, 5 => ok 12
+    ok prefix + value + suffix
+fn int compute
+    emits []
+    given
+        int seed
+    asserts
+        first: 4 => ok 12
+    int prefix = 99
+    int suffix = 99
+    callable int (int) emits [] action = callable combine with prefix = 3, suffix = 5
+    ok call action(seed)
+fn void main
+    emits []
+    asserts
+        sample:  => ok
+    ok

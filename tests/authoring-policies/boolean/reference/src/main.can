@@ -1,0 +1,17 @@
+package app
+    provides []
+    uses []
+fn int pick
+    emits []
+    given
+        bool flag
+    asserts
+        sample: true => ok 1
+    match flag
+        false => ok 0
+        true => ok 1
+fn void main
+    emits []
+    asserts
+        sample:  => ok
+    ok

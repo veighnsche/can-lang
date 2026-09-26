@@ -1,0 +1,16 @@
+package app
+    provides []
+    uses []
+fn int forwarded
+    emits []
+    given
+        int left
+        int right
+    asserts
+        sample: 1, 2 => ok 3
+    ok left + right
+fn void main
+    emits []
+    asserts
+        sample:  => ok
+    ok
