@@ -1,0 +1,37 @@
+=== RUN   TestGate3ContractEdits
+=== PAUSE TestGate3ContractEdits
+=== RUN   TestGate3RouteRebuildLive
+=== PAUSE TestGate3RouteRebuildLive
+=== RUN   TestGate3ServerMatrix
+=== PAUSE TestGate3ServerMatrix
+=== RUN   TestGate3AdapterMatrix
+=== PAUSE TestGate3AdapterMatrix
+=== RUN   TestGate3Concurrency
+=== PAUSE TestGate3Concurrency
+=== RUN   TestGate3ReplayExpiry
+=== PAUSE TestGate3ReplayExpiry
+=== RUN   TestGate3RendererFault
+=== PAUSE TestGate3RendererFault
+=== RUN   TestGate3Lifecycle
+=== PAUSE TestGate3Lifecycle
+=== CONT  TestGate3ContractEdits
+=== CONT  TestGate3ServerMatrix
+=== CONT  TestGate3Concurrency
+=== CONT  TestGate3RouteRebuildLive
+=== RUN   TestGate3ContractEdits/shared-route-edit-breaks-lock
+    gate3_matrix_test.go:175: gate3 edit shared-route-edit-breaks-lock: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/mount-handler-mismatch-diagnoses
+    gate3_matrix_test.go:175: gate3 edit mount-handler-mismatch-diagnoses: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/field-rename-diagnoses-stale-use
+    gate3_matrix_test.go:175: gate3 edit field-rename-diagnoses-stale-use: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/bogus-registry-entry-fails
+    gate3_matrix_test.go:175: gate3 edit bogus-registry-entry-fails: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/dangling-predecessor-chain-fails
+    gate3_matrix_test.go:175: gate3 edit dangling-predecessor-chain-fails: assert and build fail naming the stale use
+--- PASS: TestGate3ContractEdits (6.78s)
+    --- PASS: TestGate3ContractEdits/shared-route-edit-breaks-lock (0.26s)
+    --- PASS: TestGate3ContractEdits/mount-handler-mismatch-diagnoses (4.39s)
+    --- PASS: TestGate3ContractEdits/field-rename-diagnoses-stale-use (1.31s)
+    --- PASS: TestGate3ContractEdits/bogus-registry-entry-fails (0.30s)
+    --- PASS: TestGate3ContractEdits/dangling-predecessor-chain-fails (0.31s)
+=== CONT  TestGate3RendererFault

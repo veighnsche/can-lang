@@ -1,0 +1,80 @@
+=== RUN   TestGate3ContractEdits
+=== PAUSE TestGate3ContractEdits
+=== RUN   TestGate3RouteRebuildLive
+=== PAUSE TestGate3RouteRebuildLive
+=== RUN   TestGate3ServerMatrix
+=== PAUSE TestGate3ServerMatrix
+=== RUN   TestGate3AdapterMatrix
+=== PAUSE TestGate3AdapterMatrix
+=== RUN   TestGate3Concurrency
+=== PAUSE TestGate3Concurrency
+=== RUN   TestGate3ReplayExpiry
+=== PAUSE TestGate3ReplayExpiry
+=== RUN   TestGate3RendererFault
+=== PAUSE TestGate3RendererFault
+=== RUN   TestGate3Lifecycle
+=== PAUSE TestGate3Lifecycle
+=== CONT  TestGate3ContractEdits
+=== CONT  TestGate3Concurrency
+=== RUN   TestGate3ContractEdits/shared-route-edit-breaks-lock
+    gate3_matrix_test.go:175: gate3 edit shared-route-edit-breaks-lock: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/mount-handler-mismatch-diagnoses
+    gate3_matrix_test.go:175: gate3 edit mount-handler-mismatch-diagnoses: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/field-rename-diagnoses-stale-use
+    gate3_matrix_test.go:175: gate3 edit field-rename-diagnoses-stale-use: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/bogus-registry-entry-fails
+    gate3_matrix_test.go:175: gate3 edit bogus-registry-entry-fails: assert and build fail naming the stale use
+=== RUN   TestGate3ContractEdits/dangling-predecessor-chain-fails
+    gate3_matrix_test.go:175: gate3 edit dangling-predecessor-chain-fails: assert and build fail naming the stale use
+--- PASS: TestGate3ContractEdits (5.14s)
+    --- PASS: TestGate3ContractEdits/shared-route-edit-breaks-lock (0.20s)
+    --- PASS: TestGate3ContractEdits/mount-handler-mismatch-diagnoses (3.08s)
+    --- PASS: TestGate3ContractEdits/field-rename-diagnoses-stale-use (1.26s)
+    --- PASS: TestGate3ContractEdits/bogus-registry-entry-fails (0.18s)
+    --- PASS: TestGate3ContractEdits/dangling-predecessor-chain-fails (0.16s)
+=== CONT  TestGate3RendererFault
+=== NAME  TestGate3Concurrency
+    gate3_matrix_test.go:1319: revision race: op-r3 committed revision 2, seven losers conflicted
+    gate3_matrix_test.go:1361: identical race: one shared effect at revision 3 with byte-identical results
+    gate3_matrix_test.go:1456: membership flap: 1 commit(s), revision 5, 4 ledger rows, every landing coherent
+    gate3_matrix_test.go:1470: gate3 concurrency: 344 can assertions, revision/identical/membership races live with row evidence
+--- PASS: TestGate3Concurrency (233.42s)
+=== CONT  TestGate3Lifecycle
+=== NAME  TestGate3RendererFault
+    gate3_matrix_test.go:1740: fault drop-lines form: committed=false (revision 2 held, lines table dropped)
+    gate3_matrix_test.go:1752: fault drop-lines form retry: committed=true (entries {revision:2 replays:1} -> {revision:3 replays:2})
+    gate3_matrix_test.go:1755: gate3 render: 344 can assertions, post-commit renderer 500, JSON health, page recovery and form 503 fragment live with row evidence
+--- PASS: TestGate3RendererFault (241.57s)
+=== CONT  TestGate3AdapterMatrix
+=== NAME  TestGate3Lifecycle
+    gate3_matrix_test.go:1820: $canSQLPools.sqliteOpenFile: 1 call site
+    gate3_matrix_test.go:1821: $canSQLPools.close: 1 call site
+    gate3_matrix_test.go:1829: startup refusal missing-db: nonzero exit before serving
+    gate3_matrix_test.go:1839: startup refusal occupied-port: nonzero exit before serving
+    gate3_matrix_test.go:1851: SIGTERM drained in 4ms with a clean exit
+    gate3_matrix_test.go:1893: SIGTERM with in-flight trickle drained in 668ms with a clean exit
+    gate3_matrix_test.go:1896: in-flight outcome 200 {"case":"invoice_contract::grid_saved","value":{"operation_id":"op-l3","acknowledged":{"revision":"4","lines":[{"key":"k1","id":"a","quantity":"2","price":"5.00"}],"total_minor_units":1000}}} (either landing converges below)
+    gate3_matrix_test.go:1951: request-lifetime suite: 8 pass under the staged sidecar
+    gate3_matrix_test.go:1952: gate3 lifecycle: 344 can assertions, one pool, startup refusal, shutdown/drainage and revocation live with row evidence
+--- PASS: TestGate3Lifecycle (280.41s)
+=== CONT  TestGate3ReplayExpiry
+=== NAME  TestGate3AdapterMatrix
+    gate3_matrix_test.go:1047: dot climb: 403 without entry effect
+    gate3_matrix_test.go:1166: fault drop-replay: committed=false (revision 3 held, ledger table dropped)
+    gate3_matrix_test.go:1190: fault drop-replay retry: committed=true (revision 3 -> 4 on a restored ledger)
+    gate3_matrix_test.go:1191: gate3 adapter: 344 can assertions, 404/405/capture/separator/media/budget legs without entry, disconnect and replay-outage legs with row evidence
+--- PASS: TestGate3AdapterMatrix (271.74s)
+=== CONT  TestGate3RouteRebuildLive
+=== NAME  TestGate3ReplayExpiry
+    gate3_matrix_test.go:1637: gate3 replay: 344 can assertions, revoked/live/expired replay and revision invariants live with row evidence
+--- PASS: TestGate3ReplayExpiry (266.76s)
+=== CONT  TestGate3ServerMatrix
+=== NAME  TestGate3RouteRebuildLive
+    gate3_matrix_test.go:327: gate3 route rebuild: build 9390a1f9a5e2, new path 200 with row evidence, page follows checked URL
+--- PASS: TestGate3RouteRebuildLive (263.93s)
+=== NAME  TestGate3ServerMatrix
+    gate3_matrix_test.go:842: in-flight outcome response: 200 {"case":"invoice_contract::grid_saved","value":{"operation_id":"op-m11","acknowledged":{"revision":"6","lines":[{"key":"k1","id":"sku-9","quantity":"4","price":"9.99"},{"key":"k2","id":"sku-2","quantity":"1","price":"2.00"}],"total_minor_units":4196}}} (either landing converges below)
+    gate3_matrix_test.go:898: gate3 matrix: 344 can assertions, json save/load/reorder/swap/uncertain legs live with row evidence
+--- PASS: TestGate3ServerMatrix (148.89s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	929.718s

@@ -1,0 +1,81 @@
+{
+  "passed": true,
+  "browser": "chromium",
+  "version": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+  "scenario": "save",
+  "loadedRevision": "2",
+  "checks": [
+    {
+      "name": "boot-loads",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "client-identity",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "contract-save",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18751/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18751/__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18751/api/v2/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18751/__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18751/api/tenants/1/invoices/7",
+      "status": 200
+    }
+  ],
+  "ledger": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18751/api/v2/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"2\",\"lines\":[{\"key\":\"k1\",\"id\":\"a\",\"quantity\":\"2\",\"price\":\"5.00\"},{\"key\":\"k2\",\"id\":\"b\",\"quantity\":\"1\",\"price\":\"1.99\"}],\"total_minor_units\":1199}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18751/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r2/e1\",\"revision\":\"2\",\"lines\":[{\"key\":\"k1\",\"id\":\"a\",\"quantity\":\"3\",\"price\":\"5.00\"},{\"key\":\"k2\",\"id\":\"b\",\"quantity\":\"1\",\"price\":\"1.99\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r2/e1\",\"acknowledged\":{\"revision\":\"3\",\"lines\":[{\"key\":\"k1\",\"id\":\"a\",\"quantity\":\"3\",\"price\":\"5.00\"},{\"key\":\"k2\",\"id\":\"b\",\"quantity\":\"1\",\"price\":\"1.99\"}],\"total_minor_units\":1699}}}"
+    }
+  ],
+  "dom": {
+    "h1": "Tenant 1 invoice 7 revision 3",
+    "status": "saved revision 3",
+    "statusRole": "status",
+    "totals": "2 lines, 16.99 total",
+    "rows": 2
+  },
+  "bodySnippet": "<h1>Invoice grid</h1><div id=\"invoice-grid\"><p>Loading invoice grid…</p><div id=\"grid\"><h1>Tenant 1 invoice 7 revision 3</h1><p id=\"status\" role=\"status\" aria-live=\"polite\">saved revision 3</p><table><thead><tr><th scope=\"col\">Line</th><th scope=\"col\">ID</th><th scope=\"col\">Quantity</th><th scope=\"col\">Price</th><th scope=\"col\">Amount</th><th scope=\"col\">Actions</th></tr></thead><tbody><tr><th scope=\"row\">k1</th><td><input id=\"id:k1\" type=\"text\" value=\"a\" aria-label=\"id k1\"></td><td><input id=\"qty:k1\" type=\"text\" value=\"3\" aria-label=\"quantity k1\"></td><td><input id=\"price:k1\" type=\"text\" value=\"5.00\" aria-label=\"price k1\"></td><td>15.00</td><td><button id=\"up:k1\" type=\"button\" aria-label=\"move line k1 up\">Up</button><button id=\"down:k1\" type=\"button\" aria-label=\"move line k1 down\">Down</button><button id=\"del:k1\" type=\"button\" aria-label=\"remove line k1\">Remove</button></td></tr><tr><th scope=\"row\">k2</th><td><input id=\"id:k2\" type=\"text\" value=\"b\" aria-label=\"id k2\"></td><td><input id=\"qty:k2\" type=\"text\" value=\"1\" aria-label=\"quantity k2\"></td><td><input id=\"price:k2\" type=\"text\" value=\"1.99\" aria-label=\"price k2\"></td><td>1.99</td><td><button id=\"up:k2\" type=\"button\" aria-label=\"move line k2 up\">Up</button><button id=\"down:k2\" type=\"button\" aria-label=\"move line k2 down\">Down</button><button id=\"del:k2\" type=\"button\" aria-label=\"remove line k2\">Remove</button></td></tr></tbody></table><p id=\"totals\">2 lines, 16.99 total</p><div><button id=\"save\" type=\"button\">Save</button><button id=\"reread\" type=\"button\">Reread</button><button id=\"replay\" type=\"button\" disabled=\"disabled\">Replay save</button><button id=\"add\" type=\"button\">Add line</button></div></div></div><script type=\"module\" src=\"/__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js\"></script>",
+  "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; navigate-to 'self'",
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'."
+  ]
+}

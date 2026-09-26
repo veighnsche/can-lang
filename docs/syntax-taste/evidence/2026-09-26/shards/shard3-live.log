@@ -1,0 +1,202 @@
+=== RUN   TestApplicationsStaged
+=== PAUSE TestApplicationsStaged
+=== RUN   TestApplicationsStagedForms
+=== PAUSE TestApplicationsStagedForms
+=== RUN   TestApplicationsNativeAIStubbed
+=== PAUSE TestApplicationsNativeAIStubbed
+=== RUN   TestApplicationsLive
+=== RUN   TestApplicationsLive/accounts
+=== RUN   TestApplicationsLive/dashboard
+=== RUN   TestApplicationsLive/triage
+=== NAME  TestApplicationsLive
+    applications_test.go:769: live applications: 17 checks against PostgreSQL 17.11 (Homebrew)
+--- PASS: TestApplicationsLive (9.93s)
+    --- PASS: TestApplicationsLive/accounts (3.53s)
+    --- PASS: TestApplicationsLive/dashboard (3.03s)
+    --- PASS: TestApplicationsLive/triage (3.10s)
+=== RUN   TestApplicationsBrowser
+    applications_test.go:871: forms browser chromium 140.0.7339.186: 8 checks, 7 loopback requests
+    applications_test.go:883: accounts browser chromium 140.0.7339.186: 9 checks, 10 loopback requests
+    applications_test.go:885: dashboard browser chromium 140.0.7339.186: 5 checks, 6 loopback requests
+--- PASS: TestApplicationsBrowser (25.82s)
+=== RUN   TestGate4FaultMatrix
+=== PAUSE TestGate4FaultMatrix
+=== RUN   TestInvoiceGridStagedBrowserBuild
+=== PAUSE TestInvoiceGridStagedBrowserBuild
+=== RUN   TestInvoiceFormLive
+=== PAUSE TestInvoiceFormLive
+=== RUN   TestInvoiceStartupRefusal
+    invoice_test.go:1011: startup refusal bad-origin: nonzero exit before serving
+    invoice_test.go:1011: startup refusal missing-origin: nonzero exit before serving
+    invoice_test.go:1011: startup refusal zero-window: nonzero exit before serving
+    invoice_test.go:1011: startup refusal negative-window: nonzero exit before serving
+    invoice_test.go:1011: startup refusal malformed-window: nonzero exit before serving
+--- PASS: TestInvoiceStartupRefusal (102.99s)
+=== RUN   TestInvoiceGridPagePaired
+=== PAUSE TestInvoiceGridPagePaired
+=== RUN   TestInvoiceBrowser
+=== PAUSE TestInvoiceBrowser
+=== RUN   TestInvoiceHTMLFragments
+=== PAUSE TestInvoiceHTMLFragments
+=== RUN   TestInvoiceBrowserGuardDOM
+=== PAUSE TestInvoiceBrowserGuardDOM
+=== CONT  TestApplicationsStaged
+=== CONT  TestInvoiceFormLive
+=== NAME  TestApplicationsStaged
+    applications_test.go:331: account-search staged: 26 assertions (26 real-can), build e2f0b3c774ec
+    applications_test.go:331: form-validation staged: 17 assertions (17 real-can), build 6c18acc67d03
+    applications_test.go:331: dashboard staged: 16 assertions (16 real-can), build b6ad355d60ff
+    applications_test.go:331: native-ai staged: 22 assertions (22 real-can), build b1e55f82a269
+--- PASS: TestApplicationsStaged (38.32s)
+=== CONT  TestInvoiceHTMLFragments
+=== NAME  TestInvoiceFormLive
+    invoice_test.go:976: invoice live: 344 can assertions, form/json save/load/replay/retention/outage legs with row evidence
+--- PASS: TestInvoiceFormLive (187.69s)
+=== CONT  TestInvoiceBrowserGuardDOM
+=== RUN   TestInvoiceBrowserGuardDOM/swap-200
+    invoice_test.go:1449: UP23 leg swap-200 passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (); webkit 26.0 ()
+=== RUN   TestInvoiceBrowserGuardDOM/swap-403
+    invoice_test.go:1449: UP23 leg swap-403 passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (); webkit 26.0 ()
+=== RUN   TestInvoiceBrowserGuardDOM/swap-409
+    invoice_test.go:1449: UP23 leg swap-409 passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (); webkit 26.0 ()
+=== RUN   TestInvoiceBrowserGuardDOM/swap-422
+    invoice_test.go:1449: UP23 leg swap-422 passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (); webkit 26.0 ()
+=== RUN   TestInvoiceBrowserGuardDOM/swap-503
+    invoice_test.go:1449: UP23 leg swap-503 passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (); webkit 26.0 ()
+=== RUN   TestInvoiceBrowserGuardDOM/missing-target-before
+    invoice_test.go:1449: UP23 leg missing-target-before passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (no request sent; 47 nodes before removal); webkit 26.0 (no request sent; 47 nodes before removal)
+=== RUN   TestInvoiceBrowserGuardDOM/missing-target-during
+    invoice_test.go:1449: UP23 leg missing-target-during passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (uncertain target_detached; upstream committed); webkit 26.0 (uncertain target_detached; upstream committed)
+=== RUN   TestInvoiceBrowserGuardDOM/oob-rejected
+    invoice_test.go:1449: UP23 leg oob-rejected passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (swap/task_shape); webkit 26.0 (swap/task_shape)
+=== RUN   TestInvoiceBrowserGuardDOM/partial-rejected
+    invoice_test.go:1449: UP23 leg partial-rejected passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (swap/task_shape); webkit 26.0 (swap/task_shape)
+=== RUN   TestInvoiceBrowserGuardDOM/control-headers-rejected
+    invoice_test.go:1449: UP23 leg control-headers-rejected passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (response/control_header); webkit 26.0 (response/control_header)
+=== RUN   TestInvoiceBrowserGuardDOM/remount-stable
+    invoice_test.go:1449: UP23 leg remount-stable passed on chromium 140.0.7339.186 + webkit 26.0: chromium 140.0.7339.186 (4 nodes restored, 5 unique ids); webkit 26.0 (4 nodes restored, 5 unique ids)
+--- PASS: TestInvoiceBrowserGuardDOM (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/swap-200 (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/swap-403 (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/swap-409 (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/swap-422 (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/swap-503 (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/missing-target-before (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/missing-target-during (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/oob-rejected (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/partial-rejected (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/control-headers-rejected (0.00s)
+    --- PASS: TestInvoiceBrowserGuardDOM/remount-stable (0.00s)
+=== CONT  TestGate4FaultMatrix
+    gate4_fault_test.go:277: gate4 host bound: staged bundle on darwin/arm64 bun 1.4.2 rev 744846f84437
+=== NAME  TestInvoiceHTMLFragments
+    invoice_test.go:1399: invoice fragments: 344 can assertions, 200/422/409/403/503 fragment bytes plus served swap policy with row evidence
+--- PASS: TestInvoiceHTMLFragments (221.27s)
+=== CONT  TestInvoiceGridStagedBrowserBuild
+=== NAME  TestGate4FaultMatrix
+    gate4_fault_test.go:375: gate4 invoice disconnect: abandoned save committed revision 2 with one replay row; replay 200, conflict 409
+=== NAME  TestInvoiceGridStagedBrowserBuild
+    invoice_grid_test.go:112: grid: 338 assertion roots (real-can evidence), browser build 6f08a02a1aae
+--- PASS: TestInvoiceGridStagedBrowserBuild (83.88s)
+=== CONT  TestApplicationsNativeAIStubbed
+    applications_test.go:598: stubbed native-ai: plan plus one batched judgment; refusal, invalid plan, and invalid answers surface typed failures
+--- PASS: TestApplicationsNativeAIStubbed (4.59s)
+=== CONT  TestInvoiceBrowser
+=== NAME  TestGate4FaultMatrix
+    gate4_fault_test.go:449: gate4 webhook: trickled delivery accepted once; SIGTERM drained in 1ms; restart keeps 2 ledger rows
+    gate4_fault_test.go:475: gate4 stream: counted 3 lines; missing input exits 1 with a diagnostic
+    gate4_fault_test.go:517: gate4 shutdown suite: map[coordination.test.ts:15 owner.test.ts:18 server.test.ts:27 shutdown.test.ts:6 transport-late.test.ts:5 transport-owned.test.ts:3], 0 fail
+    gate4_fault_test.go:523: gate4 report:
+        {
+          "abortableOperations": [
+            "transport deadlines with native abort and owner-signal cancellation",
+            "stream cancel (terminal, records its reason)",
+            "websocket cancel/stop prompts"
+          ],
+          "compiler": "canlc staged bundle",
+          "host": {
+            "architecture": "arm64",
+            "bun": "1.4.2",
+            "platform": "darwin",
+            "revision": "744846f844374847c902b5e7fd59b4342a51ef99"
+          },
+          "legs": {
+            "invoice_disconnect": {
+              "assertions": 344,
+              "build": "e07784c957381b468209a252a1efc4ad6da816a59c09b4c31d9b5af496a558e8",
+              "real_can": 344,
+              "replay_rows": 1,
+              "revision": "2",
+              "settled": "abandoned handler committed one effect; identical replay replays, changed content conflicts",
+              "stop_drain_ms": 2
+            },
+            "shutdown_suite": {
+              "failed": 0,
+              "files": {
+                "coordination.test.ts": 15,
+                "owner.test.ts": 18,
+                "server.test.ts": 27,
+                "shutdown.test.ts": 6,
+                "transport-late.test.ts": 5,
+                "transport-owned.test.ts": 3
+              },
+              "settled": "pending losers keep leases until they settle; deadlines bound only the waiter; disconnect never aborts an owned handler; abort exists only where an operation offers it"
+            },
+            "stream_cleanup": {
+              "assertions": 7,
+              "counted": "3",
+              "missing_input_exit": 1,
+              "real_can": 7,
+              "settled": "funnel closes exactly once; read failure keeps precedence over close failure per the shutdown suite"
+            },
+            "webhook_slow_and_terminate": {
+              "assertions": 67,
+              "build": "540b7e76736ebc0a2efbacd6242549b852c4c6a316d2b487ef634a9b05c212ad",
+              "ledger_rows": 2,
+              "outbox_rows": 2,
+              "real_can": 67,
+              "settled": "trickled body accepted once; SIGTERM drained owned work; restart replays duplicate and accepts new work",
+              "sigterm_drain_ms": 1
+            }
+          },
+          "limitations": [
+            "deadline-expiry shutdown_failed(\"deadline\") is not forced on a live server here; it is covered by the artifact shutdown/owner suites below",
+            "an empty first-completion race stays pending by design; the harness owns its observation deadline (coordination suite)",
+            "the disconnect leg closes after a complete body; a mid-body abort is a 400/invalid_body rejection, never a partial commit"
+          ],
+          "mode": "staged bundle"
+        }
+--- PASS: TestGate4FaultMatrix (178.14s)
+=== CONT  TestApplicationsStagedForms
+    applications_test.go:403: staged forms: 7 checks
+--- PASS: TestApplicationsStagedForms (7.59s)
+=== CONT  TestInvoiceGridPagePaired
+    invoice_test.go:1150: invoice paired: browser 7ba0973e2ab2, grid and form pages carry entry /__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js once, health untouched
+--- PASS: TestInvoiceGridPagePaired (173.20s)
+=== NAME  TestInvoiceBrowser
+    invoice_test.go:1188: invoice browser harness:
+        PASS htmx-loaded
+        PASS pinned-scripts htmx+guard
+        PASS htmx-config-policy
+        PASS form-renders
+        PASS save-200-swap
+        PASS validation-422-swap
+        PASS draft-and-focus-preserved
+        PASS stale-409-swap
+        PASS busy-503-swap
+        PASS denied-403-swap
+        PASS target-absence-stable no request sent; 46 nodes before removal
+        PASS remount-stable 4 nodes restored, 5 unique ids
+        PASS target-restored-save
+        PASS missing-target-during uncertain target_detached; upstream committed
+        PASS final-save
+        PASS control-header response/control_header
+        PASS oob-rejected swap/task_shape
+        PASS partial-rejected swap/task_shape
+        PASS redirect-rejected response/redirect
+        PASS no-external-requests 6 guard occurrences recorded
+        browser invoice evidence passed on chromium
+    invoice_test.go:1218: invoice browser: 344 can assertions, 20 checks passed, live submit committed rev 5 seats 2 details "Guard Final"
+--- PASS: TestInvoiceBrowser (208.63s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	695.694s

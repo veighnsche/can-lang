@@ -1,0 +1,445 @@
+=== RUN   TestCurrentBundledArrays
+=== PAUSE TestCurrentBundledArrays
+=== RUN   TestCurrentBundledAssertions
+=== PAUSE TestCurrentBundledAssertions
+=== RUN   TestAssertionFailureLocations
+=== PAUSE TestAssertionFailureLocations
+=== RUN   TestCurrentBundledAssets
+=== PAUSE TestCurrentBundledAssets
+=== RUN   TestCurrentBundledBytes
+=== PAUSE TestCurrentBundledBytes
+=== RUN   TestCurrentBundledCallables
+=== PAUSE TestCurrentBundledCallables
+=== RUN   TestCurrentBundledChecks
+=== PAUSE TestCurrentBundledChecks
+=== RUN   TestChecksMismatchSpan
+=== PAUSE TestChecksMismatchSpan
+=== RUN   TestCurrentBundledCLI
+=== PAUSE TestCurrentBundledCLI
+=== RUN   TestCurrentBundledCodec
+=== PAUSE TestCurrentBundledCodec
+=== RUN   TestCurrentBundledCollections
+=== PAUSE TestCurrentBundledCollections
+=== RUN   TestCurrentBundledCookiesCSRF
+=== PAUSE TestCurrentBundledCookiesCSRF
+=== RUN   TestCurrentBundledCoordination
+=== PAUSE TestCurrentBundledCoordination
+=== RUN   TestStandardSnapshotIdentity
+=== PAUSE TestStandardSnapshotIdentity
+=== RUN   TestCurrentCryptoCommands
+=== PAUSE TestCurrentCryptoCommands
+=== RUN   TestDevelopmentSidecar
+=== PAUSE TestDevelopmentSidecar
+=== RUN   TestDistributionShipsBrowserBundleTool
+=== PAUSE TestDistributionShipsBrowserBundleTool
+=== RUN   TestCurrentBundledExactAmounts
+=== PAUSE TestCurrentBundledExactAmounts
+=== RUN   TestCurrentBundledFetch
+=== PAUSE TestCurrentBundledFetch
+=== RUN   TestCurrentBundledFiles
+=== PAUSE TestCurrentBundledFiles
+=== RUN   TestFormatPreservesExecution
+=== PAUSE TestFormatPreservesExecution
+=== RUN   TestCurrentFormatsDocuments
+=== PAUSE TestCurrentFormatsDocuments
+=== RUN   TestCurrentBundledGeneration
+=== PAUSE TestCurrentBundledGeneration
+=== RUN   TestCurrentBundledGenerics
+=== PAUSE TestCurrentBundledGenerics
+=== RUN   TestCurrentBundledGenericChain
+=== PAUSE TestCurrentBundledGenericChain
+=== RUN   TestHarnessKeyStable
+=== PAUSE TestHarnessKeyStable
+=== RUN   TestHarnessKeySensitive
+=== PAUSE TestHarnessKeySensitive
+=== RUN   TestHarnessVerifyClean
+=== PAUSE TestHarnessVerifyClean
+=== RUN   TestHarnessVerifyContaminated
+=== PAUSE TestHarnessVerifyContaminated
+=== RUN   TestHarnessEntryComplete
+=== PAUSE TestHarnessEntryComplete
+=== RUN   TestHeavySlotsBounded
+--- PASS: TestHeavySlotsBounded (0.10s)
+=== RUN   TestHeavySlotCap
+--- PASS: TestHeavySlotCap (0.00s)
+=== RUN   TestHarnessSharedEndToEnd
+--- PASS: TestHarnessSharedEndToEnd (3.11s)
+=== RUN   TestCurrentBundledHTML
+=== PAUSE TestCurrentBundledHTML
+=== RUN   TestCurrentBundledHTTP
+=== PAUSE TestCurrentBundledHTTP
+=== RUN   TestCurrentBundledInputCapture
+=== PAUSE TestCurrentBundledInputCapture
+=== RUN   TestCurrentBundledInputEnvironment
+=== PAUSE TestCurrentBundledInputEnvironment
+=== RUN   TestCurrentBundledNoulJudge
+=== PAUSE TestCurrentBundledNoulJudge
+=== RUN   TestLinuxInstalledArtifactSmoke
+    linux_distribution_test.go:26: linux amd64 installed-artifact smoke only
+--- SKIP: TestLinuxInstalledArtifactSmoke (0.00s)
+=== RUN   TestLinuxPostgresRoundtrip
+    linux_distribution_test.go:267: linux amd64 postgres roundtrip only
+--- SKIP: TestLinuxPostgresRoundtrip (0.00s)
+=== RUN   TestCurrentMarkdownRender
+=== PAUSE TestCurrentMarkdownRender
+=== RUN   TestCurrentMySQLPersistence
+    mysql_test.go:50: set CAN_TEST_MYSQL_URL for staged MySQL execution
+--- SKIP: TestCurrentMySQLPersistence (0.00s)
+=== RUN   TestCurrentBundledNativeDeclarations
+=== PAUSE TestCurrentBundledNativeDeclarations
+=== RUN   TestCurrentBundledNumbers
+=== PAUSE TestCurrentBundledNumbers
+=== RUN   TestBundledOwnershipOffline
+=== PAUSE TestBundledOwnershipOffline
+=== RUN   TestCurrentBundledProcess
+=== PAUSE TestCurrentBundledProcess
+=== RUN   TestCurrentBundledMixedQuestions
+=== PAUSE TestCurrentBundledMixedQuestions
+=== RUN   TestReleaseInstallUpdate
+=== PAUSE TestReleaseInstallUpdate
+=== RUN   TestInstallRootRefusals
+=== PAUSE TestInstallRootRefusals
+=== RUN   TestCurrentS3Objects
+=== PAUSE TestCurrentS3Objects
+=== RUN   TestCurrentBundledServer
+=== PAUSE TestCurrentBundledServer
+=== RUN   TestCurrentSQLDescriptors
+--- PASS: TestCurrentSQLDescriptors (10.07s)
+=== RUN   TestCurrentSQLDescriptorsLive
+    sql_descriptors_test.go:281: live descriptors: 16 checks against PostgreSQL 17.11 (Homebrew)
+--- PASS: TestCurrentSQLDescriptorsLive (2.13s)
+=== RUN   TestCurrentSQLQueries
+--- PASS: TestCurrentSQLQueries (8.52s)
+=== RUN   TestCurrentSQLQueriesLive
+    sql_test.go:346: live queries: 16 checks against PostgreSQL 17.11 (Homebrew)
+--- PASS: TestCurrentSQLQueriesLive (2.97s)
+=== RUN   TestCurrentSQLTransactions
+--- PASS: TestCurrentSQLTransactions (8.68s)
+=== RUN   TestCurrentSQLTransactionsLive
+    sql_test.go:676: live transactions: 13 checks against PostgreSQL 17.11 (Homebrew)
+--- PASS: TestCurrentSQLTransactionsLive (2.91s)
+=== RUN   TestCurrentSQLitePersistence
+=== PAUSE TestCurrentSQLitePersistence
+=== RUN   TestStdlibMaintained
+=== PAUSE TestStdlibMaintained
+=== RUN   TestCurrentBundledStreams
+=== PAUSE TestCurrentBundledStreams
+=== RUN   TestCurrentBundledTemplates
+=== PAUSE TestCurrentBundledTemplates
+=== RUN   TestCurrentBundledText
+=== PAUSE TestCurrentBundledText
+=== RUN   TestCurrentBundledTLS
+=== PAUSE TestCurrentBundledTLS
+=== RUN   TestBundledTransportLoopback
+=== PAUSE TestBundledTransportLoopback
+=== RUN   TestUP23WriteVerdict
+    up23_verdict_test.go:54: set CAN_UP23_OUT to write the UP23 verdict file
+--- SKIP: TestUP23WriteVerdict (0.00s)
+=== RUN   TestCurrentBundledUtilities
+=== PAUSE TestCurrentBundledUtilities
+=== RUN   TestCurrentBundledVerifiedBuild
+=== PAUSE TestCurrentBundledVerifiedBuild
+=== RUN   TestWebhookSliceLive
+=== PAUSE TestWebhookSliceLive
+=== RUN   TestCurrentBundledWebSocket
+=== PAUSE TestCurrentBundledWebSocket
+=== RUN   TestCurrentBundledWrappers
+=== PAUSE TestCurrentBundledWrappers
+=== CONT  TestCurrentBundledArrays
+=== CONT  TestHarnessEntryComplete
+--- PASS: TestHarnessEntryComplete (0.00s)
+=== CONT  TestCurrentS3Objects
+    s3_test.go:56: set CAN_TEST_S3_ENDPOINT/REGION/BUCKET/ACCESS_KEY/SECRET_KEY for staged S3 execution
+--- SKIP: TestCurrentS3Objects (0.00s)
+=== CONT  TestCurrentBundledWrappers
+--- PASS: TestCurrentBundledWrappers (10.27s)
+=== CONT  TestCurrentBundledWebSocket
+--- PASS: TestCurrentBundledArrays (12.99s)
+=== CONT  TestWebhookSliceLive
+--- PASS: TestCurrentBundledWebSocket (10.37s)
+=== CONT  TestCurrentBundledVerifiedBuild
+=== NAME  TestWebhookSliceLive
+    webhook_test.go:554: in-flight outcome response: 200 {"status":"accepted"} (either landing converges below)
+    webhook_test.go:597: webhook slice: 67 assertions (67 real-can), build 540b7e76736e, stub receipts del-1=1 del-2=1 del-3=2 del-4=1
+--- PASS: TestWebhookSliceLive (14.75s)
+=== CONT  TestCurrentBundledUtilities
+--- PASS: TestCurrentBundledUtilities (14.69s)
+=== CONT  TestBundledTransportLoopback
+--- PASS: TestBundledTransportLoopback (2.30s)
+=== CONT  TestCurrentBundledTLS
+--- PASS: TestCurrentBundledVerifiedBuild (28.47s)
+=== CONT  TestCurrentBundledText
+--- PASS: TestCurrentBundledTLS (4.73s)
+=== CONT  TestCurrentBundledTemplates
+--- PASS: TestCurrentBundledTemplates (5.93s)
+=== CONT  TestCurrentBundledStreams
+--- PASS: TestCurrentBundledText (6.96s)
+=== CONT  TestStdlibMaintained
+=== RUN   TestStdlibMaintained/examples/account-search
+=== PAUSE TestStdlibMaintained/examples/account-search
+=== RUN   TestStdlibMaintained/examples/cookies
+=== PAUSE TestStdlibMaintained/examples/cookies
+=== RUN   TestStdlibMaintained/examples/crypto
+=== PAUSE TestStdlibMaintained/examples/crypto
+=== RUN   TestStdlibMaintained/examples/dashboard
+=== PAUSE TestStdlibMaintained/examples/dashboard
+=== RUN   TestStdlibMaintained/examples/files
+=== PAUSE TestStdlibMaintained/examples/files
+=== RUN   TestStdlibMaintained/examples/form-validation
+=== PAUSE TestStdlibMaintained/examples/form-validation
+=== RUN   TestStdlibMaintained/examples/gallery
+=== PAUSE TestStdlibMaintained/examples/gallery
+=== RUN   TestStdlibMaintained/examples/invoice
+=== PAUSE TestStdlibMaintained/examples/invoice
+=== RUN   TestStdlibMaintained/examples/invoice-grid
+=== PAUSE TestStdlibMaintained/examples/invoice-grid
+=== RUN   TestStdlibMaintained/examples/language-site
+=== PAUSE TestStdlibMaintained/examples/language-site
+=== RUN   TestStdlibMaintained/examples/markdown
+=== PAUSE TestStdlibMaintained/examples/markdown
+=== RUN   TestStdlibMaintained/examples/mysql
+=== PAUSE TestStdlibMaintained/examples/mysql
+=== RUN   TestStdlibMaintained/examples/native-ai
+=== PAUSE TestStdlibMaintained/examples/native-ai
+=== RUN   TestStdlibMaintained/examples/process
+=== PAUSE TestStdlibMaintained/examples/process
+=== RUN   TestStdlibMaintained/examples/sqlite
+=== PAUSE TestStdlibMaintained/examples/sqlite
+=== RUN   TestStdlibMaintained/examples/stream
+=== PAUSE TestStdlibMaintained/examples/stream
+=== RUN   TestStdlibMaintained/examples/utilities
+=== PAUSE TestStdlibMaintained/examples/utilities
+=== RUN   TestStdlibMaintained/examples/webhook
+=== PAUSE TestStdlibMaintained/examples/webhook
+=== RUN   TestStdlibMaintained/examples/websocket
+=== PAUSE TestStdlibMaintained/examples/websocket
+=== RUN   TestStdlibMaintained/std/map/current
+=== PAUSE TestStdlibMaintained/std/map/current
+=== RUN   TestStdlibMaintained/std/ratio/current
+=== PAUSE TestStdlibMaintained/std/ratio/current
+=== RUN   TestStdlibMaintained/std/scalars/current
+=== PAUSE TestStdlibMaintained/std/scalars/current
+=== RUN   TestStdlibMaintained/std/text/current
+=== PAUSE TestStdlibMaintained/std/text/current
+=== CONT  TestCurrentSQLitePersistence
+    sqlite_test.go:161: live sqlite: 10 checks against library 3.54.0
+--- PASS: TestCurrentSQLitePersistence (4.25s)
+=== CONT  TestCurrentBundledServer
+--- PASS: TestCurrentBundledStreams (9.28s)
+=== CONT  TestDevelopmentSidecar
+=== CONT  TestHarnessVerifyContaminated
+--- PASS: TestCurrentBundledServer (4.63s)
+--- PASS: TestHarnessVerifyContaminated (0.00s)
+=== CONT  TestHarnessVerifyClean
+--- PASS: TestHarnessVerifyClean (0.00s)
+=== CONT  TestHarnessKeySensitive
+--- PASS: TestHarnessKeySensitive (0.04s)
+=== CONT  TestHarnessKeyStable
+--- PASS: TestHarnessKeyStable (0.03s)
+=== CONT  TestCurrentBundledGenericChain
+=== RUN   TestDevelopmentSidecar/current-parser-is-inert
+=== RUN   TestDevelopmentSidecar/current-project-identities-offline
+=== RUN   TestDevelopmentSidecar/current-declaration-types-offline
+=== RUN   TestDevelopmentSidecar/native-nominal-data-offline
+=== RUN   TestDevelopmentSidecar/native-primitives-offline
+=== RUN   TestDevelopmentSidecar/native-failures-offline
+=== RUN   TestDevelopmentSidecar/native-completions-offline
+=== RUN   TestDevelopmentSidecar/missing
+=== RUN   TestDevelopmentSidecar/non-executable
+=== RUN   TestDevelopmentSidecar/tampered
+=== RUN   TestDevelopmentSidecar/wrong-architecture
+=== RUN   TestDevelopmentSidecar/symlinked-sidecar
+=== RUN   TestDevelopmentSidecar/tampered-manifest.json
+=== RUN   TestDevelopmentSidecar/tampered-tools/runtime/check.ts
+=== NAME  TestDevelopmentSidecar
+    distribution_test.go:356: offline absolute sidecar and symlink execution passed; hostile config ignored; identity bun-1.4.2-darwin-arm64-v1
+--- PASS: TestDevelopmentSidecar (5.07s)
+    --- PASS: TestDevelopmentSidecar/current-parser-is-inert (0.05s)
+    --- PASS: TestDevelopmentSidecar/current-project-identities-offline (0.10s)
+    --- PASS: TestDevelopmentSidecar/current-declaration-types-offline (0.09s)
+    --- PASS: TestDevelopmentSidecar/native-nominal-data-offline (0.02s)
+    --- PASS: TestDevelopmentSidecar/native-primitives-offline (0.03s)
+    --- PASS: TestDevelopmentSidecar/native-failures-offline (0.03s)
+    --- PASS: TestDevelopmentSidecar/native-completions-offline (0.03s)
+    --- PASS: TestDevelopmentSidecar/missing (0.03s)
+    --- PASS: TestDevelopmentSidecar/non-executable (0.04s)
+    --- PASS: TestDevelopmentSidecar/tampered (0.08s)
+    --- PASS: TestDevelopmentSidecar/wrong-architecture (0.06s)
+    --- PASS: TestDevelopmentSidecar/symlinked-sidecar (0.03s)
+    --- PASS: TestDevelopmentSidecar/tampered-manifest.json (0.03s)
+    --- PASS: TestDevelopmentSidecar/tampered-tools/runtime/check.ts (0.08s)
+=== CONT  TestCurrentBundledGenerics
+--- PASS: TestCurrentBundledGenericChain (8.49s)
+=== CONT  TestCurrentBundledGeneration
+    generation_test.go:272: {"root":{"package":"conformance","declaration":"compiled_generation","name":"raw_provider"},"frames":[],"violations":[],"evidence":["raw-provider-fixture","real-can"],"fixturePaths":[],"passed":true}
+--- PASS: TestCurrentBundledGeneration (13.02s)
+=== CONT  TestCurrentFormatsDocuments
+    formats_test.go:155: live formats: 10 checks
+--- PASS: TestCurrentFormatsDocuments (4.54s)
+=== CONT  TestFormatPreservesExecution
+--- PASS: TestFormatPreservesExecution (3.55s)
+=== CONT  TestCurrentBundledFiles
+--- PASS: TestCurrentBundledGenerics (26.92s)
+=== CONT  TestCurrentBundledFetch
+--- PASS: TestCurrentBundledFiles (5.36s)
+=== CONT  TestCurrentBundledExactAmounts
+--- PASS: TestCurrentBundledExactAmounts (5.84s)
+=== CONT  TestDistributionShipsBrowserBundleTool
+--- PASS: TestDistributionShipsBrowserBundleTool (2.69s)
+=== CONT  TestCurrentBundledNativeDeclarations
+--- PASS: TestCurrentBundledFetch (16.51s)
+=== CONT  TestInstallRootRefusals
+--- PASS: TestInstallRootRefusals (0.00s)
+=== CONT  TestReleaseInstallUpdate
+--- PASS: TestCurrentBundledNativeDeclarations (5.98s)
+=== CONT  TestCurrentBundledMixedQuestions
+--- PASS: TestReleaseInstallUpdate (22.65s)
+=== CONT  TestCurrentBundledProcess
+=== NAME  TestCurrentBundledMixedQuestions
+    questions_test.go:340: {"root":{"package":"conformance","declaration":"compiled_judge","name":"raw_provider"},"frames":[],"violations":[],"evidence":["raw-provider-fixture","real-can"],"fixturePaths":[],"passed":true}
+--- PASS: TestCurrentBundledMixedQuestions (22.72s)
+=== CONT  TestBundledOwnershipOffline
+--- PASS: TestBundledOwnershipOffline (0.32s)
+=== CONT  TestCurrentBundledNumbers
+--- PASS: TestCurrentBundledNumbers (6.26s)
+=== CONT  TestCurrentBundledCLI
+--- PASS: TestCurrentBundledProcess (8.07s)
+=== CONT  TestCurrentCryptoCommands
+    crypto_test.go:244: live crypto: 6 checks
+--- PASS: TestCurrentCryptoCommands (8.84s)
+=== CONT  TestCurrentBundledCollections
+--- PASS: TestCurrentBundledCollections (5.54s)
+=== CONT  TestStandardSnapshotIdentity
+--- PASS: TestStandardSnapshotIdentity (1.81s)
+=== CONT  TestCurrentBundledInputEnvironment
+=== RUN   TestCurrentBundledInputEnvironment/input
+--- PASS: TestCurrentBundledCLI (23.05s)
+=== CONT  TestCurrentMarkdownRender
+--- PASS: TestCurrentMarkdownRender (4.91s)
+=== CONT  TestCurrentBundledNoulJudge
+=== RUN   TestCurrentBundledInputEnvironment/input-text
+=== NAME  TestCurrentBundledNoulJudge
+    judge_test.go:202: {"root":{"package":"conformance","declaration":"compiled_judge","name":"raw_provider"},"frames":[],"violations":[],"evidence":["raw-provider-fixture","real-can"],"fixturePaths":[],"passed":true}
+--- PASS: TestCurrentBundledNoulJudge (9.26s)
+=== CONT  TestCurrentBundledBytes
+=== RUN   TestCurrentBundledInputEnvironment/environment
+--- PASS: TestCurrentBundledBytes (4.59s)
+=== CONT  TestChecksMismatchSpan
+--- PASS: TestChecksMismatchSpan (1.31s)
+=== CONT  TestCurrentBundledChecks
+--- PASS: TestCurrentBundledChecks (3.74s)
+=== CONT  TestCurrentBundledCallables
+--- PASS: TestCurrentBundledInputEnvironment (36.22s)
+    --- PASS: TestCurrentBundledInputEnvironment/input (13.46s)
+    --- PASS: TestCurrentBundledInputEnvironment/input-text (11.47s)
+    --- PASS: TestCurrentBundledInputEnvironment/environment (10.98s)
+=== CONT  TestCurrentBundledCookiesCSRF
+=== CONT  TestCurrentBundledCodec
+--- PASS: TestCurrentBundledCallables (6.09s)
+--- PASS: TestCurrentBundledCodec (4.51s)
+=== CONT  TestAssertionFailureLocations
+--- PASS: TestCurrentBundledCookiesCSRF (6.81s)
+=== CONT  TestCurrentBundledAssets
+--- PASS: TestAssertionFailureLocations (2.45s)
+=== CONT  TestCurrentBundledCoordination
+--- PASS: TestCurrentBundledAssets (18.65s)
+=== CONT  TestCurrentBundledAssertions
+--- PASS: TestCurrentBundledCoordination (21.59s)
+=== CONT  TestCurrentBundledHTML
+--- PASS: TestCurrentBundledHTML (3.69s)
+=== CONT  TestCurrentBundledInputCapture
+--- PASS: TestCurrentBundledInputCapture (3.45s)
+=== CONT  TestCurrentBundledHTTP
+--- PASS: TestCurrentBundledHTTP (7.57s)
+=== CONT  TestStdlibMaintained/examples/account-search
+    stdlib_test.go:240: examples/account-search: 26 assertions (26 real-can), build e2f0b3c774ec, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/native-ai
+--- PASS: TestCurrentBundledAssertions (28.78s)
+=== CONT  TestStdlibMaintained/std/text/current
+=== NAME  TestStdlibMaintained/examples/native-ai
+    stdlib_test.go:240: examples/native-ai: 22 assertions (22 real-can), build b1e55f82a269, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/std/scalars/current
+=== NAME  TestStdlibMaintained/std/text/current
+    stdlib_test.go:240: std/text/current: 45 assertions (45 real-can), build f0e5e47b3158, ran clean
+=== CONT  TestStdlibMaintained/std/ratio/current
+=== NAME  TestStdlibMaintained/std/scalars/current
+    stdlib_test.go:240: std/scalars/current: 40 assertions (40 real-can), build 066092120bcd, ran clean
+=== CONT  TestStdlibMaintained/std/map/current
+=== NAME  TestStdlibMaintained/std/ratio/current
+    stdlib_test.go:240: std/ratio/current: 23 assertions (23 real-can), build 5271ac81508e, ran clean
+=== CONT  TestStdlibMaintained/examples/websocket
+=== NAME  TestStdlibMaintained/std/map/current
+    stdlib_test.go:240: std/map/current: 19 assertions (19 real-can), build 47c2a07f9229, ran clean
+=== CONT  TestStdlibMaintained/examples/webhook
+=== NAME  TestStdlibMaintained/examples/websocket
+    stdlib_test.go:240: examples/websocket: 13 assertions (13 real-can), build 8a6333d1a850, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/utilities
+    stdlib_test.go:240: examples/utilities: 8 assertions (8 real-can), build 4a677c37d2e0, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/stream
+=== NAME  TestStdlibMaintained/examples/webhook
+    stdlib_test.go:240: examples/webhook: 67 assertions (67 real-can), build 540b7e76736e, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/sqlite
+=== NAME  TestStdlibMaintained/examples/stream
+    stdlib_test.go:240: examples/stream: 7 assertions (7 real-can), build 0db4004c6bb3, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/process
+=== NAME  TestStdlibMaintained/examples/sqlite
+    stdlib_test.go:240: examples/sqlite: 6 assertions (6 real-can), build 93d3e1ca6cf6, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/gallery
+=== NAME  TestStdlibMaintained/examples/process
+    stdlib_test.go:240: examples/process: 6 assertions (6 real-can), build e2a0bdec3073, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/mysql
+    stdlib_test.go:240: examples/mysql: 6 assertions (6 real-can), build 6a19700bb461, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/markdown
+    stdlib_test.go:240: examples/markdown: 8 assertions (8 real-can), build b3e193b37b0e, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/language-site
+=== NAME  TestStdlibMaintained/examples/gallery
+    stdlib_test.go:240: examples/gallery: 74 assertions (74 real-can), build f5bcb1937e87, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/invoice-grid
+=== NAME  TestStdlibMaintained/examples/language-site
+    stdlib_test.go:240: examples/language-site: 11 assertions (11 real-can), build d48ede419f71, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/invoice
+=== NAME  TestStdlibMaintained/examples/invoice-grid
+    stdlib_test.go:240: examples/invoice-grid: 338 assertions (338 real-can), build 6f08a02a1aae, browser run covered by gate5 suite
+=== CONT  TestStdlibMaintained/examples/dashboard
+=== NAME  TestStdlibMaintained/examples/invoice
+    stdlib_test.go:240: examples/invoice: 344 assertions (344 real-can), build e07784c95738, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/form-validation
+=== NAME  TestStdlibMaintained/examples/dashboard
+    stdlib_test.go:240: examples/dashboard: 16 assertions (16 real-can), build b6ad355d60ff, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/files
+=== NAME  TestStdlibMaintained/examples/form-validation
+    stdlib_test.go:240: examples/form-validation: 17 assertions (17 real-can), build 6c18acc67d03, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/crypto
+=== NAME  TestStdlibMaintained/examples/files
+    stdlib_test.go:240: examples/files: 8 assertions (8 real-can), build 5ca94e61ad03, server/cli run covered by applications suite
+=== CONT  TestStdlibMaintained/examples/cookies
+=== NAME  TestStdlibMaintained/examples/crypto
+    stdlib_test.go:240: examples/crypto: 9 assertions (9 real-can), build 38890ddadbfc, server/cli run covered by applications suite
+=== NAME  TestStdlibMaintained/examples/cookies
+    stdlib_test.go:240: examples/cookies: 18 assertions (18 real-can), build ea7631e126fd, server/cli run covered by applications suite
+--- PASS: TestStdlibMaintained (0.06s)
+    --- PASS: TestStdlibMaintained/examples/account-search (8.60s)
+    --- PASS: TestStdlibMaintained/examples/native-ai (8.45s)
+    --- PASS: TestStdlibMaintained/std/text/current (14.94s)
+    --- PASS: TestStdlibMaintained/std/scalars/current (13.61s)
+    --- PASS: TestStdlibMaintained/std/ratio/current (9.91s)
+    --- PASS: TestStdlibMaintained/std/map/current (8.99s)
+    --- PASS: TestStdlibMaintained/examples/websocket (6.02s)
+    --- PASS: TestStdlibMaintained/examples/utilities (7.73s)
+    --- PASS: TestStdlibMaintained/examples/webhook (15.31s)
+    --- PASS: TestStdlibMaintained/examples/stream (6.45s)
+    --- PASS: TestStdlibMaintained/examples/sqlite (4.57s)
+    --- PASS: TestStdlibMaintained/examples/process (4.65s)
+    --- PASS: TestStdlibMaintained/examples/mysql (6.81s)
+    --- PASS: TestStdlibMaintained/examples/markdown (7.05s)
+    --- PASS: TestStdlibMaintained/examples/gallery (17.84s)
+    --- PASS: TestStdlibMaintained/examples/language-site (7.37s)
+    --- PASS: TestStdlibMaintained/examples/invoice-grid (223.88s)
+    --- PASS: TestStdlibMaintained/examples/invoice (223.23s)
+    --- PASS: TestStdlibMaintained/examples/dashboard (8.72s)
+    --- PASS: TestStdlibMaintained/examples/form-validation (7.20s)
+    --- PASS: TestStdlibMaintained/examples/files (5.50s)
+    --- PASS: TestStdlibMaintained/examples/crypto (5.59s)
+    --- PASS: TestStdlibMaintained/examples/cookies (5.34s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	599.703s

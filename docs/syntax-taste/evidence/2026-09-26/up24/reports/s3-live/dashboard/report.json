@@ -1,0 +1,66 @@
+{
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "base": "http://127.0.0.1:18543",
+  "passed": true,
+  "checks": [
+    {
+      "name": "htmx-loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pinned-scripts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "dashboard-poll-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "dashboard-repeated-polls",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-external-requests",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "aborted": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/dashboard",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/__can/project/92484a48ffcea790eee02e52058a883cf5822b6bbbca4718162f0040e6a41e44/site.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/__can/assets/htmx-guard.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/__can/assets/htmx-4.0.0.min.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/dashboard/data",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18543/dashboard/data",
+      "status": 200
+    }
+  ]
+}

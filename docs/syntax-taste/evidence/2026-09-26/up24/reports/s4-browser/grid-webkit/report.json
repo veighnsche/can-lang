@@ -1,0 +1,719 @@
+{
+  "browser": "webkit",
+  "version": "26.0",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+  "base": "http://127.0.0.1:18642",
+  "passed": true,
+  "checks": [
+    {
+      "name": "boot-loads",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "client-identity",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "query-edges",
+      "passed": true,
+      "detail": "missing/invalid/duplicate/malformed keys notice without API calls"
+    },
+    {
+      "name": "edit-totals",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "money-exact",
+      "passed": true,
+      "detail": "live totals and rendered amounts exact to the minor unit"
+    },
+    {
+      "name": "add-line-focus",
+      "passed": true,
+      "detail": "focus lands on id:k3 after attach"
+    },
+    {
+      "name": "move-row-focus",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "remove-row-focus",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "blocked-save",
+      "passed": true,
+      "detail": "notice persists in state across the re-render"
+    },
+    {
+      "name": "rejected-422",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "enter-saves",
+      "passed": true,
+      "detail": "op t1/i7/r3/e12; Enter prevented synchronously"
+    },
+    {
+      "name": "real-keystrokes",
+      "passed": true,
+      "detail": "typed chars survive to the wire; Enter sends the typed draft; restored at rev 7"
+    },
+    {
+      "name": "slow-save-pending",
+      "passed": true,
+      "detail": "saving paints mid-flight and clears on the outcome; mid-flight edit preserved"
+    },
+    {
+      "name": "midflight-press-single-grid",
+      "passed": true,
+      "detail": "ignored press renders nothing; outcome leaves one grid at rev 99"
+    },
+    {
+      "name": "single-flight",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "offline-replay",
+      "passed": true,
+      "detail": "op t1/i7/r10/e20"
+    },
+    {
+      "name": "busy-replay",
+      "passed": true,
+      "detail": "attempt op t1/i7/r11/e21"
+    },
+    {
+      "name": "busy-replay-commit",
+      "passed": true,
+      "detail": "op t1/i7/r11/e21"
+    },
+    {
+      "name": "truncate-replay",
+      "passed": true,
+      "detail": "op t1/i7/r12/e22"
+    },
+    {
+      "name": "garbage-replay",
+      "passed": true,
+      "detail": "op t1/i7/r13/e23"
+    },
+    {
+      "name": "stale-conflict",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "conflict-keep-adopt",
+      "passed": true,
+      "detail": "adopted server revision 15"
+    },
+    {
+      "name": "detached-click-silent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "disposed-response-silent",
+      "passed": true,
+      "detail": "late response on disposed app silent; reboot clean"
+    },
+    {
+      "name": "ghost-denied",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "unavailable-load",
+      "passed": true,
+      "detail": "busy load retries into adopt at rev 15"
+    },
+    {
+      "name": "denied-load",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "reload-no-durability",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "navigation-stable",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-duplicate-ids",
+      "passed": true,
+      "detail": "14 id nodes, all unique"
+    },
+    {
+      "name": "node-count-bounded",
+      "passed": true,
+      "detail": "40 nodes"
+    },
+    {
+      "name": "network-ledger-clean",
+      "passed": true,
+      "detail": "61 requests, 32 invoice calls"
+    }
+  ],
+  "limitations": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=x&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=x",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&tenant=2&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=%E0%A4%A",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": -1
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 503
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": -1
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=2&invoice=8",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/2/invoices/8",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200
+    }
+  ],
+  "ledger": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r1/e2\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"4\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"0.05\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r1/e2\",\"acknowledged\":{\"revision\":\"2\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"4\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"0.05\"}],\"total_minor_units\":8001}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r2/e4\",\"revision\":\"2\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r2/e4\",\"acknowledged\":{\"revision\":\"3\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 422,
+      "requestBody": "{\"operation_id\":\"t1/i7/r3/e11\",\"revision\":\"3\",\"lines\":[{\"key\":\"k1\",\"id\":\"\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_invalid\",\"value\":{\"operation_id\":\"t1/i7/r3/e11\",\"draft\":{\"operation_id\":\"t1/i7/r3/e11\",\"revision\":\"3\",\"lines\":[{\"key\":\"k1\",\"id\":\"\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]},\"errors\":[{\"row_key\":{\"case\":\"option::none\",\"value\":{}},\"field\":\"id\",\"message\":\"empty line id\"}]}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r3/e12\",\"revision\":\"3\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r3/e12\",\"acknowledged\":{\"revision\":\"4\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r4/e13\",\"revision\":\"4\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"5\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r4/e13\",\"acknowledged\":{\"revision\":\"5\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"5\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":10495}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r5/e15\",\"revision\":\"5\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"8\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r5/e15\",\"acknowledged\":{\"revision\":\"6\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"8\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":16492}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r6/e16\",\"revision\":\"6\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r6/e16\",\"acknowledged\":{\"revision\":\"7\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r7/e17\",\"revision\":\"7\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r7/e17\",\"acknowledged\":{\"revision\":\"8\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"2\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4500}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r8/e18\",\"revision\":\"8\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r8/e18\",\"acknowledged\":{\"revision\":\"9\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":6500}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"9\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":6500}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r9/e1\",\"revision\":\"9\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"9\",\"price\":\"20.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"synthetic-probe-op\",\"acknowledged\":{\"revision\":\"99\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"9\",\"price\":\"20.00\"}],\"total_minor_units\":18000}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r9/e19\",\"revision\":\"9\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"21.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r9/e19\",\"acknowledged\":{\"revision\":\"10\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"21.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":6800}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r10/e20\",\"revision\":\"10\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"22.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r10/e20\",\"acknowledged\":{\"revision\":\"11\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"22.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":7100}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 503,
+      "requestBody": "{\"operation_id\":\"t1/i7/r11/e21\",\"revision\":\"11\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"23.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_unavailable\",\"value\":{\"operation_id\":\"t1/i7/r11/e21\",\"message\":\"store unavailable\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r11/e21\",\"revision\":\"11\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"23.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r11/e21\",\"acknowledged\":{\"revision\":\"12\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"23.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":7400}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r12/e22\",\"revision\":\"12\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"24.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"i"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r12/e22\",\"revision\":\"12\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"24.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r12/e22\",\"acknowledged\":{\"revision\":\"13\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"24.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":7700}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r13/e23\",\"revision\":\"13\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"25.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r13/e23\",\"revision\":\"13\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"25.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r13/e23\",\"acknowledged\":{\"revision\":\"14\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"25.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":8000}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"op-up23-race\",\"revision\":\"14\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"op-up23-race\",\"acknowledged\":{\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}],\"total_minor_units\":3998}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 409,
+      "requestBody": "{\"operation_id\":\"t1/i7/r14/e24\",\"revision\":\"14\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"26.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_conflict\",\"value\":{\"operation_id\":\"t1/i7/r14/e24\",\"draft\":{\"operation_id\":\"t1/i7/r14/e24\",\"revision\":\"14\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-9\",\"quantity\":\"3\",\"price\":\"26.00\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]},\"message\":\"stale revision\"}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}],\"total_minor_units\":3998}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}],\"total_minor_units\":3998}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}],\"total_minor_units\":3998}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 403,
+      "requestBody": "{\"operation_id\":\"t1/i7/r15/e1\",\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"28.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_forbidden\",\"value\":{\"operation_id\":\"t1/i7/r15/e1\",\"message\":\"request denied\"}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 503,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_load_unavailable\",\"value\":{\"message\":\"store unavailable\"}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"19.99\"}],\"total_minor_units\":3998}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/2/invoices/8",
+      "status": 403,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_load_forbidden\",\"value\":{\"message\":\"request denied\"}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "{\"operation_id\":\"t1/i7/r15/e1\",\"revision\":\"15\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"28.00\"}]}",
+      "responseBody": "{\"case\":\"invoice_contract::grid_saved\",\"value\":{\"operation_id\":\"t1/i7/r15/e1\",\"acknowledged\":{\"revision\":\"16\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"28.00\"}],\"total_minor_units\":5600}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"16\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"28.00\"}],\"total_minor_units\":5600}}}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18642/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"16\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1\",\"quantity\":\"2\",\"price\":\"28.00\"}],\"total_minor_units\":5600}}}"
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+    "Failed to load resource: WebKit encountered an internal error",
+    "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+  ]
+}

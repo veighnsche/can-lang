@@ -1,0 +1,50 @@
+{
+  "commit": "be95d009180437d361682a6fd37a9b8c442cb86a",
+  "engine": "chromium 140.0.7339.186 + webkit 26.0",
+  "legs": {
+    "control-headers-rejected": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (response/control_header); webkit 26.0 (response/control_header)"
+    },
+    "missing-target-before": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (no request sent; 47 nodes before removal); webkit 26.0 (no request sent; 47 nodes before removal)"
+    },
+    "missing-target-during": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (uncertain target_detached; upstream committed); webkit 26.0 (uncertain target_detached; upstream committed)"
+    },
+    "oob-rejected": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (swap/task_shape); webkit 26.0 (swap/task_shape)"
+    },
+    "partial-rejected": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (swap/task_shape); webkit 26.0 (swap/task_shape)"
+    },
+    "remount-stable": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (4 nodes restored, 5 unique ids); webkit 26.0 (4 nodes restored, 5 unique ids)"
+    },
+    "swap-200": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (); webkit 26.0 ()"
+    },
+    "swap-403": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (); webkit 26.0 ()"
+    },
+    "swap-409": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (); webkit 26.0 ()"
+    },
+    "swap-422": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (); webkit 26.0 ()"
+    },
+    "swap-503": {
+      "verdict": "pass",
+      "evidence": "chromium 140.0.7339.186 (); webkit 26.0 ()"
+    }
+  }
+}

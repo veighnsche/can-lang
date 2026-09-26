@@ -1,0 +1,314 @@
+=== RUN   TestInvoiceContractRoute
+=== PAUSE TestInvoiceContractRoute
+=== RUN   TestInvoiceContractCapture
+=== PAUSE TestInvoiceContractCapture
+=== RUN   TestInvoiceContractField
+=== PAUSE TestInvoiceContractField
+=== RUN   TestInvoiceContractLeaf
+=== PAUSE TestInvoiceContractLeaf
+=== RUN   TestInvoiceContractStatus
+=== PAUSE TestInvoiceContractStatus
+=== RUN   TestInvoiceContractLimit
+=== PAUSE TestInvoiceContractLimit
+=== RUN   TestInvoiceContractBodyMode
+=== PAUSE TestInvoiceContractBodyMode
+=== RUN   TestInvoiceContractManifestMismatch
+=== PAUSE TestInvoiceContractManifestMismatch
+=== RUN   TestInvoiceContractNoRegistration
+=== PAUSE TestInvoiceContractNoRegistration
+=== CONT  TestInvoiceContractRoute
+=== CONT  TestInvoiceContractLimit
+    invoice_contract_test.go:986: grid build cafc987caabd executed 338 assertions
+=== NAME  TestInvoiceContractRoute
+    invoice_contract_test.go:498: grid build a1ef891c7158 executed 338 assertions
+=== NAME  TestInvoiceContractLimit
+    invoice_contract_test.go:987: server build 63b3bcdc77fa executed 344 assertions
+=== NAME  TestInvoiceContractRoute
+    invoice_contract_test.go:499: server build 6d6ac97dfd58 executed 344 assertions
+=== NAME  TestInvoiceContractLimit
+    invoice_contract_test.go:1050: contract live evidence:
+        [
+          {
+            "edit": "limit",
+            "phase": "relock",
+            "detail": "d1c6ff83e8bf"
+          },
+          {
+            "edit": "limit",
+            "phase": "grid-build",
+            "detail": "cafc987caabd0d59336b45981cfbac83a3ddaaf53abbed242e6903d65988fbed"
+          },
+          {
+            "edit": "limit",
+            "phase": "server-build",
+            "detail": "63b3bcdc77fa3c8bf5bb6ed7abdaf7e5d4cb21fa917b88dd3bc3e916b4206937 entry /__can/assets/f2e23ce0ab62f8add7f9f30a966f5b805c44150d0e35eb182c6fe5da7c30bc51.js"
+          },
+          {
+            "edit": "limit",
+            "phase": "http",
+            "detail": "over-limit 413 pre-entry"
+          },
+          {
+            "edit": "limit",
+            "phase": "browser",
+            "detail": "save too large; remove lines and retry, no POST"
+          },
+          {
+            "edit": "limit",
+            "phase": "http-under",
+            "detail": "under-limit 200 rev 2"
+          }
+        ]
+=== NAME  TestInvoiceContractRoute
+    invoice_contract_test.go:594: contract live evidence:
+        [
+          {
+            "edit": "route",
+            "phase": "relock",
+            "detail": "666ac634caac"
+          },
+          {
+            "edit": "route",
+            "phase": "grid-build",
+            "detail": "a1ef891c7158c5e58e8a879ebde8318c8cbee815ec30c40b1728afc78ac5f83c"
+          },
+          {
+            "edit": "route",
+            "phase": "server-build",
+            "detail": "6d6ac97dfd58b6691708ab491460a7524f6441e2960d101b4e202c5a83cddc27 entry /__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js"
+          },
+          {
+            "edit": "route",
+            "phase": "bytes",
+            "detail": "/__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js sha256 f2337fb4cb30"
+          },
+          {
+            "edit": "route",
+            "phase": "load",
+            "detail": "old GET 405, unknown 404, new 200 with live snapshot, malformed 400"
+          },
+          {
+            "edit": "route",
+            "phase": "browser",
+            "detail": "Tenant 1 invoice 7 revision 3 / saved revision 3"
+          }
+        ]
+=== CONT  TestInvoiceContractManifestMismatch
+--- PASS: TestInvoiceContractRoute (195.02s)
+--- PASS: TestInvoiceContractLimit (195.03s)
+=== CONT  TestInvoiceContractNoRegistration
+    invoice_contract_test.go:1235: server build 4b1120392b2f executed 344 assertions
+=== NAME  TestInvoiceContractManifestMismatch
+    invoice_contract_test.go:1165: grid build a1ef891c7158 executed 338 assertions
+=== NAME  TestInvoiceContractNoRegistration
+    invoice_contract_test.go:1270: contract live evidence:
+        [
+          {
+            "edit": "no-register",
+            "phase": "server-build",
+            "detail": "4b1120392b2f622f3975aa39e199f9cebde344e93a64161c2eb0ba5728e1f225"
+          },
+          {
+            "edit": "no-register",
+            "phase": "http",
+            "detail": "all actions 404, health and shell 200, no effects"
+          }
+        ]
+--- PASS: TestInvoiceContractNoRegistration (91.38s)
+=== CONT  TestInvoiceContractLeaf
+    invoice_contract_test.go:813: grid build 8ebcdfe45555 executed 338 assertions
+=== NAME  TestInvoiceContractManifestMismatch
+    invoice_contract_test.go:1167: grid build 6f08a02a1aae executed 338 assertions
+=== NAME  TestInvoiceContractLeaf
+    invoice_contract_test.go:814: server build 4865dfbc3c1e executed 344 assertions
+    invoice_contract_test.go:881: contract live evidence:
+        [
+          {
+            "edit": "leaf",
+            "phase": "relock",
+            "detail": "f5ed164e8fe1"
+          },
+          {
+            "edit": "leaf",
+            "phase": "grid-build",
+            "detail": "8ebcdfe45555cd5a7a9abb5460ea0d392fc80ef79ab7fe2786508a60f83ac81c"
+          },
+          {
+            "edit": "leaf",
+            "phase": "server-build",
+            "detail": "4865dfbc3c1ea16a65a58c464deef151d932ea09071644ab94bc0298efed5a50 entry /__can/assets/c2cf637434a54a4d14c134f3be5aa8d6dcb2724dffae1aa961f1a6e4819f8ece.js"
+          },
+          {
+            "edit": "leaf",
+            "phase": "http",
+            "detail": "422 grid_rejected, then 200"
+          },
+          {
+            "edit": "leaf",
+            "phase": "browser",
+            "detail": "id: empty line id"
+          }
+        ]
+--- PASS: TestInvoiceContractLeaf (165.80s)
+=== CONT  TestInvoiceContractStatus
+=== NAME  TestInvoiceContractManifestMismatch
+    invoice_contract_test.go:1206: server build 6d6ac97dfd58 executed 344 assertions
+    invoice_contract_test.go:1208: contract live evidence:
+        [
+          {
+            "edit": "manifest",
+            "phase": "grid-build",
+            "detail": "edited a1ef891c7158 pristine 6f08a02a1aae"
+          },
+          {
+            "edit": "manifest",
+            "phase": "old-client-new-server",
+            "detail": "browser manifest locks shared instance \"can.project.lineage/billing\" differently than the server project"
+          },
+          {
+            "edit": "manifest",
+            "phase": "tampered",
+            "detail": "browser manifest path must name the browser/manifest.json of one staged browser generation"
+          },
+          {
+            "edit": "manifest",
+            "phase": "matched",
+            "detail": "6d6ac97dfd58 entry /__can/assets/f2337fb4cb30266114bbb5ef67a6c8a189288c295574dcc4700c4dd3c8c66f7b.js"
+          }
+        ]
+--- PASS: TestInvoiceContractManifestMismatch (257.59s)
+=== CONT  TestInvoiceContractField
+=== NAME  TestInvoiceContractStatus
+    invoice_contract_test.go:913: grid build 120225dfb068 executed 338 assertions
+=== NAME  TestInvoiceContractField
+    invoice_contract_test.go:710: grid build 9624ca101ddb executed 338 assertions
+=== NAME  TestInvoiceContractStatus
+    invoice_contract_test.go:914: server build b4be2366d439 executed 344 assertions
+=== NAME  TestInvoiceContractField
+    invoice_contract_test.go:711: server build 099f1998e7fb executed 344 assertions
+=== NAME  TestInvoiceContractStatus
+    invoice_contract_test.go:968: contract live evidence:
+        [
+          {
+            "edit": "status",
+            "phase": "relock",
+            "detail": "187989148768"
+          },
+          {
+            "edit": "status",
+            "phase": "grid-build",
+            "detail": "120225dfb068a8566a6e18b8cfcb7cb7ea4f77d2a80651f0df956d86ab91f0de"
+          },
+          {
+            "edit": "status",
+            "phase": "server-build",
+            "detail": "b4be2366d43985b709ad0742d26d9e075583b6ccd02367fe305d67bd18739932 entry /__can/assets/4be1f37bafb246ced66ceca3036f3cf68f7ce3cc57cfd9825c174e0bd78b0052.js"
+          },
+          {
+            "edit": "status",
+            "phase": "browser",
+            "detail": "Tenant 1 invoice 7 revision 3 / saved revision 3"
+          }
+        ]
+=== NAME  TestInvoiceContractField
+    invoice_contract_test.go:775: contract live evidence:
+        [
+          {
+            "edit": "field",
+            "phase": "relock",
+            "detail": "8debc04bad96"
+          },
+          {
+            "edit": "field",
+            "phase": "grid-build",
+            "detail": "9624ca101ddbf5ab620d00654194cb3ccc8592645a5e40b90bf9312031b19b25"
+          },
+          {
+            "edit": "field",
+            "phase": "server-build",
+            "detail": "099f1998e7fb2c18ef6747553a5c6895f57ad4d2dade965911f5ca090c84c835 entry /__can/assets/d242105f20dca6f28ea0310ab609a7584058e640f95e9bb14dec80120d1c0d74.js"
+          },
+          {
+            "edit": "field",
+            "phase": "http",
+            "detail": "new field 200 rev 2, old field rejected without mutation"
+          },
+          {
+            "edit": "field",
+            "phase": "browser",
+            "detail": "Tenant 1 invoice 7 revision 3 / saved revision 3"
+          }
+        ]
+--- PASS: TestInvoiceContractStatus (152.43s)
+=== CONT  TestInvoiceContractCapture
+--- PASS: TestInvoiceContractField (152.02s)
+=== CONT  TestInvoiceContractBodyMode
+=== NAME  TestInvoiceContractCapture
+    invoice_contract_test.go:632: grid build d3eb4a54dd5b executed 338 assertions
+=== NAME  TestInvoiceContractBodyMode
+    invoice_contract_test.go:1097: server build 2583351d5de5 executed 344 assertions
+=== NAME  TestInvoiceContractCapture
+    invoice_contract_test.go:633: server build 2da37901086c executed 344 assertions
+=== NAME  TestInvoiceContractBodyMode
+    invoice_contract_test.go:1130: server build e07784c95738 executed 344 assertions
+    invoice_contract_test.go:1145: contract live evidence:
+        [
+          {
+            "edit": "body-mode",
+            "phase": "relock",
+            "detail": "f56e97252ce7"
+          },
+          {
+            "edit": "body-mode",
+            "phase": "grid-stale",
+            "detail": "concrete function can.project.root/web::fetch_save: /private/var/folders/5x/bpszcvmj1tddmjp35y21dt680000gn/T/TestInvoiceContractBodyMode1996650290/001/grid/src/web/web.can region can.project.root/web::fetch_save: action::post requires a JSON POST action, but \"contract::save_invoice_grid\" is HTML POST"
+          },
+          {
+            "edit": "body-mode",
+            "phase": "server-build",
+            "detail": "2583351d5de5ce24cf3e69255822a7339b667ab93b5dd3e6219c10cceef6bf6e html-only"
+          },
+          {
+            "edit": "body-mode",
+            "phase": "http",
+            "detail": "form 200 html, json 415, load 200"
+          },
+          {
+            "edit": "body-mode",
+            "phase": "base-json",
+            "detail": "html 415, json 200 application/json"
+          }
+        ]
+--- PASS: TestInvoiceContractBodyMode (156.76s)
+=== NAME  TestInvoiceContractCapture
+    invoice_contract_test.go:686: contract live evidence:
+        [
+          {
+            "edit": "capture",
+            "phase": "relock",
+            "detail": "073a9e3bba62"
+          },
+          {
+            "edit": "capture",
+            "phase": "grid-build",
+            "detail": "d3eb4a54dd5bbb619d22823965d0dd885769b93ae60a8fdacd892c2131167bc2"
+          },
+          {
+            "edit": "capture",
+            "phase": "server-build",
+            "detail": "2da37901086c6f1089a1a35b4e9e1ddc9fbb5960912ba4abc4f6d144df3bdd41 entry /__can/assets/e31030829111368d5bd6df1a4fcf39f6964f2600a557aa1233d5ff549a749fa7.js"
+          },
+          {
+            "edit": "capture",
+            "phase": "http",
+            "detail": "load/save 200 through the renamed capture, malformed 400"
+          },
+          {
+            "edit": "capture",
+            "phase": "browser",
+            "detail": "Tenant 1 invoice 7 revision 3 / saved revision 3"
+          }
+        ]
+--- PASS: TestInvoiceContractCapture (158.04s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	762.822s

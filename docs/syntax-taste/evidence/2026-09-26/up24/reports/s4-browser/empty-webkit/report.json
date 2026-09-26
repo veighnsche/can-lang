@@ -1,0 +1,62 @@
+{
+  "browser": "webkit",
+  "version": "26.0",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+  "base": "http://127.0.0.1:18646",
+  "passed": true,
+  "checks": [
+    {
+      "name": "served-shell",
+      "passed": true,
+      "detail": "shell intact, single paired script"
+    },
+    {
+      "name": "paired-startup-clean",
+      "passed": true,
+      "detail": "module executed, no faults, DOM untouched"
+    },
+    {
+      "name": "served-map-table",
+      "passed": true,
+      "detail": "map 55 sources, sealed table"
+    },
+    {
+      "name": "network-ledger-clean",
+      "passed": true,
+      "detail": "4 loopback requests"
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18646/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18646/__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18646/__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18646/__can/assets/c7a468fd9bfdf8bb5529caabb90924d5828a83846adeeb5a49ee7501f8ced05f.js.map",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18646/__can/assets/cca92ca6e47f5285e549d55ae6ac3f635c6a4610193368814da93976967ab3c0.json",
+      "status": 200
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+  ]
+}

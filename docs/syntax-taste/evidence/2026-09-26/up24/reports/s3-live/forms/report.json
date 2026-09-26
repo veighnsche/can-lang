@@ -1,0 +1,86 @@
+{
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "base": "http://127.0.0.1:18541",
+  "passed": true,
+  "checks": [
+    {
+      "name": "htmx-loaded",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "pinned-scripts",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-inline-handlers",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "csp-header",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "form-422-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "form-200-swap",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "hostile-escaped",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-external-requests",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "aborted": [],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18541/signup",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18541/__can/project/92484a48ffcea790eee02e52058a883cf5822b6bbbca4718162f0040e6a41e44/site.css",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18541/__can/assets/htmx-guard.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18541/__can/assets/htmx-4.0.0.min.js",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18541/signup/validate",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18541/signup/validate",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18541/signup/validate",
+      "status": 200
+    }
+  ]
+}

@@ -20,6 +20,16 @@ reconciled with current source and the later final acceptance record. The
 shared action binding, browser runtime delivery and UI acceptance. Recorded
 test passes qualify their tested paths; they do not close those requirements.
 
+**Post-upgrade implementation status (26 September 2026):** the 11
+selected fixes are implemented and staged-qualified; the [fix
+evidence](post-upgrade-fix-evidence-2026-09-26.md) links each row to
+shipped source and passing tests, and the [clean-build
+recipe](post-upgrade-clean-build-2026-09-26.md) reproduces the
+qualification. The dated notes in §§1–2 supersede the pre-fix
+sentences they annotate; those sentences stay as history of the
+24 September baseline. Installed-target evidence (UP25) is deferred to
+the x86 Linux machine; nothing below claims an installed run.
+
 ## 1. Supported platforms
 
 ### 1.1 Server runtime
@@ -53,6 +63,13 @@ reports the installed-artifact Linux rerun passing, including the shutdown
 suite. This is recorded qualification under emulation, not evidence of a new
 native (non-emulated) linux/amd64 run or arbitrary Linux-host coverage.
 
+Post-upgrade staged acceptance (26 September 2026) reran the full
+tree on darwin/arm64 at the fix candidate: Gate 3/4 server suites,
+Gate 5 browser matrix (Chromium 140.0.7339.186, WebKit 26.0) and the
+invoice suites pass; see the [fix evidence](post-upgrade-fix-evidence-2026-09-26.md)
+and the [clean-build recipe](post-upgrade-clean-build-2026-09-26.md#full-staged-qualification).
+The native linux/amd64 installed rerun remains the deferred UP25 step.
+
 ### 1.2 Browser matrix
 
 Qualified by the Gate 5 grid matrix
@@ -73,6 +90,15 @@ bundling path. Server projects are rejected for the browser target (9 SQL
 descriptors in the invoice project exercise that rejection). The artifact
 audit's text scan and skipped runtime bodies are remaining gaps.
 
+The preceding paragraph is the 24 September baseline. Since the
+upgrade, `canlc build --target browser` produces a served-ready
+content-addressed module, source map, diagnostic table and manifest
+through the compiler-owned bundle stage, and `canlc build
+--browser-manifest <file>` verifies the server/browser pairing (U04);
+no test bundler enters the supported path. The audit is structural
+over every generated, dependency and runtime module plus the final
+bundled bytes (B01). Current evidence: [U04 and B01 rows](post-upgrade-fix-evidence-2026-09-26.md#b01--structural-browser-audit).
+
 ### 1.3 What is not supported
 
 No worker profile, no authored JS/TS in browser code, no arbitrary
@@ -90,7 +116,8 @@ The form action is mounted through its typed adapter in
 routes. The declared captured GET is not the mounted `/invoices/load` query
 route. The browser test rewrites between them, and the grid duplicates action
 declarations with stub handlers. The three server declarations are quoted below;
-their presence does not establish shared contextual mounting:
+their presence does not establish shared contextual mounting (24 September
+baseline; superseded — see the note after the listing):
 
 ```text
 action save_invoice
@@ -129,6 +156,17 @@ action load_invoice
         records::load_busy => 503
 ```
 
+The listing above is the pre-upgrade spelling. Since the upgrade,
+actions are handler-free declarations in one shared locked package
+([`invoice_contract.can`](../../shared/invoice-contract/src/invoice_contract/invoice_contract.can)):
+`action` rows declare method, path, captures, body mode, result and
+cases; `handles` is a removal diagnostic; handlers bind separately at
+the server via `action::mount`, which consumes the action symbol plus
+an exactly-shaped callback and returns an `http::route` (U01/U02).
+The declared captured path is the mounted route — no test rewrite —
+and contract edits rebuild both targets or diagnose (U03). Current
+evidence: [U01–U03 rows](post-upgrade-fix-evidence-2026-09-26.md#u01--shared-handler-free-action-declaration).
+
 ### 2.1 JSON POST-save and bodyless GET-load
 
 - POST carries `body json <wire>`; GET carries no body. A GET with a
@@ -150,11 +188,13 @@ action load_invoice
 - JSON wire types reject form-only rows and owner records
   (`compiler/internal/check` JSON body checks;
   `bun test runtime/test/action-json.test.ts`, 14 pass).
-- Consumers of the same action symbol use checked metadata. The current
-  invoice/grid projects duplicate declarations, so cross-project edits can
-  drift without a diagnostic. Gate 5 records route/wire/unlinked-server
-  limitations; its passing result is not proof of the earlier shared-contract
-  edit-propagation requirement.
+- Consumers of the same action symbol use checked metadata. Before the
+  upgrade the invoice/grid projects duplicated declarations, so
+  cross-project edits could drift without a diagnostic. Since the
+  upgrade both targets import the same locked package instance and
+  route/capture/field/leaf/body edits propagate or diagnose (U01/U03);
+  the old Gate 5 rewrite/wire/unlink limitations are gone with the
+  origin proxy.
 
 ### 2.2 Keyed-row form POST
 
@@ -165,18 +205,21 @@ action load_invoice
   Duplicate, unknown and partial rows are rejected while known-raw
   values are retained for redisplay.
 - `http::serve_form_action` binds the three server callables for one
-  form action: the valid-wire handler named by the action's
-  `handles` row, the outcome renderer, and the structural-422
+  form action: the valid-wire handler supplied at `action::mount`,
+  the outcome renderer, and the structural-422
   renderer (`compiler/internal/catalogue/catalogue.json`,
-  `can.std.http@1::serve_form_action`).
+  `can.std.http@1::serve_form_action`). The pre-upgrade `handles`
+  row no longer exists (U01).
 - Field and row names come from checked builders; rendering uses
   safe `html::safe` builders with values escaped at serialization.
-  The emitted HTMX policy swaps exactly 200–399 and 422
-  (`runtime/platform/html.ts`: `noSwap` holds 204/304 and every
-  4xx/5xx except 422); 409/403/503 fragments are served but never
-  swapped into the form target.
-  This remains short of the [accepted visible-503 requirement](preparation/integrated-action-contract.md#request-operation-and-response-policy);
-  the product matrix's recorded pass does not supersede that requirement.
+  The emitted policy keeps `noSwap: [204, 304, "4xx", "5xx"]` and
+  admits exactly the checked HTML action's declared cases through
+  generated `hx-status:<code>` attributes, so 200/422/409/403/503
+  fragments swap into their connected targets
+  (`runtime/platform/html.ts`, compiler-owned
+  `runtime/platform/htmx-guard.ts`). The accepted visible-503
+  requirement is now met (S01); the pre-upgrade "served but never
+  swapped" sentence is history.
 
 ### 2.3 Routes and captures
 
@@ -349,6 +392,14 @@ catalogue (opaque `browser::app`/`browser::view`/`browser::node`/
 `browser::state` handles, T22). The native-judgment agent-comparison
 candidate is deferred with the current idiom retained; see
 `tests/baseline/candidates/T26-native-ai/README.md`.
+
+Post-upgrade boundary note (26 September 2026): the current
+retained/deferred boundary is the [disposition
+ledger](post-upgrade-dispositions-2026-09-24.md) — 19 deferred
+proposals plus 9 retentions — not the DI list above alone. The
+[completion audit](post-upgrade-completion-audit-2026-09-26.md)
+re-verifies every exclusion; none of the deferred behavior is
+described as shipped anywhere in this guide.
 
 ## 9. Consultations and agent comparisons
 

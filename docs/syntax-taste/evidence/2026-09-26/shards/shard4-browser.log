@@ -1,0 +1,150 @@
+=== RUN   TestCurrentBrowserAssets
+=== PAUSE TestCurrentBrowserAssets
+=== RUN   TestCurrentPairedAssets
+=== PAUSE TestCurrentPairedAssets
+=== RUN   TestBrowserBuildTarget
+=== PAUSE TestBrowserBuildTarget
+=== RUN   TestBrowserWireCodecParity
+=== PAUSE TestBrowserWireCodecParity
+=== RUN   TestGate5ServedMatrix
+=== PAUSE TestGate5ServedMatrix
+=== RUN   TestGate5GridStatic
+=== PAUSE TestGate5GridStatic
+=== CONT  TestCurrentBrowserAssets
+=== CONT  TestBrowserWireCodecParity
+    browser_build_test.go:805: codec parity required browser chromium at 140.0.7339.186
+    browser_build_test.go:805: codec parity required browser webkit at 26.0
+=== RUN   TestBrowserWireCodecParity/chromium
+    browser_build_test.go:921: chromium 140.0.7339.186 rawJSON=true Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36
+=== RUN   TestBrowserWireCodecParity/webkit
+    browser_build_test.go:922: webkit 26.0 rawJSON=true Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15
+=== RUN   TestBrowserWireCodecParity/firefox
+    browser_build_test.go:923: firefox unavailable, skipping: node:internal/modules/run_main:107
+            triggerUncaughtException(
+            ^
+        
+        browserType.launch: Executable doesn't exist at /Users/vince/Library/Caches/ms-playwright/firefox-1490/firefox/Nightly.app/Contents/MacOS/firefox
+        ╔═════════════════════════════════════════════════════════════════════════╗
+        ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+        ║ Please run the following command to download new browsers:              ║
+        ║                                                                         ║
+        ║     npx playwright install                                              ║
+        ║                                                                         ║
+        ║ <3 Playwright Team                                                      ║
+        ╚═════════════════════════════════════════════════════════════════════════╝
+            at /Users/vince/Projects/can-lang/tests/integration/browser/codec-parity.mjs:16:42 {
+          name: 'Error'
+        }
+        
+        Node.js v24.21.0
+    browser_build_test.go:923: firefox unavailable: exit status 1
+--- PASS: TestBrowserWireCodecParity (2.25s)
+    --- PASS: TestBrowserWireCodecParity/chromium (0.28s)
+    --- PASS: TestBrowserWireCodecParity/webkit (0.78s)
+    --- SKIP: TestBrowserWireCodecParity/firefox (0.13s)
+=== CONT  TestGate5GridStatic
+    gate5_frontend_test.go:1229: gate5 capability: server project rejected for --target browser: browser entry must be an exported non-generic void main with no arguments and emits []
+    gate5_frontend_test.go:1254: gate5 static: capability closure rejects the server browser build, grid sets no timers
+--- PASS: TestGate5GridStatic (0.16s)
+=== CONT  TestGate5ServedMatrix
+    gate5_frontend_test.go:1122: gate5 host bound: staged bundle on darwin/arm64 bun 1.4.2 rev 744846f84437 (archive sha256 90987a3a16d7)
+    gate5_frontend_test.go:1129: gate5 required browser chromium at 140.0.7339.186
+    gate5_frontend_test.go:1129: gate5 required browser webkit at 26.0
+=== NAME  TestCurrentBrowserAssets
+    assets_test.go:546: browser chromium 140.0.7339.186: 12 checks, 12 loopback requests
+--- PASS: TestCurrentBrowserAssets (6.65s)
+=== CONT  TestBrowserBuildTarget
+=== RUN   TestBrowserBuildTarget/pure_multi-package_project_ships_the_browser_root
+=== RUN   TestBrowserBuildTarget/same_project_still_builds_for_bun
+=== RUN   TestBrowserBuildTarget/combined_flags
+=== RUN   TestBrowserBuildTarget/worker_target_rejected
+=== RUN   TestBrowserBuildTarget/server_capability_diagnosed
+=== RUN   TestBrowserBuildTarget/empty_app_builds_a_verified_bundle
+=== RUN   TestBrowserBuildTarget/bundle_publishes_verified_outputs
+=== RUN   TestBrowserBuildTarget/repeated_clean_builds_are_identical
+=== RUN   TestBrowserBuildTarget/failing_assertions_prevent_browser_publication
+=== RUN   TestBrowserBuildTarget/tampered_bundle_prevents_publication
+=== RUN   TestBrowserBuildTarget/missing_map_prevents_publication
+=== RUN   TestBrowserBuildTarget/profile-unavailable_operations_diagnose
+--- PASS: TestBrowserBuildTarget (62.32s)
+    --- PASS: TestBrowserBuildTarget/pure_multi-package_project_ships_the_browser_root (3.81s)
+    --- PASS: TestBrowserBuildTarget/same_project_still_builds_for_bun (4.39s)
+    --- PASS: TestBrowserBuildTarget/combined_flags (6.03s)
+    --- PASS: TestBrowserBuildTarget/worker_target_rejected (0.14s)
+    --- PASS: TestBrowserBuildTarget/server_capability_diagnosed (6.45s)
+    --- PASS: TestBrowserBuildTarget/empty_app_builds_a_verified_bundle (5.53s)
+    --- PASS: TestBrowserBuildTarget/bundle_publishes_verified_outputs (5.53s)
+    --- PASS: TestBrowserBuildTarget/repeated_clean_builds_are_identical (7.55s)
+    --- PASS: TestBrowserBuildTarget/failing_assertions_prevent_browser_publication (1.28s)
+    --- PASS: TestBrowserBuildTarget/tampered_bundle_prevents_publication (4.73s)
+    --- PASS: TestBrowserBuildTarget/missing_map_prevents_publication (9.40s)
+    --- PASS: TestBrowserBuildTarget/profile-unavailable_operations_diagnose (7.39s)
+=== CONT  TestCurrentPairedAssets
+--- PASS: TestCurrentPairedAssets (53.25s)
+=== NAME  TestGate5ServedMatrix
+    gate5_frontend_test.go:1167: gate5 builds: server 344 assertions (344 real-can); grid 338 roots browser 6f08a02a1aae paired 17865f1ad11b; fixture 39 roots browser ef723bbff7e0 paired d3ea4b44c21f; empty 1 roots browser c821df20ae58 paired cc63ce1d727b
+=== RUN   TestGate5ServedMatrix/grid
+    gate5_frontend_test.go:1174: grid pairing: shell carries /__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js once, script 3886675 bytes, map 59 sources, sealed table, health untouched
+    gate5_frontend_test.go:1174: gate5 grid chromium 140.0.7339.186: 32 checks, 61 loopback requests, 32 invoice calls, rev 16 committed with 15 replay rows
+    gate5_frontend_test.go:1175: grid pairing: shell carries /__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js once, script 3886675 bytes, map 59 sources, sealed table, health untouched
+    gate5_frontend_test.go:1175: gate5 grid webkit 26.0: 32 checks, 61 loopback requests, 32 invoice calls, rev 16 committed with 15 replay rows
+=== RUN   TestGate5ServedMatrix/conformance
+    gate5_frontend_test.go:1178: conformance pairing: shell carries /__can/assets/220dea5a06ae430d9f8c128a29253e35c63b4cb97fa7c23cd0e01e51aad45643.js once, script 1302448 bytes, map 56 sources, sealed table, health untouched
+    gate5_frontend_test.go:1178: gate5 conformance chromium 140.0.7339.186: 17 checks, 31 loopback requests, database untouched
+    gate5_frontend_test.go:1179: conformance pairing: shell carries /__can/assets/220dea5a06ae430d9f8c128a29253e35c63b4cb97fa7c23cd0e01e51aad45643.js once, script 1302448 bytes, map 56 sources, sealed table, health untouched
+    gate5_frontend_test.go:1179: gate5 conformance webkit 26.0: 17 checks, 31 loopback requests, database untouched
+=== RUN   TestGate5ServedMatrix/empty
+    gate5_frontend_test.go:1182: empty pairing: shell carries /__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js once, script 613075 bytes, map 55 sources, sealed table, health untouched
+    gate5_frontend_test.go:1182: gate5 empty chromium 140.0.7339.186: 4 checks, degenerate program booted from served bytes
+    gate5_frontend_test.go:1183: empty pairing: shell carries /__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js once, script 613075 bytes, map 55 sources, sealed table, health untouched
+    gate5_frontend_test.go:1183: gate5 empty webkit 26.0: 4 checks, degenerate program booted from served bytes
+=== RUN   TestGate5ServedMatrix/invoice
+    gate5_frontend_test.go:1186: gate5 invoice chromium 140.0.7339.186: 20 checks, 6 guard occurrences, rev 5 committed with 4 replay rows
+    gate5_frontend_test.go:1187: gate5 invoice webkit 26.0: 20 checks, 5 guard occurrences, rev 5 committed with 4 replay rows
+=== NAME  TestGate5ServedMatrix
+    gate5_frontend_test.go:1204: gate5 report:
+        {
+          "empty": {
+            "browser": "c821df20ae5804f53d80a5dc0625ab7e800d07964d20aed88d069ef59a4caa89",
+            "entry": "/__can/assets/38941a81d77fd0009b905c0b809998527cf294316da9917554b3068f5c5a9d34.js",
+            "paired": "cc63ce1d727b6b14d86750871c6b044a57914754c6e26467f53ebfb1b7aaa046",
+            "roots": 1
+          },
+          "fixture": {
+            "browser": "ef723bbff7e0fc1d6ad255cfab3290b5c23d6757e94d594f0274d5c16c3e46b1",
+            "entry": "/__can/assets/220dea5a06ae430d9f8c128a29253e35c63b4cb97fa7c23cd0e01e51aad45643.js",
+            "paired": "d3ea4b44c21f2b43035d4da2836b40f30595fe8ee54f4779f20eba08b5a94872",
+            "roots": 39
+          },
+          "grid": {
+            "browser": "6f08a02a1aae4770a567fe0b32a86e6abbde111203402564cf7118f3ef2b132c",
+            "entry": "/__can/assets/058931859088f52ef984ba532cfe007b56858a197ac19506455001c6afd59ee2.js",
+            "paired": "17865f1ad11b0b2aa41ad969e6693986b7b181920f84017fbd831a7e85fb50e8",
+            "roots": 338
+          },
+          "host": {
+            "architecture": "arm64",
+            "bun": "1.4.2",
+            "platform": "darwin",
+            "revision": "744846f844374847c902b5e7fd59b4342a51ef99"
+          },
+          "limitations": [
+            "L-redirect-webkit: no same-origin 302 is producible under WebKit interception; the redirect guard branch is qualified on Chromium"
+          ],
+          "matrix": {
+            "chromium": "140.0.7339.186",
+            "webkit": "26.0"
+          },
+          "mode": "staged bundle",
+          "server": {
+            "assertions": 344,
+            "real_can": 344
+          }
+        }
+--- PASS: TestGate5ServedMatrix (476.19s)
+    --- PASS: TestGate5ServedMatrix/grid (58.72s)
+    --- PASS: TestGate5ServedMatrix/conformance (6.83s)
+    --- PASS: TestGate5ServedMatrix/empty (4.44s)
+    --- PASS: TestGate5ServedMatrix/invoice (22.88s)
+PASS
+ok  	github.com/veighnsche/can-lang/tests/integration	478.902s
