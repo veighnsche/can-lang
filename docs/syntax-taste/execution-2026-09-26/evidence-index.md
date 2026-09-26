@@ -9,6 +9,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | C07 | done (DOC-invoice) | main `6fe2bc46` (worker `e0474712`) | macOS darwin-arm64, bun 1.4.2 dist | `canlc assert examples/invoice`: 344/344 passed, exit 0; intended startup rejection via `env::invalid_name("")` | pass |
 | H01 | done (register open) | main `3c672e77` (worker `f197c925`) | n/a (docs) | `distribution/provisioning-register.md` reviewed: 6 provisions tracked separately, credential env-names only, no values | pass |
 | H09 | done (DOC-Linux) | main `58060191` (worker `d69be330`) | n/a (docs) | both README sentences corrected; link targets `distribution/target-linux-amd64.json`, `distribution/linux/README.md` verified present; no UP25 pass claimed | pass |
+| E01 | done (C-C foundations) | main `2224e1b4` (worker `6e9914f6`) | macOS, bun 1.4.2 | `bun test runtime/test/request-budget.test.ts`: 6/6 pass; `bun run check:runtime` green; new files only (request-budget.ts, test, request-policy.md) | pass |
 
 ## Conditional branches
 
