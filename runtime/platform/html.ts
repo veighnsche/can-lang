@@ -526,7 +526,7 @@ export function createHTML(
       const config = JSON.stringify({ mode: "same-origin", noSwap });
       return success(
         node(
-          `<meta name="htmx-config" content="${escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script><script type="module" src="/__can/assets/htmx-guard.js" integrity="sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"></script>`,
+          `<meta name="htmx-config" content="${escapeHTML(config)}"><script defer src="/__can/assets/htmx-4.0.0.min.js" integrity="sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"></script><script type="module" src="/__can/assets/htmx-guard.js" integrity="sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ"></script>`,
           "runtime",
           true,
         ),

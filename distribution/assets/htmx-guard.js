@@ -32,6 +32,34 @@ function controlHeaderName(name) {
 function taskStyle(task) {
   return isObject(task.swapSpec) ? task.swapSpec.style : undefined;
 }
+const generationHeaderName = "can-generation";
+const generationSlotAttribute = "data-can-generation";
+const generationPattern = /^[0-9a-f]{64}$/;
+function readGenerationSlot(host) {
+  if (!isObject(host))
+    return;
+  const query = host["querySelector"];
+  if (typeof query !== "function")
+    return;
+  let node;
+  try {
+    node = query.call(host, `script[${generationSlotAttribute}]`);
+  } catch {
+    return;
+  }
+  if (!isObject(node))
+    return;
+  const get = node["getAttribute"];
+  if (typeof get !== "function")
+    return;
+  let slot;
+  try {
+    slot = get.call(node, generationSlotAttribute);
+  } catch {
+    return;
+  }
+  return typeof slot === "string" && generationPattern.test(slot) ? slot : undefined;
+}
 function occurrence(kind, phase, status, effect, reason, header) {
   return Object.freeze(header === undefined ? { kind, phase, status, effect, reason } : { kind, phase, status, effect, reason, header });
 }
@@ -246,9 +274,21 @@ export function installHTMXGuard(host, options = {}) {
       return checkSwapTasks(ctx, tasks, captured);
     }, event);
   };
+  const onConfig = (event) => {
+    const slot = readGenerationSlot(host);
+    if (slot === undefined)
+      return;
+    const ctx = readContext(event.detail);
+    const request = isObject(ctx) ? ctx["request"] : undefined;
+    const headers = isObject(request) ? request["headers"] : undefined;
+    if (!isObject(headers))
+      return;
+    headers[generationHeaderName] = slot;
+  };
   host.addEventListener("htmx:before:request", onRequest);
   host.addEventListener("htmx:before:response", onResponse);
   host.addEventListener("htmx:before:swap", onSwap);
+  host.addEventListener("htmx:config:request", onConfig);
   let installed = true;
   return () => {
     if (!installed)
@@ -257,6 +297,7 @@ export function installHTMXGuard(host, options = {}) {
     host.removeEventListener("htmx:before:request", onRequest);
     host.removeEventListener("htmx:before:response", onResponse);
     host.removeEventListener("htmx:before:swap", onSwap);
+    host.removeEventListener("htmx:config:request", onConfig);
     targets = new WeakMap;
     globals.__canHtmxGuard = false;
   };

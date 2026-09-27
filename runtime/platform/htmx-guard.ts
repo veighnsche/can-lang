@@ -18,6 +18,10 @@
 //   content rides along otherwise). An admitted swap proceeds only for
 //   exactly one `main` task with `innerHTML` style against the same
 //   still-connected node captured at submission.
+// - `htmx:config:request`: the live document generation slot stamps
+//   the outgoing headers, so htmx form actions handshake exactly
+//   like JSON actions. Slotless pages send nothing; stamping never
+//   cancels and reports nothing.
 //
 // Every cancellation reports one frozen, sanitized occurrence: finite
 // kind/phase/reason enums, the received HTTP status (never a body,
@@ -136,6 +140,38 @@ function controlHeaderName(name: string): string | undefined {
 
 function taskStyle(task: GuardTask): unknown {
   return isObject(task.swapSpec) ? (task.swapSpec as GuardSwapSpec).style : undefined;
+}
+
+// Paired-generation identity for htmx traffic (C-H). Mirrors the
+// handshake vocabulary in runtime/platform/action-routes.ts, which
+// this zero-import module cannot import; keep the literals in sync.
+const generationHeaderName = "can-generation";
+const generationSlotAttribute = "data-can-generation";
+const generationPattern = /^[0-9a-f]{64}$/;
+
+function readGenerationSlot(host: unknown): string | undefined {
+  if (!isObject(host)) return undefined;
+  const query = (host as Record<string, unknown>)["querySelector"];
+  if (typeof query !== "function") return undefined;
+  let node: unknown;
+  try {
+    node = (query as (selectors: string) => unknown).call(
+      host,
+      `script[${generationSlotAttribute}]`,
+    );
+  } catch {
+    return undefined;
+  }
+  if (!isObject(node)) return undefined;
+  const get = (node as Record<string, unknown>)["getAttribute"];
+  if (typeof get !== "function") return undefined;
+  let slot: unknown;
+  try {
+    slot = (get as (name: string) => unknown).call(node, generationSlotAttribute);
+  } catch {
+    return undefined;
+  }
+  return typeof slot === "string" && generationPattern.test(slot) ? slot : undefined;
 }
 
 export type GuardVerdict = Readonly<{
@@ -477,9 +513,24 @@ export function installHTMXGuard(host: GuardHost, options: GuardOptions = {}): (
       return checkSwapTasks(ctx, tasks, captured);
     }, event);
   };
+  // Stamping is not guarding: a present slot joins the headers, a
+  // missing or malformed one sends nothing, and the request always
+  // proceeds. The server fails a missing header closed.
+  const onConfig = (event: GuardEvent): void => {
+    const slot = readGenerationSlot(host);
+    if (slot === undefined) return;
+    const ctx = readContext(event.detail);
+    const request = isObject(ctx)
+      ? (ctx as unknown as Record<string, unknown>)["request"]
+      : undefined;
+    const headers = isObject(request) ? (request as Record<string, unknown>)["headers"] : undefined;
+    if (!isObject(headers)) return;
+    (headers as Record<string, unknown>)[generationHeaderName] = slot;
+  };
   host.addEventListener("htmx:before:request", onRequest);
   host.addEventListener("htmx:before:response", onResponse);
   host.addEventListener("htmx:before:swap", onSwap);
+  host.addEventListener("htmx:config:request", onConfig);
   let installed = true;
   return () => {
     if (!installed) return;
@@ -487,6 +538,7 @@ export function installHTMXGuard(host: GuardHost, options: GuardOptions = {}): (
     host.removeEventListener("htmx:before:request", onRequest);
     host.removeEventListener("htmx:before:response", onResponse);
     host.removeEventListener("htmx:before:swap", onSwap);
+    host.removeEventListener("htmx:config:request", onConfig);
     targets = new WeakMap<object, GuardNode>();
     globals.__canHtmxGuard = false;
   };

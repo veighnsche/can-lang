@@ -65,7 +65,7 @@ func assetBundle(program *check.Program, pairing *BrowserPairing) (assetTable, [
 		// runtime/platform/htmx-guard.ts; re-pin together with
 		// runtimeHead after any guard edit and regeneration.
 		Route: "/__can/assets/htmx-guard.js", Digest: guardDigest, MediaType: "text/javascript",
-		File: "assets/" + guardDigest + "/htmx-guard.js", Integrity: "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG",
+		File: "assets/" + guardDigest + "/htmx-guard.js", Integrity: "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ",
 	}}
 	files := map[string][]byte{table.HTMX.File: script, table.Guard.File: guard}
 	urls := []string{}

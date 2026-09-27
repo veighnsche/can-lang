@@ -381,7 +381,7 @@ function fakeEvent(
   };
 }
 
-test("installing wires all three positions and uninstalling removes them", () => {
+test("installing wires all four positions and uninstalling removes them", () => {
   const host = fakeHost();
   const reports: GuardOccurrence[] = [];
   const created: { type: string; detail: GuardOccurrence }[] = [];
@@ -396,6 +396,7 @@ test("installing wires all three positions and uninstalling removes them", () =>
     expect(host.listeners("htmx:before:request")).toHaveLength(1);
     expect(host.listeners("htmx:before:response")).toHaveLength(1);
     expect(host.listeners("htmx:before:swap")).toHaveLength(1);
+    expect(host.listeners("htmx:config:request")).toHaveLength(1);
     const ctx = { target: node(true), swap: "innerHTML" };
     const request = fakeEvent("htmx:before:request", { ctx });
     host.listeners("htmx:before:request")[0]!(request);
@@ -421,6 +422,73 @@ test("installing wires all three positions and uninstalling removes them", () =>
   expect(host.listeners("htmx:before:request")).toHaveLength(0);
   expect(host.listeners("htmx:before:response")).toHaveLength(0);
   expect(host.listeners("htmx:before:swap")).toHaveLength(0);
+  expect(host.listeners("htmx:config:request")).toHaveLength(0);
+});
+
+test("config stamps the page slot into htmx headers and never cancels", () => {
+  const PIN = "d".repeat(64);
+  const slotted = () => {
+    const host = fakeHost() as GuardHost & {
+      listeners(type: string): ((e: GuardEvent) => void)[];
+      querySelector(selectors: string): { getAttribute(name: string): string | null } | null;
+    };
+    (host as unknown as Record<string, unknown>)["querySelector"] = (selectors: string) => {
+      expect(selectors).toBe("script[data-can-generation]");
+      return { getAttribute: (name: string) => (name === "data-can-generation" ? PIN : null) };
+    };
+    return host;
+  };
+  const host = slotted();
+  const reports: GuardOccurrence[] = [];
+  const uninstall = installHTMXGuard(host, { report: (found) => reports.push(found) });
+  try {
+    const headers: Record<string, unknown> = { Accept: "text/html" };
+    const stamped = fakeEvent("htmx:config:request", { ctx: { request: { headers } } });
+    host.listeners("htmx:config:request")[0]!(stamped);
+    expect(stamped.canceled).toBe(false);
+    expect(headers).toEqual({ Accept: "text/html", "can-generation": PIN });
+    expect(reports).toHaveLength(0);
+    // Malformed contexts stamp nothing and throw nothing.
+    for (const detail of [undefined, {}, { ctx: null }, { ctx: {} }, { ctx: { request: null } }]) {
+      const quiet = fakeEvent("htmx:config:request", detail);
+      host.listeners("htmx:config:request")[0]!(quiet);
+      expect(quiet.canceled).toBe(false);
+    }
+    expect(reports).toHaveLength(0);
+  } finally {
+    uninstall();
+  }
+});
+
+test("config sends nothing from slotless or malformed pages", () => {
+  for (const slot of [null, "nope", "e".repeat(63)]) {
+    const host = fakeHost() as GuardHost & {
+      listeners(type: string): ((e: GuardEvent) => void)[];
+    };
+    (host as unknown as Record<string, unknown>)["querySelector"] = () =>
+      slot === null ? null : { getAttribute: () => slot };
+    const uninstall = installHTMXGuard(host, {});
+    try {
+      const headers: Record<string, unknown> = {};
+      const event = fakeEvent("htmx:config:request", { ctx: { request: { headers } } });
+      host.listeners("htmx:config:request")[0]!(event);
+      expect(event.canceled).toBe(false);
+      expect(headers).toEqual({});
+    } finally {
+      uninstall();
+    }
+  }
+  const bare = fakeHost();
+  const uninstall = installHTMXGuard(bare, {});
+  try {
+    const headers: Record<string, unknown> = {};
+    const event = fakeEvent("htmx:config:request", { ctx: { request: { headers } } });
+    bare.listeners("htmx:config:request")[0]!(event);
+    expect(event.canceled).toBe(false);
+    expect(headers).toEqual({});
+  } finally {
+    uninstall();
+  }
 });
 
 test("a second installation keeps the first and reports once", () => {

@@ -236,7 +236,7 @@ const owned=await runOwnedRoot(async ()=>{
  assert.ok(html.includes("/__can/assets/htmx-4.0.0.min.js"));
  assert.ok(html.includes("sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc"));
  assert.ok(html.includes("/__can/assets/htmx-guard.js"));
- assert.ok(html.includes("sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG"));
+ assert.ok(html.includes("sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ"));
  assert.ok(html.includes("htmx-config"));
  const policy=page.headers.get("content-security-policy")??"";
  assert.ok(policy.includes("script-src 'self'")&&!policy.includes("unsafe-eval"));

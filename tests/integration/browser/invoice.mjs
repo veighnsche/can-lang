@@ -125,7 +125,7 @@ try {
     assert.equal(scripts[0].integrity, "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc");
     assert.equal(scripts[1].src, "/__can/assets/htmx-guard.js");
     assert.equal(scripts[1].type, "module");
-    assert.equal(scripts[1].integrity, "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG");
+    assert.equal(scripts[1].integrity, "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ");
     assert.ok(csp.includes("script-src 'self'"), `csp lacks script-src: ${csp}`);
     if (expected) {
       assert.equal(scripts[2].src, expected);

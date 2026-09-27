@@ -108,7 +108,7 @@ func TestAssetBundleServesPinnedGuard(t *testing.T) {
 	if table.Guard.Route != "/__can/assets/htmx-guard.js" {
 		t.Fatalf("guard route %q is not served exactly", table.Guard.Route)
 	}
-	if table.Guard.Integrity != "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG" {
+	if table.Guard.Integrity != "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ" {
 		t.Fatal("guard integrity is not the pinned transpiled digest")
 	}
 	if table.Guard.MediaType != "text/javascript" {

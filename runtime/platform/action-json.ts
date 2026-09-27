@@ -25,6 +25,9 @@ import {
   compileActionRoutes,
   buildActionURL,
   actionTemplate,
+  generationHeaderName,
+  readGenerationMismatch,
+  readGenerationSlot,
   ActionRouteIssue,
 } from "./action-routes.ts";
 import type { MountedCallback } from "./router.ts";
@@ -274,14 +277,17 @@ export function createJsonActions(
 // ActionFetchResult is the fetch consumer's outcome vocabulary. Transport,
 // abort, timeout, codec and unexpected-status failures stay distinct from
 // finite domain cases; createJsonActionFetch lowers these names into the
-// checked per-action failure bound.
+// checked per-action failure bound. The generation_mismatch outcome fires
+// only for the byte-exact paired-generation refusal, never for a domain
+// 409 such as grid_conflict.
 export type ActionFetchResult =
   | Readonly<{ kind: "ok"; status: number; leaf: string; value: unknown }>
   | Readonly<{ kind: "transport"; phase: "connect" | "body" | "protocol" }>
   | Readonly<{ kind: "aborted" }>
   | Readonly<{ kind: "timeout" }>
   | Readonly<{ kind: "codec"; path: string; reason: string }>
-  | Readonly<{ kind: "unexpected_status"; status: number }>;
+  | Readonly<{ kind: "unexpected_status"; status: number }>
+  | Readonly<{ kind: "generation_mismatch"; serverGeneration: string }>;
 
 export type ActionFetchInput = Readonly<{
   url: string;
@@ -384,6 +390,84 @@ export async function fetchJsonAction(input: ActionFetchInput): Promise<ActionFe
   }
 }
 
+type BoundedBody =
+  | Readonly<{ kind: "bytes"; raw: Uint8Array }>
+  | Readonly<{ kind: "over" }>
+  | Readonly<{ kind: "timeout" }>
+  | Readonly<{ kind: "aborted" }>
+  | Readonly<{ kind: "transport" }>;
+
+async function readBoundedBody(
+  received: Response,
+  limit: number,
+  timedOut: () => boolean,
+  aborted: (cause: unknown) => boolean,
+): Promise<BoundedBody> {
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  if (received.body !== null) {
+    const reader = received.body.getReader();
+    try {
+      for (;;) {
+        let next;
+        try {
+          next = await reader.read();
+        } catch (cause) {
+          if (timedOut()) return { kind: "timeout" };
+          if (aborted(cause)) return { kind: "aborted" };
+          if (fetchFailed(cause)) return { kind: "transport" };
+          throw cause;
+        }
+        if (next.done) break;
+        if (next.value.byteLength > limit - size) {
+          try {
+            await reader.cancel();
+          } catch {}
+          return { kind: "over" };
+        }
+        size += next.value.byteLength;
+        if (next.value.byteLength !== 0) chunks.push(new Uint8Array(next.value));
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  }
+  const raw = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    raw.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { kind: "bytes", raw };
+}
+
+// The typed refusal is small; anything larger cannot be its shape and
+// skips the parse on the way to ordinary classification.
+const mismatchProbeLimit = 256;
+
+function probeMismatch(received: Response, raw: Uint8Array): string | undefined {
+  if (raw.byteLength > mismatchProbeLimit) return undefined;
+  try {
+    responseMedia(received.headers.get("content-type") ?? undefined, true);
+  } catch (cause) {
+    if (!(cause instanceof CodecIssue)) throw cause;
+    return undefined;
+  }
+  let text: string;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(raw);
+  } catch {
+    return undefined;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+  return readGenerationMismatch(parsed);
+}
+
 async function fetchBound(
   input: ActionFetchInput,
   cases: readonly ActionJsonCase[],
@@ -394,14 +478,24 @@ async function fetchBound(
   timedOut: () => boolean,
 ): Promise<ActionFetchResult> {
   const aborted = (cause: unknown): boolean => fetchAborted(cause, controller.signal);
+  // Paired-generation handshake (C-H): live documents echo their page
+  // slot; any other host sends no header and unpaired servers ignore it.
+  const slot = readGenerationSlot((globalThis as unknown as { document?: unknown }).document);
   let received: Response;
   try {
     received = await fetch(input.url, {
       method: input.method,
       headers:
         input.method === "POST"
-          ? { "content-type": "application/json", accept: "application/json" }
-          : { accept: "application/json" },
+          ? {
+              "content-type": "application/json",
+              accept: "application/json",
+              ...(slot === undefined ? {} : { [generationHeaderName]: slot }),
+            }
+          : {
+              accept: "application/json",
+              ...(slot === undefined ? {} : { [generationHeaderName]: slot }),
+            },
       body: encoded,
       // Same-origin credentials: the emitted browser asset runs on the
       // serving origin, and protected actions authenticate through the
@@ -421,46 +515,42 @@ async function fetchBound(
     } catch {}
     return { kind: "transport", phase: "protocol" };
   }
+  // A 409 carries either a declared domain case (grid_conflict) or the
+  // typed generation refusal: only the byte-exact mismatch shape maps
+  // to generation_mismatch, and it maps ahead of any case-table match.
+  // Other statuses keep the existing classify-then-read order.
+  let staged: Uint8Array | undefined;
+  if (received.status === 409) {
+    const probed = await readBoundedBody(received, limit, timedOut, aborted);
+    if (probed.kind === "timeout") return { kind: "timeout" };
+    if (probed.kind === "aborted") return { kind: "aborted" };
+    if (probed.kind === "transport") return { kind: "transport", phase: "body" };
+    if (probed.kind === "bytes") {
+      const named = probeMismatch(received, probed.raw);
+      if (named !== undefined) return { kind: "generation_mismatch", serverGeneration: named };
+      staged = probed.raw;
+    } else if (!cases.some((kase) => kase.status === received.status)) {
+      return { kind: "unexpected_status", status: received.status };
+    } else {
+      return { kind: "codec", path: "", reason: "byte_limit" };
+    }
+  }
   if (!cases.some((kase) => kase.status === received.status)) {
     try {
       await received.body?.cancel();
     } catch {}
     return { kind: "unexpected_status", status: received.status };
   }
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  if (received.body !== null) {
-    const reader = received.body.getReader();
-    try {
-      for (;;) {
-        let next;
-        try {
-          next = await reader.read();
-        } catch (cause) {
-          if (timedOut()) return { kind: "timeout" };
-          if (aborted(cause)) return { kind: "aborted" };
-          if (fetchFailed(cause)) return { kind: "transport", phase: "body" };
-          throw cause;
-        }
-        if (next.done) break;
-        if (next.value.byteLength > limit - size) {
-          try {
-            await reader.cancel();
-          } catch {}
-          return { kind: "codec", path: "", reason: "byte_limit" };
-        }
-        size += next.value.byteLength;
-        if (next.value.byteLength !== 0) chunks.push(new Uint8Array(next.value));
-      }
-    } finally {
-      reader.releaseLock();
-    }
-  }
-  const raw = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    raw.set(chunk, offset);
-    offset += chunk.byteLength;
+  let raw: Uint8Array;
+  if (staged !== undefined) {
+    raw = staged;
+  } else {
+    const body = await readBoundedBody(received, limit, timedOut, aborted);
+    if (body.kind === "timeout") return { kind: "timeout" };
+    if (body.kind === "aborted") return { kind: "aborted" };
+    if (body.kind === "transport") return { kind: "transport", phase: "body" };
+    if (body.kind === "over") return { kind: "codec", path: "", reason: "byte_limit" };
+    raw = body.raw;
   }
   try {
     responseMedia(received.headers.get("content-type") ?? undefined, true);
@@ -707,6 +797,12 @@ export function createJsonActionFetch(
         // server may still have acted: same no-commit-knowledge rule
         // as cancelled, under its own phase.
         return fail(types.transport, [["phase", "timeout"]], site.action);
+      case "generation_mismatch":
+        // The server refused before dispatch, so nothing ran: the
+        // refusal lowers into the transport family under its own
+        // phase, distinct from the no-commit-knowledge phases. The
+        // app answers with a blocking refresh, never a retry.
+        return fail(types.transport, [["phase", "generation"]], site.action);
       case "codec":
         return fail(
           types.invalidData,

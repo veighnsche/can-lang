@@ -82,7 +82,7 @@ const guardEntry: ServedAsset = {
   digest: guardDigest,
   mediaType: "text/javascript",
   file: `assets/${guardDigest}/htmx-guard.js`,
-  integrity: "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG",
+  integrity: "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ",
 };
 mkdirSync(join(root, "assets", htmxDigest), { recursive: true });
 mkdirSync(join(root, "assets", guardDigest), { recursive: true });

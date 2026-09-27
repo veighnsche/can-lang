@@ -175,11 +175,11 @@ func HTMXAsset() ([]byte, error) {
 // retranspile a replacement.
 func GuardAsset() ([]byte, error) {
 	script := append([]byte(nil), GuardScript...)
-	if Hash(script) != "4d7098c2660af8affaf4693c38f7b91ede6632193f7a1b2bc45731ed7d603da0" {
+	if Hash(script) != "a48acdeb5385611cd6e318a0557e745e1c2a2541a5f97ae0793f345b912331ac" {
 		return nil, fmt.Errorf("guard script: SHA-256 mismatch")
 	}
 	sum := sha512.Sum384(script)
-	if "sha384-"+base64.StdEncoding.EncodeToString(sum[:]) != "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG" {
+	if "sha384-"+base64.StdEncoding.EncodeToString(sum[:]) != "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ" {
 		return nil, fmt.Errorf("guard script: P11 digest mismatch")
 	}
 	return script, nil

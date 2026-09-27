@@ -70,7 +70,7 @@ try {
     assert.equal(scripts[0].integrity, "sha384-BvJpBiO8Kh31EqtJe5DRIeWrHWnCGkwytKs9NKFi86Hhw96dEqdEMzZDeK9iEGTc");
     assert.equal(scripts[1].src, "/__can/assets/htmx-guard.js");
     // Guard digest mirrors runtimeHead in runtime/platform/html.ts; re-pin together.
-    assert.equal(scripts[1].integrity, "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG");
+    assert.equal(scripts[1].integrity, "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ");
   });
   await check("htmx-config", async () => {
     const content = await page.locator('meta[name="htmx-config"]').getAttribute("content");

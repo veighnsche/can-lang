@@ -280,12 +280,13 @@ test("missing, malformed, and unequal headers refuse before action logic", async
     const token = value(await paired.start(config, table));
     const target = "http://127.0.0.1:18762/api/tenants/1/invoices/7";
     const exact = `{"schemaVersion":1,"kind":"can.generation-mismatch","serverGeneration":"${PIN}"}`;
-    for (const headers of [
+    const refusals: Record<string, string>[] = [
       {},
       { "can-generation": "nope" },
       { "can-generation": "a".repeat(63) },
       { "can-generation": OTHER },
-    ]) {
+    ];
+    for (const headers of refusals) {
       const refused = await fetch(target, { headers });
       expect(refused.status).toBe(409);
       expect(refused.headers.get("content-type")).toBe("application/json");
@@ -648,7 +649,7 @@ test("created assets pin paired manifests and ignore the rest", async () => {
         digest: guardDigest,
         mediaType: "text/javascript",
         file: `assets/${guardDigest}/htmx-guard.js`,
-        integrity: "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG",
+        integrity: "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ",
       },
       project: [],
       browser: {

@@ -47,7 +47,7 @@ const guardRoute = "/__can/assets/htmx-guard.js";
 // The guard integrity pins the Bun-transpiled bytes of
 // runtime/platform/htmx-guard.ts; re-pin together with runtimeHead after
 // any guard edit and regeneration.
-const guardIntegrity = "sha384-mr/IRfJgLjok38ftBi21o/T8c9cnFZrvEKtiwVjIOFAlo3Z7h1rGMYsWvebDJ8kG";
+const guardIntegrity = "sha384-C5A6uJ5FDnfm4n0j9TRlnVP+OIz//4VRs7OcvEYgUzCRevIwXmktURVNyPxYvOpQ";
 
 function hex(bytes: ArrayBuffer): string {
   let out = "";
