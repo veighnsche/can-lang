@@ -31,8 +31,8 @@ playwright-report/
 test-results/
 .performance/
 
-# Local audit archive; maintained summary is docs/performance/README.md.
-/docs/performance/2026-09-27/
+# Local dated audit archives; maintained summary is docs/performance/README.md.
+/docs/performance/????-??-??/
 
 # linked git worktrees nested under .agents (see git worktree list)
 /.agents/worktrees/
