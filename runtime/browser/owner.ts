@@ -88,6 +88,11 @@ export function guardCallback<T extends Function>(token: Scope, callback: T): T 
   return unavailable();
 }
 
+export function bindNativeCallback<T extends Function>(callback: T): T {
+  void callback;
+  return unavailable();
+}
+
 export async function runOwnedRoot<T>(
   _body: () => Completion<T> | Promise<Completion<T>>,
   _report?: (diagnostic: OwnerDiagnostic) => void | Promise<void>,

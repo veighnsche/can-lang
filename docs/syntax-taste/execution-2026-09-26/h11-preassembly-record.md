@@ -41,7 +41,8 @@ H12 W6-deploy native legs are the single pending evidence input
 | F6 W2-negative e2e gap | MEDIUM | H + D, or IC2 disposition |
 | F7 W1.5 substitute-surface disposition | MEDIUM | preparation / IC2 disposition |
 | F8 Can-path RETURNING execution gap | MEDIUM | CLOSED (coordinator — see F8 closure §) |
-| F9–F15, F17, F18 | LOW | owners / IC2 / H14 / H12-Leg-7 as listed |
+| F9–F15, F18 | LOW | owners / IC2 / H14 / H12-Leg-7 as listed |
+| F17 cold-pool withTransaction burst | LOW | CLOSED (coordinator — see F17 closure §) |
 | F16, F19–F22 | INFO | coordinator / record |
 
 ## What remains for an IC2 close (not done here)
@@ -155,6 +156,32 @@ layers plus live legs are now on main:
    `bun run check:runtime` green; sibling SQL suites green
    (`mysql.test.ts` 12/12 re-verified under its designed
    `test-pw`/`can_b1_03` provisioning after an ad-hoc-URL red herring).
+
+## F17 closure (coordinator, user in-scope decision)
+
+Reproduced authentically pre-fix: 8-wide `withTransaction` burst on a
+fresh pool failed `ok,standard×7` on PG17 (`standard` decoded as
+`resource_state`) and partially on MySQL 8.4 (timing-dependent) —
+exactly the F03 handoff. Root cause proven: cold-pool native dispatch
+drops ALS context, so the ambient `withScope` inside `client.begin`'s
+callback failed closed before user callbacks entered.
+
+Fix on main: new ambient-owner primitive `bindNativeCallback`
+(`owner-core.ts`, exported via `owner.ts`, fail-closed stub in
+`browser/owner.ts`) captures the registering execution and re-enters
+root+scope (never the caller task) for native-dispatched callbacks;
+`transaction.ts` wraps the `begin` callback with it. `sql-ledger.ts`
+`begin` sites need no change (no owner calls inside).
+
+Legs: `runtime/test/sql-tx-burst.test.ts` 2/2 (PG+MySQL, 8-wide × 3
+rounds on fresh pools, setup on a separate pool so the burst pool
+stays cold; 5 consecutive green runs post-fix). SQLite files serialize
+writers by design (concurrent burst yields domain lock failures), so
+the leg is PG/MySQL only. The F03 driver's serial warmup is now
+redundant but left untouched as sealed F03 evidence. `check:runtime`
+green; tx consumer suites green (2 live-PG budget-timing failures in
+`sql-budget`/`w5-lifetime` reproduce identically on pristine main —
+pre-existing, out of F17 scope, recorded as a finding).
 
 ## F7 resolution (documented-limitation justification, evidence-backed)
 

@@ -19,6 +19,7 @@ import {
   useResource,
   withScope,
   guardCallback,
+  bindNativeCallback,
   resourceStatus,
 } from "../../owner.ts";
 import { raceBoundary } from "../../transport/operation-budget.ts";
@@ -210,37 +211,45 @@ export function createSQLTransactions(
               try {
                 // The native callback stays pending through scope drain: commit
                 // returns normally only after registered owners settle.
-                const value = await client.begin(async (tx: unknown) => {
-                  began = true;
-                  const outcome = await withScope(async (scope): Promise<Completion<unknown>> => {
-                    // The handle is scope-managed: drain closes it without a cleanup
-                    // mark, and any later use fails the scope check.
-                    const handle = registerResource("sql-tx", tx, async () => success(undefined), {
-                      scopeManaged: true,
+                // Bound to the registering execution: cold-pool dispatch
+                // drops ALS context, which used to fail withScope below
+                // with resource_state before user callbacks entered (F17).
+                const value = await client.begin(
+                  bindNativeCallback(async (tx: unknown) => {
+                    began = true;
+                    const outcome = await withScope(async (scope): Promise<Completion<unknown>> => {
+                      // The handle is scope-managed: drain closes it without a cleanup
+                      // mark, and any later use fails the scope check.
+                      const handle = registerResource(
+                        "sql-tx",
+                        tx,
+                        async () => success(undefined),
+                        { scopeManaged: true },
+                      );
+                      handles.set(handle, { pool, id });
+                      const guarded = guardCallback(scope, callback as TxCallable);
+                      const completed = await invoke(() => guarded(handle, undefined), origin);
+                      if (completed.kind !== "ok") return completed;
+                      const identity = recordIdentity(completed.value);
+                      if (identity === commit)
+                        return success({
+                          commit: true as const,
+                          value: dataProperty(completed.value, "value"),
+                        });
+                      if (identity === rollback)
+                        return success({
+                          commit: false as const,
+                          value: dataProperty(completed.value, "value"),
+                        });
+                      throw new TypeError("invalid compiler sql decision");
                     });
-                    handles.set(handle, { pool, id });
-                    const guarded = guardCallback(scope, callback as TxCallable);
-                    const completed = await invoke(() => guarded(handle, undefined), origin);
-                    if (completed.kind !== "ok") return completed;
-                    const identity = recordIdentity(completed.value);
-                    if (identity === commit)
-                      return success({
-                        commit: true as const,
-                        value: dataProperty(completed.value, "value"),
-                      });
-                    if (identity === rollback)
-                      return success({
-                        commit: false as const,
-                        value: dataProperty(completed.value, "value"),
-                      });
-                    throw new TypeError("invalid compiler sql decision");
-                  });
-                  if (outcome.kind !== "ok") throw new TxPrimary(outcome as Completion<never>);
-                  const boxed = outcome.value as { commit: boolean; value: unknown };
-                  if (!boxed.commit) throw new TxRollback(boxed.value);
-                  enteredCommit = true;
-                  return boxed.value;
-                });
+                    if (outcome.kind !== "ok") throw new TxPrimary(outcome as Completion<never>);
+                    const boxed = outcome.value as { commit: boolean; value: unknown };
+                    if (!boxed.commit) throw new TxRollback(boxed.value);
+                    enteredCommit = true;
+                    return boxed.value;
+                  }),
+                );
                 return success(value);
               } catch (cause) {
                 if (cause instanceof TxRollback) return success(cause.value);

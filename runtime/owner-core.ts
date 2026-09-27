@@ -790,6 +790,21 @@ export function createAmbientOwner(drivers: AmbientDrivers) {
     return guarded as unknown as T;
   }
 
+  function bindNativeCallback<T extends Function>(callback: T): T {
+    const current = execution();
+    // Native dispatch carries no caller context: a cold-pool begin drops
+    // ALS across connection setup, so ambient owner calls inside would
+    // fail closed. Re-enter the captured root and scope instead. The
+    // caller's task is never inherited — the dispatch is a new unit of
+    // work retained by the awaiting caller, and guardCallback below
+    // mints its own task for the user callback.
+    const entry = { root: current.root, scope: current.scope };
+    const bound = (...args: unknown[]) =>
+      drivers.run(entry, () => (callback as unknown as (...args: unknown[]) => unknown)(...args));
+    captures.set(bound, Object.freeze([callback]));
+    return bound as unknown as T;
+  }
+
   async function runOwnedRoot<T>(
     body: () => Completion<T> | Promise<Completion<T>>,
     report: Reporter = () => {},
@@ -813,6 +828,7 @@ export function createAmbientOwner(drivers: AmbientDrivers) {
     launchNative,
     withScope,
     guardCallback,
+    bindNativeCallback,
     runOwnedRoot,
   };
 }

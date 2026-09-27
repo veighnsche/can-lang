@@ -39,5 +39,6 @@ export const {
   launchNative,
   withScope,
   guardCallback,
+  bindNativeCallback,
   runOwnedRoot,
 } = ambient;
