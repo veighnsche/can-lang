@@ -98,3 +98,17 @@ and `host/d03-record.md` (""→null normalization confirmed, permission
 matrix pinned, 250ms trip wire holds with >60× headroom,
 secureContext true ×3). H11 §3.2/§7 "debt" language is superseded by
 this closure; the §6 F5 finding stays as the audit trail.
+
+## F4 closure (coordinator rerun, B-owner-noted)
+
+F4 is CLOSED as far as evidence goes: the exact B05 rerun command
+(`CAN_BUN_ARCHIVE=/tmp/bun-darwin-aarch64.zip go test
+./tests/failure-conventions/ -v -count=1`) is green 11/11 at two
+independent post-emitfix revisions — H10's rerun at `932924f7`
+(`h10-battery.md:15`) and the coordinator's at post-H10 main (38s,
+`/tmp/h10-cb.log` session log). No B lane is open to stamp an owner
+re-seal, so this coordinator rerun pair stands as the W3-green
+evidence with that provenance honestly noted; a future B-owner stamp
+would be cosmetic only. (No third rerun was needed: the failure-conventions
+bundle key covers `compiler/distribution/runtime/tools`, all
+untouched since the coordinator's green run.)
