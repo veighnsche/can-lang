@@ -1,0 +1,15 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 3 state fields, 3 instructions and 6 option descriptions has a distinct complete phrasing (12 fields). Task IDs (E-TIMEOUT R1, X-R15-3, W5-S5b, E07 H1-H5/F1-F4/F3, E04, E09), file paths (runtime/platform/s3.ts, runtime/transport/operation-budget.ts), identifiers (raceBoundary, unknown-write, s3::service_error, deadline_ms, boundMs, source s3), numeric facts (100ms, 3s watchdog, 1+3 retries), and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "Can agent language; zero external users; no compat for syntax/ABI/spellings/TS layouts/goldens; E-TIMEOUT R1 retained X-R15-3: every hung S3 read/write/flush/end/stat await bounded; E07 H1-H5 + W5-S5b pin unbounded (hung source.read past 100ms deadline to 3s watchdog, zero wire ops; hung flush/end/stat never settle); user rejected between-awaits-only exclusion and indefinite waits; W5 failed until live MinIO qualification",
+    "Bun S3 natives have no abort/timeout/release; hung writer/flush/end never settle, end(Error) waits same state; abandoned un-ended writer pins loop from creation (unref/GC helpless) + strands MPU; only settled end releases; retries 1+3 fresh-conn PUT/part/complete, single-shot delete, create-no-retry/complete-retry asymmetry; destructive scrub end-then-delete, delete-coupled abort only on part-failure path (F3) never complete-failure (F1/F4), delete runs after failed end; write_stream lazy sink, deadline_ms between-awaits only, service_error code timeout on expiry, destructive discard on reader failure; E04 raceBoundary cancel-absent with frozen unknown-write marker incl source s3, one escalation, late observation, never touches running op; ambient scope signal for disconnect/shutdown; other lanes own checker/emitter/catalogue wording; this slice runtime/platform/s3.ts + runtime/transport + tests + evidence, emitted arities frozen",
+    "Limits: Jev classifies, no research; advisory only, no acceptance proof; no Can code runs, no MinIO leg starts, no calibration; timeout must report uncertainty honestly, never imply cancelled/rolled back; rounds independent, no prior answer leaks; decide from supplied state"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "ffd3178847013049eb21834a276f6fdd2cdaefd2be960033717b9fb590addd89",
+    "request-2.json": "67d753930db9b7467bb6f7103de3cce0a22ed18ab4d698c70ed02856f4bc4942",
+    "request-3.json": "5d69434ee71713ad69d5cd29fc932424c7ef14ef5c4614a470d4e7027e5348aa"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 3 state fields, 3 instructions and 6 option descriptions has a distinct complete phrasing (12 fields). Task IDs (E-TIMEOUT R2, W5-L1/L2/L3/L6/L7, E04, E09), file paths (runtime/platform/server.ts, runtime/platform/sql/transaction.ts, runtime/owner-core.ts, runtime/transport), identifiers (serveNative, withScope, withTransaction, raceBoundary, guardCallback, RequestScope, revokeRequest, serveOuter, shutdownMs, commit_unknown, unknown:commit, sql::commit_unknown), numeric facts (150ms bound, 155ms handler, 2009ms peer, 2s stall, 1500/1800/8000 pins), and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "Can agent language; zero external users; no compat for syntax/ABI/spellings/TS layouts/goldens; E-TIMEOUT R2 releases at-budget peer for overrun tx; W5-L3 handler 155ms vs peer 2009ms at 150ms bound, drain gates Response on callback settlement; hung callback would hold peer past any bound; user: client response bounded too, internal detection insufficient, timeout honest never implying cancelled/rolled back; L3 pins (handler <1500ms, peer >=1800ms <8000ms) flip to bounded assertions",
+    "serveNative per request: ambient RequestScope (budget/signal/collector) + owner withScope drained before Response; withTransaction guarded callback task in tx inner scope nested in request scope so drain waits past raceBoundary commit_unknown; pool leases off pool resource outside scope so L1/L2/L6/L7 release at bound; only inner groups+callbacks gate drain; stop expires scopes shutdown + closes sessions + server close under shutdownMs with overdue owned for supervisor; wait same cap; E04 honesty (no rollback/non-start claim except never-started phase, commit_unknown never retried reread reconcile, no timer lease revoke, frozen markers, no post-disposal use); revokeRequest after drainage; serveOuter drain failures to redacted report; editable server dispatch + runtime/transport + tests + evidence; SQL internals incl withTransaction and owner-core.ts read-only",
+    "Limits: Jev classifies, no research; advisory only, no acceptance proof; no Can code runs, no server leg starts, no calibration; timeout honest never implying cancelled/rolled back; rounds independent, no prior answer leaks; decide from supplied state"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "8acf2272aa2a33adcf3534e19bc5b43dff20c79cffa84ffcf22e7f9bfccc01e9",
+    "request-2.json": "fe3a9e9a6708e841c4d9853405e798a5c2e26f55bc959719b31eefc5cb8253af",
+    "request-3.json": "d9803bcbd57116f833b822e638e4a9d858013be91a67c2cd3c5db7a16ac40bd9"
+  }
+}
