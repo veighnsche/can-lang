@@ -1,0 +1,38 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "htmx_channel": {
+      "type": "choice",
+      "choice": "guard_injection",
+      "confidence": 0.99,
+      "probabilities": {
+        "browser_entry_hook": 0.0,
+        "exempt_form": 0.0,
+        "guard_injection": 1.0
+      }
+    },
+    "lowering": {
+      "type": "choice",
+      "choice": "phase_value",
+      "confidence": 0.69,
+      "probabilities": {
+        "new_identity": 0.16,
+        "phase_value": 0.84
+      }
+    },
+    "scope": {
+      "type": "choice",
+      "choice": "paired_pin_selective",
+      "confidence": 0.97,
+      "probabilities": {
+        "paired_pin_json_only": 0.02,
+        "paired_pin_selective": 0.98,
+        "always_pin_uniform": 0.0
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1497,
+    "output_tokens": 131
+  }
+}

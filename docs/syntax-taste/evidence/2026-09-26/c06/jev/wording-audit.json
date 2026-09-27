@@ -1,0 +1,128 @@
+{
+  "structural": {
+    "model": [
+      "jev-latest",
+      "jev-latest",
+      "jev-latest"
+    ],
+    "state_keys": [
+      "client",
+      "fixed",
+      "handshake",
+      "htmx",
+      "server"
+    ],
+    "question_keys": [
+      "htmx_channel",
+      "lowering",
+      "scope"
+    ],
+    "htmx_channel": {
+      "type": "choice",
+      "options": [
+        "browser_entry_hook",
+        "exempt_form",
+        "guard_injection"
+      ]
+    },
+    "lowering": {
+      "type": "choice",
+      "options": [
+        "new_identity",
+        "phase_value"
+      ]
+    },
+    "scope": {
+      "type": "choice",
+      "options": [
+        "always_pin_uniform",
+        "paired_pin_json_only",
+        "paired_pin_selective"
+      ]
+    }
+  },
+  "fields": {
+    "count": 16,
+    "state.client": {
+      "1v2": 0.368,
+      "1v3": 0.351,
+      "2v3": 0.179
+    },
+    "state.fixed": {
+      "1v2": 0.294,
+      "1v3": 0.199,
+      "2v3": 0.304
+    },
+    "state.handshake": {
+      "1v2": 0.166,
+      "1v3": 0.177,
+      "2v3": 0.256
+    },
+    "state.htmx": {
+      "1v2": 0.138,
+      "1v3": 0.095,
+      "2v3": 0.081
+    },
+    "state.server": {
+      "1v2": 0.408,
+      "1v3": 0.183,
+      "2v3": 0.151
+    },
+    "htmx_channel.instructions": {
+      "1v2": 0.627,
+      "1v3": 0.417,
+      "2v3": 0.476
+    },
+    "htmx_channel.browser_entry_hook": {
+      "1v2": 0.195,
+      "1v3": 0.114,
+      "2v3": 0.125
+    },
+    "htmx_channel.exempt_form": {
+      "1v2": 0.05,
+      "1v3": 0.132,
+      "2v3": 0.009
+    },
+    "htmx_channel.guard_injection": {
+      "1v2": 0.041,
+      "1v3": 0.023,
+      "2v3": 0.117
+    },
+    "lowering.instructions": {
+      "1v2": 0.44,
+      "1v3": 0.462,
+      "2v3": 0.469
+    },
+    "lowering.new_identity": {
+      "1v2": 0.125,
+      "1v3": 0.081,
+      "2v3": 0.083
+    },
+    "lowering.phase_value": {
+      "1v2": 0.223,
+      "1v3": 0.266,
+      "2v3": 0.214
+    },
+    "scope.instructions": {
+      "1v2": 0.654,
+      "1v3": 0.43,
+      "2v3": 0.567
+    },
+    "scope.always_pin_uniform": {
+      "1v2": 0.037,
+      "1v3": 0.135,
+      "2v3": 0.02
+    },
+    "scope.paired_pin_json_only": {
+      "1v2": 0.187,
+      "1v3": 0.047,
+      "2v3": 0.164
+    },
+    "scope.paired_pin_selective": {
+      "1v2": 0.156,
+      "1v3": 0.155,
+      "2v3": 0.096
+    }
+  },
+  "ok": true
+}
