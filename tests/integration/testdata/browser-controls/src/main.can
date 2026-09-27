@@ -1,0 +1,505 @@
+/// Browser controls fixture (C02). A minimal browser-target Can
+/// application exercising the native control surface the invoice grid
+/// never touches: checked snapshots, multiselect values, file metadata,
+/// modifier keys, composition state, caret projection, live
+/// value/checked/selected/caret calls, dirty reset and control
+/// denials. One page renders every control with a verdict line per
+/// behavior plus `p#done`; the controls.mjs harness drives each
+/// control and asserts the verdict text. Assertion rows cover the
+/// assert-scope path with real pure execution; Chromium, WebKit and
+/// Firefox qualify the live paths.
+package app
+    provides []
+    uses [browser, text]
+
+/// Render one verdict word.
+fn str yesno
+    emits []
+    given
+        bool verdict
+    asserts
+        yes: true => ok "true"
+        no: false => ok "false"
+    match verdict
+        false => ok "false"
+        true => ok "true"
+
+/// Render one caret record as start,end,direction.
+fn str caret_verdict
+    emits []
+    given
+        browser::selection caret
+    asserts
+        point: browser::selection(2, 2, "none") => ok "2,2,none"
+        range: browser::selection(1, 3, "forward") => ok "1,3,forward"
+        neutral: browser::selection(-1, -1, "none") => ok "-1,-1,none"
+    ok call text::from_int(caret.start) + "," + call text::from_int(caret.end) + "," + caret.direction
+
+/// Render one modifiers record as alt/ctrl/meta/shift words.
+fn str mods_verdict
+    emits []
+    given
+        browser::modifiers held
+    asserts
+        plain: browser::modifiers(false, false, false, false) => ok "alt=false|ctrl=false|meta=false|shift=false"
+        save: browser::modifiers(false, true, false, false) => ok "alt=false|ctrl=true|meta=false|shift=false"
+    ok "alt=" + call yesno(held.alt) + "|ctrl=" + call yesno(held.ctrl) + "|meta=" + call yesno(held.meta) + "|shift=" + call yesno(held.shift)
+
+/// Render one file selection as count plus first-file details.
+fn str files_verdict
+    emits []
+    given
+        browser::file[] picked
+    asserts
+        empty: [] => ok "files=0:-"
+        one: [browser::file("a.csv", 12, "text/csv")] => ok "files=1:a.csv:12:text/csv"
+    match picked.length >= 1
+        false => ok "files=0:-"
+        true => ok "files=" + call text::from_int(picked.length) + ":" + picked[0].name + ":" + call text::from_int(picked[0].size) + ":" + picked[0].mime
+
+/// Text input echo: live value, composition flag and caret.
+fn void on_text_input
+    emits []
+    given
+        browser::event e
+        near browser::node echo_text
+    asserts
+        sample: browser::event("input", "f-text", "hi", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(2, 2, "none")) => ok
+    match call caret_verdict(e.selection)
+        ok str caret => match call browser::set_text(echo_text, "text=" + e.value + "|composing=" + call yesno(e.composing) + "|caret=" + caret)
+            browser::disposed => ok
+            ok => ok
+
+/// Key echo: key plus held modifiers.
+fn void on_text_key
+    emits []
+    given
+        browser::event e
+        near browser::node echo_key
+    asserts
+        sample: browser::event("keydown", "f-text", "", "s", false, [], [], browser::modifiers(false, true, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call mods_verdict(e.modifiers)
+        ok str held => match call browser::set_text(echo_key, "key=" + e.key + "|" + held)
+            browser::disposed => ok
+            ok => ok
+
+/// Checkbox echo: checked state plus the raw value field.
+fn void on_check_change
+    emits []
+    given
+        browser::event e
+        near browser::node echo_check
+    asserts
+        sample: browser::event("change", "f-check", "on", "", true, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_text(echo_check, "check=" + call yesno(e.checked) + "|value=" + e.value)
+        browser::disposed => ok
+        ok => ok
+
+/// Multiselect echo: selected values joined.
+fn void on_multi_change
+    emits []
+    given
+        browser::event e
+        near browser::node echo_multi
+    asserts
+        sample: browser::event("change", "f-multi", "a", "", false, ["a", "c"], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_text(echo_multi, "multi=" + call text::join(e.selected, ","))
+        browser::disposed => ok
+        ok => ok
+
+/// File echo: selection count plus first-file details.
+fn void on_files_change
+    emits []
+    given
+        browser::event e
+        near browser::node echo_files
+    asserts
+        sample: browser::event("change", "f-files", "a.csv", "", false, [], [browser::file("a.csv", 12, "text/csv")], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call files_verdict(e.files)
+        ok str words => match call browser::set_text(echo_files, words)
+            browser::disposed => ok
+            ok => ok
+
+/// Live value write then read.
+fn void on_setvalue_click
+    emits []
+    given
+        browser::event e
+        near browser::node field
+        near browser::node echo_setvalue
+    asserts
+        sample: browser::event("click", "b-setvalue", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_value(field, "can-set")
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call browser::read_value(field)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok str live => match call browser::set_text(echo_setvalue, "setvalue=" + live)
+                browser::disposed => ok
+                ok => ok
+
+/// Live checked write then read.
+fn void on_setchecked_click
+    emits []
+    given
+        browser::event e
+        near browser::node check
+        near browser::node echo_setchecked
+    asserts
+        sample: browser::event("click", "b-setchecked", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_checked(check, true)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call browser::read_checked(check)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok bool flag => match call browser::set_text(echo_setchecked, "setchecked=" + call yesno(flag))
+                browser::disposed => ok
+                ok => ok
+
+/// Multiselect write then read on multi and single controls.
+fn void on_setselected_click
+    emits []
+    given
+        browser::event e
+        near browser::node multi
+        near browser::node single
+        near browser::node echo_setselected
+    asserts
+        sample: browser::event("click", "b-setselected", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_selected(multi, ["b"])
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call browser::read_selected(multi)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok str[] picked => match call browser::set_selected(single, ["x", "z"])
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => match call browser::read_selected(single)
+                    browser::disposed => ok
+                    browser::rejected => ok
+                    ok str[] one => match call browser::set_text(echo_setselected, "setsel=" + call text::join(picked, ",") + "|" + call text::join(one, ","))
+                        browser::disposed => ok
+                        ok => ok
+
+/// Caret write then read.
+fn void on_setcaret_click
+    emits []
+    given
+        browser::event e
+        near browser::node field
+        near browser::node echo_setcaret
+    asserts
+        sample: browser::event("click", "b-setcaret", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_selection(field, 1, 3, "forward")
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call browser::read_selection(field)
+            browser::disposed => ok
+            ok browser::selection caret => match call caret_verdict(caret)
+                ok str words => match call browser::set_text(echo_setcaret, "setcaret=" + words)
+                    browser::disposed => ok
+                    ok => ok
+
+/// Save-time live reads across every control.
+fn void on_readall_click
+    emits []
+    given
+        browser::event e
+        near browser::node field
+        near browser::node check
+        near browser::node multi
+        near browser::node upload
+        near browser::node echo_readall
+    asserts
+        sample: browser::event("click", "b-readall", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::read_value(field)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok str live => match call browser::read_checked(check)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok bool flag => match call browser::read_selected(multi)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok str[] picked => match call browser::read_selection(field)
+                    browser::disposed => ok
+                    ok browser::selection caret => match call browser::read_files(upload)
+                        browser::disposed => ok
+                        browser::rejected => ok
+                        ok browser::file[] found => match call browser::set_text(echo_readall, "readall=" + live + "|" + call yesno(flag) + "|" + call text::join(picked, ",") + "|" + call text::from_int(caret.start) + "|" + call text::from_int(found.length))
+                            browser::disposed => ok
+                            ok => ok
+
+/// Dirty reset: restore Can-held defaults through live writes.
+fn void on_reset_click
+    emits []
+    given
+        browser::event e
+        near browser::node field
+        near browser::node check
+        near browser::node multi
+        near browser::node echo_reset
+    asserts
+        sample: browser::event("click", "b-reset", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::set_value(field, "start")
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match call browser::set_checked(check, false)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => match call browser::set_selected(multi, [])
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => match call browser::set_selection(field, 0, 0, "none")
+                    browser::disposed => ok
+                    browser::rejected => ok
+                    ok => match call browser::read_value(field)
+                        browser::disposed => ok
+                        browser::rejected => ok
+                        ok str live => match call browser::read_checked(check)
+                            browser::disposed => ok
+                            browser::rejected => ok
+                            ok bool flag => match call browser::read_selected(multi)
+                                browser::disposed => ok
+                                browser::rejected => ok
+                                ok str[] picked => match call browser::set_text(echo_reset, "reset=" + live + "|" + call yesno(flag) + "|" + call text::join(picked, ","))
+                                    browser::disposed => ok
+                                    ok => ok
+
+/// Denial verdicts: value read and caret write reject on the
+/// wrong controls, while caret reads stay total with neutral.
+fn void on_reject_click
+    emits []
+    given
+        browser::event e
+        near browser::node panel
+        near browser::node field
+        near browser::node echo_reject
+    asserts
+        sample: browser::event("click", "b-reject", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+    match call browser::read_value(panel)
+        browser::disposed => ok
+        browser::rejected => match call browser::set_selection(field, 0, 99, "none")
+            browser::disposed => ok
+            browser::rejected => match call browser::read_selection(panel)
+                browser::disposed => ok
+                ok browser::selection caret => match call browser::set_text(echo_reject, "reject=rejected|rejected|" + call text::from_int(caret.start))
+                    browser::disposed => ok
+                    ok => ok
+            ok => match call browser::set_text(echo_reject, "reject=UNEXPECTED-CARET-WRITE")
+                browser::disposed => ok
+                ok => ok
+        ok str live => match call browser::set_text(echo_reject, "reject=UNEXPECTED-VALUE-READ")
+            browser::disposed => ok
+            ok => ok
+/// Build the controls page: verdict lines, controls, action
+/// buttons and their listeners. Near captures bind each handler
+/// to its echo line and target controls by scope name.
+fn void run_controls
+    emits []
+    given
+        browser::view view
+        browser::node parent
+    asserts
+        sample:  => ok
+    match chain
+        call browser::create_element(view, "p") as browser::node echo_text
+        call browser::set_attribute(echo_text, "id", "v-text")
+        call browser::create_text(view, "pending") as browser::node echo_text_words
+        call browser::append_child(echo_text, echo_text_words)
+        call browser::append_child(parent, echo_text)
+        call browser::create_element(view, "p") as browser::node echo_key
+        call browser::set_attribute(echo_key, "id", "v-key")
+        call browser::create_text(view, "pending") as browser::node echo_key_words
+        call browser::append_child(echo_key, echo_key_words)
+        call browser::append_child(parent, echo_key)
+        call browser::create_element(view, "p") as browser::node echo_check
+        call browser::set_attribute(echo_check, "id", "v-check")
+        call browser::create_text(view, "pending") as browser::node echo_check_words
+        call browser::append_child(echo_check, echo_check_words)
+        call browser::append_child(parent, echo_check)
+        call browser::create_element(view, "p") as browser::node echo_multi
+        call browser::set_attribute(echo_multi, "id", "v-multi")
+        call browser::create_text(view, "pending") as browser::node echo_multi_words
+        call browser::append_child(echo_multi, echo_multi_words)
+        call browser::append_child(parent, echo_multi)
+        call browser::create_element(view, "p") as browser::node echo_files
+        call browser::set_attribute(echo_files, "id", "v-files")
+        call browser::create_text(view, "pending") as browser::node echo_files_words
+        call browser::append_child(echo_files, echo_files_words)
+        call browser::append_child(parent, echo_files)
+        call browser::create_element(view, "p") as browser::node echo_setvalue
+        call browser::set_attribute(echo_setvalue, "id", "v-setvalue")
+        call browser::create_text(view, "pending") as browser::node echo_setvalue_words
+        call browser::append_child(echo_setvalue, echo_setvalue_words)
+        call browser::append_child(parent, echo_setvalue)
+        call browser::create_element(view, "p") as browser::node echo_setchecked
+        call browser::set_attribute(echo_setchecked, "id", "v-setchecked")
+        call browser::create_text(view, "pending") as browser::node echo_setchecked_words
+        call browser::append_child(echo_setchecked, echo_setchecked_words)
+        call browser::append_child(parent, echo_setchecked)
+        call browser::create_element(view, "p") as browser::node echo_setselected
+        call browser::set_attribute(echo_setselected, "id", "v-setselected")
+        call browser::create_text(view, "pending") as browser::node echo_setselected_words
+        call browser::append_child(echo_setselected, echo_setselected_words)
+        call browser::append_child(parent, echo_setselected)
+        call browser::create_element(view, "p") as browser::node echo_setcaret
+        call browser::set_attribute(echo_setcaret, "id", "v-setcaret")
+        call browser::create_text(view, "pending") as browser::node echo_setcaret_words
+        call browser::append_child(echo_setcaret, echo_setcaret_words)
+        call browser::append_child(parent, echo_setcaret)
+        call browser::create_element(view, "p") as browser::node echo_readall
+        call browser::set_attribute(echo_readall, "id", "v-readall")
+        call browser::create_text(view, "pending") as browser::node echo_readall_words
+        call browser::append_child(echo_readall, echo_readall_words)
+        call browser::append_child(parent, echo_readall)
+        call browser::create_element(view, "p") as browser::node echo_reset
+        call browser::set_attribute(echo_reset, "id", "v-reset")
+        call browser::create_text(view, "pending") as browser::node echo_reset_words
+        call browser::append_child(echo_reset, echo_reset_words)
+        call browser::append_child(parent, echo_reset)
+        call browser::create_element(view, "p") as browser::node echo_reject
+        call browser::set_attribute(echo_reject, "id", "v-reject")
+        call browser::create_text(view, "pending") as browser::node echo_reject_words
+        call browser::append_child(echo_reject, echo_reject_words)
+        call browser::append_child(parent, echo_reject)
+        call browser::create_element(view, "p") as browser::node done
+        call browser::set_attribute(done, "id", "done")
+        call browser::create_text(view, "done") as browser::node done_words
+        call browser::append_child(done, done_words)
+        call browser::append_child(parent, done)
+        browser::disposed => ok
+        browser::rejected => ok
+        ok => match chain
+            call browser::create_element(view, "input") as browser::node field
+            call browser::set_attribute(field, "id", "f-text")
+            call browser::set_attribute(field, "type", "text")
+            call browser::set_attribute(field, "value", "start")
+            call browser::set_attribute(field, "aria-label", "text field")
+            call browser::append_child(parent, field)
+            call browser::create_element(view, "input") as browser::node check
+            call browser::set_attribute(check, "id", "f-check")
+            call browser::set_attribute(check, "type", "checkbox")
+            call browser::set_attribute(check, "aria-label", "check field")
+            call browser::append_child(parent, check)
+            call browser::create_element(view, "select") as browser::node multi
+            call browser::set_attribute(multi, "id", "f-multi")
+            call browser::set_attribute(multi, "multiple", "multiple")
+            call browser::set_attribute(multi, "aria-label", "multi field")
+            call browser::create_element(view, "option") as browser::node m_a
+            call browser::set_attribute(m_a, "value", "a")
+            call browser::create_text(view, "A") as browser::node m_a_words
+            call browser::append_child(m_a, m_a_words)
+            call browser::append_child(multi, m_a)
+            call browser::create_element(view, "option") as browser::node m_b
+            call browser::set_attribute(m_b, "value", "b")
+            call browser::create_text(view, "B") as browser::node m_b_words
+            call browser::append_child(m_b, m_b_words)
+            call browser::append_child(multi, m_b)
+            call browser::create_element(view, "option") as browser::node m_c
+            call browser::set_attribute(m_c, "value", "c")
+            call browser::create_text(view, "C") as browser::node m_c_words
+            call browser::append_child(m_c, m_c_words)
+            call browser::append_child(multi, m_c)
+            call browser::append_child(parent, multi)
+            call browser::create_element(view, "select") as browser::node single
+            call browser::set_attribute(single, "id", "f-single")
+            call browser::set_attribute(single, "aria-label", "single field")
+            call browser::create_element(view, "option") as browser::node s_x
+            call browser::set_attribute(s_x, "value", "x")
+            call browser::create_text(view, "X") as browser::node s_x_words
+            call browser::append_child(s_x, s_x_words)
+            call browser::append_child(single, s_x)
+            call browser::create_element(view, "option") as browser::node s_y
+            call browser::set_attribute(s_y, "value", "y")
+            call browser::create_text(view, "Y") as browser::node s_y_words
+            call browser::append_child(s_y, s_y_words)
+            call browser::append_child(single, s_y)
+            call browser::create_element(view, "option") as browser::node s_z
+            call browser::set_attribute(s_z, "value", "z")
+            call browser::create_text(view, "Z") as browser::node s_z_words
+            call browser::append_child(s_z, s_z_words)
+            call browser::append_child(single, s_z)
+            call browser::append_child(parent, single)
+            call browser::create_element(view, "input") as browser::node upload
+            call browser::set_attribute(upload, "id", "f-files")
+            call browser::set_attribute(upload, "type", "file")
+            call browser::set_attribute(upload, "multiple", "multiple")
+            call browser::set_attribute(upload, "aria-label", "file field")
+            call browser::append_child(parent, upload)
+            call browser::create_element(view, "div") as browser::node panel
+            call browser::set_attribute(panel, "id", "f-panel")
+            call browser::append_child(parent, panel)
+            call browser::create_element(view, "button") as browser::node b_setvalue
+            call browser::set_attribute(b_setvalue, "id", "b-setvalue")
+            call browser::create_text(view, "set value") as browser::node b_setvalue_words
+            call browser::append_child(b_setvalue, b_setvalue_words)
+            call browser::append_child(parent, b_setvalue)
+            call browser::create_element(view, "button") as browser::node b_setchecked
+            call browser::set_attribute(b_setchecked, "id", "b-setchecked")
+            call browser::create_text(view, "set checked") as browser::node b_setchecked_words
+            call browser::append_child(b_setchecked, b_setchecked_words)
+            call browser::append_child(parent, b_setchecked)
+            call browser::create_element(view, "button") as browser::node b_setselected
+            call browser::set_attribute(b_setselected, "id", "b-setselected")
+            call browser::create_text(view, "set selected") as browser::node b_setselected_words
+            call browser::append_child(b_setselected, b_setselected_words)
+            call browser::append_child(parent, b_setselected)
+            call browser::create_element(view, "button") as browser::node b_setcaret
+            call browser::set_attribute(b_setcaret, "id", "b-setcaret")
+            call browser::create_text(view, "set caret") as browser::node b_setcaret_words
+            call browser::append_child(b_setcaret, b_setcaret_words)
+            call browser::append_child(parent, b_setcaret)
+            call browser::create_element(view, "button") as browser::node b_readall
+            call browser::set_attribute(b_readall, "id", "b-readall")
+            call browser::create_text(view, "read all") as browser::node b_readall_words
+            call browser::append_child(b_readall, b_readall_words)
+            call browser::append_child(parent, b_readall)
+            call browser::create_element(view, "button") as browser::node b_reset
+            call browser::set_attribute(b_reset, "id", "b-reset")
+            call browser::create_text(view, "reset") as browser::node b_reset_words
+            call browser::append_child(b_reset, b_reset_words)
+            call browser::append_child(parent, b_reset)
+            call browser::create_element(view, "button") as browser::node b_reject
+            call browser::set_attribute(b_reject, "id", "b-reject")
+            call browser::create_text(view, "reject") as browser::node b_reject_words
+            call browser::append_child(b_reject, b_reject_words)
+            call browser::append_child(parent, b_reject)
+            browser::disposed => ok
+            browser::rejected => ok
+            ok => match chain
+                call browser::on_event(view, field, "input", callable on_text_input)
+                call browser::on_event(view, field, "keydown", callable on_text_key)
+                call browser::on_event(view, check, "change", callable on_check_change)
+                call browser::on_event(view, multi, "change", callable on_multi_change)
+                call browser::on_event(view, upload, "change", callable on_files_change)
+                call browser::on_event(view, b_setvalue, "click", callable on_setvalue_click)
+                call browser::on_event(view, b_setchecked, "click", callable on_setchecked_click)
+                call browser::on_event(view, b_setselected, "click", callable on_setselected_click)
+                call browser::on_event(view, b_setcaret, "click", callable on_setcaret_click)
+                call browser::on_event(view, b_readall, "click", callable on_readall_click)
+                call browser::on_event(view, b_reset, "click", callable on_reset_click)
+                call browser::on_event(view, b_reject, "click", callable on_reject_click)
+                browser::disposed => ok
+                browser::rejected => ok
+                ok => ok
+
+/// Fixture entry: mount the served grid shell and build the
+/// controls page.
+fn void main
+    emits []
+    asserts
+        boot:  => ok
+    match call browser::mount("invoice-grid")
+        browser::missing_root => ok
+        ok browser::app app => match call browser::root(app)
+            browser::disposed => match call browser::dispose_app(app)
+                ok => ok
+            ok browser::node anchor => match call browser::open_view(app)
+                browser::disposed => match call browser::dispose_app(app)
+                    ok => ok
+                ok browser::view view => match call run_controls(view, anchor)
+                    ok => ok
