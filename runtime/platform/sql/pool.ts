@@ -122,7 +122,12 @@ export function createSQLOperations(
     const profile = profileFor(pool ?? descriptor.dialect);
     const encoded = profile.codec.encodeParams(plan, params);
     if (!encoded.ok) return { kind: "failed", completion: encoded.failure };
-    const template = descriptors.template(descriptor, [...encoded.values, limit]);
+    // F8/RETURNING: limit-0 descriptors (execute, and admitted one+INSERT)
+    // bind exactly the application parameters — there is no limit site.
+    const template = descriptors.template(
+      descriptor,
+      descriptor.limit === 0 ? encoded.values : [...encoded.values, limit],
+    );
     // Validation runs before the race; only native execution is bounded.
     // At expiry the lease stays held until the native query settles.
     const raced = await raceBoundary(

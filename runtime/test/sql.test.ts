@@ -122,6 +122,22 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       total: 1,
       version: 170007,
     },
+    gen_account: {
+      dialect: "postgresql",
+      cardinality: "one",
+      kind: "InsertStmt",
+      segments: [
+        { text: "INSERT INTO t (display_name) VALUES (" },
+        { param: 1 },
+        { text: ") RETURNING id" },
+      ],
+      params: ["term"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 1,
+      version: 170007,
+    },
   },
 };
 const descriptors = createSQLDescriptors(table);
@@ -150,6 +166,7 @@ const pools = createSQLPools(
 const byId = descriptors.declareDescriptor("", "account_by_id");
 const byTerm = descriptors.declareDescriptor("", "accounts_by_term");
 const addAccount = descriptors.declareDescriptor("", "add_account");
+const genAccount = descriptors.declareDescriptor("", "gen_account");
 
 function domainOutcome(completion: Completion<unknown>, name: string): Record<string, unknown> {
   expect(completion.kind).toBe("domain");
@@ -231,6 +248,10 @@ const idParams: SQLPlan = {
       { name: "display_name", kind: "str" },
     ],
   },
+};
+const genParams: SQLPlan = {
+  params: { root: "app::search_parameters", fields: [{ name: "term", kind: "str" }] },
+  rows: { root: "app::gen_row", fields: [{ name: "id", kind: "int" }] },
 };
 const termParams: SQLPlan = {
   params: { root: "app::search_parameters", fields: [{ name: "term", kind: "str" }] },
@@ -497,6 +518,40 @@ describe("sql rows", () => {
         expect(dataProperty(row, "display_name")).toBe("Bob");
         expect(Object.isFrozen(row)).toBe(true);
         expect(client.calls[0]!.values).toEqual([4n, 2]);
+        value(await pools.close(token, 1000n));
+      });
+    } finally {
+      env.clear();
+      restoreSQL();
+    }
+  });
+  test("F8: RETURNING binds app params only and enforces exactly-one", async () => {
+    const fake = installFake();
+    try {
+      env.set("CAN_TEST_POSTGRES", "postgres://fake/x");
+      await owned(async () => {
+        const token = value(await pools.open("CAN_TEST_POSTGRES", 5n));
+        const client = fake.clients[0]!;
+        const params = record("app::search_parameters", [["term", "x"]]);
+        client.query = async () => [{ id: 7n }];
+        const row = value(await pools.queryOne(genAccount, genParams, token, params));
+        expect(dataProperty(row, "id")).toBe(7n);
+        // No limit value is appended: Total == len(app params).
+        expect(client.calls[0]!.values).toEqual(["x"]);
+        client.query = async () => [];
+        expect(
+          domainOutcome(
+            await pools.queryOne(genAccount, genParams, token, params),
+            "sql::row_missing",
+          ),
+        ).toEqual({ query: "gen_account" });
+        client.query = async () => [{ id: 7n }, { id: 8n }];
+        expect(
+          domainOutcome(
+            await pools.queryOne(genAccount, genParams, token, params),
+            "sql::row_count",
+          ),
+        ).toEqual({ query: "gen_account", actual: 2n });
         value(await pools.close(token, 1000n));
       });
     } finally {
