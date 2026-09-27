@@ -55,6 +55,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | G01 | done | lane-g-g01 (`14`) | isolated | A01 | formatting→G02/authors | worker `31f0e66a` → main `94795946` | go test compiler+driver ok |
 | G02 | done | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | worker `e8b10707` → main `0d23fada` | go test compiler+driver ok |
 | G03 | done | lane-g-g03 (`27`) | isolated | G02, A02 | refs→G04/G05 | `8268bb5b`→main | 13 TestG03 pass, compiler suite green |
+| G04 | done | lane-g-g04 | isolated | G03, A06✗, C02 | completion→G05/authors | worker `29715ce2,cb43cff6,5f3d8870` | 24 TestG04 pass, compiler suite green, retirement gate holds |
 | E06 | done | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | worker `c5499411` → main `e3a4148c` | 17/17, check green |
 | C03 | done | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | worker `8f61b1b` → main `9a2ea7b7` | go test check ok |
 | C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 landed after (additive-only C-D; C04 stands per c02-report) |
