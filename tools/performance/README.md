@@ -27,6 +27,7 @@ bun run perf compare /absolute/new/baseline /absolute/new/candidate
 bun run perf report /absolute/new/candidate
 bun run perf report /absolute/new/candidate --output /absolute/new/results.md
 bun run perf report /absolute/new/candidate --baseline /absolute/new/baseline
+bun run perf report /absolute/new/candidate --format pdf --output results.pdf
 
 # Create workload-bound targets with deliberately unset values.
 bun run perf targets /absolute/new/baseline --output .performance/targets.json
@@ -136,6 +137,37 @@ output directories are never overwritten. A run writes one compressed `evidence.
 `--targets` or `--baseline` recomputes the rankings after revalidating the raw
 measurement records. `--output` saves a new report without overwriting a file or
 changing the archive. Reporting and target creation launch no workloads.
+
+### PDF presentation
+
+The reusable [Typst template](report.typ) reads the same `report.json` data as
+the Markdown report. Its A4 layout includes a twelve-slice dashboard, separate
+top tens, measurement settings, exclusions, per-case timing/variability and
+workload boundaries, and source/reference provenance. Non-measurement evidence
+is labelled and receives no rankings. Synthetic examples are marked on every
+page when the document's `synthetic` field is true.
+
+```sh
+# From an existing evidence directory or evidence.zip; no benchmark is rerun.
+bun run perf report PATH_TO_RUN --format pdf --output results.pdf
+
+# Revalidate raw evidence and apply explicit comparison references first.
+bun run perf report PATH_TO_RUN --targets .performance/targets.json \
+  --baseline PATH_TO_BASELINE --format pdf --output compared-results.pdf
+```
+
+PDF export requires an installed Typst CLI (validated with 0.15.1). It uses one
+compiler worker, embedded fonts and no external Typst packages or downloads.
+Temporary JSON/template/output files are removed on success and handled failure;
+only the requested PDF is retained. Existing output files are never replaced.
+PDF creation is an explicit offline export, not an extra step in a measured run.
+
+For direct template editing, place an exported `report.json` beside `report.typ`
+and run `typst compile --jobs 1 --ignore-system-fonts report.typ results.pdf`.
+Alternatively choose its JSON input with `--input data=another-report.json`.
+Keep data inside Typst's project root. The template loads JSON as data; report
+strings are never evaluated as Typst source. See the official
+[JSON data-loading reference](https://typst.app/docs/reference/data-loading/json/).
 
 ## Comparable rankings across all twelve slices
 

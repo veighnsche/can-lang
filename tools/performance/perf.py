@@ -242,9 +242,11 @@ def report_data(manifest, summary, targets=None, baseline=None):
 
 def report(args):
     """View saved evidence, or recompute rankings from raw records without execution."""
+    if args.format == "pdf" and not args.output:
+        raise ValueError("PDF export requires --output with a new .pdf file")
     root = Path(args.run).expanduser().resolve()
     if not args.targets and not args.baseline:
-        content = read_evidence(root, "report.json" if args.format == "json" else "report.md")
+        content = read_evidence(root, "report.json" if args.format in ("json", "pdf") else "report.md")
     else:
         meta, summary = load_measured_run(root)
         targets = read_targets(args.targets) if args.targets else None
@@ -256,8 +258,13 @@ def report(args):
         baseline = load_measured_run(args.baseline) if args.baseline else None
         meta = {**meta, "ranking_references": reference_metadata(targets, baseline, args.baseline)}
         data = report_data(meta, summary, targets, baseline)
-        content = (json.dumps(data, indent=2, allow_nan=False) + "\n" if args.format == "json"
+        content = (json.dumps(data, indent=2, allow_nan=False) + "\n" if args.format in ("json", "pdf")
                    else markdown_report(meta, summary, data["rankings"]))
+    if args.format == "pdf":
+        from pdf_report import write_pdf
+        write_pdf(json.loads(content), args.output)
+        print(f"PDF saved: {Path(args.output).expanduser()}")
+        return 0
     if args.output:
         with Path(args.output).expanduser().open("x") as output:
             output.write(content)
@@ -538,7 +545,7 @@ def main():
     reader.add_argument("run")
     reader.add_argument("--targets")
     reader.add_argument("--baseline")
-    reader.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    reader.add_argument("--format", choices=["markdown", "json", "pdf"], default="markdown")
     reader.add_argument("--output", help="Write a new report file without replacing the original evidence")
     template = commands.add_parser("targets", help="Create unset, workload-bound targets from verified measurement evidence")
     template.add_argument("run")
@@ -561,7 +568,7 @@ def main():
         if args.idle_percent > 100:
             raise ValueError("Idle percentage cannot exceed 100")
         return run(args)
-    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as exc:
         parser.error(str(exc))
 
 
