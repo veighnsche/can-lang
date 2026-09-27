@@ -76,6 +76,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 
 | H10 | done (IC1 GREEN) | lane-h-h10 | isolated | A01–A05, B01–B04✗, C02–C05✗, D02, E04–E06, E08, F01, F03, F05, G05, H06–H07 | IC1→H12 | 2 worker (`99add4a1`,`44651e43`)→main `80651c7c`..`2a84ee9f` | 5/5 battery (C-B 11/11, C-D 128/128, rename 4/4, companion 9/9, conf 51/51, C-H 2/2, RH green); 13/13 conditionals republished first; coord re-verified all counts on main; NOTE-02 fixed by coord |
 
+| H12 | staged (BLOCKED on UP25 grant) | lane-h-h12 | isolated | H05, H10, C06, D03, E09, F04, F06 | W6-deploy→H11/H13/H14 | 3 worker (`744801b4`,`775463fb`,`267bdfc8`)→main (Jev+checklist+runbook); coord Leg-6 WORK note | 8/8 validation bullets staged w/ exact commands+env+pass criteria; pins verified (bun zip 36368fae, rev 744846f84, go1.27.1, PG17); window-check.sh inspection-only; Jev 3/3 unanimous; zero x86 exec/emulation; native run awaits machine+window |
+
 All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints

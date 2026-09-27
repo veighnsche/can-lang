@@ -61,6 +61,8 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | H06 | done (C-H deploy contract) | main `1cf506e7` (3 worker) | macOS, go1.27.1 | 5/5 contract; generation pins; E/C slices→C06; `distribution/paired-deploy.md` | pass |
 | H10 | done (IC1 GREEN) | main `2a84ee9f` (2 worker `99add4a1`,`44651e43`) | macOS, go1.27.1/bun 1.4.2, pinned Bun archive | 5/5 battery re-verified on main by coord (C-B 11/11 38s, C-D 128/128 canlc assert, rename 4/4, companion 9/9, host conf 51/51 bun + 9+2skip go, redaction+bulk 25/25, H07+F01 75/75, C-H 2/2, catalogue-check 0, check:runtime green); 13/13 conditioned resolutions republished first; NOTE-02 (stale internal/ walk from af0f42a2) fixed by coord + focused rerun green; record `docs/syntax-taste/execution-2026-09-26/h10-ic1-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h10/` | pass |
 
+| H12 | staged (BLOCKED on UP25 grant) | main `275dd42d` (3 worker `744801b4`,`775463fb`,`267bdfc8`) | staging on macOS; native run pending Debian 13+ amd64 | per-leg runbook (smoke offline, drift both dirs, retention, rollout/rollback, CAS GC, PG roundtrip, service/health/creds/operator-DDL, old-browser wrapper); window-check.sh gate; pins re-verified by coord; Jev unanimous; record `docs/syntax-taste/execution-2026-09-26/h12-staging-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h12/` | blocked |
+
 ## Conditional branches
 
 | Gate | Experiment | State | Evidence |
