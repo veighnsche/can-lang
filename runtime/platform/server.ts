@@ -39,6 +39,9 @@ import {
   matchActionRoute,
   actionReject,
   bunRouteKeys,
+  generationHeaderName,
+  generationSlotAttribute,
+  generationMismatchResponse,
   type ActionRouteTable,
   type ActionRouteCapture,
 } from "./action-routes.ts";
@@ -140,13 +143,15 @@ const idle: AssetServer = {
 };
 const pairedScriptPattern = /^\/__can\/assets\/[0-9a-f]{64}\.js$/;
 // pairDocument delivers the report-selected paired browser script to served
-// pages. A paired build splices exactly one src-only module tag ahead of
-// </body> in text/html documents; fragments without a body marker, other
-// media types, HEAD responses, and every unpaired build keep exact bytes.
+// pages. A paired build splices exactly one module tag ahead of </body> in
+// text/html documents, carrying the serving generation in the slot the
+// action clients echo; fragments without a body marker, other media types,
+// HEAD responses, and every unpaired build keep exact bytes.
 async function pairDocument(
   request: Request,
   response: Response,
   script: string | undefined,
+  generation: string | undefined,
 ): Promise<Response> {
   if (script === undefined || !pairedScriptPattern.test(script) || request.method === "HEAD")
     return response;
@@ -163,8 +168,11 @@ async function pairDocument(
       headers,
     });
   headers.delete("content-length");
-  const paired =
-    body.slice(0, index) + `<script type="module" src="${script}"></script>` + body.slice(index);
+  const tag =
+    generation === undefined
+      ? `<script type="module" src="${script}"></script>`
+      : `<script type="module" src="${script}" ${generationSlotAttribute}="${generation}"></script>`;
+  const paired = body.slice(0, index) + tag + body.slice(index);
   return new Response(paired, {
     status: response.status,
     statusText: response.statusText,
@@ -240,6 +248,11 @@ export function createServer(
     >((resolve) => {
       ready = resolve;
     });
+    // Paired-generation pin (C-H), resolved once at startup from the
+    // assets: the manifest buildID on paired builds, undefined on
+    // unpaired builds and unreadable manifests (no handshake there).
+    const generation = await assets.generation?.catch(() => undefined);
+    const pinned = typeof generation === "string" ? generation : undefined;
     const scoped = withScope(async (scope): Promise<Completion<undefined>> => {
       // Canonical action dispatch runs after ingress on the raw pathname, so
       // method-first/static-within-method matching and 400/404/405
@@ -266,6 +279,17 @@ export function createServer(
               // The boundary report names the checked action identity; the
               // failure itself propagates to serveOuter for the single report.
               noteRequestSource(native, "action:" + match.identity);
+              // Explicit-table handshake mirrors dispatch: pinned JSON
+              // and form actions refuse a missing, malformed, or
+              // unequal header before invocation; document entries
+              // serve headerless navigations.
+              if (pinned !== undefined && match.mode !== "document") {
+                const sent = native.headers.get(generationHeaderName);
+                if (sent !== pinned) {
+                  await abandonRequest(snapshot);
+                  return success(generationMismatchResponse(pinned));
+                }
+              }
               try {
                 const completed = await invoke(
                   () => actions.invoke(match.identity, match.captures, snapshot, context),
@@ -281,7 +305,7 @@ export function createServer(
             if (match.kind === "method-not-allowed") return success(actionReject(405, match.allow));
           }
         }
-        return dispatch(router, snapshot, context);
+        return dispatch(router, snapshot, context, pinned);
       }
       const serveNative =
         (peek: boolean) =>
@@ -359,7 +383,7 @@ export function createServer(
             if (completed.kind !== "ok")
               await reportRequestFailure(completed, requestContext(native));
             const answered = completed.kind === "ok" ? completed.value : fixed(500);
-            return withPolicy(await pairDocument(native, answered, assets.browserScript));
+            return withPolicy(await pairDocument(native, answered, assets.browserScript, pinned));
           } catch (cause) {
             await reportRequestFailure(cause, requestContext(native));
             return withPolicy(fixed(500));

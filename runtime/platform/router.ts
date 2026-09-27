@@ -28,6 +28,8 @@ import {
   bunRouteKeys,
   isActionRouteBinding,
   readActionRouteBinding,
+  generationHeaderName,
+  generationMismatchResponse,
   ActionRouteIssue,
   type ActionRouteTable,
   type ActionRouteSource,
@@ -104,6 +106,7 @@ export async function dispatch(
   router: unknown,
   request: unknown,
   context?: AssertionContext,
+  generation?: string,
 ): Promise<Completion<Response>> {
   const table = read(routers, router),
     snapshot = requestSnapshot(request),
@@ -140,6 +143,15 @@ export async function dispatch(
     const callback = actions.callbacks.get(match.identity);
     if (callback === undefined) throw new TypeError("invalid compiler action route");
     noteRequestSource(requestNativeRequest(request), "action:" + match.identity);
+    // Paired-generation handshake (C-H): a pinned server refuses JSON
+    // and form actions whose header is missing, malformed, or unequal,
+    // before any action logic runs. Document mounts serve headerless
+    // navigations and stay outside the check; unpinned servers behave
+    // exactly as before.
+    if (generation !== undefined && match.mode !== "document") {
+      const sent = snapshot.headers.find(([name]) => name === generationHeaderName)?.[1];
+      if (sent !== generation) return rejected(generationMismatchResponse(generation), request);
+    }
     try {
       const completed = await invoke(() => callback(request, match.captures, context), origin);
       if (completed.kind !== "ok") return completed;

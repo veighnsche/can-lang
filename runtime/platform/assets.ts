@@ -28,6 +28,11 @@ export type AssetTable = Readonly<{
 export type AssetServer = Readonly<{
   serve(request: Request): Promise<Response | undefined>;
   browserScript?: string;
+  // Serving-generation pin for the paired handshake (C-H): the
+  // manifest buildID read once from the generation root. Unpaired
+  // builds and unreadable manifests resolve undefined, which
+  // disables both the page slot and the action check.
+  generation?: Promise<string | undefined>;
 }>;
 type LedgerEntry = Readonly<{
   digest: string;
@@ -169,6 +174,22 @@ export function createAssets(table: AssetTable, root: URL): AssetServer {
     }
     browserScript = section.entry;
   }
+  // The serving generation is the manifest buildID beside the emitted
+  // program, read once here and shared by every request. Only paired
+  // builds pin: an unpaired server keeps serving headerless action
+  // callers (curl, tests, companions) exactly as before.
+  const generation: Promise<string | undefined> =
+    table.browser === undefined
+      ? Promise.resolve(undefined)
+      : Bun.file(new URL("manifest.json", root))
+          .json()
+          .then(
+            (manifest) => {
+              const id = (manifest as { buildID?: unknown } | null)?.buildID;
+              return typeof id === "string" && /^[0-9a-f]{64}$/.test(id) ? id : undefined;
+            },
+            () => undefined,
+          );
   // The durable retention store lives two levels above the generation
   // (dist/builds/<id>/ -> dist/); a missing ledger means no retention.
   const durable = new URL("../../", root);
@@ -209,6 +230,7 @@ export function createAssets(table: AssetTable, root: URL): AssetServer {
   }
   return Object.freeze({
     ...(browserScript === undefined ? {} : { browserScript }),
+    generation,
     async serve(request: Request): Promise<Response | undefined> {
       let path: string;
       try {

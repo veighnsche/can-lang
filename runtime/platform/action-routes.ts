@@ -62,11 +62,14 @@ export type ActionCaptureType = "str" | "int";
 
 export type ActionRouteSourceCapture = Readonly<{ name: string; type: ActionCaptureType }>;
 
+export type ActionRouteMode = "json" | "form" | "document";
+
 export type ActionRouteSource = Readonly<{
   identity: string;
   method: string;
   path: string;
   captures: readonly ActionRouteSourceCapture[];
+  mode?: ActionRouteMode;
 }>;
 
 export type ActionRouteSegment =
@@ -80,6 +83,7 @@ export type CompiledActionRoute = Readonly<{
   segments: readonly ActionRouteSegment[];
   statics: number;
   bunKey: string;
+  mode: ActionRouteMode;
 }>;
 
 export type ActionRouteTable = Readonly<{ routes: readonly CompiledActionRoute[] }>;
@@ -87,7 +91,12 @@ export type ActionRouteTable = Readonly<{ routes: readonly CompiledActionRoute[]
 export type ActionRouteCapture = Readonly<{ name: string; value: string | bigint }>;
 
 export type ActionRouteMatch =
-  | Readonly<{ kind: "match"; identity: string; captures: readonly ActionRouteCapture[] }>
+  | Readonly<{
+      kind: "match";
+      identity: string;
+      captures: readonly ActionRouteCapture[];
+      mode: ActionRouteMode;
+    }>
   | Readonly<{ kind: "bad-request" }>
   | Readonly<{ kind: "not-found" }>
   | Readonly<{ kind: "method-not-allowed"; allow: string }>;
@@ -190,6 +199,11 @@ function compileRoute(entry: unknown): CompiledActionRoute {
       .slice(1)
       .map((segment) => (segment.startsWith("{") ? `:${segment.slice(1, -1)}` : segment))
       .join("/");
+  // Client-built tables omit the mount mode; mounts always set it.
+  // JSON is the enforcing default, so an unmarked route handshakes.
+  const mode = source.mode ?? "json";
+  if (mode !== "json" && mode !== "form" && mode !== "document")
+    throw invalid(`mode ${JSON.stringify(source.mode)}`);
   return Object.freeze({
     identity: source.identity,
     method: source.method,
@@ -197,6 +211,7 @@ function compileRoute(entry: unknown): CompiledActionRoute {
     segments: Object.freeze(segments),
     statics,
     bunKey,
+    mode,
   });
 }
 
@@ -355,7 +370,12 @@ export function matchActionRoute(
     else foreign.add(route.method);
   }
   if (best !== undefined)
-    return Object.freeze({ kind: "match", identity: best.route.identity, captures: best.captures });
+    return Object.freeze({
+      kind: "match",
+      identity: best.route.identity,
+      captures: best.captures,
+      mode: best.route.mode,
+    });
   if (groupStructural) return Object.freeze({ kind: "bad-request" });
   if (foreign.size !== 0)
     return Object.freeze({ kind: "method-not-allowed", allow: [...foreign].sort().join(", ") });
@@ -428,6 +448,79 @@ export function actionReject(status: 400 | 405, allow?: string): Response {
   });
   if (status === 405 && allow !== undefined) headers.set("allow", allow);
   return new Response(status === 400 ? "Bad Request" : "Method Not Allowed", { status, headers });
+}
+
+// Paired-generation handshake vocabulary (C-H). The page slot lives in
+// data-can-generation on the paired script tag; live-document action
+// traffic echoes it in the can-generation header. The server pins its
+// own manifest buildID at startup and answers any missing, malformed,
+// or unequal value with the exact 409 shape below, before any action
+// logic runs. Document mounts stay outside the check: navigations
+// cannot carry the header and always load the current document.
+export const generationHeaderName = "can-generation";
+export const generationSlotAttribute = "data-can-generation";
+export const generationMismatchKind = "can.generation-mismatch";
+const generationPattern = /^[0-9a-f]{64}$/;
+
+export function isGenerationId(value: unknown): value is string {
+  return typeof value === "string" && generationPattern.test(value);
+}
+
+export function generationMismatchResponse(serverGeneration: string): Response {
+  const body = JSON.stringify({
+    schemaVersion: 1,
+    kind: generationMismatchKind,
+    serverGeneration,
+  });
+  return new Response(body, {
+    status: 409,
+    headers: new Headers({
+      "content-type": "application/json",
+      "x-content-type-options": "nosniff",
+    }),
+  });
+}
+
+// Exact-shape test for the client: only this response maps to the
+// generation_mismatch outcome. A domain 409 such as grid_conflict
+// carries a different body and keeps its existing classification.
+// Returns the named server generation when the shape is exact.
+export function readGenerationMismatch(value: unknown): string | undefined {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const record = value as Record<string, unknown>;
+  const keys = Object.keys(record);
+  if (keys.length !== 3) return undefined;
+  if (record["schemaVersion"] !== 1 || record["kind"] !== generationMismatchKind) return undefined;
+  const named = record["serverGeneration"];
+  return isGenerationId(named) ? named : undefined;
+}
+
+// Live-document slot read for the fetch client. Browsers resolve the
+// paired script tag; any other host (Bun, tests, companions) has no
+// slot and sends no header. Only a well-formed slot is returned.
+export function readGenerationSlot(host: unknown): string | undefined {
+  if (host === null || typeof host !== "object") return undefined;
+  const query = (host as { querySelector?: unknown }).querySelector;
+  if (typeof query !== "function") return undefined;
+  let node: unknown;
+  try {
+    node = (query as (selectors: string) => unknown).call(
+      host,
+      `script[${generationSlotAttribute}]`,
+    );
+  } catch {
+    return undefined;
+  }
+  if (node === null || typeof node !== "object") return undefined;
+  const get = (node as { getAttribute?: unknown }).getAttribute;
+  if (typeof get !== "function") return undefined;
+  let slot: unknown;
+  try {
+    slot = (get as (name: string) => unknown).call(node, generationSlotAttribute);
+  } catch {
+    return undefined;
+  }
+  return isGenerationId(slot) ? slot : undefined;
 }
 
 const adapterOrigin = Object.freeze({
@@ -1030,6 +1123,11 @@ export function createActionRoutes(
     entry: MountEntry,
     callback: ActionDispatchCallback,
   ): Promise<Completion<unknown>> {
+    // The dispatch-time handshake mode rides the compiled route: JSON
+    // and form mounts compare the generation header, document mounts
+    // serve headerless navigations and stay outside the check.
+    const mode: ActionRouteMode =
+      entry.body === "json" ? "json" : entry.method === "POST" ? "form" : "document";
     let template: string;
     try {
       template = actionTemplate(entry.identity, entry.path);
@@ -1039,6 +1137,7 @@ export function createActionRoutes(
           method: entry.method,
           path: template,
           captures: entry.captures,
+          mode,
         },
       ]);
     } catch (cause) {
@@ -1054,6 +1153,7 @@ export function createActionRoutes(
           method: entry.method,
           path: template,
           captures: Object.freeze(entry.captures.map((capture) => Object.freeze({ ...capture }))),
+          mode,
         }),
         callback,
       }),

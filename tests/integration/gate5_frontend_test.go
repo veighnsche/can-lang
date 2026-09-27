@@ -662,7 +662,7 @@ func gate5ServedPairing(t *testing.T, suite, base, shellPath, session string, pa
 	if !strings.Contains(csp, "script-src 'self'") || !strings.Contains(csp, "connect-src 'self'") {
 		t.Fatalf("%s shell CSP %q scopes beyond self", suite, csp)
 	}
-	want := `<script type="module" src="` + pairing.Entry + `"></script>`
+	want := `<script type="module" src="` + pairing.Entry + `" data-can-generation="` + pairing.BuildID + `"></script>`
 	if strings.Count(shell, want) != 1 {
 		t.Fatalf("%s shell carries the paired entry %d times, want exactly once: %.500s", suite, strings.Count(shell, want), shell)
 	}
@@ -1083,7 +1083,7 @@ func (m *gate5Matrix) invoiceLeg(t *testing.T, engine string, port int) {
 	if status != 200 {
 		t.Fatalf("invoice %s form page: %d, want 200", engine, status)
 	}
-	want := `<script type="module" src="` + pairing.Entry + `"></script>`
+	want := `<script type="module" src="` + pairing.Entry + `" data-can-generation="` + pairing.BuildID + `"></script>`
 	if strings.Count(form, want) != 1 {
 		t.Fatalf("invoice %s form carries the paired entry %d times, want exactly once", engine, strings.Count(form, want))
 	}

@@ -810,7 +810,7 @@ console.log("paired asset loopback passed");
 	for _, file := range serverV1.Browser.Files {
 		exactV1[file.Route] = filepath.Join(browserV1.Directory, filepath.FromSlash(file.Path))
 	}
-	tagV1 := `<script type="module" src="` + serverV1.Browser.Entry + `"></script>`
+	tagV1 := `<script type="module" src="` + serverV1.Browser.Entry + `" data-can-generation="` + serverV1.BuildID + `"></script>`
 	serveAndCheck(serverV1.Directory, tagV1, exactV1, nil)
 
 	code, out, diag = buildServer(serverRoot, manifestV1)
@@ -867,7 +867,7 @@ console.log("paired asset loopback passed");
 	for route, expected := range exactV2 {
 		combined[route] = expected
 	}
-	tagV2 := `<script type="module" src="` + serverV2.Browser.Entry + `"></script>`
+	tagV2 := `<script type="module" src="` + serverV2.Browser.Entry + `" data-can-generation="` + serverV2.BuildID + `"></script>`
 	serveAndCheck(serverV2.Directory, tagV2, combined, nil)
 
 	// Every negative fails before publication and preserves the prior set.
