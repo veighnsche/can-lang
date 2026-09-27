@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/veighnsche/can-lang/compiler/internal/browser"
 	"github.com/veighnsche/can-lang/compiler/internal/check"
 	"github.com/veighnsche/can-lang/compiler/internal/driver"
 	"github.com/veighnsche/can-lang/compiler/internal/emit"
@@ -101,11 +102,15 @@ func main() {
 		must(err)
 		defer store.Close()
 		inputs := store.BuildInputs(private.Identity, private.Identity, private.Identity, private.Identity)
+		programEntry := "entry.ts"
+		if *target == "browser" {
+			programEntry = browser.BrowserEntry
+		}
 		for _, candidate := range []struct {
-			name      string
-			artifacts []ir.Artifact
-		}{{"program", mapped}, {"assertions", aa}} {
-			output, err := driver.PrepareOutput(inputs, "entry.ts", candidate.artifacts)
+			name, entry string
+			artifacts   []ir.Artifact
+		}{{"program", programEntry, mapped}, {"assertions", "entry.ts", aa}} {
+			output, err := driver.PrepareOutput(inputs, candidate.entry, candidate.artifacts)
 			must(err)
 			if err := r.ValidateOutput(context.Background(), output); err != nil {
 				panic(fmt.Errorf("prepare %s: %w", candidate.name, err))
