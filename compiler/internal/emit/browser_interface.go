@@ -37,6 +37,8 @@ package emit
 //     createText/setText/setAttribute/removeAttribute/appendChild/removeNode/
 //     focus/onEvent/setTimeout/queryParameter/onCancelKey/onCancelEvent with
 //     this trailing explicit context, plus the factory contracts below.
+//     C02 adds setValue/setChecked/setSelected/setSelection/readValue/
+//     readChecked/readSelected/readSelection/readFiles with the same shape.
 //   - Shared catalogue ops (non-browser, including actions/fetch) take
 //     (args..., $canContext?) only, as before; browser callers pass the
 //     (undefined) assertion context. UP09 owns those adapters.
@@ -55,10 +57,12 @@ package emit
 //
 // Factory contracts (emit/runtime_browser.go, consumed by UP13):
 //   - $canCreateBrowser($canDomain, {missingRoot, disposed, rejected, event,
-//     invalidQuery, some, none}) with build-sealed identities. invalidQuery
-//     is the UP11 addition for query_parameter; UP13 threads it into the
-//     adapter together with the UP13 some/none option leaves sealed from
-//     the query_parameter intrinsic result (option::value<str>).
+//     invalidQuery, some, none, modifiers, selection, file}) with
+//     build-sealed identities. invalidQuery is the UP11 addition for
+//     query_parameter; UP13 threads it into the adapter together with the
+//     UP13 some/none option leaves sealed from the query_parameter
+//     intrinsic result (option::value<str>). modifiers/selection/file are
+//     the C02 nested snapshot record identities.
 //   - Method names are queryParameter, onCancelKey, onCancelEvent (camelCase
 //     of the catalogue operations). Cancel methods preventDefault
 //     synchronously for matching cancelable events before dispatching one

@@ -1,7 +1,7 @@
 # Closed distribution catalogue
 
 Generated from compiler/internal/catalogue/catalogue.json; do not edit this mirror.
-Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 664630d671f03866dcc40c0cae628091f160c88700ff13e8e698998de8c295aa.
+Revision: **1**. Target: bun-1.4.2-darwin-arm64-v1. Source SHA-256: 87c05b44978ff20cea35c8e67a427c535a1aab20ab15e041a0cfb9006894b99f.
 
 This is the complete approved descriptor inventory, not a claim that every
 runtime adapter is implemented. Each native recipe names its implementation
@@ -155,7 +155,10 @@ with the same command plus --check. Go tests also reject stale mirrors.
 | browser::node | opaque |  |  | false |
 | browser::state | opaque | T:data |  | false |
 | browser::snapshot | record | T:data | int version, T value | true |
-| browser::event | record |  | str kind, str target, str value, str key | true |
+| browser::event | record |  | str kind, str target, str value, str key, bool checked, str[] selected, browser::file[] files, browser::modifiers modifiers, bool composing, browser::selection selection | true |
+| browser::modifiers | record |  | bool alt, bool ctrl, bool meta, bool shift | true |
+| browser::selection | record |  | int start, int end, str direction | true |
+| browser::file | record |  | str name, int size, str mime | true |
 | action::declaration | opaque |  |  | false |
 
 ## Domain errors
@@ -569,6 +572,15 @@ callbacks. Later assertion work must enforce those rules before side effects.
 | browser::query_parameter | str key → option::value&lt;str&gt;; static key | [browser::invalid_query] |  | URLSearchParams, decodeURIComponent | Read one literal query key from location.search under strict budgets: scan every raw pair with decodeURIComponent after plus-to-space, reject malformed escapes, invalid UTF-8, oversized or duplicate values as browser::invalid_query, return none for zero and some for one. | real | T22 / T22 |
 | browser::on_cancel_key | browser::view view, browser::node node, str kind, str key, $callback callback → void | [browser::disposed, browser::rejected] | callback(browser::event) → void emits [] | EventTarget.addEventListener, AbortController | Register a cancel-policy key listener: admit only keydown or keyup with a nonempty exact key, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; mismatched or noncancelable events still dispatch once without cancellation. | real | T22 / T22 |
 | browser::on_cancel_event | browser::view view, browser::node node, str kind, $callback callback → void | [browser::disposed, browser::rejected] | callback(browser::event) → void emits [] | EventTarget.addEventListener, AbortController | Register a cancel-policy event listener: initially admit only submit, preventDefault synchronously for matching cancelable events before dispatching one immutable snapshot; otherwise dispatch once without cancellation. | real | T22 / T22 |
+| browser::set_value | browser::node node, str value → void | [browser::disposed, browser::rejected] |  | Element.value | Admit elements carrying a string value IDL, then assign the live value natively; text nodes and IDL-less controls reject, and no event is dispatched. | real | C02 / C02 |
+| browser::set_checked | browser::node node, bool checked → void | [browser::disposed, browser::rejected] |  | HTMLInputElement.checked | Admit elements carrying a boolean checked IDL, then assign the live state natively; text nodes and IDL-less controls reject, and no event is dispatched. | real | C02 / C02 |
+| browser::set_selected | browser::node node, str[] values → void | [browser::disposed, browser::rejected] |  | HTMLOptionElement.selected | Admit select elements, then mark selected exactly the options whose value appears in the input; unknown values match nothing and no event is dispatched. | real | C02 / C02 |
+| browser::set_selection | browser::node node, int start, int end, str direction → void | [browser::disposed, browser::rejected] |  | HTMLInputElement.setSelectionRange | Admit the forward/backward/none direction and 0 &lt;= start &lt;= end &lt;= value length, then set the caret natively; out-of-range bounds and selection-less controls reject instead of clamping. | real | C02 / C02 |
+| browser::read_value | browser::node node → str | [browser::disposed, browser::rejected] |  | Element.value | Admit elements carrying a string value IDL, then read the live value natively; text nodes and IDL-less controls reject. | real | C02 / C02 |
+| browser::read_checked | browser::node node → bool | [browser::disposed, browser::rejected] |  | HTMLInputElement.checked | Admit elements carrying a boolean checked IDL, then read the live state natively; text nodes and IDL-less controls reject. | real | C02 / C02 |
+| browser::read_selected | browser::node node → str[] | [browser::disposed, browser::rejected] |  | HTMLSelectElement.options | Admit select elements, then copy the selected option values into a fresh immutable array; non-select controls reject. | real | C02 / C02 |
+| browser::read_selection | browser::node node → browser::selection | [browser::disposed] |  | HTMLInputElement.selectionStart, HTMLInputElement.selectionEnd, HTMLInputElement.selectionDirection | Project the live caret like event snapshots: text controls read start/end/direction natively, and controls without a text selection read the neutral -1/-1/none record. | real | C02 / C02 |
+| browser::read_files | browser::node node → browser::file[] | [browser::disposed, browser::rejected] |  | HTMLInputElement.files | Admit file-carrying inputs, then copy at most the first 128 name/size/mime entries into fresh immutable records; bytes never cross and other controls reject. | real | C02 / C02 |
 | action::mount | action::declaration action → http::route | [http::invalid_route] |  | URL, Request, Response | Bind one action symbol plus its exact checked callables into a mounted route: one request-first handler for JSON actions, plus the normal and structural-422 renderers for HTML actions; decode through the declared codec and map result leaves to case statuses. | real | I32 / P10 |
 | action::url | action::declaration action → str | [action::invalid_path] |  | URL, encodeURIComponent | Render the canonical action path from the symbol route template and the typed captures record; strict single-segment captures fail as action::invalid_path. | real | I32 / P10 |
 | action::request | Result:data; action::declaration action → Result | [http::transport_failed, http::invalid_request, http::status_error, codec::invalid_data] |  | fetch, Request, Response, TextDecoder | Resolve the action symbol against the checked JSON table, build the canonical same-origin URL from the typed captures record, issue a bodyless GET through native fetch, and map the actual status to a finite domain case; transport, abort, codec and unexpected-status outcomes stay in the declared failure bound. | real | I32 / P10 |

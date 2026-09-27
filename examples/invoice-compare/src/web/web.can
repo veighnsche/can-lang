@@ -468,7 +468,7 @@ fn void on_count_input
         near browser::node status_line
         near browser::node totals_line
     asserts
-        sample: browser::event("input", "qty:k1", "4", ""), "k1" => ok
+        sample: browser::event("input", "qty:k1", "4", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::with_count(snap.value, row, e.value)
@@ -492,7 +492,7 @@ fn void on_sku_input
         near str row
         near browser::node status_line
     asserts
-        sample: browser::event("input", "id:k1", "b", ""), "k1" => ok
+        sample: browser::event("input", "id:k1", "b", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::with_sku(snap.value, row, e.value)
@@ -516,7 +516,7 @@ fn void on_add_row
         near browser::view right_view
         near browser::state<records::panel> right_cell
     asserts
-        sample: browser::event("click", "left-add", "", "") => ok
+        sample: browser::event("click", "left-add", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::row_added(snap.value)
@@ -540,7 +540,7 @@ fn void on_remove_row
         near browser::state<records::panel> right_cell
         near str row
     asserts
-        sample: browser::event("click", "left-del:k1", "", ""), "k1" => ok
+        sample: browser::event("click", "left-del:k1", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::row_removed(snap.value, row)
@@ -564,7 +564,7 @@ fn void on_move_up
         near browser::state<records::panel> right_cell
         near str row
     asserts
-        sample: browser::event("click", "left-up:k1", "", ""), "k1" => ok
+        sample: browser::event("click", "left-up:k1", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::row_moved(snap.value, row, 0)
@@ -588,7 +588,7 @@ fn void on_move_down
         near browser::state<records::panel> right_cell
         near str row
     asserts
-        sample: browser::event("click", "left-down:k1", "", ""), "k1" => ok
+        sample: browser::event("click", "left-down:k1", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::row_moved(snap.value, row, 1)
@@ -612,7 +612,7 @@ fn void on_review_click
         near browser::view right_view
         near browser::state<records::panel> right_cell
     asserts
-        sample: browser::event("click", "left-review", "", "") => ok
+        sample: browser::event("click", "left-review", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::panel> snap => match call model::review_notice(snap.value)
@@ -636,7 +636,7 @@ fn void on_mirror_click
         near browser::view right_view
         near browser::state<records::panel> right_cell
     asserts
-        sample: browser::event("click", "mirror", "", "") => ok
+        sample: browser::event("click", "mirror", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call mirror_notice(left_cell, right_cell)
         ok option::value<records::panel> done => match done
             option::some => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
@@ -657,7 +657,7 @@ fn void on_dispose_left
         near browser::view right_view
         near browser::state<records::panel> right_cell
     asserts
-        sample: browser::event("click", "drop-left", "", "") => ok
+        sample: browser::event("click", "drop-left", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::dispose_view(left_view)
         ok => match call render_replace(app, left_view, left_cell, right_view, right_cell, view)
             ok => ok

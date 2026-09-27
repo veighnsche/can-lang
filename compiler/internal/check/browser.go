@@ -40,6 +40,15 @@ const (
 	browserOnCancelKey     = "can.std.browser@1::on_cancel_key"
 	browserOnCancelEvent   = "can.std.browser@1::on_cancel_event"
 	browserInvalidQuery    = "can.std.browser@1::invalid_query"
+	browserSetValue        = "can.std.browser@1::set_value"
+	browserSetChecked      = "can.std.browser@1::set_checked"
+	browserSetSelected     = "can.std.browser@1::set_selected"
+	browserSetSelection    = "can.std.browser@1::set_selection"
+	browserReadValue       = "can.std.browser@1::read_value"
+	browserReadChecked     = "can.std.browser@1::read_checked"
+	browserReadSelected    = "can.std.browser@1::read_selected"
+	browserReadSelection   = "can.std.browser@1::read_selection"
+	browserReadFiles       = "can.std.browser@1::read_files"
 )
 
 // browserMaxDelayMs is the largest setTimeout delay the catalogue admits:
@@ -114,7 +123,7 @@ func browserStateOperation(identity string) *catalogue.Operation {
 func browserStaticOperation(identity string) bool {
 	switch identity {
 	case browserCreateElement, browserSetAttribute, browserRemoveAttribute, browserOnEvent, browserSetTimeout,
-		browserQueryParameter, browserOnCancelKey, browserOnCancelEvent:
+		browserQueryParameter, browserOnCancelKey, browserOnCancelEvent, browserSetSelection:
 		return true
 	}
 	return false
@@ -205,6 +214,18 @@ func checkBrowserCancelEvent(kind string) error {
 		return nil
 	}
 	return fmt.Errorf("browser cancel event %q is not admitted; expected submit", kind)
+}
+
+// checkBrowserSelectionDirection admits the set_selection caret
+// direction vocabulary: forward, backward or none, ASCII
+// case-insensitive like event kinds. The runtime re-checks dynamic
+// values and normalizes to lowercase.
+func checkBrowserSelectionDirection(direction string) error {
+	switch browserLower(direction) {
+	case "forward", "backward", "none":
+		return nil
+	}
+	return fmt.Errorf("browser selection direction %q is not admitted; expected forward, backward or none", direction)
 }
 
 // checkBrowserURLValue mirrors the runtime URL rule for URL-valued
@@ -434,6 +455,17 @@ func (c *regionChecker) checkBrowserCall(identity string, args []syntax.Argument
 		}
 		if _, ok := fetchUngroup(fixedArgs[3].Value).(*syntax.ReferenceExpr); !ok {
 			return c.locate(span, fmt.Errorf("browser cancel callback must be a named reference"))
+		}
+		return nil
+	case browserSetSelection:
+		fixedArgs, err := fixed(4)
+		if err != nil {
+			return err
+		}
+		if direction := literal(fixedArgs[3]); direction != nil && direction.Token.Kind == syntax.String {
+			if err := checkBrowserSelectionDirection(direction.Token.Value); err != nil {
+				return c.locate(direction.Token.Span, err)
+			}
 		}
 		return nil
 	default:

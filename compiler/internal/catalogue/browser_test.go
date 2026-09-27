@@ -36,9 +36,33 @@ func TestBrowserCatalogueContract(t *testing.T) {
 	if !ok || event.Kind != "record" {
 		t.Fatalf("browser::event declaration lost: %+v %v", event, ok)
 	}
-	wantFields := []Field{{Name: "kind", Type: "str"}, {Name: "target", Type: "str"}, {Name: "value", Type: "str"}, {Name: "key", Type: "str"}}
+	wantFields := []Field{{Name: "kind", Type: "str"}, {Name: "target", Type: "str"}, {Name: "value", Type: "str"}, {Name: "key", Type: "str"}, {Name: "checked", Type: "bool"}, {Name: "selected", Type: "str[]"}, {Name: "files", Type: "browser::file[]"}, {Name: "modifiers", Type: "browser::modifiers"}, {Name: "composing", Type: "bool"}, {Name: "selection", Type: "browser::selection"}}
 	if !reflect.DeepEqual(event.Fields, wantFields) {
 		t.Fatalf("browser::event fields differ: %+v", event.Fields)
+	}
+	modifiers, ok := c.Type("browser::modifiers")
+	if !ok || modifiers.Kind != "record" {
+		t.Fatalf("browser::modifiers declaration lost: %+v %v", modifiers, ok)
+	}
+	wantModifiers := []Field{{Name: "alt", Type: "bool"}, {Name: "ctrl", Type: "bool"}, {Name: "meta", Type: "bool"}, {Name: "shift", Type: "bool"}}
+	if !reflect.DeepEqual(modifiers.Fields, wantModifiers) {
+		t.Fatalf("browser::modifiers fields differ: %+v", modifiers.Fields)
+	}
+	selection, ok := c.Type("browser::selection")
+	if !ok || selection.Kind != "record" {
+		t.Fatalf("browser::selection declaration lost: %+v %v", selection, ok)
+	}
+	wantSelection := []Field{{Name: "start", Type: "int"}, {Name: "end", Type: "int"}, {Name: "direction", Type: "str"}}
+	if !reflect.DeepEqual(selection.Fields, wantSelection) {
+		t.Fatalf("browser::selection fields differ: %+v", selection.Fields)
+	}
+	file, ok := c.Type("browser::file")
+	if !ok || file.Kind != "record" {
+		t.Fatalf("browser::file declaration lost: %+v %v", file, ok)
+	}
+	wantFile := []Field{{Name: "name", Type: "str"}, {Name: "size", Type: "int"}, {Name: "mime", Type: "str"}}
+	if !reflect.DeepEqual(file.Fields, wantFile) {
+		t.Fatalf("browser::file fields differ: %+v", file.Fields)
 	}
 	stale, ok := c.Error("browser::stale_version")
 	if !ok || len(stale.Fields) != 2 || stale.Fields[0].Name != "expected" || stale.Fields[0].Type != "int" || stale.Fields[1].Name != "actual" || stale.Fields[1].Type != "int" {
@@ -94,6 +118,29 @@ func TestBrowserCatalogueContract(t *testing.T) {
 			t.Fatalf("browser operation %s missing: %v", name, err)
 		}
 		if op.Lowering.Task != "T22" || op.Assertion != "real" {
+			t.Fatalf("browser operation %s evidence contract differs: %+v", name, op.Lowering)
+		}
+	}
+	caret, err := c.Operation("browser::set_selection", c.Inventory().TargetID, c.Inventory().Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(caret.Inputs) != 4 || caret.Inputs[1].Type != "int" || caret.Inputs[3].Type != "str" || caret.Result != "void" {
+		t.Fatalf("browser::set_selection descriptor differs: %+v", caret)
+	}
+	live, err := c.Operation("browser::read_selection", c.Inventory().TargetID, c.Inventory().Revision)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if live.Result != "browser::selection" || !reflect.DeepEqual(live.Emits, []string{"browser::disposed"}) {
+		t.Fatalf("browser::read_selection descriptor differs: %+v", live)
+	}
+	for _, name := range []string{"browser::set_value", "browser::set_checked", "browser::set_selected", "browser::set_selection", "browser::read_value", "browser::read_checked", "browser::read_selected", "browser::read_selection", "browser::read_files"} {
+		op, err := c.Operation(name, c.Inventory().TargetID, c.Inventory().Revision)
+		if err != nil {
+			t.Fatalf("browser operation %s missing: %v", name, err)
+		}
+		if op.Lowering.Task != "C02" || op.Assertion != "real" {
 			t.Fatalf("browser operation %s evidence contract differs: %+v", name, op.Lowering)
 		}
 	}

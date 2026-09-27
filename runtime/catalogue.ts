@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "664630d671f03866dcc40c0cae628091f160c88700ff13e8e698998de8c295aa";
+export const catalogueSHA256 = "87c05b44978ff20cea35c8e67a427c535a1aab20ab15e041a0cfb9006894b99f";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -1849,6 +1849,103 @@ export const catalogue = freeze({
         },
         {
           "name": "key",
+          "type": "str"
+        },
+        {
+          "name": "checked",
+          "type": "bool"
+        },
+        {
+          "name": "selected",
+          "type": "str[]"
+        },
+        {
+          "name": "files",
+          "type": "browser::file[]"
+        },
+        {
+          "name": "modifiers",
+          "type": "browser::modifiers"
+        },
+        {
+          "name": "composing",
+          "type": "bool"
+        },
+        {
+          "name": "selection",
+          "type": "browser::selection"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "browser::modifiers",
+      "identity": "can.std.browser@1::modifiers",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "alt",
+          "type": "bool"
+        },
+        {
+          "name": "ctrl",
+          "type": "bool"
+        },
+        {
+          "name": "meta",
+          "type": "bool"
+        },
+        {
+          "name": "shift",
+          "type": "bool"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "browser::selection",
+      "identity": "can.std.browser@1::selection",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "start",
+          "type": "int"
+        },
+        {
+          "name": "end",
+          "type": "int"
+        },
+        {
+          "name": "direction",
+          "type": "str"
+        }
+      ],
+      "leaves": [],
+      "projections": [],
+      "constructible": true
+    },
+    {
+      "name": "browser::file",
+      "identity": "can.std.browser@1::file",
+      "kind": "record",
+      "parameters": [],
+      "fields": [
+        {
+          "name": "name",
+          "type": "str"
+        },
+        {
+          "name": "size",
+          "type": "int"
+        },
+        {
+          "name": "mime",
           "type": "str"
         }
       ],
@@ -13570,6 +13667,319 @@ export const catalogue = freeze({
       ]
     },
     {
+      "name": "browser::set_value",
+      "identity": "can.std.browser@1::set_value",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "value",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Element.value"
+        ],
+        "adapter": "Admit elements carrying a string value IDL, then assign the live value natively; text nodes and IDL-less controls reject, and no event is dispatched.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::set_checked",
+      "identity": "can.std.browser@1::set_checked",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "checked",
+          "type": "bool"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLInputElement.checked"
+        ],
+        "adapter": "Admit elements carrying a boolean checked IDL, then assign the live state natively; text nodes and IDL-less controls reject, and no event is dispatched.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::set_selected",
+      "identity": "can.std.browser@1::set_selected",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "values",
+          "type": "str[]"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLOptionElement.selected"
+        ],
+        "adapter": "Admit select elements, then mark selected exactly the options whose value appears in the input; unknown values match nothing and no event is dispatched.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::set_selection",
+      "identity": "can.std.browser@1::set_selection",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        },
+        {
+          "name": "start",
+          "type": "int"
+        },
+        {
+          "name": "end",
+          "type": "int"
+        },
+        {
+          "name": "direction",
+          "type": "str"
+        }
+      ],
+      "staticInputs": [],
+      "result": "void",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLInputElement.setSelectionRange"
+        ],
+        "adapter": "Admit the forward/backward/none direction and 0 <= start <= end <= value length, then set the caret natively; out-of-range bounds and selection-less controls reject instead of clamping.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::read_value",
+      "identity": "can.std.browser@1::read_value",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "Element.value"
+        ],
+        "adapter": "Admit elements carrying a string value IDL, then read the live value natively; text nodes and IDL-less controls reject.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::read_checked",
+      "identity": "can.std.browser@1::read_checked",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "bool",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLInputElement.checked"
+        ],
+        "adapter": "Admit elements carrying a boolean checked IDL, then read the live state natively; text nodes and IDL-less controls reject.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::read_selected",
+      "identity": "can.std.browser@1::read_selected",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "str[]",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLSelectElement.options"
+        ],
+        "adapter": "Admit select elements, then copy the selected option values into a fresh immutable array; non-select controls reject.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::read_selection",
+      "identity": "can.std.browser@1::read_selection",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::selection",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLInputElement.selectionStart",
+          "HTMLInputElement.selectionEnd",
+          "HTMLInputElement.selectionDirection"
+        ],
+        "adapter": "Project the live caret like event snapshots: text controls read start/end/direction natively, and controls without a text selection read the neutral -1/-1/none record.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
+      "name": "browser::read_files",
+      "identity": "can.std.browser@1::read_files",
+      "kind": "function",
+      "receiver": "",
+      "parameters": [],
+      "inputs": [
+        {
+          "name": "node",
+          "type": "browser::node"
+        }
+      ],
+      "staticInputs": [],
+      "result": "browser::file[]",
+      "callbacks": [],
+      "emits": [
+        "browser::disposed",
+        "browser::rejected"
+      ],
+      "callbackErrors": [],
+      "lowering": {
+        "native": [
+          "HTMLInputElement.files"
+        ],
+        "adapter": "Admit file-carrying inputs, then copy at most the first 128 name/size/mime entries into fresh immutable records; bytes never cross and other controls reject.",
+        "task": "C02"
+      },
+      "assertion": "real",
+      "refs": [
+        "C02"
+      ]
+    },
+    {
       "name": "action::mount",
       "identity": "can.std.action@1::mount",
       "kind": "function",
@@ -15928,6 +16338,155 @@ export const catalogueTypeShapes = freeze([
       },
       {
         "name": "key",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "checked",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "selected",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "str",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "files",
+        "type": {
+          "name": "[]",
+          "arguments": [
+            {
+              "name": "browser::file",
+              "arguments": null
+            }
+          ]
+        }
+      },
+      {
+        "name": "modifiers",
+        "type": {
+          "name": "browser::modifiers",
+          "arguments": null
+        }
+      },
+      {
+        "name": "composing",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "selection",
+        "type": {
+          "name": "browser::selection",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::modifiers",
+    "identity": "can.std.browser@1::modifiers",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "alt",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "ctrl",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "meta",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      },
+      {
+        "name": "shift",
+        "type": {
+          "name": "bool",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::selection",
+    "identity": "can.std.browser@1::selection",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "start",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "end",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "direction",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      }
+    ],
+    "leaves": []
+  },
+  {
+    "name": "browser::file",
+    "identity": "can.std.browser@1::file",
+    "kind": "record",
+    "parameters": [],
+    "fields": [
+      {
+        "name": "name",
+        "type": {
+          "name": "str",
+          "arguments": null
+        }
+      },
+      {
+        "name": "size",
+        "type": {
+          "name": "int",
+          "arguments": null
+        }
+      },
+      {
+        "name": "mime",
         "type": {
           "name": "str",
           "arguments": null

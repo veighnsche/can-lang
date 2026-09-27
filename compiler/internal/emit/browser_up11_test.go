@@ -238,14 +238,14 @@ fn void on_field_key
     given
         browser::event e
     asserts
-        sample: browser::event("keydown", "input", "", "Enter") => ok
+        sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
     emits []
     given
         browser::event e
     asserts
-        sample: browser::event("submit", "form", "", "") => ok
+        sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void show_boot_notice
     emits []
@@ -293,14 +293,14 @@ fn void on_field_key
     given
         browser::event e
     asserts
-        sample: browser::event("keydown", "input", "", "Enter") => ok
+        sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
     emits []
     given
         browser::event e
     asserts
-        sample: browser::event("submit", "form", "", "") => ok
+        sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void demo
     emits [browser::missing_root, browser::disposed, browser::rejected]

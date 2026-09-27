@@ -239,7 +239,7 @@ fn void on_probe_input
         near browser::view view
         near browser::node marks
     asserts
-        sample: browser::event("input", "probe", "x", "") => ok
+        sample: browser::event("input", "probe", "x", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match chain
         call browser::create_element(view, "li") as browser::node mark
         call browser::create_text(view, "saw-input") as browser::node words
@@ -278,7 +278,7 @@ fn void on_dispose_click
         near browser::app app
         near browser::node parent
     asserts
-        sample: browser::event("click", "dispose", "", "") => ok
+        sample: browser::event("click", "dispose", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::dispose_view(view)
         ok => match call browser::open_view(app)
             browser::disposed => ok
@@ -373,7 +373,7 @@ fn void on_form_submit
         near browser::view view
         near browser::node marks
     asserts
-        sample: browser::event("submit", "cf", "", "") => ok
+        sample: browser::event("submit", "cf", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match chain
         call browser::create_element(view, "li") as browser::node mark
         call browser::create_text(view, "submitted") as browser::node words
@@ -394,8 +394,8 @@ fn void on_key_save
         near browser::view view
         near browser::node marks
     asserts
-        enter: browser::event("keydown", "key", "", "Enter") => ok
-        other: browser::event("keydown", "key", "", "a") => ok
+        enter: browser::event("keydown", "key", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+        other: browser::event("keydown", "key", "", "a", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match e.key is "Enter"
         false => match chain
             call browser::create_element(view, "li") as browser::node mark

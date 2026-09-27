@@ -33,6 +33,15 @@ func browserOperationBindings() bindingContribution {
 		"can.std.browser@1::query_parameter":  "$canBrowser.queryParameter",
 		"can.std.browser@1::on_cancel_key":    "$canBrowser.onCancelKey",
 		"can.std.browser@1::on_cancel_event":  "$canBrowser.onCancelEvent",
+		"can.std.browser@1::set_value":        "$canBrowser.setValue",
+		"can.std.browser@1::set_checked":      "$canBrowser.setChecked",
+		"can.std.browser@1::set_selected":     "$canBrowser.setSelected",
+		"can.std.browser@1::set_selection":    "$canBrowser.setSelection",
+		"can.std.browser@1::read_value":       "$canBrowser.readValue",
+		"can.std.browser@1::read_checked":     "$canBrowser.readChecked",
+		"can.std.browser@1::read_selected":    "$canBrowser.readSelected",
+		"can.std.browser@1::read_selection":   "$canBrowser.readSelection",
+		"can.std.browser@1::read_files":       "$canBrowser.readFiles",
 	}
 	return bindingContribution{domain: "browser", functions: functions}
 }
@@ -119,10 +128,12 @@ func browserQueryOptionIDs(builder *stateBuilder) (some, none string) {
 // live document lazily, so Bun executions fail closed with missing_root
 // while browser bundles bind the real document. The invalidQuery contract
 // is the UP11 addition for query_parameter; UP13 consumes it in the
-// platform adapter together with the sealed some/none option leaves.
+// platform adapter together with the sealed some/none option leaves. The
+// modifiers/selection/file contracts are the C02 addition for the nested
+// snapshot records; like event they resolve from the program model.
 func (builder *stateBuilder) initializeBrowserState() {
 	some, none := browserQueryOptionIDs(builder)
-	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s,invalidQuery:%s,some:%s,none:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]), quote(builder.numberIDs["can.std.browser@1::invalid_query"]), quote(some), quote(none))
+	fmt.Fprintf(&builder.out, "$canBrowser=$canCreateBrowser($canDomain,{missingRoot:%s,disposed:%s,rejected:%s,event:%s,invalidQuery:%s,some:%s,none:%s,modifiers:%s,selection:%s,file:%s});\n", quote(builder.numberIDs["can.std.browser@1::missing_root"]), quote(builder.numberIDs["can.std.browser@1::disposed"]), quote(builder.numberIDs["can.std.browser@1::rejected"]), quote(builder.numberIDs["can.std.browser@1::event"]), quote(builder.numberIDs["can.std.browser@1::invalid_query"]), quote(some), quote(none), quote(builder.numberIDs["can.std.browser@1::modifiers"]), quote(builder.numberIDs["can.std.browser@1::selection"]), quote(builder.numberIDs["can.std.browser@1::file"]))
 }
 
 // initializeBrowserStateSpecializations constructs the per-type browser

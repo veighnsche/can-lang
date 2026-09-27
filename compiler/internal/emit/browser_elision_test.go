@@ -16,7 +16,7 @@ fn void on_press
         browser::event e
         near browser::state<int> cell
     asserts
-        sample: browser::event("click", "save", "", "") => ok
+        sample: browser::event("click", "save", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<int> snap => ok

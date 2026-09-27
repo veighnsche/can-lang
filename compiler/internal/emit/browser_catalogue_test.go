@@ -17,7 +17,7 @@ fn void on_click
     given
         browser::event e
     asserts
-        sample: browser::event("click", "", "", "") => ok
+        sample: browser::event("click", "", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_tick
     emits []

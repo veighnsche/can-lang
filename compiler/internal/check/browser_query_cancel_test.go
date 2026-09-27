@@ -13,14 +13,14 @@ fn void on_field_key
     given
         browser::event e
     asserts
-        sample: browser::event("keydown", "input", "", "Enter") => ok
+        sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
     emits []
     given
         browser::event e
     asserts
-        sample: browser::event("submit", "form", "", "") => ok
+        sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void boot
     emits []
@@ -103,14 +103,14 @@ fn void on_field_key
     given
         browser::event e
     asserts
-        sample: browser::event("keydown", "input", "", "Enter") => ok
+        sample: browser::event("keydown", "input", "", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void on_submit
     emits []
     given
         browser::event e
     asserts
-        sample: browser::event("submit", "form", "", "") => ok
+        sample: browser::event("submit", "form", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     ok
 fn void demo
     emits [browser::missing_root, browser::disposed, browser::rejected]
@@ -153,7 +153,7 @@ func TestBrowserCancelRefusals(t *testing.T) {
 	for _, tc := range []struct{ name, from, to, want string }{
 		{"click cancel key", `"keydown", "Enter"`, `"click", "Enter"`, `browser cancel key event "click" is not admitted`},
 		{"empty cancel key", `"keydown", "Enter"`, `"keydown", ""`, `nonempty exact key`},
-		{"call result cancel callback", `callable on_field_key`, `call on_field_key(browser::event("keydown", "", "", ""))`, `must be a named reference`},
+		{"call result cancel callback", `callable on_field_key`, `call on_field_key(browser::event("keydown", "", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")))`, `must be a named reference`},
 		{"click cancel event", `"submit", callable on_submit`, `"click", callable on_submit`, `browser cancel event "click" is not admitted`},
 		{"keydown cancel event", `"submit", callable on_submit`, `"keydown", callable on_submit`, `browser cancel event "keydown" is not admitted`},
 	} {

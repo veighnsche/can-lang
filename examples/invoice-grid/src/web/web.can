@@ -784,7 +784,7 @@ fn void on_id_input
         near str row
         near browser::node status_line
     asserts
-        sample: browser::event("input", "id:k1", "b", ""), "k1" => ok
+        sample: browser::event("input", "id:k1", "b", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::id_edited(snap.value, row, e.value)
@@ -808,7 +808,7 @@ fn void on_qty_input
         near browser::node status_line
         near browser::node totals_line
     asserts
-        sample: browser::event("input", "qty:k1", "4", ""), "k1" => ok
+        sample: browser::event("input", "qty:k1", "4", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::quantity_edited(snap.value, row, e.value)
@@ -834,7 +834,7 @@ fn void on_price_input
         near browser::node status_line
         near browser::node totals_line
     asserts
-        sample: browser::event("input", "price:k1", "2.50", ""), "k1" => ok
+        sample: browser::event("input", "price:k1", "2.50", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::price_edited(snap.value, row, e.value)
@@ -865,8 +865,8 @@ fn void on_field_key
         near browser::view view
         near browser::node status_line
     asserts
-        enter: browser::event("keydown", "qty:k1", "4", "Enter") => ok
-        other: browser::event("keydown", "qty:k1", "45", "5") => ok
+        enter: browser::event("keydown", "qty:k1", "4", "Enter", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
+        other: browser::event("keydown", "qty:k1", "45", "5", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match e.key is "Enter"
         false => ok
         true => match call send_save(cell, status_line)
@@ -886,7 +886,7 @@ fn void on_move_up
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "up:k2", "", ""), "k2" => ok
+        sample: browser::event("click", "up:k2", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k2" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::line_moved(snap.value, row, 0)
@@ -906,7 +906,7 @@ fn void on_move_down
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "down:k1", "", ""), "k1" => ok
+        sample: browser::event("click", "down:k1", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::line_moved(snap.value, row, 1)
@@ -927,7 +927,7 @@ fn void on_remove_line
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "del:k1", "", ""), "k1" => ok
+        sample: browser::event("click", "del:k1", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")), "k1" => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::line_removed(snap.value, row)
@@ -947,7 +947,7 @@ fn void on_add_line
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "add", "", "") => ok
+        sample: browser::event("click", "add", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::line_added(snap.value)
@@ -969,7 +969,7 @@ fn void on_save_click
         near browser::view view
         near browser::node status_line
     asserts
-        sample: browser::event("click", "save", "", "") => ok
+        sample: browser::event("click", "save", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call send_save(cell, status_line)
         ok option::value<records::grid_state> done => match done
             option::some => match call render_replace(app, cell, view)
@@ -988,7 +988,7 @@ fn void on_reread_click
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "reread", "", "") => ok
+        sample: browser::event("click", "reread", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call load_pressed(cell)
         ok option::value<records::grid_state> done => match done
             option::some => match call render_replace(app, cell, view)
@@ -1008,7 +1008,7 @@ fn void on_replay_click
         near browser::view view
         near browser::node status_line
     asserts
-        sample: browser::event("click", "replay", "", "") => ok
+        sample: browser::event("click", "replay", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::replay_ready(snap.value)
@@ -1030,7 +1030,7 @@ fn void on_adopt_click
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "adopt", "", "") => ok
+        sample: browser::event("click", "adopt", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::adopted_server(snap.value)
@@ -1050,7 +1050,7 @@ fn void on_dismiss_click
         near browser::app app
         near browser::view view
     asserts
-        sample: browser::event("click", "keep", "", "") => ok
+        sample: browser::event("click", "keep", "", "", false, [], [], browser::modifiers(false, false, false, false), false, browser::selection(-1, -1, "none")) => ok
     match call browser::read_state(cell)
         browser::disposed => ok
         ok browser::snapshot<records::grid_state> snap => match call model::dismissed_held(snap.value)
