@@ -557,6 +557,7 @@ fn records::grid_state marked_unsaved
         clean: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::clean_state("saved revision 1"), "") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "")
         saving: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", []), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e1", "1", []), 1, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
         failed: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status")
+        stale: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status") => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status")
     match state.status
         records::clean_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::unsaved_state("unsaved changes"), state.focus)
         records::unsaved_state => ok state
@@ -565,11 +566,13 @@ fn records::grid_state marked_unsaved
         records::uncertain_state => ok state
         records::denied_state => ok state
         records::conflict_state => ok state
+        records::stale_state => ok state
 
 /// Save-press guard: "" when the press sends, else the notice.
 /// A conflict must resolve first (saving around it would discard
-/// the comparison); unparsable quantities and prices cannot feed
-/// exact totals; a clean unchanged draft has nothing to send.
+/// the comparison); a stale page must refresh first (the server
+/// refused the generation); unparsable quantities and prices cannot
+/// feed exact totals; a clean unchanged draft has nothing to send.
 /// Uncertain and failed drafts send: an unchanged press reuses the
 /// identical operation id, which is exactly the safe replay.
 fn str save_notice
@@ -580,10 +583,13 @@ fn str save_notice
         dirty: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "") => ok ""
         replay: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok ""
         conflict: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status") => ok "server has revision 2; your edits kept"
+        stale: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status") => ok "app updated; refresh to continue"
         invalid: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), "") => ok "line k1: bad quantity"
         clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), "") => ok "no changes to save"
     match state.status
         records::conflict_state => match call status_notice(state.status)
+            ok str held => ok held
+        records::stale_state => match call status_notice(state.status)
             ok str held => ok held
         records::clean_state => match state.current.edit_seq is state.submit_seq
             false => ok ""
@@ -609,7 +615,8 @@ fn str save_notice
 /// carries the notice to the live region, and focus moves to the
 /// status line on the next render. Rendering stays a pure function
 /// of state, so the feedback survives re-render. A held conflict
-/// keeps its server copy: only the notice refocuses.
+/// keeps its server copy: only the notice refocuses. A stale page
+/// keeps its prompt: only the notice refocuses.
 fn records::grid_state blocked_applied
     emits []
     given
@@ -617,6 +624,7 @@ fn records::grid_state blocked_applied
         str notice
     asserts
         conflict: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), ""), "server has revision 2; your edits kept" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
+        stale: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), ""), "app updated; refresh to continue" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status")
         clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::clean_state("loaded revision 2"), ""), "no changes to save" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("2", [], 0), records::failed_state("no changes to save"), "status")
         invalid: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::unsaved_state("unsaved changes"), ""), "line k1: bad quantity" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [records::draft_line("k1", "a", "many", "1.00", 1, 100, false)], 1), 0, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::failed_state("line k1: bad quantity"), "status")
     match call status_of(state)
@@ -628,6 +636,7 @@ fn records::grid_state blocked_applied
             records::failed_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
             records::uncertain_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
             records::denied_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+            records::stale_state => ok records::grid_state(state.key, state.current, state.attempt, state.flight, state.submitted, state.submit_seq, state.acknowledged, records::stale_state(notice), "status")
 
 /// Apply one saved outcome. Late or wrong-flight arrivals are
 /// ignored so a reordered response never clobbers newer state. A
@@ -734,6 +743,9 @@ fn records::grid_state unavailable_applied
 /// the draft turns uncertain with its replay id intact. A request
 /// that never left (over the wire limit, or locally invalid) is a
 /// plain failure instead: nothing was sent, so nothing is unknown.
+/// A generation refusal lands stale instead: the server refused
+/// before dispatch, so nothing ran and the draft waits on a
+/// refresh. Late or wrong-flight arrivals are ignored.
 fn records::grid_state save_failed
     emits []
     given
@@ -747,15 +759,18 @@ fn records::grid_state save_failed
         limit: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "limit" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("save too large; remove lines and retry"), "status")
         request: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "request" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::failed_state("request invalid; reread and retry"), "status")
         late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save")
+        generation: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 1, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::saving_state("saving..."), "save"), 2, "generation" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status")
     match attempt is state.attempt
         false => ok state
         true => match state.flight is 1
             false => ok state
             true => match call notices::save_failure_notice(kind)
-                ok str notice => match call notices::save_failure_uncertain(kind)
-                    ok bool unknown => match unknown
-                        false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
-                        true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state(notice), "status")
+                ok str notice => match kind is "generation"
+                    false => match call notices::save_failure_uncertain(kind)
+                        ok bool unknown => match unknown
+                            false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+                            true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::uncertain_state(notice), "status")
+                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::stale_state(notice), "status")
 
 /// Dispatch one save outcome onto the matching applier: the
 /// fetch client returns the whole variant, and each leaf lands in
@@ -788,7 +803,9 @@ fn records::grid_state save_outcome_applied
 /// as its new base; anything else (local edits, an uncertain save,
 /// a failure, a denial, a held copy) holds the server copy aside
 /// for an explicit adopt-or-keep choice, so changed rows never
-/// clobber newer edits. Late or wrong-flight arrivals are ignored.
+/// clobber newer edits. A stale draft resolves like a clean one:
+/// the success proves the generations agree again. Late or
+/// wrong-flight arrivals are ignored.
 fn records::grid_state loaded_applied
     emits []
     given
@@ -800,6 +817,7 @@ fn records::grid_state loaded_applied
         hold_dirty: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 2, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
         hold_uncertain: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status"), 3, contract::grid_loaded(contract::grid_snapshot("1", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 1; your edits kept", contract::grid_snapshot("1", [], 0)), "status")
         late: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread"), 1, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::saving_state("loading..."), "reread")
+        stale_hold: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status"), 2, contract::grid_loaded(contract::grid_snapshot("2", [], 0)) => ok records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 1), 2, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("1", [], 0), records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)), "status")
     match attempt is state.attempt
         false => ok state
         true => match state.flight is 2
@@ -809,6 +827,9 @@ fn records::grid_state loaded_applied
                     false => ok call hold_snapshot(state, outcome.current)
                     true => ok call adopt_snapshot(state, outcome.current)
                 records::saving_state => match state.current.edit_seq is state.submit_seq
+                    false => ok call hold_snapshot(state, outcome.current)
+                    true => ok call adopt_snapshot(state, outcome.current)
+                records::stale_state => match state.current.edit_seq is state.submit_seq
                     false => ok call hold_snapshot(state, outcome.current)
                     true => ok call adopt_snapshot(state, outcome.current)
                 records::unsaved_state => ok call hold_snapshot(state, outcome.current)
@@ -899,7 +920,9 @@ fn records::grid_state load_outcome_applied
             ok records::grid_state next => ok next
 
 /// Apply one load transport failure. Reads never commit, so every
-/// load failure is a plain retryable failure, never uncertainty.
+/// load failure is a plain retryable failure, never uncertainty. A
+/// generation refusal lands stale instead: the app moved, so the
+/// draft waits on a refresh.
 fn records::grid_state load_failed
     emits []
     given
@@ -910,24 +933,29 @@ fn records::grid_state load_failed
         transport: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("connection lost; retry reread"), "status")
         status: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "status" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unexpected response; retry reread"), "status")
         codec: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "codec" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::failed_state("unreadable response; retry reread"), "status")
+        generation: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "generation" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 1, 0, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::stale_state("app updated; refresh to continue"), "status")
         late: records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread"), 1, "transport" => ok records::grid_state(contract::invoice_key(1, 7), records::draft("", [], 0), 2, 2, contract::grid_edit_input("", "", []), 0, contract::grid_snapshot("", [], 0), records::saving_state("loading..."), "reread")
     match attempt is state.attempt
         false => ok state
         true => match state.flight is 2
             false => ok state
             true => match call notices::load_failure_notice(kind)
-                ok str notice => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+                ok str notice => match kind is "generation"
+                    false => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::failed_state(notice), "status")
+                    true => ok records::grid_state(state.key, state.current, state.attempt, 0, state.submitted, state.submit_seq, state.acknowledged, records::stale_state(notice), "status")
 
 /// Explicit identical-id replay is available only while the last
 /// save is uncertain, nothing newer is in flight, the draft still
 /// holds the sent content, and an operation id exists to reuse. Any
-/// edit after the press mints a new intent instead.
+/// edit after the press mints a new intent instead. A stale page
+/// never replays: only a refresh resolves the prompt.
 fn bool replay_ready
     emits []
     given
         records::grid_state state
     asserts
         ready: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok true
+        stale: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::stale_state("app updated; refresh to continue"), "status") => ok false
         edited: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 3), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
         flying: records::grid_state(contract::invoice_key(1, 7), records::draft("1", [], 2), 3, 2, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("1", [], 0), records::uncertain_state("save may have committed; replay or reread"), "status") => ok false
         clean: records::grid_state(contract::invoice_key(1, 7), records::draft("2", [], 2), 2, 0, contract::grid_edit_input("t1/i7/r1/e2", "1", []), 2, contract::grid_snapshot("2", [], 0), records::clean_state("saved revision 2"), "") => ok false
@@ -945,6 +973,7 @@ fn bool replay_ready
         records::failed_state => ok false
         records::denied_state => ok false
         records::conflict_state => ok false
+        records::stale_state => ok false
 
 /// Adopt the held server copy as the clean draft (authorized
 /// reconciliation: the user chose the server copy explicitly).
@@ -965,6 +994,7 @@ fn records::grid_state adopted_server
             records::failed_state => ok state
             records::uncertain_state => ok state
             records::denied_state => ok state
+            records::stale_state => ok state
 
 /// Dismiss the held server copy and keep editing the draft.
 /// Outside a conflict the state is untouched.
@@ -983,6 +1013,7 @@ fn records::grid_state dismissed_held
         records::failed_state => ok state
         records::uncertain_state => ok state
         records::denied_state => ok state
+        records::stale_state => ok state
 
 /// The boot cell: an empty draft waiting on its first authorized
 /// load. The boot press marks the load flight before fetching.
@@ -1013,6 +1044,7 @@ fn str status_notice
     asserts
         clean: records::clean_state("saved revision 2") => ok "saved revision 2"
         conflict: records::conflict_state("server has revision 2; your edits kept", contract::grid_snapshot("2", [], 0)) => ok "server has revision 2; your edits kept"
+        stale: records::stale_state("app updated; refresh to continue") => ok "app updated; refresh to continue"
     match status
         records::clean_state => ok status.notice
         records::unsaved_state => ok status.notice
@@ -1021,6 +1053,7 @@ fn str status_notice
         records::uncertain_state => ok status.notice
         records::denied_state => ok status.notice
         records::conflict_state => ok status.notice
+        records::stale_state => ok status.notice
 
 /// Swap the draft inside a state, keeping key, attempt, flight,
 /// pending record, acknowledgement, status and focus untouched.

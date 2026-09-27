@@ -1,5 +1,5 @@
 package records
-    provides [draft_line, draft, clean_state, unsaved_state, saving_state, failed_state, uncertain_state, denied_state, conflict_state, grid_status, grid_state]
+    provides [draft_line, draft, clean_state, unsaved_state, saving_state, failed_state, uncertain_state, denied_state, conflict_state, stale_state, grid_status, grid_state]
     uses [billing::invoice_contract as contract]
 
 /// One grid draft line. The raw edited id, quantity and price texts
@@ -41,6 +41,12 @@ record failed_state
 /// identical operation id stays available for explicit replay.
 record uncertain_state
     str notice
+/// The app moved under this page: the server refused a request
+/// from a stale generation before dispatch, so nothing ran and the
+/// draft waits on an explicit refresh. Edits keep the prompt (only
+/// a refresh resolves it); saves and replays stay blocked.
+record stale_state
+    str notice
 /// Access denied: foreign, nonexistent and unauthenticated targets
 /// share one notice that discloses nothing. The in-view draft stays.
 record denied_state
@@ -51,7 +57,7 @@ record denied_state
 record conflict_state
     str notice
     contract::grid_snapshot server
-/// The seven grid statuses. Every leaf carries its own status-line
+/// The eight grid statuses. Every leaf carries its own status-line
 /// notice so rendering is a pure function of state.
 variant grid_status
     clean_state
@@ -61,6 +67,7 @@ variant grid_status
     uncertain_state
     denied_state
     conflict_state
+    stale_state
 /// The whole grid cell value: pure data, no browser handles. The key
 /// names the invoice; the attempt counts every issued request; the
 /// flight names the outstanding one (0 none, 1 save, 2 load) so late

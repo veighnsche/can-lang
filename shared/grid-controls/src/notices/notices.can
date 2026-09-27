@@ -5,7 +5,7 @@
 /// field_problem at the boundary and delegate every notice here,
 /// so both apps stay byte-identical on every shared shape.
 package notices
-    provides [field_problem, problem_notice, invalid_notice, rejected_notice, blocked_line_notice, denied_notice, save_unknown_notice, load_busy_notice, conflict_notice, saved_notice, loaded_notice, held_notice, save_failure_notice, save_failure_uncertain, load_failure_notice]
+    provides [field_problem, problem_notice, invalid_notice, rejected_notice, blocked_line_notice, denied_notice, save_unknown_notice, load_busy_notice, conflict_notice, saved_notice, loaded_notice, held_notice, save_failure_notice, save_failure_uncertain, load_failure_notice, stale_notice]
     uses [option]
 
 /// One reportable field problem: an optional row key plus the wire
@@ -127,66 +127,90 @@ fn str held_notice
         sample: "2" => ok "server has revision 2; your edits kept"
     ok "server has revision " + revision + "; your edits kept"
 
+/// The paired-generation refusal notice: the app moved under this
+/// page, so the draft waits on an explicit refresh instead of a
+/// retry. Nothing ran on the server, so nothing is unknown.
+fn str stale_notice
+    emits []
+    asserts
+        sample:  => ok "app updated; refresh to continue"
+    ok "app updated; refresh to continue"
+
 /// One save transport failure notice. A lost response, an unexpected
 /// status or an undecodable answer all leave the commit unknown; a
 /// request that never left (over the wire limit, or locally
-/// invalid) is a plain failure instead.
+/// invalid) is a plain failure instead. A generation refusal also
+/// fails plainly: the server refused before dispatch, so nothing
+/// ran and the draft waits on a refresh.
 fn str save_failure_notice
     emits []
     given
         str kind
     asserts
+        generation: "generation" => ok "app updated; refresh to continue"
         transport: "transport" => ok "connection lost; save may have committed"
         status: "status" => ok "unexpected response; save may have committed"
         codec: "codec" => ok "unreadable response; save may have committed"
         limit: "limit" => ok "save too large; remove lines and retry"
         request: "request" => ok "request invalid; reread and retry"
-    match kind is "transport"
-        false => match kind is "status"
-            false => match kind is "codec"
-                false => match kind is "limit"
-                    false => ok "request invalid; reread and retry"
-                    true => ok "save too large; remove lines and retry"
-                true => ok "unreadable response; save may have committed"
-            true => ok "unexpected response; save may have committed"
-        true => ok "connection lost; save may have committed"
+    match kind is "generation"
+        false => match kind is "transport"
+            false => match kind is "status"
+                false => match kind is "codec"
+                    false => match kind is "limit"
+                        false => ok "request invalid; reread and retry"
+                        true => ok "save too large; remove lines and retry"
+                    true => ok "unreadable response; save may have committed"
+                true => ok "unexpected response; save may have committed"
+            true => ok "connection lost; save may have committed"
+        true => ok "app updated; refresh to continue"
 
 /// Report whether one save failure kind leaves the commit unknown.
 /// Transport, status and codec failures turn uncertain with the
-/// replay id intact; limit and request failures fail plainly.
+/// replay id intact; limit, request and generation failures fail
+/// plainly. A generation refusal never reached action logic, so
+/// nothing ran and no replay id is needed.
 fn bool save_failure_uncertain
     emits []
     given
         str kind
     asserts
+        generation: "generation" => ok false
         transport: "transport" => ok true
         status: "status" => ok true
         codec: "codec" => ok true
         limit: "limit" => ok false
         request: "request" => ok false
-    match kind is "transport"
-        false => match kind is "status"
-            false => match kind is "codec"
-                false => ok false
+    match kind is "generation"
+        false => match kind is "transport"
+            false => match kind is "status"
+                false => match kind is "codec"
+                    false => ok false
+                    true => ok true
                 true => ok true
             true => ok true
-        true => ok true
+        true => ok false
 
 /// One load transport failure notice. Reads never commit, so every
-/// load failure is a plain retryable failure, never uncertainty.
+/// load failure is a plain retryable failure, never uncertainty. A
+/// generation refusal is a plain blocking refresh instead of a
+/// retry: the app moved under this page.
 fn str load_failure_notice
     emits []
     given
         str kind
     asserts
+        generation: "generation" => ok "app updated; refresh to continue"
         transport: "transport" => ok "connection lost; retry reread"
         status: "status" => ok "unexpected response; retry reread"
         codec: "codec" => ok "unreadable response; retry reread"
         request: "request" => ok "request invalid; retry reread"
-    match kind is "transport"
-        false => match kind is "status"
-            false => match kind is "codec"
-                false => ok "request invalid; retry reread"
-                true => ok "unreadable response; retry reread"
-            true => ok "unexpected response; retry reread"
-        true => ok "connection lost; retry reread"
+    match kind is "generation"
+        false => match kind is "transport"
+            false => match kind is "status"
+                false => match kind is "codec"
+                    false => ok "request invalid; retry reread"
+                    true => ok "unreadable response; retry reread"
+                true => ok "unexpected response; retry reread"
+            true => ok "connection lost; retry reread"
+        true => ok "app updated; refresh to continue"
