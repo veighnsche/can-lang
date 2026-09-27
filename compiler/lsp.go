@@ -157,7 +157,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		}
 		switch msg.Method {
 		case "initialize":
-			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true, "referencesProvider": true}})
+			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true, "referencesProvider": true, "completionProvider": map[string]any{"triggerCharacters": []string{".", ":"}}}})
 		case "initialized", "$/cancelRequest":
 		case "textDocument/didOpen":
 			var p struct {
@@ -251,6 +251,23 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 					include = p.Context.IncludeDeclaration
 				}
 				respond(msg.ID, server.references(p.TextDocument.URI, p.Position.Line, p.Position.Character, include))
+			}
+		case "textDocument/completion":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+				Position     struct {
+					Line      int `json:"line"`
+					Character int `json:"character"`
+				} `json:"position"`
+			}
+			if json.Unmarshal(msg.Params, &p) != nil {
+				if msg.ID != nil {
+					respondErr(msg.ID, -32602, "invalid completion params")
+				}
+				continue
+			}
+			if msg.ID != nil {
+				respond(msg.ID, server.completion(p.TextDocument.URI, p.Position.Line, p.Position.Character))
 			}
 		case "textDocument/formatting":
 			var p struct {
@@ -1256,24 +1273,43 @@ func (w *refWalker) walkReference(node *syntax.ReferenceExpr) {
 	}
 }
 
+// shadowsLocal reports whether a name occurrence is shadowed by a
+// function-local binder visible at its offset.
+func (w *refWalker) shadowsLocal(name syntax.QualifiedName, offset int) bool {
+	return name.Package == "" && w.lookup(name.Name, offset) != nil
+}
+
+// calleeFunction resolves a callable callee to its checked function
+// declaration: a name that is not function-local, resolving through call
+// usage to a project function. Anything else — a local callable, an
+// unknown name, a catalogue or non-function symbol — declines so the
+// checker owns the error.
+func calleeFunction(file *compileresolve.File, isLocal func(syntax.QualifiedName, int) bool, callee syntax.Expr) (*syntax.FunctionDecl, *compileresolve.Symbol, bool) {
+	named, ok := callee.(*syntax.NameExpr)
+	if !ok {
+		return nil, nil, false
+	}
+	if isLocal(named.Name, named.Name.Span.Start) {
+		return nil, nil, false
+	}
+	symbol, err := file.Lookup(nil, named.Name, compileresolve.CallUse)
+	if err != nil || symbol.Source == nil {
+		return nil, nil, false
+	}
+	declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
+	if !ok {
+		return nil, nil, false
+	}
+	return declaration, symbol, true
+}
+
 // withName resolves one explicit near-input pin to the callee parameter
 // it names. Only a callee resolving to a checked function declaration
 // with a near input of that name records; anything else — a local
 // callable, an unknown name, a non-near input — stays unindexed so the
 // checker owns the error and queries decline.
 func (w *refWalker) withName(callee syntax.Expr, name syntax.Token) {
-	named, ok := callee.(*syntax.NameExpr)
-	if !ok {
-		return
-	}
-	if w.lookup(named.Name.Name, named.Name.Span.Start) != nil && named.Name.Package == "" {
-		return
-	}
-	symbol, err := w.file.Lookup(nil, named.Name, compileresolve.CallUse)
-	if err != nil || symbol.Source == nil {
-		return
-	}
-	declaration, ok := symbol.Declaration.(*syntax.FunctionDecl)
+	declaration, symbol, ok := calleeFunction(w.file, w.shadowsLocal, callee)
 	if !ok {
 		return
 	}
@@ -1315,12 +1351,21 @@ func (w *refWalker) methodOn(callee syntax.Expr, name syntax.Token) {
 // values with a local nominal annotation and direct constructor calls.
 // Local receivers decline rather than guess.
 func (w *refWalker) receiverRecord(receiver syntax.Expr) (*compileresolve.Symbol, error) {
+	return knownReceiverRecord(w.file, w.shadowsLocal, receiver)
+}
+
+// knownReceiverRecord resolves the record behind an annotation-known
+// receiver: a module value carrying a local nominal annotation, or a
+// direct record constructor call. Function-local receivers decline —
+// their nominal type needs checking, and guessing would risk a
+// wrong-scope member. References and completion share this set.
+func knownReceiverRecord(file *compileresolve.File, isLocal func(syntax.QualifiedName, int) bool, receiver syntax.Expr) (*compileresolve.Symbol, error) {
 	switch node := receiver.(type) {
 	case *syntax.NameExpr:
-		if w.lookup(node.Name.Name, node.Name.Span.Start) != nil && node.Name.Package == "" {
+		if isLocal(node.Name, node.Name.Span.Start) {
 			return nil, fmt.Errorf("receiver is function-local")
 		}
-		symbol, err := w.file.Lookup(nil, node.Name, compileresolve.ValueUse)
+		symbol, err := file.Lookup(nil, node.Name, compileresolve.ValueUse)
 		if err != nil {
 			return nil, err
 		}
@@ -1332,7 +1377,7 @@ func (w *refWalker) receiverRecord(receiver syntax.Expr) (*compileresolve.Symbol
 		if !ok || named.Name.Package != "" {
 			return nil, fmt.Errorf("receiver type is not a local nominal")
 		}
-		record, err := w.file.Lookup(nil, named.Name, compileresolve.TypeUse)
+		record, err := file.Lookup(nil, named.Name, compileresolve.TypeUse)
 		if err != nil {
 			return nil, err
 		}
@@ -1341,7 +1386,7 @@ func (w *refWalker) receiverRecord(receiver syntax.Expr) (*compileresolve.Symbol
 		}
 		return record, nil
 	case *syntax.ConstructorExpr:
-		symbol, err := w.file.Lookup(nil, node.Name, compileresolve.ConstructorUse)
+		symbol, err := file.Lookup(nil, node.Name, compileresolve.ConstructorUse)
 		if err != nil {
 			return nil, err
 		}
