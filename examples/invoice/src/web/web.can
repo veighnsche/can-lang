@@ -384,13 +384,13 @@ fn http::server_response form_route
         http::request req
         near sql::pool pool
     asserts
-        form_over_limit: => ok
-        form_bad_query: => ok
-        form_bad_tenant: => ok
-        form_found: => ok
-        form_denied: => ok
-        form_busy: => ok
-        form_render_down: => ok
+        form_over_limit:  => ok
+        form_bad_query:  => ok
+        form_bad_tenant:  => ok
+        form_found:  => ok
+        form_denied:  => ok
+        form_busy:  => ok
+        form_render_down:  => ok
     match call http::request_body(req, 8192)
         when
             form_over_limit: req, 8192 => http::body_limit(8192)
@@ -450,8 +450,8 @@ fn http::server_response grid_route
     given
         http::request req
     asserts
-        grid_over_limit: => ok
-        grid_shell: => ok
+        grid_over_limit:  => ok
+        grid_shell:  => ok
     match call http::request_body(req, 8192)
         when
             grid_over_limit: req, 8192 => http::body_limit(8192)
@@ -464,20 +464,44 @@ fn http::server_response grid_route
                     html::invalid_structure => ok call fixed_at(500, "error")
                     ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
 
+/// Serve the invoice compare shell: reject any request body, then
+/// serve the static public shell. Like the grid shell it carries no
+/// invoice data and echoes no query input, so the route parses
+/// nothing and checks no session; the compare application boots from
+/// seeds and makes no server calls.
+fn http::server_response compare_route
+    emits []
+    given
+        http::request req
+    asserts
+        compare_over_limit:  => ok
+        compare_shell:  => ok
+    match call http::request_body(req, 8192)
+        when
+            compare_over_limit: req, 8192 => http::body_limit(8192)
+            compare_shell: req, 8192 => ok call bytes::empty()
+        http::body_limit => ok call fixed_at(413, "Payload Too Large")
+        ok bytes::buffer raw => match call bytes::to_ints(raw)
+            ok int[] units => match units.length is 0
+                false => ok call fixed_at(400, "Bad Request")
+                true => match call render::compare_page()
+                    html::invalid_structure => ok call fixed_at(500, "error")
+                    ok html::safe document => ok call http::response_html(call http::status_ok(), call http::empty_server_headers(), document)
+
 /// Answer readiness for the operator and the test harness.
 fn http::server_response health
     emits []
     given
         http::request req
     asserts
-        sample: => ok
+        sample:  => ok
     ok call http::response_text(call http::status_ok(), call http::empty_server_headers(), "ok")
 
 /// Mount the three shared invoice actions plus the query-addressed
-/// edit page and the public grid shell, capturing the serving pool,
-/// the validated public origin and the retention window. Importing
-/// the contract registers nothing; only these mounts enter the server
-/// route table.
+/// edit page and the public grid and compare shells, capturing the
+/// serving pool, the validated public origin and the retention
+/// window. Importing the contract registers nothing; only these
+/// mounts enter the server route table.
 fn http::router invoice_routes
     emits [http::invalid_route, http::duplicate_route, http::ambiguous_route]
     given
@@ -492,8 +516,9 @@ fn http::router invoice_routes
         call action::mount(contract::save_invoice_html, callable save_html, callable render_html, callable render_bad_form) as http::route form
         call http::route_get("/invoices/form", callable form_route) as http::route form_page
         call http::route_get("/invoice-grid", callable grid_route) as http::route grid_page
+        call http::route_get("/invoice-compare", callable compare_route) as http::route compare_page
         call http::route_get("/health", callable health) as http::route probe
-        call http::make_router([load, save, form, form_page, grid_page, probe]) as http::router built
+        call http::make_router([load, save, form, form_page, grid_page, compare_page, probe]) as http::router built
         http::invalid_route
         http::duplicate_route
         http::ambiguous_route
@@ -505,7 +530,7 @@ fn http::router invoice_routes
 fn void reject_startup
     emits [env::invalid_name, http::credentials_missing]
     asserts
-        sample: => env::invalid_name("")
+        sample:  => env::invalid_name("")
     env::invalid_name("")
 
 /// Read the retention window: explicit positive
@@ -516,10 +541,10 @@ fn void reject_startup
 fn int startup_window
     emits [env::invalid_name, http::credentials_missing]
     asserts
-        default: => ok 604800000
-        explicit: => ok 1000
-        malformed: => env::invalid_name("")
-        negative: => env::invalid_name("")
+        default:  => ok 604800000
+        explicit:  => ok 1000
+        malformed:  => env::invalid_name("")
+        negative:  => env::invalid_name("")
     match call env::optional("INVOICE_REPLAY_WINDOW_MS")
         when
             default: "INVOICE_REPLAY_WINDOW_MS" => ok option::none()
@@ -594,7 +619,7 @@ fn void main
                                     ok => ok
                                 true => match call startup_window()
                                     when
-                                        bad_window: => env::invalid_name("")
+                                        bad_window:  => env::invalid_name("")
                                     env::invalid_name
                                     http::credentials_missing
                                     ok int window => match call sql::sqlite_open_file(db, sql::sqlite_file_options("rw", 5000))
