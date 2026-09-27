@@ -21,9 +21,13 @@ import (
 
 // g04Main extends the G03 fixture with a fallible error, a holder
 // method, and a chained method call, keeping every G03 needle intact.
+// The chained method call targets the module value: methods chain onto
+// calls, and only a module value carries an annotation-known receiver,
+// so the checker rejects the value-as-callee while resolve still
+// supplies the World completion reads.
 var g04Main = strings.Replace(g03Main,
 	"    ok call action(doubled) + shared.tag",
-	"    ok call action(doubled) + shared.tag + call holder(callable helper, 0).describe(1)",
+	"    ok call action(doubled) + shared.tag + call shared().describe(1)",
 	1) + `
 fn int describe
     on holder self
@@ -262,4 +266,188 @@ func TestG04CompletionUnparseableDeclinesNull(t *testing.T) {
 	if result := g01Response(t, frames, 2); result != nil {
 		t.Fatalf("unopened file completed: %v", result)
 	}
+}
+
+// TestG04CompletionCalleeArity pins caller repair: a broken callee
+// completes to the call-eligible names with exact checked arities —
+// the intended function, the callback local, and the catalogue
+// prelude — while non-callables and keywords stay out.
+func TestG04CompletionCalleeArity(t *testing.T) {
+	broken := strings.Replace(g04Main, "ok call action(doubled) + shared.tag + call shared().describe(1)", "ok call combin(doubled)", 1)
+	items := g04Items(t, map[string]string{"src/main.can": broken}, "src/main.can", "ok call combi|n(doubled)", 2)
+	g04WantLabels(t, items, []string{"action", "append", "combine", "helper", "run", "shadowed"})
+	if item := g04Find(t, items, "combine"); item["kind"] != float64(compFunction) || item["detail"] != "(near prefix: int, value: int) -> int" || item["documentation"] != "package app" {
+		t.Fatalf("combine candidate wrong: %v", item)
+	}
+	if item := g04Find(t, items, "action"); item["kind"] != float64(compVariable) || item["detail"] != "(int) -> int" || item["documentation"] != "local binding" {
+		t.Fatalf("action candidate wrong: %v", item)
+	}
+	if item := g04Find(t, items, "append"); item["kind"] != float64(compFunction) || item["detail"] != "function" || item["documentation"] != "catalogue" {
+		t.Fatalf("append candidate wrong: %v", item)
+	}
+	if keywords := g04Kind(t, items, compKeyword); len(keywords) != 0 {
+		t.Fatalf("keywords in callee position: %v", keywords)
+	}
+}
+
+// TestG04CompletionCallbackExtraction pins the callback scenario: a
+// callable reference completes to reference-eligible functions only —
+// no locals, since with-pin resolution declines them, and no keywords.
+func TestG04CompletionCallbackExtraction(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "callable combi|ne with prefix = doubled", 2)
+	g04WantLabels(t, items, []string{"append", "combine", "helper", "run", "shadowed"})
+	for _, item := range g04Kind(t, items, compFunction) {
+		if item["documentation"] != "package app" && item["documentation"] != "catalogue" {
+			t.Fatalf("unexpected provenance: %v", item)
+		}
+	}
+	if locals := g04Kind(t, items, compVariable); len(locals) != 0 {
+		t.Fatalf("locals in callable-callee position: %v", locals)
+	}
+	if keywords := g04Kind(t, items, compKeyword); len(keywords) != 0 {
+		t.Fatalf("keywords in callable-callee position: %v", keywords)
+	}
+}
+
+// TestG04CompletionWithPins pins near precision: a with pin completes
+// to the resolved callee's near parameters only, whatever partial
+// name is typed; an unresolvable callee yields nothing for the
+// checker to diagnose.
+func TestG04CompletionWithPins(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "with pre|fix = doubled", 2)
+	g04WantLabels(t, items, []string{"prefix"})
+	if item := g04Find(t, items, "prefix"); item["kind"] != float64(compProperty) || item["detail"] != "near int" || item["documentation"] != "near parameter of combine" {
+		t.Fatalf("prefix pin wrong: %v", item)
+	}
+	renamed := strings.Replace(g04Main, "with prefix = doubled", "with value = doubled", 1)
+	items = g04Items(t, map[string]string{"src/main.can": renamed}, "src/main.can", "with val|ue = doubled", 2)
+	g04WantLabels(t, items, []string{"prefix"})
+	missing := strings.Replace(g04Main, "callable combine with", "callable missing with", 1)
+	items = g04Items(t, map[string]string{"src/main.can": missing}, "src/main.can", "with pre|fix = doubled", 2)
+	if len(items) != 0 {
+		t.Fatalf("pins behind an unknown callee: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionMemberFields pins the shared-record scenario: a
+// field use behind a module value completes to the record's declared
+// fields, while unknown and function-local receivers yield nothing
+// rather than a guessed member.
+func TestG04CompletionMemberFields(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "shared.ta|g", 2)
+	g04WantLabels(t, items, []string{"action", "tag"})
+	if item := g04Find(t, items, "tag"); item["kind"] != float64(compField) || item["detail"] != "int" || item["documentation"] != "field of holder" {
+		t.Fatalf("tag candidate wrong: %v", item)
+	}
+	if item := g04Find(t, items, "action"); item["kind"] != float64(compField) || item["detail"] != "callable int (int) emits []" || item["documentation"] != "field of holder" {
+		t.Fatalf("action candidate wrong: %v", item)
+	}
+	missing := strings.Replace(g04Main, "shared.tag", "missing.tag", 1)
+	if items := g04Items(t, map[string]string{"src/main.can": missing}, "src/main.can", "missing.ta|g", 2); len(items) != 0 {
+		t.Fatalf("members behind an unknown receiver: %v", g04Labels(items))
+	}
+	local := strings.Replace(g04Main, "shared.tag", "doubled.tag", 1)
+	if items := g04Items(t, map[string]string{"src/main.can": local}, "src/main.can", "doubled.ta|g", 2); len(items) != 0 {
+		t.Fatalf("members behind a function-local receiver: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionMemberMethod pins method precision: a chained
+// method name completes to the receiver record's methods with exact
+// arity, not fields.
+func TestG04CompletionMemberMethod(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", ".des|cribe(1)", 2)
+	g04WantLabels(t, items, []string{"describe"})
+	if item := g04Find(t, items, "describe"); item["kind"] != float64(compMethod) || item["detail"] != "(extra: int) -> int" || item["documentation"] != "method of holder" {
+		t.Fatalf("describe candidate wrong: %v", item)
+	}
+}
+
+// TestG04CompletionConstructor pins constructor precision: a
+// constructor name completes to constructible records and errors,
+// never to functions, locals, or keywords.
+func TestG04CompletionConstructor(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "hold|er(callable helper, 0)", 2)
+	g04WantLabels(t, items, []string{"all_failed", "choice_option", "holder"})
+	if item := g04Find(t, items, "holder"); item["kind"] != float64(compClass) || item["detail"] != "record" {
+		t.Fatalf("holder candidate wrong: %v", item)
+	}
+}
+
+// TestG04CompletionDeclSiteEmpty pins rename's territory: completing
+// on a declared name yields nothing instead of competing candidates.
+func TestG04CompletionDeclSiteEmpty(t *testing.T) {
+	if items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "int doub|led = seed", 2); len(items) != 0 {
+		t.Fatalf("candidates on a binding name: %v", g04Labels(items))
+	}
+	if items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "fn int run|\n", 2); len(items) != 0 {
+		t.Fatalf("candidates on a function name: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionTypeContext pins annotation precision: inside a
+// type, only type-eligible symbols and the type keywords surface — no
+// locals, no functions, no statement keywords.
+func TestG04CompletionTypeContext(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "in|t doubled = seed + seed", 2)
+	g04WantLabels(t, items, []string{"all_failed", "bool", "choice_option", "float", "holder", "int", "standard_failure", "str", "void"})
+	g04WantKindLabels(t, items, compKeyword, []string{"bool", "float", "int", "str", "void"})
+	if locals := g04Kind(t, items, compVariable); len(locals) != 0 {
+		t.Fatalf("locals in type position: %v", locals)
+	}
+}
+
+// TestG04CompletionErrorBound pins emits precision: an empty bound
+// completes to error-eligible names only, with no keywords.
+func TestG04CompletionErrorBound(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "emits [|]", 2)
+	g04WantLabels(t, items, []string{"all_failed"})
+	if keywords := g04Kind(t, items, compKeyword); len(keywords) != 0 {
+		t.Fatalf("keywords in emits position: %v", keywords)
+	}
+	items = g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "fn int helper\n    emits [|]", 2)
+	g04WantLabels(t, items, []string{"all_failed"})
+}
+
+// TestG04CompletionTopLevel pins declaration-start precision: between
+// declarations only starter keywords and type names surface.
+func TestG04CompletionTopLevel(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "ok value\n\n|fn int combine", 2)
+	g04WantKindLabels(t, items, compKeyword, []string{"bool", "error", "float", "fn", "int", "record", "str", "variant", "void"})
+	g04Find(t, items, "holder")
+	if locals := g04Kind(t, items, compVariable); len(locals) != 0 {
+		t.Fatalf("locals at top level: %v", locals)
+	}
+	if g04Count(items, "helper") != 0 {
+		t.Fatalf("function at top level: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionHeader pins the manifest positions: header gaps
+// offer the header keywords, the file's declared names, and visible
+// import aliases, but no locals.
+func TestG04CompletionHeader(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "provides [|run, shadowed]", 2)
+	g04WantKindLabels(t, items, compKeyword, []string{"as", "package", "provides", "uses"})
+	for _, present := range []string{"run", "helper", "holder", "shared"} {
+		g04Find(t, items, present)
+	}
+	if locals := g04Kind(t, items, compVariable); len(locals) != 0 {
+		t.Fatalf("locals in header: %v", locals)
+	}
+}
+
+// TestG04CompletionSignature pins the signature gaps: between a
+// function header and its body only section keywords surface.
+func TestG04CompletionSignature(t *testing.T) {
+	items := g04Items(t, map[string]string{"src/main.can": g04Main}, "src/main.can", "    given|", 2)
+	g04WantLabels(t, items, []string{"asserts", "emits", "given", "near"})
+}
+
+// TestG04CompletionCallableWith pins the with keyword: after a bare
+// callable callee only `with` follows.
+func TestG04CompletionCallableWith(t *testing.T) {
+	bare := strings.Replace(g04Main, "callable combine with prefix = doubled", "callable combine ", 1)
+	items := g04Items(t, map[string]string{"src/main.can": bare}, "src/main.can", "= callable combine |\n", 2)
+	g04WantLabels(t, items, []string{"with"})
 }

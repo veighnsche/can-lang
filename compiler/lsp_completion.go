@@ -178,6 +178,7 @@ type compWalker struct {
 	records   []source.Span
 	opaque    []source.Span
 	declSpans []source.Span
+	leads     []source.Span
 	header    source.Span
 }
 
@@ -249,6 +250,7 @@ func (w *compWalker) walkDecl(declaration syntax.Declaration) {
 	switch node := declaration.(type) {
 	case *syntax.FunctionDecl:
 		w.decls = append(w.decls, node.Name.Span)
+		w.leads = append(w.leads, source.Span{Start: node.DeclSpan().Start, End: node.Name.Span.End})
 		for _, parameter := range node.Parameters {
 			w.decls = append(w.decls, parameter.Span)
 		}
@@ -282,6 +284,7 @@ func (w *compWalker) walkDecl(declaration syntax.Declaration) {
 		w.curFn = outer
 	case *syntax.RecordDecl:
 		w.decls = append(w.decls, node.Name.Span)
+		w.leads = append(w.leads, source.Span{Start: node.DeclSpan().Start, End: node.Name.Span.End})
 		for _, parameter := range node.Parameters {
 			w.decls = append(w.decls, parameter.Span)
 		}
@@ -292,6 +295,7 @@ func (w *compWalker) walkDecl(declaration syntax.Declaration) {
 		}
 	case *syntax.VariantDecl:
 		w.decls = append(w.decls, node.Name.Span)
+		w.leads = append(w.leads, source.Span{Start: node.DeclSpan().Start, End: node.Name.Span.End})
 		for _, parameter := range node.Parameters {
 			w.decls = append(w.decls, parameter.Span)
 		}
@@ -301,6 +305,7 @@ func (w *compWalker) walkDecl(declaration syntax.Declaration) {
 		}
 	case *syntax.ErrorDecl:
 		w.decls = append(w.decls, node.Name.Span)
+		w.leads = append(w.leads, source.Span{Start: node.DeclSpan().Start, End: node.Name.Span.End})
 		for _, parameter := range node.Parameters {
 			w.decls = append(w.decls, parameter.Span)
 		}
@@ -711,6 +716,20 @@ func coversAny(spans []source.Span, offset int) bool {
 	return false
 }
 
+// sameLineGap reports whether the source between two offsets holds
+// only same-line whitespace.
+func (w *compWalker) sameLineGap(from, to int) bool {
+	if from < 0 || to > len(w.text) || from > to {
+		return false
+	}
+	for i := from; i < to; i++ {
+		if w.text[i] != ' ' && w.text[i] != '\t' {
+			return false
+		}
+	}
+	return true
+}
+
 // classify resolves the cursor to its innermost context. Declaration
 // sites, literals, comments, and uncovered native declarations yield
 // no candidates; strict name positions (qualified, type, with-pin,
@@ -727,6 +746,12 @@ func (w *compWalker) classify(file *syntax.File, offset int) compContext {
 	}
 	if found, marker := smallestQualified(w.qualified, offset); found {
 		return w.qualifiedContext(marker, offset)
+	}
+	// Bounds precede types: positions inside an emits clause —
+	// members or gaps — take error candidates, never the general
+	// type set.
+	if coversAny(w.bounds, offset) {
+		return compContext{kind: ctxErrorType}
 	}
 	if coversAny(w.types, offset) {
 		return compContext{kind: ctxType}
@@ -750,18 +775,23 @@ func (w *compWalker) classify(file *syntax.File, offset int) compContext {
 		return compContext{kind: ctxCtor}
 	}
 	for _, ref := range w.refExprs {
-		if ref.firstBind >= 0 && !(offset < ref.firstBind) {
-			continue
+		if coversEnd(ref.span, offset) && offset > ref.calleeEnd && (ref.firstBind < 0 || offset < ref.firstBind) {
+			return compContext{kind: ctxWithKw}
 		}
-		if coversEnd(ref.span, offset) && offset > ref.calleeEnd {
+		// A bare callee's span ends at its name, but `with` still
+		// follows across same-line whitespace.
+		if ref.firstBind < 0 && offset > ref.calleeEnd && w.sameLineGap(ref.span.End, offset) {
 			return compContext{kind: ctxWithKw}
 		}
 	}
-	if coversAny(w.bounds, offset) {
-		return compContext{kind: ctxErrorType}
-	}
 	if coversEnd(w.header, offset) {
 		return compContext{kind: ctxHeader}
+	}
+	// Declaration leads (the starter keywords before a declared
+	// name) complete like top level: the name itself already declined
+	// above, and annotation positions resolved earlier.
+	if coversAny(w.leads, offset) {
+		return compContext{kind: ctxTopLevel}
 	}
 	for _, fn := range w.funcs {
 		if !coversEnd(fn.decl, offset) {
