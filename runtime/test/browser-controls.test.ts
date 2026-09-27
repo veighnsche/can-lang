@@ -475,6 +475,13 @@ test("live calls deny controls without the matching IDL", async () => {
   await expect(browser.setSelected(tags, "a")).rejects.toThrow(TypeError);
   await expect(browser.setSelected(tags, ["a", 7])).rejects.toThrow(TypeError);
   await expect(browser.setSelection(field, 0, 0n, "none")).rejects.toThrow(TypeError);
+  // Input shape faults precede control admission, like set_attribute:
+  // mistyped inputs throw even where the control would deny.
+  await expect(browser.setValue(box, 7)).rejects.toThrow(TypeError);
+  await expect(browser.setChecked(box, "yes")).rejects.toThrow(TypeError);
+  await expect(browser.setSelected(box, "a")).rejects.toThrow(TypeError);
+  await expect(browser.setSelection(box, 0, 0n, "none")).rejects.toThrow(TypeError);
+  await expect(browser.setSelection(field, 0n, 0n, 7)).rejects.toThrow(TypeError);
 });
 
 test("autofilled content is observable and reset restores defaults", async () => {

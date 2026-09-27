@@ -653,8 +653,9 @@ export function createBrowser(
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
+      const text = string(value);
       if (liveStringValue(found.dom) === undefined) return denied("property");
-      (found.dom as unknown as Record<string, unknown>)["value"] = string(value);
+      (found.dom as unknown as Record<string, unknown>)["value"] = text;
       return success(undefined);
     },
     // C02 live checked write: assigns the boolean checked IDL natively.
@@ -664,8 +665,9 @@ export function createBrowser(
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
+      const state = boolean(checked);
       if (liveChecked(found.dom) === undefined) return denied("property");
-      (found.dom as unknown as Record<string, unknown>)["checked"] = boolean(checked);
+      (found.dom as unknown as Record<string, unknown>)["checked"] = state;
       return success(undefined);
     },
     // C02 multiselect write: marks selected exactly the options whose
@@ -677,11 +679,11 @@ export function createBrowser(
       const found = read(nodes, node);
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
-      const options = optionList(found.dom);
-      if (options === undefined) return denied("property");
       if (!Array.isArray(values)) throw new TypeError("invalid browser string array");
       const wanted = new Set<string>();
       for (const entry of values) wanted.add(string(entry));
+      const options = optionList(found.dom);
+      if (options === undefined) return denied("property");
       for (let index = 0; index < options.length; index++) {
         const option = options[index];
         if (option === null || (typeof option !== "object" && typeof option !== "function"))
@@ -709,13 +711,13 @@ export function createBrowser(
       if (!liveNode(found)) return gone();
       if (found.text) return denied("text_node");
       const way = asciiLower(string(direction));
+      const from = integer(start);
+      const to = integer(end);
       if (way !== "forward" && way !== "backward" && way !== "none") return denied("direction");
       const current = liveStringValue(found.dom);
       if (current === undefined) return denied("property");
       const setter = (found.dom as unknown as Record<string, unknown>)["setSelectionRange"];
       if (typeof setter !== "function") return denied("property");
-      const from = integer(start);
-      const to = integer(end);
       if (from < 0n || to < from || to > BigInt(current.length)) return denied("selection");
       try {
         (setter as (from: number, to: number, way: string) => void).call(
