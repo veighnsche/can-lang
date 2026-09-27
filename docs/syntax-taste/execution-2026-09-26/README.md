@@ -70,7 +70,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | done | lane-d-d02 (`38`) + coord F5 | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` + coord live closure | 40/40 + Go gates; live 8/8×3 (Ch140/Wk26/FF141); D02-LIVE-1..4 CLOSED |
 | F06 | done | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | 3 worker→`feb0a934` | live PASS A–I (coord 146s, worker 82.8s+130.2s); sums OK |
-| H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
+| H08 | done (blocked) + follow-up | lane-h-h08 (`36`) + H08-FU | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` + 5 FU→main | harness 12/12; tariff pinned v3 (4.2e-8 in-only); bound-U still UNQUALIFIED (cap bracketed, exact figure unpublished); usage $0.00135 ledgered |
 | D03 | done | lane-d-d03 (`41`) + coord F5 | isolated | D02 | W2→H11 | 3 worker→`4d7efdbd` + coord live closure | 51/51 + Go 9 (+2 live w/ env); Vendor B via unchanged D02 client; live 5/5×3; D03-LIVE-1..4 CLOSED |
 | C06 | done | lane-c-c06 | isolated | C01, C04, C05✗, E04, H06 | W1→IC2/H13 | 10 worker (`a37eadc4`..`59c99b39`+record)→main `3286e5cc`..`932924f7` | served 99/99 (compare 13×3, grid 12×3, drift 4×3×2; Ch140/Wk26/FF141); check/build grid 394+compare 221+server 347 real-can, API-break + capture edits; gate5 regress 1179s green (219 checks); main re-qual 942s green (same counts); RH green |
 
