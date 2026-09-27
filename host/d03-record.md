@@ -131,7 +131,7 @@ in `conformance/live/` still own the verdict):
 | Leg | Verdict |
 |---|---|
 | W2 positive — second vendor, no vendor-specific compiler patch, no hand-edited generated code; capability rejection + lifecycle green | **PASS (runnable)** — Vendor B runs behind the assigned T3 path; D03 diff is `host/`-only with catalogue/generated files byte-identical; 11 vendor-B legs + all D02 legs green |
-| W2 negative — unadmitted capability fails the browser closure with location evidence | **PASS (runnable)** — vendor-specific and D02 capability names reject with file-attributed `unknown package` diagnostics (the check phase of the browser build pipeline); the C-owned closure suite is gated green read-only. No dev-distribution `canlc build --target browser` end-to-end leg exists here (builds need an H-packaged distribution; CAN-DIST-UNBUNDLED in this worktree) — recorded as a gap for H11, not a pass |
+| W2 negative — unadmitted capability fails the browser closure with location evidence | **PASS (runnable + e2e)** — vendor-specific and D02 capability names reject with file-attributed `unknown package` diagnostics at check phase AND through the full `canlc build --target browser` pipeline (`TestBrowserBuildRejectsUnadmittedCapabilities`, 5/5, H11-F6 closure); the C-owned closure suite is gated green read-only |
 | W2 integration — assigned adapter/companion conformance in CI shape | **PASS (runnable) + LIVE DEBT** — `bun test host/conformance/` + `go test ./host/conformance/` are the CI shape and green; the Vendor B live-browser gate skips on D03-LIVE-1..4 until C01 unblocks |
 
 ## Honest deltas and open points
@@ -144,13 +144,12 @@ in `conformance/live/` still own the verdict):
   reimplemented handle + engine are the vendor-specific parts. A
   from-spec reimplementation would port the codecs; in-repo import is
   the conforming equivalent.
-- The end-to-end `canlc build --target browser` negative (unadmitted
-  capability through the full browser build) is not runnable in this
-  worktree: `canlc build` requires a development distribution
-  (`CAN-DIST-UNBUNDLED`), which is H-owned packaging outside Lane D's
-  `host/`-only boundary. The check-phase rejection + read-only closure
-  witness above are the runnable evidence; H11 owns the fuller leg if
-  it wants one after H packaging lands.
+- The end-to-end `canlc build --target browser` negative was unrunnable
+  in the D03 worktree (`CAN-DIST-UNBUNDLED`: no dev distribution) and
+  is now covered: `TestBrowserBuildRejectsUnadmittedCapabilities`
+  builds a dev distribution from `CAN_BUN_ARCHIVE` and proves all five
+  capability names fail the full browser build with located
+  diagnostics (H11-F6 closure, coordinator-executed).
 - SDK representative sizing stays the known unmeasured gap from D01
   (direction known, T3-favoring); unchanged by D03.
 - `canlc build`/`inspect` behavior, catalogue contents, and closure
