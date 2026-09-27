@@ -606,9 +606,15 @@ try {
   await check("stale-conflict", async () => {
     const rev = await currentRev();
     const race = await page.evaluate(async (r) => {
+      // The race writer is a same-generation client, so it echoes
+      // the live slot exactly like the application's own fetch path;
+      // a headerless write would fail closed with 409.
+      const slot = document
+        .querySelector("script[data-can-generation]")
+        ?.getAttribute("data-can-generation");
       const response = await fetch(`/api/tenants/1/invoices/7`, {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", "can-generation": slot ?? "" },
         body: JSON.stringify({
           operation_id: "op-up23-race",
           revision: String(r),
