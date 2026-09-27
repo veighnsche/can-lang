@@ -56,6 +56,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | G02 | done | lane-g-g02 (`17`) | isolated | G01 | hover→G03 | worker `e8b10707` → main `0d23fada` | go test compiler+driver ok |
 | G03 | done | lane-g-g03 (`27`) | isolated | G02, A02 | refs→G04/G05 | `8268bb5b`→main | 13 TestG03 pass, compiler suite green |
 | G04 | done | lane-g-g04 | isolated | G03, A06✗, C02 | completion→G05/authors | worker `29715ce2,cb43cff6,5f3d8870` | 24 TestG04 pass, compiler suite green, retirement gate holds |
+| G05 | done | lane-g-g05 | isolated | G04, A02 | rename+workflow→B/C/H | worker `fc85d837,ace91b09` | 19 TestG05 pass, compiler suite green, retirement gate holds |
 | E06 | done | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | worker `c5499411` → main `e3a4148c` | 17/17, check green |
 | C03 | done | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | worker `8f61b1b` → main `9a2ea7b7` | go test check ok |
 | C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 landed after (additive-only C-D; C04 stands per c02-report) |
@@ -76,7 +77,7 @@ All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints
 
-- IC1 (H10): blocked — needs G05 (rest done: A01–A05+A06✗, B01–B04✗✗, C02–C04+C05✗, D02, E04–E06, E08, F01, F03, F05, H06, H07).
+- IC1 (H10): unblocked — G05 done (rest done: A01–A05+A06✗, B01–B04✗✗, C02–C04+C05✗, D02, E04–E06, E08, F01, F03, F05, H06, H07).
 - IC2 (H11): blocked — needs H10 plus workload owners.
 - IC3 (H13): blocked — needs H11 plus matrix/live legs.
 
