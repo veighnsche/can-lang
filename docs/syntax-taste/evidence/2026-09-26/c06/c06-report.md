@@ -147,3 +147,30 @@ build stage on per-root 5s supervision timeouts under host load
 (load avg 41 from GUI renderers + canlc workers); failing roots
 differed per attempt and the same builds pass directly, so the
 attempts were discarded as environmental, not code, failures.
+
+## Main-integration re-qualification (2026-09-27, main `932924f7`)
+
+After integrating all 10 slices onto main (design `3286e5cc`
+through record `932924f7`, interleaved with concurrent-lane commit
+`85566db4`), the full C06 battery was re-run on main with the same
+pinned toolchain (`CAN_BUN_ARCHIVE=/tmp/bun-darwin-aarch64.zip`,
+container FF141 via `CAN_FIREFOX_WS`, Playwright 1.55.1):
+
+- `TestC06Positive` PASS (517s): grid 394, compare 221; compare
+  pairing `bc1af0119dcb`.
+- `TestC06NegativeAPIBreak` PASS (8s).
+- `TestC06CaptureEdits` PASS (816s): route/capture/wire/body/leaf
+  5/5 sublegs.
+- `TestC06ServedMatrix` PASS (942s): compare 13×3, w1-grid 12×3,
+  drift rollout 4×3 + rollback 4×3 = 99/99 across Chromium
+  140.0.7339.186, WebKit 26.0, Firefox 141.0. Served pairings:
+  server 347 assertions, compare `e01fe43690e1`, grid
+  `e2bfe00b9f1a`, drift `6993bc8ced10` vs `a3c447785bf6`.
+
+Command: `go test ./tests/integration/ -run 'TestC06' -count=1
+-timeout 90m -v` (the default 600s `go test` timeout kills this
+battery mid-run; the 90m timeout is required, not a code issue).
+Result: `ok ... 942.100s`, EXIT=0, zero failures. Counts match the
+worker-run matrix exactly; no drift from the concurrent-lane
+interleave. Full log retained by the coordinator at
+`/tmp/c06-main-qual.log` for this session.
