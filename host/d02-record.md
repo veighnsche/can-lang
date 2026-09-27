@@ -137,3 +137,35 @@ legs in `conformance/live/` still own the verdict):
   D02's schedule; no C-G gap found.
 - C/E (no patch): T1 sketches and selection conditions unchanged
   from D01; no catalogue or checker change requested.
+
+## Live-debt closure (2026-09-27, coordinator-executed, D-owner-noted)
+
+C01 is done, so the D02-LIVE-1..4 unblock commands ran on all three
+pinned browsers (Chromium 140.0.7339.186, WebKit 26.0, container
+Firefox 141.0 via `CAN_FIREFOX_WS`, Playwright 1.55.1):
+
+- `CAN_D02_LIVE=1 go test ./host/conformance/ -run
+  TestLiveBrowserLegs -count=1 -v` → 8/8 × 3, EXIT=0.
+- Reports: `conformance/live/reports/2026-09-27/d02-{chromium,webkit,firefox}.json`.
+
+Harness repairs needed to run (D-owned files, no D worker active;
+deliverable untouched): node-side assertions (node:assert is undefined
+in page context), Chromium-only clipboard grant (webkit/firefox throw
+`Unknown permission`), container-FF connect + forwarded port 18651,
+explicit `process.exit(0)` (held WS keeps the loop alive).
+
+- D02-LIVE-1 CLOSED: three green reports attached above.
+- D02-LIVE-2 CLOSED: Chromium empty-read resolves `""`, normalized to
+  `null` by the native binding (`host/adapters/clipboard.ts:219`) and
+  reported as `clipboard::empty` (`clipboard.ts:77`) — normalization
+  confirmed, no binding-map addition. WebKit/Firefox reject
+  `NotAllowedError` → `clipboard::denied` leaf.
+- D02-LIVE-3 CLOSED: Chromium grants read+write (strict roundtrip
+  green); WebKit/Firefox permission queries throw `TypeError`
+  (unqueryable) with contract floor holding — WebKit read denies
+  (`clipboard::denied`), Firefox read succeeds end-to-end. Floor is
+  strict-or-documented-denial per engine, as recorded.
+- D02-LIVE-4 CLOSED: no live leg failed; no deliverable return.
+
+T2 verdict is now "runnable + live legs green": 8 live × 3 browsers
+on top of 40/40 bun + the Go conformance gates.

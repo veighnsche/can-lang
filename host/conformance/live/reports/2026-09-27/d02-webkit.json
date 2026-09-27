@@ -1,0 +1,47 @@
+{
+  "browser": "webkit",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+  "secureContext": true,
+  "checks": [
+    {
+      "name": "storage: real roundtrip",
+      "passed": true,
+      "detail": "set/get/remove/missing-null against real localStorage"
+    },
+    {
+      "name": "storage: invalid key rejects before host contact",
+      "passed": true,
+      "detail": "invalid_key with unchanged store length"
+    },
+    {
+      "name": "storage: real quota breach maps with no native text",
+      "passed": true,
+      "detail": "real quota error mapped, store cleaned"
+    },
+    {
+      "name": "clipboard: permission matrix recorded",
+      "passed": true,
+      "detail": "{\"clipboard-read\":\"query-throws:TypeError\",\"clipboard-write\":\"query-throws:TypeError\"}"
+    },
+    {
+      "name": "clipboard: raw empty-read shape recorded",
+      "passed": true,
+      "detail": "rejected:NotAllowedError"
+    },
+    {
+      "name": "clipboard: real write/read roundtrip (contract-floor)",
+      "passed": true,
+      "detail": "contract floor holds: {\"written\":{\"ok\":true,\"value\":null},\"read\":{\"ok\":false,\"failure\":{\"code\":\"clipboard::denied\",\"detail\":\"clipboard access denied\"}}}"
+    },
+    {
+      "name": "clipboard: invalid write rejects before host contact",
+      "passed": true,
+      "detail": "invalid_text without clipboard contact"
+    },
+    {
+      "name": "no page errors escape any leg",
+      "passed": true,
+      "detail": "all legs clean"
+    }
+  ]
+}

@@ -177,3 +177,28 @@ in `conformance/live/` still own the verdict):
   protocol).
 - C/E (no patch): no catalogue or checker change requested; T1 sketches
   and selection conditions unchanged from D01.
+
+## Live-debt closure (2026-09-27, coordinator-executed, D-owner-noted)
+
+C01 is done, so the D03-LIVE-1..4 unblock commands ran on all three
+pinned browsers (Chromium 140.0.7339.186, WebKit 26.0, container
+Firefox 141.0 via `CAN_FIREFOX_WS`, Playwright 1.55.1):
+
+- `CAN_D03_LIVE=1 go test ./host/conformance/ -run
+  TestLiveVendorBLegs -count=1 -v` → 5/5 × 3, EXIT=0.
+- Reports: `conformance/live/reports/2026-09-27/d03-{chromium,webkit,firefox}.json`.
+
+Harness repairs (shared with the D02 closure): container-FF connect +
+forwarded port 18651, explicit `process.exit(0)`.
+
+- D03-LIVE-1 CLOSED: three green reports attached above.
+- D03-LIVE-2 CLOSED: select roundtrip p50/worst of 25 vs the 250ms
+  trip wire — Chromium 0.500/0.800ms, WebKit 1.000/3.000ms, Firefox
+  3.000/4.000ms. Trip wire holds per engine with >60× headroom.
+- D03-LIVE-3 CLOSED: `secureContext: true` on all three engines;
+  loopback page→`/v1/chart` fetch works in real page context on all
+  three — no engine blocks it, so no operator posture is needed.
+- D03-LIVE-4 CLOSED: no live leg failed; no deliverable return.
+
+W2 verdict is now "runnable + live legs green"; D02-LIVE-1..4 closed
+alongside (see `host/d02-record.md`).

@@ -1,0 +1,47 @@
+{
+  "browser": "firefox",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+  "secureContext": true,
+  "checks": [
+    {
+      "name": "storage: real roundtrip",
+      "passed": true,
+      "detail": "set/get/remove/missing-null against real localStorage"
+    },
+    {
+      "name": "storage: invalid key rejects before host contact",
+      "passed": true,
+      "detail": "invalid_key with unchanged store length"
+    },
+    {
+      "name": "storage: real quota breach maps with no native text",
+      "passed": true,
+      "detail": "real quota error mapped, store cleaned"
+    },
+    {
+      "name": "clipboard: permission matrix recorded",
+      "passed": true,
+      "detail": "{\"clipboard-read\":\"query-throws:TypeError\",\"clipboard-write\":\"query-throws:TypeError\"}"
+    },
+    {
+      "name": "clipboard: raw empty-read shape recorded",
+      "passed": true,
+      "detail": "rejected:NotAllowedError"
+    },
+    {
+      "name": "clipboard: real write/read roundtrip (contract-floor)",
+      "passed": true,
+      "detail": "contract floor holds: {\"written\":{\"ok\":true,\"value\":null},\"read\":{\"ok\":true,\"value\":\"d02-live-probe\"}}"
+    },
+    {
+      "name": "clipboard: invalid write rejects before host contact",
+      "passed": true,
+      "detail": "invalid_text without clipboard contact"
+    },
+    {
+      "name": "no page errors escape any leg",
+      "passed": true,
+      "detail": "all legs clean"
+    }
+  ]
+}

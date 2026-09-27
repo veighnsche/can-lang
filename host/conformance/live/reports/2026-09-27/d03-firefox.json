@@ -1,0 +1,32 @@
+{
+  "browser": "firefox",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+  "secureContext": true,
+  "checks": [
+    {
+      "name": "page client: render, select, release roundtrip over loopback fetch",
+      "passed": true,
+      "detail": "render/select/release from page context against vendor B"
+    },
+    {
+      "name": "page client: select-after-release expires from the page",
+      "passed": true,
+      "detail": "expiry honored across the page boundary"
+    },
+    {
+      "name": "page client: invalid spec rejects client-side from the page",
+      "passed": true,
+      "detail": "invalid_spec without a send"
+    },
+    {
+      "name": "page client: select roundtrip timing recorded under the trip wire",
+      "passed": true,
+      "detail": "p50 3.000ms, worst 4.000ms of 25 against 250ms"
+    },
+    {
+      "name": "no page errors escape any leg",
+      "passed": true,
+      "detail": "all legs clean"
+    }
+  ]
+}

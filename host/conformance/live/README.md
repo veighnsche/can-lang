@@ -1,7 +1,6 @@
 # D02 live-browser legs — pinned spec and conformance debt
 
-Status: **debt, unrun** — C01 is blocked-open (no pinned browser is
-launchable), so no live leg below is claimed passing. Everything else
+Status: **CLOSED 2026-09-27** — C01 done; unblock commands green on all three pinned browsers (reports `reports/2026-09-27/`). Everything else
 in `host/conformance/` runs and passes without a browser.
 
 ## What the live leg checks
@@ -62,27 +61,25 @@ browser, and fails on any failed check or missing `report.json`.
 
 ## Debt ledger
 
-- [ ] D02-LIVE-1: run the unblock command on all three pinned
+- [x] D02-LIVE-1: CLOSED 2026-09-27 (reports `reports/2026-09-27/d02-*.json`, see `host/d02-record.md` §Live-debt closure). Original: run the unblock command on all three pinned
   browsers; attach the three `report.json` files to `d02-record.md`.
-- [ ] D02-LIVE-2: pin the per-browser empty-read shape (leg 5) and
+- [x] D02-LIVE-2: CLOSED (""→null confirmed `clipboard.ts:219`→`clipboard::empty`; wk/ff NotAllowedError→denied). Original: pin the per-browser empty-read shape (leg 5) and
   either confirm the `""→null` binding normalization or add the
   observed rejection name to the binding map with a conformance leg.
-- [ ] D02-LIVE-3: pin the per-browser permission/engagement matrix
+- [x] D02-LIVE-3: CLOSED (chromium granted/granted strict; wk/ff unqueryable, floor holds). Original: pin the per-browser permission/engagement matrix
   (leg 4 + leg 6 outcomes); tighten the WebKit/Firefox
   contract-floor to strict-or-documented-denial.
-- [ ] D02-LIVE-4: if any live leg fails, the failure returns to the
+- [x] D02-LIVE-4: CLOSED (no live leg failed). Original: if any live leg fails, the failure returns to the
   D02 deliverable (binding or adapter fix + re-review), never to a
   weakened leg.
 
-Until all four close, the T2 conformance verdict stays
-"runnable legs green, live legs debt" — never "passing".
+All four closed 2026-09-27: T2 verdict is "runnable + live legs green".
 
 ---
 
 # D03 Vendor B live-browser legs — pinned spec and conformance debt
 
-Status: **debt, unrun** — C01 is blocked-open (no pinned browser is
-launchable), so no live leg below is claimed passing. Everything else
+Status: **CLOSED 2026-09-27** — C01 done; unblock commands green on all three pinned browsers (reports `reports/2026-09-27/`). Everything else
 in `host/conformance/` runs and passes without a browser.
 
 ## What the live leg checks
@@ -135,18 +132,17 @@ runner once per browser, and fails on any failed check or missing
 
 ## Debt ledger
 
-- [ ] D03-LIVE-1: run the unblock command on all three pinned
+- [x] D03-LIVE-1: CLOSED 2026-09-27 (reports `reports/2026-09-27/d03-*.json`, see `host/d03-record.md` §Live-debt closure). Original: run the unblock command on all three pinned
   browsers; attach the three `report.json` files to `d03-record.md`.
-- [ ] D03-LIVE-2: pin the per-browser Vendor B select timing (leg 4)
+- [x] D03-LIVE-2: CLOSED (p50/worst Ch 0.5/0.8, Wk 1/3, FF 3/4ms vs 250ms wire). Original: pin the per-browser Vendor B select timing (leg 4)
   and in-page fetch behavior; confirm the trip wire holds per engine
   with headroom stated, or document the observed floor.
-- [ ] D03-LIVE-3: pin the per-browser secure-context/page profile for
+- [x] D03-LIVE-3: CLOSED (secureContext true ×3; loopback fetch works ×3). Original: pin the per-browser secure-context/page profile for
   the companion fetch path (leg reports `secureContext`); any engine
   that blocks loopback fetch from page context gets a documented
   operator posture, not a weakened leg.
-- [ ] D03-LIVE-4: if any live leg fails, the failure returns to the
+- [x] D03-LIVE-4: CLOSED (no live leg failed). Original: if any live leg fails, the failure returns to the
   D03 deliverable (server fix + re-review) or the shared client via
   its owner, never to a weakened leg.
 
-Until all four close, the W2 live verdict stays
-"runnable legs green, live legs debt" — never "passing".
+All four closed 2026-09-27: W2 verdict is "runnable + live legs green".

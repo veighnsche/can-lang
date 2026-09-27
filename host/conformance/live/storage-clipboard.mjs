@@ -6,21 +6,29 @@
 // Usage:
 //   node storage-clipboard.mjs <chromium|webkit|firefox> <bundle-dir> <outdir>
 // Writes report.json into outdir; exits nonzero on any failed check.
-// Pinned but UNRUN while C01 is blocked-open: see README.md.
+// Coordinator F5 repair (D-owner-noted, no D worker active): assertions run
+// node-side on evaluate results (node:assert is not defined in page
+// context), and the firefox leg connects to the pinned C01 container
+// runner via CAN_FIREFOX_WS instead of launching an unpinned local build.
 import { strict as assert } from "node:assert";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createServer } from "node:http";
+import { launchWanted } from "../../../tests/integration/browser/firefox-remote.mjs";
 
-const [wanted, bundleDir, outdir] = process.argv.slice(2);
+const [wanted, bundleDir, outdir, portArg] = process.argv.slice(2);
 if (
   (wanted !== "chromium" && wanted !== "webkit" && wanted !== "firefox") ||
   !bundleDir ||
   !outdir
 ) {
-  console.error("usage: node storage-clipboard.mjs <chromium|webkit|firefox> <bundle-dir> <outdir>");
+  console.error("usage: node storage-clipboard.mjs <chromium|webkit|firefox> <bundle-dir> <outdir> [port]");
   process.exit(2);
 }
+// Container Firefox reaches Mac leg servers only through the provisioned
+// loopback forwarders (provision-local.sh FF_FW_PORTS); the Go gate passes
+// a forwarded port for firefox and 0 (ephemeral) otherwise.
+const listenPort = Number(portArg ?? 0);
 mkdirSync(outdir, { recursive: true });
 
 const assets = {
@@ -46,11 +54,11 @@ const server = createServer((request, response) => {
   }
   response.writeHead(200, { "content-type": "text/javascript" }).end(asset);
 });
-await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+await new Promise((resolve) => server.listen(listenPort, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const playwright = await import("playwright");
-const browser = await playwright[wanted].launch({ timeout: 120000 });
+const { browser, remote } = await launchWanted(playwright, wanted);
 const checks = [];
 const check = (name, fn) =>
   Promise.resolve()
@@ -63,7 +71,10 @@ try {
   // which case the roundtrip leg below degrades to its documented
   // contract-level branch instead of assuming a grant that never
   // happened. The first green live run pins per-engine behavior.
-  const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
+  // Only Chromium accepts clipboard grants (webkit/firefox throw
+  // "Unknown permission"); the other engines run contract-floor legs.
+  const contextOptions = wanted === "chromium" ? { permissions: ["clipboard-read", "clipboard-write"] } : {};
+  const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
   const pageerrors = [];
   page.on("pageerror", (error) => pageerrors.push(String(error?.message ?? error)));
@@ -73,54 +84,64 @@ try {
   const userAgent = await page.evaluate(() => navigator.userAgent);
   const secureContext = await page.evaluate(() => window.isSecureContext);
 
-  await check("storage: real roundtrip", () =>
-    page.evaluate(() => {
+  await check("storage: real roundtrip", async () => {
+    const result = await page.evaluate(() => {
       const adapter = window.__d02_storage.createStorageAdapter(
         window.__d02_storage.createNativeStorageHost(window),
       );
-      assert.deepEqual(adapter.localSet("theme", "dark"), { ok: true, value: null });
-      assert.deepEqual(adapter.localGet("theme"), { ok: true, value: "dark" });
-      assert.deepEqual(adapter.localRemove("theme"), { ok: true, value: null });
-      assert.deepEqual(adapter.localGet("theme"), { ok: true, value: null });
-      return "set/get/remove/missing-null against real localStorage";
-    }),
-  );
+      return {
+        set: adapter.localSet("theme", "dark"),
+        get: adapter.localGet("theme"),
+        remove: adapter.localRemove("theme"),
+        missing: adapter.localGet("theme"),
+      };
+    });
+    assert.deepEqual(result.set, { ok: true, value: null });
+    assert.deepEqual(result.get, { ok: true, value: "dark" });
+    assert.deepEqual(result.remove, { ok: true, value: null });
+    assert.deepEqual(result.missing, { ok: true, value: null });
+    return "set/get/remove/missing-null against real localStorage";
+  });
 
-  await check("storage: invalid key rejects before host contact", () =>
-    page.evaluate(() => {
+  await check("storage: invalid key rejects before host contact", async () => {
+    const result = await page.evaluate(() => {
       const adapter = window.__d02_storage.createStorageAdapter(
         window.__d02_storage.createNativeStorageHost(window),
       );
       const before = window.localStorage.length;
       const got = adapter.localGet("");
-      assert.equal(got.ok, false);
-      assert.equal(got.failure.code, "storage::invalid_key");
-      assert.equal(window.localStorage.length, before);
-      return "invalid_key with unchanged store length";
-    }),
-  );
+      return { got, before, after: window.localStorage.length };
+    });
+    assert.equal(result.got.ok, false);
+    assert.equal(result.got.failure.code, "storage::invalid_key");
+    assert.equal(result.after, result.before);
+    return "invalid_key with unchanged store length";
+  });
 
-  await check("storage: real quota breach maps with no native text", () =>
-    page.evaluate(() => {
+  await check("storage: real quota breach maps with no native text", async () => {
+    const result = await page.evaluate(() => {
       const adapter = window.__d02_storage.createStorageAdapter(
         window.__d02_storage.createNativeStorageHost(window),
       );
       // Fill toward the ~5MB origin quota in 256KB chunks; the loop
       // must terminate on the mapped leaf, never on an escaping throw.
       const leaves = [];
+      let leaked = false;
       for (let fill = 0; fill < 64; fill += 1) {
-        const result = adapter.localSet(`quota-probe-${fill}`, "x".repeat(262144));
-        if (!result.ok) {
-          leaves.push(result.failure.code);
-          assert.ok(!JSON.stringify(result).includes("QuotaExceededError"));
+        const outcome = adapter.localSet(`quota-probe-${fill}`, "x".repeat(262144));
+        if (!outcome.ok) {
+          leaves.push(outcome.failure.code);
+          leaked = JSON.stringify(outcome).includes("QuotaExceededError");
           break;
         }
       }
       for (let fill = 0; fill < 64; fill += 1) adapter.localRemove(`quota-probe-${fill}`);
-      assert.deepEqual(leaves, ["storage::quota_exceeded"]);
-      return "real quota error mapped, store cleaned";
-    }),
-  );
+      return { leaves, leaked };
+    });
+    assert.equal(result.leaked, false);
+    assert.deepEqual(result.leaves, ["storage::quota_exceeded"]);
+    return "real quota error mapped, store cleaned";
+  });
 
   await check("clipboard: permission matrix recorded", () =>
     page.evaluate(async () => {
@@ -155,36 +176,36 @@ try {
   // native text, a known leaf) and records the outcome for the
   // first-run pinning follow-up.
   const strictRoundtrip = wanted === "chromium";
-  await check(`clipboard: real write/read roundtrip (${strictRoundtrip ? "strict" : "contract-floor"})`, () =>
-    page.evaluate(async (strict) => {
+  await check(`clipboard: real write/read roundtrip (${strictRoundtrip ? "strict" : "contract-floor"})`, async () => {
+    const result = await page.evaluate(async (strict) => {
       const adapter = window.__d02_clipboard.createClipboardAdapter(
         window.__d02_clipboard.createNativeClipboardHost(window),
       );
       const written = await adapter.writeText("d02-live-probe");
       const read = written.ok ? await adapter.readText() : written;
-      const serialized = JSON.stringify({ written, read });
-      assert.ok(!/(NotAllowedError|SecurityError|DataError)/.test(serialized), `native text leaked: ${serialized}`);
-      if (strict) {
-        assert.deepEqual(written, { ok: true, value: null });
-        assert.deepEqual(read, { ok: true, value: "d02-live-probe" });
-        return "writeText/readText against the device clipboard";
-      }
-      assert.ok(["clipboard::denied", "clipboard::unavailable"].includes(read.failure?.code) || read.ok === true);
-      return `contract floor holds: ${serialized}`;
-    }, strictRoundtrip),
-  );
+      return { written, read, serialized: JSON.stringify({ written, read }) };
+    }, strictRoundtrip);
+    assert.ok(!/(NotAllowedError|SecurityError|DataError)/.test(result.serialized), `native text leaked: ${result.serialized}`);
+    if (strictRoundtrip) {
+      assert.deepEqual(result.written, { ok: true, value: null });
+      assert.deepEqual(result.read, { ok: true, value: "d02-live-probe" });
+      return "writeText/readText against the device clipboard";
+    }
+    assert.ok(["clipboard::denied", "clipboard::unavailable"].includes(result.read.failure?.code) || result.read.ok === true);
+    return `contract floor holds: ${result.serialized}`;
+  });
 
-  await check("clipboard: invalid write rejects before host contact", () =>
-    page.evaluate(async () => {
+  await check("clipboard: invalid write rejects before host contact", async () => {
+    const got = await page.evaluate(async () => {
       const adapter = window.__d02_clipboard.createClipboardAdapter(
         window.__d02_clipboard.createNativeClipboardHost(window),
       );
-      const got = await adapter.writeText("");
-      assert.equal(got.ok, false);
-      assert.equal(got.failure.code, "clipboard::invalid_text");
-      return "invalid_text without clipboard contact";
-    }),
-  );
+      return adapter.writeText("");
+    });
+    assert.equal(got.ok, false);
+    assert.equal(got.failure.code, "clipboard::invalid_text");
+    return "invalid_text without clipboard contact";
+  });
 
   await check("no page errors escape any leg", async () => {
     assert.deepEqual(pageerrors, []);
@@ -196,7 +217,9 @@ try {
     JSON.stringify({ browser: wanted, userAgent, secureContext, checks }, null, 2),
   );
 } finally {
-  await browser.close().catch(() => {});
+  // A connected leg must never close the shared browser server (C01
+  // firefox-remote contract); launched browsers close normally.
+  if (!remote) await browser.close().catch(() => {});
   server.close();
 }
 
@@ -206,3 +229,6 @@ if (failed.length > 0) {
   process.exit(1);
 }
 console.log(`live legs pass on ${wanted}: ${checks.length}/${checks.length}`);
+// Explicit exit: a connected (remote) run holds the shared WS open, which
+// would keep the event loop alive forever (C01 compare.mjs pattern).
+process.exit(0);

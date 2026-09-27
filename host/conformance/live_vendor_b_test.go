@@ -22,7 +22,7 @@ const liveVendorBDebtCommand = "CAN_D03_LIVE=1 go test ./host/conformance/ -run 
 // runner once per browser, and fails on any failed check.
 func TestLiveVendorBLegs(t *testing.T) {
 	if os.Getenv("CAN_D03_LIVE") != "1" {
-		t.Skipf("live legs debt (C01 blocked-open); unblock with: %s", liveVendorBDebtCommand)
+		t.Skipf("live legs need pinned browsers; run with: %s", liveVendorBDebtCommand)
 	}
 	root := repoRoot(t)
 	playwright := filepath.Join(root, "tests/integration/browser/node_modules/playwright")
@@ -51,7 +51,14 @@ func TestLiveVendorBLegs(t *testing.T) {
 	for _, browser := range []string{"chromium", "webkit", "firefox"} {
 		t.Run(browser, func(t *testing.T) {
 			outdir := t.TempDir()
-			cmd := exec.Command(node, filepath.Join(root, "host/conformance/live/vendor-b.mjs"), browser, bundles, outdir)
+			// Container Firefox reaches Mac leg servers only via the
+			// provisioned loopback forwarders (FF_FW_PORTS 18651-18654);
+			// chromium/webkit use ephemeral ports. (Coordinator F5 repair.)
+			port := "0"
+			if browser == "firefox" {
+				port = "18651"
+			}
+			cmd := exec.Command(node, filepath.Join(root, "host/conformance/live/vendor-b.mjs"), browser, bundles, outdir, port)
 			cmd.Dir = root
 			cmd.Env = append(os.Environ(), "NODE_PATH="+filepath.Join(root, "tests/integration/browser/node_modules"))
 			out, err := cmd.CombinedOutput()

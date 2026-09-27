@@ -15,16 +15,21 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
+import { launchWanted } from "../../../tests/integration/browser/firefox-remote.mjs";
 
-const [wanted, bundleDir, outdir] = process.argv.slice(2);
+const [wanted, bundleDir, outdir, portArg] = process.argv.slice(2);
 if (
   (wanted !== "chromium" && wanted !== "webkit" && wanted !== "firefox") ||
   !bundleDir ||
   !outdir
 ) {
-  console.error("usage: node vendor-b.mjs <chromium|webkit|firefox> <bundle-dir> <outdir>");
+  console.error("usage: node vendor-b.mjs <chromium|webkit|firefox> <bundle-dir> <outdir> [port]");
   process.exit(2);
 }
+// Container Firefox reaches Mac leg servers only through the provisioned
+// loopback forwarders (provision-local.sh FF_FW_PORTS); the Go gate passes
+// a forwarded port for firefox and 0 (ephemeral) otherwise.
+const listenPort = Number(portArg ?? 0);
 mkdirSync(outdir, { recursive: true });
 
 // The live secret lives in the runner only: the server reads it from the
@@ -68,11 +73,14 @@ const http = createServer((request, response) => {
   }
   response.writeHead(404).end("not found");
 });
-await new Promise((resolve) => http.listen(0, "127.0.0.1", resolve));
+await new Promise((resolve) => http.listen(listenPort, "127.0.0.1", resolve));
 const base = `http://127.0.0.1:${http.address().port}`;
 
 const playwright = await import("playwright");
-const browser = await playwright[wanted].launch({ timeout: 120000 });
+// Coordinator F5 repair (D-owner-noted): the firefox leg connects to the
+// pinned C01 container runner via CAN_FIREFOX_WS instead of launching an
+// unpinned local build.
+const { browser, remote } = await launchWanted(playwright, wanted);
 const checks = [];
 const check = (name, fn) =>
   Promise.resolve()
@@ -217,7 +225,9 @@ try {
     JSON.stringify({ browser: wanted, userAgent, secureContext, checks }, null, 2),
   );
 } finally {
-  await browser.close().catch(() => {});
+  // A connected leg must never close the shared browser server (C01
+  // firefox-remote contract); launched browsers close normally.
+  if (!remote) await browser.close().catch(() => {});
   http.close();
 }
 
@@ -227,3 +237,6 @@ if (failed.length > 0) {
   process.exit(1);
 }
 console.log(`live legs pass on ${wanted}: ${checks.length}/${checks.length}`);
+// Explicit exit: a connected (remote) run holds the shared WS open, which
+// would keep the event loop alive forever (C01 compare.mjs pattern).
+process.exit(0);
