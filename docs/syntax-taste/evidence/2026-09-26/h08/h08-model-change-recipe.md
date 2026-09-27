@@ -50,3 +50,43 @@ opens (spend approval, price table, qualified bound — see
 - Ledger-backend note (PG default; alternates only per F04).
 - Limitations: single serial run each; host wall-clock latency, not
   a provider SLO; USD only via the pinned price table.
+
+## Follow-up notes (2026-09-27; binding on future qualification runs)
+
+- **Pinned tariff.** The v3 price table carries the published
+  input tariff (4.2e-8 USD/token) as the single gate price with
+  source URL and retrieval date. Settled input-plus-output tokens
+  billed at the input rate overstate true spend (output is free)
+  in the safe direction: spend tracking reaches the cap early.
+  Handoff (outside the follow-up slice): exact split billing
+  needs a `tools/runtime/ai-eval/` change billing each side at
+  its own rate — `quoteSplitCost` in `runtime/ai/bound.ts`
+  already implements the arithmetic with tests.
+- **Bound-qualification protocol (boundary-plus-sweep).** Before
+  any candidate U is adopted for a pinned identity: (1) an
+  over-budget probe establishing reject-without-consumption (typed
+  error, zero usage); (2) a near-budget accept bracketing the
+  enforced cap from below with exact usage; (3) the full 18-case
+  sweep with ledger-reconciled usage; (4) adversarial max-length
+  repeats plus byte-identical determinism repeats; (5) every
+  figure verified through `verifyCandidate` in
+  `runtime/ai/bound.ts` and filed as a redacted artifact (hashes,
+  lengths, usage — no prompt text, bodies, or credentials).
+  Stopping rule: rejects carry no usage, so the cap bracket's
+  upper edge is rate-derived — dense bracketing shrinks ε, but
+  only provider publication of the exact enforced figure closes
+  it. Record ε explicitly; never present a bracket edge as the
+  cap value.
+- **Re-verification on provider change.** The pinned tariff and
+  any adopted U rest on provider publication plus the verification
+  above. If the Models page changes price/context figures, or a
+  new model version ships, re-run this protocol for the new
+  identity before any budgeted send — never carry U or the tariff
+  across an unpublished change.
+- **Candidate (unadopted).** U=33280 (32768 input + 512 output)
+  for `typesafe/jev/1.13.0` is recorded in
+  `h08-followup/bound-u-investigation.md` as a measurement-backed
+  candidate only. Adopting it requires the exact enforced input
+  figure plus output-side grounding (provider text or a recorded
+  program decision) and then the protocol above through the live
+  gate.

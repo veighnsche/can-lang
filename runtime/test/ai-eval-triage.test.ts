@@ -140,7 +140,7 @@ async function runCases(
 }
 
 test("protocol loads frozen with verified hashes and valid labels", () => {
-  expect(PROTOCOL.registration.protocolVersion).toBe("2");
+  expect(PROTOCOL.registration.protocolVersion).toBe("3");
   expect(PROTOCOL.representative).toHaveLength(12);
   expect(PROTOCOL.heldout).toHaveLength(6);
   const keys = new Set(KEYS);
@@ -293,7 +293,12 @@ test("live gate names every missing input and validates the cap", () => {
     }) as TriageRegistration;
   const none = authorizeLive({}, PROTOCOL.registration);
   expect(none.authorized).toBe(false);
-  if (!none.authorized) expect(none.missing).toHaveLength(4);
+  // v3 pins the price table, so the gate names the three still-missing
+  // inputs (credential, spend cap, qualified U) and no price complaint.
+  if (!none.authorized) {
+    expect(none.missing).toHaveLength(3);
+    expect(none.missing.join(" ")).not.toContain("price table");
+  }
   const keyOnly = authorizeLive({ [CREDENTIAL_ENV]: "x" }, PROTOCOL.registration);
   expect(keyOnly.authorized).toBe(false);
   if (!keyOnly.authorized) expect(keyOnly.missing.join(" ")).not.toContain(CREDENTIAL_ENV);
@@ -313,7 +318,7 @@ test("live gate names every missing input and validates the cap", () => {
   if (!capped.authorized)
     expect(capped.missing).toEqual(["qualified complete-call bound U (profile unqualified)"]);
   expect(qualifiedBound(PROTOCOL.registration)).toBeUndefined();
-  expect(pricePerToken(PROTOCOL.registration)).toBeUndefined();
+  expect(pricePerToken(PROTOCOL.registration)).toBe(4.2e-8);
   const qualified = priced({
     priceTable: { usdPerToken: 0.000_001 },
     boundStatus: { status: "qualified", detail: "fixture", upperBound: 5000 },

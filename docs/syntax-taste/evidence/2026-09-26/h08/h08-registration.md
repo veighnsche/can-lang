@@ -75,3 +75,14 @@ qualification analysis is `h08-x-r14-1.md`.
   `within` scope mints one correlation per attempt, which the
   selected contract permits ("correlation may group attempts"). Case
   files, labels, thresholds, and other measures unchanged.
+- v3 (2026-09-27, still before any live evaluation result): price
+  table pinned from the published TypeSafe Models page
+  (`usdPerToken` 4.2e-8 = $0.042/MTok input; output free in
+  reality, safe-direction over-charged by the single-price gate —
+  see `h08-followup/bound-u-investigation.md` and the recipe).
+  `boundStatus` detail updated with live enforcement/bracket
+  evidence; status stays `unqualified`. Follow-up live calls used
+  synthetic unlabeled states (bound-U probes m1–m9) and design
+  consultations only — no frozen case was sent, no quality verdict
+  observed. Case files, labels, thresholds, and state caps
+  unchanged; registered hashes stand.

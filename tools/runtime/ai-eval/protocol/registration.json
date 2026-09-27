@@ -1,7 +1,7 @@
 {
  "abstainConfidenceFloor": 0.5,
  "boundStatus": {
-  "detail": "No complete-call upper bound U has been qualified for any profile. Live budgeted dispatch is mechanically impossible until a bound qualifies in the H07 registry; see h08-x-r14-1.md.",
+  "detail": "UNQUALIFIED (v3, 2026-09-27): input enforcement verified live (400 max_tokens_exceeded, zero usage) and the enforced cap bracketed at (23546, ~42000] consistent with the published 32k state budget, but the exact enforced figure and output-side grounding remain unpublished; candidate U=33280 recorded but explicitly unadopted. Live budgeted dispatch stays mechanically impossible; see h08-x-r14-1.md and h08-followup/bound-u-investigation.md.",
   "status": "unqualified"
  },
  "caseSets": {
@@ -42,7 +42,7 @@
   "correlation": "the ai_budget::within scope mints one correlation id per case attempt; the runner verifies every accounting report carries that case correlation, and runs group by run id in the report",
   "liveGate": {
    "credentialEnv": "TYPESAFE_API_KEY",
-   "priceTable": "required: pinned per-token USD prices; absent (see priceTable)",
+   "priceTable": "pinned at v3: 4.2e-8 USD/token input tariff (output over-charged safe-direction); see priceTable",
    "spendCapEnv": "CAN_EVAL_SPEND_CAP_USD"
   },
   "mode": "strictly serial: one provider call at a time, no concurrent provider legs"
@@ -61,7 +61,7 @@
   "abstain count, invalid-output count, rejected count",
   "tokens per case and summed: input_tokens + output_tokens, unweighted; breakdown fields never double-counted",
   "latency per case in ms (wall clock around guarded dispatch) plus run max; reported only, no SLO",
-  "cost in tokens; USD only when a price table is pinned (none pinned: USD unknown)",
+  "cost in tokens; USD via the v3 pinned price table (single input rate over-charges output safe-direction)",
   "budget/correlation checks: every settled actual <= U; ledger committed == sum of settled usage; every accounting report carries its case correlation"
  ],
  "modelChange": {
@@ -79,9 +79,14 @@
   "timeoutMs": 30000,
   "version": "1.13.0"
  },
- "priceTable": null,
- "priceTableNote": "No per-token USD price table is pinned: TypeSafe publishes no usable price in-repo and no operator price sheet was supplied. Token counts are reported; USD cost is unknown. Live runs stay blocked until prices pin (the H04 USD spend cap cannot be enforced against unknown USD cost).",
- "protocolVersion": "2",
+ "priceTable": {
+  "basis": "Published input tariff applied to settled input-plus-output tokens: a documented conservative over-charge (real output is free), so spend tracking reaches the cap early and can never overspend it. Exact split billing is a future harness handoff; see h08-model-change-recipe.md.",
+  "retrieved": "2026-09-27",
+  "source": "https://docs.typesafe.ai/models (Jev 1.13 row: $42/Btok = $0.042/MTok input, output free)",
+  "usdPerToken": 4.2e-8
+ },
+ "priceTableNote": "Pinned at v3 (2026-09-27) from the published TypeSafe Models page: 4.2e-8 USD/token input, output free in reality and over-charged by the single-price gate in the safe direction. Supersedes the v2 unpinned note.",
+ "protocolVersion": "3",
  "questionKind": "choice",
  "registeredAt": "2026-09-26",
  "registeredBy": "H08 slice 1, before any H08 live evaluation result",
@@ -106,6 +111,11 @@
    "version": "2",
    "date": "2026-09-26",
    "change": "Correlation rule corrected during slice-2 smoke test (still before any live result): v1 assumed one run-wide correlation, but the H07 within scope mints one correlation per attempt per the selected contract (\"correlation may group attempts\"). Case files, labels, thresholds, and measures otherwise unchanged."
+  },
+  {
+   "version": "3",
+   "date": "2026-09-27",
+   "change": "H08 follow-up: price table pinned from the published TypeSafe Models page (4.2e-8 USD/token input, output free in reality, safe-direction over-charge documented); boundStatus detail updated with live enforcement/bracket evidence while staying unqualified. Still before any live evaluation result: follow-up live calls used synthetic unlabeled states (bound-U probes) and design consultations only. Case files, labels, thresholds, and state caps unchanged (hashes stand)."
   }
  ]
 }
