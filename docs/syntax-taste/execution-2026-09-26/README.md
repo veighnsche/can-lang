@@ -78,6 +78,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 
 | H12 | staged (BLOCKED on UP25 grant) | lane-h-h12 | isolated | H05, H10, C06, D03, E09, F04, F06 | W6-deploy→H11/H13/H14 | 3 worker (`744801b4`,`775463fb`,`267bdfc8`)→main (Jev+checklist+runbook); coord Leg-6 WORK note | 8/8 validation bullets staged w/ exact commands+env+pass criteria; pins verified (bun zip 36368fae, rev 744846f84, go1.27.1, PG17); window-check.sh inspection-only; Jev 3/3 unanimous; zero x86 exec/emulation; native run awaits machine+window |
 
+| H11 | pre-assembly (OPEN behind H12) | lane-h-h11-prep | isolated | H10, A07–B05, C06–C07, D03, E09, F04, F06, G05, H08, H12 | IC2 verdict→H13 (later turn) | 2 worker (`9d5f3fc6`,`b3f24b09`)→main + coord verification | W1–W6+tooling/examples aggregated from owner seals; findings F0–F22 (F1/F2 HIGH confirmed, F8 MEDIUM confirmed, F11 resolved); no IC2 verdict claimed |
+
 All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints
