@@ -652,7 +652,7 @@ describe("hedge over real HTTP (cancel-absent-shaped replicas)", () => {
 describe("hedge over real HTTP (cancel-present fetch replicas)", () => {
   const decodeText = (bytes: Uint8Array) => success(new TextDecoder().decode(bytes));
 
-  test("H4: without loser abort the response waits for loser drain", async () => {
+  test("H4: R2 — without loser abort the peer answers at the winner", async () => {
     const seen: Record<string, unknown> = {};
     const owned = await runOwnedRoot(async () => {
       const upstream = startStallUpstream();
@@ -721,8 +721,8 @@ describe("hedge over real HTTP (cancel-present fetch replicas)", () => {
           if (outcome.kind !== "settled") return textResult("unexpected:" + outcome.kind);
           seen.winner = outcome.winner;
           // The handler responds WITHOUT awaiting the loser: any delay
-          // past the winner is the pre-response scope drain, which is
-          // exactly what this leg measures.
+          // past the winner would be the scope drain, which R2 moved
+          // behind the answered peer.
           void outcome.settledAll.then((fates) => {
             seen.fates = fates.length;
           });
@@ -732,15 +732,13 @@ describe("hedge over real HTTP (cancel-present fetch replicas)", () => {
         const response = await fetch("http://127.0.0.1:18774/x");
         const body = await response.text();
         const elapsed = Date.now() - start;
-        // Content follows the winner, but timing follows the loser: the
-        // loser's native owner group sits in the request scope, so the
-        // pre-response drain waits for its two-second settlement. This
-        // is the mechanism O2 supervision would address — and H5 shows
-        // the O1 abort already covers it.
+        // R2: content and timing both follow the winner: the loser's
+        // native owner group still sits in the request scope, but the
+        // scope now drains behind the answered peer instead of gating
+        // it. H5 shows the O1 abort also covers the losing side.
         expect(response.status).toBe(200);
         expect(body).toBe("winner:1:fast");
-        expect(elapsed).toBeGreaterThanOrEqual(1500);
-        expect(elapsed).toBeLessThan(8000);
+        expect(elapsed).toBeLessThan(1500);
         await waitFor("hedge fates", () => seen.fates === 2, 8000);
         expect(
           upstream

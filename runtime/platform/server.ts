@@ -1,4 +1,11 @@
-import { success, failure, invoke, type Completion, type AssertionContext } from "../completion.ts";
+import {
+  success,
+  failure,
+  invoke,
+  caught,
+  type Completion,
+  type AssertionContext,
+} from "../completion.ts";
 import { denyLiveBoundary } from "../assert/context.ts";
 import { record } from "../data.ts";
 import { copyBytes } from "../bytes.ts";
@@ -317,6 +324,10 @@ export function createServer(
             // Unbounded-until-expired: no time bound is invented here.
             const scope = createRequestScope();
             liveScopes.add(scope);
+            // Set once the per-request drain continuation owns scope-list
+            // removal and disconnect observation; ingress failures before
+            // that point still clean up in the outer finally below.
+            let draining = false;
             // Disconnect observation (X-R04-3, qualified): the serve-side
             // signal aborts promptly on peer disconnect but stops nothing
             // by itself. Expiring the scope propagates the disconnect
@@ -348,20 +359,63 @@ export function createServer(
                   : await snapshotRequest(native, bodyLimit, scope.signal);
                 if (snapshot.kind === "rejected") return success(fixed(snapshot.status));
                 bindRequestServer(snapshot.value, server);
-                // Body readers live and die in this per-request scope; dispatch
-                // abandons an unread live body before the scope drains, and the
-                // outer boundary revokes the token only after drainage, before
-                // the response returns. Handler faults and rejected routes pass
-                // through the same finally, so no path leaks a usable token.
-                try {
-                  return await withScope(async () => serveSnapshot(native, snapshot.value));
-                } finally {
-                  revokeRequest(snapshot.value);
-                }
+                // R2 respond_then_drain: the handler Response publishes the
+                // moment the handler completes, releasing the peer while
+                // the per-request scope drains owned in the background to
+                // the same settled end state. Body readers still live and
+                // die in the scope; revocation, scope-list removal,
+                // disconnect observation, and drain-failure reporting move
+                // verbatim into the drain continuation, preserving
+                // close-before-revoke and the single correlated failure
+                // record. Handler faults and rejected routes pass through
+                // the same continuation, so no path leaks a usable token.
+                let publish!: (completed: Completion<Response>) => void;
+                let answered: Completion<Response> | undefined;
+                const published = new Promise<Completion<Response>>((resolve) => {
+                  publish = (completed) => {
+                    answered = completed;
+                    resolve(completed);
+                  };
+                });
+                const drained = withScope(async () => {
+                  const completed = await invoke(
+                    () => serveSnapshot(native, snapshot.value),
+                    origin,
+                  );
+                  publish(completed);
+                  return completed;
+                });
+                draining = true;
+                void drained.then(
+                  (outcome) => {
+                    revokeRequest(snapshot.value);
+                    liveScopes.delete(scope);
+                    nativeSignal?.removeEventListener("abort", onDisconnect);
+                    // Only drain-introduced failures report here: a failed
+                    // handler body already flowed to serveOuter through the
+                    // published outcome, so reporting it again would double
+                    // the correlated record.
+                    if (answered?.kind === "ok" && outcome.kind !== "ok") {
+                      void reportRequestFailure(outcome, requestContext(native));
+                    }
+                  },
+                  (cause) => {
+                    // Defensive: withScope resolves its boxed outcome and
+                    // rejects only on entry violation. Publish so the peer
+                    // never hangs, then run the same continuation.
+                    publish(caught(cause, origin));
+                    revokeRequest(snapshot.value);
+                    liveScopes.delete(scope);
+                    nativeSignal?.removeEventListener("abort", onDisconnect);
+                  },
+                );
+                return await published;
               });
             } finally {
-              nativeSignal?.removeEventListener("abort", onDisconnect);
-              liveScopes.delete(scope);
+              if (!draining) {
+                nativeSignal?.removeEventListener("abort", onDisconnect);
+                liveScopes.delete(scope);
+              }
             }
           });
         };

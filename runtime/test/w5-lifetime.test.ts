@@ -523,23 +523,19 @@ describe("W5 lifetime: stalled SQL over live HTTP", () => {
   );
 
   pgLive(
-    "W5-L3: a stalled mid-flight write reports commit-unknown honestly (BLOCKED: peer gated on settlement)",
+    "W5-L3: R2 — a stalled mid-flight write answers the peer at the bound",
     async () => {
-      // BLOCKED (W5 at-budget response for overrun transactions):
-      // the tx boundary returns commit_unknown at the 150ms bound and
-      // every honest-outcome assertion below holds, but dispatch's
-      // per-request scope drain waits for the tx callback task
-      // (owner-core drain waits for callbacks inside the scope), so
-      // the peer responds at callback settlement (~2s), not at the
-      // bound. The tx shape is drain-blocking (owner-grouped) plus
-      // natively unabortable — the exact shape class the X-R04-2 O2
-      // trip condition names. Redesigning tx ownership is an E04
-      // semantic change, not a W5 leg fix: this leg pins the measured
-      // split (handler fast, peer at settlement) and the evidence
-      // record carries the BLOCKED verdict to IC2/preparation. A hung
-      // tx callback would hold the peer past any bound (shutdown
-      // bounds stop itself via shutdownMs; the in-flight peer is cut
-      // with the session, not answered).
+      // R2 (retained W5 at-budget response for overrun transactions;
+      // the BLOCKED negative is superseded): the tx boundary returns
+      // commit_unknown at the 150ms bound, dispatch publishes the
+      // handler Response immediately, and the per-request scope
+      // drains owned in the background — the peer receives the
+      // honest unknown:commit body at the bound (~150ms), not at tx
+      // callback settlement (~2s). Ownership, commit_unknown,
+      // escalation, and late-settlement semantics are unchanged;
+      // only response timing decouples from drain timing. A hung tx
+      // callback still converges owned in the background without
+      // holding the peer.
       const { lines, restore } = capture();
       try {
         const seen: Record<string, unknown> = {};
@@ -583,13 +579,12 @@ describe("W5 lifetime: stalled SQL over live HTTP", () => {
             const started = Date.now();
             const response = await fetch("http://127.0.0.1:18793/write", { method: "POST" });
             const elapsed = Date.now() - started;
-            // The pinned split: the handler (boundary) returned at the
-            // bound while the peer waited for tx callback settlement.
-            // NOT at-budget: this is the blocked measurement, and the
-            // lower bound below fails loudly if the shape ever changes.
+            // R2: handler and peer both answer at the bound; the tx
+            // callback still settles (~2s) in the background drain.
+            // The upper bound below fails loudly if the peer ever
+            // gates on settlement again.
             expect((seen.handlerAt as number) - started).toBeLessThan(1500);
-            expect(elapsed).toBeGreaterThanOrEqual(1800);
-            expect(elapsed).toBeLessThan(8000);
+            expect(elapsed).toBeLessThan(1500);
             expect(response.status).toBe(200);
             expect(await response.text()).toBe("unknown:commit");
             expect(seen.failure).toBe("sql::commit_unknown");
@@ -608,6 +603,102 @@ describe("W5 lifetime: stalled SQL over live HTTP", () => {
             );
             expect(reread.kind).toBe("ok");
             expect((await server.stop(token)).kind).toBe("ok");
+            value(await pools.close(pool, 5000n));
+            return success(undefined);
+          } catch (cause) {
+            value(await pools.close(pool, 15000n));
+            throw cause;
+          }
+        });
+        expect(owned.cleanupFailed).toBe(false);
+        expect(owned.completion.kind).toBe("ok");
+        expect(lines).toHaveLength(0);
+      } finally {
+        restore();
+      }
+    },
+    30000,
+  );
+
+  pgLive(
+    "W5-L11: R2 — stop during the background drain stays bounded",
+    async () => {
+      // R2: the peer is already answered when stop runs; the overrun tx
+      // still settles (~2s) in the background drain. Stop must stay
+      // bounded (no fetch lease is held past publish), the drain must
+      // still converge (revocation, late record, reconciliation row),
+      // and the reporter must stay silent on the clean drain.
+      const { lines, restore } = capture();
+      try {
+        const seen: Record<string, unknown> = {};
+        const owned = await runOwnedRoot(async () => {
+          const pool = await setupSchema(() => pools.open("CAN_E09_PG", 5n), "pg");
+          try {
+            const { token } = await startRoutes(18799, [
+              {
+                method: "post",
+                path: "/write",
+                handler: async () => {
+                  seen.scope = currentRequestScope();
+                  const outcome = await transactions.withTransaction(
+                    pool,
+                    async (handle: unknown) => {
+                      const inserted = await transactions.execute(
+                        descriptors.declareDescriptor("pg", "tx_insert"),
+                        emptyPlan,
+                        handle,
+                        emptyParams,
+                      );
+                      if (inserted.kind !== "ok") return inserted as Completion<never>;
+                      return success(record(COMMIT, [["value", 1n]]));
+                    },
+                    leaves,
+                    undefined,
+                    { boundMs: 150 },
+                  );
+                  if (outcome.kind !== "domain") return textResult("settled");
+                  seen.failure = payloadOf(outcome).name;
+                  return textResult("unknown:commit");
+                },
+              },
+            ]);
+            const started = Date.now();
+            const response = await fetch("http://127.0.0.1:18799/write", { method: "POST" });
+            expect(Date.now() - started).toBeLessThan(1500);
+            expect(response.status).toBe(200);
+            expect(await response.text()).toBe("unknown:commit");
+            expect(seen.failure).toBe("sql::commit_unknown");
+            // Stop while the tx callback is still stalled: bounded,
+            // because the fetch lease released at publish.
+            const stopStarted = Date.now();
+            expect((await server.stop(token)).kind).toBe("ok");
+            expect(Date.now() - stopStarted).toBeLessThan(3000);
+            const scope = seen.scope as RequestScope;
+            // Two expiries, two records: the 150ms bound first, then the
+            // shutdown expiry of the stalled callback await.
+            expect(scope.collected.escalations).toHaveLength(2);
+            expect(scope.collected.escalations.map((e) => e.cause)).toEqual(["budget", "shutdown"]);
+            await waitFor("late pg commit", () => scope.collected.lates.length === 2, 10000);
+            // L11-observed: both stalled phases settle resolved after the native
+            // PG round-trips converge post-stop (rollback completes, barrier
+            // releases). Sorted multiset — same-tick order is not contractual.
+            // 2026-09-26: late shape recorded under live PG; ordering beyond the
+            // multiset must not be asserted without re-qualification.
+            expect(scope.collected.lates.map((l) => l.settled).sort()).toEqual([
+              "resolved",
+              "resolved",
+            ]);
+            // Stop expired the scope mid-stall, so the callback never
+            // committed: the reread honestly reports the row missing
+            // (rollback converged; the first escalation still stands).
+            const reread = await pools.queryOne(
+              descriptors.declareDescriptor("pg", "probe_note"),
+              notePlan,
+              pool,
+              idParam(8n),
+            );
+            expect(reread.kind).toBe("domain");
+            expect(payloadOf(reread).name).toBe("sql::row_missing");
             value(await pools.close(pool, 5000n));
             return success(undefined);
           } catch (cause) {

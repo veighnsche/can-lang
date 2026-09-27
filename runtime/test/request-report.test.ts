@@ -454,7 +454,7 @@ test("JSON adapter adaptation failure reports without reflecting the leaf", asyn
   }
 });
 
-test("scope drain failure keeps the cleanup record single with a fixed 500", async () => {
+test("scope drain failure keeps the cleanup record single behind an answered peer", async () => {
   const closeSecret = "e06-close-secret-4f7d";
   const { lines, restore } = capture();
   const diagnostics: OwnerDiagnostic[] = [];
@@ -473,8 +473,15 @@ test("scope drain failure keeps the cleanup record single with a fixed 500", asy
         const table = value(await router.make([leaking]));
         const token = value(await server.start(config, table));
         const response = await fetch("http://127.0.0.1:18746/leak");
-        expect(response.status).toBe(500);
-        expect(await response.text()).toBe("Internal Server Error");
+        // R2: the peer receives the handler body at publish; the failing
+        // drain lands behind it through the same single record below.
+        expect(response.status).toBe(200);
+        expect(await response.text()).toBe("done");
+        // The background drain marks the root: await its diagnostic.
+        const drainStarted = Date.now();
+        while (diagnostics.length === 0 && Date.now() - drainStarted < 5000) {
+          await Bun.sleep(10);
+        }
         expect((await server.stop(token)).kind).toBe("ok");
         return success(undefined);
       },

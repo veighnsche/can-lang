@@ -159,6 +159,17 @@ async function expectResourceState(call: () => unknown): Promise<void> {
   }
   throw new Error("expected resource_state failure");
 }
+// R2: revocation lands in the background drain continuation, after the
+// peer is answered. Poll for it with a bound instead of asserting it
+// synchronously once the response returns.
+async function awaitRevoked(token: unknown, budgetMs: number): Promise<boolean> {
+  const started = Date.now();
+  for (;;) {
+    if (!isRequest(token)) return true;
+    if (Date.now() - started >= budgetMs) return false;
+    await Bun.sleep(10);
+  }
+}
 async function expectRevoked(token: unknown): Promise<void> {
   expect(isRequest(token)).toBe(false);
   expect(isHTTPValue("request", token)).toBe(false);
@@ -447,8 +458,16 @@ test("admitted child work keeps the token during drainage", async () => {
     expect(await response.text()).toBe("early");
     // The child read after the handler settled but before revocation: the
     // token dies only when drainage completes, not when dispatch returns.
+    // R2: the peer answers at publish, so await the admitted child (it
+    // still runs in the background drain) before asserting drain-time
+    // visibility and the post-drain revocation.
+    const childStarted = Date.now();
+    while (seen.afterSettle === undefined && Date.now() - childStarted < 5000) {
+      await Bun.sleep(10);
+    }
     expect(seen.afterSettle).toBe(true);
     expect(seen.header).toBe("yes");
+    expect(await awaitRevoked(seen.token, 5000)).toBe(true);
     await expectRevoked(seen.token);
     expect(resourceStatus(token)).toMatchObject({ state: "open", leases: 0 });
     expect((await servers.stop(token)).kind).toBe("ok");

@@ -66,7 +66,7 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | B05 | done | lane-b-b05 (`32`) + lane-a-emitfix (`37`) | isolated | B01, B02, B03✗, B04✗ | W3 verdict→H11 | report→`804d650a`, fix→`b636674d` | W3 rerun green; M1 3/3; emit green |
 | D01 | done | lane-d-d01 (`33`) | isolated | C04, C05✗, F01 | tiers→D02/H | 7 worker→`b837f710` | 54/54 + admission; A/B→T2, C→T3 |
 | E05 | done | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | 7 worker→`94e3fae8`+`384a6080` | 16/16; O1 sufficient, O2 inactive |
-| E09 | done | lane-e-e09 (`40`) | isolated | E04, E05, E06, E08, H02, H03 | W5→IC2/H | `2137f1f3`→`784b2c2b`, `4e441420`→`fa812d4a` | coord live rerun 16/16 (L3/S5b BLOCKED-evidence passes), check:runtime green |
+| E09 | done | lane-e-e09 (`40`) | isolated | E04, E05, E06, E08, H02, H03 | W5→IC2/H | `2137f1f3`→`784b2c2b`, `4e441420`→`fa812d4a` | coord live rerun 16/16 (L3/S5b BLOCKED-evidence passes), check:runtime green; R1 CLOSED S5b/H1 (X-R15-3), R2 CLOSED L3 + L11 — see e09-w5.md |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
 | D02 | done | lane-d-d02 (`38`) + coord F5 | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` + coord live closure | 40/40 + Go gates; live 8/8×3 (Ch140/Wk26/FF141); D02-LIVE-1..4 CLOSED |
 | F06 | done | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | 3 worker→`feb0a934` | live PASS A–I (coord 146s, worker 82.8s+130.2s); sums OK |
