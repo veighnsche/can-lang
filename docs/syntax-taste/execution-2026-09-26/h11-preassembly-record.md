@@ -40,7 +40,7 @@ H12 W6-deploy native legs are the single pending evidence input
 | F5 D live legs now runnable | MEDIUM | D owner |
 | F6 W2-negative e2e gap | MEDIUM | H + D, or IC2 disposition |
 | F7 W1.5 substitute-surface disposition | MEDIUM | preparation / IC2 disposition |
-| F8 Can-path RETURNING execution gap | MEDIUM | E owner + coordinator |
+| F8 Can-path RETURNING execution gap | MEDIUM | CLOSED (coordinator — see F8 closure §) |
 | F9–F15, F17, F18 | LOW | owners / IC2 / H14 / H12-Leg-7 as listed |
 | F16, F19–F22 | INFO | coordinator / record |
 
@@ -133,6 +133,28 @@ beyond the 52 closed task records — not a hidden subtask of any of them —
 so it needs the user's implement-vs-exclude call (F8 disposition).
 W6.1 "generated identities" stands evidenced via raw-SQL oracles +
 MySQL `LAST_INSERT_ID` mapping + ledger identities either way.
+
+## F8 closure (coordinator, user implement decision)
+
+The user put F8 RETURNING in scope (implement, not exclude). All three
+layers plus live legs are now on main:
+
+1. Manifest (`c1e63d44`): `one`+absent-limit admitted for RETURNING.
+2. Descriptor (`abf744ad`): `(one, 0)` INSERT kinds admitted + tests.
+3. Pool (`2394a180`): app-only binds + §3 enforcement + tests.
+4. Live legs (this turn): `runtime/test/sql-returning.test.ts` 6/6 —
+   SQLite single/multi/skip-conflict/tx-twin plus live PG17
+   (`can-pg17`, db `can_f8_run1`: single-row, ON CONFLICT skip,
+   `f8_gen_tag_key` conflict, tx twin) and live MySQL 8.4
+   (`can-mysql84`, db `can_f8_run1`: 4 concurrent tx refetch exactly
+   their own `LAST_INSERT_ID` rows). Fixed on the way: the legs'
+   `createSQLTransactions` 3-arg call, `mysqlOpen` dispatch, PG
+   rerun-idempotency (`DELETE FROM f8_gen` in setup), and a
+   pre-existing `tsc` red in `sql-descriptor.test.ts` (`as const`
+   readonly segments — type-only fix, runtime assertions unchanged).
+   `bun run check:runtime` green; sibling SQL suites green
+   (`mysql.test.ts` 12/12 re-verified under its designed
+   `test-pw`/`can_b1_03` provisioning after an ad-hoc-URL red herring).
 
 ## F7 resolution (documented-limitation justification, evidence-backed)
 
