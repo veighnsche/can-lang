@@ -1,0 +1,743 @@
+{
+  "task": "C06",
+  "date": "2026-09-26",
+  "harness": "TestC06ServedMatrix (643s) + TestC06Positive + TestC06NegativeAPIBreak + TestC06CaptureEdits",
+  "asserts": {
+    "invoice-grid": 394,
+    "invoice-compare": 221,
+    "invoice": 347
+  },
+  "served": {
+    "compare-chromium": {
+      "browser": "chromium",
+      "version": "140.0.7339.186",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-panels",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": "slot=adbc425f3ffc"
+        },
+        {
+          "name": "edit-left-keeps-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "review-blocks-on-invalid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "real-keystrokes",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "caret-preserved-across-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "composing-input-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-folds-left-into-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "drop-left-right-works",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-after-drop-silent",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "network-ledger-clean",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 3,
+      "ledger": 0,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'."
+      ],
+      "report_sha256": "1e8b7a0f675b0626cd6f9b3f2e918fa715a2c23108376349c6e2f9b158a11e8a",
+      "screenshot_sha256": "15ef0821de739c63d9c6a86a2cd020af2c5c0a353442b035bc055f4214dbd082"
+    },
+    "compare-firefox": {
+      "browser": "firefox",
+      "version": "141.0",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-panels",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": "slot=adbc425f3ffc"
+        },
+        {
+          "name": "edit-left-keeps-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "review-blocks-on-invalid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "real-keystrokes",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "caret-preserved-across-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "composing-input-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-folds-left-into-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "drop-left-right-works",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-after-drop-silent",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "network-ledger-clean",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 3,
+      "ledger": 0,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [],
+      "report_sha256": "a20509bea8b4ce97eae1d418e295fad8aedeaceeabeaad8471299913e28b6229",
+      "screenshot_sha256": "ae8b0660a3b90778367e870f98c526fb40c86168966fede5eaca465fc959255f"
+    },
+    "compare-webkit": {
+      "browser": "webkit",
+      "version": "26.0",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-panels",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": "slot=adbc425f3ffc"
+        },
+        {
+          "name": "edit-left-keeps-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "review-blocks-on-invalid",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "real-keystrokes",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "caret-preserved-across-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "composing-input-folds",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-folds-left-into-right",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "drop-left-right-works",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mirror-after-drop-silent",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "network-ledger-clean",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 3,
+      "ledger": 0,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+      ],
+      "report_sha256": "850ddd07a9737668f1893eb3d09e24269fbfea6f631759f9def8a8e98494d0db",
+      "screenshot_sha256": "3bce662bc81353c0b7a05052bfd6e6cc11c14366076636ffa0a0a511ffcf8c95"
+    },
+    "drift-rollback-chromium": {
+      "browser": "chromium",
+      "version": "140.0.7339.186",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'."
+      ],
+      "report_sha256": "7a03c2a785749cb28ec0437432f0315fef3c5b77c6f588008b799b304e69d1c9",
+      "screenshot_sha256": "89fc8f2c1506457ef70fb0249c551d85b0831a56e6fac240b997cd7b977fe400"
+    },
+    "drift-rollback-firefox": {
+      "browser": "firefox",
+      "version": "141.0",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [],
+      "report_sha256": "f6667c6395c557353248a4f753278c66595b0c436c0970ff4afd7456388ed3a6",
+      "screenshot_sha256": "44bbeab91fbc720694effa5415ef17ee0a6ab6563088a5d3b7ad3e0a7ed08ce4"
+    },
+    "drift-rollback-webkit": {
+      "browser": "webkit",
+      "version": "26.0",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+      ],
+      "report_sha256": "d116d786dd58f596098a6f2afec0d1b7a1576c1e2f6c1d2cd40d5656c26405a4",
+      "screenshot_sha256": "d432dc087599459306ee2cd201cccb1aa0bb26c9eed1d2719e18ccdca1e41176"
+    },
+    "drift-rollout-chromium": {
+      "browser": "chromium",
+      "version": "140.0.7339.186",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'."
+      ],
+      "report_sha256": "45040d0d3261e5e74c8b04ab6fbb3e5d3607d3d710b81d88d22e77ab17d2e620",
+      "screenshot_sha256": "89fc8f2c1506457ef70fb0249c551d85b0831a56e6fac240b997cd7b977fe400"
+    },
+    "drift-rollout-firefox": {
+      "browser": "firefox",
+      "version": "141.0",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [],
+      "report_sha256": "9fb025754ce6a89333f1a7358acd73b62f287111f5d606bc0189c3f194b0537b",
+      "screenshot_sha256": "44bbeab91fbc720694effa5415ef17ee0a6ab6563088a5d3b7ad3e0a7ed08ce4"
+    },
+    "drift-rollout-webkit": {
+      "browser": "webkit",
+      "version": "26.0",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-v1",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "old-page-refused",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refused-save-never-ran",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 7,
+      "ledger": 3,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+      ],
+      "report_sha256": "ee47e7d612c36c380847a6871802f36e5683763344ccd1e64f9c0cb8b8ec1859",
+      "screenshot_sha256": "d432dc087599459306ee2cd201cccb1aa0bb26c9eed1d2719e18ccdca1e41176"
+    },
+    "w1-grid-chromium": {
+      "browser": "chromium",
+      "version": "140.0.7339.186",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-loads",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "header-on-actions",
+          "passed": true,
+          "detail": "1 calls"
+        },
+        {
+          "name": "missing-id-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "page-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "unknown-path-404",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "grid-caret",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-save-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-load-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refresh-resolves",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 30,
+      "ledger": 7,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'."
+      ],
+      "report_sha256": "a391fdb2ad3dbdfeff94a987e61bdc3383825b773c4dcbdb2de0419b25f1b812",
+      "screenshot_sha256": "f33e624df06132cde9a5ee96000e2ca1f93485a047541324303b4d75e3fc8682"
+    },
+    "w1-grid-firefox": {
+      "browser": "firefox",
+      "version": "141.0",
+      "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-loads",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "header-on-actions",
+          "passed": true,
+          "detail": "1 calls"
+        },
+        {
+          "name": "missing-id-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "page-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "unknown-path-404",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "grid-caret",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-save-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-load-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refresh-resolves",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 30,
+      "ledger": 7,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [],
+      "report_sha256": "ee8804568fb73e1008da4fc5ca389fe05987abb7d7adc5865e2b22b6a61e5d89",
+      "screenshot_sha256": "429872432d5e6e51ea403ed856dae1d210e775bc37952f689275e8c66ed3bcfd"
+    },
+    "w1-grid-webkit": {
+      "browser": "webkit",
+      "version": "26.0",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+      "passed": true,
+      "checks": [
+        {
+          "name": "boot-loads",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "client-identity",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "generation-slot",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "header-on-actions",
+          "passed": true,
+          "detail": "1 calls"
+        },
+        {
+          "name": "missing-id-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "page-denied",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "unknown-path-404",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "grid-caret",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-save-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "mismatch-load-prompt",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "refresh-resolves",
+          "passed": true,
+          "detail": ""
+        },
+        {
+          "name": "no-page-faults",
+          "passed": true,
+          "detail": ""
+        }
+      ],
+      "requests": 30,
+      "ledger": 7,
+      "aborted": [],
+      "pageerrors": [],
+      "consoleErrors": [
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+        "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Failed to load resource: the server responded with a status of 409 (Conflict)",
+        "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+        "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+      ],
+      "report_sha256": "78455a5afbae7c93abc5b866e47b150f3c42ff5f6792836f7fe37b00d96bc082",
+      "screenshot_sha256": "b308faf037d97efaec282d816bfc1f5d5c01eaf5886c12e34273ed22aece218c"
+    }
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "harness": "compare.mjs",
+  "browser": "firefox",
+  "version": "141.0",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+  "checks": [
+    {
+      "name": "boot-panels",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "client-identity",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "generation-slot",
+      "passed": true,
+      "detail": "slot=adbc425f3ffc"
+    },
+    {
+      "name": "edit-left-keeps-right",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "review-blocks-on-invalid",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "real-keystrokes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caret-preserved-across-folds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "composing-input-folds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mirror-folds-left-into-right",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "drop-left-right-works",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mirror-after-drop-silent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "network-ledger-clean",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-page-faults",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/invoice-compare",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/__can/assets/8a03327ce03c2d29c8849c05a9286ed605ece9df5957cf819dff6bffa4c4ebdb.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/__can/assets/8a03327ce03c2d29c8849c05a9286ed605ece9df5957cf819dff6bffa4c4ebdb.js",
+      "status": 200
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [],
+  "passed": true
+}

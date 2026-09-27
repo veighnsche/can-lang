@@ -1,0 +1,92 @@
+{
+  "harness": "drift.mjs",
+  "browser": "firefox",
+  "version": "141.0",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64; rv:141.0) Gecko/20100101 Firefox/141.0",
+  "checks": [
+    {
+      "name": "boot-v1",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "old-page-refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "refused-save-never-ran",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-page-faults",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/__can/assets/bbe315e8920771efdfd0a8fc9196e90f231418c4e2d010039f56d70aa4921183.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/__can/assets/bbe315e8920771efdfd0a8fc9196e90f231418c4e2d010039f56d70aa4921183.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 200
+    }
+  ],
+  "ledger": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 409,
+      "requestBody": "{\"operation_id\":\"t1/i7/r1/e1\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"3\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"schemaVersion\":1,\"kind\":\"can.generation-mismatch\",\"serverGeneration\":\"6587e28bccd006c8e75c1826cfe188d1b315436db56e0fde2878105ebce8168a\"}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18651/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [],
+  "passed": true
+}

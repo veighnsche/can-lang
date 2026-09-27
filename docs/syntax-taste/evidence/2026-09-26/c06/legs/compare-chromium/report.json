@@ -1,0 +1,96 @@
+{
+  "harness": "compare.mjs",
+  "browser": "chromium",
+  "version": "140.0.7339.186",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/140.0.7339.186 Safari/537.36",
+  "checks": [
+    {
+      "name": "boot-panels",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "client-identity",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "generation-slot",
+      "passed": true,
+      "detail": "slot=adbc425f3ffc"
+    },
+    {
+      "name": "edit-left-keeps-right",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "review-blocks-on-invalid",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "real-keystrokes",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "caret-preserved-across-folds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "composing-input-folds",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mirror-folds-left-into-right",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "drop-left-right-works",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "mirror-after-drop-silent",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "network-ledger-clean",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-page-faults",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18781/invoice-compare",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18781/__can/assets/8a03327ce03c2d29c8849c05a9286ed605ece9df5957cf819dff6bffa4c4ebdb.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18781/__can/assets/8a03327ce03c2d29c8849c05a9286ed605ece9df5957cf819dff6bffa4c4ebdb.js",
+      "status": 200
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'."
+  ],
+  "passed": true
+}

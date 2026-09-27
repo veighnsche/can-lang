@@ -1,0 +1,97 @@
+{
+  "harness": "drift.mjs",
+  "browser": "webkit",
+  "version": "26.0",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Safari/605.1.15",
+  "checks": [
+    {
+      "name": "boot-v1",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "old-page-refused",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "refused-save-never-ran",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "no-page-faults",
+      "passed": true,
+      "detail": ""
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/__can/assets/bbe315e8920771efdfd0a8fc9196e90f231418c4e2d010039f56d70aa4921183.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/invoice-grid?tenant=1&invoice=7",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/__can/assets/bbe315e8920771efdfd0a8fc9196e90f231418c4e2d010039f56d70aa4921183.js",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 200
+    }
+  ],
+  "ledger": [
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 409,
+      "requestBody": "{\"operation_id\":\"t1/i7/r1/e1\",\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"3\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}]}",
+      "responseBody": "{\"schemaVersion\":1,\"kind\":\"can.generation-mismatch\",\"serverGeneration\":\"c7857d2a760eff5388281da770c784de9aeb5d3d2e45efa3f50572a86ca9d48a\"}"
+    },
+    {
+      "method": "GET",
+      "url": "http://127.0.0.1:18788/api/tenants/1/invoices/7",
+      "status": 200,
+      "requestBody": "",
+      "responseBody": "{\"case\":\"invoice_contract::grid_loaded\",\"value\":{\"current\":{\"revision\":\"1\",\"lines\":[{\"key\":\"k1\",\"id\":\"sku-1 <b>\",\"quantity\":\"2\",\"price\":\"19.99\"},{\"key\":\"k2\",\"id\":\"plain\",\"quantity\":\"1\",\"price\":\"5.00\"}],\"total_minor_units\":4498}}}"
+    }
+  ],
+  "aborted": [],
+  "pageerrors": [],
+  "consoleErrors": [
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    "Unrecognized Content-Security-Policy directive 'navigate-to'.\n",
+    "Refused to apply a stylesheet because its hash, its nonce, or 'unsafe-inline' does not appear in the style-src directive of the Content Security Policy."
+  ],
+  "passed": true
+}
