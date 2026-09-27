@@ -1,0 +1,38 @@
+{
+  "model": "jev-1.13.0",
+  "state": {
+    "contract": "Under BLK-01, no profile sends budgeted traffic without a conservative upper bound U over the entire encoded call: all provider-side input and output tokens, with instructions, schemas, questions, overhead, and output limits inside the bound. Two derivations can never serve as proof: reasoning from bytes, and reasoning from an estimated tokenizer count. The qualification is pinned to one provider, model, and version triple; altering any element reopens qualification unless the proof already covers it. H08 applied this standard in X-R14-1 and qualified zero profiles, so W6-AI stands blocked as designed \u2014 the passing rejection suite (12 tests, exact scripted sums of 1156 and 276) exercises the guard with no provider contact and is fenced off from live claims. When authoritative usage tops U, the ledger keeps the true figure, quarantines that profile, and fails the budgeted result; when usage is unknown, the full reservation hold persists.",
+    "published": "Public TypeSafe documentation fetched 2026-09-27 describes Jev 1.13 as model jev-1.13.0 with input-only pricing of $42 per billion ($0.042 per million, 4.2e-8 USD each) and zero output charge; a request context length of 64k tokens, of which state plus the longest question may take 32k and state plus all questions together the full 64k; and rate ceilings of 250,000 tokens per second alongside 1,200 requests per minute. The docs state no maximum output length, publish no tokenizer, expose no preflight counter, and list no over-context error among 401/422/429/529 \u2014 so what the service does past 64k input tokens is unrecorded. The dynamic-change warning attaches to the rate ceilings alone, not to price or context size. Successful calls report usage input_tokens/output_tokens as required integers and echo the model, with choice answers fixed to the choice/confidence/probabilities shape.",
+    "posture": "For this slice the operator shell holds TYPESAFE_API_KEY (presence confirmed, value withheld from all records) and roughly ten metered live calls under $0.01 are approved, each to appear in the usage ledger with timestamp, endpoint, model, token split, and purpose. Writable ground covers runtime/ai/, runtime/test/ai-*, examples/native-ai/, the h08-followup directory, and h08 recipe/registration text; tools/runtime/ai-eval/ stays read-only here, pushing harness redesign into a handoff note. The pinned call shape is provider typesafe, model jev, version 1.13.0, wire model jev-1.13.0, endpoint v1/systemone, 30 s deadline, 65536-byte response cap, and the triage workload is one five-category choice question over a 200-char subject with a 2000-char body. Credentials and bounded spend are settled for this slice; the price pin is achievable from publication, but only the provider can publish what qualification still needs.",
+    "risk": "Exceeding the bound costs real tokens exactly once per profile: the overspending call settles before quarantine blocks its successors, so margin size exchanges allowance efficiency for breach safety, and redefining the feature as its fixture set is explicitly out of bounds. The guard machinery underneath is already proven: unqualified sends refuse before any I/O, undecoded usage keeps the whole hold, breaches quarantine the profile durably, and the runner totals usage from ledger records instead of response text. Fixture-measured peaks say nothing about future production inputs, which may be larger without warning; a measurement program therefore supports whichever derivation is chosen but cannot replace it. Jev advises only: it selects among the presented designs using the furnished facts, researches nothing, and its cross-round agreement is engineering input, not verification or debiasing proof."
+  },
+  "questions": {
+    "output_treatment": {
+      "type": "choice",
+      "instructions": "Decide what this slice does about output tokens: input has a public budget with secret enforcement, output has neither a budget nor enforcement text.",
+      "criteria": {
+        "measured_allowance": "Build the allowance from live data without promoting it to proof: sweep the registered sets, worst-case-length adversarial inputs, and determinism repeats; publish the observed output peak plus a wide margin as the recorded output allowance under quarantine backstop; leave U unqualified until provider text grounds the output side. The published 64k input budget gets its own boundary-probe verification track. A few cents of metered calls convert an open question into a measured remainder with no contract overclaim.",
+        "fixed_request_only": "Bound nothing that can vary: prove by live repetition that fixed request bytes yield a fixed output count, pin that count to fixed-request profiles alone, and publish no output number for variable triage input. Input-side 64k verification continues independently while output remains formally open. Exactness is preserved by shrinking the claim to cover only replayable requests.",
+        "defer_output": "Park the output side: run only the input-track verification against the public 64k budget and defer all output measurement until the provider documents an output ceiling or its enforcement. Adopt no allowance and no margin, and run no determinism repeats. The slice stays small and the output question waits for provider text, unmeasured."
+      }
+    },
+    "verification_protocol": {
+      "type": "choice",
+      "instructions": "Decide which live evidence gates a future U: which probes run, and which are skipped.",
+      "criteria": {
+        "boundary_plus_sweep": "Verify edge and middle together: an over-64k probe reveals the true limit behavior (refusal, truncation with accurate usage, or acceptance), a near-limit probe confirms admission below it, then the 18-case sweep, worst-case repeats, and identical-byte replays complete the picture for roughly six calls under a cent, all usage ledger-reconciled and redacted. No gap is left to assumption.",
+        "sweep_only": "Sets without boundaries: verify the frozen 18 live with a margined peak and omit every limit-edge probe, keeping spend tiny and provider behavior predictable. The case range is covered while cap enforcement remains a guess.",
+        "boundary_only": "Edges now, sets later: establish over-limit and near-limit behavior with two probes and leave the frozen-case sweep to the eventual gated evaluation. Answers enforcement with minimum spend while case evidence accumulates where it will be used."
+      }
+    },
+    "price_pin": {
+      "type": "choice",
+      "instructions": "Decide the price-table pin: one gate field must carry an input-only published tariff.",
+      "criteria": {
+        "conservative_single": "Use one safe-direction price: pin 4.2e-8 USD per token with its source and date, letting the gate bill every settled token at the input rate even though output is actually free. The recorded over-charge is conservative by construction \u2014 spend tracking reaches the cap early \u2014 unblocking the price leg with no schema change.",
+        "split_table_handoff": "Split on paper, single in code: document the real two-rate tariff with its source in the follow-up record, route exact split billing to a future harness slice, and accept that the live gate stays price-blocked until then. The pin is faithful while the gate waits.",
+        "no_pin": "Stay unpinned: regard published prices as unconfirmed until billing paperwork corroborates them, leave the table null, and keep live runs price-blocked. Maximum skepticism, but the gate never opens on publication alone."
+      }
+    }
+  }
+}

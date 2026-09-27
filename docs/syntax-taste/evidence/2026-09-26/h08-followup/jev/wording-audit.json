@@ -1,0 +1,16 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 4 state fields, 3 instructions and 9 option descriptions has a distinct complete phrasing (48 fields). Model ID jev-1.13.0, endpoint v1/systemone, env name TYPESAFE_API_KEY, file paths, requirement IDs (BLK-01/X-R14-1/H08/W6-AI), token sums 1156+276, prices $42/$0.042/4.2e-8, budgets 64k/32k, timeouts, byte caps, char caps, HTTP statuses, and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "BLK-01 conservative whole-call bound U incl. instructions/schemas/questions/overhead/output limits; bytes and estimated tokenizer counts excluded as proof; pinned provider/model/version, change voids qualification; H08/X-R14-1 qualified nothing so W6-AI blocked; 12/12 rejection fixtures with exact 1156+276 scripted sums prove fail-closed with zero I/O, not a live pass; over-U actual records unclamped + quarantines + invalidates; unknown usage keeps full hold",
+    "TypeSafe Models page retrieved 2026-09-27: Jev 1.13 jev-1.13.0, $42/Btok = $0.042/MTok = 4.2e-8 USD/token input-only with free output, 64k tokens/request context (32k state+longest question, 64k state+all questions), 250k tok/s + 1200 req/min rate limits; no output max/tokenizer/count endpoint published; errors 401/422/429/529 with no over-context status so 64k enforcement unpublished; dynamic-change warning on rate limits only; success carries required usage.input_tokens/usage.output_tokens + model echo; choice answers fixed choice/confidence/probabilities shape",
+    "TYPESAFE_API_KEY present (presence only, never printed); ~10 bounded live calls under $0.01 authorized, each ledgered with time/endpoint/model/tokens/purpose, no secrets; editable runtime/ai/, runtime/test/ai-*, examples/native-ai/, h08-followup/, h08 recipe+registration; tools/runtime/ai-eval/ out of slice so harness schema changes are handoff; pinned wire typesafe/jev/1.13.0 model field jev-1.13.0 endpoint v1/systemone 30s timeout 65536 maxBodyBytes; triage one 5-category choice over subject<=200/body<=2000 chars; gate still needs spend cap + price + qualified U; slice can resolve price and narrow U gap only",
+    "U failure asymmetric: first over-U call overspends before quarantine; margins trade allowance cost vs breach risk; narrowing feature to fixtures forbidden; proven fail-closed: unqualified pre-send missing-qualification rejection, unknown-usage full holds, durable breach quarantine, ledger-reconciled serial sums; fixture maxima bound fixtures not feature; Jev advisory classification only, no research, agreement is advice not proof or bias removal"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "b86b15d95d30da31f1bc685ecd790fdefa592606c7f4eab3d69154907de4bd0a",
+    "request-2.json": "44ba0d69b28624dbd92b99cd519bdd0c15fe6fcb559fca632df56e96d17dfcc7",
+    "request-3.json": "fe2c4cd699e2d6a416a2dee9b537b2d764588be6a4738ccb2dd1ebfa724a8449"
+  }
+}

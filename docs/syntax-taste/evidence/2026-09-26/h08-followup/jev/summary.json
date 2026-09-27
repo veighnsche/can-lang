@@ -1,0 +1,117 @@
+{
+  "answered_by": "jev-1.13.0",
+  "decisions": {
+    "output_treatment": {
+      "options": [
+        "defer_output",
+        "fixed_request_only",
+        "measured_allowance"
+      ],
+      "rounds": [
+        {
+          "confidence": 0.45,
+          "probabilities": {
+            "defer_output": 0.21,
+            "fixed_request_only": 0.15,
+            "measured_allowance": 0.64
+          },
+          "selected": "measured_allowance"
+        },
+        {
+          "confidence": 0.94,
+          "probabilities": {
+            "defer_output": 0.02,
+            "fixed_request_only": 0.02,
+            "measured_allowance": 0.96
+          },
+          "selected": "measured_allowance"
+        },
+        {
+          "confidence": 0.14,
+          "probabilities": {
+            "defer_output": 0.41,
+            "fixed_request_only": 0.16,
+            "measured_allowance": 0.43
+          },
+          "selected": "measured_allowance"
+        }
+      ]
+    },
+    "price_pin": {
+      "options": [
+        "conservative_single",
+        "no_pin",
+        "split_table_handoff"
+      ],
+      "rounds": [
+        {
+          "confidence": 0.87,
+          "probabilities": {
+            "conservative_single": 0.92,
+            "no_pin": 0.0,
+            "split_table_handoff": 0.08
+          },
+          "selected": "conservative_single"
+        },
+        {
+          "confidence": 0.77,
+          "probabilities": {
+            "conservative_single": 0.84,
+            "no_pin": 0.02,
+            "split_table_handoff": 0.14
+          },
+          "selected": "conservative_single"
+        },
+        {
+          "confidence": 0.99,
+          "probabilities": {
+            "conservative_single": 0.99,
+            "no_pin": 0.0,
+            "split_table_handoff": 0.01
+          },
+          "selected": "conservative_single"
+        }
+      ]
+    },
+    "verification_protocol": {
+      "options": [
+        "boundary_only",
+        "boundary_plus_sweep",
+        "sweep_only"
+      ],
+      "rounds": [
+        {
+          "confidence": 0.92,
+          "probabilities": {
+            "boundary_only": 0.04,
+            "boundary_plus_sweep": 0.94,
+            "sweep_only": 0.02
+          },
+          "selected": "boundary_plus_sweep"
+        },
+        {
+          "confidence": 0.89,
+          "probabilities": {
+            "boundary_only": 0.06,
+            "boundary_plus_sweep": 0.92,
+            "sweep_only": 0.02
+          },
+          "selected": "boundary_plus_sweep"
+        },
+        {
+          "confidence": 0.1,
+          "probabilities": {
+            "boundary_only": 0.4,
+            "boundary_plus_sweep": 0.36,
+            "sweep_only": 0.24
+          },
+          "selected": "boundary_only"
+        }
+      ]
+    }
+  },
+  "total_usage": {
+    "input_tokens": 6208,
+    "output_tokens": 447
+  }
+}
