@@ -1,0 +1,684 @@
+{
+ "task": "C02",
+ "workload": "R02 native browser controls (F-R02-01/02/06; interface C-D)",
+ "verdict": "pass",
+ "base": "bfdc0f9cfec46d8ccf7b4d6d5fecf705d15d5c5d",
+ "env": "macOS darwin-arm64, Bun 1.4.2, Go 1.27.1, Playwright 1.55.1; Firefox 141.0 via container can-ff",
+ "command": "go test ./tests/integration/ -run 'TestC02NativeMatrix|TestC02ControlsMatrix' (CAN_BUN_ARCHIVE set for emitted)",
+ "harness": "tests/integration/browser/{controls-native,controls}.mjs via tests/integration/browser_controls_test.go",
+ "conventions": "additive C-D snapshot contract; no mutable escape; per-field per-browser verdicts below",
+ "legs": [
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "checkbox-idl",
+   "status": "pass",
+   "detail": "checked toggles, value stays on"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "dirty-divergence",
+   "status": "pass",
+   "detail": "attribute moves the default, live keeps the edit"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "form-reset",
+   "status": "pass",
+   "detail": "reset restores start/unchecked"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "multiselect",
+   "status": "pass",
+   "detail": "a,c then b"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "single-last-wins",
+   "status": "pass",
+   "detail": "last match wins"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "files",
+   "status": "pass",
+   "detail": "2 files with name/size/type"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "modifiers",
+   "status": "pass",
+   "detail": "real shift+Enter, real s, synthetic ctrl+x"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "composing",
+   "status": "pass",
+   "detail": "real false, synthetic true"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "selection",
+   "status": "pass",
+   "detail": "1,3,backward; checkbox null + InvalidStateError"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "2 loopback requests"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "checkbox-idl",
+   "status": "pass",
+   "detail": "checked toggles, value stays on"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "dirty-divergence",
+   "status": "pass",
+   "detail": "attribute moves the default, live keeps the edit"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "form-reset",
+   "status": "pass",
+   "detail": "reset restores start/unchecked"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "multiselect",
+   "status": "pass",
+   "detail": "a,c then b"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "single-last-wins",
+   "status": "pass",
+   "detail": "last match wins"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "files",
+   "status": "pass",
+   "detail": "2 files with name/size/type"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "modifiers",
+   "status": "pass",
+   "detail": "real shift+Enter, real s, synthetic ctrl+x"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "composing",
+   "status": "pass",
+   "detail": "real false, synthetic true"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "selection",
+   "status": "pass",
+   "detail": "1,3,backward; checkbox null + InvalidStateError"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "2 loopback requests"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "checkbox-idl",
+   "status": "pass",
+   "detail": "checked toggles, value stays on"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "dirty-divergence",
+   "status": "pass",
+   "detail": "attribute moves the default, live keeps the edit"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "form-reset",
+   "status": "pass",
+   "detail": "reset restores start/unchecked"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "multiselect",
+   "status": "pass",
+   "detail": "a,c then b"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "single-last-wins",
+   "status": "pass",
+   "detail": "last match wins"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "files",
+   "status": "pass",
+   "detail": "2 files with name/size/type"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "modifiers",
+   "status": "pass",
+   "detail": "real shift+Enter, real s, synthetic ctrl+x"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "composing",
+   "status": "pass",
+   "detail": "real false, synthetic true"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "selection",
+   "status": "pass",
+   "detail": "1,3,backward; checkbox null + InvalidStateError"
+  },
+  {
+   "suite": "controls-native",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "2 loopback requests"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "client-identity",
+   "status": "pass",
+   "detail": "paired script only"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "boot",
+   "status": "pass",
+   "detail": "13 lines render"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "text-echo",
+   "status": "pass",
+   "detail": "value+composing+caret echo"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "key-echo",
+   "status": "pass",
+   "detail": "plain a then shift+Enter"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "check-echo",
+   "status": "pass",
+   "detail": "checked toggles, value on"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "multi-echo",
+   "status": "pass",
+   "detail": "a,c selected"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "files-echo",
+   "status": "pass",
+   "detail": "2 files, first detailed"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "setvalue",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "setchecked",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "setselected",
+   "status": "pass",
+   "detail": "multi b, single last-wins z"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "setcaret",
+   "status": "pass",
+   "detail": "1,3,forward live"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "composing-synthetic",
+   "status": "pass",
+   "detail": "synthetic composing input echoes"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "dirty-reset",
+   "status": "pass",
+   "detail": "defaults restored live"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "readall",
+   "status": "pass",
+   "detail": "save-time reads agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "reject",
+   "status": "pass",
+   "detail": "denials named, caret neutral"
+  },
+  {
+   "suite": "controls",
+   "engine": "chromium",
+   "version": "140.0.7339.186",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "31 loopback requests, 15 pinned engine warnings"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "client-identity",
+   "status": "pass",
+   "detail": "paired script only"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "boot",
+   "status": "pass",
+   "detail": "13 lines render"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "text-echo",
+   "status": "pass",
+   "detail": "value+composing+caret echo"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "key-echo",
+   "status": "pass",
+   "detail": "plain a then shift+Enter"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "check-echo",
+   "status": "pass",
+   "detail": "checked toggles, value on"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "multi-echo",
+   "status": "pass",
+   "detail": "a,c selected"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "files-echo",
+   "status": "pass",
+   "detail": "2 files, first detailed"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "setvalue",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "setchecked",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "setselected",
+   "status": "pass",
+   "detail": "multi b, single last-wins z"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "setcaret",
+   "status": "pass",
+   "detail": "1,3,forward live"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "composing-synthetic",
+   "status": "pass",
+   "detail": "synthetic composing input echoes"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "dirty-reset",
+   "status": "pass",
+   "detail": "defaults restored live"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "readall",
+   "status": "pass",
+   "detail": "save-time reads agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "reject",
+   "status": "pass",
+   "detail": "denials named, caret neutral"
+  },
+  {
+   "suite": "controls",
+   "engine": "webkit",
+   "version": "26.0",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "31 loopback requests, 15 pinned engine warnings"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "client-identity",
+   "status": "pass",
+   "detail": "paired script only"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "boot",
+   "status": "pass",
+   "detail": "13 lines render"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "text-echo",
+   "status": "pass",
+   "detail": "value+composing+caret echo"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "key-echo",
+   "status": "pass",
+   "detail": "plain a then shift+Enter"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "check-echo",
+   "status": "pass",
+   "detail": "checked toggles, value on"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "multi-echo",
+   "status": "pass",
+   "detail": "a,c selected"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "files-echo",
+   "status": "pass",
+   "detail": "2 files, first detailed"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "setvalue",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "setchecked",
+   "status": "pass",
+   "detail": "live write+read agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "setselected",
+   "status": "pass",
+   "detail": "multi b, single last-wins z"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "setcaret",
+   "status": "pass",
+   "detail": "1,3,forward live"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "composing-synthetic",
+   "status": "pass",
+   "detail": "synthetic composing input echoes"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "autofill-simulated",
+   "status": "pass",
+   "detail": "external live change observed"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "dirty-reset",
+   "status": "pass",
+   "detail": "defaults restored live"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "readall",
+   "status": "pass",
+   "detail": "save-time reads agree"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "reject",
+   "status": "pass",
+   "detail": "denials named, caret neutral"
+  },
+  {
+   "suite": "controls",
+   "engine": "firefox",
+   "version": "141.0",
+   "name": "network-ledger-clean",
+   "status": "pass",
+   "detail": "31 loopback requests, 0 pinned engine warnings"
+  }
+ ]
+}
