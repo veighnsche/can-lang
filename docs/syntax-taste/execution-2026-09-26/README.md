@@ -68,10 +68,10 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | E05 | done | lane-e-e05 (`34`) | isolated | E04, E06 | O1/O2→E09 | 7 worker→`94e3fae8`+`384a6080` | 16/16; O1 sufficient, O2 inactive |
 | E09 | done | lane-e-e09 (`40`) | isolated | E04, E05, E06, E08, H02, H03 | W5→IC2/H | `2137f1f3`→`784b2c2b`, `4e441420`→`fa812d4a` | coord live rerun 16/16 (L3/S5b BLOCKED-evidence passes), check:runtime green |
 | H06 | done | lane-h-h06 (`35`) | isolated | C03, E04 | C-H→C06/H10/H12 | 3 worker→`1cf506e7` | 5/5 contract; E/C slices→C06 |
-| D02 | done (live debt) | lane-d-d02 (`38`) | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` | 40/40 + Go gates; debt D02-LIVE-1..4 until C01 unblocks |
+| D02 | done | lane-d-d02 (`38`) + coord F5 | isolated | D01 | artifact→D03/H | 4 worker→`fb30a330` + coord live closure | 40/40 + Go gates; live 8/8×3 (Ch140/Wk26/FF141); D02-LIVE-1..4 CLOSED |
 | F06 | done | lane-f-f06 (`39`) | isolated | F05, A07, E04, H02 | pair/batch→IC2/H12/H13 | 3 worker→`feb0a934` | live PASS A–I (coord 146s, worker 82.8s+130.2s); sums OK |
 | H08 | done (blocked) | lane-h-h08 (`36`) | isolated | H04*, H07, F04 | W6-AI→IC2/H14 | 5 worker→`b4c4c33d` | harness 12/12; W6-AI blocked: cap+prices+U |
-| D03 | done (live debt) | lane-d-d03 (`41`) | isolated | D02 | W2→H11 | 3 worker→`4d7efdbd` | 51/51 + Go 9+2skip; Vendor B via unchanged D02 client; debt D03-LIVE-1..4 until C01 unblocks |
+| D03 | done | lane-d-d03 (`41`) + coord F5 | isolated | D02 | W2→H11 | 3 worker→`4d7efdbd` + coord live closure | 51/51 + Go 9 (+2 live w/ env); Vendor B via unchanged D02 client; live 5/5×3; D03-LIVE-1..4 CLOSED |
 | C06 | done | lane-c-c06 | isolated | C01, C04, C05✗, E04, H06 | W1→IC2/H13 | 10 worker (`a37eadc4`..`59c99b39`+record)→main `3286e5cc`..`932924f7` | served 99/99 (compare 13×3, grid 12×3, drift 4×3×2; Ch140/Wk26/FF141); check/build grid 394+compare 221+server 347 real-can, API-break + capture edits; gate5 regress 1179s green (219 checks); main re-qual 942s green (same counts); RH green |
 
 | H10 | done (IC1 GREEN) | lane-h-h10 | isolated | A01–A05, B01–B04✗, C02–C05✗, D02, E04–E06, E08, F01, F03, F05, G05, H06–H07 | IC1→H12 | 2 worker (`99add4a1`,`44651e43`)→main `80651c7c`..`2a84ee9f` | 5/5 battery (C-B 11/11, C-D 128/128, rename 4/4, companion 9/9, conf 51/51, C-H 2/2, RH green); 13/13 conditionals republished first; coord re-verified all counts on main; NOTE-02 fixed by coord |

@@ -83,3 +83,18 @@ tree before accepting this pre-assembly:
 
 IC2 stays OPEN behind H12 + F1/F2 dispositions at minimum. No verdict
 claimed or waived by this addendum.
+
+## F5 closure (coordinator-executed, post-pre-assembly)
+
+F5 is CLOSED: the D02/D03 live unblock commands ran green on all three
+pinned browsers — `TestLiveBrowserLegs` 8/8×3, `TestLiveVendorBLegs`
+5/5×3 (Chromium 140.0.7339.186, WebKit 26.0, container Firefox 141.0).
+Harness repairs (node-side asserts, Chromium-only clipboard grant,
+container-FF connect + forwarded port 18651, explicit process exit)
+are committed with the six `report.json` files under
+`host/conformance/live/reports/2026-09-27/`; D02-LIVE-1..4 and
+D03-LIVE-1..4 all close with per-engine pins in `host/d02-record.md`
+and `host/d03-record.md` (""→null normalization confirmed, permission
+matrix pinned, 250ms trip wire holds with >60× headroom,
+secureContext true ×3). H11 §3.2/§7 "debt" language is superseded by
+this closure; the §6 F5 finding stays as the audit trail.
