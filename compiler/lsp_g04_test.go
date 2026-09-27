@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"sort"
@@ -450,4 +451,153 @@ func TestG04CompletionCallableWith(t *testing.T) {
 	bare := strings.Replace(g04Main, "callable combine with prefix = doubled", "callable combine ", 1)
 	items := g04Items(t, map[string]string{"src/main.can": bare}, "src/main.can", "= callable combine |\n", 2)
 	g04WantLabels(t, items, []string{"with"})
+}
+
+const g04Browser = `package app
+    provides [boot]
+    uses [browser]
+
+fn int boot
+    emits []
+    given
+        int seed
+    asserts
+        sample: 1 => ok 1
+    ok call browser::mount(seed)
+`
+
+// TestG04CompletionQualifiedBrowser pins the C-D catalogue path: a
+// qualified name completes to the imported package's members under
+// the position's usage with catalogue provenance and no arity guess;
+// the package part completes visible import aliases; and an
+// unimported package yields nothing.
+func TestG04CompletionQualifiedBrowser(t *testing.T) {
+	files := map[string]string{"src/main.can": g04Browser}
+	items := g04Items(t, files, "src/main.can", "browser::mou|nt(seed)", 2)
+	mount := g04Find(t, items, "mount")
+	if mount["kind"] != float64(compFunction) || mount["detail"] != "function" || mount["documentation"] != "catalogue" {
+		t.Fatalf("mount candidate wrong: %v", mount)
+	}
+	for _, raw := range items {
+		item := g04Object(t, raw)
+		if item["documentation"] != "catalogue" {
+			t.Fatalf("non-catalogue member behind browser::: %v", item)
+		}
+		if item["kind"] != float64(compFunction) {
+			t.Fatalf("non-function member in call position: %v", item)
+		}
+	}
+	if len(items) == 0 {
+		t.Fatalf("browser package completed empty")
+	}
+	items = g04Items(t, files, "src/main.can", "browser|::mount(seed)", 2)
+	g04WantLabels(t, items, []string{"browser"})
+	if item := g04Find(t, items, "browser"); item["kind"] != float64(compModule) || item["documentation"] != "catalogue package browser" {
+		t.Fatalf("browser alias wrong: %v", item)
+	}
+	unimported := strings.Replace(g04Browser, "uses [browser]", "uses []", 1)
+	if items := g04Items(t, map[string]string{"src/main.can": unimported}, "src/main.can", "browser::mou|nt(seed)", 2); len(items) != 0 {
+		t.Fatalf("members of an unimported package: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionStringAndCommentEmpty pins non-code positions:
+// inside a string literal or a comment no candidates surface.
+func TestG04CompletionStringAndCommentEmpty(t *testing.T) {
+	commented := "// leading note\n" + g04Main
+	if items := g04Items(t, map[string]string{"src/main.can": commented}, "src/main.can", "// lead|ing note", 2); len(items) != 0 {
+		t.Fatalf("candidates inside a comment: %v", g04Labels(items))
+	}
+	quoted := strings.Replace(g04Main, "    ok extra", `    ok "extra"`, 1)
+	if items := g04Items(t, map[string]string{"src/main.can": quoted}, "src/main.can", `ok "extr|a"`, 2); len(items) != 0 {
+		t.Fatalf("candidates inside a string: %v", g04Labels(items))
+	}
+}
+
+// TestG04CompletionWarnedFile pins diagnostics parity: a file carrying
+// a check-pipeline warning still completes, and still publishes
+// exactly that warning.
+func TestG04CompletionWarnedFile(t *testing.T) {
+	root := writeServerProject(t, map[string]string{"src/main.can": g01FinalLocal})
+	uri := uriFromPath(filepath.Join(root, "src/main.can"))
+	line, character := positionOf(t, g01FinalLocal, "ok tot|al")
+	frames := runExchange(t, []string{
+		didOpen(uri, g01FinalLocal, 1),
+		g04Completion(2, uri, line, character),
+		`{"jsonrpc":"2.0","method":"exit"}`,
+	})
+	raw := g01Response(t, frames, 2)
+	items, ok := raw.([]any)
+	if !ok || len(items) == 0 {
+		t.Fatalf("warned file declined completion: %v", raw)
+	}
+	g04Find(t, items, "total")
+	last := lastPublishFor(frames, uri)
+	if last == nil {
+		t.Fatalf("no publish in %v", frames)
+	}
+	diags := diagnosticsOf(t, last)
+	if len(diags) != 1 || diags[0]["severity"] != 2.0 {
+		t.Fatalf("warned file misdiagnosed beside completion: %v", diags)
+	}
+}
+
+// TestG04CompletionDeterministic pins statelessness: the same request
+// twice yields byte-identical results, so no mutable server state
+// leaks between queries.
+func TestG04CompletionDeterministic(t *testing.T) {
+	root := writeServerProject(t, map[string]string{"src/main.can": g04Main})
+	uri := uriFromPath(filepath.Join(root, "src/main.can"))
+	line, character := positionOf(t, g04Main, "ok call action(doub|led)")
+	frames := runExchange(t, []string{
+		didOpen(uri, g04Main, 1),
+		g04Completion(2, uri, line, character),
+		g04Completion(3, uri, line, character),
+		`{"jsonrpc":"2.0","method":"exit"}`,
+	})
+	first, err := json.Marshal(g01Response(t, frames, 2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := json.Marshal(g01Response(t, frames, 3))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(first) != string(second) {
+		t.Fatalf("completion not deterministic:\n%s\n%s", first, second)
+	}
+}
+
+// TestG04CompletionNoUnselectedKeywords pins the keyword obligation:
+// every context offers only selected-surface keywords, and none of
+// the unselected iteration or foreign words the inactive grammars
+// would have contributed.
+func TestG04CompletionNoUnselectedKeywords(t *testing.T) {
+	unselected := []string{"while", "loop", "for", "repeat", "until", "each", "iterate", "break", "continue", "return", "yield", "async", "await", "where", "select", "function", "class", "struct", "enum", "interface", "import", "export", "let", "var", "const", "new", "this", "self", "super", "extends", "private", "public", "static"}
+	files := map[string]string{"src/main.can": g04Main}
+	sweep := map[string]string{
+		"general":   "ok call action(doub|led)",
+		"type":      "in|t doubled = seed + seed",
+		"top":       "ok value\n\n|fn int combine",
+		"signature": "    given|",
+		"header":    "provides [|run, shadowed]",
+		"callee":    "call act|ion(doubled)",
+		"member":    "shared.ta|g",
+		"withPin":   "with pre|fix = doubled",
+	}
+	id := 2
+	for context, needle := range sweep {
+		items := g04Items(t, files, "src/main.can", needle, id)
+		id++
+		for _, item := range g04Kind(t, items, compKeyword) {
+			label, _ := item["label"].(string)
+			for _, word := range unselected {
+				if label == word {
+					t.Fatalf("unselected keyword %q in %s context", word, context)
+				}
+			}
+		}
+	}
+	items := g04Items(t, files, "src/main.can", "ok call action(doub|led)", id)
+	g04WantKindLabels(t, items, compKeyword, []string{"and", "call", "callable", "do", "false", "is", "match", "not", "ok", "or", "relay", "true"})
 }
