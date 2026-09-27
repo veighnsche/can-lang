@@ -40,6 +40,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | F03 | done (RETURNING slice + contracts) | main `bf83f0aa` (worker `4e500d8`) | macOS, live PG 17.11/MySQL 8.4.11 | sql pkg ok; live relational slice pass (incl. MySQL mapping leg); integration gap found+fixed: `can_f03` lane DB minted PG+MySQL and recorded in register | pass |
 | E07 | done (X-R15-1 NEG, X-R15-3 NEG) | main `bef41a2d` (worker `3bcf458e`) | macOS, live MinIO S3-protocol | 21/21 pass live (60s); `check:runtime` green; end(Error) completes w/o abort, destructive cancel proven, pin/release mapped, cleanup-await injection recorded | pass |
 | A08 | partial slice 1 (task open) | main `e88ebf01` (worker `7f301098`) | n/a (docs/fixtures) | registry + 3 frozen repair comparisons (prompts, sealed variants, hidden checks); all JSON valid; agent slots empty (0 attempts, no model access) | partial |
+| C02 | done (native controls) | main `ff18f134` (6 worker slices, ff) | macOS + container FF141, Playwright 1.55.1 | `TestC02NativeMatrix` 11/11×3, `TestC02ControlsMatrix` 17/17×3 (Ch140/Wk26/FF141); gate5 12/12 regress 831s; check suite 696s; RH green; report `docs/syntax-taste/evidence/2026-09-26/c02/c02-report.md` | pass |ures) | registry + 3 frozen repair comparisons (prompts, sealed variants, hidden checks); all JSON valid; agent slots empty (0 attempts, no model access) | partial |
 
 ## Conditional branches
 

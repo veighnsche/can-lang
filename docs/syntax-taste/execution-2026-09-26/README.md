@@ -57,8 +57,9 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | G03 | done | lane-g-g03 (`27`) | isolated | G02, A02 | refs→G04/G05 | `8268bb5b`→main | 13 TestG03 pass, compiler suite green |
 | E06 | done | lane-e-e06 (`21`) | isolated | E01, B01 | reports→E09/H | worker `c5499411` → main `e3a4148c` | 17/17, check green |
 | C03 | done | lane-c-c03 (`22`) | isolated | A03, E03 | C-E wire→C04/F05/H06 | worker `8f61b1b` → main `9a2ea7b7` | go test check ok |
-| C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 unconsumed (no-addition feedback; C02 still blocked on C01) |
+| C04 | done | lane-c-c04 (`26`) | isolated | C03, A01 (+C02 open*) | C-D→E09; X-R02-1→C05 | 4 worker→`b7a3e214` | 124+378+217 asserts, builds 0, fmt clean; *C02 landed after (additive-only C-D; C04 stands per c02-report) |
 | C05 | inactive (X-R02-1) | — (gate eval) | — | C04 | root-only rule stands | — | no inexpressible shape; trip conditions in x-r02-1.md |
+| C02 | done | lane-c-c02 (`43`) | isolated | C01 | C-D→C04/C06/D/G | 6 worker→main `ff18f134` (ff) | 6 snapshot fields + 9 live calls; native 11/11×3, emitted 17/17×3 (Ch140/Wk26/FF141); gate5 12/12 regress 831s; check 696s; RH green |
 | F05 | done | lane-f-f05 (`31`) | isolated | F01, E01, C03, A04 | auth/protocol→F06/H | 5 worker→`b9930b47` | 183 asserts, live pair, DOC-webhook |
 | B05 | done | lane-b-b05 (`32`) + lane-a-emitfix (`37`) | isolated | B01, B02, B03✗, B04✗ | W3 verdict→H11 | report→`804d650a`, fix→`b636674d` | W3 rerun green; M1 3/3; emit green |
 | D01 | done | lane-d-d01 (`33`) | isolated | C04, C05✗, F01 | tiers→D02/H | 7 worker→`b837f710` | 54/54 + admission; A/B→T2, C→T3 |
@@ -74,7 +75,7 @@ All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints
 
-- IC1 (H10): blocked — needs A01–A06, B01–B04, C02–C05, D02, E04–E06, E08, F01, F03, F05, G05, H06, H07.
+- IC1 (H10): blocked — needs G05 (rest done: A01–A05+A06✗, B01–B04✗✗, C02–C04+C05✗, D02, E04–E06, E08, F01, F03, F05, H06, H07).
 - IC2 (H11): blocked — needs H10 plus workload owners.
 - IC3 (H13): blocked — needs H11 plus matrix/live legs.
 
