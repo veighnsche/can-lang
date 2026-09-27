@@ -1,9 +1,10 @@
 # H12 staging record — 2026-09-26
 
-Status: **BLOCKED-awaiting-UP25-grant**. Staging complete; zero native
-legs executed. No machine was probed (no SSH/tailscale contact — the
-user designates the machine), no linux/amd64 binary or container ran
-here, and no emulation was used anywhere.
+Status: **DEFERRED** (user direction 2026-09-27: native x86
+qualification is not a current objective; no machine or window is
+authorized, and none is requested). Staging complete; zero native
+legs executed. No machine was probed, no linux/amd64 binary or
+container ran here, and no emulation was used anywhere.
 
 Staging evidence: `evidence/2026-09-26/h12/h12-staging.md` (pins,
 per-leg runbook, env contract, scenario rationale),
@@ -11,7 +12,7 @@ per-leg runbook, env contract, scenario rationale),
 `distribution/h12/window-check.sh` (window-entry automation, `sh -n`
 clean). Worktree base `4d67bdb6`, post-IC1 (`932924f7`).
 
-## Exact machine + window ask (echo of distribution/x86-window.md)
+## What a future window would need (reference only, not requested)
 
 1. Designate the machine: hostname/address + login user + which key or
    access path to use, and confirm it is Debian 13+ amd64/glibc.
@@ -21,7 +22,7 @@ clean). Worktree base `4d67bdb6`, post-IC1 (`932924f7`).
    reachable from the UP25 host, or approval to natively install PG 17
    on the box during the window (isolated database).
 
-## What runs the minute access lands
+## What a future window would run (reference only)
 
 1. `sh distribution/h12/window-check.sh .` — READY verdict gates
    everything; any BLOCKED check stops the window.

@@ -26,10 +26,13 @@ resolution options, resolution (once decided), IC2 effect.
     pass-with-documented-exclusion; H14 carries the exclusion.
   - (b) Keep W5 failed: IC2 stays blocked behind a future S3
     deadline implementation (new scope, new qualification).
-- Resolution: UNDECIDED — needs the explicit user scope call the
-  task-list row requires.
-- IC2 effect: blocking until resolved; option (a) unblocks with an
-  H14 exclusion, option (b) keeps IC2 blocked.
+- Resolution: USER-DECIDED 2026-09-27 — requirement RETAINED, neither
+  option taken as offered. The user does not accept indefinite waits or
+  a between-awaits-only exclusion: storage waits must be bounded. The
+  failed acceptance condition is engineering work to implement and
+  verify (bounded hung-await behavior + live MinIO validation).
+- IC2 effect: blocking until the bounded-wait implementation is
+  qualified; no waiver, no exclusion.
 
 ## R2 — W5-L3 overrun-tx peer release (E04 tx-ownership semantics) — RETURNED, awaiting scope call
 
@@ -56,8 +59,12 @@ resolution options, resolution (once decided), IC2 effect.
   - (b) Commission the E04 semantic change now (detach tx ownership
     from request scope with disposal/commit design + full
     re-qualification of L1–L10 and the E04 suite).
-- Resolution: UNDECIDED — needs the user scope call (defer-with-doctrine
-  vs commission-now).
-- IC2 effect: blocking until resolved; option (a) unblocks with the L3
-  pin as the documented contract, option (b) unblocks after
-  implementation + re-qualification.
+- Resolution: USER-DECIDED 2026-09-27 — bounded waiting applies to the
+  client response too; internal timeout detection while holding the
+  response is insufficient. The ownership and cleanup changes need
+  proper design and validation. A timeout must report uncertainty
+  honestly — it must not imply the write was cancelled or rolled back.
+  Engineering work commissioned (design via Jev consultation, then
+  implement + validate; L3 leg pins flip to bounded peer response).
+- IC2 effect: blocking until the ownership/cleanup implementation is
+  qualified; no waiver.

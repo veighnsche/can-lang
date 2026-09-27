@@ -1,8 +1,12 @@
-# Native x86 UP25 window (H05) — BLOCKED on user access grant
+# Native x86 UP25 window (H05) — DEFERRED (not an outstanding ask)
 
-No machine access and no exclusive window arranged. UP25 qualification
-(H12) cannot run on this MacBook Air: x86 emulation is forbidden here
-(no Docker `linux/amd64`, no QEMU/Rosetta-Linux — none used, none present).
+Native x86 qualification (H12/UP25) is deferred: release preparation
+and publication are not current objectives, and no x86 machine or
+testing window is authorized at this stage. The legs below stay
+explicitly unexecuted; nothing here is a request awaiting a user
+answer. UP25 qualification cannot run on this MacBook Air: x86
+emulation is forbidden here (no Docker `linux/amd64`, no
+QEMU/Rosetta-Linux — none used, none present).
 
 ## Machine needed
 
@@ -16,12 +20,12 @@ No machine access and no exclusive window arranged. UP25 qualification
   facts below. Several tailscale Linux nodes are visible from here, but
   H05 has probed none of them: the user must designate the machine.
 
-## Exact user ask
+## What a future window would need (reference only, not requested)
 
-1. Designate the machine: hostname/address + login user + which key or
-   access path to use, and confirm it is Debian 13+ amd64/glibc.
-2. Grant an exclusive window: single queue — no other jobs on the box
-   during qualification; state start time and duration (or "on demand").
+1. Machine designation: hostname/address + login user + which key or
+   access path to use, and confirmation it is Debian 13+ amd64/glibc.
+2. Exclusive window: single queue — no other jobs on the box
+   during qualification; start time and duration (or "on demand").
 
 ## Verification checklist (run at window start, before any UP25 leg)
 

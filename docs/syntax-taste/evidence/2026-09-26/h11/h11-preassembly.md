@@ -1,7 +1,8 @@
 # H11 pre-assembly — IC2 workload acceptance aggregation (2026-09-26)
 
 Status: **PRE-ASSEMBLY ONLY — no IC2 verdict claimed.**
-IC2 stays **OPEN behind H12** (W6-deploy native legs, BLOCKED-awaiting-UP25-grant),
+IC2 stays **OPEN behind H12** (W6-deploy native legs, DEFERRED per
+user direction 2026-09-27 — not an outstanding ask),
 which is the **single pending evidence input**.
 All other H11 prerequisites have delivered owner seals; their legs are aggregated
 below solely from those seals, with every mismatch, stale pin, and live-requirement
@@ -273,9 +274,11 @@ Severity: BLOCKING (gates any future IC2-green) / HIGH (verdict-blocking
 preparation-or-grant item) / MEDIUM (owner re-seal or disposition required) /
 LOW (accepted-with-note or owner clarification) / INFO (recorded, no action).
 
-- **F0 — H12 W6-deploy: zero legs executed, BLOCKED-awaiting-UP25-grant.**
+- **F0 — H12 W6-deploy: zero legs executed, DEFERRED.**
   Severity: BLOCKING (the single pending evidence input, §7). Not a defect —
-  staging is complete. Routed: user UP25 grant → H12 native run.
+  staging is complete. Routed: deferred per user direction 2026-09-27
+  (native x86 qualification is not a current objective; no machine or
+  window authorized or requested). No action.
 - **F1 — E09 W5-S5b (+E07 H1–H5) BLOCKED by design (X-R15-3 negative).**
   Severity: HIGH. Hung S3 awaits unbounded on final adapters; per the task-list
   experiment table the X-R15-3 negative *fails W5* and needs explicit user scope
@@ -399,11 +402,12 @@ LOW (accepted-with-note or owner clarification) / INFO (recorded, no action).
 Pointer: `docs/syntax-taste/evidence/2026-09-26/h12/h12-staging.md`
 (+ `jev/` findings; `distribution/h12/window-check.sh`;
 record `docs/syntax-taste/execution-2026-09-26/h12-staging-record.md`).
-Status: **BLOCKED-awaiting-UP25-grant**. Staging complete; zero native legs
-executed; no machine probed; no emulation anywhere. The H12 W6-deploy leg was
-deliberately NOT claimed, emulated, or worked around in this pre-assembly.
+Status: **DEFERRED** per user direction 2026-09-27 (not an outstanding
+ask). Staging complete; zero native legs executed; no machine probed; no
+emulation anywhere. The H12 W6-deploy leg was deliberately NOT claimed,
+emulated, or worked around in this pre-assembly.
 
-Exact UP25 ask (quoted):
+What a future window would need (quoted, reference only):
 
 From `distribution/x86-window.md:19-24` (H05):
 
@@ -419,10 +423,11 @@ item 3):
    reachable from the UP25 host, or approval to natively install PG 17 on the
    box during the window (isolated database).
 
-The minute access lands, H12 runs `window-check.sh` (READY gates everything),
-then Legs 1–8 per the runbook, and hands W6-deploy evidence + lifecycle recipe
-to H11/H13/H14. Live-probe policy: BLOCKED legs stay BLOCKED with cause, never
-green; only native-x86 observations count.
+In a future authorized window, H12 would run `window-check.sh` (READY
+gates everything), then Legs 1–8 per the runbook, and hand W6-deploy
+evidence + lifecycle recipe to H11/H13/H14. Live-probe policy: BLOCKED
+legs stay BLOCKED with cause, never green; only native-x86 observations
+count. (Deferred; nothing requested.)
 
 ## 8. Jev consultations
 
