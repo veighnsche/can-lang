@@ -3,6 +3,8 @@
   "private": true,
   "packageManager": "bun@1.4.2",
   "scripts": {
+    "perf": "python3 tools/performance/perf.py",
+    "perf:smoke": "python3 tools/performance/perf.py run --smoke",
     "lint:runtime": "oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --deny-warnings",
     "lint:fix:runtime": "oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --fix",
     "format:runtime": "oxfmt \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"",

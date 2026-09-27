@@ -6,6 +6,7 @@ Thumbs.db
 
 # vendored deps
 node_modules/
+node_modules
 
 # build outputs
 bin/
@@ -28,6 +29,10 @@ coverage/
 *.coverprofile
 playwright-report/
 test-results/
+.performance/
+
+# Local audit archive; maintained summary is docs/performance/README.md.
+/docs/performance/2026-09-27/
 
 # linked git worktrees nested under .agents (see git worktree list)
 /.agents/worktrees/

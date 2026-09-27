@@ -1,0 +1,15 @@
+package gallery
+    provides []
+    uses [checks]
+
+/// Match a named error and turn it into a normal value.
+fn bool is_positive
+    emits []
+    given
+        int number
+    asserts
+        yes: 3 => ok true
+        no: 0 => ok false
+    match call checks::require(number > 0, "positive required")
+        checks::failed => ok false
+        ok => ok true

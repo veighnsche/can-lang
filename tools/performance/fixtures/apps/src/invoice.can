@@ -1,0 +1,60 @@
+package gallery
+    provides []
+    uses []
+
+/// Representative invoice request model inspired by examples/invoice line_draft.
+record invoice_line
+    str sku
+    int quantity
+    int unit_minor
+record checked_line
+    str sku
+    int total_minor
+    bool valid
+record invoice_result
+    bool accepted
+    int total_minor
+    int invalid_lines
+fn invoice_line make_invoice_line
+    emits []
+    given
+        str sku
+        int quantity
+        int unit_minor
+    asserts
+        sample: "A", 2, 150 => ok invoice_line("A", 2, 150)
+    ok invoice_line(sku, quantity, unit_minor)
+fn checked_line check_invoice_line
+    emits []
+    given
+        invoice_line line
+    asserts
+        valid: invoice_line("A", 2, 150) => ok checked_line("A", 300, true)
+        invalid_quantity: invoice_line("A", 0, 150) => ok checked_line("A", 0, false)
+        invalid_price: invoice_line("A", 2, -1) => ok checked_line("A", 0, false)
+    match line.quantity < 1
+        true => ok checked_line(line.sku, 0, false)
+        false => match line.unit_minor < 0
+            true => ok checked_line(line.sku, 0, false)
+            false => ok checked_line(line.sku, line.quantity * line.unit_minor, true)
+fn invoice_result accumulate_invoice
+    emits []
+    given
+        invoice_result previous
+        checked_line line
+    asserts
+        valid: invoice_result(true, 5, 0), checked_line("A", 300, true) => ok invoice_result(true, 305, 0)
+        invalid: invoice_result(true, 5, 0), checked_line("A", 0, false) => ok invoice_result(false, 5, 1)
+    match line.valid
+        false => ok invoice_result(false, previous.total_minor, previous.invalid_lines + 1)
+        true => ok invoice_result(previous.accepted, previous.total_minor + line.total_minor, previous.invalid_lines)
+fn invoice_result summarize_invoice
+    emits []
+    given
+        invoice_line[] lines
+    asserts
+        sample: [invoice_line("A", 2, 150)] => ok invoice_result(true, 300, 0)
+        empty: [] => ok invoice_result(true, 0, 0)
+        invalid: [invoice_line("A", 0, 150)] => ok invoice_result(false, 0, 1)
+    checked_line[] checked = call lines.map(callable check_invoice_line)
+    ok call checked.fold(invoice_result(true, 0, 0), callable accumulate_invoice)

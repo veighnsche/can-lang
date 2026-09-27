@@ -1,0 +1,129 @@
+package gallery
+    provides []
+    uses [text, bytes, codec]
+
+fn int branch_arithmetic
+    emits []
+    given
+        int number
+    asserts
+        negative: -4 => ok 19
+        positive: 4 => ok 29
+        zero: 0 => ok 1
+    match number < 0
+        true => ok number * number + 3
+        false => ok (number + 3) * number + 1
+
+record counter
+    int value
+    str label
+fn counter make_counter
+    emits []
+    given
+        int number
+    asserts
+        sample: 2 => ok counter(2, "stable")
+    ok counter(number, "stable")
+fn counter update_counter
+    emits []
+    given
+        counter original
+        int increment
+    asserts
+        sample: counter(2, "stable"), 3 => ok counter(5, "stable")
+    ok original with value = original.value + increment
+fn int project_counter
+    emits []
+    given
+        counter original
+    asserts
+        sample: counter(2, "stable") => ok 10
+    ok original.value * 2 + original.label.length
+
+record circle
+    int radius
+record rectangle
+    int width
+    int height
+variant shape
+    circle
+    rectangle
+fn shape make_shape
+    emits []
+    given
+        int number
+    asserts
+        circle_case: 2 => ok circle(2)
+        rectangle_case: 3 => ok rectangle(3, 4)
+    match number % 2 is 0
+        true => ok circle(number)
+        false => ok rectangle(number, number + 1)
+fn int shape_area
+    emits []
+    given
+        shape value
+    asserts
+        round: circle(3) => ok 9
+        square: rectangle(3, 4) => ok 12
+    match value
+        circle => ok value.radius * value.radius
+        rectangle => ok value.width * value.height
+
+fn item identity<item>
+    emits []
+    given
+        item input
+    asserts
+        integer: 4 => ok 4
+        text: "Can" => ok "Can"
+    ok input
+fn int[] generic_pass
+    emits []
+    given
+        int[] values
+    asserts
+        sample: [1, 2] => ok [1, 2]
+        empty: [] => ok []
+    ok call values.map(callable identity<int>)
+
+fn int add_offset
+    emits []
+    given
+        near int offset
+        int number
+    asserts
+        sample: 3, 4 => ok 7
+    ok offset + number
+fn int[] captured_map
+    emits []
+    given
+        int[] values
+        int offset
+    asserts
+        sample: [1, 2], 3 => ok [4, 5]
+        empty: [], 7 => ok []
+    callable int (int) emits [] operation = callable add_offset
+    ok call values.map(operation)
+
+fn str normalize_text
+    emits [text::invalid_unicode]
+    given
+        str input
+    asserts
+        sample: "  É 😀  " => ok "é 😀"
+    str lowered = call (call input.trim()).to_lower_case()
+    match call text::normalize_nfc(lowered)
+        text::invalid_unicode
+        ok str normalized => ok normalized
+fn str base64_text
+    emits [codec::invalid_data]
+    given
+        str input
+    asserts
+        sample: "héllo" => ok "aMOpbGxv"
+        empty: "" => ok ""
+    match chain
+        call bytes::from_utf8(input) as bytes::buffer raw
+        call bytes::encode_base64(raw) as str encoded
+        codec::invalid_data
+        ok => ok encoded
