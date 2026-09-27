@@ -133,3 +133,52 @@ beyond the 52 closed task records — not a hidden subtask of any of them —
 so it needs the user's implement-vs-exclude call (F8 disposition).
 W6.1 "generated identities" stands evidenced via raw-SQL oracles +
 MySQL `LAST_INSERT_ID` mapping + ledger identities either way.
+
+## F7 resolution (documented-limitation justification, evidence-backed)
+
+F7's premise holds (no program declares a document-mode GET action:
+invoice actions are GET-json, POST-json, POST-html-inner —
+`shared/invoice-contract/.../invoice_contract.can:98-133`), but the
+W1.5 functional content is proven across three covered layers, leaving
+no document-mode-specific decision logic unproven:
+
+1. Denial decisions on captured actions: `missing-id-denied`
+   (`w1-grid.mjs:164-179`) — captured GET `/invoices/9` → 403
+   `grid_load_forbidden`, no row leak, UI denial shown.
+2. Document denial rendering over live HTTP through the real
+   mount/dispatch/render stack with captures: `action-document.test.ts:211-277`
+   — denied leaf serves a full `<!doctype html>` page under truthful
+   404 (`<main>denied</main>`), canonical URL builder round-trips.
+3. In-browser observation of truthful denial documents:
+   `page-denied` (`w1-grid.mjs:181-191`) — navigated pages return 403
+   with denied document text; `unknown-path-404` proves truthful 404.
+
+The uncovered residue is only the composition (a real browser
+observing a document-mode action denial through a paired build),
+which adds no new decision logic beyond the three proven layers.
+Accepted as a valid test-scope difference with this justification;
+revisit if a document-mode GET action is ever declared (trip: any
+`body html` + `get` action in a shipped contract).
+
+## F9/F10/F13/F18 resolutions (individual, evidence-backed)
+
+- F9 CLOSED (already documented): A07 handoff pins `step:<0-based
+  iteration>` for loop iterations (`a07-report.md:124-128`); F06 pins
+  the 1-based contiguous claim-order index for batch claims
+  (`f06-report.md:74-77`). Different domains, both documented,
+  occurrence linkage both sides. No owner action needed.
+- F10 ACCEPTED (documented limitation): scan retained bytes are
+  recorded-not-gated because JSC conservative-stack scanning is
+  nondeterministic (probed: identical runs collect fully/partially/not
+  at all); loop flatness is proven by scalar-machine legs sharing the
+  exact loop shape (~0 heap at 100k/1M) (`a07-report.md:47-53`).
+- F13 ACCEPTED (documented design): the webhook Can side is
+  SQLite-only by F05 design, so the mkdb PG/MySQL path cannot apply;
+  isolation holds via a fresh disposable SQLite file per run, never a
+  shared table (`f06-report.md:92-98`). The isolation property — the
+  actual requirement — is met.
+- F18 ACCEPTED (scope confirmed): neither W6.1 nor W6.2 names
+  ledger-under-budget evidence (task-list:888-889); F04's scope is the
+  backend across dialects over native Bun.SQL, with no E/runtime files
+  touched (`f04-report.md:58-60`). If a future leg needs
+  ledger-under-budget, that is new scope, not a gap in W6.
