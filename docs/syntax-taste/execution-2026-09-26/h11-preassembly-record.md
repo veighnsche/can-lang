@@ -112,3 +112,24 @@ evidence with that provenance honestly noted; a future B-owner stamp
 would be cosmetic only. (No third rerun was needed: the failure-conventions
 bundle key covers `compiler/distribution/runtime/tools`, all
 untouched since the coordinator's green run.)
+
+## F8 scoping (coordinator investigation, for the user disposition)
+
+F8's Can-path RETURNING gap is confirmed on all three handoff layers
+(F03 `f03-report.md:51-57` specified but never implemented):
+
+1. `compiler/internal/project/manifest_sql.go:91-103` REQUIRES
+   `row_limit_parameter` for every row-returning cardinality —
+   `one` cannot express RETURNING's absent-limit shape.
+2. `runtime/platform/sql/descriptor.ts:100` allows `limit === 0`
+   ONLY for `execute` — `(one, 0)` throws `invalid sql limit`.
+3. `runtime/platform/sql/pool.ts` has no RETURNING execution path
+   (bind-app-params-only + §3 shared-decoder enforcement unbuilt).
+
+Closing F8 means E-lane implementation on all three layers + new
+runtime/live legs across PG/MySQL/SQLite, intersecting open defect
+F17 (cold-pool `withTransaction` burst, same E area). It is new work
+beyond the 52 closed task records — not a hidden subtask of any of them —
+so it needs the user's implement-vs-exclude call (F8 disposition).
+W6.1 "generated identities" stands evidenced via raw-SQL oracles +
+MySQL `LAST_INSERT_ID` mapping + ledger identities either way.
