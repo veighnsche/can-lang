@@ -18,6 +18,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -157,7 +158,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		}
 		switch msg.Method {
 		case "initialize":
-			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true, "referencesProvider": true, "completionProvider": map[string]any{"triggerCharacters": []string{".", ":"}}}})
+			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true, "referencesProvider": true, "completionProvider": map[string]any{"triggerCharacters": []string{".", ":"}}, "renameProvider": true}})
 		case "initialized", "$/cancelRequest":
 		case "textDocument/didOpen":
 			var p struct {
@@ -268,6 +269,24 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 			}
 			if msg.ID != nil {
 				respond(msg.ID, server.completion(p.TextDocument.URI, p.Position.Line, p.Position.Character))
+			}
+		case "textDocument/rename":
+			var p struct {
+				TextDocument docID `json:"textDocument"`
+				Position     struct {
+					Line      int `json:"line"`
+					Character int `json:"character"`
+				} `json:"position"`
+				NewName string `json:"newName"`
+			}
+			if json.Unmarshal(msg.Params, &p) != nil {
+				if msg.ID != nil {
+					respondErr(msg.ID, -32602, "invalid rename params")
+				}
+				continue
+			}
+			if msg.ID != nil {
+				respond(msg.ID, server.rename(p.TextDocument.URI, p.Position.Line, p.Position.Character, p.NewName))
 			}
 		case "textDocument/formatting":
 			var p struct {
@@ -2751,4 +2770,356 @@ func (s *lspServer) completion(uri string, line, character int) any {
 		})
 	}
 	return out
+}
+
+// canlc rename: validated safe rename over the reference index.
+//
+// The token at the cursor resolves to its binding identity through the
+// G03 project index — top-level symbols, record fields, explicit with
+// pins to the callee's near parameter, and function-local bindings by
+// scope identity — and every occurrence sharing that identity,
+// declaration site included, becomes one atomic WorkspaceEdit.
+// Shadowed or same-spelled bindings in other scopes are different
+// identities, so they stay untouched; implicit fallback captures keep
+// their own caller-scope identity as well.
+//
+// Validation follows the --write discipline. The renamed text checks
+// through a copied overlay carrying every other open buffer, and the
+// candidate must introduce no new error beside the live snapshot's
+// own: pre-existing diagnostics ride along, added ones veto. The
+// renamed occurrences must also re-resolve to exactly one shared
+// identity in the candidate index — no renamed use may resolve
+// elsewhere, and no pre-existing occurrence may merge into the
+// renamed group. Anything unresolvable, misspelled, colliding,
+// capturing, or breaking the check declines to null so the editor
+// applies nothing; renaming to the current spelling yields an empty
+// edit. Warnings never block a rename, matching the CLI's
+// warnings-only exit 0.
+
+// renameNamePattern is the Can identifier spelling (lexer namePattern):
+// a lowercase lead, lowercase/digit body, underscore-joined segments.
+var renameNamePattern = regexp.MustCompile(`^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$`)
+
+// validRenameName admits only spellings the lexer emits as a Name: the
+// identifier pattern minus hard keywords. Contextual words stay
+// admissible — the candidate re-check owns positional breakage.
+func validRenameName(name string) bool {
+	if name == "" || syntax.IsHardKeyword(name) {
+		return false
+	}
+	return renameNamePattern.MatchString(name)
+}
+
+// renameTarget is one occurrence replacement: the token span in the
+// live snapshot plus the span the renamed token occupies in the
+// candidate text.
+type renameTarget struct {
+	file    string
+	span    source.Span
+	renamed source.Span
+}
+
+// renameTokenRange narrows an indexed span to the token rename
+// replaces. Qualified occurrences span the whole `pkg::name` form, so
+// only the trailing segment is replaced; every other occurrence is a
+// single Name token already.
+func renameTokenRange(text string, span source.Span) (source.Span, bool) {
+	if span.Start < 0 || span.End > len(text) || span.Start >= span.End {
+		return source.Span{}, false
+	}
+	raw := text[span.Start:span.End]
+	if i := strings.LastIndex(raw, "::"); i >= 0 {
+		return source.Span{Start: span.Start + i + 2, End: span.End}, true
+	}
+	return span, true
+}
+
+// renamePlan resolves the token at an editor offset to its binding
+// identity and lays out the replacement of every occurrence sharing
+// it. It declines wherever the token is unindexed or a replacement
+// range cannot be laid out exactly.
+func renamePlan(snapshot *driver.Snapshot, file string, line, character int, newName string) (string, map[string][]renameTarget, bool) {
+	if snapshot == nil || snapshot.World == nil || snapshot.Graph == nil {
+		return "", nil, false
+	}
+	canonical, err := filepath.EvalSymlinks(file)
+	if err != nil {
+		return "", nil, false
+	}
+	bases := map[string]*project.Source{}
+	var src *project.Source
+	for _, p := range snapshot.Graph.Projects {
+		for _, s := range p.Sources {
+			bases[s.Path] = s
+			if s.Path == canonical {
+				src = s
+			}
+		}
+	}
+	if src == nil || src.Syntax == nil {
+		return "", nil, false
+	}
+	text, err := source.New(canonical, string(src.Bytes))
+	if err != nil {
+		return "", nil, false
+	}
+	offset, err := text.Offset(source.UTF16Position{Line: line, Character: character})
+	if err != nil {
+		return "", nil, false
+	}
+	index := buildReferenceIndex(snapshot)
+	at := index.occurrenceAt(canonical, offset)
+	if at == nil {
+		return "", nil, false
+	}
+	anchor, ok := renameTokenRange(string(src.Bytes), at.span)
+	if !ok {
+		return "", nil, false
+	}
+	oldName := string(src.Bytes[anchor.Start:anchor.End])
+	if oldName == "" || oldName != newName && !validRenameName(newName) {
+		return "", nil, false
+	}
+	group := index.byID[at.id]
+	if len(group) == 0 {
+		return "", nil, false
+	}
+	byFile := map[string][]*refOccurrence{}
+	for _, occurrence := range group {
+		byFile[occurrence.file] = append(byFile[occurrence.file], occurrence)
+	}
+	targets := map[string][]renameTarget{}
+	for path, occurrences := range byFile {
+		base, ok := bases[path]
+		if !ok || base == nil {
+			return "", nil, false
+		}
+		body := string(base.Bytes)
+		sorted := append([]*refOccurrence(nil), occurrences...)
+		sort.Slice(sorted, func(i, j int) bool { return sorted[i].span.Start < sorted[j].span.Start })
+		delta := 0
+		previous := -1
+		for _, occurrence := range sorted {
+			token, ok := renameTokenRange(body, occurrence.span)
+			if !ok || token.Start < previous || body[token.Start:token.End] != oldName {
+				return "", nil, false
+			}
+			previous = token.End
+			shifted := source.Span{Start: token.Start + delta, End: token.Start + delta + len(newName)}
+			delta += len(newName) - (token.End - token.Start)
+			targets[path] = append(targets[path], renameTarget{file: path, span: token, renamed: shifted})
+		}
+	}
+	return oldName, targets, true
+}
+
+// applyRenameTargets splices the new spelling into each edited file.
+// Spans ascend within a file, so one left-to-right pass suffices.
+func applyRenameTargets(bases map[string]string, targets map[string][]renameTarget, newName string) map[string]string {
+	out := map[string]string{}
+	for path, list := range targets {
+		body := bases[path]
+		var rebuilt strings.Builder
+		cursor := 0
+		for _, target := range list {
+			rebuilt.WriteString(body[cursor:target.span.Start])
+			rebuilt.WriteString(newName)
+			cursor = target.span.End
+		}
+		rebuilt.WriteString(body[cursor:])
+		out[path] = rebuilt.String()
+	}
+	return out
+}
+
+// renameErrorKey fingerprints one error diagnostic for the no-new-error
+// comparison: severity, code, file, line span, and the message with
+// digit runs blanked, since checker messages embed byte offsets that
+// shift under any length-changing rename. Columns and related notes
+// shift too, so they stay out of the key.
+func renameErrorKey(diagnostic driver.Diagnostic) string {
+	var message strings.Builder
+	digits := false
+	for _, r := range diagnostic.Message {
+		if r >= '0' && r <= '9' {
+			if !digits {
+				message.WriteByte('#')
+				digits = true
+			}
+			continue
+		}
+		digits = false
+		message.WriteRune(r)
+	}
+	return diagnostic.Severity + "\x00" + diagnostic.Code + "\x00" + diagnostic.File + "\x00" +
+		strconv.Itoa(diagnostic.Line) + "\x00" + strconv.Itoa(diagnostic.EndLine) + "\x00" + message.String()
+}
+
+// renameIntroducesNoErrors reports whether every candidate error has a
+// live counterpart: pre-existing errors ride along, added ones veto.
+// Warnings never count on either side.
+func renameIntroducesNoErrors(live, candidate []driver.Diagnostic) bool {
+	remaining := map[string]int{}
+	for _, diagnostic := range live {
+		if diagnostic.Severity == "warning" {
+			continue
+		}
+		remaining[renameErrorKey(diagnostic)]++
+	}
+	for _, diagnostic := range candidate {
+		if diagnostic.Severity == "warning" {
+			continue
+		}
+		key := renameErrorKey(diagnostic)
+		if remaining[key] == 0 {
+			return false
+		}
+		remaining[key]--
+	}
+	return true
+}
+
+// renameStable re-resolves every renamed token in the candidate index:
+// each must carry the new spelling, all must share one identity, and
+// that identity must own exactly the renamed set — no use lost to
+// another binding, none gained from one.
+func renameStable(proposed *driver.Snapshot, targets map[string][]renameTarget, newName string) bool {
+	if proposed == nil || proposed.World == nil || proposed.Graph == nil {
+		return false
+	}
+	bodies := map[string]string{}
+	for _, p := range proposed.Graph.Projects {
+		for _, s := range p.Sources {
+			bodies[s.Path] = string(s.Bytes)
+		}
+	}
+	index := buildReferenceIndex(proposed)
+	want := ""
+	total := 0
+	for _, list := range targets {
+		for _, target := range list {
+			total++
+			body, ok := bodies[target.file]
+			if !ok || target.renamed.Start < 0 || target.renamed.End > len(body) || body[target.renamed.Start:target.renamed.End] != newName {
+				return false
+			}
+			occurrence := index.occurrenceAt(target.file, target.renamed.Start)
+			if occurrence == nil {
+				return false
+			}
+			if want == "" {
+				want = occurrence.id
+			} else if occurrence.id != want {
+				return false
+			}
+		}
+	}
+	return want != "" && len(index.byID[want]) == total
+}
+
+// rename answers textDocument/rename over the checked snapshot: one
+// atomic WorkspaceEdit for the cursor token's binding identity, or
+// null where the name, the token, or the validated candidate cannot
+// support the rename. Like the other queries it reads an inert
+// overlay snapshot and validates through a copied overlay, so live
+// editor state never changes.
+func (s *lspServer) rename(uri string, line, character int, newName string) any {
+	doc, ok := s.docs[uri]
+	if !ok || doc.path == "" {
+		return nil
+	}
+	if !validRenameName(newName) {
+		return nil
+	}
+	root := discoverRoot(doc.path)
+	snapshot, err := driver.CheckSnapshot(root, doc.path, s.overlay)
+	if err != nil || snapshot.World == nil || snapshot.Graph == nil {
+		return nil
+	}
+	oldName, targets, ok := renamePlan(snapshot, doc.path, line, character, newName)
+	if !ok {
+		return nil
+	}
+	if oldName == newName {
+		return map[string]any{"changes": map[string]any{}}
+	}
+	live := s.overlay.Snapshot()
+	candidate := project.NewOverlay()
+	for path, entry := range live {
+		if err := candidate.Set(path, entry.Version, entry.Text); err != nil {
+			return nil
+		}
+	}
+	bases := map[string]string{}
+	versions := map[string]int64{}
+	for _, p := range snapshot.Graph.Projects {
+		for _, s := range p.Sources {
+			bases[s.Path] = string(s.Bytes)
+			if entry, ok := live[s.Path]; ok {
+				versions[s.Path] = entry.Version
+			}
+		}
+	}
+	for path, text := range applyRenameTargets(bases, targets, newName) {
+		if err := candidate.Set(path, versions[path], text); err != nil {
+			return nil
+		}
+	}
+	proposed, err := driver.CheckSnapshot(root, doc.path, candidate)
+	if err != nil || proposed == nil {
+		return nil
+	}
+	if !renameIntroducesNoErrors(snapshot.Diagnostics, proposed.Diagnostics) {
+		return nil
+	}
+	if !renameStable(proposed, targets, newName) {
+		return nil
+	}
+	files := map[string]*source.File{}
+	converted := func(path string) (*source.File, bool) {
+		if file, ok := files[path]; ok {
+			return file, file != nil
+		}
+		body, ok := bases[path]
+		if !ok {
+			files[path] = nil
+			return nil, false
+		}
+		file, err := source.New(path, body)
+		if err != nil {
+			files[path] = nil
+			return nil, false
+		}
+		files[path] = file
+		return file, true
+	}
+	paths := make([]string, 0, len(targets))
+	for path := range targets {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+	changes := map[string]any{}
+	for _, path := range paths {
+		file, ok := converted(path)
+		if !ok {
+			return nil
+		}
+		edits := []any{}
+		for _, target := range targets[path] {
+			start, startErr := file.UTF16Position(target.span.Start)
+			end, endErr := file.UTF16Position(target.span.End)
+			if startErr != nil || endErr != nil || start.Line != end.Line {
+				return nil
+			}
+			edits = append(edits, map[string]any{
+				"range": map[string]any{
+					"start": map[string]any{"line": start.Line, "character": start.Character},
+					"end":   map[string]any{"line": end.Line, "character": end.Character},
+				},
+				"newText": newName,
+			})
+		}
+		changes[uriFromPath(path)] = edits
+	}
+	return map[string]any{"changes": changes}
 }
