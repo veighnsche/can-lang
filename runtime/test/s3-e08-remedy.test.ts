@@ -1,4 +1,5 @@
-// E08 (R15 remedy): destructive discard_upload + between-awaits deadline legs.
+// E08 (R15 remedy): destructive discard_upload + write_stream deadline legs,
+// rebased by R1 (retained X-R15-3) to the bounded-await contract.
 //
 // S3-PROTOCOL scope: every live leg runs against the provisioned
 // MinIO endpoint (never AWS-real) under an isolated `s3e08/` prefix;
@@ -12,10 +13,12 @@
 //     the pending upload — transiently visible, overwriting any
 //     pre-existing key — then delete it) with honest cleanup-failure
 //     reporting.
-//   - `s3::write_stream` keeps only the qualified between-awaits
-//     deadline: it fires at the top of each pump iteration, never
-//     inside a hung await (the H-term E07 legs remain the documented
-//     unbounded remainder; W5 stays blocked on it).
+//   - `s3::write_stream` bounds every pump await (R1): the deadline
+//     remainder races each read, write, flush, end, and stat through
+//     cancel-absent boundaries; expiry answers service_error/timeout
+//     while the native stays owned, and post-sink expiries converge
+//     through deferred destructive scrub. The loop-top check is kept
+//     as the between-awaits fast path.
 // Destructive-overwrite, transient-window, and cleanup-injection
 // validation lives in the rebased E07 legs (C0/C4/F1–F7); this file
 // adds the rename/contract legs, the terminal guards, and the
@@ -157,6 +160,17 @@ const upstreamOf = (): { host: string; port: number } => {
 };
 const opTriples = (tap: Tap): string[] =>
   tap.ops.map((entry) => `${entry.method} ${entry.op} ${entry.verdict}`);
+// R1: deferred convergence lands after the timeout outcome; await the
+// qualified wire shape with a bounded poll instead of asserting it
+// synchronously.
+const awaitOps = async (tap: Tap, count: number, budgetMs: number): Promise<boolean> => {
+  const started = Date.now();
+  for (;;) {
+    if (tap.ops.length >= count) return true;
+    if (Date.now() - started >= budgetMs) return false;
+    await Bun.sleep(20);
+  }
+};
 
 // --- Rename atomicity: no silent delete may keep the cancel name ---
 
@@ -195,14 +209,18 @@ test("E08 E2: s3::discard_upload carries the destructive contract", () => {
   expect(found.lowering.adapter.toLowerCase()).not.toContain("never materializes");
 });
 
-test("E08 E3: write_stream documents only the between-awaits deadline", () => {
+test("E08 E3: write_stream documents the bounded-await deadline (R1)", () => {
   const pump = operation("s3::write_stream");
-  expect(pump.lowering.adapter).toContain("only between awaits");
-  expect(pump.lowering.adapter).toContain("never a hung await");
-  expect(pump.lowering.adapter).toContain("discards the upload destructively");
-  expect(pump.lowering.adapter.toLowerCase()).not.toContain("cancel");
+  expect(pump.lowering.adapter).toContain("bounds every pump await");
+  expect(pump.lowering.adapter).toContain("service_error/timeout");
+  expect(pump.lowering.adapter).toContain("while the native stays owned");
+  expect(pump.lowering.adapter).toContain("discard the upload destructively");
+  expect(pump.lowering.adapter.replaceAll("cancel-absent", "").toLowerCase()).not.toContain(
+    "cancel",
+  );
   const append = operation("s3::upload_write");
   expect(append.lowering.adapter).toContain("finish or discard");
+  expect(append.lowering.adapter).toContain("poisons the handle to discarded");
 });
 
 // --- Terminal guards: discarded handles reject every reuse ---
@@ -264,11 +282,13 @@ live(
           { code: "timeout", operation: "write_stream" },
         );
         expect(tap.desyncs()).toBe(0);
-        console.log(JSON.stringify({ leg: "D4", pulls, ops: opTriples(tap) }));
         expect(pulls).toBeGreaterThanOrEqual(1);
-        // The timed-out pump scrubs through the shared destructive
-        // cleanup: one completion of the buffered bytes, then the
+        // R1: the timed-out pump converges deferred — the scrub runs
+        // once the hung read settles. Await the same qualified wire
+        // shape: one completion of the buffered bytes, then the
         // delete. Nothing else touches the wire on this path.
+        expect(await awaitOps(tap, 2, 10000)).toBe(true);
+        console.log(JSON.stringify({ leg: "D4", pulls, ops: opTriples(tap) }));
         expect(opTriples(tap)).toEqual([
           "PUT put-object forwarded",
           "DELETE delete-object forwarded",

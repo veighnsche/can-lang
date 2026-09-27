@@ -7,7 +7,7 @@ function freeze<T>(value: T): Readonly<T> {
   }
   return value;
 }
-export const catalogueSHA256 = "87c05b44978ff20cea35c8e67a427c535a1aab20ab15e041a0cfb9006894b99f";
+export const catalogueSHA256 = "762356c8a2068aea365a65e6e10c39018785dbf666beeb5739506955cb66c2e1";
 export const catalogue = freeze({
   "schemaVersion": 1,
   "revision": 1,
@@ -12209,7 +12209,7 @@ export const catalogue = freeze({
           "S3Client",
           "S3File"
         ],
-        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline binds only between awaits, never a hung await; reader failure discards the upload destructively and propagates.",
+        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline remainder bounds every pump await (read, write, flush, end, stat) through cancel-absent races, and expiry answers service_error/timeout while the native stays owned; timeouts and reader failure discard the upload destructively and propagate.",
         "task": "B1-10"
       },
       "assertion": "supplied",
@@ -12514,7 +12514,7 @@ export const catalogue = freeze({
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed.",
+        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed; a timed-out chunk poisons the handle to discarded with deferred scrub on settlement.",
         "task": "B1-10"
       },
       "assertion": "supplied",
@@ -12548,7 +12548,7 @@ export const catalogue = freeze({
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Complete the upload and return immutable metadata of the stored object.",
+        "adapter": "Complete the upload and return immutable metadata of the stored object; a timed-out finish poisons the handle to discarded with deferred scrub on settlement.",
         "task": "B1-10"
       },
       "assertion": "supplied",

@@ -10,9 +10,11 @@
 //     cleanup-failure reporting. Per the X-R15-2 experiment row, W5
 //     asserts name removal, explicit call sites and honest outcomes —
 //     never preservation.
-//   - X-R15-3 NEGATIVE → hung writer/flush/end/stat awaits admit no
-//     bound. W5-S5 pins that negative with the exact evidence and the
-//     verdict stays BLOCKED: it must never become an accepted pass.
+//   - X-R15-3 RETAINED (R1) → every S3 await races a layered bound
+//     through cancel-absent boundaries; expiry answers
+//     service_error/timeout while the native stays owned. W5-S5
+//     qualifies the bounded contract live (the former BLOCKED
+//     negative is superseded).
 import { test, expect } from "bun:test";
 import { createHash } from "node:crypto";
 import { catalogue, operation } from "../catalogue.ts";
@@ -24,6 +26,7 @@ import { value, success, failure, type Completion } from "../completion.ts";
 import { record, dataProperty } from "../data.ts";
 import { ownBytes } from "../bytes.ts";
 import { runOwnedRoot } from "../owner.ts";
+import { createRequestScope, runWithRequestScope } from "../transport/request-scope.ts";
 import { startTap, listUploads, abortUpload, type Tap, type S3Identity } from "./s3-e07-tap.ts";
 
 const hash = (kind: string, name: string) =>
@@ -178,29 +181,6 @@ const upstreamOf = (): { host: string; port: number } => {
 };
 const opTriples = (tap: Tap): string[] =>
   tap.ops.map((entry) => `${entry.method} ${entry.op} ${entry.verdict}`);
-
-type RaceWon = Readonly<
-  | { status: "resolved"; value: unknown }
-  | { status: "rejected"; name: string; code: string }
-  | { status: "watchdog" }
->;
-
-async function raceWatch(promise: Promise<unknown>, ms: number): Promise<RaceWon> {
-  return Promise.race([
-    promise.then(
-      (val) => ({ status: "resolved", value: val }) as const,
-      (cause: unknown) => {
-        const code = (cause as { code?: unknown }).code;
-        return {
-          status: "rejected",
-          name: cause instanceof Error ? cause.name : typeof cause,
-          code: typeof code === "string" ? code : "",
-        } as const;
-      },
-    ),
-    Bun.sleep(ms).then(() => ({ status: "watchdog" }) as const),
-  ]);
-}
 
 // --- X-R15-2, O2 branch: name removal, explicit sites, honest outcomes ---
 
@@ -372,46 +352,57 @@ live(
   30000,
 );
 
-// --- X-R15-3: BLOCKED. Hung awaits admit no bound. ---
+// --- X-R15-3: R1 implements the retained bounded-wait requirement. ---
 
-test("W5-S5a: write_stream documents only the between-awaits deadline", () => {
+test("W5-S5a: write_stream documents the bounded-await deadline (R1)", () => {
   const pump = operation("s3::write_stream");
-  expect(pump.lowering.adapter).toContain("only between awaits");
-  expect(pump.lowering.adapter).toContain("never a hung await");
-  expect(pump.lowering.adapter).toContain("discards the upload destructively");
+  expect(pump.lowering.adapter).toContain("bounds every pump await");
+  expect(pump.lowering.adapter).toContain("service_error/timeout");
+  expect(pump.lowering.adapter).toContain("while the native stays owned");
+  expect(pump.lowering.adapter).toContain("discard the upload destructively");
 });
 
 live(
-  "W5-S5b: BLOCKED — a hung source.read hangs write_stream past its deadline",
+  "W5-S5b: R1 — a hung source.read answers timeout at the deadline",
   async () => {
-    // BLOCKED (X-R15-3 negative, must never become an accepted pass):
-    // this leg pins the exact negative — the between-awaits deadline
-    // never fires while the first read is pending — and the evidence
-    // record carries the BLOCKED verdict. E07 H2–H5 pin the same
-    // negative for hung flush/end/stat/abandonment on these final
-    // adapters; see the E09 evidence record.
+    // R1 (retained X-R15-3; the BLOCKED negative is superseded): the
+    // hung first read races the 100ms deadline remainder and answers
+    // service_error{timeout, write_stream} with zero wire ops — no
+    // sink exists yet (creation is lazy), so pre-sink expiry costs
+    // nothing and the hung native stays owned (it never settles
+    // here, so no late record is expected). One budget escalation
+    // with an s3 marker is filed to the request scope.
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     try {
-      const client = await openTap(tap);
-      const key = `${PREFIX}s5b.bin`;
-      const hung = new ReadableStream<Uint8Array>({ pull() {} });
-      // The owned root is deliberately abandoned at the watchdog: the
-      // hung read holds only a pending promise (no sink exists yet —
-      // creation is lazy — so nothing pins the loop for later legs).
-      const root = runOwnedRoot(async () => {
-        const reader = registerReader(
-          openByteCell(hung, 65536n),
-          fail,
-          identity("can.std.stream@1::close_failed"),
-          { scopeManaged: true },
-        );
-        return s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 100n);
+      const scope = createRequestScope();
+      const started = Date.now();
+      const outcome = await runWithRequestScope(scope, () =>
+        runOwnedRoot(async () => {
+          const client = await openTap(tap);
+          const key = `${PREFIX}s5b.bin`;
+          const hung = new ReadableStream<Uint8Array>({ pull() {} });
+          const reader = registerReader(
+            openByteCell(hung, 65536n),
+            fail,
+            identity("can.std.stream@1::close_failed"),
+            { scopeManaged: true },
+          );
+          return s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 100n);
+        }),
+      );
+      const elapsed = Date.now() - started;
+      console.log(JSON.stringify({ leg: "W5-S5b", elapsed, ops: opTriples(tap) }));
+      expect(outcome.cleanupFailed).toBe(false);
+      check(outcome.completion, "s3::service_error", {
+        code: "timeout",
+        operation: "write_stream",
       });
-      const outcome = await raceWatch(root, 3000);
-      console.log(JSON.stringify({ leg: "W5-S5b", outcome: outcome.status, ops: opTriples(tap) }));
+      expect(elapsed).toBeLessThan(1500);
       expect(tap.desyncs()).toBe(0);
-      expect(outcome.status).toBe("watchdog");
       expect(tap.ops).toEqual([]);
+      expect(scope.collected.escalations).toHaveLength(1);
+      expect(scope.collected.escalations[0]).toMatchObject({ cause: "budget" });
+      expect(scope.collected.escalations[0]!.marker.source).toBe("s3");
     } finally {
       tap.close();
     }

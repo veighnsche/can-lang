@@ -15,6 +15,9 @@ import { ownBytes, copyBytes, isBytes } from "../bytes.ts";
 import { createDomainRuntime } from "../domain.ts";
 import { mintTimeInstant } from "./datetime.ts";
 import { registerResource } from "../owner.ts";
+import { raceBoundary, type BoundaryOutcome } from "../transport/operation-budget.ts";
+import { scopeRaceInput } from "../transport/request-scope.ts";
+import type { RequestBudget } from "../transport/request-budget.ts";
 import {
   registerReader,
   useReader,
@@ -42,7 +45,31 @@ type UploadBox = {
   partSize: number | undefined;
   sink: NativeSink | undefined;
   state: "open" | "finished" | "discarded";
+  scrubPending: boolean;
 };
+// S3Bounds carries the cancel-absent operation bounds (E04-style,
+// trailing-optional, checker-mandatory later): the caller bound in
+// milliseconds plus an explicit request budget. Emitted S3 calls keep
+// their current arity; the runtime supplies bounds.
+export type S3Bounds = Readonly<{
+  boundMs?: number;
+  budget?: RequestBudget;
+}>;
+// The fixed adapter ceiling (R1): the only new bound knob. Every S3
+// await races at most this long, so the common budgetless case —
+// dispatch invents no request total — stays bounded. Set above any
+// measured live leg (local-MinIO awaits settle in milliseconds to
+// low seconds) and below indefinite.
+export const S3_AWAIT_CEILING_MS = 30000;
+// Layered per-await bound (R1): min(explicit deadline remainder,
+// trailing runtime boundMs, adapter ceiling). The ambient
+// request-budget remainder joins inside raceBoundary through
+// scopeRaceInput, so the race sees the full layered minimum.
+export function s3RaceBoundMs(explicitMs?: number, bounds?: S3Bounds): number {
+  const explicit = explicitMs ?? Number.POSITIVE_INFINITY;
+  const trailing = bounds?.boundMs ?? Number.POSITIVE_INFINITY;
+  return Math.max(1, Math.min(explicit, trailing, S3_AWAIT_CEILING_MS));
+}
 type PresignedBox = Readonly<{
   url: string;
   method: "GET" | "PUT" | "DELETE" | "HEAD";
@@ -126,6 +153,66 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
     if (code === "UnknownError") return denied(operation);
     if (code !== undefined) return service(code, operation);
     return caught(cause, origin);
+  };
+  // One cancel-absent per-await race (R1). The pending native is
+  // captured for deferred convergence: expiry returns the honest
+  // timeout outcome while the native stays owned until settlement,
+  // with one escalation plus late-settlement observation flowing to
+  // the race sink automatically. pending stays undefined when the
+  // boundary pre-expired (start never ran), so no phantom native
+  // can draw deferred cleanup. Rejections propagate to the caller,
+  // exactly like the unraced await they replace.
+  const raceS3 = async <T>(
+    explicitMs: number | undefined,
+    bounds: S3Bounds | undefined,
+    start: () => T | Promise<T>,
+  ): Promise<{ raced: BoundaryOutcome<T>; pending: Promise<T> | undefined }> => {
+    let pending: Promise<T> | undefined;
+    const raced = await raceBoundary(
+      {
+        source: "s3",
+        boundMs: s3RaceBoundMs(explicitMs, bounds),
+        ...scopeRaceInput(bounds?.budget),
+      },
+      () => (pending = Promise.resolve(start())),
+    );
+    return { raced, pending };
+  };
+  // Deferred convergence (R1 race_and_own): when the hung native
+  // later settles either way, run the standard destructive scrub.
+  // Best-effort like the pump-finally scrub it extends: by the time
+  // it runs, the caller already holds the timeout outcome and no
+  // channel remains to report scrub detail.
+  const convergeDeferred = <T>(
+    pending: Promise<T> | undefined,
+    scrubStep: () => Promise<unknown>,
+  ): void => {
+    pending?.then(
+      () => {
+        void scrubStep();
+      },
+      () => {
+        void scrubStep();
+      },
+    );
+  };
+  // Upload poison on op expiry (R1 poison_discard): the box becomes
+  // discarded immediately so no caller code can build on
+  // unknown-write state, and the retained sink converges through
+  // one deferred scrub on settlement. Single-flight per box:
+  // concurrent same-box expiries attach once.
+  const poisonUpload = <T>(
+    box: UploadBox,
+    pending: Promise<T> | undefined,
+    operation: string,
+  ): void => {
+    if (pending === undefined || box.state !== "open") return;
+    box.state = "discarded";
+    const doomed = box.sink;
+    box.sink = undefined;
+    if (box.scrubPending) return;
+    box.scrubPending = true;
+    convergeDeferred(pending, () => scrub(box.client, box.key, doomed, operation));
   };
   const option = (some: string, value: unknown): unknown => {
     const identity = recordIdentity(value);
@@ -287,6 +374,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       key: unknown,
       maxBytes: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -296,9 +384,13 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         return invalid("limit");
       const file = client.file(checked);
       try {
-        const stat = await file.stat();
+        const statRaced = await raceS3(undefined, bounds, () => file.stat());
+        if (statRaced.raced.kind === "unknown") return service("timeout", "read_bytes");
+        const stat = statRaced.raced.value;
         if (BigInt(stat.size) > maxBytes) return overLimit(maxBytes, BigInt(stat.size));
-        return success(ownBytes(new Uint8Array(await file.bytes())));
+        const bytesRaced = await raceS3(undefined, bounds, () => file.bytes());
+        if (bytesRaced.raced.kind === "unknown") return service("timeout", "read_bytes");
+        return success(ownBytes(new Uint8Array(bytesRaced.raced.value)));
       } catch (cause) {
         return wire("read_bytes", checked, cause);
       }
@@ -309,6 +401,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       offset: unknown,
       length: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -321,7 +414,9 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       if (length === 0n) return success(ownBytes(new Uint8Array(0)));
       try {
         const window = client.file(checked).slice(Number(offset), Number(offset + length));
-        return success(ownBytes(new Uint8Array(await window.arrayBuffer())));
+        const raced = await raceS3(undefined, bounds, () => window.arrayBuffer());
+        if (raced.raced.kind === "unknown") return service("timeout", "read_range");
+        return success(ownBytes(new Uint8Array(raced.raced.value)));
       } catch (cause) {
         return wire("read_range", checked, cause);
       }
@@ -331,6 +426,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       key: unknown,
       maxBytes: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<object>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -340,7 +436,9 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         return invalid("max_bytes");
       try {
         const file = client.file(checked);
-        const stat = await file.stat();
+        const raced = await raceS3(undefined, bounds, () => file.stat());
+        if (raced.raced.kind === "unknown") return service("timeout", "read_stream");
+        const stat = raced.raced.value;
         if (BigInt(stat.size) > maxBytes) return overLimit(maxBytes, BigInt(stat.size));
         // The eager stat bounds the known size; the counting wrapper
         // guards against growth mid-read and fails the stream with a
@@ -375,6 +473,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       body: unknown,
       options: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -384,10 +483,15 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       const type = contentType(dataProperty(options, "content_type"));
       if (typeof type !== "string" && type !== undefined) return type;
       try {
-        await client
-          .file(checked)
-          .write(copyBytes(body, origin), type === undefined ? undefined : { type });
-        return success(await statOf(client, checked));
+        const put = await raceS3(undefined, bounds, () =>
+          client
+            .file(checked)
+            .write(copyBytes(body, origin), type === undefined ? undefined : { type }),
+        );
+        if (put.raced.kind === "unknown") return service("timeout", "write_bytes");
+        const stat = await raceS3(undefined, bounds, () => statOf(client, checked));
+        if (stat.raced.kind === "unknown") return service("timeout", "write_bytes");
+        return success(stat.raced.value);
       } catch (cause) {
         return wire("write_bytes", checked, cause);
       }
@@ -400,6 +504,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       maxBytes: unknown,
       deadlineMs: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -413,20 +518,29 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         return invalid("deadline");
       // The sink is created lazily on the first chunk: a pump that
       // fails before any byte never touches the service. Every pump
-      // failure after the first write scrubs through the shared
-      // destructive cleanup: an un-ended sink pins the Bun event
-      // loop, so the pump completes synchronously with end() and
-      // deletes the key instead of abandoning the writer. The
-      // deadline below binds only between awaits (E08; X-R15-3
-      // negative): it fires at the top of each pump iteration, never
-      // inside a hung read, write, flush, end, or stat — those awaits
-      // admit no client-side bound and stay hung past the deadline.
+      // await races its layered bound (R1): the deadline remainder
+      // plus trailing runtime boundMs, ambient request budget, and
+      // the adapter ceiling, cancel-absent with one escalation and
+      // late-settlement observation per expiry. Expiry with a live
+      // sink converges deferred — the standard destructive scrub
+      // runs once the hung native settles — while a pre-sink expiry
+      // costs nothing (W5-S5b); an already-expired boundary starts
+      // no native and the shared finally below scrubs synchronously.
       let sink: NativeSink | undefined;
       const pump = () =>
         (sink ??= client.file(checked).writer(type === undefined ? undefined : { type }));
       const deadline = Number(deadlineMs);
       const started = Date.now();
       const expired = (): boolean => Date.now() - started >= deadline;
+      const remainder = (): number => Math.max(1, deadline - (Date.now() - started));
+      const expirePump = <T>(pending: Promise<T> | undefined): Completion<never> => {
+        if (pending !== undefined && sink !== undefined) {
+          const doomed = sink;
+          sink = undefined;
+          convergeDeferred(pending, () => scrub(client, checked, doomed, "write_stream"));
+        }
+        return service("timeout", "write_stream");
+      };
       const reasonFor = (cause: unknown): string => {
         if (typeof cause === "object" && cause !== null) {
           if ((cause as { name?: unknown }).name === "AbortError") return "aborted";
@@ -449,7 +563,9 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
             }
             let next;
             try {
-              next = await source.read();
+              const read = await raceS3(remainder(), bounds, () => source.read());
+              if (read.raced.kind === "unknown") return expirePump(read.pending);
+              next = read.raced.value;
             } catch (cause) {
               cell.errored = true;
               cell.carry = undefined;
@@ -468,17 +584,24 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
             }
             try {
               const active = pump();
-              await active.write(new Uint8Array(next.value));
-              await active.flush();
+              const writtenOut = await raceS3(remainder(), bounds, () =>
+                active.write(new Uint8Array(next.value)),
+              );
+              if (writtenOut.raced.kind === "unknown") return expirePump(writtenOut.pending);
+              const flushed = await raceS3(remainder(), bounds, () => active.flush());
+              if (flushed.raced.kind === "unknown") return expirePump(flushed.pending);
             } catch (cause) {
               return wire("write_stream", checked, cause);
             }
             written += length;
           }
           try {
-            await pump().end();
+            const ended = await raceS3(remainder(), bounds, () => pump().end());
+            if (ended.raced.kind === "unknown") return expirePump(ended.pending);
             completed = true;
-            return success(await statOf(client, checked));
+            const stat = await raceS3(remainder(), bounds, () => statOf(client, checked));
+            if (stat.raced.kind === "unknown") return service("timeout", "write_stream");
+            return success(stat.raced.value);
           } catch (cause) {
             return wire("write_stream", checked, cause);
           }
@@ -495,13 +618,16 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       handle: unknown,
       key: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
       const checked = keyOf(key);
       if (typeof checked !== "string") return checked;
       try {
-        return success(await statOf(client, checked));
+        const raced = await raceS3(undefined, bounds, () => statOf(client, checked));
+        if (raced.raced.kind === "unknown") return service("timeout", "stat");
+        return success(raced.raced.value);
       } catch (cause) {
         return wire("stat", checked, cause);
       }
@@ -510,13 +636,16 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       handle: unknown,
       key: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<boolean>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
       const checked = keyOf(key);
       if (typeof checked !== "string") return checked;
       try {
-        return success(await client.file(checked).exists());
+        const raced = await raceS3(undefined, bounds, () => client.file(checked).exists());
+        if (raced.raced.kind === "unknown") return service("timeout", "exists");
+        return success(raced.raced.value);
       } catch (cause) {
         // Absent keys answer false; every other fault keeps its shape.
         if (s3Code(cause) === "NoSuchKey") return success(false);
@@ -527,13 +656,15 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       handle: unknown,
       key: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<void>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
       const checked = keyOf(key);
       if (typeof checked !== "string") return checked;
       try {
-        await client.file(checked).delete();
+        const raced = await raceS3(undefined, bounds, () => client.file(checked).delete());
+        if (raced.raced.kind === "unknown") return service("timeout", "delete");
         return success(undefined);
       } catch (cause) {
         return wire("delete", checked, cause);
@@ -543,6 +674,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       handle: unknown,
       options: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const client = projectClient(handle);
@@ -563,12 +695,16 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         if (continuation === undefined) throw new TypeError("invalid compiler s3 continuation");
       }
       try {
-        const response: NativeList = await client.list({
-          prefix,
-          maxKeys: Number(limit),
-          ...(delimiterPick === undefined ? {} : { delimiter: delimiterPick }),
-          ...(continuation === undefined ? {} : { continuationToken: continuation }),
-        });
+        const raced = await raceS3(undefined, bounds, () =>
+          client.list({
+            prefix,
+            maxKeys: Number(limit),
+            ...(delimiterPick === undefined ? {} : { delimiter: delimiterPick }),
+            ...(continuation === undefined ? {} : { continuationToken: continuation }),
+          }),
+        );
+        if (raced.raced.kind === "unknown") return service("timeout", "list");
+        const response: NativeList = raced.raced.value;
         const entries: unknown[] = [];
         for (const item of response.contents ?? []) {
           // Size, etag and timestamp always accompany real entries;
@@ -681,6 +817,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         partSize: partPick === undefined ? undefined : Number(partPick),
         sink: undefined,
         state: "open",
+        scrubPending: false,
       };
       const token = registerResource(
         UPLOAD_RESOURCE_KIND,
@@ -701,6 +838,7 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       token: unknown,
       chunk: unknown,
       context?: AssertionContext,
+      bounds?: S3Bounds,
     ): Promise<Completion<bigint>> {
       denyLiveBoundary(context, origin);
       const box = projectUpload(token);
@@ -709,8 +847,16 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
       try {
         const bytes = copyBytes(chunk, origin);
         const sink = sinkOf(box);
-        await sink.write(bytes);
-        await sink.flush();
+        const written = await raceS3(undefined, bounds, () => sink.write(bytes));
+        if (written.raced.kind === "unknown") {
+          poisonUpload(box, written.pending, "upload_write");
+          return service("timeout", "upload_write");
+        }
+        const flushed = await raceS3(undefined, bounds, () => sink.flush());
+        if (flushed.raced.kind === "unknown") {
+          poisonUpload(box, flushed.pending, "upload_write");
+          return service("timeout", "upload_write");
+        }
         // The adapter guards the native silent drop after end: no
         // terminal write ever reaches the sink, so a write that
         // returns buffered the whole chunk or threw.
@@ -719,14 +865,24 @@ export function createS3(domain: ReturnType<typeof createDomainRuntime>, ids: Id
         return wire("upload_write", box.key, cause);
       }
     },
-    async uploadFinish(token: unknown, context?: AssertionContext): Promise<Completion<unknown>> {
+    async uploadFinish(
+      token: unknown,
+      context?: AssertionContext,
+      bounds?: S3Bounds,
+    ): Promise<Completion<unknown>> {
       denyLiveBoundary(context, origin);
       const box = projectUpload(token);
       if (box.state !== "open") return closed("upload_finish", box.state);
       try {
-        await sinkOf(box).end();
+        const ended = await raceS3(undefined, bounds, () => sinkOf(box).end());
+        if (ended.raced.kind === "unknown") {
+          poisonUpload(box, ended.pending, "upload_finish");
+          return service("timeout", "upload_finish");
+        }
         box.state = "finished";
-        return success(await statOf(box.client, box.key));
+        const stat = await raceS3(undefined, bounds, () => statOf(box.client, box.key));
+        if (stat.raced.kind === "unknown") return service("timeout", "upload_finish");
+        return success(stat.raced.value);
       } catch (cause) {
         // A failed completion leaves the handle open: the caller may
         // retry the finish or discard explicitly.

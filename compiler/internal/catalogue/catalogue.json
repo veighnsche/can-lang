@@ -12199,7 +12199,7 @@
           "S3Client",
           "S3File"
         ],
-        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline binds only between awaits, never a hung await; reader failure discards the upload destructively and propagates.",
+        "adapter": "Pump a byte reader into a multipart upload under byte and deadline budgets; the deadline remainder bounds every pump await (read, write, flush, end, stat) through cancel-absent races, and expiry answers service_error/timeout while the native stays owned; timeouts and reader failure discard the upload destructively and propagate.",
         "task": "B1-10"
       },
       "assertion": "supplied",
@@ -12504,7 +12504,7 @@
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed.",
+        "adapter": "Append one chunk to an open upload and report accepted bytes; use after finish or discard fails upload_closed; a timed-out chunk poisons the handle to discarded with deferred scrub on settlement.",
         "task": "B1-10"
       },
       "assertion": "supplied",
@@ -12538,7 +12538,7 @@
         "native": [
           "NetworkSink"
         ],
-        "adapter": "Complete the upload and return immutable metadata of the stored object.",
+        "adapter": "Complete the upload and return immutable metadata of the stored object; a timed-out finish poisons the handle to discarded with deferred scrub on settlement.",
         "task": "B1-10"
       },
       "assertion": "supplied",

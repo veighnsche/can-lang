@@ -19,6 +19,10 @@
 // and F1/F2/F4/F5 assert the honest cleanup-failure posture
 // (service_error) instead of silent resolve. Wire observations and
 // `leg:` tags are unchanged from the E07 record.
+// R1 rebase (retained X-R15-3): the H1 adapter leg now qualifies the
+// bounded-await contract (timeout at the deadline, zero wire ops,
+// one s3 escalation). The H2–H5 legs still pin native no-abort
+// behavior, which R1 does not change.
 import { test, expect } from "bun:test";
 import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
@@ -32,6 +36,7 @@ import { value, success, failure, type Completion } from "../completion.ts";
 import { record, dataProperty } from "../data.ts";
 import { ownBytes, copyBytes } from "../bytes.ts";
 import { runOwnedRoot } from "../owner.ts";
+import { createRequestScope, runWithRequestScope } from "../transport/request-scope.ts";
 import {
   startTap,
   listUploads,
@@ -942,38 +947,49 @@ live(
   30000,
 );
 
-// --- Deadline branch (X-R15-3): one leg per hung await ---
+// --- Deadline branch (X-R15-3): H1 qualifies the R1 bounded contract;
+// H2–H5 pin native no-abort behavior (unchanged by R1) ---
 
 live(
-  "X-R15-3 H1: hung source.read hangs write_stream past its deadline",
+  "X-R15-3 H1: R1 — a hung source.read answers timeout at the deadline",
   async () => {
+    // R1 (retained X-R15-3; the H1 negative is superseded): the hung
+    // first read races the 100ms deadline remainder and answers
+    // service_error{timeout, write_stream} with zero wire ops — no
+    // sink exists yet (creation is lazy). One budget escalation with
+    // an s3 marker is filed to the request scope.
     const tap = startTap(upstreamOf().host, upstreamOf().port);
     try {
-      const client = await openTap(tap);
-      const key = `${PREFIX}h1.bin`;
-      // A stream that never produces: pull returns without enqueueing.
-      const hung = new ReadableStream<Uint8Array>({ pull() {} });
-      // The owned root is deliberately abandoned at the watchdog: the
-      // hung read holds only a pending promise (no sink exists yet —
-      // creation is lazy — so nothing pins the loop for later legs).
-      const root = runOwnedRoot(async () => {
-        const reader = registerReader(
-          openByteCell(hung, 65536n),
-          fail,
-          identity("can.std.stream@1::close_failed"),
-          { scopeManaged: true },
-        );
-        return s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 100n);
-      });
-      const outcome = await raceWatch(root, 3000);
-      console.log(
-        JSON.stringify({ leg: "H1", outcome: describeRace(outcome), ops: opTriples(tap) }),
+      const scope = createRequestScope();
+      const started = Date.now();
+      const outcome = await runWithRequestScope(scope, () =>
+        runOwnedRoot(async () => {
+          const client = await openTap(tap);
+          const key = `${PREFIX}h1.bin`;
+          // A stream that never produces: pull returns without enqueueing.
+          const hung = new ReadableStream<Uint8Array>({ pull() {} });
+          const reader = registerReader(
+            openByteCell(hung, 65536n),
+            fail,
+            identity("can.std.stream@1::close_failed"),
+            { scopeManaged: true },
+          );
+          return s3.writeStream(client, key, reader, writeOpts(none()), 1024n, 100n);
+        }),
       );
+      const elapsed = Date.now() - started;
+      console.log(JSON.stringify({ leg: "H1", elapsed, ops: opTriples(tap) }));
+      expect(outcome.cleanupFailed).toBe(false);
+      check(outcome.completion, "s3::service_error", {
+        code: "timeout",
+        operation: "write_stream",
+      });
+      expect(elapsed).toBeLessThan(1500);
       expect(tap.desyncs()).toBe(0);
-      // The between-awaits deadline never fires: no loop iteration
-      // completes while the first read is pending.
-      expect(outcome.status).toBe("watchdog");
       expect(tap.ops).toEqual([]);
+      expect(scope.collected.escalations).toHaveLength(1);
+      expect(scope.collected.escalations[0]).toMatchObject({ cause: "budget" });
+      expect(scope.collected.escalations[0]!.marker.source).toBe("s3");
     } finally {
       tap.close();
     }
