@@ -63,7 +63,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 
 | H12 | staged (BLOCKED on UP25 grant) | main `275dd42d` (3 worker `744801b4`,`775463fb`,`267bdfc8`) | staging on macOS; native run pending Debian 13+ amd64 | per-leg runbook (smoke offline, drift both dirs, retention, rollout/rollback, CAS GC, PG roundtrip, service/health/creds/operator-DDL, old-browser wrapper); window-check.sh gate; pins re-verified by coord; Jev unanimous; record `docs/syntax-taste/execution-2026-09-26/h12-staging-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h12/` | blocked |
 
-| H11 | pre-assembly (OPEN behind H12) | main (2 worker `9d5f3fc6`,`b3f24b09`) | n/a (aggregation, no live reruns) | per-workload leg tables + version/env cross-check + double-count audit + F0–F22; H12 single pending input; coord verified F1/F2/F8, resolved F11; record `docs/syntax-taste/execution-2026-09-26/h11-preassembly-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h11/` | open |
+| H11 | pre-assembly (OPEN behind H12) | main `f25685c9`+`ee2050c4` (2 worker `9d5f3fc6`,`b3f24b09`) | n/a (aggregation, no live reruns) | per-workload leg tables + version/env cross-check + double-count audit + F0–F22; H12 single pending input; coord verified F1/F2/F8, resolved F11; record `docs/syntax-taste/execution-2026-09-26/h11-preassembly-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h11/` | open |
 
 ## Conditional branches
 
