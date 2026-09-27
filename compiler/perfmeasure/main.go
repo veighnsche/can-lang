@@ -95,6 +95,22 @@ func main() {
 		}
 		mapped, err := encodeMappedArtifacts(r, p, a)
 		must(err)
+		// Reject invalid fixture output before any measured suite starts.
+		// Map encoding alone does not validate TypeScript or its import inventory.
+		store, err := driver.BeginOutput(*directory)
+		must(err)
+		defer store.Close()
+		inputs := store.BuildInputs(private.Identity, private.Identity, private.Identity, private.Identity)
+		for _, candidate := range []struct {
+			name      string
+			artifacts []ir.Artifact
+		}{{"program", mapped}, {"assertions", aa}} {
+			output, err := driver.PrepareOutput(inputs, "entry.ts", candidate.artifacts)
+			must(err)
+			if err := r.ValidateOutput(context.Background(), output); err != nil {
+				panic(fmt.Errorf("prepare %s: %w", candidate.name, err))
+			}
+		}
 		raw, err := json.Marshal(prepared{Artifacts: a, Assertions: aa, Roots: roots, MappedArtifacts: mapped})
 		must(err)
 		must(os.WriteFile(filepath.Join(*directory, "prepared.json"), raw, 0600))

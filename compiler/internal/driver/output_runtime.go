@@ -125,7 +125,11 @@ func (r *Runtime) ValidateOutput(ctx context.Context, prepared *PreparedOutput) 
 	}
 	var stdout, stderr bytes.Buffer
 	if err = r.RunTool(ctx, "tools/runtime/output-check.ts", nil, nil, bytes.NewReader(data), &stdout, &stderr); err != nil {
-		return fmt.Errorf("generated TypeScript/source-map validation failed: %w", err)
+		diagnostic := strings.TrimSpace(stderr.String())
+		if len(diagnostic) > 8192 {
+			diagnostic = diagnostic[len(diagnostic)-8192:]
+		}
+		return fmt.Errorf("generated TypeScript/source-map validation failed: %w\n%s", err, diagnostic)
 	}
 	var report struct {
 		SchemaVersion int    `json:"schemaVersion"`

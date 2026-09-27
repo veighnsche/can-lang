@@ -72,6 +72,9 @@ func TestPackagedOutputValidationAndExecution(t *testing.T) {
 		if err = runtime.ValidateOutput(ctx, p); err == nil {
 			t.Fatal("invalid syntax/import inventory admitted")
 		}
+		if !strings.Contains(err.Error(), "invalid generated TypeScript or import inventory: entry.ts") {
+			t.Fatalf("native validator diagnostic was lost: %v", err)
+		}
 		if _, err = store.Publish(p); err == nil {
 			t.Fatal("failed validation published")
 		}

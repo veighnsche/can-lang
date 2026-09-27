@@ -729,6 +729,9 @@
       "../bytes.ts",
       "../domain.ts",
       "../owner.ts",
+      "../transport/operation-budget.ts",
+      "../transport/request-scope.ts",
+      "../transport/request-budget.ts",
       "../transport/stream/lifecycle.ts",
       "../transport/stream/readable.ts",
       "./datetime.ts"
