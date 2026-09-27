@@ -197,7 +197,7 @@ class IsolationTests(unittest.TestCase):
 
 
 class SerialRunTests(unittest.TestCase):
-    def run_fixture(self, root, fail=False, interrupt=False):
+    def run_fixture(self, root, fail=False, interrupt=False, inventory=None):
         source = root / "source"
         source.mkdir()
         driver = source / "fixture.py"
@@ -229,7 +229,7 @@ sys.exit(1 if result['status']=='failed' else 0)
                 (output / name / "payload").write_text("temporary execution data")
             return source, {"dependencies": None}
         with contextlib.ExitStack() as stack:
-            stack.enter_context(patch.object(perf, "SUITES", {"first": ("one", "fixture"), "second": ("two", "fixture")}))
+            stack.enter_context(patch.object(perf, "SUITES", inventory or {"first": ("one", "fixture"), "second": ("two", "fixture")}))
             stack.enter_context(patch.object(perf, "source_snapshot", side_effect=snapshot))
             stack.enter_context(patch.object(perf, "environment", return_value={}))
             stack.enter_context(patch("storage.open_references", return_value=[]))
@@ -238,7 +238,7 @@ sys.exit(1 if result['status']=='failed' else 0)
             result = perf.run(args)
         return result, (source / "order").read_text().splitlines(), root / "output"
 
-    def test_all_suites_run_serially_and_combined_report_is_complete(self):
+    def test_selected_suites_run_serially_and_combined_report_is_complete(self):
         with tempfile.TemporaryDirectory() as directory:
             status, order, output = self.run_fixture(Path(directory))
             self.assertEqual(status, 0)
@@ -252,6 +252,27 @@ sys.exit(1 if result['status']=='failed' else 0)
             self.assertFalse((output / "go-cache").exists())
             self.assertFalse(list(output.rglob("*.stdout.log")))
             self.assertEqual(len(json.loads(read_evidence(output, "summary.json"))), 2)
+
+    def test_twelve_slices_run_in_order_and_archive_one_combined_report(self):
+        # The real suite inventory, with every production driver replaced by the
+        # tiny synthetic child above. This never starts a benchmark workload.
+        inventory = dict(perf.SUITES)
+        with tempfile.TemporaryDirectory() as directory:
+            status, order, output = self.run_fixture(Path(directory), inventory=inventory)
+            self.assertEqual(status, 0)
+            families = list(dict.fromkeys(family for family, _ in inventory.values()))
+            sequence = [("prepare", family) for family in families] + [("run", suite) for suite in inventory]
+            self.assertEqual(order, [f"{event} {mode} {name}" for mode, name in sequence for event in ("start", "end")])
+            data = json.loads(read_evidence(output, "report.json"))
+            self.assertEqual(data["manifest"]["completed_suites"], list(inventory))
+            self.assertEqual(len(data["cases"]), 12)
+            self.assertEqual(data["rankings"]["targets"]["status"], "ineligible")
+            markdown = read_evidence(output, "report.md")
+            self.assertIn("12/12 requested suites completed", markdown)
+            for suite in inventory:
+                self.assertIn(f"| {suite} |", markdown)
+            self.assertFalse((output / "source").exists())
+            self.assertFalse((output / "work").exists())
 
     def test_failed_suite_retains_raw_evidence_but_no_completed_summary(self):
         with tempfile.TemporaryDirectory() as directory:

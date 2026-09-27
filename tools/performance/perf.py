@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import shlex
 import socket
 import subprocess
 import sys
@@ -22,6 +23,8 @@ from storage import Scratch, archive_evidence, defer_interrupts, identity, inter
 
 from isolation import exclusive, execute, quiet_window
 from schema import summarize_trials, validate_result
+from ranking import build_rankings, comparison_context, target_template, validate_targets
+from reporting import markdown_report as render_report
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -197,29 +200,79 @@ def failure_reason(path, fallback):
     return reason if isinstance(reason, str) and reason else fallback
 
 
-def markdown_report(manifest, summary):
-    lines = ["# Can performance results", "", f"Status: **{manifest['status']}**. Evidence class: **{manifest['quality']}**.", "",
-             f"Suites completed: {len(manifest['completed_suites'])}/{len(manifest['requested_suites'])}. All suites execute sequentially.", "",
-             f"Total run wall time: {manifest.get('wall_seconds', 0):.2f}s, including preparation, quiet-host waits and validation.",
-             f"Preparation driver wall time: {sum(x['elapsed_seconds'] for x in manifest['steps'] if x['phase'] == 'prepare'):.2f}s. "
-             f"Suite driver wall time: {sum(x['elapsed_seconds'] for x in manifest['steps'] if x['phase'] == 'trial'):.2f}s.", "",
-             "These orchestration durations are not summed workload latency or an overall performance score.", "",
-             "Smoke and failed/incomplete runs are not accepted performance baselines.", "",
-             "Independent process trials are summarized using each trial's batch median. These are not request-level tail percentiles.", "",
-             "| Slice | Verified cases in this summary |", "|---|---:|"]
-    for suite in manifest["requested_suites"]:
-        count = sum(name.startswith(suite + "/") for name in summary)
-        lines.append(f"| {suite} | {count if summary else 'not summarized'} |")
-    lines += ["", "Case counts include scenario and implementation variants; they are not percentages of language or feature coverage.", "",
-              "| Case | Unit | Process trials | Median | Min–max |", "|---|---|---:|---:|---:|"]
-    for name, row in summary.items():
-        stats = row["distribution"]
-        lines.append(f"| {name} | {row['unit']} | {stats['n']} | {stats['median']:.6g} | {stats['min']:.6g}–{stats['max']:.6g} |")
-    if manifest.get("reason"):
-        lines += ["", "Failure or limitation: " + manifest["reason"]]
-    lines += ["", "Each raw driver file contains exact timing scopes, parameters, correctness checks, notes and additional metrics.",
-              "No automatic regression budget is calibrated by this run. Inspect workload-specific effects and repeatability.", ""]
-    return "\n".join(lines)
+def markdown_report(manifest, summary, rankings=None):
+    return render_report(manifest, summary, rankings, SUITES)
+
+
+def read_targets(path):
+    targets = json.loads(Path(path).expanduser().read_text())
+    validate_targets(targets)
+    return targets
+
+
+def value_digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def reference_metadata(targets=None, baseline=None, baseline_path=None):
+    return {
+        "targets": {"name": targets["name"], "sha256": value_digest(targets)} if targets is not None else None,
+        "baseline": {"path": str(Path(baseline_path).expanduser().resolve()) if baseline_path else None,
+                     "source": baseline[0].get("source"),
+                     "verified_summary_sha256": value_digest(baseline[1])} if baseline is not None else None,
+    }
+
+
+def load_measured_run(path):
+    root = Path(path).expanduser().resolve()
+    meta = json.loads(read_evidence(root, "manifest.json"))
+    if not isinstance(meta, dict) or meta.get("status") != "complete" or meta.get("quality") != "measurement":
+        raise ValueError("Only completed measured runs can supply ranking references")
+    if meta.get("completed_suites") != meta.get("requested_suites"):
+        raise ValueError("Reference run did not complete every requested suite in order")
+    comparison_context(meta)
+    return meta, verified_summary(root, meta)
+
+
+def report_data(manifest, summary, targets=None, baseline=None):
+    rankings = build_rankings(manifest, summary, targets=targets, baseline=baseline)
+    return {"schema_version": 1, "kind": "can.performance-report", "manifest": manifest,
+            "rankings": rankings, "cases": summary}
+
+
+def report(args):
+    """View saved evidence, or recompute rankings from raw records without execution."""
+    root = Path(args.run).expanduser().resolve()
+    if not args.targets and not args.baseline:
+        content = read_evidence(root, "report.json" if args.format == "json" else "report.md")
+    else:
+        meta, summary = load_measured_run(root)
+        targets = read_targets(args.targets) if args.targets else None
+        if targets is None and meta.get("ranking_references", {}).get("targets"):
+            targets = json.loads(read_evidence(root, "raw/ranking-targets.json"))
+            validate_targets(targets)
+            if value_digest(targets) != meta["ranking_references"]["targets"].get("sha256"):
+                raise ValueError("Archived target profile does not match its recorded reference hash")
+        baseline = load_measured_run(args.baseline) if args.baseline else None
+        meta = {**meta, "ranking_references": reference_metadata(targets, baseline, args.baseline)}
+        data = report_data(meta, summary, targets, baseline)
+        content = (json.dumps(data, indent=2, allow_nan=False) + "\n" if args.format == "json"
+                   else markdown_report(meta, summary, data["rankings"]))
+    if args.output:
+        with Path(args.output).expanduser().open("x") as output:
+            output.write(content)
+    else:
+        print(content, end="" if content.endswith("\n") else "\n")
+    return 0
+
+
+def targets_command(args):
+    meta, summary = load_measured_run(args.run)
+    template = target_template(meta, summary)
+    with Path(args.output).expanduser().open("x") as output:
+        output.write(json.dumps(template, indent=2, allow_nan=False) + "\n")
+    print(f"Created {len(template['cases'])} unset targets; fill each target and its rationale before ranking.")
+    return 0
 
 
 def run(args):
@@ -239,6 +292,8 @@ def run_owned(args):
     args.size = args.size if args.size is not None else (10 if args.smoke else 100)
     if args.smoke and args.trials != 1:
         raise ValueError("Smoke uses one process trial; use a measured run for repeated evidence")
+    targets = read_targets(args.targets) if getattr(args, "targets", None) else None
+    baseline = load_measured_run(args.baseline) if getattr(args, "baseline", None) else None
     output = Path(args.output).expanduser().resolve() if args.output else REPO / ".performance" / datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     if output.exists():
         raise ValueError("Output directory already exists; evidence is never overwritten")
@@ -257,8 +312,11 @@ def run_owned(args):
         "trials": args.trials, "iterations": args.iterations, "warmups": args.warmups, "size": args.size,
         "isolation": {"quiet_seconds": args.quiet_seconds, "idle_percent": args.idle_percent, "smoke_bypasses_quiet_gate": args.smoke},
         "steps": [], "environment": {}, "source": None,
+        "ranking_references": reference_metadata(targets, baseline, getattr(args, "baseline", None)),
     }
     write_json(output / "manifest.json", manifest)
+    if targets is not None:
+        write_json(output / "raw/ranking-targets.json", targets)
     evidence = output / "isolation.jsonl"
     trials = []
     summary = {}
@@ -270,6 +328,13 @@ def run_owned(args):
             source, provenance = source_snapshot(output, args.revision, args.working_tree)
             manifest["source"] = provenance
             write_json(output / "manifest.json", manifest)
+            if manifest["quality"] == "measurement":
+                context = comparison_context(manifest)
+                if targets is not None and targets["context"] != context:
+                    raise ValueError("Target profile context differs; resolve it before measuring workloads")
+                if baseline is not None and (comparison_context(baseline[0]) != context
+                                             or baseline[0]["requested_suites"] != selected):
+                    raise ValueError("Baseline context or suite order differs; resolve it before measuring workloads")
             env = child_environment(output)
             families = list(dict.fromkeys(SUITES[s][0] for s in selected))
             for family in families:
@@ -335,9 +400,12 @@ def run_owned(args):
                 manifest['status'] = 'failed'
             else:
                 write_json(output / "manifest.json", manifest)
-                (output / "report.md").write_text(markdown_report(manifest, summary))
+                data = report_data(manifest, summary, targets, baseline)
+                write_json(output / "report.json", data)
+                (output / "report.md").write_text(markdown_report(manifest, summary, data["rankings"]))
                 archive_evidence(output)
     print(f"{manifest['status']}: {len(manifest['completed_suites'])}/{len(selected)} suites; {quality} evidence", flush=True)
+    print(f"Read the report without running tests: bun run perf report {shlex.quote(str(output))}", flush=True)
     return 0 if manifest["status"] == "complete" else 1
 
 
@@ -403,6 +471,7 @@ def compare(args):
                       "change_percent": 100 * (after / before - 1) if before else None,
                       "verdict": "unclassified: practical budgets and uncertainty gates are not calibrated"}
     result = {"schema_version": 1, "baseline": str(roots[0]), "candidate": str(roots[1]), "cases": rows,
+              "rankings": build_rankings(manifests[1], summaries[1], baseline=(manifests[0], summaries[0])),
               "warning": "Separate-run median changes are descriptive, not causal speedups or calibrated regression verdicts. Confirm changes in counterbalanced fresh runs."}
     if args.output:
         target = Path(args.output).resolve()
@@ -451,6 +520,8 @@ def main():
     source.add_argument("--revision")
     source.add_argument("--working-tree", action="store_true")
     runner.add_argument("--output")
+    runner.add_argument("--targets", help="Reviewed per-case target profile for normalized shortfall ranking")
+    runner.add_argument("--baseline", help="Completed measured run for a separate relative-regression ranking")
     runner.add_argument("--keep-work", action="store_true", help="Retain owned execution trees for up to seven days; reap expires them")
     runner.add_argument("--quiet-seconds", type=finite_positive, default=30)
     runner.add_argument("--idle-percent", type=finite_positive, default=90)
@@ -463,6 +534,15 @@ def main():
     comparison.add_argument("baseline")
     comparison.add_argument("candidate")
     comparison.add_argument("--output")
+    reader = commands.add_parser("report", help="Read a saved report; optional references recompute rankings without workloads")
+    reader.add_argument("run")
+    reader.add_argument("--targets")
+    reader.add_argument("--baseline")
+    reader.add_argument("--format", choices=["markdown", "json"], default="markdown")
+    reader.add_argument("--output", help="Write a new report file without replacing the original evidence")
+    template = commands.add_parser("targets", help="Create unset, workload-bound targets from verified measurement evidence")
+    template.add_argument("run")
+    template.add_argument("--output", required=True)
     args = parser.parse_args()
     try:
         if args.command == "list":
@@ -474,6 +554,10 @@ def main():
             return 0
         if args.command == "compare":
             return compare(args)
+        if args.command == "report":
+            return report(args)
+        if args.command == "targets":
+            return targets_command(args)
         if args.idle_percent > 100:
             raise ValueError("Idle percentage cannot exceed 100")
         return run(args)

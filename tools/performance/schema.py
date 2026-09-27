@@ -61,6 +61,43 @@ def distribution(samples):
     }
 
 
+def ranking_issues(suite, case):
+    """Faster partial delivery is not equivalent server work for a ranking."""
+    if suite != "server":
+        return []
+    metrics = case.get("metrics", {})
+    trials = metrics.get("trials") if isinstance(metrics, dict) else None
+    if not isinstance(trials, list) or not trials:
+        return ["Server delivery accounting is missing; duration cannot be ranked."]
+    expected = case["parameters"].get("request_count")
+    if not isinstance(expected, int) or isinstance(expected, bool) or expected <= 0:
+        return ["Server scheduled request count is invalid; duration cannot be ranked."]
+    measured = []
+    for trial in trials:
+        if not isinstance(trial, dict) or not isinstance(trial.get("warmup"), bool):
+            return ["Server delivery accounting is malformed; duration cannot be ranked."]
+        if not trial["warmup"]:
+            measured.append(trial)
+    if len(measured) != len(case["samples"]) * case["iterations_per_sample"]:
+        return ["Server delivery accounting does not cover every measured operation."]
+    dropped = 0
+    for trial in measured:
+        fields = [trial.get(key) for key in ("scheduled_count", "completed", "dropped_by_generator", "errors")]
+        if any(not isinstance(value, int) or isinstance(value, bool) or value < 0 for value in fields):
+            return ["Server request counters are invalid; duration cannot be ranked."]
+        scheduled, completed, omitted, errors = fields
+        requests = trial.get("requests")
+        if (scheduled != expected or completed + omitted != scheduled or errors != 0
+                or not isinstance(requests, list) or len(requests) != completed
+                or any(not isinstance(request, dict) or request.get("correct") is not True for request in requests)):
+            return ["Server delivery is incomplete or incorrect; duration cannot be ranked."]
+        identifiers = [request.get("id") for request in requests]
+        if any(not isinstance(value, int) or isinstance(value, bool) or not 0 <= value < scheduled for value in identifiers) or len(set(identifiers)) != completed:
+            return ["Server request identities are invalid; duration cannot be ranked."]
+        dropped += omitted
+    return [f"Generator dropped {dropped} scheduled requests; elapsed time is not equivalent work."] if dropped else []
+
+
 def summarize_trials(trials):
     """Summarize independent process-trial medians, never invented request tails."""
     grouped = {}
@@ -76,11 +113,12 @@ def summarize_trials(trials):
             key = f"{suite}/{case['name']}"
             signature = {k: case[k] for k in ("unit", "parameters", "timing_scope", "iterations_per_sample")}
             if key not in grouped:
-                grouped[key] = {**signature, "trial_medians": [], "raw_sample_counts": []}
+                grouped[key] = {**signature, "trial_medians": [], "raw_sample_counts": [], "ranking_issues": []}
             row = grouped[key]
             if any(row[k] != value for k, value in signature.items()):
                 raise ValueError(f"Workload contract changed between trials: {key}")
             row["trial_medians"].append(statistics.median(case["samples"]))
             row["raw_sample_counts"].append(len(case["samples"]))
+            row["ranking_issues"] = sorted(set(row["ranking_issues"] + ranking_issues(suite, case)))
     return {key: {**value, "distribution": distribution(value["trial_medians"])}
             for key, value in sorted(grouped.items())}

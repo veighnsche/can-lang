@@ -249,7 +249,7 @@ def archive_evidence(root):
     root_identity = identity(os.fstat(root_fd))
     try:
         records = {}
-        for name in ('manifest.json', 'summary.json', 'report.md', 'isolation.jsonl'):
+        for name in ('manifest.json', 'summary.json', 'report.md', 'report.json', 'isolation.jsonl'):
             if name in os.listdir(root_fd):
                 info = os.stat(name, dir_fd=root_fd, follow_symlinks=False)
                 if not stat.S_ISREG(info.st_mode):

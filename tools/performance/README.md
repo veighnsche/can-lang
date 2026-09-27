@@ -22,6 +22,19 @@ bun run perf run --suite generated --suite runtime --size 1000
 bun run perf run --revision HEAD --output /absolute/new/baseline
 bun run perf run --working-tree --output /absolute/new/candidate
 bun run perf compare /absolute/new/baseline /absolute/new/candidate
+
+# Read a saved report; these commands execute no benchmark workloads.
+bun run perf report /absolute/new/candidate
+bun run perf report /absolute/new/candidate --output /absolute/new/results.md
+bun run perf report /absolute/new/candidate --baseline /absolute/new/baseline
+
+# Create workload-bound targets with deliberately unset values.
+bun run perf targets /absolute/new/baseline --output .performance/targets.json
+# Review and fill target values and rationales, then rank saved evidence.
+bun run perf report /absolute/new/candidate --targets .performance/targets.json
+
+# For a future authorized measurement, include both comparison standards.
+bun run perf run --targets .performance/targets.json --baseline /absolute/new/baseline
 ```
 
 Python 3.12+, the repository's Go and Bun versions, installed repository
@@ -113,7 +126,80 @@ output directories are never overwritten. A run writes one compressed `evidence.
 - `summary.json`: completed results only, with per-case independent-trial medians
   and dispersion. Warmups never enter the summary.
 - `report.md`: the combined human-readable report with all individual cases,
-  completion status, total run duration, preparation time and driver time.
+  a twelve-slice overview, completion status, total run duration, preparation time,
+  driver time, separate normalized top tens, and grouped case details.
+- `report.json`: the same report data and complete normalized case tables for
+  tooling; the Markdown view limits each ranking to ten entries.
+
+`bun run perf report RUN` displays the saved report from the directory or
+`evidence.zip`. `--format json` displays its structured counterpart. Supplying
+`--targets` or `--baseline` recomputes the rankings after revalidating the raw
+measurement records. `--output` saves a new report without overwriting a file or
+changing the archive. Reporting and target creation launch no workloads.
+
+## Comparable rankings across all twelve slices
+
+The ranked unit is one benchmark case, including its workload size and variant;
+it is not a source function or a whole slice. Every slice uses the same ratio:
+
+| Metric direction | Ratio | Meaning of 2× |
+|---|---|---|
+| Lower is better (every current headline timing) | observed / reference | Twice the reference cost |
+| Higher is better (supported for future throughput headlines) | reference / observed | Half the reference throughput |
+
+The two top tens have deliberately separate meanings:
+
+- **Target shortfalls:** compare each case with its reviewed performance target.
+  This finds existing shortfalls even when they have not recently regressed.
+- **Relative regressions:** compare each case with the same case in an accepted
+  previous measurement. This finds deterioration, not absolute inefficiency.
+
+Only ratios above 1 enter a top ten. Fewer than ten shortfalls produces a shorter
+list; no shortfalls produces an explicit empty result. Tables retain the measured
+and reference values, units, ratio, normalized percentage excess, independent
+trial count and median absolute deviation. All eligible ratios, including
+improvements and cases meeting their target, remain in `report.json`. Original
+timings remain in the case details. The list is ordered by relative excess, not
+estimated engineering benefit; overlapping compiler phases and repeated variants
+cannot be summed into an overall cost. Auxiliary throughput and event metrics
+remain raw diagnostic evidence, not additional independently ranked units.
+
+Targets must have a positive finite value, rationale and a compatible workload
+contract (unit/direction, parameters, timing scope and batch operations). Target
+profiles and baselines also bind measurement settings, host/tool identity,
+dependencies and harness identity. A target profile may cover a deliberate
+subset, with exclusions and coverage clearly reported. A baseline must match the
+entire case inventory and suite order. Missing references, changed conditions,
+unset targets and unknown units never silently receive a score. Server durations
+with dropped requests or missing delivery accounting are excluded because less
+completed work must not look faster.
+
+There are currently **no calibrated targets or accepted quiet-machine baseline**.
+The first authorized measured run provides evidence for creating and reviewing
+targets; the `targets` command leaves every numeric goal unset. It does not turn
+current performance into desired performance. Without references the report
+still shows every slice and case, but the top tens explicitly say unavailable.
+Smoke, exploratory and incomplete runs never enter a ranking. Native reference
+cases retain their own timings; native overhead is not mixed with these ratios.
+The rankings are descriptive and do not assert statistical significance or
+automatically fail a run on a performance threshold.
+
+Keep target profiles outside `tools/performance/`, because that directory is
+part of the measurement instrument fingerprint. For maintained targets, a file
+under `docs/performance/` is suitable; `.performance/targets.json` is local only.
+An attached target profile is copied into `raw/ranking-targets.json` before the
+run. Baseline evidence remains a separate archive, avoiding recursively copying
+prior archives into every new report. To recompute historical regressions, supply
+that baseline again; simply viewing a saved report needs only its own archive.
+
+Three fresh Jev consultations agreed on separate denominators, explicit missing
+references and workload-bound matching. The independently reviewed requests and
+responses are saved locally in `.performance/ranking-design/evidence.zip`; agreement was
+design advice, not validation. The use of workload-specific reference ratios is
+also established in [SPEC's benchmark methodology](https://www.spec.org/cpu2017/Docs/overview.html).
+These rankings do not implement or claim a SPEC score.
+
+## Storage lifetime
 
 Execution trees (`source/`, including copied dependencies, `work/`, including
 bundles/publication trees, and `go-cache/`) are scratch, not comparison evidence.
