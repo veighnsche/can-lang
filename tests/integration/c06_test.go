@@ -13,6 +13,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -382,4 +383,256 @@ func TestC06CaptureEdits(t *testing.T) {
 			}
 		})
 	}
+}
+
+const (
+	c06PortCompareChromium = 18781
+	c06PortCompareWebkit   = 18782
+	c06PortGridChromium    = 18784
+	c06PortGridWebkit      = 18787
+	c06PortDriftChromium   = 18785
+	c06PortDriftWebkit     = 18788
+	// Container Firefox reaches staged leg servers through the
+	// provisioned loopback forwarders, like the gate5 legs.
+	c06PortFirefox = 18651
+)
+
+type c06Matrix struct {
+	ctx        context.Context
+	sourceRoot string
+	browserDir string
+	toolchain  string
+	canlc      string
+	nodePath   string
+	driver     string
+	serverRoot string
+	serverV2   string
+	compare    gate5Pairing
+	grid       gate5Pairing
+	driftA     gate5Pairing
+	driftB     gate5Pairing
+}
+
+func (m *c06Matrix) serve(t *testing.T, pairing gate5Pairing, serverRoot string, port int) (base string, db string, stop func()) {
+	t.Helper()
+	home := t.TempDir()
+	db = gate5SeedDB(t, m.ctx, m.toolchain, home, m.driver, serverRoot)
+	base, stop = serveInvoice(t, m.ctx, m.toolchain, home, filepath.Join(pairing.Directory, "entry.ts"), db, port, "")
+	return base, db, stop
+}
+
+func (m *c06Matrix) compareLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	base, _, stop := m.serve(t, m.compare, m.serverRoot, port)
+	gate5ServedPairing(t, "compare", base, "/invoice-compare", "", m.compare)
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "compare", engine,
+		"compare.mjs", engine, base, outdir, m.compare.Entry)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "compare", engine, raw, 13, true)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("compare %s limitations %+v, want none", engine, report.Limitations)
+	}
+	for _, entry := range report.Requests {
+		if strings.Contains(entry.URL, "/api/") {
+			t.Fatalf("compare %s called an API: %s", engine, entry.URL)
+		}
+	}
+	gate5Screenshot(t, "compare", engine, outdir)
+	gate5Evidence(t, outdir, "compare-"+engine)
+	t.Logf("C06 compare %s %s: 13 checks, %d loopback requests", engine, report.Version, len(report.Requests))
+}
+
+func (m *c06Matrix) gridLeg(t *testing.T, engine string, port int) {
+	t.Helper()
+	base, _, stop := m.serve(t, m.grid, m.serverRoot, port)
+	gate5ServedPairing(t, "w1-grid", base, "/invoice-grid?tenant=1&invoice=7", "", m.grid)
+	outdir := t.TempDir()
+	gate5RunHarness(t, m.ctx, m.nodePath, m.browserDir, "w1-grid", engine,
+		"w1-grid.mjs", engine, base, outdir, m.grid.Entry, m.grid.BuildID)
+	stop()
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "w1-grid", engine, raw, 12, true)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("w1-grid %s limitations %+v, want none", engine, report.Limitations)
+	}
+	gate5Screenshot(t, "w1-grid", engine, outdir)
+	gate5Evidence(t, outdir, "w1-grid-"+engine)
+	t.Logf("C06 w1-grid %s %s: 12 checks, %d loopback requests, %d invoice calls",
+		engine, report.Version, len(report.Requests), len(report.Ledger))
+}
+
+// driftLeg proves a real old-page/new-server refusal: serve from,
+// boot the page, wait for the harness READY rendezvous, restart the
+// same port on to, release the harness with GO, and read its report.
+func (m *c06Matrix) driftLeg(t *testing.T, engine string, port int, from, to gate5Pairing, fromRoot, toRoot, name string) {
+	t.Helper()
+	home := t.TempDir()
+	db := gate5SeedDB(t, m.ctx, m.toolchain, home, m.driver, fromRoot)
+	base, stop := serveInvoice(t, m.ctx, m.toolchain, home, filepath.Join(from.Directory, "entry.ts"), db, port, "")
+	outdir := t.TempDir()
+	env := []string{"PATH=" + filepath.Dir(m.nodePath) + ":/usr/bin:/bin", "HOME=" + os.Getenv("HOME")}
+	if value, ok := os.LookupEnv("CAN_FIREFOX_WS"); ok {
+		env = append(env, "CAN_FIREFOX_WS="+value)
+	}
+	cmd := exec.CommandContext(m.ctx, m.nodePath, "drift.mjs", engine, base, outdir, from.Entry, from.BuildID, to.BuildID)
+	cmd.Dir = m.browserDir
+	cmd.Env = env
+	result := make(chan []byte, 1)
+	runErr := make(chan error, 1)
+	go func() {
+		out, err := cmd.CombinedOutput()
+		result <- out
+		runErr <- err
+	}()
+	deadline := time.Now().Add(2 * time.Minute)
+	for {
+		if _, err := os.Stat(filepath.Join(outdir, "READY")); err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("drift %s %s never readied", name, engine)
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	stop()
+	_, restart := serveInvoice(t, m.ctx, m.toolchain, home, filepath.Join(to.Directory, "entry.ts"), db, port, "")
+	if err := os.WriteFile(filepath.Join(outdir, "GO"), []byte("go\n"), 0600); err != nil {
+		restart()
+		t.Fatal(err)
+	}
+	out, err := <-result, <-runErr
+	restart()
+	if err != nil {
+		t.Fatalf("drift %s %s harness: %v %s", name, engine, err, out)
+	}
+	raw, err := os.ReadFile(filepath.Join(outdir, "report.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	report := gate5ReadReport(t, "drift-"+name, engine, raw, 4, true)
+	if len(report.Limitations) != 0 {
+		t.Fatalf("drift %s %s limitations %+v, want none", name, engine, report.Limitations)
+	}
+	gate5Screenshot(t, "drift-"+name, engine, outdir)
+	gate5Evidence(t, outdir, "drift-"+name+"-"+engine)
+	t.Logf("C06 drift %s %s %s: 4 checks, %s -> %s", name, engine, report.Version, from.BuildID[:12], to.BuildID[:12])
+}
+
+func TestC06ServedMatrix(t *testing.T) {
+	t.Parallel()
+	acquireHeavy(t)
+	archive := os.Getenv("CAN_BUN_ARCHIVE")
+	if archive == "" {
+		t.Skip("set CAN_BUN_ARCHIVE for staged C06 execution")
+	}
+	nodePath, err := exec.LookPath("node")
+	if err != nil {
+		t.Skip("node is required for the browser harness")
+	}
+	sourceRoot := mustSourceRoot(t)
+	browserDir := filepath.Join(sourceRoot, "tests/integration/browser")
+	if _, err := os.Stat(filepath.Join(browserDir, "node_modules/playwright/package.json")); err != nil {
+		t.Skip("run bun ci in tests/integration/browser for the pinned harness")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 55*time.Minute)
+	defer cancel()
+	matrix := &c06Matrix{
+		ctx:        ctx,
+		sourceRoot: sourceRoot,
+		browserDir: browserDir,
+	}
+	toolchain, canlc, _, _ := gate5Toolchain(t, ctx, sourceRoot, archive)
+	matrix.toolchain = toolchain
+	matrix.canlc = canlc
+	matrix.nodePath = nodePath
+	matrix.driver = filepath.Join(sourceRoot, "tests/integration/testdata/invoice/driver.ts")
+
+	// All three named engines are required: probe before building.
+	for _, engine := range []string{"chromium", "webkit", "firefox"} {
+		gate5BrowserProbe(t, ctx, nodePath, browserDir, engine)
+	}
+	home := t.TempDir()
+	serverRoot := c06Stage(t, sourceRoot, "invoice")
+	matrix.serverRoot = serverRoot
+	gridRoot := c06Stage(t, sourceRoot, "invoice-grid")
+	compareRoot := c06Stage(t, sourceRoot, "invoice-compare")
+	status, out, diag := c06Assert(t, ctx, canlc, home, serverRoot)
+	if status != 0 || diag != "" {
+		t.Fatalf("server assert: %d %.300s %s", status, out, diag)
+	}
+	total, real := c06AssertCounts(t, out)
+	if total != 347 || real != 347 {
+		t.Fatalf("server asserts %d (%d real), want 347 (347 real)", total, real)
+	}
+	compare := gate5Build(t, ctx, canlc, home, compareRoot, "--target", "browser")
+	compareAgain := gate5Build(t, ctx, canlc, home, compareRoot, "--target", "browser")
+	if compare.BuildID != compareAgain.BuildID {
+		t.Fatalf("compare browser rebuild drifted: %s vs %s", compare.BuildID, compareAgain.BuildID)
+	}
+	assertNoStrayEmit(t, compareRoot, compareAgain.Directory)
+	gate5Asset(t, compareAgain.Directory)
+	gate5ImportAudit(t, compareAgain.Directory)
+	grid := gate5Build(t, ctx, canlc, home, gridRoot, "--target", "browser")
+	gridAgain := gate5Build(t, ctx, canlc, home, gridRoot, "--target", "browser")
+	if grid.BuildID != gridAgain.BuildID {
+		t.Fatalf("grid browser rebuild drifted: %s vs %s", grid.BuildID, gridAgain.BuildID)
+	}
+	assertNoStrayEmit(t, gridRoot, gridAgain.Directory)
+	gate5Asset(t, gridAgain.Directory)
+	gate5ImportAudit(t, gridAgain.Directory)
+	matrix.compare = gate5PairBuild(t, ctx, canlc, home, serverRoot, filepath.Join(compareAgain.Directory, "browser", "manifest.json"))
+	matrix.grid = gate5PairBuild(t, ctx, canlc, home, serverRoot, filepath.Join(gridAgain.Directory, "browser", "manifest.json"))
+	assertNoStrayEmit(t, serverRoot, matrix.grid.Directory)
+
+	// The drift pair needs two server generations over one browser
+	// build: a comment-only second stage keeps behavior identical
+	// while the content address moves.
+	secondRoot := c06Stage(t, sourceRoot, "invoice")
+	webPath := filepath.Join(secondRoot, "src/web/web.can")
+	web, err := os.ReadFile(webPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(webPath, append([]byte("/// C06 drift generation two.\n"), web...), 0600); err != nil {
+		t.Fatal(err)
+	}
+	matrix.serverV2 = secondRoot
+	manifest := filepath.Join(gridAgain.Directory, "browser", "manifest.json")
+	matrix.driftA = gate5PairBuild(t, ctx, canlc, home, serverRoot, manifest)
+	matrix.driftB = gate5PairBuild(t, ctx, canlc, home, secondRoot, manifest)
+	if matrix.driftA.BuildID == matrix.driftB.BuildID {
+		t.Fatalf("drift generations collide: %s", matrix.driftA.BuildID)
+	}
+	t.Logf("C06 builds: server %d assertions; compare %s paired %s; grid %s paired %s; drift %s vs %s",
+		total, compare.BuildID[:12], matrix.compare.BuildID[:12], grid.BuildID[:12], matrix.grid.BuildID[:12],
+		matrix.driftA.BuildID[:12], matrix.driftB.BuildID[:12])
+
+	t.Run("compare", func(t *testing.T) {
+		matrix.compareLeg(t, "chromium", c06PortCompareChromium)
+		matrix.compareLeg(t, "webkit", c06PortCompareWebkit)
+		matrix.compareLeg(t, "firefox", c06PortFirefox)
+	})
+	t.Run("grid", func(t *testing.T) {
+		matrix.gridLeg(t, "chromium", c06PortGridChromium)
+		matrix.gridLeg(t, "webkit", c06PortGridWebkit)
+		matrix.gridLeg(t, "firefox", c06PortFirefox)
+	})
+	t.Run("drift-rollout", func(t *testing.T) {
+		matrix.driftLeg(t, "chromium", c06PortDriftChromium, matrix.driftA, matrix.driftB, matrix.serverRoot, matrix.serverV2, "rollout")
+		matrix.driftLeg(t, "webkit", c06PortDriftWebkit, matrix.driftA, matrix.driftB, matrix.serverRoot, matrix.serverV2, "rollout")
+		matrix.driftLeg(t, "firefox", c06PortFirefox, matrix.driftA, matrix.driftB, matrix.serverRoot, matrix.serverV2, "rollout")
+	})
+	t.Run("drift-rollback", func(t *testing.T) {
+		matrix.driftLeg(t, "chromium", c06PortDriftChromium, matrix.driftB, matrix.driftA, matrix.serverV2, matrix.serverRoot, "rollback")
+		matrix.driftLeg(t, "webkit", c06PortDriftWebkit, matrix.driftB, matrix.driftA, matrix.serverV2, matrix.serverRoot, "rollback")
+		matrix.driftLeg(t, "firefox", c06PortFirefox, matrix.driftB, matrix.driftA, matrix.serverV2, matrix.serverRoot, "rollback")
+	})
 }
