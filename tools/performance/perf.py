@@ -17,6 +17,9 @@ import sys
 import tarfile
 import time
 
+import isolation
+from storage import Scratch, archive_evidence, defer_interrupts, identity, interruption_signals, read_evidence, reap
+
 from isolation import exclusive, execute, quiet_window
 from schema import summarize_trials, validate_result
 
@@ -99,6 +102,12 @@ def child_environment(work):
     allowed = {"PATH", "HOME", "USER", "LOGNAME", "SHELL", "TMPDIR", "TEMP", "TMP", "LANG", "LC_ALL", "TZ",
                "PLAYWRIGHT_BROWSERS_PATH", "CAN_BUN_ARCHIVE", "CAN_PERF_BUN_ARCHIVE", "CAN_FIREFOX_WS", "CAN_PERF_BROWSER_ENGINES"}
     result = {key: value for key, value in os.environ.items() if key in allowed}
+    temporary = work / "work" / "_tmp"
+    temporary.mkdir(parents=True, exist_ok=True)
+    go_temporary = temporary / "go"
+    go_temporary.mkdir(exist_ok=True)
+    result.update({key: str(temporary) + os.sep for key in ("TMPDIR", "TEMP", "TMP")})
+    result["GOTMPDIR"] = str(go_temporary)
     result["GOCACHE"] = str(work / "go-cache")
     # Reuse the installed module cache read-only in ordinary cached builds;
     # any required download is explicitly disabled.
@@ -214,6 +223,11 @@ def markdown_report(manifest, summary):
 
 
 def run(args):
+    with interruption_signals():
+        return run_owned(args)
+
+
+def run_owned(args):
     started = time.monotonic()
     selected = list(SUITES) if not args.suite or "all" in args.suite else list(dict.fromkeys(args.suite))
     if "all" in (args.suite or []) and len(args.suite) > 1:
@@ -230,7 +244,11 @@ def run(args):
         raise ValueError("Output directory already exists; evidence is never overwritten")
     if output.is_relative_to(HERE):
         raise ValueError("Output cannot be nested inside the harness directory")
+    for recovered in reap(output.parent):
+        if recovered["status"] in ("child-still-running", "workspace-still-open", "owner-still-running", "refused"):
+            print("Scratch recovery deferred: " + json.dumps(recovered), file=sys.stderr)
     output.mkdir(parents=True)
+    scratch = Scratch(output, keep=getattr(args, "keep_work", False))
     weakened = args.quiet_seconds < 30 or args.idle_percent < 90
     quality = "smoke" if args.smoke else ("exploratory" if weakened else "measurement")
     manifest = {
@@ -238,7 +256,7 @@ def run(args):
         "requested_suites": selected, "completed_suites": [], "profile": args.profile,
         "trials": args.trials, "iterations": args.iterations, "warmups": args.warmups, "size": args.size,
         "isolation": {"quiet_seconds": args.quiet_seconds, "idle_percent": args.idle_percent, "smoke_bypasses_quiet_gate": args.smoke},
-        "steps": [], "environment": environment(), "source": None,
+        "steps": [], "environment": {}, "source": None,
     }
     write_json(output / "manifest.json", manifest)
     evidence = output / "isolation.jsonl"
@@ -247,6 +265,8 @@ def run(args):
     print(f"Evidence directory: {output}", flush=True)
     try:
         with exclusive(args.wait_seconds, evidence):
+            isolation.PROCESS_OBSERVER = scratch.child
+            manifest["environment"] = environment()
             source, provenance = source_snapshot(output, args.revision, args.working_tree)
             manifest["source"] = provenance
             write_json(output / "manifest.json", manifest)
@@ -265,6 +285,7 @@ def run(args):
                 if code or not target.exists():
                     raise RuntimeError(failure_reason(target, f"{family} preparation failed; inspect its saved logs"))
                 validate_result(json.loads(target.read_text()), "prepare", preparation=True)
+                target.with_suffix(".stdout.log").unlink(missing_ok=True)
             for suite in selected:
                 family = SUITES[suite][0]
                 if not args.smoke:
@@ -280,6 +301,7 @@ def run(args):
                         raise RuntimeError(failure_reason(target, f"{suite} failed; inspect its saved logs"))
                     result = validate_result(json.loads(target.read_text()), suite)
                     validate_sampling(result, manifest)
+                    target.with_suffix(".stdout.log").unlink(missing_ok=True)
                     trials.append({"suite": suite, "trial": trial+1, "result": result})
                 manifest["completed_suites"].append(suite)
                 write_json(output / "manifest.json", manifest)
@@ -296,10 +318,25 @@ def run(args):
         # Partial raw files stay available, but never receive a completed summary.
         print(f"Run {manifest['status']}: {manifest['reason']}", file=sys.stderr, flush=True)
     finally:
-        manifest["finished_at"] = time.time()
-        manifest["wall_seconds"] = time.monotonic() - started
-        write_json(output / "manifest.json", manifest)
-        (output / "report.md").write_text(markdown_report(manifest, summary))
+        with defer_interrupts():
+            isolation.PROCESS_OBSERVER = None
+            try:
+                scratch.finish()
+                manifest["scratch"] = scratch.metadata
+            except (OSError, ValueError, subprocess.SubprocessError) as exc:
+                manifest["status"] = "failed"
+                manifest["reason"] = "Scratch cleanup deferred: " + str(exc)
+                manifest["scratch"] = scratch.metadata
+                summary = {}
+            manifest["finished_at"] = time.time()
+            manifest["wall_seconds"] = time.monotonic() - started
+            if identity(os.stat(output, follow_symlinks=False)) != scratch.metadata['root_identity']:
+                print('Run directory replaced; preserving original evidence without writing replacement', file=sys.stderr)
+                manifest['status'] = 'failed'
+            else:
+                write_json(output / "manifest.json", manifest)
+                (output / "report.md").write_text(markdown_report(manifest, summary))
+                archive_evidence(output)
     print(f"{manifest['status']}: {len(manifest['completed_suites'])}/{len(selected)} suites; {quality} evidence", flush=True)
     return 0 if manifest["status"] == "complete" else 1
 
@@ -324,13 +361,13 @@ def verified_summary(root, meta):
         for trial in range(1, count + 1):
             path = root / "raw" / f"{suite}-{trial:03}.json"
             try:
-                result = validate_result(json.loads(path.read_text()), suite)
+                result = validate_result(json.loads(read_evidence(root, "raw/" + path.name)), suite)
                 validate_sampling(result, meta)
             except (OSError, ValueError) as exc:
                 raise ValueError(f"Invalid or missing raw evidence: {path.name}: {exc}") from exc
             trials.append({"suite": suite, "trial": trial, "result": result})
     summary = summarize_trials(trials)
-    if summary != json.loads((root / "summary.json").read_text()):
+    if summary != json.loads(read_evidence(root, "summary.json")):
         raise ValueError("Saved summary does not match verified raw trials")
     return summary
 
@@ -339,7 +376,7 @@ def compare(args):
     roots = [Path(args.baseline).resolve(), Path(args.candidate).resolve()]
     manifests, summaries = [], []
     for root in roots:
-        meta = json.loads((root / "manifest.json").read_text())
+        meta = json.loads(read_evidence(root, "manifest.json"))
         if meta.get("status") != "complete" or meta.get("quality") != "measurement":
             raise ValueError("Only completed measured runs can be compared; smoke, exploratory and failed evidence is excluded")
         if set(meta.get("completed_suites", [])) != set(meta.get("requested_suites", [])):
@@ -414,11 +451,14 @@ def main():
     source.add_argument("--revision")
     source.add_argument("--working-tree", action="store_true")
     runner.add_argument("--output")
+    runner.add_argument("--keep-work", action="store_true", help="Retain owned execution trees for up to seven days; reap expires them")
     runner.add_argument("--quiet-seconds", type=finite_positive, default=30)
     runner.add_argument("--idle-percent", type=finite_positive, default=90)
     runner.add_argument("--wait-seconds", type=finite_positive, default=900)
     runner.add_argument("--timeout", type=finite_positive, default=900)
     runner.add_argument("--prepare-timeout", type=finite_positive, default=1800)
+    cleaner = commands.add_parser("reap", help="Reclaim dead marked scratch trees, preserving comparison evidence")
+    cleaner.add_argument("root", nargs="?", default=str(REPO / ".performance"))
     comparison = commands.add_parser("compare", help="Compare compatible completed measurements without inventing a regression gate")
     comparison.add_argument("baseline")
     comparison.add_argument("candidate")
@@ -428,6 +468,9 @@ def main():
         if args.command == "list":
             for name, (_, description) in SUITES.items():
                 print(f"{name:12} {description}")
+            return 0
+        if args.command == "reap":
+            print(json.dumps(reap(Path(args.root).expanduser()), indent=2))
             return 0
         if args.command == "compare":
             return compare(args)

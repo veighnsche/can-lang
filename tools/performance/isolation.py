@@ -12,6 +12,10 @@ import subprocess
 import sys
 import time
 
+from storage import defer_interrupts, pid_alive
+
+PROCESS_OBSERVER = None
+
 LOCK = Path("/tmp/can-lang-perf-audit-2026-09-27.lock")
 
 
@@ -149,6 +153,7 @@ def stop_group(process):
     try:
         os.killpg(process.pid, signal.SIGTERM)
     except ProcessLookupError:
+        process.wait(timeout=3)
         return
     try:
         process.wait(timeout=3)
@@ -159,13 +164,23 @@ def stop_group(process):
         os.killpg(process.pid, signal.SIGKILL)
     except ProcessLookupError:
         pass
+    process.wait(timeout=3)
+    deadline = time.monotonic() + 3
+    while pid_alive(process.pid, group=True):
+        if time.monotonic() >= deadline:
+            raise TimeoutError('Child process group remains live after shutdown')
+        time.sleep(.05)
 
 
 def execute(command, cwd, environment, stdout, stderr, timeout, evidence, monitor):
     started = time.monotonic()
     with stdout.open("w") as out, stderr.open("w") as err:
-        process = subprocess.Popen(command, cwd=cwd, env=environment, stdout=out, stderr=err, start_new_session=True)
+        process = None
         try:
+            with defer_interrupts(raise_after=True):
+                process = subprocess.Popen(command, cwd=cwd, env=environment, stdout=out, stderr=err, start_new_session=True)
+                if PROCESS_OBSERVER is not None:
+                    PROCESS_OBSERVER(process.pid)
             next_check = started + 2
             while process.poll() is None:
                 now = time.monotonic()
@@ -185,4 +200,8 @@ def execute(command, cwd, environment, stdout, stderr, timeout, evidence, monito
                     raise RuntimeError("Competing work was observed at trial completion")
             return process.returncode, time.monotonic() - started
         finally:
-            stop_group(process)
+            with defer_interrupts():
+                if process is not None:
+                    stop_group(process)
+                    if PROCESS_OBSERVER is not None:
+                        PROCESS_OBSERVER(None)

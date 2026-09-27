@@ -6,10 +6,9 @@
 //
 // Bundle resolution: CONV_BUNDLE names a prebuilt development bundle
 // (fast local loop; the manifest is re-verified on every use).
-// Otherwise CAN_BUN_ARCHIVE builds through the shared cross-process
-// bundle cache also used by tests/integration (identical root and key
-// inputs, so entries are shared when both suites run). Without either,
-// execution legs skip.
+// Otherwise CAN_BUN_ARCHIVE builds once per input key in a suite-owned
+// temporary cache removed by TestMain. CAN_TEST_CACHE chooses its parent,
+// never a persistent cache. Without either bundle input, execution legs skip.
 package failureconventions
 
 import (
@@ -29,6 +28,7 @@ import (
 	"time"
 
 	"github.com/veighnsche/can-lang/distribution"
+	"github.com/veighnsche/can-lang/tests/support/tempcache"
 )
 
 // assertReport decodes the can.assertion-report object canlc assert prints.
@@ -94,13 +94,15 @@ func resolveBundle(t *testing.T, ctx context.Context) string {
 var bundleMu sync.Mutex
 
 // cachedBundle builds the toolchain bundle once per unique input key and
-// shares it across processes. The root, key inputs, entry layout, and
-// verification match tests/integration exactly so both suites share
-// entries; a contaminated entry is detected and rebuilt.
+// shares it within this suite. Like tests/integration, it verifies every
+// entry before use; a contaminated entry is detected and rebuilt.
 func cachedBundle(t *testing.T, ctx context.Context, sourceRoot, archive string) string {
 	t.Helper()
 	key := bundleKey(t, sourceRoot, archive)
-	root := bundleCacheRoot()
+	root, err := bundleCacheRoot()
+	if err != nil {
+		t.Fatalf("create suite bundle cache: %v", err)
+	}
 	entry := filepath.Join(root, "bundle-"+key)
 	if err := os.MkdirAll(root, 0755); err != nil {
 		t.Fatal(err)
@@ -128,15 +130,42 @@ func cachedBundle(t *testing.T, ctx context.Context, sourceRoot, archive string)
 	}
 }
 
-func bundleCacheRoot() string {
-	if root := os.Getenv("CAN_TEST_CACHE"); root != "" {
-		return root
-	}
-	return filepath.Join(os.TempDir(), "can-test-cache")
+var suiteCache struct {
+	once  sync.Once
+	cache *tempcache.Cache
+	root  string
+	err   error
 }
 
-// bundleKey hashes every input distribution.Build consumes. It must stay
-// identical to the tests/integration key or cache entries diverge.
+// TestMain removes only the temporary child this suite created. A configured
+// parent, existing bundles, and concurrent suites' directories remain untouched.
+func TestMain(m *testing.M) {
+	os.Exit(runSuite(m))
+}
+
+func runSuite(m *testing.M) (code int) {
+	defer func() {
+		if err := suiteCache.cache.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "remove suite bundle cache: %v\n", err)
+			code = 1
+		}
+	}()
+	return m.Run()
+}
+
+// bundleCacheRoot lazily creates one leased temporary cache for this suite.
+func bundleCacheRoot() (string, error) {
+	suiteCache.once.Do(func() {
+		suiteCache.cache, suiteCache.err = tempcache.Open(os.Getenv("CAN_TEST_CACHE"))
+		if suiteCache.err == nil {
+			suiteCache.root = suiteCache.cache.Path
+		}
+	})
+	return suiteCache.root, suiteCache.err
+}
+
+// bundleKey hashes every input distribution.Build consumes, using the same
+// input set as tests/integration.
 func bundleKey(t *testing.T, sourceRoot, archive string) string {
 	t.Helper()
 	hashes := map[string]string{}

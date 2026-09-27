@@ -47,3 +47,27 @@ Family ownership:
 - Apps: `browser`, `server`, `io`, `journeys`; own driver and apps TS/browser helpers, fixtures under `tools/performance/fixtures/apps/`; coordinate with runtime owner to reuse generated fixture outputs through a documented independent emitter command if useful.
 
 The coordinator owns `perf.py`, shared runner modules, top-level docs and integration tests. Do not edit another family's files without coordination.
+
+The parent removes execution scratch after the invocation and compresses admitted
+raw results and diagnostic evidence into `evidence.zip`. Successful stdout is
+discarded once its output JSON validates; drivers must save required semantic
+evidence through their result JSON or raw auxiliary files, never only stdout.
+Source/dependency copies, emitted bundles, transient publication stores and Go
+cache belong under the owned scratch directories. They are not persistent
+baseline evidence. `--keep-work` permits exceptional seven-day retention, reaped
+by subsequent runs under the same output parent. No driver owns final retention.
+
+Child temporary directories are redirected to the run-owned `work/_tmp/` tree.
+Shutdown confirms the recorded process group is gone before clearing ownership;
+cleanup additionally refuses live owner PIDs, changed root/marker identities and
+open workspace references. Repeated signals are deferred during startup
+registration and teardown. Unknown process/inspection state retains scratch with
+failure evidence instead of risking deletion beneath a surviving child.
+
+The persistent `raw/` inventory is flat: auxiliary files must be regular files
+directly inside it. Nested directories and symlinks are refused. Compaction opens
+and pins the raw directory descriptor, verifies its device/inode and inventory
+before removal, unlinks only enumerated records through that descriptor, and
+removes only the verified empty directory. A replaced directory is preserved.
+The coordinator exclusively owns the run directory; concurrent external edits to
+its evidence or archive staging files are unsupported.

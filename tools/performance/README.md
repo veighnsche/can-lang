@@ -103,17 +103,46 @@ baselines. Child process groups are terminated on completion, failure or timeout
 ## Evidence and comparisons
 
 By default output goes into an ignored, unique `.performance/` directory. Existing
-output directories are never overwritten. A run saves:
+output directories are never overwritten. A run writes one compressed `evidence.zip` containing:
 
 - `manifest.json`: source revision/content hashes, harness/dependency hashes,
   tool binaries/versions, host identity, settings, step outcomes and total wall time.
-- `source/`: the exact source and dependency copy used for the run.
-- `raw/`: preparation results, every driver-process result, and stdout/stderr.
+- `raw/`: preparation results, every driver-process result, auxiliary evidence
+  and diagnostic logs. Successful stdout logs are discarded after validation.
 - `isolation.jsonl`: lock, quiet-window and competing-process observations.
 - `summary.json`: completed results only, with per-case independent-trial medians
   and dispersion. Warmups never enter the summary.
 - `report.md`: the combined human-readable report with all individual cases,
   completion status, total run duration, preparation time and driver time.
+
+Execution trees (`source/`, including copied dependencies, `work/`, including
+bundles/publication trees, and `go-cache/`) are scratch, not comparison evidence.
+They are removed after children stop on success, failure, Ctrl-C and SIGTERM.
+The archive preserves raw JSON so comparisons still revalidate every trial and
+recompute summaries. Compare accepts a run directory or its `evidence.zip`;
+older unpacked evidence directories also remain readable. Archive creation and
+cleanup are outside measured intervals. Archive CRCs and per-file SHA-256
+checksums are verified before loose evidence is removed; retries preserve an
+existing archive.
+
+`--keep-work` is an exceptional debugging option with a seven-day expiry.
+Each new run automatically reaps expired retained trees and abandoned marked
+runs under the same output parent. `bun run perf reap [OUTPUT_PARENT]` also
+performs that safe recovery without running workloads. Recovery preserves
+archives; it requires the run's ownership marker and available per-run lock,
+and skips live owner PIDs or remaining child process groups. Root and marker
+device/inode identities are verified, and deletion uses an open directory
+descriptor so replacing a path cannot redirect cleanup. After workloads launch,
+cleanup also checks same-user open files, cwd and executables with system `lsof`
+to catch detached children holding workspace references. Missing/failed inspection
+or remaining references retains scratch and records a failed cleanup; it never
+assumes detached children have stopped. SIGKILL/power loss
+cannot run finalizers; the next run recovers abandoned scratch. Live orphan
+processes and workspace references must close before their work can be reclaimed. No background janitor
+runs when the tool is unused, so expiry is enforced on the next run/reap.
+Unmarked historical directories are never deleted automatically. Compact
+archives remain deliberately retained; their sizes depend on requested sample
+counts and recorded observations, and no cumulative archive quota is imposed.
 
 Total run duration includes orchestration and quiet waits. It is not the sum of
 application latencies, nor a score combining incompatible units. Overlapping
@@ -125,6 +154,9 @@ and its two Go helper packages are always overlaid onto the snapshot so one
 instrument can test different revisions. Installed dependencies are copied and
 checked for changes after the run. External dependency symlinks are rejected.
 Child workloads receive an allowlist of local tool settings, not ambient API keys.
+Their `TMPDIR`, `TEMP`, `TMP` and `GOTMPDIR` point into the unique owned
+`work/_tmp/` tree so interrupted native runtime/Go/browser temporary files share
+the same cleanup lifetime. Home directories and shared caches are unchanged.
 
 Comparison reloads and validates every expected raw trial, recomputes the
 summary, and rejects missing/incorrect results, changed case inventories,

@@ -1,6 +1,6 @@
-import { test, expect } from "bun:test";
+import { test, expect, afterAll } from "bun:test";
 import { createHash } from "node:crypto";
-import { mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdtempSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -54,7 +54,18 @@ const domain = createDomainRuntime({
   shapes: [str, int, ...errors],
 });
 const urlID = errors[1]!.identity;
-const root = mkdtempSync(join(tmpdir(), "can-assets-"));
+const temporaryDirectories = new Set<string>();
+afterAll(() => {
+  for (const directory of temporaryDirectories) {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+function temporaryDirectory(prefix: string) {
+  const directory = mkdtempSync(join(tmpdir(), prefix));
+  temporaryDirectories.add(directory);
+  return directory;
+}
+const root = temporaryDirectory("can-assets-");
 const script = await Bun.file(
   new URL("../../distribution/assets/htmx-4.0.0.min.js", import.meta.url),
 ).bytes();
@@ -251,7 +262,7 @@ test("retention keeps routes through the bound and drops them after", () => {
 });
 
 function pairedTree() {
-  const dist = mkdtempSync(join(tmpdir(), "can-paired-"));
+  const dist = temporaryDirectory("can-paired-");
   const generation = join(dist, "builds", "current");
   const entry = new TextEncoder().encode(
     'console.log("paired");\n//# sourceMappingURL=browser.js.map\n',

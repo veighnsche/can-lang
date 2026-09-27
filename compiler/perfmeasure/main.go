@@ -269,6 +269,7 @@ func main() {
 			for i := range fresh {
 				destination, e := os.MkdirTemp(filepath.Dir(*directory), "publish-flat-")
 				must(e)
+				defer func() { must(os.RemoveAll(destination)) }()
 				must(copyFlatInputs(*directory, destination, g))
 				fresh[i], e = driver.BeginOutput(destination)
 				must(e)

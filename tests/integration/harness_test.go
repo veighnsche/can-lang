@@ -15,9 +15,12 @@
 // Tests whose subject IS the build (release determinism, distribution
 // refusals) keep calling distribution.Build directly.
 //
-// Cache entries live under $CAN_TEST_CACHE (default os.TempDir +
-// "/can-test-cache") and survive across `go test` processes. Fills are
-// serialized by an inter-process lock directory; stale locks expire.
+// Cache entries live in one temporary directory owned by this test process.
+// TestMain removes it after the suite, including failed tests. CAN_TEST_CACHE
+// selects its parent directory; it does not enable persistence or reuse across
+// processes. Concurrent fills within the suite use lock directories. A forced
+// process termination can leave a cache recovered by a later suite once its
+// ownership, age, lease, and process/open-file inactivity are verified.
 package integration
 
 import (
@@ -36,6 +39,7 @@ import (
 	"time"
 
 	"github.com/veighnsche/can-lang/distribution"
+	"github.com/veighnsche/can-lang/tests/support/tempcache"
 )
 
 // harnessSharedVersion is the one bundle version every cached test shares.
@@ -99,7 +103,10 @@ func harnessBundle(t *testing.T, ctx context.Context, archive string) (string, e
 		return "", err
 	}
 	key := harnessKey(t, sourceRoot, archive)
-	root := harnessRoot()
+	root, err := harnessRoot()
+	if err != nil {
+		return "", fmt.Errorf("create suite bundle cache: %w", err)
+	}
 	entry := filepath.Join(root, "bundle-"+key)
 	// Memos are per cache root: the same content key in two roots
 	// names two different entries.
@@ -129,12 +136,39 @@ func harnessBundle(t *testing.T, ctx context.Context, archive string) (string, e
 	return path, nil
 }
 
-// harnessRoot is the persistent cross-process cache directory.
-func harnessRoot() string {
-	if root := os.Getenv("CAN_TEST_CACHE"); root != "" {
-		return root
-	}
-	return filepath.Join(os.TempDir(), "can-test-cache")
+// suiteCache owns the unique temporary child created by this process.
+var suiteCache struct {
+	once  sync.Once
+	cache *tempcache.Cache
+	root  string
+	err   error
+}
+
+// TestMain removes only the temporary child this suite created. A configured
+// parent, existing bundles, and concurrent suites' directories remain untouched.
+func TestMain(m *testing.M) {
+	os.Exit(runSuite(m))
+}
+
+func runSuite(m *testing.M) (code int) {
+	defer func() {
+		if err := suiteCache.cache.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "remove suite bundle cache: %v\n", err)
+			code = 1
+		}
+	}()
+	return m.Run()
+}
+
+// harnessRoot lazily creates one leased temporary cache for this suite.
+func harnessRoot() (string, error) {
+	suiteCache.once.Do(func() {
+		suiteCache.cache, suiteCache.err = tempcache.Open(os.Getenv("CAN_TEST_CACHE"))
+		if suiteCache.err == nil {
+			suiteCache.root = suiteCache.cache.Path
+		}
+	})
+	return suiteCache.root, suiteCache.err
 }
 
 // harnessKey hashes every input distribution.Build consumes, so any change
@@ -186,7 +220,7 @@ func harnessKey(t *testing.T, sourceRoot, archive string) string {
 }
 
 // harnessFill returns the verified entry, building it under an
-// inter-process lock on miss or waiting for a concurrent filler.
+// suite-local lock on miss or waiting for a concurrent filler.
 func harnessFill(ctx context.Context, sourceRoot, archive, root, entry, key string) (string, error) {
 	if err := os.MkdirAll(root, 0755); err != nil {
 		return "", err

@@ -37,7 +37,8 @@ preparation because the laptop was busy, before any of its twelve suite trials
 started. Its coordinator and preparation processes were verified stopped. The
 compiler development checks reused a previously pinned runtime distribution;
 fresh current-source preparation and the expanded suite still need validation
-together. No further builds or tests were run after the request to avoid load.
+together. That interrupted run has not been resumed. Subsequent storage-lifecycle
+validation used focused correctness checks, not performance workloads.
 
 Focused checks passed: 13 coordinator/isolation/evidence tests, 7 compiler-driver
 tests, 5 runtime-driver tests, and 6 application-driver tests (31 total). Go helper
@@ -78,11 +79,30 @@ these validation checks.
 Detailed audit reports, experiments, profiles, logs, consultation requests and
 responses, and raw validation results are retained locally under
 `docs/performance/2026-09-27/`. That dated archive is deliberately Git-ignored;
-its 330 files are not part of the maintained benchmark source. No evidence was
-deleted. The expanded-driver inventory records original paths and file hashes,
+its files are not part of the maintained benchmark source. The expanded-driver
+inventory records original paths and file hashes,
 and the interrupted run preserves its original status. The archive also corrects
 earlier claims about overwritten browser failure evidence.
 
 New runner output uses unique directories under the ignored `.performance/`
-directory. Commit maintained fixtures, drivers and concise reviewed summaries;
-keep local run artifacts outside version control.
+directory. Each completed or handled-interruption run keeps a compact
+`evidence.zip` and ownership metadata. Source copies, dependencies, prepared
+bundles, private build caches and child temporary files are removed after their
+processes stop. Raw observations remain in the archive for validated comparisons.
+Explicit diagnostic retention expires after seven days and is reclaimed on a
+later run; abandoned owned scratch is also recovered then. Recovery skips active
+or uncertain ownership. See the suite guide for the recovery command and limits.
+
+The storage cleanup preserved historical result records in verified archives and
+removed execution copies. Integration, failure-convention and host conformance
+suites now own temporary caches, share builds within a suite, remove them on
+completion, and recover eligible abandoned caches on later runs. Asset tests and
+publication measurements also register temporary-directory cleanup.
+
+Validation of these lifecycle changes used 35 small Python harness checks, the Go
+cache-helper unit tests, runtime static checks and ten asset unit tests. It did
+not run a benchmark, browser or combined smoke workload. Full integration
+validation remains deferred while the laptop is busy.
+
+Commit maintained fixtures, drivers and concise reviewed summaries; keep local
+run artifacts outside version control.

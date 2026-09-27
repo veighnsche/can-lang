@@ -23,12 +23,23 @@ unchanged; redaction policy stays owned by `entry.ts`.
 | `x-r07-1.md` | X-R07-1 experiment record, measurements, Q4 assessment |
 
 Run the legs with a prebuilt bundle (`CONV_BUNDLE`) or let the harness
-build through the shared cache (`CAN_BUN_ARCHIVE`, same root/key scheme
-as `tests/integration`):
+build once per input key within this suite (`CAN_BUN_ARCHIVE`):
 
 ```sh
 CONV_BUNDLE=/path/to/bundle go test ./tests/failure-conventions/ -v
 ```
+
+The harness creates a unique temporary bundle cache and removes it after
+normal suite completion, including test failures. `CAN_TEST_CACHE` optionally
+selects the parent location; each suite creates and owns a separate child,
+so this setting does not retain bundles across runs. Prebuilt `CONV_BUNDLE`
+directories remain caller-owned and are never removed. Forced termination
+can leave temporary children. On a later run, automatic recovery considers
+up to 16 marked suite caches older than one hour, checks the owner process
+is gone, acquires their leases, and requires successful `ps` and `lsof`
+checks showing no references. Missing tools or inconclusive checks skip
+recovery with a diagnostic. Legacy caches and unmarked directories are
+never deleted.
 
 ## Result-data convention (R06)
 

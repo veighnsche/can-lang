@@ -8,12 +8,15 @@ package conformance
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
 	"testing"
+
+	"github.com/veighnsche/can-lang/tests/support/tempcache"
 )
 
 // hypotheticalPackages are the catalogue packages the T1 sketches would
@@ -230,6 +233,21 @@ func TestDeliverablesAvoidHostNamespaces(t *testing.T) {
 var canlcOnce sync.Once
 var canlcPath string
 var canlcErr error
+var canlcCache *tempcache.Cache
+
+func TestMain(m *testing.M) {
+	os.Exit(runConformance(m))
+}
+
+func runConformance(m *testing.M) (code int) {
+	defer func() {
+		if err := canlcCache.Close(); err != nil {
+			fmt.Fprintf(os.Stderr, "remove temporary compiler directory: %v\n", err)
+			code = 1
+		}
+	}()
+	return m.Run()
+}
 
 // canlcBinary builds the real compiler once per test run into a temp
 // dir. The located-rejection legs drive it black-box
@@ -238,12 +256,13 @@ var canlcErr error
 func canlcBinary(t *testing.T) string {
 	t.Helper()
 	canlcOnce.Do(func() {
-		dir, err := os.MkdirTemp("", "d02-canlc")
+		cache, err := tempcache.Open("")
 		if err != nil {
 			canlcErr = err
 			return
 		}
-		out := filepath.Join(dir, "canlc")
+		canlcCache = cache
+		out := filepath.Join(cache.Path, "canlc")
 		cmd := exec.Command("go", "build", "-o", out, "./compiler")
 		cmd.Dir = repoRootForBuild()
 		if out, err := cmd.CombinedOutput(); err != nil {

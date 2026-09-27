@@ -172,14 +172,14 @@ func TestHeavySlotCap(t *testing.T) {
 	}
 }
 
-// End-to-end sharing proof: two calls, at most one real fill, same path.
+// End-to-end sharing proof: two calls use the same suite-owned bundle.
+// Other tests may already have filled it, so at most one new fill is needed.
 // Runs only with the pinned archive, like every other staged test.
 func TestHarnessSharedEndToEnd(t *testing.T) {
 	archive := os.Getenv("CAN_BUN_ARCHIVE")
 	if archive == "" {
 		t.Skip("set CAN_BUN_ARCHIVE for harness sharing proof")
 	}
-	t.Setenv("CAN_TEST_CACHE", t.TempDir())
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 	defer cancel()
 	before := harnessBuilds.Load()
@@ -194,7 +194,7 @@ func TestHarnessSharedEndToEnd(t *testing.T) {
 	if first != second {
 		t.Fatalf("shared bundle paths differ: %q vs %q", first, second)
 	}
-	if got := harnessBuilds.Load() - before; got != 1 {
-		t.Fatalf("two shared-bundle calls performed %d fills, want 1", got)
+	if got := harnessBuilds.Load() - before; got > 1 {
+		t.Fatalf("two shared-bundle calls performed %d fills, want at most 1", got)
 	}
 }

@@ -15,6 +15,7 @@ from unittest.mock import patch
 import isolation
 import perf
 import schema
+from storage import archive_evidence, read_evidence
 
 
 def evidence(suite="runtime"):
@@ -27,6 +28,17 @@ def evidence(suite="runtime"):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_child_temporaries_are_owned_by_each_run(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            with patch.dict(os.environ, {'TMPDIR': '/foreign', 'TMP': '/foreign', 'TEMP': '/foreign'}):
+                first = perf.child_environment(root / 'first')
+                second = perf.child_environment(root / 'second')
+            for key in ('TMPDIR', 'TEMP', 'TMP', 'GOTMPDIR'):
+                self.assertTrue(Path(first[key]).is_relative_to(root / 'first/work'))
+                self.assertTrue(Path(first[key]).is_dir())
+                self.assertNotEqual(first[key], second[key])
+
     def test_malformed_failed_driver_output_keeps_a_bounded_reason(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "result.json"
@@ -98,6 +110,29 @@ class EvidenceTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     perf.compare(args)
 
+    def test_comparison_revalidates_compressed_raw_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            metadata = {"status": "complete", "quality": "measurement", "requested_suites": ["runtime"],
+                        "completed_suites": ["runtime"], "environment": {}, "profile": "quick",
+                        "iterations": 1, "warmups": 1, "size": 10, "isolation": {}, "trials": 1,
+                        "source": {"dependencies": "same", "harness_overlays": "same"}}
+            summary = schema.summarize_trials([{"suite": "runtime", "result": evidence()}])
+            for name in ("a", "b"):
+                target = root / name
+                perf.write_json(target / "manifest.json", metadata)
+                perf.write_json(target / "summary.json", summary)
+                trial = evidence()
+                if name == "b":
+                    trial["cases"][0]["samples"] = [8, 8, 8]
+                perf.write_json(target / "raw/runtime-001.json", trial)
+                archive_evidence(target)
+            args = argparse.Namespace(baseline=str(root / "a/evidence.zip"), candidate=str(root / "a"), output=None)
+            self.assertEqual(perf.compare(args), 0)
+            args.candidate = str(root / "b/evidence.zip")
+            with self.assertRaisesRegex(ValueError, "summary does not match"):
+                perf.compare(args)
+
     def test_comparison_requires_raw_evidence_and_recomputed_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -162,12 +197,14 @@ class IsolationTests(unittest.TestCase):
 
 
 class SerialRunTests(unittest.TestCase):
-    def run_fixture(self, root, fail=False):
+    def run_fixture(self, root, fail=False, interrupt=False):
         source = root / "source"
         source.mkdir()
         driver = source / "fixture.py"
         driver.write_text('''import json,pathlib,sys,time
 mode,suite,out,fail=sys.argv[1:]
+import os,signal
+if fail=="term" and mode=="run": os.kill(os.getppid(), signal.SIGTERM)
 root=pathlib.Path(__file__).parent
 active=root/'active'
 with active.open('x') as h: h.write(suite)
@@ -185,11 +222,17 @@ sys.exit(1 if result['status']=='failed' else 0)
             warmups=None, size=None, output=str(root / "output"), quiet_seconds=30, idle_percent=90,
             wait_seconds=1, prepare_timeout=5, timeout=5, revision=None, working_tree=False)
         def command(snapshot, family, mode, work, out, options, *, suite=None, suites=None):
-            return [sys.executable, str(driver), mode, suite or family, str(out), "yes" if fail else "no"]
+            return [sys.executable, str(driver), mode, suite or family, str(out), "term" if interrupt else "yes" if fail else "no"]
+        def snapshot(output, revision, working_tree):
+            for name in ("source", "go-cache"):
+                (output / name).mkdir()
+                (output / name / "payload").write_text("temporary execution data")
+            return source, {"dependencies": None}
         with contextlib.ExitStack() as stack:
             stack.enter_context(patch.object(perf, "SUITES", {"first": ("one", "fixture"), "second": ("two", "fixture")}))
-            stack.enter_context(patch.object(perf, "source_snapshot", return_value=(source, {"dependencies": None})))
+            stack.enter_context(patch.object(perf, "source_snapshot", side_effect=snapshot))
             stack.enter_context(patch.object(perf, "environment", return_value={}))
+            stack.enter_context(patch("storage.open_references", return_value=[]))
             stack.enter_context(patch.object(perf, "command_for", side_effect=command))
             stack.enter_context(patch.object(isolation, "LOCK", root / "lock"))
             result = perf.run(args)
@@ -200,20 +243,35 @@ sys.exit(1 if result['status']=='failed' else 0)
             status, order, output = self.run_fixture(Path(directory))
             self.assertEqual(status, 0)
             self.assertEqual(order, [f"{event} {mode} {name}" for mode, name in [("prepare", "one"), ("prepare", "two"), ("run", "first"), ("run", "second")] for event in ("start", "end")])
-            manifest = json.loads((output / "manifest.json").read_text())
+            manifest = json.loads(read_evidence(output, "manifest.json"))
             self.assertEqual(manifest["completed_suites"], ["first", "second"])
             self.assertEqual(manifest["quality"], "smoke")
-            self.assertEqual(len(json.loads((output / "summary.json").read_text())), 2)
+            self.assertTrue((output / "evidence.zip").exists())
+            self.assertFalse((output / "work").exists())
+            self.assertFalse((output / "source").exists())
+            self.assertFalse((output / "go-cache").exists())
+            self.assertFalse(list(output.rglob("*.stdout.log")))
+            self.assertEqual(len(json.loads(read_evidence(output, "summary.json"))), 2)
 
     def test_failed_suite_retains_raw_evidence_but_no_completed_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             status, order, output = self.run_fixture(Path(directory), fail=True)
             self.assertEqual(status, 1)
-            self.assertFalse((output / "summary.json").exists())
-            self.assertTrue((output / "raw/first-001.json").exists())
-            manifest = json.loads((output / "manifest.json").read_text())
+            with self.assertRaises(ValueError):
+                read_evidence(output, "summary.json")
+            self.assertEqual(json.loads(read_evidence(output, "raw/first-001.json"))["status"], "complete")
+            manifest = json.loads(read_evidence(output, "manifest.json"))
             self.assertEqual(manifest["completed_suites"], ["first"])
             self.assertEqual(manifest["status"], "failed")
+
+    def test_sigterm_cleans_scratch_and_preserves_interrupted_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            status, order, output = self.run_fixture(Path(directory), interrupt=True)
+            self.assertEqual(status, 1)
+            self.assertEqual(json.loads(read_evidence(output, "manifest.json"))["status"], "interrupted")
+            self.assertFalse((output / "work").exists())
+            self.assertFalse((output / "source").exists())
+            self.assertFalse((output / "go-cache").exists())
 
 
 if __name__ == "__main__":
