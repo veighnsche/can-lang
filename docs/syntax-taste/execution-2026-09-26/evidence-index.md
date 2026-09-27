@@ -63,7 +63,11 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 
 | H12 | staged (DEFERRED, not requested) | main `275dd42d` (3 worker `744801b4`,`775463fb`,`267bdfc8`) | staging on macOS; native run DEFERRED (not an objective) | per-leg runbook (smoke offline, drift both dirs, retention, rollout/rollback, CAS GC, PG roundtrip, service/health/creds/operator-DDL, old-browser wrapper); window-check.sh gate; pins re-verified by coord; Jev unanimous; record `docs/syntax-taste/execution-2026-09-26/h12-staging-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h12/` | blocked |
 
-| H11 | pre-assembly (OPEN behind H12) | main `f25685c9`+`ee2050c4` (2 worker `9d5f3fc6`,`b3f24b09`) | n/a (aggregation, no live reruns) | per-workload leg tables + version/env cross-check + double-count audit + F0–F22; H12 single pending input; coord verified F1/F2/F8, resolved F11; record `docs/syntax-taste/execution-2026-09-26/h11-preassembly-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h11/` | open |
+| H11 | pre-assembly (OPEN behind H12) | main `f25685c9`+`ee2050c4` (2 worker `9d5f3fc6`,`b3f24b09`) + coord F1/F2/F4/F5/F8/F17 closures | n/a (aggregation, no live reruns) | per-workload leg tables + version/env cross-check + double-count audit + F0–F22; H12 single pending input; F1/F2 closed by R1 (`ba1926e2`)/R2 (`a73e1795`); record `docs/syntax-taste/execution-2026-09-26/h11-preassembly-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h11/` | open |
+
+| H13 | not started (OPEN behind H11+H12) | — | release assembly deferred (not a current objective) | gated on IC2 verdict + UP25 native run; no work claimed, nothing requested | open |
+
+| H14 | not started (OPEN behind H13) | — | publication deferred (not a current objective) | gated on IC3; no work claimed, nothing requested | open |
 
 ## Conditional branches
 
@@ -75,7 +79,7 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | C05 (X-R02-1) | C04 | INACTIVE | root-only rule stands; `tests/browser-controls/x-r02-1.md:98-116` + trip conditions |
 | O2 (X-R04-2) | E05 | O1 SUFFICIENT, O2 INACTIVE | zero write shapes qualified; `request-policy.md:114-123,167-171`, `e05-x-r04-2.md` |
 | S3 cancel vs discard (X-R15-1) | E07 | NEGATIVE (cancel removed) | `s3::discard_upload` in catalogue; `s3.ts:205-241`; `e08-r15-remedy.md:30-71`; absence legs E1/W5-S1 |
-| S3 deadline (X-R15-3) | E07/E09 | NEGATIVE (between-awaits bound) | `s3.ts:420`; `e08-r15-remedy.md:76-93`; W5 deadline legs BLOCKED by design |
+| S3 deadline (X-R15-3) | E07/E09 | CLOSED by R1 (all Can-level awaits bounded) | `raceS3` in `s3.ts` (`ba1926e2`); layered bounds + poison + deferred scrub; S5b/H1 flipped, `s3-r1-bounds` 7/7; H2–H5 reframed as substrate pins; `e09-w5.md` R1 § |
 | D01 tier | D01 | A/B→T2, C→T3 | `x-r01-1.md:248-282`; `host/` deliverables + `REVIEW-MANIFEST.json` |
 | RETURNING | F02→F03 | ADMITTED per-dialect | keyless generated-identity only; `f02-report.md`; `f03-returning-contract.md` §3, §5 MySQL mapping |
 | X-R14-1 profile | H07/H08 | NO profile qualifies | guard fails closed; `h08-x-r14-1.md`; `budget.ts:16-17`; `native-ai/README.md:36-40` |

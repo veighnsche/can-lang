@@ -33,8 +33,8 @@ H12 W6-deploy native legs are the single pending evidence input
 | Finding | Severity | Routed to |
 | --- | --- | --- |
 | F0 H12 pending (UP25 grant) | BLOCKING | user → H12 native run |
-| F1 X-R15-3 scope return (W5 fails per contract) | HIGH | preparation + user scoping |
-| F2 W5-L3 tx-ownership preparation return | HIGH | preparation (E owner) |
+| F1 X-R15-3 scope return (W5 fails per contract) | HIGH | CLOSED by R1 implementation (coordinator — see F1 closure §) |
+| F2 W5-L3 tx-ownership preparation return | HIGH | CLOSED by R2 implementation (coordinator — see F2 closure §) |
 | F3 W6-AI grants + qualified bound U | HIGH | user + provider evidence |
 | F4 B05 W3 re-seal post-emitfix | MEDIUM | B owner |
 | F5 D live legs now runnable | MEDIUM | D owner |
@@ -82,7 +82,8 @@ tree before accepting this pre-assembly:
   are next in the coordinator queue (unblock commands runnable since
   C01-done).
 
-IC2 stays OPEN behind H12 + F1/F2 dispositions at minimum. No verdict
+IC2 stays OPEN behind H12 at minimum (F1/F2 now closed by R1/R2
+implementation — see closure §§; addendum trail above preserved). No verdict
 claimed or waived by this addendum.
 
 ## F5 closure (coordinator-executed, post-pre-assembly)
@@ -182,6 +183,61 @@ redundant but left untouched as sealed F03 evidence. `check:runtime`
 green; tx consumer suites green (2 live-PG budget-timing failures in
 `sql-budget`/`w5-lifetime` reproduce identically on pristine main —
 pre-existing, out of F17 scope, recorded as a finding).
+
+## F1 closure (R1; user retained-timeout decision)
+
+F1 is CLOSED by implementation, not by scope return. The user
+retained the X-R15-3 timeout requirement (storage waits must be
+bounded; no indefinite waits, no between-awaits-only exclusion), so
+R1 bounded every Can-level S3 await instead of documenting the limit:
+
+- `runtime/platform/s3.ts` (`ba1926e2`): `raceS3` on all 12 data
+  awaits (pump read/write/flush/end/stat, small-put stat/exists,
+  delete, upload-handle methods); layered bounds (explicit arg →
+  trailing `S3Bounds` → ambient remainder → 30s ceiling); upload
+  expiry poisons the handle; post-expiry settlement converges via
+  deferred scrub. Discard/drain stays unraced by design (Jev r1-impl
+  3/3 `unraced_cleanup`, advice).
+- Catalogue regen (`write_stream`/upload lowering rebased).
+- Legs: W5-S5b flipped (hung `source.read` answers `timeout` at the
+  deadline), E07 H1 flipped (adapter hung-read deadline), new
+  `s3-r1-bounds.test.ts` 7/7 (blackhole timeout, layering ×2,
+  poisoning, deferred recovery, healthy-under-generous-bounds).
+  H2–H5 stay green reframed as native-substrate hung pins (raw sink,
+  never awaited unraced from Can code).
+- Gates: `check:runtime` green; S3 suites 58/58 live MinIO.
+
+X-R15-3's acceptance condition ("every hung read/write/flush/end/stat
+await bounded") now holds at the adapter level; the task-list:933
+"return to preparation" row is satisfied by this return's
+implementation. Record: `e09-w5.md` R1 §.
+
+## F2 closure (R2; user bounded-response decision)
+
+F2 is CLOSED by implementation. The user ruled bounded waiting
+applies to the client response too (detecting a timeout internally
+while holding the peer past the bound is not acceptable), so R2
+rebuilt the serve path per the Jev r2 design (3/3
+`respond_then_drain`, advice):
+
+- `runtime/platform/server.ts` (`a73e1795`): the peer is answered
+  from the handler boundary value at the bound; the request scope
+  then drains owned in the background. No tx-ownership/E04 semantic
+  change was needed — the drain moved, not the ownership.
+- Legs: W5-L3 flipped (peer `unknown:commit` at the 150ms bound, 1
+  budget escalation, reread converges, hook silent); new W5-L11 pins
+  stop-during-drain (bounded stop, rollback convergence, sorted late
+  multiset `[resolved, resolved]`, silent reporter); hedge/lifetime/
+  report legs rebased to the new shape.
+- Gates: `check:runtime` green; 159/159 live sweep (server 27/27,
+  server-budget 13/13, w5-lifetime 11/11, sql-budget 15/15,
+  http-hedge 16/16, burst 2/2, returning 6/6, S3 suites, shutdown,
+  transport-late) over live PG 17.11/MySQL 8.4.11/MinIO.
+
+The O2-trip shape class keeps its live unhedged instance as
+qualified evidence (drain-blocking + natively unabortable tx, now
+with a bounded peer), and the shutdown interplay F2 left reasoned is
+now measured (L11). Record: `e09-w5.md` R2 §.
 
 ## F7 resolution (documented-limitation justification, evidence-backed)
 

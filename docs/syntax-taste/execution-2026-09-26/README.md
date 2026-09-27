@@ -38,7 +38,6 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | H09 | done | lane-h-h01-h09 (`10`) | isolated | none | docs→H14 | worker `d69be330` → main `58060191` | link targets verified present |
 
 | C01 | done | lane-c-c01-retry (`42`) | isolated | H01 | runners→C02/C06/H13 | worker 8 slices → main `764f9a0a,606ae57d,ac0a816d,2000eecc,ae74c771,e651e29b,e2d46674` (+record) | native FF impossible on macOS 27 (FF141 GFX/sandbox hang; FF155 vendor-dir kernel-denied incl root); container FF141 (pinned arm64 noble, ws 18783) + loopback forwarders 18651–18654; alias rejected by evidence (insecure ctx + exact_origin 403); gate5 12/12 green (FF141.0, Ch140.0.7339.186, Wk26.0); CI installs FF for native path |
-| C03 | ready (A03+E03 done) | — | — | A03, E03 | C-E wire→C04/F05/H06 | — | — |
 | H02 | done | lane-h-h02-h05 (`12`) | isolated | H01 | DB access→E02/F02/F04/F06 | worker `9482ff01` → main `2a880eee` | PG 17.11 + DBs verified; mysql 12/12+5/5 |
 | H03 | done | lane-h-h02-h05 (`12`) | isolated | H01 | storage→E07/E09 | worker `9482ff01` → main `2a880eee` | MinIO live verified; s3.test 19/19 (S3-protocol scope) |
 | H04 | done (blocked) | lane-h-h02-h05 (`12`) | isolated | H01 | AI gate→H08 | worker `f9a0acdf` → main `2d784b31` | exact creds + spend-cap ask recorded; gate stays blocked |
@@ -78,15 +77,19 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 
 | H12 | staged (DEFERRED, not requested) | lane-h-h12 | isolated | H05, H10, C06, D03, E09, F04, F06 | W6-deploy→H11/H13/H14 | 3 worker (`744801b4`,`775463fb`,`267bdfc8`)→main (Jev+checklist+runbook); coord Leg-6 WORK note | 8/8 validation bullets staged w/ exact commands+env+pass criteria; pins verified (bun zip 36368fae, rev 744846f84, go1.27.1, PG17); window-check.sh inspection-only; Jev 3/3 unanimous; zero x86 exec/emulation; native run deferred, nothing requested |
 
-| H11 | pre-assembly (OPEN behind H12) | lane-h-h11-prep | isolated | H10, A07–B05, C06–C07, D03, E09, F04, F06, G05, H08, H12 | IC2 verdict→H13 (later turn) | 2 worker (`9d5f3fc6`,`b3f24b09`)→main `f25685c9`+`ee2050c4` | W1–W6+tooling/examples aggregated from owner seals; findings F0–F22 (F1/F2 HIGH confirmed, F8 MEDIUM confirmed, F11 resolved); no IC2 verdict claimed |
+| H11 | pre-assembly (OPEN behind H12) | lane-h-h11-prep | isolated | H10, A07–B05, C06–C07, D03, E09, F04, F06, G05, H08, H12 | IC2 verdict→H13 (later turn) | 2 worker (`9d5f3fc6`,`b3f24b09`)→main `f25685c9`+`ee2050c4` | W1–W6+tooling/examples aggregated; F1/F2 CLOSED by R1/R2 impl, F4/F5/F8/F17 CLOSED, F11 resolved; no IC2 verdict claimed |
+
+| H13 | not started (OPEN behind H11+H12; release assembly not a current objective) | — | — | H11, C01, H02, H08, H12, F06 | bundle→H14 | — | gated on IC2 verdict + UP25 native run; no work claimed, nothing requested |
+
+| H14 | not started (OPEN behind H13; publication not a current objective) | — | — | H13, H09, C07, A08 | story→user | — | gated on IC3; no work claimed, nothing requested |
 
 All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints
 
 - IC1 (H10): unblocked — G05 done (rest done: A01–A05+A06✗, B01–B04✗✗, C02–C04+C05✗, D02, E04–E06, E08, F01, F03, F05, H06, H07).
-- IC2 (H11): blocked — needs H10 plus workload owners.
-- IC3 (H13): blocked — needs H11 plus matrix/live legs.
+- IC2 (H11): pre-assembly done, verdict OPEN behind H12 (H10 green, all workload owners sealed; F1/F2/F4/F5/F8/F17 closed by coord, F11 resolved).
+- IC3 (H13): not started — needs H11 verdict + H12 native legs (release assembly not a current objective).
 
 ## Incidents
 
