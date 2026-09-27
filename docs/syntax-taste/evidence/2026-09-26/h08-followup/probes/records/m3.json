@@ -1,0 +1,23 @@
+{
+  "name": "m3",
+  "purpose": "triage-shaped max-caps hostile state: worst-case input in state caps",
+  "startedAt": "2026-09-27T11:31:50.793631+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": "jev-1.13.0",
+  "status": 200,
+  "request_sha256": "61fb72714dd808bbd05b6cc4aa7f51d397cdb59ea752522ea24d7b4fb84d0aca",
+  "request_bytes": 3411,
+  "state_json_chars": 2247,
+  "latency_ms": 374,
+  "usage": {
+    "input_tokens": 1446,
+    "output_tokens": 54
+  },
+  "answers_summary": {
+    "q0": {
+      "choice": "billing",
+      "confidence": 1.0
+    }
+  }
+}

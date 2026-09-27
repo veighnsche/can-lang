@@ -1,0 +1,15 @@
+{
+  "name": "m6",
+  "purpose": "near-64k-token state: admission below the published budget",
+  "startedAt": "2026-09-27T11:36:02.810601+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": null,
+  "status": 400,
+  "request_sha256": "e39b47fd5a7a3ffbb165f07c49134bfec2a7de770cab43967384c696a2b6a8a2",
+  "request_bytes": 149060,
+  "state_json_chars": 123270,
+  "latency_ms": 300,
+  "usage": null,
+  "answers_summary": {}
+}

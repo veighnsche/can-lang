@@ -1,0 +1,15 @@
+{
+  "name": "m7",
+  "purpose": "at-budget state: bracket the enforced cap from below",
+  "startedAt": "2026-09-27T11:36:05.118419+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": null,
+  "status": 400,
+  "request_sha256": "7daf47d6e3e837eefe02952dad93d9829f2fda70c3c9bfde1669106c4f407217",
+  "request_bytes": 164884,
+  "state_json_chars": 136398,
+  "latency_ms": 853,
+  "usage": null,
+  "answers_summary": {}
+}

@@ -1,0 +1,22 @@
+{
+  "name": "m4",
+  "purpose": "byte-identical repeat of m1: output/usage determinism",
+  "startedAt": "2026-09-27T11:31:53.183576+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": "jev-1.13.0",
+  "status": 200,
+  "request_sha256": "f99e3e4ef766124fc2e37597fd77e4d4eac65932dd92a2348688ac2451d40b17",
+  "request_bytes": 143,
+  "state_json_chars": 22,
+  "latency_ms": 423,
+  "usage": {
+    "input_tokens": 275,
+    "output_tokens": 21
+  },
+  "answers_summary": {
+    "q0": {
+      "noul": 0.69
+    }
+  }
+}

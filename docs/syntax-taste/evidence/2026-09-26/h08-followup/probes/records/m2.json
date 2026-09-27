@@ -1,0 +1,23 @@
+{
+  "name": "m2",
+  "purpose": "triage-shaped small state: usage scale for realistic ticket text",
+  "startedAt": "2026-09-27T11:31:48.513782+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": "jev-1.13.0",
+  "status": 200,
+  "request_sha256": "8737138b151b18c8b58d37a6ebba784f312848b47884624c2a88afd2f36cdee7",
+  "request_bytes": 877,
+  "state_json_chars": 207,
+  "latency_ms": 273,
+  "usage": {
+    "input_tokens": 483,
+    "output_tokens": 54
+  },
+  "answers_summary": {
+    "q0": {
+      "choice": "billing",
+      "confidence": 1.0
+    }
+  }
+}

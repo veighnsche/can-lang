@@ -1,0 +1,15 @@
+{
+  "name": "m5",
+  "purpose": "over-64k-token state: over-budget enforcement semantics",
+  "startedAt": "2026-09-27T11:33:54.951839+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": null,
+  "status": 400,
+  "request_sha256": "fd9ce34235a79780154938fcecc393484ea0cec6754349172dc732c5a8b9459c",
+  "request_bytes": 256066,
+  "state_json_chars": 212154,
+  "latency_ms": 378,
+  "usage": null,
+  "answers_summary": {}
+}

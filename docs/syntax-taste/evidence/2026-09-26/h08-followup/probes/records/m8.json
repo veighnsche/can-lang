@@ -1,0 +1,23 @@
+{
+  "name": "m8",
+  "purpose": "mid-budget state: admission below the cap plus rate calibration",
+  "startedAt": "2026-09-27T11:37:10.940713+00:00",
+  "endpoint": "v1/systemone",
+  "model_request": "jev-1.13.0",
+  "model_echo": "jev-1.13.0",
+  "status": 200,
+  "request_sha256": "2789a6ef68a3a0cd9acf6cd7b06218c007b17f337145531d4de76e050d982e8e",
+  "request_bytes": 63924,
+  "state_json_chars": 52566,
+  "latency_ms": 449,
+  "usage": {
+    "input_tokens": 23546,
+    "output_tokens": 54
+  },
+  "answers_summary": {
+    "q0": {
+      "choice": "billing",
+      "confidence": 1.0
+    }
+  }
+}

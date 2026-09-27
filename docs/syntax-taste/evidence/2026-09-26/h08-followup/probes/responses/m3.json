@@ -1,0 +1,21 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "q0": {
+      "type": "choice",
+      "choice": "billing",
+      "confidence": 1.0,
+      "probabilities": {
+        "general": 0.0,
+        "account_access": 0.0,
+        "shipping": 0.0,
+        "technical": 0.0,
+        "billing": 1.0
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1446,
+    "output_tokens": 54
+  }
+}
