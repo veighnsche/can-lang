@@ -101,7 +101,16 @@ export function createSQLDescriptors(table: Record<string, Record<string, SQLDes
         limit > total
       )
         throw new TypeError("invalid sql parameter count");
-      if ((cardinality === "execute") !== (limit === 0)) throw new TypeError("invalid sql limit");
+      // F8/RETURNING: limit 0 holds exactly for execute and for the
+      // admitted (one, INSERT) shape — the checker admits one+0 only for
+      // INSERT ... RETURNING (F03 contract §1), and the kind pin keeps a
+      // forged table from smuggling a 0-limit SELECT past this factory.
+      const returningOne =
+        limit === 0 &&
+        cardinality === "one" &&
+        (kind === "InsertStmt" || kind === "insert_statement");
+      if ((cardinality === "execute") !== (limit === 0) && !returningOne)
+        throw new TypeError("invalid sql limit");
       if (params.length !== total - (limit === 0 ? 0 : 1))
         throw new TypeError("invalid sql parameter names");
       if (version !== parserVersions[dialect]) throw new TypeError("sql parser version mismatch");

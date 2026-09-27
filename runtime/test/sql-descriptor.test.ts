@@ -138,4 +138,33 @@ describe("sql descriptors", () => {
       ).toThrow(TypeError);
     }
   });
+  test("F8: (one, 0) admits INSERT kinds only", () => {
+    const returning = {
+      dialect: "postgresql",
+      cardinality: "one",
+      segments: [{ text: "INSERT INTO t (a) VALUES (" }, { param: 1 }, { text: ") RETURNING id" }],
+      params: ["a"],
+      paramType: "p",
+      rowType: "r",
+      limit: 0,
+      total: 1,
+      version: 170007,
+    } as const;
+    for (const kind of ["InsertStmt", "insert_statement"]) {
+      const sql = createSQLDescriptors({ "": { gen: { ...returning, kind } } });
+      const built = sql.template(sql.declareDescriptor("", "gen"), ["v"]);
+      expect(built.values).toEqual(["v"]);
+    }
+    for (const bad of [
+      { cardinality: "one", kind: "SelectStmt" },
+      { cardinality: "one", kind: "UpdateStmt" },
+      { cardinality: "many", kind: "InsertStmt" },
+      { cardinality: "optional", kind: "InsertStmt" },
+    ]) {
+      expect(
+        () => createSQLDescriptors({ "": { gen: { ...returning, ...bad } } }),
+        JSON.stringify(bad),
+      ).toThrow(TypeError);
+    }
+  });
 });
