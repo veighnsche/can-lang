@@ -1,0 +1,15 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 3 state fields, 3 instructions and 9 option descriptions has a distinct complete phrasing (30 fields). Task IDs (H12/UP25/C06/H10), requirement IDs (R13, F-R13-01b/02/03, W6-deploy), interface C-H, file paths, kind strings, function names, test names, env names, the 409 shape, 0400/0600 modes, the seven-day bound and code spellings are intentionally stable. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "Can agent language; zero external users; no compat for syntax/ABI/spellings/TS layouts/goldens; H12 paired-deploy qualification under R13 F-R13-01b/02/03 W6-deploy C-H, release-engineering owned; package/install/offline smoke/live PG/credentials/health/retained assets/old-browser/rollout/rollback on native UP25 x86; staging-only turn, no linux/amd64 execution here; unavailable live evidence never a pass; no emulated native claim",
+    "C-H fixed: data-can-generation in documents, can-generation on actions, startup buildID pin, 409 exact can.generation-mismatch body before action logic, blocking refresh, seven-day dist/assets.json retention, dist/cas 0400 links, metadata unique 0600; C06 scope: http::transport_failed phase generation on JSON+form paired mounts, prompt live in invoice-grid, invoice-compare no server calls, htmx form 409 without prompt; T19 distribution/linux build/smoke/postgres + TestLinuxInstalledArtifactSmoke/TestLinuxPostgresRoundtrip via CAN_BUN_ARCHIVE/CAN_LINUX_INSTALL_ROOT/DATABASE_URL; qualify.py unshare -n else verified --network-isolation claim else fail closed",
+    "Limits: Jev classifies, no research; advisory only, no acceptance proof; no Can code runs, no x86 process starts, no calibration; UP25 checklist demands native Debian 13+ amd64/glibc via uname/os-release/glibc, no linux/amd64 emulation; rounds independent, no prior answer leaks; decide from supplied state"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "328c8450b058155bec6afb77dca402903508f6d0d6c934c0b61e06763872ffe7",
+    "request-2.json": "5562f14879a508abe0b16a9a58c2b260fdef4ac7483998f4bd144f6751921a15",
+    "request-3.json": "d3c06f05351a30afa9a26294183cc18b64db76837c413720c272b4e408adf878"
+  }
+}
