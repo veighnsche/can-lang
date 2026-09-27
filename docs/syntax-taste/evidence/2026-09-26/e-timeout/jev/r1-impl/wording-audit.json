@@ -1,0 +1,15 @@
+{
+  "review": "Manually checked equal facts, constraints and alternatives across all three requests before sending. Each of the 3 state fields, 2 instructions and 4 option descriptions has a distinct complete phrasing (9 fields). Task IDs (E-TIMEOUT R1, X-R15-3, E07 H2, E08 D3, E04), file paths (runtime/platform/s3.ts), identifiers (UploadBox, uploadWrite, uploadFinish, discardUpload, retire, scrub, sink.write/flush/end, raceBoundary, source s3, s3::service_error, upload_closed, boundMs), state names (open/finished/discarded), and code spellings are intentionally stable. Settled R1 mechanism is fixed context, not an alternative. No response or favored recommendation appears in any later request state.",
+  "same_facts": [
+    "Can agent language; zero external users; no compat for syntax/ABI/spellings/TS layouts/goldens; E-TIMEOUT R1 retained X-R15-3 with settled mechanism (race_and_own, layered min(deadline_ms remainder, trailing boundMs, ambient budget remainder, adapter ceiling), reuse_service_error code timeout); this consult resolves only upload-box-after-expiry and discard-race implementation points",
+    "UploadBox caller-held {client, key, type, partSize, lazy sink, state open/finished/discarded}; uploadWrite awaits sink.write+flush, uploadFinish sink.end+stat, each raced post-R1 with expiry service_error timeout and native owned to settlement; natives have no abort, concurrent sink.write unqualified, end() waits on hung same-sink state (E07 H2), un-ended sink pins loop from creation, only settled end releases; retire() marks discarded + destructive scrub (end then delete); scope drain retires abandoned handles; discardUpload runs retire, upload_closed for non-open; E08 D3 pins discarded-handle reuse rejections; scope-drain retire cannot race (no timeout channel, cleanupFailed only); emitted arities frozen; slice owns runtime/platform/s3.ts + tests + evidence",
+    "Limits: Jev classifies, no research; advisory only, no acceptance proof; no Can code runs, no MinIO leg starts, no calibration; settled mechanism not relitigated; timeout must report uncertainty honestly, never imply cancelled/rolled back; rounds independent, no prior answer leaks; decide from supplied state"
+  ],
+  "limit": "Text inequality plus manual semantic review cannot prove absence of framing effects; investigate disagreement and treat agreement as advice, not proof.",
+  "shared_8gram_violations": [],
+  "request_sha256": {
+    "request-1.json": "673f422aeaaf1b3a5d95c257aa302c78f902ec74a8b71cbcc70962cc463b89b1",
+    "request-2.json": "c6e4d83930afb896a443b67f91990faf3fbb631f7f087c12a9de1b1ff281c976",
+    "request-3.json": "73530f0d756194837d37c92644f9bf90784c5e733ba1890b29dd9dc69e9d98dd"
+  }
+}

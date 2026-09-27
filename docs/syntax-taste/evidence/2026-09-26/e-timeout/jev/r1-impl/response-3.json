@@ -1,0 +1,1 @@
+{"model":"jev-1.13.0","answers":{"upload_expiry":{"type":"choice","choice":"poison_discard","confidence":0.82,"probabilities":{"leave_open":0.09,"poison_discard":0.91}},"discard_race":{"type":"choice","choice":"unraced_cleanup","confidence":0.17,"probabilities":{"unraced_cleanup":0.59,"race_like_others":0.41}}},"usage":{"input_tokens":1535,"output_tokens":79}}
