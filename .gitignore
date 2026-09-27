@@ -4,9 +4,10 @@ Thumbs.db
 .idea/
 .vscode/
 
-# vendored deps
+# local dependencies
 node_modules/
 node_modules
+/.local-deps/
 
 # build outputs
 bin/
@@ -15,6 +16,9 @@ build/
 out/
 *.test
 tscheck/.fresh-emit/
+
+# Temporary files used for atomic formatter writes
+.can-format-*
 
 # Python (consult/audit helper scripts)
 __pycache__/
@@ -34,5 +38,6 @@ test-results/
 # Local dated audit archives; maintained summary is docs/performance/README.md.
 /docs/performance/????-??-??/
 
-# linked git worktrees nested under .agents (see git worktree list)
+# Local agent worktrees
 /.agents/worktrees/
+/.muse/worktrees/
