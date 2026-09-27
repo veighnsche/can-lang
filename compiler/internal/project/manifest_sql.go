@@ -93,12 +93,26 @@ func parseSQL(raw json.RawMessage) (SQLDescriptor, error) {
 		if exists {
 			return d, fmt.Errorf("execute cannot declare row_limit_parameter")
 		}
+	} else if d.Cardinality == "one" && !exists {
+		// F8/RETURNING shape: cardinality one without a row-limit site.
+		// Absent decodes as 0; the checker (CheckDescriptorDialect)
+		// then requires INSERT ... RETURNING and rejects every other
+		// one+0 shape exactly as before.
+		d.RowLimitParameter = 0
 	} else {
 		if !exists {
 			return d, fmt.Errorf("row-returning SQL requires row_limit_parameter")
 		}
 		d.RowLimitParameter, err = integer(limit)
-		if err != nil || d.RowLimitParameter != uint64(len(d.Parameters))+1 {
+		if err != nil {
+			return d, fmt.Errorf("row_limit_parameter must follow the application parameters")
+		}
+		if d.Cardinality == "one" && d.RowLimitParameter == 0 {
+			// Explicit 0 is the absent shape (F8/RETURNING); the
+			// checker decides admission from the statement text.
+			return d, nil
+		}
+		if d.RowLimitParameter != uint64(len(d.Parameters))+1 {
 			return d, fmt.Errorf("row_limit_parameter must follow the application parameters")
 		}
 	}

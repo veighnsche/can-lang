@@ -79,6 +79,39 @@ func TestSQLDescriptorShapeRefusals(t *testing.T) {
 	}
 }
 
+// TestSQLDescriptorOneLimitZero pins the F8/RETURNING manifest rule:
+// cardinality one allows a missing (or explicit 0) row_limit_parameter,
+// decoding to 0 for the checker to admit-or-reject from the statement
+// text. Every other cardinality keeps its existing rule.
+func TestSQLDescriptorOneLimitZero(t *testing.T) {
+	one := func(body string) string {
+		return `{"source_root":"src","error_registry":"e","sql":{"q":{"dialect":"postgresql","statement":"X","parameters":["name"],"parameter_type":"app::parameters","row_type":"app::row","cardinality":"one"` + body + `}}}`
+	}
+	for _, raw := range []string{
+		one(``),
+		one(`,"row_limit_parameter":0`),
+		one(`,"row_limit_parameter":2`),
+	} {
+		manifest, err := ParseManifest([]byte(raw))
+		if err != nil {
+			t.Fatalf("%s: %v", raw, err)
+		}
+		if got := manifest.SQL["q"].RowLimitParameter; strings.Contains(raw, `"row_limit_parameter":2`) && got != 2 {
+			t.Fatalf("select-one limit = %d, want 2", got)
+		} else if !strings.Contains(raw, `"row_limit_parameter":2`) && got != 0 {
+			t.Fatalf("returning-shape limit = %d, want 0", got)
+		}
+	}
+	bad := one(`,"row_limit_parameter":1`)
+	if _, err := ParseManifest([]byte(bad)); err == nil {
+		t.Fatal("one+limit 1 accepted")
+	}
+	many := `{"source_root":"src","error_registry":"e","sql":{"q":{"dialect":"postgresql","statement":"X","parameters":["name"],"parameter_type":"app::parameters","row_type":"app::row","cardinality":"many"}}}`
+	if _, err := ParseManifest([]byte(many)); err == nil {
+		t.Fatal("many+absent accepted")
+	}
+}
+
 func TestRealpathConfinement(t *testing.T) {
 	root := t.TempDir()
 	outside := t.TempDir()
