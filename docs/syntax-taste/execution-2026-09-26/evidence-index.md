@@ -38,11 +38,11 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | C03 | done (C-E action wire) | main `9a2ea7b7` (worker `8f61b1b`) | macOS, go1.27.1 | gofmt clean; `go test` check ok; GET/document + POST/swap-inner rules, no per-case mixing, plain routes untouched | pass |
 | H07 | done (R14 budget guard) | main `92f93263` (worker `73dd42a8`) | macOS, bun 1.4.2 | 36/36 pass; `check:runtime` green; secret scan clean; within-scope reserve/fence/settle, usage decoding, redaction, no bypass | pass |
 | E06 | done (redacted reporting) | main `e3a4148c` (worker `c5499411`) | macOS, bun 1.4.2 | 17/17 pass; `check:runtime` green; boundary reporting, shared claim, fixed 500, no native leakage | pass |
-| E04 | partial slices 1-2 (task open) | main `8318712b`+`4b10d46b` | macOS, bun 1.4.2, live PG/MySQL | 23/23 + 15/15 pass; `check:runtime` green; SQL pool/tx bounds; fetch/action/server/disconnect legs pending | partial |
+| E04 | done (request lifetime) | main `ea043250` (5 slices; retry lane, `19` failed clean) | macOS, bun 1.4.2, live PG/MySQL | 74/74 live pass; `check:runtime` green; SQL pool/tx bounds, fetch/action abort, dispatch scope, ingress; checker patch→C06 | pass |
 | F03 | done (RETURNING slice + contracts) | main `bf83f0aa` (worker `4e500d8`) | macOS, live PG 17.11/MySQL 8.4.11 | sql pkg ok; live relational slice pass (incl. MySQL mapping leg); integration gap found+fixed: `can_f03` lane DB minted PG+MySQL and recorded in register | pass |
 | E07 | done (X-R15-1 NEG, X-R15-3 NEG) | main `bef41a2d` (worker `3bcf458e`) | macOS, live MinIO S3-protocol | 21/21 pass live (60s); `check:runtime` green; end(Error) completes w/o abort, destructive cancel proven, pin/release mapped, cleanup-await injection recorded | pass |
-| A08 | partial slice 1 (task open) | main `e88ebf01` (worker `7f301098`) | n/a (docs/fixtures) | registry + 3 frozen repair comparisons (prompts, sealed variants, hidden checks); all JSON valid; agent slots empty (0 attempts, no model access) | partial |
-| C02 | done (native controls) | main `ff18f134` (6 worker slices, ff) | macOS + container FF141, Playwright 1.55.1 | `TestC02NativeMatrix` 11/11×3, `TestC02ControlsMatrix` 17/17×3 (Ch140/Wk26/FF141); gate5 12/12 regress 831s; check suite 696s; RH green; report `docs/syntax-taste/evidence/2026-09-26/c02/c02-report.md` | pass |ures) | registry + 3 frozen repair comparisons (prompts, sealed variants, hidden checks); all JSON valid; agent slots empty (0 attempts, no model access) | partial |
+| A08 | done (authoring-policy comparisons) | main `e88ebf01`+`74256811` (workers `7f301098`,`f1a5dc46`) | n/a (docs/fixtures) | registry + 3 records + neutral/adverse, held-out sealed, handoff filed; all JSON valid | pass |
+| C02 | done (native controls) | main `ff18f134` (6 worker slices, ff) | macOS + container FF141, Playwright 1.55.1 | `TestC02NativeMatrix` 11/11×3, `TestC02ControlsMatrix` 17/17×3 (Ch140/Wk26/FF141); gate5 12/12 regress 831s; check suite 696s; RH green; report `docs/syntax-taste/evidence/2026-09-26/c02/c02-report.md` | pass |
 | C06 | done (W1 both apps × 3 browsers) | main `932924f7` (10 worker `a37eadc4`..`59c99b39`+record) | macOS + container FF141, Playwright 1.55.1 | `TestC06ServedMatrix` 99/99 in 643s worker / 942s main re-qual (compare 13×3, w1-grid 12×3, drift rollout+rollback 4×3×2; Ch140.0.7339.186/Wk26.0/FF141.0); check/build legs (grid 394/394, compare 221/221, server 347/347 real-can; API-break + capture edits); gate5 regress 1179s green (219 checks); RH green; report `docs/syntax-taste/evidence/2026-09-26/c06/c06-report.md` (+ main re-qual §) | pass |
 
 | H10 | done (IC1 GREEN) | main `2a84ee9f` (2 worker `99add4a1`,`44651e43`) | macOS, go1.27.1/bun 1.4.2, pinned Bun archive | 5/5 battery re-verified on main by coord (C-B 11/11 38s, C-D 128/128 canlc assert, rename 4/4, companion 9/9, host conf 51/51 bun + 9+2skip go, redaction+bulk 25/25, H07+F01 75/75, C-H 2/2, catalogue-check 0, check:runtime green); 13/13 conditioned resolutions republished first; NOTE-02 (stale internal/ walk from af0f42a2) fixed by coord + focused rerun green; record `docs/syntax-taste/execution-2026-09-26/h10-ic1-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h10/` | pass |
@@ -54,10 +54,10 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | A06 (Q6) | A04 | INACTIVE | self_tail_coverage.md: no needed W4 shape excluded; callable refinement path recorded |
 | B03 (Q5) | B01 | INACTIVE | x-r06-1.md parity tables + trip conditions |
 | B04 (Q4) | B02 | INACTIVE | x-r07-1.md burden measures + trip conditions |
-| C05 (X-R02-1) | C04 | pending | — |
-| O2 (X-R04-2) | E05 | pending | — |
-| S3 cancel vs discard (X-R15-1) | E07 | pending | — |
-| S3 deadline (X-R15-3) | E07/E09 | pending | — |
-| D01 tier | D01 | pending | — |
-| RETURNING | F02→F03 | pending | — |
-| X-R14-1 profile | H07/H08 | pending | — |
+| C05 (X-R02-1) | C04 | INACTIVE | root-only rule stands; `tests/browser-controls/x-r02-1.md:98-116` + trip conditions |
+| O2 (X-R04-2) | E05 | O1 SUFFICIENT, O2 INACTIVE | zero write shapes qualified; `request-policy.md:114-123,167-171`, `e05-x-r04-2.md` |
+| S3 cancel vs discard (X-R15-1) | E07 | NEGATIVE (cancel removed) | `s3::discard_upload` in catalogue; `s3.ts:205-241`; `e08-r15-remedy.md:30-71`; absence legs E1/W5-S1 |
+| S3 deadline (X-R15-3) | E07/E09 | NEGATIVE (between-awaits bound) | `s3.ts:420`; `e08-r15-remedy.md:76-93`; W5 deadline legs BLOCKED by design |
+| D01 tier | D01 | A/B→T2, C→T3 | `x-r01-1.md:248-282`; `host/` deliverables + `REVIEW-MANIFEST.json` |
+| RETURNING | F02→F03 | ADMITTED per-dialect | keyless generated-identity only; `f02-report.md`; `f03-returning-contract.md` §3, §5 MySQL mapping |
+| X-R14-1 profile | H07/H08 | NO profile qualifies | guard fails closed; `h08-x-r14-1.md`; `budget.ts:16-17`; `native-ai/README.md:36-40` |
