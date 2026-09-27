@@ -140,10 +140,7 @@ The installed launcher resolves through the real executable path exactly
 like the development sidecar, so running processes keep their open file
 handles while new launches enter the new tree. Updates never rewrite a
 live version, never remove old versions, and never call `bun upgrade`;
-any verification failure preserves the previous selection. Only
-installer-owned `.can-stage-*`/`.can-current-*` staging names are ever
-removed, via `PruneStaging`; foreign files are left alone and unowned
-patterns refuse.
+any verification failure preserves the previous selection.
 
 Each refusal names its cause: detached-record mismatch or malformed
 record, archive escapes/absolute paths/symlinks/non-regular entries,
@@ -206,7 +203,7 @@ runtime; packaged HTMX 4.0.0; eight maintained examples; offline
 install/update with versioned roots and current-symlink swaps.
 
 Gates: the [verifier](../.github/workflows/verifier.yml) runs
-gofmt, vet, cataloguegen, modcheck, gramcheck, the full Go suite,
+gofmt, vet, cataloguegen, gramcheck, the full Go suite,
 and the 850-test Bun suite with PostgreSQL 17, pinned Chromium,
 and TypeScript 7.0.2 operated — zero skips. The
 [tsc gate](../.github/workflows/tsc.yml) typechecks 504 freshly

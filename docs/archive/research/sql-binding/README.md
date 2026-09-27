@@ -1,11 +1,11 @@
 # SQL parser binding comparison (I36)
 
-Bounded research: pick the production PostgreSQL parser binding for Can SQL
+Historical I36 decision: select the PostgreSQL parser binding for Can SQL
 descriptors. Both candidates wrap libpg_query, the actual PostgreSQL
 parser/scanner; the question is which Go binding to pin, not whether to
-trust the grammar. Nothing here is imported by production code: the
-comparison lives in its own module, and only the winner entered the root
-`go.mod`. The loser's dependency never touched production.
+trust the grammar. The retired comparison ran in its own module, never imported by
+production code. Only the winner entered the root `go.mod`; the loser's
+dependency never touched production.
 
 ## Candidates
 
@@ -19,37 +19,28 @@ comparison lives in its own module, and only the winner entered the root
 | Needs | clang + `CGO_ENABLED=1` to build | WASM threads + exception handling (wazero provides) |
 | Licenses | BSD-3-Clause + PostgreSQL | MIT + BSD NOTICE + PostgreSQL-derived + Apache-2.0 (wazero) |
 
-go-pgquery returns pg_query_go/v6 protobuf types, so both harnesses assert
+go-pgquery returned pg_query_go/v6 protobuf types, so both harnesses checked
 the same shapes. Same PostgreSQL major (17) and minor (7) on both sides.
 
-## Corpus and harnesses
+## Historical method
 
-- `corpus/corpus.json`: 24 SQL cases with identical bytes for both sides:
-  ordinary, repeated, and multi-digit parameters; single-quoted, escape,
-  and dollar-quoted strings; line and nested block comments; multibyte
-  UTF-8 before tokens; malformed grammar; unterminated strings; multi,
-  empty, comment-only, and semicolon-only inputs; INSERT/UPDATE/DELETE
-  with and without RETURNING; subquery and literal LIMIT.
-- `corpus/pinned.json`: expected statement spans, parameter spans, token
-  counts, and failures, derived from the reference run and hand-checked
-  (byte offsets verified against multibyte inputs).
-- `cgo/main.go`, `wasm/main.go`: structurally identical mains, each
-  importing one candidate. Modes: run the corpus (results JSON plus
-  per-case raw parse/scan JSON under `results/raw/`), `--once` for cold
-  single-shot timing, `--batch` for memory.
-- `compare/main.go`: `--pin` derives pins; `--check` verifies a run;
-  `--verdict` diffs two runs case by case, including byte equality of
-  the raw parse and scan JSON. Nothing is normalized away.
-- `measure.sh`: the full protocol (builds, sizes, cold/warm/memory,
-  `CGO_ENABLED=0` behavior). Outputs `results/measure.log`,
-  `results/cold.json`; binaries under `results/bin/` are regenerable
-  and git-ignored.
+The retired standalone Go module compared 24 identical SQL inputs with
+both bindings. Cases covered parameter numbers, quotes, comments, UTF-8
+byte offsets, malformed and empty inputs, statement counts, DML, and
+LIMIT. The comparison checked raw parse/scan JSON without normalization,
+plus hand-checked statement and parameter spans. Cold, warm, build,
+binary-size, and memory measurements informed the choice.
+
+The executable harnesses, self-tests, shell runner, dependency files,
+private corpus, and detailed run outputs were removed after the decision.
+Git history retains that evidence. This directory is a historical record,
+not a runnable experiment or a current validation input.
 
 ## Results (Apple M4, darwin/arm64)
 
 Correctness: **24/24 cases match byte for byte** — raw parse JSON, raw
 scan JSON, token spans, statement spans, parameter numbers and spans,
-error messages and cursors (`results/verdict.json`). The only divergence
+error messages and cursors ([retained verdict](results/verdict.json)). The only divergence
 is the Go error wrapper name (`*parser.Error` vs `*pgerror.Error`) with
 equal message and cursor.
 
@@ -66,7 +57,7 @@ equal message and cursor.
 ## Verdict
 
 Pin the **CGo binding**. Jev agreed 3/3 at high confidence (see
-`../docs/implementation/evidence/2026-09-21/i36-jev/decision.md`), and
+[consultations](../../../implementation/evidence/2026-09-21/i36-jev/decision.md)), and
 the evidence supports it: identical outputs, ~100x faster cold starts
 per SQL-touching compiler invocation, ~25x lower transient memory, a
 smaller binary, and a tagged official release. The cost is clang plus
@@ -75,18 +66,22 @@ as a source-build prerequisite; release users still need no C toolchain,
 and staged tests execute the CGo-built launcher with compilers absent
 from `PATH`.
 
-## Handoff notes for I37
+## Retirement audit
 
-Upstream span quirks, all pinned by `compiler/internal/sql/parser_test.go`:
+The comparison served its one-time dependency selection; keeping its
+alternate parser, nested module, and experiment-only tests adds obsolete
+maintenance work. A bounded repository reference audit found no imports,
+execution paths, or fixture consumers in current compiler, runtime,
+tools, or tests. The distribution SQL binding provenance record cites this
+README for the rejected candidate's rationale; it remains valid.
+Implementation planning and frozen I36 evidence describe the original
+experiment historically. No current gate or test may depend on archive
+files, as stated in the [archive policy](../../README.md).
 
-- `StmtLen` is 0 unless the statement ends with `;`. Derive unterminated
-  ends from scanner tokens, never from `Length` alone.
-- `StmtLocation` points just past the previous semicolon and can include
-  leading whitespace.
-- Token `Start`/`End` are byte offsets (verified across multibyte text).
-  Failure `Cursor` is a character offset; map it to manifest byte spans.
-- `;` scans as `ASCII_59`; comment-only input scans as one `SQL_COMMENT`.
-  Empty input scans to zero tokens; all three parse to zero statements.
-- Error Go types differ per binding; the adapter normalizes to message
-  plus cursor. Classify from structure (counts, spans, token shapes),
-  never by matching message substrings.
+The original [verdict](results/verdict.json) preserves the 24 case
+comparisons and matching hashes. [Cold timing results](results/cold.json)
+preserve the measured startup difference (values in milliseconds). Other
+measurements above are the historical summary, not newly rerun claims.
+Production parser contracts and their current tests remain outside this
+archive. No builds, tests, benchmarks, or experiment reruns accompanied
+this retirement.

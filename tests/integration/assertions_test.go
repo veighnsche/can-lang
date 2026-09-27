@@ -302,32 +302,39 @@ func TestAssertionFailureLocations(t *testing.T) {
 		if err = json.Unmarshal(out.Bytes(), &report); err != nil {
 			t.Fatal(err, out.String())
 		}
-		var frames []any
+		entries := report["assertions"].([]any)
+		if len(entries) == 0 {
+			t.Fatal("missing assertion reports", report)
+		}
+		expectedReason := "harness violation"
 		if initialization {
-			if report["reason"] != "initialization failed" {
-				t.Fatal(report)
+			expectedReason = "initialization failed"
+			if len(entries) != 2 {
+				t.Fatal("expected both roots to report initialization failure", report)
 			}
-			frames, _ = report["frames"].([]any)
-		} else {
-			test := report["assertions"].([]any)[0].(map[string]any)
-			if test["reason"] != "harness violation" || !strings.Contains(out.String(), "missing fixture") {
-				t.Fatal(report)
-			}
-			frames, _ = test["frames"].([]any)
+		} else if !strings.Contains(out.String(), "missing fixture") {
+			t.Fatal(report)
 		}
 		start := strings.Index(text, expression)
 		end := start + len(expression)
 		line := strings.Count(text[:start], "\n") + 1
 		column := start - strings.LastIndex(text[:start], "\n")
-		found := false
-		for _, raw := range frames {
-			frame := raw.(map[string]any)
-			if frame["file"] == "main.can" && frame["start"] == float64(start) && frame["end"] == float64(end) && frame["line"] == float64(line) && frame["column"] == float64(column) {
-				found = true
+		for _, rawEntry := range entries {
+			entry := rawEntry.(map[string]any)
+			if entry["reason"] != expectedReason {
+				t.Fatal(report)
 			}
-		}
-		if !found {
-			t.Fatalf("missing exact span [%d,%d): %s", start, end, out.String())
+			frames, _ := entry["frames"].([]any)
+			found := false
+			for _, raw := range frames {
+				frame := raw.(map[string]any)
+				if frame["file"] == "main.can" && frame["start"] == float64(start) && frame["end"] == float64(end) && frame["line"] == float64(line) && frame["column"] == float64(column) {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatalf("missing exact span [%d,%d): %s", start, end, out.String())
+			}
 		}
 		for _, secret := range []string{root, bundle, "must-not-disclose", "can:cli", "Error:", "must-not-write"} {
 			if strings.Contains(out.String(), secret) {
@@ -343,6 +350,7 @@ fn int sample
     emits []
     asserts
         works: => ok 1
+        also_works: => ok 1
     ok 1
 `, "1 / 0", true)
 	run(`package app

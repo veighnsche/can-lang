@@ -17,7 +17,7 @@ func TestParseLSPArgs(t *testing.T) {
 	if err := parseLSPArgs([]string{"--stdio"}); err != nil {
 		t.Fatalf("--stdio: err=%v", err)
 	}
-	for _, argv := range [][]string{{"pos.can"}, {"--bogus", "x"}, {"--baseline", "b.json"}, {"--baseline"}} {
+	for _, argv := range [][]string{{"pos.can"}, {"--bogus", "x"}} {
 		if err := parseLSPArgs(argv); err == nil {
 			t.Fatalf("parseLSPArgs(%q) = nil error, want usage error", argv)
 		}
@@ -28,11 +28,7 @@ func TestRunUsageCodes(t *testing.T) {
 	for _, argv := range [][]string{
 		{},
 		{"--bogus", "x"},
-		{"baseline"},
-		{"explain"},
-		{"explain", "a", "b"},
-		{"lint"},
-		{"normalize"},
+		{"unknown-command"},
 		{"lsp", "pos.can"},
 		{"assert"},
 		{"assert", "--assert-timeout-ms"},

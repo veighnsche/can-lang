@@ -82,7 +82,6 @@ Run in the implementation checkout, after the active implementer's changes are i
 make catalogue
 make catalogue-check
 go test ./compiler/internal/catalogue ./compiler/internal/check ./compiler/internal/ir ./compiler/internal/emit
-go run ./tools/modcheck
 go test ./...
 ```
 
@@ -93,6 +92,6 @@ Choose focused runtime/integration tests while developing; use the repository's 
 CAN_BUN_ARCHIVE="$CAN_BUN_ARCHIVE" go test ./tests/integration -run 'Files|SQLite|MySQL' -count=1
 ```
 
-Those test names are intended matching groups, not claims the tests already exist. Verify that a test ran rather than matching zero tests or skipping because the archive/service is absent. Use the repository's existing bundle qualification procedure instead of downloading a random Bun binary. `tools/modcheck` checks maintained Can modules; it is not by itself a runtime import-graph or native compatibility test.
+Those test names are intended matching groups, not claims the tests already exist. Verify that a test ran rather than matching zero tests or skipping because the archive/service is absent. Use the repository's existing bundle qualification procedure instead of downloading a random Bun binary.
 
 Preparation ran only the standalone evidence probe and documentation validation. It did not run these implementation acceptance commands against unfinished features.

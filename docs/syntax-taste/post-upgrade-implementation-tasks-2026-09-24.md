@@ -554,7 +554,6 @@ operated, run the existing full gates:
 ```sh
 go vet ./...
 go run ./compiler/internal/catalogue/cmd/cataloguegen --check
-go run ./tools/modcheck
 go run ./tools/gramcheck
 go test -timeout=60m -count=1 -v ./...
 bun test runtime/test/

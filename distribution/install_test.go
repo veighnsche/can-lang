@@ -181,36 +181,3 @@ func TestExtractReleaseRefusals(t *testing.T) {
 		t.Fatal("extracted an absent archive")
 	}
 }
-
-func TestPruneStaging(t *testing.T) {
-	root := t.TempDir()
-	foreign := filepath.Join(root, "foreign.txt")
-	if err := os.WriteFile(foreign, []byte("operator data"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	stale := filepath.Join(root, ".can-stage-interrupted", "versions", "x")
-	if err := os.MkdirAll(stale, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, ".can-stage-interrupted", "partial"), []byte("x"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(root, ".can-current-temp"), []byte("x"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := PruneStaging(root); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(foreign); err != nil {
-		t.Fatal("prune touched a foreign file")
-	}
-	for _, stale := range []string{".can-stage-interrupted", ".can-current-temp"} {
-		if _, err := os.Lstat(filepath.Join(root, stale)); !os.IsNotExist(err) {
-			t.Fatalf("prune left %s", stale)
-		}
-	}
-	selected, err := Selection(root)
-	if err != nil || selected != "" {
-		t.Fatalf("empty root selects %q: %v", selected, err)
-	}
-}

@@ -11,7 +11,7 @@ implicitly open.
   example/docs updated) or closed as wontfix with a decisions.md entry
   explaining what was tried and why it stops.
 - `bun test runtime/test/`, `go test ./...` (archive + live services),
-  `make catalogue-check`, `modcheck`, and the fresh-emit strict `tsc`
+  `make catalogue-check` and the fresh-emit strict `tsc`
   gate are all green at the end.
 - No new external dependencies; all native behavior pinned to Bun 1.4.2
   with probe evidence.
@@ -158,7 +158,7 @@ catalogue regens. Run units in D, B, A, F, E, C order.
   the validation artifact; F2/E2/C2 reuse their capability suites.
 - Z: `bun test runtime/test/`, `go test ./...` with
   `CAN_BUN_ARCHIVE` + live MinIO/MySQL, `make catalogue-check`,
-  `go run ./tools/modcheck`, fresh-emit `tsc -p tsconfig.json`.
+  fresh-emit `tsc -p tsconfig.json`.
 - Highest-risk validation: C1 — a new-syntax decision would be the
   largest scope change; its Jev + comparison evidence must be
   airtight before C2 starts.

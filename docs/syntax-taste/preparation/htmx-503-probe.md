@@ -1,12 +1,14 @@
-# Current HTMX 503 visibility probe
+# Historical HTMX 503 visibility probe
 
 24 September 2026. Bounded DI-09d/DI-13 observation on source commit `02a549d28fd5fc5c3996160e65a97de332390d30`. This tests the existing account-search action and pinned browser asset; it makes no syntax or product-policy choice.
+
+The one-off `probes/htmx-503` scripts were retired during repository cleanup. This note records the observation at the stated revision; maintained account and invoice HTTP/browser tests cover current response and swap behavior.
 
 ## Setup and method
 
 - macOS 27.0 arm64; Bun 1.4.2 from the checked-in pinned archive (archive SHA-256 `90987a3a16d7db556d886ac3edf0a1cf43acaed622e8676be1d12f`); Node 24.21.0; Playwright 1.55.1; installed Chromium 140.0.7339.186; disposable PostgreSQL 17.11 on loopback. HTMX is the repository's pinned 4.0.0 asset (`distribution/assets/htmx-4.0.0.min.js`, SHA-256 `e484d9171a9db30a39c8f16e3d709d4137f3211c659f8e6125816635033d593f`). No browser or asset was downloaded.
-- [build-current.go](../../../probes/htmx-503/build-current.go) built the current distribution from this checkout with the verified local Bun archive. Its `canlc build` then compiled an unchanged copy of `examples/account-search` under `/private/tmp`. The build reported 23/23 assertions passing and build ID `e2d14ab3df2f7f7c75f17f35b3c54c04fe27df15ec24cad101a80abf7611d70a`.
-- The existing `seed-driver.ts` setup created seven account rows in a disposable database. The generated account server used its normal fd-3 `ACCOUNTS_DB` credential and served `127.0.0.1:18563`. [probe.mjs](../../../probes/htmx-503/probe.mjs) opened `/accounts` in real Chromium, blocked non-loopback requests, and used the page's existing `#account_query` HTMX form. After the 200 and 422 controls, it renamed `can_i42_accounts` within that disposable database. The unchanged SQL loader's next query failed and the unchanged handler returned 503. The probe restored the table in `finally`; a subsequent count found all seven rows.
+- The retired `build-current.go` script built the current distribution from this checkout with the verified local Bun archive. Its `canlc build` then compiled an unchanged copy of `examples/account-search` under `/private/tmp`. The build reported 23/23 assertions passing and build ID `e2d14ab3df2f7f7c75f17f35b3c54c04fe27df15ec24cad101a80abf7611d70a`.
+- The existing `seed-driver.ts` setup created seven account rows in a disposable database. The generated account server used its normal fd-3 `ACCOUNTS_DB` credential and served `127.0.0.1:18563`. The retired `probe.mjs` script opened `/accounts` in real Chromium, blocked non-loopback requests, and used the page's existing `#account_query` HTMX form. After the 200 and 422 controls, it renamed `can_i42_accounts` within that disposable database. The unchanged SQL loader's next query failed and the unchanged handler returned 503. The probe restored the table in `finally`; a subsequent count found all seven rows.
 - The browser read each actual `GET /accounts/search` response status, body and content type, and compared `#account_results.innerHTML` immediately before versus 250 ms after the response. It checked that HTMX loaded and that the emitted `htmx-config` has `mode: "same-origin"`, includes 503 in `noSwap`, and excludes 422. The raw local observation is `/private/tmp/can-htmx-503-work/observations.json` (temporary, not a committed artifact).
 
 | Browser action | HTTP status and body | `#account_results` before → after |

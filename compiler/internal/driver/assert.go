@@ -109,21 +109,6 @@ func (r *Runtime) Assert(ctx context.Context, directory string, selector, enviro
 		"complete":      complete,
 		"assertions":    entries,
 	}
-	// Initialization is deterministic per worker: when every root fails in
-	// setup, the suite also carries the legacy suite-level shape so
-	// initialization diagnostics keep their historical location.
-	if complete && len(entries) > 0 {
-		initialization := true
-		for _, entry := range entries {
-			if entry["reason"] != "initialization failed" {
-				initialization = false
-			}
-		}
-		if initialization {
-			suite["reason"] = "initialization failed"
-			suite["frames"] = entries[0]["frames"]
-		}
-	}
 	// Survive a closed report pipe: without this the runtime dies on SIGPIPE
 	// while delivering the suite, but a broken consumer must stay a plain
 	// assertion failure with silent diagnostics, as worker delivery was.

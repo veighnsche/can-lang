@@ -4,7 +4,7 @@ name: target qualification
 # operates every required service — pinned Bun archive, PostgreSQL
 # 17, Node 24 with pinned Playwright Chromium, WebKit and Firefox, pinned
 # TypeScript — and runs the unnarrowed suite: gofmt, vet,
-# cataloguegen, modcheck, gramcheck, go test ./..., and bun test
+# cataloguegen, gramcheck, go test ./..., and bun test
 # runtime/test/. No release upload, credentialed signing, or live
 # provider call happens here.
 
@@ -72,10 +72,9 @@ jobs:
       - name: Check formatting, vet, and generated mirrors
         run: |
           set -euo pipefail
-          test -z "$(gofmt -l compiler/ tests/ tools/ distribution/ internal/)"
+          test -z "$(gofmt -l compiler/ tests/ tools/ distribution/)"
           go vet ./...
           go run ./compiler/internal/catalogue/cmd/cataloguegen --check
-          go run ./tools/modcheck
           go run ./tools/gramcheck
       - name: Produce the UP23 browser-guard verdict
         env:

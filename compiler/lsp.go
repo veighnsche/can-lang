@@ -79,9 +79,7 @@ func writeFrame(w *bufio.Writer, v any) error {
 // through the current parse, resolve, and check pipeline, and definition
 // requests resolve through file, package, prelude, and import scopes. No
 // request builds, runs, asserts, dials out, queries, reads the
-// environment, emits files, or mutates registries; the --baseline
-// execution hook is gone, and predecessor spellings diagnose as ordinary
-// current-syntax errors.
+// environment, emits files, or mutates registries.
 type lspDoc struct {
 	path    string
 	text    string
@@ -99,11 +97,6 @@ func newLSPServer() *lspServer {
 }
 
 func parseLSPArgs(argv []string) error {
-	for _, arg := range argv {
-		if arg == "--baseline" || strings.HasPrefix(arg, "--baseline=") {
-			return fmt.Errorf("canlc lsp: --baseline was retired with the baseline-veto handshake; the server now reports live diagnostics")
-		}
-	}
 	fs := flag.NewFlagSet("canlc lsp", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	fs.Bool("stdio", false, "stdio transport marker from LSP clients (ignored)")

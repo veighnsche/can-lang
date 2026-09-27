@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/veighnsche/can-lang/internal/scan"
 )
 
 func fullCorpus() string {
@@ -21,7 +19,7 @@ func fullCorpus() string {
 }
 
 func TestRepoGrammar(t *testing.T) {
-	root, err := scan.RepoRoot()
+	root, err := repoRoot()
 	if err != nil {
 		t.Skip("not in repo checkout")
 	}

@@ -12,14 +12,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/veighnsche/can-lang/internal/scan"
 )
 
 var jsonFiles = []string{
@@ -352,8 +351,26 @@ func loadCorpus(root string) (string, error) {
 	return sb.String(), nil
 }
 
+// repoRoot locates the checkout for grammar validation invoked from a subdirectory.
+func repoRoot() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", errors.New("repo root (go.mod) not found")
+		}
+		dir = parent
+	}
+}
+
 func main() {
-	root, err := scan.RepoRoot()
+	root, err := repoRoot()
 	if err != nil {
 		fmt.Println("GRAMMAR CHECK FAILED")
 		fmt.Println(" -", err)

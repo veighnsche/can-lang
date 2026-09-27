@@ -18,8 +18,8 @@ test may depend on these files (frozen evidence snapshots under
 - [`sketches/`](sketches/README.md) — retired predecessor gallery
   note (sources deleted) and the clean-room review.
 - [`research/sql-binding/`](research/sql-binding/README.md) — the
-  I36 parser-binding comparison harness (own Go module, never
-  imported by production code).
+  I36 parser-binding decision and minimal recorded results; the
+  standalone comparison module and experiment-only fixtures were retired.
 - [`std-package-history.md`](std-package-history.md) — the merged
   per-package predecessor notes for the eight retired `std/`
   packages (their directories held nothing else).

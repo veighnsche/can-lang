@@ -262,31 +262,3 @@ func lockRoot(root string) (func(), error) {
 		file.Close()
 	}, nil
 }
-
-// PruneStaging removes interrupted installer-owned staging directories and
-// selection temporaries. Anything else in the root is left alone, and
-// unowned patterns refuse rather than delete.
-func PruneStaging(root string) error {
-	abs, err := filepath.Abs(root)
-	if err != nil {
-		return err
-	}
-	entries, err := os.ReadDir(abs)
-	if err != nil {
-		return err
-	}
-	for _, entry := range entries {
-		name := entry.Name()
-		owned := strings.HasPrefix(name, ".can-stage-") || strings.HasPrefix(name, ".can-current-") || strings.HasPrefix(name, ".can-release-")
-		if !owned {
-			continue
-		}
-		if err := checkOwnership(filepath.Join(abs, name)); err != nil {
-			return err
-		}
-		if err := os.RemoveAll(filepath.Join(abs, name)); err != nil {
-			return err
-		}
-	}
-	return nil
-}

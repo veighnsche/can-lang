@@ -62,7 +62,7 @@ current manifest-backed project (`can.project.json`,
 imports) that builds fresh from a staged layout with output only in
 owned dist. `tests/integration/stdlib_test.go` discovers them by
 walking for manifests, so no project can be silently omitted from
-fresh compilation; `modcheck` covers every maintained `.can` file.
+fresh compilation through the production parser and resolver.
 
 - `std/map/current`, `std/ratio/current`, `std/scalars/current`,
   `std/text/current`
@@ -142,8 +142,6 @@ automatic retries, and rollback guarantees after cancellation.
 - `go test ./compiler/internal/catalogue/`
   (`TestCatalogueInclusionInventory`: every operation resolves to
   owning-task evidence)
-- `go run ./tools/modcheck` (retired shapes stay out of maintained
-  sources; `uses` resolve to catalogue or tree packages)
 - `go test ./tests/integration/ -run TestStdlibMaintained`
   (every maintained project asserts and builds fresh from staging)
 

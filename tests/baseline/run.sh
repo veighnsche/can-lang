@@ -45,10 +45,10 @@ step "baseline $MODE in disposable $DIR"
 step "bun $BUN_VER ($BUN_REV) / $GO_VER / git $GIT_REV"
 
 step "gofmt check (repo must be clean)"
-if [ -z "$(gofmt -l compiler/ tests/ tools/ distribution/ internal/)" ]; then
+if [ -z "$(gofmt -l compiler/ tests/ tools/ distribution/)" ]; then
   record gofmt pass "no files listed"
 else
-  record gofmt fail "$(gofmt -l compiler/ tests/ tools/ distribution/ internal/ | tr '\n' ' ')"
+  record gofmt fail "$(gofmt -l compiler/ tests/ tools/ distribution/ | tr '\n' ' ')"
   failures=$((failures + 1))
 fi
 
@@ -74,9 +74,6 @@ if [ "$MODE" = "full" ]; then
 
   step "cataloguegen --check"
   if go run ./compiler/internal/catalogue/cmd/cataloguegen --check; then record catalogue pass "clean"; else record catalogue fail "see log"; failures=$((failures + 1)); fi
-
-  step "modcheck"
-  if go run ./tools/modcheck; then record modcheck pass "clean"; else record modcheck fail "see log"; failures=$((failures + 1)); fi
 
   step "gramcheck"
   if go run ./tools/gramcheck; then record gramcheck pass "clean"; else record gramcheck fail "see log"; failures=$((failures + 1)); fi

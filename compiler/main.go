@@ -213,10 +213,6 @@ func run(argv []string) int {
 	if len(argv) > 0 && argv[0] == "lsp" {
 		return runLSP(argv[1:])
 	}
-	if len(argv) > 0 && (argv[0] == "explain" || argv[0] == "lint" || argv[0] == "baseline" || argv[0] == "normalize") {
-		fmt.Fprintf(os.Stderr, "canlc %s was retired with the predecessor toolchain in I44\n", argv[0])
-		return 2
-	}
 	if len(argv) > 0 && argv[0] == "clean" {
 		if len(argv) != 2 {
 			fmt.Fprintln(os.Stderr, "usage: canlc clean PROJECT_DIRECTORY")

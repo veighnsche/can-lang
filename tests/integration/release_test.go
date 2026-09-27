@@ -352,26 +352,6 @@ func TestReleaseInstallUpdate(t *testing.T) {
 	if selected, err := distribution.Selection(root); err != nil || selected != current {
 		t.Fatalf("racing updates moved selection to %q: %v", selected, err)
 	}
-	foreign := filepath.Join(root, "operator-note.txt")
-	if err := os.WriteFile(foreign, []byte("operator data"), 0600); err != nil {
-		t.Fatal(err)
-	}
-	stale := filepath.Join(root, ".can-stage-interrupted")
-	if err := os.Mkdir(stale, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := distribution.PruneStaging(root); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := os.Stat(foreign); err != nil {
-		t.Fatal("prune touched a foreign file")
-	}
-	if _, err := os.Lstat(stale); !os.IsNotExist(err) {
-		t.Fatal("prune left owned staging")
-	}
-	if selected, err := distribution.Selection(root); err != nil || selected != current {
-		t.Fatalf("prune moved selection to %q: %v", selected, err)
-	}
 	if !reflect.DeepEqual(sourceBefore, treeHashes(t, source, []string{"compiler", "distribution", "runtime", "tools"})) {
 		t.Fatal("release flow wrote to the source tree")
 	}

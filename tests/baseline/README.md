@@ -29,7 +29,7 @@ before any trial runs. It implements task T01 only.
 # Fast baseline verification (gofmt, disposable canlc build, version smoke).
 tests/baseline/run.sh --smoke
 
-# Full core regression (vet, cataloguegen, modcheck, gramcheck,
+# Full core regression (vet, cataloguegen, gramcheck,
 # runtime checks, go test ./..., bun test runtime/test/).
 tests/baseline/run.sh --full
 
@@ -40,6 +40,10 @@ go test ./tests/baseline/
 Set `KEEP_DIR=1` to keep the disposable run directory for inspection.
 
 ## Rules for later tasks
+
+Repository cleanup removed the obsolete `modcheck` command and root
+`internal/` formatting path from the core regression commands. The frozen
+compiler revision, registered workloads, and acceptance rules are unchanged.
 
 - Never edit a registered prompt, held-out variant or hidden check in
   place. If a case must change, open a new dated registry revision.

@@ -101,7 +101,7 @@ documents generally live under `archive/a/`.
 - One rule, one `CANnnnn` code (the registry was deleted with the
   predecessor toolchain in I44).
 - Verify current claims mechanically: `go test ./...`,
-  `bun test runtime/test/`, `go run ./tools/modcheck`,
+  `bun test runtime/test/`,
   `go run ./tools/gramcheck`, plus the `tscheck/` fresh-emit gate.
   Committed goldens are gone; maintained examples assert and build
   fresh from staged layouts.

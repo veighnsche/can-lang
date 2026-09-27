@@ -34,7 +34,7 @@ P15.1).
   [evidence](docs/implementation/evidence/2026-09-21/))
 - [`editors/vscode/`](editors/vscode/README.md) — syntax highlighting
   plus an LSP client over `canlc lsp`
-- [`tools/`](tools/) — distbuild, gramcheck, modcheck
+- [`tools/`](tools/) — distbuild, gramcheck
 - [`tscheck/`](tscheck/README.md) — strict TypeScript over fresh emit
 - [`package.json`](package.json) — pinned lint and typecheck tools for authored runtime TypeScript
 
