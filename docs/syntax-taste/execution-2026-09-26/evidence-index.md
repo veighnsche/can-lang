@@ -50,6 +50,15 @@ Format: revision, environment, command, result (pass/fail/skip), artifact path.
 | F04 | done (ledger backend) | main `217654f8` (workers `b8c52ca3`,`bea2a8a4`,`53ef28f9`) | macOS, live PG 17.11/MySQL 8.4.11/SQLite 3.54 | 47/47 live, 59/59 regress, inventory ok; per-run DBs `can_f04_run1`/`run2`; report `docs/syntax-taste/evidence/2026-09-26/f04/f04-report.md` | pass |
 | F06 | done (companion ops + W4 batch) | main `feb0a934` (3 worker) | macOS darwin-arm64, bun 1.4.2, go1.27.1 | live PASS A–I (coord 146s, worker 82.8s+130.2s); sums OK; report `docs/syntax-taste/evidence/2026-09-26/f06/f06-report.md` + `f06-legs.json` | pass |
 | H08 | done (blocked) | main `b4c4c33d` (5 worker) | macOS, bun 1.4.2 (offline) | harness 12/12; W6-AI BLOCKED honest: missing cap+prices+U inputs; no live claim; X-R14-1 no profile qualifies; report `docs/syntax-taste/evidence/2026-09-26/h08/h08-report.md` + recipe + registration | blocked |
+| C04 | done (C-D library + second app) | main `b7a3e214` (4 worker) | macOS, canlc asserts | 124+378+217 asserts, builds 0, fmt clean; C02 landed after additive-only (C04 stands per c02-report) | pass |
+| C05 | inactive (X-R02-1) | — (gate eval; correct outcome) | n/a | no inexpressible shape; root-only rule stands; trip conditions in `x-r02-1.md` | inactive |
+| D01 | done (tier discrimination) | main `b837f710` (7 worker) | macOS | 54/54 + admission; A/B→T2, C→T3; `x-r01-1.md:248-282` | pass |
+| D02 | done (live debt) | main `fb30a330` (4 worker) | macOS, bun 1.4.2 | 40/40 + Go gates; debt D02-LIVE-1..4 until C01 unblocks; record `host/d02-record.md` | pass |
+| E05 | done (X-R04-2 O1) | main `94e3fae8`+`384a6080` (7 worker) | macOS, bun 1.4.2 | 16/16; O1 sufficient, O2 inactive; `docs/implementation/evidence/2026-09-26/e05-x-r04-2.md` | pass |
+| E08 | done (S3 remedy) | main `0688c1eb` (4 worker + coord compiler slice) | macOS, bun 1.4.2, live MinIO S3-protocol | 45/45 live, check/emit green, pin 290; `docs/implementation/evidence/2026-09-26/e08-r15-remedy.md` | pass |
+| F05 | done (companion pair) | main `b9930b47` (5 worker) | macOS, live authenticated pair | 183 asserts; carrier protocol v1; DOC-webhook; `examples/webhook/PROTOCOL.md` | pass |
+| G03 | done (AU-LSP-refs) | main `20c45f48` (worker `8268bb5b` cited) | macOS, go1.27.1 | 13 TestG03 pass; compiler suite green incl G01–G02 | pass |
+| H06 | done (C-H deploy contract) | main `1cf506e7` (3 worker) | macOS, go1.27.1 | 5/5 contract; generation pins; E/C slices→C06; `distribution/paired-deploy.md` | pass |
 | H10 | done (IC1 GREEN) | main `2a84ee9f` (2 worker `99add4a1`,`44651e43`) | macOS, go1.27.1/bun 1.4.2, pinned Bun archive | 5/5 battery re-verified on main by coord (C-B 11/11 38s, C-D 128/128 canlc assert, rename 4/4, companion 9/9, host conf 51/51 bun + 9+2skip go, redaction+bulk 25/25, H07+F01 75/75, C-H 2/2, catalogue-check 0, check:runtime green); 13/13 conditioned resolutions republished first; NOTE-02 (stale internal/ walk from af0f42a2) fixed by coord + focused rerun green; record `docs/syntax-taste/execution-2026-09-26/h10-ic1-record.md`, evidence `docs/syntax-taste/evidence/2026-09-26/h10/` | pass |
 
 ## Conditional branches
