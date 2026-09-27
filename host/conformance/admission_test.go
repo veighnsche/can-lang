@@ -99,7 +99,8 @@ func TestDeliverablesUnreferenced(t *testing.T) {
 		"compiler",
 		"examples",
 		"distribution",
-		"internal",
+		// NOTE(H10-NOTE-02): top-level internal/ was deleted by af0f42a2
+		// (obsolete scanner removal); no replacement tree exists.
 	}
 	var violations []string
 	for _, tree := range owned {

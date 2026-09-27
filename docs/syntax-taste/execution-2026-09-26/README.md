@@ -74,6 +74,8 @@ Initial ready: A01–A05, B01/B02, C07, E01/E03, H01/H09.
 | D03 | done (live debt) | lane-d-d03 (`41`) | isolated | D02 | W2→H11 | 3 worker→`4d7efdbd` | 51/51 + Go 9+2skip; Vendor B via unchanged D02 client; debt D03-LIVE-1..4 until C01 unblocks |
 | C06 | done | lane-c-c06 | isolated | C01, C04, C05✗, E04, H06 | W1→IC2/H13 | 10 worker (`a37eadc4`..`59c99b39`+record)→main `3286e5cc`..`932924f7` | served 99/99 (compare 13×3, grid 12×3, drift 4×3×2; Ch140/Wk26/FF141); check/build grid 394+compare 221+server 347 real-can, API-break + capture edits; gate5 regress 1179s green (219 checks); main re-qual 942s green (same counts); RH green |
 
+| H10 | done (IC1 GREEN) | lane-h-h10 | isolated | A01–A05, B01–B04✗, C02–C05✗, D02, E04–E06, E08, F01, F03, F05, G05, H06–H07 | IC1→H12 | 2 worker (`99add4a1`,`44651e43`)→main `80651c7c`..`2a84ee9f` | 5/5 battery (C-B 11/11, C-D 128/128, rename 4/4, companion 9/9, conf 51/51, C-H 2/2, RH green); 13/13 conditionals republished first; coord re-verified all counts on main; NOTE-02 fixed by coord |
+
 All other tasks: blocked on prerequisites per the task-list graph.
 
 ## Integration checkpoints

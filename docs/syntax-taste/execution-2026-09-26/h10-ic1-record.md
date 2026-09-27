@@ -76,3 +76,27 @@ IC1 release-candidate inputs to H12: the pinned interface versions in
 `h10-manifest.md` (catalogue sha `87c05b44…`, carrier v1, chart `d02.chart/1`,
 generation schema v1, policy/ledger/guard publications). Dependent lane
 completion claims unblocked. No contract returned to preparation.
+
+## Coordinator verification addendum (main, post-integration)
+
+The coordinator independently re-ran the H10 battery on main after
+integrating both H10 slices: C-B harness 11/11
+(`CAN_BUN_ARCHIVE` bundle, 38s), C-D `canlc assert
+shared/grid-controls` 128/128 + top-level pass via a fresh
+`make bundle` dev build (bundle removed after), G05 rename 4/4,
+C-H handshake 2/2, companion protocol 9/9, host conformance bun
+51/51 + go 9 pass / 2 live-debt skips, redaction+bulk 25/25,
+H07+F01 file set 75/75, `catalogue-check` exit 0, catalogue suite
+ok, `check:runtime` green. All counts match the worker record.
+
+H10-NOTE-02 is RESOLVED by the coordinator (no D worker active; the
+stale path came from concurrent foreign-lane refactor `af0f42a2`,
+which deleted `internal/scan/` outright with no replacement tree):
+`TestDeliverablesUnreferenced` fatal reproduced on main, the
+contract re-verified holding by an independent marker sweep (0 hits
+in `runtime`, `tools/runtime`, `compiler`, `examples`,
+`distribution`), the deleted path dropped from the walk list with an
+explanatory comment, and the focused rerun green
+(`TestDeliverablesUnreferenced` + `TestReviewManifestCoversDeliverables`
+PASS). H10-NOTE-01 (E spec-prose sync) remains E-routed and
+non-blocking; IC1 verdict unchanged: GREEN.
