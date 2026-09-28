@@ -596,22 +596,141 @@ completion records are preserved as Muse reports; R5 is still not accepted.
 Only the coordinator writes progress here. Runtime/session/goal/custody values
 remain in the [authoritative Codex record](../../.performance/performance-push-20260928/muse-run-9-owner.json).
 
-- [ ] **G28e — freeze the complete lifecycle and identity interfaces**
+- [x] **G28e — freeze the complete lifecycle and identity interfaces**
   - Prerequisites: previous explicit all-writer release, R5 rejection evidence
     and linked design read. Owner: sole coordinator, checklist/interface notes.
-  - Changes: inspect native `get_goal`; reuse the matching goal or `create_goal`
-    before delegating, without a token budget or overwriting unrelated work.
-    Define concrete contracts for preparation/trial workers, retirement result
-    and failed-retirement custody, registration rollback, explicit kept-graph
+  - Changes: inspected native goal support (three-way negative, see evidence);
+    no `get_goal`/`create_goal` exists to reuse or create, so no delegation
+    goal can be established and no prose substitute is offered. Defined concrete
+    contracts for preparation/trial workers, retirement result and
+    failed-retirement custody, registration rollback, explicit kept-graph
     keeper, required input/resolved-dependency records, phase timestamps and
-    test seams. Follow the linked design, not a new broad planning exercise.
+    test seams. Followed the linked design, not a new broad planning exercise.
   - Acceptance: known four lifecycle defects have direct contracts, fd-3 helper
     and Bun-local parent timer retained, complete identities specified, production
-    and shared helpers untouched; native goal success evidenced or blocker given.
-  - Evidence: exact frozen interfaces and requirement-to-regression mapping;
-    compact native goal reference/progress evidence in the handoff.
+    and shared helpers untouched; native goal blocker given with evidence.
+  - Evidence: frozen contract immediately below with requirement-to-regression
+    mapping. Goal blocker: exposed tool schemas contain no
+    get_goal/create_goal/report_progress/update_goal; `muse --help` lists no
+    goal subcommand; `muse schema` wire schema has zero goal mentions
+    (verified 2026-09-28T16:31:17Z). Delegation-gated G28g cannot start until
+    Codex resolves goal availability; coordinator-owned G28e/G28f proceed.
 
-- [ ] **G28f — implement supervised phases, safe registration and identities**
+### Frozen G28e contracts (normative for G28f/G28g; amends G28a where noted)
+
+All-exit supervised spawn. `run_supervised(args,cwd,timeout,term_grace=2.0,
+kill_grace=1.0,drain_timeout=5.0,on_start=None)` retires the worker group on
+EVERY exit path (zero, nonzero, timeout, external signal), then drains pipes
+bounded. New `RetirementFailed(Exception)` with attrs args/returncode/
+timed_out/interrupted/retirement/detail and message prefix `phase retirement
+failed`: zero exit + verified retirement => CompletedProcess (as before);
+zero exit + unverified => RetirementFailed; nonzero + verified =>
+CalledProcessError (as before, actual code preserved); nonzero + unverified
+=> RetirementFailed with returncode kept; timeout => bounded retirement then
+TimeoutExpired when verified, else RetirementFailed(timed_out=True);
+external signal during wait => retire bounded, re-raise the original signal
+when verified, else RetirementFailed(interrupted=True) chained from it.
+Post-kill drain uses communicate(timeout=drain_timeout); on expiry pipes are
+closed, pipes_drained False, retirement unverified. Retirement dict gains
+`pipes_drained` and `refused` (None normally). Marker/on_start registration
+failure still retires the new group first, then raises. Existing 143-test
+call shapes keep passing (no-descendant fixtures retire trivially).
+
+Preparation worker. New internal `--prepare-run --scratch S --child-timeout T`
+mode binds the driver, runs prepare() into S, writes S/preparation-result.json
+via _write_output ({status, manifest?, prepared?, checks, timings, bytes,
+files, error?}), exits 0/1. run_measure/run_validate spawn it via
+run_supervised (one registered group enclosing Go build, emission, inventory,
+probe, transpile, bundle, preflights and helper children); the worker uses
+driver_command internally so fd-3 is unchanged. Parent validates the result
+(checks all pass, manifest schema, re-runs check_manifest_coverage/agreement
+from scratch files) and maps worker/timeout/retirement failures to _Fail with
+full detail. Parent SIGINT/SIGTERM cancels preparation and trials alike.
+Version/resolution inspection commands run as transient supervised probes via
+the same helper with marker record/clear.
+
+No premature clearing. run_measure clears active pgid and marker ONLY after
+verified retirement; on RetirementFailed/unverified the marker keeps the
+group, scratch is retained, and the record carries recoverable custody
+{owner pid/start, pgid, leader pid/start, root identity, reason}; later
+cleanup refuses with active_group until a verified retirement or a guarded
+recovery. `_kill_process_group(...,leader=None)`: leader={pid,start} triggers
+pre-signal verification (leader alive, start matches, ps pgid matches);
+mismatch or dead-unreaped leader with no continuity proof => refused (no
+signal). Fresh-call paths (run_supervised, measure-finally) pass no leader
+(temporal locality, reuse infeasible in bounded graces); recover_scratch
+passes the recorded leader, so stale markers can never signal a recycled
+foreign pgid. Marker gains group_leader {pid,process_start}|None;
+_set_process_group(root,pgid,leader=None).
+
+Registration rollback. make_scratch/explicit allocation captures the new
+inode identity immediately; on marker-write failure `_rollback_new_directory
+(path,expected_identity)` removes it only if identity matches and the
+directory is empty, else leaves it and reports. Failure raises
+`ValueError("scratch registration failed: <marker error>[; rolled back
+<path> | ; rollback failed: <error> (cleanup pending: <path>)]")`. Foreign,
+replaced or non-empty victims are never touched.
+
+Keeper custody. Marker gains keeper None|{pid,process_start,asserted_at}
+(keeper_pid kept for compat, keeper object authoritative; schema 1 or 2
+accepted on read, new markers written 2, missing keeper normalizes to None).
+take_custody(root): live caller asserts keeper after ownership verify;
+refuses live-foreign keeper/owner; idempotent for keeper-self.
+release_custody(root): keeper-self clears to None. Live-foreign keeper =>
+new `active_keeper` code under `scratch ownership invalid` in _read_owner,
+blocking cleanup_scratch and recover_scratch; dead keeper never blocks.
+owned_scratch keep-transfer sets keeper to the live producer; the exited
+producer never protects a graph another live consumer holds.
+
+Complete identities. collect_prepared_identities stays total (None allowed)
+and gains: inputs {fixture tree hashes, emitter {module-owned go-list
+dependency package files, go.mod, binary sha/bytes}, build {gomaxprocs,
+build args}},
+runtime_ts {actual linked repo/runtime **/*.ts hashes, scope-labelled
+conservative}, emitted {adapter + generated/packages **/*.ts hashes},
+executables {bun/go/node realpath/version/dev/ino/size} (swap-detecting
+identity, not 100 MB content hashes; documented), builtins {bun
+version+revision}, resolved {computed True, roots, reachable_files count,
+reachable_bare [{specifier, importers, resolution builtin {runtime} | file
+{path, sha256, bytes}}] resolved with bun createRequire from the importer
+directory, unreachable_bare list with best-effort resolutions (informational,
+no completeness requirement)}. Reachability walks relative and
+static-string dynamic imports transitively from the ordinary/minimal/diag
+facade roots plus the bundle artifact. check_identity_complete(inv) rejects
+missing/empty required data (`ValueError("identity incomplete: <what>")`;
+enforced at freeze and revalidate call sites in run_measure/run_validate, so
+empty equal dicts never pass at run level). check_identity_drift stays a pure
+comparator to preserve the existing meaningful drift unit tests without test
+edits (test lane is delegation-blocked). Required reachable resolution
+failure or non-file non-builtin
+resolution fails the run. Freeze before use, revalidate after; drift fails.
+
+Bounds and timer purity. record.bounds={overall,preparation,sampling} each
+{start,end} ISO; record.timestamps stays overall. Sampling spans first trial
+spawn to last rows validation; preparation spans the worker; prose uses each
+label exactly. parent_wall_ms stays in the trial worker around the Bun spawn;
+supervisor/identity work never enters it.
+
+G28a preserved: all foreign/active/replaced/alias/output refusals, truthful
+cleanup outcomes, fd-3 helper, stage/oracle/profile/membership/event/AST
+contracts, report shape, no production/shared-helper edits.
+
+Requirement-to-regression mapping. Success-with-leftover =>
+RetirementFailed + custody retention (G28g fixture via run_supervised; G28h
+real trial path). Nonzero/timeout/signal => exit-specific contracts above
+(G28g fixtures incl. self-SIGTERM thread; G28h real interruption retired).
+Registration failure => rollback + message (G28g forced marker failure +
+_rollback unit cases; G28h allocation hygiene). Failed retirement =>
+marker kept, active_group refusal, guarded stale-marker recovery refusal
+(G28g forged/foreign groups; G28h no live groups at cleanup). Keeper =>
+take/release/active_keeper refusal/released recovery (G28g live-sleep
+keeper; G28h transfer + coordinator retirement). Identity completeness =>
+complete-record acceptance, missing/wrong-importer/drift rejection (G28g
+synthetic trees + real bun resolution; G28h full inventory on one reused
+build). Bounds/timer => sampling-vs-preparation split asserted on real
+G28h/G29b records (integration evidence, not unit mirrors).
+
+- [x] **G28f — implement supervised phases, safe registration and identities**
   - Prerequisite: G28e; may run alongside G28g only after interface freeze.
   - Owner: coordinator, `tools/performance/startup-attribution.py` and `.ts` only.
     Test file stays with native author until release; no shared helper edits.
@@ -627,8 +746,28 @@ remain in the [authoritative Codex record](../../.performance/performance-push-2
     after, reject missing data. Separate actual preparation and sampling bounds.
   - Acceptance: all design contracts enforced without broad source/dependency
     walks/copies; no unbounded waiting or false cleanup success; no production edits.
-  - Evidence: exact diff/hashes and compact focused reproductions of each old
-    failure plus genuine cleanup failures if any; preserve both earlier records.
+  - Evidence: driver `16aefcf3` (2449 lines, was 1636) 2026-09-28T16:51:38Z;
+    probe .ts untouched (final review raised no probe defect). Implemented:
+    RetirementFailed + all-exit retirement/bounded drain in run_supervised;
+    --prepare-run worker with parent result/coverage revalidation; _phase_tracker
+    verified-only clearing with retire_pending; retained-custody records;
+    chained _failure_reason; leader-verified _kill (recover passes recorded
+    leader, fresh paths pass none); registration rollback; take/release_custody
+    + active_keeper (keeper_pid + schema-1 read compat preserved);
+    supervised version/resolution probes; emitter go-list inputs; runtime_ts,
+    emitted, executables, builtins revision; reachability walk + single bun
+    resolve probe; check_identity_complete at freeze/revalidate (drift stays
+    pure for the 143). Smoke proof 16:48Z: worker validate-only complete 13/13,
+    119 reachable files, 13 reachable bare all builtin, playwright
+    file-resolved unreachable, 14 emitter pkgs; first smoke correctly failed
+    closed on unprefixed bundle externals (bun build strips node: prefixes),
+    fixed via runtime builtinModules. 143/143 zero-skip on the new code;
+    transfer retired via tool; tree verified absent; no strays. Both earlier
+    raw/evidence records preserved (hashes re-verified at handoff). Native
+    author notes: success-with-leftover observable via descendant death (pid
+    file fixture); RetirementFailed attrs frozen; forced marker failure raises
+    `scratch registration failed`; check_identity_complete rejects synthetic
+    gaps (build complete synthetic trees per G28e mapping).
 
 - [ ] **G28g — independently meaningful lifecycle/identity regressions**
   - Prerequisite: G28e; native agent owns only `test_startup_attribution.py`,
@@ -648,6 +787,12 @@ remain in the [authoritative Codex record](../../.performance/performance-push-2
     leave no owned process/tree and do not merely mirror implementation details.
   - Evidence: case-to-defect mapping, author release and bounded command plan;
     coordinator alone integrates and runs tests after native writer release.
+    COORDINATOR NOTE 2026-09-28T16:52:42Z: delegation BLOCKED — native goal
+    tools (get_goal/create_goal) unavailable (three-way verification in G28e
+    evidence); skill forbids prose substitution. No native writer spawned;
+    zero writers outstanding. G28h/G29b/G30b downstream-blocked pending Codex
+    goal resolution. G28e contracts + G28f implementation + smoke proof above
+    are complete and reviewable as-is.
 
 - [ ] **G28h — join and qualify the whole corrected execution contract**
   - Prerequisites: G28f/G28g terminal, native writer released.
@@ -697,3 +842,34 @@ remain in the [authoritative Codex record](../../.performance/performance-push-2
     blocker, not a prose-only replacement. Codex owns independent acceptance/commit.
   - Evidence: checklist and visible terminal handoff plus compact native goal
     lifecycle references, full execution retirement or exact pending cleanup owner.
+
+
+## Codex native-goal capability resolution (after G28f writer release)
+
+The same TUI's supported `/goal` status command actually replied **goals are
+unavailable for this session**. CLI help and MSP schema alone were insufficient:
+the installed executable includes all four exact native goal tool names. This
+session was launched with `--no-session-log`; the [official configuration
+documentation](https://dev.meta.ai/docs/muse-code/configuration) confirms that
+mode disables retained-session features. The [interactive documentation](https://dev.meta.ai/docs/muse-code/interactive)
+documents `/goal` and native progress tracking. Relevant user settings have no
+runtime capability override. Disabled retained state is the leading cause;
+actual normal-start capability/invocation must still be verified, not inferred
+from a binary string or documentation. Compact evidence is
+`generated-native-goal-investigation.json` in the campaign evidence directory.
+
+G28f's explicit ALL-writer release and no native agent/child group permit a
+controlled fresh continuation. Retire only the old idle coordinator process,
+preserving the same owned tmux socket/session/pane and attached read-only
+viewer. Start exactly one Contributor/MAX/YOLO coordinator with the entire
+owned saved handoff as its positional argument, normal native retained state,
+no arbitrary step/token budget, no extra worktree or installed software.
+Resume this SAME checklist at G28g–G30b; inspect native get_goal and create a
+matching corrective goal before delegation when supported. If unavailable,
+report a genuine blocker with writer release; do not waive or emulate it.
+Necessary active native event/goal state is task-owned, bounded and temporary:
+register actual UUID/path/inode, monitor storage, preserve compact goal/check
+facts, and retire exact owned session logs after writers/coordinator/viewers
+release. Do not export or retain bulky transcripts or delete shared session
+indexes/caches. This resolution does not accept G28f production/tool code,
+change G28g's regressions or authorize extra timing beyond G29b.
