@@ -126,3 +126,12 @@ corrected test-only. Next source-supported generated packet is
 [guarded absent-context authored calls](generated-context-bypass-tasks.md),
 G43-G48, retaining generic invoke and all assertion-defined/fallback routes.
 Final independent twelve-slice exhaustion review remains pending.
+
+
+Collection native context bypass independently accepted9bdc7fe5: 11 actual Bun
+contracts,13 graph gates, strictTS/24 oracles/14 saved bindings and complete fresh
+identity/cleanup evidence pass. Five frequency sites remove assertion-wrapper
+work; latency/heap unmeasured. Next is the finite audited text/byte/check proof
+[G55-G60](generated-core-context-tasks.md), with26 canonical pairs and six
+source workload targets. Startup/other native/final12 remain open; frozen
+auxiliary tools stay unchanged.

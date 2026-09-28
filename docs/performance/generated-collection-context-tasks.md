@@ -124,7 +124,7 @@ latency/heap claim. R9/Q9 left for Codex.
   - Codex only after ALL-writer handoff. Proportional new acceptance and one
     bounded independent actual graph; reuse qualified contracts/unchanged tools.
     Exact owned path commit, preserve foreign work; corrections through Muse.
-- [ ] **Q9 — remaining production proofs and final twelve-slice review**
+- [x] **Q9 — remaining production proofs and final twelve-slice review**
   - Codex source review of startup/other native/remaining12 dispositions after
     acceptance. Continue ready supported production tasks; no fabricated work
     or auxiliary expansion. Stop only if independent final review finds none.
@@ -139,3 +139,10 @@ before cleanup. Only frequency module differs from the qualified prior inventory
 graph/root retired. Compact evidence: generated-packet-9-independent-review.json
 and generated-packet-9-independent-generated.json under the campaign directory.
 Source-proven wrapper work removed; latency/heap unmeasured. Q9 remains open.
+
+## Q9 continuation
+
+Source audit supports26 frozen own async text/byte/check method pairs. The current
+workload has concrete text/byte/check calls; three fresh equivalent consultations
+advise finite separate proof. Continue [G55-G60](generated-core-context-tasks.md).
+This queue step is complete; final twelve-slice exhaustion is still pending.
