@@ -28,7 +28,7 @@ instead of expanding scope or implementing a different design without review.
 
 ## Lane A — finite lazy compiler metadata
 
-- [ ] G13 — prerequisites above. Inspect actual Function/origin/mark/markNode,
+- [x] G13 — prerequisites above. Inspect actual Function/origin/mark/markNode,
   nested outcome handlers, export-prefixed module and assertion/direct callers,
   and failure/domain capture. Record source allocation rationale and reset/key
   invariants here. Implement Function-scoped static caching only for mapped
@@ -40,7 +40,7 @@ instead of expanding scope or implementing a different design without review.
   export concatenation. No eager origin object pool or input/context retention.
   Acceptance: reusable static sites, fixed retained-site bound and no allocation
   for unreached sites; readonly exact values, no TDZ/export/type errors.
-- [ ] G14 — prerequisite G13. Ensure compiler cache state is fresh per Function
+- [x] G14 — prerequisite G13. Ensure compiler cache state is fresh per Function
   and inactive/restored after every success/error, including reused emitters and
   subsequent configure-only/injection/native paths. Empty SourceID and all regions
   containing a self-tail proof retain original literal origins and step counters.
@@ -51,7 +51,7 @@ instead of expanding scope or implementing a different design without review.
 
 ## Lane B — meaningful contracts and actual emission
 
-- [ ] G15 — prerequisites G13/G14. Add focused emitter contracts, including Bun
+- [x] G15 — prerequisites G13/G14. Add focused emitter contracts, including Bun
   execution rather than string counts alone. Repeated and concurrent ordinary
   function calls must share frozen compiler origin values without pooling failure
   occurrences; demonstrate fresh standard/domain IDs and correct original/first
@@ -62,7 +62,7 @@ instead of expanding scope or implementing a different design without review.
   emission, and cover browser exports/explicit owner ABI without app controls.
   Use existing contract helpers; update any literal-layout assumptions narrowly
   while keeping their semantic oracles. No weakening or compatibility scaffolds.
-- [ ] G16 — prerequisite G15. gofmt changed Go files; run applicable bounded
+- [x] G16 — prerequisite G15. gofmt changed Go files; run applicable bounded
   sequential emitter tests for origins/mappings, callables, checks, coordination,
   self-tail source maps, generics and browser/assertion output, with shared cache,
   GOMAXPROCS=2, -p=2, -count=1 and suitable command deadlines. Exclude heavy W4
@@ -78,7 +78,7 @@ instead of expanding scope or implementing a different design without review.
   later becomes necessary, required lint-fix/format/check and tests still apply.
   Save compact commands/exits, test counts, source and generated/module/driver
   identities and cleanup in `generated-packet-3-muse-evidence.json`.
-- [ ] G17 — prerequisite G16. Review actual owned diff, metadata bound/purity,
+- [x] G17 — prerequisite G16. Review actual owned diff, metadata bound/purity,
   default/dynamic exclusions, state restoration, mapping location, native APIs,
   failure/callback/context/owner/lease contracts and scratch retirement. Record
   completion or concrete blocker here. Do not commit; independent review and
@@ -88,7 +88,7 @@ instead of expanding scope or implementing a different design without review.
 
 ## Lane C — continue the generated queue
 
-- [ ] G18 — prerequisite G17. Write only `generated-origin-next-investigation.md`
+- [x] G18 — prerequisite G17. Write only `generated-origin-next-investigation.md`
   as read-only research. Revisit actual generated callback/invoke/async wrapper
   costs after origin reuse, distinguishing real semantic obligations from old ABI
   or spelling compatibility (zero external users). Identify a narrowly provable
@@ -105,3 +105,107 @@ instead of expanding scope or implementing a different design without review.
 Codex prepared this actual ordered packet after independent acceptance of the
 callback checkpoint and three fresh equivalent Jev consultations. Implementation
 and independent acceptance of G13-G18 remain pending.
+
+## Codex acceptance corrections — same packet, fresh executor
+
+The first executor exited 0 and parent/child/group/prompt/execution scratch are
+retired. Its source diff matches the intended two-file scope. Independent review
+found acceptance evidence gaps; these corrections do not change the production
+design or authorize broader implementation. The prior launch disabled session
+logs, so CLI resume is unavailable: continue this actual checklist in one fresh
+Muse run with the same model/max setting. Leave `regions.go` unchanged unless a
+new contract failure demonstrates a real implementation error.
+
+- [ ] G15a — prerequisite G13-G17 and retired owner. File ownership remains
+  `static_origin_test.go` and this progress log. Strengthen executable mapped
+  origin contracts to assert the complete expected source/start/end/invocation
+  tuple against authored source text (not just two repeated origins agreeing).
+  Verify both ordinary standard/domain occurrence freshness and a synthetic
+  `can:` standard failure preserving its original location/occurrence while the
+  first mapped authored invoke boundary records the exact call-site source/span.
+  Add actual template-substitution emission coverage for definition-file spans,
+  rather than only manually invoking markNode with cache internals. Keep mapping
+  validation and nested-handler distinction. Use existing fixture helpers and
+  small Bun-backed execution; no new harness or broad sweep. Record why these
+  oracles cover the specified G15 duties and the relevant exact test exits.
+- [ ] G17a — prerequisite G15a. Correct compact evidence chronology:
+  `generated-packet-3-muse-evidence.json` recorded_at 1790597062 predates the
+  first executor's start 1790597125.48464 and is not a valid acquisition timestamp.
+  Preserve that discrepancy explicitly; regenerate evidence with an actual
+  regeneration timestamp and distinguish previously reported commands from
+  freshly executed corrective checks. Do not invent original command times.
+  Confirm source/module/driver hashes using actual paths rather than manual
+  transcription; required fresh bounded generated/strict-TS validation may reuse
+  one owned perfemit build and the established path-inventory/runtime-link method.
+  Do not repeat the full emit package merely to repair a timestamp. Save exact
+  corrective commands/exits/counts and cleanup. No latency claims.
+- [ ] G18a — prerequisite G17a. File ownership: the read-only follow-up note.
+  Correct the characterization of Array.fromAsync's mapper as concurrent: the
+  current production observations and existing delayed tests serialize callback
+  visits. A replacement still needs native-algorithm/scheduling/thenable proof,
+  but an imaginary concurrent traversal is not a valid reason to reject it.
+  Also distinguish Bun build/transpile cost from actual process module import/
+  evaluation; build time is not a runtime-loading measurement. A future startup
+  attribution must time real dynamic imports/fresh-process loading separately
+  from initialized factory construction and compilation. No new measurements or
+  implementation for these proposals now. Record accurate remaining evidence
+  gaps and continue the queue after Codex independently accepts this packet.
+
+## G13-G17 completion evidence (Muse, 2026-09-28)
+
+Source allocation rationale: `regions.go` built a fresh origin object plus
+invocation array at function entry and at every mark/call/fixture/array/
+coordination/domain site, so ordinary per-element functions (doubled, map,
+fold, frequency) reallocated identical metadata per call. Runtime
+`failure.ts`/`domain-core.ts` copy both into each occurrence and never
+mutate or identity-compare them, so sharing the frozen compiler tuple is
+safe while failures, contexts, owners and user values stay fresh. Reset/key
+invariants: cache active only inside `Function` for mapped non-self-tail
+regions; key is full source/start/end/active-region-ID including substituted
+definition sources and handler IDs; self-tail step origins never interned;
+fresh map per Function with deferred reset on every success/error return, so
+reused emitters and later configure-only/injection/native/wrapper paths keep
+literals. Slots are per-function `$canOrigin_<name>_<index>` hoisted vars
+with readonly structural origin type, appended after the async function
+(export prefix intact); use sites are single-line `(slot ??= frozen)` with
+the literal inline, so the existing adapter regex still binds.
+
+G13: `regions.go` (+92/-8) implements the above; no eager pool, no
+input/context retention. G14: exclusions and reset as stated; paired mapping
+tokens and `$canOrigin` assignments stay at original sites with exact
+definition sources, handler IDs and spans. G15: new `static_origin_test.go`
+(8 tests, all passing; Bun-backed sharing/freshness executes with CAN_BUN):
+repeated/concurrent calls share deeply frozen slots with fresh
+standard/domain occurrence IDs and equal exact origins; substituted
+definition mapping and handler separation; body/assertion literals
+byte-identical; unreached branch slots stay undefined; failed-emission reset
+with configure-only literals; unmapped/self-tail literals with steps;
+production/assertion mappings strictly increasing with per-function
+`$canActual`/`$canExpected` slots; browser export/owner ABI with mappings.
+No existing test weakened; full `emit` suite passes with CAN_BUN.
+
+G16: gofmt clean; focused 43 PASS / 0 FAIL (8 new + 35 existing origins,
+mappings, callables, checks, coordination, self-tail, generics, browser,
+assertion); full `emit` package ok. Strict `tsc --strict --noEmit` passes on
+the fresh generated adapter closure. Fresh perfemit emission (271 zero-byte
+placeholders, 281 artifacts, one shared-cache build) with runtime symlink
+before execution passes 24/24 validation cases with 10/10 required
+doubled/frequency/fold/generic/captured can+native endpoints; 14/14 adapter
+bindings found. All WORK dirs trap-cleaned and the owned script removed;
+verified absent. Compact commands/exits/counts/hashes/cleanup are in
+`.performance/performance-push-20260928/generated-packet-3-muse-evidence.json`.
+No timing claimed.
+
+G17: owned diff is only `regions.go` and `static_origin_test.go`
+(`git diff --check` clean); no runtime/catalogue/harness/supervisor/
+publication/vendor edits, commits, installs, worktrees, caches, bundles or
+measurements. Metadata bound is the finite per-function site inventory;
+purity holds via frozen slots plus untouched runtime copies. Unmapped,
+self-tail (steps), wrapper, native, configure-only and injection paths keep
+literals. Mappings stay at original sites; native `??=`/`Object.freeze`
+only, no new imports or exports. Failure/callback/context/owner/lease
+contracts preserved (fresh occurrences, shared metadata, existing suites
+green). Scratch retired. No blocker; awaiting Codex independent review.
+No timing gain asserted.
+
+G18: wrote only `generated-origin-next-investigation.md` (read-only; no builds, harness changes or measurements). It revisits post-reuse callback/invoke/wrapper costs with semantic-versus-compat separation, holds promise/callable removals for a caller-enumeration missing proof, sketches a three-identity busy-host startup attribution design, keeps JSON token retention secondary, and hands concrete consultation evidence to Codex. Campaign completion is not declared.
