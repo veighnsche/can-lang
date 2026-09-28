@@ -26,6 +26,28 @@ def fixtures():
 
 
 class ReportingTests(unittest.TestCase):
+    def test_zero_trial_timing_has_visible_limit_without_mutating_legacy_summary(self):
+        manifest, summary, _ = fixtures()
+        row = summary['browser/case']
+        row['unit'] = 'ms/interaction'
+        row['distribution']['min'] = 0
+        report = markdown_report(manifest, summary)
+        self.assertIn('Timing limit: **1 case is below measurement resolution**', report)
+        self.assertIn('Affected cases: browser/case.', report)
+        self.assertIn('do not establish instantaneous execution', report)
+        self.assertIn('| browser/case | 4 (below measurement resolution) |', report)
+        self.assertNotIn('ranking_issues', row)
+        row['distribution'].pop('min')
+        row['distribution']['median'] = 0
+        self.assertIn('0 (below measurement resolution)', markdown_report(manifest, summary))
+
+    def test_zero_count_and_unsupported_units_are_not_timing_limits(self):
+        manifest, summary, _ = fixtures()
+        for row in summary.values():
+            row['unit'] = 'bytes'
+            row['distribution'].update(median=0, min=0)
+        self.assertNotIn('below measurement resolution', markdown_report(manifest, summary))
+
     def test_all_twelve_and_supplied_rank_order(self):
         manifest, summary, boards = fixtures()
         report = markdown_report(manifest, summary, boards)

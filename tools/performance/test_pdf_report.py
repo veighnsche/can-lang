@@ -1,9 +1,10 @@
-"""Bounded PDF export tests using a fake compiler; no performance work runs."""
+"""Bounded PDF export tests with fake and installed Typst; no workloads run."""
 
 import contextlib
 import io
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -132,6 +133,52 @@ class PdfReportTests(unittest.TestCase):
             else:
                 self.assertFalse(self.output.exists())
             self.assert_clean()
+
+
+@unittest.skipUnless(shutil.which("typst"), "Typst is not installed")
+class InstalledTypstTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="can-pdf-template-test-")
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+
+    def compile_report(self, quality):
+        # Deliberately omit `synthetic`: real reports take the quality header
+        # branch that synthetic previews cannot exercise.
+        data = evidence()
+        data["manifest"].update(
+            quality=quality, requested_suites=["runtime", "browser"], completed_suites=["runtime", "browser"],
+            reason='#panic("evidence must stay literal")',
+        )
+        data["cases"] = {"runtime/tiny": {
+            "unit": "ns/op", "timing_scope": "one bounded operation", "parameters": {"size": 1},
+            "distribution": {"median": 2, "min": 1, "max": 3,
+                             "median_absolute_deviation": 1, "n": 3},
+        }, "browser/unresolved": {
+            "unit": "ms/interaction", "timing_scope": "one callback", "parameters": {"size": 1},
+            "distribution": {"median": 0, "min": 0, "max": 0.1,
+                             "median_absolute_deviation": 0, "n": 3},
+        }}
+        # Measurement renders this row; smoke follows the ineligible branch.
+        data["rankings"] = {"targets": {
+            "status": "partial", "eligible_cases": 1, "total_cases": 2,
+            "per_case": {"runtime/tiny": {}}, "rows": [{
+                "case": "runtime/tiny", "unit": "ns/op", "observed": 2,
+                "reference": 1, "ratio": 2, "trial_count": 3, "mad": 1,
+            }],
+        }}
+        output = self.root / f"{quality}.pdf"
+        pdf_report.write_pdf(data, output)
+        with output.open("rb") as result:
+            self.assertEqual(result.read(5), b"%PDF-")
+        self.assertGreater(output.stat().st_size, 1000)
+        self.assertEqual(list(self.root.iterdir()), [output])
+
+    def test_measurement_template_compiles(self):
+        self.compile_report("measurement")
+
+    def test_smoke_template_compiles(self):
+        self.compile_report("smoke")
 
 
 class PdfCommandTests(unittest.TestCase):

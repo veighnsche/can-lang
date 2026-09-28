@@ -206,8 +206,13 @@ unset targets and unknown units never silently receive a score. Server durations
 with dropped requests or missing delivery accounting are excluded because less
 completed work must not look faster.
 
-There are currently **no calibrated targets or accepted quiet-machine baseline**.
-The first authorized measured run provides evidence for creating and reviewing
+Timed cases containing a zero independent-trial median are below measurement
+resolution. Their raw observations remain available, but they cannot support
+target or baseline ratios, including when used as the reference. Reports label
+these cases explicitly; zero does not establish instantaneous execution.
+
+The repository supplies **no calibrated targets or bundled reference baseline**.
+An authorized measured run provides evidence for creating and reviewing
 targets; the `targets` command leaves every numeric goal unset. It does not turn
 current performance into desired performance. Without references the report
 still shows every slice and case, but the top tens explicitly say unavailable.

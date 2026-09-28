@@ -3,6 +3,8 @@
 import html
 import json
 
+from ranking import timing_resolution_issue
+
 DEFAULT_SUITES = {
     "compiler": ("compiler", "source loading, checking, emission and scaling"),
     "assertions": ("compiler", "precompiled assertions and worker supervision"),
@@ -61,6 +63,13 @@ def markdown_report(manifest, summary, rankings=None, suites=None):
         lines += ["Sample settings: " + "; ".join(f"{k}: {escape(v)}" for k, v in settings) + ".", ""]
     if manifest.get("isolation"):
         lines += ["Host isolation: " + escape(json.dumps(manifest["isolation"], sort_keys=True)) + ".", ""]
+    unresolved = [key for key, row in summary.items() if timing_resolution_issue(row)]
+    if unresolved:
+        count = f"{len(unresolved)} case is" if len(unresolved) == 1 else f"{len(unresolved)} cases are"
+        lines += [f"Timing limit: **{count} below measurement resolution** because at least one trial median is zero. "
+                  "These readings do not establish instantaneous execution. Affected cases are excluded from target and baseline ratios, "
+                  "including when used as baseline references.", "",
+                  "Affected cases: " + "; ".join(escape(key) for key in sorted(unresolved)) + ".", ""]
     preparation = sum(s.get("elapsed_seconds", 0) for s in steps if s.get("phase") == "prepare")
     drivers = sum(s.get("elapsed_seconds", 0) for s in steps if s.get("phase") == "trial")
     lines += [f"Orchestration wall time: total run **{number(manifest.get('wall_seconds'))} s**; "
@@ -136,7 +145,10 @@ def markdown_report(manifest, summary, rankings=None, suites=None):
                   "|---|---:|---|---|---:|---:|---|---|"]
         for key, row in cases:
             stats = row["distribution"]
-            lines.append(f"| {escape(key)} | {number(stats['median'])} | {escape(row['unit'])} | {number(stats['min'])}–{number(stats['max'])} | {number(stats['median_absolute_deviation'])} | {stats['n']} | {escape(json.dumps(row['parameters'], sort_keys=True))} | {escape(row['timing_scope'])} |")
+            median = number(stats['median'])
+            if timing_resolution_issue(row):
+                median += " (below measurement resolution)"
+            lines.append(f"| {escape(key)} | {median} | {escape(row['unit'])} | {number(stats.get('min'))}–{number(stats.get('max'))} | {number(stats['median_absolute_deviation'])} | {stats['n']} | {escape(json.dumps(row['parameters'], sort_keys=True))} | {escape(row['timing_scope'])} |")
         issues = [(key, row.get("ranking_issues", [])) for key, row in cases if row.get("ranking_issues")]
         for key, reasons in issues:
             if isinstance(reasons, str):

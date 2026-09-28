@@ -63,6 +63,19 @@ def _number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
 
 
+def timing_resolution_issue(row):
+    """Recognize unresolved timings without changing saved summary evidence."""
+    if UNIT_DIRECTIONS.get(row.get("unit")) != "lower":
+        return None
+    stats = row.get("distribution") or {}
+    minimum = stats.get("min")
+    if minimum is None:
+        minimum = stats.get("median")
+    if _number(minimum) and minimum == 0:
+        return "below measurement resolution: a zero trial median does not establish instantaneous execution"
+    return None
+
+
 def validate_targets(targets):
     if (not isinstance(targets, dict) or targets.get("schema_version") != 1
             or targets.get("kind") != "can.performance-targets"
@@ -85,6 +98,9 @@ def _row(key, observed, reference, label):
     direction = UNIT_DIRECTIONS.get(observed["unit"])
     if direction is None:
         return None, "unknown metric unit"
+    resolution = timing_resolution_issue(observed)
+    if resolution:
+        return None, "candidate evidence: " + resolution
     if observed.get("ranking_issues"):
         return None, "candidate evidence: " + "; ".join(observed["ranking_issues"])
     stats = observed["distribution"]
@@ -162,7 +178,10 @@ def build_rankings(manifest, summary, targets=None, baseline=None):
             for key, observed in sorted(summary.items()):
                 reference = before_summary[key]
                 issues = reference.get("ranking_issues")
-                row, reason = (None, "baseline evidence: " + "; ".join(issues)) if issues else _row(key, observed, reference["distribution"]["median"], "matched prior run")
+                resolution = timing_resolution_issue(reference)
+                row, reason = ((None, "baseline evidence: " + resolution) if resolution else
+                               (None, "baseline evidence: " + "; ".join(issues)) if issues else
+                               _row(key, observed, reference["distribution"]["median"], "matched prior run"))
                 if reason:
                     board["exclusions"][key] = reason
                 else:

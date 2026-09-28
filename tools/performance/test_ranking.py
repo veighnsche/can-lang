@@ -105,11 +105,43 @@ class RankingTests(unittest.TestCase):
             self.s[key]['distribution']['median'] = value
             self.assertIn(key, self.board(targets=self.t)['targets']['exclusions'])
         self.s[key]['distribution']['median'] = 0
-        self.assertEqual(self.board(targets=self.t)['targets']['per_case'][key]['ratio'], 0)
+        self.assertIn('below measurement resolution', self.board(targets=self.t)['targets']['exclusions'][key])
         self.s[key]['unit'] = 'mystery'
         self.t = targets(self.m, self.s)
         self.t['cases'][key].update(target=1, rationale='review')
         self.assertIn('unknown', self.board(targets=self.t)['targets']['exclusions'][key])
+
+    def test_zero_trial_median_excludes_candidate_and_baseline_with_positive_overall_median(self):
+        key = 'browser/case'
+        before = copy.deepcopy(self.s)
+        self.s[key]['distribution']['min'] = 0
+        board = self.board(targets=self.t, baseline=(self.m, before))
+        for kind in ('targets', 'baseline'):
+            self.assertNotIn(key, board[kind]['per_case'])
+            self.assertIn('candidate evidence: below measurement resolution', board[kind]['exclusions'][key])
+        self.s = copy.deepcopy(before)
+        before[key]['distribution']['min'] = 0
+        board = self.board(baseline=(self.m, before))['baseline']
+        self.assertNotIn(key, board['per_case'])
+        self.assertIn('baseline evidence: below measurement resolution', board['exclusions'][key])
+
+    def test_legacy_zero_median_without_flags_or_minimum_is_unresolved(self):
+        key = 'browser/case'
+        self.s[key]['distribution']['median'] = 0
+        self.assertIsNotNone(ranking.timing_resolution_issue(self.s[key]))
+        self.assertNotIn('ranking_issues', self.s[key])
+        self.assertIn('below measurement resolution', self.board(targets=self.t)['targets']['exclusions'][key])
+        old = copy.deepcopy(self.s)
+        self.s[key]['distribution']['median'] = 1
+        self.assertIn('baseline evidence: below measurement resolution', self.board(baseline=(self.m, old))['baseline']['exclusions'][key])
+
+    def test_resolution_detection_only_covers_supported_timing_units(self):
+        for unit in ranking.UNIT_DIRECTIONS:
+            row = {'unit': unit, 'distribution': {'median': 2, 'min': 0}}
+            self.assertEqual(ranking.timing_resolution_issue(row) is not None,
+                             ranking.UNIT_DIRECTIONS[unit] == 'lower')
+        for unit in ('bytes', 'count', 'unknown', 'ops/s'):
+            self.assertIsNone(ranking.timing_resolution_issue({'unit': unit, 'distribution': {'median': 0, 'min': 0}}))
 
     def test_candidate_and_baseline_admission(self):
         for field, value in [('quality', 'smoke'), ('quality', 'exploratory'), ('status', 'failed'), ('completed_suites', [])]:

@@ -33,6 +33,9 @@
   } else { str(calc.round(value, digits: 3)) }
 } else { str(value) }
 #let literal(value) = if type(value) == str { value } else { json.encode(value, pretty: false) }
+#let time-units = ("ns/op", "ms/launch", "ms/interaction", "ms/trial", "ms/op", "ms/journey")
+#let unresolved(row) = time-units.contains(row.unit) and (row.distribution.at("min", default: none) == 0 or row.distribution.median == 0)
+#let unresolved-cases = cases.keys().filter(key => unresolved(cases.at(key)))
 #let soft(value) = text(literal(value).replace("/", "/\u{200b}").replace("_", "_\u{200b}").replace(".", ".\u{200b}"))
 #let small-label(body) = text(font: mono, size: 7.5pt, fill: muted, tracking: 0.4pt, body)
 #let head-cell(body) = text(weight: "bold", fill: white, body)
@@ -57,7 +60,7 @@
   header: context [
     #small-label[CAN / PERFORMANCE]
     #h(1fr)
-    #small-label(if preview { "SYNTHETIC PREVIEW" } else { meta.at("quality", default: "unknown").upper() })
+    #small-label(if preview { "SYNTHETIC PREVIEW" } else { upper(meta.at("quality", default: "unknown")) })
   ],
   footer: context [
     #line(length: 100%, stroke: 0.5pt + rule)
@@ -98,6 +101,12 @@
 }
 #if meta.at("reason", default: none) != none {
   block(width: 100%, fill: pale, inset: 10pt)[*Failure or limitation:* #text(meta.reason)]
+}
+#if unresolved-cases.len() > 0 {
+  block(width: 100%, fill: rgb("FFF2DD"), inset: 10pt, radius: 3pt)[
+    *Timing limitation: #unresolved-cases.len() cases are unresolved.*
+    At least one timed trial recorded zero. These values are below measurement resolution, not instantaneous execution, and cannot support speed rankings.
+  ]
 }
 
 #let card(label, value) = block(width: 100%, fill: pale, inset: 10pt, radius: 3pt)[
@@ -212,6 +221,7 @@ Each headline is the median of independent process-trial medians. Warmup batches
 #pagebreak()
 = Per-case evidence
 The tables preserve the original unit for each operation. Exact parameters and timing boundaries follow each slice; they must match before a comparison is interpreted.
+#if unresolved-cases.len() > 0 { [Cases labelled *unresolved* contain zero timed trials. Their original min–max observations remain visible; a reliable per-operation duration was not resolved.] }
 #for (id, label) in suites {
   let names = cases.keys().filter(key => key.starts-with(id + "/")).sorted()
   if names.len() > 0 {
@@ -222,7 +232,7 @@ The tables preserve the original unit for each operation. Exact parameters and t
       ..names.map(key => {
         let r = cases.at(key)
         let d = r.distribution
-        (soft(key), fmt(d.median), text(r.unit), [#fmt(d.min)–#fmt(d.max)], fmt(d.median_absolute_deviation), str(d.n))
+        (soft(key), if unresolved(r) { text(fill: amber, "unresolved") } else { fmt(d.median) }, text(r.unit), [#fmt(d.min)–#fmt(d.max)], fmt(d.median_absolute_deviation), str(d.n))
       }).flatten(),
     )
     for key in names {
