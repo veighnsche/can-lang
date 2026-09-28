@@ -1,5 +1,9 @@
 # Generated static origin assignments
 
+Status: independently accepted and committed `5b1889ee`; implementation and
+corrective owners are retired. The campaign continues with checked authored
+[forwarding assignments](generated-forwarding-tasks.md).
+
 Design: [lazy origin reuse](generated-origin-plan.md). Complete G13-G18 in
 dependency order in one sustained Muse run. Codex independently accepts and
 commits each completed packet; campaign exhaustion is a later obligation.
@@ -222,7 +226,7 @@ with the runtime helper, but does not pin the origin supplied by an actual emitt
 invocation step. Acceptance remains pending this one exact-path oracle; no production
 error has been demonstrated and `regions.go` must stay unchanged unless it fails.
 
-- [ ] G15b — prerequisites G15a/G17a/G18a and their retired owner. Own only
+- [x] G15b — prerequisites G15a/G17a/G18a and their retired owner. Own only
   `static_origin_test.go` and this progress log. Add a small Bun-backed case with an
   actual `RegionEmitter.Function` containing a checked invocation/match to an
   injected target returning a synthetic `can:` standard failure carrier. Execute
@@ -235,7 +239,7 @@ error has been demonstrated and `regions.go` must stay unchanged unless it fails
   all exact authored/substituted-source oracles unchanged. Run only the new case
   and relevant static-origin subset; no broad emit suite or repeated generated
   build/24-case run is required for a test-only change with identical production.
-- [ ] G17b — prerequisite G15b. Record actual commands/counts/timestamps and the
+- [x] G17b — prerequisite G15b. Record actual commands/counts/timestamps and the
   updated test hash, preserving previous chronology discrepancy and verification
   evidence. Verify test scratch cleanup and unchanged production/driver hashes.
   The independent 24-case/strict TS evidence already matches the frozen production
@@ -302,3 +306,58 @@ proxy), and the validate correctness gate. Remaining gaps are the
 stated missing proofs (caller enumeration, three-part mapper
 equivalence, per-factory usage evidence). Campaign continues after
 Codex independently accepts this packet; completion is not declared.
+
+## G15b-G17b emitted-boundary evidence (Muse, 2026-09-28)
+
+G15b: `static_origin_test.go` only; `regions.go` untouched
+(sha256 `cf6ed4fd…dae` equals the prior after-hash and the independent
+source hash, so no production, runtime, compiler, or harness change and
+no narrow fix). New `TestStaticOriginEmittedInvocationBoundary` builds
+an actual `RegionEmitter.Function` match caller (`match call lookup(1)`
+with missing/ok arms) to an injected `$lookup` returning a synthetic
+`can:static-origin-synth` standard carrier, then executes the emitted
+caller. Go-side oracles slice authored text to the exact step span
+`lookup(1)`, the entry match, and the prepared literal `1`, asserting
+all three spans and the invocation/entry tuples are pairwise distinct;
+the caller keeps paired `call` mapping tokens at the step span and a
+lazily interned (`??=`) step origin slot. Bun-side asserts the returned
+completion is the identical synthetic occurrence (same object and
+occurrence ID), its origin still equals the synthetic location, its
+first `boundaryOrigin` deep-equals the exact emitted invocation tuple
+(not the entry), and a subsequent outer `$canInvoke` does not replace
+that first boundary. All 9 existing static-origin tests pass unchanged
+(10/10 with the new case); no oracle was weakened. `gofmt` clean; new
+case 1 PASS and `TestStaticOrigin` 10 PASS / 0 FAIL / 0 SKIP, both exit
+0 with `CAN_BUN`, `GOMAXPROCS=2`, `-p=2`, `-count=1`. No broad suite,
+generated build, install, or timing.
+
+G17b: evidence regenerated at actual `recorded_at` 1790600935.460844
+(2026-09-28T13:08:55Z). Prior chronology is preserved verbatim in the
+`chronology` section (invalid first `recorded_at` 1790597062.0, G15a
+`recorded_at` 1790599790.625365); G15a commands/validation/hashes were
+not rerun and are kept as the frozen record, with fresh G15b/G17b
+checks listed separately under `g15b_commands`. Hashes recomputed from
+actual paths: `regions.go` and both drivers match prior values; only
+the test file hash changed (`9fc422f4…9f8df`). The independent 24-case
+validation, strict TS, and module/driver identities already match this
+frozen emission and are cited, not claimed as rerun. No owned WORK dir
+was allocated; Bun execution used auto-removed `t.TempDir`, `/tmp`
+verified absent of owned residue, updater script removed, no
+bundle/source/dependency copy retained, shared cache kept.
+`git diff --check` clean; status shows only owned files. Handed back
+for Codex's narrow final independent test acceptance. No latency
+claimed; campaign completion is not declared.
+
+## Codex independent acceptance
+
+Final actual emitted-invocation test reviewed and ten static-origin tests passed
+with installed Bun, zero skips. Earlier 14 applicable independent tests and 24
+fresh actual generated/native cases, strict TS and matched module/driver identities
+remain valid because only additive tests changed during corrections; production
+and drivers stayed byte-identical. Exact authored/substituted spans, paired mappings,
+nested handlers, self-tail exclusion, fresh occurrences and the real synthetic
+first invocation boundary are covered. Parent/child/group, prompts and execution
+scratch retired for every run. Compact review and commands are
+`generated-packet-3-independent-review.json`, `independent-corrected-checks.json`,
+`independent-generated.json` and `independent-final-checks.json` in the campaign
+evidence directory. Source/test commit: `5b1889ee`. No latency gain is claimed.

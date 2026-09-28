@@ -145,3 +145,26 @@ all owner/prompt/execution scratch retired. No speedup number is asserted.
 [Next source investigation](generated-next-investigation.md) identifies static
 origin reuse and startup import/init attribution; these require reviewed design
 before Muse implementation. Continue the campaign.
+
+## Generated origin checkpoint and forwarding packet
+
+G13-G18 and acceptance corrections are independently accepted and committed as
+`5b1889ee`. Mapped non-self-tail functions lazily retain finite deeply frozen
+source/span/region origins; dynamic tail steps and other emission remain unchanged.
+Fourteen applicable independent contracts and 24 fresh actual generated/native
+cases passed with strict TS and matching module/driver identities. A final narrow
+ten-test static-origin run pins exact authored/substituted spans and a real emitted
+synthetic failure's first invocation boundary, preserving occurrence freshness.
+All owner groups, prompts and execution scratch are retired. The prior invalid
+evidence acquisition timestamp is preserved explicitly and corrected in compact
+records; successful broad checks were not repeated. No latency gain is measured.
+
+The [forwarding design](generated-forwarding-plan.md) and
+[ordered checklist](generated-forwarding-tasks.md) govern the next packet. Checked
+authored functions are native async; only exact identity/resolved-binding proof
+permits their callable adapters to return the existing promise directly. Generic
+invoke admission, catches, boxing, context/owner contracts and unclassified adapters
+stay in place. Three fresh fully rewritten equivalent Jev consultations advise this
+narrow choice, with varying recommendation strength; correctness remains an
+independent obligation. Startup import/evaluation versus initialization attribution,
+secondary numeric JSON retention and the twelve-slice exhaustion review remain open.

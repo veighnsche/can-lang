@@ -1,16 +1,26 @@
 # Checked authored forwarding checklist
 
-Status: planned; dispatch blocked on origin acceptance and current owner retirement.
+Status: ready; origin independently accepted/committed `5b1889ee`, all owners retired.
 Design: [forwarding plan](generated-forwarding-plan.md). Campaign:
 [master checklist](performance-improvement-tasks.md).
 
 ## Prerequisites and ownership
 
-Before dispatch, Codex verifies the G15a/G17a/G18a executor's real exit and retired
+Before dispatch, Codex verifies the origin corrective executors' real exits and retired
 parent/child/group, prompt and execution scratch; independently accepts and commits
 the origin checkpoint; rechecks the source evidence; and records prerequisites
 below. Three fully reworded equivalent Jev consultations are already saved/reviewed.
-No competing implementation or task-owned build/test may run with Muse.
+No competing external implementation or task-owned build/test may run with Muse.
+
+The single Muse coordinator owns shared proof/binding interfaces and checklist
+progress. G19 freezes the finite proof field and constructor plumbing before
+G20/G21 join. G20 then owns `callables.go`; a native Muse implementation subagent
+may author G21 in new `callable_forwarding_test.go` concurrently, using the stable
+G19 interface and this design. These writes are disjoint. Subagents report evidence
+to the coordinator and never edit this progress file or shared interfaces.
+Use native subagents for independent ready implementation; no extra worktree
+isolation, source copies or second Muse CLI coordinator. Only the coordinator
+runs integration build/tests, sequentially, after both lanes join at G22.
 
 Muse owns `compiler/internal/emit/callables.go`, `regions.go`,
 `runtime_bindings.go`, `program_modules.go`, `program_entry.go`, focused regressions
@@ -51,7 +61,9 @@ Do not commit or claim a measured gain. Corrections return through this checklis
 
 ## Lane B — executable semantics and bounded validation
 
-- [ ] G21 — prerequisites G19/G20. Add meaningful regressions for saved target and
+- [ ] G21 — prerequisite G19 and its stable proof interface. Independently author
+  tests in `callable_forwarding_test.go` alongside G20; integration waits for both.
+  Add meaningful regressions for saved target and
   ordered exactly-once captures, residual signatures, fresh receipt identities and
   equality, resource capture evidence, assertion context/fixture accounting and
   browser owner forwarding. Exercise truly delayed completion with controllable
@@ -61,7 +73,7 @@ Do not commit or claim a measured gain. Corrections return through this checklis
   preserve carrier refusal, fresh standard/domain occurrences and exact original
   plus first synthetic invocation boundary metadata. Check paired mappings and
   strict TS on generated adapters, rather than testing only string spelling.
-- [ ] G22 — prerequisite G21. Run applicable bounded emitter/callable/mapping/
+- [ ] G22 — prerequisites G20/G21 joined. Run applicable bounded emitter/callable/mapping/
   assertion/browser tests with installed Bun actually executing, shared Go cache,
   `GOMAXPROCS=2`, `-p=2`, `-count=1` and suitable command deadlines. Do not repeat
   the broad emitter suite merely for this checkpoint. If an authorized correction
@@ -98,5 +110,20 @@ Do not commit or claim a measured gain. Corrections return through this checklis
 ## Progress
 
 Codex saved source evidence and three reviewed consultations during the sole origin
-corrective run. Dispatch prerequisites remain pending; no implementation or competing
-checks have been launched for this packet.
+corrective run. Origin accepted and committed `5b1889ee`; final ten origin tests,
+earlier 14 neighboring contracts and 24 actual generated/native/strict TS evidence
+passed with stable production/driver identities. Every previous owner/group/prompt/
+scratch is retired. Source evidence rechecked; no missing prerequisite remains.
+
+## Codex acceptance and continuing campaign (Muse leaves unchecked)
+
+- [ ] R4 — prerequisites G19-G24 and actual sole owner retirement. Codex reviews
+  the exact proof/fallback/forwarding diff and evidence, independently checks bounded
+  contracts and actual emitted/generated/native/strict TS identities, verifies all
+  owned group/prompt/scratch cleanup, and promptly commits the accepted checkpoint.
+  Genuine issues become concrete corrective tasks for Muse in this same checklist.
+- [ ] Q4 — prerequisite R4. Codex reconciles G24 with all twelve master queue
+  dispositions, performs the next supported source/design/consultation step for
+  startup/callback/codec or another ready lane, and saves its concrete assignments.
+  The master final exhaustion review remains pending until no ready supported fix
+  exists. No optional quiet window or individual patch ends the campaign.

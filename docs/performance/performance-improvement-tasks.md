@@ -231,3 +231,21 @@ next: no-context array callback bypass, success-proven private extraction and ma
 metadata reuse, relevant contracts/actual generated checks and continued source
 investigation. General callContext, invoke, emitter ABI and ownership logic remain
 outside that packet. C4 and final exhaustion review remain active.
+
+## Continuing generated checkpoints (Codex)
+
+G7-G12 accepted and committed `a7130e42`: 53 applicable contracts, runtime check,
+24 actual generated/native validations and identity/cleanup review passed.
+G13-G18 plus exact-metadata/evidence corrections accepted and committed `5b1889ee`:
+14 applicable independent contracts, 24 fresh actual generated/native cases,
+strict TS and matching module/driver hashes, then a final narrow ten-test origin
+run with an actual emitted synthetic invocation-boundary oracle. Production stayed
+unchanged during test-only corrections; all groups/prompts/scratch retired. Prior
+evidence chronology discrepancy is explicitly preserved. Both checkpoints avoid
+source-proven work; neither has a measured speedup number.
+
+Next implementation: [checked authored forwarding tasks](generated-forwarding-tasks.md)
+G19-G24, after [their design](generated-forwarding-plan.md) and three saved fresh
+equivalent consultations. Muse owns implementation/integration; Codex independently
+accepts and commits before continuing. Startup attribution, codec retention and all
+twelve dispositions remain under C4. C5 stays unchecked until actual final exhaustion.

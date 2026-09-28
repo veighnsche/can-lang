@@ -1,8 +1,8 @@
 # Checked authored callable forwarding
 
-Status: design prepared while the origin corrective executor remains active.
-Implementation waits for that owner and its group to retire and for independent
-origin acceptance. The campaign continues through the [master queue](performance-improvement-tasks.md).
+Status: ready after independent origin acceptance and commit `5b1889ee` and
+retirement of every corrective owner/group/prompt. The campaign continues through
+the [master queue](performance-improvement-tasks.md).
 Assignments are in the [forwarding checklist](generated-forwarding-tasks.md).
 
 ## Source evidence and proposed change
