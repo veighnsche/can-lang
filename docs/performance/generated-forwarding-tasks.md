@@ -183,7 +183,7 @@ independent Codex review (R4/Q4 unchecked).
   contracts and actual emitted/generated/native/strict TS identities, verifies all
   owned group/prompt/scratch cleanup, and promptly commits the accepted checkpoint.
   Genuine issues become concrete corrective tasks for Muse in this same checklist.
-- [ ] Q4 — prerequisite R4. Codex reconciles G24 with all twelve master queue
+- [x] Q4 — prerequisite R4. Codex reconciles G24 with all twelve master queue
   dispositions, performs the next supported source/design/consultation step for
   startup/callback/codec or another ready lane, and saves its concrete assignments.
   The master final exhaustion review remains pending until no ready supported fix
@@ -207,3 +207,12 @@ fallback; they do not enumerate every internal array caller. Q4 remains active:
 attribute actual generated startup import/evaluation versus initialization and
 preparation, retain per-site authored invoke and numeric JSON candidates, and
 continue the twelve-slice queue.
+
+
+Q4 prepared the [startup attribution design](generated-startup-plan.md) and
+[ordered G25-G30 tasks](generated-startup-tasks.md). Actual initializer-body order
+is distinct from import enumeration; fresh adapter/facade graph loading is distinct
+from complete production entry startup. Three new fully rewritten equivalent Jev
+requests/responses and independent reconciliation are saved. They advise staged
+attribution and temporary AST instrumentation, without production trimming. The
+next sole Muse run implements only the opt-in tools/tests and bounded evidence.

@@ -90,3 +90,21 @@ follow generated-execution-plan.md and generated-execution-tasks.md. Broader
 callback/invocation overhead must be reviewed on the actual generated async path,
 followed by supported startup work. JSON token retention remains a secondary
 candidate. All implementation and corrective edits belong to Muse.
+
+
+## Queue reconciliation after forwarding acceptance
+
+Intermediate review, not exhaustion: catalogue `1319ceda` correctness is accepted
+and unmeasured; editor retains its separate historical isolated comparison.
+Generated/runtime completion, snapshot, private callback/extraction/metadata,
+static origin and proven authored forwarding candidates have verified fixes in
+`7e0d5641`, `a7130e42`, `5b1889ee` and `4589122c`, with no current timing claim.
+Startup loading/init attribution is the next [ordered packet](generated-startup-tasks.md);
+per-site authored invoke remains a proof opportunity. Codecs retain the specific
+numeric-only token candidate. Assertions require fresh roots and may inherit
+supported startup improvements; artifacts still need phase attribution without
+removing durability/integrity boundaries. Server has no isolated supported cause;
+I/O keeps its demonstrated ownership copies; journeys follow shared generated/
+codec candidates; browser retains behavior checks with no performance conclusion.
+All twelve slices are dispositioned but the final independent queue review is
+pending. Do not reinterpret old revision `40eaf6a88` as current measurements.

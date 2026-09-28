@@ -89,7 +89,7 @@ generic synchronous callers stay valid regardless.
   package modules, `program/state.ts`, and the full platform runtime import
   graph (`programImports`/`browserProgramImports`, `runtime_core.go:5,28`).
 - Initialization: factory construction via `$canInitialize`
-  (`emitStateModule`, `program_state.go:36`) in `stateImports` order, plus
+  (`emitStateModule`, `program_state.go:36`) in the actual emitted initializer-body order (the import list is separate), plus
   `configureDiagnostics` and error-plan resolution before `$canMain`.
 
 Loading and initialization remain unattributed; no per-stage timing was
@@ -98,7 +98,7 @@ reuse one-build perfemit emission with the zero-byte inventory plus
 runtime-symlink preparation; time separately on the busy host with observed
 activity noted — (a) real dynamic imports / fresh-process loading of the
 prepared startup entries, (b) per-factory timers around each
-`program/state.ts` initializer statement in `stateImports` order,
+`program/state.ts` initializer statement in the actual emitted initializer-body order (the import list is separate),
 (c) `bun build` of the startup entries reported apart as compilation,
 (d) the existing `validate` bench mode as the correctness gate. Explicit
 identities: loading = emitted import graph paths/bytes/hashes;
@@ -146,3 +146,14 @@ enumerated import/initializer inventory matches the attribution input.
 - Campaign state: G19-G24 implemented with 24/24 validation and strict TS;
   independent acceptance of the forwarding packet and the next ordered
   checklist belong to Codex.
+
+
+## Codex reconciliation after independent acceptance
+
+Forwarding correctness is accepted and committed `4589122c`; source and generated
+identities independently match. The next [startup design](generated-startup-plan.md)
+separates preparation, adapter/facade-root imports, diagnostics and actual body-order
+initialization, with temporary AST statement instrumentation only as a diagnostic
+variant. This scoped route is not complete production `runEntry` startup. The G21
+sync controls establish conservative fallback behavior, rather than an enumeration
+of all internal production array callers. No universal runtime fast path is accepted.

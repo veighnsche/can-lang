@@ -263,3 +263,11 @@ records the review. Next: bounded attribution of actual generated startup loadin
 and initialization, separate from compilation; then the next supported remedy.
 Per-site invoke proof, secondary numeric JSON evidence retention and final
 independent twelve-slice exhaustion review remain active.
+
+
+Next ready packet: [generated startup attribution](generated-startup-plan.md) and
+[G25-G30 assignments](generated-startup-tasks.md). Three fresh fully rewritten
+consultations are saved/reconciled; one sole Muse implements opt-in tools and
+parallel-safe new tests, then one qualified bounded busy-host attribution run.
+Production imports/factories remain unchanged until actual stage and source proof
+supports a remedy. R5/Q5 govern independent acceptance and the continuing queue.
