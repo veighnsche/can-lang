@@ -88,6 +88,44 @@ class CompilerDriverContract(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             driver.validate_rename(extra, expected)
 
+    def test_lsp_close_rejects_trace_failure_exit(self):
+        driver = self.load_driver()
+        lsp = driver.LSP.__new__(driver.LSP)
+        lsp.request_timeout = 1
+        proc = MagicMock()
+        proc.poll.side_effect = [None, 2]
+        proc.returncode = 2
+        lsp.process = proc
+        lsp.reader = MagicMock()
+        with patch.object(driver.LSP, 'send'), patch.object(driver.LSP, 'until', return_value={'id': 999999}):
+            with self.assertRaisesRegex(RuntimeError, 'exited 2'):
+                lsp.close()
+        proc.wait.assert_called_with(timeout=3)
+
+    def test_lsp_close_accepts_clean_exit(self):
+        driver = self.load_driver()
+        lsp = driver.LSP.__new__(driver.LSP)
+        lsp.request_timeout = 1
+        proc = MagicMock()
+        proc.poll.side_effect = [None, 0]
+        proc.returncode = 0
+        lsp.process = proc
+        lsp.reader = MagicMock()
+        with patch.object(driver.LSP, 'send'), patch.object(driver.LSP, 'until', return_value={'id': 999999}):
+            lsp.close()
+
+    def test_lsp_close_rejects_prior_crash(self):
+        driver = self.load_driver()
+        lsp = driver.LSP.__new__(driver.LSP)
+        lsp.request_timeout = 1
+        proc = MagicMock()
+        proc.poll.side_effect = [5, 5]
+        proc.returncode = 5
+        lsp.process = proc
+        lsp.reader = MagicMock()
+        with self.assertRaisesRegex(RuntimeError, 'exited 5'):
+            lsp.close()
+
     def test_anchor_identity_excludes_locations_outputs_and_docs_but_detects_input_edits(self):
         driver = self.load_driver()
         with tempfile.TemporaryDirectory() as tmp:

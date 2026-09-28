@@ -180,6 +180,8 @@ class LSP:
             self.process.stdin.close()
             self.process.stdout.close()
             self.reader.join(timeout=3)
+        if self.process.returncode != 0:
+            raise RuntimeError(f'LSP process exited {self.process.returncode}; trial is invalid')
 
 
 def expected_rename(uri, call_line, declaration_line):
