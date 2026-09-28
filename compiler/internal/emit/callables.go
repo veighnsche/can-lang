@@ -98,10 +98,20 @@ func (e *RegionEmitter) callable(node *ir.Expression) (LoweredExpression, error)
 	}
 	name := e.temp()
 	out.WriteString(e.mark(node.Span, "callable"))
+	// A positively proven authored target is a native async function, so
+	// the forwarding arrow returns its promise directly without a
+	// redundant async adoption layer. The explicit Promise<Completion>
+	// annotation, saved target/capture sequence and owner/assertion
+	// context forwarding are unchanged; array, native, unclassified and
+	// inconsistently rebound targets keep the async adapter.
+	adapter := "async "
+	if declaration.Array == nil && e.provenAuthoredBinding(declaration.Target, target) {
+		adapter = ""
+	}
 	if e.Browser {
-		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s]);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
 	} else {
-		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], async (%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
+		fmt.Fprintf(&out, "const %s = $canOwnCallable(%s, %s, [%s], %s(%s): Promise<$canCompletion<%s>> => %s, [%s],$canContext);\n", name, quote(declaration.Site), quote(declaration.Target), strings.Join(captures, ", "), adapter, strings.Join(parameters, ", "), TypeName(node.Type.Result()), invoke, strings.Join(retained, ", "))
 	}
 	return LoweredExpression{Statements: out.String(), Value: name}, nil
 }

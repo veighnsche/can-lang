@@ -155,6 +155,12 @@ func NativeTypeDeclarationsForTarget(graph []*types.Type, browser bool) (string,
 type RegionEmitter struct {
 	Bindings  map[string]string
 	Functions map[string]string
+	// authoredProof pairs checked authored function identities from
+	// program.Functions with their actual emitted bindings. It is separate
+	// from the mixed operation/function map above and is nil for direct
+	// emitters without assembly evidence; those keep legacy behavior. The
+	// map is shared read-only within one assembly and never mutated.
+	authoredProof map[string]string
 	// RuleNames maps wrapper rule region IDs to their emitted function
 	// names so inherit delegates to the predecessor rule.
 	RuleNames map[string]string
@@ -524,6 +530,19 @@ func (e *RegionEmitter) target(id string) (string, error) {
 		return "", fmt.Errorf("missing concrete target %s for call in region %s (%s)", id, e.region.ID, e.sourceID())
 	}
 	return "", fmt.Errorf("missing concrete target %s", id)
+}
+
+// provenAuthoredBinding reports whether identity names a checked authored
+// function whose actual resolved binding agrees with the assembly evidence.
+// Both the proof entry and the resolved name must match: unknown, native,
+// catalogue, array or inconsistently rebound targets never qualify, and the
+// proof never substitutes a stale binding from another assembly.
+func (e *RegionEmitter) provenAuthoredBinding(identity, resolved string) bool {
+	if e.authoredProof == nil || identity == "" || resolved == "" {
+		return false
+	}
+	bound, ok := e.authoredProof[identity]
+	return ok && bound == resolved
 }
 func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, error) {
 	if call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {

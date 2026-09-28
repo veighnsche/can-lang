@@ -91,7 +91,7 @@ func emitAssertionCase(assembly *programAssembly, runtime string, test *ir.Asser
 	if sourceID == "" {
 		return Module{}, fmt.Errorf("assertion source is not indexed")
 	}
-	emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: sourceID}
+	emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: sourceID, authoredProof: assembly.authoredProof}
 	actual, err := emitter.Function("$canActual", test.Actual)
 	if err != nil {
 		return Module{}, err

@@ -44,6 +44,11 @@ type programAssembly struct {
 	functions map[string]string
 	bindings  map[string]string
 	browser   bool
+	// authoredProof pairs each checked program.Functions identity with its
+	// actual emitted binding. It is built from the same checked list and
+	// resolved table as emission, separate from the mixed operation map,
+	// and is shared read-only by this assembly's region emitters only.
+	authoredProof map[string]string
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -122,6 +127,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 		return nil, err
 	}
 	assembly.functions = functions
+	assembly.authoredProof = assembly.checkedAuthoredProof()
 	assembly.bindInitializers()
 	return assembly, nil
 }
@@ -186,6 +192,21 @@ func (assembly *programAssembly) functionBindings() bindingContribution {
 		functions[fn.Identity()] = fmt.Sprintf("$canFunction%d", i)
 	}
 	return bindingContribution{domain: "functions", functions: functions}
+}
+
+// checkedAuthoredProof pairs every checked authored function identity,
+// including concrete generic instances, with its actual emitted binding.
+// Identities without a resolved binding are omitted so they can never
+// qualify for proof-selected emission.
+func (assembly *programAssembly) checkedAuthoredProof() map[string]string {
+	proof := make(map[string]string, len(assembly.program.Functions))
+	for _, fn := range assembly.program.Functions {
+		identity := fn.Identity()
+		if bound := assembly.functions[identity]; bound != "" {
+			proof[identity] = bound
+		}
+	}
+	return proof
 }
 
 // bindInitializers exposes ordered top-level values through the shared
