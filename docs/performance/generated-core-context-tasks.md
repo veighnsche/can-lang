@@ -120,7 +120,7 @@ unchecked and performs every ready ordered assignment until complete or blocked.
   - Evidence: met: changed 4 emit files, new core test, this checklist,
     packet-10 evidence; both graphs retired, absent; no residue.
     Terminal handoff below. ALL writers released; TUI idle. Native goal
-    `goal-777adfad-a2fc-499e-8795-c3f513134d9b` complete at handoff.
+    reference in the authoritative monitoring record complete at handoff.
 
 ## Muse terminal handoff (G55-G60 core bypass, 2026-09-28T22:08Z)
 
@@ -134,7 +134,7 @@ execution. 23 bounded tests pass; graph 13/13, 14/14 bindings,
 strict tsc 0, 24/24 oracles; 6 new core sites (11/16 cumulative),
 exactly 2 modules + manifest changed. No measurements, no tool
 edits, no latency/heap claim. R10/Q10 left for Codex.
-- [ ] **R10 — independently review and commit coherent owned paths**
+- [x] **R10 — independently review and commit coherent owned paths**
   - Prerequisite: ALL-writer handoff. Codex only, actual diff/new contracts and
     ONE bounded actual graph; reuse successful evidence, no unrelated broad
     repeat. Genuine defects through saved tasks/SAME Muse; exact owned commit.
@@ -143,3 +143,16 @@ edits, no latency/heap claim. R10/Q10 left for Codex.
     remaining12, specific dispositions and further supported production work.
     Finish only if independent final review finds no ready fix and all owned
     cleanup is released. Do not manufacture work or expand auxiliary tools.
+
+## R10 independent acceptance
+
+Accepted production e57f3ad2. Codex actual diff review,5 new actual Bun contracts/
+zero skips and one reused bounded graph passed:13 gates, strictTS0,24 native
+comparisons,14 actual saved bindings matching Muse names and module-hash suffixes.
+Only2 expected modules differ from packet9; all source/driver hashes verified and
+groups/graphs retired. Evidence generated-packet-10-independent-review.json and
+-generated.json in the campaign directory. Hostile input refusal is tested;
+successful boxed-payload behavior reuses unchanged generic invoke/completion
+source and accepted contracts. No latency/heap claim. Q10 redirects to current
+large generated/native gaps and substantial measured remedies; no further micro-
+packet sequence or auxiliary expansion.
