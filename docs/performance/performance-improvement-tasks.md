@@ -271,3 +271,15 @@ consultations are saved/reconciled; one sole Muse implements opt-in tools and
 parallel-safe new tests, then one qualified bounded busy-host attribution run.
 Production imports/factories remain unchanged until actual stage and source proof
 supports a remedy. R5/Q5 govern independent acceptance and the continuing queue.
+
+Startup attribution checkpoint a544630c is accepted within builtin-only scope
+after the final bounded independent224-test/zero-skip review, actual validation
+and custody probes with execution cleanup. Historical216-row69-summary arithmetic
+is preserved with its original producer. This auxiliary lane is frozen per user
+direction; no runtime speedup is claimed. The next production packet is
+[domain catalogue index reuse](generated-domain-index-plan.md) and its
+[G31-G36 assignments](generated-domain-index-tasks.md), d88e57b: remove repeated
+immutable lookup work while preserving fresh plan/validation/failure state,
+with one baseline and one after observation using existing unchanged tooling.
+Source work removal, measured differences and uncertainty will be reported
+separately. Authored invoke, numeric retention and final twelve-slice review remain.

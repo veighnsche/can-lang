@@ -551,11 +551,17 @@ are never reconstructed.
     actual validation and unchanged source inputs. Accepted within builtin-only
     attribution scope, no performance improvement or speedup claim. Auxiliary
     lane frozen per latest user direction; no successive hardening packet.
-- [ ] **Q5 — next supported fix and final queue discipline**
+- [x] **Q5 — next supported fix and final queue discipline**
   - Prerequisite: R5. Owner: Codex; reconcile all twelve slices, design the next
     source/evidence-supported remedy, make required three fresh consultations and
     save ordered Muse tasks. No time cap or manufactured work. Retire the campaign
     heartbeat only when the independent final review finds no ready supported fix.
+  - Evidence: next production [domain index design](generated-domain-index-plan.md)
+    and [G31-G36 tasks](generated-domain-index-tasks.md), committed d88e57b, follow
+    frozen110-error/215-shape metadata proof and three fresh reworded Jev requests
+    (.94/.97/.65 lazy indexing, varying strength reconciled). Baseline/after use
+    unchanged existing instrumentation; no more auxiliary development. The
+    startup/authored-invoke/numeric/all-twelve queue and final review stay active.
 
 ## Muse terminal handoff (G25-G30 complete, 2026-09-28)
 
