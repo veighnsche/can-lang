@@ -116,7 +116,7 @@ logs, so CLI resume is unavailable: continue this actual checklist in one fresh
 Muse run with the same model/max setting. Leave `regions.go` unchanged unless a
 new contract failure demonstrates a real implementation error.
 
-- [ ] G15a — prerequisite G13-G17 and retired owner. File ownership remains
+- [x] G15a — prerequisite G13-G17 and retired owner. File ownership remains
   `static_origin_test.go` and this progress log. Strengthen executable mapped
   origin contracts to assert the complete expected source/start/end/invocation
   tuple against authored source text (not just two repeated origins agreeing).
@@ -128,7 +128,7 @@ new contract failure demonstrates a real implementation error.
   validation and nested-handler distinction. Use existing fixture helpers and
   small Bun-backed execution; no new harness or broad sweep. Record why these
   oracles cover the specified G15 duties and the relevant exact test exits.
-- [ ] G17a — prerequisite G15a. Correct compact evidence chronology:
+- [x] G17a — prerequisite G15a. Correct compact evidence chronology:
   `generated-packet-3-muse-evidence.json` recorded_at 1790597062 predates the
   first executor's start 1790597125.48464 and is not a valid acquisition timestamp.
   Preserve that discrepancy explicitly; regenerate evidence with an actual
@@ -139,7 +139,7 @@ new contract failure demonstrates a real implementation error.
   one owned perfemit build and the established path-inventory/runtime-link method.
   Do not repeat the full emit package merely to repair a timestamp. Save exact
   corrective commands/exits/counts and cleanup. No latency claims.
-- [ ] G18a — prerequisite G17a. File ownership: the read-only follow-up note.
+- [x] G18a — prerequisite G17a. File ownership: the read-only follow-up note.
   Correct the characterization of Array.fromAsync's mapper as concurrent: the
   current production observations and existing delayed tests serialize callback
   visits. A replacement still needs native-algorithm/scheduling/thenable proof,
@@ -209,3 +209,96 @@ green). Scratch retired. No blocker; awaiting Codex independent review.
 No timing gain asserted.
 
 G18: wrote only `generated-origin-next-investigation.md` (read-only; no builds, harness changes or measurements). It revisits post-reuse callback/invoke/wrapper costs with semantic-versus-compat separation, holds promise/callable removals for a caller-enumeration missing proof, sketches a three-identity busy-host startup attribution design, keeps JSON token retention secondary, and hands concrete consultation evidence to Codex. Campaign completion is not declared.
+
+## G15a-G18a correction evidence (Muse, 2026-09-28)
+
+### Independent review follow-up: actual invocation boundary
+
+Codex verified owner/group/prompt retirement, 14 corrected applicable checks and
+24 fresh actual generated/native oracles, strict TS and matching source/module/
+driver identities. The synthetic boundary assertion currently invokes `$canInvoke`
+manually with a cached function-entry origin. This proves that cached origins work
+with the runtime helper, but does not pin the origin supplied by an actual emitted
+invocation step. Acceptance remains pending this one exact-path oracle; no production
+error has been demonstrated and `regions.go` must stay unchanged unless it fails.
+
+- [ ] G15b — prerequisites G15a/G17a/G18a and their retired owner. Own only
+  `static_origin_test.go` and this progress log. Add a small Bun-backed case with an
+  actual `RegionEmitter.Function` containing a checked invocation/match to an
+  injected target returning a synthetic `can:` standard failure carrier. Execute
+  the emitted caller, rather than invoking `$canInvoke` manually from the test.
+  Derive the expected call-site span from authored text and the checked invocation
+  step; assert the full boundary source/start/end/invocation tuple equals that exact
+  emitted invocation site (distinct from function-entry/literal spans). Preserve
+  the synthetic original location and occurrence identity, and show a subsequent
+  outer boundary does not replace the first. Keep existing successful 9 tests and
+  all exact authored/substituted-source oracles unchanged. Run only the new case
+  and relevant static-origin subset; no broad emit suite or repeated generated
+  build/24-case run is required for a test-only change with identical production.
+- [ ] G17b — prerequisite G15b. Record actual commands/counts/timestamps and the
+  updated test hash, preserving previous chronology discrepancy and verification
+  evidence. Verify test scratch cleanup and unchanged production/driver hashes.
+  The independent 24-case/strict TS evidence already matches the frozen production
+  emission; do not pretend those commands were rerun. Hand back for Codex's narrow
+  final independent test acceptance and prompt correctness commit. Do not benchmark,
+  implement a harness, alter runtime or expand the design.
+
+G15a: `static_origin_test.go` only; `regions.go` untouched
+(sha256 `cf6ed4fd…dae` equals the prior after-hash, so no production,
+runtime, compiler, or harness change). The Bun sharing/freshness test now
+asserts complete source/start/end/invocation tuples against authored text:
+Go-side oracles slice the exact fixture source to `ok 1\n`, `1`,
+`1 / 0`, and `missing(9)`; Bun-side `deepEqual` pins the literal slot, the entry
+slot, both standard and both domain failure origins (fresh occurrence
+IDs, identical exact metadata), plus slot order (body marks intern
+before the entry). A synthetic `can:static-origin-synth` failure keeps
+its original occurrence/location through `$canInvoke`, records the exact
+emitted entry tuple as its first `boundaryOrigin`, and keeps that first
+boundary on a second invoke. These oracles cover the G15 duties because
+repeated/concurrent sharing, freshness, exact authored spans, first
+boundaries, and synthetic-origin discipline are each asserted against
+authored text rather than pairwise agreement. New
+`TestStaticOriginTemplateSubstitutionEmission` checks a two-file
+fixture-template program through real `ProgramModules` emission: the
+consumer module carries definition-source mappings slicing
+`helpers.can` to `base + base` alongside use-source mappings, paired
+non-function tokens, and a lazily interned (`??=`) definition origin
+under the active consumer region. Mapping validation and
+nested-handler distinction are kept (existing tests unweakened).
+`gofmt` clean; `TestStaticOrigin` 9 PASS / 0 FAIL / 0 SKIP and the
+focused 14-family contract set 44 PASS / 0 FAIL / 0 SKIP, both exit 0
+with `CAN_BUN`, `GOMAXPROCS=2`, `-p=2`, `-count=1`. Two interim
+test-side expectation errors (entry-slot order, single-token function
+marks) were corrected in the test; neither implicated production code.
+
+G17a: evidence regenerated at actual `recorded_at` 1790599790.625365
+(2026-09-28T12:49:50Z). The prior `recorded_at` 1790597062.0 predates
+the first executor's start 1790597125.48464 and is preserved in the
+`chronology` section as a reported value, not a valid acquisition
+timestamp; no original command times are invented. Previously reported
+commands are kept verbatim under `previously_reported_commands`;
+freshly executed corrective checks are listed separately under
+`commands`. All hashes were recomputed from actual paths: `regions.go`
+and both drivers match prior values; all 9 fresh generated modules
+match prior values (byte-identical emission); only the test file hash
+changed. Fresh bounded validation used one shared-cache perfemit build,
+271 zero-byte placeholders (0 bytes), 281 emitted artifacts, checkout
+runtime symlink before execution, 14/14 adapter bindings, strict `tsc`
+clean, and 24/24 validate with 10/10 required endpoints (exit 0 each).
+The full emit package was deliberately not repeated. Owned WORK dirs
+(one interim inventory-layout failure plus the full pass) and the
+owned script were trap-removed and verified absent. No latency claimed.
+
+G18a: read-only follow-up corrected, no implementation or measurement.
+The `Array.fromAsync` mapper is not concurrent: `observations`
+(`array.ts:79-91`) awaits each mapped value before advancing, and the
+existing gated/order tests (`array.test.ts:30-78,455-562,596-660`)
+prove strictly serialized visits. A replacement still needs
+native-algorithm/scheduling/thenable proof, but concurrent traversal
+is no longer offered as a rejection reason. Startup attribution now
+separates four identities: real dynamic-import/fresh-process loading,
+per-factory initialization, `bun build` compilation (not a loading
+proxy), and the validate correctness gate. Remaining gaps are the
+stated missing proofs (caller enumeration, three-part mapper
+equivalence, per-factory usage evidence). Campaign continues after
+Codex independently accepts this packet; completion is not declared.
