@@ -1,0 +1,187 @@
+{
+  "purpose": "Compact retained evidence for an interactive SQLite dependency boundary design sketch; no implementation changes.",
+  "wording_audit": {
+    "passed": true,
+    "method": "Reviewed all three states, judgments and option descriptions for the same facts, constraints and alternatives. Every explanatory prose field differs in every pair; schema keys and exact technical identifiers are deliberately stable. This is a wording and semantic-preservation audit, not proof of bias elimination."
+  },
+  "sources": [
+    "https://go.dev/ref/mod",
+    "https://pkg.go.dev/cmd/cgo",
+    "https://docs.typesafe.ai/api",
+    "https://docs.typesafe.ai/primitives/choice",
+    "compiler/internal/sql/sqlite/PROVENANCE.md",
+    "compiler/internal/sql/parser.go",
+    "compiler/internal/sql/sqlite.go",
+    "distribution/build.go",
+    "go.mod"
+  ],
+  "consultations": [
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "goal": "The owner wants upstream parser sources removed from the main Can repository through a cleaner dependency boundary; changing language statistics alone is insufficient. Only a design sketch is authorized.",
+          "current": "Can is a Go compiler already using github.com/pganalyze/pg_query_go/v6 as an external module. Its SQLite syntax backend vendors Tree-sitter runtime 0.27.0 and a generated defin/tree-sitter-sqlite3 grammar. The generated parser occupies 5,809,039 bytes.",
+          "boundary": "Two Can-authored additions, glue.c and glue.go, total 277 physical lines and 7,985 bytes. They wrap C parsing and return generic nodes with type, byte spans, children, syntax-error status and LanguageVersion. Parent SQLite analysis maps those nodes into the compiler-owned Analysis including parameter sites, statement kinds, LIMIT shape and RETURNING. The provenance identifies upstream sources as unchanged; the bridge is not a patch to SQLite.",
+          "execution": "Application database execution uses Bun.SQL independently of compiler parsing. Moving sources changes repository layout, not parser semantics, native compilation requirements or guaranteed binary size.",
+          "build": "Official cgo documentation says C source in the Go package directory is compiled automatically. A separate Go module can contain that package and the required C sources. Ordinary Go module resolution downloads versioned sources into the shared module cache and checks go.sum. Distribution builds currently set CGO_ENABLED=1 and GOPROXY=off, so newly required modules must be provisioned before the offline build. No build experiment has been run.",
+          "constraints": "Disk and laptop load are constrained; avoid duplicate private dependency caches, broad builds and benchmarks. There are no external users or compatibility promises. A new external module needs a maintained repository and reproducible upstream source pins, license material, bridge tests and update ownership. No suitable existing module has been verified; the proposed owned module would need publishing later."
+        },
+        "questions": {
+          "packaging": {
+            "type": "choice",
+            "instructions": "Which packaging direction best matches the stated ownership goal while retaining existing parsing behavior and ordinary reproducible Go builds? Judge only the supplied evidence and constraints; do not assume unavailable dependencies or claim an implementation has been tested.",
+            "criteria": {
+              "module": "Create a separately maintained Go module/repository containing the generic bridge and its pinned Tree-sitter runtime and SQLite grammar; retain Can-specific SQL analysis in Can. Reference a fixed module version with go.mod/go.sum and prefetch it before offline distribution builds. Dependency sources still occupy the shared module cache and C still compiles.",
+              "submodule": "Put the parser and generic bridge into a separate Git repository pinned as a submodule of Can. Keep the Can SQL analyzer local. Add recursive checkout or initialization and Go build wiring; checked-out upstream sources still live under the Can checkout.",
+              "archive_fetch": "Keep a small lock, bridge sources and preparation script in Can; download a fixed upstream source archive, verify its digest and stage the parser beside the bridge before cgo. Maintain extraction, cleanup and offline provisioning logic.",
+              "archive_commit": "Commit a compressed archive of parser sources beside the bridge and unpack it into a build package before compilation. Retain dependency bytes in the main repository and add extraction; upstream changes are less directly reviewable.",
+              "attributes": "Keep all source files in Can and label upstream paths linguist-vendored while retaining authored files in the statistics. This only changes GitHub classification, with no dependency relocation or build changes.",
+              "defer": "The evidence does not support choosing any listed packaging direction; identify the need for further investigation by selecting this option."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "packaging": {
+            "type": "choice",
+            "choice": "module",
+            "confidence": 0.91,
+            "probabilities": {
+              "defer": 0.04,
+              "archive_fetch": 0.02,
+              "submodule": 0.01,
+              "archive_commit": 0.0,
+              "attributes": 0.0,
+              "module": 0.93
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1071,
+          "output_tokens": 65
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.323
+      }
+    },
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "goal": "The requested sketch should separate borrowed parsing code from Can repository ownership. A corrected GitHub percentage would not satisfy the goal. The user has not requested implementation.",
+          "current": "The Go-based Can compiler already obtains its PostgreSQL parser through the external github.com/pganalyze/pg_query_go/v6 module. SQLite syntax recognition instead includes copied Tree-sitter 0.27.0 runtime files and generated defin/tree-sitter-sqlite3 output; that generated file is 5,809,039 bytes long.",
+          "boundary": "Can contributes glue.c plus glue.go: 277 physical lines, 7,985 bytes altogether. The pair exposes generic syntax nodes carrying kinds, byte ranges and descendants, together with syntax-error information and LanguageVersion. A higher-level Can SQLite analyzer derives Analysis records for statement categories, parameters, LIMIT form and RETURNING. Upstream material is described as verbatim by the provenance; these added adapters do not alter SQLite upstream files.",
+          "execution": "Bun.SQL handles running application queries on a different path from compiler syntax analysis. Relocating this dependency preserves the same parser and still needs native C compilation; a smaller compiler executable is not an established consequence.",
+          "build": "According to the cgo specification, C files located with a Go package participate automatically in compilation, including a package delivered as a Go module. Module tooling acquires version-selected sources in its shared cache with go.sum verification. The release builder enforces CGO_ENABLED=1 and disables module retrieval using GOPROXY=off; its dependencies therefore need preparation before the offline stage. These conclusions have not been validated by an experimental build.",
+          "constraints": "Work must respect limited disk capacity and machine load, avoiding isolated duplicate module caches, large builds and measurements. No outside consumers require backwards compatibility. Owning a separate module entails a maintained repository, pinned reproducible upstream inputs, licensing, adapter tests and responsibility for refreshes. An existing appropriate package has not been confirmed; a newly owned one would require eventual publication."
+        },
+        "questions": {
+          "packaging": {
+            "type": "choice",
+            "instructions": "Using these established facts alone, select the most suitable source-distribution arrangement for externalizing parser ownership without changing syntax semantics or losing standard reproducible Go compilation. Do not presume an unverified package exists or that validation work is complete.",
+            "criteria": {
+              "module": "Release the generic C/Go adapter, fixed upstream grammar and Tree-sitter sources from their own maintained Go module repository. Leave SQL policy and Analysis construction with Can, select the dependency in go.mod/go.sum, and prepare its download ahead of disconnected release builds. Shared module storage and C compilation remain necessary.",
+              "submodule": "Use a second Git repository for the generic parser package and record its commit in a Can Git submodule. Preserve the local SQL policy layer but provide submodule retrieval and package-build integration. The upstream files are materialized inside the working checkout after initialization.",
+              "archive_fetch": "Maintain the adapter, dependency digest record and setup logic in Can. Have setup retrieve an immutable upstream archive, authenticate its digest and extract a compilable package containing both adapter and C code; own its cleanup and offline preparation behavior.",
+              "archive_commit": "Track the dependency as a compressed blob in Can and expand it next to the adapter for the build. This still stores the source payload in Can, introduces unpacking and obscures ordinary upstream source diffs.",
+              "attributes": "Retain the current layout and add linguist-vendored declarations only for external sources, so Can-authored material remains counted. Repository contents and build mechanics would be unchanged; only the language display differs.",
+              "defer": "None of the arrangements can be responsibly selected from the available facts, so additional investigation should precede a recommendation."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "packaging": {
+            "type": "choice",
+            "choice": "module",
+            "confidence": 0.79,
+            "probabilities": {
+              "attributes": 0.01,
+              "module": 0.82,
+              "archive_fetch": 0.11,
+              "submodule": 0.01,
+              "archive_commit": 0.0,
+              "defer": 0.05
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1113,
+          "output_tokens": 65
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.365
+      }
+    },
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "goal": "Success here means a proposal that makes the upstream SQL parser an external dependency of Can, rather than merely hiding its contribution to language totals. Scope is architectural discussion, with no change execution approved.",
+          "current": "Can compiles from Go and has an existing external PostgreSQL grammar dependency named github.com/pganalyze/pg_query_go/v6. For SQLite it checks in a Tree-sitter 0.27.0 runtime and generated grammar from defin/tree-sitter-sqlite3. The latter parser alone measures 5,809,039 bytes.",
+          "boundary": "Only the adapter additions glue.c and glue.go constitute the discussed bridge, with 277 physical lines taking 7,985 bytes in total. They provide parsing plus generic tree nodes exposing categories, source-byte intervals and nested nodes, a syntax-error indication and LanguageVersion. Can code above them translates the tree into Analysis, determining parameter locations, statement categories, LIMIT structure and RETURNING. The recorded provenance calls the copied files unmodified, so the bridge is additional code rather than an upstream SQLite patch.",
+          "execution": "The application runtime delegates query execution to Bun.SQL separately. Source externalization alone leaves parsing behavior and the need to compile C intact and offers no demonstrated reduction in executable size.",
+          "build": "Go cgo automatically builds a package directory's C translation units. That directory can be part of an independently distributed Go module; versioned module downloads use the normal shared cache and go.sum integrity verification. The existing distribution process uses CGO_ENABLED=1 with GOPROXY=off, requiring dependency acquisition before that offline build. This is documentation-backed analysis without a test build.",
+          "constraints": "The computer has tight storage and load budgets. Duplicate project-specific module caches, expansive builds and performance runs are inappropriate. There is no installed external user base imposing compatibility. A separate owned package brings repository maintenance, reproducible source/version records, licenses, wrapper tests and an upstream-update responsibility. There is no verified ready-made module to reuse, and an owned module would have to be published in a later implementation step."
+        },
+        "questions": {
+          "packaging": {
+            "type": "choice",
+            "instructions": "For the supplied project, which dependency packaging option should the design recommend to separate upstream ownership while maintaining the existing parser semantics and reproducible conventional Go builds? Base the judgment on the provided record, without inventing package availability or completed tests.",
+            "criteria": {
+              "module": "Maintain and publish an independent Go module containing the thin generic binding alongside exact upstream Tree-sitter and grammar versions. Keep the Can SQL interpretation in the compiler and consume a selected module release via go.mod/go.sum, fetching dependencies before offline release assembly. The source still resides in Go's shared cache and is compiled as C.",
+              "submodule": "Manage the binding and parser package in a distinct Git project referenced by a pinned submodule commit in Can. Supply checkout initialization and Go integration while leaving SQL interpretation in Can. Once fetched, the parser source occupies a subtree of the Can workspace.",
+              "archive_fetch": "Leave authored binding files plus a source-lock manifest and materialization script in Can. Fetch a digest-pinned upstream archive and produce the C/Go package before building, including explicit responsibilities for removal of temporary files and disconnected build preparation.",
+              "archive_commit": "Save the upstream package inside a compressed archive checked into Can, then extract a package containing the authored binding for compilation. Source bytes remain owned by the Can repository, with an extra expansion step and reduced visibility of upstream diffs.",
+              "attributes": "Add vendored-language annotations to the copied sources while preserving authorship counts for the local adapters and otherwise retaining the repository and build exactly as they stand. Only GitHub reporting changes.",
+              "defer": "Select this if further facts are essential and no offered packaging strategy is sufficiently supported for a recommendation."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "packaging": {
+            "type": "choice",
+            "choice": "module",
+            "confidence": 0.89,
+            "probabilities": {
+              "attributes": 0.0,
+              "defer": 0.02,
+              "module": 0.92,
+              "submodule": 0.03,
+              "archive_fetch": 0.03,
+              "archive_commit": 0.0
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1120,
+          "output_tokens": 65
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.31
+      }
+    }
+  ],
+  "assessment": {
+    "recommendation": "External, versioned Go module containing generic C/Go parser bindings and pinned upstream sources; Can retains SQL-specific analysis.",
+    "jev": "Three fresh, fully reworded consultations chose module. Selection probabilities were 0.93, 0.82 and 0.92. No selected-option disagreement; uncertainty differs. Agreement is advisory, not validation.",
+    "independent_review": "Confirmed cgo package locality does not require Can-repository locality. Export an importable package outside internal. Include actual C/header files in module archive, avoiding vendor exclusions and symlinks. Preserve grammar revision provenance and notices. Offline distribution requires dependency preparation.",
+    "limitations": "No suitable published binding has yet been verified. No implementation, archive/build validation or publishing occurred. Shared module-cache storage and native compilation remain; no disk or binary-size reduction claimed.",
+    "retention": "This compact evidence file is intentionally retained for the design discussion; no temporary checkout, build bundle or private cache was created."
+  },
+  "subsequent_correction": "Superseded by the full brainstorm: upstream Go bindings were found at the exact existing grammar revision, contradicting local provenance; a new owned module is now fallback only. Meyer pure-Go parser is an additional candidate. Earlier consultation inputs did not contain these findings."
+}

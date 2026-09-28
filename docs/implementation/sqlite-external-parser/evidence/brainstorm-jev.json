@@ -1,0 +1,203 @@
+{
+  "purpose": "Retained compact evidence for the full Can SQL architecture brainstorm, including the newly discovered upstream Go binding and pure-Go parser candidates.",
+  "wording_audit": "All context, instruction and option-description prose was independently rewritten across the three requests. Facts, constraints, alternatives and question meaning were reviewed for equivalence; pairwise checks reject identical explanatory fields. Stable code/package identifiers are intentionally retained. This does not guarantee absence of bias.",
+  "consultations": [
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "objective": "The user requests a full brainstorm after objecting to vendored SQLite C source and inconsistent SQL dependency packaging. They explicitly asked about Go SQLite reimplementations. This is design research only; no implementation is authorized. No external users or backwards compatibility obligations exist.",
+          "current": "Can is a Go compiler with PostgreSQL pg_query_go/v6 and MySQL TiDB parser external modules. SQLite vendors 88 files totaling 6,729,649 bytes; generated parser.c accounts for 5,809,039. Two generic C/Go bridge files total 277 lines and 7,985 bytes; parent Go code owns SQL policy. All three feed one Analysis interface. Application query execution already uses native Bun.SQL.",
+          "contract": "The compiler currently checks SQL grammar offline, one admitted top-level statement, parameter identity and per-occurrence byte spans, declared parameter coverage, top-level LIMIT shape and restricted RETURNING. Those spans produce native bound-value templates. It does not prove database schema/result-column agreement, freedom from hidden effects, or bounded database work. Runtime decodes returned rows. Arbitrary SQL with inferred placeholders still requires a dialect lexer even without a full parser; explicit source slots would remove that inference obligation.",
+          "upstream_binding": "The exact defin/tree-sitter-sqlite3 commit already pinned by Can includes go.mod and bindings/go/Language(), so the documented no-Go-module rationale is false. The module default official go-tree-sitter v0.24.0 only supports ABI14, whereas its grammar uses ABI15. Compatible official runtime source supporting ABI15 exists; Go proxy also has v0.25.0 with that source, but the live GitHub tag is absent. Binding tests only construct a language and do not prove parsing. Using appropriate existing modules could remove local copied C and custom serialization glue while retaining the grammar; build and API equivalence are untested.",
+          "go_parser": "sqlc-dev/meyer v0.1.2 is a MIT-licensed pure-Go SQLite parser with no module dependencies and Go1.24. It predates the Can SQLite decision. Public API returns statement ASTs with byte Pos/End, BindParam.Raw, LIMIT and RETURNING structure, positioned errors and configurable UpdateDeleteLimit. Upstream reports 21,326 SQLite corpus passes, roundtrip and differential/fuzz checks against SQLite3.53.4; these are not locally reproduced. Current sqlc source imports it. It is a young project; Can-specific grammar/parameter/Unicode behavior and resource limits remain unverified.",
+          "alternatives": "rqlite/sql is another authored Go SQLite AST parser with explicitly incomplete grammar coverage; its scanner increments offsets per rune, requiring conversion before byte slicing. modernc.org/sqlite translates the SQLite C engine to Go; zombiezen/glebarez layer on it. Current ncruces/go-sqlite3 translates SQLite Wasm to Go via wasm2go. These full engines expose preparation/binding APIs but no established schema-free AST with every occurrence span and LIMIT role. Native engine preparation is not a demonstrated drop-in for Can Analysis.",
+          "constraints": "Keep laptop load and disk use bounded; no benchmarks, broad builds, clones or dependency installations have been run. Module relocation does not eliminate dependency cache storage, compile work or maintenance. A pure-Go SQLite parser would not remove Can-wide cgo because PostgreSQL still uses it. Existing distribution builds are offline after dependency provisioning. An owned binding module creates another maintenance boundary. New parser qualification should use existing SQL corpus plus UTF-8, comments, placeholders, CTEs, LIMIT and RETURNING cases, adjudicating differences against intended contracts and actual SQLite rather than preserving erroneous old goldens.",
+          "unknowns": "Neither Meyer nor the official runtime/grammar combination has been compiled or tested in Can. No current runtime/size/performance comparison exists. The owner has not chosen to abandon offline SQL guarantees. A separate checked-SQL tool, explicit slots with native preparation, typed query IR, or schema-backed development checks are legitimate larger designs with different product contracts."
+        },
+        "questions": {
+          "first_probe": {
+            "type": "choice",
+            "instructions": "Which candidate should receive the first bounded correctness qualification for removing Can-owned upstream SQLite sources while preserving the currently intended SQL checks? Treat this as research prioritization, not proof of correctness or authorization to implement. Use only these facts and keep uncertainty about untested alternatives explicit.",
+            "criteria": {
+              "meyer": "First assess the existing pure-Go Meyer parser against Can Analysis and its correctness cases. It could eliminate both copied C and the SQLite Tree-sitter/cgo bridge; its newness, SQLite-version differences and behavior remain qualification risks.",
+              "official_bindings": "First assess the existing upstream grammar module with a compatible official Go Tree-sitter runtime. This keeps the current grammar and removes Can-local copied sources/custom binding, while retaining C compilation and requiring API, ABI and ownership verification.",
+              "rqlite": "First assess the independent rqlite Go parser, including a rune-to-byte position adapter and verification of incomplete dialect coverage.",
+              "owned_module": "First design an owned external Go module containing the current bridge and upstream sources. Behavior can remain close, but the dependency is still maintained by Can and a new publication lifecycle is required.",
+              "full_engine": "First investigate a cgo-free full SQLite engine in Go and its internal/public interfaces to establish whether it can yield Can's AST and span evidence without a schema. Such access is not yet shown.",
+              "contract_redesign": "First revisit the SQL feature contract, considering explicit bound slots, optional or separate checking, or constructed query IR before choosing a replacement parser. These may reduce compiler complexity but can change offline checks and authoring.",
+              "undecided": "Available evidence is insufficient even to choose which bounded qualification to prioritize."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "first_probe": {
+            "type": "choice",
+            "choice": "official_bindings",
+            "confidence": 0.52,
+            "probabilities": {
+              "owned_module": 0.0,
+              "rqlite": 0.0,
+              "full_engine": 0.0,
+              "contract_redesign": 0.0,
+              "undecided": 0.0,
+              "official_bindings": 0.59,
+              "meyer": 0.41
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1571,
+          "output_tokens": 81
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.323
+      }
+    },
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "objective": "This discussion seeks a broad architectural option map, prompted by the owner's dislike of copied SQLite C dominating the source tree and diverging from other SQL integrations. Go implementations of SQLite were specifically requested. Scope stops at brainstorming; changes are not approved. Compatibility with external consumers is irrelevant because none exist.",
+          "current": "Can compiles in Go and obtains its PostgreSQL parser through pg_query_go/v6 and MySQL parsing through a TiDB module. Its local SQLite subtree has 88 tracked files and 6,729,649 bytes, including a 5,809,039-byte generated parser. The generic two-file binding comprises 277 lines/7,985 bytes, with dialect policy above it in Go. A shared Analysis result serves every backend, and native Bun.SQL already executes application queries.",
+          "contract": "Existing offline analysis validates dialect syntax, admissible single-statement form, bind identities/occurrence byte ranges and declaration coverage, SELECT LIMIT position and admitted RETURNING forms. Exact ranges allow conversion into bound-value native templates. Database schema correspondence, absence of all implicit effects and limits on engine work are not proven; returned records are checked at execution time. Removing only syntax parsing still leaves lexical work when placeholders must be discovered within arbitrary SQL. Explicit language-level parameter slots avoid that discovery task.",
+          "upstream_binding": "Inspection of Can's precise defin/tree-sitter-sqlite3 revision found a Go module and bindings/go/Language(), contradicting the recorded absence claim. Its declared go-tree-sitter v0.24.0 runtime accepts at most ABI14, yet the generated grammar is ABI15. An ABI15-capable official runtime revision is available; v0.25.0 is also present on the Go proxy although GitHub no longer exposes its tag. The grammar's Go test only creates a language value and never parses. Importing compatible modules might replace copied C plus custom serialization without changing the grammar, but no integration build or equivalence run has confirmed this.",
+          "go_parser": "The existing sqlc-dev/meyer v0.1.2 release implements SQLite parsing directly in Go, is MIT licensed, requires Go1.24 and has an empty dependency list. It was available before Can chose its SQLite backend. AST nodes expose source-byte Pos/End; binds retain Raw spelling, clauses expose LIMIT/RETURNING, errors carry locations, and UpdateDeleteLimit is configurable. Its maintainers claim 21,326 successful corpus cases and roundtrip, fuzz and engine-differential checks using SQLite3.53.4, not results measured here. sqlc currently imports this parser. Its short history and unverified Can-specific semantics, Unicode handling and resource bounds matter.",
+          "alternatives": "A second independently written Go AST option is rqlite/sql, whose documented grammar omissions and rune-counting source offsets require attention and a byte-offset mapping. modernc.org/sqlite is a C-to-Go SQLite engine translation reused through zombiezen/glebarez. ncruces/go-sqlite3 currently converts a SQLite Wasm build into Go with wasm2go. These engines offer statement preparation and binding metadata; an offline schema-independent AST exposing each bind occurrence and its LIMIT role has not been established, so preparation is not proven equivalent to Analysis.",
+          "constraints": "Work must remain light on the laptop and storage; this investigation has performed no builds, measurements, clones or dependency installation. External modules still cost shared-cache space, compilation and maintenance. Dropping SQLite cgo alone leaves PostgreSQL cgo in the compiler. Release assembly expects dependencies prepared before its offline build. Publishing a Can-owned wrapper adds continuing repository/package duties. Candidate tests should cover the existing SQL cases and Unicode, literal/comment decoys, parameter spellings, CTEs, LIMIT and RETURNING, resolving divergences using intended semantics and SQLite behavior instead of treating old golden errors as compatibility obligations.",
+          "unknowns": "Can has not yet exercised Meyer or a compatible official Tree-sitter module pair, and current footprint/speed tradeoffs are unmeasured. The user has not selected weaker offline verification. Alternatives such as a dedicated checked-SQL stage, explicit slots plus engine validation, structured query construction and schema-aware developer checks change where guarantees live."
+        },
+        "questions": {
+          "first_probe": {
+            "type": "choice",
+            "instructions": "Select the first narrowly scoped correctness experiment that is best supported for externalizing SQLite source ownership without silently dropping Can's intended checks. The selection only orders research and implies neither a verified replacement nor permission to make changes; avoid assumptions beyond the supplied evidence.",
+            "criteria": {
+              "meyer": "Begin by qualifying Meyer's native-Go syntax tree interface against the required Analysis facts and existing cases. Success would remove the local C payload and SQLite-specific Tree-sitter/cgo adapter, subject to young-project, grammar-version and behavioral risks.",
+              "official_bindings": "Begin by qualifying the currently used grammar through its published Go binding and an ABI-compatible official Tree-sitter package. This limits grammar changes while replacing locally vendored source and bespoke glue; C tooling and lifecycle/API checks remain.",
+              "rqlite": "Begin with rqlite's Go-only parser, testing coverage gaps and introducing the necessary rune-index to source-byte translation during qualification.",
+              "owned_module": "Begin with a separately published package owned by Can that carries today's generic binding and parser sources. It largely preserves the present behavior but relocates maintenance and introduces module release work.",
+              "full_engine": "Begin by exploring whether a translated Go SQLite database engine can supply schema-independent structural and source-location evidence through available or extractable interfaces; this capability is still unverified.",
+              "contract_redesign": "Begin by choosing a revised SQL contract around explicit value holes, independently run checks, or a structured query representation. This could reduce core responsibilities while changing authorship and compilation guarantees.",
+              "undecided": "Defer a priority judgment because the record does not support choosing any first qualification."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "first_probe": {
+            "type": "choice",
+            "choice": "official_bindings",
+            "confidence": 0.72,
+            "probabilities": {
+              "contract_redesign": 0.0,
+              "owned_module": 0.0,
+              "full_engine": 0.0,
+              "rqlite": 0.0,
+              "undecided": 0.0,
+              "official_bindings": 0.77,
+              "meyer": 0.23
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1603,
+          "output_tokens": 81
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.346
+      }
+    },
+    {
+      "request": {
+        "model": "jev-latest",
+        "state": {
+          "objective": "The owner asked for a full brainstorm, including SQLite written in Go, after challenging both the large vendored grammar and the inconsistent packaging across database dialects. The authorized activity is research and design, not implementation. There is no external user population requiring old behavior for compatibility.",
+          "current": "The Go Can compiler already depends on PostgreSQL pg_query_go/v6 and a MySQL TiDB parser module. SQLite's checked-in parser directory spans 88 files occupying 6,729,649 bytes, of which generated parser C is 5,809,039. The generic C-plus-Go interface layer is just two files, 277 lines and 7,985 bytes; SQL rules are in its parent Go analyzer. All dialects converge on Analysis, while application database operations run separately through Bun.SQL.",
+          "contract": "At present compilation establishes offline syntax acceptance, exactly one permitted top-level statement, parameter matching and coverage with occurrence-level byte offsets, the specified LIMIT shape and allowed RETURNING. Offsets drive native template binding. This does not certify database column/schema agreement, rule out every nested effect or bound total database computation; results undergo runtime type decoding. Keeping free-form SQL and automatic placeholder recognition requires dialect-aware tokenization even if full grammar checks vanish. Explicit parameter-hole syntax changes that requirement.",
+          "upstream_binding": "Contrary to Can's provenance explanation, the very grammar revision selected from defin/tree-sitter-sqlite3 already ships go.mod plus a Go Language() entry point under bindings/go. Its default official runtime dependency, go-tree-sitter v0.24.0, supports ABI14, incompatible with its ABI15 grammar. Suitable official ABI15 runtime code exists, and Go proxy retains a v0.25.0 module for that code despite an absent GitHub tag. The upstream smoke test constructs the language only, without grammar admission or parse execution. Reusing compatible upstream modules could remove checked-in third-party C and custom serialization while holding the grammar steady; actual Can integration is not tested.",
+          "go_parser": "Meyer from sqlc-dev, version v0.1.2, was released before Can's SQLite decision and is a recent MIT pure-Go parser requiring Go1.24 without module dependencies. Its statements form an AST with byte-based Pos/End, Raw bind text, LIMIT and RETURNING nodes, error positions and an UpdateDeleteLimit option. Upstream advertises 21,326 corpus passes, tree roundtrips and fuzz/differential checking with SQLite3.53.4; none were rerun in this review. It is already imported by current sqlc source. New-project maturity, dialect behavior, Unicode/parameters and bounded resource handling still need Can qualification.",
+          "alternatives": "rqlite/sql provides a separately authored Go SQLite syntax tree, but declares incomplete language support and advances scanner offsets by characters rather than UTF-8 bytes. Adapting those positions is necessary. Full-engine possibilities differ: modernc.org/sqlite translates SQLite C into Go, zombiezen and glebarez use that translated engine, and the current ncruces/go-sqlite3 path translates SQLite Wasm into Go through wasm2go. Their preparation and bind APIs have not been shown to expose all schema-free tree structure, source occurrences or LIMIT relationships required by Analysis.",
+          "constraints": "Storage capacity and CPU load are hard limits; no clone, installation, broad compilation or timing experiment has taken place. Moving a module does not erase its cache footprint, compilation or upkeep. Even a completely Go-based SQLite path would leave the PostgreSQL cgo dependency. The distribution builder runs offline after dependencies have been obtained. Maintaining a private external wrapper entails its own source/release lifecycle. Qualification should exercise current SQL coverage plus non-ASCII positions, quoted/commented lookalikes, parameter forms, CTEs, LIMIT and RETURNING, with disagreements judged against actual SQLite and the intended contract rather than preserving historical test mistakes.",
+          "unknowns": "There is no Can build or correctness result for Meyer or the corrected official runtime/grammar dependency pair, nor fresh comparative performance evidence. Removing compile-time promises has not been selected by the user. An external verifier, direct bound-slot SQL with runtime preparation, query IR or schema-driven development tooling remain possible larger architectural choices."
+        },
+        "questions": {
+          "first_probe": {
+            "type": "choice",
+            "instructions": "Given this record, which replacement candidate merits the initial bounded correctness probe toward removing upstream SQLite files from Can while respecting its current intended validation? Recommend an investigation priority only, without treating it as tested correctness or action approval.",
+            "criteria": {
+              "meyer": "Prioritize a compatibility probe of the existing dependency-free Go Meyer parser and its AST/span API. Passing would let Can shed local C and its SQLite Tree-sitter bridge; the parser's recent origin and different SQLite baseline require evidence.",
+              "official_bindings": "Prioritize running the present grammar through its upstream Go package together with a matching official runtime. This offers continuity of syntax behavior and removal of local vendor/glue code, with continued C compilation and API/ABI/cleanup obligations.",
+              "rqlite": "Prioritize verification of rqlite's independent Go implementation, its omitted syntax and a mapping from its character offsets to Can's byte positions.",
+              "owned_module": "Prioritize preparing a Can-maintained external module for the existing parser and thin wrapper. The source tree would be smaller but ownership and update duties persist in a new published package.",
+              "full_engine": "Prioritize interface research into full SQLite engines delivered as Go, checking whether internal parsing can expose the necessary structure and positions without database schema dependence.",
+              "contract_redesign": "Prioritize a product-level choice about explicit bind slots, off-compiler verification or constructed query trees. Smaller compiler scope may follow, with corresponding changes to accepted SQL workflows and proof obligations.",
+              "undecided": "No first probe can yet be justified; obtain more information before prioritizing these alternatives."
+            }
+          }
+        }
+      },
+      "response": {
+        "model": "jev-1.13.0",
+        "answers": {
+          "first_probe": {
+            "type": "choice",
+            "choice": "official_bindings",
+            "confidence": 0.44,
+            "probabilities": {
+              "owned_module": 0.0,
+              "rqlite": 0.0,
+              "undecided": 0.0,
+              "full_engine": 0.0,
+              "contract_redesign": 0.0,
+              "meyer": 0.48,
+              "official_bindings": 0.52
+            }
+          }
+        },
+        "usage": {
+          "input_tokens": 1607,
+          "output_tokens": 81
+        }
+      },
+      "metadata": {
+        "status": 200,
+        "seconds": 0.299
+      }
+    }
+  ],
+  "assessment": {
+    "findings": "The exact pinned grammar already has a Go module and binding. Original no-module provenance is incorrect. Meyer v0.1.2 predates Can SQLite choice and provides a direct Go AST/span API. No behavior qualification was run.",
+    "consultation_interpretation": "All three rewrites selected official_bindings as the first bounded correctness probe; selected probabilities 0.59,0.77,0.52, with Meyer 0.41,0.23,0.48. There is no selected-option disagreement. Material distribution variation means weak-to-moderate preference, not evidence that Meyer is inferior. The question emphasized preserving current intended checks, favoring a baseline using the existing grammar. These consultations do not select the long-term architecture.",
+    "recommendation": "Two finalists: establish the same-grammar upstream-module baseline, qualify Meyer against the same bounded correctness cases, and prefer Meyer if it satisfies intended contracts with acceptable resource behavior and maintenance confidence. No new owned module unless verified upstream routes fail. Treat explicit slots plus separate/schema-aware checking as a larger product-design alternative, not silent packaging work.",
+    "limits": "Source/API research and tracked-file counts only; no clones, installs, tests, builds, benchmarks, implementation or publishing. Current performance and Can behavioral equivalence are unknown. Shared cache and PostgreSQL cgo costs remain.",
+    "retention": "Compact final design evidence and brainstorm Markdown are retained as deliverables; no temporary workspaces or private caches were created."
+  },
+  "primary_sources": [
+    "https://github.com/defin/tree-sitter-sqlite3/blob/7f69bb66845beaac48d467f4f7d107ea2002865e/go.mod",
+    "https://github.com/defin/tree-sitter-sqlite3/blob/7f69bb66845beaac48d467f4f7d107ea2002865e/bindings/go/binding.go",
+    "https://github.com/tree-sitter/go-tree-sitter",
+    "https://proxy.golang.org/github.com/tree-sitter/go-tree-sitter/@v/v0.25.0.info",
+    "https://github.com/sqlc-dev/meyer/tree/v0.1.2",
+    "https://github.com/sqlc-dev/sqlc/blob/main/internal/engine/sqlite/parse.go",
+    "https://github.com/rqlite/sql",
+    "https://github.com/rqlite/sql/blob/master/scanner.go",
+    "https://gitlab.com/cznic/sqlite",
+    "https://github.com/zombiezen/go-sqlite",
+    "https://github.com/glebarez/go-sqlite",
+    "https://github.com/ncruces/go-sqlite3",
+    "https://www.sqlite.org/c3ref/prepare.html",
+    "https://www.sqlite.org/c3ref/bind_parameter_count.html",
+    "https://bun.sh/docs/runtime/sql",
+    "https://go.dev/ref/mod",
+    "https://pkg.go.dev/cmd/cgo"
+  ]
+}

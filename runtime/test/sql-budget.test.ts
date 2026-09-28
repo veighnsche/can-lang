@@ -196,7 +196,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
   ),
   lite: entries(
     "sqlite",
-    15,
+    102,
     "1 = 1",
     (rowId, note) => `INSERT INTO e04_probe (id, note) VALUES (${rowId}, '${note}')`,
   ),

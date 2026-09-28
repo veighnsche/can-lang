@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "can.sqlite-binding",
+  "task": "sqlite-external-parser",
+  "selected": {
+    "module": "github.com/sqlc-dev/meyer",
+    "version": "v0.1.2",
+    "published": "2026-08-25T20:44:20Z",
+    "repository": "https://github.com/sqlc-dev/meyer",
+    "tag": "v0.1.2",
+    "commit": "59b2dbf9b1872316bc6c6d3379b500df84db3e01",
+    "goSum": "h1:40Ng9Glnx7CTf3yOYV7jfvDIN7voIFjrStkIULS+uws=",
+    "goModSum": "h1:pS4USCRf/SLjWtaMcnTo4YrEEFKBj8CyyqlxcVUJQH8=",
+    "stamp": 102,
+    "options": "parser.Options{UpdateDeleteLimit: true}",
+    "licenses": [
+      {"spdx": "MIT", "path": "distribution/notices/meyer-LICENSE.txt"}
+    ]
+  },
+  "transitive": [],
+  "rejected": {
+    "module": "github.com/defin/tree-sitter-sqlite3 / github.com/tree-sitter/go-tree-sitter",
+    "version": "v0.1.1-0.20260503135658-7f69bb66845b / v0.25.0",
+    "reason": "qualified 74/74 differential baseline, but the grammar rejects engine-accepted $1/:1/@1/$name(arg) spellings, keeps a SQLite cgo bridge, and the runtime release is proxy-only (live v0.25.0 tag absent); see docs/implementation/sqlite-external-parser/evidence/qualification.md"
+  },
+  "buildInputs": "The binding is a pure-Go module compiled into the canlc launcher binary, whose content hash feeds every build ID via the compiler input; no separate manifest field is needed."
+}

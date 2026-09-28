@@ -1,0 +1,51 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	"github.com/sqlc-dev/meyer/ast"
+	"github.com/sqlc-dev/meyer/parser"
+)
+
+func trial(id, src string) {
+	stmts, err := parser.ParseString(src)
+	if err != nil {
+		var perr *parser.Error
+		if errors.As(err, &perr) {
+			fmt.Printf("%s inputBytes=%d FAIL msg=%q off=%d\n", id, len(src), perr.Message, perr.Offset)
+			return
+		}
+		fmt.Printf("%s inputBytes=%d ERR %v\n", id, len(src), err)
+		return
+	}
+	params := 0
+	if len(stmts) == 1 {
+		ast.Walk(stmts[0], func(n ast.Node) bool {
+			if _, ok := n.(*ast.BindParam); ok {
+				params++
+			}
+			return true
+		})
+	}
+	fmt.Printf("%s inputBytes=%d OK stmts=%d params=%d\n", id, len(src), len(stmts), params)
+}
+
+func main() {
+	trial("big40k", "SELECT "+strings.Repeat("1+", 20000)+"1 FROM t WHERE x = ? LIMIT ?")
+	trial("deep5k", "SELECT "+strings.Repeat("(", 5000)+"1"+strings.Repeat(")", 5000)+" FROM t")
+	trial("deep15k", "SELECT "+strings.Repeat("(", 15000)+"1"+strings.Repeat(")", 15000)+" FROM t")
+	trial("chain100k", "SELECT "+strings.Repeat("1+", 100000)+"1 FROM t")
+	var udl parser.Options
+	udl.UpdateDeleteLimit = true
+	s, err := udl.ParseString("UPDATE t SET x = ? LIMIT 1")
+	fmt.Printf("udl-update stmts=%d err=%v\n", len(s), err)
+}
+
+func init() {
+	trial("values-limit", "VALUES (1),(2) LIMIT 1")
+	trial("mid-orderby", "SELECT id FROM t ORDER BY id UNION SELECT id FROM u")
+	trial("hash-name", "SELECT #name")
+	trial("explain-qp", "EXPLAIN QUERY PLAN SELECT * FROM t WHERE x = ? LIMIT ?")
+}

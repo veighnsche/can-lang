@@ -86,7 +86,7 @@ const fileOptions = (mode: string, ms: bigint) =>
     ["busy_timeout_ms", ms],
   ]);
 
-// Hand-built sqlite descriptors (dialect sqlite, grammar version 15).
+// Hand-built sqlite descriptors (dialect sqlite, Meyer release stamp 102).
 // DDL runs through execute descriptors: the factory shapes segments,
 // never the SQL text, so tests bootstrap their own schema.
 const D = "sqlite" as const;
@@ -107,7 +107,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     insert_cover: {
       dialect: D,
@@ -133,7 +133,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 6,
-      version: 15,
+      version: 102,
     },
     cover_by_id: {
       dialect: D,
@@ -150,7 +150,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 2,
       total: 2,
-      version: 15,
+      version: 102,
     },
     cover_all: {
       dialect: D,
@@ -162,7 +162,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 1,
       total: 1,
-      version: 15,
+      version: 102,
     },
     update_flag: {
       dialect: D,
@@ -179,7 +179,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 2,
-      version: 15,
+      version: 102,
     },
     delete_cover: {
       dialect: D,
@@ -191,7 +191,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 1,
-      version: 15,
+      version: 102,
     },
     setup_unique: {
       dialect: D,
@@ -203,7 +203,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     insert_unique: {
       dialect: D,
@@ -221,7 +221,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 2,
-      version: 15,
+      version: 102,
     },
     broken_syntax: {
       dialect: D,
@@ -233,7 +233,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     drop_absent: {
       dialect: D,
@@ -245,7 +245,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     journal_delete: {
       dialect: D,
@@ -257,7 +257,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     begin_immediate: {
       dialect: D,
@@ -269,7 +269,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     rollback_txn: {
       dialect: D,
@@ -281,7 +281,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     setup_parent: {
       dialect: D,
@@ -293,7 +293,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     setup_child: {
       dialect: D,
@@ -309,7 +309,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     pragma_fk: {
       dialect: D,
@@ -321,7 +321,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 0,
-      version: 15,
+      version: 102,
     },
     insert_child: {
       dialect: D,
@@ -339,7 +339,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 2,
-      version: 15,
+      version: 102,
     },
     child_by_id: {
       dialect: D,
@@ -356,7 +356,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 2,
       total: 2,
-      version: 15,
+      version: 102,
     },
   },
 };

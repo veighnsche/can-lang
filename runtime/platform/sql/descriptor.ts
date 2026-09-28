@@ -42,9 +42,10 @@ export interface SQLTemplate {
 }
 
 // Pinned alongside compiler/internal/sql: libpg_query 17.7 per I36, the
-// tree-sitter SQLite grammar language version per the G-SQL exit, and
-// the tidb MySQL grammar compatibility version per B1-03.
-const parserVersions = { postgresql: 170007, sqlite: 15, mysql: 80011 } as const;
+// Meyer v0.1.2 SQLite release stamp (SQLiteVersion 102) per the
+// sqlite-external-parser implementation, and the tidb MySQL grammar
+// compatibility version per B1-03.
+const parserVersions = { postgresql: 170007, sqlite: 102, mysql: 80011 } as const;
 
 export function createSQLDescriptors(table: Record<string, Record<string, SQLDescriptorEntry>>) {
   const descriptors = new Map<string, SQLDescriptor>();

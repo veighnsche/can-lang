@@ -1,0 +1,115 @@
+// A03 resource checks: Close ownership, parser reuse determinism, and
+// node-count guard behavior. No timing (no performance measurements).
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
+	tree_sitter_sqlite3 "github.com/defin/tree-sitter-sqlite3/bindings/go"
+)
+
+func runResource() {
+	inputs := []string{
+		"SELECT name FROM users WHERE id = :id LIMIT :lim",
+		"SELECT * FORM users WHERE id = ?",
+		"",
+	}
+	// 1. Parser reuse: one parser, sequential parses, one Close.
+	lang := tree_sitter.NewLanguage(tree_sitter_sqlite3.Language())
+	p := tree_sitter.NewParser()
+	defer p.Close()
+	if err := p.SetLanguage(lang); err != nil {
+		fmt.Println("REUSE-SETLANG-FAIL:", err)
+		os.Exit(1)
+	}
+	var reuse []string
+	for _, in := range inputs {
+		t := p.Parse([]byte(in), nil)
+		if t == nil {
+			fmt.Println("REUSE-PARSE-NIL")
+			os.Exit(1)
+		}
+		r := t.RootNode()
+		reuse = append(reuse, fmt.Sprintf("%q kind=%s err=%v desc=%d",
+			in, r.Kind(), r.HasError(), r.DescendantCount()))
+		t.Close()
+	}
+	// Fresh parser per input must agree with reuse run.
+	for i, in := range inputs {
+		p2 := tree_sitter.NewParser()
+		if err := p2.SetLanguage(lang); err != nil {
+			fmt.Println("FRESH-SETLANG-FAIL:", err)
+			os.Exit(1)
+		}
+		t := p2.Parse([]byte(in), nil)
+		r := t.RootNode()
+		got := fmt.Sprintf("%q kind=%s err=%v desc=%d",
+			in, r.Kind(), r.HasError(), r.DescendantCount())
+		t.Close()
+		p2.Close()
+		if got != reuse[i] {
+			fmt.Printf("REUSE-MISMATCH:\n  reuse=%s\n  fresh=%s\n", reuse[i], got)
+			os.Exit(1)
+		}
+	}
+	fmt.Println("REUSE-DETERMINISTIC")
+	for _, s := range reuse {
+		fmt.Println("  ", s)
+	}
+
+	// 2. Extraction-before-Close: copy spans/text, close, then verify
+	// Go-side copies are intact and a new parser still works.
+	t := p.Parse([]byte(inputs[0]), nil)
+	r := t.RootNode()
+	kind, hasErr := r.Kind(), r.HasError()
+	stmt := r.NamedChild(0)
+	skind := stmt.Kind()
+	sstart, send := stmt.StartByte(), stmt.EndByte()
+	stext := inputs[0][sstart:send]
+	t.Close()
+	// NOTE: p stays open under the section-1 defer; Close is NOT
+	// idempotent (double Close segfaults in ts_parser_delete).
+	if kind != "source_file" || hasErr || skind != "select_statement" ||
+		inputs[0][sstart:send] != stext {
+		fmt.Println("EXTRACT-BEFORE-CLOSE-FAIL")
+		os.Exit(1)
+	}
+	a, visits, err := analyzeOfficial("after-close", inputs[0])
+	if err != nil || len(a.Sites) != 2 {
+		fmt.Println("AFTER-CLOSE-FAIL:", visits, err)
+		os.Exit(1)
+	}
+	fmt.Println("CLOSE-OWNERSHIP-OK")
+
+	// 3. Node-count guard: small override cap must trigger a clean Go
+	// error on an ordinary input (no hang, no truncation silence).
+	nodeCapOverride = 10
+	_, _, err = analyzeOfficial("cap-test", inputs[0])
+	nodeCapOverride = 0
+	if err == nil || !strings.Contains(err.Error(), "exceeds the node limit") {
+		fmt.Println("CAP-GUARD-FAIL:", err)
+		os.Exit(1)
+	}
+	fmt.Println("CAP-GUARD-OK err=", strconv.Quote(err.Error()))
+
+	// 4. Moderate-size input completes with a reported visit count.
+	big := "SELECT " + strings.Repeat("1+", 20000) + "1 FROM t WHERE x = ? LIMIT ?"
+	a, visits, err = analyzeOfficial("big", big)
+	if err != nil {
+		fmt.Println("BIG-FAIL:", err)
+		os.Exit(1)
+	}
+	fmt.Printf("BIG-OK inputBytes=%d visits=%d stmts=%d sites=%d\n",
+		len(big), visits, len(a.Statements), len(a.Sites))
+
+	// 5. Deep nesting completes (iterative walks, no Go-stack risk).
+	deep := "SELECT " + strings.Repeat("(", 5000) + "1" + strings.Repeat(")", 5000) + " FROM t"
+	a, visits, err = analyzeOfficial("deep", deep)
+	fmt.Printf("DEEP inputBytes=%d visits=%d err=%v failure=%v\n",
+		len(deep), visits, err, a.Failure != nil)
+	fmt.Println("RESOURCE-CHECKS-PASS")
+}

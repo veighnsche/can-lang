@@ -22,8 +22,8 @@ func TestF03ReturningAdmission(t *testing.T) {
 		{DialectPostgreSQL, "INSERT INTO f03_gen (payload) VALUES ($1) RETURNING id", []string{"payload"}, "InsertStmt", 170007},
 		{DialectPostgreSQL, "INSERT INTO f03_gen (worker, payload) VALUES ($1, $2) RETURNING id, payload", []string{"worker", "payload"}, "InsertStmt", 170007},
 		{DialectPostgreSQL, "INSERT INTO f03_keys (id, payload) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING id", []string{"id", "payload"}, "InsertStmt", 170007},
-		{DialectSQLite, "INSERT INTO t (a) VALUES (?1) RETURNING id", []string{"a"}, "insert_statement", 15},
-		{DialectSQLite, "INSERT INTO t (a) VALUES (:a) RETURNING id", []string{"a"}, "insert_statement", 15},
+		{DialectSQLite, "INSERT INTO t (a) VALUES (?1) RETURNING id", []string{"a"}, "insert_statement", SQLiteVersion},
+		{DialectSQLite, "INSERT INTO t (a) VALUES (:a) RETURNING id", []string{"a"}, "insert_statement", SQLiteVersion},
 	}
 	for _, c := range cases {
 		got, err := CheckDescriptorDialect(c.dialect, "f03", c.statement, c.params, "one", 0)

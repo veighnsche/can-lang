@@ -1,0 +1,99 @@
+// A05: bounded in-memory Bun SQLite oracle for disputed syntax/parameter
+// behavior. Separates SYNTAX failures (prepare throws) from SCHEMA failures
+// ("no such table/column" at prepare/run) and binding behavior.
+import { Database } from "bun:sqlite";
+
+const db = new Database(":memory:");
+console.log("sqlite_version=" + (db.query("SELECT sqlite_version() AS v").get() as any).v);
+
+db.run("CREATE TABLE t (a, b, c, x, id, name)");
+db.run("CREATE TABLE u (id)");
+db.run("CREATE TABLE users (id, name, nick)");
+
+function prep(id: string, sql: string): string {
+  try {
+    const q = db.query(sql);
+    // Run when it returns rows or is DML; SELECTs without params execute.
+    try {
+      q.all();
+      return "PREP-OK RUN-OK";
+    } catch (e: any) {
+      return "PREP-OK RUN-FAIL: " + e.message;
+    }
+  } catch (e: any) {
+    return "PREP-FAIL: " + e.message;
+  }
+}
+
+const syntaxCases: Array<[string, string]> = [
+  ["lite-20", "SELECT name FROM users WHERE id = $1 LIMIT ?"],
+  ["p05", "SELECT * FROM t WHERE a = :1 LIMIT ?"],
+  ["p06", "SELECT * FROM t WHERE a = @1 LIMIT ?"],
+  ["m01", "UPDATE t SET x = ? LIMIT 1"],
+  ["m02", "DELETE FROM t WHERE x = ? ORDER BY x LIMIT 1"],
+  ["m04", "SELECT * FROM t WHERE x = $name(arg)"],
+  ["p07", "SELECT * FROM t WHERE a = ?0 LIMIT ?"],
+  ["m05", "SELECT * FROM t WHERE a = ?99999999999999999999999"],
+  ["m07", "SELECT id FROM t LIMIT 1 UNION SELECT id FROM u"],
+  ["m08", "SELECT id FROM t UNION SELECT id FROM u LIMIT ?"],
+  ["u03", "SELECT héllo FROM t WHERE x = ? LIMIT ?"],
+  ["m03", "SELECT #1"],
+  ["e06", "SELECT"],
+  ["lite-16", "SELECT * FORM users WHERE id = ? LIMIT ?"],
+  ["lite-17", "SELECT name FROM users WHERE nick = 'unterminated AND id = ? LIMIT ?"],
+  ["deep5k", "SELECT " + "(".repeat(5000) + "1" + ")".repeat(5000) + " FROM t"],
+  ["deep2k", "SELECT " + "(".repeat(2000) + "1" + ")".repeat(2000) + " FROM t"],
+  ["r03", "SELECT * FROM t RETURNING id"],
+  ["p02shape", "SELECT * FROM t WHERE a = :a AND b = @a AND c = $a LIMIT ?"],
+];
+for (const [id, sql] of syntaxCases) {
+  console.log(id + "\t" + prep(id, sql));
+}
+
+// Sigil identity: if :a IS @a with only :a bound, same-param => 1, distinct => NULL.
+function sigil(): void {
+  const q = db.query("SELECT :a IS @a AS eq, :a IS $a AS eq2, @a IS $a AS eq3");
+  console.log("sigil-bind-a5: " + JSON.stringify(q.get({ ":a": 5 })));
+  const q2 = db.query("SELECT :a, @a, $a");
+  console.log("sigil-all-bound: " + JSON.stringify(q2.get({ ":a": 1, "@a": 2, "$a": 3 })));
+}
+sigil();
+
+// Bare-after-explicit numbering: SELECT ?2, ? with positional binds (v1,v2,v3).
+function numbering(): void {
+  const q = db.query("SELECT ?2 AS first, ? AS second");
+  console.log("num-?2?-abc: " + JSON.stringify(q.get("a", "b", "c")));
+  try {
+    const q0 = db.query("SELECT ?0 AS z");
+    console.log("num-?0-prep-OK run: " + JSON.stringify(q0.get()));
+  } catch (e: any) {
+    console.log("num-?0 FAIL: " + e.message);
+  }
+  for (const [id, sql, bind] of [
+    ["dollar1", "SELECT $1 AS v", { "$1": 9 }],
+    ["colon1", "SELECT :1 AS v", { ":1": 8 }],
+    ["at1", "SELECT @1 AS v", { "@1": 7 }],
+    ["tclform", "SELECT $name(arg) AS v", {}],
+  ] as Array<[string, string, any]>) {
+    try {
+      const q = db.query(sql);
+      console.log(id + "-prep-OK bind: " + JSON.stringify(q.get(bind)));
+    } catch (e: any) {
+      console.log(id + " FAIL: " + e.message);
+    }
+  }
+}
+numbering();
+
+// UPDATE..LIMIT behavioral check (if prepared, does it run?).
+function udl(): void {
+  try {
+    const q = db.query("UPDATE t SET x = ? LIMIT 1");
+    console.log("udl-run: " + JSON.stringify(q.run(7)));
+  } catch (e: any) {
+    console.log("udl FAIL: " + e.message);
+  }
+}
+udl();
+db.close();
+console.log("A05-PROBE-DONE");

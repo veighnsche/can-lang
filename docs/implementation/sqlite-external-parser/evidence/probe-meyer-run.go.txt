@@ -1,0 +1,164 @@
+// A04 Meyer probe: same corpus + cases.json through sqlc-dev/meyer v0.1.2.
+// Summary format mirrors the A03 sides; kind strings are mapped to the
+// tree-sitter spellings where 1:1 (M: prefix + Go type otherwise), failure
+// messages/cursors are raw Meyer (byte offsets) for the record.
+package main
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"reflect"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+
+	"github.com/sqlc-dev/meyer/ast"
+	"github.com/sqlc-dev/meyer/parser"
+)
+
+type corpusCase struct {
+	ID        string `json:"id"`
+	Dialect   string `json:"dialect"`
+	Statement string `json:"statement"`
+}
+
+type extraCase struct {
+	ID   string `json:"id"`
+	Stmt string `json:"stmt"`
+}
+
+func kindOf(s ast.Stmt) string {
+	t := reflect.TypeOf(s)
+	if t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	switch t.Name() {
+	case "SelectStmt":
+		return "select_statement"
+	case "InsertStmt":
+		return "insert_statement"
+	case "UpdateStmt":
+		return "update_statement"
+	case "DeleteStmt":
+		return "delete_statement"
+	case "PragmaStmt":
+		return "pragma_statement"
+	case "ExplainStmt":
+		return "explain_statement"
+	case "CreateTableStmt":
+		return "create_table_statement"
+	case "VacuumStmt":
+		return "vacuum_statement"
+	case "BeginStmt":
+		return "begin_statement"
+	case "CommitStmt":
+		return "commit_statement"
+	default:
+		return "M:" + t.Name()
+	}
+}
+
+func refOf(raw string, number int) string {
+	if raw == "?" {
+		return "?" + strconv.Itoa(number)
+	}
+	return raw
+}
+
+func summarize(id, stmt string) string {
+	stmts, err := parser.ParseString(stmt)
+	if err != nil {
+		var perr *parser.Error
+		if errors.As(err, &perr) {
+			runes := -1
+			if perr.Offset >= 0 && perr.Offset <= len(stmt) {
+				runes = utf8.RuneCountInString(stmt[:perr.Offset])
+			}
+			return fmt.Sprintf("FAIL{msg=%q byteoff=%d runeoff=%d}", perr.Message, perr.Offset, runes)
+		}
+		return "ERR:" + err.Error()
+	}
+	var b strings.Builder
+	b.WriteString("vM stmts[")
+	for i, s := range stmts {
+		if i > 0 {
+			b.WriteString(" ")
+		}
+		fmt.Fprintf(&b, "%s@%d+%d", kindOf(s), s.Pos(), s.End()-s.Pos())
+		if sel, ok := s.(*ast.SelectStmt); ok && len(sel.Cores) > 0 {
+			// Top-level LIMIT = last core's Limit (single-core: cores[0]).
+			if q, ok := sel.Cores[len(sel.Cores)-1].(*ast.SelectQuery); ok && q.Limit != nil {
+				lp := 0
+				if bp, ok := q.Limit.Count.(*ast.BindParam); ok && q.Limit.Offset == nil {
+					lp = bp.Number
+				}
+				fmt.Fprintf(&b, "L%d", lp)
+			}
+		}
+		switch n := s.(type) {
+		case *ast.InsertStmt:
+			if len(n.Returning) > 0 {
+				b.WriteString("R")
+			}
+		case *ast.UpdateStmt:
+			if len(n.Returning) > 0 {
+				b.WriteString("R")
+			}
+		case *ast.DeleteStmt:
+			if len(n.Returning) > 0 {
+				b.WriteString("R")
+			}
+		}
+	}
+	b.WriteString("] sites[")
+	if len(stmts) == 1 {
+		first := true
+		ast.Walk(stmts[0], func(n ast.Node) bool {
+			if bp, ok := n.(*ast.BindParam); ok {
+				if !first {
+					b.WriteString(" ")
+				}
+				first = false
+				fmt.Fprintf(&b, "%d[%d,%d)%s", bp.Number, bp.Pos(), bp.End(), refOf(bp.Raw, bp.Number))
+			}
+			return true
+		})
+	}
+	b.WriteString("]")
+	return b.String()
+}
+
+func main() {
+	raw, err := os.ReadFile("/Users/vince/.codex/worktrees/db71/can-lang/docs/bun-integration/asap/evidence/sql-corpus.json")
+	if err != nil {
+		panic(err)
+	}
+	var corpus struct {
+		Cases []corpusCase `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &corpus); err != nil {
+		panic(err)
+	}
+	xraw, err := os.ReadFile("../cases.json")
+	if err != nil {
+		xraw, err = os.ReadFile("cases.json")
+		if err != nil {
+			panic(err)
+		}
+	}
+	var extra []extraCase
+	if err := json.Unmarshal(xraw, &extra); err != nil {
+		panic(err)
+	}
+	for _, c := range corpus.Cases {
+		if c.Dialect != "sqlite" {
+			continue
+		}
+		fmt.Printf("%s\t%s\n", c.ID, summarize(c.ID, c.Statement))
+	}
+	for _, c := range extra {
+		fmt.Printf("%s\t%s\n", c.ID, summarize(c.ID, c.Stmt))
+	}
+}

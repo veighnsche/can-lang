@@ -155,19 +155,19 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       "sqlite",
       "insert_statement",
       "INSERT INTO f8_gen (payload, tag) VALUES (?1, ?1) ON CONFLICT (tag) DO NOTHING RETURNING id",
-      15,
+      102,
     ),
     f8_setup_lite: execEntry(
       "sqlite",
       "create_table_statement",
       "CREATE TABLE IF NOT EXISTS f8_gen (id INTEGER PRIMARY KEY AUTOINCREMENT, payload TEXT NOT NULL, tag TEXT NOT NULL UNIQUE)",
-      15,
+      102,
     ),
     f8_insert_lite: returningEntry(
       "sqlite",
       "insert_statement",
       "INSERT INTO f8_gen (payload, tag) VALUES (?1, ?1) RETURNING id",
-      15,
+      102,
     ),
     f8_insert3_lite: {
       dialect: "sqlite",
@@ -193,7 +193,7 @@ const table: Record<string, Record<string, SQLDescriptorEntry>> = {
       rowType: "r",
       limit: 0,
       total: 3,
-      version: 15,
+      version: 102,
     },
     f8_setup_mysql: execEntry(
       "mysql",

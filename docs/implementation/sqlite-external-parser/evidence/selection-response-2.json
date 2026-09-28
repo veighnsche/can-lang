@@ -1,0 +1,19 @@
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "production_parser": {
+      "type": "choice",
+      "choice": "official",
+      "confidence": 0.41,
+      "probabilities": {
+        "official": 0.61,
+        "further_evidence": 0.04,
+        "meyer": 0.35
+      }
+    }
+  },
+  "usage": {
+    "input_tokens": 1686,
+    "output_tokens": 44
+  }
+}

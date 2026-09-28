@@ -134,7 +134,7 @@ const liteEntries: Record<string, SQLDescriptorEntry> = {
     rowType: "r",
     limit: 0,
     total: 0,
-    version: 15,
+    version: 102,
   },
   setup_probe: {
     dialect: "sqlite",
@@ -146,7 +146,7 @@ const liteEntries: Record<string, SQLDescriptorEntry> = {
     rowType: "r",
     limit: 0,
     total: 0,
-    version: 15,
+    version: 102,
   },
   seed_probe: {
     dialect: "sqlite",
@@ -158,7 +158,7 @@ const liteEntries: Record<string, SQLDescriptorEntry> = {
     rowType: "r",
     limit: 0,
     total: 0,
-    version: 15,
+    version: 102,
   },
   probe_note: {
     dialect: "sqlite",
@@ -175,7 +175,7 @@ const liteEntries: Record<string, SQLDescriptorEntry> = {
     rowType: "r",
     limit: 2,
     total: 2,
-    version: 15,
+    version: 102,
   },
 };
 type Dialect = "postgresql" | "mysql" | "sqlite";

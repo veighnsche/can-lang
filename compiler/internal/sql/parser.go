@@ -1,7 +1,7 @@
 // Package sql validates manifest SQL descriptors against pinned,
 // dialect-specific grammar backends. PostgreSQL parses and scans through
 // the actual PostgreSQL 17 grammar and lexer via libpg_query; SQLite
-// parses through the pinned tree-sitter parse.y mirror. Each backend
+// parses through the pinned Meyer grammar module. Each backend
 // converts its results into the small compiler-owned Analysis shape here:
 // statements, parameter sites with byte spans, kinds, LIMIT shapes,
 // RETURNING presence, and verbatim failures. No backend AST node, token

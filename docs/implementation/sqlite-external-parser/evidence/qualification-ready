@@ -1,0 +1,22 @@
+# Qualification ready for Codex decision
+
+Date: 2026-09-28. Executor Muse finished Lane A (A01–A06).
+
+Input: `qualification.md` (§A01 baseline, §A02 pins/provenance, §A03
+official 74/74 differential, §A04 Meyer 53/74 + 21 diffs, §A05 engine
+3.54.0 oracle, §A06 comparison + recommendation).
+Raw: `a03-official-outcomes.txt` (74 lines),
+`a04-meyer-outcomes.txt` (74 lines), `a05-oracle.txt` (30 lines),
+`a05-probe.ts.txt`.
+
+Muse recommendation (advice only): Meyer v0.1.2 with
+`Options{UpdateDeleteLimit: true}`. Fallback: official pair
+(grammar 7f69bb + runtime v0.25.0, zero behavior change).
+
+Open questions for decision.md: see §A06 items 1–6 (?0/overflow,
+mid-compound LIMIT, deep nesting, pins, Version identity,
+ParseString vs ParseStatement).
+
+Codex owns: review, required Jev consultations, `decision.md`.
+Muse waits for `decision.md`, doing independent provenance inventory
+meanwhile, polling every 30–60s.

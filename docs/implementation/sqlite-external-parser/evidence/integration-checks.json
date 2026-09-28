@@ -1,0 +1,89 @@
+{
+  "tested_commit": "cfe95ec23a12c7dca7aa5b151795668ff08272f9",
+  "base_main": "721e1e0cc9251228b9093953b32bbb650d9ce25c",
+  "sandbox_retry_reason": "Initial attempt could not access the normal shared Go build cache; no test body ran. Retried with approved filesystem access.",
+  "checks": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-mod=readonly",
+        "-p",
+        "1",
+        "./compiler/internal/sql/",
+        "-count=1",
+        "-timeout=60s"
+      ],
+      "exit_code": 0,
+      "passed_tests_and_subtests": 106,
+      "skipped_tests": [
+        "TestMySQLDifferential"
+      ],
+      "packages": [
+        {
+          "package": "github.com/veighnsche/can-lang/compiler/internal/sql",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-mod=readonly",
+        "-p",
+        "1",
+        "./compiler/internal/check/",
+        "./compiler/internal/emit/",
+        "-run",
+        "TestSQL|TestPoolInputs|TestStaticOrigin|TestForwarding",
+        "-count=1",
+        "-timeout=180s"
+      ],
+      "exit_code": 0,
+      "passed_tests_and_subtests": 41,
+      "skipped_tests": [],
+      "packages": [
+        {
+          "package": "github.com/veighnsche/can-lang/compiler/internal/check",
+          "action": "pass"
+        },
+        {
+          "package": "github.com/veighnsche/can-lang/compiler/internal/emit",
+          "action": "pass"
+        }
+      ]
+    },
+    {
+      "command": [
+        "/Users/vince/.bun/bin/bun",
+        "run",
+        "check:runtime"
+      ],
+      "exit_code": 0,
+      "output": "$ bun run lint:runtime && bun run format:check:runtime && bun run typecheck:runtime\n$ oxlint runtime tools/runtime --ignore-pattern '**/vendor/**' --deny-warnings\n$ oxfmt --check \"runtime/**/*.ts\" \"tools/runtime/**/*.ts\"\nChecking formatting...\n\nAll matched files use the correct format.\nFinished in 37ms on 287 files using 10 threads.\n$ tsc -p tsconfig.runtime.json\n"
+    },
+    {
+      "command": [
+        "/Users/vince/.bun/bin/bun",
+        "test",
+        "runtime/test/sqlite.test.ts",
+        "runtime/test/sql-returning.test.ts",
+        "runtime/test/sql-descriptor.test.ts",
+        "runtime/test/sql-budget.test.ts",
+        "runtime/test/http-hedge.test.ts"
+      ],
+      "exit_code": 0,
+      "output": "bun test v1.4.2 (744846f84)\n\nruntime/test/sql-budget.test.ts:\n(pass) sql budgets: sqlite (in-memory) > an exhausted budget returns without starting the query [12.38ms]\n(pass) sql budgets: sqlite (in-memory) > an exhausted budget leaves the write unstarted [0.47ms]\n(pass) sql budgets: sqlite (in-memory) > validation runs before the race, even on an exhausted budget [0.15ms]\n(pass) sql budgets: sqlite (in-memory) > a settling query under a live bound is identical to the unbounded path [0.99ms]\n(pass) sql budgets: sqlite (in-memory) > an exhausted budget refuses the transaction before any callback runs [0.29ms]\n(skip) sql budgets: postgresql (live) > an overrun query reports the bound while the backend runs to completion\n(skip) sql budgets: postgresql (live) > an overrun write reconciles by reread, never by assuming rollback\n(skip) sql budgets: postgresql (live) > an overrun transaction reports commit-unknown and settles owned\n(skip) sql budgets: postgresql (live) > the ambient request budget bounds calls without explicit bounds\n(skip) sql budgets: postgresql (live) > scope expiry propagates disconnect into a running query\n(skip) sql budgets: postgresql (live) > overlapping bounded queries share one pool without interference\n(skip) sql budgets: postgresql (live) > close during an overrun drains by default\n(skip) sql budgets: postgresql (live) > a short close deadline during an overrun leaves the close owned\n(skip) sql budgets: mysql (live) > an overrun query reports the bound while the server thread runs on\n(skip) sql budgets: mysql (live) > an overrun transaction reports commit-unknown and settles owned\n\nruntime/test/http-hedge.test.ts:\n(pass) hedge contract (unit) > H0a: all-rejected replicas report every error without throwing [21.83ms]\n(pass) hedge contract (unit) > H0b: arity, delay, and bound validation fail closed [1.60ms]\n(pass) hedge contract (unit) > H0d: expiry dominates rejection when nothing settles [151.43ms]\n(pass) hedge contract (unit) > H0c: zero delay starts both replicas before the first await [31.31ms]\n(pass) hedge over real HTTP (cancel-absent-shaped replicas) > H1: the winner responds boundedly while the loser stays owned [2096.31ms]\n(pass) hedge over real HTTP (cancel-absent-shaped replicas) > H2: the hedge absorbs a fast replica failure [54.53ms]\n(pass) hedge over real HTTP (cancel-absent-shaped replicas) > H3: all-expired replicas return the honest unknown outcome [2213.12ms]\n(pass) hedge over real HTTP (cancel-present fetch replicas) > H4: R2 \u2014 without loser abort the peer answers at the winner [2031.69ms]\n(pass) hedge over real HTTP (cancel-present fetch replicas) > H5: aborting the loser bounds the response under O1 [56.59ms]\n(pass) hedge lifetime: late failure, disconnect, shutdown, cleanup > H6: a late loser failure is owner-observed after the response [526.60ms]\n(pass) hedge lifetime: late failure, disconnect, shutdown, cleanup > H7: disconnect expires every replica boundary while work stays owned [4044.22ms]\n(pass) hedge lifetime: late failure, disconnect, shutdown, cleanup > H8: stop bounds the live hedge peer with the shutdown outcome [5018.35ms]\n(pass) hedge lifetime: late failure, disconnect, shutdown, cleanup > H9: SIGTERM bounds the live hedge peer with the shutdown outcome [5070.10ms]\n(pass) hedge lifetime: late failure, disconnect, shutdown, cleanup > H10: the pool lease survives the hedge response; close drains it [807.41ms]\n(skip) hedge over live SQL (cancel-absent replicas) > H11: the PG lease survives the hedge response; the backend runs on\n(skip) hedge over live SQL (cancel-absent replicas) > H12: the MySQL thread survives the hedge response; the pool stays usable\n\nruntime/test/sql-descriptor.test.ts:\n(pass) sql descriptors > declare and template a checked descriptor [0.41ms]\n(pass) sql descriptors > repeated parameters share one prepared value [0.15ms]\n(pass) sql descriptors > zero-parameter descriptors template to bare strings [0.07ms]\n(pass) sql descriptors > unknown names, forged values, and arity breaks throw [0.33ms]\n(pass) sql descriptors > corrupt tables refuse at construction [0.63ms]\n(pass) sql descriptors > F8: (one, 0) admits INSERT kinds only [0.21ms]\n\nruntime/test/sql-returning.test.ts:\n(pass) sqlite: single-row RETURNING yields the generated id [1.81ms]\n(pass) sqlite: multi-row RETURNING enforces exactly-one [1.06ms]\n(pass) sqlite: conflict-skip yields row_missing, duplicate yields constraint_failed [1.18ms]\n(pass) sqlite: RETURNING inside a transaction commits [3.17ms]\n(skip) pg: RETURNING single-row, skip, conflict, and transaction twin\n(skip) mysql: mapping refetches exactly the own row, concurrently\n\nruntime/test/sqlite.test.ts:\n(pass) sqlite pools > memory pools round-trip the whole scalar cover exactly [2.60ms]\n(pass) sqlite pools > execute reports exact affected counts including zero [0.82ms]\n(pass) sqlite pools > file pools persist across close and reopen with enforced modes [5.34ms]\n(pass) sqlite pools > dialect mismatch fails before any native call [0.56ms]\n(pass) sqlite pools > constraint, syntax, and missing-table failures classify with codes only [0.49ms]\n(pass) sqlite pools > lock contention surfaces SQLITE_BUSY without blocking the loop [2.15ms]\n(pass) sqlite pools > sqlite transactions commit across awaits and roll back [6.93ms]\n(pass) sqlite pools > sqlite transaction body standard failure rolls back and propagates [0.61ms]\n(pass) sqlite pools > sqlite commit failure reports commit-unknown and lands nothing [0.54ms]\n(pass) sqlite pools > sqlite close during a leased transaction preserves the primary [51.52ms]\n(pass) sqlite pools > sqlite close timeout keeps the commit and records cleanup [106.92ms]\n(pass) sqlite pools > sqlite close validates, closes, and denies later work [0.89ms]\n(pass) sqlite pools > fixture boundaries never open sqlite pools [1.28ms]\n\n14 tests skipped:\n(skip) sql budgets: postgresql (live) > an overrun query reports the bound while the backend runs to completion\n(skip) sql budgets: postgresql (live) > an overrun write reconciles by reread, never by assuming rollback\n(skip) sql budgets: postgresql (live) > an overrun transaction reports commit-unknown and settles owned\n(skip) sql budgets: postgresql (live) > the ambient request budget bounds calls without explicit bounds\n(skip) sql budgets: postgresql (live) > scope expiry propagates disconnect into a running query\n(skip) sql budgets: postgresql (live) > overlapping bounded queries share one pool without interference\n(skip) sql budgets: postgresql (live) > close during an overrun drains by default\n(skip) sql budgets: postgresql (live) > a short close deadline during an overrun leaves the close owned\n(skip) sql budgets: mysql (live) > an overrun query reports the bound while the server thread runs on\n(skip) sql budgets: mysql (live) > an overrun transaction reports commit-unknown and settles owned\n(skip) hedge over live SQL (cancel-absent replicas) > H11: the PG lease survives the hedge response; the backend runs on\n(skip) hedge over live SQL (cancel-absent replicas) > H12: the MySQL thread survives the hedge response; the pool stays usable\n(skip) pg: RETURNING single-row, skip, conflict, and transaction twin\n(skip) mysql: mapping refetches exactly the own row, concurrently\n\n 42 pass\n 14 skip\n 0 fail\n 349 expect() calls\nRan 56 tests across 5 files. [22.39s]\n"
+    }
+  ],
+  "bun": "1.4.2",
+  "test_environment": {
+    "GOPROXY": "off",
+    "CGO_ENABLED": "1",
+    "CAN_BUN": "/Users/vince/.bun/bin/bun"
+  },
+  "cleanup": "Owned temporary dependency symlink removed; shared target preserved."
+}

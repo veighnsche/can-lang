@@ -1,0 +1,303 @@
+// A03 adapter mirror: Can's analyzeSQLite logic re-implemented over the
+// official go-tree-sitter API (no vendored C, no dump serialization).
+// B02 candidate shape: per-call parser, iterative capped walks, extraction
+// before Close. Uses local mirror types (JSON-compatible with sql.Analysis)
+// so this probe builds without importing Can.
+package main
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"unicode/utf8"
+
+	tree_sitter "github.com/tree-sitter/go-tree-sitter"
+	tree_sitter_sqlite3 "github.com/defin/tree-sitter-sqlite3/bindings/go"
+)
+
+// officialVersion mirrors sqlite.LanguageVersion: grammar ABI number.
+const officialVersion = 15
+
+// officialNodeCap mirrors SQLITE_DUMP_NODE_CAP: every visited node counts;
+// exceeding it is a Go error, never a silent truncation.
+const officialNodeCap = 1000000
+
+// nodeCapOverride is a PROBE-ONLY hook (B02 uses the const): env
+// OFFICIAL_NODE_CAP, when a positive int, replaces officialNodeCap so
+// guard behavior can be verified on small inputs without heavy load.
+var nodeCapOverride = 0
+
+func capLimit() int {
+	if nodeCapOverride > 0 {
+		return nodeCapOverride
+	}
+	return officialNodeCap
+}
+
+// Local Analysis mirror (field-compatible with sql.Analysis for summaries).
+type oStatement struct {
+	Location   int
+	Length     int
+	Kind       string
+	HasLimit   bool
+	LimitParam int
+	Returning  bool
+}
+
+type oParamSite struct {
+	Number   int
+	Start    int
+	End      int
+	Ref      string
+}
+
+type oFailure struct {
+	Message string
+	Cursor  int
+}
+
+type oAnalysis struct {
+	Statements []oStatement
+	Sites      []oParamSite
+	Failure    *oFailure
+	Version    int
+}
+
+var officialLang = tree_sitter.NewLanguage(tree_sitter_sqlite3.Language())
+
+func mapOfficialNumbers(texts []string) []int {
+	out := make([]int, len(texts))
+	max := 0
+	named := map[string]int{}
+	for i, text := range texts {
+		switch {
+		case text == "?":
+			max++
+			out[i] = max
+		case strings.HasPrefix(text, "?"):
+			number, err := strconv.Atoi(text[1:])
+			if err != nil || number < 0 {
+				out[i] = -1
+			} else {
+				out[i] = number
+			}
+			if out[i] > max {
+				max = out[i]
+			}
+		default:
+			name := text[1:]
+			number, seen := named[name]
+			if !seen {
+				max++
+				number = max
+				named[name] = number
+			}
+			out[i] = number
+		}
+	}
+	return out
+}
+
+func officialRef(text string, number int) string {
+	if text == "?" {
+		return "?" + strconv.Itoa(number)
+	}
+	return text
+}
+
+type walker struct {
+	count int
+}
+
+// children appends direct children of n (iterative-safe primitive).
+func children(n *tree_sitter.Node) []*tree_sitter.Node {
+	kids := make([]*tree_sitter.Node, 0, n.ChildCount())
+	for i := uint(0); i < n.ChildCount(); i++ {
+		kids = append(kids, n.Child(i))
+	}
+	return kids
+}
+
+// firstError finds the first ERROR or MISSING node in pre-order, iterative.
+func (w *walker) firstError(root *tree_sitter.Node) (*tree_sitter.Node, error) {
+	stack := []*tree_sitter.Node{root}
+	for len(stack) > 0 {
+		n := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		w.count++
+		if w.count > capLimit() {
+			return nil, fmt.Errorf("sqlite statement exceeds the node limit")
+		}
+		if n.Kind() == "ERROR" || n.IsMissing() {
+			return n, nil
+		}
+		kids := children(n)
+		for i := len(kids) - 1; i >= 0; i-- {
+			stack = append(stack, kids[i])
+		}
+	}
+	return nil, nil
+}
+
+// collect gathers every node of the given kind in pre-order, iterative.
+func (w *walker) collect(root *tree_sitter.Node, kind string) ([]*tree_sitter.Node, error) {
+	var out []*tree_sitter.Node
+	stack := []*tree_sitter.Node{root}
+	for len(stack) > 0 {
+		n := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		w.count++
+		if w.count > capLimit() {
+			return nil, fmt.Errorf("sqlite statement exceeds the node limit")
+		}
+		if n.Kind() == kind {
+			out = append(out, n)
+		}
+		kids := children(n)
+		for i := len(kids) - 1; i >= 0; i-- {
+			stack = append(stack, kids[i])
+		}
+	}
+	return out, nil
+}
+
+func officialFailure(input string, w *walker, root *tree_sitter.Node) (*oFailure, error) {
+	first, err := w.firstError(root)
+	if err != nil {
+		return nil, err
+	}
+	if first == nil {
+		return &oFailure{Message: "syntax error", Cursor: 0}, nil
+	}
+	cursor := utf8.RuneCountInString(input[:first.StartByte()])
+	text := input[first.StartByte():first.EndByte()]
+	if text == "" {
+		return &oFailure{Message: "syntax error", Cursor: cursor}, nil
+	}
+	runes := []rune(text)
+	if len(runes) > 48 {
+		text = string(runes[:48])
+	}
+	return &oFailure{Message: fmt.Sprintf("syntax error near %q", text), Cursor: cursor}, nil
+}
+
+func officialLimitShape(stmt *tree_sitter.Node, numbers map[[2]uint]int, w *walker) (bool, int, error) {
+	for _, child := range children(stmt) {
+		if child.Kind() != "limit_clause" {
+			continue
+		}
+		binds, err := w.collect(child, "bind_parameter")
+		if err != nil {
+			return false, 0, err
+		}
+		bare := len(binds) == 1
+		if bare {
+			// Iterative subtree check: only bind_parameter and comments
+			// may appear as named nodes under the clause.
+			stack := children(child)
+			for len(stack) > 0 && bare {
+				n := stack[len(stack)-1]
+				stack = stack[:len(stack)-1]
+				w.count++
+				if w.count > capLimit() {
+					return false, 0, fmt.Errorf("sqlite statement exceeds the node limit")
+				}
+				if !n.IsNamed() || n.Kind() == "bind_parameter" ||
+					n.Kind() == "line_comment" || n.Kind() == "block_comment" {
+					stack = append(stack, children(n)...)
+					continue
+				}
+				bare = false
+			}
+		}
+		if bare {
+			key := [2]uint{binds[0].StartByte(), binds[0].EndByte()}
+			return true, numbers[key], nil
+		}
+		return true, 0, nil
+	}
+	return false, 0, nil
+}
+
+func analyzeOfficial(name, statement string) (oAnalysis, int, error) {
+	var out oAnalysis
+	parser := tree_sitter.NewParser()
+	defer parser.Close()
+	if err := parser.SetLanguage(officialLang); err != nil {
+		return oAnalysis{}, 0, err
+	}
+	tree := parser.Parse([]byte(statement), nil)
+	if tree == nil {
+		return oAnalysis{}, 0, fmt.Errorf("sql descriptor %q: sqlite parse returned no tree", name)
+	}
+	defer tree.Close()
+	root := tree.RootNode()
+	if root.Kind() != "source_file" {
+		return oAnalysis{}, 0, fmt.Errorf("sql descriptor %q: sqlite root shape %q", name, root.Kind())
+	}
+	w := &walker{}
+	if root.HasError() {
+		failure, err := officialFailure(statement, w, root)
+		if err != nil {
+			return oAnalysis{}, w.count, err
+		}
+		out.Failure = failure
+		return out, w.count, nil
+	}
+	out.Version = officialVersion
+	var stmts []*tree_sitter.Node
+	for _, child := range children(root) {
+		if !child.IsNamed() {
+			continue
+		}
+		if child.Kind() == "line_comment" || child.Kind() == "block_comment" {
+			continue
+		}
+		stmts = append(stmts, child)
+	}
+	for _, stmt := range stmts {
+		out.Statements = append(out.Statements, oStatement{
+			Location: int(stmt.StartByte()),
+			Length:   int(stmt.EndByte() - stmt.StartByte()),
+			Kind:     stmt.Kind(),
+		})
+	}
+	if len(stmts) != 1 {
+		return out, w.count, nil
+	}
+	stmt := stmts[0]
+	binds, err := w.collect(stmt, "bind_parameter")
+	if err != nil {
+		return oAnalysis{}, w.count, err
+	}
+	texts := make([]string, len(binds))
+	for i, bind := range binds {
+		texts[i] = statement[bind.StartByte():bind.EndByte()]
+	}
+	numbers := mapOfficialNumbers(texts)
+	// Key by byte span: go-tree-sitter Child() returns a fresh Go
+	// wrapper per call, so pointer identity is unusable across walks.
+	bySpan := map[[2]uint]int{}
+	for i, bind := range binds {
+		bySpan[[2]uint{bind.StartByte(), bind.EndByte()}] = numbers[i]
+		out.Sites = append(out.Sites, oParamSite{
+			Number: numbers[i],
+			Start:  int(bind.StartByte()),
+			End:    int(bind.EndByte()),
+			Ref:    officialRef(texts[i], numbers[i]),
+		})
+	}
+	shaped := &out.Statements[0]
+	for _, child := range children(stmt) {
+		if child.Kind() == "returning_clause" {
+			shaped.Returning = true
+		}
+	}
+	if stmt.Kind() == "select_statement" {
+		shaped.HasLimit, shaped.LimitParam, err = officialLimitShape(stmt, bySpan, w)
+		if err != nil {
+			return oAnalysis{}, w.count, err
+		}
+	}
+	return out, w.count, nil
+}

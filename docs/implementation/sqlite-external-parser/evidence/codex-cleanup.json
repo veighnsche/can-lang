@@ -1,0 +1,24 @@
+{
+  "temporary_node_modules_link": {
+    "path": "/Users/vince/.codex/worktrees/db71/can-lang/node_modules",
+    "target": "/Users/vince/Projects/can-lang/node_modules",
+    "owner": "Codex SQLite parser task",
+    "status": "removed; exact owned symlink target verified before unlink; target preserved",
+    "cleanup": "After Muse and Codex runtime checks finish, unlink only if it is still a symlink with this exact target; never remove target directory."
+  },
+  "muse_prompt_directory": {
+    "path": "/private/tmp/can-sqlite-muse-gu0rbjsf",
+    "status": "removed automatically at process exit; independently verified absent",
+    "cleanup": "Parent Python wrapper registers atexit removal and signal handling before launching Muse."
+  },
+  "muse_repair_prompt_directory": {
+    "path": "/private/tmp/can-sqlite-repair-i5l8s5ob",
+    "status": "removed automatically at process exit; independently verified absent",
+    "cleanup": "atexit handler registered before allocation; signal interruption exits through cleanup"
+  },
+  "qualification_workspace": {
+    "path": "/private/tmp/can-sqlite-qual-DmApBm",
+    "status": "removed by Muse; independently verified absent"
+  },
+  "outcome": "All task-owned temporary probes, prompt directories and dependency symlink reclaimed. Shared caches and native resumable Muse session preserved; no cleanup failures."
+}

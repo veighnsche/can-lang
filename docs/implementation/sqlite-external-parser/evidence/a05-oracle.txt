@@ -1,0 +1,30 @@
+sqlite_version=3.54.0
+lite-20	PREP-OK RUN-FAIL: datatype mismatch
+p05	PREP-OK RUN-FAIL: datatype mismatch
+p06	PREP-OK RUN-FAIL: datatype mismatch
+m01	PREP-OK RUN-OK
+m02	PREP-OK RUN-OK
+m04	PREP-OK RUN-OK
+p07	PREP-FAIL: variable number must be between ?1 and ?500000
+m05	PREP-FAIL: variable number must be between ?1 and ?500000
+m07	PREP-FAIL: LIMIT clause should come after UNION not before
+m08	PREP-OK RUN-FAIL: datatype mismatch
+u03	PREP-FAIL: no such column: héllo
+m03	PREP-FAIL: near "#1": syntax error
+e06	PREP-FAIL: incomplete input
+lite-16	PREP-FAIL: near "FORM": syntax error
+lite-17	PREP-FAIL: unrecognized token: "'unterminated AND id = ? LIMIT ?"
+deep5k	PREP-FAIL: Recursion limit
+deep2k	PREP-OK RUN-OK
+r03	PREP-FAIL: near "RETURNING": syntax error
+p02shape	PREP-OK RUN-FAIL: datatype mismatch
+sigil-bind-a5: {"eq":0,"eq2":0,"eq3":1}
+sigil-all-bound: {":a":1,"@a":2,"$a":3}
+num-?2?-abc: {"first":"b","second":"c"}
+num-?0 FAIL: variable number must be between ?1 and ?500000
+dollar1-prep-OK bind: {"v":9}
+colon1-prep-OK bind: {"v":8}
+at1-prep-OK bind: {"v":7}
+tclform-prep-OK bind: {"v":null}
+udl-run: {"changes":0,"lastInsertRowid":0}
+A05-PROBE-DONE

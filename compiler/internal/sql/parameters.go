@@ -42,8 +42,11 @@ func CheckCoverage(name string, dialect Dialect, parameters []string, present ma
 // parameter: a :name/@name/$name site binding an application number must
 // carry that number's declared name exactly. Bare and ?NNN sites have no
 // name to check, and the row-limit site's name is free since no declared
-// parameter corresponds to it. Sigils never distinguish names. Ranges and
-// coverage already passed, so out-of-range numbers cannot occur here.
+// parameter corresponds to it. Numbers arrive sigil-distinct from the
+// backend: :a, @a and $a are different parameter identities per the
+// engine, so this check compares only the suffix after the sigil against
+// the name declared for that number. Ranges and coverage already passed,
+// so out-of-range numbers cannot occur here.
 func CheckSiteNames(name string, parameters []string, sites []ParamSite, limit int) error {
 	for _, site := range sites {
 		if len(site.Ref) == 0 || (site.Ref[0] != ':' && site.Ref[0] != '@' && site.Ref[0] != '$') {

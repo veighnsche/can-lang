@@ -15,3 +15,9 @@ https://raw.githubusercontent.com/bigskysoftware/htmx/v4.0.0/LICENSE.
 The vendored script bytes are pinned by distribution/assets/htmx.lock.json
 and verified before bundle publication; all three recorded origins returned
 byte-identical content.
+
+meyer-LICENSE.txt is the unmodified upstream MIT licensing document from
+https://raw.githubusercontent.com/sqlc-dev/meyer/v0.1.2/LICENSE
+(byte-identical to the go.sum-verified module archive). The SQLite parser
+module is pinned by sqlite-binding.lock.json, consistent with
+go.mod/go.sum; it has no transitive dependencies.

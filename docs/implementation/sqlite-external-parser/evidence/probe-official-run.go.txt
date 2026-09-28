@@ -1,0 +1,90 @@
+// A03 official side: run corpus sqlite cases + cases.json through the
+// official-module adapter; print one summary line per case for diffing
+// against the vendored side's identical output.
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+)
+
+type corpusCase struct {
+	ID        string `json:"id"`
+	Dialect   string `json:"dialect"`
+	Statement string `json:"statement"`
+}
+
+type extraCase struct {
+	ID   string `json:"id"`
+	Stmt string `json:"stmt"`
+}
+
+func summarize(a oAnalysis, err error) string {
+	if err != nil {
+		return "ERR:" + err.Error()
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "v%d stmts[", a.Version)
+	for i, s := range a.Statements {
+		if i > 0 {
+			b.WriteString(" ")
+		}
+		fmt.Fprintf(&b, "%s@%d+%d", s.Kind, s.Location, s.Length)
+		if s.HasLimit {
+			fmt.Fprintf(&b, "L%d", s.LimitParam)
+		}
+		if s.Returning {
+			b.WriteString("R")
+		}
+	}
+	b.WriteString("] sites[")
+	for i, s := range a.Sites {
+		if i > 0 {
+			b.WriteString(" ")
+		}
+		fmt.Fprintf(&b, "%d[%d,%d)%s", s.Number, s.Start, s.End, s.Ref)
+	}
+	b.WriteString("]")
+	if a.Failure != nil {
+		fmt.Fprintf(&b, " FAIL{%q@%d}", a.Failure.Message, a.Failure.Cursor)
+	}
+	return b.String()
+}
+
+func main() {
+	if len(os.Args) > 1 && os.Args[1] == "res" {
+		runResource()
+		return
+	}
+	raw, err := os.ReadFile("/Users/vince/.codex/worktrees/db71/can-lang/docs/bun-integration/asap/evidence/sql-corpus.json")
+	if err != nil {
+		panic(err)
+	}
+	var corpus struct {
+		Cases []corpusCase `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &corpus); err != nil {
+		panic(err)
+	}
+	xraw, err := os.ReadFile("cases.json")
+	if err != nil {
+		panic(err)
+	}
+	var extra []extraCase
+	if err := json.Unmarshal(xraw, &extra); err != nil {
+		panic(err)
+	}
+	for _, c := range corpus.Cases {
+		if c.Dialect != "sqlite" {
+			continue
+		}
+		a, visits, err := analyzeOfficial(c.ID, c.Statement)
+		fmt.Printf("%s\tnodes=%d\t%s\n", c.ID, visits, summarize(a, err))
+	}
+	for _, c := range extra {
+		a, visits, err := analyzeOfficial(c.ID, c.Stmt)
+		fmt.Printf("%s\tnodes=%d\t%s\n", c.ID, visits, summarize(a, err))
+	}
+}

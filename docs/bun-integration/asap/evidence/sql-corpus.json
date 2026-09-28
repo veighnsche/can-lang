@@ -625,9 +625,9 @@
    "cardinality": "one",
    "row_limit": 2,
    "expect": {
-    "invalid": "syntax"
+    "invalid": "param_name"
    },
-   "notes": "digit-led $ names are rejected by the grammar, like the engine"
+   "notes": "$1 is a named SQLite spelling the engine accepts and binds; it parses, then fails the declared-field name policy (corrected 2026-09-28: the old tree-sitter grammar rejected it, unlike the engine)"
   },
   {
    "id": "lite-21",

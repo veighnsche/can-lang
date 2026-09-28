@@ -1,0 +1,88 @@
+// A03 vendored side (TRANSIENT worktree probe): run corpus sqlite cases +
+// cases.json through Can's current vendored backend; print one summary
+// line per case, same format as the official side, for diffing.
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strings"
+
+	"github.com/veighnsche/can-lang/compiler/internal/sql"
+)
+
+type corpusCase struct {
+	ID        string `json:"id"`
+	Dialect   string `json:"dialect"`
+	Statement string `json:"statement"`
+}
+
+type extraCase struct {
+	ID   string `json:"id"`
+	Stmt string `json:"stmt"`
+}
+
+func summarize(a sql.Analysis, err error) string {
+	if err != nil {
+		return "ERR:" + err.Error()
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, "v%d stmts[", a.Version)
+	for i, s := range a.Statements {
+		if i > 0 {
+			b.WriteString(" ")
+		}
+		fmt.Fprintf(&b, "%s@%d+%d", s.Kind, s.Location, s.Length)
+		if s.HasLimit {
+			fmt.Fprintf(&b, "L%d", s.LimitParam)
+		}
+		if s.Returning {
+			b.WriteString("R")
+		}
+	}
+	b.WriteString("] sites[")
+	for i, s := range a.Sites {
+		if i > 0 {
+			b.WriteString(" ")
+		}
+		fmt.Fprintf(&b, "%d[%d,%d)%s", s.Number, s.Start, s.End, s.Ref)
+	}
+	b.WriteString("]")
+	if a.Failure != nil {
+		fmt.Fprintf(&b, " FAIL{%q@%d}", a.Failure.Message, a.Failure.Cursor)
+	}
+	return b.String()
+}
+
+func main() {
+	raw, err := os.ReadFile("docs/bun-integration/asap/evidence/sql-corpus.json")
+	if err != nil {
+		panic(err)
+	}
+	var corpus struct {
+		Cases []corpusCase `json:"cases"`
+	}
+	if err := json.Unmarshal(raw, &corpus); err != nil {
+		panic(err)
+	}
+	xraw, err := os.ReadFile("/tmp/can-sqlite-qual-DmApBm/cases.json")
+	if err != nil {
+		panic(err)
+	}
+	var extra []extraCase
+	if err := json.Unmarshal(xraw, &extra); err != nil {
+		panic(err)
+	}
+	for _, c := range corpus.Cases {
+		if c.Dialect != "sqlite" {
+			continue
+		}
+		a, err := sql.Analyze(sql.DialectSQLite, c.ID, c.Statement)
+		fmt.Printf("%s\t%s\n", c.ID, summarize(a, err))
+	}
+	for _, c := range extra {
+		a, err := sql.Analyze(sql.DialectSQLite, c.ID, c.Stmt)
+		fmt.Printf("%s\t%s\n", c.ID, summarize(a, err))
+	}
+}

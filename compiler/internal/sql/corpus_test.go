@@ -54,7 +54,7 @@ func invalidCategory(c corpusCase) string {
 func categoryMatches(category, message string) bool {
 	switch category {
 	case "syntax":
-		return strings.Contains(message, "syntax error")
+		return strings.Contains(message, "syntax error") || strings.Contains(message, "unrecognized token")
 	case "multi_statement":
 		return strings.Contains(message, "statements, want 1")
 	case "bad_kind":
@@ -147,7 +147,7 @@ func TestCorpus(t *testing.T) {
 			}
 			wantVersion := 170007
 			if c.Dialect == "sqlite" {
-				wantVersion = 15
+				wantVersion = SQLiteVersion
 			}
 			if c.Dialect == "mysql" {
 				wantVersion = MySQLVersion

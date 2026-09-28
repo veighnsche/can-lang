@@ -155,9 +155,11 @@ completeness, never on signature content.
 Upstream obligations ship inside every bundle under
 `distribution/notices/`: the Bun license, HTMX 4.0.0 with its lock, the
 acorn parser with its lock, the four Jridgewell source-map packages with
-their lock, and the pinned `pg_query_go/v6` CGo binding with the
+their lock, the pinned `pg_query_go/v6` CGo binding with the
 PostgreSQL/libpg-query/protobuf licenses recorded in
-`sql-binding.lock.json`, consistent with `go.mod`/`go.sum`.
+`sql-binding.lock.json`, and the pinned `meyer` pure-Go SQLite parser
+with its MIT license recorded in `sqlite-binding.lock.json`,
+consistent with `go.mod`/`go.sum`.
 
 ## Prepared signing commands (not executed)
 

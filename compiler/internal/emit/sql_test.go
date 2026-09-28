@@ -73,6 +73,61 @@ func TestSQLDescriptorsEmitManifestTable(t *testing.T) {
 	}
 }
 
+func TestSQLDescriptorsEmitSQLiteTable(t *testing.T) {
+	root := t.TempDir()
+	source, err := os.ReadFile(filepath.Join("..", "..", "testdata", "current", "sql", "descriptors.can"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	write := func(name, text string) {
+		t.Helper()
+		path := filepath.Join(root, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(text), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("can.project.json", `{"source_root":"src","error_registry":"can.errors.json","sql":{"search_sqlite":{"dialect":"sqlite","statement":"SELECT id, display_name FROM accounts WHERE display_name LIKE :term ORDER BY id LIMIT :lim","parameters":["term"],"parameter_type":"app::search_parameters","row_type":"app::account_row","cardinality":"many","row_limit_parameter":2}}}`)
+	write("can.errors.json", `{"active":[],"retired":[]}`)
+	write("src/main.can", string(source))
+	graph, err := project.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	program, err := check.CheckProgram(graph)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(program.SQL) != 1 {
+		t.Fatalf("checked %d descriptors", len(program.SQL))
+	}
+	artifacts, err := ProgramModules(program, "runtime", httpDependencies(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var state string
+	for _, artifact := range artifacts {
+		if artifact.Path == "program/state.ts" {
+			state = string(artifact.Bytes)
+		}
+	}
+	for _, needle := range []string{
+		`"search_sqlite":{"dialect":"sqlite","cardinality":"many","kind":"select_statement"`,
+		`"text":"SELECT id, display_name FROM accounts WHERE display_name LIKE "`,
+		`{"param":1}`,
+		`"text":" ORDER BY id LIMIT "`,
+		`{"param":2}`,
+		`"params":["term"]`,
+		`"limit":2,"total":2,"version":102`,
+	} {
+		if !strings.Contains(state, needle) {
+			t.Fatalf("missing %s", needle)
+		}
+	}
+}
+
 func TestSQLQueriesEmitPlansAndSplices(t *testing.T) {
 	root := t.TempDir()
 	source, err := os.ReadFile(filepath.Join("..", "..", "testdata", "current", "sql", "queries.can"))

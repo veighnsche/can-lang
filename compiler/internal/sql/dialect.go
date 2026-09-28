@@ -7,7 +7,7 @@ import (
 
 // Dialect is a manifest SQL dialect tag. PostgreSQL validates through the
 // pinned libpg_query adaptation in postgres.go; SQLite through the
-// tree-sitter parse.y mirror in sqlite.go; MySQL through the pinned
+// pinned Meyer grammar module in sqlite.go; MySQL through the pinned
 // tidb parser in mysql.go. No dialect text is ever fed through another
 // dialect's backend.
 type Dialect string
@@ -17,7 +17,7 @@ const (
 	// the pinned PostgreSQL 17 grammar and lexer.
 	DialectPostgreSQL Dialect = "postgresql"
 	// DialectSQLite is the "sqlite" manifest tag, validated by the
-	// pinned tree-sitter SQLite grammar.
+	// pinned Meyer SQLite grammar module.
 	DialectSQLite Dialect = "sqlite"
 	// DialectMySQL is the "mysql" manifest tag, validated by the
 	// pinned tidb parser.

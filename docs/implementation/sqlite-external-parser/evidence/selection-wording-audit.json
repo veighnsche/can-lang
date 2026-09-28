@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "method": "Codex authored three full rewrites and manually checked semantic equivalence: same objective, contract, pins, qualification counts, strengths, faults, limits and alternatives in each. Every explanatory state field, instruction and option differs across each pair; identifiers, code, numbers and schema keys remain exact. Automated distinct-field assertions pass. This is wording review, not proof of unbiased classification.",
+  "request_pairs": [
+    [
+      1,
+      2
+    ],
+    [
+      1,
+      3
+    ],
+    [
+      2,
+      3
+    ]
+  ]
+}
