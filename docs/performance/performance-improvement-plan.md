@@ -122,3 +122,26 @@ lane. Completion construction and duplicate map containment materialization are
 source-proven removal candidates; the new generated execution design/checklist
 will govern Muse implementation. Compiler/editor timing is not a prerequisite.
 Broader generated async callback/invocation and startup work remains in the queue.
+
+## Current generated checkpoint
+
+Completion and map containment allocation changes are independently accepted and
+committed as `7e0d5641`; 25 focused tests, runtime lint/format/type checks and 24
+fresh actual generated/native cases passed, with owned cleanup verified. No timing
+claim. Muse now follows generated-callback-tasks.md G7-G12 with explicit max effort.
+That narrower packet preserves the assertion-enabled route, generic context/invoke
+implementations and native algorithms while removing source-proven per-element
+wrapping/admission and private collection lookup repetition. The campaign continues
+through its next source/evidence handoff and independent review.
+
+## Generated callback checkpoint
+
+G7-G12 independently accepted: absent-context collection callbacks retain invoke
+while skipping unused assertion dispatch/receipt work; privately authenticated
+successes use direct extraction; map/set backing reuses one validated metadata
+lookup. 53 applicable contracts, required runtime check and 24 fresh actual
+generated/native validation cases passed. Source and emitted identities checked;
+all owner/prompt/execution scratch retired. No speedup number is asserted.
+[Next source investigation](generated-next-investigation.md) identifies static
+origin reuse and startup import/init attribution; these require reviewed design
+before Muse implementation. Continue the campaign.
