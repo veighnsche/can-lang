@@ -166,3 +166,55 @@ func coreOperationBindings() bindingContribution {
 	functions["can.std.checks@1::require"] = "$canChecks.require"
 	return bindingContribution{domain: "core", functions: functions}
 }
+
+// coreAsyncTargets is the finite frozen whitelist of audited native async
+// core factory methods: 16 text, 9 bytes and 1 checks pair. Only these
+// exact canonical identity/target pairs can qualify for context-bypass
+// emission; nothing is inferred from prefixes, receivers or annotations.
+var coreAsyncTargets = map[string]string{
+	"can.intrinsic.str@1::ends_with":     "$canText.endsWith",
+	"can.intrinsic.str@1::includes":      "$canText.includes",
+	"can.intrinsic.str@1::replace_all":   "$canText.replaceAll",
+	"can.intrinsic.str@1::slice":         "$canText.slice",
+	"can.intrinsic.str@1::split":         "$canText.split",
+	"can.intrinsic.str@1::starts_with":   "$canText.startsWith",
+	"can.intrinsic.str@1::to_lower_case": "$canText.toLowerCase",
+	"can.intrinsic.str@1::to_upper_case": "$canText.toUpperCase",
+	"can.intrinsic.str@1::trim":          "$canText.trim",
+	"can.std.bytes@1::decode_base64":     "$canBytes.decodeBase64",
+	"can.std.bytes@1::decode_hex":        "$canBytes.decodeHex",
+	"can.std.bytes@1::empty":             "$canBytes.empty",
+	"can.std.bytes@1::encode_base64":     "$canBytes.encodeBase64",
+	"can.std.bytes@1::encode_hex":        "$canBytes.encodeHex",
+	"can.std.bytes@1::from_ints":         "$canBytes.fromInts",
+	"can.std.bytes@1::from_utf8":         "$canBytes.fromUTF8",
+	"can.std.bytes@1::to_ints":           "$canBytes.toInts",
+	"can.std.bytes@1::to_utf8":           "$canBytes.toUTF8",
+	"can.std.checks@1::require":          "$canChecks.require",
+	"can.std.text@1::compile_regex":      "$canText.compileRegex",
+	"can.std.text@1::from_scalars":       "$canText.fromScalars",
+	"can.std.text@1::graphemes":          "$canText.graphemes",
+	"can.std.text@1::join":               "$canText.join",
+	"can.std.text@1::matches":            "$canText.findMatches",
+	"can.std.text@1::normalize_nfc":      "$canText.normalizeNFC",
+	"can.std.text@1::scalars":            "$canText.scalars",
+}
+
+// checkedCoreProof pairs every whitelisted canonical identity whose final
+// merged target agrees exactly with the audited receiver.method. Missing,
+// unknown, rebound or cross-receiver pairs are omitted so they can never
+// qualify for proof-selected emission.
+func (assembly *programAssembly) checkedCoreProof() map[string]string {
+	proof := make(map[string]string, len(coreAsyncTargets))
+	for identity, want := range coreAsyncTargets {
+		if identity == "" || want == "" {
+			continue
+		}
+		resolved, ok := assembly.functions[identity]
+		if !ok || resolved == "" || resolved != want {
+			continue
+		}
+		proof[identity] = resolved
+	}
+	return proof
+}

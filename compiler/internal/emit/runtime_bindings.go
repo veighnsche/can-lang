@@ -56,6 +56,12 @@ type programAssembly struct {
 	// from checked program.Collections, never inferred from names or
 	// types, and is shared read-only by assembly region emitters only.
 	collectionAsyncProof map[string]string
+	// coreAsyncProof pairs whitelisted canonical text/byte/check
+	// identities with their actual emitted receiver.method bindings. It
+	// is built after the final contribution merge from the finite exact
+	// table, never inferred, and is shared read-only by assembly region
+	// emitters only.
+	coreAsyncProof map[string]string
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -136,6 +142,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	assembly.functions = functions
 	assembly.authoredProof = assembly.checkedAuthoredProof()
 	assembly.collectionAsyncProof = assembly.checkedCollectionProof()
+	assembly.coreAsyncProof = assembly.checkedCoreProof()
 	assembly.bindInitializers()
 	return assembly, nil
 }
