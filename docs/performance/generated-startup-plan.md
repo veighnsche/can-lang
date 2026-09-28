@@ -217,3 +217,92 @@ arguments cannot throw. Native capability/constructor effects and first-use
 failure timing need source/contract investigation before a lazy rewrite. AST
 callee labels inside nested function bodies are syntactic inventory, not proof
 those factories executed. No production remedy is authorized in this correction.
+
+
+## Second independent review: complete phase supervision and input identity
+
+Codex's independent review after the G28a–G30a all-writer release rejects R5.
+The 216 rows and all 57 statement summaries recompute correctly, but that does
+not establish lifecycle safety or missing execution identities. The actual
+controlled success-path probe left a live descendant after `run_supervised`
+returned; marker-write failure left an unregistered allocation. Root retired
+that owned group and temporary tree immediately. See
+[compact independent evidence](../../.performance/performance-push-20260928/generated-packet-5-independent-final-review-probes.json).
+Source review also finds preparation still calls unsupervised `driver_command`,
+`run_measure` clears the group on every path before proving retirement, and
+post-kill `communicate()` can wait without a bound. The dependency record has
+specifier names/package-lock/link identity but no resolved module contents or
+actual source/runtime input inventory. Existing total timestamps include
+preparation while the result labels them sampling. Both prior raw runs and
+Muse evidence remain unchanged and provisional; no missing historical identity
+can be filled using a later reconstruction.
+
+Three fresh equivalent Jev Choice requests, responses, equivalence review and
+reconciliation are `generated-supervision-request/response-[1-3].json`,
+`generated-supervision-equivalence.json` and
+`generated-supervision-reconciliation.json` under the same evidence directory.
+All choose phase workers (probabilities .93/.98/.93); differing strength is
+advice only. Independent reasoning selects a local preparation controller plus
+existing per-trial controllers rather than introducing wrappers around every
+Bun launch: established fd-3 transport and the parent timer around the real Bun
+spawn stay inside the worker. No shared driver or global default change.
+
+The next correction must meet these requirements:
+
+1. One durably registered owned process group encloses the entire preparation
+   phase: Go compilation/emission, inventory, probe, transpilation, bundle and
+   preflights, including helper subprocesses. Trial controllers use the same
+   lifecycle contract. Commands that inspect versions/resolution also belong to
+   a supervised phase. Registration failure must retire the newly spawned group.
+   All normal, nonzero, timeout and handled-signal exits perform bounded
+   TERM/KILL/reap and bounded pipe drainage. A successful controller with live
+   descendants cannot hand off as retired. Preserve the actual child's failure
+   while reporting retirement failures explicitly. Never clear an active group
+   marker or delete its scratch until retirement is proved; keep recoverable
+   PID/start/group/inode evidence when it cannot be proved. Parent cancellation
+   covers preparation as well as trials. Do not signal a mismatched/reused owner.
+2. Register allocation ownership before fallible work, or safely roll back the
+   exact newly allocated inode if marker creation fails. Cover generated and
+   explicit paths; do not delete foreign/replaced roots. Retained validation
+   graphs need explicit custody by the live consuming coordinator/test owner,
+   with its PID/start identity; the exited producer is not the keeper. An active
+   keeper prevents abandoned recovery. Preserve all existing output/alias,
+   foreign/active/replaced-path refusal and honest cleanup-error contracts.
+3. Freeze complete real input identities before use and revalidate after use:
+   relevant Can fixture/compiler/emitter/build inputs, actual linked runtime TS,
+   tooling/drivers/instrumentation/launcher, prepared ordinary/diagnostic/bundle
+   graphs, actual installed executable identity and built-in runtime identity,
+   and actual resolved external module/package content identities. Resolve with
+   the actual runtime and importer context; capture reachable dependencies and
+   resolution links/manifests, without copying code or walking unrelated
+   node_modules. Distinguish resolved/reachable imports from syntactic labels;
+   reject incomplete identity records, ambiguous required resolution and drift.
+   Empty equal dictionaries, unresolved bare-name lists, missing required hashes
+   or null required source identity are not sufficient. Use bounded inventory;
+   report a real blocker rather than silently relaxing completeness. A complete
+   conservative inventory may include unused inputs if its scope is labelled.
+4. Separate preparation and sampling start/end from overall wall bounds. Keep
+   parent launch timing inside trial controllers around actual Bun invocation;
+   supervisor/identity work is not part of that interval. Retain ordinary
+   counterbalance, six trials, two excluded warmups, seven accepted batches per
+   profile and one fresh startup per batch, diagnostic last; complete finite
+   stage/events/AST/oracle/membership checks and inclusive timing interpretation.
+5. Preserve original and first-corrected raw/evidence bytes. Their arithmetic
+   remains useful; neither has newly complete identities. After lifecycle and
+   identity qualification, one replacement busy-host run to a new `-final.json`
+   is authorized specifically because the missing identities cannot be repaired
+   retrospectively. Never merge trials or repeat sampling simply for reassurance.
+   Keep 300-second sampling, 64 MiB/500 compiled-file scratch limits and a compact
+   evidence target of 2 MiB per execution record; scope is adapter/facade-root,
+   not total production `runEntry`. No p95 or causal speedup claim.
+
+This is a correction of the new opt-in tool, not a production remedy. Shared
+helpers/runtime/compiler/defaults/vendor/publication remain outside scope.
+Use one saved checklist and the existing released interactive Muse session.
+Before delegation use Muse's native `get_goal` and reuse a matching active goal,
+or native `create_goal` for these repairs if none is active; never overwrite an
+unrelated goal. No arbitrary goal token budget. Align native `report_progress`
+with task evidence, and complete `update_goal` only at the all-writer release
+and reviewable handoff. If native goal tools are unavailable/rejected, report
+that blocker before delegation. Actual session/goal references belong in the
+Codex monitoring record and compact handoff, not copied mutable checklist state.

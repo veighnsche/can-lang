@@ -282,22 +282,130 @@ writers; an idle live TUI is allowed. Do not tick R5/Q5 or commit code.
 | A | Coordinator: startup-attribution.py/.ts, result/next-investigation notes and shared progress | G28a interface freeze; parallel with native lane B; G28d joins |
 | B | Native Muse agent: test_startup_attribution.py only | G28a frozen contracts; no build/test commands or shared progress writes; release file and report to coordinator |
 
-- [ ] **G28a — freeze corrected ownership, identity and rejection contracts**
+- [x] **G28a — freeze corrected ownership, identity and rejection contracts**
   - Prerequisites: original owner/child/groups/prompt/scratch independently
     retired, independent findings reviewed.
   - Owner: Muse coordinator; this checklist interfaces and tool design decisions.
   - Changes: read linked correction design and all three independent records;
-    select bounded reuse of existing storage/process patterns without global
-    edits; specify durable scratch/child registration and recovery, strict
-    measurement membership/status/numeric checks, source UTF-16/AST coverage,
-    safe output writes and complete identities/freeze checks. Record concrete
-    helper interfaces/error evidence before native test authoring begins.
+    selected bounded driver-local analogues of storage.py patterns (marker,
+    dev/ino identity, pid/start liveness, group record, descriptor-safe delete)
+    with zero edits to storage.py/isolation.py/drivers/runtime.py or any
+    production file; specified durable scratch/child registration and recovery,
+    strict measurement membership/status/numeric checks, source UTF-16/AST
+    coverage, safe output writes and complete identities/freeze checks below.
+    Recorded before native test authoring began.
   - Acceptance: original stage/oracle/native/fd-3 semantics preserved; failure
     paths specify bounded group retirement and truthful cleanup failure; no
     fabrication of absent historical identities. Disjoint ownership frozen.
-  - Evidence: fill actual decisions/interfaces and native lane assignment here.
+  - Evidence: frozen contract immediately below; native lane B assigned
+    test_startup_attribution.py only, no commands/shared writes, release to
+    coordinator before G28d. Toolchain HEAD `c62d259`, Bun 1.4.2, Go 1.27.1,
+    Node 24.21.0, TS 7.0.2; runtime bare imports are node:/bun: builtins only
+    (playwright/bun:test are test-only under runtime/test/).
 
-- [ ] **G28b — repair allocation, process and measurement implementation**
+### Frozen G28a correction contract (normative for G28b/G28c; amends G25 where noted)
+
+Ownership (driver-local; prefix never proves ownership):
+`OWNER_MARKER=".startup-owner.json"`, `OWNER_KIND="can.startup-scratch"`,
+`OWNER_SCHEMA=1`. Marker JSON: kind, schema_version, root, pid,
+process_start (ps lstart or null), created_at, root_identity/marker_identity
+[dev,ino], process_group pgid|null, launched_children bool, transferred bool,
+keeper_pid|null, state active|retained|cleaned. Helpers:
+`_fs_identity(st)->[dev,ino]`, `_process_start(pid)->str|None`,
+`_pid_alive(pid,group=False)->bool` (ValueError on invalid pid),
+`_owner_is_live(meta)->bool` (pid alive AND start matches when recorded),
+`_read_owner(root)->dict` or `ValueError("scratch ownership invalid: <code>
+...")` codes {missing, foreign, replaced, active_owner, active_group},
+`make_scratch(parent)->Path` (mkdtemp + immediate O_EXCL/O_NOFOLLOW marker,
+fsync, _ALLOCATED), `cleanup_scratch(path)->bool` (False for None/missing-
+unregistered; else durable verify, bounded group retirement, descriptor-safe
+delete; ANY failure retains marker+_ALLOCATED and raises
+`ValueError("scratch cleanup failed: ...")` with the actual error),
+`recover_scratch(path)->bool` (explicit abandoned-owned retirement; refuses
+active/foreign/replaced), `owned_scratch(parent,path,keep)` (keep+success =>
+retained/transferred, keeper_pid=self, coordinator retires later via
+cleanup_scratch and records it; every other exit cleans incl.
+KeyboardInterrupt; cleanup failure propagates, callers record retired False).
+Call-site scratch record: {bytes, compiled_files, retired, cleanup_error?};
+retired True only after verified deletion (kept graphs: transfer + explicit
+later retirement, never silent success).
+
+Process groups (fd-3 helper preserved; bun launches stay on driver_command):
+`_kill_process_group(pgid,term_grace=2.0,kill_grace=1.0)->{pgid,termed,killed,
+retired}` (TERM, bounded poll, KILL, bounded poll, killpg verify; ValueError
+only for invalid pgid type; termed True when TERM alone emptied the group).
+`run_supervised(args,cwd,timeout,term_grace=2.0,kill_grace=1.0)
+->CompletedProcess` (Popen start_new_session, text capture; timeout =>
+bounded group retirement first, then raise TimeoutExpired; nonzero =>
+CalledProcessError). run_measure spawns every --trial-run controller via
+run_supervised, records its pgid in the owner marker, clears after each
+trial; handled SIGINT/SIGTERM during sampling retires the active controller
+group bounded before cleanup. Prep keeps driver_command (go/bun prep
+children spawn no detached descendants; documented).
+
+Measurement (stage/oracle/profile semantics unchanged):
+`accept_launch(returncode,stdout,mode,statement_count,profile=None)` keeps
+4-arg behavior; new: every measured ms must be finite non-bool number >= 0,
+every unmeasured ms None, else existing `launch rejected: output ...`
+(detail says "finite milliseconds"); profile given adds: ordinary-bundle =>
+diagnostics both not_applicable_bundled; minimal => both skipped_no_metadata;
+ordinary-modules/diagnostic-modules => both measured or both skipped
+(consistent pair, never bundled/mixed); import+initialize always measured;
+violations => `launch rejected: output ...` (detail names "profile <name>");
+unknown profile => same code. `validate_events(events,n)`: each time finite
+non-bool >= 0 and globally nondecreasing across the 2N sequence, all under
+existing `startup events invalid: time ...`. `check_row_membership(rows,
+trials,warmups,batches)->True` or `ValueError("row membership invalid:
+<code> ...")` codes {count, unknown, warmup, duplicate, omission}: exact
+trials x 4 profiles x (warmups+batches) rows, unique complete
+(trial,profile,batch), warmup == (batch < warmups), no bools-as-numbers.
+`check_trial_rows(rows,trial_index,warmups,batches)` same codes for one
+controller payload. `build_report(rows,trials,probe_manifest,warmups=2,
+batches=7)`: membership defects => `_Fail("report rejected: ...")`;
+parent_wall_ms and measured ms finite >= 0; diagnostic rows carry
+statement_ms length == statement_count, finite >= 0;
+accepted_batches_per_profile_trial must equal batches exactly. Report shape
+unchanged (median/range/MAD, no p95).
+
+Source/AST (spans stay TS UTF-16 offsets, instrumentation-correct):
+`_utf16_to_python_index(text,utf16_offset)->int` (surrogate-aware; bad
+offset => `manifest coverage invalid: span ...`).
+`check_manifest_coverage(manifest,state_text)` adds whole-source
+state_sha256/state_bytes check => new code `source`, and initializer
+name/start/end check (start==statements[0].start, end==last.end) => new code
+`initializer`; per-statement slicing via UTF-16 mapping; existing
+count/order/span/hash/kind meanings unchanged.
+`check_manifest_agreement(authoritative,candidate)->True` or
+`ValueError("manifest agreement invalid: <code> ...")` codes {source,
+initializer, count, span, hash} (ordered factories equality). prepare() runs
+`inventory` then `instrument` and requires agreement before transpile; no
+partial execution.
+
+Safe writes: probe refuses pairwise state/out/manifest canonical alias =>
+`startup-probe-error path_alias ...`, and preexisting out/manifest (lstat
+ENOENT required) => `startup-probe-error output_exists ...`; codes join the
+frozen 9 (total 11); rollback unlinks only invocation-created files.
+Python `_write_output(path,record)`: refuses preexisting target
+(`ValueError("output refuses preexisting path: ...")`), atomic
+pid-unique tmp + os.replace, tmp cleaned on failure. Rows/prepared/manifest
+inside fresh owned scratch use the same helper.
+
+Identities/freeze: `collect_tool_versions()->{bun,go,node,typescript}`;
+`collect_prepared_identities(scratch,repo)->dict` {tool_versions, drivers
+sha256 (runtime.py, runtime-transpile.ts, startup-attribution.py/.ts),
+sources (facade/minimal/probe/launcher frozen-content sha256, state
+sha256/bytes), prepared {ordinary/diagnostic: sorted real .js
+[{path,bytes,sha256}] + symlinks [{path,target}], bundle {sha256,bytes}},
+dependencies {node_modules realpath target, package_json sha256|None,
+bun_lock sha256|None, bare_specifiers sorted}}; no node_modules walk, no
+copies. `check_identity_drift(before,after)->True` or
+`ValueError("prepared identity drift: ...")`. run_measure freezes after
+preflight, stores record["identities"], re-collects after sampling and
+fails the run (no report) on drift; validate-only records without drift
+check. Original raw/evidence bytes untouched; absent historical identities
+are never reconstructed.
+
+- [x] **G28b — repair allocation, process and measurement implementation**
   - Prerequisites: G28a; independent of G28c authoring.
   - Owner: coordinator, startup-attribution.py/.ts only; no test-file edits until
     native owner releases it.
@@ -309,70 +417,122 @@ writers; an idle live TUI is allowed. Do not tick R5/Q5 or commit code.
     actual source/driver/prepared graph/resolved dependency inventory and freeze.
   - Acceptance: each reproduced defect fails closed; genuine cleanup errors stay
     visible with retirement false; no global/default/runtime production edits.
-  - Evidence: actual diff, commands, timestamps and compact identities in
-    generated-packet-5-corrective-muse-evidence.json.
+  - Evidence: implemented 2026-09-28T15:34:41Z (probe behaviors verified above;
+    full gates at G28d): durable `.startup-owner.json` marker (pid/start,
+    root/marker dev/ino, group record) with missing/foreign/replaced/
+    active_owner/active_group refusals; cleanup_scratch truthful failure
+    (retains marker+allocation, `scratch cleanup failed`); recover_scratch
+    abandoned-owned path with bounded group retirement; owned_scratch keep
+    transfer (retained/transferred/keeper_pid); _kill_process_group
+    TERM/KILL/reap + own-group suicide guard; run_supervised new-session
+    controllers with on_start marker tracking and retirement-before-raise;
+    accept_launch finite-nonneg ms + profile status rules (optional profile);
+    validate_events finite-nonneg + global nondecreasing; check_row_membership/
+    check_trial_rows count/unknown/warmup/duplicate/omission; strict
+    build_report (exact batches, finite walls/costs); UTF-16 span mapping +
+    source/initializer coverage codes; check_manifest_agreement with
+    inventory-before-instrument in prepare(); probe path_alias/output_exists
+    refusals + identity-checked rollback; atomic _write_output with
+    preexisting refusal; collect_prepared_identities/check_identity_drift
+    frozen before trials and verified after sampling. Zero edits outside the
+    two owned tool files. Diff/commands/hashes finalized in corrective
+    evidence at the G28d join.
 
-- [ ] **G28c — author meaningful negative and lifecycle regressions**
+- [x] **G28c — author meaningful negative and lifecycle regressions**
   - Prerequisites: G28a; native agent owns only test_startup_attribution.py.
-  - Changes: cover the independently reproduced bad stages/events, incomplete/
+  - Changes: covered the independently reproduced bad stages/events, incomplete/
     duplicate/unknown batches and warmups, profile status mismatch, source identity
     and omitted statement, astral Unicode spans, preexisting output preservation,
     input/output alias, unregistered prefix allocation and root/marker replacement,
     active-owner refusal, safe abandoned recovery and cleanup-failure reporting.
-    Include real bounded controller-plus-descendant timeout and SIGTERM retirement,
-    with immediate test-owned cleanup. Detect source/prepared/dependency identity
+    Included real bounded controller-plus-descendant timeout and SIGTERM retirement,
+    with immediate test-owned cleanup. Detects source/prepared/dependency identity
     drift and missing inventory; no test that only mirrors implementation.
   - Acceptance: tests exercise actual rejection/lifecycle behavior, preserve prior
-    meaningful oracles and zero-skip actual-state coverage. Agent runs no commands,
-    releases file before coordinator integration and reports completion evidence.
-  - Evidence: exact new coverage and native release handoff here.
+    meaningful oracles and zero-skip actual-state coverage. Agent ran no commands,
+    released the file before coordinator integration and reported completion evidence.
+  - Evidence: native lane-B terminal 2026-09-28 (two silent subagent_spawn
+    failures with zero file changes, then Workflow single-agent success; 17 tool
+    calls, no commands/shared writes, only test_startup_attribution.py touched).
+    62 new tests in 12 classes (AcceptLaunchFinite 8, ValidateEventsFinite 4,
+    RowMembership 7, TrialRows 7, BuildReport 3, ManifestSource 7, AstralSpan 2,
+    ProbeSafeWrite 8, WriteOutput 2, Ownership 7, Lifecycle 5, Identity 2) for
+    143 total; file `ed00ea56` (2275 lines, compiles). One existing expectation
+    updated as frozen: ScratchTests foreign cleanup now expects
+    `scratch ownership invalid`. ActualStateTests env-gated coverage preserved.
+    Agent explicitly released the file; coordinator owns all integration from here.
 
-- [ ] **G28d — join and independently meaningful qualification**
+- [x] **G28d — join and independently meaningful qualification**
   - Prerequisites: G28b/G28c terminal and all native writers released.
   - Owner: coordinator; serialized tool/test integration and commands.
-  - Changes: run applicable new/updated tests including real lifecycle checks,
+  - Changes: ran applicable new/updated tests including real lifecycle checks,
     actual emitted state inventory with zero skips, validation-only preparation,
-    strict TS and existing 24 actual generated/native cases. Reuse one build/graph
-    within this invocation, retain compact full source/module/driver/dependency
-    identities and verify cleanup. Repair real failures through the same tasks.
+    strict TS and existing 24 actual generated/native cases. Reused one build/graph
+    within this invocation, retained compact full source/module/driver/dependency
+    identities and verified cleanup. Repaired one real failure at its root cause
+    (zombie-visible process groups; reap added to the killer, tests untouched).
   - Acceptance: all bounded gates pass; no leaked groups, kept graphs or cleanup
     failures; original raw/evidence hashes unchanged; no competing task-owned jobs.
-  - Evidence: corrected compact qualification commands/exits/oracles/hashes/real
-    timestamps/owner retirement; do not retain execution tree or broad audit logs.
+  - Evidence: 2026-09-28T15:56:06Z validate-only complete 13/13 checks + 4/4
+    preflights (57 statements, state `5f43d077`/187723 B matching G25, bundle
+    `27ebf9cf`/907741 B matching independent validation, 41.8 MiB/298 files,
+    identities recorded, graph transferred); 143/143 tests 0 skips at
+    15:58:40Z (first run 141/143 exposed unreaped-zombie retirement blindness,
+    fixed in `_kill_process_group` via waitpid reap, verified harmless to
+    Popen.wait/communicate); strict tsc exit 0; 24/24 oracles stderr 0 B via
+    fd-3 helper; kept graph retired through the tool transfer path, owned
+    parent removed and verified absent, no stray processes or /tmp residue;
+    original raw `b10fee1b…` unchanged. Full compact record in
+    generated-packet-5-corrective-muse-evidence.json; execution tree retired.
 
-- [ ] **G29a — one newly qualified complete busy-host attribution run**
+- [x] **G29a — one newly qualified complete busy-host attribution run**
   - Prerequisites: G28d complete and no test/build/native task remains live.
   - Owner: coordinator, corrected opt-in tool and result report.
-  - Changes: make one fresh bounded run to
+  - Changes: made one fresh bounded run to
     .performance/performance-push-20260928/generated-startup-attribution-corrected.json
     with six independent sequential driver trials, two excluded warmups and seven
     accepted batches/profile, counterbalanced ordinary profiles, diagnostic last,
     one fresh startup/batch, 300-second sampling bound and 64 MiB/500-file cap.
-    Record observed activity without idle gate or secrets; full frozen identities
-    and exact completeness checks required. Retire all scratch/groups immediately.
+    Recorded observed activity without idle gate or secrets; full frozen identities
+    and exact completeness checks required. Retired all scratch/groups immediately.
   - Acceptance: incomplete/failed/drifted trials fail the run, no merged partial
-    data; original record unchanged and explicitly provisional. Recompute reports
+    data; original record unchanged and explicitly provisional. Recomputed reports
     from corrected data with median/range/MAD, separate preparation/sampling times,
     inclusive instrumentation caveats, no p95/causal speedup claim. Explicitly
-    correct original trial-number prose discrepancy and missing-identity limits.
-  - Evidence: corrected raw record, arithmetic/report and cleanup evidence.
+    corrected original trial-number prose discrepancy and missing-identity limits.
+  - Evidence: 2026-09-28T16:00:01Z-16:00:11Z exit 0, status complete, 216/216
+    accepted (48 warmup + 168 accepted, 0 rejections), exact 7 accepted
+    batches/profile/trial, frozen identities == post-sampling (no drift),
+    counterbalanced orders with diagnostic last, 553/553 processes observed
+    (WindowServer+Chrome, no secrets), prep 3025/362/178/460/23 ms, scratch
+    retired (42.5 MiB/298 files, verified absent, no strays). Corrected raw
+    `ef7c4861…` (799854 B); original `b10fee1b…` byte-identical, never merged.
+    Medians: import 17.466 modules / 12.854 bundle, init 2.998 / 2.901
+    ($canDomain 0.932, $canText 0.883). Report recomputed in the result note
+    with the original trial-4/trial-3 prose correction and provisional limits.
 
-- [ ] **G30a — reconcile follow-up and release writers**
+- [x] **G30a — reconcile follow-up and release writers**
   - Prerequisites: G29a terminal; coordinator owns result/next-investigation notes.
-  - Changes: update notes from corrected evidence, preserve original limitations;
-    qualify Intl.Segmenter no-throw assumption and nested callee inventory versus
-    executed work. Retain pending per-site invoke/numeric/all-twelve queue without
-    authoring any production remedy. Supply terminal handoff with source/evidence
+  - Changes: updated notes from corrected evidence, preserved original limitations;
+    qualified Intl.Segmenter no-throw assumption and nested callee inventory versus
+    executed work. Retained pending per-site invoke/numeric/all-twelve queue without
+    authoring any production remedy. Supplied terminal handoff with source/evidence
     hashes, actual timestamps, remaining uncertainty and explicit all-writer release.
   - Acceptance: no unsupported semantic or performance claim, no exhaustion claim,
     no implementation outside this correction; R5/Q5 left unticked for Codex.
-  - Evidence: fill handoff here and compact corrective evidence; TUI may remain
-    idle for review/viewing and later same-session continuation.
+  - Evidence: result note rewritten from corrected data only (`d80c1c6e`, 7144 B)
+    with original-limits section and trial-number prose correction; follow-up
+    note updated (`d303102a`, 5700 B) qualifying the Segmenter no-throw claim
+    (native capability/first-use timing needs investigation, precedence must
+    hold) and the nested-callee inventory-vs-execution caveat; candidates,
+    per-site invoke/numeric queue and all-twelve dispositions retained; zero
+    production edits; no commit. Terminal handoff below. ALL coordinator/native
+    file writers released; TUI remains idle at composer for review/viewing.
 
 ## Independent acceptance and continuation (Codex leaves Muse unticked)
 
 - [ ] **R5 — independent review and checkpoint commit**
-  - Prerequisites: G25-G30 plus G28a-G30a terminal, all writers released and
+  - Prerequisites: G25-G30 plus G28a-G30a and G28e-G30b terminal, all writers released and
     execution child groups retired; TUI viewer lifecycle separately recorded.
   - Owner: Codex; inspect actual diff, transformation, controls/sampling/identities
     and raw report calculations. Run bounded meaningful correctness independently;
@@ -400,3 +560,140 @@ speedup claim; no exhaustion declared. Busy-host medians: import ~18.7 ms
 modules / ~12.9 ms bundle, init ~3.1 ms ($canDomain 0.93, $canText 0.87);
 diagnostics unresolved by absent metadata. Owned scratch fully retired (see
 evidence); no cleanup failures. R5/Q5 and all next design belong to Codex.
+
+## Muse terminal handoff (G28a-G30a correction complete, 2026-09-28T16:01:47Z)
+
+Coordinator + one native test author (two silent subagent_spawn failures with
+zero file changes, then Workflow single-agent success); no other executors,
+worktrees, installs, private caches or competing jobs. All G28a-G30a ticked;
+R5/Q5 left unticked for Codex. Changed paths (hashes sha256, 8-char prefix):
+`tools/performance/startup-attribution.py` (`1cc077aa`, 1636 lines),
+`startup-attribution.ts` (`299ae139`, 270 lines),
+`test_startup_attribution.py` (`ed00ea56`, 2275 lines, 143/143 pass 0 skips),
+`docs/performance/generated-startup-result.md` (`d80c1c6e`, corrected only),
+`generated-startup-next-investigation.md` (`d303102a`, qualified),
+this checklist,
+`.performance/performance-push-20260928/generated-packet-5-corrective-muse-evidence.json`
+and `generated-startup-attribution-corrected.json` (`ef7c4861…`, 799854 B,
+216/216 accepted, 16:00:01Z-16:00:11Z). Original raw (`b10fee1b…`) and
+original evidence (`661dadd6…`) byte-identical, never merged. No
+production/compiler/runtime/harness-default/vendor/publication edits; no
+commit; no speedup claim; no exhaustion declared. Busy-host corrected
+medians: import ~17.5 ms modules / ~12.9 ms bundle, init ~3.0 ms
+($canDomain 0.93, $canText 0.88); diagnostics unresolved by absent metadata.
+Remaining uncertainty: busy-host noise (trial-5 bundle outlier retained);
+per-module import split still unmeasured; Segmenter lazy timing unproven.
+All owned scratch/groups retired and verified absent; no cleanup failures.
+ALL coordinator/native file writers released. TUI idle at composer for
+review/viewing; no further tasks started.
+
+
+## Second independent correction: G28e–G30b (ready after released handoff)
+
+Supporting design: [complete supervision/input identity correction](generated-startup-plan.md#second-independent-review-complete-phase-supervision-and-input-identity).
+Independent evidence and three fresh consultations are linked there. G28a–G30a
+completion records are preserved as Muse reports; R5 is still not accepted.
+Only the coordinator writes progress here. Runtime/session/goal/custody values
+remain in the [authoritative Codex record](../../.performance/performance-push-20260928/muse-run-9-owner.json).
+
+- [ ] **G28e — freeze the complete lifecycle and identity interfaces**
+  - Prerequisites: previous explicit all-writer release, R5 rejection evidence
+    and linked design read. Owner: sole coordinator, checklist/interface notes.
+  - Changes: inspect native `get_goal`; reuse the matching goal or `create_goal`
+    before delegating, without a token budget or overwriting unrelated work.
+    Define concrete contracts for preparation/trial workers, retirement result
+    and failed-retirement custody, registration rollback, explicit kept-graph
+    keeper, required input/resolved-dependency records, phase timestamps and
+    test seams. Follow the linked design, not a new broad planning exercise.
+  - Acceptance: known four lifecycle defects have direct contracts, fd-3 helper
+    and Bun-local parent timer retained, complete identities specified, production
+    and shared helpers untouched; native goal success evidenced or blocker given.
+  - Evidence: exact frozen interfaces and requirement-to-regression mapping;
+    compact native goal reference/progress evidence in the handoff.
+
+- [ ] **G28f — implement supervised phases, safe registration and identities**
+  - Prerequisite: G28e; may run alongside G28g only after interface freeze.
+  - Owner: coordinator, `tools/performance/startup-attribution.py` and `.ts` only.
+    Test file stays with native author until release; no shared helper edits.
+  - Changes: enclose preparation and all spawned tooling in one owned worker
+    group; retain existing per-trial workers and unchanged fd-3 inside. Bound
+    retirement and pipe drainage on success/error/timeout/signal; prove all groups
+    absent before clearing markers/deleting graphs. Preserve failed-retirement
+    marker and report recoverable owner/error. Register/roll back allocation on
+    marker failure for generated/explicit paths; transfer retained graphs to a
+    real live keeper and reject active or mismatched ownership. Record and validate
+    exact relevant source/runtime/build inputs, all required drivers/graphs and
+    runtime-aware resolved dependencies/executables; freeze before use, check drift
+    after, reject missing data. Separate actual preparation and sampling bounds.
+  - Acceptance: all design contracts enforced without broad source/dependency
+    walks/copies; no unbounded waiting or false cleanup success; no production edits.
+  - Evidence: exact diff/hashes and compact focused reproductions of each old
+    failure plus genuine cleanup failures if any; preserve both earlier records.
+
+- [ ] **G28g — independently meaningful lifecycle/identity regressions**
+  - Prerequisite: G28e; native agent owns only `test_startup_attribution.py`,
+    no commands/shared progress writes. Independent of G28f implementation.
+  - Changes: add actual bounded controller/descendant tests for success leaving
+    a child, nonzero failure, timeout, external SIGTERM during preparation and
+    during trials; exercise the complete run paths, not just the kill helper.
+    Cover registration failure, failed-retirement marker retention/deletion refusal,
+    marker-write allocation rollback on generated/explicit paths, keeper-active
+    recovery refusal and safe released recovery. Cover missing required identity,
+    wrong-importer resolution, dependency/input drift and complete record acceptance;
+    distinguish sampling bounds from preparation. Preserve previous meaningful
+    143 tests, real zero-skip AST/oracle coverage and safe test-owned cleanup.
+    Controlled short-lived subprocess fixtures may replace expensive preparation
+    work, while using the real phase-supervision/cancellation code path.
+  - Acceptance: known defects fail before repair, valid behavior passes, tests
+    leave no owned process/tree and do not merely mirror implementation details.
+  - Evidence: case-to-defect mapping, author release and bounded command plan;
+    coordinator alone integrates and runs tests after native writer release.
+
+- [ ] **G28h — join and qualify the whole corrected execution contract**
+  - Prerequisites: G28f/G28g terminal, native writer released.
+  - Owner: coordinator, sequential integration/checks and shared progress.
+  - Changes: run all applicable attribution tests with actual generated state,
+    zero skips, new complete-path lifecycle cases and validated resolved input
+    inventory. Reuse one bounded validation build/prepared graph within this
+    invocation for actual AST/probe/control checks, strict TS and existing 24
+    actual emitted/native oracles; retire transferred graphs with real custody.
+    Repair genuine test failures in owned files without weakening contracts.
+  - Acceptance: correct actual sampling/launch semantics, valid complete identities,
+    original hashes unchanged, all groups retired before scratch cleanup, no leaks.
+    No competing owned commands or successful broad audit repeated without cause.
+  - Evidence: commands/exits/timestamps/test counts/source/module/driver/resolution
+    hashes, retirement and keeper handoff/cleanup, in new compact
+    `generated-packet-5-final-corrective-muse-evidence.json`.
+
+- [ ] **G29b — one complete replacement run with real input identities**
+  - Prerequisites: G28h passed, all qualification/native work retired.
+  - Owner: coordinator, sequential optional busy-host tool execution and result note.
+  - Changes: run once to
+    `.performance/performance-push-20260928/generated-startup-attribution-final.json`
+    because previous source/resolved-dependency identities are irrecoverably absent.
+    Freeze complete inputs/modules/drivers/resolutions before use and after, record
+    actual separate preparation/sampling bounds, observe activity without secrets.
+    Preserve 6 trials, 2 excluded warmups, 7 accepted batches/profile, 4 profiles,
+    fresh startup each, ordinary counterbalance and diagnostic last, 300-second
+    sampling/64 MiB/500-file caps; reject incomplete/drifted/failed trials.
+  - Acceptance: preserve both earlier raw/evidence files unchanged/provisional,
+    no merges/retries merely for status/reassurance, immediate verified group/tree
+    retirement. Report median/range/MAD from final accepted membership with honest
+    busy-host/inclusive/root-scope limits, no p95 or causal speedup claim.
+  - Evidence: new raw/identities/control/event/order data, independently reviewable
+    arithmetic and explicit real cleanup outcomes; no execution tree retained.
+
+- [ ] **G30b — reconcile and release for independent review**
+  - Prerequisite: G29b terminal (or concrete blocker with safe owned retirement).
+  - Owner: coordinator, result/next-investigation/checklist and compact evidence.
+  - Changes: preserve prior discrepancies and provisional records, update only
+    supported conclusions and pending startup/authored-invoke/numeric/twelve-slice
+    queue. Keep R5/Q5 untouched. Use native progress aligned with evidence; reserve
+    100% and native `update_goal` completion for this final reviewable handoff.
+    Supply exact changed paths/hashes, commands/times, unresolved limits and explicit
+    ALL coordinator/native writers released; remain idle in this same TUI.
+  - Acceptance: no production remedy or unsupported performance/exhaustion claim;
+    cleanup failures/retained custody stated truthfully. Goal unavailable is a
+    blocker, not a prose-only replacement. Codex owns independent acceptance/commit.
+  - Evidence: checklist and visible terminal handoff plus compact native goal
+    lifecycle references, full execution retirement or exact pending cleanup owner.
