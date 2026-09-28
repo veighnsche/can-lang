@@ -293,3 +293,11 @@ benefit unmeasured. One pre-existing stale browser export expectation is separat
 dispositioned for narrow test correction. Next production packet:
 [consumed numeric JSON evidence](generated-numeric-retention-tasks.md),
 G37-G42. Auxiliary lane remains frozen; no new performance sampling requested.
+
+Numeric JSON retention accepted12970524: independent42 tests/600 assertions,
+runtime checks and64→4 source-reference replay passed; all numerical spellings and
+parsed values preserved, no latency/heap claim. Stale browser export inventory
+corrected test-only. Next source-supported generated packet is
+[guarded absent-context authored calls](generated-context-bypass-tasks.md),
+G43-G48, retaining generic invoke and all assertion-defined/fallback routes.
+Final independent twelve-slice exhaustion review remains pending.

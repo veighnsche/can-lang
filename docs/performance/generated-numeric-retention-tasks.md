@@ -95,7 +95,7 @@ latency/heap claim. R7/Q7 left for Codex.
 - [x] **R7 — independently review, verify applicable contracts and commit**
   - Owner: Codex after explicit writer release; actual diff/source/probe/consumer
     checks, reuse successful identities appropriately, promptly commit exact paths.
-- [ ] **Q7 — finish remaining production decisions and final twelve-slice review**
+- [x] **Q7 — finish remaining production decisions and final twelve-slice review**
   - Owner: Codex; no invented fixes or auxiliary expansion. Campaign remains active.
 
 Muse long-command cadence: native bash initialyield120000ms, routine1-5min/default2,
@@ -117,3 +117,8 @@ workloads do not decode JSON, so prior strictTS/actual oracle evidence is reused
 Changed document/browser test runtime hashes are disclosed, never called equal.
 Probe absent; no independent temporary graph allocated. No latency/heap claim.
 Evidence: generated-packet-7-independent-review.json.
+
+Q7 continuation: independent source audit finds unused assertion-context adoption
+at proven plain authored sites; three fresh equivalent consultations1/1/.99 advise
+the guarded branch. generated-context-bypass-plan.md and G43-G48 assignments govern
+the next production packet. Startup/native proof and final twelve-slice review open.
