@@ -3,8 +3,13 @@ import { createHash } from "node:crypto";
 import * as arrays from "../collections/array.ts";
 import { success, failure, value, type Completion } from "../completion.ts";
 import { array, record, recordIdentity } from "../data.ts";
-import { captureStandard, standardFailureKind } from "../failure.ts";
-import { createDomainRuntime } from "../domain.ts";
+import {
+  captureStandard,
+  standardFailureDiagnostics,
+  standardFailureKind,
+  standardFailureOccurrenceID,
+} from "../failure.ts";
+import { createDomainRuntime, domainFailureDiagnostics } from "../domain.ts";
 import { runAssertion } from "../assert/runner.ts";
 import { withFixture } from "../assert/fixtures.ts";
 import { settle } from "../coordination.ts";
@@ -445,4 +450,338 @@ test("map forwards an explicit owner context to browser-profile element callback
   if (root.completion.kind === "ok") expect(value(root.completion)).toEqual(array([2n, 4n]));
   expect(owned).toBeDefined();
   expect(seen).toEqual([owned, owned]);
+});
+
+test("absent-context sync callbacks run serially with failure stopping and empty short-circuit", async () => {
+  const source = array([1, 2, 3]);
+  const seen: number[] = [];
+  expect(
+    value(
+      await arrays.map(
+        source,
+        (item) => {
+          seen.push(item);
+          return success(item * 2);
+        },
+        trace,
+      ),
+    ),
+  ).toEqual([2, 4, 6]);
+  expect(seen).toEqual([1, 2, 3]);
+  seen.length = 0;
+  expect(
+    value(
+      await arrays.filter(
+        source,
+        (item) => {
+          seen.push(item);
+          return success(item === 2);
+        },
+        trace,
+      ),
+    ),
+  ).toEqual([2]);
+  expect(seen).toEqual([1, 2, 3]);
+  seen.length = 0;
+  expect(
+    value(
+      await arrays.fold(
+        source,
+        0,
+        (acc, item) => {
+          seen.push(item);
+          return success(acc + item);
+        },
+        trace,
+      ),
+    ),
+  ).toBe(6);
+  expect(seen).toEqual([1, 2, 3]);
+  seen.length = 0;
+  const found = value(
+    await arrays.find(
+      source,
+      (item) => {
+        seen.push(item);
+        return success(item === 2);
+      },
+      { none: "none", some: "some-int" },
+      trace,
+    ),
+  );
+  expect(recordIdentity(found)).toBe("some-int");
+  expect(seen).toEqual([1, 2]);
+  seen.length = 0;
+  expect(
+    value(
+      await arrays.some(
+        source,
+        (item) => {
+          seen.push(item);
+          return success(item === 2);
+        },
+        trace,
+      ),
+    ),
+  ).toBe(true);
+  expect(seen).toEqual([1, 2]);
+  seen.length = 0;
+  expect(
+    value(
+      await arrays.every(
+        source,
+        (item) => {
+          seen.push(item);
+          return success(item !== 1);
+        },
+        trace,
+      ),
+    ),
+  ).toBe(false);
+  expect(seen).toEqual([1]);
+  const failed = failure(captureStandard(new Error("sync stop"), origin));
+  seen.length = 0;
+  const stopped = await arrays.map(
+    source,
+    (item) => {
+      seen.push(item);
+      return item === 2 ? failed : success(item);
+    },
+    trace,
+  );
+  expect(stopped).toBe(failed);
+  expect(seen).toEqual([1, 2]);
+  const never = () => {
+    throw Error("empty sync callback reached");
+  };
+  expect(value(await arrays.map([], never, trace))).toEqual([]);
+  expect(value(await arrays.filter([], never, trace))).toEqual([]);
+  expect(value(await arrays.fold([], 7, never as never, trace))).toBe(7);
+  expect(value(await arrays.some([], never, trace))).toBe(false);
+  expect(value(await arrays.every([], never, trace))).toBe(true);
+});
+
+test("absent-context fold serializes truly delayed callbacks in element order", async () => {
+  const source = array([1, 2, 3]);
+  const started: number[] = [];
+  let active = 0;
+  let peak = 0;
+  const gates = source.map(() => deferred());
+  const pending = arrays.fold(
+    source,
+    0,
+    async (acc, item) => {
+      started.push(item);
+      active++;
+      peak = Math.max(peak, active);
+      await gates[item - 1].promise;
+      active--;
+      return success(acc + item);
+    },
+    trace,
+  );
+  await ticks();
+  expect(started).toEqual([1]);
+  gates[0].release();
+  await ticks();
+  expect(started).toEqual([1, 2]);
+  gates[1].release();
+  await ticks();
+  expect(started).toEqual([1, 2, 3]);
+  gates[2].release();
+  expect(value(await pending)).toBe(6);
+  expect(peak).toBe(1);
+});
+
+test("absent-context callbacks preserve domain and standard occurrences with boundary origins", async () => {
+  const source = array([1, 2, 3]);
+  const declaration = "can.project.root/array::failed";
+  const identity = createHash("sha256")
+    .update("can-concrete-type-v1\0" + JSON.stringify(["error", declaration]))
+    .digest("hex");
+  const domain = createDomainRuntime({
+    declarations: [{ identity: declaration, name: "array::failed", parameters: 0 }],
+    shapes: [
+      {
+        identity,
+        kind: "error",
+        declaration,
+        arguments: [],
+        fields: [],
+        leaves: [],
+        inputs: [],
+        errors: [],
+      },
+    ],
+  });
+  const domainOccurrence = domain.create(identity, record(identity, []), origin);
+  const domainCarrier = failure(domainOccurrence);
+  const seenDomain: number[] = [];
+  const domainResult = await arrays.map(
+    source,
+    (item) => {
+      seenDomain.push(item);
+      return item === 2 ? domainCarrier : success(item);
+    },
+    trace,
+  );
+  expect(domainResult).toBe(domainCarrier);
+  expect(seenDomain).toEqual([1, 2]);
+  expect(domainResult.kind).toBe("domain");
+  if (domainResult.kind === "domain") {
+    expect(domainResult.value).toBe(domainOccurrence);
+    expect(domainFailureDiagnostics(domainResult.value).occurrenceID).toBe(
+      domainFailureDiagnostics(domainOccurrence).occurrenceID,
+    );
+  }
+  const syntheticOrigin = { source: "can:adapter", start: 0, end: 0, invocation: [] };
+  const standardOccurrence = captureStandard(new Error("synthetic"), syntheticOrigin);
+  const standardCarrier = failure(standardOccurrence);
+  const beforeID = standardFailureOccurrenceID(standardOccurrence);
+  const seenStandard: number[] = [];
+  const standardResult = await arrays.map(
+    source,
+    async (item) => {
+      seenStandard.push(item);
+      await Promise.resolve();
+      return item === 2 ? standardCarrier : success(item);
+    },
+    trace,
+  );
+  expect(standardResult).toBe(standardCarrier);
+  expect(seenStandard).toEqual([1, 2]);
+  expect(standardResult.kind).toBe("standard");
+  if (standardResult.kind === "standard") {
+    expect(standardResult.value).toBe(standardOccurrence);
+    expect(standardFailureOccurrenceID(standardResult.value)).toBe(beforeID);
+    expect(standardFailureDiagnostics(standardResult.value).origin.source).toBe("can:adapter");
+    expect(standardFailureDiagnostics(standardResult.value).boundaryOrigin).toEqual(origin);
+  }
+});
+
+test("absent-context callbacks refuse raw and forged results without assimilating then", async () => {
+  // oxlint-disable no-thenable -- Hostile then members prove refusal happens before assimilation.
+  let assimilations = 0;
+  const hostile = {
+    then() {
+      assimilations++;
+    },
+  };
+  // oxlint-enable no-thenable
+  const source = array([1, 2, 3]);
+  for (const raw of [hostile, { kind: "ok", value: 1 }, 1, undefined]) {
+    const seen: number[] = [];
+    const result = await arrays.map(
+      source,
+      (item) => {
+        seen.push(item);
+        return (item === 2 ? raw : success(item)) as never;
+      },
+      trace,
+    );
+    expect(result.kind).toBe("standard");
+    expect(seen).toEqual([1, 2]);
+  }
+  const seenAsync: number[] = [];
+  const asyncRaw = await arrays.map(
+    source,
+    async (item) => {
+      seenAsync.push(item);
+      await Promise.resolve();
+      // Async functions assimilate returned thenables before invoke runs, so the
+      // delayed refusal case uses a non-thenable forged carrier.
+      return (item === 2 ? { kind: "ok", value: 1 } : success(item)) as never;
+    },
+    trace,
+  );
+  expect(asyncRaw.kind).toBe("standard");
+  expect(seenAsync).toEqual([1, 2]);
+  expect(assimilations).toBe(0);
+});
+
+test("browser owner callbacks receive explicit owner and undefined context in order", async () => {
+  const seenOwners: unknown[] = [];
+  const seenContexts: unknown[] = [];
+  const started: bigint[] = [];
+  let owned: OwnerContext | undefined;
+  const gates = [deferred(), deferred()];
+  const root = await runExplicitRoot(async (owner) => {
+    owned = owner;
+    const pending = arrays.map(
+      array([1n, 2n]),
+      async (item: bigint, ctx: OwnerContext, context?: unknown) => {
+        started.push(item);
+        seenOwners.push(ctx);
+        seenContexts.push(context);
+        await gates[item === 1n ? 0 : 1].promise;
+        return success(item * 2n);
+      },
+      { origin, site: "p::array#owner-order", owner },
+    );
+    await ticks();
+    expect(started).toEqual([1n]);
+    gates[0].release();
+    await ticks();
+    expect(started).toEqual([1n, 2n]);
+    gates[1].release();
+    return pending;
+  });
+  expect(root.cleanupFailed).toBe(false);
+  expect(root.completion.kind).toBe("ok");
+  if (root.completion.kind === "ok") expect(value(root.completion)).toEqual(array([2n, 4n]));
+  expect(owned).toBeDefined();
+  expect(seenOwners).toEqual([owned, owned]);
+  expect(seenContexts).toEqual([undefined, undefined]);
+});
+
+test("private success extraction preserves then/getter payload identity without assimilation", async () => {
+  // oxlint-disable no-thenable -- Hostile payloads prove direct extraction never assimilates them.
+  let thenCalls = 0;
+  let getterCalls = 0;
+  const thenPayload = {
+    tag: "then",
+    then() {
+      thenCalls++;
+      throw new Error("assimilated");
+    },
+  };
+  const getterPayload: Record<string, unknown> = { tag: "getter" };
+  Object.defineProperty(getterPayload, "then", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getterCalls++;
+      throw new Error("assimilated getter");
+    },
+  });
+  // oxlint-enable no-thenable
+  const payloads = [thenPayload, getterPayload];
+  const mapped = value(await arrays.map(array([0, 1]), (index) => success(payloads[index]), trace));
+  expect(mapped[0]).toBe(thenPayload);
+  expect(mapped[1]).toBe(getterPayload);
+  expect(Object.isFrozen(mapped)).toBe(true);
+  const folded = value(
+    await arrays.fold(
+      array([0, 1]),
+      array([]) as readonly unknown[],
+      (acc, index) => success(array([...acc, payloads[index]])),
+      trace,
+    ),
+  );
+  expect(folded[0]).toBe(thenPayload);
+  expect(folded[1]).toBe(getterPayload);
+  expect(Object.isFrozen(folded)).toBe(true);
+  const emptySeed = value(
+    await arrays.fold(
+      array([]),
+      thenPayload,
+      async () => {
+        throw Error("empty fold callback reached");
+      },
+      trace,
+    ),
+  );
+  expect(emptySeed).toBe(thenPayload);
+  expect(thenCalls).toBe(0);
+  expect(getterCalls).toBe(0);
 });

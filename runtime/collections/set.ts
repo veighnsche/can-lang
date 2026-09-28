@@ -25,8 +25,13 @@ export function createSet<K extends Key>(identity: string, keyKind: KeyKind) {
     return token;
   }
   function backing(value: unknown): Set<Key> {
-    if (!isSet(identity, value)) throw resourceStateFailure(undefined, origin);
-    return storage.get(value)!.values;
+    // Single metadata lookup after the same non-null object and concrete
+    // identity guard as isSet; no yield or user code ran between the former
+    // two lookups. Public isSet, key checks, origins and native copies stay.
+    const found = value !== null && typeof value === "object" ? storage.get(value) : undefined;
+    if (found === undefined || found.identity !== identity)
+      throw resourceStateFailure(undefined, origin);
+    return found.values;
   }
   return Object.freeze({
     async empty(_context?: AssertionContext) {

@@ -129,6 +129,102 @@ test("collection storage rejects forged, copied and wrong-specialization tokens 
   for (const key of [1, NaN, {}, "1", true])
     await expect(sets.add(set, key as any)).rejects.toBeDefined();
 });
+
+test("collection backing rejects unknown, null, primitive, function and revoked inputs without traps", async () => {
+  const token = value(await maps.empty());
+  const sets = createSet<bigint>("set-int", "int");
+  const set = value(await sets.empty());
+  const nonObjects: unknown[] = [
+    null,
+    undefined,
+    0,
+    1,
+    0n,
+    "",
+    "map-int-object",
+    true,
+    false,
+    Symbol("map"),
+    () => {},
+    async () => {},
+  ];
+  for (const input of nonObjects) {
+    expect(isMap("map-int-object", input)).toBe(false);
+    expect(isSet("set-int", input)).toBe(false);
+    await expect(maps.entries(input as never)).rejects.toBeDefined();
+    await expect(maps.get(input as never, 1n)).rejects.toBeDefined();
+    await expect(maps.insert(input as never, 1n, {})).rejects.toBeDefined();
+    await expect(maps.replace(input as never, 1n, {})).rejects.toBeDefined();
+    await expect(maps.remove(input as never, 1n)).rejects.toBeDefined();
+    await expect(sets.contains(input as never, 1n)).rejects.toBeDefined();
+    await expect(sets.add(input as never, 1n)).rejects.toBeDefined();
+  }
+  for (const unknownObject of [Object.freeze([]), [1n], Object.freeze({}), new Map(), new Set()]) {
+    expect(isMap("map-int-object", unknownObject)).toBe(false);
+    expect(isSet("set-int", unknownObject)).toBe(false);
+    await expect(maps.entries(unknownObject as never)).rejects.toBeDefined();
+    await expect(sets.contains(unknownObject as never, 1n)).rejects.toBeDefined();
+  }
+  let mapTraps = 0;
+  const countingMap = new Proxy(token, {
+    get(target, property, receiver) {
+      mapTraps++;
+      return Reflect.get(target, property, receiver);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      mapTraps++;
+      return Reflect.getOwnPropertyDescriptor(target, property);
+    },
+    ownKeys(target) {
+      mapTraps++;
+      return Reflect.ownKeys(target);
+    },
+    has(target, property) {
+      mapTraps++;
+      return Reflect.has(target, property);
+    },
+    getPrototypeOf(target) {
+      mapTraps++;
+      return Reflect.getPrototypeOf(target);
+    },
+  });
+  await expect(maps.entries(countingMap as never)).rejects.toBeDefined();
+  await expect(maps.get(countingMap as never, 1n)).rejects.toBeDefined();
+  expect(mapTraps).toBe(0);
+  let setTraps = 0;
+  const countingSet = new Proxy(set, {
+    get(target, property, receiver) {
+      setTraps++;
+      return Reflect.get(target, property, receiver);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      setTraps++;
+      return Reflect.getOwnPropertyDescriptor(target, property);
+    },
+    ownKeys(target) {
+      setTraps++;
+      return Reflect.ownKeys(target);
+    },
+  });
+  await expect(sets.contains(countingSet as never, 1n)).rejects.toBeDefined();
+  await expect(sets.add(countingSet as never, 1n)).rejects.toBeDefined();
+  expect(setTraps).toBe(0);
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  expect(isMap("map-int-object", revoked.proxy)).toBe(false);
+  expect(isSet("set-int", revoked.proxy)).toBe(false);
+  await expect(maps.entries(revoked.proxy as never)).rejects.toBeDefined();
+  await expect(sets.contains(revoked.proxy as never, 1n)).rejects.toBeDefined();
+  await expect(sets.union(set, token as never)).rejects.toBeDefined();
+  await expect(sets.intersection(token as never, set)).rejects.toBeDefined();
+  await expect(sets.difference(set, token as never)).rejects.toBeDefined();
+  const payload = Object.freeze({ value: 1 });
+  const first = value(await maps.insert(token, 3n, payload));
+  expect(value(await maps.get(first, 3n))).toBe(payload);
+  expect(value(await maps.entries(token))).toEqual([]);
+  expect(value(await maps.entries(first)).map((entry) => entry.key)).toEqual([3n]);
+  expect(value(await sets.contains(value(await sets.add(set, 3n)), 3n))).toBe(true);
+});
 test("native set operations preserve left order through both intersection size branches", async () => {
   const sets = createSet<bigint>("set-int", "int");
   async function build(keys: bigint[]) {

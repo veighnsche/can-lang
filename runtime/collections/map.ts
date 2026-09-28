@@ -29,8 +29,13 @@ export function createMap<K extends Key, V>(
     return token;
   }
   function backing(value: unknown): Map<Key, unknown> {
-    if (!isMap(identities.map, value)) throw resourceStateFailure(undefined, origin);
-    return storage.get(value)!.values;
+    // Single metadata lookup after the same non-null object and concrete
+    // identity guard as isMap; no yield or user code ran between the former
+    // two lookups. Public isMap, key checks, origins and native copies stay.
+    const found = value !== null && typeof value === "object" ? storage.get(value) : undefined;
+    if (found === undefined || found.identity !== identities.map)
+      throw resourceStateFailure(undefined, origin);
+    return found.values;
   }
   function error(identity: string): Completion<never> {
     return failure(domain.create(identity, record(identity, []), origin));

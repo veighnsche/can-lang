@@ -1,12 +1,4 @@
-import {
-  invoke,
-  success,
-  failure,
-  caught,
-  isCompletion,
-  value,
-  type Completion,
-} from "../completion.ts";
+import { invoke, success, failure, caught, isCompletion, type Completion } from "../completion.ts";
 import { array, record } from "../data.ts";
 import { nonfiniteSortKeyFailure, type FailureOrigin } from "../failure.ts";
 import { callContext, type AssertionContext } from "../assert/context.ts";
@@ -30,6 +22,13 @@ export type BrowserCallback<A extends unknown[], R> = (
 ) => Completion<R> | Promise<Completion<R>>;
 export type ElementCallback<A extends unknown[], R> = Callback<A, R> | BrowserCallback<A, R>;
 export type SortKey = bigint | number | string | boolean;
+// Private success provenance: observations stores only invoke-authenticated
+// carriers that passed the ok guard; sort decorations are success() results;
+// fold accumulators start from success(initial) and forward only guarded ok
+// callback results. All are privately branded by this module's success/invoke
+// path. Public value()/checkedCompletion() still guard external carriers;
+// direct .value extraction below never exposes a naked payload across an await.
+type PrivateSuccess<T> = Completion<T> & { readonly kind: "ok"; readonly value: T };
 // Callback payloads are never returned naked from an async function. The parent
 // collection frame remains active between visits and while native algorithms
 // settle, so fixture scheduling cannot mistake those gaps for quiescence.
@@ -39,6 +38,20 @@ function callback<A extends unknown[], R>(
   trace: Trace,
 ): Promise<Completion<R>> {
   const owner = trace.owner;
+  if (trace.context === undefined) {
+    // Absent assertion context: callContext would return run(undefined) with
+    // no frame work, and run always returns invoke's authenticated completion
+    // promise. Bypass the async wrapper and the unused receipt lookup while
+    // forwarding identical owner/context positions and the same origin.
+    // Invoke still authenticates completions, refuses unboxed/forged results
+    // without assimilating then/getters, and records boundary origins.
+    return owner === undefined
+      ? invoke(() => (action as Callback<A, R>)(...arguments_, undefined), trace.origin)
+      : invoke(
+          () => (action as BrowserCallback<A, R>)(...arguments_, owner, undefined),
+          trace.origin,
+        );
+  }
   return callContext(
     trace.context,
     trace.site,
@@ -67,10 +80,10 @@ async function observations<T, U>(
   source: readonly T[],
   action: ElementCallback<[T], U>,
   trace: Trace,
-): Promise<Completion<U>[]> {
+): Promise<PrivateSuccess<U>[]> {
   // Iterating elements would let Array.fromAsync await a data-valued `then`.
   // Indices are native numbers; the callback receives its element synchronously.
-  return Array.fromAsync(source.keys(), async (index) => {
+  return Array.fromAsync(source.keys(), async (index): Promise<PrivateSuccess<U>> => {
     const result = await callback(action, [source[index]], trace);
     if (result.kind !== "ok") throw result;
     return result;
@@ -95,7 +108,10 @@ export function map<T, U>(
   trace: Trace,
 ): Promise<Completion<readonly U[]>> {
   return boundary(
-    async () => success(array((await observations(source, action, trace)).map(value))),
+    async () =>
+      success(
+        array((await observations(source, action, trace)).map((completion) => completion.value)),
+      ),
     trace,
   );
 }
@@ -115,7 +131,9 @@ export function filter<T>(
   trace: Trace,
 ): Promise<Completion<readonly T[]>> {
   return boundary(async () => {
-    const decisions = (await observations(source, action, trace)).map(value);
+    const decisions = (await observations(source, action, trace)).map(
+      (completion) => completion.value,
+    );
     return success(array(source.filter((_, index) => decisions[index])));
   }, trace);
 }
@@ -139,14 +157,16 @@ export function fold<T, U>(
 ): Promise<Completion<U>> {
   return boundary(
     () =>
-      source.reduce<Promise<Completion<U>>>(
+      source.reduce<Promise<PrivateSuccess<U>>>(
         (prior, item) =>
           prior.then(async (accumulator) => {
-            const result = await callback(action, [value(accumulator), item], trace);
+            const result = await callback(action, [accumulator.value, item], trace);
             if (result.kind !== "ok") throw result;
             return result;
           }),
-        Promise.resolve(success(initial)),
+        // success() always creates a privately branded ok carrier; the chain
+        // forwards only guarded ok callback results.
+        Promise.resolve(success(initial) as PrivateSuccess<U>),
       ),
     trace,
   );
@@ -281,15 +301,20 @@ export function sortBy<T, K extends SortKey>(
   trace: Trace,
 ): Promise<Completion<readonly T[]>> {
   return boundary(async () => {
-    const keys = await Array.fromAsync(source.keys(), async (index) => {
-      const result = await callback(action, [source[index]], trace);
-      if (result.kind !== "ok") throw result;
-      if (typeof result.value === "number" && !Number.isFinite(result.value))
-        throw failure(nonfiniteSortKeyFailure(undefined, trace.origin));
-      // Only the sealed compiler-admitted int/float/str/bool key type reaches here.
-      return success(Object.freeze({ key: result.value, index }));
-    });
-    const decorated = keys.map(value);
+    type Decoration = Readonly<{ key: K; index: number }>;
+    const keys = await Array.fromAsync(
+      source.keys(),
+      async (index): Promise<PrivateSuccess<Decoration>> => {
+        const result = await callback(action, [source[index]], trace);
+        if (result.kind !== "ok") throw result;
+        if (typeof result.value === "number" && !Number.isFinite(result.value))
+          throw failure(nonfiniteSortKeyFailure(undefined, trace.origin));
+        // Only the sealed compiler-admitted int/float/str/bool key type reaches
+        // here; success() always creates a privately branded ok carrier.
+        return success(Object.freeze({ key: result.value, index })) as PrivateSuccess<Decoration>;
+      },
+    );
+    const decorated = keys.map((completion) => completion.value);
     const sorted = decorated.toSorted((a, b) =>
       a.key < b.key ? -1 : a.key > b.key ? 1 : a.index - b.index,
     );
