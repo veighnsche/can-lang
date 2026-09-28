@@ -97,12 +97,11 @@ func sqlGenericOperation(identity string) bool {
 }
 
 func sqlOperation(identity string) *catalogue.Operation {
-	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Identity == identity {
-			return &op
-		}
+	op, ok := catalogue.Builtin().OperationByIdentity(identity)
+	if !ok {
+		return nil
 	}
-	return nil
+	return &op
 }
 
 // CheckSQLCallSites validates every recorded query call site against the

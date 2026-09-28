@@ -40,12 +40,11 @@ func streamOperation(identity string) *catalogue.Operation {
 	default:
 		return nil
 	}
-	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Identity == identity {
-			return &op
-		}
+	op, ok := catalogue.Builtin().OperationByIdentity(identity)
+	if !ok {
+		return nil
 	}
-	return nil
+	return &op
 }
 
 func streamGenericOperation(identity string) bool {

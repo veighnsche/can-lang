@@ -23,12 +23,11 @@ func collectionOperation(identity string) *catalogue.Operation {
 	if !strings.HasPrefix(identity, "can.std.collections@1::") {
 		return nil
 	}
-	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Identity == identity && (op.Lowering.Task == "I25" || op.Lowering.Task == "A05") {
-			return &op
-		}
+	op, ok := catalogue.Builtin().OperationByIdentity(identity)
+	if !ok || (op.Lowering.Task != "I25" && op.Lowering.Task != "A05") {
+		return nil
 	}
-	return nil
+	return &op
 }
 func (c *programChecker) collectionSignature(op *catalogue.Operation) (*resolve.File, []string, *syntax.CallableType, error) {
 	file := &resolve.File{Scope: c.world.Prelude, Imports: c.world.Packages}

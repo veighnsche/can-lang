@@ -274,20 +274,12 @@ func (c *programChecker) inferConstructor(symbol *resolve.Symbol, node *syntax.C
 	default:
 		var metadata []catalogue.Field
 		found := false
-		inventory := catalogue.Builtin().Inventory()
-		for _, declaration := range inventory.Types {
-			if declaration.Identity == symbol.ID && declaration.Kind == "record" && declaration.Constructible {
-				metadata = declaration.Fields
-				found = true
-				break
-			}
-		}
-		for _, declaration := range inventory.Errors {
-			if declaration.Identity == symbol.ID {
-				metadata = declaration.Fields
-				found = true
-				break
-			}
+		if declaration, ok := catalogue.Builtin().TypeByIdentity(symbol.ID); ok && declaration.Kind == "record" && declaration.Constructible {
+			metadata = declaration.Fields
+			found = true
+		} else if declaration, ok := catalogue.Builtin().ErrorByIdentity(symbol.ID); ok {
+			metadata = declaration.Fields
+			found = true
 		}
 		if !found {
 			return nil, fmt.Errorf("generic constructor requires record or error declaration")

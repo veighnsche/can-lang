@@ -118,7 +118,6 @@ func (c *regionChecker) arrayStep(receiver *ir.Expression, name, site string, ar
 	fail := func(message string) (ir.InvocationStep, error) {
 		return ir.InvocationStep{}, fmt.Errorf("array.%s: %s", name, message)
 	}
-	inventory := catalogue.Builtin().Inventory()
 	operationName := "array." + name
 	if name == "append" {
 		operationName = name
@@ -128,7 +127,7 @@ func (c *regionChecker) arrayStep(receiver *ir.Expression, name, site string, ar
 	if err != nil {
 		return ir.InvocationStep{}, err
 	}
-	op, err := catalogue.Builtin().Operation(operationName, inventory.TargetID, inventory.Revision)
+	op, err := catalogue.Builtin().CurrentOperation(operationName)
 	if err != nil {
 		return ir.InvocationStep{}, err
 	}
@@ -227,12 +226,11 @@ func (c *regionChecker) arrayContract(name, site string, receiver *types.Type, a
 	fail := func(message string) (ir.InvocationStep, error) {
 		return ir.InvocationStep{}, fmt.Errorf("array.%s: %s", name, message)
 	}
-	inventory := catalogue.Builtin().Inventory()
 	operationName := "array." + name
 	if name == "append" {
 		operationName = name
 	}
-	op, err := catalogue.Builtin().Operation(operationName, inventory.TargetID, inventory.Revision)
+	op, err := catalogue.Builtin().CurrentOperation(operationName)
 	if err != nil {
 		return ir.InvocationStep{}, err
 	}

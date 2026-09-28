@@ -33,7 +33,7 @@ func ErrorDeclarations(world *resolve.World) (*ErrorRegistry, error) {
 		registry.declarations[d.Identity] = d
 		return nil
 	}
-	for _, d := range catalogue.Builtin().Inventory().Errors {
+	for _, d := range catalogue.Builtin().Errors() {
 		if err := add(ErrorDeclaration{d.Identity, d.Name, len(d.Parameters)}); err != nil {
 			return nil, err
 		}

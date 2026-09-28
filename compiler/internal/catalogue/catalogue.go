@@ -109,6 +109,14 @@ type Catalogue struct {
 	operations map[string]Operation
 	native     map[string]NativeDeclaration
 	reserved   map[string]bool
+	// Identity and receiver indexes address the embedded inventory by
+	// position. They are built during load validation, after uniqueness
+	// is established, so every lookup below observes validated data in
+	// original inventory order. Index values are never exposed.
+	operationsByIdentity map[string]int
+	typesByIdentity      map[string]int
+	errorsByIdentity     map[string]int
+	receiverMethods      map[string][]int
 }
 
 var builtin *Catalogue
@@ -175,6 +183,65 @@ func (c *Catalogue) Operation(name, target string, revision int) (Operation, err
 	return clone(op), nil
 }
 
+// OperationByIdentity returns a deep defensive copy of the operation with
+// the given catalogue identity. It replaces whole-inventory scans for
+// identity-keyed consumers; absent identities report false.
+func (c *Catalogue) OperationByIdentity(identity string) (Operation, bool) {
+	i, ok := c.operationsByIdentity[identity]
+	if !ok {
+		return Operation{}, false
+	}
+	return clone(c.inventory.Operations[i]), true
+}
+
+// CurrentOperation resolves a name against this instance's own target and
+// revision, so callers that already hold the current catalogue need not
+// clone the inventory just to obtain pins. Explicit Operation pin
+// rejection is unchanged.
+func (c *Catalogue) CurrentOperation(name string) (Operation, error) {
+	return c.Operation(name, c.inventory.TargetID, c.inventory.Revision)
+}
+
+// TypeByIdentity returns a deep defensive copy of the type declaration
+// with the given catalogue identity. Callers keep their own kind and
+// constructibility filters.
+func (c *Catalogue) TypeByIdentity(identity string) (TypeDecl, bool) {
+	i, ok := c.typesByIdentity[identity]
+	if !ok {
+		return TypeDecl{}, false
+	}
+	return clone(c.inventory.Types[i]), true
+}
+
+// ErrorByIdentity returns a deep defensive copy of the error declaration
+// with the given catalogue identity.
+func (c *Catalogue) ErrorByIdentity(identity string) (ErrorDecl, bool) {
+	i, ok := c.errorsByIdentity[identity]
+	if !ok {
+		return ErrorDecl{}, false
+	}
+	return clone(c.inventory.Errors[i]), true
+}
+
+// ReceiverMethods returns deep defensive copies of the kind=method
+// operations whose receiver names a catalogue type with the given
+// identity, in original inventory order, so callers keep first-match
+// resolution. Unknown receivers yield no operations.
+func (c *Catalogue) ReceiverMethods(receiverIdentity string) []Operation {
+	indexes := c.receiverMethods[receiverIdentity]
+	out := make([]Operation, 0, len(indexes))
+	for _, i := range indexes {
+		out = append(out, clone(c.inventory.Operations[i]))
+	}
+	return out
+}
+
+// Errors returns deep defensive copies of the catalogue error
+// declarations without cloning the whole inventory.
+func (c *Catalogue) Errors() []ErrorDecl {
+	return clone(c.inventory.Errors)
+}
+
 // load is deliberately private. Only embedded distribution data is loadable by
 // production consumers; malformed-inventory tests exercise this same validator.
 func load(data []byte) (*Catalogue, error) {
@@ -190,7 +257,7 @@ func load(data []byte) (*Catalogue, error) {
 	if err := d.Decode(new(any)); err != io.EOF {
 		return nil, fmt.Errorf("trailing catalogue JSON")
 	}
-	c := &Catalogue{inventory: inventory, types: map[string]TypeDecl{}, errors: map[string]ErrorDecl{}, operations: map[string]Operation{}, native: map[string]NativeDeclaration{}, reserved: map[string]bool{}}
+	c := &Catalogue{inventory: inventory, types: map[string]TypeDecl{}, errors: map[string]ErrorDecl{}, operations: map[string]Operation{}, native: map[string]NativeDeclaration{}, reserved: map[string]bool{}, operationsByIdentity: map[string]int{}, typesByIdentity: map[string]int{}, errorsByIdentity: map[string]int{}, receiverMethods: map[string][]int{}}
 	if err := c.validate(); err != nil {
 		return nil, err
 	}
@@ -510,6 +577,25 @@ func (c *Catalogue) validate() error {
 	for _, name := range inv.Prelude {
 		if !names[name] {
 			return fmt.Errorf("missing prelude declaration %s", name)
+		}
+	}
+	// All names and identities are unique here, so positional indexes are
+	// unambiguous. Receiver methods keep inventory order for first-match
+	// resolution; intrinsic receivers (str, T[]) never name a catalogue
+	// type and stay excluded, as before.
+	for i, t := range inv.Types {
+		c.typesByIdentity[t.Identity] = i
+	}
+	for i, e := range inv.Errors {
+		c.errorsByIdentity[e.Identity] = i
+	}
+	for i, op := range inv.Operations {
+		c.operationsByIdentity[op.Identity] = i
+		if op.Kind != "method" || op.Receiver == "" {
+			continue
+		}
+		if decl, ok := c.types[op.Receiver]; ok {
+			c.receiverMethods[decl.Identity] = append(c.receiverMethods[decl.Identity], i)
 		}
 	}
 	return nil

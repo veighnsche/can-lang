@@ -111,13 +111,11 @@ func browserStateOperation(identity string) *catalogue.Operation {
 	if identity != browserCreateState && identity != browserReadState && identity != browserReplaceState {
 		return nil
 	}
-	for _, op := range catalogue.Builtin().Inventory().Operations {
-		if op.Identity == identity && op.Lowering.Task == "T22" {
-			operation := op
-			return &operation
-		}
+	op, ok := catalogue.Builtin().OperationByIdentity(identity)
+	if !ok || op.Lowering.Task != "T22" {
+		return nil
 	}
-	return nil
+	return &op
 }
 
 func browserStaticOperation(identity string) bool {

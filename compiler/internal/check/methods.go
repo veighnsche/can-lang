@@ -32,17 +32,15 @@ func (c *regionChecker) resolveMethod(application MethodApplication) (ValueBindi
 }
 func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueBinding, error) {
 	if scalar(a.Receiver, "str") {
-		for _, op := range catalogue.Builtin().Inventory().Operations {
-			if op.Name == "str."+a.Name.Text && op.Lowering.Task == "I24" {
-				if len(a.Types) != 0 {
-					return ValueBinding{}, fmt.Errorf("string method does not take type arguments")
-				}
-				typ := c.bindings[op.Identity]
-				if typ == nil {
-					return ValueBinding{}, fmt.Errorf("missing string catalogue contract")
-				}
-				return ValueBinding{Identity: op.Identity, Type: typ}, nil
+		if op, err := catalogue.Builtin().CurrentOperation("str." + a.Name.Text); err == nil && op.Lowering.Task == "I24" {
+			if len(a.Types) != 0 {
+				return ValueBinding{}, fmt.Errorf("string method does not take type arguments")
 			}
+			typ := c.bindings[op.Identity]
+			if typ == nil {
+				return ValueBinding{}, fmt.Errorf("missing string catalogue contract")
+			}
+			return ValueBinding{Identity: op.Identity, Type: typ}, nil
 		}
 	}
 	// Catalogue methods on catalogue types (B1-10): kind=method
@@ -50,19 +48,7 @@ func (c *programChecker) method(file *resolve.File, a MethodApplication) (ValueB
 	// declaration resolve by local name. Intrinsic receivers (str,
 	// T[]) never match a catalogue type, so existing paths are
 	// unaffected; project records still fall through below.
-	inventory := catalogue.Builtin().Inventory()
-	receiverIdentities := map[string]string{}
-	for _, typ := range inventory.Types {
-		receiverIdentities[typ.Name] = typ.Identity
-	}
-	for _, op := range inventory.Operations {
-		if op.Kind != "method" || op.Receiver == "" {
-			continue
-		}
-		receiverID, ok := receiverIdentities[op.Receiver]
-		if !ok || receiverID != a.Receiver.Declaration() {
-			continue
-		}
+	for _, op := range catalogue.Builtin().ReceiverMethods(a.Receiver.Declaration()) {
 		local := op.Name
 		if i := strings.LastIndex(local, "::"); i >= 0 {
 			local = local[i+2:]
