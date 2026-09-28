@@ -172,14 +172,75 @@ type RegionEmitter struct {
 	// loopStep names the iteration counter while a proven self-tail
 	// region lowers; empty selects ordinary origins without a step.
 	loopStep string
+	// originCacheActive enables finite lazy static origin reuse while
+	// Function emits one mapped non-self-tail function. All other paths
+	// (unmapped, self-tail, wrapper, native, configure-only, injection)
+	// keep literal origins. The cache is fresh per Function and cleared
+	// on every success/error return so reused emitters never leak slots.
+	originCacheActive bool
+	originCachePrefix string
+	originCache       map[originCacheKey]int
+	originSlots       []originCacheKey
+}
+
+// originCacheKey identifies one immutable compiler origin: the emitted
+// source ID (including substituted definition sources), the exact span,
+// and the active region ID (including nested handler regions).
+type originCacheKey struct {
+	source string
+	start  int
+	end    int
+	region string
 }
 
 func (e *RegionEmitter) temp() string { e.serial++; return fmt.Sprintf("$canRegion%d", e.serial) }
-func (e *RegionEmitter) origin(span source.Span) string {
-	invocation := quote(e.region.ID)
-	if e.loopStep != "" {
-		invocation += `,"step:"+` + e.loopStep
+
+// resetOriginCache deactivates lazy origin reuse and drops all slots.
+func (e *RegionEmitter) resetOriginCache() {
+	e.originCacheActive = false
+	e.originCachePrefix = ""
+	e.originCache = nil
+	e.originSlots = nil
+}
+
+// frozenOriginLiteral renders the deeply frozen origin value interned in one
+// slot. The object and its invocation array freeze on first use; the runtime
+// still copies both into each failure occurrence.
+func frozenOriginLiteral(key originCacheKey) string {
+	return fmt.Sprintf("Object.freeze({source:%s,start:%d,end:%d,invocation:Object.freeze([%s])})", quote(key.source), key.start, key.end, quote(key.region))
+}
+
+// cachedOrigin interns one static origin tuple and returns its lazy use-site
+// expression. It reports false for every dynamic or out-of-scope origin:
+// inactive cache, self-tail step counters, unmapped/configure-only paths.
+func (e *RegionEmitter) cachedOrigin(source string, span source.Span, regionID string) (string, bool) {
+	if !e.originCacheActive || e.loopStep != "" {
+		return "", false
 	}
+	key := originCacheKey{source: source, start: span.Start, end: span.End, region: regionID}
+	if e.originCache == nil {
+		e.originCache = map[originCacheKey]int{}
+	}
+	if index, ok := e.originCache[key]; ok {
+		slot := fmt.Sprintf("%s%d", e.originCachePrefix, index)
+		return "(" + slot + " ??= " + frozenOriginLiteral(key) + ")", true
+	}
+	index := len(e.originSlots)
+	e.originCache[key] = index
+	e.originSlots = append(e.originSlots, key)
+	slot := fmt.Sprintf("%s%d", e.originCachePrefix, index)
+	return "(" + slot + " ??= " + frozenOriginLiteral(key) + ")", true
+}
+
+func (e *RegionEmitter) origin(span source.Span) string {
+	if e.loopStep != "" {
+		invocation := quote(e.region.ID) + `,"step:"+` + e.loopStep
+		return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.sourceID()), span.Start, span.End, invocation)
+	}
+	if cached, ok := e.cachedOrigin(e.sourceID(), span, e.region.ID); ok {
+		return cached
+	}
+	invocation := quote(e.region.ID)
 	return fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(e.sourceID()), span.Start, span.End, invocation)
 }
 func (e *RegionEmitter) sourceID() string {
@@ -208,17 +269,33 @@ func (e *RegionEmitter) markNode(node *ir.Expression, operation string) string {
 	if node.Source != "" {
 		source = node.Source
 	}
-	invocation := quote(e.region.ID)
-	if e.loopStep != "" {
-		invocation += `,"step:"+` + e.loopStep
+	var origin string
+	if cached, ok := e.cachedOrigin(source, node.Span, e.region.ID); ok {
+		origin = cached
+	} else {
+		invocation := quote(e.region.ID)
+		if e.loopStep != "" {
+			invocation += `,"step:"+` + e.loopStep
+		}
+		origin = fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(source), node.Span.Start, node.Span.End, invocation)
 	}
-	origin := fmt.Sprintf("{source:%s,start:%d,end:%d,invocation:[%s]}", quote(source), node.Span.Start, node.Span.End, invocation)
 	return mappingMark(source, node.Span, operation) + "$canOrigin = " + origin + ";\n" + mappingMark(source, node.Span, operation)
 }
 func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error) {
 	if region == nil || region.ID == "" || region.Body == nil || !types.Equal(region.Result, region.Result) || !jsBinding.MatchString(name) {
 		return "", fmt.Errorf("invalid checked region")
 	}
+	// Lazy origin reuse is Function-scoped: fresh state on entry, inactive
+	// on every success/error return so reused emitters and later
+	// configure-only/injection/native paths keep literal origins.
+	e.resetOriginCache()
+	lowered := regionHasSelfTail(region)
+	if e.SourceID != "" && !lowered {
+		e.originCacheActive = true
+		e.originCachePrefix = "$canOrigin_" + name + "_"
+		e.originCache = map[originCacheKey]int{}
+	}
+	defer e.resetOriginCache()
 	args, err := e.configure(region)
 	if err != nil {
 		return "", err
@@ -226,7 +303,6 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 	// Proven self-tail regions lower to a native loop: the step counter
 	// is declared before every origin so failure metadata can name the
 	// iteration, and self relays continue instead of nesting calls.
-	lowered := regionHasSelfTail(region)
 	if lowered {
 		e.loopStep = e.temp()
 		defer func() { e.loopStep = "" }()
@@ -241,8 +317,16 @@ func (e *RegionEmitter) Function(name string, region *ir.Region) (string, error)
 		prefix = mappingMark(e.SourceID, region.Span, "function") + "let $canOrigin = " + origin + ";\n"
 		origin = "$canOrigin"
 	}
+	// Module-private hoisted slots retain at most the finite emitted site
+	// inventory. Var (not let) stays undefined through cyclic evaluation,
+	// so first use initializes without a TDZ. The returned text still
+	// starts with the async function token for export concatenation.
+	var slots strings.Builder
+	for index := range e.originSlots {
+		fmt.Fprintf(&slots, "var %s%d: Readonly<{source: string; start: number; end: number; invocation: readonly string[]}> | undefined;\n", e.originCachePrefix, index)
+	}
 	if !lowered {
-		return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin), nil
+		return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\n%stry {\n%s} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), prefix, body, origin) + slots.String(), nil
 	}
 	return fmt.Sprintf("async function %s(%s): Promise<$canCompletion<%s>> {\nlet %s = 0;\n%stry {\nwhile (true) {\n%s}\n} catch ($canCause) { return $canCaught($canCause, %s); }\n}\n", name, strings.Join(args, ", "), TypeName(region.Result), e.loopStep, prefix, body, origin), nil
 }
