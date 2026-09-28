@@ -132,7 +132,7 @@ R8/Q8 left for Codex.
 - [x] **R8 — independent review/applicable verification/coherent commit**
   - Owner: Codex after release; actual diff/new contracts/generated identities,
     reuse successful evidence and promptly commit exact accepted paths.
-- [ ] **Q8 — remaining supported production decisions and final twelve slices**
+- [x] **Q8 — remaining supported production decisions and final twelve slices**
   - Owner: Codex; native async proof/startup and final source/evidence exhaustion pass.
 
 Muse native bash initialyield120000ms, routine1-5min/default2, retain handle/deadline,
@@ -225,3 +225,9 @@ context call. The defined and native/unknown/special/browser routes remain.
 Evidence: generated-packet-8-independent-review.json and
 generated-packet-8-independent-generated.json. Q8 continues native async proof,
 startup hypotheses and final twelve-slice review; no exhaustion claim.
+
+
+Q8 next queue: actual frozen native async map/set factories plus checked exact
+specialization/binding proof support separate collection-context packet G49-G54,
+with three fresh equivalent consultations and saved design/tasks. No universal
+native bypass. Source startup/other native questions and final12 remain open.
