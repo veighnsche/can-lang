@@ -249,3 +249,17 @@ G19-G24, after [their design](generated-forwarding-plan.md) and three saved fres
 equivalent consultations. Muse owns implementation/integration; Codex independently
 accepts and commits before continuing. Startup attribution, codec retention and all
 twelve dispositions remain under C4. C5 stays unchecked until actual final exhaustion.
+
+
+## Checked authored forwarding checkpoint
+
+G19-G24 independently accepted and committed `4589122c`: only an exact checked
+authored identity/resolved binding permits direct promise forwarding. Sixteen
+independent tests, zero skips, 24 fresh generated/native oracles, strict TS and
+matching source/module/driver identities passed; ownership and execution cleanup
+verified. The checkpoint removes source-proven redundant async adoption, with no
+measured speedup claim. [Forwarding acceptance](generated-forwarding-tasks.md)
+records the review. Next: bounded attribution of actual generated startup loading
+and initialization, separate from compilation; then the next supported remedy.
+Per-site invoke proof, secondary numeric JSON evidence retention and final
+independent twelve-slice exhaustion review remain active.

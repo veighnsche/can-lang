@@ -168,3 +168,17 @@ stay in place. Three fresh fully rewritten equivalent Jev consultations advise t
 narrow choice, with varying recommendation strength; correctness remains an
 independent obligation. Startup import/evaluation versus initialization attribution,
 secondary numeric JSON retention and the twelve-slice exhaustion review remain open.
+
+
+## Checked authored forwarding checkpoint
+
+G19-G24 independently accepted and committed `4589122c`: only an exact checked
+authored identity/resolved binding permits direct promise forwarding. Sixteen
+independent tests, zero skips, 24 fresh generated/native oracles, strict TS and
+matching source/module/driver identities passed; ownership and execution cleanup
+verified. The checkpoint removes source-proven redundant async adoption, with no
+measured speedup claim. [Forwarding acceptance](generated-forwarding-tasks.md)
+records the review. Next: bounded attribution of actual generated startup loading
+and initialization, separate from compilation; then the next supported remedy.
+Per-site invoke proof, secondary numeric JSON evidence retention and final
+independent twelve-slice exhaustion review remain active.
