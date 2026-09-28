@@ -129,7 +129,7 @@ fixture holds 0 eligible sites (all 16 shared/native, correctly
 unchanged). No measurements, no tool edits, no latency/heap claim.
 R8/Q8 left for Codex.
 
-- [ ] **R8 — independent review/applicable verification/coherent commit**
+- [x] **R8 — independent review/applicable verification/coherent commit**
   - Owner: Codex after release; actual diff/new contracts/generated identities,
     reuse successful evidence and promptly commit exact accepted paths.
 - [ ] **Q8 — remaining supported production decisions and final twelve slices**
@@ -156,7 +156,7 @@ small executable test closes this changed-path gap; no broad suite or new
 measurement is justified. Existing owner/lease/defined-context contracts passed
 and are reused. Native/session references remain only in monitor/evidence.
 
-- [ ] **G45a — pin standard boundary and boxed payload through eligible emission**
+- [x] **G45a — pin standard boundary and boxed payload through eligible emission**
   - Prerequisite: read this review, get_goal then create/reuse matching corrective
     goal before implementation; sole coordinator, no other agents.
   - Owner/file: Muse, only compiler/internal/emit/authored_context_bypass_test.go.
@@ -173,8 +173,55 @@ and are reused. Native/session references remain only in monitor/evidence.
     production regions.go stays byte-identical43250e78902b. Existing24 passes
     reused, no broad rerun, graph/strictTS24 validation not repeated for test-only
     change. gofmt touched test and compact evidence.
-- [ ] **G48a — release corrective writer and reviewable handoff**
+  - Evidence: met: `TestBypassEligibleCallBoundaryAndBoxedPayloads` added
+    (`0218e8489`); regions.go `43250e78902b` byte-identical; 6/6 TestBypass
+    pass zero skips; exact call-site boundary, first-boundary-once, fresh
+    occurrences, unassimilated hostile payloads all through emitted
+    eligible callers. Record in packet-8 evidence (g45a).
+- [x] **G48a — release corrective writer and reviewable handoff**
   - Prerequisite: G45a. Save exact test hash/commands/real times/cleanup in current
     packet-8 evidence without rewriting historic producer observations. Explicit
     ALL-writer release, native goal complete at handoff, remain same TUI idle.
     No commits, no source/harness/runtime edits, no timings. R8/Q8 stay unchecked.
+  - Evidence: met: test-only change recorded in packet-8 evidence (g45a/
+    g48a), prior observations retained; no residue. Terminal note below.
+    ALL writers released; TUI idle. Native corrective goal complete at
+    handoff; reference in evidence/terminal and authoritative monitor.
+
+## Muse corrective handoff (G45a/G48a, 2026-09-28T20:52Z)
+
+Sole coordinator, same TUI, no extra executor. Closed the changed-route
+acceptance gap test-only: one new executed contract pins the exact
+authored call-site standard boundary, first-boundary-once, fresh
+occurrences and unassimilated boxed hostile payloads through the NEW
+eligible emission. Production `regions.go` byte-identical
+(`43250e78902b`); 6/6 bypass tests pass, zero skips; no broad reruns,
+no new graph. R8/Q8 left for Codex.
+
+
+## R8 independent acceptance (Codex)
+
+Actual22-line production change preserves original direct argument/context
+expression, defined wrapper, outer invoke/thunk and conservative exact identity/
+resolved-binding eligibility. Independent24 applicable ByPass/Forwarding/
+StaticOrigin contracts passed zero skips; the one test-only corrective contract
+then independently passed, pinning actual eligible emitted first call-site
+standard boundaries/freshness and hostile boxed payloads. Production stayed
+byte-identical during correction. No second broad review or timing was run.
+
+One bounded actual validate-only graph passed13 gates, strictTS,24 emitted/native
+cases and14 unique export validation. Complete fresh input/tool/runtime/module/
+dependency identities retained in compact independent evidence. Individual14
+binding entries were not freshly saved before graph retirement; accepted packet6
+entries are reused only after every current module byte/SHA and adapter SHA
+matched exactly, with current preparation enforcing complete14 membership.
+Checkout runtime link/privatefd3/hardlinked benchmark verified. Both owned root
+and graph absent, no pending groups or cleanup errors. The fixture contains0
+eligible authored sites, so eligible behavior is qualified by actual emitted
+Go/Bun contracts; no latency/heap/p95 gain is claimed. Source-proven work removal
+is one assertion closure/receipt lookup/async adoption at each eligible absent-
+context call. The defined and native/unknown/special/browser routes remain.
+
+Evidence: generated-packet-8-independent-review.json and
+generated-packet-8-independent-generated.json. Q8 continues native async proof,
+startup hypotheses and final twelve-slice review; no exhaustion claim.

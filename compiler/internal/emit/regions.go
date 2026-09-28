@@ -544,6 +544,18 @@ func (e *RegionEmitter) provenAuthoredBinding(identity, resolved string) bool {
 	bound, ok := e.authoredProof[identity]
 	return ok && bound == resolved
 }
+
+// eligibleAuthoredBypass reports whether a Bun invocation step is a plain
+// direct call whose target carries positive exact authored proof. Indirect
+// callees, native/array/asset/fixture/SQL/form/fetch/action sites, browser
+// emission and missing, empty or stale proofs keep the original route; the
+// shared proof map is only read, never mutated.
+func (e *RegionEmitter) eligibleAuthoredBypass(step *ir.InvocationStep, target string) bool {
+	if e.Browser || step == nil || step.Callee != nil || step.Native != nil || step.Array != nil || step.Asset != nil || step.Fixtures != nil || step.SQL != nil || step.FormAction != nil || step.JSONFetch != nil || step.Action != nil {
+		return false
+	}
+	return e.provenAuthoredBinding(step.Identity, target)
+}
 func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, error) {
 	if call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {
 		return LoweredExpression{}, fmt.Errorf("invalid checked invocation")
@@ -736,7 +748,17 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			if step.Native == nil && step.Array == nil && step.Asset == nil {
 				instance = "$canCallableInstance(" + target + ")"
 			}
+			direct := invocation
 			invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"
+			if e.eligibleAuthoredBypass(&step, target) {
+				// A positively proven authored target is a native async
+				// function, and callContext with undefined context only
+				// async-forwards the child callback. The strict branch
+				// invokes the original direct call with the same lowered
+				// arguments; the assertion arrow and receipt lookup are
+				// constructed only in the defined branch.
+				invocation = "($canContext === undefined ? " + direct + " : " + invocation + ")"
+			}
 		}
 		out.WriteString(e.mark(step.Span, "call"))
 		fmt.Fprintf(&out, "%s = await $canInvoke(() => %s, %s);\nif (%s.kind !== 'ok') break %s;\n%s = $canValue(%s) as %s;\n", result, invocation, e.origin(step.Span), result, label, e.expression.Bindings[step.SuccessBinding], result, TypeName(step.Result))
