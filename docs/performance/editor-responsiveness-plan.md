@@ -1,7 +1,19 @@
 # Editor responsiveness: investigation and first improvement
 
-Status: planned; source and saved-result review complete. No profiling, builds,
-tests or performance runs were started to prepare this plan.
+Status: complete on 2026-09-28. The authorized investigation identified repeated
+catalogue inventory copying and implemented a local-copy/namespace-guard fix.
+All correctness checks and 20 qualified editor-only A/B trials passed.
+
+The [verified result](editor-responsiveness-result.md) reports warm completion
+497.662 → 15.607 ms and valid-edit-to-completion 996.715 → 31.230 ms on flat-100,
+meeting both provisional 100 ms goals. Flat-10 and invoice-compare also improve;
+invoice-compare remains above 100 ms. Neighbor behavior, source restoration and
+owned cleanup were verified. The [checklist](editor-responsiveness-tasks.md)
+records implementation, independent review and integration evidence.
+
+The remaining sections preserve the original investigation design and its
+pre-measurement hypotheses. Preparing that design used source and saved-result
+review only; execution was subsequently authorized by the user.
 
 The first objective is to explain the roughly 498 ms completion response, remove
 one demonstrated source of delay, and verify the improvement without weakening
@@ -75,8 +87,8 @@ checks. In the first saved trial, those alternate around 0.6–0.9 ms and
    a time. If the machine stays busy, defer measurement rather than weakening the
    gate or stopping the user's apps without authorization.
 
-This plan authorizes no automatic execution by itself. Its preparation used
-file inspection and existing records only.
+Plan preparation used file inspection and existing records only. Subsequent
+execution followed the user's authorization and the saved implementation checklist.
 
 ### 2. Trace the request before optimizing
 

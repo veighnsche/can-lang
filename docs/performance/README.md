@@ -7,12 +7,16 @@ generated TypeScript are measured separately.
 
 ## Current investigation
 
-The [editor responsiveness plan](editor-responsiveness-plan.md) defines the first
-focused performance improvement: trace completion latency, establish its cause,
-protect semantic behavior, and verify a targeted fix. Plan preparation used
-source inspection and the saved measured results; no new performance run started.
+The first focused [editor responsiveness investigation](editor-responsiveness-plan.md)
+is complete. Repeated defensive catalogue copying dominated completion latency.
+The [verified editor-only result](editor-responsiveness-result.md) records a
+20-trial qualified comparison: flat-100 warm completion 497.662 → 15.607 ms and
+valid-edit-to-completion 996.715 → 31.230 ms. Both provisional 100 ms goals passed;
+the maintained invoice-compare project improves but remains above 100 ms.
+Correctness, neighboring editor behavior, source restoration and scratch cleanup
+passed. The historical full-system evidence remains separate.
 
-The later completed measured run contains all 104 cases across twelve sequential
+The historical completed full-system run contains all 104 cases across twelve sequential
 slices. Its local run identifier is `20260927T235706.371974Z`; browser correctness
 passed, but its twelve timing cases remain unresolved. PDF export now obtains
 advisory grades automatically through TypeSafe Score. The sections below record
