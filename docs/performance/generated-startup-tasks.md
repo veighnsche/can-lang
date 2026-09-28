@@ -531,7 +531,7 @@ are never reconstructed.
 
 ## Independent acceptance and continuation (Codex leaves Muse unticked)
 
-- [ ] **R5 — independent review and checkpoint commit**
+- [x] **R5 — independent review and checkpoint commit**
   - Prerequisites: G25-G30 plus G28a-G30a and G28e-G30b terminal, all writers released and
     execution child groups retired; TUI viewer lifecycle separately recorded.
   - Owner: Codex; inspect actual diff, transformation, controls/sampling/identities
@@ -539,6 +539,18 @@ are never reconstructed.
     do not repeat optional sampling merely for acceptance. Verify cleanup and
     promptly commit coherent accepted tools/docs with exact owned paths. Genuine
     defects return as concrete assignments to Muse in this checklist.
+  - Acceptance: 2026-09-28, after G30d explicit ALL-writer release, one bounded
+    review passed 224/224 actual-state tests with zero skips, one validate-only
+    graph/13 gates, actual replacement-preservation probe and nine durable
+    metadata-group observations. All review groups/keeper/scratch retired;
+    465 current runtime/emitter/fixture input hashes remain unchanged. Earlier
+    strict TS/24 oracles and 216-row/69-summary arithmetic reused, not repeated.
+    Evidence: `generated-packet-5-independent-bounded-acceptance.json`; exact
+    rebuilt module inventories were not retained by the independent runner,
+    so complete content continuity remains Muse evidence, with independent
+    actual validation and unchanged source inputs. Accepted within builtin-only
+    attribution scope, no performance improvement or speedup claim. Auxiliary
+    lane frozen per latest user direction; no successive hardening packet.
 - [ ] **Q5 — next supported fix and final queue discipline**
   - Prerequisite: R5. Owner: Codex; reconcile all twelve slices, design the next
     source/evidence-supported remedy, make required three fresh consultations and
@@ -1073,7 +1085,7 @@ at reviewable ALL-writer handoff. Keep R5/Q5 unchecked. Preserve current Muse
 long-command cadence: initial native bash yield120000ms, routine reinspection
 1-5 minutes/default2, retained handle/deadline, delivered completion, no busy polls.
 
-- [ ] **G28m — preserve replaced marker on failed registration**
+- [x] **G28m — preserve replaced marker on failed registration**
   - Prerequisite: read fourth-review probe and design, verify writer release.
   - Owner/files: sole coordinator, startup-attribution.py and test_startup_attribution.py.
   - Change: retain original descriptor and root device/inode proof; failure unlink
@@ -1084,9 +1096,14 @@ long-command cadence: initial native bash yield120000ms, routine reinspection
     write/fsync/interruption failure; replacement bytes and inode survive and no
     success/rolled-back claim. Both automatic/explicit paths, root replacement,
     ordinary ENOSPC/short writes and existing refusals remain covered.
-  - Evidence: pending real pre-fix/post-fix regression and compact cleanup results.
+  - Evidence: met 2026-09-28T18:57:57Z: 5 new ReplacementPreservationTests,
+    all failed pre-fix (false rolled-back + destroyed replacements, 1
+    KeyboardInterrupt instead of pending); post-fix 35/35 with
+    registration/ownership suites. Driver `2c0edc8a`, tests `3e424664`.
+    Compact record in
+    `generated-packet-5-fourth-corrective-muse-evidence.json` (g28m).
 
-- [ ] **G28n — durably register identity metadata process groups**
+- [x] **G28n — durably register identity metadata process groups**
   - Prerequisite: G28m complete; freeze the small existing-tracker executor interface.
   - Owner/files: sole coordinator, same Python files; no shared-driver changes.
   - Change: use existing phase-tracker custody for versions/revision, emitter
@@ -1099,9 +1116,16 @@ long-command cadence: initial native bash yield120000ms, routine reinspection
     coverage of each command family and actual collection caller, normal/error/
     timeout/handled interruption and failed-retirement marker retention. Never
     silently turn custody failure into optional missing metadata.
-  - Evidence: pending interface, actual lifecycle/marker probes, exact retirement.
+  - Evidence: met 2026-09-28T19:06:15Z: frozen `_tracked_command` executor
+    (busy-guard, durable register, verified-only clear, custody retention
+    on RetirementFailed, ownership failures propagate); all five metadata
+    families routed through it with required tracker; 10 new
+    MetadataCustodyTests pass 27/27 with tracker/identity/resolution/
+    bounds suites, no strays. Driver `f8f8bc51`, tests `3d77778e`.
+    Compact record in
+    `generated-packet-5-fourth-corrective-muse-evidence.json` (g28n).
 
-- [ ] **G28o — bounded qualification and historical content continuity**
+- [x] **G28o — bounded qualification and historical content continuity**
   - Prerequisites: G28m/G28n complete, no other writers.
   - Owner/files: sole coordinator, applicable tests and new compact evidence.
   - Checks: new regressions plus relevant custody/lifecycle contracts, one reused
@@ -1110,16 +1134,51 @@ long-command cadence: initial native bash yield120000ms, routine reinspection
     unchanged final raw. Retire graph keeper/groups/scratch with custody evidence.
     Strict TS/24 actual oracles repeat only for an explained relevant identity
     change. No sampling, installs, copies, private caches or retained bundles.
-  - Evidence: pending exact command/count/exit/time/hash/cleanup and limits in
-    `generated-packet-5-fourth-corrective-muse-evidence.json`.
+  - Evidence: met 2026-09-28T19:07:08Z: one validate-only build complete
+    13/13 + 4 preflights; 224/224 tests 0 skips at 19:06:55Z; ordinary 282
+    + diagnostic 10 + bundle `27ebf9cf` + state `5f43d077` + 13 builtin
+    reachable specs all byte-identical to `fb060ec5`; strict TS / 24
+    oracles not repeated (probe `299ae139`, `drivers/runtime.py`
+    `96f3022a`, runtime/ unchanged; emission identical; no new reason);
+    kept graph tool-retired, parent removed verified absent, no strays;
+    no new sampling. Repaired driver `f8f8bc51` recorded separately in
+    `generated-packet-5-fourth-corrective-muse-evidence.json` (g28o).
 
-- [ ] **G30d — truthful corrective handoff and writer release**
+- [x] **G30d — truthful corrective handoff and writer release**
   - Prerequisite: G28o complete or concrete safe blocker.
   - Owner/files: coordinator, this checklist, startup result/next-investigation
     notes only if necessary and new compact corrective evidence.
   - Change: preserve historical raw/producer hashes, provisional status and
     separate repaired-tool qualification. Keep startup/authored-invoke/numeric/
     all-twelve queue and all prior negative evidence; no gain/exhaustion claim.
-  - Evidence: terminal and checklist handoff with exact paths/hashes, verification,
-    all groups/scratch retired or honest pending custody, explicit ALL writers
-    released, native goal lifecycle complete only then. Remain idle for review.
+  - Evidence: met 2026-09-28T19:08Z: result note (`1a53c568`, 8742 B) keeps
+    `77f29d04` historical producer with `3ebeff0c` repair history and adds
+    fourth-review custody gaps plus separately qualified `f8f8bc51`; all
+    numbers unchanged; follow-up note needed no change; no commit.
+    Terminal handoff below. ALL coordinator/native file writers released;
+    TUI remains idle for review/viewing. Native goal
+    `goal-ccfd36a2-c65b-4899-bb45-f9728af43b90` completed at handoff.
+
+## Muse terminal handoff (G28m-G30d correction complete, 2026-09-28T19:08Z)
+
+Sole Contributor/MAX/YOLO coordinator, same TUI, no extra executor.
+Finished two Codex-reproduced custody gaps in owned Python only:
+replaced marker/root preserved on failed registration via opened-fd
+plus root/current-path identity proof (G28m), and durable phase-tracker
+custody for all identity metadata commands via one frozen
+`_tracked_command` executor with required tracker (G28n). Deliverables:
+`tools/performance/startup-attribution.py` (`f8f8bc51`),
+`test_startup_attribution.py` (`3d77778e`, 224/224 pass 0 skips),
+`docs/performance/generated-startup-result.md` (`1a53c568`, numbers
+unchanged, `77f29d04`/`3ebeff0c` history plus `f8f8bc51` qualification),
+this checklist,
+`generated-packet-5-fourth-corrective-muse-evidence.json`. G28o qualified
+on one validate-only build (13/13, byte-identical ordinary/diagnostic/
+bundle/state/13-builtin continuity vs `fb060ec5`, retired verified
+absent); strict TS / 24 oracles not repeated (probe, shared driver and
+emission identities unchanged — no new reason); no new sampling. Final
+raw `fb060ec5` and all earlier records byte-identical, never merged or
+relabelled. No production/compiler/runtime/default/vendor/shared-driver
+edits; no commit; no gain/exhaustion claim. ALL file writers released;
+no groups/keeper/scratch retained. R5/Q5 and all next design belong to
+Codex. Native goal `goal-ccfd36a2-c65b-4899-bb45-f9728af43b90` complete.
