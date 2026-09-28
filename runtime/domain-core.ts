@@ -68,6 +68,39 @@ export function domainFailureDiagnostics(value: DomainFailure): DomainDetails {
 }
 export type OpaqueAdmission = (typeIdentity: string, value: unknown) => boolean;
 
+type CatalogueErrorEntry = (typeof catalogue.errors)[number];
+type CatalogueErrorIndex = ReadonlyMap<string, CatalogueErrorEntry>;
+type CatalogueShapeIndexes = Readonly<{
+  byName: ReadonlyMap<string, CatalogueShape>;
+  byIdentity: ReadonlyMap<string, CatalogueShape>;
+}>;
+let cachedErrorIndex: CatalogueErrorIndex | undefined;
+let cachedShapeIndexes: CatalogueShapeIndexes | undefined;
+function catalogueErrorIndex(): CatalogueErrorIndex {
+  let index = cachedErrorIndex;
+  if (index === undefined) {
+    const built = new Map<string, CatalogueErrorEntry>();
+    for (const entry of catalogue.errors)
+      if (!built.has(entry.identity)) built.set(entry.identity, entry);
+    cachedErrorIndex = index = built;
+  }
+  return index;
+}
+function catalogueShapeIndexes(): CatalogueShapeIndexes {
+  let indexes = cachedShapeIndexes;
+  if (indexes === undefined) {
+    const definitions = catalogueTypeShapes as readonly CatalogueShape[];
+    const byName = new Map<string, CatalogueShape>();
+    const byIdentity = new Map<string, CatalogueShape>();
+    for (const entry of definitions) {
+      byName.set(entry.name, entry);
+      byIdentity.set(entry.identity, entry);
+    }
+    cachedShapeIndexes = indexes = { byName, byIdentity };
+  }
+  return indexes;
+}
+
 // The canonical identity input shared by every host digest. Both the sync
 // Node check and the async browser check hash exactly these bytes.
 export function concreteTypeDigestInput(key: unknown): string {
@@ -114,7 +147,7 @@ export function createDomainRuntimeWithDigest(
       declarations.has(d.identity)
     )
       throw new TypeError("invalid or duplicate error declaration");
-    const builtin = catalogue.errors.find((e) => e.identity === d.identity);
+    const builtin = catalogueErrorIndex().get(d.identity);
     if (builtin) {
       if (builtin.name !== d.name || builtin.parameters.length !== d.parameters)
         throw new TypeError("catalogue declaration mismatch");
@@ -135,9 +168,7 @@ export function createDomainRuntimeWithDigest(
     });
     shapes.set(shape.identity, shape);
   }
-  const definitions = catalogueTypeShapes as readonly CatalogueShape[];
-  const byName = new Map(definitions.map((d) => [d.name, d]));
-  const byIdentity = new Map(definitions.map((d) => [d.identity, d]));
+  const { byName, byIdentity } = catalogueShapeIndexes();
   const get = (id: string | undefined): FailureShape => {
     const s = id ? shapes.get(id) : undefined;
     if (!s) throw new TypeError("missing concrete failure type");

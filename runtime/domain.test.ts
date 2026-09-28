@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { createHash } from "node:crypto";
 import {
   createDomainRuntime,
+  createDomainRuntimeWithDigest,
   domainFailureDiagnostics,
   isDomainFailure,
   type FailureShape,
@@ -305,4 +306,95 @@ test("recursive payloads admit shared immutable data and reject circular native 
   const sparse = Array(2);
   Object.freeze(sparse);
   expect(runtime.accepts(children.identity, sparse)).toBe(false);
+});
+
+test("repeated factories keep separate snapshots and fresh occurrences", () => {
+  const declarations = [{ ...builtin, parameters: 0 }, { ...project }];
+  const shapes = [integer, text, codec, intError, strError];
+  const first = createDomainRuntime({ declarations, shapes });
+  const second = createDomainRuntime({ declarations, shapes });
+  (declarations[1] as { name: string }).name = "app::mutated";
+  declarations.push({
+    identity: "can.project.root::app::extra",
+    name: "app::extra",
+    parameters: 0,
+  });
+  shapes.push({ ...intError });
+  const payload = record(intError.identity, [["value", 1n]]);
+  const a = first.create(intError.identity, payload, origin);
+  const b = second.create(intError.identity, payload, origin);
+  expect(domainFailureDiagnostics(a).declaration.name).toBe("app::failed");
+  expect(domainFailureDiagnostics(b).declaration.name).toBe("app::failed");
+  expect(domainFailureDiagnostics(a).occurrenceID).not.toBe(
+    domainFailureDiagnostics(b).occurrenceID,
+  );
+  expect(first.checkBound(b, [intError.identity])).toBe(b);
+  expect(first.accepts(intError.identity, payload)).toBe(true);
+  expect(second.accepts(intError.identity, payload)).toBe(true);
+});
+
+test("warm factories preserve declaration and digest rejection precedence", () => {
+  const tampered = { ...codec, identity: "0".repeat(64) };
+  expect(() =>
+    createDomainRuntime({
+      declarations: [...plan.declarations, { ...project }],
+      shapes: plan.shapes.map((s) => (s === codec ? tampered : s)),
+    }),
+  ).toThrow("duplicate");
+  const unknownBad = {
+    ...shape("record", "can.unknown@1::nope"),
+    identity: "1".repeat(64),
+  };
+  expect(() => createDomainRuntime({ ...plan, shapes: [...plan.shapes, unknownBad] })).toThrow(
+    "concrete failure type identity mismatch",
+  );
+  const unknown = shape("record", "can.unknown@1::nope");
+  expect(() => createDomainRuntime({ ...plan, shapes: [...plan.shapes, unknown] })).toThrow(
+    "unknown nominal payload declaration",
+  );
+  expect(() =>
+    createDomainRuntime({
+      ...plan,
+      declarations: [{ ...builtin, name: "codec::tampered", parameters: 0 }],
+    }),
+  ).toThrow("catalogue declaration mismatch");
+});
+
+test("every factory validates every shape digest independently", () => {
+  const expected = new Set(plan.shapes.map((s) => s.identity));
+  for (let factory = 0; factory < 2; factory++) {
+    const claimed: string[] = [];
+    const runtime = createDomainRuntimeWithDigest(plan, (input, identity) => {
+      claimed.push(identity);
+      return createHash("sha256").update(input).digest("hex");
+    });
+    expect(new Set(claimed)).toEqual(expected);
+    const payload = record(codec.identity, [
+      ["path", "p"],
+      ["reason", "r"],
+    ]);
+    expect(runtime.accepts(codec.identity, payload)).toBe(true);
+  }
+});
+
+test("rejected plans leave later factories unaffected", () => {
+  expect(() =>
+    createDomainRuntime({
+      ...plan,
+      declarations: [{ ...builtin, name: "codec::wrong", parameters: 0 }],
+    }),
+  ).toThrow("catalogue declaration mismatch");
+  const tampered = { ...codec, identity: "2".repeat(64) };
+  expect(() =>
+    createDomainRuntime({
+      ...plan,
+      shapes: plan.shapes.map((s) => (s === codec ? tampered : s)),
+    }),
+  ).toThrow("identity mismatch");
+  const runtime = createDomainRuntime(plan);
+  const payload = record(codec.identity, [
+    ["path", "p"],
+    ["reason", "r"],
+  ]);
+  expect(runtime.accepts(codec.identity, payload)).toBe(true);
 });
