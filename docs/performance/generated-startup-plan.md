@@ -354,3 +354,48 @@ small-output trials over the thirteen builtin roots. Revalidate the generated gr
 identities in one bounded correctness build, record the repaired driver separately,
 and leave independent acceptance to Codex. Broader successful generated/native/TS
 checks need repetition only if their production/probe/driver identities change.
+
+## Fourth independent review: finish marker and metadata custody
+
+After the explicit G28i-G30c ALL-writer release and native goal completion,
+Codex rechecked the real failure paths. Actual ENOSPC now leaves no allocation,
+and actual 1 MiB stdout and stderr commands return their full output successfully.
+The controlled probes and all their groups were retired. Compact evidence:
+`generated-packet-5-independent-fourth-review-probes.json`.
+
+Two requirements from the existing ownership design remain unmet. During a real
+marker write failure, replacing the marker while its original descriptor remains
+open causes `_write_owner_marker` to unlink the replacement, then report the
+allocation rolled back. Failure cleanup must compare the originally opened
+descriptor's device/inode and the original root identity with the current paths
+before unlinking anything. Retain a replacement or foreign/nonempty root intact
+and report cleanup pending; remove only the exact newly created marker and empty
+allocation on an ordinary write/fsync/interruption failure. Do not use a path
+name or the intended JSON payload as proof of custody.
+
+The actual `bun --version` identity probe launches a new process group with no
+`on_start` callback; the live marker's process_group stays null. The version,
+revision, emitter go-list, resolver and builtin inventory commands execute after
+the preparation worker retires. Their in-memory supervision does not give later
+abandoned recovery durable knowledge of a still-live child if the parent dies.
+Apply the existing `_phase_tracker` registration/verified-retirement contract to
+these sequential metadata commands, including before/after identity collection.
+Freeze one small owned executor interface shared by those helpers, retaining the
+same single active-group marker. Registration/retirement errors must propagate
+as ownership failures, not become optional missing metadata or clear the marker.
+Do not introduce another worker architecture, package resolver, helper process,
+cache or timing profile. Keep necessary bounded process-identity/bootstrap status
+reads distinct from the substantive metadata jobs; avoid recursive supervision
+of the process-status operations that establish the tracker itself.
+
+New regressions must exercise actual replacement during write/fsync/interruption
+failure and inspect the durable marker while real metadata children are alive.
+Cover each substantive metadata command family, normal/error/timeout/handled
+interruption and failed retirement, with controlled children and exact cleanup.
+One reused bounded validate-only graph qualifies actual AST tests and generated
+content continuity. Existing strict TS/24 oracles need repetition only if their
+relevant identities changed. Preserve all historical raw/evidence bytes and the
+actual fb060ec5/77f29d04 producer relationship; no further measurement is authorized.
+This small correction stays with the same released Muse coordinator, sequentially,
+under a new matching native corrective goal. Independent acceptance and the
+startup/authored-invoke/numeric/all-twelve queue remain Codex-owned.
