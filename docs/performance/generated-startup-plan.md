@@ -142,3 +142,78 @@ tools promptly, then designs the next supported fix from actual attribution and
 source usage/side effects. Per-site authored invoke proof and secondary numeric
 JSON retention remain ready investigations. All twelve slices stay dispositioned;
 the final exhaustion review is still pending.
+
+
+## R5 correction design (independent review, 2026-09-28)
+
+The initial Muse run is retired and its source is not independently accepted.
+Independent validation passed all 81 tests with actual state inventory enabled,
+strict TypeScript and 24 actual emitted/native cases. Recalculation matches all
+216 original rows. That does not establish the missing failure or identity
+contracts. Compact independent evidence is in
+`.performance/performance-push-20260928/generated-packet-5-independent-preliminary-review.json`,
+`generated-packet-5-independent-validation.json` and
+`generated-packet-5-independent-negative-probes.json`.
+
+Reproductions: negative/NaN/infinite stages and nonfinite events are accepted;
+six accepted batches can produce a report intended for seven; an unregistered
+prefix-shaped directory is deleted; a bad manifest output causes deletion of a
+preexisting instrumented output; a whole-source identity mismatch and an omitted
+statement are accepted; TypeScript UTF-16 spans fail Python validation when an
+astral character precedes the initializer. The original scratch is gone, so its
+missing prepared graph/dependency/driver identities cannot be reconstructed as
+historical evidence. Keep the original raw record and Muse evidence unchanged,
+explicitly provisional; a fresh corrected run is authorized for this concrete
+reason, not to repeat successful sampling for reassurance.
+
+The correction remains inside these opt-in tools and their tests/notes. Reuse
+existing storage/process patterns where suitable, without modifying their global
+contracts or adding a quiet gate. Freeze correction interfaces before disjoint
+test authoring. Preserve exact stage/oracle/profile semantics and existing fd-3
+helper; no production or default changes.
+
+- Immediately register every allocation with durable PID/start and root/marker
+  device/inode identity. Path prefixes and a memory-only set are not ownership.
+  Refuse foreign allocations, symlink/replacement drift and active owners/groups.
+  Recover abandoned owned work with an explicit bounded retirement path. Kept
+  validation graphs transfer cleanup ownership to a recorded coordinator and
+  must have a concrete retirement step. On any cleanup failure retain ownership,
+  record the actual error and mark retirement false; never silently claim success.
+- Own and supervise preparation/trial process groups. On command timeout,
+  sampling deadline or handled SIGINT/SIGTERM, bounded TERM/KILL/reap must retire
+  descendants before scratch deletion. Do not rely on subprocess.run killing
+  only its direct child. Preserve the established fresh private fd-3 boundary.
+- Reject nonfinite/negative measured milliseconds and parent durations; require
+  null for unmeasured stages and correct profile-specific stage statuses. Validate
+  exact trial/profile/batch identity, warmup designation and unique complete
+  membership at collection and report boundaries. Reject omissions, duplicates,
+  unknown IDs, booleans as numbers and malformed counts. Diagnostic event times
+  must be finite/nonnegative and globally nondecreasing in exact paired order.
+- Validate whole-source hash/byte count and UTF-16 span boundaries, initializer
+  extent and complete ordered coverage against the actual AST inventory. Do not
+  accept a caller-adjusted count as proof that every statement was included.
+  Preserve original statement bytes, lexical scope and instrumentation identity.
+  Refuse output/input aliases and preexisting outputs before writes; rollback
+  only files created by this invocation, never preexisting or replaced files.
+- Save a complete compact prepared JavaScript graph inventory (ordinary and
+  diagnostic), source/runtime input identities, facade/launcher/probe/driver
+  hashes, installed compiler/runtime/tool versions, and exact resolved dependency
+  identities actually used. Do not hash unrelated dependency trees or copy them.
+  Freeze these identities before trials and verify after sequential sampling;
+  drift fails the run. Include the inventory in raw evidence before cleanup.
+
+Qualify the corrections with meaningful negative tests and real bounded lifecycle
+checks (controller plus descendant, timeout and handled interruption), actual
+state inventory with zero skips, strict TS and 24 existing generated/native
+oracles using one reused build. Then make one fresh corrected busy-host run with
+six independent trials, two warmups and seven accepted batches/profile. Preserve
+original data separately; do not merge partial or historical trials. Regenerate
+current reports only from corrected raw data, with explicit old-record limits,
+actual preparation/sampling timestamps, median/range/MAD and inclusive statement
+caveats. Correct the old report's trial 4/trial 3 prose discrepancy explicitly.
+
+The next-investigation note must qualify the assertion that fixed Intl.Segmenter
+arguments cannot throw. Native capability/constructor effects and first-use
+failure timing need source/contract investigation before a lazy rewrite. AST
+callee labels inside nested function bodies are syntactic inventory, not proof
+those factories executed. No production remedy is authorized in this correction.
