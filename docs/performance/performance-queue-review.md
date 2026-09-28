@@ -108,3 +108,13 @@ I/O keeps its demonstrated ownership copies; journeys follow shared generated/
 codec candidates; browser retains behavior checks with no performance conclusion.
 All twelve slices are dispositioned but the final independent queue review is
 pending. Do not reinterpret old revision `40eaf6a88` as current measurements.
+
+Domain catalogue reuse accepted52ae03f0: independent relevant contracts, runtime
+check, strictTS/24 actual generated/native cases, exact emitted/driver identities
+and both216-row69-summary comparisons verified; execution scratch retired.
+Modules initialization observed2.926→2.742ms (~6.3% lower), domain statement
+0.898→0.749ms; ordered busy-host observations limit attribution, repeated-factory
+benefit unmeasured. One pre-existing stale browser export expectation is separately
+dispositioned for narrow test correction. Next production packet:
+[consumed numeric JSON evidence](generated-numeric-retention-tasks.md),
+G37-G42. Auxiliary lane remains frozen; no new performance sampling requested.

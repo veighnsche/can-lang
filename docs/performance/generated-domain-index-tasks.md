@@ -142,7 +142,7 @@ Codex. Native goal completion is recorded in the authoritative runtime monitor.
     applicable new contracts/actual generated identities and comparison arithmetic,
     reuse successful checks appropriately, commit only exact independently accepted
     paths promptly. No auxiliary-lane expansion.
-- [ ] **Q6 — continue supported production queue and exhaustion review**
+- [x] **Q6 — continue supported production queue and exhaustion review**
   - Owner: Codex; authored invoke/numeric JSON/startup/all twelve dispositions,
     independent final review required before campaign completion. No fabricated work.
 
@@ -166,3 +166,7 @@ drivers are identical between versions. Observed initialization decrease remains
 busy-host/sequential evidence, with repeated-factory benefit unmeasured.
 Compact evidence: generated-packet-6-independent-review.json and
 generated-packet-6-independent-generated.json. Auxiliary lane remains frozen.
+
+Q6 continuation: complete numeric-token consumer audit and three fresh equivalent
+consultations (.99/.97/.97 advice) support generated-numeric-retention-plan.md and
+G37-G42 assignments. Authored invoke/startup/all-twelve exhaustion remains pending.
