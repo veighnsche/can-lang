@@ -306,3 +306,51 @@ with task evidence, and complete `update_goal` only at the all-writer release
 and reviewable handoff. If native goal tools are unavailable/rejected, report
 that blocker before delegation. Actual session/goal references belong in the
 Codex monitoring record and compact handoff, not copied mutable checklist state.
+
+
+## Third independent review: narrowly repair remaining failure branches
+
+Codex verified explicit ALL-writer release and native goal completion before this
+revision. `generated-packet-5-independent-third-review-probes.json` reproduces
+ENOSPC at actual marker `os.write`: the marker is removed but the new unregistered
+root survives because registration only catches ValueError. A real child writing
+1 MiB to stdout stalls at the 64 KiB pipe buffer under wait-first supervision,
+times out, and returns only that prefix. Both controlled groups/trees were retired.
+`generated-packet-5-independent-third-review-resolution.json` additionally proves
+that two importer-local packages named alike resolve to different files, whereas
+the collector claims one first-importer file identity for both contexts.
+
+These violate the existing registration, bounded supervision and complete-identity
+contracts; they require narrow corrections, not a new architecture or another
+measurement packet. Keep phase workers and actual Bun-local parent timing. Drain
+stdout/stderr concurrently while observing leader exit independently of pipe EOF;
+on leader exit, retire descendants before bounded final drainage. Use standard
+library pipe multiplexing without extra files, helper processes or persistent
+threads. Preserve exact output within a 4 MiB combined capture bound; excess is an
+explicit failed command with verified retirement, never silent truncation or a
+complete trial. Registration must roll back the exact newly allocated directory
+for real write/fsync errors and handled interruption, preserving foreign/replaced
+paths and reporting rollback failures. Detect/retry short marker writes.
+
+This attribution packet's actual reachable bare dependencies are thirteen runtime
+builtins. Builtin identity may be coalesced under the actual Bun revision; a file
+dependency cannot be declared complete from first-importer resolution or a single
+entry-file hash. Fail closed on reachable nonbuiltin file dependencies until
+importer-specific ESM conditions and their transitive content closure are supported.
+Do not expand this repair into package graph implementation. Distinguish actual
+reachable importers from the wider syntactic test-file inventory; unsupported file
+contexts must not yield a complete frozen identity/report. Unreachable resolutions
+remain explicitly informational.
+
+Codex independently recomputed all 69 profile/stage/statement summaries, exact
+216-row membership (48 excluded warmups, 168 accepted batches), counterbalance,
+bounds and equality. All 456 current runtime/emitter input hashes and all producer
+driver hashes match; the four earlier records remain unchanged. Evidence is
+`generated-packet-5-independent-third-review-arithmetic.json`. These checks validate
+the calculations, not the whole tool. Preserve final raw fb060ec5 with its actual
+77f29d04 producer hash; never relabel it as produced by repaired code. No additional
+sampling is authorized by this correction: the failures do not disprove successful
+small-output trials over the thirteen builtin roots. Revalidate the generated graph
+identities in one bounded correctness build, record the repaired driver separately,
+and leave independent acceptance to Codex. Broader successful generated/native/TS
+checks need repetition only if their production/probe/driver identities change.

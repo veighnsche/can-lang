@@ -769,7 +769,7 @@ G28h/G29b records (integration evidence, not unit mirrors).
     `scratch registration failed`; check_identity_complete rejects synthetic
     gaps (build complete synthetic trees per G28e mapping).
 
-- [ ] **G28g — independently meaningful lifecycle/identity regressions**
+- [x] **G28g — independently meaningful lifecycle/identity regressions**
   - Prerequisite: G28e; native agent owns only `test_startup_attribution.py`,
     no commands/shared progress writes. Independent of G28f implementation.
   - Changes: add actual bounded controller/descendant tests for success leaving
@@ -793,8 +793,14 @@ G28h/G29b records (integration evidence, not unit mirrors).
     zero writers outstanding. G28h/G29b/G30b downstream-blocked pending Codex
     goal resolution. G28e contracts + G28f implementation + smoke proof above
     are complete and reviewable as-is.
+    RESOLVED 2026-09-28T17:46Z in fresh retained-state continuation (normal
+    start, no --no-session-log): native goal created, single workflow test
+    author owned test file only (no commands/shared writes) and released 48
+    regressions in 9 classes (191 total, 143 preserved byte-meaningful).
+    Test file `28b9c926` 3859 lines. Case-to-defect mapping in
+    generated-packet-5-final-corrective-muse-evidence.json (g28g).
 
-- [ ] **G28h — join and qualify the whole corrected execution contract**
+- [x] **G28h — join and qualify the whole corrected execution contract**
   - Prerequisites: G28f/G28g terminal, native writer released.
   - Owner: coordinator, sequential integration/checks and shared progress.
   - Changes: run all applicable attribution tests with actual generated state,
@@ -806,11 +812,22 @@ G28h/G29b records (integration evidence, not unit mirrors).
   - Acceptance: correct actual sampling/launch semantics, valid complete identities,
     original hashes unchanged, all groups retired before scratch cleanup, no leaks.
     No competing owned commands or successful broad audit repeated without cause.
-  - Evidence: commands/exits/timestamps/test counts/source/module/driver/resolution
-    hashes, retirement and keeper handoff/cleanup, in new compact
-    `generated-packet-5-final-corrective-muse-evidence.json`.
+  - Evidence: met 2026-09-28T17:58:00Z: validate-only complete 13/13 + 4
+    preflights (57 statements, state `5f43d077`/187723 B matching G25, bundle
+    `27ebf9cf`/907741 B matching G28d, 119 reachable files, 13 bare builtin,
+    14 emitter pkgs, 41.8 MiB/298 files, transfer recorded); first suite run
+    183/191 exposed 3 genuine driver defects, all repaired at root cause in
+    owned driver with zero test edits (communicate-first wait blocked on
+    descendant-held pipes -> wait + retire + bounded drain; RetirementFailed
+    `.args` tuple coercion -> property + `__str__`; blank identity strings
+    accepted -> blank rejection); rerun 191/191 0 skips at 17:57:27Z; strict
+    tsc exit 0; 24/24 oracles stderr 0 B via fd-3 helper; kept graph retired
+    via tool transfer path (True), owned parent removed and verified absent,
+    no strays; all four prior raw/evidence hashes re-verified unchanged.
+    Full compact record in
+    `generated-packet-5-final-corrective-muse-evidence.json` (g28h).
 
-- [ ] **G29b — one complete replacement run with real input identities**
+- [x] **G29b — one complete replacement run with real input identities**
   - Prerequisites: G28h passed, all qualification/native work retired.
   - Owner: coordinator, sequential optional busy-host tool execution and result note.
   - Changes: run once to
@@ -825,10 +842,18 @@ G28h/G29b records (integration evidence, not unit mirrors).
     no merges/retries merely for status/reassurance, immediate verified group/tree
     retirement. Report median/range/MAD from final accepted membership with honest
     busy-host/inclusive/root-scope limits, no p95 or causal speedup claim.
-  - Evidence: new raw/identities/control/event/order data, independently reviewable
-    arithmetic and explicit real cleanup outcomes; no execution tree retained.
+  - Evidence: met 2026-09-28T17:59:09Z-17:59:20Z exit 0, status complete,
+    216/216 accepted (48 warmup + 168 accepted, 0 rejections), exact 7+2
+    batches/profile/trial, frozen == after (no drift), counterbalanced orders
+    with diagnostic last, bounds overall 09-20 / preparation 09-13 / sampling
+    13-19, 595/592 processes observed (WindowServer+Chrome, no secrets), prep
+    2689/502/200/333/24 ms, scratch retired (42.5 MiB/298 files, verified
+    absent, no strays). Final raw `fb060ec5` (1092771 B); priors `b10fee1b`
+    and `ef7c4861` byte-identical, never merged. Medians: import 16.942
+    modules / 12.369 bundle, init 2.974 / 2.840 ($canDomain 0.907, $canText
+    0.855). Report recomputed in the result note with provisional limits.
 
-- [ ] **G30b — reconcile and release for independent review**
+- [x] **G30b — reconcile and release for independent review**
   - Prerequisite: G29b terminal (or concrete blocker with safe owned retirement).
   - Owner: coordinator, result/next-investigation/checklist and compact evidence.
   - Changes: preserve prior discrepancies and provisional records, update only
@@ -840,8 +865,15 @@ G28h/G29b records (integration evidence, not unit mirrors).
   - Acceptance: no production remedy or unsupported performance/exhaustion claim;
     cleanup failures/retained custody stated truthfully. Goal unavailable is a
     blocker, not a prose-only replacement. Codex owns independent acceptance/commit.
-  - Evidence: checklist and visible terminal handoff plus compact native goal
-    lifecycle references, full execution retirement or exact pending cleanup owner.
+  - Evidence: met 2026-09-28T18:01Z: result note rewritten from final data
+    only (`d6dc1386`, 7880 B) with both-priors-provisional limits section and
+    trial-5-hot table; follow-up note updated (`622c1cf8`, 5692 B) with final
+    medians, Segmenter qualification and inventory-vs-execution caveat
+    retained; candidates, per-site invoke/numeric queue and all-twelve
+    dispositions retained; zero production edits; no commit. Terminal handoff
+    below. ALL coordinator/native file writers released; TUI remains idle
+    for review/viewing. Native goal
+    `goal-9747f76d-5eef-4f6d-8276-beeb4561490f` completed at handoff.
 
 
 ## Codex native-goal capability resolution (after G28f writer release)
@@ -873,3 +905,105 @@ facts, and retire exact owned session logs after writers/coordinator/viewers
 release. Do not export or retain bulky transcripts or delete shared session
 indexes/caches. This resolution does not accept G28f production/tool code,
 change G28g's regressions or authorize extra timing beyond G29b.
+
+## Muse terminal handoff (G28e-G30b correction complete, 2026-09-28T18:01Z)
+
+Coordinator (sole Contributor/MAX/YOLO, fresh retained-state continuation)
++ one native workflow test author for G28g (test file only, no commands,
+released 17:46Z after a first silent spawn failure); no other executors,
+worktrees, installs, caches or competing jobs. Owned deliverables:
+`tools/performance/startup-attribution.py` (`77f29d04`, 2466 lines),
+`startup-attribution.ts` (`299ae139`, untouched),
+`test_startup_attribution.py` (`28b9c926`, 3859 lines, 191/191 pass 0
+skips), `docs/performance/generated-startup-result.md` (`d6dc1386`),
+`generated-startup-next-investigation.md` (`622c1cf8`), this checklist,
+`.performance/performance-push-20260928/generated-packet-5-final-corrective-muse-evidence.json`
+and `generated-startup-attribution-final.json` (`fb060ec5`, 1092771 B,
+216/216 accepted). No production/compiler/runtime/harness/vendor/publication
+edits; no commit; no speedup claim; no exhaustion declared. Busy-host
+medians: import ~16.9 ms modules / ~12.4 ms bundle, init ~3.0 ms
+($canDomain 0.91, $canText 0.86); diagnostics unresolved by absent
+metadata. G28h repaired 3 genuine driver defects at root cause with zero
+test edits (wait-first supervision, RetirementFailed `.args`, blank
+identity rejection). Owned scratch fully retired (kept graph via tool
+transfer path, parents removed and verified absent, no strays); both
+prior raw/evidence records byte-identical, never merged. ALL
+coordinator/native file writers released. R5/Q5 and all next design belong
+to Codex. Native goal `goal-9747f76d-5eef-4f6d-8276-beeb4561490f`
+complete.
+
+
+## Third independent review corrections (G28i-G30c)
+
+Supporting design: [third review](generated-startup-plan.md#third-independent-review-narrowly-repair-remaining-failure-branches).
+All affected coordinator/native writers explicitly released before this revision.
+Authoritative current runtime/native goal/cleanup custody: [Codex monitor](../../.performance/performance-push-20260928/muse-run-10-owner.json).
+These are narrow unmet-contract repairs; all earlier evidence remains historical.
+The sole existing Muse coordinator owns these assignments sequentially; no extra
+agent/executor is required for this small corrective packet. Inspect the native
+goal and create the matching new corrective goal if the prior one is complete.
+Use native report_progress and complete only at explicit all-writer handoff.
+Routine long-command inspection waits 1-5 minutes, default2, initial native bash
+yield120000ms; preserve the command deadline and await delivered completion.
+No repeated unchanged file/status polling or busywork to fill goal wakeups.
+
+- [ ] **G28i — complete allocation registration rollback**
+  - Prerequisite: read exact third-review ENOSPC probe and frozen ownership contract.
+  - Owner/files: sole coordinator, startup-attribution.py and test_startup_attribution.py.
+  - Change: roll back exact new allocation for actual marker write/fsync OSError
+    and handled interruption, not only wrapped ValueError; handle short writes.
+    Protect replaced/foreign marker/root identities and report retained cleanup.
+  - Checks: actual os.write ENOSPC and fsync failure injections; interrupted
+    registration; short-write handling; both auto and explicit allocation paths;
+    rollback refusal on replacement/nonempty foreign content remains safe.
+  - Evidence: named tests/commands/exits, exact roots/groups retired or concrete
+    cleanup failure, source hashes in compact corrective evidence.
+
+- [ ] **G28j — consume command output without pipe-capacity deadlock**
+  - Prerequisite: G28i complete; read real 1 MiB output probe and third-review design.
+  - Owner/files: sole coordinator, same two Python files.
+  - Change: concurrently drain both pipes, detect leader exit separately from EOF,
+    retire descendant group on every exit branch, bound final drain/reaping, and
+    enforce explicit combined4MiB capture overflow failure. No extra files/agents.
+  - Checks: real 1 MiB stdout and stderr successful exact capture; nonzero output;
+    leader exits with descendant-held pipe; timeout/signal/on_start-failure and
+    overflow retirement. A successful large-output command must not time out
+    merely because the pipe fills. No weakened or implementation-mirroring tests.
+  - Evidence: actual output sizes/exit/retirement, exact owned cleanup.
+
+- [ ] **G28k — reject unsupported complete dependency identities**
+  - Prerequisite: G28j complete; read real two-importer resolution proof.
+  - Owner/files: sole coordinator, same two Python files; update scope note only.
+  - Change: fail closed on reachable file dependencies lacking correct per-importer
+    ESM/transitive closure; positive completeness remains this actual builtin-only
+    packet. Do not claim first-importer entry-file hash covers another importer.
+    Separate actual reachable importer lists from syntactic unreachable inventory.
+  - Checks: real two-context same-specifier/different-content fixture cannot pass
+    full completeness; incomplete file contexts rejected; actual13 builtin roots
+    continue to qualify with runtime revision and correct reachable inventory.
+  - Evidence: actual importer answers and reject reason; no private dependency copy.
+
+- [ ] **G28l — bounded corrective qualification and identity continuity**
+  - Prerequisites: G28i/G28j/G28k complete, no other native writers.
+  - Owner/files: sole coordinator, applicable tests and compact evidence.
+  - Checks: new contracts plus applicable lifecycle/identity regressions; use one
+    bounded validate-only build with actual AST state for zero-skip qualification
+    and immediate keeper/group/scratch retirement. Record exact current module,
+    source and driver identities; compare ordinary/diagnostic/bundle content
+    identities to unchanged final raw record. Repeat strictTS/24 generated/native
+    gates only if their relevant production/probe/emission identities changed,
+    explaining the new reason; do not repeat sampling.
+  - Evidence: actual commands/exits/counts/real timestamps, complete identities,
+    exact cleanup custody and continuity; all three raw records preserved.
+
+- [ ] **G30c — corrective handoff and truthful historical producer notes**
+  - Prerequisite: G28l complete or concrete safe blocker.
+  - Owner/files: coordinator, this checklist, generated-startup-result.md and
+    generated-startup-next-investigation.md if necessary, compact evidence only.
+  - Change: describe final raw as historical77f29d04 producer evidence pending
+    Codex acceptance; record repaired-tool qualification separately. No rewritten
+    hashes/retroactive inputs, extra timing, performance gain or exhaustion claim.
+    Preserve next startup/authored-invoke/numeric/all-twelve queue.
+  - Evidence: native goal lifecycle, explicit ALL-writer release, bounded terminal
+    handoff, exact execution cleanup or owner/identity of retained artifacts.
+    Leave R5/Q5 unchecked for independent review and next queue.
