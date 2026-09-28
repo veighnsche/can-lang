@@ -68,7 +68,7 @@ def exclusion_details(board, measured_cases):
     return lines
 
 
-def markdown_report(manifest, summary, rankings=None, suites=None):
+def markdown_report(manifest, summary, rankings=None, suites=None, assessment=None):
     suites = DEFAULT_SUITES if suites is None else suites
     requested = set(manifest.get("requested_suites", []))
     completed = set(manifest.get("completed_suites", []))
@@ -88,6 +88,21 @@ def markdown_report(manifest, summary, rankings=None, suites=None):
         lines += ["This run is ineligible for performance rankings or use as an accepted baseline (non-measurement or incomplete evidence).", ""]
     if quality == "exploratory":
         lines += ["Exploratory evidence uses weakened host-isolation settings and is INELIGIBLE for rankings and baselines.", ""]
+    if assessment is not None and quality == "measurement" and status == "complete":
+        lines += ["## Jev’s advisory report card", "",
+                  "Generated automatically through TypeSafe Score with three fresh, independently worded requests. "
+                  "A/A+ = very good/exceptional; B = good; C = usable with improvements; D = substantial concern; F = severe concern; U = ungraded. "
+                  "This project supplies the rubric and letter mapping; these are not TypeSafe-certified performance standards.", "",
+                  "| Slice | Grade | Wording range | Assessment basis |", "|---|---|---|---|"]
+        for suite, row in assessment["slices"].items():
+            spread = row["grade_min"] if row["grade_min"] == row["grade_max"] else row["grade_min"] + " to " + row["grade_max"]
+            note = row["basis"] + (" " + row["ungraded_reason"] if row["grade"] == "U" else "")
+            if row["excluded_cases"]:
+                note += " Excluded rows: " + ", ".join(row["excluded_cases"]) + "."
+            lines.append(f"| {escape(suite)} | **{row['grade']}** | {spread} | {escape(note)} |")
+        lines += ["", "The median of three Score assessments sets the letter. Ranges describe wording sensitivity, not confidence intervals. "
+                  "The companion grading archive preserves all scores, distributions and evidence binding. Grades describe the eligible tested subset, "
+                  "not exhaustive coverage or recoverable savings.", ""]
     unresolved = [key for key, row in summary.items() if timing_resolution_issue(row)]
     if unresolved:
         count = f"{len(unresolved)} case is" if len(unresolved) == 1 else f"{len(unresolved)} cases are"

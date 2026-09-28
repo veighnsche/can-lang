@@ -344,7 +344,7 @@ class PdfCommandTests(unittest.TestCase):
         with patch.object(self.perf, "read_evidence", wraps=self.perf.read_evidence) as read:
             with patch.object(pdf_report, "write_pdf") as export:
                 self.assertEqual(self.command(str(run / "evidence.zip"), "--format", "pdf",
-                                              "--output", "~/export.pdf"), 0)
+                                              "--output", "~/export.pdf", "--no-grades"), 0)
         read.assert_called_once_with((run / "evidence.zip").resolve(), "report.json")
         export.assert_called_once_with(expected, "~/export.pdf")
 
@@ -360,7 +360,7 @@ class PdfCommandTests(unittest.TestCase):
         before = (run / "evidence.zip").read_bytes()
         with patch.object(pdf_report, "write_pdf") as export:
             self.assertEqual(self.command(str(run), "--format", "pdf", "--output", "export.pdf",
-                                          "--targets", str(path), "--baseline", str(baseline)), 0)
+                                          "--targets", str(path), "--baseline", str(baseline), "--no-grades"), 0)
         data, output = export.call_args.args
         self.assertEqual(output, "export.pdf")
         self.assertEqual(data["kind"], "can.performance-report")
@@ -369,6 +369,69 @@ class PdfCommandTests(unittest.TestCase):
         self.assertEqual(data["rankings"]["baseline"]["eligible_cases"], 12)
         self.assertTrue(all(row["ratio"] == 2 for row in data["rankings"]["baseline"]["rows"]))
         self.assertEqual((run / "evidence.zip").read_bytes(), before)
+
+    def test_default_measured_pdf_grades_verified_raw_evidence(self):
+        import jev_service
+        run, manifest, summary = self.make_run("automatic")
+        output = self.root / "automatic.pdf"
+        before = (run / "evidence.zip").read_bytes()
+        enriched = dict(self.perf.report_data(manifest, summary), assessment={"advisory": True})
+        with patch.object(self.perf.shutil, "which", return_value="/fake/typst"):
+            with patch.object(jev_service, "run_grading", return_value=enriched) as grade:
+                with patch.object(pdf_report, "write_pdf") as export:
+                    self.command(str(run), "--format", "pdf", "--output", str(output))
+        grade.assert_called_once_with(self.perf.report_data(manifest, summary), output.with_suffix(".grading.zip"))
+        export.assert_called_once_with(enriched, str(output))
+        self.assertEqual((run / "evidence.zip").read_bytes(), before)
+
+    def test_default_pdf_raw_forgery_is_rejected_before_network(self):
+        import jev_service
+        def forge(root):
+            path = root / "report.json"
+            data = json.loads(path.read_text())
+            data["cases"]["compiler/bounded"]["distribution"]["median"] = 999
+            self.perf.write_json(path, data)
+        run, _, _ = self.make_run("forged-pdf", change=forge)
+        with patch.object(self.perf.shutil, "which", return_value="/fake/typst"):
+            with patch.object(jev_service, "run_grading") as grade:
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit):
+                        self.command(str(run), "--format", "pdf", "--output", str(self.root / "forged.pdf"))
+        grade.assert_not_called()
+
+    def test_default_pdf_preflight_prevents_paid_calls(self):
+        import jev_service
+        run, _, _ = self.make_run("preflight")
+        output = self.root / "preflight.pdf"
+        scenarios = [(output, b"existing PDF"), (output.with_suffix(".grading.zip"), b"existing audit")]
+        for occupied, contents in scenarios:
+            occupied.write_bytes(contents)
+            with patch.object(self.perf.shutil, "which", return_value="/fake/typst"):
+                with patch.object(jev_service, "run_grading") as grade:
+                    with contextlib.redirect_stderr(io.StringIO()):
+                        with self.assertRaises(SystemExit):
+                            self.command(str(run), "--format", "pdf", "--output", str(output))
+            grade.assert_not_called()
+            self.assertEqual(occupied.read_bytes(), contents)
+            occupied.unlink()
+        with patch.object(self.perf.shutil, "which", return_value=None):
+            with patch.object(jev_service, "run_grading") as grade:
+                with contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit):
+                        self.command(str(run), "--format", "pdf", "--output", str(output))
+        grade.assert_not_called()
+
+    def test_smoke_and_failed_pdf_omit_remote_grading(self):
+        import jev_service
+        for name, options in (("smoke-pdf", {"quality": "smoke"}), ("failed-pdf", {"status": "failed"})):
+            run, manifest, summary = self.make_run(name, **options)
+            with patch.object(self.perf.shutil, "which", return_value="/fake/typst"):
+                with patch.object(jev_service, "run_grading") as grade:
+                    with patch.object(pdf_report, "write_pdf") as export:
+                        self.command(str(run), "--format", "pdf", "--output", str(self.root / (name + ".pdf")))
+            grade.assert_not_called()
+            export.assert_called_once()
+            self.assertNotIn("assessment", export.call_args.args[0])
 
 
 if __name__ == "__main__":

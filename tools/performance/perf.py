@@ -262,7 +262,31 @@ def report(args):
                    else markdown_report(meta, summary, data["rankings"]))
     if args.format == "pdf":
         from pdf_report import write_pdf
-        write_pdf(json.loads(content), args.output)
+        data = json.loads(content)
+        if not getattr(args, "no_grades", False):
+            from jev_service import preflight_archive, run_grading
+            output = Path(args.output).expanduser()
+            if output.suffix.lower() != ".pdf":
+                raise ValueError("PDF output must have a .pdf extension")
+            if os.path.lexists(output):
+                raise FileExistsError(f"PDF output already exists: {output}")
+            if not output.parent.is_dir() or not os.access(output.parent, os.W_OK):
+                raise ValueError(f"PDF output parent must be an existing writable directory: {output.parent}")
+            if shutil.which("typst") is None:
+                raise RuntimeError("PDF export requires an installed typst executable on PATH")
+            manifest = data.get("manifest", {})
+            if manifest.get("quality") == "measurement" and manifest.get("status") == "complete":
+                archive = preflight_archive(output.with_suffix(".grading.zip"))
+                verified_meta, verified_cases = load_measured_run(root)
+                if data.get("cases") != verified_cases:
+                    raise ValueError("Stored PDF report differs from verified raw measurement cases")
+                if not args.targets and not args.baseline and manifest != verified_meta:
+                    raise ValueError("Stored PDF report differs from verified measurement manifest")
+                data = run_grading(data, archive)
+                print(f"Grading evidence saved: {archive}")
+            else:
+                print("Grading omitted: only complete measured evidence is eligible.")
+        write_pdf(data, args.output)
         print(f"PDF saved: {Path(args.output).expanduser()}")
         return 0
     if args.output:
@@ -547,6 +571,8 @@ def main():
     reader.add_argument("--baseline")
     reader.add_argument("--format", choices=["markdown", "json", "pdf"], default="markdown")
     reader.add_argument("--output", help="Write a new report file without replacing the original evidence")
+    reader.add_argument("--no-grades", action="store_true",
+                        help="Export a PDF offline without automatic Jev consultations")
     template = commands.add_parser("targets", help="Create unset, workload-bound targets from verified measurement evidence")
     template.add_argument("run")
     template.add_argument("--output", required=True)

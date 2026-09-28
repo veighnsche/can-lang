@@ -154,7 +154,8 @@ is labelled and receives no rankings. Synthetic examples are marked on every
 page when the document's `synthetic` field is true.
 
 ```sh
-# From an existing evidence directory or evidence.zip; no benchmark is rerun.
+# From existing evidence; verify raw measurements and obtain three Jev grades.
+# Set TYPESAFE_API_KEY in the environment; no benchmark is rerun.
 bun run perf report PATH_TO_RUN --format pdf --output results.pdf
 
 # Revalidate raw evidence and apply explicit comparison references first.
@@ -165,8 +166,37 @@ bun run perf report PATH_TO_RUN --targets .performance/targets.json \
 PDF export requires an installed Typst CLI (validated with 0.15.1). It uses one
 compiler worker, embedded fonts and no external Typst packages or downloads.
 Temporary JSON/template/output files are removed on success and handled failure;
-only the requested PDF is retained. Existing output files are never replaced.
-PDF creation is an explicit offline export, not an extra step in a measured run.
+the requested PDF and grading sidecar are retained. Existing output files are never replaced.
+Complete measured PDF exports automatically send three fully reworded requests to
+[TypeSafe System One](https://docs.typesafe.ai/api) (`jev-latest`). All eligible
+suite questions share one state in each request; there is no request per slice.
+Each eligible suite receives one six-level [Score](https://docs.typesafe.ai/primitives/score)
+judgment per request, from 0 to 5. This project defines the performance rubric;
+these are not official TypeSafe performance grades. Agreement is advisory and
+disagreements remain visible. The input comes from verified raw measurement
+records; report generation never launches benchmark workloads or builds.
+
+Set `TYPESAFE_API_KEY` in the environment before exporting. The adjacent
+`results.grading.zip` retains all three requests, responses, the validated
+`assessment.json`, and the enriched `report.json`. Both output paths must be new.
+The original measurements are never modified. Calls have a 55-second timeout and
+are never automatically retried. Missing credentials, service failures, or invalid
+responses fail the graded export; compact requests and replies are kept in the
+sidecar for investigation. Credentials and HTTP headers are excluded. The sidecar
+is bounded below 5 MiB and temporary staging files are reclaimed.
+
+For an explicit offline export, use `--no-grades`:
+
+```sh
+bun run perf report PATH_TO_RUN --format pdf --output offline.pdf --no-grades
+```
+
+Smoke or incomplete evidence automatically omits grading and prints that reason.
+If every slice lacks eligible evidence, no API request or credential is needed;
+the sidecar records `not-invoked` and every slice remains ungraded.
+JSON and Markdown exports remain offline. The local `pdf_report.write_pdf` function
+also remains offline; the enriched sidecar report can be rendered again without
+another consultation. PDF export is separate from the measured run.
 
 For direct template editing, place an exported `report.json` beside `report.typ`
 and run `typst compile --jobs 1 --ignore-system-fonts report.typ results.pdf`.

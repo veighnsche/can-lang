@@ -6,6 +6,7 @@
 #let meta = data.manifest
 #let cases = data.cases
 #let boards = data.rankings
+#let assessment = data.at("assessment", default: none)
 #let preview = data.at("synthetic", default: false)
 #let valid = meta.at("status", default: "unknown") == "complete" and meta.at("quality", default: "unknown") == "measurement"
 #let source = if meta.at("source", default: none) == none { (:) } else { meta.source }
@@ -196,6 +197,45 @@
   *Selection:* #if requested.len() == suites.len() and suites.all(pair => requested.contains(pair.first())) { [all twelve slices] } else { [subset] }
 ]
 
+#let grade-bases = (
+  compiler: "Local project build cost; phases overlap.",
+  assertions: "Complete test cycle, including worker startup.",
+  artifacts: "Validation, source maps and publication steps.",
+  generated: "Efficiency versus matched native workloads.",
+  runtime: "Helper sequences, including ownership work.",
+  codecs: "Full validated conversion and rejection.",
+  startup: "Fresh launch through checks and process exit.",
+  browser: "Visual responsiveness is not measured.",
+  server: "Local fixed-client batches; paced runs excluded.",
+  io: "Local adapter cost versus matched controls.",
+  editor: "Response delay against proposed 100/500 ms goals.",
+  journeys: "Local compiled requests; no database or network.",
+)
+#let grade-color(g) = if g.starts-with("A") { teal } else if g.starts-with("B") { rgb("426728") } else if g.starts-with("C") { amber } else if g == "U" { muted } else { rgb("A33532") }
+#if assessment != none and valid {
+  heading(level: 1, "Jev’s performance report card")
+  text(size: 9pt)[*A / A+* very good / exceptional · *B* good · *C* usable, needs improvement · *D* substantial concern · *F* severe concern · *U* ungraded. Pluses and minuses refine the assessment.]
+  v(3mm)
+  set text(size: 8.5pt)
+  frame-table((1.08fr, 0.45fr, 0.7fr, 2.1fr), compact: true,
+    table.header(..("Slice", "Grade", "Checkpoint", "What this grade judges").map(head-cell)),
+    ..suites.filter(pair => pair.first() in assessment.slices).map(pair => {
+      let (id, label) = pair
+      let a = assessment.slices.at(id)
+      let (key, caption) = checkpoints.at(id)
+      let spread = if a.grade_min == a.grade_max { "" } else { a.grade_min + " to " + a.grade_max }
+      let total = count-for(id)
+      let excluded = a.excluded_cases.len()
+      let subset = if excluded > 0 { " " + str(excluded) + "/" + str(total) + " rows excluded." } else { "" }
+      (text(label), [#text(size: 15pt, weight: "bold", fill: grade-color(a.grade), a.grade) #if spread != "" [\ #text(size: 6.5pt, fill: muted, spread)]],
+       text(weight: "bold", checkpoint-time(key)), [#text(grade-bases.at(id)) #text(size: 7pt, fill: muted, subset)])
+    }).flatten(),
+  )
+  v(3mm)
+  text(size: 8.5pt, fill: muted)[*Advisory grades:* Three automatic Jev Score assessments per slice; the median sets the letter. Small ranges show wording sensitivity, not confidence intervals. Checkpoints illustrate timings; grades cover the eligible subset. Our rubric is published in the appendix and is not a TypeSafe-certified standard or a ranking of optimization savings.]
+  pagebreak()
+}
+
 #heading(level: 1, if valid { "What the measurements show" } else { "Recorded checks" })
 #if native-pairs.len() > 0 {
   let pair = native-pairs.first()
@@ -240,6 +280,7 @@
 } else {
   text(size: 9pt, fill: muted)[*Cross-slice ranking:* Reference-based top tens follow the measured results. Target shortfalls and changes since an earlier run have separate rankings.]
 }
+#if assessment == none [
 #pagebreak()
 = Across all twelve slices
 
@@ -267,6 +308,9 @@ Each row is a named workload, not a score for the whole slice. A short codec ope
 The detailed tables show typical time and variation across independent runs. The generated-code findings use matched native workloads in this same run, so they do not require a historical baseline. A higher ratio means the compiled version took longer for that specific workload.
 
 #if valid { [*What to do next:* Inspect the largest compiler phase, the generated/native gaps and the editor response times. Improve browser timing resolution before using browser numbers to judge speed.] } else { [*What to do next:* Use these records for functional validation. Performance conclusions require a complete measurement run.] }
+
+
+]
 
 #if native-pairs.len() > 0 [
 #pagebreak()
@@ -420,3 +464,55 @@ Each headline is the median of independent process-trial medians. Warmup batches
 
 == Evidence and storage
 Raw samples, correctness results, workload contracts and source/tool fingerprints remain in the compact evidence archive. Temporary execution files are cleaned separately. Exporting this report does not run performance workloads or modify that archive.
+
+#if assessment != none and valid [
+#pagebreak()
+= How the grades were produced
+The reporting command sent the saved measurements to Jev automatically, using TypeSafe’s *Score* primitive. It made three fresh requests with equivalent facts and independently rewritten explanations. No performance workloads were rerun.
+
+*The distinction matters:* TypeSafe defines how Score works. This project defines the performance rubric and the letter conversion. These grades are scoped engineering advice, not a validated standard, historical regression or statistical test.
+
+== The six rubric anchors
+#frame-table((0.4fr, 3.6fr), compact: true,
+  table.header(head-cell("Level"), head-cell("Meaning")),
+  ..assessment.rubric.enumerate().map(((i, description)) => (text(("F", "D", "C", "B", "A", "A+").at(i)), text(description))).flatten(),
+)
+
+== Assessment spread
+#set text(size: 8.5pt)
+#frame-table((1.15fr, 0.6fr, 1.4fr, 1fr), compact: true,
+  table.header(..("Slice", "Letter", "Three scores / 5", "Grade range").map(head-cell)),
+  ..suites.filter(pair => pair.first() in assessment.slices).map(pair => {
+    let a = assessment.slices.at(pair.first())
+    let values = if a.answers.len() == 0 { "—" } else { a.answers.map(answer => str(calc.round(answer.score, digits: 2))).join(" / ") }
+    (text(pair.last()), text(weight: "bold", a.grade), text(values), text(if a.grade_min == a.grade_max { a.grade } else { a.grade_min + " to " + a.grade_max }))
+  }).flatten(),
+)
+#v(2mm)
+The median of three scores sets the letter. Named positions are F=0; D−=⅔, D=1, D+=1⅓; C−=1⅔, C=2, C+=2⅓; B−=2⅔, B=3, B+=3⅓; A−=3⅔, A=4; A+=5. The nearest position wins; exact midpoint ties go to the lower grade. Scores are rubric positions, not percentages or GPA.
+
+#let sensitive = assessment.slices.values().filter(a => a.grade_min != a.grade_max).len()
+*#sensitive grades cross a letter boundary between wordings.* The exact letter is sensitive; the range is part of the result. Jev returns numerical assessments, not explanations of why it chose them.
+
+The raw probability distributions and confidence values remain in the grading archive. TypeSafe confidence describes concentration across rubric levels, not the probability that a grade is correct. Agreement between wordings is advice, not proof. A broad range calls for closer review before acting on the central letter.
+
+#pagebreak()
+= Scope of each assessment
+#set text(size: 9pt)
+#for (id, label) in suites {
+  if not (id in assessment.slices) { continue }
+  let a = assessment.slices.at(id)
+  block(breakable: false, above: 7pt, below: 4pt)[
+    #text(weight: "bold", fill: grade-color(a.grade))[#label · #a.grade]
+    #parbreak()
+    #text(descriptions.at(id))
+    #if id == "editor" [ Proposed engineering goals: 100 ms for completion, hover and definition; 500 ms for formatting and rename. These are provisional, not adopted standards. Mixed diagnostics are excluded from this grade.]
+    #if id == "runtime" [ Native controls are excluded from grading because this rubric has not established them as matched references. The grade concerns absolute helper cost.]
+    #if id == "server" [ Only the bounded-client workloads receive a grade; deliberately paced arrival batches are excluded.]
+    #if id == "assertions" [ Exact assertion populations are unavailable in the summary; the grade concerns full-fixture turnaround.]
+    #if a.grade == "U" [ #text(fill: muted, a.ungraded_reason)]
+  ]
+}
+#v(3mm)
+#text(size: 8pt, fill: muted)[The companion grading archive binds all requests, responses and assessments to this run’s exact source and case evidence. It also preserves the graded report data for later local reformatting. The original measurement archive is unchanged.]
+]
