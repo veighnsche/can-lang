@@ -8,7 +8,7 @@ const nominalRecords = new WeakMap<object, string>();
 // their backing storage. Evidence records containment only; the owner acquires
 // leases at participant preparation, never at container construction.
 const opaqueChildren = new WeakMap<object, readonly unknown[]>();
-export function registerOpaqueContents(token: object, values: readonly unknown[]): void {
+export function registerOpaqueContents(token: object, values: Iterable<unknown>): void {
   if (opaqueChildren.has(token)) throw new TypeError("opaque contents already registered");
   opaqueChildren.set(token, Object.freeze([...values]));
 }

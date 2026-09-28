@@ -12,6 +12,7 @@ import {
   failure,
   value,
   checkedCompletion,
+  isCompletion,
   invoke,
   type Completion,
 } from "./completion.ts";
@@ -103,6 +104,134 @@ test("forged carriers and immediate unboxed thenables are refused without execut
   for (const forged of [{ kind: "ok", value: 1 }, new Proxy(success(1), {}), revoked.proxy])
     expect(() => checkedCompletion(forged as Completion)).toThrow();
   expect(() => failure({} as any)).toThrow();
+});
+
+test("carriers expose exactly two frozen null-prototype data keys with fresh branded identity", () => {
+  const domainFailure = fresh();
+  const standardFailure = captureStandard(new Error("shape"), origin);
+  const carriers: Array<{
+    carrier: Completion;
+    kind: "ok" | "domain" | "standard";
+    payload: unknown;
+  }> = [
+    { carrier: success(1), kind: "ok", payload: 1 },
+    { carrier: success(undefined), kind: "ok", payload: undefined },
+    { carrier: failure(domainFailure), kind: "domain", payload: domainFailure },
+    { carrier: failure(standardFailure), kind: "standard", payload: standardFailure },
+  ];
+  expect(success(1)).not.toBe(success(1));
+  for (const { carrier, kind, payload } of carriers) {
+    expect(Object.getPrototypeOf(carrier)).toBeNull();
+    expect(Object.isFrozen(carrier)).toBe(true);
+    expect(Object.keys(carrier)).toEqual(["kind", "value"]);
+    expect(Reflect.ownKeys(carrier)).toEqual(["kind", "value"]);
+    expect("then" in carrier).toBe(false);
+    for (const [key, expected] of [
+      ["kind", kind],
+      ["value", payload],
+    ] as const) {
+      const descriptor = Object.getOwnPropertyDescriptor(carrier, key)!;
+      expect("value" in descriptor).toBe(true);
+      expect(descriptor.enumerable).toBe(true);
+      expect(descriptor.writable).toBe(false);
+      expect(descriptor.configurable).toBe(false);
+      expect(descriptor.value).toBe(expected);
+    }
+    expect(isCompletion(carrier)).toBe(true);
+    expect(checkedCompletion(carrier)).toBe(carrier);
+    expect(carrier.kind).toBe(kind);
+    expect(carrier.value).toBe(payload);
+  }
+  const nullProtoFake = { __proto__: null, kind: "ok", value: 1 };
+  expect(isCompletion(nullProtoFake)).toBe(false);
+  expect(() => checkedCompletion(nullProtoFake as unknown as Completion)).toThrow();
+});
+
+test("carrier admission rejects forged getters and proxies before inspection", () => {
+  let getters = 0;
+  const forged = {};
+  Object.defineProperty(forged, "kind", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getters++;
+      return "ok";
+    },
+  });
+  Object.defineProperty(forged, "value", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getters++;
+      return 1;
+    },
+  });
+  expect(isCompletion(forged)).toBe(false);
+  expect(() => checkedCompletion(forged as Completion)).toThrow();
+  expect(getters).toBe(0);
+
+  let traps = 0;
+  const genuine = success(1);
+  const proxy = new Proxy(genuine, {
+    get(target, property, receiver) {
+      traps++;
+      return Reflect.get(target, property, receiver);
+    },
+    getOwnPropertyDescriptor(target, property) {
+      traps++;
+      return Reflect.getOwnPropertyDescriptor(target, property);
+    },
+    ownKeys(target) {
+      traps++;
+      return Reflect.ownKeys(target);
+    },
+  });
+  expect(isCompletion(proxy)).toBe(false);
+  expect(() => checkedCompletion(proxy as Completion)).toThrow();
+  expect(traps).toBe(0);
+
+  const revoked = Proxy.revocable({}, {});
+  revoked.revoke();
+  expect(isCompletion(revoked.proxy)).toBe(false);
+  expect(() => checkedCompletion(revoked.proxy as Completion)).toThrow();
+});
+
+test("success preserves hostile then and getter payloads without assimilation", async () => {
+  // oxlint-disable no-thenable -- Hostile then/getter payloads prove boxing never assimilates them.
+  let thenCalls = 0;
+  const thenPayload = {
+    then() {
+      thenCalls++;
+      throw new Error("assimilated");
+    },
+  };
+  let getterCalls = 0;
+  const getterPayload = {};
+  Object.defineProperty(getterPayload, "then", {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getterCalls++;
+      throw new Error("assimilated getter");
+    },
+  });
+  // oxlint-enable no-thenable
+  for (const payload of [thenPayload, getterPayload]) {
+    const carrier = success(payload);
+    expect(carrier.value).toBe(payload);
+    expect(value(carrier)).toBe(payload);
+    const recovered = await invoke(async () => success(payload), origin);
+    expect(recovered.value).toBe(payload);
+    expect(value(recovered)).toBe(payload);
+    expect(value(await Promise.resolve(carrier).then((c) => success(value(c))))).toBe(payload);
+  }
+  expect(thenCalls).toBe(0);
+  expect(getterCalls).toBe(0);
+  expect(success(undefined).value).toBeUndefined();
+  const domainFailure = fresh();
+  const standardFailure = captureStandard(new Error("payload"), origin);
+  expect(failure(domainFailure).value).toBe(domainFailure);
+  expect(failure(standardFailure).value).toBe(standardFailure);
 });
 
 test("returned and rejected synthetic failures acquire one checked boundary without new occurrences", async () => {

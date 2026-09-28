@@ -25,7 +25,7 @@ export function createMap<K extends Key, V>(
   function own(values: Map<Key, unknown>): ImmutableMap<K, V> {
     const token = Object.freeze(Object.create(null));
     storage.set(token, { identity: identities.map, values });
-    registerOpaqueContents(token, Array.from(values.values()));
+    registerOpaqueContents(token, values.values());
     return token;
   }
   function backing(value: unknown): Map<Key, unknown> {

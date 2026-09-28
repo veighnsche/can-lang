@@ -22,11 +22,7 @@ const completions = new WeakSet<object>();
 const objectLike = (v: unknown): v is object =>
   v !== null && (typeof v === "object" || typeof v === "function");
 function box(kind: "ok" | "domain" | "standard", value: unknown): Completion {
-  const result = Object.create(null);
-  Object.defineProperties(result, {
-    kind: { value: kind, enumerable: true },
-    value: { value, enumerable: true },
-  });
+  const result = { __proto__: null, kind, value } as unknown as Completion;
   Object.freeze(result);
   completions.add(result);
   return result;

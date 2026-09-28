@@ -4,7 +4,7 @@ import { catalogue } from "../catalogue.ts";
 import { createDomainRuntime, domainFailureDiagnostics, type FailureShape } from "../domain.ts";
 import { createMap, isMap } from "../collections/map.ts";
 import { createSet, isSet, type ImmutableSet } from "../collections/set.ts";
-import { record } from "../data.ts";
+import { opaqueContents, record } from "../data.ts";
 import { value, type Completion } from "../completion.ts";
 const declarations = catalogue.errors.filter((e) =>
   ["collections::key_absent", "collections::key_exists"].includes(e.name),
@@ -69,6 +69,44 @@ test("map copies preserve key order, aliases and nominal entries", async () => {
   invalid(await maps.replace(empty, 3n, a), "collections::key_absent");
   invalid(await maps.insert(first, 3n, b), "collections::key_exists");
 });
+test("map opaque containment follows immutable versions with frozen snapshots", async () => {
+  const a = Object.freeze({ value: 1 });
+  const b = Object.freeze({ value: 2 });
+  const empty = value(await maps.empty());
+  const first = value(await maps.insert(empty, 3n, a));
+  const second = value(await maps.insert(first, 2n, b));
+  const replaced = value(await maps.replace(second, 3n, b));
+  const removed = value(await maps.remove(second, 3n));
+  const built = value(
+    await maps.build_map([
+      { key: 3n, value: a },
+      { key: 2n, value: b },
+    ]),
+  );
+  const snapshots = new Map<unknown, readonly unknown[]>([
+    [empty, opaqueContents(empty)!],
+    [first, opaqueContents(first)!],
+    [second, opaqueContents(second)!],
+    [replaced, opaqueContents(replaced)!],
+    [removed, opaqueContents(removed)!],
+    [built, opaqueContents(built)!],
+  ]);
+  for (const snapshot of snapshots.values()) expect(Object.isFrozen(snapshot)).toBe(true);
+  expect([...snapshots.values()].map((snapshot) => snapshot.length)).toEqual([0, 1, 2, 2, 1, 2]);
+  expect(snapshots.get(first)![0]).toBe(a);
+  expect(snapshots.get(second)![0]).toBe(a);
+  expect(snapshots.get(second)![1]).toBe(b);
+  expect(snapshots.get(replaced)![0]).toBe(b);
+  expect(snapshots.get(replaced)![1]).toBe(b);
+  expect(snapshots.get(removed)![0]).toBe(b);
+  expect(snapshots.get(built)![0]).toBe(a);
+  expect(snapshots.get(built)![1]).toBe(b);
+  expect(new Set(snapshots.values()).size).toBe(6);
+  expect(opaqueContents(empty)!.length).toBe(0);
+  expect(opaqueContents(first)![0]).toBe(a);
+  expect(opaqueContents(second)!.map((item) => (item === a ? "a" : "b"))).toEqual(["a", "b"]);
+});
+
 test("collection storage rejects forged, copied and wrong-specialization tokens and keys", async () => {
   const token = value(await maps.empty());
   expect(isMap("map-int-object", token)).toBe(true);
