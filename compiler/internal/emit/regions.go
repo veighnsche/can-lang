@@ -161,6 +161,12 @@ type RegionEmitter struct {
 	// emitters without assembly evidence; those keep legacy behavior. The
 	// map is shared read-only within one assembly and never mutated.
 	authoredProof map[string]string
+	// collectionProof pairs checked map/set specialization keys with
+	// their actual emitted receiver.method bindings for the finite
+	// audited native async operations. It is separate from authored
+	// proof, nil for direct emitters without assembly evidence, shared
+	// read-only within one assembly and never mutated.
+	collectionProof map[string]string
 	// RuleNames maps wrapper rule region IDs to their emitted function
 	// names so inherit delegates to the predecessor rule.
 	RuleNames map[string]string
@@ -556,6 +562,29 @@ func (e *RegionEmitter) eligibleAuthoredBypass(step *ir.InvocationStep, target s
 	}
 	return e.provenAuthoredBinding(step.Identity, target)
 }
+
+// provenCollectionBinding reports whether identity names a checked map/set
+// specialization whose actual resolved receiver.method agrees with the
+// assembly collection evidence. Both the proof entry and the resolved
+// name must match; unknown, mismatched or stale bindings never qualify.
+func (e *RegionEmitter) provenCollectionBinding(identity, resolved string) bool {
+	if e.collectionProof == nil || identity == "" || resolved == "" {
+		return false
+	}
+	bound, ok := e.collectionProof[identity]
+	return ok && bound == resolved
+}
+
+// eligibleCollectionBypass reports whether a Bun invocation step is a
+// plain direct collection call whose receiver.method carries positive
+// exact collection proof. The same conservative exclusions as authored
+// bypass apply; the shared proof map is only read, never mutated.
+func (e *RegionEmitter) eligibleCollectionBypass(step *ir.InvocationStep, target string) bool {
+	if e.Browser || step == nil || step.Callee != nil || step.Native != nil || step.Array != nil || step.Asset != nil || step.Fixtures != nil || step.SQL != nil || step.FormAction != nil || step.JSONFetch != nil || step.Action != nil {
+		return false
+	}
+	return e.provenCollectionBinding(step.Identity, target)
+}
 func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, error) {
 	if call == nil || len(call.Steps) == 0 || !types.Equal(call.Result, call.Result) {
 		return LoweredExpression{}, fmt.Errorf("invalid checked invocation")
@@ -750,13 +779,14 @@ func (e *RegionEmitter) invocation(call *ir.Invocation) (LoweredExpression, erro
 			}
 			direct := invocation
 			invocation = "$canCallContext($canContext," + quote(step.Site) + ",($canContext) => " + invocation + "," + instance + ")"
-			if e.eligibleAuthoredBypass(&step, target) {
-				// A positively proven authored target is a native async
-				// function, and callContext with undefined context only
-				// async-forwards the child callback. The strict branch
-				// invokes the original direct call with the same lowered
-				// arguments; the assertion arrow and receipt lookup are
-				// constructed only in the defined branch.
+			if e.eligibleAuthoredBypass(&step, target) || e.eligibleCollectionBypass(&step, target) {
+				// A positively proven authored or audited collection
+				// target is a native async function, and callContext
+				// with undefined context only async-forwards the child
+				// callback. The strict branch invokes the original
+				// direct call with the same lowered arguments; the
+				// assertion arrow and receipt lookup are constructed
+				// only in the defined branch.
 				invocation = "($canContext === undefined ? " + direct + " : " + invocation + ")"
 			}
 		}

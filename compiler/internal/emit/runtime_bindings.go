@@ -49,6 +49,13 @@ type programAssembly struct {
 	// resolved table as emission, separate from the mixed operation map,
 	// and is shared read-only by this assembly's region emitters only.
 	authoredProof map[string]string
+	// collectionAsyncProof pairs each checked map/set specialization key
+	// with its actual emitted receiver.method binding, but only for the
+	// finite audited canonical operations with correct Entry-based
+	// factory pairing. It is built after the final contribution merge
+	// from checked program.Collections, never inferred from names or
+	// types, and is shared read-only by assembly region emitters only.
+	collectionAsyncProof map[string]string
 
 	httpIDs    []string
 	httpNames  map[string]string
@@ -128,6 +135,7 @@ func assembleProgramBindings(program *check.Program) (*programAssembly, error) {
 	}
 	assembly.functions = functions
 	assembly.authoredProof = assembly.checkedAuthoredProof()
+	assembly.collectionAsyncProof = assembly.checkedCollectionProof()
 	assembly.bindInitializers()
 	return assembly, nil
 }

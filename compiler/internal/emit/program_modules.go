@@ -90,7 +90,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 	}
 	body.WriteString(localTypes)
 	for _, fn := range fns {
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, DomainRuntime: "$canDomain", SourceID: fn.Symbol.Source.ID, Browser: assembly.browser, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof}
 		code, err := emitter.Function(assembly.functions[fn.Identity()], fn.Region)
 		if err != nil {
 			return Module{}, err
@@ -103,7 +103,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 			continue
 		}
 		for _, region := range native.Regions {
-			emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof}
+			emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof}
 			render := emitter.Function
 			if native.Wrapper != nil {
 				render = emitter.WrapperRule
@@ -114,7 +114,7 @@ func emitAuthoredModule(assembly *programAssembly, runtime, path string, fns []*
 			}
 			body.WriteString("export " + code)
 		}
-		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof}
+		emitter := RegionEmitter{Bindings: assembly.bindings, Functions: assembly.functions, RuleNames: assembly.nativeNames, DomainRuntime: "$canDomain", SourceID: native.Symbol.Source.ID, authoredProof: assembly.authoredProof, collectionProof: assembly.collectionAsyncProof}
 		var code string
 		var err error
 		if native.Question != nil {

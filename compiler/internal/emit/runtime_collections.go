@@ -31,6 +31,66 @@ func (assembly *programAssembly) collectionBindings() bindingContribution {
 	return bindingContribution{domain: "collections", functions: functions}
 }
 
+// collectionAsyncMethod is one audited canonical operation: the factory
+// kind it requires ("map" or "set") and its native async method name.
+type collectionAsyncMethod struct {
+	kind   string
+	method string
+}
+
+// collectionAsyncMethods is the finite frozen whitelist of native async
+// collection operations. Map entries require Entry-based pairing
+// (Entry != nil); set entries require Entry == nil. Anything outside
+// this table never qualifies for context-bypass emission.
+var collectionAsyncMethods = map[string]collectionAsyncMethod{
+	"can.std.collections@1::empty_map":    {kind: "map", method: "empty"},
+	"can.std.collections@1::build_map":    {kind: "map", method: "build_map"},
+	"can.std.collections@1::get":          {kind: "map", method: "get"},
+	"can.std.collections@1::insert":       {kind: "map", method: "insert"},
+	"can.std.collections@1::replace":      {kind: "map", method: "replace"},
+	"can.std.collections@1::remove":       {kind: "map", method: "remove"},
+	"can.std.collections@1::entries":      {kind: "map", method: "entries"},
+	"can.std.collections@1::empty_set":    {kind: "set", method: "empty"},
+	"can.std.collections@1::build_set":    {kind: "set", method: "build_set"},
+	"can.std.collections@1::contains":     {kind: "set", method: "contains"},
+	"can.std.collections@1::add":          {kind: "set", method: "add"},
+	"can.std.collections@1::union":        {kind: "set", method: "union"},
+	"can.std.collections@1::intersection": {kind: "set", method: "intersection"},
+	"can.std.collections@1::difference":   {kind: "set", method: "difference"},
+}
+
+// checkedCollectionProof pairs every checked map/set specialization key
+// whose canonical operation, Entry-based factory kind and final merged
+// target agree exactly with the actual collectionNames receiver and the
+// audited native async method. Unknown operations, mismatched kinds,
+// missing bindings and rebound targets are omitted so they can never
+// qualify for proof-selected emission.
+func (assembly *programAssembly) checkedCollectionProof() map[string]string {
+	proof := make(map[string]string, len(assembly.program.Collections))
+	for key, special := range assembly.program.Collections {
+		if key == "" || special == nil || special.Collection == nil {
+			continue
+		}
+		want, ok := collectionAsyncMethods[special.Operation]
+		if !ok {
+			continue
+		}
+		if (special.Entry != nil) != (want.kind == "map") {
+			continue
+		}
+		receiver, ok := assembly.collectionNames[special.Collection.Identity()]
+		if !ok || receiver == "" {
+			continue
+		}
+		resolved, ok := assembly.functions[key]
+		if !ok || resolved == "" || resolved != receiver+"."+want.method {
+			continue
+		}
+		proof[key] = resolved
+	}
+	return proof
+}
+
 // collectionStateImports lists the runtime map/set factories the shared
 // state module needs.
 func (assembly *programAssembly) collectionStateImports(runtime string) []ModuleImport {
