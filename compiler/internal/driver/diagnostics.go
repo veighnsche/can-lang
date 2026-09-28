@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/check"
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	compileresolve "github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/source"
@@ -73,6 +74,7 @@ type Snapshot struct {
 // so library files diagnose like programs. Every pipeline failure becomes
 // a diagnostic; the returned error is only for programmer misuse.
 func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snapshot, error) {
+	defer editortrace.Stage("snapshot")()
 	if directory == "" {
 		return nil, fmt.Errorf("diagnose project: empty directory")
 	}
@@ -80,24 +82,32 @@ func CheckSnapshot(directory, openFile string, overlay *project.Overlay) (*Snaps
 	if overlay != nil {
 		snapshot.Versions = overlay.Versions()
 	}
+	endLoad := editortrace.Stage("load")
 	graph, err := project.LoadWithOverlay(directory, overlay)
+	endLoad()
 	if err != nil {
 		snapshot.Diagnostics = loadDiagnostics(graph, openFile, err)
 		return snapshot, nil
 	}
 	snapshot.Graph = graph
+	endResolve := editortrace.Stage("snapshot-resolve")
 	world, err := compileresolve.Build(graph)
+	endResolve()
 	if err != nil {
 		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
 		return snapshot, nil
 	}
 	snapshot.World = world
+	endCheck := editortrace.Stage("check")
 	program, err := check.CheckAssertionProgram(graph)
+	endCheck()
 	if err != nil {
 		snapshot.Diagnostics = []Diagnostic{semanticDiagnostic(graph, openFile, err)}
 		return snapshot, nil
 	}
+	endDiagnostics := editortrace.Stage("diagnostic-conversion")
 	snapshot.Diagnostics = warningDiagnostics(graph, program.Warnings)
+	endDiagnostics()
 	return snapshot, nil
 }
 

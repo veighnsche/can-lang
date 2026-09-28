@@ -2,6 +2,7 @@ package check
 
 import (
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -106,6 +107,102 @@ fn bool grouped
 	for _, want := range []string{"can.std.collections@1::build_map", "can.std.collections@1::build_set"} {
 		if !seen[want] {
 			t.Fatalf("missing specialization %s in %+v", want, program.Collections)
+		}
+	}
+}
+
+// TestCollectionOperationNamespaceInvariant pins the early-rejection guard:
+// every I25/A05 operation must live in can.std.collections@1::, the guard
+// must return metadata identical to the former full-scan oracle, and all
+// other identities must decline without consulting task state.
+func TestCollectionOperationNamespaceInvariant(t *testing.T) {
+	const namespace = "can.std.collections@1::"
+	inventory := catalogue.Builtin().Inventory()
+	if len(inventory.Operations) == 0 {
+		t.Fatal("embedded inventory has no operations")
+	}
+	admitted := 0
+	for _, want := range inventory.Operations {
+		want := want
+		admissible := want.Lowering.Task == "I25" || want.Lowering.Task == "A05"
+		got := collectionOperation(want.Identity)
+		if !admissible {
+			if got != nil {
+				t.Fatalf("collectionOperation(%q) admitted task %q", want.Identity, want.Lowering.Task)
+			}
+			continue
+		}
+		admitted++
+		if !strings.HasPrefix(want.Identity, namespace) {
+			t.Fatalf("admitted %q violates namespace %q", want.Identity, namespace)
+		}
+		if got == nil {
+			t.Fatalf("collectionOperation(%q) declined I25/A05 operation", want.Identity)
+		}
+		if !reflect.DeepEqual(*got, want) {
+			t.Fatalf("collectionOperation(%q) metadata differs from inventory oracle", want.Identity)
+		}
+	}
+	if admitted == 0 {
+		t.Fatal("no I25/A05 operations in embedded inventory")
+	}
+	// Mutating nested fields must not affect later lookups: the positive
+	// scan still serves deep defensive copies of the embedded inventory.
+	first := ""
+	var original catalogue.Operation
+	for _, op := range inventory.Operations {
+		if (op.Lowering.Task == "I25" || op.Lowering.Task == "A05") && len(op.Inputs) > 0 {
+			first, original = op.Identity, op
+			break
+		}
+	}
+	if first == "" {
+		t.Fatal("no I25/A05 operation with inputs for mutation isolation")
+	}
+	mutated := collectionOperation(first)
+	if mutated == nil {
+		t.Fatalf("collectionOperation(%q) declined during mutation check", first)
+	}
+	mutated.Result = "mutated::type"
+	mutated.Inputs[0].Type = "mutated::nested"
+	mutated.Inputs[0].Name = "mutated_nested"
+	if len(mutated.Parameters) > 0 {
+		mutated.Parameters[0].Constraint = "mutated"
+	}
+	again := collectionOperation(first)
+	if again == nil {
+		t.Fatalf("collectionOperation(%q) declined after mutation", first)
+	}
+	if !reflect.DeepEqual(*again, original) {
+		t.Fatal("collectionOperation result aliases embedded inventory (nested mutation leaked)")
+	}
+	rejections := []string{
+		"",
+		"audit::f0",
+		"main",
+		"can.project.audit@1::f0",
+		// Near-prefix impostors.
+		"can.std.collections@1:empty_map",
+		"can.std.collections@1",
+		"can.std.collections@1::",
+		"can.std.collections@10::empty_map",
+		"can.std.collections@1X::empty_map",
+		"can.std.collections@2::empty_map",
+		"can.std.collections@1::empty_map ",
+		" can.std.collections@1::empty_map",
+		"CAN.STD.COLLECTIONS@1::EMPTY_MAP",
+		"xcan.std.collections@1::empty_map",
+		// Unknown names inside the namespace.
+		"can.std.collections@1::does_not_exist",
+		"can.std.collections@1::Empty_Map",
+		// Real non-collection built-ins across several tasks.
+		"can.std.text@1::from_int",
+		"can.intrinsic.str@1::includes",
+		"can.std.bytes@1::empty",
+	}
+	for _, identity := range rejections {
+		if got := collectionOperation(identity); got != nil {
+			t.Fatalf("collectionOperation(%q) should decline, got %+v", identity, got.Identity)
 		}
 	}
 }

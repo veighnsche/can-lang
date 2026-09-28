@@ -3,6 +3,7 @@ package check
 import (
 	"fmt"
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
 	"github.com/veighnsche/can-lang/compiler/internal/types"
@@ -15,6 +16,13 @@ type CollectionSpecialization struct {
 }
 
 func collectionOperation(identity string) *catalogue.Operation {
+	defer editortrace.Stage("collection-operation")()
+	// Every I25/A05 operation lives in this namespace; ordinary project
+	// identities return before cloning the whole inventory. Positive
+	// filtering below is unchanged.
+	if !strings.HasPrefix(identity, "can.std.collections@1::") {
+		return nil
+	}
 	for _, op := range catalogue.Builtin().Inventory().Operations {
 		if op.Identity == identity && (op.Lowering.Task == "I25" || op.Lowering.Task == "A05") {
 			return &op

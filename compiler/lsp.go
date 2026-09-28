@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/driver"
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	compileresolve "github.com/veighnsche/can-lang/compiler/internal/resolve"
 	"github.com/veighnsche/can-lang/compiler/internal/source"
@@ -63,6 +64,7 @@ func uriFromPath(path string) string {
 }
 
 func writeFrame(w *bufio.Writer, v any) error {
+	defer editortrace.Stage("serialize-flush")()
 	body, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -114,6 +116,21 @@ func runLSP(argv []string) int {
 		fmt.Fprintln(os.Stderr, err)
 		return 2
 	}
+	if path := os.Getenv("CAN_LSP_TRACE"); path != "" {
+		closeTrace, err := editortrace.Open(path)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 2
+		}
+		serveLSP(bufio.NewReader(os.Stdin), bufio.NewWriter(os.Stdout))
+		// Write, cap and close failures invalidate the trace; report them
+		// in the exit status instead of masquerading as a clean run.
+		if err := closeTrace(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 2
+		}
+		return 0
+	}
 	serveLSP(bufio.NewReader(os.Stdin), bufio.NewWriter(os.Stdout))
 	return 0
 }
@@ -149,6 +166,22 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		if err := json.Unmarshal(body, &msg); err != nil {
 			continue
 		}
+		endRequest := editortrace.Request(msg.Method, msg.ID, 0)
+		if editortrace.Enabled() {
+			var params struct {
+				TextDocument struct {
+					URI     string `json:"uri"`
+					Version int64  `json:"version"`
+				} `json:"textDocument"`
+			}
+			if json.Unmarshal(msg.Params, &params) == nil {
+				version := params.TextDocument.Version
+				if doc := server.docs[params.TextDocument.URI]; version == 0 && doc != nil {
+					version = doc.version
+				}
+				editortrace.SetRequestVersion(version)
+			}
+		}
 		switch msg.Method {
 		case "initialize":
 			respond(msg.ID, map[string]any{"capabilities": map[string]any{"textDocumentSync": 1, "definitionProvider": true, "documentFormattingProvider": true, "hoverProvider": true, "referencesProvider": true, "completionProvider": map[string]any{"triggerCharacters": []string{".", ":"}}, "renameProvider": true}})
@@ -162,6 +195,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				} `json:"textDocument"`
 			}
 			if json.Unmarshal(msg.Params, &p) != nil {
+				endRequest()
 				continue
 			}
 			server.open(p.TextDocument.URI, p.TextDocument.Text, p.TextDocument.Version)
@@ -177,6 +211,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				} `json:"contentChanges"`
 			}
 			if json.Unmarshal(msg.Params, &p) != nil || len(p.Changes) == 0 {
+				endRequest()
 				continue
 			}
 			server.change(p.TextDocument.URI, p.Changes[len(p.Changes)-1].Text, p.TextDocument.Version)
@@ -200,6 +235,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid definition params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -217,6 +253,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid hover params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -237,6 +274,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid references params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -258,6 +296,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid completion params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -276,6 +315,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid rename params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -289,6 +329,7 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 				if msg.ID != nil {
 					respondErr(msg.ID, -32602, "invalid formatting params")
 				}
+				endRequest()
 				continue
 			}
 			if msg.ID != nil {
@@ -297,12 +338,14 @@ func serveLSP(in *bufio.Reader, out *bufio.Writer) {
 		case "shutdown":
 			respond(msg.ID, nil)
 		case "exit":
+			endRequest()
 			return
 		default:
 			if msg.ID != nil {
 				respondErr(msg.ID, -32601, "unknown method "+msg.Method)
 			}
 		}
+		endRequest()
 	}
 }
 
@@ -2727,9 +2770,14 @@ func completion(snapshot *driver.Snapshot, file string, line, character int) ([]
 	if err != nil {
 		return nil, false
 	}
+	endWalk := editortrace.Stage("completion-context")
 	walker := &compWalker{text: string(src.Bytes), file: resolved}
 	walker.walkFile(src.Syntax)
-	items := walker.candidates(walker.classify(src.Syntax, offset), offset)
+	context := walker.classify(src.Syntax, offset)
+	endWalk()
+	endCandidates := editortrace.Stage("completion-candidates")
+	items := walker.candidates(context, offset)
+	endCandidates()
 	if items == nil {
 		items = []compItem{}
 	}
@@ -2741,6 +2789,7 @@ func completion(snapshot *driver.Snapshot, file string, line, character int) ([]
 // snapshot cannot support the query. Like the other queries it reads
 // an inert overlay snapshot and returns freshly built items.
 func (s *lspServer) completion(uri string, line, character int) any {
+	defer editortrace.Stage("completion")()
 	doc, ok := s.docs[uri]
 	if !ok || doc.path == "" {
 		return nil

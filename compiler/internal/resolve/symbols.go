@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	"github.com/veighnsche/can-lang/compiler/internal/source"
 	"github.com/veighnsche/can-lang/compiler/internal/syntax"
@@ -176,6 +177,7 @@ type World struct {
 }
 
 func Build(graph *project.Graph) (*World, error) {
+	defer editortrace.Stage("resolve-build")()
 	w := &World{Graph: graph, Prelude: NewScope(nil), Packages: map[string]*Package{}, Files: map[*project.Source]*File{}, Functions: map[*syntax.FunctionDecl]*Scope{}, NativeScopes: map[syntax.Declaration]*Scope{}}
 	if err := w.catalogue(); err != nil {
 		return nil, err

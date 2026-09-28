@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/veighnsche/can-lang/compiler/internal/catalogue"
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 	"github.com/veighnsche/can-lang/compiler/internal/ir"
 	"github.com/veighnsche/can-lang/compiler/internal/project"
 	"github.com/veighnsche/can-lang/compiler/internal/resolve"
@@ -378,13 +379,18 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 	if target != TargetBun && target != TargetBrowser {
 		return nil, fmt.Errorf("unknown check target %q: expected %q or %q", string(target), string(TargetBun), string(TargetBrowser))
 	}
+	endResolve := editortrace.Stage("checker-resolve")
 	world, err := resolve.Build(graph)
+	endResolve()
 	if err != nil {
 		return nil, err
 	}
+	endDeclarations := editortrace.Stage("check-declarations")
 	if _, err = types.CheckDeclarations(world); err != nil {
 		return nil, err
 	}
+	endDeclarations()
+	endSeed := editortrace.Stage("check-seed")
 	registry, err := ErrorDeclarations(world)
 	if err != nil {
 		return nil, err
@@ -394,11 +400,17 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		return nil, err
 	}
 	p := &Program{Target: target, World: world, Registry: registry, Intrinsics: map[string]*types.Type{}, Connections: map[string]ConnectionPolicy{}}
+	endSeed()
+	endCatalogue := editortrace.Stage("check-catalogue-contracts")
 	// Resolve maintained contracts from the catalogue in a private canonical scope.
 	// Authored calls still require their declaring file's explicit imports.
 	builtinFile := &resolve.File{Scope: world.Prelude, Imports: world.Packages}
 	c.annotations[builtinFile] = map[string]*types.Type{}
-	for _, op := range catalogue.Builtin().Inventory().Operations {
+	// One defensive copy serves both loops below: contract gathering here
+	// and intrinsic receiver metadata in the callable stage. Both loops
+	// read only; the embedded inventory stays unreachable for mutation.
+	catalogueOperations := catalogue.Builtin().Inventory().Operations
+	for _, op := range catalogueOperations {
 		if routeOperation(op.Identity) {
 			if err = c.admitRouteOperation(p, builtinFile, op); err != nil {
 				return nil, err
@@ -467,6 +479,8 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		c.bindings[op.Identity] = typ
 		p.Intrinsics[op.Identity] = typ
 	}
+	endCatalogue()
+	endGather := editortrace.Stage("check-gather")
 	var files []*resolve.File
 	for _, file := range world.Files {
 		files = append(files, file)
@@ -603,6 +617,8 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		}
 		return nil, fmt.Errorf("root project requires void main(str[] args)")
 	}
+	endGather()
+	endModel := editortrace.Stage("check-model")
 	p.Model, err = c.builder.Finish()
 	if err != nil {
 		return nil, err
@@ -643,6 +659,8 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 			return nil, err
 		}
 	}
+	endModel()
+	endCallables := editortrace.Stage("check-callables")
 	callables := map[string]CallableDeclaration{}
 	c.callables = callables
 	for _, native := range p.Natives {
@@ -658,7 +676,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 			names[i] = fmt.Sprintf("input%d", i)
 		}
 		receiver := false
-		for _, op := range catalogue.Builtin().Inventory().Operations {
+		for _, op := range catalogueOperations {
 			if op.Identity == id {
 				receiver = op.Kind == "method"
 				break
@@ -679,6 +697,8 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 		}
 		callables[fn.Symbol.ID] = descriptor
 	}
+	endCallables()
+	endBodies := editortrace.Stage("check-bodies")
 	// Action contracts bind after every callable signature is known and
 	// the type graph is sealed. Declarations are handler-free, so no
 	// executable import is needed to check or export them.
@@ -739,6 +759,7 @@ func checkProgramForTarget(graph *project.Graph, target Target, requireEntry boo
 			return nil, fmt.Errorf("concrete function %s: %w", fn.Identity(), err)
 		}
 	}
+	endBodies()
 	c.current = nil
 	if err = c.nativeAssertions(p, callables); err != nil {
 		return nil, err

@@ -14,6 +14,8 @@ import (
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/veighnsche/can-lang/compiler/internal/editortrace"
 )
 
 //go:embed catalogue.json
@@ -134,7 +136,10 @@ func clone[T any](value T) T {
 	}
 	return result
 }
-func (c *Catalogue) Inventory() Inventory              { return clone(c.inventory) }
+func (c *Catalogue) Inventory() Inventory {
+	defer editortrace.Stage("catalogue-inventory-clone")()
+	return clone(c.inventory)
+}
 func (c *Catalogue) Type(name string) (TypeDecl, bool) { v, ok := c.types[name]; return clone(v), ok }
 func (c *Catalogue) Error(name string) (ErrorDecl, bool) {
 	v, ok := c.errors[name]
