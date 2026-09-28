@@ -5,6 +5,20 @@ runner with twelve sequential slices. All twelve have representative workloads;
 coverage is broad, not exhaustive. Compiler speed and the execution speed of
 generated TypeScript are measured separately.
 
+## Current investigation
+
+The [editor responsiveness plan](editor-responsiveness-plan.md) defines the first
+focused performance improvement: trace completion latency, establish its cause,
+protect semantic behavior, and verify a targeted fix. Plan preparation used
+source inspection and the saved measured results; no new performance run started.
+
+The later completed measured run contains all 104 cases across twelve sequential
+slices. Its local run identifier is `20260927T235706.371974Z`; browser correctness
+passed, but its twelve timing cases remain unresolved. PDF export now obtains
+advisory grades automatically through TypeSafe Score. The sections below record
+the earlier implementation-validation and cleanup state, not the status of that
+later measured run. Current commands and grading behavior are in the suite guide.
+
 ## Implementation validation on 2026-09-27
 
 The expanded inventory contains **104 cases**, up from 37:
