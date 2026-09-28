@@ -42,10 +42,13 @@ no backwards compatibility requirement exists for the obsolete eighteen-name lis
 
 Muse alone owns implementation/tests/progress, sequentially. Required runtime
 lint-fix/format/check and focused consumers must pass. Reuse successful generated
-strictTS/24 oracle evidence from checkpoint52ae03f0 if compiler/module/driver and
-all generated fixture-reachable runtime sources are unchanged: its emitted fixture
-does not import codec/document.ts. Explain reachability before deciding; build only
-one reused bounded actual graph if a new relevant contract needs it. Do not repeat
+strictTS/24 oracle evidence from checkpoint52ae03f0 when no generated interface or
+invoked workload changes. The benchmark imports codec/json.ts and thereby document.ts,
+so runtime input hashes change; never claim all runtime identities remain equal. Its
+24 named generated cases exercise arithmetic, collections, records, variants, failure,
+Unicode and base64 rather than JSON decoding. Confirm actual emitter/fixture dependency
+use before deciding. Focused real codec consumers qualify this guard; build only one
+reused bounded actual graph if a generated JSON path or new relevant contract needs it. Do not repeat
 startup tool tests, timing or a full-system audit. Register/retire exact temporary
 resources and keep compact source/command/result evidence. After ALL-writer
 handoff Codex independently reviews and commits; invoke/startup/final twelve-slice
